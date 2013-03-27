@@ -21,22 +21,33 @@ import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
 import sun.misc.IOUtils;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
+import java.io.*;
 import java.util.Properties;
+import java.util.logging.Level;
 
 public class L18nSupport {
-	public static Properties languageFile = new Properties();
+	public static Properties languageFile;
 
 	public static void init () {
 		languageFile = new Properties();
 
-		InputStream is = null;
-		is = Movecraft.getInstance().getClass().getResourceAsStream("/localization/" + Settings.LOCALE + ".properties");
+		File localisationDirectory = new File( Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/localisation/" );
 
-		if (is == null) {
-			is = Movecraft.getInstance().getClass().getResourceAsStream("/localization/en_US.properties");
+		if ( !localisationDirectory.exists() ) {
+			localisationDirectory.mkdirs();
+		}
+
+		InputStream is = null;
+		try {
+			is = new FileInputStream(  localisationDirectory.getAbsolutePath() + "/" + Settings.LOCALE + ".properties" );
+		} catch ( FileNotFoundException e ) {
+			e.printStackTrace();
+		}
+
+		if ( is == null ) {
+			Movecraft.getInstance().getLogger().log( Level.SEVERE, "Critical Error in Localisation System" );
+			Movecraft.getInstance().getServer().shutdown();
+			return;
 		}
 
 		try {
