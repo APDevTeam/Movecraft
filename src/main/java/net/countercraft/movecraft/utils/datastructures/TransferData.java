@@ -17,10 +17,14 @@
 
 package net.countercraft.movecraft.utils.datastructures;
 
-public interface TransferData {
+public class TransferData {
+	private byte data;
 
-	public byte getData();
+	public TransferData( byte data) {
+		this.data = data;
+	}
 
-	public void setData( byte b );
-
+	public byte getData() {
+		return data;
+	}
 }

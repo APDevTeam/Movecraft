@@ -1,0 +1,46 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.mcstats.bukkit</groupId>
+    <artifactId>metrics</artifactId>
+    <version>R6</version>
+    <packaging>jar</packaging>
+    <url>mcstats.org</url>
+    <name>Metrics (Bukkit)</name>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <repositories>
+        <repository>
+            <id>Bukkit Official</id>
+            <url>http://repo.bukkit.org/content/repositories/public</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.bukkit</groupId>
+            <artifactId>bukkit</artifactId>
+            <version>1.4.5-R0.3-SNAPSHOT</version>
+            <type>jar</type>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
+
+    <distributionManagement>
+        <repository>
+            <id>mcstats.releases</id>
+            <name>mcstats.org releases</name>
+            <url>http://repo.mcstats.org/content/repositories/releases/</url>
+        </repository>
+
+        <snapshotRepository>
+            <id>mcstats.snapshots</id>
+            <name>mcstats.org snapshots</name>
+            <url>http://repo.mcstats.org/content/repositories/snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
+</project>

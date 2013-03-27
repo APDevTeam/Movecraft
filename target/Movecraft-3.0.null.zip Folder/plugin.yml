@@ -1,0 +1,7 @@
+name: Movecraft
+version: 3.1.${env.BUILD_NUMBER}
+description: The original flight and movement plugin for minecraft.
+author: AJCStriker
+website: http://madrealms.net/forums/
+main: net.countercraft.movecraft.Movecraft
+database: false
