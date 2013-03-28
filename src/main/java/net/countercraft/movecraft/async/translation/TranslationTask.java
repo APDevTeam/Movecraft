@@ -19,7 +19,7 @@ package net.countercraft.movecraft.async.translation;
 
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.localisation.L18nSupport;
+import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.MapUpdateCommand;
 import net.countercraft.movecraft.utils.MovecraftLocation;
 import org.apache.commons.collections.ListUtils;
@@ -63,7 +63,7 @@ public class TranslationTask extends AsyncTask{
 
 			if ( newLoc.getY() >= heightLimit ) {
 				failed = true;
-				failMessage = String.format( L18nSupport.getInternationalisedString( "Translation - Failed Craft hit height limit" ) );
+				failMessage = String.format( I18nSupport.getInternationalisedString( "Translation - Failed Craft hit height limit" ) );
 			}
 
 			int testID = getCraft().getW().getBlockTypeIdAt( newLoc.getX(), newLoc.getY(), newLoc.getZ() );
@@ -72,7 +72,7 @@ public class TranslationTask extends AsyncTask{
 			if ( testID != 0 && !existingBlockSet.contains( newLoc ) ) {
 				// New block is not air and is not part of the existing ship
 				failed = true;
-				failMessage = String.format( L18nSupport.getInternationalisedString( "Translation - Failed Craft is obstructed" ) );
+				failMessage = String.format( I18nSupport.getInternationalisedString( "Translation - Failed Craft is obstructed" ) );
 				break;
 			} else {
 				int oldID = getCraft().getW().getBlockTypeIdAt( oldLoc.getX(), oldLoc.getY(), oldLoc.getZ() );
@@ -105,10 +105,15 @@ public class TranslationTask extends AsyncTask{
 					newHitbox[x] = new int[hitbox[x].length][];
 
 					for ( int z = 0; z < hitbox[x].length; z++ ) {
+						try {
 
-						newHitbox[x][z] = new int[2];
-						newHitbox[x][z][0] = hitbox[x][z][0] + dy;
-						newHitbox[x][z][1] = hitbox[x][z][1] + dy;
+							newHitbox[x][z] = new int[2];
+							newHitbox[x][z][0] = hitbox[x][z][0] + dy;
+							newHitbox[x][z][1] = hitbox[x][z][1] + dy;
+
+						} catch ( NullPointerException e ) {
+							continue;
+						}
 
 					}
 

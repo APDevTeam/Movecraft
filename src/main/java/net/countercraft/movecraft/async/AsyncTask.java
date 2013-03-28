@@ -19,7 +19,7 @@ package net.countercraft.movecraft.async;
 
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.localisation.L18nSupport;
+import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.logging.Level;
@@ -36,7 +36,7 @@ public abstract class AsyncTask extends BukkitRunnable {
 			excecute();
 			AsyncManager.getInstance().submitCompletedTask( this );
 		} catch ( Exception e ) {
-			Movecraft.getInstance().getLogger().log( Level.SEVERE, String.format( L18nSupport.getInternationalisedString( "Internal - Error - Proccessor thread encountered an error" ) ) );
+			Movecraft.getInstance().getLogger().log( Level.SEVERE, String.format( I18nSupport.getInternationalisedString( "Internal - Error - Proccessor thread encountered an error" ) ) );
 			e.printStackTrace();
 		}
 	}

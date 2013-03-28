@@ -19,10 +19,12 @@ package net.countercraft.movecraft.async.detection;
 
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.localisation.L18nSupport;
+import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.MovecraftLocation;
 import org.bukkit.World;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Stack;
 
@@ -39,6 +41,7 @@ public class DetectionTask extends AsyncTask {
 	private MovecraftLocation[] blockListFinal;
 	private String playername;
 	int[][][] hitBox;
+	private HashMap<Integer, Integer> blockTypeCount = new HashMap<Integer, Integer>();
 
 	public DetectionTask( Craft c, MovecraftLocation startLocation, int minSize, int maxSize, Integer[] allowedBlocks, Integer[] forbiddenBlocks, String player, World w ) {
 		super( c );
@@ -67,11 +70,11 @@ public class DetectionTask extends AsyncTask {
 
 		if( blockList.size() < minSize ) {
 			// Craft is too small
-			failMessage = String.format( L18nSupport.getInternationalisedString( "Detection - Craft too small" ), minSize) ;
+			failMessage = String.format( I18nSupport.getInternationalisedString( "Detection - Craft too small" ), minSize) ;
 			failed = true;
 		} else if ( blockList.size() > maxSize ) {
 			// Craft is too big
-			failMessage = String.format( L18nSupport.getInternationalisedString( "Detection - Craft too large" ), maxSize);
+			failMessage = String.format( I18nSupport.getInternationalisedString( "Detection - Craft too large" ), maxSize);
 			failed = true;
 		} else {
 
@@ -81,8 +84,43 @@ public class DetectionTask extends AsyncTask {
 				// Check if craft contains forbidden block
 				for ( MovecraftLocation l : blockList ) {
 					if ( isForbiddenBlock( w.getBlockTypeIdAt( l.getX(), l.getY(), l.getZ() ) ) ) {
-						failMessage = String.format( L18nSupport.getInternationalisedString( "Detection - Forbidden block found" ) );
+						failMessage = String.format( I18nSupport.getInternationalisedString( "Detection - Forbidden block found" ) );
 						failed = true;
+					} else {
+						// Add the block type to the relevant count
+						int id = w.getBlockTypeIdAt( l.getX(), l.getY(), l.getZ() );
+						Integer i = blockTypeCount.get( id );
+
+						if ( i == null ) {
+							i = 1;
+						} else {
+							i++;
+						}
+
+						blockTypeCount.put( id, i );
+					}
+				}
+
+				// Check if it obeys structure requirements
+				HashMap<Integer, ArrayList<Double>> flyBlocks = ( HashMap<Integer, ArrayList<Double>> ) getCraft().getType().getFlyBlocks().clone();
+
+				for ( Integer i : flyBlocks.keySet() ) {
+					Integer numberOfBlocks = blockTypeCount.get( i );
+
+					if ( numberOfBlocks == null ) {
+						numberOfBlocks = 0;
+					}
+
+					if ( (((float)numberOfBlocks / blockListFinal.length) * 100) < flyBlocks.get( i ).get( 0 )){
+						//bad
+						failMessage = String.format( I18nSupport.getInternationalisedString( "Detection - Failed - Not enough flyblock" ), i, flyBlocks.get( i ).get( 0 ), (((float)numberOfBlocks / blockListFinal.length) * 100) );
+						failed = true;
+					} else if((((float)numberOfBlocks / blockListFinal.length) * 100)  > flyBlocks.get( i ).get( 1 )) {
+						failMessage = String.format( String.format( I18nSupport.getInternationalisedString( "Detection - Failed - Too much flyblock" ) , i, flyBlocks.get( i ).get( 1 ),  (((float)numberOfBlocks / blockListFinal.length) * 100) ) );
+						failed = true;
+					} else {
+						// good
+
 					}
 				}
 
@@ -93,28 +131,35 @@ public class DetectionTask extends AsyncTask {
 					sizeZ = maxZ - minZ + 1;
 
 					int[][][] polygonalBox = new int[sizeX][][];
-					for ( int i = minX; i <= maxX; i++ ) {
-						polygonalBox[i - minX] = new int[sizeZ][];
 
-						for ( int j = minZ; j <= maxZ; j++ ) {
-							int yMin = -1, yMax = -1;
 
-							for ( MovecraftLocation l : blockList ) {
-								if ( l.getX() == i && l.getZ() == j ) {
-									if( yMax == -1 || l.getY() > yMax ){
-										yMax = l.getY();
-									}
-									if( yMin == -1 || l.getY() < yMin ){
-										yMin = l.getY();
-									}
+					for ( MovecraftLocation l : blockList ) {
+						if ( polygonalBox[l.getX() - minX] == null ) {
+							polygonalBox[l.getX() - minX] = new int[sizeZ][];
+						}
 
-								}
+						int minY = 0, maxY = 0;
+
+						if ( polygonalBox[l.getX() - minX][l.getZ() - minZ] == null ) {
+
+							polygonalBox[l.getX() - minX][l.getZ() - minZ] = new int[2];
+							polygonalBox[l.getX() - minX][l.getZ() - minZ][0] = l.getY();
+							polygonalBox[l.getX() - minX][l.getZ() - minZ][1] = l.getY();
+
+						} else {
+							minY = polygonalBox[l.getX() - minX][l.getZ() - minZ][0];
+							maxY = polygonalBox[l.getX() - minX][l.getZ() - minZ][1];
+
+							if( l.getY() < minY ){
+								polygonalBox[l.getX() - minX][l.getZ() - minZ][0] = l.getY();
+							}
+							if( l.getY() > maxY ){
+								polygonalBox[l.getX() - minX][l.getZ() - minZ][1] = l.getY();
 							}
 
-							polygonalBox[i - minX][j - minZ] = new int[2];
-							polygonalBox[i - minX][j - minZ][0] = yMin;
-							polygonalBox[i - minX][j - minZ][1] = yMax;
 						}
+
+
 					}
 
 					hitBox = polygonalBox;
@@ -193,7 +238,7 @@ public class DetectionTask extends AsyncTask {
 			}
 		}
 
-		return test != 0;
+		return false;
 	}
 
 	private boolean isForbiddenBlock( int test ){

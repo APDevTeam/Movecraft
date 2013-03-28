@@ -19,7 +19,7 @@ package net.countercraft.movecraft.listener;
 
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.localisation.L18nSupport;
+import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
@@ -35,9 +35,9 @@ public class CommandListener implements Listener {
 
 			if ( pCraft != null ) {
 				CraftManager.getInstance().removeCraft( pCraft );
-				e.getPlayer().sendMessage( String.format( L18nSupport.getInternationalisedString( "Player- Craft has been released" ) ) );
+				e.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "Player- Craft has been released" ) ) );
 			} else {
-				e.getPlayer().sendMessage( String.format( L18nSupport.getInternationalisedString( "Player- Error - You do not have a craft to release!" ) ) );
+				e.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "Player- Error - You do not have a craft to release!" ) ) );
 			}
 
 		} else {

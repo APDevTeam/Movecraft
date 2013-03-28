@@ -27,8 +27,14 @@ public class MathUtils {
 			// PLayer is within correct X boundary
 			if ( l.getZ() >= minZ && l.getZ() < ( minZ + box[l.getX() - minX].length ) ) {
 				// Player is within valid Z boundary
-				int minY = box[l.getX() - minX][l.getZ() - minZ][0];
-				int maxY = box[l.getX() - minX][l.getZ() - minZ][1];
+				int minY = -1, maxY = -1;
+				try {
+					minY = box[l.getX() - minX][l.getZ() - minZ][0];
+					maxY = box[l.getX() - minX][l.getZ() - minZ][1];
+				} catch ( NullPointerException e ) {
+					return false;
+				}
+
 
 				if ( minY != -1 && maxY != -1 ) {
 					if ( l.getY() >= minY && l.getY() <= (maxY + 2) ) {
@@ -49,4 +55,30 @@ public class MathUtils {
 		return new MovecraftLocation( l.getBlockX(), l.getBlockY(), l.getBlockZ() );
 	}
 
+	public static MovecraftLocation rotateVec ( Rotation r, MovecraftLocation l ) {
+		MovecraftLocation newLocation = new MovecraftLocation( 0, l.getY(), 0 );
+		double theta;
+		if ( r == Rotation.CLOCKWISE ) {
+			theta = 0.5 *  Math.PI;
+		} else {
+			theta = -1 * 0.5 * Math.PI;
+		}
+
+		int x = (int) Math.round( ( l.getX() * Math.cos( theta ) ) + ( l.getZ() * ( -1 * Math.sin( theta ) ) ) );
+		int z = (int) Math.round( ( l.getX() * Math.sin( theta ) ) + ( l.getZ() * Math.cos( theta ) ) );
+
+		newLocation.setX( x );
+		newLocation.setZ( z );
+
+		return newLocation;
+	}
+
+	public static int positiveMod( int mod, int divisor ) {
+		if (mod < 0)
+		{
+			mod += divisor;
+		}
+
+		return mod;
+	}
 }

@@ -23,7 +23,7 @@ import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.localisation.L18nSupport;
+import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.*;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
@@ -80,7 +80,7 @@ public class AsyncManager extends BukkitRunnable{
 
 				if( pCraft != null ) {
 					//Player is already controlling a craft
-					p.sendMessage( String.format( L18nSupport.getInternationalisedString( "Detection - Failed - Already commanding a craft" ) ) );
+					p.sendMessage( String.format( I18nSupport.getInternationalisedString( "Detection - Failed - Already commanding a craft" ) ) );
 				} else {
 					if ( task.isFailed() ) {
 						Movecraft.getInstance().getServer().getPlayer( task.getPlayername() ).sendMessage( task.getFailMessage() );
@@ -92,7 +92,7 @@ public class AsyncManager extends BukkitRunnable{
 								for ( Craft craft :  craftsInWorld ) {
 
 									if ( BlockUtils.arrayContainsOverlap( craft.getBlockList(), task.getBlockListFinal() ) ) {
-										Movecraft.getInstance().getServer().getPlayer( task.getPlayername() ).sendMessage( String.format( L18nSupport.getInternationalisedString( "Detection - Failed Craft is already being controlled" ) ) );
+										Movecraft.getInstance().getServer().getPlayer( task.getPlayername() ).sendMessage( String.format( I18nSupport.getInternationalisedString( "Detection - Failed Craft is already being controlled" ) ) );
 									}
 
 								}
@@ -103,7 +103,8 @@ public class AsyncManager extends BukkitRunnable{
 								c.setMinX( task.getMinX() );
 								c.setMinZ( task.getMinZ() );
 
-								Movecraft.getInstance().getServer().getPlayer( task.getPlayername() ).sendMessage( String.format( L18nSupport.getInternationalisedString( "Detection - Successfully piloted craft" ) ) );
+								Movecraft.getInstance().getServer().getPlayer( task.getPlayername() ).sendMessage( String.format( I18nSupport.getInternationalisedString( "Detection - Successfully piloted craft" ) ) );
+								Movecraft.getInstance().getLogger().log( Level.INFO, String.format( I18nSupport.getInternationalisedString( "Detection - Success - Log Output" ), p.getDisplayName(), c.getType().getCraftName(), c.getMinX(), c.getMinZ() ) );
 								CraftManager.getInstance().addCraft( c, Movecraft.getInstance().getServer().getPlayer( task.getPlayername() ) );
 							}
 					}
@@ -158,7 +159,7 @@ public class AsyncManager extends BukkitRunnable{
 
 						} else {
 
-							Movecraft.getInstance().getLogger().log( Level.SEVERE, String.format( L18nSupport.getInternationalisedString( "Translation - Craft collision" ) ) );
+							Movecraft.getInstance().getLogger().log( Level.SEVERE, String.format( I18nSupport.getInternationalisedString( "Translation - Craft collision" ) ) );
 
 						}
 					}
@@ -192,20 +193,13 @@ public class AsyncManager extends BukkitRunnable{
 
 									// Player is onboard this craft
 										MovecraftLocation originPoint = task.getOriginPoint();
-										Location playerPosAdjusted = pTest.getLocation().subtract( originPoint.getX(), originPoint.getY(), originPoint.getZ() );
+										MovecraftLocation playerLoc = MathUtils.bukkit2MovecraftLoc( pTest.getLocation() );
+										MovecraftLocation adjustedPLoc = playerLoc.subtract( originPoint );
 
-										double theta;
-										if ( task.getRotation() == Rotation.CLOCKWISE ) {
-											theta = 0.5 * Math.PI;
-										} else {
-											theta = -1 * 0.5 * Math.PI;
-										}
-
-										double x = ( ( playerPosAdjusted.getX() * Math.cos( theta ) ) + ( playerPosAdjusted.getZ() * ( -1 * Math.sin( theta ) ) ) );
-										double z = ( ( playerPosAdjusted.getX() * Math.sin( theta ) ) + ( playerPosAdjusted.getZ() * Math.cos( theta ) ) );
+										MovecraftLocation newPLoc = MathUtils.rotateVec( task.getRotation(), adjustedPLoc ).add( originPoint );
 
 									Vector velocity = pTest.getVelocity().clone();
-									pTest.teleport( new Location( pTest.getWorld(), x + originPoint.getX(), pTest.getLocation().getY(), z + originPoint.getZ() ) );
+									pTest.teleport( new Location( pTest.getWorld(), newPLoc.getX(), newPLoc.getY(), newPLoc.getZ() ) );
 									pTest.setVelocity( velocity );
 								}
 
@@ -217,7 +211,7 @@ public class AsyncManager extends BukkitRunnable{
 
 						} else {
 
-							Movecraft.getInstance().getLogger().log( Level.SEVERE, String.format( L18nSupport.getInternationalisedString( "Rotation - Craft Collision" ) ) );
+							Movecraft.getInstance().getLogger().log( Level.SEVERE, String.format( I18nSupport.getInternationalisedString( "Rotation - Craft Collision" ) ) );
 
 						}
 					}

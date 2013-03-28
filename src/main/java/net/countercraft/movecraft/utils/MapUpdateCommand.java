@@ -59,4 +59,7 @@ public class MapUpdateCommand {
 		return newBlockLocation;
 	}
 
+	public Rotation getRotation() {
+		return rotation;
+	}
 }

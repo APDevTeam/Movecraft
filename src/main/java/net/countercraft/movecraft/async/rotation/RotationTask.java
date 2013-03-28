@@ -19,8 +19,9 @@ package net.countercraft.movecraft.async.rotation;
 
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.localisation.L18nSupport;
+import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.MapUpdateCommand;
+import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.utils.MovecraftLocation;
 import net.countercraft.movecraft.utils.Rotation;
 import org.apache.commons.collections.ListUtils;
@@ -64,11 +65,11 @@ public class RotationTask extends AsyncTask{
 
 		for ( int i = 0; i < blockList.length; i++ ) {
 
-			blockList[i] = rotateVec( rotation, centeredBlockList[i] ).add( originPoint );
+			blockList[i] = MathUtils.rotateVec( rotation, centeredBlockList[i] ).add( originPoint );
 
 			if ( w.getBlockTypeIdAt( blockList[i].getX(), blockList[i].getY(), blockList[i].getZ() ) != 0 && !existingBlockSet.contains( blockList[i] ) ) {
 				failed = true;
-				failMessage = String.format( L18nSupport.getInternationalisedString( "Rotation - Craft is obstructed" ) );
+				failMessage = String.format( I18nSupport.getInternationalisedString( "Rotation - Craft is obstructed" ) );
 				break;
 			} else {
 				int id = w.getBlockTypeIdAt( originalBlockList[i].getX(), originalBlockList[i].getY(), originalBlockList[i].getZ() );
@@ -89,7 +90,9 @@ public class RotationTask extends AsyncTask{
 
 			this.updates = mapUpdates.toArray( new MapUpdateCommand[1] );
 
-			int maxX = 0, maxZ = 0, minX = 0, minZ = 0;
+			int maxX = 0, maxZ = 0;
+			minX = 0;
+			minZ = 0;
 
 			for ( MovecraftLocation l : blockList ) {
 				if ( maxX == 0 || l.getX() > maxX ){
@@ -101,7 +104,7 @@ public class RotationTask extends AsyncTask{
 				if( minX == 0 || l.getX() < minX ){
 					minX = l.getX();
 				}
-				if( minZ == 0 || l.getX() < minZ ){
+				if( minZ == 0 || l.getZ() < minZ ){
 					minZ = l.getZ();
 				}
 			}
@@ -112,50 +115,41 @@ public class RotationTask extends AsyncTask{
 			sizeZ = maxZ - minZ + 1;
 
 			int[][][] polygonalBox = new int[sizeX][][];
-			for ( int i = minX; i <= maxX; i++ ) {
-				polygonalBox[i - minX] = new int[sizeZ][];
 
-				for ( int j = minZ; j <= maxZ; j++ ) {
-					int yMin = -1, yMax = -1;
 
-					for ( MovecraftLocation l : blockList ) {
-						if ( l.getX() == i && l.getZ() == j ) {
-							if( yMax == -1 || l.getY() > yMax ){
-								yMax = l.getY();
-							}
-							if( yMin == -1 || l.getY() < yMin ){
-								yMin = l.getY();
-							}
+			for ( MovecraftLocation l : blockList ) {
+				if ( polygonalBox[l.getX() - minX] == null ) {
+					polygonalBox[l.getX() - minX] = new int[sizeZ][];
+				}
 
-						}
+				int minY = 0, maxY = 0;
+
+				if ( polygonalBox[l.getX() - minX][l.getZ() - minZ] == null ) {
+
+					polygonalBox[l.getX() - minX][l.getZ() - minZ] = new int[2];
+					polygonalBox[l.getX() - minX][l.getZ() - minZ][0] = l.getY();
+					polygonalBox[l.getX() - minX][l.getZ() - minZ][1] = l.getY();
+
+				} else {
+					minY = polygonalBox[l.getX() - minX][l.getZ() - minZ][0];
+					maxY = polygonalBox[l.getX() - minX][l.getZ() - minZ][1];
+
+					if( l.getY() < minY ){
+						polygonalBox[l.getX() - minX][l.getZ() - minZ][0] = l.getY();
+					}
+					if( l.getY() > maxY ){
+						polygonalBox[l.getX() - minX][l.getZ() - minZ][1] = l.getY();
 					}
 
-					polygonalBox[i - minX][j - minZ] = new int[2];
-					polygonalBox[i - minX][j - minZ][0] = yMin;
-					polygonalBox[i - minX][j - minZ][1] = yMax;
 				}
+
+
 			}
+
+
 
 			this.hitbox = polygonalBox;
 		}
-	}
-
-	private MovecraftLocation rotateVec ( Rotation r, MovecraftLocation l ) {
-		MovecraftLocation newLocation = new MovecraftLocation( 0, l.getY(), 0 );
-		double theta;
-		if ( r == Rotation.CLOCKWISE ) {
-			theta = 0.5 *  Math.PI;
-		} else {
-			theta = -1 * 0.5 * Math.PI;
-		}
-
-		int x = (int) Math.round( ( l.getX() * Math.cos( theta ) ) + ( l.getZ() * ( -1 * Math.sin( theta ) ) ) );
-		int z = (int) Math.round( ( l.getX() * Math.sin( theta ) ) + ( l.getZ() * Math.cos( theta ) ) );
-
-		newLocation.setX( x );
-		newLocation.setZ( z );
-
-		return newLocation;
 	}
 
 	public MovecraftLocation getOriginPoint() {
