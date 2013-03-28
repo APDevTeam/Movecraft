@@ -18,7 +18,7 @@
 package net.countercraft.movecraft.utils;
 
 import net.countercraft.movecraft.items.StorageChestItem;
-import net.countercraft.movecraft.localisation.L18nSupport;
+import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.datastructures.InventoryTransferHolder;
 import net.countercraft.movecraft.utils.datastructures.SignTransferHolder;
 import net.countercraft.movecraft.utils.datastructures.StorageCrateTransferHolder;
@@ -34,6 +34,7 @@ import org.bukkit.craftbukkit.v1_5_R2.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.*;
@@ -62,13 +63,12 @@ public class MapUpdateManager extends BukkitRunnable {
 					Map<MovecraftLocation, TransferData> dataMap = new HashMap<MovecraftLocation, TransferData>();
 					Set<net.minecraft.server.v1_5_R2.Chunk> chunks = new HashSet<net.minecraft.server.v1_5_R2.Chunk>();
 
-
 					// Preprocessing
 					for ( MapUpdateCommand c : updatesInWorld ) {
 						MovecraftLocation l = c.getOldBlockLocation();
 
 						if ( l != null ) {
-							TransferData blockDataPacket = getBlockDataPacket( w.getBlockAt( l.getX(), l.getY(), l.getZ() ).getState(), c.getNewBlockLocation() );
+							TransferData blockDataPacket = getBlockDataPacket( w.getBlockAt( l.getX(), l.getY(), l.getZ() ).getState(), c.getNewBlockLocation(), c.getRotation() );
 							if ( blockDataPacket != null ) {
 								dataMap.put( c.getNewBlockLocation(), blockDataPacket );
 							}
@@ -125,7 +125,7 @@ public class MapUpdateManager extends BukkitRunnable {
 							sign.update( true );
 
 						} else if ( transferData instanceof StorageCrateTransferHolder ) {
-							Inventory inventory = Bukkit.createInventory( null, 27, String.format( L18nSupport.getInternationalisedString( "Item - Storage Crate name" ) ) );
+							Inventory inventory = Bukkit.createInventory( null, 27, String.format( I18nSupport.getInternationalisedString( "Item - Storage Crate name" ) ) );
 							inventory.setContents( ( ( StorageCrateTransferHolder ) transferData ).getInvetory() );
 							StorageChestItem.setInventoryOfCrateAtLocation( inventory, l, w );
 
@@ -204,9 +204,15 @@ public class MapUpdateManager extends BukkitRunnable {
 			return false;
 		}
 
-		private TransferData getBlockDataPacket( BlockState s, MovecraftLocation newPosition ) {
+		private TransferData getBlockDataPacket( BlockState s, MovecraftLocation newPosition, Rotation r ) {
 			if ( !BlockUtils.blockHasData( s.getTypeId() ) ) {
 				return null;
+			}
+
+			byte data = s.getRawData();
+
+			if ( BlockUtils.blockRequiresRotation( s.getTypeId() ) && r != Rotation.NONE ) {
+				data = BlockUtils.rotate( data, s.getTypeId(), r );
 			}
 
 			switch ( s.getTypeId() ){
@@ -215,25 +221,27 @@ public class MapUpdateManager extends BukkitRunnable {
 				case 62:
 				case 117:
 					// Data and Inventory
-					return new InventoryTransferHolder( s.getRawData(), (( InventoryHolder ) s).getInventory().getContents() );
+					ItemStack[] contents = (( InventoryHolder ) s).getInventory().getContents().clone();
+					( ( InventoryHolder ) s ).getInventory().clear();
+					return new InventoryTransferHolder( data, contents );
 
 				case 68:
 				case 63:
 					// Data and sign lines
-					return new SignTransferHolder( s.getRawData(), (( Sign )s).getLines() );
+					return new SignTransferHolder( data, (( Sign )s).getLines() );
 
 				case 33:
 					MovecraftLocation l = MathUtils.bukkit2MovecraftLoc( s.getLocation() );
 					Inventory i = StorageChestItem.getInventoryOfCrateAtLocation( l, s.getWorld() );
 					if ( i != null ) {
 						StorageChestItem.removeInventoryAtLocation( l );
-						return new StorageCrateTransferHolder( s.getRawData(), i.getContents() );
+						return new StorageCrateTransferHolder( data, i.getContents() );
 					} else {
-						return new TransferData( s.getRawData() );
+						return new TransferData( data );
 					}
 
 				default:
-					return new TransferData( s.getRawData());
+					return new TransferData( data );
 
 			}
 		}

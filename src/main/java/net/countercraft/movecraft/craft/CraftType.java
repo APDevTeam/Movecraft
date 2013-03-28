@@ -18,7 +18,7 @@
 package net.countercraft.movecraft.craft;
 
 import net.countercraft.movecraft.Movecraft;
-import net.countercraft.movecraft.localisation.L18nSupport;
+import net.countercraft.movecraft.localisation.I18nSupport;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.File;
@@ -26,6 +26,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 
@@ -35,12 +36,13 @@ public class CraftType {
 	private Integer[] allowedBlocks, forbiddenBlocks;
 	private boolean canFly, tryNudge;
 	private int tickCooldown;
+	private HashMap<Integer, ArrayList<Double>> flyBlocks = new HashMap<Integer, ArrayList<Double>>();
 
 	public CraftType( File f ) {
 		try {
 			parseCraftDataFromFile( f );
 		} catch ( Exception e ) {
-			Movecraft.getInstance().getLogger().log( Level.SEVERE, String.format( L18nSupport.getInternationalisedString( "Startup - Error parsing CraftType file" ) , f.getAbsolutePath() ) );
+			Movecraft.getInstance().getLogger().log( Level.SEVERE, String.format( I18nSupport.getInternationalisedString( "Startup - Error parsing CraftType file" ) , f.getAbsolutePath() ) );
 			e.printStackTrace();
 		}
 	}
@@ -57,6 +59,7 @@ public class CraftType {
 		canFly = ( Boolean ) data.get( "canFly" );
 		tryNudge = ( Boolean ) data.get( "tryNudge" );
 		tickCooldown = (int) Math.ceil( 20 / ( ( Double ) data.get( "speed" ) ) );
+		flyBlocks = ( HashMap<Integer, ArrayList<Double>> ) data.get( "flyblocks" );
 	}
 
 	public String getCraftName() {
@@ -89,5 +92,9 @@ public class CraftType {
 
 	public boolean isTryNudge() {
 		return tryNudge;
+	}
+
+	public HashMap<Integer, ArrayList<Double>> getFlyBlocks() {
+		return flyBlocks;
 	}
 }

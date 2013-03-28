@@ -22,7 +22,7 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.items.StorageChestItem;
 import net.countercraft.movecraft.listener.*;
-import net.countercraft.movecraft.localisation.L18nSupport;
+import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.metrics.MovecraftMetrics;
 import net.countercraft.movecraft.utils.MapUpdateManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -45,11 +45,11 @@ public class Movecraft extends JavaPlugin{
 		// Read in config
 		this.saveDefaultConfig();
 		Settings.LOCALE = getConfig().getString( "Locale" );
-		this.saveResource( "localisation/en_US.properties", false);
-		L18nSupport.init();
+		this.saveResource( "localisation/movecraftlang_en.properties", false);
+		I18nSupport.init();
 		if( shuttingDown == true && Settings.IGNORE_RESET ){
-			logger.log( Level.SEVERE, String.format( L18nSupport.getInternationalisedString( "Startup - Error - Reload error" ) ) );
-			logger.log( Level.INFO, String.format( L18nSupport.getInternationalisedString( "Startup - Error - Disable warning for reload" ) ) );
+			logger.log( Level.SEVERE, String.format( I18nSupport.getInternationalisedString( "Startup - Error - Reload error" ) ) );
+			logger.log( Level.INFO, String.format( I18nSupport.getInternationalisedString( "Startup - Error - Disable warning for reload" ) ) );
 			getPluginLoader().disablePlugin( this );
 		}else{
 
@@ -63,7 +63,6 @@ public class Movecraft extends JavaPlugin{
 			getServer().getPluginManager().registerEvents( new SignListener(), this );
 			getServer().getPluginManager().registerEvents( new CommandListener(), this );
 			getServer().getPluginManager().registerEvents( new BlockListener(), this );
-			getServer().getPluginManager().registerEvents( new StickListener(), this );
 			getServer().getPluginManager().registerEvents( new PlayerListener(), this );
 
 			StorageChestItem.readFromDisk();
@@ -71,7 +70,7 @@ public class Movecraft extends JavaPlugin{
 
 			MovecraftMetrics metricsConnector = new MovecraftMetrics( CraftManager.getInstance().getCraftTypes().length );
 
-			logger.log( Level.INFO, String.format( L18nSupport.getInternationalisedString( "Startup - Enabled message" ), getDescription().getVersion() ) );
+			logger.log( Level.INFO, String.format( I18nSupport.getInternationalisedString( "Startup - Enabled message" ), getDescription().getVersion() ) );
 		}
 	}
 

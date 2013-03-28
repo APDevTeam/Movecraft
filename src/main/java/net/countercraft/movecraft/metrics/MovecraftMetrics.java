@@ -18,7 +18,8 @@
 package net.countercraft.movecraft.metrics;
 
 import net.countercraft.movecraft.Movecraft;
-import net.countercraft.movecraft.localisation.L18nSupport;
+import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.localisation.I18nSupport;
 import org.mcstats.Metrics;
 
 import java.io.IOException;
@@ -37,10 +38,19 @@ public class MovecraftMetrics {
 			Metrics metrics = new Metrics(Movecraft.getInstance());
 
 			if ( metrics.isOptOut() ) {
-				Movecraft.getInstance().getLogger().log( Level.INFO, String.format( L18nSupport.getInternationalisedString( "MCStats - :( - Admin has opted out" ) ) );
+				Movecraft.getInstance().getLogger().log( Level.INFO, String.format( I18nSupport.getInternationalisedString( "MCStats - :( - Admin has opted out" ) ) );
 			}
 
-			metrics.addCustomData( new Metrics.Plotter("Number of Craft Types") {
+			Metrics.Graph langaugeGraph = metrics.createGraph( "Language Used" );
+			langaugeGraph.addPlotter( new Metrics.Plotter( Settings.LOCALE ) {
+				@Override
+				public int getValue() {
+					return 1;
+				}
+			});
+
+			Metrics.Graph craftsGraph = metrics.createGraph( "Craft Types" );
+			craftsGraph.addPlotter( new Metrics.Plotter( "Number of Craft Types" ) {
 
 				@Override
 				public int getValue() {
@@ -49,9 +59,9 @@ public class MovecraftMetrics {
 
 			} );
 			metrics.start();
-			Movecraft.getInstance().getLogger().log( Level.INFO, String.format( L18nSupport.getInternationalisedString( "MCStats - Thank you message" ) ) );
+			Movecraft.getInstance().getLogger().log( Level.INFO, String.format( I18nSupport.getInternationalisedString( "MCStats - Thank you message" ) ) );
 		} catch (IOException e) {
-			Movecraft.getInstance().getLogger().log( Level.WARNING, String.format( L18nSupport.getInternationalisedString( "MCStats - Error - Unable to upload stats" ) ) );
+			Movecraft.getInstance().getLogger().log( Level.WARNING, String.format( I18nSupport.getInternationalisedString( "MCStats - Error - Unable to upload stats" ) ) );
 		}
 	}
 

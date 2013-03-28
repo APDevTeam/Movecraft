@@ -18,7 +18,7 @@
 package net.countercraft.movecraft.craft;
 
 import net.countercraft.movecraft.Movecraft;
-import net.countercraft.movecraft.localisation.L18nSupport;
+import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
@@ -68,7 +68,7 @@ public class CraftManager {
 		}
 
 		craftTypes = craftTypesSet.toArray( new CraftType[1] );
-		Movecraft.getInstance().getLogger().log( Level.INFO, String.format( L18nSupport.getInternationalisedString( "Startup - Number of craft files loaded" ), craftTypes.length ) );
+		Movecraft.getInstance().getLogger().log( Level.INFO, String.format( I18nSupport.getInternationalisedString( "Startup - Number of craft files loaded" ), craftTypes.length ) );
 	}
 
 	public void addCraft( Craft c, Player p ) {
@@ -82,7 +82,8 @@ public class CraftManager {
 
 	public void removeCraft( Craft c ) {
 		craftList.get( c.getW() ).remove( c );
-
+		getPlayerFromCraft( c ).sendMessage( String.format( I18nSupport.getInternationalisedString( "Release - Craft has been released message" ) ) );
+		Movecraft.getInstance().getLogger().log( Level.INFO, String.format( I18nSupport.getInternationalisedString( "Release - Player has released a craft console" ), getPlayerFromCraft( c ).getDisplayName(), c.getMinX(), c.getMinZ() ) );
 		craftPlayerIndex.remove( getPlayerFromCraft( c ) );
 
 	}

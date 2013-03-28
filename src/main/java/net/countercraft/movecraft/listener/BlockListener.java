@@ -19,7 +19,7 @@ package net.countercraft.movecraft.listener;
 
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.items.StorageChestItem;
-import net.countercraft.movecraft.localisation.L18nSupport;
+import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.MovecraftLocation;
 import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
@@ -37,7 +37,7 @@ public class BlockListener implements Listener {
 	public void onBlockPlace ( final BlockPlaceEvent e) {
 		if ( e.getBlockAgainst().getTypeId() == 33 && e.getBlockAgainst().getData() == ((byte) 6) ) {
 		e.setCancelled( true );
-		} else if ( e.getItemInHand().getItemMeta() != null && e.getItemInHand().getItemMeta().getDisplayName() != null && e.getItemInHand().getItemMeta().getDisplayName().equalsIgnoreCase( String.format( L18nSupport.getInternationalisedString( "Item - Storage Crate name" ) ) ) ) {
+		} else if ( e.getItemInHand().getItemMeta() != null && e.getItemInHand().getItemMeta().getDisplayName() != null && e.getItemInHand().getItemMeta().getDisplayName().equalsIgnoreCase( String.format( I18nSupport.getInternationalisedString( "Item - Storage Crate name" ) ) ) ) {
 			e.getBlockPlaced().setTypeId( 33 );
 			Location l = e.getBlockPlaced().getLocation();
 			MovecraftLocation l1 = new MovecraftLocation( l.getBlockX(), l.getBlockY(), l.getBlockZ() );

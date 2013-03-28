@@ -25,13 +25,13 @@ import java.io.*;
 import java.util.Properties;
 import java.util.logging.Level;
 
-public class L18nSupport {
+public class I18nSupport {
 	public static Properties languageFile;
 
 	public static void init () {
 		languageFile = new Properties();
 
-		File localisationDirectory = new File( Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/localisation/" );
+		File localisationDirectory = new File( Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/localisation" );
 
 		if ( !localisationDirectory.exists() ) {
 			localisationDirectory.mkdirs();
@@ -39,7 +39,7 @@ public class L18nSupport {
 
 		InputStream is = null;
 		try {
-			is = new FileInputStream(  localisationDirectory.getAbsolutePath() + "/" + Settings.LOCALE + ".properties" );
+			is = new FileInputStream(  localisationDirectory.getAbsolutePath() + "/movecraftlang" + "_" + Settings.LOCALE + ".properties" );
 		} catch ( FileNotFoundException e ) {
 			e.printStackTrace();
 		}
