@@ -18,11 +18,11 @@
 package net.countercraft.movecraft.utils;
 
 public class BlockUtils {
-	private static final int[] dataBlocks = new int[] { 17, 51, 18, 84, 6, 81, 83, 8, 3, 59, 115, 86, 25, 50, 66, 53, 69, 64, 77, 63, 65, 23, 86, 70, 43, 78, 92, 26, 93, 55, 2, 96, 29, 34, 98, 99, 106, 107, 117, 118, 120, 139, 140, 144, 145, 5, 155, 9, 60, 141, 75, 27, 67, 71, 143, 68, 72, 44, 94, 33, 100, 10, 142, 76, 28, 108, 61, 147, 11, 109, 62, 148, 114, 128, 134, 135, 136, 156};
+	private static final int[] dataBlocks = new int[]{ 17, 51, 18, 84, 6, 81, 83, 8, 3, 59, 115, 86, 50, 66, 53, 69, 64, 77, 63, 65, 23, 86, 70, 43, 78, 92, 26, 93, 55, 2, 96, 29, 34, 98, 99, 106, 107, 117, 118, 120, 139, 140, 144, 145, 5, 155, 9, 60, 141, 75, 27, 67, 71, 143, 68, 72, 44, 94, 33, 100, 10, 142, 76, 28, 108, 61, 147, 11, 109, 62, 148, 114, 128, 134, 135, 136, 156, 35 };
 
-	private static final int[] rotationBlocks = new int[] {17, 50, 75, 76, 26, 29, 33, 34, 53, 67, 108, 109, 114, 128, 134, 135, 136, 156, 63, 64, 71, 66, 27, 28, 65, 68, 61, 23, 69, 77, 143, 93, 94, 96, 107, 120, 131, 144, 145};
+	private static final int[] rotationBlocks = new int[]{ 17, 50, 75, 76, 26, 29, 33, 34, 53, 67, 108, 109, 114, 128, 134, 135, 136, 156, 63, 64, 71, 66, 27, 28, 65, 68, 61, 23, 69, 77, 143, 93, 94, 96, 107, 120, 131, 144, 145 };
 
-	public static boolean blockHasData ( int id ) {
+	public static boolean blockHasData( int id ) {
 		for ( int i : dataBlocks ) {
 			if ( id == i ) {
 				return true;
@@ -31,7 +31,7 @@ public class BlockUtils {
 		return false;
 	}
 
-	public static boolean blockRequiresRotation ( int id ) {
+	public static boolean blockRequiresRotation( int id ) {
 		for ( int i : rotationBlocks ) {
 			if ( id == i ) {
 				return true;
@@ -42,11 +42,11 @@ public class BlockUtils {
 	}
 
 	public static boolean arrayContainsOverlap( Object[] array1, Object[] array2 ) {
-		for( Object o : array1 ) {
+		for ( Object o : array1 ) {
 
 			for ( Object o1 : array2 ) {
-				if ( o.equals( o1 ) ){
-					return  true;
+				if ( o.equals( o1 ) ) {
+					return true;
 				}
 			}
 
@@ -58,11 +58,11 @@ public class BlockUtils {
 	public static byte rotate( byte data, int typeID, Rotation rotation ) {
 		switch ( typeID ) {
 			case 17:
-				boolean side1 = ( ( data & 0x4 ) == 0x4);
-				boolean side2 = ( (data & 0x8 ) == 0x8);
+				boolean side1 = ( ( data & 0x4 ) == 0x4 );
+				boolean side2 = ( ( data & 0x8 ) == 0x8 );
 
-				if ( side1 || side2) {
-					data = (byte) ( data ^ 0xC );
+				if ( side1 || side2 ) {
+					data = ( byte ) ( data ^ 0xC );
 				}
 				return data;
 
@@ -110,7 +110,7 @@ public class BlockUtils {
 				return data;
 
 			case 26:
-				byte direction = (byte) ( data & 0x3 );
+				byte direction = ( byte ) ( data & 0x3 );
 
 				byte constant = 1;
 
@@ -118,16 +118,16 @@ public class BlockUtils {
 					constant = -1;
 				}
 
-				direction = (byte) ( MathUtils.positiveMod( (direction + constant) % 4, 4 ) );
-				data = (byte) ( ( data & 0xC ) | direction );
+				direction = ( byte ) ( MathUtils.positiveMod( ( direction + constant ) % 4, 4 ) );
+				data = ( byte ) ( ( data & 0xC ) | direction );
 
 				return data;
 
 			case 29:
 			case 33:
 			case 34:
-				direction = (byte) ( data & 0x7 );
-				System.out.println(direction);
+				direction = ( byte ) ( data & 0x7 );
+				System.out.println( direction );
 
 				nonDirectional = direction == 0x0 || direction == 0x1 || direction == 0x6;
 
@@ -170,7 +170,7 @@ public class BlockUtils {
 							break;
 					}
 
-					data = ( byte ) (( data & 0x8 ) | direction);
+					data = ( byte ) ( ( data & 0x8 ) | direction );
 				}
 
 				return data;
@@ -186,8 +186,7 @@ public class BlockUtils {
 			case 136:
 			case 156:
 
-				direction = (byte) ( data & 0x3 );
-
+				direction = ( byte ) ( data & 0x3 );
 
 
 				switch ( direction ) {
@@ -227,7 +226,7 @@ public class BlockUtils {
 						}
 						break;
 				}
-				data = (byte) ( ( data & 0x4 ) | direction );
+				data = ( byte ) ( ( data & 0x4 ) | direction );
 				return data;
 
 			case 63:
@@ -238,16 +237,16 @@ public class BlockUtils {
 					constant = -4;
 				}
 
-				data = (byte) ( MathUtils.positiveMod( (data + constant) % 16, 16 ) );
+				data = ( byte ) ( MathUtils.positiveMod( ( data + constant ) % 16, 16 ) );
 
 				return data;
 
 			case 64:
 			case 71:
-				boolean isRealDoor = (data & 0x8) == 0;
+				boolean isRealDoor = ( data & 0x8 ) == 0;
 
 				if ( isRealDoor ) {
-					direction = (byte) (data & 0x3);
+					direction = ( byte ) ( data & 0x3 );
 
 					constant = 4;
 
@@ -255,15 +254,15 @@ public class BlockUtils {
 						constant = -4;
 					}
 
-					direction = (byte) ( MathUtils.positiveMod( (direction + constant) % 4, 4 ) );
+					direction = ( byte ) ( MathUtils.positiveMod( ( direction + constant ) % 4, 4 ) );
 
-					data = ( byte ) ((data & 0xC) | direction);
+					data = ( byte ) ( ( data & 0xC ) | direction );
 				}
 
 				return data;
 
 			case 66:
-				direction = ( byte ) (data & 0x5);
+				direction = ( byte ) ( data & 0x5 );
 				boolean flat = direction == 0x0 || direction == 0x1;
 
 				if ( flat ) {
@@ -274,7 +273,7 @@ public class BlockUtils {
 						constant = -1;
 					}
 
-					direction = (byte) ( MathUtils.positiveMod( (direction + constant) % 2, 2 ) );
+					direction = ( byte ) ( MathUtils.positiveMod( ( direction + constant ) % 2, 2 ) );
 
 					data = direction;
 
@@ -288,9 +287,9 @@ public class BlockUtils {
 							constant = -1;
 						}
 
-						direction = (byte) ( MathUtils.positiveMod( ( (data >> 4) + constant) % 4, 4 ) );
+						direction = ( byte ) ( MathUtils.positiveMod( ( ( data >> 4 ) + constant ) % 4, 4 ) );
 
-						data = ( byte ) (direction << 4);
+						data = ( byte ) ( direction << 4 );
 
 					} else {
 						// Is a rising piece
@@ -340,10 +339,9 @@ public class BlockUtils {
 				return data;
 
 
-
 			case 27:
 			case 28:
-				direction = ( byte ) (data & 0x5);
+				direction = ( byte ) ( data & 0x5 );
 				flat = direction == 0x0 || direction == 0x1;
 
 				if ( flat ) {
@@ -354,52 +352,52 @@ public class BlockUtils {
 						constant = -1;
 					}
 
-					direction = (byte) ( MathUtils.positiveMod( (direction + constant) % 2, 2 ) );
+					direction = ( byte ) ( MathUtils.positiveMod( ( direction + constant ) % 2, 2 ) );
 
 					data = direction;
 
 				} else {
 
-						// Is a rising piece
-						switch ( direction ) {
-							case 0x2:
-								// East
-								if ( rotation == Rotation.CLOCKWISE ) {
-									direction = 0x4;
-								} else {
-									direction = 0x5;
-								}
-								break;
+					// Is a rising piece
+					switch ( direction ) {
+						case 0x2:
+							// East
+							if ( rotation == Rotation.CLOCKWISE ) {
+								direction = 0x4;
+							} else {
+								direction = 0x5;
+							}
+							break;
 
-							case 0x3:
-								// West
-								if ( rotation == Rotation.CLOCKWISE ) {
-									direction = 0x5;
-								} else {
-									direction = 0x4;
-								}
-								break;
+						case 0x3:
+							// West
+							if ( rotation == Rotation.CLOCKWISE ) {
+								direction = 0x5;
+							} else {
+								direction = 0x4;
+							}
+							break;
 
-							case 0x4:
-								// South
-								if ( rotation == Rotation.CLOCKWISE ) {
-									direction = 0x3;
-								} else {
-									direction = 0x2;
-								}
-								break;
+						case 0x4:
+							// South
+							if ( rotation == Rotation.CLOCKWISE ) {
+								direction = 0x3;
+							} else {
+								direction = 0x2;
+							}
+							break;
 
-							case 0x5:
-								// North
-								if ( rotation == Rotation.CLOCKWISE ) {
-									direction = 0x2;
-								} else {
-									direction = 0x3;
-								}
-								break;
-						}
+						case 0x5:
+							// North
+							if ( rotation == Rotation.CLOCKWISE ) {
+								direction = 0x2;
+							} else {
+								direction = 0x3;
+							}
+							break;
+					}
 
-						data = direction;
+					data = direction;
 
 
 				}
@@ -410,54 +408,54 @@ public class BlockUtils {
 			case 68:
 			case 61:
 			case 23:
-				if ( data == 0x0 || data == 0x1) {
+				if ( data == 0x0 || data == 0x1 ) {
 					return data;
 				}
 
-				direction = ( byte ) (( data >> 1 ) & 0x3);
+				direction = ( byte ) ( data & 0x7 );
 				switch ( direction ) {
-					case 0x0:
+					case 0x5:
 						// East
 						if ( rotation == Rotation.CLOCKWISE ) {
-							direction = 0x2;
-						} else {
 							direction = 0x3;
+						} else {
+							direction = 0x2;
 						}
 						break;
 
-					case 0x1:
+					case 0x4:
 						// West
 						if ( rotation == Rotation.CLOCKWISE ) {
-							direction = 0x3;
-						} else {
 							direction = 0x2;
-						}
-						break;
-
-					case 0x2:
-						// South
-						if ( rotation == Rotation.CLOCKWISE ) {
-							direction = 0x1;
 						} else {
-							direction = 0x0;
+							direction = 0x3;
 						}
 						break;
 
 					case 0x3:
+						// South
+						if ( rotation == Rotation.CLOCKWISE ) {
+							direction = 0x4;
+						} else {
+							direction = 0x5;
+						}
+						break;
+
+					case 0x2:
 						// North
 						if ( rotation == Rotation.CLOCKWISE ) {
-							direction = 0x0;
+							direction = 0x5;
 						} else {
-							direction = 0x1;
+							direction = 0x4;
 						}
 						break;
 				}
 
-				data = ( byte ) (( data & 0x7 ) | ( direction << 1 ));
+				data = direction;
 				return data;
 
 			case 69:
-				direction = ( byte ) (data & 0x7);
+				direction = ( byte ) ( data & 0x7 );
 				if ( direction >= 0x1 && direction <= 0x3 ) {
 
 					switch ( direction ) {
@@ -498,17 +496,17 @@ public class BlockUtils {
 							break;
 					}
 
-					data = (byte) ((data & 0x8) | direction);
+					data = ( byte ) ( ( data & 0x8 ) | direction );
 
 				} else {
 					if ( direction == 0x5 ) {
-						data = ( byte ) ((data & 0x8) | 0x6);
+						data = ( byte ) ( ( data & 0x8 ) | 0x6 );
 					} else if ( direction == 0x6 ) {
-						data = ( byte ) ((data & 0x8) | 0x5);
+						data = ( byte ) ( ( data & 0x8 ) | 0x5 );
 					} else if ( direction == 0x7 ) {
-						data = ( byte ) ((data & 0x8) | 0x0);
+						data = ( byte ) ( ( data & 0x8 ) | 0x0 );
 					} else if ( direction == 0x0 ) {
-						data = ( byte ) ((data & 0x8) | 0x7);
+						data = ( byte ) ( ( data & 0x8 ) | 0x7 );
 					}
 				}
 
@@ -516,7 +514,7 @@ public class BlockUtils {
 
 			case 77:
 			case 143:
-				direction = ( byte ) (data & 0x7);
+				direction = ( byte ) ( data & 0x7 );
 				switch ( direction ) {
 					case 0x1:
 						// East
@@ -555,12 +553,12 @@ public class BlockUtils {
 						break;
 				}
 
-				data = ( byte ) ((data & 0x8) | direction);
+				data = ( byte ) ( ( data & 0x8 ) | direction );
 
 				return data;
 
 			case 86:
-				direction = (byte) ( data & 0x3 );
+				direction = ( byte ) ( data & 0x3 );
 
 				if ( data == 0x4 ) {
 					data = 0x4;
@@ -571,7 +569,7 @@ public class BlockUtils {
 						constant = -1;
 					}
 
-					direction = (byte) ( MathUtils.positiveMod( (direction + constant) % 4, 4 ) );
+					direction = ( byte ) ( MathUtils.positiveMod( ( direction + constant ) % 4, 4 ) );
 
 					data = direction;
 				}
@@ -580,7 +578,7 @@ public class BlockUtils {
 
 			case 93:
 			case 94:
-				direction = ( byte ) (data & 0x3);
+				direction = ( byte ) ( data & 0x3 );
 
 				constant = 1;
 
@@ -588,14 +586,14 @@ public class BlockUtils {
 					constant = -1;
 				}
 
-				direction = (byte) ( MathUtils.positiveMod( (direction + constant) % 4, 4 ) );
+				direction = ( byte ) ( MathUtils.positiveMod( ( direction + constant ) % 4, 4 ) );
 
-				data = ( byte ) ((data & 0xC) | direction);
+				data = ( byte ) ( ( data & 0xC ) | direction );
 
 				return data;
 
 			case 96:
-				direction = ( byte ) (data & 0x3);
+				direction = ( byte ) ( data & 0x3 );
 				switch ( direction ) {
 					case 0x2:
 						// East
@@ -634,15 +632,15 @@ public class BlockUtils {
 						break;
 				}
 
-				data = ( byte ) ((data & 0x4) | direction);
+				data = ( byte ) ( ( data & 0x4 ) | direction );
 
 				return data;
 			case 106:
 				if ( data != 0x0 ) {
 					if ( rotation == Rotation.CLOCKWISE ) {
-						data = ( byte ) (data << 1);
+						data = ( byte ) ( data << 1 );
 					} else {
-						data = ( byte ) (data >> 1);
+						data = ( byte ) ( data >> 1 );
 					}
 
 					if ( data > 8 ) {
@@ -658,7 +656,7 @@ public class BlockUtils {
 
 			case 107:
 			case 120:
-				direction = ( byte ) (data & 0x3);
+				direction = ( byte ) ( data & 0x3 );
 
 				constant = 1;
 
@@ -666,14 +664,14 @@ public class BlockUtils {
 					constant = -1;
 				}
 
-				direction = (byte) ( MathUtils.positiveMod( (direction + constant) % 4, 4 ) );
+				direction = ( byte ) ( MathUtils.positiveMod( ( direction + constant ) % 4, 4 ) );
 
-				data = ( byte ) ((data & 0x4) | direction);
+				data = ( byte ) ( ( data & 0x4 ) | direction );
 
 				return data;
 
 			case 131:
-				direction = ( byte ) (data & 0x3);
+				direction = ( byte ) ( data & 0x3 );
 
 				constant = 1;
 
@@ -681,9 +679,9 @@ public class BlockUtils {
 					constant = -1;
 				}
 
-				direction = (byte) ( MathUtils.positiveMod( (direction + constant) % 4, 4 ) );
+				direction = ( byte ) ( MathUtils.positiveMod( ( direction + constant ) % 4, 4 ) );
 
-				data = ( byte ) ((data & 0xC) | direction);
+				data = ( byte ) ( ( data & 0xC ) | direction );
 
 				return data;
 
@@ -732,20 +730,19 @@ public class BlockUtils {
 				return direction;
 
 			case 145:
-				direction = ( byte ) (data & 0x1);
+				direction = ( byte ) ( data & 0x1 );
 				constant = 1;
 
 				if ( rotation == Rotation.ANTICLOCKWISE ) {
 					constant = -1;
 				}
 
-				direction = (byte) ( MathUtils.positiveMod( (direction + constant) % 2, 2 ) );
+				direction = ( byte ) ( MathUtils.positiveMod( ( direction + constant ) % 2, 2 ) );
 
-				data = ( byte ) ((data & 0xC) | direction);
+				data = ( byte ) ( ( data & 0xC ) | direction );
 
 				return data;
 		}
-
 
 
 		return data;
