@@ -17,6 +17,7 @@
 
 package net.countercraft.movecraft.utils;
 
+import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.items.StorageChestItem;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.datastructures.InventoryTransferHolder;
@@ -38,6 +39,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.*;
+import java.util.logging.Level;
 
 public class MapUpdateManager extends BukkitRunnable {
 	private HashMap<World, ArrayList<MapUpdateCommand>> updates = new HashMap<World, ArrayList<MapUpdateCommand>>();
@@ -114,30 +116,34 @@ public class MapUpdateManager extends BukkitRunnable {
 
 				// Restore block specific information
 				for ( MovecraftLocation l : dataMap.keySet() ) {
-					TransferData transferData = dataMap.get( l );
+					try {
+						TransferData transferData = dataMap.get( l );
 
-					if ( transferData instanceof SignTransferHolder ) {
+						if ( transferData instanceof SignTransferHolder ) {
 
-						SignTransferHolder signData = ( SignTransferHolder ) transferData;
-						Sign sign = ( Sign ) w.getBlockAt( l.getX(), l.getY(), l.getZ() ).getState();
-						for ( int i = 0; i < signData.getLines().length; i++ ) {
-							sign.setLine( i, signData.getLines()[i] );
+							SignTransferHolder signData = ( SignTransferHolder ) transferData;
+							Sign sign = ( Sign ) w.getBlockAt( l.getX(), l.getY(), l.getZ() ).getState();
+							for ( int i = 0; i < signData.getLines().length; i++ ) {
+								sign.setLine( i, signData.getLines()[i] );
+							}
+							sign.update( true );
+
+						} else if ( transferData instanceof StorageCrateTransferHolder ) {
+							Inventory inventory = Bukkit.createInventory( null, 27, String.format( I18nSupport.getInternationalisedString( "Item - Storage Crate name" ) ) );
+							inventory.setContents( ( ( StorageCrateTransferHolder ) transferData ).getInvetory() );
+							StorageChestItem.setInventoryOfCrateAtLocation( inventory, l, w );
+
+						} else if ( transferData instanceof InventoryTransferHolder ) {
+
+							InventoryTransferHolder invData = ( InventoryTransferHolder ) transferData;
+							InventoryHolder inventoryHolder = ( InventoryHolder ) w.getBlockAt( l.getX(), l.getY(), l.getZ() ).getState();
+							inventoryHolder.getInventory().setContents( invData.getInvetory() );
+
+						} else {
+							w.getBlockAt( l.getX(), l.getY(), l.getZ() ).setData( transferData.getData() );
 						}
-						sign.update( true );
-
-					} else if ( transferData instanceof StorageCrateTransferHolder ) {
-						Inventory inventory = Bukkit.createInventory( null, 27, String.format( I18nSupport.getInternationalisedString( "Item - Storage Crate name" ) ) );
-						inventory.setContents( ( ( StorageCrateTransferHolder ) transferData ).getInvetory() );
-						StorageChestItem.setInventoryOfCrateAtLocation( inventory, l, w );
-
-					} else if ( transferData instanceof InventoryTransferHolder ) {
-
-						InventoryTransferHolder invData = ( InventoryTransferHolder ) transferData;
-						InventoryHolder inventoryHolder = ( InventoryHolder ) w.getBlockAt( l.getX(), l.getY(), l.getZ() ).getState();
-						inventoryHolder.getInventory().setContents( invData.getInvetory() );
-
-					} else {
-						w.getBlockAt( l.getX(), l.getY(), l.getZ() ).setData( transferData.getData() );
+					} catch ( Exception e ) {
+						Movecraft.getInstance().getLogger().log( Level.SEVERE, "Severe error in map updater" );
 					}
 
 				}
