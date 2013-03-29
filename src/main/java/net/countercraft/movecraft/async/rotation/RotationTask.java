@@ -39,7 +39,7 @@ public class RotationTask extends AsyncTask {
 	private MovecraftLocation[] blockList;
 	private MapUpdateCommand[] updates;
 	private int[][][] hitbox;
-	private int minX, minZ;
+	private Integer minX, minZ;
 	private Rotation rotation;
 	private World w;
 
@@ -90,21 +90,21 @@ public class RotationTask extends AsyncTask {
 
 			this.updates = mapUpdates.toArray( new MapUpdateCommand[1] );
 
-			int maxX = 0, maxZ = 0;
-			minX = 0;
-			minZ = 0;
+			Integer maxX = null, maxZ = null;
+			minX = null;
+			minZ = null;
 
 			for ( MovecraftLocation l : blockList ) {
-				if ( maxX == 0 || l.getX() > maxX ) {
+				if ( maxX == null || l.getX() > maxX ) {
 					maxX = l.getX();
 				}
-				if ( maxZ == 0 || l.getZ() > maxZ ) {
+				if ( maxZ == null || l.getZ() > maxZ ) {
 					maxZ = l.getZ();
 				}
-				if ( minX == 0 || l.getX() < minX ) {
+				if ( minX == null || l.getX() < minX ) {
 					minX = l.getX();
 				}
-				if ( minZ == 0 || l.getZ() < minZ ) {
+				if ( minZ == null || l.getZ() < minZ ) {
 					minZ = l.getZ();
 				}
 			}

@@ -30,7 +30,7 @@ import java.util.Stack;
 
 public class DetectionTask extends AsyncTask {
 	private MovecraftLocation startLocation;
-	private int minSize, maxSize, maxX, maxY, maxZ, minX, minY, minZ;
+	private Integer minSize, maxSize, maxX, maxY, maxZ, minX, minY, minZ;
 	private Integer[] allowedBlocks, forbiddenBlocks;
 	private World w;
 	private Stack<MovecraftLocation> blockStack = new Stack<MovecraftLocation>();
@@ -203,22 +203,22 @@ public class DetectionTask extends AsyncTask {
 
 					blockStack.push( workingLocation );
 
-					if ( maxX == 0 || workingLocation.getX() > maxX ) {
+					if ( maxX == null || workingLocation.getX() > maxX ) {
 						maxX = workingLocation.getX();
 					}
-					if ( maxY == 0 || workingLocation.getY() > maxY ) {
+					if ( maxY == null || workingLocation.getY() > maxY ) {
 						maxY = workingLocation.getY();
 					}
-					if ( maxZ == 0 || workingLocation.getZ() > maxZ ) {
+					if ( maxZ == null || workingLocation.getZ() > maxZ ) {
 						maxZ = workingLocation.getZ();
 					}
-					if ( minX == 0 || workingLocation.getX() < minX ) {
+					if ( minX == null || workingLocation.getX() < minX ) {
 						minX = workingLocation.getX();
 					}
-					if ( minY == 0 || workingLocation.getY() < minY ) {
+					if ( minY == null || workingLocation.getY() < minY ) {
 						minY = workingLocation.getY();
 					}
-					if ( minZ == 0 || workingLocation.getZ() < minZ ) {
+					if ( minZ == null || workingLocation.getZ() < minZ ) {
 						minZ = workingLocation.getZ();
 					}
 				} else {
