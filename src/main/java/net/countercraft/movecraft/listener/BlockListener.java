@@ -34,9 +34,9 @@ import org.bukkit.scheduler.BukkitRunnable;
 public class BlockListener implements Listener {
 
 	@EventHandler
-	public void onBlockPlace ( final BlockPlaceEvent e) {
-		if ( e.getBlockAgainst().getTypeId() == 33 && e.getBlockAgainst().getData() == ((byte) 6) ) {
-		e.setCancelled( true );
+	public void onBlockPlace( final BlockPlaceEvent e ) {
+		if ( e.getBlockAgainst().getTypeId() == 33 && e.getBlockAgainst().getData() == ( ( byte ) 6 ) ) {
+			e.setCancelled( true );
 		} else if ( e.getItemInHand().getItemMeta() != null && e.getItemInHand().getItemMeta().getDisplayName() != null && e.getItemInHand().getItemMeta().getDisplayName().equalsIgnoreCase( String.format( I18nSupport.getInternationalisedString( "Item - Storage Crate name" ) ) ) ) {
 			e.getBlockPlaced().setTypeId( 33 );
 			Location l = e.getBlockPlaced().getLocation();
@@ -46,7 +46,7 @@ public class BlockListener implements Listener {
 
 				@Override
 				public void run() {
-					e.getBlockPlaced().setData( (byte) 6 );
+					e.getBlockPlaced().setData( ( byte ) 6 );
 				}
 
 			}.runTask( Movecraft.getInstance() );
@@ -54,10 +54,10 @@ public class BlockListener implements Listener {
 	}
 
 	@EventHandler
-	public void onPlayerInteract ( PlayerInteractEvent event ) {
+	public void onPlayerInteract( PlayerInteractEvent event ) {
 
 		if ( event.getAction() == Action.RIGHT_CLICK_BLOCK ) {
-			if ( event.getClickedBlock().getTypeId() == 33 && event.getClickedBlock().getData() == ((byte) 6) ) {
+			if ( event.getClickedBlock().getTypeId() == 33 && event.getClickedBlock().getData() == ( ( byte ) 6 ) ) {
 				Location l = event.getClickedBlock().getLocation();
 				MovecraftLocation l1 = new MovecraftLocation( l.getBlockX(), l.getBlockY(), l.getBlockZ() );
 				Inventory i = StorageChestItem.getInventoryOfCrateAtLocation( l1, event.getPlayer().getWorld() );
@@ -70,11 +70,14 @@ public class BlockListener implements Listener {
 	}
 
 	@EventHandler
-	public void onBlockBreak ( final BlockBreakEvent e ) {
-		if ( e.getBlock().getTypeId() == 33 && e.getBlock().getData() == ((byte) 6) ) {
+	public void onBlockBreak( final BlockBreakEvent e ) {
+		if ( e.getBlock().getTypeId() == 33 && e.getBlock().getData() == ( ( byte ) 6 ) ) {
 			Location l = e.getBlock().getLocation();
 			MovecraftLocation l1 = new MovecraftLocation( l.getBlockX(), l.getBlockY(), l.getBlockZ() );
 			StorageChestItem.removeInventoryAtLocation( l1 );
+			e.getBlock().getDrops().clear();
+			e.getBlock().getDrops().add( new StorageChestItem().getItemStack() );
+
 		}
 	}
 
