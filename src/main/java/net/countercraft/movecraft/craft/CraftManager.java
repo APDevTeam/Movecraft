@@ -49,7 +49,7 @@ public class CraftManager {
 	}
 
 	public void initCraftTypes() {
-		File craftsFile = new File( Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/types");
+		File craftsFile = new File( Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/types" );
 
 		if ( !craftsFile.exists() ) {
 			craftsFile.mkdirs();
@@ -58,7 +58,7 @@ public class CraftManager {
 		HashSet<CraftType> craftTypesSet = new HashSet<CraftType>();
 
 		for ( File file : craftsFile.listFiles() ) {
-			if (file.isFile()) {
+			if ( file.isFile() ) {
 
 				if ( file.getName().contains( ".craft" ) ) {
 					CraftType type = new CraftType( file );
@@ -73,31 +73,31 @@ public class CraftManager {
 
 	public void addCraft( Craft c, Player p ) {
 		Set<Craft> crafts = craftList.get( c.getW() );
-		if( crafts == null ) {
+		if ( crafts == null ) {
 			craftList.put( c.getW(), new HashSet<Craft>() );
 		}
 		craftList.get( c.getW() ).add( c );
-		craftPlayerIndex.put( p , c );
+		craftPlayerIndex.put( p, c );
 	}
 
 	public void removeCraft( Craft c ) {
 		craftList.get( c.getW() ).remove( c );
 		getPlayerFromCraft( c ).sendMessage( String.format( I18nSupport.getInternationalisedString( "Release - Craft has been released message" ) ) );
-		Movecraft.getInstance().getLogger().log( Level.INFO, String.format( I18nSupport.getInternationalisedString( "Release - Player has released a craft console" ), getPlayerFromCraft( c ).getDisplayName(), c.getMinX(), c.getMinZ() ) );
+		Movecraft.getInstance().getLogger().log( Level.INFO, String.format( I18nSupport.getInternationalisedString( "Release - Player has released a craft console" ), getPlayerFromCraft( c ).getDisplayName(), c.getType().getCraftName(), c.getBlockList().length, c.getMinX(), c.getMinZ() ) );
 		craftPlayerIndex.remove( getPlayerFromCraft( c ) );
 
 	}
 
-	public Craft[] getCraftsInWorld(World w) {
+	public Craft[] getCraftsInWorld( World w ) {
 		Set<Craft> crafts = craftList.get( w );
-		if ( crafts == null  || crafts.isEmpty()) {
+		if ( crafts == null || crafts.isEmpty() ) {
 			return null;
 		} else {
 			return craftList.get( w ).toArray( new Craft[1] );
 		}
 	}
 
-	public Craft getCraftByPlayer( Player p ){
+	public Craft getCraftByPlayer( Player p ) {
 		return craftPlayerIndex.get( p );
 	}
 

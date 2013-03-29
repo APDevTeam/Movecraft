@@ -36,7 +36,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 
-public class AsyncManager extends BukkitRunnable{
+public class AsyncManager extends BukkitRunnable {
 	private static AsyncManager instance = new AsyncManager();
 	private HashMap<AsyncTask, Craft> ownershipMap = new HashMap<AsyncTask, Craft>();
 	private BlockingQueue<AsyncTask> finishedAlgorithms = new LinkedBlockingQueue<AsyncTask>();
@@ -48,7 +48,7 @@ public class AsyncManager extends BukkitRunnable{
 	private AsyncManager() {
 	}
 
-	public void submitTask(AsyncTask task, Craft c) {
+	public void submitTask( AsyncTask task, Craft c ) {
 		if ( !c.isProcessing() ) {
 			c.setProcessing( true );
 			ownershipMap.put( task, c );
@@ -56,7 +56,7 @@ public class AsyncManager extends BukkitRunnable{
 		}
 	}
 
-	public void submitCompletedTask(AsyncTask task) {
+	public void submitCompletedTask( AsyncTask task ) {
 		finishedAlgorithms.add( task );
 	}
 
@@ -70,7 +70,7 @@ public class AsyncManager extends BukkitRunnable{
 			AsyncTask poll = finishedAlgorithms.poll();
 			Craft c = ownershipMap.get( poll );
 
-			if( poll instanceof DetectionTask ){
+			if ( poll instanceof DetectionTask ) {
 				// Process detection task
 
 				DetectionTask task = ( DetectionTask ) poll;
@@ -78,47 +78,47 @@ public class AsyncManager extends BukkitRunnable{
 				Player p = Movecraft.getInstance().getServer().getPlayer( task.getPlayername() );
 				Craft pCraft = CraftManager.getInstance().getCraftByPlayer( p );
 
-				if( pCraft != null ) {
+				if ( pCraft != null ) {
 					//Player is already controlling a craft
 					p.sendMessage( String.format( I18nSupport.getInternationalisedString( "Detection - Failed - Already commanding a craft" ) ) );
 				} else {
 					if ( task.isFailed() ) {
 						Movecraft.getInstance().getServer().getPlayer( task.getPlayername() ).sendMessage( task.getFailMessage() );
 					} else {
-							Craft[] craftsInWorld = CraftManager.getInstance().getCraftsInWorld( c.getW() );
-							boolean failed = false;
+						Craft[] craftsInWorld = CraftManager.getInstance().getCraftsInWorld( c.getW() );
+						boolean failed = false;
 
-							if(craftsInWorld != null) {
-								for ( Craft craft :  craftsInWorld ) {
+						if ( craftsInWorld != null ) {
+							for ( Craft craft : craftsInWorld ) {
 
-									if ( BlockUtils.arrayContainsOverlap( craft.getBlockList(), task.getBlockListFinal() ) ) {
-										Movecraft.getInstance().getServer().getPlayer( task.getPlayername() ).sendMessage( String.format( I18nSupport.getInternationalisedString( "Detection - Failed Craft is already being controlled" ) ) );
-									}
-
+								if ( BlockUtils.arrayContainsOverlap( craft.getBlockList(), task.getBlockListFinal() ) ) {
+									Movecraft.getInstance().getServer().getPlayer( task.getPlayername() ).sendMessage( String.format( I18nSupport.getInternationalisedString( "Detection - Failed Craft is already being controlled" ) ) );
 								}
-							}
-							if ( !failed ) {
-								c.setBlockList( task.getBlockListFinal() );
-								c.setHitBox( task.getHitBox() );
-								c.setMinX( task.getMinX() );
-								c.setMinZ( task.getMinZ() );
 
-								Movecraft.getInstance().getServer().getPlayer( task.getPlayername() ).sendMessage( String.format( I18nSupport.getInternationalisedString( "Detection - Successfully piloted craft" ) ) );
-								Movecraft.getInstance().getLogger().log( Level.INFO, String.format( I18nSupport.getInternationalisedString( "Detection - Success - Log Output" ), p.getDisplayName(), c.getType().getCraftName(), c.getMinX(), c.getMinZ() ) );
-								CraftManager.getInstance().addCraft( c, Movecraft.getInstance().getServer().getPlayer( task.getPlayername() ) );
 							}
+						}
+						if ( !failed ) {
+							c.setBlockList( task.getBlockListFinal() );
+							c.setHitBox( task.getHitBox() );
+							c.setMinX( task.getMinX() );
+							c.setMinZ( task.getMinZ() );
+
+							Movecraft.getInstance().getServer().getPlayer( task.getPlayername() ).sendMessage( String.format( I18nSupport.getInternationalisedString( "Detection - Successfully piloted craft" ) ) );
+							Movecraft.getInstance().getLogger().log( Level.INFO, String.format( I18nSupport.getInternationalisedString( "Detection - Success - Log Output" ), p.getDisplayName(), c.getType().getCraftName(), c.getBlockList().length, c.getMinX(), c.getMinZ() ) );
+							CraftManager.getInstance().addCraft( c, Movecraft.getInstance().getServer().getPlayer( task.getPlayername() ) );
+						}
 					}
 				}
 
 
-			}else if( poll instanceof TranslationTask ){
+			} else if ( poll instanceof TranslationTask ) {
 				//Process translation task
 
 				TranslationTask task = ( TranslationTask ) poll;
 				Player p = CraftManager.getInstance().getPlayerFromCraft( c );
 
 				// Check that the craft hasn't been sneakily unpiloted
-				if( p != null ) {
+				if ( p != null ) {
 
 					if ( task.isFailed() ) {
 						//The craft translation failed
@@ -156,7 +156,6 @@ public class AsyncManager extends BukkitRunnable{
 							c.setHitBox( task.getHitbox() );
 
 
-
 						} else {
 
 							Movecraft.getInstance().getLogger().log( Level.SEVERE, String.format( I18nSupport.getInternationalisedString( "Translation - Craft collision" ) ) );
@@ -167,13 +166,13 @@ public class AsyncManager extends BukkitRunnable{
 				}
 
 
-			} else if( poll instanceof RotationTask ){
+			} else if ( poll instanceof RotationTask ) {
 				// Process rotation task
 				RotationTask task = ( RotationTask ) poll;
 				Player p = CraftManager.getInstance().getPlayerFromCraft( c );
 
 				// Check that the craft hasn't been sneakily unpiloted
-				if( p != null ) {
+				if ( p != null ) {
 
 					if ( task.isFailed() ) {
 						//The craft translation failed
@@ -192,11 +191,11 @@ public class AsyncManager extends BukkitRunnable{
 								if ( MathUtils.playerIsWithinBoundingPolygon( c.getHitBox(), c.getMinX(), c.getMinZ(), MathUtils.bukkit2MovecraftLoc( pTest.getLocation() ) ) ) {
 
 									// Player is onboard this craft
-										MovecraftLocation originPoint = task.getOriginPoint();
-										MovecraftLocation playerLoc = MathUtils.bukkit2MovecraftLoc( pTest.getLocation() );
-										MovecraftLocation adjustedPLoc = playerLoc.subtract( originPoint );
+									MovecraftLocation originPoint = task.getOriginPoint();
+									MovecraftLocation playerLoc = MathUtils.bukkit2MovecraftLoc( pTest.getLocation() );
+									MovecraftLocation adjustedPLoc = playerLoc.subtract( originPoint );
 
-										MovecraftLocation newPLoc = MathUtils.rotateVec( task.getRotation(), adjustedPLoc ).add( originPoint );
+									MovecraftLocation newPLoc = MathUtils.rotateVec( task.getRotation(), adjustedPLoc ).add( originPoint );
 
 									Vector velocity = pTest.getVelocity().clone();
 									pTest.teleport( new Location( pTest.getWorld(), newPLoc.getX(), newPLoc.getY(), newPLoc.getZ() ) );
