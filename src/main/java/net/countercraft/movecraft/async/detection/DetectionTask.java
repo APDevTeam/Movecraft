@@ -60,21 +60,21 @@ public class DetectionTask extends AsyncTask {
 		blockStack.push( startLocation );
 
 		//detect all connected blocks
-		do{
+		do {
 			detectBlock( blockStack.pop() );
 		}
-		while( !blockStack.isEmpty() );
+		while ( !blockStack.isEmpty() );
 		//Add each valid location to a HashSet
 
 		//If exceeded max block limit return false
 
-		if( blockList.size() < minSize ) {
+		if ( blockList.size() < minSize ) {
 			// Craft is too small
-			failMessage = String.format( I18nSupport.getInternationalisedString( "Detection - Craft too small" ), minSize) ;
+			failMessage = String.format( I18nSupport.getInternationalisedString( "Detection - Craft too small" ), minSize );
 			failed = true;
 		} else if ( blockList.size() > maxSize ) {
 			// Craft is too big
-			failMessage = String.format( I18nSupport.getInternationalisedString( "Detection - Craft too large" ), maxSize);
+			failMessage = String.format( I18nSupport.getInternationalisedString( "Detection - Craft too large" ), maxSize );
 			failed = true;
 		} else {
 
@@ -111,12 +111,12 @@ public class DetectionTask extends AsyncTask {
 						numberOfBlocks = 0;
 					}
 
-					if ( (((float)numberOfBlocks / blockListFinal.length) * 100) < flyBlocks.get( i ).get( 0 )){
+					if ( ( ( ( float ) numberOfBlocks / blockListFinal.length ) * 100 ) < flyBlocks.get( i ).get( 0 ) ) {
 						//bad
-						failMessage = String.format( I18nSupport.getInternationalisedString( "Detection - Failed - Not enough flyblock" ), i, flyBlocks.get( i ).get( 0 ), (((float)numberOfBlocks / blockListFinal.length) * 100) );
+						failMessage = String.format( I18nSupport.getInternationalisedString( "Detection - Failed - Not enough flyblock" ), i, flyBlocks.get( i ).get( 0 ), ( ( ( float ) numberOfBlocks / blockListFinal.length ) * 100 ) );
 						failed = true;
-					} else if((((float)numberOfBlocks / blockListFinal.length) * 100)  > flyBlocks.get( i ).get( 1 )) {
-						failMessage = String.format( String.format( I18nSupport.getInternationalisedString( "Detection - Failed - Too much flyblock" ) , i, flyBlocks.get( i ).get( 1 ),  (((float)numberOfBlocks / blockListFinal.length) * 100) ) );
+					} else if ( ( ( ( float ) numberOfBlocks / blockListFinal.length ) * 100 ) > flyBlocks.get( i ).get( 1 ) ) {
+						failMessage = String.format( String.format( I18nSupport.getInternationalisedString( "Detection - Failed - Too much flyblock" ), i, flyBlocks.get( i ).get( 1 ), ( ( ( float ) numberOfBlocks / blockListFinal.length ) * 100 ) ) );
 						failed = true;
 					} else {
 						// good
@@ -127,8 +127,8 @@ public class DetectionTask extends AsyncTask {
 				if ( !failed ) {
 					// Form Polygonal bounding box
 					int sizeX, sizeZ;
-					sizeX = maxX - minX + 1;
-					sizeZ = maxZ - minZ + 1;
+					sizeX = ( maxX - minX ) + 1;
+					sizeZ = ( maxZ - minZ ) + 1;
 
 					int[][][] polygonalBox = new int[sizeX][][];
 
@@ -150,10 +150,10 @@ public class DetectionTask extends AsyncTask {
 							minY = polygonalBox[l.getX() - minX][l.getZ() - minZ][0];
 							maxY = polygonalBox[l.getX() - minX][l.getZ() - minZ][1];
 
-							if( l.getY() < minY ){
+							if ( l.getY() < minY ) {
 								polygonalBox[l.getX() - minX][l.getZ() - minZ][0] = l.getY();
 							}
-							if( l.getY() > maxY ){
+							if ( l.getY() > maxY ) {
 								polygonalBox[l.getX() - minX][l.getZ() - minZ][1] = l.getY();
 							}
 
@@ -169,59 +169,59 @@ public class DetectionTask extends AsyncTask {
 
 	}
 
-	private void detectBlock(MovecraftLocation location){
+	private void detectBlock( MovecraftLocation location ) {
 		int x = location.getX();
 		int y = location.getY();
 		int z = location.getZ();
 
-		detectBlock(x + 1, y, z);
-		detectBlock(x - 1, y, z);
-		detectBlock(x, y + 1, z);
-		detectBlock(x, y - 1, z);
-		detectBlock(x, y, z + 1);
-		detectBlock(x, y, z - 1);
-		detectBlock(x + 1, y - 1, z);
-		detectBlock(x - 1, y - 1, z);
-		detectBlock(x, y - 1, z + 1);
-		detectBlock(x, y - 1, z - 1);
-		detectBlock(x + 1, y + 1, z);
-		detectBlock(x - 1, y + 1, z);
-		detectBlock(x, y + 1, z + 1);
-		detectBlock(x, y + 1, z - 1);
+		detectBlock( x + 1, y, z );
+		detectBlock( x - 1, y, z );
+		detectBlock( x, y + 1, z );
+		detectBlock( x, y - 1, z );
+		detectBlock( x, y, z + 1 );
+		detectBlock( x, y, z - 1 );
+		detectBlock( x + 1, y - 1, z );
+		detectBlock( x - 1, y - 1, z );
+		detectBlock( x, y - 1, z + 1 );
+		detectBlock( x, y - 1, z - 1 );
+		detectBlock( x + 1, y + 1, z );
+		detectBlock( x - 1, y + 1, z );
+		detectBlock( x, y + 1, z + 1 );
+		detectBlock( x, y + 1, z - 1 );
 
 	}
 
-	private void detectBlock( int x, int y, int z ){
+	private void detectBlock( int x, int y, int z ) {
 		MovecraftLocation workingLocation = new MovecraftLocation( x, y, z );
-		if(!visited.contains( workingLocation )){
+		if ( !visited.contains( workingLocation ) ) {
 			visited.add( workingLocation );
 
-			if(isAllowedBlock( w.getBlockTypeIdAt( x, y, z ) )){
-				blockList.add(workingLocation);
+			if ( isAllowedBlock( w.getBlockTypeIdAt( x, y, z ) ) ) {
+				blockList.add( workingLocation );
 
-				if(blockList.size() <= maxSize){
+				if ( blockList.size() <= maxSize ) {
 
 					blockStack.push( workingLocation );
 
-					if ( maxX == 0 || workingLocation.getX() > maxX ){
+					if ( maxX == 0 || workingLocation.getX() > maxX ) {
 						maxX = workingLocation.getX();
 					}
-					if( maxY == 0 || workingLocation.getY() > maxY ){
+					if ( maxY == 0 || workingLocation.getY() > maxY ) {
 						maxY = workingLocation.getY();
 					}
-					if( maxZ == 0 || workingLocation.getZ() > maxZ ){
+					if ( maxZ == 0 || workingLocation.getZ() > maxZ ) {
 						maxZ = workingLocation.getZ();
 					}
-					if( minX == 0 || workingLocation.getX() < minX ){
+					if ( minX == 0 || workingLocation.getX() < minX ) {
 						minX = workingLocation.getX();
 					}
-					if( minY == 0 || workingLocation.getY() < minY ){
+					if ( minY == 0 || workingLocation.getY() < minY ) {
 						minY = workingLocation.getY();
 					}
-					if( minZ == 0 || workingLocation.getZ() < minZ ){
+					if ( minZ == 0 || workingLocation.getZ() < minZ ) {
 						minZ = workingLocation.getZ();
 					}
-				}else{
+				} else {
 					return;
 				}
 			}
@@ -230,10 +230,10 @@ public class DetectionTask extends AsyncTask {
 
 	}
 
-	private boolean isAllowedBlock( int test ){
+	private boolean isAllowedBlock( int test ) {
 
-		for( int i : allowedBlocks ){
-			if( i == test ){
+		for ( int i : allowedBlocks ) {
+			if ( i == test ) {
 				return true;
 			}
 		}
@@ -241,10 +241,10 @@ public class DetectionTask extends AsyncTask {
 		return false;
 	}
 
-	private boolean isForbiddenBlock( int test ){
+	private boolean isForbiddenBlock( int test ) {
 
-		for( int i : forbiddenBlocks ){
-			if( i == test ){
+		for ( int i : forbiddenBlocks ) {
+			if ( i == test ) {
 				return true;
 			}
 		}

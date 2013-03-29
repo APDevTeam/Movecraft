@@ -32,7 +32,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class RotationTask extends AsyncTask{
+public class RotationTask extends AsyncTask {
 	private MovecraftLocation originPoint;
 	private boolean failed = false;
 	private String failMessage;
@@ -84,8 +84,8 @@ public class RotationTask extends AsyncTask{
 			// Calculate air changes
 			List<MovecraftLocation> airLocation = ListUtils.subtract( Arrays.asList( originalBlockList ), Arrays.asList( blockList ) );
 
-			for( MovecraftLocation l1 : airLocation ){
-				mapUpdates.add(new MapUpdateCommand(l1, 0));
+			for ( MovecraftLocation l1 : airLocation ) {
+				mapUpdates.add( new MapUpdateCommand( l1, 0 ) );
 			}
 
 			this.updates = mapUpdates.toArray( new MapUpdateCommand[1] );
@@ -95,24 +95,25 @@ public class RotationTask extends AsyncTask{
 			minZ = 0;
 
 			for ( MovecraftLocation l : blockList ) {
-				if ( maxX == 0 || l.getX() > maxX ){
+				if ( maxX == 0 || l.getX() > maxX ) {
 					maxX = l.getX();
 				}
-				if( maxZ == 0 || l.getZ() > maxZ ){
+				if ( maxZ == 0 || l.getZ() > maxZ ) {
 					maxZ = l.getZ();
 				}
-				if( minX == 0 || l.getX() < minX ){
+				if ( minX == 0 || l.getX() < minX ) {
 					minX = l.getX();
 				}
-				if( minZ == 0 || l.getZ() < minZ ){
+				if ( minZ == 0 || l.getZ() < minZ ) {
 					minZ = l.getZ();
 				}
 			}
 
 			// Rerun the polygonal bounding formula for the newly formed craft
 			int sizeX, sizeZ;
-			sizeX = maxX - minX + 1;
-			sizeZ = maxZ - minZ + 1;
+			sizeX = ( maxX - minX ) + 1;
+			sizeZ = ( maxZ - minZ ) + 1;
+
 
 			int[][][] polygonalBox = new int[sizeX][][];
 
@@ -134,10 +135,10 @@ public class RotationTask extends AsyncTask{
 					minY = polygonalBox[l.getX() - minX][l.getZ() - minZ][0];
 					maxY = polygonalBox[l.getX() - minX][l.getZ() - minZ][1];
 
-					if( l.getY() < minY ){
+					if ( l.getY() < minY ) {
 						polygonalBox[l.getX() - minX][l.getZ() - minZ][0] = l.getY();
 					}
-					if( l.getY() > maxY ){
+					if ( l.getY() > maxY ) {
 						polygonalBox[l.getX() - minX][l.getZ() - minZ][1] = l.getY();
 					}
 
@@ -145,7 +146,6 @@ public class RotationTask extends AsyncTask{
 
 
 			}
-
 
 
 			this.hitbox = polygonalBox;
