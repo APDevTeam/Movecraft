@@ -50,6 +50,9 @@ public class SignListener implements Listener {
 		} else if ( event.getAction() == Action.LEFT_CLICK_BLOCK ) {
 			Material m = event.getClickedBlock().getType();
 			if ( m.equals( Material.SIGN_POST ) || m.equals( Material.WALL_SIGN ) ) {
+				if ( event.getClickedBlock() == null ) {
+					return;
+				}
 				Sign sign = ( Sign ) event.getClickedBlock().getState();
 				if ( sign.getLine( 0 ).equals( "\\  ||  /" ) && sign.getLine( 1 ).equals( "==      ==" ) && sign.getLine( 2 ).equals( "/  ||  \\" ) ) {
 					Craft craft = CraftManager.getInstance().getCraftByPlayer( event.getPlayer() );
