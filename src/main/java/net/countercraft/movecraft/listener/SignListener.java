@@ -36,28 +36,28 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SignListener implements Listener{
+public class SignListener implements Listener {
 	private static Map<Player, Long> timeMap = new HashMap<Player, Long>();
 
 	@EventHandler
-	public void onPlayerInteract ( PlayerInteractEvent event ) {
+	public void onPlayerInteract( PlayerInteractEvent event ) {
 
 		if ( event.getAction() == Action.RIGHT_CLICK_BLOCK ) {
 			Material m = event.getClickedBlock().getType();
-			if ( m.equals( Material.SIGN_POST)  || m.equals( Material.WALL_SIGN ) ){
+			if ( m.equals( Material.SIGN_POST ) || m.equals( Material.WALL_SIGN ) ) {
 				onSignRightClick( event );
 			}
 		} else if ( event.getAction() == Action.LEFT_CLICK_BLOCK ) {
 			Material m = event.getClickedBlock().getType();
-			if ( m.equals( Material.SIGN_POST)  || m.equals( Material.WALL_SIGN ) ){
+			if ( m.equals( Material.SIGN_POST ) || m.equals( Material.WALL_SIGN ) ) {
 				Sign sign = ( Sign ) event.getClickedBlock().getState();
-				if ( sign.getLine( 0 ).equals( "\\  ||  /" ) && sign.getLine( 1 ).equals(  "==      ==" ) && sign.getLine( 2 ).equals(  "/  ||  \\" )) {
+				if ( sign.getLine( 0 ).equals( "\\  ||  /" ) && sign.getLine( 1 ).equals( "==      ==" ) && sign.getLine( 2 ).equals( "/  ||  \\" ) ) {
 					Craft craft = CraftManager.getInstance().getCraftByPlayer( event.getPlayer() );
 					if ( event.getPlayer().hasPermission( "movecraft." + craft.getType().getCraftName() + ".rotate" ) ) {
 						if ( craft != null ) {
 							Long time = timeMap.get( event.getPlayer() );
 							if ( time != null ) {
-								long ticksElapsed = (System.currentTimeMillis() - time) / 50;
+								long ticksElapsed = ( System.currentTimeMillis() - time ) / 50;
 								if ( ticksElapsed < craft.getType().getTickCooldown() ) {
 									event.setCancelled( true );
 									return;
@@ -80,7 +80,7 @@ public class SignListener implements Listener{
 		}
 	}
 
-	private void onSignRightClick ( PlayerInteractEvent event ) {
+	private void onSignRightClick( PlayerInteractEvent event ) {
 		Sign sign = ( Sign ) event.getClickedBlock().getState();
 
 
@@ -94,7 +94,7 @@ public class SignListener implements Listener{
 				Craft c = new Craft( getCraftTypeFromString( sign.getLine( 0 ) ), loc.getWorld() );
 
 				if ( CraftManager.getInstance().getCraftByPlayer( event.getPlayer() ) == null ) {
-					c.detect( event.getPlayer().getDisplayName(), startPoint );
+					c.detect( event.getPlayer().getName(), startPoint );
 				} else {
 					event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "Player - Error - Already piloting craft" ) ) );
 				}
@@ -105,17 +105,16 @@ public class SignListener implements Listener{
 		} else if ( sign.getLine( 0 ).equalsIgnoreCase( "[helm]" ) ) {
 			sign.setLine( 0, "\\  ||  /" );
 			sign.setLine( 1, "==      ==" );
-			sign.setLine( 2,  "/  ||  \\" );
+			sign.setLine( 2, "/  ||  \\" );
 			sign.update( true );
 			event.setCancelled( true );
-		} else if ( sign.getLine( 0 ).equals( "\\  ||  /" ) && sign.getLine( 1 ).equals(  "==      ==" ) && sign.getLine( 2 ).equals(  "/  ||  \\" )) {
+		} else if ( sign.getLine( 0 ).equals( "\\  ||  /" ) && sign.getLine( 1 ).equals( "==      ==" ) && sign.getLine( 2 ).equals( "/  ||  \\" ) ) {
 			Craft craft = CraftManager.getInstance().getCraftByPlayer( event.getPlayer() );
-			if ( event.getPlayer().hasPermission( "movecraft." + craft.getType().getCraftName() + ".rotate" ) ) {
-
-				if ( craft != null ) {
+			if ( craft != null ) {
+				if ( event.getPlayer().hasPermission( "movecraft." + craft.getType().getCraftName() + ".rotate" ) ) {
 					Long time = timeMap.get( event.getPlayer() );
 					if ( time != null ) {
-						long ticksElapsed = (System.currentTimeMillis() - time) / 50;
+						long ticksElapsed = ( System.currentTimeMillis() - time ) / 50;
 						if ( ticksElapsed < craft.getType().getTickCooldown() ) {
 							event.setCancelled( true );
 							return;
@@ -139,9 +138,9 @@ public class SignListener implements Listener{
 
 	}
 
-	private CraftType getCraftTypeFromString ( String s ) {
+	private CraftType getCraftTypeFromString( String s ) {
 		for ( CraftType t : CraftManager.getInstance().getCraftTypes() ) {
-			if(s.equalsIgnoreCase( t.getCraftName() )){
+			if ( s.equalsIgnoreCase( t.getCraftName() ) ) {
 				return t;
 			}
 		}
@@ -151,14 +150,14 @@ public class SignListener implements Listener{
 
 
 	@EventHandler
-	public void onPlayerInteractStick ( PlayerInteractEvent event ) {
+	public void onPlayerInteractStick( PlayerInteractEvent event ) {
 		if ( event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK ) {
 			if ( event.getItem() != null && event.getItem().getType().equals( Material.STICK ) ) {
 				Craft craft = CraftManager.getInstance().getCraftByPlayer( event.getPlayer() );
 				if ( craft != null ) {
 					Long time = timeMap.get( event.getPlayer() );
 					if ( time != null ) {
-						long ticksElapsed = (System.currentTimeMillis() - time) / 50;
+						long ticksElapsed = ( System.currentTimeMillis() - time ) / 50;
 						if ( ticksElapsed < craft.getType().getTickCooldown() ) {
 							return;
 						}
@@ -168,21 +167,21 @@ public class SignListener implements Listener{
 
 						if ( event.getPlayer().hasPermission( "movecraft." + craft.getType().getCraftName() + ".move" ) ) {
 							// Player is onboard craft and right clicking
-							float rotation = (float) Math.PI * event.getPlayer().getLocation().getYaw() / 180f;
+							float rotation = ( float ) Math.PI * event.getPlayer().getLocation().getYaw() / 180f;
 
-							float nx = -(float) Math.sin(rotation);
-							float nz = (float) Math.cos(rotation);
+							float nx = -( float ) Math.sin( rotation );
+							float nz = ( float ) Math.cos( rotation );
 
-							int dx = (Math.abs(nx) >= 0.5 ? 1 : 0) * (int) Math.signum(nx);
-							int dz = (Math.abs(nz) > 0.5 ? 1 : 0) * (int) Math.signum(nz);
+							int dx = ( Math.abs( nx ) >= 0.5 ? 1 : 0 ) * ( int ) Math.signum( nx );
+							int dz = ( Math.abs( nz ) > 0.5 ? 1 : 0 ) * ( int ) Math.signum( nz );
 							int dy = 0;
 
 							float p = event.getPlayer().getLocation().getPitch();
 
-							dy = -(Math.abs(p) >= 25 ? 1 : 0)
-									* (int) Math.signum(p);
+							dy = -( Math.abs( p ) >= 25 ? 1 : 0 )
+									* ( int ) Math.signum( p );
 
-							if (Math.abs(event.getPlayer().getLocation().getPitch()) >= 75) {
+							if ( Math.abs( event.getPlayer().getLocation().getPitch() ) >= 75 ) {
 								dx = 0;
 								dz = 0;
 							}

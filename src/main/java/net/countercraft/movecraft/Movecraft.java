@@ -21,16 +21,20 @@ import net.countercraft.movecraft.async.AsyncManager;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.items.StorageChestItem;
-import net.countercraft.movecraft.listener.*;
+import net.countercraft.movecraft.listener.BlockListener;
+import net.countercraft.movecraft.listener.CommandListener;
+import net.countercraft.movecraft.listener.PlayerListener;
+import net.countercraft.movecraft.listener.SignListener;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.metrics.MovecraftMetrics;
 import net.countercraft.movecraft.utils.MapUpdateManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Movecraft extends JavaPlugin{
+public class Movecraft extends JavaPlugin {
 	private static Movecraft instance;
 	private Logger logger;
 	private boolean shuttingDown;
@@ -45,13 +49,16 @@ public class Movecraft extends JavaPlugin{
 		// Read in config
 		this.saveDefaultConfig();
 		Settings.LOCALE = getConfig().getString( "Locale" );
-		this.saveResource( "localisation/movecraftlang_en.properties", false);
+
+		if ( !new File( getDataFolder() + "/localisation/movecraftlang_en.properties" ).exists() ) {
+			this.saveResource( "localisation/movecraftlang_en.properties", false );
+		}
 		I18nSupport.init();
-		if( shuttingDown == true && Settings.IGNORE_RESET ){
+		if ( shuttingDown == true && Settings.IGNORE_RESET ) {
 			logger.log( Level.SEVERE, String.format( I18nSupport.getInternationalisedString( "Startup - Error - Reload error" ) ) );
 			logger.log( Level.INFO, String.format( I18nSupport.getInternationalisedString( "Startup - Error - Disable warning for reload" ) ) );
 			getPluginLoader().disablePlugin( this );
-		}else{
+		} else {
 
 
 			// Startup procedure
@@ -81,7 +88,7 @@ public class Movecraft extends JavaPlugin{
 		logger = getLogger();
 	}
 
-	public static Movecraft getInstance(){
+	public static Movecraft getInstance() {
 		return instance;
 	}
 }
