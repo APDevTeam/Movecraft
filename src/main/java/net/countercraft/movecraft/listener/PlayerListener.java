@@ -45,7 +45,7 @@ public class PlayerListener implements Listener {
 		}
 	}
 
-	public void onPlayerDamaged ( EntityDamageByEntityEvent e ) {
+	public void onPlayerDamaged( EntityDamageByEntityEvent e ) {
 		if ( e instanceof Player ) {
 			Player p = ( Player ) e;
 			CraftManager.getInstance().removeCraft( CraftManager.getInstance().getCraftByPlayer( p ) );
@@ -53,9 +53,9 @@ public class PlayerListener implements Listener {
 	}
 
 	@EventHandler
-	public void onPlayerMove ( PlayerMoveEvent event ) {
+	public void onPlayerMove( PlayerMoveEvent event ) {
 		final Craft c = CraftManager.getInstance().getCraftByPlayer( event.getPlayer() );
-		if (  c != null ) {
+		if ( c != null ) {
 			if ( !MathUtils.playerIsWithinBoundingPolygon( c.getHitBox(), c.getMinX(), c.getMinZ(), MathUtils.bukkit2MovecraftLoc( event.getPlayer().getLocation() ) ) ) {
 
 				if ( !releaseEvents.containsKey( event.getPlayer() ) ) {
@@ -68,12 +68,12 @@ public class PlayerListener implements Listener {
 							CraftManager.getInstance().removeCraft( c );
 						}
 
-					}.runTaskLater( Movecraft.getInstance(), (20 * 60 * 15) );
+					}.runTaskLater( Movecraft.getInstance(), ( 20 * 15 ) );
 
 					releaseEvents.put( event.getPlayer(), releaseTask );
 				}
 
-			} else if ( releaseEvents.containsKey( event.getPlayer() ) ){
+			} else if ( releaseEvents.containsKey( event.getPlayer() ) ) {
 				releaseEvents.get( event.getPlayer() ).cancel();
 				releaseEvents.remove( event.getPlayer() );
 			}
@@ -81,9 +81,9 @@ public class PlayerListener implements Listener {
 	}
 
 	@EventHandler
-	public void onPlayerHit ( EntityDamageByEntityEvent event ) {
-		if ( event.getEntity() instanceof Player && CraftManager.getInstance().getCraftByPlayer( (Player) event.getEntity() ) != null ) {
-			CraftManager.getInstance().removeCraft( CraftManager.getInstance().getCraftByPlayer( (Player) event.getEntity() ));
+	public void onPlayerHit( EntityDamageByEntityEvent event ) {
+		if ( event.getEntity() instanceof Player && CraftManager.getInstance().getCraftByPlayer( ( Player ) event.getEntity() ) != null ) {
+			CraftManager.getInstance().removeCraft( CraftManager.getInstance().getCraftByPlayer( ( Player ) event.getEntity() ) );
 		}
 	}
 
