@@ -40,210 +40,213 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.util.*;
 
 public class MapUpdateManager extends BukkitRunnable {
-		private HashMap<World, ArrayList<MapUpdateCommand>> updates = new HashMap<World, ArrayList<MapUpdateCommand>>();
-		private final int[] inventoryBlocks = {117, 54, 23, 61, 62, 63, 68};
+	private HashMap<World, ArrayList<MapUpdateCommand>> updates = new HashMap<World, ArrayList<MapUpdateCommand>>();
+	private final int[] inventoryBlocks = { 117, 54, 23, 61, 62, 63, 68 };
 
-		private MapUpdateManager() {
-		}
+	private MapUpdateManager() {
+	}
 
-		public static MapUpdateManager getInstance() {
-			return MapUpdateManagerHolder.INSTANCE;
-		}
+	public static MapUpdateManager getInstance() {
+		return MapUpdateManagerHolder.INSTANCE;
+	}
 
-		private static class MapUpdateManagerHolder {
-			private static final MapUpdateManager INSTANCE = new MapUpdateManager();
-		}
+	private static class MapUpdateManagerHolder {
+		private static final MapUpdateManager INSTANCE = new MapUpdateManager();
+	}
 
-		public void run(){
-			if(updates.isEmpty()) return;
+	public void run() {
+		if ( updates.isEmpty() ) return;
 
-			for(World w : updates.keySet()){
-				if ( w != null ) {
-					List<MapUpdateCommand> updatesInWorld = updates.get( w );
-					Map<MovecraftLocation, TransferData> dataMap = new HashMap<MovecraftLocation, TransferData>();
-					Set<net.minecraft.server.v1_5_R2.Chunk> chunks = new HashSet<net.minecraft.server.v1_5_R2.Chunk>();
+		for ( World w : updates.keySet() ) {
+			if ( w != null ) {
+				List<MapUpdateCommand> updatesInWorld = updates.get( w );
+				Map<MovecraftLocation, TransferData> dataMap = new HashMap<MovecraftLocation, TransferData>();
+				Set<net.minecraft.server.v1_5_R2.Chunk> chunks = new HashSet<net.minecraft.server.v1_5_R2.Chunk>();
 
-					// Preprocessing
-					for ( MapUpdateCommand c : updatesInWorld ) {
-						MovecraftLocation l = c.getOldBlockLocation();
+				// Preprocessing
+				for ( MapUpdateCommand c : updatesInWorld ) {
+					MovecraftLocation l = c.getOldBlockLocation();
 
-						if ( l != null ) {
-							TransferData blockDataPacket = getBlockDataPacket( w.getBlockAt( l.getX(), l.getY(), l.getZ() ).getState(), c.getNewBlockLocation(), c.getRotation() );
-							if ( blockDataPacket != null ) {
-								dataMap.put( c.getNewBlockLocation(), blockDataPacket );
-							}
-						}
-
-					}
-
-					// Perform core block updates
-					for(MapUpdateCommand m : updatesInWorld){
-						MovecraftLocation workingL = m.getNewBlockLocation();
-
-
-						int x = workingL.getX();
-						int y = workingL.getY();
-						int z = workingL.getZ();
-
-						// Calculate chunk
-
-						Chunk chunk = w.getBlockAt(x, y, z).getChunk();
-						net.minecraft.server.v1_5_R2.Chunk c = ((CraftChunk ) chunk).getHandle();
-						//get the inner-chunk index of the block to change
-						//modify the block in the chunk
-
-						int newTypeID = m.getTypeID();
-						TransferData transferData = dataMap.get( workingL );
-
-						byte data;
-						if ( transferData != null ) {
-							 data = transferData.getData();
-						} else {
-							data = 0;
-						}
-
-						c.a(x & 15, y, z & 15, newTypeID, data);
-
-						if(!chunks.contains(c)){
-							chunks.add(c);
-						}
-
-					}
-
-
-					// Restore block specific information
-					for( MovecraftLocation l : dataMap.keySet() ){
-						TransferData transferData = dataMap.get( l );
-
-						if ( transferData instanceof SignTransferHolder ) {
-
-							SignTransferHolder signData = ( SignTransferHolder ) transferData;
-							Sign sign = ( Sign ) w.getBlockAt( l.getX(), l.getY(), l.getZ() ).getState();
-							for ( int i = 0; i < signData.getLines().length; i++) {
-								sign.setLine( i, signData.getLines()[i] );
-							}
-							sign.update( true );
-
-						} else if ( transferData instanceof StorageCrateTransferHolder ) {
-							Inventory inventory = Bukkit.createInventory( null, 27, String.format( I18nSupport.getInternationalisedString( "Item - Storage Crate name" ) ) );
-							inventory.setContents( ( ( StorageCrateTransferHolder ) transferData ).getInvetory() );
-							StorageChestItem.setInventoryOfCrateAtLocation( inventory, l, w );
-
-						} else if ( transferData instanceof InventoryTransferHolder) {
-
-							InventoryTransferHolder invData = ( InventoryTransferHolder ) transferData;
-							InventoryHolder inventoryHolder = ( InventoryHolder ) w.getBlockAt( l.getX(), l.getY(), l.getZ() ).getState();
-							inventoryHolder.getInventory().setContents( invData.getInvetory() );
-
-						}
-
-					}
-
-
-					for(net.minecraft.server.v1_5_R2.Chunk c : chunks){
-						c.initLighting();
-						ChunkCoordIntPair ccip = new ChunkCoordIntPair( c.x, c.z );
-
-
-						for( Player p : w.getPlayers() ) {
-							List<ChunkCoordIntPair> chunkCoordIntPairQueue = ( List<ChunkCoordIntPair> ) ( ( CraftPlayer ) p ).getHandle().chunkCoordIntPairQueue;
-
-							if(!chunkCoordIntPairQueue.contains(ccip))
-								chunkCoordIntPairQueue.add(ccip);
+					if ( l != null ) {
+						TransferData blockDataPacket = getBlockDataPacket( w.getBlockAt( l.getX(), l.getY(), l.getZ() ).getState(), c.getNewBlockLocation(), c.getRotation() );
+						if ( blockDataPacket != null ) {
+							dataMap.put( c.getNewBlockLocation(), blockDataPacket );
 						}
 					}
-				}
-			}
 
-			updates.clear();
-
-		}
-
-		public boolean addWorldUpdate(World w, MapUpdateCommand[] mapUpdates){
-			ArrayList<MapUpdateCommand> get = updates.get( w );
-			if( get != null ){
-				updates.remove( w );
-			} else {
-				get = new ArrayList<MapUpdateCommand>();
-			}
-
-			ArrayList<MapUpdateCommand> tempSet = new ArrayList<MapUpdateCommand>();
-			for( MapUpdateCommand m : mapUpdates ){
-
-				if( setContainsConflict( get, m ) ){
-					return true;
-				}else{
-					tempSet.add( m );
 				}
 
-			}
+				// Perform core block updates
+				for ( MapUpdateCommand m : updatesInWorld ) {
+					MovecraftLocation workingL = m.getNewBlockLocation();
 
-			get.addAll( tempSet );
-			updates.put( w, get );
-			return false;
-		}
 
-		private boolean setContainsConflict( ArrayList<MapUpdateCommand> set, MapUpdateCommand c ){
-			for ( Iterator<MapUpdateCommand> it = set.iterator(); it.hasNext(); ) {
-				MapUpdateCommand command = it.next();
-				if( command.getNewBlockLocation().equals( c.getNewBlockLocation() ) ){
-					return true;
-				}
-			}
+					int x = workingL.getX();
+					int y = workingL.getY();
+					int z = workingL.getZ();
 
-			return false;
-		}
+					// Calculate chunk
 
-		private boolean arrayContains( int[] oA, int o ){
-			for( int testO : oA ){
-				if( testO == o ){
-					return true;
-				}
-			}
+					Chunk chunk = w.getBlockAt( x, y, z ).getChunk();
+					net.minecraft.server.v1_5_R2.Chunk c = ( ( CraftChunk ) chunk ).getHandle();
+					//get the inner-chunk index of the block to change
+					//modify the block in the chunk
 
-			return false;
-		}
+					int newTypeID = m.getTypeID();
+					TransferData transferData = dataMap.get( workingL );
 
-		private TransferData getBlockDataPacket( BlockState s, MovecraftLocation newPosition, Rotation r ) {
-			if ( !BlockUtils.blockHasData( s.getTypeId() ) ) {
-				return null;
-			}
-
-			byte data = s.getRawData();
-
-			if ( BlockUtils.blockRequiresRotation( s.getTypeId() ) && r != Rotation.NONE ) {
-				data = BlockUtils.rotate( data, s.getTypeId(), r );
-			}
-
-			switch ( s.getTypeId() ){
-				case 23:
-				case 61:
-				case 62:
-				case 117:
-					// Data and Inventory
-					ItemStack[] contents = (( InventoryHolder ) s).getInventory().getContents().clone();
-					( ( InventoryHolder ) s ).getInventory().clear();
-					return new InventoryTransferHolder( data, contents );
-
-				case 68:
-				case 63:
-					// Data and sign lines
-					return new SignTransferHolder( data, (( Sign )s).getLines() );
-
-				case 33:
-					MovecraftLocation l = MathUtils.bukkit2MovecraftLoc( s.getLocation() );
-					Inventory i = StorageChestItem.getInventoryOfCrateAtLocation( l, s.getWorld() );
-					if ( i != null ) {
-						StorageChestItem.removeInventoryAtLocation( l );
-						return new StorageCrateTransferHolder( data, i.getContents() );
+					byte data;
+					if ( transferData != null ) {
+						data = transferData.getData();
 					} else {
-						return new TransferData( data );
+						data = 0;
 					}
 
-				default:
-					return new TransferData( data );
+					c.a( x & 15, y, z & 15, 0, 0 );
+					c.a( x & 15, y, z & 15, newTypeID, data );
 
+					if ( !chunks.contains( c ) ) {
+						chunks.add( c );
+					}
+
+				}
+
+
+				// Restore block specific information
+				for ( MovecraftLocation l : dataMap.keySet() ) {
+					TransferData transferData = dataMap.get( l );
+
+					if ( transferData instanceof SignTransferHolder ) {
+
+						SignTransferHolder signData = ( SignTransferHolder ) transferData;
+						Sign sign = ( Sign ) w.getBlockAt( l.getX(), l.getY(), l.getZ() ).getState();
+						for ( int i = 0; i < signData.getLines().length; i++ ) {
+							sign.setLine( i, signData.getLines()[i] );
+						}
+						sign.update( true );
+
+					} else if ( transferData instanceof StorageCrateTransferHolder ) {
+						Inventory inventory = Bukkit.createInventory( null, 27, String.format( I18nSupport.getInternationalisedString( "Item - Storage Crate name" ) ) );
+						inventory.setContents( ( ( StorageCrateTransferHolder ) transferData ).getInvetory() );
+						StorageChestItem.setInventoryOfCrateAtLocation( inventory, l, w );
+
+					} else if ( transferData instanceof InventoryTransferHolder ) {
+
+						InventoryTransferHolder invData = ( InventoryTransferHolder ) transferData;
+						InventoryHolder inventoryHolder = ( InventoryHolder ) w.getBlockAt( l.getX(), l.getY(), l.getZ() ).getState();
+						inventoryHolder.getInventory().setContents( invData.getInvetory() );
+
+					} else {
+						w.getBlockAt( l.getX(), l.getY(), l.getZ() ).setData( transferData.getData() );
+					}
+
+				}
+
+
+				for ( net.minecraft.server.v1_5_R2.Chunk c : chunks ) {
+					c.initLighting();
+					ChunkCoordIntPair ccip = new ChunkCoordIntPair( c.x, c.z );
+
+
+					for ( Player p : w.getPlayers() ) {
+						List<ChunkCoordIntPair> chunkCoordIntPairQueue = ( List<ChunkCoordIntPair> ) ( ( CraftPlayer ) p ).getHandle().chunkCoordIntPairQueue;
+
+						if ( !chunkCoordIntPairQueue.contains( ccip ) )
+							chunkCoordIntPairQueue.add( ccip );
+					}
+				}
 			}
 		}
+
+		updates.clear();
+
+	}
+
+	public boolean addWorldUpdate( World w, MapUpdateCommand[] mapUpdates ) {
+		ArrayList<MapUpdateCommand> get = updates.get( w );
+		if ( get != null ) {
+			updates.remove( w );
+		} else {
+			get = new ArrayList<MapUpdateCommand>();
+		}
+
+		ArrayList<MapUpdateCommand> tempSet = new ArrayList<MapUpdateCommand>();
+		for ( MapUpdateCommand m : mapUpdates ) {
+
+			if ( setContainsConflict( get, m ) ) {
+				return true;
+			} else {
+				tempSet.add( m );
+			}
+
+		}
+
+		get.addAll( tempSet );
+		updates.put( w, get );
+		return false;
+	}
+
+	private boolean setContainsConflict( ArrayList<MapUpdateCommand> set, MapUpdateCommand c ) {
+		for ( Iterator<MapUpdateCommand> it = set.iterator(); it.hasNext(); ) {
+			MapUpdateCommand command = it.next();
+			if ( command.getNewBlockLocation().equals( c.getNewBlockLocation() ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private boolean arrayContains( int[] oA, int o ) {
+		for ( int testO : oA ) {
+			if ( testO == o ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private TransferData getBlockDataPacket( BlockState s, MovecraftLocation newPosition, Rotation r ) {
+		if ( !BlockUtils.blockHasData( s.getTypeId() ) ) {
+			return null;
+		}
+
+		byte data = s.getRawData();
+
+		if ( BlockUtils.blockRequiresRotation( s.getTypeId() ) && r != Rotation.NONE ) {
+			data = BlockUtils.rotate( data, s.getTypeId(), r );
+		}
+
+		switch ( s.getTypeId() ) {
+			case 23:
+			case 61:
+			case 62:
+			case 117:
+				// Data and Inventory
+				ItemStack[] contents = ( ( InventoryHolder ) s ).getInventory().getContents().clone();
+				( ( InventoryHolder ) s ).getInventory().clear();
+				return new InventoryTransferHolder( data, contents );
+
+			case 68:
+			case 63:
+				// Data and sign lines
+				return new SignTransferHolder( data, ( ( Sign ) s ).getLines() );
+
+			case 33:
+				MovecraftLocation l = MathUtils.bukkit2MovecraftLoc( s.getLocation() );
+				Inventory i = StorageChestItem.getInventoryOfCrateAtLocation( l, s.getWorld() );
+				if ( i != null ) {
+					StorageChestItem.removeInventoryAtLocation( l );
+					return new StorageCrateTransferHolder( data, i.getContents() );
+				} else {
+					return new TransferData( data );
+				}
+
+			default:
+				return new TransferData( data );
+
+		}
+	}
 
 }

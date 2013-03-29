@@ -56,8 +56,9 @@ public class SignListener implements Listener {
 				Sign sign = ( Sign ) event.getClickedBlock().getState();
 				if ( sign.getLine( 0 ).equals( "\\  ||  /" ) && sign.getLine( 1 ).equals( "==      ==" ) && sign.getLine( 2 ).equals( "/  ||  \\" ) ) {
 					Craft craft = CraftManager.getInstance().getCraftByPlayer( event.getPlayer() );
-					if ( event.getPlayer().hasPermission( "movecraft." + craft.getType().getCraftName() + ".rotate" ) ) {
-						if ( craft != null ) {
+					if ( craft != null ) {
+						if ( event.getPlayer().hasPermission( "movecraft." + craft.getType().getCraftName() + ".rotate" ) ) {
+
 							Long time = timeMap.get( event.getPlayer() );
 							if ( time != null ) {
 								long ticksElapsed = ( System.currentTimeMillis() - time ) / 50;
