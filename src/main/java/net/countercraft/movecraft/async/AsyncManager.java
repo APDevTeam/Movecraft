@@ -93,6 +93,7 @@ public class AsyncManager extends BukkitRunnable {
 
 								if ( BlockUtils.arrayContainsOverlap( craft.getBlockList(), task.getBlockListFinal() ) ) {
 									Movecraft.getInstance().getServer().getPlayer( task.getPlayername() ).sendMessage( String.format( I18nSupport.getInternationalisedString( "Detection - Failed Craft is already being controlled" ) ) );
+									failed = true;
 								}
 
 							}
