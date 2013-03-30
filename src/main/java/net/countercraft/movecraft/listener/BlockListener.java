@@ -82,7 +82,9 @@ public class BlockListener implements Listener {
 			Location l = e.getBlock().getLocation();
 			MovecraftLocation l1 = new MovecraftLocation( l.getBlockX(), l.getBlockY(), l.getBlockZ() );
 			for ( ItemStack i : StorageChestItem.getInventoryOfCrateAtLocation( l1, e.getBlock().getWorld() ).getContents() ) {
-				e.getBlock().getWorld().dropItemNaturally( e.getBlock().getLocation(), i );
+				if ( i != null ) {
+					e.getBlock().getWorld().dropItemNaturally( e.getBlock().getLocation(), i );
+				}
 			}
 			StorageChestItem.removeInventoryAtLocation( l1 );
 			e.setCancelled( true );
