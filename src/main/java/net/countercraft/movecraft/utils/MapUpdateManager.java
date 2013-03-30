@@ -105,7 +105,14 @@ public class MapUpdateManager extends BukkitRunnable {
 					}
 
 					c.a( x & 15, y, z & 15, 0, 0 );
-					c.a( x & 15, y, z & 15, newTypeID, data );
+					boolean success = c.a( x & 15, y, z & 15, newTypeID, data );
+
+					if ( !success && newTypeID != 0 ) {
+						boolean b = w.getBlockAt( x, y, z ).setTypeIdAndData( newTypeID, data, false );
+						if ( !b ) {
+							Movecraft.getInstance().getLogger().log( Level.SEVERE, "Map interface error" );
+						}
+					}
 
 					if ( !chunks.contains( c ) ) {
 						chunks.add( c );

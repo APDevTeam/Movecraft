@@ -82,9 +82,11 @@ public class CraftManager {
 
 	public void removeCraft( Craft c ) {
 		craftList.get( c.getW() ).remove( c );
-		getPlayerFromCraft( c ).sendMessage( String.format( I18nSupport.getInternationalisedString( "Release - Craft has been released message" ) ) );
-		Movecraft.getInstance().getLogger().log( Level.INFO, String.format( I18nSupport.getInternationalisedString( "Release - Player has released a craft console" ), getPlayerFromCraft( c ).getDisplayName(), c.getType().getCraftName(), c.getBlockList().length, c.getMinX(), c.getMinZ() ) );
-		craftPlayerIndex.remove( getPlayerFromCraft( c ) );
+		if ( getPlayerFromCraft( c ) != null ) {
+			getPlayerFromCraft( c ).sendMessage( String.format( I18nSupport.getInternationalisedString( "Release - Craft has been released message" ) ) );
+			Movecraft.getInstance().getLogger().log( Level.INFO, String.format( I18nSupport.getInternationalisedString( "Release - Player has released a craft console" ), getPlayerFromCraft( c ).getDisplayName(), c.getType().getCraftName(), c.getBlockList().length, c.getMinX(), c.getMinZ() ) );
+			craftPlayerIndex.remove( getPlayerFromCraft( c ) );
+		}
 	}
 
 	public Craft[] getCraftsInWorld( World w ) {

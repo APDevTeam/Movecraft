@@ -32,6 +32,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
@@ -40,6 +41,7 @@ public class AsyncManager extends BukkitRunnable {
 	private static AsyncManager instance = new AsyncManager();
 	private HashMap<AsyncTask, Craft> ownershipMap = new HashMap<AsyncTask, Craft>();
 	private BlockingQueue<AsyncTask> finishedAlgorithms = new LinkedBlockingQueue<AsyncTask>();
+	private HashSet<Craft> clearanceSet = new HashSet<Craft>();
 
 	public static AsyncManager getInstance() {
 		return instance;
@@ -219,12 +221,24 @@ public class AsyncManager extends BukkitRunnable {
 			}
 
 			ownershipMap.remove( poll );
-			c.setProcessing( false );
-
+			clear( c );
 		}
 	}
 
 	public void run() {
+		clearAll();
 		processAlgorithmQueue();
+	}
+
+	private void clear( Craft c ) {
+		clearanceSet.add( c );
+	}
+
+	private void clearAll() {
+		for ( Craft c : clearanceSet ) {
+			c.setProcessing( false );
+		}
+
+		clearanceSet.clear();
 	}
 }
