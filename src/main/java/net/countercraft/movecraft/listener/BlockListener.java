@@ -83,7 +83,7 @@ public class BlockListener implements Listener {
 			StorageChestItem.removeInventoryAtLocation( l1 );
 			e.setCancelled( true );
 			e.getBlock().setType( Material.AIR );
-			e.getBlock().breakNaturally( new StorageChestItem().getItemStack() );
+			e.getBlock().getLocation().getWorld().dropItemNaturally( e.getBlock().getLocation(), new StorageChestItem().getItemStack() );
 
 		}
 	}
