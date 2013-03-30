@@ -62,7 +62,7 @@ public class SignListener implements Listener {
 							Long time = timeMap.get( event.getPlayer() );
 							if ( time != null ) {
 								long ticksElapsed = ( System.currentTimeMillis() - time ) / 50;
-								if ( ticksElapsed < craft.getType().getTickCooldown() ) {
+								if ( Math.abs( ticksElapsed ) < craft.getType().getTickCooldown() ) {
 									event.setCancelled( true );
 									return;
 								}
@@ -119,7 +119,7 @@ public class SignListener implements Listener {
 					Long time = timeMap.get( event.getPlayer() );
 					if ( time != null ) {
 						long ticksElapsed = ( System.currentTimeMillis() - time ) / 50;
-						if ( ticksElapsed < craft.getType().getTickCooldown() ) {
+						if ( Math.abs( ticksElapsed ) < craft.getType().getTickCooldown() ) {
 							event.setCancelled( true );
 							return;
 						}
@@ -162,7 +162,7 @@ public class SignListener implements Listener {
 					Long time = timeMap.get( event.getPlayer() );
 					if ( time != null ) {
 						long ticksElapsed = ( System.currentTimeMillis() - time ) / 50;
-						if ( ticksElapsed < craft.getType().getTickCooldown() ) {
+						if ( Math.abs( ticksElapsed ) < craft.getType().getTickCooldown() ) {
 							return;
 						}
 					}
