@@ -22,7 +22,9 @@ import net.countercraft.movecraft.items.StorageChestItem;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.MovecraftLocation;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -69,14 +71,19 @@ public class BlockListener implements Listener {
 		}
 	}
 
-	@EventHandler
+	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onBlockBreak( final BlockBreakEvent e ) {
+
+		if ( e.isCancelled() ) {
+			return;
+		}
 		if ( e.getBlock().getTypeId() == 33 && e.getBlock().getData() == ( ( byte ) 6 ) ) {
 			Location l = e.getBlock().getLocation();
 			MovecraftLocation l1 = new MovecraftLocation( l.getBlockX(), l.getBlockY(), l.getBlockZ() );
 			StorageChestItem.removeInventoryAtLocation( l1 );
-			e.getBlock().getDrops().clear();
-			e.getBlock().getDrops().add( new StorageChestItem().getItemStack() );
+			e.setCancelled( true );
+			e.getBlock().setType( Material.AIR );
+			e.getBlock().breakNaturally( new StorageChestItem().getItemStack() );
 
 		}
 	}
