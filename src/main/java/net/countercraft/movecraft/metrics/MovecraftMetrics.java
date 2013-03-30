@@ -49,7 +49,7 @@ public class MovecraftMetrics {
 				}
 			} );
 
-			Metrics.Graph craftsGraph = metrics.createGraph( "Craft Types" );
+			Metrics.Graph craftsGraph = metrics.createGraph( "Craft Types 2" );
 			craftsGraph.addPlotter( new Metrics.Plotter( Integer.toString( classTypes ) ) {
 
 				@Override
