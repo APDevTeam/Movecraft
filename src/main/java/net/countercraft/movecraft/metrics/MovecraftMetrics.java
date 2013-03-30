@@ -28,14 +28,14 @@ import java.util.logging.Level;
 public class MovecraftMetrics {
 	private int classTypes;
 
-	public MovecraftMetrics(int classTypes) {
+	public MovecraftMetrics( int classTypes ) {
 		this.classTypes = classTypes;
 		uploadStatistics();
 	}
 
 	private void uploadStatistics() {
 		try {
-			Metrics metrics = new Metrics(Movecraft.getInstance());
+			Metrics metrics = new Metrics( Movecraft.getInstance() );
 
 			if ( metrics.isOptOut() ) {
 				Movecraft.getInstance().getLogger().log( Level.INFO, String.format( I18nSupport.getInternationalisedString( "MCStats - :( - Admin has opted out" ) ) );
@@ -47,20 +47,20 @@ public class MovecraftMetrics {
 				public int getValue() {
 					return 1;
 				}
-			});
+			} );
 
 			Metrics.Graph craftsGraph = metrics.createGraph( "Craft Types" );
-			craftsGraph.addPlotter( new Metrics.Plotter( "Number of Craft Types" ) {
+			craftsGraph.addPlotter( new Metrics.Plotter( Integer.toString( classTypes ) ) {
 
 				@Override
 				public int getValue() {
-					return classTypes;
+					return 1;
 				}
 
 			} );
 			metrics.start();
 			Movecraft.getInstance().getLogger().log( Level.INFO, String.format( I18nSupport.getInternationalisedString( "MCStats - Thank you message" ) ) );
-		} catch (IOException e) {
+		} catch ( IOException e ) {
 			Movecraft.getInstance().getLogger().log( Level.WARNING, String.format( I18nSupport.getInternationalisedString( "MCStats - Error - Unable to upload stats" ) ) );
 		}
 	}
