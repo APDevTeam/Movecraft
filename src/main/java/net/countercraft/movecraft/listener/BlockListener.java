@@ -31,6 +31,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class BlockListener implements Listener {
@@ -80,10 +81,14 @@ public class BlockListener implements Listener {
 		if ( e.getBlock().getTypeId() == 33 && e.getBlock().getData() == ( ( byte ) 6 ) ) {
 			Location l = e.getBlock().getLocation();
 			MovecraftLocation l1 = new MovecraftLocation( l.getBlockX(), l.getBlockY(), l.getBlockZ() );
+			for ( ItemStack i : StorageChestItem.getInventoryOfCrateAtLocation( l1, e.getBlock().getWorld() ).getContents() ) {
+				e.getBlock().getWorld().dropItemNaturally( e.getBlock().getLocation(), i );
+			}
 			StorageChestItem.removeInventoryAtLocation( l1 );
 			e.setCancelled( true );
 			e.getBlock().setType( Material.AIR );
 			e.getBlock().getLocation().getWorld().dropItemNaturally( e.getBlock().getLocation(), new StorageChestItem().getItemStack() );
+
 
 		}
 	}
