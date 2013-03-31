@@ -107,7 +107,7 @@ public class AsyncManager extends BukkitRunnable {
 							c.setMinZ( task.getMinZ() );
 
 							Movecraft.getInstance().getServer().getPlayer( task.getPlayername() ).sendMessage( String.format( I18nSupport.getInternationalisedString( "Detection - Successfully piloted craft" ) ) );
-							Movecraft.getInstance().getLogger().log( Level.INFO, String.format( I18nSupport.getInternationalisedString( "Detection - Success - Log Output" ), p.getDisplayName(), c.getType().getCraftName(), c.getBlockList().length, c.getMinX(), c.getMinZ() ) );
+							Movecraft.getInstance().getLogger().log( Level.INFO, String.format( I18nSupport.getInternationalisedString( "Detection - Success - Log Output" ), p.getName(), c.getType().getCraftName(), c.getBlockList().length, c.getMinX(), c.getMinZ() ) );
 							CraftManager.getInstance().addCraft( c, Movecraft.getInstance().getServer().getPlayer( task.getPlayername() ) );
 						}
 					}
