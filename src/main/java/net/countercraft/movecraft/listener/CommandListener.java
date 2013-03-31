@@ -28,7 +28,6 @@ public class CommandListener implements Listener {
 
 	@EventHandler
 	public void onCommand( PlayerCommandPreprocessEvent e ) {
-		e.setCancelled( true );
 
 		if ( e.getMessage().equalsIgnoreCase( "/release" ) ) {
 			final Craft pCraft = CraftManager.getInstance().getCraftByPlayer( e.getPlayer() );
@@ -40,8 +39,7 @@ public class CommandListener implements Listener {
 				e.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "Player- Error - You do not have a craft to release!" ) ) );
 			}
 
-		} else {
-			e.setCancelled( false );
+			e.setCancelled( true );
 		}
 
 	}
