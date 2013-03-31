@@ -29,7 +29,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class TranslationTask extends AsyncTask{
+public class TranslationTask extends AsyncTask {
 	private int dx, dy, dz;
 	private boolean failed = false;
 	private String failMessage;
@@ -64,6 +64,11 @@ public class TranslationTask extends AsyncTask{
 			if ( newLoc.getY() >= heightLimit ) {
 				failed = true;
 				failMessage = String.format( I18nSupport.getInternationalisedString( "Translation - Failed Craft hit height limit" ) );
+				break;
+			} else if ( newLoc.getY() <= 0 ) {
+				failed = true;
+				failMessage = String.format( I18nSupport.getInternationalisedString( "Translation - Failed Craft is obstructed" ) );
+				break;
 			}
 
 			int testID = getCraft().getW().getBlockTypeIdAt( newLoc.getX(), newLoc.getY(), newLoc.getZ() );
@@ -77,7 +82,7 @@ public class TranslationTask extends AsyncTask{
 			} else {
 				int oldID = getCraft().getW().getBlockTypeIdAt( oldLoc.getX(), oldLoc.getY(), oldLoc.getZ() );
 
-				updateSet.add( new MapUpdateCommand( blocksList[i], newBlockList[i], oldID) );
+				updateSet.add( new MapUpdateCommand( blocksList[i], newBlockList[i], oldID ) );
 
 
 			}
@@ -91,8 +96,8 @@ public class TranslationTask extends AsyncTask{
 			//Set blocks that are no longer craft to air
 			List<MovecraftLocation> airLocation = ListUtils.subtract( Arrays.asList( blocksList ), Arrays.asList( newBlockList ) );
 
-			for( MovecraftLocation l1 : airLocation ){
-				updateSet.add(new MapUpdateCommand(l1, 0));
+			for ( MovecraftLocation l1 : airLocation ) {
+				updateSet.add( new MapUpdateCommand( l1, 0 ) );
 			}
 
 			this.updates = updateSet.toArray( new MapUpdateCommand[1] );
