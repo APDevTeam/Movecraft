@@ -54,6 +54,12 @@ public class SignListener implements Listener {
 					return;
 				}
 				Sign sign = ( Sign ) event.getClickedBlock().getState();
+				String signText = sign.getLine( 0 );
+
+				if ( signText == null ) {
+					return;
+				}
+
 				if ( sign.getLine( 0 ).equals( "\\  ||  /" ) && sign.getLine( 1 ).equals( "==      ==" ) && sign.getLine( 2 ).equals( "/  ||  \\" ) ) {
 					Craft craft = CraftManager.getInstance().getCraftByPlayer( event.getPlayer() );
 					if ( craft != null ) {
@@ -86,6 +92,11 @@ public class SignListener implements Listener {
 
 	private void onSignRightClick( PlayerInteractEvent event ) {
 		Sign sign = ( Sign ) event.getClickedBlock().getState();
+		String signText = sign.getLine( 0 );
+
+		if ( signText == null ) {
+			return;
+		}
 
 
 		if ( getCraftTypeFromString( sign.getLine( 0 ) ) != null ) {
