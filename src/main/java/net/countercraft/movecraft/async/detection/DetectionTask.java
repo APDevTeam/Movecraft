@@ -30,7 +30,7 @@ import java.util.Stack;
 
 public class DetectionTask extends AsyncTask {
 	private MovecraftLocation startLocation;
-	private Integer minSize, maxSize, maxX, maxY, maxZ, minX, minY, minZ;
+	private Integer minSize, maxSize, maxX, maxY, maxZ, minX, minY, minZ, minHeightLimit, maxHeightLimit;
 	private Integer[] allowedBlocks, forbiddenBlocks;
 	private World w;
 	private Stack<MovecraftLocation> blockStack = new Stack<MovecraftLocation>();
@@ -43,7 +43,7 @@ public class DetectionTask extends AsyncTask {
 	int[][][] hitBox;
 	private HashMap<Integer, Integer> blockTypeCount = new HashMap<Integer, Integer>();
 
-	public DetectionTask( Craft c, MovecraftLocation startLocation, int minSize, int maxSize, Integer[] allowedBlocks, Integer[] forbiddenBlocks, String player, World w ) {
+	public DetectionTask( Craft c, MovecraftLocation startLocation, int minSize, int maxSize, Integer[] allowedBlocks, Integer[] forbiddenBlocks, String player, World w,int minHeightLimit, int maxHeightLimit ) {
 		super( c );
 		this.startLocation = startLocation;
 		this.minSize = minSize;
@@ -52,6 +52,8 @@ public class DetectionTask extends AsyncTask {
 		this.forbiddenBlocks = forbiddenBlocks;
 		playername = player;
 		this.w = w;
+                this.minHeightLimit = minHeightLimit;
+                this.maxHeightLimit = maxHeightLimit;
 	}
 
 	@Override
