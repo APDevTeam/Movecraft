@@ -78,7 +78,7 @@ public class Craft {
 	}
 
 	public void detect( String playerName, MovecraftLocation startPoint ) {
-		AsyncManager.getInstance().submitTask( new DetectionTask( this, startPoint, type.getMinSize(), type.getMaxSize(), type.getAllowedBlocks(), type.getForbiddenBlocks(), playerName, w, type.getMinHeightLevel(), type.getMaxHeightLevel()) , this);
+		AsyncManager.getInstance().submitTask( new DetectionTask( this, startPoint, type.getMinSize(), type.getMaxSize(), type.getAllowedBlocks(), type.getForbiddenBlocks(), playerName, w) , this);
 	}
 
 	public void translate( int dx, int dy, int dz ) {
