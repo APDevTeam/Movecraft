@@ -68,7 +68,7 @@ public class TranslationTask extends AsyncTask {
 				break;        
 			} else if ( newLoc.getY() <= minHeightLimit ) {   
 				failed = true;
-                                failMessage = String.format( I18nSupport.getInternationalisedString( "Translation - Failed Craft hit the minimum height limit" ) );
+                                failMessage = String.format( I18nSupport.getInternationalisedString( "Translation - Failed Craft hit minimum height limit" ) );
 				break;
 			}
 
