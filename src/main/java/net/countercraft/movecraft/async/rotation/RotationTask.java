@@ -33,15 +33,15 @@ import java.util.List;
 import java.util.Set;
 
 public class RotationTask extends AsyncTask {
-	private MovecraftLocation originPoint;
+	private final MovecraftLocation originPoint;
 	private boolean failed = false;
 	private String failMessage;
-	private MovecraftLocation[] blockList;
+	private final MovecraftLocation[] blockList;
 	private MapUpdateCommand[] updates;
 	private int[][][] hitbox;
 	private Integer minX, minZ;
-	private Rotation rotation;
-	private World w;
+	private final Rotation rotation;
+	private final World w;
 
 	public RotationTask( Craft c, MovecraftLocation originPoint, MovecraftLocation[] blockList, Rotation rotation, World w ) {
 		super( c );
@@ -123,7 +123,7 @@ public class RotationTask extends AsyncTask {
 					polygonalBox[l.getX() - minX] = new int[sizeZ][];
 				}
 
-				int minY = 0, maxY = 0;
+				int minY, maxY;
 
 				if ( polygonalBox[l.getX() - minX][l.getZ() - minZ] == null ) {
 

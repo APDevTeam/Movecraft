@@ -19,16 +19,15 @@ package net.countercraft.movecraft.localisation;
 
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
-import sun.misc.IOUtils;
 
 import java.io.*;
 import java.util.Properties;
 import java.util.logging.Level;
 
 public class I18nSupport {
-	public static Properties languageFile;
+	private static Properties languageFile;
 
-	public static void init () {
+	public static void init() {
 		languageFile = new Properties();
 
 		File localisationDirectory = new File( Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/localisation" );
@@ -39,7 +38,7 @@ public class I18nSupport {
 
 		InputStream is = null;
 		try {
-			is = new FileInputStream(  localisationDirectory.getAbsolutePath() + "/movecraftlang" + "_" + Settings.LOCALE + ".properties" );
+			is = new FileInputStream( localisationDirectory.getAbsolutePath() + "/movecraftlang" + "_" + Settings.LOCALE + ".properties" );
 		} catch ( FileNotFoundException e ) {
 			e.printStackTrace();
 		}
@@ -60,7 +59,7 @@ public class I18nSupport {
 
 	}
 
-	public static String getInternationalisedString ( String key ) {
+	public static String getInternationalisedString( String key ) {
 		return languageFile.getProperty( key );
 	}
 

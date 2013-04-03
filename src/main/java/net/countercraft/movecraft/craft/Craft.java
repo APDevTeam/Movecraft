@@ -28,21 +28,21 @@ import org.bukkit.World;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Craft {
-	int[][][] hitBox;
-	private CraftType type;
+	private int[][][] hitBox;
+	private final CraftType type;
 	private MovecraftLocation[] blockList;
-	private World w;
-	private AtomicBoolean processing = new AtomicBoolean();
+	private final World w;
+	private final AtomicBoolean processing = new AtomicBoolean();
 	private int minX, minZ;
 
 	public Craft( CraftType type, World world ) {
 		this.type = type;
 		this.w = world;
-
+		this.blockList = new MovecraftLocation[1];
 	}
 
-	public boolean isProcessing() {
-		return processing.get();
+	public boolean isNotProcessing() {
+		return !processing.get();
 	}
 
 	public void setProcessing( boolean processing ) {
@@ -56,7 +56,7 @@ public class Craft {
 	}
 
 	public void setBlockList( MovecraftLocation[] blockList ) {
-		synchronized ( blockList ) {
+		synchronized ( this.blockList ) {
 			this.blockList = blockList;
 		}
 	}
@@ -78,7 +78,7 @@ public class Craft {
 	}
 
 	public void detect( String playerName, MovecraftLocation startPoint ) {
-		AsyncManager.getInstance().submitTask( new DetectionTask( this, startPoint, type.getMinSize(), type.getMaxSize(), type.getAllowedBlocks(), type.getForbiddenBlocks(), playerName, w ) , this);
+		AsyncManager.getInstance().submitTask( new DetectionTask( this, startPoint, type.getMinSize(), type.getMaxSize(), type.getAllowedBlocks(), type.getForbiddenBlocks(), playerName, w ), this );
 	}
 
 	public void translate( int dx, int dy, int dz ) {

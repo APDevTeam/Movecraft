@@ -34,11 +34,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class StorageChestItem {
-	private static Map<World, Map<MovecraftLocation, Inventory>> crateInventories = new HashMap<World, Map<MovecraftLocation, Inventory>>();
-	ItemStack itemStack;
+	private static final Map<World, Map<MovecraftLocation, Inventory>> crateInventories = new HashMap<World, Map<MovecraftLocation, Inventory>>();
+	private final ItemStack itemStack;
 
 	public StorageChestItem() {
-		this.itemStack = new ItemStack( 54, 1);
+		this.itemStack = new ItemStack( 54, 1 );
 		ItemMeta itemMeta = itemStack.getItemMeta();
 		itemMeta.setDisplayName( String.format( I18nSupport.getInternationalisedString( "Item - Storage Crate name" ) ) );
 		itemStack.setItemMeta( itemMeta );
@@ -52,12 +52,12 @@ public class StorageChestItem {
 		return crateInventories.get( w ).get( location );
 	}
 
-	public static void setInventoryOfCrateAtLocation ( Inventory i, MovecraftLocation l, World w ) {
+	public static void setInventoryOfCrateAtLocation( Inventory i, MovecraftLocation l, World w ) {
 		crateInventories.get( w ).put( l, i );
 	}
 
-	public static void removeInventoryAtLocation ( MovecraftLocation l ) {
-		crateInventories.remove( l );
+	public static void removeInventoryAtLocation( World w, MovecraftLocation l ) {
+		crateInventories.get( w ).remove( l );
 	}
 
 	public static void createNewInventory( MovecraftLocation l, World w ) {
@@ -72,7 +72,7 @@ public class StorageChestItem {
 		Movecraft.getInstance().getServer().addRecipe( storageCrateRecipie );
 	}
 
-	public static void saveToDisk(){
+	public static void saveToDisk() {
 		Map<String, CardboardBox[]> data = new HashMap<String, CardboardBox[]>();
 
 		for ( World w : crateInventories.keySet() ) {
@@ -82,7 +82,7 @@ public class StorageChestItem {
 				CardboardBox[] cardboardBoxes = new CardboardBox[is.length];
 
 				for ( int i = 0; i < is.length; i++ ) {
-					if ( is[i] != null) {
+					if ( is[i] != null ) {
 						cardboardBoxes[i] = new CardboardBox( is[i] );
 					} else {
 						cardboardBoxes[i] = null;
@@ -104,7 +104,7 @@ public class StorageChestItem {
 
 			FileOutputStream fileOut = new FileOutputStream( new File( Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/crates/inventories.txt" ) );
 
-			ObjectOutputStream out = new ObjectOutputStream(fileOut);
+			ObjectOutputStream out = new ObjectOutputStream( fileOut );
 			out.writeObject( data );
 			out.close();
 			fileOut.close();
@@ -126,15 +126,15 @@ public class StorageChestItem {
 
 			File f = new File( Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/crates/inventories.txt" );
 			FileInputStream input = new FileInputStream( f );
-			ObjectInputStream in = new ObjectInputStream(input);
-			Map<String, CardboardBox[]> data = (Map<String, CardboardBox[]>) in.readObject();
+			ObjectInputStream in = new ObjectInputStream( input );
+			Map<String, CardboardBox[]> data = ( Map<String, CardboardBox[]> ) in.readObject();
 
 			for ( String s : data.keySet() ) {
 				CardboardBox[] cardboardBoxes = data.get( s );
 				ItemStack[] is = new ItemStack[cardboardBoxes.length];
 
 				for ( int i = 0; i < is.length; i++ ) {
-					if ( cardboardBoxes[i] != null) {
+					if ( cardboardBoxes[i] != null ) {
 						is[i] = cardboardBoxes[i].unbox();
 					} else {
 						is[i] = null;
@@ -159,7 +159,7 @@ public class StorageChestItem {
 			in.close();
 			input.close();
 
-		} catch ( FileNotFoundException e ) {
+		} catch ( FileNotFoundException ignored ) {
 		} catch ( ClassNotFoundException e ) {
 			e.printStackTrace();
 		} catch ( IOException e ) {

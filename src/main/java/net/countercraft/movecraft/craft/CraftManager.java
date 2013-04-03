@@ -31,10 +31,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
 public class CraftManager {
-	private static CraftManager ourInstance = new CraftManager();
+	private static final CraftManager ourInstance = new CraftManager();
 	private CraftType[] craftTypes;
-	private Map<World, Set<Craft>> craftList = new ConcurrentHashMap<World, Set<Craft>>();
-	private HashMap<Player, Craft> craftPlayerIndex = new HashMap<Player, Craft>();
+	private final Map<World, Set<Craft>> craftList = new ConcurrentHashMap<World, Set<Craft>>();
+	private final HashMap<Player, Craft> craftPlayerIndex = new HashMap<Player, Craft>();
 
 	public static CraftManager getInstance() {
 		return ourInstance;
@@ -48,7 +48,7 @@ public class CraftManager {
 		return craftTypes;
 	}
 
-	public void initCraftTypes() {
+	void initCraftTypes() {
 		File craftsFile = new File( Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/types" );
 
 		if ( !craftsFile.exists() ) {

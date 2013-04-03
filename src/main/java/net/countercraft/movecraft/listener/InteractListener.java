@@ -36,8 +36,8 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SignListener implements Listener {
-	private static Map<Player, Long> timeMap = new HashMap<Player, Long>();
+public class InteractListener implements Listener {
+	private static final Map<Player, Long> timeMap = new HashMap<Player, Long>();
 
 	@EventHandler
 	public void onPlayerInteract( PlayerInteractEvent event ) {
@@ -189,7 +189,7 @@ public class SignListener implements Listener {
 
 							int dx = ( Math.abs( nx ) >= 0.5 ? 1 : 0 ) * ( int ) Math.signum( nx );
 							int dz = ( Math.abs( nz ) > 0.5 ? 1 : 0 ) * ( int ) Math.signum( nz );
-							int dy = 0;
+							int dy;
 
 							float p = event.getPlayer().getLocation().getPitch();
 

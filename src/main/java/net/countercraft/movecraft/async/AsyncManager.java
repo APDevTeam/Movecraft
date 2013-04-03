@@ -19,6 +19,7 @@ package net.countercraft.movecraft.async;
 
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.async.detection.DetectionTask;
+import net.countercraft.movecraft.async.detection.DetectionTaskData;
 import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.craft.Craft;
@@ -38,10 +39,10 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 
 public class AsyncManager extends BukkitRunnable {
-	private static AsyncManager instance = new AsyncManager();
-	private HashMap<AsyncTask, Craft> ownershipMap = new HashMap<AsyncTask, Craft>();
-	private BlockingQueue<AsyncTask> finishedAlgorithms = new LinkedBlockingQueue<AsyncTask>();
-	private HashSet<Craft> clearanceSet = new HashSet<Craft>();
+	private static final AsyncManager instance = new AsyncManager();
+	private final HashMap<AsyncTask, Craft> ownershipMap = new HashMap<AsyncTask, Craft>();
+	private final BlockingQueue<AsyncTask> finishedAlgorithms = new LinkedBlockingQueue<AsyncTask>();
+	private final HashSet<Craft> clearanceSet = new HashSet<Craft>();
 
 	public static AsyncManager getInstance() {
 		return instance;
@@ -51,7 +52,7 @@ public class AsyncManager extends BukkitRunnable {
 	}
 
 	public void submitTask( AsyncTask task, Craft c ) {
-		if ( !c.isProcessing() ) {
+		if ( c.isNotProcessing() ) {
 			c.setProcessing( true );
 			ownershipMap.put( task, c );
 			task.runTaskAsynchronously( Movecraft.getInstance() );
@@ -62,7 +63,7 @@ public class AsyncManager extends BukkitRunnable {
 		finishedAlgorithms.add( task );
 	}
 
-	public void processAlgorithmQueue() {
+	void processAlgorithmQueue() {
 		int runLength = 10;
 		int queueLength = finishedAlgorithms.size();
 
@@ -76,16 +77,17 @@ public class AsyncManager extends BukkitRunnable {
 				// Process detection task
 
 				DetectionTask task = ( DetectionTask ) poll;
+				DetectionTaskData data = task.getData();
 
-				Player p = Movecraft.getInstance().getServer().getPlayer( task.getPlayername() );
+				Player p = Movecraft.getInstance().getServer().getPlayer( data.getPlayername() );
 				Craft pCraft = CraftManager.getInstance().getCraftByPlayer( p );
 
 				if ( pCraft != null ) {
 					//Player is already controlling a craft
 					p.sendMessage( String.format( I18nSupport.getInternationalisedString( "Detection - Failed - Already commanding a craft" ) ) );
 				} else {
-					if ( task.isFailed() ) {
-						Movecraft.getInstance().getServer().getPlayer( task.getPlayername() ).sendMessage( task.getFailMessage() );
+					if ( data.failed() ) {
+						Movecraft.getInstance().getServer().getPlayer( data.getPlayername() ).sendMessage( data.getFailMessage() );
 					} else {
 						Craft[] craftsInWorld = CraftManager.getInstance().getCraftsInWorld( c.getW() );
 						boolean failed = false;
@@ -93,22 +95,22 @@ public class AsyncManager extends BukkitRunnable {
 						if ( craftsInWorld != null ) {
 							for ( Craft craft : craftsInWorld ) {
 
-								if ( BlockUtils.arrayContainsOverlap( craft.getBlockList(), task.getBlockListFinal() ) ) {
-									Movecraft.getInstance().getServer().getPlayer( task.getPlayername() ).sendMessage( String.format( I18nSupport.getInternationalisedString( "Detection - Failed Craft is already being controlled" ) ) );
+								if ( BlockUtils.arrayContainsOverlap( craft.getBlockList(), data.getBlockList() ) ) {
+									Movecraft.getInstance().getServer().getPlayer( data.getPlayername() ).sendMessage( String.format( I18nSupport.getInternationalisedString( "Detection - Failed Craft is already being controlled" ) ) );
 									failed = true;
 								}
 
 							}
 						}
 						if ( !failed ) {
-							c.setBlockList( task.getBlockListFinal() );
-							c.setHitBox( task.getHitBox() );
-							c.setMinX( task.getMinX() );
-							c.setMinZ( task.getMinZ() );
+							c.setBlockList( data.getBlockList() );
+							c.setHitBox( data.getHitBox() );
+							c.setMinX( data.getMinX() );
+							c.setMinZ( data.getMinZ() );
 
-							Movecraft.getInstance().getServer().getPlayer( task.getPlayername() ).sendMessage( String.format( I18nSupport.getInternationalisedString( "Detection - Successfully piloted craft" ) ) );
+							Movecraft.getInstance().getServer().getPlayer( data.getPlayername() ).sendMessage( String.format( I18nSupport.getInternationalisedString( "Detection - Successfully piloted craft" ) ) );
 							Movecraft.getInstance().getLogger().log( Level.INFO, String.format( I18nSupport.getInternationalisedString( "Detection - Success - Log Output" ), p.getName(), c.getType().getCraftName(), c.getBlockList().length, c.getMinX(), c.getMinZ() ) );
-							CraftManager.getInstance().addCraft( c, Movecraft.getInstance().getServer().getPlayer( task.getPlayername() ) );
+							CraftManager.getInstance().addCraft( c, Movecraft.getInstance().getServer().getPlayer( data.getPlayername() ) );
 						}
 					}
 				}

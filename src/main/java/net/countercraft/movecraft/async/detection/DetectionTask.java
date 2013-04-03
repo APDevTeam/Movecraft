@@ -20,6 +20,7 @@ package net.countercraft.movecraft.async.detection;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.utils.BoundingBoxUtils;
 import net.countercraft.movecraft.utils.MovecraftLocation;
 import org.bukkit.World;
 
@@ -29,201 +30,82 @@ import java.util.HashSet;
 import java.util.Stack;
 
 public class DetectionTask extends AsyncTask {
-	private MovecraftLocation startLocation;
-	private Integer minSize, maxSize, maxX, maxY, maxZ, minX, minY, minZ;
-	private Integer[] allowedBlocks, forbiddenBlocks;
-	private World w;
-	private Stack<MovecraftLocation> blockStack = new Stack<MovecraftLocation>();
-	private HashSet<MovecraftLocation> blockList = new HashSet<MovecraftLocation>();
-	private HashSet<MovecraftLocation> visited = new HashSet<MovecraftLocation>();
-	private boolean failed;
-	private String failMessage;
-	private MovecraftLocation[] blockListFinal;
-	private String playername;
-	int[][][] hitBox;
-	private HashMap<Integer, Integer> blockTypeCount = new HashMap<Integer, Integer>();
+	private final MovecraftLocation startLocation;
+	private final Integer minSize;
+	private final Integer maxSize;
+	private Integer maxX;
+	private Integer maxY;
+	private Integer maxZ;
+	private Integer minY;
+	private final Stack<MovecraftLocation> blockStack = new Stack<MovecraftLocation>();
+	private final HashSet<MovecraftLocation> blockList = new HashSet<MovecraftLocation>();
+	private final HashSet<MovecraftLocation> visited = new HashSet<MovecraftLocation>();
+	private final HashMap<Integer, Integer> blockTypeCount = new HashMap<Integer, Integer>();
+	private final DetectionTaskData data;
 
 	public DetectionTask( Craft c, MovecraftLocation startLocation, int minSize, int maxSize, Integer[] allowedBlocks, Integer[] forbiddenBlocks, String player, World w ) {
 		super( c );
 		this.startLocation = startLocation;
 		this.minSize = minSize;
 		this.maxSize = maxSize;
-		this.allowedBlocks = allowedBlocks;
-		this.forbiddenBlocks = forbiddenBlocks;
-		playername = player;
-		this.w = w;
+		data = new DetectionTaskData( w, player, allowedBlocks, forbiddenBlocks );
 	}
 
 	@Override
 	public void excecute() {
-		//Recursive detection
+
 		blockStack.push( startLocation );
 
-		//detect all connected blocks
 		do {
-			detectBlock( blockStack.pop() );
+			detectSurrounding( blockStack.pop() );
 		}
 		while ( !blockStack.isEmpty() );
-		//Add each valid location to a HashSet
 
-		//If exceeded max block limit return false
-
-		if ( blockList.size() < minSize ) {
-			// Craft is too small
-			failMessage = String.format( I18nSupport.getInternationalisedString( "Detection - Craft too small" ), minSize );
-			failed = true;
-		} else if ( blockList.size() > maxSize ) {
-			// Craft is too big
-			failMessage = String.format( I18nSupport.getInternationalisedString( "Detection - Craft too large" ), maxSize );
-			failed = true;
-		} else {
-
-			blockListFinal = blockList.toArray( new MovecraftLocation[1] );
-
-			if ( !failed ) {
-				// Check if craft contains forbidden block
-				for ( MovecraftLocation l : blockList ) {
-					if ( isForbiddenBlock( w.getBlockTypeIdAt( l.getX(), l.getY(), l.getZ() ) ) ) {
-						failMessage = String.format( I18nSupport.getInternationalisedString( "Detection - Forbidden block found" ) );
-						failed = true;
-					} else {
-						// Add the block type to the relevant count
-						int id = w.getBlockTypeIdAt( l.getX(), l.getY(), l.getZ() );
-						Integer i = blockTypeCount.get( id );
-
-						if ( i == null ) {
-							i = 1;
-						} else {
-							i++;
-						}
-
-						blockTypeCount.put( id, i );
-					}
-				}
-
-				// Check if it obeys structure requirements
-				HashMap<Integer, ArrayList<Double>> flyBlocks = ( HashMap<Integer, ArrayList<Double>> ) getCraft().getType().getFlyBlocks().clone();
-
-				for ( Integer i : flyBlocks.keySet() ) {
-					Integer numberOfBlocks = blockTypeCount.get( i );
-
-					if ( numberOfBlocks == null ) {
-						numberOfBlocks = 0;
-					}
-
-					if ( ( ( ( float ) numberOfBlocks / blockListFinal.length ) * 100 ) < flyBlocks.get( i ).get( 0 ) ) {
-						//bad
-						failMessage = String.format( I18nSupport.getInternationalisedString( "Detection - Failed - Not enough flyblock" ), i, flyBlocks.get( i ).get( 0 ), ( ( ( float ) numberOfBlocks / blockListFinal.length ) * 100 ) );
-						failed = true;
-					} else if ( ( ( ( float ) numberOfBlocks / blockListFinal.length ) * 100 ) > flyBlocks.get( i ).get( 1 ) ) {
-						failMessage = String.format( String.format( I18nSupport.getInternationalisedString( "Detection - Failed - Too much flyblock" ), i, flyBlocks.get( i ).get( 1 ), ( ( ( float ) numberOfBlocks / blockListFinal.length ) * 100 ) ) );
-						failed = true;
-					} else {
-						// good
-
-					}
-				}
-
-				if ( !failed ) {
-					// Form Polygonal bounding box
-					int sizeX, sizeZ;
-					sizeX = ( maxX - minX ) + 1;
-					sizeZ = ( maxZ - minZ ) + 1;
-
-					int[][][] polygonalBox = new int[sizeX][][];
-
-
-					for ( MovecraftLocation l : blockList ) {
-						if ( polygonalBox[l.getX() - minX] == null ) {
-							polygonalBox[l.getX() - minX] = new int[sizeZ][];
-						}
-
-						int minY = 0, maxY = 0;
-
-						if ( polygonalBox[l.getX() - minX][l.getZ() - minZ] == null ) {
-
-							polygonalBox[l.getX() - minX][l.getZ() - minZ] = new int[2];
-							polygonalBox[l.getX() - minX][l.getZ() - minZ][0] = l.getY();
-							polygonalBox[l.getX() - minX][l.getZ() - minZ][1] = l.getY();
-
-						} else {
-							minY = polygonalBox[l.getX() - minX][l.getZ() - minZ][0];
-							maxY = polygonalBox[l.getX() - minX][l.getZ() - minZ][1];
-
-							if ( l.getY() < minY ) {
-								polygonalBox[l.getX() - minX][l.getZ() - minZ][0] = l.getY();
-							}
-							if ( l.getY() > maxY ) {
-								polygonalBox[l.getX() - minX][l.getZ() - minZ][1] = l.getY();
-							}
-
-						}
-
-
-					}
-
-					hitBox = polygonalBox;
-				}
-			}
+		if ( data.failed() ) {
+			return;
 		}
 
-	}
+		if ( isWithinLimit( blockList.size(), minSize, maxSize ) ) {
 
-	private void detectBlock( MovecraftLocation location ) {
-		int x = location.getX();
-		int y = location.getY();
-		int z = location.getZ();
+			data.setBlockList( finaliseBlockList( blockList ) );
 
-		detectBlock( x + 1, y, z );
-		detectBlock( x - 1, y, z );
-		detectBlock( x, y + 1, z );
-		detectBlock( x, y - 1, z );
-		detectBlock( x, y, z + 1 );
-		detectBlock( x, y, z - 1 );
-		detectBlock( x + 1, y - 1, z );
-		detectBlock( x - 1, y - 1, z );
-		detectBlock( x, y - 1, z + 1 );
-		detectBlock( x, y - 1, z - 1 );
-		detectBlock( x + 1, y + 1, z );
-		detectBlock( x - 1, y + 1, z );
-		detectBlock( x, y + 1, z + 1 );
-		detectBlock( x, y + 1, z - 1 );
+			HashMap<Integer, ArrayList<Double>> flyBlocks = ( HashMap<Integer, ArrayList<Double>> ) getCraft().getType().getFlyBlocks().clone();
+
+			if ( confirmStructureRequirements( flyBlocks, blockTypeCount ) ) {
+
+				data.setHitBox( BoundingBoxUtils.formBoundingBox( data.getBlockList(), data.getMinX(), maxX, data.getMinZ(), maxZ ) );
+
+			}
+
+		}
 
 	}
 
 	private void detectBlock( int x, int y, int z ) {
+
 		MovecraftLocation workingLocation = new MovecraftLocation( x, y, z );
-		if ( !visited.contains( workingLocation ) ) {
-			visited.add( workingLocation );
 
-			if ( isAllowedBlock( w.getBlockTypeIdAt( x, y, z ) ) ) {
-				blockList.add( workingLocation );
+		if ( notVisited( workingLocation, visited ) ) {
 
-				if ( blockList.size() <= maxSize ) {
+			int testID = data.getWorld().getBlockTypeIdAt( x, y, z );
 
-					blockStack.push( workingLocation );
+			if ( isForbiddenBlock( testID ) ) {
 
-					if ( maxX == null || workingLocation.getX() > maxX ) {
-						maxX = workingLocation.getX();
-					}
-					if ( maxY == null || workingLocation.getY() > maxY ) {
-						maxY = workingLocation.getY();
-					}
-					if ( maxZ == null || workingLocation.getZ() > maxZ ) {
-						maxZ = workingLocation.getZ();
-					}
-					if ( minX == null || workingLocation.getX() < minX ) {
-						minX = workingLocation.getX();
-					}
-					if ( minY == null || workingLocation.getY() < minY ) {
-						minY = workingLocation.getY();
-					}
-					if ( minZ == null || workingLocation.getZ() < minZ ) {
-						minZ = workingLocation.getZ();
-					}
-				} else {
-					return;
+				fail( String.format( I18nSupport.getInternationalisedString( "Detection - Forbidden block found" ) ) );
+
+			} else if ( isAllowedBlock( testID ) ) {
+
+				addToBlockList( workingLocation );
+				addToBlockCount( testID );
+
+				if ( isWithinLimit( blockList.size(), 0, maxSize ) ) {
+
+					addToDetectionStack( workingLocation );
+
+					calculateBounds( workingLocation );
+
 				}
+
 			}
 		}
 
@@ -232,7 +114,7 @@ public class DetectionTask extends AsyncTask {
 
 	private boolean isAllowedBlock( int test ) {
 
-		for ( int i : allowedBlocks ) {
+		for ( int i : data.getAllowedBlocks() ) {
 			if ( i == test ) {
 				return true;
 			}
@@ -243,7 +125,7 @@ public class DetectionTask extends AsyncTask {
 
 	private boolean isForbiddenBlock( int test ) {
 
-		for ( int i : forbiddenBlocks ) {
+		for ( int i : data.getForbiddenBlocks() ) {
 			if ( i == test ) {
 				return true;
 			}
@@ -252,35 +134,138 @@ public class DetectionTask extends AsyncTask {
 		return false;
 	}
 
-	public World getW() {
-		return w;
+	public DetectionTaskData getData() {
+		return data;
 	}
 
-	public boolean isFailed() {
-		return failed;
+	private boolean notVisited( MovecraftLocation l, HashSet<MovecraftLocation> locations ) {
+		if ( locations.contains( l ) ) {
+			return false;
+		} else {
+			locations.add( l );
+			return true;
+		}
 	}
 
-	public String getFailMessage() {
-		return failMessage;
+	private void addToBlockList( MovecraftLocation l ) {
+		blockList.add( l );
 	}
 
-	public MovecraftLocation[] getBlockListFinal() {
-		return blockListFinal;
+	private void addToDetectionStack( MovecraftLocation l ) {
+		blockStack.push( l );
 	}
 
-	public String getPlayername() {
-		return playername;
+	private void addToBlockCount( int id ) {
+		Integer count = blockTypeCount.get( id );
+
+		if ( count == null ) {
+			count = 0;
+		}
+
+		blockTypeCount.put( id, count + 1 );
 	}
 
-	public int[][][] getHitBox() {
-		return hitBox;
+	private void detectSurrounding( MovecraftLocation l ) {
+		int x = l.getX();
+		int y = l.getY();
+		int z = l.getZ();
+
+		for ( int xMod = -1; xMod < 2; xMod += 2 ) {
+
+			for ( int yMod = -1; yMod < 2; yMod++ ) {
+
+				detectBlock( x + xMod, y + yMod, z );
+
+			}
+
+		}
+
+		for ( int zMod = -1; zMod < 2; zMod += 2 ) {
+
+			for ( int yMod = -1; yMod < 2; yMod++ ) {
+
+				detectBlock( x, y + yMod, z + zMod );
+
+			}
+
+		}
+
+		for ( int yMod = -1; yMod < 2; yMod += 2 ) {
+
+			detectBlock( x, y + yMod, z );
+
+		}
+
 	}
 
-	public int getMinX() {
-		return minX;
+	private void calculateBounds( MovecraftLocation l ) {
+		if ( maxX == null || l.getX() > maxX ) {
+			maxX = l.getX();
+		}
+		if ( maxY == null || l.getY() > maxY ) {
+			maxY = l.getY();
+		}
+		if ( maxZ == null || l.getZ() > maxZ ) {
+			maxZ = l.getZ();
+		}
+		if ( data.getMinX() == null || l.getX() < data.getMinX() ) {
+			data.setMinX( l.getX() );
+		}
+		if ( minY == null || l.getY() < minY ) {
+			minY = l.getY();
+		}
+		if ( data.getMinZ() == null || l.getZ() < data.getMinZ() ) {
+			data.setMinZ( l.getZ() );
+		}
 	}
 
-	public int getMinZ() {
-		return minZ;
+	private boolean isWithinLimit( int size, int min, int max ) {
+		if ( size < min ) {
+			fail( String.format( I18nSupport.getInternationalisedString( "Detection - Craft too small" ), min ) );
+			return false;
+		} else if ( size > max ) {
+			fail( String.format( I18nSupport.getInternationalisedString( "Detection - Craft too large" ), max ) );
+			return false;
+		} else {
+			return true;
+		}
+
+	}
+
+	private MovecraftLocation[] finaliseBlockList( HashSet<MovecraftLocation> blockSet ) {
+		return blockSet.toArray( new MovecraftLocation[1] );
+	}
+
+	private boolean confirmStructureRequirements( HashMap<Integer, ArrayList<Double>> flyBlocks, HashMap<Integer, Integer> countData ) {
+		for ( Integer i : flyBlocks.keySet() ) {
+			Integer numberOfBlocks = countData.get( i );
+
+			if ( numberOfBlocks == null ) {
+				numberOfBlocks = 0;
+			}
+
+			float blockPercentage = ( ( ( float ) numberOfBlocks / data.getBlockList().length ) * 100 );
+			Double minPercentage = flyBlocks.get( i ).get( 0 );
+			Double maxPercentage = flyBlocks.get( i ).get( 1 );
+
+			if ( blockPercentage < minPercentage ) {
+
+				fail( String.format( I18nSupport.getInternationalisedString( "Detection - Failed - Not enough flyblock" ), i, minPercentage, blockPercentage ) );
+				return false;
+
+			} else if ( blockPercentage > maxPercentage ) {
+
+				fail( String.format( I18nSupport.getInternationalisedString( "Detection - Failed - Too much flyblock" ), i, maxPercentage, blockPercentage ) );
+				return false;
+
+			}
+		}
+
+		return true;
+	}
+
+	private void fail( String message ) {
+		data.setFailed( true );
+		data.setFailMessage( message );
 	}
 }

@@ -15,19 +15,15 @@
  *     along with Movecraft.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.countercraft.movecraft.utils.datastructures;
+package net.countercraft.movecraft.utils;
 
-import org.bukkit.inventory.ItemStack;
+import org.testng.annotations.Test;
 
-public class InventoryTransferHolder extends TransferData {
-	private final ItemStack[] invetory;
+public class BoundingBoxUtilsTest {
 
-	public InventoryTransferHolder( byte data, ItemStack[] invetory ) {
-		super( data );
-		this.invetory = invetory;
+	@Test
+	public void testFormBoundingBox() throws Exception {
+		assert true;
 	}
 
-	public ItemStack[] getInvetory() {
-		return invetory;
-	}
 }

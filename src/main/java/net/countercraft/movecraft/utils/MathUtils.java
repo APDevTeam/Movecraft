@@ -23,11 +23,12 @@ public class MathUtils {
 
 	public static boolean playerIsWithinBoundingPolygon( int[][][] box, int minX, int minZ, MovecraftLocation l ) {
 
-		if( l.getX() >= minX && l.getX() < ( minX + box.length ) ) {
+		if ( l.getX() >= minX && l.getX() < ( minX + box.length ) ) {
 			// PLayer is within correct X boundary
 			if ( l.getZ() >= minZ && l.getZ() < ( minZ + box[l.getX() - minX].length ) ) {
 				// Player is within valid Z boundary
-				int minY = -1, maxY = -1;
+				int minY, maxY;
+
 				try {
 					minY = box[l.getX() - minX][l.getZ() - minZ][0];
 					maxY = box[l.getX() - minX][l.getZ() - minZ][1];
@@ -36,13 +37,11 @@ public class MathUtils {
 				}
 
 
-				if ( minY != -1 && maxY != -1 ) {
-					if ( l.getY() >= minY && l.getY() <= (maxY + 2) ) {
-						// Player is on board the vessel
-						return true;
-					}
-
+				if ( l.getY() >= minY && l.getY() <= ( maxY + 2 ) ) {
+					// Player is on board the vessel
+					return true;
 				}
+
 
 			}
 
@@ -51,21 +50,21 @@ public class MathUtils {
 		return false;
 	}
 
-	public static MovecraftLocation bukkit2MovecraftLoc( Location l ){
+	public static MovecraftLocation bukkit2MovecraftLoc( Location l ) {
 		return new MovecraftLocation( l.getBlockX(), l.getBlockY(), l.getBlockZ() );
 	}
 
-	public static MovecraftLocation rotateVec ( Rotation r, MovecraftLocation l ) {
+	public static MovecraftLocation rotateVec( Rotation r, MovecraftLocation l ) {
 		MovecraftLocation newLocation = new MovecraftLocation( 0, l.getY(), 0 );
 		double theta;
 		if ( r == Rotation.CLOCKWISE ) {
-			theta = 0.5 *  Math.PI;
+			theta = 0.5 * Math.PI;
 		} else {
 			theta = -1 * 0.5 * Math.PI;
 		}
 
-		int x = (int) Math.round( ( l.getX() * Math.cos( theta ) ) + ( l.getZ() * ( -1 * Math.sin( theta ) ) ) );
-		int z = (int) Math.round( ( l.getX() * Math.sin( theta ) ) + ( l.getZ() * Math.cos( theta ) ) );
+		int x = ( int ) Math.round( ( l.getX() * Math.cos( theta ) ) + ( l.getZ() * ( -1 * Math.sin( theta ) ) ) );
+		int z = ( int ) Math.round( ( l.getX() * Math.sin( theta ) ) + ( l.getZ() * Math.cos( theta ) ) );
 
 		newLocation.setX( x );
 		newLocation.setZ( z );
@@ -74,8 +73,7 @@ public class MathUtils {
 	}
 
 	public static int positiveMod( int mod, int divisor ) {
-		if (mod < 0)
-		{
+		if ( mod < 0 ) {
 			mod += divisor;
 		}
 

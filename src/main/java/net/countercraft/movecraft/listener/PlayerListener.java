@@ -34,7 +34,7 @@ import org.bukkit.scheduler.BukkitTask;
 import java.util.HashMap;
 
 public class PlayerListener implements Listener {
-	private HashMap<Player, BukkitTask> releaseEvents = new HashMap<Player, BukkitTask>();
+	private final HashMap<Player, BukkitTask> releaseEvents = new HashMap<Player, BukkitTask>();
 
 	@EventHandler
 	public void onPLayerLogout( PlayerQuitEvent e ) {

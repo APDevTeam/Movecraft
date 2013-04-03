@@ -30,13 +30,17 @@ import java.util.List;
 import java.util.Set;
 
 public class TranslationTask extends AsyncTask {
-	private int dx, dy, dz;
+	private final int dx;
+	private final int dy;
+	private final int dz;
 	private boolean failed = false;
 	private String failMessage;
 	private MovecraftLocation[] newBlockList;
 	private MapUpdateCommand[] updates;
 	private int[][][] hitbox;
-	private int minX, minZ, heightLimit;
+	private int minX;
+	private int minZ;
+	private final int heightLimit;
 
 	public TranslationTask( Craft c, int dx, int dy, int dz, int[][][] hitBox, int minX, int minZ, int heightLimit ) {
 		super( c );
@@ -116,8 +120,7 @@ public class TranslationTask extends AsyncTask {
 							newHitbox[x][z][0] = hitbox[x][z][0] + dy;
 							newHitbox[x][z][1] = hitbox[x][z][1] + dy;
 
-						} catch ( NullPointerException e ) {
-							continue;
+						} catch ( NullPointerException ignored ) {
 						}
 
 					}

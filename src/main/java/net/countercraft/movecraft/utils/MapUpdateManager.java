@@ -42,8 +42,7 @@ import java.util.*;
 import java.util.logging.Level;
 
 public class MapUpdateManager extends BukkitRunnable {
-	private HashMap<World, ArrayList<MapUpdateCommand>> updates = new HashMap<World, ArrayList<MapUpdateCommand>>();
-	private final int[] inventoryBlocks = { 117, 54, 23, 61, 62, 63, 68 };
+	private final HashMap<World, ArrayList<MapUpdateCommand>> updates = new HashMap<World, ArrayList<MapUpdateCommand>>();
 
 	private MapUpdateManager() {
 	}
@@ -70,7 +69,7 @@ public class MapUpdateManager extends BukkitRunnable {
 					MovecraftLocation l = c.getOldBlockLocation();
 
 					if ( l != null ) {
-						TransferData blockDataPacket = getBlockDataPacket( w.getBlockAt( l.getX(), l.getY(), l.getZ() ).getState(), c.getNewBlockLocation(), c.getRotation() );
+						TransferData blockDataPacket = getBlockDataPacket( w.getBlockAt( l.getX(), l.getY(), l.getZ() ).getState(), c.getRotation() );
 						if ( blockDataPacket != null ) {
 							dataMap.put( c.getNewBlockLocation(), blockDataPacket );
 						}
@@ -200,8 +199,7 @@ public class MapUpdateManager extends BukkitRunnable {
 	}
 
 	private boolean setContainsConflict( ArrayList<MapUpdateCommand> set, MapUpdateCommand c ) {
-		for ( Iterator<MapUpdateCommand> it = set.iterator(); it.hasNext(); ) {
-			MapUpdateCommand command = it.next();
+		for ( MapUpdateCommand command : set ) {
 			if ( command.getNewBlockLocation().equals( c.getNewBlockLocation() ) ) {
 				return true;
 			}
@@ -220,8 +218,8 @@ public class MapUpdateManager extends BukkitRunnable {
 		return false;
 	}
 
-	private TransferData getBlockDataPacket( BlockState s, MovecraftLocation newPosition, Rotation r ) {
-		if ( !BlockUtils.blockHasData( s.getTypeId() ) ) {
+	private TransferData getBlockDataPacket( BlockState s, Rotation r ) {
+		if ( BlockUtils.blockHasNoData( s.getTypeId() ) ) {
 			return null;
 		}
 
@@ -250,7 +248,7 @@ public class MapUpdateManager extends BukkitRunnable {
 				MovecraftLocation l = MathUtils.bukkit2MovecraftLoc( s.getLocation() );
 				Inventory i = StorageChestItem.getInventoryOfCrateAtLocation( l, s.getWorld() );
 				if ( i != null ) {
-					StorageChestItem.removeInventoryAtLocation( l );
+					StorageChestItem.removeInventoryAtLocation( s.getWorld(), l );
 					return new StorageCrateTransferHolder( data, i.getContents() );
 				} else {
 					return new TransferData( data );

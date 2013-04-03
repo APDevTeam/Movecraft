@@ -22,13 +22,13 @@ public class BlockUtils {
 
 	private static final int[] rotationBlocks = new int[]{ 17, 50, 75, 76, 26, 29, 33, 34, 53, 67, 108, 109, 114, 128, 134, 135, 136, 156, 63, 64, 71, 66, 27, 28, 65, 68, 61, 23, 69, 77, 143, 93, 94, 96, 107, 120, 131, 144, 145 };
 
-	public static boolean blockHasData( int id ) {
+	public static boolean blockHasNoData( int id ) {
 		for ( int i : dataBlocks ) {
 			if ( id == i ) {
-				return true;
+				return false;
 			}
 		}
-		return false;
+		return true;
 	}
 
 	public static boolean blockRequiresRotation( int id ) {
@@ -504,7 +504,7 @@ public class BlockUtils {
 					} else if ( direction == 0x6 ) {
 						data = ( byte ) ( ( data & 0x8 ) | 0x5 );
 					} else if ( direction == 0x7 ) {
-						data = ( byte ) ( ( data & 0x8 ) | 0x0 );
+						data = ( byte ) ( ( data & 0x8 ) );
 					} else if ( direction == 0x0 ) {
 						data = ( byte ) ( ( data & 0x8 ) | 0x7 );
 					}

@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 
 public class MovecraftMetrics {
-	private int classTypes;
+	private final int classTypes;
 
 	public MovecraftMetrics( int classTypes ) {
 		this.classTypes = classTypes;

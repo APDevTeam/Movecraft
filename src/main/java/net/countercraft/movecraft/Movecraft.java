@@ -23,8 +23,8 @@ import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.items.StorageChestItem;
 import net.countercraft.movecraft.listener.BlockListener;
 import net.countercraft.movecraft.listener.CommandListener;
+import net.countercraft.movecraft.listener.InteractListener;
 import net.countercraft.movecraft.listener.PlayerListener;
-import net.countercraft.movecraft.listener.SignListener;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.metrics.MovecraftMetrics;
 import net.countercraft.movecraft.utils.MapUpdateManager;
@@ -54,7 +54,7 @@ public class Movecraft extends JavaPlugin {
 			this.saveResource( "localisation/movecraftlang_en.properties", false );
 		}
 		I18nSupport.init();
-		if ( shuttingDown == true && Settings.IGNORE_RESET ) {
+		if ( shuttingDown && Settings.IGNORE_RESET ) {
 			logger.log( Level.SEVERE, String.format( I18nSupport.getInternationalisedString( "Startup - Error - Reload error" ) ) );
 			logger.log( Level.INFO, String.format( I18nSupport.getInternationalisedString( "Startup - Error - Disable warning for reload" ) ) );
 			getPluginLoader().disablePlugin( this );
@@ -67,7 +67,7 @@ public class Movecraft extends JavaPlugin {
 
 			CraftManager.getInstance();
 
-			getServer().getPluginManager().registerEvents( new SignListener(), this );
+			getServer().getPluginManager().registerEvents( new InteractListener(), this );
 			getServer().getPluginManager().registerEvents( new CommandListener(), this );
 			getServer().getPluginManager().registerEvents( new BlockListener(), this );
 			getServer().getPluginManager().registerEvents( new PlayerListener(), this );
@@ -75,7 +75,7 @@ public class Movecraft extends JavaPlugin {
 			StorageChestItem.readFromDisk();
 			StorageChestItem.addRecipie();
 
-			MovecraftMetrics metricsConnector = new MovecraftMetrics( CraftManager.getInstance().getCraftTypes().length );
+			new MovecraftMetrics( CraftManager.getInstance().getCraftTypes().length );
 
 			logger.log( Level.INFO, String.format( I18nSupport.getInternationalisedString( "Startup - Enabled message" ), getDescription().getVersion() ) );
 		}

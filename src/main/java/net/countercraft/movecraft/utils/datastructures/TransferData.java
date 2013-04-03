@@ -18,9 +18,9 @@
 package net.countercraft.movecraft.utils.datastructures;
 
 public class TransferData {
-	private byte data;
+	private final byte data;
 
-	public TransferData( byte data) {
+	public TransferData( byte data ) {
 		this.data = data;
 	}
 
