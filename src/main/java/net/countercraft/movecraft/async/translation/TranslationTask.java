@@ -38,11 +38,15 @@ public class TranslationTask extends AsyncTask {
 	private MovecraftLocation[] newBlockList;
 	private MapUpdateCommand[] updates;
 	private int[][][] hitbox;
+<<<<<<< HEAD
 	private int minX;
 	private int minZ;
 	private final int heightLimit;
+=======
+	private int minX, minZ, heightLimit, minHeightLimit;
+>>>>>>> 9bda626b70a1f8b00a8a7decfae23f9b3c8e05c5
 
-	public TranslationTask( Craft c, int dx, int dy, int dz, int[][][] hitBox, int minX, int minZ, int heightLimit ) {
+	public TranslationTask( Craft c, int dx, int dy, int dz, int[][][] hitBox, int minX, int minZ, int heightLimit, int minHeightLimit ) {
 		super( c );
 		this.dx = dx;
 		this.dy = dy;
@@ -51,6 +55,7 @@ public class TranslationTask extends AsyncTask {
 		this.minX = minX;
 		this.minZ = minZ;
 		this.heightLimit = heightLimit;
+                this.minHeightLimit=minHeightLimit;
 	}
 
 	@Override
@@ -68,10 +73,10 @@ public class TranslationTask extends AsyncTask {
 			if ( newLoc.getY() >= heightLimit ) {
 				failed = true;
 				failMessage = String.format( I18nSupport.getInternationalisedString( "Translation - Failed Craft hit height limit" ) );
-				break;
-			} else if ( newLoc.getY() <= 0 ) {
+				break;        
+			} else if ( newLoc.getY() <= minHeightLimit ) {   
 				failed = true;
-				failMessage = String.format( I18nSupport.getInternationalisedString( "Translation - Failed Craft is obstructed" ) );
+                                failMessage = String.format( I18nSupport.getInternationalisedString( "Translation - Failed Craft hit minimum height limit" ) );
 				break;
 			}
 

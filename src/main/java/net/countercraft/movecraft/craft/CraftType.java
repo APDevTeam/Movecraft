@@ -32,7 +32,7 @@ import java.util.logging.Level;
 
 public class CraftType {
 	private String craftName;
-	private int maxSize, minSize;
+	private int maxSize, minSize, minHeightLimit, maxHeightLimit;
 	private Integer[] allowedBlocks, forbiddenBlocks;
 	private boolean canFly, tryNudge;
 	private int tickCooldown;
@@ -60,6 +60,19 @@ public class CraftType {
 		tryNudge = ( Boolean ) data.get( "tryNudge" );
 		tickCooldown = (int) Math.ceil( 20 / ( ( Double ) data.get( "speed" ) ) );
 		flyBlocks = ( HashMap<Integer, ArrayList<Double>> ) data.get( "flyblocks" );
+                if (data.containsKey("minHeightLimit")){
+                    minHeightLimit = ( Integer ) data.get( "minHeightLimit" );
+                    if (minHeightLimit<0){minHeightLimit=0;}
+                }else{
+                    minHeightLimit=0;
+                }
+                //maxHeightLimit is corrected by world in Craft.translate
+                if (data.containsKey("maxHeightLimit")){
+                    maxHeightLimit = ( Integer ) data.get( "maxHeightLimit" );
+                    if (maxHeightLimit<=minHeightLimit){maxHeightLimit=254;} 
+                }else{
+                    maxHeightLimit=254; 
+                }
 	}
 
 	public String getCraftName() {
@@ -69,11 +82,11 @@ public class CraftType {
 	public int getMaxSize() {
 		return maxSize;
 	}
-
+        
 	public int getMinSize() {
 		return minSize;
 	}
-
+        
 	public Integer[] getAllowedBlocks() {
 		return allowedBlocks;
 	}
@@ -97,4 +110,11 @@ public class CraftType {
 	public HashMap<Integer, ArrayList<Double>> getFlyBlocks() {
 		return flyBlocks;
 	}
+        
+        public int getMaxHeightLimit(){
+                return maxHeightLimit;
+        }
+        public int getMinHeightLimit(){
+                return minHeightLimit;
+        }
 }
