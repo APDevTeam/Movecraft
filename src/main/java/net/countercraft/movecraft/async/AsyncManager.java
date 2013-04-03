@@ -125,18 +125,18 @@ public class AsyncManager extends BukkitRunnable {
 				// Check that the craft hasn't been sneakily unpiloted
 				if ( p != null ) {
 
-					if ( task.isFailed() ) {
+					if ( task.getData().failed() ) {
 						//The craft translation failed
-						p.sendMessage( task.getFailMessage() );
+						p.sendMessage( task.getData().getFailMessage() );
 					} else {
 						//The craft is clear to move, perform the block updates
 
-						MapUpdateCommand[] updates = task.getUpdates();
+						MapUpdateCommand[] updates = task.getData().getUpdates();
 						boolean failed = MapUpdateManager.getInstance().addWorldUpdate( c.getW(), updates );
 
 						if ( !failed ) {
 
-							c.setBlockList( task.getNewBlockList() );
+							c.setBlockList( task.getData().getBlockList() );
 
 							// Move entities
 							for ( Entity pTest : c.getW().getEntities() ) {
@@ -147,18 +147,18 @@ public class AsyncManager extends BukkitRunnable {
 
 									// Smoother method, still work in progress
 									if ( c.getType().isTryNudge() ) {
-										pTest.setVelocity( pTest.getVelocity().add( new Vector( task.getDx(), task.getDy(), task.getDz() ).normalize().multiply( 0.5 ) ) );
+										pTest.setVelocity( pTest.getVelocity().add( new Vector( task.getData().getDx(), task.getData().getDy(), task.getData().getDz() ).normalize().multiply( 0.5 ) ) );
 									} else {
 										Vector velocity = pTest.getVelocity().clone();
-										pTest.teleport( pTest.getLocation().add( task.getDx(), task.getDy(), task.getDz() ) );
+										pTest.teleport( pTest.getLocation().add( task.getData().getDx(), task.getData().getDy(), task.getData().getDz() ) );
 										pTest.setVelocity( velocity );
 									}
 								}
 
 							}
-							c.setMinX( task.getMinX() );
-							c.setMinZ( task.getMinZ() );
-							c.setHitBox( task.getHitbox() );
+							c.setMinX( task.getData().getMinX() );
+							c.setMinZ( task.getData().getMinZ() );
+							c.setHitBox( task.getData().getHitbox() );
 
 
 						} else {

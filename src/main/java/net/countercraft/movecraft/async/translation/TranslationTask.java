@@ -20,6 +20,7 @@ package net.countercraft.movecraft.async.translation;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.utils.BoundingBoxUtils;
 import net.countercraft.movecraft.utils.MapUpdateCommand;
 import net.countercraft.movecraft.utils.MovecraftLocation;
 import org.apache.commons.collections.ListUtils;
@@ -30,47 +31,30 @@ import java.util.List;
 import java.util.Set;
 
 public class TranslationTask extends AsyncTask {
-	private final int dx;
-	private final int dy;
-	private final int dz;
-	private boolean failed = false;
-	private String failMessage;
-	private MovecraftLocation[] newBlockList;
-	private MapUpdateCommand[] updates;
-	private int[][][] hitbox;
-	private int minX, minZ, heightLimit, minHeightLimit;
+	private TranslationTaskData data;
 
-	public TranslationTask( Craft c, int dx, int dy, int dz, int[][][] hitBox, int minX, int minZ, int heightLimit, int minHeightLimit ) {
+	public TranslationTask( Craft c, TranslationTaskData data ) {
 		super( c );
-		this.dx = dx;
-		this.dy = dy;
-		this.dz = dz;
-		this.hitbox = hitBox;
-		this.minX = minX;
-		this.minZ = minZ;
-		this.heightLimit = heightLimit;
-		this.minHeightLimit = minHeightLimit;
+		this.data = data;
 	}
 
 	@Override
 	public void excecute() {
-		MovecraftLocation[] blocksList = getCraft().getBlockList();
+		MovecraftLocation[] blocksList = data.getBlockList();
 		MovecraftLocation[] newBlockList = new MovecraftLocation[blocksList.length];
 		HashSet<MovecraftLocation> existingBlockSet = new HashSet<MovecraftLocation>( Arrays.asList( blocksList ) );
 		Set<MapUpdateCommand> updateSet = new HashSet<MapUpdateCommand>();
 
 		for ( int i = 0; i < blocksList.length; i++ ) {
 			MovecraftLocation oldLoc = blocksList[i];
-			MovecraftLocation newLoc = oldLoc.translate( dx, dy, dz );
+			MovecraftLocation newLoc = oldLoc.translate( data.getDx(), data.getDy(), data.getDz() );
 			newBlockList[i] = newLoc;
 
-			if ( newLoc.getY() >= heightLimit ) {
-				failed = true;
-				failMessage = String.format( I18nSupport.getInternationalisedString( "Translation - Failed Craft hit height limit" ) );
+			if ( newLoc.getY() >= data.getMaxHeight() ) {
+				fail( String.format( I18nSupport.getInternationalisedString( "Translation - Failed Craft hit height limit" ) ) );
 				break;
-			} else if ( newLoc.getY() <= minHeightLimit ) {
-				failed = true;
-				failMessage = String.format( I18nSupport.getInternationalisedString( "Translation - Failed Craft hit minimum height limit" ) );
+			} else if ( newLoc.getY() <= data.getMinHeight() ) {
+				fail( String.format( I18nSupport.getInternationalisedString( "Translation - Failed Craft hit minimum height limit" ) ) );
 				break;
 			}
 
@@ -79,8 +63,7 @@ public class TranslationTask extends AsyncTask {
 
 			if ( testID != 0 && !existingBlockSet.contains( newLoc ) ) {
 				// New block is not air and is not part of the existing ship
-				failed = true;
-				failMessage = String.format( I18nSupport.getInternationalisedString( "Translation - Failed Craft is obstructed" ) );
+				fail( String.format( I18nSupport.getInternationalisedString( "Translation - Failed Craft is obstructed" ) ) );
 				break;
 			} else {
 				int oldID = getCraft().getW().getBlockTypeIdAt( oldLoc.getX(), oldLoc.getY(), oldLoc.getZ() );
@@ -92,8 +75,8 @@ public class TranslationTask extends AsyncTask {
 
 		}
 
-		if ( !failed ) {
-			this.newBlockList = newBlockList;
+		if ( !data.failed() ) {
+			data.setBlockList( newBlockList );
 
 
 			//Set blocks that are no longer craft to air
@@ -103,75 +86,23 @@ public class TranslationTask extends AsyncTask {
 				updateSet.add( new MapUpdateCommand( l1, 0 ) );
 			}
 
-			this.updates = updateSet.toArray( new MapUpdateCommand[1] );
+			data.setUpdates( updateSet.toArray( new MapUpdateCommand[1] ) );
 
-			if ( dy != 0 ) {
-
-				int[][][] newHitbox = new int[hitbox.length][][];
-
-				for ( int x = 0; x < hitbox.length; x++ ) {
-					newHitbox[x] = new int[hitbox[x].length][];
-
-					for ( int z = 0; z < hitbox[x].length; z++ ) {
-						try {
-
-							newHitbox[x][z] = new int[2];
-							newHitbox[x][z][0] = hitbox[x][z][0] + dy;
-							newHitbox[x][z][1] = hitbox[x][z][1] + dy;
-
-						} catch ( NullPointerException ignored ) {
-						}
-
-					}
-
-				}
-
-				this.hitbox = newHitbox;
-
+			if ( data.getDy() != 0 ) {
+				data.setHitbox( BoundingBoxUtils.translateBoundingBoxVertically( data.getHitbox(), data.getDy() ) );
 			}
 
-			this.minX = minX + dx;
-			this.minZ = minZ + dz;
+			data.setMinX( data.getMinX() + data.getDx() );
+			data.setMinZ( data.getMinZ() + data.getDz() );
 		}
 	}
 
-	public MovecraftLocation[] getNewBlockList() {
-		return newBlockList;
+	private void fail( String message ) {
+		data.setFailed( true );
+		data.setFailMessage( message );
 	}
 
-	public MapUpdateCommand[] getUpdates() {
-		return updates;
-	}
-
-	public String getFailMessage() {
-		return failMessage;
-	}
-
-	public boolean isFailed() {
-		return failed;
-	}
-
-	public int getMinX() {
-		return minX;
-	}
-
-	public int getMinZ() {
-		return minZ;
-	}
-
-	public int[][][] getHitbox() {
-		return hitbox;
-	}
-
-	public int getDx() {
-		return dx;
-	}
-
-	public int getDy() {
-		return dy;
-	}
-
-	public int getDz() {
-		return dz;
+	public TranslationTaskData getData() {
+		return data;
 	}
 }

@@ -21,6 +21,7 @@ import net.countercraft.movecraft.async.AsyncManager;
 import net.countercraft.movecraft.async.detection.DetectionTask;
 import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
+import net.countercraft.movecraft.async.translation.TranslationTaskData;
 import net.countercraft.movecraft.utils.MovecraftLocation;
 import net.countercraft.movecraft.utils.Rotation;
 import org.bukkit.World;
@@ -87,8 +88,7 @@ public class Craft {
 	}
 
 	public void translate( int dx, int dy, int dz ) {
-		//AsyncManager.getInstance().submitTask( new TranslationTask( this, dx, dy, dz, hitBox, minX, minZ, w.getMaxHeight() - 1 ), this );
-		AsyncManager.getInstance().submitTask( new TranslationTask( this, dx, dy, dz, hitBox, minX, minZ, this.maxHeightLimit, type.getMinHeightLimit() ), this );
+		AsyncManager.getInstance().submitTask( new TranslationTask( this, new TranslationTaskData( dx, dz, dy, getBlockList(), getHitBox(), minZ, minX, type.getMaxHeightLimit(), type.getMinHeightLimit() ) ), this );
 	}
 
 	public void rotate( Rotation rotation, MovecraftLocation originPoint ) {
