@@ -111,10 +111,10 @@ public class CraftType {
 		return flyBlocks;
 	}
         
-        public int getMaxHeightLevel(){
+        public int getMaxHeightLimit(){
                 return maxHeightLimit;
         }
-        public int getMinHeightLevel(){
+        public int getMinHeightLimit(){
                 return minHeightLimit;
         }
 }
