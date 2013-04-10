@@ -25,7 +25,10 @@ import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.utils.*;
+import net.countercraft.movecraft.utils.BlockUtils;
+import net.countercraft.movecraft.utils.MapUpdateCommand;
+import net.countercraft.movecraft.utils.MapUpdateManager;
+import net.countercraft.movecraft.utils.MathUtils;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -190,20 +193,22 @@ public class AsyncManager extends BukkitRunnable {
 
 							c.setBlockList( task.getBlockList() );
 
+							Location originPoint = new Location( c.getW(), task.getOriginPoint().getX(), task.getOriginPoint().getY(), task.getOriginPoint().getZ() );
 							// Move entities
 							for ( Entity pTest : c.getW().getEntities() ) {
 
 								if ( MathUtils.playerIsWithinBoundingPolygon( c.getHitBox(), c.getMinX(), c.getMinZ(), MathUtils.bukkit2MovecraftLoc( pTest.getLocation() ) ) ) {
 
 									// Player is onboard this craft
-									MovecraftLocation originPoint = task.getOriginPoint();
-									MovecraftLocation playerLoc = MathUtils.bukkit2MovecraftLoc( pTest.getLocation() );
-									MovecraftLocation adjustedPLoc = playerLoc.subtract( originPoint );
+									Location playerLoc = pTest.getLocation();
+									Location adjustedPLoc = playerLoc.subtract( originPoint );
 
-									MovecraftLocation newPLoc = MathUtils.rotateVec( task.getRotation(), adjustedPLoc ).add( originPoint );
+									double[] rotatedCoords = MathUtils.rotateVec( task.getRotation(), adjustedPLoc.getX(), adjustedPLoc.getY() );
+									Location rotatedPloc = new Location( c.getW(), rotatedCoords[0], playerLoc.getY(), rotatedCoords[1] );
+									Location newPLoc = rotatedPloc.add( originPoint );
 
 									Vector velocity = pTest.getVelocity().clone();
-									pTest.teleport( new Location( pTest.getWorld(), newPLoc.getX(), newPLoc.getY(), newPLoc.getZ() ) );
+									pTest.teleport( newPLoc );
 									pTest.setVelocity( velocity );
 								}
 
