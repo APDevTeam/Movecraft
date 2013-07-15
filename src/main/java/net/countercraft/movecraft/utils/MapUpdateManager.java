@@ -24,14 +24,14 @@ import net.countercraft.movecraft.utils.datastructures.InventoryTransferHolder;
 import net.countercraft.movecraft.utils.datastructures.SignTransferHolder;
 import net.countercraft.movecraft.utils.datastructures.StorageCrateTransferHolder;
 import net.countercraft.movecraft.utils.datastructures.TransferData;
-import net.minecraft.server.v1_5_R3.ChunkCoordIntPair;
+import net.minecraft.server.v1_6_R1.ChunkCoordIntPair;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.World;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
-import org.bukkit.craftbukkit.v1_5_R3.CraftChunk;
-import org.bukkit.craftbukkit.v1_5_R3.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_6_R1.CraftChunk;
+import org.bukkit.craftbukkit.v1_6_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
@@ -62,7 +62,7 @@ public class MapUpdateManager extends BukkitRunnable {
 			if ( w != null ) {
 				List<MapUpdateCommand> updatesInWorld = updates.get( w );
 				Map<MovecraftLocation, TransferData> dataMap = new HashMap<MovecraftLocation, TransferData>();
-				Set<net.minecraft.server.v1_5_R3.Chunk> chunks = new HashSet<net.minecraft.server.v1_5_R3.Chunk>();
+				Set<net.minecraft.server.v1_6_R1.Chunk> chunks = new HashSet<net.minecraft.server.v1_6_R1.Chunk>();
 
 				// Preprocessing
 				for ( MapUpdateCommand c : updatesInWorld ) {
@@ -89,7 +89,7 @@ public class MapUpdateManager extends BukkitRunnable {
 					// Calculate chunk
 
 					Chunk chunk = w.getBlockAt( x, y, z ).getChunk();
-					net.minecraft.server.v1_5_R3.Chunk c = ( ( CraftChunk ) chunk ).getHandle();
+					net.minecraft.server.v1_6_R1.Chunk c = ( ( CraftChunk ) chunk ).getHandle();
 					//get the inner-chunk index of the block to change
 					//modify the block in the chunk
 
@@ -155,7 +155,7 @@ public class MapUpdateManager extends BukkitRunnable {
 				}
 
 
-				for ( net.minecraft.server.v1_5_R3.Chunk c : chunks ) {
+				for ( net.minecraft.server.v1_6_R1.Chunk c : chunks ) {
 					c.initLighting();
 					ChunkCoordIntPair ccip = new ChunkCoordIntPair( c.x, c.z );
 
