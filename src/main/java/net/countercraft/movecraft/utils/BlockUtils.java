@@ -17,28 +17,24 @@
 
 package net.countercraft.movecraft.utils;
 
-public class BlockUtils {
-	private static final int[] dataBlocks = new int[]{ 17, 51, 18, 84, 6, 81, 83, 8, 3, 59, 115, 86, 50, 66, 53, 69, 64, 77, 63, 65, 23, 86, 70, 43, 78, 92, 26, 93, 55, 2, 96, 29, 34, 98, 99, 106, 107, 117, 118, 120, 139, 140, 144, 145, 5, 155, 9, 60, 141, 75, 27, 67, 71, 143, 68, 72, 44, 94, 33, 100, 10, 142, 76, 28, 108, 61, 147, 11, 109, 62, 148, 114, 128, 134, 135, 136, 156, 35, 126 };
+import java.util.Arrays;
 
-	private static final int[] rotationBlocks = new int[]{ 17, 50, 75, 76, 26, 29, 33, 34, 53, 67, 108, 109, 114, 128, 134, 135, 136, 156, 63, 64, 71, 66, 27, 28, 65, 68, 61, 23, 69, 77, 143, 93, 94, 96, 107, 120, 131, 144, 145 };
+public class BlockUtils {
+	private static final int[] dataBlocks = new int[]{ 17, 51, 18, 84, 6, 81, 83, 8, 3, 59, 115, 86, 50, 66, 53, 69, 64, 77, 63, 65, 23, 70, 43, 78, 92, 26, 93, 55, 2, 96, 29, 34, 98, 99, 106, 107, 117, 118, 120, 139, 140, 144, 145, 5, 155, 9, 60, 141, 75, 27, 67, 71, 143, 68, 72, 44, 94, 33, 100, 10, 142, 76, 28, 108, 61, 147, 11, 109, 62, 148, 114, 128, 134, 135, 136, 156, 35, 126, 24, 25, 31, 46, 52, 91, 104, 105, 116, 125, 127, 130, 131, 132, 137, 138, 149, 151, 154, 157, 158, 159, 170, 171 };
+
+	private static final int[] rotationBlocks = new int[]{ 17, 50, 75, 76, 26, 29, 33, 34, 53, 67, 108, 109, 114, 128, 134, 135, 136, 156, 63, 64, 71, 66, 27, 28, 65, 68, 61, 23, 69, 77, 143, 93, 94, 96, 107, 120, 131, 144, 145, 62, 99, 100, 106, 127, 130, 145, 149, 154, 157, 158, 170, 86, 91 };
+	
+	static {
+		Arrays.sort(dataBlocks);
+		Arrays.sort(rotationBlocks);
+	}
 
 	public static boolean blockHasNoData( int id ) {
-		for ( int i : dataBlocks ) {
-			if ( id == i ) {
-				return false;
-			}
-		}
-		return true;
+		return Arrays.binarySearch(dataBlocks, id) == -1;
 	}
 
 	public static boolean blockRequiresRotation( int id ) {
-		for ( int i : rotationBlocks ) {
-			if ( id == i ) {
-				return true;
-			}
-		}
-
-		return false;
+		return Arrays.binarySearch(rotationBlocks, id) != -1;
 	}
 
 	public static boolean arrayContainsOverlap( Object[] array1, Object[] array2 ) {
@@ -58,6 +54,7 @@ public class BlockUtils {
 	public static byte rotate( byte data, int typeID, Rotation rotation ) {
 		switch ( typeID ) {
 			case 17:
+			case 170:
 				boolean side1 = ( ( data & 0x4 ) == 0x4 );
 				boolean side2 = ( ( data & 0x8 ) == 0x8 );
 
@@ -110,6 +107,8 @@ public class BlockUtils {
 				return data;
 
 			case 26:
+			case 127:
+			case 149:
 				byte direction = ( byte ) ( data & 0x3 );
 
 				byte constant = 1;
@@ -341,6 +340,7 @@ public class BlockUtils {
 
 			case 27:
 			case 28:
+			case 157:
 				direction = ( byte ) ( data & 0x5 );
 				flat = direction == 0x0 || direction == 0x1;
 
@@ -407,7 +407,11 @@ public class BlockUtils {
 			case 65:
 			case 68:
 			case 61:
+			case 62:
 			case 23:
+			case 130:
+			case 154:
+			case 158:
 				if ( data == 0x0 || data == 0x1 ) {
 					return data;
 				}
@@ -558,6 +562,7 @@ public class BlockUtils {
 				return data;
 
 			case 86:
+			case 91:
 				direction = ( byte ) ( data & 0x3 );
 
 				if ( data == 0x4 ) {
@@ -743,6 +748,84 @@ public class BlockUtils {
 
 				return data;
 
+			case 99:
+			case 100:
+				direction = data;
+				switch(direction) {
+					case 0x0:
+					case 0x5:
+					case 0xA:
+					case 0xE:
+					case 0xF:
+						return data;
+					case 0x2:
+						//North
+						if(rotation == Rotation.CLOCKWISE) {
+							direction = 0x6;
+						} else {
+							direction = 0x4;
+						}
+						break;
+					case 0x4:
+						//East
+						if(rotation == Rotation.CLOCKWISE) {
+							direction = 0x2;
+						} else {
+							direction = 0x8;
+						}
+						break;
+					case 0x6:
+						//West
+						if(rotation == Rotation.CLOCKWISE) {
+							direction = 0x8;
+						} else {
+							direction = 0x2;
+						}
+						break;
+					case 0x8:
+						//South
+						if(rotation == Rotation.CLOCKWISE) {
+							direction = 0x4;
+						} else {
+							direction = 0x6;
+						}
+						break;
+					case 0x1:
+						//North and West
+						if(rotation == Rotation.CLOCKWISE) {
+							direction = 0x3;
+						} else {
+							direction = 0x7;
+						}
+						break;
+					case 0x3:
+						//North and East
+						if(rotation == Rotation.CLOCKWISE) {
+							direction = 0x9;
+						} else {
+							direction = 0x1;
+						}
+						break;
+					case 0x7:
+						//South and West
+						if(rotation == Rotation.CLOCKWISE) {
+							direction = 0x1;
+						} else {
+							direction = 0x9;
+						}
+						break;
+					case 0x9:
+						//South and East
+						if(rotation == Rotation.CLOCKWISE) {
+							direction = 0x7;
+						} else {
+							direction = 0x3;
+						}
+						break;
+				}
+				
+				return direction;
+				
 			default:
 				return data;
 		}

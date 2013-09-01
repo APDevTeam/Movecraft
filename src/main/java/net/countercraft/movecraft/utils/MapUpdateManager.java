@@ -145,9 +145,8 @@ public class MapUpdateManager extends BukkitRunnable {
 							InventoryHolder inventoryHolder = ( InventoryHolder ) w.getBlockAt( l.getX(), l.getY(), l.getZ() ).getState();
 							inventoryHolder.getInventory().setContents( invData.getInvetory() );
 
-						} else {
-							w.getBlockAt( l.getX(), l.getY(), l.getZ() ).setData( transferData.getData() );
 						}
+						w.getBlockAt( l.getX(), l.getY(), l.getZ() ).setData( transferData.getData() );
 					} catch ( Exception e ) {
 						Movecraft.getInstance().getLogger().log( Level.SEVERE, "Severe error in map updater" );
 					}
