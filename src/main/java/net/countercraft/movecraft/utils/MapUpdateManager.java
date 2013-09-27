@@ -57,7 +57,8 @@ public class MapUpdateManager extends BukkitRunnable {
 
 	public void run() {
 		if ( updates.isEmpty() ) return;
-
+		Movecraft.getInstance().getLogger().log( Level.INFO, "Before Update" );
+		
 		for ( World w : updates.keySet() ) {
 			if ( w != null ) {
 				List<MapUpdateCommand> updatesInWorld = updates.get( w );
@@ -75,20 +76,44 @@ public class MapUpdateManager extends BukkitRunnable {
 						}
 					}
 
-				}
+				} 
+				
+				ArrayList<Chunk> chunkList = new ArrayList<Chunk>();
+				boolean isFirstChunk=true;
 
 				// Perform core block updates
 				for ( MapUpdateCommand m : updatesInWorld ) {
 					MovecraftLocation workingL = m.getNewBlockLocation();
 
-
 					int x = workingL.getX();
 					int y = workingL.getY();
 					int z = workingL.getZ();
+					Chunk chunk=null;
+					
+					// Calculate chunk if necessary, check list of chunks already loaded first
+					
+					if(isFirstChunk) {
+						chunk = w.getBlockAt( x, y, z ).getChunk();					
+						chunkList.add(chunk);
+						
+						isFirstChunk=false;
+					} else {
+						boolean foundChunk=false;
+						for (Chunk testChunk : chunkList) {
+							int sx=x>>4;
+							int sz=z>>4;
+							if((testChunk.getX()==sx)&&(testChunk.getZ()==sz)) {
+								foundChunk=true;
+								chunk=testChunk;
+							}
+						}
+						if(!foundChunk) {
+							chunk = w.getBlockAt( x, y, z ).getChunk();
+							chunkList.add(chunk);							
+						}
+					}
 
-					// Calculate chunk
-
-					Chunk chunk = w.getBlockAt( x, y, z ).getChunk();
+					
 					net.minecraft.server.v1_6_R2.Chunk c = ( ( CraftChunk ) chunk ).getHandle();
 					//get the inner-chunk index of the block to change
 					//modify the block in the chunk
@@ -103,16 +128,45 @@ public class MapUpdateManager extends BukkitRunnable {
 						data = 0;
 					}
 
-					c.a( x & 15, y, z & 15, 0, 0 );
-					boolean success = c.a( x & 15, y, z & 15, newTypeID, data );
+					int origType=w.getBlockAt( x, y, z ).getTypeId();
+					byte origData=w.getBlockAt( x, y, z ).getData();
+					boolean success = false;
 
-					if ( !success && newTypeID != 0 ) {
-						boolean b = w.getBlockAt( x, y, z ).setTypeIdAndData( newTypeID, data, false );
-						if ( !b ) {
-							Movecraft.getInstance().getLogger().log( Level.SEVERE, "Map interface error" );
+					
+	//				success = c.a( x & 15, y, z & 15, newTypeID, data );
+					
+/*					if((newTypeID!=origType)||(data!=origData)) { 						// Are there actually any changes?
+						if(newTypeID==origType) { 										// Case 1: only data changes
+							w.getBlockAt( x, y, z ).setData(data, false);
+							success = true;
+						} else {
+							if(data==origData) {										// Case 2: only type changes
+								w.getBlockAt( x, y, z ).setTypeId(newTypeID);
+								success = true;
+							} else {
+								if(origType==0) {										// Case 3: moving into air, no need to blank out block
+									success = c.a( x & 15, y, z & 15, newTypeID, data );
+								} else {												// Case 4: new data and type, and its not already air; must blank out block
+									c.a( x & 15, y, z & 15, 0, 0 ); 					// this code is super slow
+									success = c.a( x & 15, y, z & 15, newTypeID, data );
+								}
+							}
 						}
-					}
+					} */
 
+					if((origType!=0)&&(origType!=newTypeID)) { // don't blank out block if it's already air, or if blocktype is unchanged
+						c.a( x & 15, y, z & 15, 0, 0 ); // this code is super slow
+					}
+					
+					success = c.a( x & 15, y, z & 15, newTypeID, data );
+
+//					if ( !success && newTypeID != 0 ) {
+					if ( !success ) {
+						boolean b = w.getBlockAt( x, y, z ).setTypeIdAndData( newTypeID, data, false );
+	//					if ( !b ) {
+	//						Movecraft.getInstance().getLogger().log( Level.SEVERE, "Map interface error" );
+	//					}
+					}
 					if ( !chunks.contains( c ) ) {
 						chunks.add( c );
 					}
@@ -170,7 +224,7 @@ public class MapUpdateManager extends BukkitRunnable {
 		}
 
 		updates.clear();
-
+		Movecraft.getInstance().getLogger().log( Level.INFO, "Updated" );
 	}
 
 	public boolean addWorldUpdate( World w, MapUpdateCommand[] mapUpdates ) {
