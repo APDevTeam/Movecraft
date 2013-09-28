@@ -80,24 +80,90 @@ public class MapUpdateManager extends BukkitRunnable {
 				
 				ArrayList<Chunk> chunkList = new ArrayList<Chunk>();
 				boolean isFirstChunk=true;
+				
+				final int[] fragileBlocks = new int[]{ 52, 55, 63, 68, 69, 70, 71, 72, 75, 76, 77, 93, 94, 96, 131, 132, 143, 147, 148, 149, 150, 151, 323, 324, 330, 331, 356, };
+				Arrays.sort(fragileBlocks);
 
-				// Perform core block updates
+				// Perform core block updates, don't do "fragiles" yet
 				for ( MapUpdateCommand m : updatesInWorld ) {
-					MovecraftLocation workingL = m.getNewBlockLocation();
+					boolean isFragile=(Arrays.binarySearch(fragileBlocks,m.getTypeID())>=0);
+					if(!isFragile) {
+						MovecraftLocation workingL = m.getNewBlockLocation();
 
-					int x = workingL.getX();
-					int y = workingL.getY();
-					int z = workingL.getZ();
-					Chunk chunk=null;
+						int x = workingL.getX();
+						int y = workingL.getY();
+						int z = workingL.getZ();
+						Chunk chunk=null;
 					
-					// Calculate chunk if necessary, check list of chunks already loaded first
+						// Calculate chunk if necessary, check list of chunks already loaded first
 					
-					if(isFirstChunk) {
-						chunk = w.getBlockAt( x, y, z ).getChunk();					
-						chunkList.add(chunk);
-						
-						isFirstChunk=false;
-					} else {
+						if(isFirstChunk) {
+							chunk = w.getBlockAt( x, y, z ).getChunk();					
+							chunkList.add(chunk);
+							isFirstChunk=false;
+						} else {
+							boolean foundChunk=false;
+							for (Chunk testChunk : chunkList) {
+								int sx=x>>4;
+								int sz=z>>4;
+								if((testChunk.getX()==sx)&&(testChunk.getZ()==sz)) {
+									foundChunk=true;
+									chunk=testChunk;
+								}
+							}
+							if(!foundChunk) {
+								chunk = w.getBlockAt( x, y, z ).getChunk();
+								chunkList.add(chunk);							
+							}
+						}
+				
+						net.minecraft.server.v1_6_R2.Chunk c = ( ( CraftChunk ) chunk ).getHandle();
+						//get the inner-chunk index of the block to change
+						//modify the block in the chunk
+
+						int newTypeID = m.getTypeID();
+						TransferData transferData = dataMap.get( workingL );
+
+						byte data;
+						if ( transferData != null ) {
+							data = transferData.getData();
+						} else {
+							data = 0;
+						}
+
+						int origType=w.getBlockAt( x, y, z ).getTypeId();
+						byte origData=w.getBlockAt( x, y, z ).getData();
+						boolean success = false;
+
+						if((origType!=0)&&(origType!=newTypeID)) { // don't blank out block if it's already air, or if blocktype is unchanged
+							c.a( x & 15, y, z & 15, 0, 0 ); // this code is super slow
+						}
+					
+						success = c.a( x & 15, y, z & 15, newTypeID, data );
+
+						if ( !success ) {
+							boolean b = w.getBlockAt( x, y, z ).setTypeIdAndData( newTypeID, data, false );
+						}
+						if ( !chunks.contains( c ) ) {
+							chunks.add( c );
+						}
+					}
+				}
+
+				// Pass 2, fix redstone and other "fragiles"				
+				for ( MapUpdateCommand i : updatesInWorld ) {
+					boolean isFragile=(Arrays.binarySearch(fragileBlocks,i.getTypeID())>=0);
+					if(isFragile) {
+						Movecraft.getInstance().getLogger().log( Level.INFO, "is fragile "+i.getTypeID() );
+						MovecraftLocation workingL = i.getNewBlockLocation();
+
+						int x = workingL.getX();
+						int y = workingL.getY();
+						int z = workingL.getZ();
+						Chunk chunk=null;
+							
+						// Calculate chunk if necessary, check list of chunks already loaded first
+							
 						boolean foundChunk=false;
 						for (Chunk testChunk : chunkList) {
 							int sx=x>>4;
@@ -107,72 +173,43 @@ public class MapUpdateManager extends BukkitRunnable {
 								chunk=testChunk;
 							}
 						}
-						if(!foundChunk) {
+						if(!foundChunk) {  // don't know how this would ever happen, since we already loaded all the chunks. Leaving it in just in case
 							chunk = w.getBlockAt( x, y, z ).getChunk();
 							chunkList.add(chunk);							
 						}
-					}
+													
+						net.minecraft.server.v1_6_R2.Chunk c = ( ( CraftChunk ) chunk ).getHandle();
+						//get the inner-chunk index of the block to change
+						//modify the block in the chunk
 
-					
-					net.minecraft.server.v1_6_R2.Chunk c = ( ( CraftChunk ) chunk ).getHandle();
-					//get the inner-chunk index of the block to change
-					//modify the block in the chunk
+						int newTypeID = i.getTypeID();
+						TransferData transferData = dataMap.get( workingL );
 
-					int newTypeID = m.getTypeID();
-					TransferData transferData = dataMap.get( workingL );
-
-					byte data;
-					if ( transferData != null ) {
-						data = transferData.getData();
-					} else {
-						data = 0;
-					}
-
-					int origType=w.getBlockAt( x, y, z ).getTypeId();
-					byte origData=w.getBlockAt( x, y, z ).getData();
-					boolean success = false;
-
-					
-	//				success = c.a( x & 15, y, z & 15, newTypeID, data );
-					
-/*					if((newTypeID!=origType)||(data!=origData)) { 						// Are there actually any changes?
-						if(newTypeID==origType) { 										// Case 1: only data changes
-							w.getBlockAt( x, y, z ).setData(data, false);
-							success = true;
+						byte data;
+						if ( transferData != null ) {
+							data = transferData.getData();
 						} else {
-							if(data==origData) {										// Case 2: only type changes
-								w.getBlockAt( x, y, z ).setTypeId(newTypeID);
-								success = true;
-							} else {
-								if(origType==0) {										// Case 3: moving into air, no need to blank out block
-									success = c.a( x & 15, y, z & 15, newTypeID, data );
-								} else {												// Case 4: new data and type, and its not already air; must blank out block
-									c.a( x & 15, y, z & 15, 0, 0 ); 					// this code is super slow
-									success = c.a( x & 15, y, z & 15, newTypeID, data );
-								}
-							}
+							data = 0;
 						}
-					} */
 
-					if((origType!=0)&&(origType!=newTypeID)) { // don't blank out block if it's already air, or if blocktype is unchanged
-						c.a( x & 15, y, z & 15, 0, 0 ); // this code is super slow
-					}
-					
-					success = c.a( x & 15, y, z & 15, newTypeID, data );
+						int origType=w.getBlockAt( x, y, z ).getTypeId();
+						byte origData=w.getBlockAt( x, y, z ).getData();
+						boolean success = false;
 
-//					if ( !success && newTypeID != 0 ) {
-					if ( !success ) {
-						boolean b = w.getBlockAt( x, y, z ).setTypeIdAndData( newTypeID, data, false );
-	//					if ( !b ) {
-	//						Movecraft.getInstance().getLogger().log( Level.SEVERE, "Map interface error" );
-	//					}
-					}
-					if ( !chunks.contains( c ) ) {
-						chunks.add( c );
-					}
+						if((origType!=0)&&(origType!=newTypeID)) { // don't blank out block if it's already air, or if blocktype is unchanged
+							c.a( x & 15, y, z & 15, 0, 0 ); // this code is super slow
+						}
+							
+						success = c.a( x & 15, y, z & 15, newTypeID, data );
 
+						if ( !success ) {
+							w.getBlockAt( x, y, z ).setTypeIdAndData( newTypeID, data, false );
+						}
+						if ( !chunks.contains( c ) ) {
+							chunks.add( c );
+						}
+					}
 				}
-
 
 				// Restore block specific information
 				for ( MovecraftLocation l : dataMap.keySet() ) {
@@ -207,7 +244,7 @@ public class MapUpdateManager extends BukkitRunnable {
 
 				}
 
-
+				
 				for ( net.minecraft.server.v1_6_R2.Chunk c : chunks ) {
 					c.initLighting();
 					ChunkCoordIntPair ccip = new ChunkCoordIntPair( c.x, c.z );
