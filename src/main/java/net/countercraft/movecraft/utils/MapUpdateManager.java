@@ -134,14 +134,15 @@ public class MapUpdateManager extends BukkitRunnable {
 						byte origData=w.getBlockAt( x, y, z ).getData();
 						boolean success = false;
 
-						if((origType!=0)&&(origType!=newTypeID)) { // don't blank out block if it's already air, or if blocktype is unchanged
-							c.a( x & 15, y, z & 15, 0, 0 ); // this code is super slow
+						//don't blank out block if it's already air, or if blocktype will not be changed
+						if((origType!=0)&&(origType!=newTypeID)) { 
+							c.a( x & 15, y, z & 15, 0, 0 ); 
 						}
 					
 						success = c.a( x & 15, y, z & 15, newTypeID, data );
 
 						if ( !success ) {
-							boolean b = w.getBlockAt( x, y, z ).setTypeIdAndData( newTypeID, data, false );
+							w.getBlockAt( x, y, z ).setTypeIdAndData( newTypeID, data, false );
 						}
 						if ( !chunks.contains( c ) ) {
 							chunks.add( c );
@@ -149,7 +150,7 @@ public class MapUpdateManager extends BukkitRunnable {
 					}
 				}
 
-				// Pass 2, fix redstone and other "fragiles"				
+				// Fix redstone and other "fragiles"				
 				for ( MapUpdateCommand i : updatesInWorld ) {
 					boolean isFragile=(Arrays.binarySearch(fragileBlocks,i.getTypeID())>=0);
 					if(isFragile) {
@@ -171,7 +172,7 @@ public class MapUpdateManager extends BukkitRunnable {
 								chunk=testChunk;
 							}
 						}
-						if(!foundChunk) {  // don't know how this would ever happen, since we already loaded all the chunks. Leaving it in just in case
+						if(!foundChunk) {  
 							chunk = w.getBlockAt( x, y, z ).getChunk();
 							chunkList.add(chunk);							
 						}
@@ -194,8 +195,9 @@ public class MapUpdateManager extends BukkitRunnable {
 						byte origData=w.getBlockAt( x, y, z ).getData();
 						boolean success = false;
 
-						if((origType!=0)&&(origType!=newTypeID)) { // don't blank out block if it's already air, or if blocktype is unchanged
-							c.a( x & 15, y, z & 15, 0, 0 ); // this code is super slow
+						// don't blank out block if it's already air, or if blocktype is unchanged
+						if((origType!=0)&&(origType!=newTypeID)) { 
+							c.a( x & 15, y, z & 15, 0, 0 ); 
 						}
 							
 						success = c.a( x & 15, y, z & 15, newTypeID, data );
