@@ -57,7 +57,6 @@ public class MapUpdateManager extends BukkitRunnable {
 
 	public void run() {
 		if ( updates.isEmpty() ) return;
-		Movecraft.getInstance().getLogger().log( Level.INFO, "Before Update" );
 		
 		for ( World w : updates.keySet() ) {
 			if ( w != null ) {
@@ -81,7 +80,7 @@ public class MapUpdateManager extends BukkitRunnable {
 				ArrayList<Chunk> chunkList = new ArrayList<Chunk>();
 				boolean isFirstChunk=true;
 				
-				final int[] fragileBlocks = new int[]{ 52, 55, 63, 68, 69, 70, 71, 72, 75, 76, 77, 93, 94, 96, 131, 132, 143, 147, 148, 149, 150, 151, 323, 324, 330, 331, 356, };
+				final int[] fragileBlocks = new int[]{ 52, 55, 63, 65, 68, 69, 70, 71, 72, 75, 76, 77, 93, 94, 96, 131, 132, 143, 147, 148, 149, 150, 151, 323, 324, 330, 331, 356, };
 				Arrays.sort(fragileBlocks);
 
 				// Perform core block updates, don't do "fragiles" yet
@@ -154,7 +153,6 @@ public class MapUpdateManager extends BukkitRunnable {
 				for ( MapUpdateCommand i : updatesInWorld ) {
 					boolean isFragile=(Arrays.binarySearch(fragileBlocks,i.getTypeID())>=0);
 					if(isFragile) {
-						Movecraft.getInstance().getLogger().log( Level.INFO, "is fragile "+i.getTypeID() );
 						MovecraftLocation workingL = i.getNewBlockLocation();
 
 						int x = workingL.getX();
@@ -261,7 +259,6 @@ public class MapUpdateManager extends BukkitRunnable {
 		}
 
 		updates.clear();
-		Movecraft.getInstance().getLogger().log( Level.INFO, "Updated" );
 	}
 
 	public boolean addWorldUpdate( World w, MapUpdateCommand[] mapUpdates ) {
