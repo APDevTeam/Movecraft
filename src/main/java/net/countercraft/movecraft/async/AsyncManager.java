@@ -147,14 +147,19 @@ public class AsyncManager extends BukkitRunnable {
 								if ( MathUtils.playerIsWithinBoundingPolygon( c.getHitBox(), c.getMinX(), c.getMinZ(), MathUtils.bukkit2MovecraftLoc( pTest.getLocation() ) ) ) {
 
 									// Player is onboard this craft
-
-									// Smoother method, still work in progress
-									if ( c.getType().isTryNudge() ) {
-										pTest.setVelocity( pTest.getVelocity().add( new Vector( task.getData().getDx(), task.getData().getDy(), task.getData().getDz() ).normalize().multiply( 0.5 ) ) );
+		
+									// Remove "dropped_items" caused by translation - todo: only remove broken block items, not other drops
+									if(pTest.getType()==org.bukkit.entity.EntityType.DROPPED_ITEM) {
+										pTest.remove();
 									} else {
-										Vector velocity = pTest.getVelocity().clone();
-										pTest.teleport( pTest.getLocation().add( task.getData().getDx(), task.getData().getDy(), task.getData().getDz() ) );
-										pTest.setVelocity( velocity );
+									// Smoother method, still work in progress
+										if ( c.getType().isTryNudge() ) {
+											pTest.setVelocity( pTest.getVelocity().add( new Vector( task.getData().getDx(), task.getData().getDy(), task.getData().getDz() ).normalize().multiply( 0.5 ) ) );
+										} else {
+											Vector velocity = pTest.getVelocity().clone();
+											pTest.teleport( pTest.getLocation().add( task.getData().getDx(), task.getData().getDy(), task.getData().getDz() ) );
+											pTest.setVelocity( velocity );
+										}
 									}
 								}
 

@@ -57,7 +57,7 @@ public class MapUpdateManager extends BukkitRunnable {
 
 	public void run() {
 		if ( updates.isEmpty() ) return;
-
+		
 		for ( World w : updates.keySet() ) {
 			if ( w != null ) {
 				List<MapUpdateCommand> updatesInWorld = updates.get( w );
@@ -75,50 +75,141 @@ public class MapUpdateManager extends BukkitRunnable {
 						}
 					}
 
-				}
+				} 
+				
+				ArrayList<Chunk> chunkList = new ArrayList<Chunk>();
+				boolean isFirstChunk=true;
+				
+				final int[] fragileBlocks = new int[]{ 52, 55, 63, 65, 68, 69, 70, 71, 72, 75, 76, 77, 93, 94, 96, 131, 132, 143, 147, 148, 149, 150, 151, 323, 324, 330, 331, 356, };
+				Arrays.sort(fragileBlocks);
 
-				// Perform core block updates
+				// Perform core block updates, don't do "fragiles" yet
 				for ( MapUpdateCommand m : updatesInWorld ) {
-					MovecraftLocation workingL = m.getNewBlockLocation();
+					boolean isFragile=(Arrays.binarySearch(fragileBlocks,m.getTypeID())>=0);
+					if(!isFragile) {
+						MovecraftLocation workingL = m.getNewBlockLocation();
 
+						int x = workingL.getX();
+						int y = workingL.getY();
+						int z = workingL.getZ();
+						Chunk chunk=null;
+					
+						// Calculate chunk if necessary, check list of chunks already loaded first
+					
+						if(isFirstChunk) {
+							chunk = w.getBlockAt( x, y, z ).getChunk();					
+							chunkList.add(chunk);
+							isFirstChunk=false;
+						} else {
+							boolean foundChunk=false;
+							for (Chunk testChunk : chunkList) {
+								int sx=x>>4;
+								int sz=z>>4;
+								if((testChunk.getX()==sx)&&(testChunk.getZ()==sz)) {
+									foundChunk=true;
+									chunk=testChunk;
+								}
+							}
+							if(!foundChunk) {
+								chunk = w.getBlockAt( x, y, z ).getChunk();
+								chunkList.add(chunk);							
+							}
+						}
+				
+						net.minecraft.server.v1_6_R2.Chunk c = ( ( CraftChunk ) chunk ).getHandle();
+						//get the inner-chunk index of the block to change
+						//modify the block in the chunk
 
-					int x = workingL.getX();
-					int y = workingL.getY();
-					int z = workingL.getZ();
+						int newTypeID = m.getTypeID();
+						TransferData transferData = dataMap.get( workingL );
 
-					// Calculate chunk
+						byte data;
+						if ( transferData != null ) {
+							data = transferData.getData();
+						} else {
+							data = 0;
+						}
 
-					Chunk chunk = w.getBlockAt( x, y, z ).getChunk();
-					net.minecraft.server.v1_6_R2.Chunk c = ( ( CraftChunk ) chunk ).getHandle();
-					//get the inner-chunk index of the block to change
-					//modify the block in the chunk
+						int origType=w.getBlockAt( x, y, z ).getTypeId();
+						byte origData=w.getBlockAt( x, y, z ).getData();
+						boolean success = false;
 
-					int newTypeID = m.getTypeID();
-					TransferData transferData = dataMap.get( workingL );
+						//don't blank out block if it's already air, or if blocktype will not be changed
+						if((origType!=0)&&(origType!=newTypeID)) { 
+							c.a( x & 15, y, z & 15, 0, 0 ); 
+						}
+					
+						success = c.a( x & 15, y, z & 15, newTypeID, data );
 
-					byte data;
-					if ( transferData != null ) {
-						data = transferData.getData();
-					} else {
-						data = 0;
-					}
-
-					c.a( x & 15, y, z & 15, 0, 0 );
-					boolean success = c.a( x & 15, y, z & 15, newTypeID, data );
-
-					if ( !success && newTypeID != 0 ) {
-						boolean b = w.getBlockAt( x, y, z ).setTypeIdAndData( newTypeID, data, false );
-						if ( !b ) {
-							Movecraft.getInstance().getLogger().log( Level.SEVERE, "Map interface error" );
+						if ( !success ) {
+							w.getBlockAt( x, y, z ).setTypeIdAndData( newTypeID, data, false );
+						}
+						if ( !chunks.contains( c ) ) {
+							chunks.add( c );
 						}
 					}
-
-					if ( !chunks.contains( c ) ) {
-						chunks.add( c );
-					}
-
 				}
 
+				// Fix redstone and other "fragiles"				
+				for ( MapUpdateCommand i : updatesInWorld ) {
+					boolean isFragile=(Arrays.binarySearch(fragileBlocks,i.getTypeID())>=0);
+					if(isFragile) {
+						MovecraftLocation workingL = i.getNewBlockLocation();
+
+						int x = workingL.getX();
+						int y = workingL.getY();
+						int z = workingL.getZ();
+						Chunk chunk=null;
+							
+						// Calculate chunk if necessary, check list of chunks already loaded first
+							
+						boolean foundChunk=false;
+						for (Chunk testChunk : chunkList) {
+							int sx=x>>4;
+							int sz=z>>4;
+							if((testChunk.getX()==sx)&&(testChunk.getZ()==sz)) {
+								foundChunk=true;
+								chunk=testChunk;
+							}
+						}
+						if(!foundChunk) {  
+							chunk = w.getBlockAt( x, y, z ).getChunk();
+							chunkList.add(chunk);							
+						}
+													
+						net.minecraft.server.v1_6_R2.Chunk c = ( ( CraftChunk ) chunk ).getHandle();
+						//get the inner-chunk index of the block to change
+						//modify the block in the chunk
+
+						int newTypeID = i.getTypeID();
+						TransferData transferData = dataMap.get( workingL );
+
+						byte data;
+						if ( transferData != null ) {
+							data = transferData.getData();
+						} else {
+							data = 0;
+						}
+
+						int origType=w.getBlockAt( x, y, z ).getTypeId();
+						byte origData=w.getBlockAt( x, y, z ).getData();
+						boolean success = false;
+
+						// don't blank out block if it's already air, or if blocktype is unchanged
+						if((origType!=0)&&(origType!=newTypeID)) { 
+							c.a( x & 15, y, z & 15, 0, 0 ); 
+						}
+							
+						success = c.a( x & 15, y, z & 15, newTypeID, data );
+
+						if ( !success ) {
+							w.getBlockAt( x, y, z ).setTypeIdAndData( newTypeID, data, false );
+						}
+						if ( !chunks.contains( c ) ) {
+							chunks.add( c );
+						}
+					}
+				}
 
 				// Restore block specific information
 				for ( MovecraftLocation l : dataMap.keySet() ) {
@@ -153,7 +244,7 @@ public class MapUpdateManager extends BukkitRunnable {
 
 				}
 
-
+				
 				for ( net.minecraft.server.v1_6_R2.Chunk c : chunks ) {
 					c.initLighting();
 					ChunkCoordIntPair ccip = new ChunkCoordIntPair( c.x, c.z );
@@ -170,7 +261,6 @@ public class MapUpdateManager extends BukkitRunnable {
 		}
 
 		updates.clear();
-
 	}
 
 	public boolean addWorldUpdate( World w, MapUpdateCommand[] mapUpdates ) {
