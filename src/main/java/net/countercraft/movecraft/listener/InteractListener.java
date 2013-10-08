@@ -17,6 +17,7 @@
 
 package net.countercraft.movecraft.listener;
 
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.CraftType;
@@ -24,6 +25,7 @@ import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.utils.MovecraftLocation;
 import net.countercraft.movecraft.utils.Rotation;
+
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Sign;
@@ -167,7 +169,9 @@ public class InteractListener implements Listener {
 	@EventHandler
 	public void onPlayerInteractStick( PlayerInteractEvent event ) {
 		if ( event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK ) {
-			if ( event.getItem() != null && event.getItem().getType().equals( Material.STICK ) ) {
+			//if ( event.getItem() != null && event.getItem().getType().equals( Material.STICK ) ) {
+			if ( event.getItem() != null && event.getItem().getTypeId()==Settings.PilotTool ) {
+			
 				Craft craft = CraftManager.getInstance().getCraftByPlayer( event.getPlayer() );
 				if ( craft != null ) {
 					Long time = timeMap.get( event.getPlayer() );
