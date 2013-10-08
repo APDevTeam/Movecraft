@@ -18,6 +18,7 @@
 package net.countercraft.movecraft.utils;
 
 import net.countercraft.movecraft.Movecraft;
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.items.StorageChestItem;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.datastructures.InventoryTransferHolder;
@@ -25,6 +26,7 @@ import net.countercraft.movecraft.utils.datastructures.SignTransferHolder;
 import net.countercraft.movecraft.utils.datastructures.StorageCrateTransferHolder;
 import net.countercraft.movecraft.utils.datastructures.TransferData;
 import net.minecraft.server.v1_6_R2.ChunkCoordIntPair;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.World;
@@ -62,7 +64,13 @@ public class MapUpdateManager extends BukkitRunnable {
 			if ( w != null ) {
 				List<MapUpdateCommand> updatesInWorld = updates.get( w );
 				Map<MovecraftLocation, TransferData> dataMap = new HashMap<MovecraftLocation, TransferData>();
-				Set<net.minecraft.server.v1_6_R2.Chunk> chunks = new HashSet<net.minecraft.server.v1_6_R2.Chunk>();
+				Set<net.minecraft.server.v1_6_R2.Chunk> chunks = null; 
+				Set<Chunk> cmChunks = null;
+				if(Settings.CompatibilityMode) {
+					cmChunks = new HashSet<Chunk>();					
+				} else {
+					chunks = new HashSet<net.minecraft.server.v1_6_R2.Chunk>();
+				}
 
 				// Preprocessing
 				for ( MapUpdateCommand c : updatesInWorld ) {
@@ -82,10 +90,11 @@ public class MapUpdateManager extends BukkitRunnable {
 				
 				final int[] fragileBlocks = new int[]{ 52, 55, 63, 65, 68, 69, 70, 71, 72, 75, 76, 77, 93, 94, 96, 131, 132, 143, 147, 148, 149, 150, 151, 323, 324, 330, 331, 356, };
 				Arrays.sort(fragileBlocks);
-
-				// Perform core block updates, don't do "fragiles" yet
+				
+				// Perform core block updates, don't do "fragiles" yet. 
 				for ( MapUpdateCommand m : updatesInWorld ) {
 					boolean isFragile=(Arrays.binarySearch(fragileBlocks,m.getTypeID())>=0);
+					
 					if(!isFragile) {
 						MovecraftLocation workingL = m.getNewBlockLocation();
 
@@ -116,7 +125,14 @@ public class MapUpdateManager extends BukkitRunnable {
 							}
 						}
 				
-						net.minecraft.server.v1_6_R2.Chunk c = ( ( CraftChunk ) chunk ).getHandle();
+						net.minecraft.server.v1_6_R2.Chunk c = null;
+						Chunk cmC = null;
+						if(Settings.CompatibilityMode) {
+							cmC = chunk;
+						} else {
+							c = ( ( CraftChunk ) chunk ).getHandle();
+						}
+
 						//get the inner-chunk index of the block to change
 						//modify the block in the chunk
 
@@ -135,18 +151,26 @@ public class MapUpdateManager extends BukkitRunnable {
 						boolean success = false;
 
 						//don't blank out block if it's already air, or if blocktype will not be changed
-						if((origType!=0)&&(origType!=newTypeID)) { 
-							c.a( x & 15, y, z & 15, 0, 0 ); 
-						}
-					
-						success = c.a( x & 15, y, z & 15, newTypeID, data );
-
-						if ( !success ) {
+						if(Settings.CompatibilityMode) {
+							if((origType!=0)&&(origType!=newTypeID)) {
+								w.getBlockAt( x, y, z ).setTypeIdAndData( 0, (byte) 0, false );
+							} 
 							w.getBlockAt( x, y, z ).setTypeIdAndData( newTypeID, data, false );
-						}
-						if ( !chunks.contains( c ) ) {
-							chunks.add( c );
-						}
+							if ( !cmChunks.contains( cmC ) ) {
+								cmChunks.add( cmC );
+							}
+						} else {
+							if((origType!=0)&&(origType!=newTypeID)) {
+								c.a( x & 15, y, z & 15, 0, 0 );
+							} 
+							success = c.a( x & 15, y, z & 15, newTypeID, data );
+							if ( !success ) {
+								w.getBlockAt( x, y, z ).setTypeIdAndData( newTypeID, data, false );
+							}
+							if ( !chunks.contains( c ) ) {
+								chunks.add( c );
+							}
+						}						
 					}
 				}
 
@@ -176,8 +200,15 @@ public class MapUpdateManager extends BukkitRunnable {
 							chunk = w.getBlockAt( x, y, z ).getChunk();
 							chunkList.add(chunk);							
 						}
-													
-						net.minecraft.server.v1_6_R2.Chunk c = ( ( CraftChunk ) chunk ).getHandle();
+								
+						net.minecraft.server.v1_6_R2.Chunk c = null;
+						Chunk cmC = null;
+						if(Settings.CompatibilityMode) {
+							cmC = chunk;
+						} else {
+							c = ( ( CraftChunk ) chunk ).getHandle();
+						}
+
 						//get the inner-chunk index of the block to change
 						//modify the block in the chunk
 
@@ -192,22 +223,29 @@ public class MapUpdateManager extends BukkitRunnable {
 						}
 
 						int origType=w.getBlockAt( x, y, z ).getTypeId();
-						byte origData=w.getBlockAt( x, y, z ).getData();
 						boolean success = false;
 
-						// don't blank out block if it's already air, or if blocktype is unchanged
-						if((origType!=0)&&(origType!=newTypeID)) { 
-							c.a( x & 15, y, z & 15, 0, 0 ); 
-						}
-							
-						success = c.a( x & 15, y, z & 15, newTypeID, data );
-
-						if ( !success ) {
+						//don't blank out block if it's already air, or if blocktype will not be changed
+						if(Settings.CompatibilityMode) {
+							if((origType!=0)&&(origType!=newTypeID)) {
+								w.getBlockAt( x, y, z ).setTypeIdAndData( 0, (byte) 0, false );
+							} 
 							w.getBlockAt( x, y, z ).setTypeIdAndData( newTypeID, data, false );
-						}
-						if ( !chunks.contains( c ) ) {
-							chunks.add( c );
-						}
+							if ( !cmChunks.contains( cmC ) ) {
+								cmChunks.add( cmC );
+							}
+						} else {
+							if((origType!=0)&&(origType!=newTypeID)) {
+								c.a( x & 15, y, z & 15, 0, 0 );
+							} 
+							success = c.a( x & 15, y, z & 15, newTypeID, data );
+							if ( !success ) {
+								w.getBlockAt( x, y, z ).setTypeIdAndData( newTypeID, data, false );
+							}
+							if ( !chunks.contains( c ) ) {
+								chunks.add( c );
+							}
+						}						
 					}
 				}
 
@@ -243,18 +281,23 @@ public class MapUpdateManager extends BukkitRunnable {
 					}
 
 				}
-
 				
-				for ( net.minecraft.server.v1_6_R2.Chunk c : chunks ) {
-					c.initLighting();
-					ChunkCoordIntPair ccip = new ChunkCoordIntPair( c.x, c.z );
+				if(Settings.CompatibilityMode) {
+					for (Chunk cmC : cmChunks ) {
+
+					}
+				} else {
+					for ( net.minecraft.server.v1_6_R2.Chunk c : chunks ) {
+						c.initLighting();
+						ChunkCoordIntPair ccip = new ChunkCoordIntPair( c.x, c.z );
 
 
-					for ( Player p : w.getPlayers() ) {
-						List<ChunkCoordIntPair> chunkCoordIntPairQueue = ( List<ChunkCoordIntPair> ) ( ( CraftPlayer ) p ).getHandle().chunkCoordIntPairQueue;
+						for ( Player p : w.getPlayers() ) {
+							List<ChunkCoordIntPair> chunkCoordIntPairQueue = ( List<ChunkCoordIntPair> ) ( ( CraftPlayer ) p ).getHandle().chunkCoordIntPairQueue;
 
-						if ( !chunkCoordIntPairQueue.contains( ccip ) )
-							chunkCoordIntPairQueue.add( ccip );
+							if ( !chunkCoordIntPairQueue.contains( ccip ) )
+								chunkCoordIntPairQueue.add( ccip );
+						}
 					}
 				}
 			}
