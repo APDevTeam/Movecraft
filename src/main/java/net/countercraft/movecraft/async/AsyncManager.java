@@ -148,7 +148,8 @@ public class AsyncManager extends BukkitRunnable {
 
 									// Player is onboard this craft
 		
-									// Remove "dropped_items" caused by translation - todo: only remove broken block items, not other drops
+									
+									// If its an item, its probably garbage from the translation. Remove it  - todo: only remove broken block items, not other drops
 									if(pTest.getType()==org.bukkit.entity.EntityType.DROPPED_ITEM) {
 										pTest.remove();
 									} else {
