@@ -64,13 +64,11 @@ public class BoundingBoxUtils {
 			newHitbox[x] = new int[hitbox[x].length][];
 
 			for ( int z = 0; z < hitbox[x].length; z++ ) {
-				try {
 
+				if(hitbox[x][z]!=null) {
 					newHitbox[x][z] = new int[2];
 					newHitbox[x][z][0] = hitbox[x][z][0] + dy;
 					newHitbox[x][z][1] = hitbox[x][z][1] + dy;
-
-				} catch ( NullPointerException ignored ) {
 				}
 
 			}

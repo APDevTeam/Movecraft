@@ -24,5 +24,6 @@ public class Settings {
 	public static int THREAD_POOL_SIZE = 5;
 	public static List<Integer> DATA_BLOCKS;
 	public static String LOCALE;
-
+	public static int PilotTool = 280;
+	public static boolean CompatibilityMode = false;  
 }

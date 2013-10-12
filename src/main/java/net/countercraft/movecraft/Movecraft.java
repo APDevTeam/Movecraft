@@ -26,7 +26,7 @@ import net.countercraft.movecraft.listener.CommandListener;
 import net.countercraft.movecraft.listener.InteractListener;
 import net.countercraft.movecraft.listener.PlayerListener;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.metrics.MovecraftMetrics;
+import net.countercraft.movecraft.metrics.MovecraftMetrics;  
 import net.countercraft.movecraft.utils.MapUpdateManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -49,6 +49,16 @@ public class Movecraft extends JavaPlugin {
 		// Read in config
 		this.saveDefaultConfig();
 		Settings.LOCALE = getConfig().getString( "Locale" );
+		// if the PilotTool is specified in the config.yml file, use it
+		if(getConfig().getInt("PilotTool")!=0) {
+			logger.log( Level.INFO, "Recognized PilotTool setting of: "+getConfig().getInt("PilotTool"));
+			Settings.PilotTool=getConfig().getInt("PilotTool");
+		} else {
+			logger.log( Level.INFO, "No PilotTool setting, using default of 280");
+		}
+		// if the CompatibilityMode is specified in the config.yml file, use it. Otherwise set to false. - NOT IMPLEMENTED YET - Mark
+		Settings.CompatibilityMode=getConfig().getBoolean("CompatibilityMode", false);
+		
 
 		if ( !new File( getDataFolder() + "/localisation/movecraftlang_en.properties" ).exists() ) {
 			this.saveResource( "localisation/movecraftlang_en.properties", false );
@@ -75,7 +85,7 @@ public class Movecraft extends JavaPlugin {
 			StorageChestItem.readFromDisk();
 			StorageChestItem.addRecipie();
 
-			new MovecraftMetrics( CraftManager.getInstance().getCraftTypes().length );
+			new MovecraftMetrics( CraftManager.getInstance().getCraftTypes().length );   
 
 			logger.log( Level.INFO, String.format( I18nSupport.getInternationalisedString( "Startup - Enabled message" ), getDescription().getVersion() ) );
 		}
