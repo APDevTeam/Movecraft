@@ -19,21 +19,25 @@ package net.countercraft.movecraft.utils;
 
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.items.StorageChestItem;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.datastructures.InventoryTransferHolder;
 import net.countercraft.movecraft.utils.datastructures.SignTransferHolder;
 import net.countercraft.movecraft.utils.datastructures.StorageCrateTransferHolder;
 import net.countercraft.movecraft.utils.datastructures.TransferData;
-import net.minecraft.server.v1_6_R2.ChunkCoordIntPair;
+import net.minecraft.server.v1_6_R3.ChunkCoordIntPair;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
+import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
-import org.bukkit.craftbukkit.v1_6_R2.CraftChunk;
-import org.bukkit.craftbukkit.v1_6_R2.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_6_R3.CraftChunk;
+import org.bukkit.craftbukkit.v1_6_R3.entity.CraftPlayer;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
@@ -45,7 +49,8 @@ import java.util.logging.Level;
 
 public class MapUpdateManager extends BukkitRunnable {
 	private final HashMap<World, ArrayList<MapUpdateCommand>> updates = new HashMap<World, ArrayList<MapUpdateCommand>>();
-
+	private final HashMap<World, ArrayList<EntityUpdateCommand>> entityUpdates = new HashMap<World, ArrayList<EntityUpdateCommand>>();
+	
 	private MapUpdateManager() {
 	}
 
@@ -63,13 +68,14 @@ public class MapUpdateManager extends BukkitRunnable {
 		for ( World w : updates.keySet() ) {
 			if ( w != null ) {
 				List<MapUpdateCommand> updatesInWorld = updates.get( w );
+				List<EntityUpdateCommand> entityUpdatesInWorld = entityUpdates.get( w );
 				Map<MovecraftLocation, TransferData> dataMap = new HashMap<MovecraftLocation, TransferData>();
-				Set<net.minecraft.server.v1_6_R2.Chunk> chunks = null; 
+				Set<net.minecraft.server.v1_6_R3.Chunk> chunks = null; 
 				Set<Chunk> cmChunks = null;
 				if(Settings.CompatibilityMode) {
 					cmChunks = new HashSet<Chunk>();					
 				} else {
-					chunks = new HashSet<net.minecraft.server.v1_6_R2.Chunk>();
+					chunks = new HashSet<net.minecraft.server.v1_6_R3.Chunk>();
 				}
 
 				// Preprocessing
@@ -88,7 +94,7 @@ public class MapUpdateManager extends BukkitRunnable {
 				ArrayList<Chunk> chunkList = new ArrayList<Chunk>();
 				boolean isFirstChunk=true;
 				
-				final int[] fragileBlocks = new int[]{ 52, 55, 63, 65, 68, 69, 70, 71, 72, 75, 76, 77, 93, 94, 96, 131, 132, 143, 147, 148, 149, 150, 151, 323, 324, 330, 331, 356, };
+				final int[] fragileBlocks = new int[]{ 50, 52, 55, 63, 65, 68, 69, 70, 71, 72, 75, 76, 77, 93, 94, 96, 131, 132, 143, 147, 148, 149, 150, 151, 171, 323, 324, 330, 331, 356, };
 				Arrays.sort(fragileBlocks);
 				
 				// Perform core block updates, don't do "fragiles" yet. 
@@ -125,7 +131,7 @@ public class MapUpdateManager extends BukkitRunnable {
 							}
 						}
 				
-						net.minecraft.server.v1_6_R2.Chunk c = null;
+						net.minecraft.server.v1_6_R3.Chunk c = null;
 						Chunk cmC = null;
 						if(Settings.CompatibilityMode) {
 							cmC = chunk;
@@ -201,7 +207,7 @@ public class MapUpdateManager extends BukkitRunnable {
 							chunkList.add(chunk);							
 						}
 								
-						net.minecraft.server.v1_6_R2.Chunk c = null;
+						net.minecraft.server.v1_6_R3.Chunk c = null;
 						Chunk cmC = null;
 						if(Settings.CompatibilityMode) {
 							cmC = chunk;
@@ -287,7 +293,7 @@ public class MapUpdateManager extends BukkitRunnable {
 
 					}
 				} else {
-					for ( net.minecraft.server.v1_6_R2.Chunk c : chunks ) {
+					for ( net.minecraft.server.v1_6_R3.Chunk c : chunks ) {
 						c.initLighting();
 						ChunkCoordIntPair ccip = new ChunkCoordIntPair( c.x, c.z );
 
@@ -300,13 +306,47 @@ public class MapUpdateManager extends BukkitRunnable {
 						}
 					}
 				}
+				
+				// teleport any entities that are slated to be moved
+				if(entityUpdatesInWorld!=null) {
+					Iterator<EntityUpdateCommand> iEntityUpdate=entityUpdatesInWorld.iterator();
+					while (iEntityUpdate.hasNext()) {
+						EntityUpdateCommand eUpdate=iEntityUpdate.next();
+						Entity eTest=eUpdate.getEntity();
+						Location lTest=eUpdate.getNewLocation().clone();
+						if(eTest!=null) {
+							org.bukkit.util.Vector velocity=eTest.getVelocity().clone();
+
+							eTest.teleport( lTest );
+							eTest.setVelocity(velocity);
+						}
+					}
+				}
+
+				
+				// finally clean up any dropped items on all crafts. They are likely garbage left on the ground from the block movements
+				if(CraftManager.getInstance().getCraftsInWorld(w)!=null) {
+					for(Craft cleanCraft : CraftManager.getInstance().getCraftsInWorld(w)) {
+						Iterator<Entity> i=w.getEntities().iterator();
+						while (i.hasNext()) {
+							Entity eTest=i.next();
+							if ( MathUtils.playerIsWithinBoundingPolygon( cleanCraft.getHitBox(), cleanCraft.getMinX(), cleanCraft.getMinZ(), MathUtils.bukkit2MovecraftLoc( eTest.getLocation() ) ) ) {
+								if(eTest.getType()==org.bukkit.entity.EntityType.DROPPED_ITEM) {
+									eTest.remove();
+								}
+							}
+						}
+					}	
+				}
 			}
 		}
 
+		
 		updates.clear();
+		entityUpdates.clear();
 	}
 
-	public boolean addWorldUpdate( World w, MapUpdateCommand[] mapUpdates ) {
+	public boolean addWorldUpdate( World w, MapUpdateCommand[] mapUpdates, EntityUpdateCommand[] eUpdates) {
 		ArrayList<MapUpdateCommand> get = updates.get( w );
 		if ( get != null ) {
 			updates.remove( w );
@@ -324,9 +364,18 @@ public class MapUpdateManager extends BukkitRunnable {
 			}
 
 		}
-
 		get.addAll( tempSet );
 		updates.put( w, get );
+
+		//now do entity updates
+		if(eUpdates!=null) {
+			ArrayList<EntityUpdateCommand> tempEUpdates = new ArrayList<EntityUpdateCommand>();
+			for(EntityUpdateCommand e : eUpdates) {
+				tempEUpdates.add(e);
+			}
+
+			entityUpdates.put(w, tempEUpdates);
+		}		
 		return false;
 	}
 
