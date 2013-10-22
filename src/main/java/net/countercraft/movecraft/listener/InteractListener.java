@@ -150,9 +150,53 @@ public class InteractListener implements Listener {
 				}
 			}
 
+		} else if ( sign.getLine( 0 ).equals( "Cruise: OFF")) {
+			if(CraftManager.getInstance().getCraftByPlayer( event.getPlayer() )!=null)
+				if(CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getCanCruise()) {
+					sign.setLine( 0, "Cruise: ON" );
+					sign.update( true );
+
+					CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCruiseDirection(sign.getRawData());
+					CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setLastCruisUpdate(System.currentTimeMillis());
+					CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCruising(true);
+				}
+		} else if ( sign.getLine( 0 ).equals( "Cruise: ON")) {
+			if(CraftManager.getInstance().getCraftByPlayer( event.getPlayer() )!=null)
+				if(CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getCanCruise()) {
+					sign.setLine( 0, "Cruise: OFF" );
+					sign.update( true );
+					CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCruising(false);
+				}
+		} else if ( sign.getLine( 0 ).startsWith("Teleport:")) {
+			if(CraftManager.getInstance().getCraftByPlayer( event.getPlayer() )!=null) {
+				String[] numbers = sign.getLine( 1 ).split(",");
+				int tX=Integer.parseInt(numbers[0]);
+				int tY=Integer.parseInt(numbers[1]);
+				int tZ=Integer.parseInt(numbers[2]);
+
+				if(event.getPlayer().hasPermission( "movecraft." + CraftManager.getInstance().getCraftByPlayer( event.getPlayer()).getType().getCraftName() + ".move")) {					
+					if(CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getCanTeleport()) {
+						int dx=tX-sign.getX();
+						int dy=tY-sign.getY();
+						int dz=tZ-sign.getZ();
+						CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).translate(dx, dy, dz);;
+					}
+				}
+			}
+		} else if ( sign.getLine( 0 ).startsWith("Move:")) {
+			if(CraftManager.getInstance().getCraftByPlayer( event.getPlayer() )!=null) {
+				String[] numbers = sign.getLine( 1 ).split(",");
+				int dx=Integer.parseInt(numbers[0]);
+				int dy=Integer.parseInt(numbers[1]);
+				int dz=Integer.parseInt(numbers[2]);
+
+				if(event.getPlayer().hasPermission( "movecraft." + CraftManager.getInstance().getCraftByPlayer( event.getPlayer()).getType().getCraftName() + ".move")) {					if(CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getCanStaticMove()) {
+
+						CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).translate(dx, dy, dz);;
+					}
+				}
+			}
 		}
-
-
 	}
 
 	private CraftType getCraftTypeFromString( String s ) {
@@ -169,7 +213,6 @@ public class InteractListener implements Listener {
 	@EventHandler
 	public void onPlayerInteractStick( PlayerInteractEvent event ) {
 		if ( event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK ) {
-			//if ( event.getItem() != null && event.getItem().getType().equals( Material.STICK ) ) {
 			if ( event.getItem() != null && event.getItem().getTypeId()==Settings.PilotTool ) {
 			
 				Craft craft = CraftManager.getInstance().getCraftByPlayer( event.getPlayer() );
