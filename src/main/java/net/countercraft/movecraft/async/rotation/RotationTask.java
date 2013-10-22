@@ -204,6 +204,21 @@ public class RotationTask extends AsyncTask {
 						Location rotatedPloc = new Location( getCraft().getW(), rotatedCoords[0], playerLoc.getY(), rotatedCoords[1] );
 						Location newPLoc = rotatedPloc.add( tOP );
 
+						newPLoc.setPitch(playerLoc.getPitch());
+						float newYaw=playerLoc.getYaw();
+						if(rotation==Rotation.CLOCKWISE) {
+							newYaw=newYaw+90.0F;
+							if(newYaw>=360.0F) {
+								newYaw=newYaw-360.0F;
+							}
+						}
+						if(rotation==Rotation.ANTICLOCKWISE) {
+							newYaw=newYaw-90;
+							if(newYaw<0.0F) {
+								newYaw=newYaw+360.0F;
+							}
+						}
+						newPLoc.setYaw(newYaw);
 						EntityUpdateCommand eUp=new EntityUpdateCommand(playerLoc, newPLoc, pTest);
 						entityUpdateSet.add(eUp);
 					} else {
