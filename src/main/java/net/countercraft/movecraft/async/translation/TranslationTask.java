@@ -255,7 +255,8 @@ public class TranslationTask extends AsyncTask {
 					if(pTest.getType()!=org.bukkit.entity.EntityType.DROPPED_ITEM ) {
 						Location tempLoc = pTest.getLocation().add( data.getDx(), data.getDy(), data.getDz() );
 						Location newPLoc=new Location(getCraft().getW(), tempLoc.getX(), tempLoc.getY(), tempLoc.getZ());
-						
+						newPLoc.setPitch(pTest.getLocation().getPitch());
+						newPLoc.setYaw(pTest.getLocation().getYaw());
 						EntityUpdateCommand eUp=new EntityUpdateCommand(pTest.getLocation(),newPLoc,pTest);
 						entityUpdateSet.add(eUp);
 					} else {
