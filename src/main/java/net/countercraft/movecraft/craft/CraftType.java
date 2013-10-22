@@ -34,7 +34,10 @@ public class CraftType {
 	private String craftName;
 	private int maxSize, minSize, minHeightLimit, maxHeightLimit;
 	private Integer[] allowedBlocks, forbiddenBlocks;
-	private boolean canFly, tryNudge;
+	private boolean canFly, tryNudge, canCruise, canTeleport, canStaticMove;
+	private int cruiseSkipBlocks;
+	private double fuelBurnRate;
+	private double sinkPercent;
 	private int tickCooldown;
 	private HashMap<Integer, ArrayList<Double>> flyBlocks = new HashMap<Integer, ArrayList<Double>>();
 
@@ -60,19 +63,49 @@ public class CraftType {
 		tryNudge = ( Boolean ) data.get( "tryNudge" );
 		tickCooldown = (int) Math.ceil( 20 / ( ( Double ) data.get( "speed" ) ) );
 		flyBlocks = ( HashMap<Integer, ArrayList<Double>> ) data.get( "flyblocks" );
-                if (data.containsKey("minHeightLimit")){
-                    minHeightLimit = ( Integer ) data.get( "minHeightLimit" );
-                    if (minHeightLimit<0){minHeightLimit=0;}
-                }else{
-                    minHeightLimit=0;
-                }
-                //maxHeightLimit is corrected by world in Craft.translate
-                if (data.containsKey("maxHeightLimit")){
-                    maxHeightLimit = ( Integer ) data.get( "maxHeightLimit" );
-                    if (maxHeightLimit<=minHeightLimit){maxHeightLimit=254;} 
-                }else{
-                    maxHeightLimit=254; 
-                }
+		if(data.containsKey("canCruise")) {
+			canCruise=(Boolean) data.get("canCruise");
+		} else {
+			canCruise=false;
+		}
+		if(data.containsKey("canTeleport")) {
+			canTeleport=(Boolean) data.get("canTeleport");
+		} else {
+			canTeleport=false;
+		}
+		if(data.containsKey("canStaticMove")) {
+			canStaticMove=(Boolean) data.get("canStaticMove");
+		} else {
+			canStaticMove=false;
+		}
+		if(data.containsKey("cruiseSkipBlocks")) {
+			cruiseSkipBlocks=(int) data.get("cruiseSkipBlocks");
+		} else {
+			cruiseSkipBlocks=0;
+		}
+		if(data.containsKey("fuelBurnRate")) {
+			fuelBurnRate=(double) data.get("fuelBurnRate");
+		} else {
+			fuelBurnRate=0.0;
+		}
+		if(data.containsKey("sinkPercent")) {
+			sinkPercent=(double) data.get("sinkPercent");
+		} else {
+			sinkPercent=0.0;
+		}
+        if (data.containsKey("minHeightLimit")){
+            minHeightLimit = ( Integer ) data.get( "minHeightLimit" );
+            if (minHeightLimit<0){minHeightLimit=0;}
+        }else{
+            minHeightLimit=0;
+        }
+        //maxHeightLimit is corrected by world in Craft.translate
+        if (data.containsKey("maxHeightLimit")){
+            maxHeightLimit = ( Integer ) data.get( "maxHeightLimit" );
+            if (maxHeightLimit<=minHeightLimit){maxHeightLimit=254;} 
+        }else{
+            maxHeightLimit=254; 
+        }
 	}
 
 	public String getCraftName() {
@@ -99,6 +132,30 @@ public class CraftType {
 		return canFly;
 	}
 
+	public boolean getCanCruise() {
+		return canCruise;
+	}
+	
+	public int getCruiseSkipBlocks() {
+		return cruiseSkipBlocks;
+	}
+
+	public boolean getCanTeleport() {
+		return canTeleport;
+	}
+	
+	public boolean getCanStaticMove() {
+		return canStaticMove;
+	}
+	
+	public double getFuelBurnRate() {
+		return fuelBurnRate;
+	}
+	
+	public double getSinkPercent() {
+		return sinkPercent;
+	}
+	
 	public int getTickCooldown() {
 		return tickCooldown;
 	}
