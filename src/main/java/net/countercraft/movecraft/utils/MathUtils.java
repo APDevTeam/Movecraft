@@ -86,6 +86,20 @@ public class MathUtils {
 		return new double[]{ newX, newZ };
 	}
 
+	public static double[] rotateVecNoRound( Rotation r, double x, double z ) {
+		double theta;
+		if ( r == Rotation.CLOCKWISE ) {
+			theta = 0.5 * Math.PI;
+		} else {
+			theta = -1 * 0.5 * Math.PI;
+		}
+
+		double newX =  ( x * Math.cos( theta ) ) + ( z * ( -1 * Math.sin( theta ) ) ) ;
+		double newZ =  ( x * Math.sin( theta ) ) + ( z * Math.cos( theta ) ) ;
+
+		return new double[]{ newX, newZ };
+	}
+
 	public static int positiveMod( int mod, int divisor ) {
 		if ( mod < 0 ) {
 			mod += divisor;
