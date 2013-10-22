@@ -460,7 +460,7 @@ public class BlockUtils {
 
 			case 69:
 				direction = ( byte ) ( data & 0x7 );
-				if ( direction >= 0x1 && direction <= 0x3 ) {
+				if ( direction >= 0x1 && direction <= 0x4 ) {
 
 					switch ( direction ) {
 						case 0x1:
