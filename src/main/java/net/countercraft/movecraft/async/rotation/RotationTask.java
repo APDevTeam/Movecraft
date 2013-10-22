@@ -20,6 +20,7 @@ package net.countercraft.movecraft.async.rotation;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.utils.EntityUpdateCommand;
 import net.countercraft.movecraft.utils.MapUpdateCommand;
 import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.utils.MovecraftLocation;
@@ -27,7 +28,13 @@ import net.countercraft.movecraft.utils.Rotation;
 
 import org.apache.commons.collections.ListUtils;
 import org.bukkit.Chunk;
+import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.Sign;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
+import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,6 +49,7 @@ public class RotationTask extends AsyncTask {
 	private String failMessage;
 	private MovecraftLocation[] blockList;    // used to be final, not sure why. Changed by Mark / Loraxe42
 	private MapUpdateCommand[] updates;
+	private EntityUpdateCommand[] entityUpdates;
 	private int[][][] hitbox;
 	private Integer minX, minZ;
 	private final Rotation rotation;
@@ -133,10 +141,23 @@ public class RotationTask extends AsyncTask {
 		MovecraftLocation[] originalBlockList = blockList.clone();
 		HashSet<MovecraftLocation> existingBlockSet = new HashSet<MovecraftLocation>( Arrays.asList( originalBlockList ) );
 		Set<MapUpdateCommand> mapUpdates = new HashSet<MapUpdateCommand>();
+		HashSet<EntityUpdateCommand> entityUpdateSet = new HashSet<EntityUpdateCommand>();
 
+		// make the centered block list, and check for a cruise control sign to reset to off
 		for ( int i = 0; i < blockList.length; i++ ) {
 			centeredBlockList[i] = blockList[i].subtract( originPoint );
+			if(getCraft().getCruising()) {
+				int blockID=w.getBlockAt(blockList[i].getX(), blockList[i].getY(), blockList[i].getZ() ).getTypeId();
+				if(blockID==63 || blockID==68) {
+					Sign s=(Sign) w.getBlockAt(blockList[i].getX(), blockList[i].getY(), blockList[i].getZ() ).getState();
+					if ( s.getLine( 0 ).equals( "Cruise: ON")) {
+						s.setLine(0, "Cruise: OFF");
+						s.update(true);
+					}
+				}
+			}
 		}
+		getCraft().setCruising(false);
 
 		for ( int i = 0; i < blockList.length; i++ ) {
 
@@ -166,6 +187,32 @@ public class RotationTask extends AsyncTask {
 		}
 
 		if ( !failed ) {
+			//rotate entities in the craft
+			Location tOP = new Location( getCraft().getW(), originPoint.getX(), originPoint.getY(), originPoint.getZ() );
+			Iterator<Entity> i=getCraft().getW().getEntities().iterator();
+			while (i.hasNext()) {
+				Entity pTest=i.next();
+				if ( MathUtils.playerIsWithinBoundingPolygon( getCraft().getHitBox(), getCraft().getMinX(), getCraft().getMinZ(), MathUtils.bukkit2MovecraftLoc( pTest.getLocation() ) ) ) {
+					if(pTest.getType()!=org.bukkit.entity.EntityType.DROPPED_ITEM ) {
+						// Player is onboard this craft
+						tOP.setX(tOP.getBlockX()+0.5);
+						tOP.setZ(tOP.getBlockZ()+0.5);
+						Location playerLoc = pTest.getLocation();
+						Location adjustedPLoc = playerLoc.subtract( tOP ); 
+
+						double[] rotatedCoords = MathUtils.rotateVecNoRound( rotation, adjustedPLoc.getX(), adjustedPLoc.getZ() );
+						Location rotatedPloc = new Location( getCraft().getW(), rotatedCoords[0], playerLoc.getY(), rotatedCoords[1] );
+						Location newPLoc = rotatedPloc.add( tOP );
+
+						EntityUpdateCommand eUp=new EntityUpdateCommand(playerLoc, newPLoc, pTest);
+						entityUpdateSet.add(eUp);
+					} else {
+						pTest.remove();
+					}
+				}
+
+			}
+			
 			// Calculate air changes
 			List<MovecraftLocation> airLocation = ListUtils.subtract( Arrays.asList( originalBlockList ), Arrays.asList( blockList ) );
 			
@@ -184,6 +231,7 @@ public class RotationTask extends AsyncTask {
 			
 
 			this.updates = mapUpdates.toArray( new MapUpdateCommand[1] );
+			this.entityUpdates = entityUpdateSet.toArray( new EntityUpdateCommand[1] );
 
 			Integer maxX = null;
 			Integer maxZ = null;
@@ -244,7 +292,6 @@ public class RotationTask extends AsyncTask {
 
 			}
 
-
 			this.hitbox = polygonalBox;
 		}
 	}
@@ -268,6 +315,10 @@ public class RotationTask extends AsyncTask {
 
 	public MapUpdateCommand[] getUpdates() {
 		return updates;
+	}
+
+	public EntityUpdateCommand[] getEntityUpdates() {
+		return entityUpdates;
 	}
 
 	public int[][][] getHitbox() {
