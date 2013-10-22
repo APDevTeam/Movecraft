@@ -45,7 +45,14 @@ public class PlayerListener implements Listener {
 		}
 	}
 
-	public void onPlayerDamaged( EntityDamageByEntityEvent e ) {
+/*	public void onPlayerDamaged( EntityDamageByEntityEvent e ) {
+		if ( e instanceof Player ) {
+			Player p = ( Player ) e;
+			CraftManager.getInstance().removeCraft( CraftManager.getInstance().getCraftByPlayer( p ) );
+		}
+	}*/
+
+	public void onPlayerDeath( EntityDamageByEntityEvent e ) {  // changed to death so when you shoot up an airship and hit the pilot, it still sinks
 		if ( e instanceof Player ) {
 			Player p = ( Player ) e;
 			CraftManager.getInstance().removeCraft( CraftManager.getInstance().getCraftByPlayer( p ) );
