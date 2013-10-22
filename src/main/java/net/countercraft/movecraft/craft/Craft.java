@@ -35,6 +35,11 @@ public class Craft {
 	private World w;
 	private AtomicBoolean processing = new AtomicBoolean();
 	private int minX, minZ, maxHeightLimit;
+	private boolean cruising;
+	private byte cruiseDirection;
+	private long lastCruiseUpdate;
+	private long lastBlockCheck;
+	private double burningFuel;
 
 	public Craft( CraftType type, World world ) {
 		this.type = type;
@@ -111,4 +116,45 @@ public class Craft {
 	public void setMinZ( int minZ ) {
 		this.minZ = minZ;
 	}
+	
+	public boolean getCruising() {
+		return cruising;
+	}
+	
+	public void setCruiseDirection(byte cruiseDirection) {
+		this.cruiseDirection=cruiseDirection;
+	}
+
+	public byte getCruiseDirection() {
+		return cruiseDirection;
+	}
+	
+	public void setCruising(boolean cruising) {
+		this.cruising=cruising;
+	}
+
+	public void setLastCruisUpdate(long update) {
+		this.lastCruiseUpdate=update;
+	}
+	
+	public long getLastCruiseUpdate() {
+		return lastCruiseUpdate;
+	}
+	
+	public void setLastBlockCheck(long update) {
+		this.lastBlockCheck=update;
+	}
+	
+	public long getLastBlockCheck() {
+		return lastBlockCheck;
+	}
+	
+	public void setBurningFuel(double burningFuel) {
+		this.burningFuel=burningFuel;
+	}
+	
+	public double getBurningFuel() {
+		return burningFuel;
+	}
+	
 }
