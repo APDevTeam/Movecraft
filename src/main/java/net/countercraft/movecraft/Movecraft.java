@@ -26,7 +26,7 @@ import net.countercraft.movecraft.listener.CommandListener;
 import net.countercraft.movecraft.listener.InteractListener;
 import net.countercraft.movecraft.listener.PlayerListener;
 import net.countercraft.movecraft.localisation.I18nSupport;
-//import net.countercraft.movecraft.metrics.MovecraftMetrics;  Removed by Mark because I couldn't be bothered to get MCStats working
+import net.countercraft.movecraft.metrics.MovecraftMetrics;  
 import net.countercraft.movecraft.utils.MapUpdateManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -98,9 +98,8 @@ public class Movecraft extends JavaPlugin {
 			StorageChestItem.readFromDisk();
 			StorageChestItem.addRecipie();
 
-			// new MovecraftMetrics(
-			// CraftManager.getInstance().getCraftTypes().length ); Removed by
-			// Mark because I couldn't be bothered to get MCStats working
+		 	new MovecraftMetrics(CraftManager.getInstance().getCraftTypes().length ); Removed by
+			
 
 			logger.log(Level.INFO, String.format(I18nSupport
 					.getInternationalisedString("Startup - Enabled message"),
