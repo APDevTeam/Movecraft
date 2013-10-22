@@ -22,15 +22,24 @@ import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.BoundingBoxUtils;
+import net.countercraft.movecraft.utils.EntityUpdateCommand;
 import net.countercraft.movecraft.utils.MapUpdateCommand;
 import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.utils.MovecraftLocation;
 
 import org.apache.commons.collections.ListUtils;
+import org.bukkit.Location;
+import org.bukkit.block.Block;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -105,16 +114,26 @@ public class TranslationTask extends AsyncTask {
 			
 			// now add all the air blocks found within the craft's hitbox immediately above the waterline and below to the craft blocks so they will be translated
 			HashSet<MovecraftLocation> newHSBlockList=new HashSet<MovecraftLocation>(Arrays.asList(blocksList));
-			for(int posY=waterLine+1; posY>=minY; posY--) {
+			int posY=waterLine+1;
+			for(int posX=minX; posX<maxX; posX++) {
+				for(int posZ=minZ; posZ<maxZ; posZ++) {
+					if(hb[posX-minX]!=null) {
+						if(hb[posX-minX][posZ-minZ]!=null) {
+							if(getCraft().getW().getBlockAt(posX,posY,posZ).getTypeId()==0 && posY>hb[posX-minX][posZ-minZ][0] && posY<hb[posX-minX][posZ-minZ][1]) {
+								MovecraftLocation l=new MovecraftLocation(posX,posY,posZ);
+								newHSBlockList.add(l);
+							}
+						}
+					}
+				}
+			}
+			// dont check the hitbox for the underwater portion. Otherwise open-hulled ships would flood.
+			for(posY=waterLine; posY>=minY; posY--) {
 				for(int posX=minX; posX<maxX; posX++) {
 					for(int posZ=minZ; posZ<maxZ; posZ++) {
-						if(hb[posX-minX]!=null) {
-							if(hb[posX-minX][posZ-minZ]!=null) {
-								if(getCraft().getW().getBlockAt(posX,posY,posZ).getTypeId()==0 && posY>hb[posX-minX][posZ-minZ][0] && posY<hb[posX-minX][posZ-minZ][1]) {
-									MovecraftLocation l=new MovecraftLocation(posX,posY,posZ);
-									newHSBlockList.add(l);
-								}
-							}
+						if(getCraft().getW().getBlockAt(posX,posY,posZ).getTypeId()==0) {
+							MovecraftLocation l=new MovecraftLocation(posX,posY,posZ);
+							newHSBlockList.add(l);
 						}
 					}
 				}
@@ -123,10 +142,55 @@ public class TranslationTask extends AsyncTask {
 			blocksList=newHSBlockList.toArray(new MovecraftLocation[newHSBlockList.size()]);
 		}
 		
+		// check for fuel, burn some from a furnace if needed. Blocks of coal are supported, in addition to coal and charcoal
+		double fuelBurnRate=getCraft().getType().getFuelBurnRate();
+		if(fuelBurnRate!=0.0) {
+			if(getCraft().getBurningFuel()<fuelBurnRate) {
+				Block fuelHolder=null;
+				for (MovecraftLocation bTest : blocksList) {
+					Block b=getCraft().getW().getBlockAt(bTest.getX(), bTest.getY(), bTest.getZ());
+					if(b.getTypeId()==61) {
+						InventoryHolder inventoryHolder = ( InventoryHolder ) b.getState();
+						if(inventoryHolder.getInventory().contains(263) || inventoryHolder.getInventory().contains(173)) {
+							fuelHolder=b;
+						}					
+					}
+				}
+				if(fuelHolder==null) {
+					fail( String.format( I18nSupport.getInternationalisedString( "Translation - Failed Craft out of fuel" ) ) );					
+				} else {
+					InventoryHolder inventoryHolder = ( InventoryHolder ) fuelHolder.getState();
+					if(inventoryHolder.getInventory().contains(263)) {
+						ItemStack iStack=inventoryHolder.getInventory().getItem(inventoryHolder.getInventory().first(263));
+						int amount=iStack.getAmount();
+						if(amount==1) {
+							inventoryHolder.getInventory().remove(263);
+						} else {
+							iStack.setAmount(amount-1);
+						}
+						getCraft().setBurningFuel(getCraft().getBurningFuel()+7.0);
+					} else {
+						ItemStack iStack=inventoryHolder.getInventory().getItem(inventoryHolder.getInventory().first(173));
+						int amount=iStack.getAmount();
+						if(amount==1) {
+							inventoryHolder.getInventory().remove(163);
+						} else {
+							iStack.setAmount(amount-1);
+						}
+						getCraft().setBurningFuel(getCraft().getBurningFuel()+79.0);
+
+					}
+				}
+			} else {
+				getCraft().setBurningFuel(getCraft().getBurningFuel()-fuelBurnRate);
+			}
+		}
+		
 		MovecraftLocation[] newBlockList = new MovecraftLocation[blocksList.length];
 		HashSet<MovecraftLocation> existingBlockSet = new HashSet<MovecraftLocation>( Arrays.asList( blocksList ) );
+		HashSet<EntityUpdateCommand> entityUpdateSet = new HashSet<EntityUpdateCommand>();
 		Set<MapUpdateCommand> updateSet = new HashSet<MapUpdateCommand>();
-		
+			
 		for ( int i = 0; i < blocksList.length; i++ ) {
 			MovecraftLocation oldLoc = blocksList[i];
 			MovecraftLocation newLoc = oldLoc.translate( data.getDx(), data.getDy(), data.getDz() );
@@ -154,7 +218,7 @@ public class TranslationTask extends AsyncTask {
 				}
 			} else {
 			// let watercraft move through water
-				if ( (testID != 0 && testID != 9) && !existingBlockSet.contains( newLoc ) ) {
+				if ( (testID != 0 && testID != 9 && testID != 8) && !existingBlockSet.contains( newLoc ) ) {
 					// New block is not air or water and is not part of the existing ship
 					fail( String.format( I18nSupport.getInternationalisedString( "Translation - Failed Craft is obstructed" ) ) );
 					break;
@@ -170,7 +234,37 @@ public class TranslationTask extends AsyncTask {
 		if ( !data.failed() ) {
 			data.setBlockList( newBlockList );
 
+			// Move entities within the craft
+			List<Entity> eList=null;
+			int numTries=0;
+			
+			while((eList==null)&&(numTries<100)) {
+				try {
+					eList=getCraft().getW().getEntities();
+				}
+				catch(java.util.ConcurrentModificationException e)
+				{
+					numTries++;
+				}
+			}
 
+			Iterator<Entity> i=eList.iterator();
+			while (i.hasNext()) {
+				Entity pTest=i.next();
+				if ( MathUtils.playerIsWithinBoundingPolygon( getCraft().getHitBox(), getCraft().getMinX(), getCraft().getMinZ(), MathUtils.bukkit2MovecraftLoc( pTest.getLocation() ) ) ) {
+					if(pTest.getType()!=org.bukkit.entity.EntityType.DROPPED_ITEM ) {
+						Location tempLoc = pTest.getLocation().add( data.getDx(), data.getDy(), data.getDz() );
+						Location newPLoc=new Location(getCraft().getW(), tempLoc.getX(), tempLoc.getY(), tempLoc.getZ());
+						
+						EntityUpdateCommand eUp=new EntityUpdateCommand(pTest.getLocation(),newPLoc,pTest);
+						entityUpdateSet.add(eUp);
+					} else {
+						pTest.remove();
+					}
+				}
+			}
+
+			
 			//Set blocks that are no longer craft to air
 			List<MovecraftLocation> airLocation = ListUtils.subtract( Arrays.asList( blocksList ), Arrays.asList( newBlockList ) );
 
@@ -187,8 +281,9 @@ public class TranslationTask extends AsyncTask {
 				}
 			}
 
-			data.setUpdates( updateSet.toArray( new MapUpdateCommand[1] ) );
-
+			data.setUpdates(updateSet.toArray( new MapUpdateCommand[1] ) );
+			data.setEntityUpdates(entityUpdateSet.toArray( new EntityUpdateCommand[1] ) );
+			
 			if ( data.getDy() != 0 ) {
 				data.setHitbox( BoundingBoxUtils.translateBoundingBoxVertically( data.getHitbox(), data.getDy() ) );
 			}
