@@ -17,6 +17,10 @@
 
 package net.countercraft.movecraft.async.translation;
 
+import org.bukkit.Location;
+import org.bukkit.entity.Entity;
+
+import net.countercraft.movecraft.utils.EntityUpdateCommand;
 import net.countercraft.movecraft.utils.MapUpdateCommand;
 import net.countercraft.movecraft.utils.MovecraftLocation;
 
@@ -28,6 +32,7 @@ public class TranslationTaskData {
 	private String failMessage;
 	private MovecraftLocation[] blockList;
 	private MapUpdateCommand[] updates;
+	private EntityUpdateCommand[] entityUpdates;
 	private int[][][] hitbox;
 	private int minX, minZ;
 	private int maxHeight, minHeight;
@@ -87,6 +92,14 @@ public class TranslationTaskData {
 
 	public void setUpdates( MapUpdateCommand[] updates ) {
 		this.updates = updates;
+	}
+
+	public EntityUpdateCommand[] getEntityUpdates() {
+		return entityUpdates;
+	}
+
+	public void setEntityUpdates( EntityUpdateCommand[] entityUpdates ) {
+		this.entityUpdates = entityUpdates;
 	}
 
 	public int[][][] getHitbox() {
