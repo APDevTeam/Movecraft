@@ -25,5 +25,7 @@ public class Settings {
 	public static List<Integer> DATA_BLOCKS;
 	public static String LOCALE;
 	public static int PilotTool = 280;
-	public static boolean CompatibilityMode = false;  
+	public static boolean CompatibilityMode = false;
+	public static double SinkRateTicks = 20.0;
+	public static double SinkCheckTicks = 100.0;
 }
