@@ -240,6 +240,19 @@ public class AsyncManager extends BukkitRunnable {
 								pcraft.setLastCruisUpdate(System.currentTimeMillis());
 							}
 							
+						} else {
+							if(pcraft.getLastDX()!=0 || pcraft.getLastDY()!=0 || pcraft.getLastDZ()!=0) {
+								long rcticksElapsed = ( System.currentTimeMillis() - pcraft.getLastRightClick() ) / 50;
+								rcticksElapsed=Math.abs(rcticksElapsed);
+								// if they are holding the button down, keep moving
+								if (rcticksElapsed <= 5 ) {
+									long ticksElapsed = ( System.currentTimeMillis() - pcraft.getLastCruiseUpdate() ) / 50;
+									if ( Math.abs( ticksElapsed ) >= pcraft.getType().getTickCooldown() ) {
+										pcraft.translate(pcraft.getLastDX(), pcraft.getLastDY(), pcraft.getLastDZ());
+										pcraft.setLastCruisUpdate(System.currentTimeMillis());
+									}
+								}
+							}
 						}
 					}
 				}
