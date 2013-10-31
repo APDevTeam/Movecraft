@@ -51,7 +51,8 @@ public class PlayerListener implements Listener {
 			CraftManager.getInstance().removeCraft( CraftManager.getInstance().getCraftByPlayer( p ) );
 		}
 	}*/
-
+	
+	@EventHandler
 	public void onPlayerDeath( EntityDamageByEntityEvent e ) {  // changed to death so when you shoot up an airship and hit the pilot, it still sinks
 		if ( e instanceof Player ) {
 			Player p = ( Player ) e;
@@ -87,11 +88,11 @@ public class PlayerListener implements Listener {
 		}
 	}
 
-	@EventHandler
+/*	@EventHandler
 	public void onPlayerHit( EntityDamageByEntityEvent event ) {
 		if ( event.getEntity() instanceof Player && CraftManager.getInstance().getCraftByPlayer( ( Player ) event.getEntity() ) != null ) {
 			CraftManager.getInstance().removeCraft( CraftManager.getInstance().getCraftByPlayer( ( Player ) event.getEntity() ) );
 		}
-	}
+	}   */
 
 }
