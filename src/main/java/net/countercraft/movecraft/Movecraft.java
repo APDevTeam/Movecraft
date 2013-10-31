@@ -98,7 +98,7 @@ public class Movecraft extends JavaPlugin {
 			StorageChestItem.readFromDisk();
 			StorageChestItem.addRecipie();
 
-		 	new MovecraftMetrics(CraftManager.getInstance().getCraftTypes().length ); Removed by
+		 	new MovecraftMetrics(CraftManager.getInstance().getCraftTypes().length );
 			
 
 			logger.log(Level.INFO, String.format(I18nSupport
