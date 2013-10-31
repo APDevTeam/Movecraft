@@ -83,7 +83,7 @@ public class TranslationTask extends AsyncTask {
 			int minZ=getCraft().getMinZ();
 			
 			// next figure out the water level by examining blocks next to the outer boundaries of the craft
-			for(int posY=maxY; (posY>=minY)&&(waterLine==0); posY--) {
+			for(int posY=maxY+1; (posY>=minY-1)&&(waterLine==0); posY--) {
 				int posX;
 				int posZ;
 				posZ=minZ-1;
@@ -196,10 +196,10 @@ public class TranslationTask extends AsyncTask {
 			MovecraftLocation newLoc = oldLoc.translate( data.getDx(), data.getDy(), data.getDz() );
 			newBlockList[i] = newLoc;
 
-			if ( newLoc.getY() >= data.getMaxHeight() && newLoc.getY() != oldLoc.getY() ) {
+			if ( newLoc.getY() >= data.getMaxHeight() && newLoc.getY() > oldLoc.getY() ) {
 				fail( String.format( I18nSupport.getInternationalisedString( "Translation - Failed Craft hit height limit" ) ) );
 				break;
-			} else if ( newLoc.getY() <= data.getMinHeight()  && newLoc.getY() != oldLoc.getY() ) {
+			} else if ( newLoc.getY() <= data.getMinHeight()  && newLoc.getY() < oldLoc.getY() ) {
 				fail( String.format( I18nSupport.getInternationalisedString( "Translation - Failed Craft hit minimum height limit" ) ) );
 				break;
 			}
@@ -257,8 +257,11 @@ public class TranslationTask extends AsyncTask {
 						Location newPLoc=new Location(getCraft().getW(), tempLoc.getX(), tempLoc.getY(), tempLoc.getZ());
 						newPLoc.setPitch(pTest.getLocation().getPitch());
 						newPLoc.setYaw(pTest.getLocation().getYaw());
+						
+						// due to persistent entity movement problems, teleport the person and also mark them for teleportion again after the block updates						
 						EntityUpdateCommand eUp=new EntityUpdateCommand(pTest.getLocation(),newPLoc,pTest);
 						entityUpdateSet.add(eUp);
+						pTest.teleport(newPLoc);
 					} else {
 						pTest.remove();
 					}
@@ -275,7 +278,16 @@ public class TranslationTask extends AsyncTask {
 					updateSet.add( new MapUpdateCommand( l1, 0 ) );
 				} else {
 					if(l1.getY()<=waterLine) {
-						updateSet.add( new MapUpdateCommand( l1, 9 ) );
+						// if there is air below the ship at the current position, don't fill in with water
+						MovecraftLocation testAir=new MovecraftLocation(l1.getX(), l1.getY()-1, l1.getZ());
+						while(existingBlockSet.contains(testAir)) {
+							testAir.setY(testAir.getY()-1);
+						}
+						if(getCraft().getW().getBlockAt(testAir.getX(), testAir.getY(), testAir.getZ()).getTypeId()==0) {
+							updateSet.add( new MapUpdateCommand( l1, 0 ) );							
+						} else {
+							updateSet.add( new MapUpdateCommand( l1, 9 ) );
+						}
 					} else {
 						updateSet.add( new MapUpdateCommand( l1, 0 ) );
 					}
