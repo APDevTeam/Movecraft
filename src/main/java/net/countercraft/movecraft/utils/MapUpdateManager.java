@@ -312,13 +312,15 @@ public class MapUpdateManager extends BukkitRunnable {
 					Iterator<EntityUpdateCommand> iEntityUpdate=entityUpdatesInWorld.iterator();
 					while (iEntityUpdate.hasNext()) {
 						EntityUpdateCommand eUpdate=iEntityUpdate.next();
-						Entity eTest=eUpdate.getEntity();
-						Location lTest=eUpdate.getNewLocation().clone();
-						if(eTest!=null) {
-							org.bukkit.util.Vector velocity=eTest.getVelocity().clone();
+						if(eUpdate!=null) {
+							Entity eTest=eUpdate.getEntity();
+							Location lTest=eUpdate.getNewLocation().clone();
+							if(eTest!=null) {
+								org.bukkit.util.Vector velocity=eTest.getVelocity().clone();
 
-							eTest.teleport( lTest );
-							eTest.setVelocity(velocity);
+								eTest.teleport( lTest );
+								eTest.setVelocity(velocity);
+							}
 						}
 					}
 				}
