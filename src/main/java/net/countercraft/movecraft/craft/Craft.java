@@ -39,6 +39,8 @@ public class Craft {
 	private byte cruiseDirection;
 	private long lastCruiseUpdate;
 	private long lastBlockCheck;
+	private long lastRightClick;
+	private int lastDX, lastDY, lastDZ;
 	private double burningFuel;
 
 	public Craft( CraftType type, World world ) {
@@ -147,6 +149,38 @@ public class Craft {
 	
 	public long getLastBlockCheck() {
 		return lastBlockCheck;
+	}
+	
+	public void setLastRightClick(long update) {
+		this.lastRightClick=update;
+	}
+	
+	public long getLastRightClick() {
+		return lastRightClick;
+	}
+	
+	public int getLastDX() {
+		return lastDX;
+	}
+
+	public void setLastDX( int dX ) {
+		this.lastDX = dX;
+	}
+	
+	public int getLastDY() {
+		return lastDY;
+	}
+
+	public void setLastDY( int dY ) {
+		this.lastDY = dY;
+	}
+	
+	public int getLastDZ() {
+		return lastDZ;
+	}
+
+	public void setLastDZ( int dZ ) {
+		this.lastDZ = dZ;
 	}
 	
 	public void setBurningFuel(double burningFuel) {
