@@ -222,7 +222,8 @@ public class InteractListener implements Listener {
 						long ticksElapsed = ( System.currentTimeMillis() - time ) / 50;
 						if ( Math.abs( ticksElapsed ) < craft.getType().getTickCooldown() ) {
 							return;
-						}
+						} 
+						
 					}
 
 					if ( MathUtils.playerIsWithinBoundingPolygon( craft.getHitBox(), craft.getMinX(), craft.getMinZ(), MathUtils.bukkit2MovecraftLoc( event.getPlayer().getLocation() ) ) ) {
@@ -247,9 +248,22 @@ public class InteractListener implements Listener {
 								dx = 0;
 								dz = 0;
 							}
+							
+							// See if the player is holding down the mouse button and update the last right clicked info
+							if(System.currentTimeMillis()-craft.getLastRightClick()<300) {
+								craft.setLastDX(dx);
+								craft.setLastDY(dy);
+								craft.setLastDZ(dz);
+							} else {
+								craft.setLastDX(0);
+								craft.setLastDY(0);
+								craft.setLastDZ(0);
+							}
+							craft.setLastRightClick(System.currentTimeMillis());
 
 							craft.translate( dx, dy, dz );
 							timeMap.put( event.getPlayer(), System.currentTimeMillis() );
+							craft.setLastCruisUpdate(System.currentTimeMillis());
 						}
 					}
 				}
