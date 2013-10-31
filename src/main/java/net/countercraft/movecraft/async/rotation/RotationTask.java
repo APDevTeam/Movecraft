@@ -221,6 +221,7 @@ public class RotationTask extends AsyncTask {
 						newPLoc.setYaw(newYaw);
 						EntityUpdateCommand eUp=new EntityUpdateCommand(playerLoc, newPLoc, pTest);
 						entityUpdateSet.add(eUp);
+						pTest.teleport(newPLoc);
 					} else {
 						pTest.remove();
 					}
