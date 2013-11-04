@@ -113,7 +113,9 @@ public class InteractListener implements Listener {
 				if ( CraftManager.getInstance().getCraftByPlayer( event.getPlayer() ) == null ) {
 					c.detect( event.getPlayer().getName(), startPoint );
 				} else {
-					event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "Player - Error - Already piloting craft" ) ) );
+					Craft oldCraft=CraftManager.getInstance().getCraftByPlayer( event.getPlayer() );
+					CraftManager.getInstance().removeCraft( oldCraft );
+					c.detect( event.getPlayer().getName(), startPoint );
 				}
 
 				event.setCancelled( true );

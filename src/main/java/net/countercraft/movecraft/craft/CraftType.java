@@ -79,17 +79,17 @@ public class CraftType {
 			canStaticMove=false;
 		}
 		if(data.containsKey("cruiseSkipBlocks")) {
-			cruiseSkipBlocks=(int) data.get("cruiseSkipBlocks");
+			cruiseSkipBlocks=(Integer) data.get("cruiseSkipBlocks");
 		} else {
 			cruiseSkipBlocks=0;
 		}
 		if(data.containsKey("fuelBurnRate")) {
-			fuelBurnRate=(double) data.get("fuelBurnRate");
+			fuelBurnRate=(Double) data.get("fuelBurnRate");
 		} else {
 			fuelBurnRate=0.0;
 		}
 		if(data.containsKey("sinkPercent")) {
-			sinkPercent=(double) data.get("sinkPercent");
+			sinkPercent=(Double) data.get("sinkPercent");
 		} else {
 			sinkPercent=0.0;
 		}

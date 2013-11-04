@@ -173,7 +173,7 @@ public class TranslationTask extends AsyncTask {
 						ItemStack iStack=inventoryHolder.getInventory().getItem(inventoryHolder.getInventory().first(173));
 						int amount=iStack.getAmount();
 						if(amount==1) {
-							inventoryHolder.getInventory().remove(163);
+							inventoryHolder.getInventory().remove(173);
 						} else {
 							iStack.setAmount(amount-1);
 						}
