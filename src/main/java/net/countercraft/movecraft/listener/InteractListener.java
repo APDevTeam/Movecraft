@@ -252,7 +252,7 @@ public class InteractListener implements Listener {
 							}
 							
 							// See if the player is holding down the mouse button and update the last right clicked info
-							if(System.currentTimeMillis()-craft.getLastRightClick()<300) {
+							if(System.currentTimeMillis()-craft.getLastRightClick()<500) {
 								craft.setLastDX(dx);
 								craft.setLastDY(dy);
 								craft.setLastDZ(dz);

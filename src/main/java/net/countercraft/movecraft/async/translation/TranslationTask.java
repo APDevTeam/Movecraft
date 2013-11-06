@@ -261,6 +261,11 @@ public class TranslationTask extends AsyncTask {
 						// due to persistent entity movement problems, teleport the person and also mark them for teleportion again after the block updates						
 						EntityUpdateCommand eUp=new EntityUpdateCommand(pTest.getLocation(),newPLoc,pTest);
 						entityUpdateSet.add(eUp);
+						if(pTest.getType()==org.bukkit.entity.EntityType.PLAYER) {
+							Player player=(Player) pTest;
+							player.setAllowFlight(true);
+							player.setFlying(true);
+						}
 						pTest.teleport(newPLoc);
 					} else {
 						pTest.remove();

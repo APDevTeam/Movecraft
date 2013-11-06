@@ -38,6 +38,7 @@ import org.bukkit.block.Sign;
 import org.bukkit.craftbukkit.v1_6_R3.CraftChunk;
 import org.bukkit.craftbukkit.v1_6_R3.entity.CraftPlayer;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
@@ -60,6 +61,82 @@ public class MapUpdateManager extends BukkitRunnable {
 
 	private static class MapUpdateManagerHolder {
 		private static final MapUpdateManager INSTANCE = new MapUpdateManager();
+	}
+	
+	private void updateBlock(MapUpdateCommand m, ArrayList<Chunk> chunkList, World w, Map<MovecraftLocation, TransferData> dataMap, Set<net.minecraft.server.v1_6_R3.Chunk> chunks, Set<Chunk> cmChunks, boolean placeDispensers) {
+		MovecraftLocation workingL = m.getNewBlockLocation();
+
+		int x = workingL.getX();
+		int y = workingL.getY();
+		int z = workingL.getZ();
+		Chunk chunk=null;
+	
+		// Calculate chunk if necessary, check list of chunks already loaded first
+	
+		boolean foundChunk=false;
+		for (Chunk testChunk : chunkList) {
+			int sx=x>>4;
+			int sz=z>>4;
+			if((testChunk.getX()==sx)&&(testChunk.getZ()==sz)) {
+				foundChunk=true;
+				chunk=testChunk;
+			}
+		}
+		if(!foundChunk) {
+			chunk = w.getBlockAt( x, y, z ).getChunk();
+			chunkList.add(chunk);							
+		}
+
+		net.minecraft.server.v1_6_R3.Chunk c = null;
+		Chunk cmC = null;
+		if(Settings.CompatibilityMode) {
+			cmC = chunk;
+		} else {
+			c = ( ( CraftChunk ) chunk ).getHandle();
+		}
+
+		//get the inner-chunk index of the block to change
+		//modify the block in the chunk
+
+		int newTypeID = m.getTypeID();
+		if(newTypeID==23 && !placeDispensers) {
+			newTypeID=1;
+		}
+		TransferData transferData = dataMap.get( workingL );
+
+		byte data;
+		if ( transferData != null ) {
+			data = transferData.getData();
+		} else {
+			data = 0;
+		}
+
+		int origType=w.getBlockAt( x, y, z ).getTypeId();
+		byte origData=w.getBlockAt( x, y, z ).getData();
+		boolean success = false;
+
+		//don't blank out block if it's already air, or if blocktype will not be changed
+		if(Settings.CompatibilityMode) {
+			if((origType!=0)&&(origType!=newTypeID)) {
+				w.getBlockAt( x, y, z ).setTypeIdAndData( 0, (byte) 0, false );
+			} 
+			w.getBlockAt( x, y, z ).setTypeIdAndData( newTypeID, data, false );
+			if ( !cmChunks.contains( cmC ) ) {
+				cmChunks.add( cmC );
+			}
+		} else {
+			if((origType!=0)&&(origType!=newTypeID)) {
+				c.a( x & 15, y, z & 15, 0, 0 );
+			} 
+			success = c.a( x & 15, y, z & 15, newTypeID, data );
+			if ( !success ) {
+				w.getBlockAt( x, y, z ).setTypeIdAndData( newTypeID, data, false );
+			}
+			if ( !chunks.contains( c ) ) {
+				chunks.add( c );
+			}
+		}						
+
 	}
 
 	public void run() {
@@ -87,6 +164,10 @@ public class MapUpdateManager extends BukkitRunnable {
 						if ( blockDataPacket != null ) {
 							dataMap.put( c.getNewBlockLocation(), blockDataPacket );
 						}
+						//remove dispensers and replace them with stone blocks to prevent firing during ship reconstruction
+						if(w.getBlockAt( l.getX(), l.getY(), l.getZ() ).getTypeId()==23) {
+							w.getBlockAt( l.getX(), l.getY(), l.getZ() ).setTypeIdAndData( 1, (byte) 0, false );
+						}
 					}
 
 				} 
@@ -94,89 +175,15 @@ public class MapUpdateManager extends BukkitRunnable {
 				ArrayList<Chunk> chunkList = new ArrayList<Chunk>();
 				boolean isFirstChunk=true;
 				
-				final int[] fragileBlocks = new int[]{ 50, 52, 55, 63, 65, 68, 69, 70, 71, 72, 75, 76, 77, 93, 94, 96, 131, 132, 143, 147, 148, 149, 150, 151, 171, 323, 324, 330, 331, 356, };
+				final int[] fragileBlocks = new int[]{ 29, 33, 34, 50, 52, 55, 63, 65, 68, 69, 70, 71, 72, 75, 76, 77, 93, 94, 96, 131, 132, 143, 147, 148, 149, 150, 151, 171, 323, 324, 330, 331, 356, 404 };
 				Arrays.sort(fragileBlocks);
 				
-				// Perform core block updates, don't do "fragiles" yet. 
+				// Perform core block updates, don't do "fragiles" yet. Don't do Dispensers yet either
 				for ( MapUpdateCommand m : updatesInWorld ) {
 					boolean isFragile=(Arrays.binarySearch(fragileBlocks,m.getTypeID())>=0);
 					
 					if(!isFragile) {
-						MovecraftLocation workingL = m.getNewBlockLocation();
-
-						int x = workingL.getX();
-						int y = workingL.getY();
-						int z = workingL.getZ();
-						Chunk chunk=null;
-					
-						// Calculate chunk if necessary, check list of chunks already loaded first
-					
-						if(isFirstChunk) {
-							chunk = w.getBlockAt( x, y, z ).getChunk();					
-							chunkList.add(chunk);
-							isFirstChunk=false;
-						} else {
-							boolean foundChunk=false;
-							for (Chunk testChunk : chunkList) {
-								int sx=x>>4;
-								int sz=z>>4;
-								if((testChunk.getX()==sx)&&(testChunk.getZ()==sz)) {
-									foundChunk=true;
-									chunk=testChunk;
-								}
-							}
-							if(!foundChunk) {
-								chunk = w.getBlockAt( x, y, z ).getChunk();
-								chunkList.add(chunk);							
-							}
-						}
-				
-						net.minecraft.server.v1_6_R3.Chunk c = null;
-						Chunk cmC = null;
-						if(Settings.CompatibilityMode) {
-							cmC = chunk;
-						} else {
-							c = ( ( CraftChunk ) chunk ).getHandle();
-						}
-
-						//get the inner-chunk index of the block to change
-						//modify the block in the chunk
-
-						int newTypeID = m.getTypeID();
-						TransferData transferData = dataMap.get( workingL );
-
-						byte data;
-						if ( transferData != null ) {
-							data = transferData.getData();
-						} else {
-							data = 0;
-						}
-
-						int origType=w.getBlockAt( x, y, z ).getTypeId();
-						byte origData=w.getBlockAt( x, y, z ).getData();
-						boolean success = false;
-
-						//don't blank out block if it's already air, or if blocktype will not be changed
-						if(Settings.CompatibilityMode) {
-							if((origType!=0)&&(origType!=newTypeID)) {
-								w.getBlockAt( x, y, z ).setTypeIdAndData( 0, (byte) 0, false );
-							} 
-							w.getBlockAt( x, y, z ).setTypeIdAndData( newTypeID, data, false );
-							if ( !cmChunks.contains( cmC ) ) {
-								cmChunks.add( cmC );
-							}
-						} else {
-							if((origType!=0)&&(origType!=newTypeID)) {
-								c.a( x & 15, y, z & 15, 0, 0 );
-							} 
-							success = c.a( x & 15, y, z & 15, newTypeID, data );
-							if ( !success ) {
-								w.getBlockAt( x, y, z ).setTypeIdAndData( newTypeID, data, false );
-							}
-							if ( !chunks.contains( c ) ) {
-								chunks.add( c );
-							}
-						}						
+						updateBlock(m, chunkList, w, dataMap, chunks, cmChunks, false);
 					}
 				}
 
@@ -184,74 +191,14 @@ public class MapUpdateManager extends BukkitRunnable {
 				for ( MapUpdateCommand i : updatesInWorld ) {
 					boolean isFragile=(Arrays.binarySearch(fragileBlocks,i.getTypeID())>=0);
 					if(isFragile) {
-						MovecraftLocation workingL = i.getNewBlockLocation();
+						updateBlock(i, chunkList, w, dataMap, chunks, cmChunks, false);
+					}
+				}
 
-						int x = workingL.getX();
-						int y = workingL.getY();
-						int z = workingL.getZ();
-						Chunk chunk=null;
-							
-						// Calculate chunk if necessary, check list of chunks already loaded first
-							
-						boolean foundChunk=false;
-						for (Chunk testChunk : chunkList) {
-							int sx=x>>4;
-							int sz=z>>4;
-							if((testChunk.getX()==sx)&&(testChunk.getZ()==sz)) {
-								foundChunk=true;
-								chunk=testChunk;
-							}
-						}
-						if(!foundChunk) {  
-							chunk = w.getBlockAt( x, y, z ).getChunk();
-							chunkList.add(chunk);							
-						}
-								
-						net.minecraft.server.v1_6_R3.Chunk c = null;
-						Chunk cmC = null;
-						if(Settings.CompatibilityMode) {
-							cmC = chunk;
-						} else {
-							c = ( ( CraftChunk ) chunk ).getHandle();
-						}
-
-						//get the inner-chunk index of the block to change
-						//modify the block in the chunk
-
-						int newTypeID = i.getTypeID();
-						TransferData transferData = dataMap.get( workingL );
-
-						byte data;
-						if ( transferData != null ) {
-							data = transferData.getData();
-						} else {
-							data = 0;
-						}
-
-						int origType=w.getBlockAt( x, y, z ).getTypeId();
-						boolean success = false;
-
-						//don't blank out block if it's already air, or if blocktype will not be changed
-						if(Settings.CompatibilityMode) {
-							if((origType!=0)&&(origType!=newTypeID)) {
-								w.getBlockAt( x, y, z ).setTypeIdAndData( 0, (byte) 0, false );
-							} 
-							w.getBlockAt( x, y, z ).setTypeIdAndData( newTypeID, data, false );
-							if ( !cmChunks.contains( cmC ) ) {
-								cmChunks.add( cmC );
-							}
-						} else {
-							if((origType!=0)&&(origType!=newTypeID)) {
-								c.a( x & 15, y, z & 15, 0, 0 );
-							} 
-							success = c.a( x & 15, y, z & 15, newTypeID, data );
-							if ( !success ) {
-								w.getBlockAt( x, y, z ).setTypeIdAndData( newTypeID, data, false );
-							}
-							if ( !chunks.contains( c ) ) {
-								chunks.add( c );
-							}
-						}						
+				// Put Dispensers back in now that the ship is reconstructed
+				for ( MapUpdateCommand i : updatesInWorld ) {
+					if(i.getTypeID()==23) {
+						updateBlock(i, chunkList, w, dataMap, chunks, cmChunks, true);
 					}
 				}
 
@@ -289,9 +236,7 @@ public class MapUpdateManager extends BukkitRunnable {
 				}
 				
 				if(Settings.CompatibilityMode) {
-					for (Chunk cmC : cmChunks ) {
-
-					}
+					// todo: lighting stuff here
 				} else {
 					for ( net.minecraft.server.v1_6_R3.Chunk c : chunks ) {
 						c.initLighting();
@@ -320,21 +265,42 @@ public class MapUpdateManager extends BukkitRunnable {
 
 								eTest.teleport( lTest );
 								eTest.setVelocity(velocity);
+								if(eTest.getType()==org.bukkit.entity.EntityType.PLAYER) {
+									Player player=(Player) eTest;
+									player.setFlying(false);
+									player.setAllowFlight(false);
+								}
+
 							}
 						}
 					}
 				}
 
 				
-				// finally clean up any dropped items on all crafts. They are likely garbage left on the ground from the block movements
+				// finally clean up dropped items that are fragile block types on or below all crafts. They are likely garbage left on the ground from the block movements
 				if(CraftManager.getInstance().getCraftsInWorld(w)!=null) {
 					for(Craft cleanCraft : CraftManager.getInstance().getCraftsInWorld(w)) {
 						Iterator<Entity> i=w.getEntities().iterator();
 						while (i.hasNext()) {
 							Entity eTest=i.next();
-							if ( MathUtils.playerIsWithinBoundingPolygon( cleanCraft.getHitBox(), cleanCraft.getMinX(), cleanCraft.getMinZ(), MathUtils.bukkit2MovecraftLoc( eTest.getLocation() ) ) ) {
-								if(eTest.getType()==org.bukkit.entity.EntityType.DROPPED_ITEM) {
-									eTest.remove();
+							if (eTest.getTicksLived()<100 && eTest.getType()==org.bukkit.entity.EntityType.DROPPED_ITEM) {
+								int adjX=eTest.getLocation().getBlockX()-cleanCraft.getMinX();
+								int adjZ=eTest.getLocation().getBlockZ()-cleanCraft.getMinZ();
+								int[][][] hb=cleanCraft.getHitBox();
+								if(adjX>=-1 && adjX<=hb.length) {
+									if(adjX<0) {
+										adjX=0;
+									}
+									if(adjX>=hb.length) {
+										adjX=hb.length-1;
+									}
+									if(adjZ>-1 && adjZ<=hb[adjX].length) {
+										Item it=(Item)eTest;
+
+										if(Arrays.binarySearch(fragileBlocks,it.getItemStack().getTypeId())>=0) {
+											eTest.remove();
+										}
+									}
 								}
 							}
 						}
