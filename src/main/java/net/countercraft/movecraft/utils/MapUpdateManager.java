@@ -120,8 +120,10 @@ public class MapUpdateManager extends BukkitRunnable {
 		if(Settings.CompatibilityMode) {
 			if((origType!=0)&&(origType!=newTypeID)) {
 				w.getBlockAt( x, y, z ).setTypeIdAndData( 0, (byte) 0, false );
-			} 
-			w.getBlockAt( x, y, z ).setTypeIdAndData( newTypeID, data, false );
+			}
+			if(origType!=newTypeID || origData!=data) {
+				w.getBlockAt( x, y, z ).setTypeIdAndData( newTypeID, data, false );
+			}
 			if ( !cmChunks.contains( cmC ) ) {
 				cmChunks.add( cmC );
 			}
@@ -129,7 +131,11 @@ public class MapUpdateManager extends BukkitRunnable {
 			if((origType!=0)&&(origType!=newTypeID)) {
 				c.a( x & 15, y, z & 15, 0, 0 );
 			} 
-			success = c.a( x & 15, y, z & 15, newTypeID, data );
+			if(origType!=newTypeID || origData!=data) {
+				success = c.a( x & 15, y, z & 15, newTypeID, data );
+			} else {
+				success=true;
+			}
 			if ( !success ) {
 				w.getBlockAt( x, y, z ).setTypeIdAndData( newTypeID, data, false );
 			}
@@ -333,7 +339,7 @@ public class MapUpdateManager extends BukkitRunnable {
 		updates.clear();
 		entityUpdates.clear();
 		long endTime=System.currentTimeMillis();
-	//	Movecraft.getInstance().getLogger().log( Level.INFO, "Map update took (ms): "+(endTime-startTime));
+//		Movecraft.getInstance().getLogger().log( Level.INFO, "Map update took (ms): "+(endTime-startTime));
 	}
 
 	public boolean addWorldUpdate( World w, MapUpdateCommand[] mapUpdates, EntityUpdateCommand[] eUpdates) {
