@@ -38,6 +38,7 @@ public class CraftType {
 	private int cruiseSkipBlocks;
 	private double fuelBurnRate;
 	private double sinkPercent;
+	private float collisionExplosion;
 	private int tickCooldown;
 	private HashMap<Integer, ArrayList<Double>> flyBlocks = new HashMap<Integer, ArrayList<Double>>();
 
@@ -92,6 +93,12 @@ public class CraftType {
 			sinkPercent=(Double) data.get("sinkPercent");
 		} else {
 			sinkPercent=0.0;
+		}
+		if(data.containsKey("collisionExplosion")) {
+			double temp=(Double) data.get("collisionExplosion");
+			collisionExplosion=(float) temp;
+		} else {
+			collisionExplosion=0.0F;
 		}
         if (data.containsKey("minHeightLimit")){
             minHeightLimit = ( Integer ) data.get( "minHeightLimit" );
@@ -154,6 +161,10 @@ public class CraftType {
 	
 	public double getSinkPercent() {
 		return sinkPercent;
+	}
+	
+	public float getCollisionExplosion() {
+		return collisionExplosion;
 	}
 	
 	public int getTickCooldown() {

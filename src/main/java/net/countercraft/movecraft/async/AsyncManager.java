@@ -145,6 +145,14 @@ public class AsyncManager extends BukkitRunnable {
 					if ( task.getData().failed() ) {
 						//The craft translation failed
 						p.sendMessage( task.getData().getFailMessage() );
+						if(task.getData().collisionExplosion()) {
+							MapUpdateCommand[] updates = task.getData().getUpdates();
+							c.setBlockList( task.getData().getBlockList() );
+							boolean failed = MapUpdateManager.getInstance().addWorldUpdate( c.getW(), updates, null);
+							if ( failed ) {
+								Movecraft.getInstance().getLogger().log( Level.SEVERE, String.format( I18nSupport.getInternationalisedString( "Translation - Craft collision" ) ) );
+							}
+						}
 					} else {
 						//The craft is clear to move, perform the block updates
 
@@ -245,7 +253,7 @@ public class AsyncManager extends BukkitRunnable {
 								long rcticksElapsed = ( System.currentTimeMillis() - pcraft.getLastRightClick() ) / 50;
 								rcticksElapsed=Math.abs(rcticksElapsed);
 								// if they are holding the button down, keep moving
-								if (rcticksElapsed <= 5 ) {
+								if (rcticksElapsed <= 10 ) {
 									long ticksElapsed = ( System.currentTimeMillis() - pcraft.getLastCruiseUpdate() ) / 50;
 									if ( Math.abs( ticksElapsed ) >= pcraft.getType().getTickCooldown() ) {
 										pcraft.translate(pcraft.getLastDX(), pcraft.getLastDY(), pcraft.getLastDZ());
@@ -287,7 +295,7 @@ public class AsyncManager extends BukkitRunnable {
 											foundFlyBlocks.put(blockID, count+1);
 										}
 									}
-									if(blockID!=0) {
+									if(blockID!=0 && blockID!=9 && blockID!=8) {
 										totalBlocks++;
 									}
 								}
@@ -306,6 +314,9 @@ public class AsyncManager extends BukkitRunnable {
 										isSinking=true;
 									}
 									
+								}
+								if(totalBlocks==0) {
+									isSinking=true;
 								}
 								
 								// if the craft is sinking, let the player know and release the craft. Otherwise update the time for the next check

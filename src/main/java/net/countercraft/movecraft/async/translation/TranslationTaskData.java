@@ -36,6 +36,7 @@ public class TranslationTaskData {
 	private int[][][] hitbox;
 	private int minX, minZ;
 	private int maxHeight, minHeight;
+	private boolean collisionExplosion;
 
 	public TranslationTaskData( int dx, int dz, int dy, MovecraftLocation[] blockList, int[][][] hitbox, int minZ, int minX, int maxHeight, int minHeight ) {
 		this.dx = dx;
@@ -68,6 +69,14 @@ public class TranslationTaskData {
 
 	public void setFailed( boolean failed ) {
 		this.failed = failed;
+	}
+
+	public boolean collisionExplosion() {
+		return collisionExplosion;
+	}
+
+	public void setCollisionExplosion( boolean collisionExplosion ) {
+		this.collisionExplosion = collisionExplosion;
 	}
 
 	public String getFailMessage() {

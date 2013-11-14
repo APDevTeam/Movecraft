@@ -162,9 +162,10 @@ public class RotationTask extends AsyncTask {
 		for ( int i = 0; i < blockList.length; i++ ) {
 
 			blockList[i] = MathUtils.rotateVec( rotation, centeredBlockList[i] ).add( originPoint );
+			int typeID = w.getBlockTypeIdAt( blockList[i].getX(), blockList[i].getY(), blockList[i].getZ() );
 
 			if (!waterCraft) {
-				if ( w.getBlockTypeIdAt( blockList[i].getX(), blockList[i].getY(), blockList[i].getZ() ) != 0 && !existingBlockSet.contains( blockList[i] ) ) {
+				if ( (typeID != 0 && typeID!=34) && !existingBlockSet.contains( blockList[i] ) ) {
 					failed = true;
 					failMessage = String.format( I18nSupport.getInternationalisedString( "Rotation - Craft is obstructed" ) );
 					break;
@@ -174,7 +175,7 @@ public class RotationTask extends AsyncTask {
 				} 
 			} else {
 				// allow watercraft to rotate through water
-				if ( (w.getBlockTypeIdAt( blockList[i].getX(), blockList[i].getY(), blockList[i].getZ() ) != 0 && w.getBlockTypeIdAt( blockList[i].getX(), blockList[i].getY(), blockList[i].getZ() ) != 9) && !existingBlockSet.contains( blockList[i] ) ) {
+				if ( (typeID != 0 && typeID != 9 && typeID!=34) && !existingBlockSet.contains( blockList[i] ) ) {
 					failed = true;
 					failMessage = String.format( I18nSupport.getInternationalisedString( "Rotation - Craft is obstructed" ) );
 					break;
@@ -219,14 +220,10 @@ public class RotationTask extends AsyncTask {
 							}
 						}
 						newPLoc.setYaw(newYaw);
-						EntityUpdateCommand eUp=new EntityUpdateCommand(playerLoc, newPLoc, pTest);
-						entityUpdateSet.add(eUp);
-						if(pTest.getType()==org.bukkit.entity.EntityType.PLAYER) {
-							Player player=(Player) pTest;
-							player.setAllowFlight(true);
-							player.setFlying(true);
-						}
+						newPLoc.setY(newPLoc.getY()+0.125);
 						pTest.teleport(newPLoc);
+						Vector pVel=new Vector(pTest.getVelocity().getX(),0.1,pTest.getVelocity().getZ());
+						pTest.setVelocity(pVel);
 					} else {
 						pTest.remove();
 					}

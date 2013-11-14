@@ -20,6 +20,7 @@ package net.countercraft.movecraft.async.translation;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.BoundingBoxUtils;
 import net.countercraft.movecraft.utils.EntityUpdateCommand;
@@ -186,15 +187,18 @@ public class TranslationTask extends AsyncTask {
 			}
 		}
 		
-		MovecraftLocation[] newBlockList = new MovecraftLocation[blocksList.length];
+		List<MovecraftLocation> tempBlockList=new ArrayList<MovecraftLocation>();
 		HashSet<MovecraftLocation> existingBlockSet = new HashSet<MovecraftLocation>( Arrays.asList( blocksList ) );
 		HashSet<EntityUpdateCommand> entityUpdateSet = new HashSet<EntityUpdateCommand>();
 		Set<MapUpdateCommand> updateSet = new HashSet<MapUpdateCommand>();
-			
+
+		data.setCollisionExplosion(false);
+		Set<MapUpdateCommand> explosionSet = new HashSet<MapUpdateCommand>();
+		
 		for ( int i = 0; i < blocksList.length; i++ ) {
 			MovecraftLocation oldLoc = blocksList[i];
 			MovecraftLocation newLoc = oldLoc.translate( data.getDx(), data.getDy(), data.getDz() );
-			newBlockList[i] = newLoc;
+//			newBlockList[i] = newLoc;
 
 			if ( newLoc.getY() >= data.getMaxHeight() && newLoc.getY() > oldLoc.getY() ) {
 				fail( String.format( I18nSupport.getInternationalisedString( "Translation - Failed Craft hit height limit" ) ) );
@@ -206,32 +210,50 @@ public class TranslationTask extends AsyncTask {
 
 			int testID = getCraft().getW().getBlockTypeIdAt( newLoc.getX(), newLoc.getY(), newLoc.getZ() );
 
-			if(!waterCraft) { 
-				if ( testID != 0 && !existingBlockSet.contains( newLoc ) ) {
-					// New block is not air and is not part of the existing ship
+			boolean blockObstructed=false;
+			if(!waterCraft) {
+				// New block is not air or a piston head and is not part of the existing ship
+				blockObstructed=(testID != 0 && testID != 34) && !existingBlockSet.contains( newLoc );
+			} else {
+				// New block is not air or water or a piston head and is not part of the existing ship
+				blockObstructed=(testID != 0 && testID != 9 && testID != 8 && testID != 34) && !existingBlockSet.contains( newLoc );
+			}
+			
+			if ( blockObstructed ) {
+				// Explode if the craft is set to have a CollisionExplosion. Also keep moving for spectacular ramming collisions
+				if( getCraft().getType().getCollisionExplosion() == 0.0F) {
 					fail( String.format( I18nSupport.getInternationalisedString( "Translation - Failed Craft is obstructed" ) ) );
 					break;
 				} else {
-					int oldID = getCraft().getW().getBlockTypeIdAt( oldLoc.getX(), oldLoc.getY(), oldLoc.getZ() );
-
-					updateSet.add( new MapUpdateCommand( blocksList[i], newBlockList[i], oldID ) );
+					int explosionKey =  (int) (0-(getCraft().getType().getCollisionExplosion()*100));
+					explosionSet.add( new MapUpdateCommand( oldLoc, explosionKey ) );
+					data.setCollisionExplosion(true);
 				}
 			} else {
-			// let watercraft move through water
-				if ( (testID != 0 && testID != 9 && testID != 8) && !existingBlockSet.contains( newLoc ) ) {
-					// New block is not air or water and is not part of the existing ship
-					fail( String.format( I18nSupport.getInternationalisedString( "Translation - Failed Craft is obstructed" ) ) );
-					break;
-				} else {
-					int oldID = getCraft().getW().getBlockTypeIdAt( oldLoc.getX(), oldLoc.getY(), oldLoc.getZ() );
-
-					updateSet.add( new MapUpdateCommand( blocksList[i], newBlockList[i], oldID ) );
+				int oldID = getCraft().getW().getBlockTypeIdAt( oldLoc.getX(), oldLoc.getY(), oldLoc.getZ() );
+				updateSet.add( new MapUpdateCommand( oldLoc, newLoc, oldID ) );
+				tempBlockList.add(newLoc);
+			}
+		}
+		
+		// mark the craft to check for sinking, remove the exploding blocks from the blocklist, and submit the explosions for map update
+		if(data.collisionExplosion()) {
+			for(MapUpdateCommand m : explosionSet) {
+				if( existingBlockSet.contains(m.getNewBlockLocation()) ) {
+					existingBlockSet.remove(m.getNewBlockLocation());
 				}
 			}
-
+			MovecraftLocation[] newBlockList = (MovecraftLocation[]) existingBlockSet.toArray(new MovecraftLocation[0]);
+			data.setBlockList( newBlockList );
+			data.setUpdates(explosionSet.toArray( new MapUpdateCommand[1] ) );
+			if(getCraft().getType().getSinkPercent()!=0.0) {
+				getCraft().setLastBlockCheck(0);
+			}
+			fail( String.format( I18nSupport.getInternationalisedString( "Translation - Failed Craft is obstructed" ) ) );
 		}
 
 		if ( !data.failed() ) {
+			MovecraftLocation[] newBlockList = (MovecraftLocation[]) tempBlockList.toArray(new MovecraftLocation[0]);
 			data.setBlockList( newBlockList );
 
 			// Move entities within the craft
@@ -258,15 +280,9 @@ public class TranslationTask extends AsyncTask {
 						newPLoc.setPitch(pTest.getLocation().getPitch());
 						newPLoc.setYaw(pTest.getLocation().getYaw());
 						
-						// due to persistent entity movement problems, teleport the person and also mark them for teleportion again after the block updates						
-						EntityUpdateCommand eUp=new EntityUpdateCommand(pTest.getLocation(),newPLoc,pTest);
+						EntityUpdateCommand eUp=new EntityUpdateCommand(pTest.getLocation().clone(),newPLoc,pTest);
 						entityUpdateSet.add(eUp);
-						if(pTest.getType()==org.bukkit.entity.EntityType.PLAYER) {
-							Player player=(Player) pTest;
-							player.setAllowFlight(true);
-							player.setFlying(true);
-						}
-						pTest.teleport(newPLoc);
+
 					} else {
 						pTest.remove();
 					}

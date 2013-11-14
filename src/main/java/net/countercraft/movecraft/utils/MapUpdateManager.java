@@ -44,6 +44,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Vector;
 
 import java.util.*;
 import java.util.logging.Level;
@@ -142,10 +143,12 @@ public class MapUpdateManager extends BukkitRunnable {
 	public void run() {
 		if ( updates.isEmpty() ) return;
 		
+		long startTime=System.currentTimeMillis();
 		for ( World w : updates.keySet() ) {
 			if ( w != null ) {
 				List<MapUpdateCommand> updatesInWorld = updates.get( w );
 				List<EntityUpdateCommand> entityUpdatesInWorld = entityUpdates.get( w );
+				Map<MovecraftLocation, List<EntityUpdateCommand>> entityMap = new HashMap<MovecraftLocation, List<EntityUpdateCommand>>();
 				Map<MovecraftLocation, TransferData> dataMap = new HashMap<MovecraftLocation, TransferData>();
 				Set<net.minecraft.server.v1_6_R3.Chunk> chunks = null; 
 				Set<Chunk> cmChunks = null;
@@ -164,26 +167,66 @@ public class MapUpdateManager extends BukkitRunnable {
 						if ( blockDataPacket != null ) {
 							dataMap.put( c.getNewBlockLocation(), blockDataPacket );
 						}
+						
 						//remove dispensers and replace them with stone blocks to prevent firing during ship reconstruction
 						if(w.getBlockAt( l.getX(), l.getY(), l.getZ() ).getTypeId()==23) {
 							w.getBlockAt( l.getX(), l.getY(), l.getZ() ).setTypeIdAndData( 1, (byte) 0, false );
 						}
-					}
-
+					}					
 				} 
+				// track the blocks that entities will be standing on to move them smoothly with the craft
+				if(entityUpdatesInWorld!=null) {
+					for( EntityUpdateCommand i : entityUpdatesInWorld) {
+						if(i!=null) {
+							MovecraftLocation entityLoc=new MovecraftLocation(i.getNewLocation().getBlockX(), i.getNewLocation().getBlockY()-1, i.getNewLocation().getBlockZ());
+							if(!entityMap.containsKey(entityLoc)) {
+								List<EntityUpdateCommand> entUpdateList=new ArrayList<EntityUpdateCommand>();
+								entUpdateList.add(i);
+								entityMap.put(entityLoc, entUpdateList);
+							} else {
+								List<EntityUpdateCommand> entUpdateList=entityMap.get(entityLoc);
+								entUpdateList.add(i);
+							}
+						}
+					}
+				}
 				
 				ArrayList<Chunk> chunkList = new ArrayList<Chunk>();
 				boolean isFirstChunk=true;
 				
 				final int[] fragileBlocks = new int[]{ 29, 33, 34, 50, 52, 55, 63, 65, 68, 69, 70, 71, 72, 75, 76, 77, 93, 94, 96, 131, 132, 143, 147, 148, 149, 150, 151, 171, 323, 324, 330, 331, 356, 404 };
 				Arrays.sort(fragileBlocks);
-				
+						
 				// Perform core block updates, don't do "fragiles" yet. Don't do Dispensers yet either
 				for ( MapUpdateCommand m : updatesInWorld ) {
 					boolean isFragile=(Arrays.binarySearch(fragileBlocks,m.getTypeID())>=0);
 					
 					if(!isFragile) {
-						updateBlock(m, chunkList, w, dataMap, chunks, cmChunks, false);
+						// a TypeID less than 0 indicates an explosion
+						if(m.getTypeID()<0) {
+							float explosionPower=m.getTypeID();
+							explosionPower=0.0F-explosionPower/100.0F;
+							w.createExplosion(m.getNewBlockLocation().getX(), m.getNewBlockLocation().getY(), m.getNewBlockLocation().getZ(), explosionPower);
+						} else {
+							updateBlock(m, chunkList, w, dataMap, chunks, cmChunks, false);
+						}
+					}
+					
+					// if the block you just updated had any entities on it, move them. If they are moving, add in their motion to the craft motion
+					if( entityMap.containsKey(m.getNewBlockLocation()) ) {
+						List<EntityUpdateCommand> mapUpdateList=entityMap.get(m.getNewBlockLocation());
+						for(EntityUpdateCommand entityUpdate : mapUpdateList) {
+							Entity entity=entityUpdate.getEntity();
+							Vector pVel=new Vector(entity.getVelocity().getX(),0.0,entity.getVelocity().getZ());
+							if( pVel.getX()==0.0 && entity.getVelocity().getZ()==0.0 ) {
+								entity.teleport(entityUpdate.getNewLocation());
+							} else {
+								Location craftMove=entityUpdate.getNewLocation().subtract(entityUpdate.getOldLocation());
+								entity.teleport(entity.getLocation().add(craftMove));
+							}
+							entity.setVelocity(pVel);
+						}
+						entityMap.remove(m.getNewBlockLocation());
 					}
 				}
 
@@ -252,30 +295,6 @@ public class MapUpdateManager extends BukkitRunnable {
 					}
 				}
 				
-				// teleport any entities that are slated to be moved
-				if(entityUpdatesInWorld!=null) {
-					Iterator<EntityUpdateCommand> iEntityUpdate=entityUpdatesInWorld.iterator();
-					while (iEntityUpdate.hasNext()) {
-						EntityUpdateCommand eUpdate=iEntityUpdate.next();
-						if(eUpdate!=null) {
-							Entity eTest=eUpdate.getEntity();
-							Location lTest=eUpdate.getNewLocation().clone();
-							if(eTest!=null) {
-								org.bukkit.util.Vector velocity=eTest.getVelocity().clone();
-
-								eTest.teleport( lTest );
-								eTest.setVelocity(velocity);
-								if(eTest.getType()==org.bukkit.entity.EntityType.PLAYER) {
-									Player player=(Player) eTest;
-									player.setFlying(false);
-									player.setAllowFlight(false);
-								}
-
-							}
-						}
-					}
-				}
-
 				
 				// finally clean up dropped items that are fragile block types on or below all crafts. They are likely garbage left on the ground from the block movements
 				if(CraftManager.getInstance().getCraftsInWorld(w)!=null) {
@@ -306,12 +325,15 @@ public class MapUpdateManager extends BukkitRunnable {
 						}
 					}	
 				}
+				
 			}
 		}
 
 		
 		updates.clear();
 		entityUpdates.clear();
+		long endTime=System.currentTimeMillis();
+	//	Movecraft.getInstance().getLogger().log( Level.INFO, "Map update took (ms): "+(endTime-startTime));
 	}
 
 	public boolean addWorldUpdate( World w, MapUpdateCommand[] mapUpdates, EntityUpdateCommand[] eUpdates) {
@@ -337,12 +359,19 @@ public class MapUpdateManager extends BukkitRunnable {
 
 		//now do entity updates
 		if(eUpdates!=null) {
+			ArrayList<EntityUpdateCommand> eGet = entityUpdates.get( w );
+			if ( eGet != null ) {
+				entityUpdates.remove( w ); 
+			} else {
+				eGet = new ArrayList<EntityUpdateCommand>();
+			}
+			
 			ArrayList<EntityUpdateCommand> tempEUpdates = new ArrayList<EntityUpdateCommand>();
 			for(EntityUpdateCommand e : eUpdates) {
 				tempEUpdates.add(e);
 			}
-
-			entityUpdates.put(w, tempEUpdates);
+			eGet.addAll( tempEUpdates );
+			entityUpdates.put(w, eGet);
 		}		
 		return false;
 	}
