@@ -17,6 +17,8 @@
 
 package net.countercraft.movecraft.utils;
 
+import net.countercraft.movecraft.craft.Craft;
+
 /**
  * Class that stores the data about a single blocks changes to the map in an unspecified world. The world is retrieved contextually from the submitting craft.
  */
@@ -25,25 +27,29 @@ public class MapUpdateCommand {
 	private final MovecraftLocation newBlockLocation;
 	private final int typeID;
 	private final Rotation rotation;
+	private Craft craft;
 
-	public MapUpdateCommand( MovecraftLocation blockLocation, MovecraftLocation newBlockLocation, int typeID, Rotation rotation ) {
+	public MapUpdateCommand( MovecraftLocation blockLocation, MovecraftLocation newBlockLocation, int typeID, Rotation rotation, Craft craft ) {
 		this.blockLocation = blockLocation;
 		this.newBlockLocation = newBlockLocation;
 		this.typeID = typeID;
 		this.rotation = rotation;
+		this.craft = craft;
 	}
 
-	public MapUpdateCommand( MovecraftLocation blockLocation, MovecraftLocation newBlockLocation, int typeID ) {
+	public MapUpdateCommand( MovecraftLocation blockLocation, MovecraftLocation newBlockLocation, int typeID, Craft craft ) {
 		this.blockLocation = blockLocation;
 		this.newBlockLocation = newBlockLocation;
 		this.typeID = typeID;
 		this.rotation = Rotation.NONE;
+		this.craft = craft;
 	}
 
-	public MapUpdateCommand( MovecraftLocation newBlockLocation, int typeID ) {
+	public MapUpdateCommand( MovecraftLocation newBlockLocation, int typeID, Craft craft ) {
 		this.newBlockLocation = newBlockLocation;
 		this.typeID = typeID;
 		this.rotation = Rotation.NONE;
+		this.craft = craft;
 	}
 
 	public int getTypeID() {
@@ -60,6 +66,10 @@ public class MapUpdateCommand {
 
 	public Rotation getRotation() {
 		return rotation;
+	}
+
+	public Craft getCraft() {
+		return craft;
 	}
 }
 

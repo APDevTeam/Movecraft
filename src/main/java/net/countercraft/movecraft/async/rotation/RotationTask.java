@@ -171,7 +171,7 @@ public class RotationTask extends AsyncTask {
 					break;
 				} else {
 					int id = w.getBlockTypeIdAt( originalBlockList[i].getX(), originalBlockList[i].getY(), originalBlockList[i].getZ() );
-					mapUpdates.add( new MapUpdateCommand( originalBlockList[i], blockList[i], id, rotation ) );
+					mapUpdates.add( new MapUpdateCommand( originalBlockList[i], blockList[i], id, rotation, getCraft() ) );
 				} 
 			} else {
 				// allow watercraft to rotate through water
@@ -181,7 +181,7 @@ public class RotationTask extends AsyncTask {
 					break;
 				} else {
 					int id = w.getBlockTypeIdAt( originalBlockList[i].getX(), originalBlockList[i].getY(), originalBlockList[i].getZ() );
-					mapUpdates.add( new MapUpdateCommand( originalBlockList[i], blockList[i], id, rotation ) );
+					mapUpdates.add( new MapUpdateCommand( originalBlockList[i], blockList[i], id, rotation, getCraft() ) );
 				} 
 			}
 
@@ -220,10 +220,12 @@ public class RotationTask extends AsyncTask {
 							}
 						}
 						newPLoc.setYaw(newYaw);
-						newPLoc.setY(newPLoc.getY()+0.125);
-						pTest.teleport(newPLoc);
-						Vector pVel=new Vector(pTest.getVelocity().getX(),0.1,pTest.getVelocity().getZ());
-						pTest.setVelocity(pVel);
+//						newPLoc.setY(newPLoc.getY()+0.125);
+						EntityUpdateCommand eUp=new EntityUpdateCommand(pTest.getLocation().clone(),newPLoc,pTest);
+						entityUpdateSet.add(eUp);
+//						pTest.teleport(newPLoc);
+//						Vector pVel=new Vector(pTest.getVelocity().getX(),0.1,pTest.getVelocity().getZ());
+//						pTest.setVelocity(pVel);
 					} else {
 						pTest.remove();
 					}
@@ -238,12 +240,12 @@ public class RotationTask extends AsyncTask {
 				if(waterCraft) {
 						// if its below the waterline, fill in with water. Otherwise fill in with air.
 					if(l1.getY()<=waterLine) {
-						mapUpdates.add( new MapUpdateCommand( l1, 9 ) );
+						mapUpdates.add( new MapUpdateCommand( l1, 9,null ) );
 					} else {
-						mapUpdates.add( new MapUpdateCommand( l1, 0 ) );
+						mapUpdates.add( new MapUpdateCommand( l1, 0,null ) );
 					}
 				} else {
-					mapUpdates.add( new MapUpdateCommand( l1, 0 ) );
+					mapUpdates.add( new MapUpdateCommand( l1, 0,null ) );
 				}
 			}
 			

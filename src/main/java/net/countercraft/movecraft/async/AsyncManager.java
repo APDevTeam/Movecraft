@@ -87,6 +87,7 @@ public class AsyncManager extends BukkitRunnable {
 		runLength = Math.min( runLength, queueLength );
 
 		for ( int i = 0; i < runLength; i++ ) {
+			boolean sentMapUpdate=false;
 			AsyncTask poll = finishedAlgorithms.poll();
 			Craft c = ownershipMap.get( poll );
 
@@ -149,8 +150,11 @@ public class AsyncManager extends BukkitRunnable {
 							MapUpdateCommand[] updates = task.getData().getUpdates();
 							c.setBlockList( task.getData().getBlockList() );
 							boolean failed = MapUpdateManager.getInstance().addWorldUpdate( c.getW(), updates, null);
+
 							if ( failed ) {
 								Movecraft.getInstance().getLogger().log( Level.SEVERE, String.format( I18nSupport.getInternationalisedString( "Translation - Craft collision" ) ) );
+							} else {
+								sentMapUpdate=true;
 							}
 						}
 					} else {
@@ -161,7 +165,7 @@ public class AsyncManager extends BukkitRunnable {
 						boolean failed = MapUpdateManager.getInstance().addWorldUpdate( c.getW(), updates, eUpdates);
 
 						if ( !failed ) {
-
+							sentMapUpdate=true;
 							c.setBlockList( task.getData().getBlockList() );
 
 
@@ -198,7 +202,8 @@ public class AsyncManager extends BukkitRunnable {
 						boolean failed = MapUpdateManager.getInstance().addWorldUpdate( c.getW(), updates, eUpdates);
  
 						if ( !failed ) {
-
+							sentMapUpdate=true;
+							
 							c.setBlockList( task.getBlockList() );
 							c.setMinX( task.getMinX() );
 							c.setMinZ( task.getMinZ() );
@@ -214,7 +219,11 @@ public class AsyncManager extends BukkitRunnable {
 			}
 
 			ownershipMap.remove( poll );
-			clear( c );
+			
+			// only mark the craft as having finished updating if you didn't send any updates to the map updater. Otherwise the map updater will mark the crafts once it is done with them.
+			if(!sentMapUpdate) {
+				clear( c ); 
+			}
 		}
 	}
 	
@@ -295,7 +304,7 @@ public class AsyncManager extends BukkitRunnable {
 											foundFlyBlocks.put(blockID, count+1);
 										}
 									}
-									if(blockID!=0 && blockID!=9 && blockID!=8) {
+									if(blockID!=0) {   // && blockID!=9 && blockID!=8) {
 										totalBlocks++;
 									}
 								}
@@ -379,7 +388,7 @@ public class AsyncManager extends BukkitRunnable {
 									}
 									waterFillBlocks.get(w).add(newLoc);
 								}
-								MapUpdateCommand c=new MapUpdateCommand(oldLoc, newLoc, oldBlock.getTypeId());
+								MapUpdateCommand c=new MapUpdateCommand(oldLoc, newLoc, oldBlock.getTypeId(), null);
 								updates.add(c);
 								l.setY(l.getY()-1);
 								} else {
@@ -405,12 +414,12 @@ public class AsyncManager extends BukkitRunnable {
 							MapUpdateCommand c;
 							if(waterFillBlocks.get( w )!=null) {
 								if(waterFillBlocks.get( w ).contains(l)) {
-									c=new MapUpdateCommand(l,9);
+									c=new MapUpdateCommand(l,9,null);
 								} else {
-									c=new MapUpdateCommand(l,0);
+									c=new MapUpdateCommand(l,0,null);
 								}
 							} else {
-								c=new MapUpdateCommand(l,0);							
+								c=new MapUpdateCommand(l,0,null);							
 							}
 						updates.add(c);
 						}

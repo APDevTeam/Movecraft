@@ -226,12 +226,12 @@ public class TranslationTask extends AsyncTask {
 					break;
 				} else {
 					int explosionKey =  (int) (0-(getCraft().getType().getCollisionExplosion()*100));
-					explosionSet.add( new MapUpdateCommand( oldLoc, explosionKey ) );
+					explosionSet.add( new MapUpdateCommand( oldLoc, explosionKey, null ) );
 					data.setCollisionExplosion(true);
 				}
 			} else {
 				int oldID = getCraft().getW().getBlockTypeIdAt( oldLoc.getX(), oldLoc.getY(), oldLoc.getZ() );
-				updateSet.add( new MapUpdateCommand( oldLoc, newLoc, oldID ) );
+				updateSet.add( new MapUpdateCommand( oldLoc, newLoc, oldID, getCraft() ) );
 				tempBlockList.add(newLoc);
 			}
 		}
@@ -296,7 +296,7 @@ public class TranslationTask extends AsyncTask {
 			for ( MovecraftLocation l1 : airLocation ) {
 				// for watercraft, fill blocks below the waterline with water
 				if(!waterCraft) {
-					updateSet.add( new MapUpdateCommand( l1, 0 ) );
+					updateSet.add( new MapUpdateCommand( l1, 0, null ) );
 				} else {
 					if(l1.getY()<=waterLine) {
 						// if there is air below the ship at the current position, don't fill in with water
@@ -305,12 +305,12 @@ public class TranslationTask extends AsyncTask {
 							testAir.setY(testAir.getY()-1);
 						}
 						if(getCraft().getW().getBlockAt(testAir.getX(), testAir.getY(), testAir.getZ()).getTypeId()==0) {
-							updateSet.add( new MapUpdateCommand( l1, 0 ) );							
+							updateSet.add( new MapUpdateCommand( l1, 0, null ) );							
 						} else {
-							updateSet.add( new MapUpdateCommand( l1, 9 ) );
+							updateSet.add( new MapUpdateCommand( l1, 9, null ) );
 						}
 					} else {
-						updateSet.add( new MapUpdateCommand( l1, 0 ) );
+						updateSet.add( new MapUpdateCommand( l1, 0, null ) );
 					}
 				}
 			}

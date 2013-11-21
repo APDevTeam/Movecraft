@@ -225,6 +225,13 @@ public class MapUpdateManager extends BukkitRunnable {
 							Entity entity=entityUpdate.getEntity();
 							Vector pVel=new Vector(entity.getVelocity().getX(),0.0,entity.getVelocity().getZ());
 							if( pVel.getX()==0.0 && entity.getVelocity().getZ()==0.0 ) {
+								Location newLoc=entityUpdate.getNewLocation();
+								
+								// if they have gone through the floor, move them up one block
+								double decimalY=newLoc.getY()-Math.floor(newLoc.getY());
+								if(decimalY>0.50) {
+									newLoc.setY( Math.ceil( newLoc.getY() ) );
+								}
 								entity.teleport(entityUpdate.getNewLocation());
 							} else {
 								Location craftMove=entityUpdate.getNewLocation().subtract(entityUpdate.getOldLocation());
@@ -302,8 +309,8 @@ public class MapUpdateManager extends BukkitRunnable {
 				}
 				
 				
-				// finally clean up dropped items that are fragile block types on or below all crafts. They are likely garbage left on the ground from the block movements
 				if(CraftManager.getInstance().getCraftsInWorld(w)!=null) {
+					// clean up dropped items that are fragile block types on or below all crafts. They are likely garbage left on the ground from the block movements
 					for(Craft cleanCraft : CraftManager.getInstance().getCraftsInWorld(w)) {
 						Iterator<Entity> i=w.getEntities().iterator();
 						while (i.hasNext()) {
@@ -329,7 +336,17 @@ public class MapUpdateManager extends BukkitRunnable {
 								}
 							}
 						}
-					}	
+					}
+					
+					// and set all crafts that were updated to not processing
+					for ( MapUpdateCommand c : updatesInWorld ) {
+						Craft craft=c.getCraft();
+						if(craft!=null) {
+							if(!craft.isNotProcessing()) {
+								craft.setProcessing(false);
+							}
+						}
+					}
 				}
 				
 			}
