@@ -286,7 +286,7 @@ public class AsyncManager extends BukkitRunnable {
 				// check every 5 seconds for every craft to see if it should be sinking
 				for (Craft pcraft : CraftManager.getInstance().getCraftsInWorld(w)) {
 					if(pcraft!=null) {
-						if(pcraft.getType().getSinkPercent()!=0.0) {
+						if( pcraft.getType().getSinkPercent()!=0.0 && pcraft.isNotProcessing()) {
 							long ticksElapsed = ( System.currentTimeMillis() - pcraft.getLastBlockCheck() ) / 50;
 						
 							if(ticksElapsed>100) {
