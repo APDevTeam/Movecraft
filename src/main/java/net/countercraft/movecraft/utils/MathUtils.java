@@ -36,7 +36,6 @@ public class MathUtils {
 					return false;
 				}
 
-
 				if ( l.getY() >= minY && l.getY() <= ( maxY + 2 ) ) {
 					// Player is on board the vessel
 					return true;

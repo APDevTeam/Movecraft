@@ -226,7 +226,7 @@ public class TranslationTask extends AsyncTask {
 					break;
 				} else {
 					int explosionKey =  (int) (0-(getCraft().getType().getCollisionExplosion()*100));
-					explosionSet.add( new MapUpdateCommand( oldLoc, explosionKey, null ) );
+					explosionSet.add( new MapUpdateCommand( oldLoc, explosionKey, getCraft() ) );
 					data.setCollisionExplosion(true);
 				}
 			} else {
