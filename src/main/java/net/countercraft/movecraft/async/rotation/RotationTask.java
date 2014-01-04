@@ -17,6 +17,7 @@
 
 package net.countercraft.movecraft.async.rotation;
 
+import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.localisation.I18nSupport;
@@ -231,6 +232,22 @@ public class RotationTask extends AsyncTask {
 					}
 				}
 
+			}
+			
+			//update player spawn locations if they spawned where the ship used to be
+			for(Player p : Movecraft.getInstance().getServer().getOnlinePlayers()) {
+				if(p.getBedSpawnLocation()!=null) {
+					if( MathUtils.playerIsWithinBoundingPolygon( getCraft().getHitBox(), getCraft().getMinX(), getCraft().getMinZ(), MathUtils.bukkit2MovecraftLoc( p.getBedSpawnLocation() ) ) ) {
+						Location spawnLoc = p.getBedSpawnLocation();
+						Location adjustedPLoc = spawnLoc.subtract( tOP ); 
+
+						double[] rotatedCoords = MathUtils.rotateVecNoRound( rotation, adjustedPLoc.getX(), adjustedPLoc.getZ() );
+						Location rotatedPloc = new Location( getCraft().getW(), rotatedCoords[0], spawnLoc.getY(), rotatedCoords[1] );
+						Location newBedSpawn = rotatedPloc.add( tOP );
+
+						p.setBedSpawnLocation(newBedSpawn, true);
+					}
+				}
 			}
 			
 			// Calculate air changes

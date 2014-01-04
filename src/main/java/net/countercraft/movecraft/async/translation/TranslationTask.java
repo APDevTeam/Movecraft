@@ -59,10 +59,12 @@ public class TranslationTask extends AsyncTask {
 
 		// canfly=false means an ocean-going vessel
 		boolean waterCraft=!getCraft().getType().canFly();
+
+		// Find the waterline from the surrounding terrain or from the static level in the craft type
 		int waterLine=0;
 		if (waterCraft) {
 			int [][][] hb=getCraft().getHitBox();
-			
+
 			// start by finding the minimum and maximum y coord
 			int minY=65535;
 			int maxY=-65535;
@@ -83,34 +85,40 @@ public class TranslationTask extends AsyncTask {
 			int minX=getCraft().getMinX();
 			int minZ=getCraft().getMinZ();
 			
-			// next figure out the water level by examining blocks next to the outer boundaries of the craft
-			for(int posY=maxY+1; (posY>=minY-1)&&(waterLine==0); posY--) {
-				int posX;
-				int posZ;
-				posZ=minZ-1;
-				for(posX=minX-1; (posX <= maxX+1)&&(waterLine==0); posX++ ) {
-					if(getCraft().getW().getBlockAt(posX, posY, posZ).getTypeId()==9) {
-						waterLine=posY;
-					}
+			if(getCraft().getType().getStaticWaterLevel()!=0) {
+				if(waterLine<=maxY+1) {
+					waterLine=getCraft().getType().getStaticWaterLevel();
 				}
-				posZ=maxZ+1;
-				for(posX=minX-1; (posX <= maxX+1)&&(waterLine==0); posX++ ) {
-					if(getCraft().getW().getBlockAt(posX, posY, posZ).getTypeId()==9) {
-						waterLine=posY;
+			} else {
+				// figure out the water level by examining blocks next to the outer boundaries of the craft
+				for(int posY=maxY+1; (posY>=minY-1)&&(waterLine==0); posY--) {
+					int posX;
+					int posZ;
+					posZ=minZ-1;
+					for(posX=minX-1; (posX <= maxX+1)&&(waterLine==0); posX++ ) {
+						if(getCraft().getW().getBlockAt(posX, posY, posZ).getTypeId()==9) {
+							waterLine=posY;
+						}
 					}
-				}
-				posX=minX-1;
-				for(posZ=minZ; (posZ <= maxZ)&&(waterLine==0); posZ++ ) {
-					if(getCraft().getW().getBlockAt(posX, posY, posZ).getTypeId()==9) {
-						waterLine=posY;
+					posZ=maxZ+1;
+					for(posX=minX-1; (posX <= maxX+1)&&(waterLine==0); posX++ ) {
+						if(getCraft().getW().getBlockAt(posX, posY, posZ).getTypeId()==9) {
+							waterLine=posY;
+						}
 					}
-				}
-				posX=maxX+1;
-				for(posZ=minZ; (posZ <= maxZ)&&(waterLine==0); posZ++ ) {
-					if(getCraft().getW().getBlockAt(posX, posY, posZ).getTypeId()==9) {
-						waterLine=posY;
+					posX=minX-1;
+					for(posZ=minZ; (posZ <= maxZ)&&(waterLine==0); posZ++ ) {
+						if(getCraft().getW().getBlockAt(posX, posY, posZ).getTypeId()==9) {
+							waterLine=posY;
+						}
 					}
-				}
+					posX=maxX+1;
+					for(posZ=minZ; (posZ <= maxZ)&&(waterLine==0); posZ++ ) {
+						if(getCraft().getW().getBlockAt(posX, posY, posZ).getTypeId()==9) {
+							waterLine=posY;
+						}
+					}
+				}				
 			}
 			
 			// now add all the air blocks found within the craft's hitbox immediately above the waterline and below to the craft blocks so they will be translated
@@ -220,8 +228,9 @@ public class TranslationTask extends AsyncTask {
 			}
 			
 			if ( blockObstructed ) {
-				// Explode if the craft is set to have a CollisionExplosion. Also keep moving for spectacular ramming collisions
-				if( getCraft().getType().getCollisionExplosion() == 0.0F) {
+				// Explode if the craft is set to have a CollisionExplosion and its cruising. Also keep moving for spectacular ramming collisions
+
+				if( getCraft().getType().getCollisionExplosion() == 0.0F || !getCraft().getCruising()) {
 					fail( String.format( I18nSupport.getInternationalisedString( "Translation - Failed Craft is obstructed" ) ) );
 					break;
 				} else {
@@ -285,6 +294,17 @@ public class TranslationTask extends AsyncTask {
 
 					} else {
 						pTest.remove();
+					}
+				}
+			}
+			
+			//update player spawn locations if they spawned where the ship used to be
+			
+			for(Player p : Movecraft.getInstance().getServer().getOnlinePlayers()) {
+				if(p.getBedSpawnLocation()!=null) {
+					if( MathUtils.playerIsWithinBoundingPolygon( getCraft().getHitBox(), getCraft().getMinX(), getCraft().getMinZ(), MathUtils.bukkit2MovecraftLoc( p.getBedSpawnLocation() ) ) ) {
+						Location newBedSpawn=p.getBedSpawnLocation().add( data.getDx(), data.getDy(), data.getDz() );
+						p.setBedSpawnLocation(newBedSpawn, true);
 					}
 				}
 			}

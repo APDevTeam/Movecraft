@@ -168,7 +168,11 @@ public class MapUpdateManager extends BukkitRunnable {
 
 				// Preprocessing
 				for ( MapUpdateCommand c : updatesInWorld ) {
-					MovecraftLocation l = c.getOldBlockLocation();
+					MovecraftLocation l;
+					if(c!=null)
+						l = c.getOldBlockLocation();
+					else 
+						l = null;
 
 					if ( l != null ) {
 						TransferData blockDataPacket = getBlockDataPacket( w.getBlockAt( l.getX(), l.getY(), l.getZ() ).getState(), c.getRotation() );
@@ -202,11 +206,17 @@ public class MapUpdateManager extends BukkitRunnable {
 				ArrayList<Chunk> chunkList = new ArrayList<Chunk>();
 				boolean isFirstChunk=true;
 				
-				final int[] fragileBlocks = new int[]{ 29, 33, 34, 50, 52, 55, 63, 65, 68, 69, 70, 71, 72, 75, 76, 77, 93, 94, 96, 131, 132, 143, 147, 148, 149, 150, 151, 171, 323, 324, 330, 331, 356, 404 };
+				final int[] fragileBlocks = new int[]{ 26, 29, 33, 34, 50, 52, 55, 63, 64, 65, 68, 69, 70, 71, 72, 75, 76, 77, 93, 94, 96, 131, 132, 143, 147, 148, 149, 150, 151, 171, 323, 324, 330, 331, 356, 404 };
 				Arrays.sort(fragileBlocks);
 						
 				// Perform core block updates, don't do "fragiles" yet. Don't do Dispensers yet either
 				for ( MapUpdateCommand m : updatesInWorld ) {
+					if(m==null) {
+						// This happens due to crafts exploding during translation, clear everything out and quit
+						updates.clear();
+						entityUpdates.clear();
+						return;
+					}
 					boolean isFragile=(Arrays.binarySearch(fragileBlocks,m.getTypeID())>=0);
 					
 					if(!isFragile) {
@@ -434,10 +444,15 @@ public class MapUpdateManager extends BukkitRunnable {
 
 		switch ( s.getTypeId() ) {
 			case 23:
+			case 54:
 			case 61:
 			case 62:
 			case 117:
 				// Data and Inventory
+				if(( ( InventoryHolder ) s ).getInventory().getSize()==54) {
+					Movecraft.getInstance().getLogger().log( Level.SEVERE, "ERROR: Double chest detected. This is not supported." );
+					throw new IllegalArgumentException("INVALID BLOCK");
+				}
 				ItemStack[] contents = ( ( InventoryHolder ) s ).getInventory().getContents().clone();
 				( ( InventoryHolder ) s ).getInventory().clear();
 				return new InventoryTransferHolder( data, contents );

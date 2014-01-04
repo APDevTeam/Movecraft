@@ -36,6 +36,7 @@ public class CraftType {
 	private Integer[] allowedBlocks, forbiddenBlocks;
 	private boolean canFly, tryNudge, canCruise, canTeleport, canStaticMove;
 	private int cruiseSkipBlocks;
+	private int staticWaterLevel;
 	private double fuelBurnRate;
 	private double sinkPercent;
 	private float collisionExplosion;
@@ -83,6 +84,11 @@ public class CraftType {
 			cruiseSkipBlocks=(Integer) data.get("cruiseSkipBlocks");
 		} else {
 			cruiseSkipBlocks=0;
+		}
+		if(data.containsKey("staticWaterLevel")) {
+			staticWaterLevel=(Integer) data.get("staticWaterLevel");
+		} else {
+			staticWaterLevel=0;
 		}
 		if(data.containsKey("fuelBurnRate")) {
 			fuelBurnRate=(Double) data.get("fuelBurnRate");
@@ -145,6 +151,10 @@ public class CraftType {
 	
 	public int getCruiseSkipBlocks() {
 		return cruiseSkipBlocks;
+	}
+	
+	public int getStaticWaterLevel() {
+		return staticWaterLevel;
 	}
 
 	public boolean getCanTeleport() {
