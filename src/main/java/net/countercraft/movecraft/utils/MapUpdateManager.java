@@ -211,62 +211,63 @@ public class MapUpdateManager extends BukkitRunnable {
 						
 				// Perform core block updates, don't do "fragiles" yet. Don't do Dispensers yet either
 				for ( MapUpdateCommand m : updatesInWorld ) {
-					if(m==null) {
-						// This happens due to crafts exploding during translation, clear everything out and quit
-						updates.clear();
-						entityUpdates.clear();
-						return;
-					}
-					boolean isFragile=(Arrays.binarySearch(fragileBlocks,m.getTypeID())>=0);
-					
-					if(!isFragile) {
-						// a TypeID less than 0 indicates an explosion
-						if(m.getTypeID()<0) {
-							float explosionPower=m.getTypeID();
-							explosionPower=0.0F-explosionPower/100.0F;
-							w.createExplosion(m.getNewBlockLocation().getX(), m.getNewBlockLocation().getY(), m.getNewBlockLocation().getZ(), explosionPower);
-						} else {
-							updateBlock(m, chunkList, w, dataMap, chunks, cmChunks, false);
-						}
-					}
-					
-					// if the block you just updated had any entities on it, move them. If they are moving, add in their motion to the craft motion
-					if( entityMap.containsKey(m.getNewBlockLocation()) ) {
-						List<EntityUpdateCommand> mapUpdateList=entityMap.get(m.getNewBlockLocation());
-						for(EntityUpdateCommand entityUpdate : mapUpdateList) {
-							Entity entity=entityUpdate.getEntity();
-							Vector pVel=new Vector(entity.getVelocity().getX(),0.0,entity.getVelocity().getZ());
-							if( pVel.getX()==0.0 && entity.getVelocity().getZ()==0.0 ) {
-								Location newLoc=entityUpdate.getNewLocation();
-								
-								// if they have gone through the floor, move them up one block
-								double decimalY=newLoc.getY()-Math.floor(newLoc.getY());
-								if(decimalY>0.50) {
-									newLoc.setY( Math.ceil( newLoc.getY() ) );
-								}
-								entity.teleport(entityUpdate.getNewLocation());
+					if(m!=null) {
+						boolean isFragile=(Arrays.binarySearch(fragileBlocks,m.getTypeID())>=0);
+						
+						if(!isFragile) {
+							// a TypeID less than 0 indicates an explosion
+							if(m.getTypeID()<0) {
+								float explosionPower=m.getTypeID();
+								explosionPower=0.0F-explosionPower/100.0F;
+								w.createExplosion(m.getNewBlockLocation().getX(), m.getNewBlockLocation().getY(), m.getNewBlockLocation().getZ(), explosionPower);
 							} else {
-								Location craftMove=entityUpdate.getNewLocation().subtract(entityUpdate.getOldLocation());
-								entity.teleport(entity.getLocation().add(craftMove));
+								updateBlock(m, chunkList, w, dataMap, chunks, cmChunks, false);
 							}
-							entity.setVelocity(pVel);
 						}
-						entityMap.remove(m.getNewBlockLocation());
+						
+						// if the block you just updated had any entities on it, move them. If they are moving, add in their motion to the craft motion
+						if( entityMap.containsKey(m.getNewBlockLocation()) ) {
+							List<EntityUpdateCommand> mapUpdateList=entityMap.get(m.getNewBlockLocation());
+							for(EntityUpdateCommand entityUpdate : mapUpdateList) {
+								Entity entity=entityUpdate.getEntity();
+								Vector pVel=new Vector(entity.getVelocity().getX(),0.0,entity.getVelocity().getZ());
+								if( pVel.getX()==0.0 && entity.getVelocity().getZ()==0.0 ) {
+									Location newLoc=entityUpdate.getNewLocation();
+									
+									// if they have gone through the floor, move them up one block
+									double decimalY=newLoc.getY()-Math.floor(newLoc.getY());
+									if(decimalY>0.50) {
+										newLoc.setY( Math.ceil( newLoc.getY() ) );
+									}
+									entity.teleport(entityUpdate.getNewLocation());
+								} else {
+									Location craftMove=entityUpdate.getNewLocation().subtract(entityUpdate.getOldLocation());
+									entity.teleport(entity.getLocation().add(craftMove));
+								}
+								entity.setVelocity(pVel);
+							}
+							entityMap.remove(m.getNewBlockLocation());
+						}
 					}
+	
 				}
 
 				// Fix redstone and other "fragiles"				
 				for ( MapUpdateCommand i : updatesInWorld ) {
-					boolean isFragile=(Arrays.binarySearch(fragileBlocks,i.getTypeID())>=0);
-					if(isFragile) {
-						updateBlock(i, chunkList, w, dataMap, chunks, cmChunks, false);
+					if(i!=null) {
+						boolean isFragile=(Arrays.binarySearch(fragileBlocks,i.getTypeID())>=0);
+						if(isFragile) {
+							updateBlock(i, chunkList, w, dataMap, chunks, cmChunks, false);
+						}
 					}
 				}
 
 				// Put Dispensers back in now that the ship is reconstructed
 				for ( MapUpdateCommand i : updatesInWorld ) {
-					if(i.getTypeID()==23) {
-						updateBlock(i, chunkList, w, dataMap, chunks, cmChunks, true);
+					if(i!=null) {
+						if(i.getTypeID()==23) {
+							updateBlock(i, chunkList, w, dataMap, chunks, cmChunks, true);					
+						}
 					}
 				}
 
@@ -352,10 +353,12 @@ public class MapUpdateManager extends BukkitRunnable {
 					
 					// and set all crafts that were updated to not processing
 					for ( MapUpdateCommand c : updatesInWorld ) {
-						Craft craft=c.getCraft();
-						if(craft!=null) {
-							if(!craft.isNotProcessing()) {
-								craft.setProcessing(false);
+						if(c!=null) {
+							Craft craft=c.getCraft();
+							if(craft!=null) {
+								if(!craft.isNotProcessing()) {
+									craft.setProcessing(false);
+								}
 							}
 						}
 					}
