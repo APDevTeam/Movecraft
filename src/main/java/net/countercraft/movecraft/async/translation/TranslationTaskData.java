@@ -62,6 +62,10 @@ public class TranslationTaskData {
 	public int getDz() {
 		return dz;
 	}
+	
+	public void setDy(int dY) {
+		this.dy = dY;
+	}
 
 	public boolean failed() {
 		return failed;

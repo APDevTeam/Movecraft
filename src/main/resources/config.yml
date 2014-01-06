@@ -1,2 +1,5 @@
 Locale: en
 CompatibilityMode: false
+SinkRateTicks: 20
+SinkCheckTicks: 100
+PilotTool: 280

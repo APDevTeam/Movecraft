@@ -153,15 +153,21 @@ public class InteractListener implements Listener {
 			}
 
 		} else if ( sign.getLine( 0 ).equals( "Cruise: OFF")) {
-			if(CraftManager.getInstance().getCraftByPlayer( event.getPlayer() )!=null)
-				if(CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getCanCruise()) {
+			if(CraftManager.getInstance().getCraftByPlayer( event.getPlayer() )!=null){
+				Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
+				if(c.getType().getCanCruise()) {
 					sign.setLine( 0, "Cruise: ON" );
 					sign.update( true );
 
 					CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCruiseDirection(sign.getRawData());
 					CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setLastCruisUpdate(System.currentTimeMillis());
 					CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCruising(true);
+					
+					if (!c.getType().getMoveEntities()){
+						 CraftManager.getInstance().addReleaseTask(c);
+					}
 				}
+			}
 		} else if ( sign.getLine( 0 ).equals( "Cruise: ON")) {
 			if(CraftManager.getInstance().getCraftByPlayer( event.getPlayer() )!=null)
 				if(CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getCanCruise()) {

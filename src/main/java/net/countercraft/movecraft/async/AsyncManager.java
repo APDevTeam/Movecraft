@@ -367,43 +367,48 @@ public class AsyncManager extends BukkitRunnable {
 						MovecraftLocation l=sBlocks.next();
 						MovecraftLocation oldLoc=new MovecraftLocation(l.getX(), l.getY(), l.getZ());
 						MovecraftLocation newLoc=new MovecraftLocation(l.getX(), l.getY()-1, l.getZ());
-						Block oldBlock=w.getBlockAt(l.getX(), l.getY(), l.getZ());
-						Block newBlock=w.getBlockAt(l.getX(), l.getY()-1, l.getZ());
-						// If the source is air, remove it from processing
-						if(oldBlock.getTypeId()!=0) {
-							
-							// if falling through another falling block, search through all blocks downward to see if they are all on something solid. If so, don't fall
-							MovecraftLocation testLoc=new MovecraftLocation(newLoc.getX(),newLoc.getY(),newLoc.getZ());
-							while(oldBlockSet.contains(testLoc)) {
-								testLoc.setY(testLoc.getY()-1);
-							}
-							
-							Block testBlock=w.getBlockAt(testLoc.getX(), testLoc.getY(), testLoc.getZ());
-							if(Arrays.binarySearch(fallThroughBlocks,testBlock.getTypeId())>=0) {
-								// remember which blocks used to be water, so we can fill it back in later
-								if(newBlock.getTypeId()==9) {
-									if(waterFillBlocks.get( w )==null) {
-										HashSet<MovecraftLocation> newA=new HashSet<MovecraftLocation>();
-										waterFillBlocks.put( w ,newA);
+						if (l.getY()>0){
+							Block oldBlock=w.getBlockAt(l.getX(), l.getY(), l.getZ());
+							Block newBlock=w.getBlockAt(l.getX(), l.getY()-1, l.getZ());
+							// If the source is air, remove it from processing
+							if(oldBlock.getTypeId()!=0) {
+								
+								// if falling through another falling block, search through all blocks downward to see if they are all on something solid. If so, don't fall
+								MovecraftLocation testLoc=new MovecraftLocation(newLoc.getX(),newLoc.getY(),newLoc.getZ());
+								while(oldBlockSet.contains(testLoc)) {
+									testLoc.setY(testLoc.getY()-1);
+								}
+								
+								Block testBlock=w.getBlockAt(testLoc.getX(), testLoc.getY(), testLoc.getZ());
+								if(Arrays.binarySearch(fallThroughBlocks,testBlock.getTypeId())>=0) {
+									// remember which blocks used to be water, so we can fill it back in later
+									if(newBlock.getTypeId()==9) {
+										if(waterFillBlocks.get( w )==null) {
+											HashSet<MovecraftLocation> newA=new HashSet<MovecraftLocation>();
+											waterFillBlocks.put( w ,newA);
+										}
+										waterFillBlocks.get(w).add(newLoc);
 									}
-									waterFillBlocks.get(w).add(newLoc);
-								}
-								MapUpdateCommand c=new MapUpdateCommand(oldLoc, newLoc, oldBlock.getTypeId(), null);
-								updates.add(c);
-								l.setY(l.getY()-1);
-								} else {
+									MapUpdateCommand c=new MapUpdateCommand(oldLoc, newLoc, oldBlock.getTypeId(), null);
+									updates.add(c);
+									l.setY(l.getY()-1);
+									} else {
 
-								// if the block below is solid, remove the block from the falling list and the waterfill list. Also remove it from oldblocks, so it doesn't get filled in with air/water
-								waterFillBlocks.remove(l);
-								oldBlockSet.remove(l);
-								sBlocks.remove();
+									// if the block below is solid, remove the block from the falling list and the waterfill list. Also remove it from oldblocks, so it doesn't get filled in with air/water
+									waterFillBlocks.remove(l);
+									oldBlockSet.remove(l);
+									sBlocks.remove();
 
-								}
-							
+									}
+								
+							} else {
+								// don't process air, waste of time
+//								oldBlockSet.remove(l);
+								sBlocks.remove();							
+							}
 						} else {
-							// don't process air, waste of time
-//							oldBlockSet.remove(l);
-							sBlocks.remove();							
+							// don't process under 0 level
+							 sBlocks.remove();
 						}
 					}
 					

@@ -43,7 +43,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
+import org.bukkit.Material;
 
 public class TranslationTask extends AsyncTask {
 	private TranslationTaskData data;
@@ -59,7 +59,11 @@ public class TranslationTask extends AsyncTask {
 
 		// canfly=false means an ocean-going vessel
 		boolean waterCraft=!getCraft().getType().canFly();
-
+		boolean hoverCraft = getCraft().getType().getCanHover();
+		// I will use airCraft to define canFly, because i think that waterCraft=!canFly wasn't lucky sollution for fututre adds 
+		// and i hope that will be added something like "waterCraft" or "canSail" property directly to .craft properties 
+		boolean airCraft = getCraft().getType().canFly(); 
+		int hoverLimit = getCraft().getType().getHoverLimit();
 		// Find the waterline from the surrounding terrain or from the static level in the craft type
 		int waterLine=0;
 		if (waterCraft) {
@@ -203,19 +207,29 @@ public class TranslationTask extends AsyncTask {
 		data.setCollisionExplosion(false);
 		Set<MapUpdateCommand> explosionSet = new HashSet<MapUpdateCommand>();
 		
+		List<Material> harvestBlocks = getCraft().getType().getHarvestBlocks();
+		List<MovecraftLocation> harvestedBlocks=new ArrayList<MovecraftLocation>(); //future for possible drop items
+		
+		int hoverOver = data.getDy();
+		boolean clearNewData = false;
+		boolean hoverUseGravity = getCraft().getType().getUseGravity();
+		boolean checkHover = (data.getDx()!=0 || data.getDz()!=0);// we want to check only horizontal moves
+		boolean canHoverOverWater = getCraft().getType().getCanHoverOverWater();
+		
 		for ( int i = 0; i < blocksList.length; i++ ) {
 			MovecraftLocation oldLoc = blocksList[i];
 			MovecraftLocation newLoc = oldLoc.translate( data.getDx(), data.getDy(), data.getDz() );
 //			newBlockList[i] = newLoc;
 
-			if ( newLoc.getY() >= data.getMaxHeight() && newLoc.getY() > oldLoc.getY() ) {
+			if ( newLoc.getY() > data.getMaxHeight() && newLoc.getY() > oldLoc.getY() ) {
 				fail( String.format( I18nSupport.getInternationalisedString( "Translation - Failed Craft hit height limit" ) ) );
 				break;
-			} else if ( newLoc.getY() <= data.getMinHeight()  && newLoc.getY() < oldLoc.getY() ) {
+			} else if ( newLoc.getY() < data.getMinHeight()  && newLoc.getY() < oldLoc.getY() ) {
 				fail( String.format( I18nSupport.getInternationalisedString( "Translation - Failed Craft hit minimum height limit" ) ) );
 				break;
 			}
 
+			/* old by ID
 			int testID = getCraft().getW().getBlockTypeIdAt( newLoc.getX(), newLoc.getY(), newLoc.getZ() );
 
 			boolean blockObstructed=false;
@@ -226,22 +240,206 @@ public class TranslationTask extends AsyncTask {
 				// New block is not air or water or a piston head and is not part of the existing ship
 				blockObstructed=(testID != 0 && testID != 9 && testID != 8 && testID != 34) && !existingBlockSet.contains( newLoc );
 			}
+			*/
+			// by material type
+			Material testMaterial = getCraft().getW().getBlockAt( newLoc.getX(), newLoc.getY(), newLoc.getZ() ).getType();
+			            
+			boolean blockObstructed=false;
+		
+			if(!waterCraft) {
+				// New block is not air or a piston head and is not part of the existing ship
+				blockObstructed = (!testMaterial.equals(Material.AIR) && !testMaterial.equals(Material.PISTON_EXTENSION)) && !existingBlockSet.contains( newLoc );
+			 } else {
+			 	// New block is not air or water or a piston head and is not part of the existing ship
+			 	blockObstructed = (!testMaterial.equals(Material.AIR) && !testMaterial.equals(Material.STATIONARY_WATER) 
+			                      && !testMaterial.equals(Material.WATER) && !testMaterial.equals(Material.PISTON_EXTENSION)) && !existingBlockSet.contains( newLoc );
+			 }
+			 if (blockObstructed && hoverCraft){
+			 	// New block is not harvested block
+			 	if (harvestBlocks.contains(testMaterial) && !existingBlockSet.contains( newLoc )){
+			 		blockObstructed = false;
+			 		harvestedBlocks.add(newLoc); //future for possible drop items
+			 	} else {
+			 		blockObstructed = true;
+			 	}
+			 }
 			
-			if ( blockObstructed ) {
-				// Explode if the craft is set to have a CollisionExplosion and its cruising. Also keep moving for spectacular ramming collisions
-
-				if( getCraft().getType().getCollisionExplosion() == 0.0F || !getCraft().getCruising()) {
-					fail( String.format( I18nSupport.getInternationalisedString( "Translation - Failed Craft is obstructed" ) ) );
-					break;
-				} else {
-					int explosionKey =  (int) (0-(getCraft().getType().getCollisionExplosion()*100));
-					explosionSet.add( new MapUpdateCommand( oldLoc, explosionKey, getCraft() ) );
-					data.setCollisionExplosion(true);
-				}
+			 if ( blockObstructed ) {
+				 if (hoverCraft && checkHover){
+				 	//we check one up ever, if it is hovercraft and one down if it's using gravity
+				 	if (hoverOver == 0 && newLoc.getY() + 1 <= data.getMaxHeight()){
+				 		//first was checked actual level, now check if we can go up
+				 		hoverOver = 1;
+				 		data.setDy(1); 
+				 		clearNewData = true;
+				 	} else if (hoverOver >= 1){ 
+				 		//check other options to go up
+				 		if (hoverOver < hoverLimit + 1 && newLoc.getY() + 1 <= data.getMaxHeight()){
+					 		data.setDy(hoverOver + 1);
+					 		hoverOver += 1;
+					 		clearNewData = true;    
+				 		}else{
+					 		if (hoverUseGravity && newLoc.getY() - hoverOver -1 >= data.getMinHeight()){
+					 			//we are on the maximum of top 
+					 			//if we can't go up so we test bottom side
+					 			data.setDy(-1);
+					 			hoverOver = -1;
+					 		}else{
+					 			// no way - back to original dY, turn off hovercraft for this move
+					 			// and get original data again for all explosions
+					 			data.setDy(0);
+					 			hoverOver = 0;
+					 			hoverCraft = false;
+					 			hoverUseGravity=false;
+					 			}
+					 		clearNewData = true; 
+					 		}
+				 	}else if (hoverOver <=-1) {
+				 		//we cant go down for 1 block, check more to hoverLimit
+				 		if (hoverOver > -hoverLimit - 1 && newLoc.getY() - 1 >= data.getMinHeight()){
+				 			data.setDy(hoverOver - 1); 
+				 			hoverOver -= 1;
+				 			clearNewData = true;
+				 		}else{
+				 				// no way - back to original dY, turn off hovercraft for this move
+				 				// and get original data again for all explosions
+				 			data.setDy(0);
+				 			hoverOver = 0;
+				 			hoverUseGravity = false;
+				 			clearNewData = true; 
+				 			hoverCraft = false;
+				 			}
+				 	}else{
+				 			// no way - reached MaxHeight during looking new way upstairss 
+				 			if (hoverUseGravity && newLoc.getY() -1 >= data.getMinHeight()){
+				 				//we are on the maximum of top 
+				 				//if we can't go up so we test bottom side
+				 				data.setDy(-1);
+				 				hoverOver = -1;
+				 			}else{
+				 				// - back to original dY, turn off hovercraft for this move
+				 				// and get original data again for all explosions
+				 				data.setDy(0);
+				 				hoverOver = 0;
+				 				hoverUseGravity = false;
+				 				hoverCraft = false;
+				 				}
+				 			clearNewData = true; 
+				 	}    
+				 }else{
+				 	// Explode if the craft is set to have a CollisionExplosion. Also keep moving for spectacular ramming collisions
+				 	if( getCraft().getType().getCollisionExplosion() == 0.0F) {
+				 		fail( String.format( I18nSupport.getInternationalisedString( "Translation - Failed Craft is obstructed" ) ) );
+				 		break;
+				 		} else {
+				 		int explosionKey =  (int) (0-(getCraft().getType().getCollisionExplosion()*100));
+				 		if (!getCraft().getW().getBlockAt(oldLoc.getX(),oldLoc.getY(), oldLoc.getZ()).getType().equals(Material.AIR)){
+				 			explosionSet.add( new MapUpdateCommand( oldLoc, explosionKey, getCraft() ) );
+				 			data.setCollisionExplosion(true);
+				 		}
+			 		}
+			 	}
 			} else {
 				int oldID = getCraft().getW().getBlockTypeIdAt( oldLoc.getX(), oldLoc.getY(), oldLoc.getZ() );
 				updateSet.add( new MapUpdateCommand( oldLoc, newLoc, oldID, getCraft() ) );
 				tempBlockList.add(newLoc);
+				
+				if ( i == blocksList.length - 1 ){
+					if ((hoverCraft && hoverUseGravity) || (hoverUseGravity && newLoc.getY() > data.getMaxHeight() && hoverOver ==0) ){
+						//hovecraft using gravity or something else using gravity and flying over its limit
+						int iFreeSpace = 0;
+						//canHoverOverWater adds 1 to dY for better check water under craft 
+						// best way should be expand selected region to each first blocks under craft
+						if (hoverOver==0){
+							//we go directly forward so we check if we can go down
+							for (int ii = -1 ;ii > - hoverLimit - 2- (canHoverOverWater?0:1) ; ii--){
+								if (!isFreeSpace(data.getDx(),hoverOver+ii, data.getDz(), blocksList, existingBlockSet, waterCraft, hoverCraft, harvestBlocks,canHoverOverWater, checkHover)){
+									break;
+								}
+								iFreeSpace ++;
+							}
+							if (data.failed()) {
+								break;
+							}
+							if (iFreeSpace > hoverLimit-(canHoverOverWater?0:1)){
+								data.setDy(-1);
+								hoverOver = -1;
+								clearNewData=true;
+							}
+					 	}else if (hoverOver == 1 && !airCraft){
+					 		//prevent fly heigher than hoverLimit
+					 		for (int ii = -1 ;ii > - hoverLimit - 2; ii--){
+					 			if (!isFreeSpace(data.getDx(),hoverOver+ii, data.getDz(), blocksList, existingBlockSet, waterCraft, hoverCraft, harvestBlocks,canHoverOverWater, checkHover)){
+					 				break;
+					 			}
+					 			iFreeSpace ++;
+					 		}
+					 	if (data.failed()){
+					 		break;
+					 	}
+					 	if (iFreeSpace > hoverLimit){
+					 		fail( String.format( I18nSupport.getInternationalisedString( "Translation - Failed Craft hit height limit" ) ) );
+					 		break;
+					 	}
+					}else if(hoverOver > 1){
+					 	//prevent jump thru block  
+					 	for (int ii = 1 ;ii < hoverOver - 1; ii++){
+					 		if (!isFreeSpace(0,ii, 0, blocksList, existingBlockSet, waterCraft, hoverCraft, harvestBlocks,canHoverOverWater, checkHover)){
+					 			break;
+					 		}
+					 	iFreeSpace ++;
+					 	}
+					 	if (data.failed()) {
+							 break;
+						}
+						if (iFreeSpace + 2 < hoverOver){
+							data.setDy(-1);
+							hoverOver = -1;
+							clearNewData=true;
+						}
+					}else if(hoverOver < -1){
+						//prevent jump thru block  
+						for (int ii = -1 ;ii > hoverOver + 1; ii--){
+							if (!isFreeSpace(0,ii, 0, blocksList, existingBlockSet, waterCraft, hoverCraft, harvestBlocks,canHoverOverWater, checkHover)){
+								break;
+							}
+							iFreeSpace ++;
+						}
+						if (data.failed()) {
+							break;
+							}
+						if (iFreeSpace + 2 < -hoverOver){
+							data.setDy(0);
+							hoverOver = 0;
+							hoverCraft = false;
+							clearNewData=true;
+						}
+					}
+					if (!canHoverOverWater){
+						if (hoverOver >=1){
+							//others hoverOver values we have checked jet
+							for (int ii = hoverOver-1 ;ii >hoverOver - hoverLimit - 2; ii--){
+								if (!isFreeSpace(0,ii, 0, blocksList, existingBlockSet, waterCraft, hoverCraft, harvestBlocks,canHoverOverWater, checkHover)){
+									break;
+								}
+						 	iFreeSpace ++;
+						 	}
+							if (data.failed()){
+								break;
+								}
+							}
+						}
+					}
+				}
+			}
+			if (clearNewData){
+				i = -1;
+				tempBlockList.clear();
+				updateSet.clear(); 
+				harvestedBlocks.clear();
+				data.setCollisionExplosion(false);
+				explosionSet.clear();
+				clearNewData = false;
 			}
 		}
 		
@@ -265,37 +463,43 @@ public class TranslationTask extends AsyncTask {
 			MovecraftLocation[] newBlockList = (MovecraftLocation[]) tempBlockList.toArray(new MovecraftLocation[0]);
 			data.setBlockList( newBlockList );
 
-			// Move entities within the craft
-			List<Entity> eList=null;
-			int numTries=0;
+			//prevents torpedo and rocket pilots :)
+			if (getCraft().getType().getMoveEntities()){
+				// Move entities within the craft
+				List<Entity> eList=null;
+				int numTries=0;
 			
-			while((eList==null)&&(numTries<100)) {
-				try {
-					eList=getCraft().getW().getEntities();
-				}
-				catch(java.util.ConcurrentModificationException e)
-				{
-					numTries++;
-				}
-			}
-
-			Iterator<Entity> i=eList.iterator();
-			while (i.hasNext()) {
-				Entity pTest=i.next();
-				if ( MathUtils.playerIsWithinBoundingPolygon( getCraft().getHitBox(), getCraft().getMinX(), getCraft().getMinZ(), MathUtils.bukkit2MovecraftLoc( pTest.getLocation() ) ) ) {
-					if(pTest.getType()!=org.bukkit.entity.EntityType.DROPPED_ITEM ) {
-						Location tempLoc = pTest.getLocation().add( data.getDx(), data.getDy(), data.getDz() );
-						Location newPLoc=new Location(getCraft().getW(), tempLoc.getX(), tempLoc.getY(), tempLoc.getZ());
-						newPLoc.setPitch(pTest.getLocation().getPitch());
-						newPLoc.setYaw(pTest.getLocation().getYaw());
-						
-						EntityUpdateCommand eUp=new EntityUpdateCommand(pTest.getLocation().clone(),newPLoc,pTest);
-						entityUpdateSet.add(eUp);
-
-					} else {
-						pTest.remove();
+				while((eList==null)&&(numTries<100)) {
+					try {
+						eList=getCraft().getW().getEntities();
+					}
+					catch(java.util.ConcurrentModificationException e)
+					{
+						numTries++;
 					}
 				}
+
+				Iterator<Entity> i=eList.iterator();
+				while (i.hasNext()) {
+					Entity pTest=i.next();
+					if ( MathUtils.playerIsWithinBoundingPolygon( getCraft().getHitBox(), getCraft().getMinX(), getCraft().getMinZ(), MathUtils.bukkit2MovecraftLoc( pTest.getLocation() ) ) ) {
+						if(pTest.getType()!=org.bukkit.entity.EntityType.DROPPED_ITEM ) {
+							Location tempLoc = pTest.getLocation().add( data.getDx(), data.getDy(), data.getDz() );
+							Location newPLoc=new Location(getCraft().getW(), tempLoc.getX(), tempLoc.getY(), tempLoc.getZ());
+							newPLoc.setPitch(pTest.getLocation().getPitch());
+							newPLoc.setYaw(pTest.getLocation().getYaw());
+							
+							EntityUpdateCommand eUp=new EntityUpdateCommand(pTest.getLocation().clone(),newPLoc,pTest);
+							entityUpdateSet.add(eUp);
+
+						} else {
+							pTest.remove();
+						}
+					}
+				}
+			} else {
+				//add releaseTask without playermove to manager
+				CraftManager.getInstance().addReleaseTask(getCraft());
 			}
 			
 			//update player spawn locations if they spawned where the ship used to be
@@ -355,4 +559,58 @@ public class TranslationTask extends AsyncTask {
 	public TranslationTaskData getData() {
 		return data;
 	}
+	
+	private boolean isFreeSpace(int x, int y, int z, MovecraftLocation[] blocksList, HashSet<MovecraftLocation> existingBlockSet, boolean waterCraft, boolean hoverCraft, List<Material> harvestBlocks, boolean canHoverOverWater,boolean checkHover){
+		boolean isFree = true;
+		// this checking for hovercrafts should be faster with separating horizontal layers and checking only realy necesseries,
+		// or more better: remember what checked in each translation, but it's beyond my current abilities, I will try to solve it in future
+  
+		for ( int i = 0; i < blocksList.length; i++ ) {
+			MovecraftLocation oldLoc = blocksList[i];
+			MovecraftLocation newLoc = oldLoc.translate( x, y, z);
+		 
+		 	Material testMaterial = getCraft().getW().getBlockAt( newLoc.getX(), newLoc.getY(), newLoc.getZ() ).getType();
+		 	if (!canHoverOverWater){
+		 		if ( testMaterial.equals(Material.STATIONARY_WATER) || testMaterial.equals(Material.WATER) ){                    
+		 			fail (String.format(I18nSupport.getInternationalisedString( "Translation - Failed Craft over water" )));
+		 		}
+		 	}
+		 
+			if ( newLoc.getY() >= data.getMaxHeight() && newLoc.getY() > oldLoc.getY() && !checkHover ) {
+			//if ( newLoc.getY() >= data.getMaxHeight() && newLoc.getY() > oldLoc.getY()) {
+				isFree = false;
+				break;
+			} else if ( newLoc.getY() <= data.getMinHeight() && newLoc.getY() < oldLoc.getY() ) {
+				isFree = false;
+				break;
+			}
+		 	
+		boolean blockObstructed=false;
+		if(!waterCraft) {
+			// New block is not air or a piston head and is not part of the existing ship
+			blockObstructed = (!testMaterial.equals(Material.AIR) && !testMaterial.equals(Material.PISTON_EXTENSION)) && !existingBlockSet.contains( newLoc );
+		} else {
+			// New block is not air or water or a piston head and is not part of the existing ship
+			blockObstructed = (!testMaterial.equals(Material.AIR) && !testMaterial.equals(Material.STATIONARY_WATER) 
+								&& !testMaterial.equals(Material.WATER) && !testMaterial.equals(Material.PISTON_EXTENSION)) && !existingBlockSet.contains( newLoc );
+		}
+		if (blockObstructed && hoverCraft){
+			// New block is not harvested block and is not part of the existing craft
+			if (harvestBlocks.contains(testMaterial) && !existingBlockSet.contains( newLoc )){
+				blockObstructed = false;
+			}else{
+				blockObstructed = true;
+		}
+	}
+	           
+	if ( blockObstructed ) {
+		isFree = false;
+		break;
+		} 
+	}
+	
+	return isFree;
+		     
+}
+
 }
