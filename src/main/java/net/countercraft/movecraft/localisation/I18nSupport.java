@@ -60,7 +60,12 @@ public class I18nSupport {
 	}
 
 	public static String getInternationalisedString( String key ) {
-		return languageFile.getProperty( key );
+		String ret=languageFile.getProperty( key );
+		if(ret!=null) {
+			return ret;			
+		} else {
+			return key;
+		}
 	}
 
 }

@@ -60,16 +60,20 @@ public class CraftManager {
 
 		HashSet<CraftType> craftTypesSet = new HashSet<CraftType>();
 
+		boolean foundCraft=false;
 		for ( File file : craftsFile.listFiles() ) {
 			if ( file.isFile() ) {
 
 				if ( file.getName().contains( ".craft" ) ) {
 					CraftType type = new CraftType( file );
 					craftTypesSet.add( type );
+					foundCraft=true;
 				}
 			}
 		}
-
+		if(!foundCraft) {
+			Movecraft.getInstance().getLogger().log(Level.SEVERE, "ERROR: NO CRAFTS FOUND!!!");
+		}
 		craftTypes = craftTypesSet.toArray( new CraftType[1] );
 		Movecraft.getInstance().getLogger().log( Level.INFO, String.format( I18nSupport.getInternationalisedString( "Startup - Number of craft files loaded" ), craftTypes.length ) );
 	}

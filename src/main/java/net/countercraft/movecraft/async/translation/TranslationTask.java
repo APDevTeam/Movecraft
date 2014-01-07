@@ -501,19 +501,7 @@ public class TranslationTask extends AsyncTask {
 				//add releaseTask without playermove to manager
 				CraftManager.getInstance().addReleaseTask(getCraft());
 			}
-			
-			//update player spawn locations if they spawned where the ship used to be
-			
-			for(Player p : Movecraft.getInstance().getServer().getOnlinePlayers()) {
-				if(p.getBedSpawnLocation()!=null) {
-					if( MathUtils.playerIsWithinBoundingPolygon( getCraft().getHitBox(), getCraft().getMinX(), getCraft().getMinZ(), MathUtils.bukkit2MovecraftLoc( p.getBedSpawnLocation() ) ) ) {
-						Location newBedSpawn=p.getBedSpawnLocation().add( data.getDx(), data.getDy(), data.getDz() );
-						p.setBedSpawnLocation(newBedSpawn, true);
-					}
-				}
-			}
-
-			
+						
 			//Set blocks that are no longer craft to air
 			List<MovecraftLocation> airLocation = ListUtils.subtract( Arrays.asList( blocksList ), Arrays.asList( newBlockList ) );
 

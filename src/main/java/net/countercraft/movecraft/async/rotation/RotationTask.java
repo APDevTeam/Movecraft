@@ -234,7 +234,7 @@ public class RotationTask extends AsyncTask {
 
 			}
 			
-			//update player spawn locations if they spawned where the ship used to be
+/*			//update player spawn locations if they spawned where the ship used to be
 			for(Player p : Movecraft.getInstance().getServer().getOnlinePlayers()) {
 				if(p.getBedSpawnLocation()!=null) {
 					if( MathUtils.playerIsWithinBoundingPolygon( getCraft().getHitBox(), getCraft().getMinX(), getCraft().getMinZ(), MathUtils.bukkit2MovecraftLoc( p.getBedSpawnLocation() ) ) ) {
@@ -248,7 +248,7 @@ public class RotationTask extends AsyncTask {
 						p.setBedSpawnLocation(newBedSpawn, true);
 					}
 				}
-			}
+			}*/
 			
 			// Calculate air changes
 			List<MovecraftLocation> airLocation = ListUtils.subtract( Arrays.asList( originalBlockList ), Arrays.asList( blockList ) );

@@ -47,6 +47,7 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
+import org.testng.collections.Lists;
 
 import java.util.*;
 import java.util.logging.Level;
@@ -165,6 +166,7 @@ public class MapUpdateManager extends BukkitRunnable {
 				} else {
 					chunks = new HashSet<net.minecraft.server.v1_7_R1.Chunk>();
 				}
+				ArrayList<Player> unupdatedPlayers=new ArrayList<Player>(Arrays.asList(Movecraft.getInstance().getServer().getOnlinePlayers()));
 
 				// Preprocessing
 				for ( MapUpdateCommand c : updatesInWorld ) {
@@ -206,7 +208,7 @@ public class MapUpdateManager extends BukkitRunnable {
 				ArrayList<Chunk> chunkList = new ArrayList<Chunk>();
 				boolean isFirstChunk=true;
 				
-				final int[] fragileBlocks = new int[]{ 26, 29, 33, 34, 50, 52, 55, 63, 64, 65, 68, 69, 70, 71, 72, 75, 76, 77, 93, 94, 96, 131, 132, 143, 147, 148, 149, 150, 151, 171, 323, 324, 330, 331, 356, 404 };
+				final int[] fragileBlocks = new int[]{ 26, 29, 33, 34, 50, 52, 54, 55, 63, 64, 65, 68, 69, 70, 71, 72, 75, 76, 77, 93, 94, 96, 131, 132, 143, 147, 148, 149, 150, 151, 171, 323, 324, 330, 331, 356, 404 };
 				Arrays.sort(fragileBlocks);
 						
 				// Perform core block updates, don't do "fragiles" yet. Don't do Dispensers yet either
@@ -236,7 +238,7 @@ public class MapUpdateManager extends BukkitRunnable {
 									
 									// if they have gone through the floor, move them up one block
 									double decimalY=newLoc.getY()-Math.floor(newLoc.getY());
-									if(decimalY>0.50) {
+									if(decimalY>0.40) {
 										newLoc.setY( Math.ceil( newLoc.getY() ) );
 									}
 									entity.teleport(entityUpdate.getNewLocation());
@@ -258,15 +260,45 @@ public class MapUpdateManager extends BukkitRunnable {
 						boolean isFragile=(Arrays.binarySearch(fragileBlocks,i.getTypeID())>=0);
 						if(isFragile) {
 							updateBlock(i, chunkList, w, dataMap, chunks, cmChunks, false);
+							
+
 						}
 					}
 				}
 
-				// Put Dispensers back in now that the ship is reconstructed
 				for ( MapUpdateCommand i : updatesInWorld ) {
 					if(i!=null) {
+						// Put Dispensers back in now that the ship is reconstructed
 						if(i.getTypeID()==23) {
 							updateBlock(i, chunkList, w, dataMap, chunks, cmChunks, true);					
+						}
+						
+						// if a bed was moved, check to see if any spawn points need to be updated
+						if(i.getTypeID()==26) {
+							Iterator<Player> iter=unupdatedPlayers.iterator();
+							while (iter.hasNext()) {
+								Player p=iter.next();
+							
+								if(p!=null) {
+									if(p.getBedSpawnLocation()!=null) {
+										MovecraftLocation spawnLoc=MathUtils.bukkit2MovecraftLoc( p.getBedSpawnLocation() );
+										
+										// is the spawn point within 1 block of where the bed used to be?
+										boolean foundSpawn=false;
+										if(i.getOldBlockLocation().getX()-spawnLoc.getX()<=1 && i.getOldBlockLocation().getX()-spawnLoc.getX()>=-1) {
+											if(i.getOldBlockLocation().getZ()-spawnLoc.getZ()<=1 && i.getOldBlockLocation().getZ()-spawnLoc.getZ()>=-1) {
+												foundSpawn=true;
+											}
+										}
+										
+										if(foundSpawn) {
+											Location newSpawnLoc = new Location( w, i.getNewBlockLocation().getX(), i.getNewBlockLocation().getY(), i.getNewBlockLocation().getZ() );
+											p.setBedSpawnLocation(newSpawnLoc, true);
+											iter.remove();
+										}
+									}
+								}
+							}
 						}
 					}
 				}
@@ -351,7 +383,7 @@ public class MapUpdateManager extends BukkitRunnable {
 						}
 					}
 					
-					// and set all crafts that were updated to not processing
+					// and set all crafts that were updated to not processing, and move any spawn points that were on a block that was moved
 					for ( MapUpdateCommand c : updatesInWorld ) {
 						if(c!=null) {
 							Craft craft=c.getCraft();
@@ -360,7 +392,8 @@ public class MapUpdateManager extends BukkitRunnable {
 									craft.setProcessing(false);
 								}
 							}
-						}
+
+						}						
 					}
 				}
 				
