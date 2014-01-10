@@ -191,6 +191,19 @@ public class RotationTask extends AsyncTask {
 		if ( !failed ) {
 			//rotate entities in the craft
 			Location tOP = new Location( getCraft().getW(), originPoint.getX(), originPoint.getY(), originPoint.getZ() );
+			
+			List<Entity> eList=null;
+			int numTries=0;
+			
+			while((eList==null)&&(numTries<100)) {
+				try {
+					eList=getCraft().getW().getEntities();
+				}
+				catch(java.util.ConcurrentModificationException e)
+				{
+					numTries++;
+				}
+			}
 			Iterator<Entity> i=getCraft().getW().getEntities().iterator();
 			while (i.hasNext()) {
 				Entity pTest=i.next();
