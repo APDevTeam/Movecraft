@@ -434,7 +434,6 @@ public class RotationTask extends AsyncTask {
                 return false;
             }
         }
-        
         return true; 
     }
 }
