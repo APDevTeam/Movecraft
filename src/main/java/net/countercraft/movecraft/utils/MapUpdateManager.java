@@ -221,7 +221,7 @@ public class MapUpdateManager extends BukkitRunnable {
 							if(m.getTypeID()<0) {
 								float explosionPower=m.getTypeID();
 								explosionPower=0.0F-explosionPower/100.0F;
-								w.createExplosion(m.getNewBlockLocation().getX(), m.getNewBlockLocation().getY(), m.getNewBlockLocation().getZ(), explosionPower);
+								w.createExplosion(m.getNewBlockLocation().getX()+0.5, m.getNewBlockLocation().getY()+0.5, m.getNewBlockLocation().getZ()+0.5, explosionPower);
 							} else {
 								updateBlock(m, chunkList, w, dataMap, chunks, cmChunks, false);
 							}
