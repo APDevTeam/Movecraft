@@ -646,7 +646,6 @@ public class TranslationTask extends AsyncTask {
                 return false;
             }
         }
-        
         return true; 
     }
 }
