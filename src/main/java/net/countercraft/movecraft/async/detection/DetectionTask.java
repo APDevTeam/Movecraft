@@ -109,7 +109,26 @@ public class DetectionTask extends AsyncTask {
 					if(data.getWorld().getBlockTypeIdAt( x, y, z+1 )==54) {
 						foundDoubleChest=true;
 					}
-					if(foundDoubleChest) {
+                    if(foundDoubleChest) {
+						fail( String.format( I18nSupport.getInternationalisedString( "Detection - ERROR: Double chest found" ) ) );						
+					}
+				}
+                //check for double trapped chests
+				if (testID==146) {
+					boolean foundDoubleChest=false;
+					if(data.getWorld().getBlockTypeIdAt( x-1, y, z )==146) {
+						foundDoubleChest=true;
+					}
+					if(data.getWorld().getBlockTypeIdAt( x+1, y, z )==146) {
+						foundDoubleChest=true;
+					}
+					if(data.getWorld().getBlockTypeIdAt( x, y, z-1 )==146) {
+						foundDoubleChest=true;
+					}
+					if(data.getWorld().getBlockTypeIdAt( x, y, z+1 )==146) {
+						foundDoubleChest=true;
+					}
+                    if(foundDoubleChest) {
 						fail( String.format( I18nSupport.getInternationalisedString( "Detection - ERROR: Double chest found" ) ) );						
 					}
 				}

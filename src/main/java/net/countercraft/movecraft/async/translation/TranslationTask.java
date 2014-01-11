@@ -242,9 +242,21 @@ public class TranslationTask extends AsyncTask {
 			}
 			*/
 			// by material type
-			Material testMaterial = getCraft().getW().getBlockAt( newLoc.getX(), newLoc.getY(), newLoc.getZ() ).getType();
-			            
-			boolean blockObstructed=false;
+			
+            boolean blockObstructed=false;
+            Material testMaterial;
+            
+            testMaterial = getCraft().getW().getBlockAt(oldLoc.getX(), oldLoc.getY(), oldLoc.getZ() ).getType();
+            if (testMaterial.equals(Material.CHEST) || testMaterial.equals(Material.TRAPPED_CHEST)){
+                if (!checkChests(testMaterial, newLoc, existingBlockSet)){
+                    //prevent chests collision
+                    fail( String.format( I18nSupport.getInternationalisedString( "Translation - Failed Craft is obstructed" ) ) );
+                    break;
+                }
+            } 
+            
+            testMaterial = getCraft().getW().getBlockAt( newLoc.getX(), newLoc.getY(), newLoc.getZ() ).getType();
+            
 		
 			if(!waterCraft) {
 				// New block is not air or a piston head and is not part of the existing ship
@@ -588,17 +600,52 @@ public class TranslationTask extends AsyncTask {
 				blockObstructed = false;
 			}else{
 				blockObstructed = true;
-		}
-	}
+            }   
+        }
 	           
-	if ( blockObstructed ) {
-		isFree = false;
-		break;
-		} 
-	}
-	
-	return isFree;
-		     
-}
-
+        if ( blockObstructed ) {
+            isFree = false;
+            break;
+            } 
+        }
+        return isFree;	     
+    }
+    
+    private boolean checkChests(Material mBlock, MovecraftLocation newLoc, HashSet<MovecraftLocation> existingBlockSet){
+        Material testMaterial;
+        MovecraftLocation aroundNewLoc;
+        
+        aroundNewLoc = newLoc.translate( 1, 0, 0);
+        testMaterial = getCraft().getW().getBlockAt( aroundNewLoc.getX(), aroundNewLoc.getY(), aroundNewLoc.getZ()).getType();
+        if (testMaterial.equals(mBlock)){
+            if (!existingBlockSet.contains(aroundNewLoc)){
+                return false;
+            }
+        }
+        
+        aroundNewLoc = newLoc.translate( -1, 0, 0);
+        testMaterial = getCraft().getW().getBlockAt( aroundNewLoc.getX(), aroundNewLoc.getY(), aroundNewLoc.getZ()).getType();
+        if (testMaterial.equals(mBlock)){
+            if (!existingBlockSet.contains(aroundNewLoc)){
+                return false;
+            }
+        }
+        
+        aroundNewLoc = newLoc.translate( 0, 0, 1);
+        testMaterial = getCraft().getW().getBlockAt( aroundNewLoc.getX(), aroundNewLoc.getY(), aroundNewLoc.getZ()).getType();
+        if (testMaterial.equals(mBlock)){
+            if (!existingBlockSet.contains(aroundNewLoc)){
+                return false;
+            }
+        }
+        
+        aroundNewLoc = newLoc.translate( 0, 0, -1);
+        testMaterial = getCraft().getW().getBlockAt( aroundNewLoc.getX(), aroundNewLoc.getY(), aroundNewLoc.getZ()).getType();
+        if (testMaterial.equals(mBlock)){
+            if (!existingBlockSet.contains(aroundNewLoc)){
+                return false;
+            }
+        }
+        return true; 
+    }
 }
