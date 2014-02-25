@@ -110,6 +110,17 @@ public class CraftManager {
 		return craftPlayerIndex.get( p );
 	}
 
+
+	public Craft getCraftByPlayerName( String name ) {
+		Set<Player> players = craftPlayerIndex.keySet();
+		for(Player player : players) {
+			if(player.getName().equals(name)) {
+				return craftPlayerIndex.get( player );
+			}
+		}
+		return null;
+	}
+
 	public Player getPlayerFromCraft( Craft c ) {
 		for ( Map.Entry<Player, Craft> playerCraftEntry : craftPlayerIndex.entrySet() ) {
 
@@ -144,7 +155,7 @@ public class CraftManager {
 	public final void removeReleaseTask(final Craft c){
 		Player p = getPlayerFromCraft( c );
 		if (p!= null){
-			if ( releaseEvents.containsKey(p) && !c.getType().getMoveEntities()) {
+			if ( releaseEvents.containsKey(p) ) {
 				releaseEvents.get(p).cancel();
 				releaseEvents.remove(p);
 			}

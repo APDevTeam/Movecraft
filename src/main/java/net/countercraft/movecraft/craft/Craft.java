@@ -24,7 +24,9 @@ import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.async.translation.TranslationTaskData;
 import net.countercraft.movecraft.utils.MovecraftLocation;
 import net.countercraft.movecraft.utils.Rotation;
+
 import org.bukkit.World;
+import org.bukkit.entity.Player;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -90,8 +92,8 @@ public class Craft {
 		this.hitBox = hitBox;
 	}
 
-	public void detect( String playerName, MovecraftLocation startPoint ) {
-		AsyncManager.getInstance().submitTask( new DetectionTask( this, startPoint, type.getMinSize(), type.getMaxSize(), type.getAllowedBlocks(), type.getForbiddenBlocks(), playerName, w ), this );
+	public void detect( Player player, MovecraftLocation startPoint ) {
+		AsyncManager.getInstance().submitTask( new DetectionTask( this, startPoint, type.getMinSize(), type.getMaxSize(), type.getAllowedBlocks(), type.getForbiddenBlocks(), player, w ), this );
 	}
 
 	public void translate( int dx, int dy, int dz ) {

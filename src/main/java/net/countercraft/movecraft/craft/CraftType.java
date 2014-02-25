@@ -36,7 +36,7 @@ public class CraftType {
 	private String craftName;
 	private int maxSize, minSize, minHeightLimit, maxHeightLimit;
 	private Integer[] allowedBlocks, forbiddenBlocks;
-	private boolean canFly, tryNudge, canCruise, canTeleport, canStaticMove, canHover, useGravity, canHoverOverWater, moveEntities;;
+	private boolean blockedByWater, tryNudge, canCruise, canTeleport, canStaticMove, canHover, useGravity, canHoverOverWater, moveEntities;;
 	private int cruiseSkipBlocks;
 	private int staticWaterLevel;
 	private double fuelBurnRate;
@@ -65,7 +65,13 @@ public class CraftType {
 		minSize = ( Integer ) data.get( "minSize" );
 		allowedBlocks = ((ArrayList<Integer> ) data.get( "allowedBlocks" )).toArray( new Integer[1] );
 		forbiddenBlocks = ((ArrayList<Integer> ) data.get( "forbiddenBlocks" )).toArray( new Integer[1] );
-		canFly = ( Boolean ) data.get( "canFly" );
+		if(data.containsKey("canFly")) {
+			blockedByWater = ( Boolean ) data.get( "canFly" );
+		} else if (data.containsKey("blockedByWater")) {
+			blockedByWater = ( Boolean ) data.get( "blockedByWater" );			
+		} else {
+			blockedByWater = true;
+		}
 		tryNudge = ( Boolean ) data.get( "tryNudge" );
 		tickCooldown = (int) Math.ceil( 20 / ( ( Double ) data.get( "speed" ) ) );
 		flyBlocks = ( HashMap<Integer, ArrayList<Double>> ) data.get( "flyblocks" );
@@ -183,8 +189,8 @@ public class CraftType {
 		return forbiddenBlocks;
 	}
 
-	public boolean canFly() {
-		return canFly;
+	public boolean blockedByWater() {
+		return blockedByWater;
 	}
 
 	public boolean getCanCruise() {

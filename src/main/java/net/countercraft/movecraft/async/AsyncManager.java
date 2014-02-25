@@ -97,7 +97,7 @@ public class AsyncManager extends BukkitRunnable {
 				DetectionTask task = ( DetectionTask ) poll;
 				DetectionTaskData data = task.getData();
 
-				Player p = Movecraft.getInstance().getServer().getPlayer( data.getPlayername() );
+				Player p = data.getPlayer();
 				Craft pCraft = CraftManager.getInstance().getCraftByPlayer( p );
 
 				if ( pCraft != null ) {
@@ -105,7 +105,7 @@ public class AsyncManager extends BukkitRunnable {
 					p.sendMessage( String.format( I18nSupport.getInternationalisedString( "Detection - Failed - Already commanding a craft" ) ) );
 				} else {
 					if ( data.failed() ) {
-						Movecraft.getInstance().getServer().getPlayer( data.getPlayername() ).sendMessage( data.getFailMessage() );
+						p.sendMessage( data.getFailMessage() );
 					} else {
 						Craft[] craftsInWorld = CraftManager.getInstance().getCraftsInWorld( c.getW() );
 						boolean failed = false;
@@ -114,7 +114,7 @@ public class AsyncManager extends BukkitRunnable {
 							for ( Craft craft : craftsInWorld ) {
 
 								if ( BlockUtils.arrayContainsOverlap( craft.getBlockList(), data.getBlockList() ) ) {
-									Movecraft.getInstance().getServer().getPlayer( data.getPlayername() ).sendMessage( String.format( I18nSupport.getInternationalisedString( "Detection - Failed Craft is already being controlled" ) ) );
+									p.sendMessage( String.format( I18nSupport.getInternationalisedString( "Detection - Failed Craft is already being controlled" ) ) );
 									failed = true;
 								}
 
@@ -125,10 +125,9 @@ public class AsyncManager extends BukkitRunnable {
 							c.setHitBox( data.getHitBox() );
 							c.setMinX( data.getMinX() );
 							c.setMinZ( data.getMinZ() );
-
-							Movecraft.getInstance().getServer().getPlayer( data.getPlayername() ).sendMessage( String.format( I18nSupport.getInternationalisedString( "Detection - Successfully piloted craft" ) ) );
+							p.sendMessage( String.format( I18nSupport.getInternationalisedString( "Detection - Successfully piloted craft" ) ) );
 							Movecraft.getInstance().getLogger().log( Level.INFO, String.format( I18nSupport.getInternationalisedString( "Detection - Success - Log Output" ), p.getName(), c.getType().getCraftName(), c.getBlockList().length, c.getMinX(), c.getMinZ() ) );
-							CraftManager.getInstance().addCraft( c, Movecraft.getInstance().getServer().getPlayer( data.getPlayername() ) );
+							CraftManager.getInstance().addCraft( c, p );
 						}
 					}
 				}
@@ -389,7 +388,11 @@ public class AsyncManager extends BukkitRunnable {
 										}
 										waterFillBlocks.get(w).add(newLoc);
 									}
-									MapUpdateCommand c=new MapUpdateCommand(oldLoc, newLoc, oldBlock.getTypeId(), null);
+									int newTypeId=oldBlock.getTypeId();
+									if(newTypeId==9) {
+										newTypeId=0;
+									}
+									MapUpdateCommand c=new MapUpdateCommand(oldLoc, newLoc, newTypeId, null);
 									updates.add(c);
 									l.setY(l.getY()-1);
 									} else {
@@ -418,7 +421,8 @@ public class AsyncManager extends BukkitRunnable {
 						if(!sinkingBlocks.get(w).contains(l)) {
 							MapUpdateCommand c;
 							if(waterFillBlocks.get( w )!=null) {
-								if(waterFillBlocks.get( w ).contains(l)) {
+								//don't fill in water if its above sea level - necessary to avoid leaving water hanging in the air
+								if(l.getY()<=w.getSeaLevel() && waterFillBlocks.get( w ).contains(l)) {
 									c=new MapUpdateCommand(l,9,null);
 								} else {
 									c=new MapUpdateCommand(l,0,null);

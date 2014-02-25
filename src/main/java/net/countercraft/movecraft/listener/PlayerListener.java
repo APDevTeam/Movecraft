@@ -63,7 +63,7 @@ public class PlayerListener implements Listener {
 		if ( c != null ) {
 			if ( !MathUtils.playerIsWithinBoundingPolygon( c.getHitBox(), c.getMinX(), c.getMinZ(), MathUtils.bukkit2MovecraftLoc( event.getPlayer().getLocation() ) ) ) {
 
-				if ( !CraftManager.getInstance().getReleaseEvents().containsKey( event.getPlayer() ) ) {
+				if ( !CraftManager.getInstance().getReleaseEvents().containsKey( event.getPlayer() ) && c.getType().getMoveEntities()) {
 					event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "Release - Player has left craft" ) ) );
 
 					BukkitTask releaseTask = new BukkitRunnable() {

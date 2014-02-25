@@ -18,21 +18,23 @@
 package net.countercraft.movecraft.async.detection;
 
 import net.countercraft.movecraft.utils.MovecraftLocation;
+
 import org.bukkit.World;
+import org.bukkit.entity.Player;
 
 public class DetectionTaskData {
 	private World w;
 	private boolean failed;
 	private String failMessage;
 	private MovecraftLocation[] blockList;
-	private String playerName;
+	private Player player;
 	private int[][][] hitBox;
 	private Integer minX, minZ;
 	private Integer[] allowedBlocks, forbiddenBlocks;
 
-	public DetectionTaskData( World w, String playerName, Integer[] allowedBlocks, Integer[] forbiddenBlocks ) {
+	public DetectionTaskData( World w, Player player, Integer[] allowedBlocks, Integer[] forbiddenBlocks ) {
 		this.w = w;
-		this.playerName = playerName;
+		this.player = player;
 		this.allowedBlocks = allowedBlocks;
 		this.forbiddenBlocks = forbiddenBlocks;
 	}
@@ -76,8 +78,8 @@ public class DetectionTaskData {
 		this.blockList = blockList;
 	}
 
-	public String getPlayername() {
-		return playerName;
+	public Player getPlayer() {
+		return player;
 	}
 
 	public int[][][] getHitBox() {
@@ -108,7 +110,7 @@ public class DetectionTaskData {
 		this.failed = failed;
 	}
 
-	void setPlayerName( String playerName ) {
-		this.playerName = playerName;
+	void setPlayer( Player player ) {
+		this.player = player;
 	}
 }

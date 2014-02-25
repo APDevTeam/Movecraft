@@ -57,12 +57,11 @@ public class TranslationTask extends AsyncTask {
 	public void excecute() {
 		MovecraftLocation[] blocksList = data.getBlockList();
 
-		// canfly=false means an ocean-going vessel
-		boolean waterCraft=!getCraft().getType().canFly();
+		// blockedByWater=false means an ocean-going vessel
+		boolean waterCraft=!getCraft().getType().blockedByWater();
 		boolean hoverCraft = getCraft().getType().getCanHover();
-		// I will use airCraft to define canFly, because i think that waterCraft=!canFly wasn't lucky sollution for fututre adds 
-		// and i hope that will be added something like "waterCraft" or "canSail" property directly to .craft properties 
-		boolean airCraft = getCraft().getType().canFly(); 
+
+		boolean airCraft = getCraft().getType().blockedByWater(); 
 		int hoverLimit = getCraft().getType().getHoverLimit();
 		// Find the waterline from the surrounding terrain or from the static level in the craft type
 		int waterLine=0;

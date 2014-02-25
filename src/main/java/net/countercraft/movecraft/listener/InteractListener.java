@@ -85,6 +85,8 @@ public class InteractListener implements Listener {
 
 							}
 
+						} else {
+							event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "Insufficient Permissions" ) ) );
 						}
 					}
 				}
@@ -111,14 +113,17 @@ public class InteractListener implements Listener {
 				Craft c = new Craft( getCraftTypeFromString( sign.getLine( 0 ) ), loc.getWorld() );
 
 				if ( CraftManager.getInstance().getCraftByPlayer( event.getPlayer() ) == null ) {
-					c.detect( event.getPlayer().getName(), startPoint );
+					c.detect( event.getPlayer(), startPoint );
 				} else {
 					Craft oldCraft=CraftManager.getInstance().getCraftByPlayer( event.getPlayer() );
 					CraftManager.getInstance().removeCraft( oldCraft );
-					c.detect( event.getPlayer().getName(), startPoint );
+					c.detect( event.getPlayer(), startPoint );
 				}
 
 				event.setCancelled( true );
+			} else {
+			event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "Insufficient Permissions" ) ) );
+
 			}
 
 		} else if ( sign.getLine( 0 ).equalsIgnoreCase( "[helm]" ) ) {
@@ -149,10 +154,12 @@ public class InteractListener implements Listener {
 
 					}
 
+				} else {
+					event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "Insufficient Permissions" ) ) );
 				}
 			}
 
-		} else if ( sign.getLine( 0 ).equals( "Cruise: OFF")) {
+		} else if ( sign.getLine( 0 ).equalsIgnoreCase( "Cruise: OFF")) {
 			if(CraftManager.getInstance().getCraftByPlayer( event.getPlayer() )!=null){
 				Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
 				if(c.getType().getCanCruise()) {
@@ -168,14 +175,14 @@ public class InteractListener implements Listener {
 					}
 				}
 			}
-		} else if ( sign.getLine( 0 ).equals( "Cruise: ON")) {
+		} else if ( sign.getLine( 0 ).equalsIgnoreCase( "Cruise: ON")) {
 			if(CraftManager.getInstance().getCraftByPlayer( event.getPlayer() )!=null)
 				if(CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getCanCruise()) {
 					sign.setLine( 0, "Cruise: OFF" );
 					sign.update( true );
 					CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCruising(false);
 				}
-		} else if ( sign.getLine( 0 ).startsWith("Teleport:")) {
+		} else if ( sign.getLine( 0 ).equalsIgnoreCase("Teleport:")) {
 			if(CraftManager.getInstance().getCraftByPlayer( event.getPlayer() )!=null) {
 				String[] numbers = sign.getLine( 1 ).split(",");
 				int tX=Integer.parseInt(numbers[0]);
@@ -189,19 +196,29 @@ public class InteractListener implements Listener {
 						int dz=tZ-sign.getZ();
 						CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).translate(dx, dy, dz);;
 					}
+				} else {
+					event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "Insufficient Permissions" ) ) );
 				}
 			}
-		} else if ( sign.getLine( 0 ).startsWith("Move:")) {
+		} else if ( sign.getLine( 0 ).equalsIgnoreCase( "Release")) {
+			if(CraftManager.getInstance().getCraftByPlayer( event.getPlayer() )!=null) {
+				Craft oldCraft=CraftManager.getInstance().getCraftByPlayer( event.getPlayer() );
+				CraftManager.getInstance().removeCraft( oldCraft );
+			}
+		} else if ( sign.getLine( 0 ).equalsIgnoreCase("Move:")) {
 			if(CraftManager.getInstance().getCraftByPlayer( event.getPlayer() )!=null) {
 				String[] numbers = sign.getLine( 1 ).split(",");
 				int dx=Integer.parseInt(numbers[0]);
 				int dy=Integer.parseInt(numbers[1]);
 				int dz=Integer.parseInt(numbers[2]);
 
-				if(event.getPlayer().hasPermission( "movecraft." + CraftManager.getInstance().getCraftByPlayer( event.getPlayer()).getType().getCraftName() + ".move")) {					if(CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getCanStaticMove()) {
+				if(event.getPlayer().hasPermission( "movecraft." + CraftManager.getInstance().getCraftByPlayer( event.getPlayer()).getType().getCraftName() + ".move")) {
+					if(CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getCanStaticMove()) {
 
 						CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).translate(dx, dy, dz);;
 					}
+				} else {
+					event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "Insufficient Permissions" ) ) );
 				}
 			}
 		}
@@ -217,7 +234,6 @@ public class InteractListener implements Listener {
 		return null;
 	}
 
-
 	@EventHandler
 	public void onPlayerInteractStick( PlayerInteractEvent event ) {
 		if ( event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK ) {
@@ -230,8 +246,7 @@ public class InteractListener implements Listener {
 						long ticksElapsed = ( System.currentTimeMillis() - time ) / 50;
 						if ( Math.abs( ticksElapsed ) < craft.getType().getTickCooldown() ) {
 							return;
-						} 
-						
+						} 						
 					}
 
 					if ( MathUtils.playerIsWithinBoundingPolygon( craft.getHitBox(), craft.getMinX(), craft.getMinZ(), MathUtils.bukkit2MovecraftLoc( event.getPlayer().getLocation() ) ) ) {
@@ -272,6 +287,8 @@ public class InteractListener implements Listener {
 							craft.translate( dx, dy, dz );
 							timeMap.put( event.getPlayer(), System.currentTimeMillis() );
 							craft.setLastCruisUpdate(System.currentTimeMillis());
+						} else { 
+							event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "Insufficient Permissions" ) ) );
 						}
 					}
 				}

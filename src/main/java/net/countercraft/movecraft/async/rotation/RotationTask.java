@@ -68,8 +68,8 @@ public class RotationTask extends AsyncTask {
 	@Override
 	public void excecute() {
 		
-		// canfly=false means an ocean-going vessel
-		boolean waterCraft=!getCraft().getType().canFly();
+		// blockedByWater=false means an ocean-going vessel
+		boolean waterCraft=!getCraft().getType().blockedByWater();
 		int waterLine=0;
 		
 		if (waterCraft) {

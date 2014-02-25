@@ -637,7 +637,7 @@ public class BlockUtils {
 						break;
 				}
 
-				data = ( byte ) ( ( data & 0x4 ) | direction );
+				data = ( byte ) ( ( data & 0xfc) | direction );
 
 				return data;
 			case 106:

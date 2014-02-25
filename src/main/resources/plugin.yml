@@ -5,3 +5,23 @@ author: AJCStriker
 website: http://madrealms.net/forums/
 main: net.countercraft.movecraft.Movecraft
 database: false
+commands:
+  release:
+    description: Releases your craft
+    usage: /release
+  pilot:
+    description: Pilots the craft at your feet
+    usage: /pilot [crafttypename]
+  cruise:
+    description: Starts your craft cruising
+    usage: /cruise [north|south|east|west]
+  cruiseoff:
+    description: Stops your craft from cruising
+    usage: /cruiseoff
+  rotateleft:
+    description: Rotates your craft left
+    usage: /rotateleft
+  rotateright:
+    description: Rotates your craft right
+    usage: /rotateright
+
