@@ -22,6 +22,7 @@ import net.countercraft.movecraft.async.detection.DetectionTask;
 import net.countercraft.movecraft.async.detection.DetectionTaskData;
 import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
@@ -288,7 +289,7 @@ public class AsyncManager extends BukkitRunnable {
 						if( pcraft.getType().getSinkPercent()!=0.0 && pcraft.isNotProcessing()) {
 							long ticksElapsed = ( System.currentTimeMillis() - pcraft.getLastBlockCheck() ) / 50;
 						
-							if(ticksElapsed>100) {
+							if(ticksElapsed>Settings.SinkCheckTicks) {
 								int totalBlocks=0;
 								HashMap<Integer, Integer> foundFlyBlocks = new HashMap<Integer, Integer>();
 
@@ -353,7 +354,7 @@ public class AsyncManager extends BukkitRunnable {
 		for( World w : Bukkit.getWorlds()) {
 			if(w!=null) {
 				long ticksElapsed = ( System.currentTimeMillis() - lastSinkingUpdate ) / 50;
-				if(ticksElapsed>=20 && sinkingBlocks.get( w )!=null) {
+				if(ticksElapsed>=Settings.SinkRateTicks && sinkingBlocks.get( w )!=null) {
 					Iterator<MovecraftLocation> sBlocks=sinkingBlocks.get( w ).iterator();
 					HashSet<MovecraftLocation> oldBlockSet = new HashSet<MovecraftLocation>();
 					for(MovecraftLocation l : sinkingBlocks.get( w )) {

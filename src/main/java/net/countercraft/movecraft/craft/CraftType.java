@@ -36,7 +36,8 @@ public class CraftType {
 	private String craftName;
 	private int maxSize, minSize, minHeightLimit, maxHeightLimit;
 	private Integer[] allowedBlocks, forbiddenBlocks;
-	private boolean blockedByWater, tryNudge, canCruise, canTeleport, canStaticMove, canHover, useGravity, canHoverOverWater, moveEntities;;
+	private boolean blockedByWater, tryNudge, canCruise, canTeleport, canStaticMove, canHover, useGravity, canHoverOverWater, moveEntities;
+	private boolean allowHorizontalMovement, allowVerticalMovement, cruiseOnPilot;
 	private int cruiseSkipBlocks;
 	private int staticWaterLevel;
 	private double fuelBurnRate;
