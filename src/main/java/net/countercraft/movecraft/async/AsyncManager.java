@@ -101,12 +101,13 @@ public class AsyncManager extends BukkitRunnable {
 				Player p = data.getPlayer();
 				Craft pCraft = CraftManager.getInstance().getCraftByPlayer( p );
 
-				if ( pCraft != null ) {
+				if ( pCraft != null && p != null ) {
 					//Player is already controlling a craft
 					p.sendMessage( String.format( I18nSupport.getInternationalisedString( "Detection - Failed - Already commanding a craft" ) ) );
 				} else {
 					if ( data.failed() ) {
-						p.sendMessage( data.getFailMessage() );
+						if(p!=null)
+							p.sendMessage( data.getFailMessage() );
 					} else {
 						Craft[] craftsInWorld = CraftManager.getInstance().getCraftsInWorld( c.getW() );
 						boolean failed = false;
@@ -114,7 +115,7 @@ public class AsyncManager extends BukkitRunnable {
 						if ( craftsInWorld != null ) {
 							for ( Craft craft : craftsInWorld ) {
 
-								if ( BlockUtils.arrayContainsOverlap( craft.getBlockList(), data.getBlockList() ) ) {
+								if ( BlockUtils.arrayContainsOverlap( craft.getBlockList(), data.getBlockList() ) && c.getType().getCruiseOnPilot()==false ) {
 									p.sendMessage( String.format( I18nSupport.getInternationalisedString( "Detection - Failed Craft is already being controlled" ) ) );
 									failed = true;
 								}
@@ -126,8 +127,12 @@ public class AsyncManager extends BukkitRunnable {
 							c.setHitBox( data.getHitBox() );
 							c.setMinX( data.getMinX() );
 							c.setMinZ( data.getMinZ() );
-							p.sendMessage( String.format( I18nSupport.getInternationalisedString( "Detection - Successfully piloted craft" ) ) );
-							Movecraft.getInstance().getLogger().log( Level.INFO, String.format( I18nSupport.getInternationalisedString( "Detection - Success - Log Output" ), p.getName(), c.getType().getCraftName(), c.getBlockList().length, c.getMinX(), c.getMinZ() ) );
+							if(p!=null) {
+								p.sendMessage( String.format( I18nSupport.getInternationalisedString( "Detection - Successfully piloted craft" ) ) );
+								Movecraft.getInstance().getLogger().log( Level.INFO, String.format( I18nSupport.getInternationalisedString( "Detection - Success - Log Output" ), p.getName(), c.getType().getCraftName(), c.getBlockList().length, c.getMinX(), c.getMinZ() ) );
+							} else {
+								Movecraft.getInstance().getLogger().log( Level.INFO, String.format( I18nSupport.getInternationalisedString( "Detection - Success - Log Output" ), "NULL PLAYER", c.getType().getCraftName(), c.getBlockList().length, c.getMinX(), c.getMinZ() ) );								
+							}
 							CraftManager.getInstance().addCraft( c, p );
 						}
 					}
@@ -141,11 +146,12 @@ public class AsyncManager extends BukkitRunnable {
 				Player p = CraftManager.getInstance().getPlayerFromCraft( c );
 
 				// Check that the craft hasn't been sneakily unpiloted
-				if ( p != null ) {
+		//		if ( p != null ) {     cruiseOnPilot crafts don't have player pilots
 
 					if ( task.getData().failed() ) {
 						//The craft translation failed
-						p.sendMessage( task.getData().getFailMessage() );
+						if( p != null )
+							p.sendMessage( task.getData().getFailMessage() );
 						if(task.getData().collisionExplosion()) {
 							MapUpdateCommand[] updates = task.getData().getUpdates();
 							c.setBlockList( task.getData().getBlockList() );
@@ -181,7 +187,7 @@ public class AsyncManager extends BukkitRunnable {
 						}
 					}
 
-				}
+	//			}
 
 
 			} else if ( poll instanceof RotationTask ) {
@@ -258,7 +264,8 @@ public class AsyncManager extends BukkitRunnable {
 							}
 							
 						} else {
-							if(pcraft.getLastDX()!=0 || pcraft.getLastDY()!=0 || pcraft.getLastDZ()!=0) {
+//							if(pcraft.getLastDX()!=0 || pcraft.getLastDY()!=0 || pcraft.getLastDZ()!=0) {
+							if(pcraft.getKeepMoving()) {
 								long rcticksElapsed = ( System.currentTimeMillis() - pcraft.getLastRightClick() ) / 50;
 								rcticksElapsed=Math.abs(rcticksElapsed);
 								// if they are holding the button down, keep moving
@@ -268,6 +275,62 @@ public class AsyncManager extends BukkitRunnable {
 										pcraft.translate(pcraft.getLastDX(), pcraft.getLastDY(), pcraft.getLastDZ());
 										pcraft.setLastCruisUpdate(System.currentTimeMillis());
 									}
+								}
+							}
+							if(pcraft.getPilotLocked()==true && pcraft.isNotProcessing()) {
+								
+								Player p = CraftManager.getInstance().getPlayerFromCraft( pcraft );
+								if ( MathUtils.playerIsWithinBoundingPolygon( pcraft.getHitBox(), pcraft.getMinX(), pcraft.getMinZ(), MathUtils.bukkit2MovecraftLoc( p.getLocation() ) ) ) {
+									double movedX=p.getLocation().getX()-pcraft.getPilotLockedX();
+									double movedZ=p.getLocation().getZ()-pcraft.getPilotLockedZ();
+									int dX=0;
+									int dZ=0;
+									if(movedX>0.15)
+										dX=1;
+									else if(movedX<-0.15)
+										dX=-1;
+									if(movedZ>0.15)
+										dZ=1;
+									else if(movedZ<-0.15)
+										dZ=-1;
+									if(dX!=0 || dZ!=0) {
+										long timeSinceLastMoveCommand=System.currentTimeMillis()-pcraft.getLastRightClick();
+/*										boolean flippedDirection=false;
+										if((dX<0 && pcraft.getLastDX()>0)||(dX>0 && pcraft.getLastDX()<0))
+											flippedDirection=true;
+										if((dZ<0 && pcraft.getLastDZ()>0)||(dZ>0 && pcraft.getLastDZ()<0))
+											flippedDirection=true;
+										if((!flippedDirection) || timeSinceLastMoveCommand>500) {*/
+										// wait before accepting new move commands to help with bouncing. Also ignore extreme movement
+										if(Math.abs(movedX)<0.2 && Math.abs(movedZ)<0.2 && timeSinceLastMoveCommand>300) { 
+
+											pcraft.setLastRightClick(System.currentTimeMillis());
+											long ticksElapsed = ( System.currentTimeMillis() - pcraft.getLastCruiseUpdate() ) / 50;
+											if ( Math.abs( ticksElapsed ) >= pcraft.getType().getTickCooldown() ) {
+												pcraft.translate(dX, 0, dZ);
+												pcraft.setLastCruisUpdate(System.currentTimeMillis());
+											}
+//											if(timeSinceLastMoveCommand<750) {
+												pcraft.setLastDX(dX);
+												pcraft.setLastDY(0);
+												pcraft.setLastDZ(dZ);
+												pcraft.setKeepMoving(true);
+/*											} else {
+												pcraft.setLastDX(dX);
+												pcraft.setLastDY(0);
+												pcraft.setLastDZ(dZ);
+												pcraft.setKeepMoving(false);
+											}*/
+										} else {
+											Location loc=p.getLocation();
+											loc.setX(pcraft.getPilotLockedX());
+											loc.setY(pcraft.getPilotLockedY());
+											loc.setZ(pcraft.getPilotLockedZ());
+											Vector pVel=new Vector(0.0,0.0,0.0);
+											p.teleport(loc);
+											p.setVelocity(pVel);
+										}
+									} 
 								}
 							}
 						}
@@ -337,7 +400,8 @@ public class AsyncManager extends BukkitRunnable {
 									}
 									sinkingBlocks.get(w).addAll(Arrays.asList(pcraft.getBlockList()));
 									Player p = CraftManager.getInstance().getPlayerFromCraft( pcraft );
-									p.sendMessage( String.format( I18nSupport.getInternationalisedString( "Player- Craft is sinking" ) ) );
+									if(p!=null)
+										p.sendMessage( String.format( I18nSupport.getInternationalisedString( "Player- Craft is sinking" ) ) );
 									CraftManager.getInstance().removeCraft( pcraft );
 								} else {
 									pcraft.setLastBlockCheck(System.currentTimeMillis());

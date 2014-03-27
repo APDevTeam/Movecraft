@@ -495,14 +495,24 @@ public class TranslationTask extends AsyncTask {
 					Entity pTest=i.next();
 					if ( MathUtils.playerIsWithinBoundingPolygon( getCraft().getHitBox(), getCraft().getMinX(), getCraft().getMinZ(), MathUtils.bukkit2MovecraftLoc( pTest.getLocation() ) ) ) {
 						if(pTest.getType()!=org.bukkit.entity.EntityType.DROPPED_ITEM ) {
-							Location tempLoc = pTest.getLocation().add( data.getDx(), data.getDy(), data.getDz() );
+							Location tempLoc = pTest.getLocation();
+							if(getCraft().getPilotLocked()==true && pTest==CraftManager.getInstance().getPlayerFromCraft(getCraft())) {
+								tempLoc.setX(getCraft().getPilotLockedX());
+								tempLoc.setY(getCraft().getPilotLockedY());
+								tempLoc.setZ(getCraft().getPilotLockedZ());
+							} 
+							tempLoc=tempLoc.add( data.getDx(), data.getDy(), data.getDz() );
 							Location newPLoc=new Location(getCraft().getW(), tempLoc.getX(), tempLoc.getY(), tempLoc.getZ());
 							newPLoc.setPitch(pTest.getLocation().getPitch());
 							newPLoc.setYaw(pTest.getLocation().getYaw());
 							
 							EntityUpdateCommand eUp=new EntityUpdateCommand(pTest.getLocation().clone(),newPLoc,pTest);
 							entityUpdateSet.add(eUp);
-
+							if(getCraft().getPilotLocked()==true && pTest==CraftManager.getInstance().getPlayerFromCraft(getCraft())) {
+								getCraft().setPilotLockedX(tempLoc.getX());
+								getCraft().setPilotLockedY(tempLoc.getY());
+								getCraft().setPilotLockedZ(tempLoc.getZ());
+							}
 						} else {
 							pTest.remove();
 						}
@@ -510,7 +520,8 @@ public class TranslationTask extends AsyncTask {
 				}
 			} else {
 				//add releaseTask without playermove to manager
-				CraftManager.getInstance().addReleaseTask(getCraft());
+				if(getCraft().getType().getCruiseOnPilot()==false)  // not necessary to release cruiseonpilot crafts, because they will already be released
+					CraftManager.getInstance().addReleaseTask(getCraft());
 			}
 						
 			//Set blocks that are no longer craft to air

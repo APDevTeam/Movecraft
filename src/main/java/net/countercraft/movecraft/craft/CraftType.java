@@ -38,6 +38,7 @@ public class CraftType {
 	private Integer[] allowedBlocks, forbiddenBlocks;
 	private boolean blockedByWater, tryNudge, canCruise, canTeleport, canStaticMove, canHover, useGravity, canHoverOverWater, moveEntities;
 	private boolean allowHorizontalMovement, allowVerticalMovement, cruiseOnPilot;
+	private int maxStaticMove;
 	private int cruiseSkipBlocks;
 	private int staticWaterLevel;
 	private double fuelBurnRate;
@@ -86,10 +87,30 @@ public class CraftType {
 		} else {
 			canTeleport=false;
 		}
+		if(data.containsKey("cruiseOnPilot")) {
+			cruiseOnPilot=(Boolean) data.get("cruiseOnPilot");
+		} else {
+			cruiseOnPilot=false;
+		}
+		if(data.containsKey("allowVerticalMovement")) {
+			allowVerticalMovement=(Boolean) data.get("allowVerticalMovement");
+		} else {
+			allowVerticalMovement=true;
+		}
+		if(data.containsKey("allowHorizontalMovement")) {
+			allowHorizontalMovement=(Boolean) data.get("allowHorizontalMovement");
+		} else {
+			allowHorizontalMovement=true;
+		}
 		if(data.containsKey("canStaticMove")) {
 			canStaticMove=(Boolean) data.get("canStaticMove");
 		} else {
 			canStaticMove=false;
+		}
+		if(data.containsKey("maxStaticMove")) {
+			maxStaticMove=(Integer) data.get("maxStaticMove");
+		} else {
+			maxStaticMove=10000;
 		}
 		if(data.containsKey("cruiseSkipBlocks")) {
 			cruiseSkipBlocks=(Integer) data.get("cruiseSkipBlocks");
@@ -202,6 +223,10 @@ public class CraftType {
 		return cruiseSkipBlocks;
 	}
 	
+	public int maxStaticMove() {
+		return maxStaticMove;
+	}
+	
 	public int getStaticWaterLevel() {
 		return staticWaterLevel;
 	}
@@ -212,6 +237,18 @@ public class CraftType {
 	
 	public boolean getCanStaticMove() {
 		return canStaticMove;
+	}
+	
+	public boolean getCruiseOnPilot() {
+		return cruiseOnPilot;
+	}
+	
+	public boolean allowVerticalMovement() {
+		return allowVerticalMovement;
+	}
+	
+	public boolean allowHorizontalMovement() {
+		return allowHorizontalMovement;
 	}
 	
 	public double getFuelBurnRate() {

@@ -43,8 +43,13 @@ public class Craft {
 	private long lastBlockCheck;
 	private long lastRightClick;
 	private int lastDX, lastDY, lastDZ;
+	private boolean keepMoving;
 	private double burningFuel;
-
+	private boolean pilotLocked;
+	private double pilotLockedX;
+	private double pilotLockedY;
+	private double pilotLockedZ;
+	
 	public Craft( CraftType type, World world ) {
 		this.type = type;
 		this.w = world;
@@ -54,6 +59,11 @@ public class Craft {
 		} else {
 			this.maxHeightLimit = type.getMaxHeightLimit();
 		}
+		this.pilotLocked=false;
+		this.pilotLockedX=0.0;
+		this.pilotLockedY=0.0;
+		this.pilotLockedZ=0.0;
+		this.keepMoving=false;
 	}
 
 	public boolean isNotProcessing() {
@@ -97,6 +107,17 @@ public class Craft {
 	}
 
 	public void translate( int dx, int dy, int dz ) {
+		// check to see if the craft is trying to move in a direction not permitted by the type
+		if(this.getType().allowHorizontalMovement()==false) {
+			dx=0;
+			dz=0;
+		}
+		if(this.getType().allowVerticalMovement()==false) {
+			dy=0;
+		}
+		if(dx==0 && dy==0 && dz==0) {
+			return;
+		}
 		AsyncManager.getInstance().submitTask( new TranslationTask( this, new TranslationTaskData( dx, dz, dy, getBlockList(), getHitBox(), minZ, minX, type.getMaxHeightLimit(), type.getMinHeightLimit() ) ), this );
 	}
 
@@ -160,11 +181,19 @@ public class Craft {
 	public long getLastRightClick() {
 		return lastRightClick;
 	}
+
+	public void setKeepMoving(boolean keepMoving) {
+		this.keepMoving=keepMoving;
+	}
+	
+	public boolean getKeepMoving() {
+		return keepMoving;
+	}
 	
 	public int getLastDX() {
 		return lastDX;
 	}
-
+	
 	public void setLastDX( int dX ) {
 		this.lastDX = dX;
 	}
@@ -185,6 +214,38 @@ public class Craft {
 		this.lastDZ = dZ;
 	}
 	
+	public boolean getPilotLocked() {
+		return pilotLocked;
+	}
+
+	public void setPilotLocked( boolean pilotLocked ) {
+		this.pilotLocked = pilotLocked;
+	}
+	
+	public double getPilotLockedX() {
+		return pilotLockedX;
+	}
+
+	public void setPilotLockedX( double pilotLockedX ) {
+		this.pilotLockedX = pilotLockedX;
+	}	
+	
+	public double getPilotLockedY() {
+		return pilotLockedY;
+	}
+
+	public void setPilotLockedY( double pilotLockedY ) {
+		this.pilotLockedY = pilotLockedY;
+	}	
+	
+	public double getPilotLockedZ() {
+		return pilotLockedZ;
+	}
+
+	public void setPilotLockedZ( double pilotLockedZ ) {
+		this.pilotLockedZ = pilotLockedZ;
+	}	
+
 	public void setBurningFuel(double burningFuel) {
 		this.burningFuel=burningFuel;
 	}

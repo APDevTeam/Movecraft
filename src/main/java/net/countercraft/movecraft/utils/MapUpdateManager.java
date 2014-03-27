@@ -210,6 +210,20 @@ public class MapUpdateManager extends BukkitRunnable {
 				final int[] fragileBlocks = new int[]{ 26, 29, 33, 34, 50, 52, 54, 55, 63, 64, 65, 68, 69, 70, 71, 72, 75, 76, 77, 93, 94, 96, 131, 132, 143, 147, 148, 149, 150, 151, 171, 323, 324, 330, 331, 356, 404 };
 				Arrays.sort(fragileBlocks);
 						
+			/*	// place blocks that will have entities standing on them, and the 2 blocks above it
+				for ( MapUpdateCommand m : updatesInWorld ) {
+					if(m!=null) {
+						MovecraftLocation oneDown=new MovecraftLocation(m.getNewBlockLocation().getX(), m.getNewBlockLocation().getY()-1, m.getNewBlockLocation().getZ());
+						MovecraftLocation twoDown=new MovecraftLocation(m.getNewBlockLocation().getX(), m.getNewBlockLocation().getY()-2, m.getNewBlockLocation().getZ());
+						if( entityMap.containsKey(m.getNewBlockLocation()) || entityMap.containsKey(oneDown) || entityMap.containsKey(twoDown)) {
+							w.getBlockAt( m.getNewBlockLocation().getX(), m.getNewBlockLocation().getY(), m.getNewBlockLocation().getZ() ).setTypeIdAndData( 0, (byte) 0, false );
+							w.getBlockAt( m.getNewBlockLocation().getX(), m.getNewBlockLocation().getY(), m.getNewBlockLocation().getZ() ).setTypeIdAndData( 20, (byte) 0, false );
+							w.getBlockAt( m.getNewBlockLocation().getX(), m.getNewBlockLocation().getY()+1, m.getNewBlockLocation().getZ() ).setTypeIdAndData( 0, (byte) 0, false );
+							w.getBlockAt( m.getNewBlockLocation().getX(), m.getNewBlockLocation().getY()+2, m.getNewBlockLocation().getZ() ).setTypeIdAndData( 0, (byte) 0, false );
+							}
+					}
+				}*/
+				
 				// Perform core block updates, don't do "fragiles" yet. Don't do Dispensers yet either
 				for ( MapUpdateCommand m : updatesInWorld ) {
 					if(m!=null) {
@@ -232,19 +246,11 @@ public class MapUpdateManager extends BukkitRunnable {
 							for(EntityUpdateCommand entityUpdate : mapUpdateList) {
 								Entity entity=entityUpdate.getEntity();
 								Vector pVel=new Vector(entity.getVelocity().getX(),0.0,entity.getVelocity().getZ());
-								if( pVel.getX()==0.0 && entity.getVelocity().getZ()==0.0 ) {
-									Location newLoc=entityUpdate.getNewLocation();
-									
-									// if they have gone through the floor, move them up one block
-									double decimalY=newLoc.getY()-Math.floor(newLoc.getY());
-									if(decimalY>0.40) {
-										newLoc.setY( Math.ceil( newLoc.getY() ) );
-									}
-									entity.teleport(entityUpdate.getNewLocation());
-								} else {
-									Location craftMove=entityUpdate.getNewLocation().subtract(entityUpdate.getOldLocation());
-									entity.teleport(entity.getLocation().add(craftMove));
-								}
+							/*	Location newLoc=entity.getLocation();
+								newLoc.setX(entityUpdate.getNewLocation().getX());
+								newLoc.setY(entityUpdate.getNewLocation().getY());
+								newLoc.setZ(entityUpdate.getNewLocation().getZ());*/
+								entity.teleport(entityUpdate.getNewLocation());
 								entity.setVelocity(pVel);
 							}
 							entityMap.remove(m.getNewBlockLocation());
@@ -382,7 +388,24 @@ public class MapUpdateManager extends BukkitRunnable {
 						}
 					}
 					
-					// and set all crafts that were updated to not processing, and move any spawn points that were on a block that was moved
+					//move entities again to reduce falling out of crafts
+					if(entityUpdatesInWorld!=null) {
+						for(EntityUpdateCommand entityUpdate : entityUpdatesInWorld) {
+							if(entityUpdate!=null) {
+								Entity entity=entityUpdate.getEntity();
+								Vector pVel=new Vector(entity.getVelocity().getX(),0.0,entity.getVelocity().getZ());
+								
+							/*	Location newLoc=entity.getLocation();
+								newLoc.setX(entityUpdate.getNewLocation().getX());
+								newLoc.setY(entityUpdate.getNewLocation().getY());
+								newLoc.setZ(entityUpdate.getNewLocation().getZ());*/
+								entity.teleport(entityUpdate.getNewLocation());
+								entity.setVelocity(pVel);
+							}
+						}
+					}
+
+					// and set all crafts that were updated to not processing
 					for ( MapUpdateCommand c : updatesInWorld ) {
 						if(c!=null) {
 							Craft craft=c.getCraft();

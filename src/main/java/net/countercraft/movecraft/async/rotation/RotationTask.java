@@ -20,6 +20,7 @@ package net.countercraft.movecraft.async.rotation;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.EntityUpdateCommand;
 import net.countercraft.movecraft.utils.MapUpdateCommand;
@@ -43,6 +44,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
 import org.bukkit.Material;
 
 public class RotationTask extends AsyncTask {
@@ -225,6 +227,11 @@ public class RotationTask extends AsyncTask {
 						tOP.setX(tOP.getBlockX()+0.5);
 						tOP.setZ(tOP.getBlockZ()+0.5);
 						Location playerLoc = pTest.getLocation();
+						if(getCraft().getPilotLocked()==true && pTest==CraftManager.getInstance().getPlayerFromCraft(getCraft())) {
+							playerLoc.setX(getCraft().getPilotLockedX());
+							playerLoc.setY(getCraft().getPilotLockedY());
+							playerLoc.setZ(getCraft().getPilotLockedZ());
+							}
 						Location adjustedPLoc = playerLoc.subtract( tOP ); 
 
 						double[] rotatedCoords = MathUtils.rotateVecNoRound( rotation, adjustedPLoc.getX(), adjustedPLoc.getZ() );
@@ -246,12 +253,19 @@ public class RotationTask extends AsyncTask {
 							}
 						}
 						newPLoc.setYaw(newYaw);
-//						newPLoc.setY(newPLoc.getY()+0.125);
+
+						if(getCraft().getPilotLocked()==true && pTest==CraftManager.getInstance().getPlayerFromCraft(getCraft())) {
+							getCraft().setPilotLockedX(newPLoc.getX());
+							getCraft().setPilotLockedY(newPLoc.getY());
+							getCraft().setPilotLockedZ(newPLoc.getZ());
+							}
 						EntityUpdateCommand eUp=new EntityUpdateCommand(pTest.getLocation().clone(),newPLoc,pTest);
 						entityUpdateSet.add(eUp);
-//						pTest.teleport(newPLoc);
-//						Vector pVel=new Vector(pTest.getVelocity().getX(),0.1,pTest.getVelocity().getZ());
-//						pTest.setVelocity(pVel);
+						if(getCraft().getPilotLocked()==true && pTest==CraftManager.getInstance().getPlayerFromCraft(getCraft())) {
+							getCraft().setPilotLockedX(newPLoc.getX());
+							getCraft().setPilotLockedY(newPLoc.getY());
+							getCraft().setPilotLockedZ(newPLoc.getZ());
+						}
 					} else {
 						pTest.remove();
 					}

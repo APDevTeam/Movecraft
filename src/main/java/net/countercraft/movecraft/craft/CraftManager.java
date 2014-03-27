@@ -93,8 +93,8 @@ public class CraftManager {
 		if ( getPlayerFromCraft( c ) != null ) {
 			getPlayerFromCraft( c ).sendMessage( String.format( I18nSupport.getInternationalisedString( "Release - Craft has been released message" ) ) );
 			Movecraft.getInstance().getLogger().log( Level.INFO, String.format( I18nSupport.getInternationalisedString( "Release - Player has released a craft console" ), getPlayerFromCraft( c ).getName(), c.getType().getCraftName(), c.getBlockList().length, c.getMinX(), c.getMinZ() ) );
-			craftPlayerIndex.remove( getPlayerFromCraft( c ) );
 		}
+		craftPlayerIndex.remove( getPlayerFromCraft( c ) );
 	}
 
 	public Craft[] getCraftsInWorld( World w ) {
@@ -114,8 +114,10 @@ public class CraftManager {
 	public Craft getCraftByPlayerName( String name ) {
 		Set<Player> players = craftPlayerIndex.keySet();
 		for(Player player : players) {
-			if(player.getName().equals(name)) {
-				return craftPlayerIndex.get( player );
+			if(player!=null) {
+				if(player.getName().equals(name)) {
+					return craftPlayerIndex.get( player );
+				}
 			}
 		}
 		return null;
