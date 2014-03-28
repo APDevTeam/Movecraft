@@ -383,7 +383,7 @@ public class InteractListener implements Listener {
 				Craft craft = CraftManager.getInstance().getCraftByPlayer( event.getPlayer() );
 				if( craft!=null ) {
 					if ( craft.getPilotLocked()==false) {
-						if ( event.getPlayer().hasPermission( "movecraft." + craft.getType().getCraftName() + ".move" ) ) {
+						if ( event.getPlayer().hasPermission( "movecraft." + craft.getType().getCraftName() + ".move" ) && craft.getType().getCanDirectControl() ) {
 							craft.setPilotLocked(true);
 							craft.setPilotLockedX(event.getPlayer().getLocation().getBlockX()+0.5);
 							craft.setPilotLockedY(event.getPlayer().getLocation().getY());

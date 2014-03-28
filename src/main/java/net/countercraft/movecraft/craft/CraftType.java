@@ -36,7 +36,7 @@ public class CraftType {
 	private String craftName;
 	private int maxSize, minSize, minHeightLimit, maxHeightLimit;
 	private Integer[] allowedBlocks, forbiddenBlocks;
-	private boolean blockedByWater, tryNudge, canCruise, canTeleport, canStaticMove, canHover, useGravity, canHoverOverWater, moveEntities;
+	private boolean blockedByWater, tryNudge, canCruise, canTeleport, canStaticMove, canHover, canDirectControl, useGravity, canHoverOverWater, moveEntities;
 	private boolean allowHorizontalMovement, allowVerticalMovement, cruiseOnPilot;
 	private int maxStaticMove;
 	private int cruiseSkipBlocks;
@@ -150,6 +150,11 @@ public class CraftType {
         }else{
             maxHeightLimit=254; 
         }
+        if(data.containsKey("canDirectControl")) {
+        	canDirectControl=(Boolean) data.get("canDirectControl");
+        } else {
+        	canDirectControl=true;
+     	}
         if(data.containsKey("canHover")) {
         	canHover=(Boolean) data.get("canHover");
         } else {
@@ -283,6 +288,10 @@ public class CraftType {
     }
     public boolean getCanHover(){
     	return canHover;
+    	}
+    	   
+    public boolean getCanDirectControl(){
+    	return canDirectControl;
     	}
     	   
   	public int getHoverLimit(){
