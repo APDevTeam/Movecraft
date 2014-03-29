@@ -119,7 +119,7 @@ public class MapUpdateManager extends BukkitRunnable {
 		boolean success = false;
 
 		//don't blank out block if it's already air, or if blocktype will not be changed
-		if(Settings.CompatibilityMode) {
+		if(Settings.CompatibilityMode) {  
 			if((origType!=0)&&(origType!=newTypeID)) {
 				w.getBlockAt( x, y, z ).setTypeIdAndData( 0, (byte) 0, false );
 			}
@@ -130,19 +130,24 @@ public class MapUpdateManager extends BukkitRunnable {
 				cmChunks.add( cmC );
 			}
 		} else {
-			if((origType!=0)&&(origType!=newTypeID)) {
-				c.a( x & 15, y, z & 15, CraftMagicNumbers.getBlock(0), 0 );
-			} 
-			if(origType!=newTypeID || origData!=data) {
-				success = c.a( x & 15, y, z & 15, CraftMagicNumbers.getBlock(newTypeID), data );
-			} else {
-				success=true;
-			}
-			if ( !success ) {
+			if(newTypeID==149 || newTypeID==150) { // have to use slower calls for comparators for some reason
+				w.getBlockAt( x, y, z ).setTypeIdAndData( 0, (byte) 0, false );
 				w.getBlockAt( x, y, z ).setTypeIdAndData( newTypeID, data, false );
-			}
-			if ( !chunks.contains( c ) ) {
-				chunks.add( c );
+			} else {
+				if((origType!=0)&&(origType!=newTypeID)) {
+					c.a( x & 15, y, z & 15, CraftMagicNumbers.getBlock(0), 0 );
+				} 
+				if(origType!=newTypeID || origData!=data) {
+					success = c.a( x & 15, y, z & 15, CraftMagicNumbers.getBlock(newTypeID), data );
+				} else {
+					success=true;
+				}
+				if ( !success ) {
+					w.getBlockAt( x, y, z ).setTypeIdAndData( newTypeID, data, false );
+				}
+				if ( !chunks.contains( c ) ) {
+					chunks.add( c );
+				}
 			}
 		}						
 
