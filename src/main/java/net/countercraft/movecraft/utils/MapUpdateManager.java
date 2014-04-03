@@ -34,6 +34,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.craftbukkit.v1_7_R2.CraftChunk;
@@ -130,8 +131,14 @@ public class MapUpdateManager extends BukkitRunnable {
 				cmChunks.add( cmC );
 			}
 		} else {
-			if(newTypeID==149 || newTypeID==150) { // have to use slower calls for comparators for some reason
-				w.getBlockAt( x, y, z ).setTypeIdAndData( 0, (byte) 0, false );
+			if(origType==149 || origType==150) { // bukkit can't remove comparators safely, it screws up the NBT data. So turn it to a sign, then remove it.
+				w.getBlockAt( x, y, z ).setType(org.bukkit.Material.AIR);
+				w.getBlockAt( x, y, z ).setType(org.bukkit.Material.SIGN_POST);
+				BlockState state=w.getBlockAt( x, y, z ).getState();
+				Sign s=(Sign)state;
+				s.setLine(0, "PLACEHOLDER");
+				s.update();
+				w.getBlockAt( x, y, z ).setType(org.bukkit.Material.AIR);
 				w.getBlockAt( x, y, z ).setTypeIdAndData( newTypeID, data, false );
 			} else {
 				if((origType!=0)&&(origType!=newTypeID)) {
