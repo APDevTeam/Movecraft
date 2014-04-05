@@ -110,7 +110,9 @@ public class InteractListener implements Listener {
 		
 		// don't process commands if this is a pilot tool click, do that below
 		if ( event.getItem() != null && event.getItem().getTypeId()==Settings.PilotTool ) {
-			return;
+			Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
+			if(c!=null)
+				return;
 		}
 
 
@@ -286,17 +288,10 @@ public class InteractListener implements Listener {
 	@EventHandler
 	public void onPlayerInteractStick( PlayerInteractEvent event ) {
 		
-		// taken out so the pilot tool always takes precedence
-		/*if(event.getClickedBlock()!=null ) {
-			if(event.getClickedBlock().getType().equals(Material.SIGN_POST) || event.getClickedBlock().getType().equals(Material.WALL_SIGN)) {
-				Sign sign = ( Sign ) event.getClickedBlock().getState();
-				String signText = sign.getLine( 0 );
-				// If they clicked on a sign with text, don't handle it here. It will be handled above.
-				if ( signText != null ) {
-					return;
-				}
-			}
-		}*/
+		Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
+		// if not in command of craft, don't process pilot tool clicks
+		if(c==null)
+			return;
 		
 		if ( event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK ) {
 			Craft craft = CraftManager.getInstance().getCraftByPlayer( event.getPlayer() );
