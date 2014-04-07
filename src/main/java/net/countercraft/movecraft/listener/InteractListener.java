@@ -272,6 +272,68 @@ public class InteractListener implements Listener {
 					event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "Insufficient Permissions" ) ) );
 				}
 			}
+		} else  if ( sign.getLine( 0 ).equalsIgnoreCase("RMove:")) {
+			if(CraftManager.getInstance().getCraftByPlayer( event.getPlayer() )!=null) {
+				Long time = timeMap.get( event.getPlayer() );
+				if ( time != null ) {
+					long ticksElapsed = ( System.currentTimeMillis() - time ) / 50;
+					if ( Math.abs( ticksElapsed ) < CraftManager.getInstance().getCraftByPlayer( event.getPlayer() ).getType().getTickCooldown() ) {
+						event.setCancelled( true );
+						return;
+					}
+				}
+				String[] numbers = sign.getLine( 1 ).split(",");
+				int dLeftRight=Integer.parseInt(numbers[0]); // negative = left, positive = right
+				int dy=Integer.parseInt(numbers[1]);
+				int dBackwardForward=Integer.parseInt(numbers[2]); // negative = backwards, positive = forwards
+				int maxMove=CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().maxStaticMove();
+				
+				if(dLeftRight>maxMove) 
+					dLeftRight=maxMove;
+				if(dLeftRight<0-maxMove) 
+					dLeftRight=0-maxMove;
+				if(dy>maxMove)
+					dy=maxMove;
+				if(dy<0-maxMove)
+					dy=0-maxMove;
+				if(dBackwardForward>maxMove)
+					dBackwardForward=maxMove;
+				if(dBackwardForward<0-maxMove)
+					dBackwardForward=0-maxMove;
+				int dx=0;
+				int dz=0;
+				switch(sign.getRawData()) {
+				case 0x3:
+					// North
+					dx=dLeftRight;
+					dz=0-dBackwardForward;
+					break;
+				case 0x2:
+					// South
+					dx=0-dLeftRight;
+					dz=dBackwardForward;
+					break;
+				case 0x4:
+					// East
+					dx=dBackwardForward;
+					dz=dLeftRight;
+					break;
+				case 0x5:
+					// West
+					dx=0-dBackwardForward;
+					dz=0-dLeftRight;
+					break;
+				}
+
+				if(event.getPlayer().hasPermission( "movecraft." + CraftManager.getInstance().getCraftByPlayer( event.getPlayer()).getType().getCraftName() + ".move")) {
+					if(CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getCanStaticMove()) {
+
+						CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).translate(dx, dy, dz);
+					}
+				} else {
+					event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "Insufficient Permissions" ) ) );
+				}
+			}
 		}
 	}
 
