@@ -132,7 +132,7 @@ public class CommandListener implements CommandExecutor {
 
 			if ( player.hasPermission( "movecraft." + craft.getType().getCraftName() + ".rotate" ) ) {
 				MovecraftLocation midPoint = getCraftMidPoint(craft);
-				CraftManager.getInstance().getCraftByPlayer( player ).rotate( Rotation.ANTICLOCKWISE, midPoint );
+				CraftManager.getInstance().getCraftByPlayerName( player.getName() ).rotate( Rotation.ANTICLOCKWISE, midPoint );
 			} else {
 				player.sendMessage( String.format( I18nSupport.getInternationalisedString( "Insufficient Permissions" ) ) );				
 			}
@@ -145,7 +145,7 @@ public class CommandListener implements CommandExecutor {
 
 			if ( player.hasPermission( "movecraft." + craft.getType().getCraftName() + ".rotate" ) ) {
 				MovecraftLocation midPoint = getCraftMidPoint(craft);
-				CraftManager.getInstance().getCraftByPlayer( player ).rotate( Rotation.CLOCKWISE, midPoint );
+				CraftManager.getInstance().getCraftByPlayerName( player.getName() ).rotate( Rotation.CLOCKWISE, midPoint );
 			} else {
 				player.sendMessage( String.format( I18nSupport.getInternationalisedString( "Insufficient Permissions" ) ) );				
 			}
