@@ -29,6 +29,7 @@ import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.utils.MovecraftLocation;
 
 import org.apache.commons.collections.ListUtils;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
@@ -43,6 +44,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
 import org.bukkit.Material;
 
 public class TranslationTask extends AsyncTask {
@@ -63,31 +65,42 @@ public class TranslationTask extends AsyncTask {
 
 		boolean airCraft = getCraft().getType().blockedByWater(); 
 		int hoverLimit = getCraft().getType().getHoverLimit();
-		// Find the waterline from the surrounding terrain or from the static level in the craft type
-		int waterLine=0;
-		if (waterCraft) {
-			int [][][] hb=getCraft().getHitBox();
 
-			// start by finding the minimum and maximum y coord
-			int minY=65535;
-			int maxY=-65535;
-			for (int [][] i1 : hb) {
-				for (int [] i2 : i1) {
-					if(i2!=null) {
-						if(i2[0]<minY) {
-							minY=i2[0];
-						}
-						if(i2[1]>maxY) {
-							maxY=i2[1];
-						}
+		int [][][] hb=getCraft().getHitBox();
+
+		// start by finding the crafts borders
+		int minY=65535;
+		int maxY=-65535;
+		for (int [][] i1 : hb) {
+			for (int [] i2 : i1) {
+				if(i2!=null) {
+					if(i2[0]<minY) {
+						minY=i2[0];
+					}
+					if(i2[1]>maxY) {
+						maxY=i2[1];
 					}
 				}
 			}
-			int maxX=getCraft().getMinX()+hb.length;
-			int maxZ=getCraft().getMinZ()+hb[0].length;  // safe because if the first x array doesn't have a z array, then it wouldn't be the first x array
-			int minX=getCraft().getMinX();
-			int minZ=getCraft().getMinZ();
-			
+		}
+		int maxX=getCraft().getMinX()+hb.length;
+		int maxZ=getCraft().getMinZ()+hb[0].length;  // safe because if the first x array doesn't have a z array, then it wouldn't be the first x array
+		int minX=getCraft().getMinX();
+		int minZ=getCraft().getMinZ();
+		
+		// Load any chunks that you are moving into that are not loaded 
+		for (int posX=minX+data.getDx();posX<=maxX+data.getDx();posX++) {
+			for (int posZ=minZ+data.getDz();posZ<=maxZ+data.getDz();posZ++) {
+				Chunk chunk=getCraft().getW().getBlockAt(posX,minY,posZ).getChunk();
+				if (!chunk.isLoaded()) {
+					chunk.load();
+				}
+			}
+		}
+		
+		// Find the waterline from the surrounding terrain or from the static level in the craft type
+		int waterLine=0;
+		if (waterCraft) {			
 			if(getCraft().getType().getStaticWaterLevel()!=0) {
 				if(waterLine<=maxY+1) {
 					waterLine=getCraft().getType().getStaticWaterLevel();

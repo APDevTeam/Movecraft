@@ -438,7 +438,7 @@ public class MapUpdateManager extends BukkitRunnable {
 		updates.clear();
 		entityUpdates.clear();
 		long endTime=System.currentTimeMillis();
-//		Movecraft.getInstance().getLogger().log( Level.INFO, "Map update took (ms): "+(endTime-startTime));
+		Movecraft.getInstance().getLogger().log( Level.INFO, "Map update took (ms): "+(endTime-startTime));
 	}
 
 	public boolean addWorldUpdate( World w, MapUpdateCommand[] mapUpdates, EntityUpdateCommand[] eUpdates) {
