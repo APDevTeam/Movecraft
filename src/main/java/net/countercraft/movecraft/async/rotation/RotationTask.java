@@ -70,31 +70,47 @@ public class RotationTask extends AsyncTask {
 	@Override
 	public void excecute() {
 		
-		// blockedByWater=false means an ocean-going vessel
-		boolean waterCraft=!getCraft().getType().blockedByWater();
 		int waterLine=0;
 		
-		if (waterCraft) {
-			int [][][] hb=getCraft().getHitBox();
-			
-			// start by finding the minimum and maximum y coord
-			int minY=65535;
-			int maxY=-65535;
-			for (int [][] i1 : hb) {
-				for (int [] i2 : i1) {
-					if(i2!=null) {
-						if(i2[0]<minY) {
-							minY=i2[0];
-						}
-						if(i2[1]>maxY) {
-							maxY=i2[1];
-						}
+		int [][][] hb=getCraft().getHitBox();
+		
+		// Determine craft borders
+		int minY=65535;
+		int maxY=-65535;
+		for (int [][] i1 : hb) {
+			for (int [] i2 : i1) {
+				if(i2!=null) {
+					if(i2[0]<minY) {
+						minY=i2[0];
+					}
+					if(i2[1]>maxY) {
+						maxY=i2[1];
 					}
 				}
 			}
-			int maxX=getCraft().getMinX()+hb.length;
-			int maxZ=getCraft().getMinZ()+hb[0].length;  // safe because if the first x array doesn't have a z array, then it wouldn't be the first x array
-			
+		}
+		Integer maxX=getCraft().getMinX()+hb.length;
+		Integer maxZ=getCraft().getMinZ()+hb[0].length;  // safe because if the first x array doesn't have a z array, then it wouldn't be the first x array
+		minX=getCraft().getMinX();
+		minZ=getCraft().getMinZ();
+
+		int distX=maxX-minX;
+		int distZ=maxZ-minZ; 
+		
+		// Load any chunks that you could possibly rotate into that are not loaded 
+		for (int posX=minX-distZ;posX<=maxX+distZ;posX++) {
+			for (int posZ=minZ-distX;posZ<=maxZ+distX;posZ++) {
+				Chunk chunk=getCraft().getW().getBlockAt(posX,minY,posZ).getChunk();
+				if (!chunk.isLoaded()) {
+					chunk.load();
+				}
+			}
+		}
+		
+		// blockedByWater=false means an ocean-going vessel
+		boolean waterCraft=!getCraft().getType().blockedByWater();
+
+		if (waterCraft) {
 			// next figure out the water level by examining blocks next to the outer boundaries of the craft
 			for(int posY=maxY; (posY>=minY)&&(waterLine==0); posY--) {
 				int posX;
@@ -267,7 +283,7 @@ public class RotationTask extends AsyncTask {
 							getCraft().setPilotLockedZ(newPLoc.getZ());
 						}
 					} else {
-						pTest.remove();
+					//	pTest.remove();   removed to test cleaner fragile item removal
 					}
 				}
 
@@ -309,12 +325,11 @@ public class RotationTask extends AsyncTask {
 			this.updates = mapUpdates.toArray( new MapUpdateCommand[1] );
 			this.entityUpdates = entityUpdateSet.toArray( new EntityUpdateCommand[1] );
 
-			Integer maxX = null;
-			Integer maxZ = null;
+			maxX = null;
+			maxZ = null;
 			minX = null;
 			minZ = null;
-			
-			int maxY, minY;
+
 
 			for ( MovecraftLocation l : blockList ) {
 				if ( maxX == null || l.getX() > maxX ) {

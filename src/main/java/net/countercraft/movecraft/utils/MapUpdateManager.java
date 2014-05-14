@@ -27,8 +27,8 @@ import net.countercraft.movecraft.utils.datastructures.InventoryTransferHolder;
 import net.countercraft.movecraft.utils.datastructures.SignTransferHolder;
 import net.countercraft.movecraft.utils.datastructures.StorageCrateTransferHolder;
 import net.countercraft.movecraft.utils.datastructures.TransferData;
-import net.minecraft.server.v1_7_R2.ChunkCoordIntPair;
-import net.minecraft.server.v1_7_R2.Material;
+import net.minecraft.server.v1_7_R3.ChunkCoordIntPair;
+import net.minecraft.server.v1_7_R3.Material;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
@@ -37,9 +37,9 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
-import org.bukkit.craftbukkit.v1_7_R2.CraftChunk;
-import org.bukkit.craftbukkit.v1_7_R2.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_7_R2.util.CraftMagicNumbers;
+import org.bukkit.craftbukkit.v1_7_R3.CraftChunk;
+import org.bukkit.craftbukkit.v1_7_R3.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_7_R3.util.CraftMagicNumbers;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
@@ -67,7 +67,7 @@ public class MapUpdateManager extends BukkitRunnable {
 		private static final MapUpdateManager INSTANCE = new MapUpdateManager();
 	}
 	
-	private void updateBlock(MapUpdateCommand m, ArrayList<Chunk> chunkList, World w, Map<MovecraftLocation, TransferData> dataMap, Set<net.minecraft.server.v1_7_R2.Chunk> chunks, Set<Chunk> cmChunks, boolean placeDispensers) {
+	private void updateBlock(MapUpdateCommand m, ArrayList<Chunk> chunkList, World w, Map<MovecraftLocation, TransferData> dataMap, Set<net.minecraft.server.v1_7_R3.Chunk> chunks, Set<Chunk> cmChunks, boolean placeDispensers) {
 		MovecraftLocation workingL = m.getNewBlockLocation();
 
 		int x = workingL.getX();
@@ -91,7 +91,7 @@ public class MapUpdateManager extends BukkitRunnable {
 			chunkList.add(chunk);							
 		}
 
-		net.minecraft.server.v1_7_R2.Chunk c = null;
+		net.minecraft.server.v1_7_R3.Chunk c = null;
 		Chunk cmC = null;
 		if(Settings.CompatibilityMode) {
 			cmC = chunk;
@@ -162,7 +162,7 @@ public class MapUpdateManager extends BukkitRunnable {
 
 	public void run() {
 		if ( updates.isEmpty() ) return;
-		
+
 		long startTime=System.currentTimeMillis();
 		for ( World w : updates.keySet() ) {
 			if ( w != null ) {
@@ -170,12 +170,12 @@ public class MapUpdateManager extends BukkitRunnable {
 				List<EntityUpdateCommand> entityUpdatesInWorld = entityUpdates.get( w );
 				Map<MovecraftLocation, List<EntityUpdateCommand>> entityMap = new HashMap<MovecraftLocation, List<EntityUpdateCommand>>();
 				Map<MovecraftLocation, TransferData> dataMap = new HashMap<MovecraftLocation, TransferData>();
-				Set<net.minecraft.server.v1_7_R2.Chunk> chunks = null; 
+				Set<net.minecraft.server.v1_7_R3.Chunk> chunks = null; 
 				Set<Chunk> cmChunks = null;
 				if(Settings.CompatibilityMode) {
 					cmChunks = new HashSet<Chunk>();					
 				} else {
-					chunks = new HashSet<net.minecraft.server.v1_7_R2.Chunk>();
+					chunks = new HashSet<net.minecraft.server.v1_7_R3.Chunk>();
 				}
 				ArrayList<Player> unupdatedPlayers=new ArrayList<Player>(Arrays.asList(Movecraft.getInstance().getServer().getOnlinePlayers()));
 
@@ -198,7 +198,7 @@ public class MapUpdateManager extends BukkitRunnable {
 							w.getBlockAt( l.getX(), l.getY(), l.getZ() ).setTypeIdAndData( 1, (byte) 0, false );
 						}
 					}					
-				} 
+				}
 				// track the blocks that entities will be standing on to move them smoothly with the craft
 				if(entityUpdatesInWorld!=null) {
 					for( EntityUpdateCommand i : entityUpdatesInWorld) {
@@ -222,19 +222,21 @@ public class MapUpdateManager extends BukkitRunnable {
 				final int[] fragileBlocks = new int[]{ 26, 29, 33, 34, 50, 52, 54, 55, 63, 64, 65, 68, 69, 70, 71, 72, 75, 76, 77, 93, 94, 96, 131, 132, 143, 147, 148, 149, 150, 151, 171, 323, 324, 330, 331, 356, 404 };
 				Arrays.sort(fragileBlocks);
 						
-			/*	// place blocks that will have entities standing on them, and the 2 blocks above it
-				for ( MapUpdateCommand m : updatesInWorld ) {
-					if(m!=null) {
-						MovecraftLocation oneDown=new MovecraftLocation(m.getNewBlockLocation().getX(), m.getNewBlockLocation().getY()-1, m.getNewBlockLocation().getZ());
-						MovecraftLocation twoDown=new MovecraftLocation(m.getNewBlockLocation().getX(), m.getNewBlockLocation().getY()-2, m.getNewBlockLocation().getZ());
-						if( entityMap.containsKey(m.getNewBlockLocation()) || entityMap.containsKey(oneDown) || entityMap.containsKey(twoDown)) {
-							w.getBlockAt( m.getNewBlockLocation().getX(), m.getNewBlockLocation().getY(), m.getNewBlockLocation().getZ() ).setTypeIdAndData( 0, (byte) 0, false );
-							w.getBlockAt( m.getNewBlockLocation().getX(), m.getNewBlockLocation().getY(), m.getNewBlockLocation().getZ() ).setTypeIdAndData( 20, (byte) 0, false );
-							w.getBlockAt( m.getNewBlockLocation().getX(), m.getNewBlockLocation().getY()+1, m.getNewBlockLocation().getZ() ).setTypeIdAndData( 0, (byte) 0, false );
-							w.getBlockAt( m.getNewBlockLocation().getX(), m.getNewBlockLocation().getY()+2, m.getNewBlockLocation().getZ() ).setTypeIdAndData( 0, (byte) 0, false );
-							}
+				// Place any blocks that replace "fragiles", other than other fragiles
+				for ( MapUpdateCommand i : updatesInWorld ) {
+					if(i!=null) {
+						int prevType=w.getBlockAt(i.getNewBlockLocation().getX(), i.getNewBlockLocation().getY(), i.getNewBlockLocation().getZ()).getTypeId();
+						boolean prevIsFragile=(Arrays.binarySearch(fragileBlocks,prevType)>=0);
+						boolean isFragile=(Arrays.binarySearch(fragileBlocks,i.getTypeID())>=0);
+						if(prevIsFragile && (!isFragile)) {
+							updateBlock(i, chunkList, w, dataMap, chunks, cmChunks, false);
+						}
+						if(prevIsFragile && isFragile) {
+							MapUpdateCommand blankCommand=new MapUpdateCommand(i.getNewBlockLocation(), 0, i.getCraft());
+							updateBlock(blankCommand, chunkList, w, dataMap, chunks, cmChunks, false);
+						}
 					}
-				}*/
+				}
 				
 				// Perform core block updates, don't do "fragiles" yet. Don't do Dispensers yet either
 				for ( MapUpdateCommand m : updatesInWorld ) {
@@ -277,8 +279,6 @@ public class MapUpdateManager extends BukkitRunnable {
 						boolean isFragile=(Arrays.binarySearch(fragileBlocks,i.getTypeID())>=0);
 						if(isFragile) {
 							updateBlock(i, chunkList, w, dataMap, chunks, cmChunks, false);
-							
-
 						}
 					}
 				}
@@ -356,7 +356,7 @@ public class MapUpdateManager extends BukkitRunnable {
 				if(Settings.CompatibilityMode) {
 					// todo: lighting stuff here
 				} else {
-					for ( net.minecraft.server.v1_7_R2.Chunk c : chunks ) {
+					for ( net.minecraft.server.v1_7_R3.Chunk c : chunks ) {
 						c.initLighting();
 						ChunkCoordIntPair ccip = new ChunkCoordIntPair( c.locX, c.locZ ); // changed from c.x to c.locX and c.locZ
 
@@ -372,7 +372,7 @@ public class MapUpdateManager extends BukkitRunnable {
 				
 				
 				if(CraftManager.getInstance().getCraftsInWorld(w)!=null) {
-					// clean up dropped items that are fragile block types on or below all crafts. They are likely garbage left on the ground from the block movements
+		/*			// clean up dropped items that are fragile block types on or below all crafts. They are likely garbage left on the ground from the block movements
 					for(Craft cleanCraft : CraftManager.getInstance().getCraftsInWorld(w)) {
 						Iterator<Entity> i=w.getEntities().iterator();
 						while (i.hasNext()) {
@@ -398,7 +398,7 @@ public class MapUpdateManager extends BukkitRunnable {
 								}
 							}
 						}
-					}
+					}*/
 					
 					//move entities again to reduce falling out of crafts
 					if(entityUpdatesInWorld!=null) {
@@ -438,7 +438,7 @@ public class MapUpdateManager extends BukkitRunnable {
 		updates.clear();
 		entityUpdates.clear();
 		long endTime=System.currentTimeMillis();
-		Movecraft.getInstance().getLogger().log( Level.INFO, "Map update took (ms): "+(endTime-startTime));
+//		Movecraft.getInstance().getLogger().log( Level.INFO, "Map update took (ms): "+(endTime-startTime));
 	}
 
 	public boolean addWorldUpdate( World w, MapUpdateCommand[] mapUpdates, EntityUpdateCommand[] eUpdates) {

@@ -527,7 +527,7 @@ public class TranslationTask extends AsyncTask {
 								getCraft().setPilotLockedZ(tempLoc.getZ());
 							}
 						} else {
-							pTest.remove();
+						//	pTest.remove(); Removed to test better fragile item removal
 						}
 					}
 				}
