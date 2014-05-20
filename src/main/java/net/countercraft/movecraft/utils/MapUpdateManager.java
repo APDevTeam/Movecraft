@@ -28,7 +28,10 @@ import net.countercraft.movecraft.utils.datastructures.SignTransferHolder;
 import net.countercraft.movecraft.utils.datastructures.StorageCrateTransferHolder;
 import net.countercraft.movecraft.utils.datastructures.TransferData;
 import net.minecraft.server.v1_7_R3.ChunkCoordIntPair;
+import net.minecraft.server.v1_7_R3.IContainer;
 import net.minecraft.server.v1_7_R3.Material;
+import net.minecraft.server.v1_7_R3.TileEntity;
+import net.minecraft.server.v1_7_R3.WorldServer;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
@@ -38,6 +41,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.craftbukkit.v1_7_R3.CraftChunk;
+import org.bukkit.craftbukkit.v1_7_R3.CraftWorld;
 import org.bukkit.craftbukkit.v1_7_R3.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_7_R3.util.CraftMagicNumbers;
 import org.bukkit.entity.Entity;
@@ -122,7 +126,19 @@ public class MapUpdateManager extends BukkitRunnable {
 		//don't blank out block if it's already air, or if blocktype will not be changed
 		if(Settings.CompatibilityMode) {  
 			if((origType!=0)&&(origType!=newTypeID)) {
-				w.getBlockAt( x, y, z ).setTypeIdAndData( 0, (byte) 0, false );
+//				w.getBlockAt( x, y, z ).setTypeIdAndData( 0, (byte) 0, false );
+				boolean found=false;
+				for(BlockState bs : cmC.getTileEntities()) {
+					if( bs.getX() == (x & 15) )
+						if( bs.getZ() == (z & 15) )
+							if( bs.getY() == y ) {
+								found=true;
+								bs.setType(org.bukkit.Material.AIR);
+								bs.update();
+							}
+				}
+				if(!found)
+					w.getBlockAt( x, y, z ).setType(org.bukkit.Material.AIR);
 			}
 			if(origType!=newTypeID || origData!=data) {
 				w.getBlockAt( x, y, z ).setTypeIdAndData( newTypeID, data, false );
@@ -132,18 +148,32 @@ public class MapUpdateManager extends BukkitRunnable {
 			}
 		} else {
 			if(origType==149 || origType==150) { // bukkit can't remove comparators safely, it screws up the NBT data. So turn it to a sign, then remove it.
-				w.getBlockAt( x, y, z ).setType(org.bukkit.Material.AIR);
-				w.getBlockAt( x, y, z ).setType(org.bukkit.Material.SIGN_POST);
+				c.a( x & 15, y, z & 15, CraftMagicNumbers.getBlock(org.bukkit.Material.AIR), 0 );
+				c.a( x & 15, y, z & 15, CraftMagicNumbers.getBlock(org.bukkit.Material.SIGN_POST), 0 );
 				BlockState state=w.getBlockAt( x, y, z ).getState();
 				Sign s=(Sign)state;
 				s.setLine(0, "PLACEHOLDER");
 				s.update();
-				w.getBlockAt( x, y, z ).setType(org.bukkit.Material.AIR);
-				w.getBlockAt( x, y, z ).setTypeIdAndData( newTypeID, data, false );
+				c.a( x & 15, y, z & 15, CraftMagicNumbers.getBlock(org.bukkit.Material.AIR), 0 );
+				success = c.a( x & 15, y, z & 15, CraftMagicNumbers.getBlock(newTypeID), data );
+				if ( !success ) {
+					w.getBlockAt( x, y, z ).setTypeIdAndData( newTypeID, data, false );
+				}
+				if ( !chunks.contains( c ) ) {
+					chunks.add( c );
+				}
 			} else {
-				if((origType!=0)&&(origType!=newTypeID)) {
-					c.a( x & 15, y, z & 15, CraftMagicNumbers.getBlock(0), 0 );
-				} 
+/*				if((origType!=0)&&(origType!=newTypeID)) {
+					c.a( x & 15, y, z & 15, CraftMagicNumbers.getBlock(org.bukkit.Material.AIR), 0 );
+/*					CraftWorld cw=c.world.getWorld();
+//					cw.getTileEntityAt(x, y, z);   // this actually fixes incorrect tileentities
+					WorldServer ws=c.world.getWorld().getHandle();
+					
+					Block block=w.getBlockAt(x, y, z);
+					TileEntity replacement = ((IContainer) block).a(ws, ws.getData(x, y, z));
+		            ws.setTileEntity(x, y, z, replacement);
+				}*/
+
 				if(origType!=newTypeID || origData!=data) {
 					success = c.a( x & 15, y, z & 15, CraftMagicNumbers.getBlock(newTypeID), data );
 				} else {
@@ -355,6 +385,17 @@ public class MapUpdateManager extends BukkitRunnable {
 				
 				if(Settings.CompatibilityMode) {
 					// todo: lighting stuff here
+					for ( Chunk c : cmChunks ) {
+						ChunkCoordIntPair ccip = new ChunkCoordIntPair( c.getX(), c.getZ() ); // changed from c.x to c.locX and c.locZ
+
+						for ( Player p : w.getPlayers() ) {
+							List<ChunkCoordIntPair> chunkCoordIntPairQueue = ( List<ChunkCoordIntPair> ) ( ( CraftPlayer ) p ).getHandle().chunkCoordIntPairQueue;
+
+							if ( !chunkCoordIntPairQueue.contains( ccip ) )
+								chunkCoordIntPairQueue.add( ccip );
+						}
+					}
+					
 				} else {
 					for ( net.minecraft.server.v1_7_R3.Chunk c : chunks ) {
 						c.initLighting();
@@ -369,6 +410,7 @@ public class MapUpdateManager extends BukkitRunnable {
 						}
 					}
 				}
+
 				
 				
 				if(CraftManager.getInstance().getCraftsInWorld(w)!=null) {
@@ -438,7 +480,7 @@ public class MapUpdateManager extends BukkitRunnable {
 		updates.clear();
 		entityUpdates.clear();
 		long endTime=System.currentTimeMillis();
-//		Movecraft.getInstance().getLogger().log( Level.INFO, "Map update took (ms): "+(endTime-startTime));
+		Movecraft.getInstance().getLogger().log( Level.INFO, "Map update took (ms): "+(endTime-startTime));
 	}
 
 	public boolean addWorldUpdate( World w, MapUpdateCommand[] mapUpdates, EntityUpdateCommand[] eUpdates) {
