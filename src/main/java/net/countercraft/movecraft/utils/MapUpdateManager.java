@@ -78,6 +78,11 @@ public class MapUpdateManager extends BukkitRunnable {
 		int y = workingL.getY();
 		int z = workingL.getZ();
 		Chunk chunk=null;
+
+		int newTypeID = m.getTypeID();
+		if((newTypeID==23 || newTypeID==152) && !placeDispensers) {
+			return;
+		}
 	
 		// Calculate chunk if necessary, check list of chunks already loaded first
 	
@@ -106,10 +111,6 @@ public class MapUpdateManager extends BukkitRunnable {
 		//get the inner-chunk index of the block to change
 		//modify the block in the chunk
 
-		int newTypeID = m.getTypeID();
-		if(newTypeID==23 && !placeDispensers) {
-			newTypeID=1;
-		}
 		TransferData transferData = dataMap.get( workingL );
 
 		byte data;
@@ -209,6 +210,9 @@ public class MapUpdateManager extends BukkitRunnable {
 				}
 				ArrayList<Player> unupdatedPlayers=new ArrayList<Player>(Arrays.asList(Movecraft.getInstance().getServer().getOnlinePlayers()));
 
+				ArrayList<Chunk> chunkList = new ArrayList<Chunk>();
+				boolean isFirstChunk=true;
+				
 				// Preprocessing
 				for ( MapUpdateCommand c : updatesInWorld ) {
 					MovecraftLocation l;
@@ -224,8 +228,10 @@ public class MapUpdateManager extends BukkitRunnable {
 						}
 						
 						//remove dispensers and replace them with stone blocks to prevent firing during ship reconstruction
-						if(w.getBlockAt( l.getX(), l.getY(), l.getZ() ).getTypeId()==23) {
-							w.getBlockAt( l.getX(), l.getY(), l.getZ() ).setTypeIdAndData( 1, (byte) 0, false );
+						if(w.getBlockAt( l.getX(), l.getY(), l.getZ() ).getTypeId()==23 || w.getBlockAt( l.getX(), l.getY(), l.getZ() ).getTypeId()==152) {
+							MapUpdateCommand blankCommand=new MapUpdateCommand(c.getOldBlockLocation(), 1, c.getCraft());
+							updateBlock(blankCommand, chunkList, w, dataMap, chunks, cmChunks, false);
+//							w.getBlockAt( l.getX(), l.getY(), l.getZ() ).setTypeIdAndData( 1, (byte) 0, false );
 						}
 					}					
 				}
@@ -245,9 +251,6 @@ public class MapUpdateManager extends BukkitRunnable {
 						}
 					}
 				}
-				
-				ArrayList<Chunk> chunkList = new ArrayList<Chunk>();
-				boolean isFirstChunk=true;
 				
 				final int[] fragileBlocks = new int[]{ 26, 29, 33, 34, 50, 52, 54, 55, 63, 64, 65, 68, 69, 70, 71, 72, 75, 76, 77, 93, 94, 96, 131, 132, 143, 147, 148, 149, 150, 151, 171, 323, 324, 330, 331, 356, 404 };
 				Arrays.sort(fragileBlocks);
@@ -316,7 +319,7 @@ public class MapUpdateManager extends BukkitRunnable {
 				for ( MapUpdateCommand i : updatesInWorld ) {
 					if(i!=null) {
 						// Put Dispensers back in now that the ship is reconstructed
-						if(i.getTypeID()==23) {
+						if(i.getTypeID()==23 || i.getTypeID()==152) {
 							updateBlock(i, chunkList, w, dataMap, chunks, cmChunks, true);					
 						}
 						
@@ -384,7 +387,6 @@ public class MapUpdateManager extends BukkitRunnable {
 				}
 				
 				if(Settings.CompatibilityMode) {
-					// todo: lighting stuff here
 					for ( Chunk c : cmChunks ) {
 						ChunkCoordIntPair ccip = new ChunkCoordIntPair( c.getX(), c.getZ() ); // changed from c.x to c.locX and c.locZ
 
@@ -480,7 +482,7 @@ public class MapUpdateManager extends BukkitRunnable {
 		updates.clear();
 		entityUpdates.clear();
 		long endTime=System.currentTimeMillis();
-		Movecraft.getInstance().getLogger().log( Level.INFO, "Map update took (ms): "+(endTime-startTime));
+//		Movecraft.getInstance().getLogger().log( Level.INFO, "Map update took (ms): "+(endTime-startTime));
 	}
 
 	public boolean addWorldUpdate( World w, MapUpdateCommand[] mapUpdates, EntityUpdateCommand[] eUpdates) {
