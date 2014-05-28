@@ -346,7 +346,7 @@ public class AsyncManager extends BukkitRunnable {
 		for( World w : Bukkit.getWorlds()) {
 			if(w!=null && CraftManager.getInstance().getCraftsInWorld(w)!=null) {
 
-				// check every 5 seconds for every craft to see if it should be sinking
+				// check every few seconds for every craft to see if it should be sinking
 				for (Craft pcraft : CraftManager.getInstance().getCraftsInWorld(w)) {
 					if(pcraft!=null) {
 						if( pcraft.getType().getSinkPercent()!=0.0 && pcraft.isNotProcessing()) {
@@ -354,27 +354,32 @@ public class AsyncManager extends BukkitRunnable {
 						
 							if(ticksElapsed>Settings.SinkCheckTicks) {
 								int totalBlocks=0;
-								HashMap<Integer, Integer> foundFlyBlocks = new HashMap<Integer, Integer>();
+								HashMap<ArrayList<Integer>, Integer> foundFlyBlocks = new HashMap<ArrayList<Integer>, Integer>();
 
 								// go through each block in the blocklist, and if its in the FlyBlocks, total up the number of them
 								for(MovecraftLocation l : pcraft.getBlockList()) {
-									int blockID=w.getBlockAt(l.getX(), l.getY(), l.getZ()).getTypeId();
-									if(pcraft.getType().getFlyBlocks().containsKey(blockID) ) {
-										Integer count=foundFlyBlocks.get(blockID);
-										if(count==null) {
-											foundFlyBlocks.put(blockID, 1);
-										} else {
-											foundFlyBlocks.put(blockID, count+1);
+									Integer blockID=w.getBlockAt(l.getX(), l.getY(), l.getZ()).getTypeId();
+									Integer dataID=(int)w.getBlockAt(l.getX(), l.getY(), l.getZ()).getData();
+									Integer shiftedID=(blockID<<4)+dataID+10000;
+									for(ArrayList<Integer> flyBlockDef : pcraft.getType().getFlyBlocks().keySet()) {
+										if(flyBlockDef.contains(blockID) || flyBlockDef.contains(shiftedID)) {
+											Integer count=foundFlyBlocks.get(flyBlockDef);
+											if(count==null) {
+												foundFlyBlocks.put(flyBlockDef, 1);
+											} else {
+												foundFlyBlocks.put(flyBlockDef, count+1);
+											}
 										}
 									}
-									if(blockID!=0) {   // && blockID!=9 && blockID!=8) {
+									
+									if(blockID!=0) {  
 										totalBlocks++;
 									}
 								}
 								
 								// now see if any of the resulting percentages are below the threshold specified in SinkPercent
 								boolean isSinking=false;
-								for(int i : pcraft.getType().getFlyBlocks().keySet()) {
+								for(ArrayList<Integer> i : pcraft.getType().getFlyBlocks().keySet()) {
 									int numfound=0;
 									if(foundFlyBlocks.get(i)!=null) {
 										numfound=foundFlyBlocks.get(i);

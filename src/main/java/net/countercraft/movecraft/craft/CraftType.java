@@ -48,7 +48,7 @@ public class CraftType {
 	private double sinkPercent;
 	private float collisionExplosion;
 	private int tickCooldown;
-	private HashMap<Integer, ArrayList<Double>> flyBlocks = new HashMap<Integer, ArrayList<Double>>();
+	private HashMap<ArrayList<Integer>, ArrayList<Double>> flyBlocks = new HashMap<ArrayList<Integer>, ArrayList<Double>>();
 	private int hoverLimit;
 	private List<Material> harvestBlocks;
 	
@@ -84,8 +84,8 @@ public class CraftType {
 				if(str.contains(":")) {
 					String[] parts=str.split(":");
 					Integer typeID=Integer.valueOf(parts[0]);
-					Integer metaData=Integer.valueOf(parts[0]);
-					returnList.add(10000+typeID<<4+metaData);  // id greater than 10000 indicates it has a meta data / damage value
+					Integer metaData=Integer.valueOf(parts[1]);
+					returnList.add(10000+(typeID<<4)+metaData);  // id greater than 10000 indicates it has a meta data / damage value
 				} else {
 					Integer typeID=Integer.valueOf(str);
 					returnList.add(typeID);
@@ -96,6 +96,64 @@ public class CraftType {
 			}
 		}
 		return returnList.toArray(new Integer[1]);
+	}
+
+	private HashMap<ArrayList<Integer>, ArrayList<Double>> blockIDMapListFromObject(Object obj) {
+		//flyBlocks = ( HashMap<Integer, ArrayList<Double>> ) data.get( "flyblocks" );
+		
+		HashMap<ArrayList<Integer>, ArrayList<Double>> returnMap=new HashMap<ArrayList<Integer>, ArrayList<Double>>();
+		HashMap<Object, Object> objMap=(HashMap<Object, Object>) obj;
+		for(Object i : objMap.keySet()) {
+			ArrayList<Integer> rowList=new ArrayList<Integer>();
+
+			// first read in the list of the blocks that type of flyblock. It could be a single string (with or without a ":") or integer, or it could be multiple of them
+			if(i instanceof ArrayList<?>) {
+				for(Object o : (ArrayList<Object>)i) {
+					if(o instanceof String) {
+						String str=(String)o;
+						if(str.contains(":")) {
+							String[] parts=str.split(":");
+							Integer typeID=Integer.valueOf(parts[0]);
+							Integer metaData=Integer.valueOf(parts[1]);
+							rowList.add(10000+(typeID<<4)+metaData);  // id greater than 10000 indicates it has a meta data / damage value
+						} else {
+							Integer typeID=Integer.valueOf(str);
+							rowList.add(typeID);
+						}
+					} else {
+						Integer typeID=(Integer)o;
+						rowList.add(typeID);
+					}
+				}
+			} else 
+			if(i instanceof String) {
+				String str=(String)i;
+				if(str.contains(":")) {
+					String[] parts=str.split(":");
+					Integer typeID=Integer.valueOf(parts[0]);
+					Integer metaData=Integer.valueOf(parts[1]);
+					rowList.add(10000+(typeID<<4)+metaData);  // id greater than 10000 indicates it has a meta data / damage value
+				} else {
+					Integer typeID=Integer.valueOf(str);
+					rowList.add(typeID);
+				}
+			} else {
+				Integer typeID=(Integer)i;
+				rowList.add(typeID);
+			}
+
+			ArrayList<Object> objList=(ArrayList<Object>)objMap.get(i);
+			ArrayList<Double> limitList=new ArrayList<Double>();
+			for(Object limitObj : objList) {
+				if(limitObj instanceof Integer) {
+					Double ret=((Integer)limitObj).doubleValue();
+					limitList.add(ret);
+				} else
+					limitList.add((Double)limitObj);
+			}
+			returnMap.put(rowList, limitList);
+		}
+		return returnMap;
 	}
 
 	private void parseCraftDataFromFile( File file ) throws FileNotFoundException {
@@ -116,9 +174,14 @@ public class CraftType {
 		} else {
 			blockedByWater = true;
 		}
-		tryNudge = ( Boolean ) data.get( "tryNudge" );
+		if(data.containsKey("tryNudge")) {
+			tryNudge=(Boolean) data.get("tryNudge");
+		} else {
+			tryNudge=false;
+		}
 		tickCooldown = (int) Math.ceil( 20 / ( doubleFromObject(data.get( "speed" )) ) );
-		flyBlocks = ( HashMap<Integer, ArrayList<Double>> ) data.get( "flyblocks" );
+//		flyBlocks = ( HashMap<Integer, ArrayList<Double>> ) data.get( "flyblocks" );
+		flyBlocks = blockIDMapListFromObject(data.get( "flyblocks" ));
 		if(data.containsKey("canCruise")) {
 			canCruise=(Boolean) data.get("canCruise");
 		} else {
@@ -318,10 +381,10 @@ public class CraftType {
 		return tryNudge;
 	}
 
-	public HashMap<Integer, ArrayList<Double>> getFlyBlocks() {
+	public HashMap<ArrayList<Integer>, ArrayList<Double>> getFlyBlocks() {
 		return flyBlocks;
 	}
-        
+	
     public int getMaxHeightLimit(){
         return maxHeightLimit;
     }

@@ -80,10 +80,11 @@ public class MapUpdateManager extends BukkitRunnable {
 		Chunk chunk=null;
 
 		int newTypeID = m.getTypeID();
-		if((newTypeID==23 || newTypeID==152) && !placeDispensers) {
+
+		if(newTypeID==152 && !placeDispensers) {
 			return;
 		}
-	
+			
 		// Calculate chunk if necessary, check list of chunks already loaded first
 	
 		boolean foundChunk=false;
@@ -119,7 +120,12 @@ public class MapUpdateManager extends BukkitRunnable {
 		} else {
 			data = 0;
 		}
-
+		
+		if(newTypeID==23 && !placeDispensers) {
+			newTypeID=44;
+			data=8;
+		}
+		
 		int origType=w.getBlockAt( x, y, z ).getTypeId();
 		byte origData=w.getBlockAt( x, y, z ).getData();
 		boolean success = false;
