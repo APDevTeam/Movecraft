@@ -38,6 +38,7 @@ public class Craft {
 	private AtomicBoolean processing = new AtomicBoolean();
 	private int minX, minZ, maxHeightLimit;
 	private boolean cruising;
+	private boolean sinking;
 	private byte cruiseDirection;
 	private long lastCruiseUpdate;
 	private long lastBlockCheck;
@@ -108,11 +109,11 @@ public class Craft {
 
 	public void translate( int dx, int dy, int dz ) {
 		// check to see if the craft is trying to move in a direction not permitted by the type
-		if(this.getType().allowHorizontalMovement()==false) {
+		if(this.getType().allowHorizontalMovement()==false && this.getSinking()==false) {
 			dx=0;
 			dz=0;
 		}
-		if(this.getType().allowVerticalMovement()==false) {
+		if(this.getType().allowVerticalMovement()==false && this.getSinking()==false) {
 			dy=0;
 		}
 		if(dx==0 && dy==0 && dz==0) {
@@ -146,6 +147,10 @@ public class Craft {
 		return cruising;
 	}
 	
+	public boolean getSinking() {
+		return sinking;
+	}
+	
 	public void setCruiseDirection(byte cruiseDirection) {
 		this.cruiseDirection=cruiseDirection;
 	}
@@ -156,6 +161,10 @@ public class Craft {
 	
 	public void setCruising(boolean cruising) {
 		this.cruising=cruising;
+	}
+
+	public void setSinking(boolean sinking) {
+		this.sinking=sinking;
 	}
 
 	public void setLastCruisUpdate(long update) {

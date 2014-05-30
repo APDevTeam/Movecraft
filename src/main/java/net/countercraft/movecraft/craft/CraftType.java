@@ -18,6 +18,7 @@
 package net.countercraft.movecraft.craft;
 
 import net.countercraft.movecraft.Movecraft;
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.localisation.I18nSupport;
 
 import org.yaml.snakeyaml.Yaml;
@@ -46,6 +47,11 @@ public class CraftType {
 	private int staticWaterLevel;
 	private double fuelBurnRate;
 	private double sinkPercent;
+	private double overallSinkPercent;
+	private int sinkRateTicks;
+	private boolean keepMovingOnSink;
+	private int smokeOnSink;
+	private float explodeOnCrash;
 	private float collisionExplosion;
 	private int tickCooldown;
 	private HashMap<ArrayList<Integer>, ArrayList<Double>> flyBlocks = new HashMap<ArrayList<Integer>, ArrayList<Double>>();
@@ -237,6 +243,32 @@ public class CraftType {
 		} else {
 			sinkPercent=0.0;
 		}
+		if(data.containsKey("overallSinkPercent")) {
+			overallSinkPercent=doubleFromObject(data.get("overallSinkPercent"));
+		} else {
+			overallSinkPercent=0.0;
+		}
+		if(data.containsKey("sinkSpeed")) {
+			sinkRateTicks=(int) Math.ceil( 20 / ( doubleFromObject(data.get( "sinkSpeed" )) ) );
+		} else {
+			sinkRateTicks=(int)Settings.SinkRateTicks;
+		}
+        if(data.containsKey("keepMovingOnSink")) {
+        	keepMovingOnSink=(Boolean) data.get("keepMovingOnSink");
+        } else {
+        	keepMovingOnSink=false;
+     	}
+        if (data.containsKey("smokeOnSink")){
+        	smokeOnSink = integerFromObject(data.get( "smokeOnSink" ));
+        }else{
+        	smokeOnSink=0; 
+        }
+		if(data.containsKey("explodeOnCrash")) {
+			double temp=doubleFromObject(data.get("explodeOnCrash"));
+			explodeOnCrash=(float) temp;
+		} else {
+			explodeOnCrash=0.0F;
+		}
 		if(data.containsKey("collisionExplosion")) {
 			double temp=doubleFromObject(data.get("collisionExplosion"));
 			collisionExplosion=(float) temp;
@@ -369,6 +401,26 @@ public class CraftType {
 		return sinkPercent;
 	}
 	
+	public double getOverallSinkPercent() {
+		return overallSinkPercent;
+	}
+	
+	public int getSinkRateTicks() {
+		return sinkRateTicks;
+	}
+
+	public boolean getKeepMovingOnSink() {
+		return keepMovingOnSink;
+	}
+
+	public float getExplodeOnCrash() {
+		return explodeOnCrash;
+	}
+	
+	public int getSmokeOnSink() {
+		return smokeOnSink;
+	}
+
 	public float getCollisionExplosion() {
 		return collisionExplosion;
 	}

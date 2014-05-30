@@ -35,6 +35,7 @@ import net.minecraft.server.v1_7_R3.WorldServer;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
+import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -264,15 +265,17 @@ public class MapUpdateManager extends BukkitRunnable {
 				// Place any blocks that replace "fragiles", other than other fragiles
 				for ( MapUpdateCommand i : updatesInWorld ) {
 					if(i!=null) {
-						int prevType=w.getBlockAt(i.getNewBlockLocation().getX(), i.getNewBlockLocation().getY(), i.getNewBlockLocation().getZ()).getTypeId();
-						boolean prevIsFragile=(Arrays.binarySearch(fragileBlocks,prevType)>=0);
-						boolean isFragile=(Arrays.binarySearch(fragileBlocks,i.getTypeID())>=0);
-						if(prevIsFragile && (!isFragile)) {
-							updateBlock(i, chunkList, w, dataMap, chunks, cmChunks, false);
-						}
-						if(prevIsFragile && isFragile) {
-							MapUpdateCommand blankCommand=new MapUpdateCommand(i.getNewBlockLocation(), 0, i.getCraft());
-							updateBlock(blankCommand, chunkList, w, dataMap, chunks, cmChunks, false);
+						if(i.getTypeID()>0) {
+							int prevType=w.getBlockAt(i.getNewBlockLocation().getX(), i.getNewBlockLocation().getY(), i.getNewBlockLocation().getZ()).getTypeId();
+							boolean prevIsFragile=(Arrays.binarySearch(fragileBlocks,prevType)>=0);
+							boolean isFragile=(Arrays.binarySearch(fragileBlocks,i.getTypeID())>=0);
+							if(prevIsFragile && (!isFragile)) {
+								updateBlock(i, chunkList, w, dataMap, chunks, cmChunks, false);
+							}
+							if(prevIsFragile && isFragile) {
+								MapUpdateCommand blankCommand=new MapUpdateCommand(i.getNewBlockLocation(), 0, i.getCraft());
+								updateBlock(blankCommand, chunkList, w, dataMap, chunks, cmChunks, false);
+							}
 						}
 					}
 				}
@@ -285,9 +288,11 @@ public class MapUpdateManager extends BukkitRunnable {
 						if(!isFragile) {
 							// a TypeID less than 0 indicates an explosion
 							if(m.getTypeID()<0) {
-								float explosionPower=m.getTypeID();
-								explosionPower=0.0F-explosionPower/100.0F;
-								w.createExplosion(m.getNewBlockLocation().getX()+0.5, m.getNewBlockLocation().getY()+0.5, m.getNewBlockLocation().getZ()+0.5, explosionPower);
+								if(m.getTypeID()<-10) { // don't bother with tiny explosions
+									float explosionPower=m.getTypeID();
+									explosionPower=0.0F-explosionPower/100.0F;
+									w.createExplosion(m.getNewBlockLocation().getX()+0.5, m.getNewBlockLocation().getY()+0.5, m.getNewBlockLocation().getZ()+0.5, explosionPower);
+								}
 							} else {
 								updateBlock(m, chunkList, w, dataMap, chunks, cmChunks, false);
 							}
@@ -359,6 +364,16 @@ public class MapUpdateManager extends BukkitRunnable {
 					}
 				}
 
+				// put in smoke or effects
+				for ( MapUpdateCommand i : updatesInWorld ) {
+					if(i!=null) {
+						if(i.getSmoke()==1) {
+							Location loc=new Location(w, i.getNewBlockLocation().getX(), i.getNewBlockLocation().getY(),  i.getNewBlockLocation().getZ());
+							w.playEffect(loc, Effect.SMOKE, 4);
+						}
+					}
+				}
+				
 				// Restore block specific information
 				for ( MovecraftLocation l : dataMap.keySet() ) {
 					try {

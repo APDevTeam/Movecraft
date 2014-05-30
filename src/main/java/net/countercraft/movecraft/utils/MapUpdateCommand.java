@@ -28,6 +28,7 @@ public class MapUpdateCommand {
 	private final int typeID;
 	private final Rotation rotation;
 	private Craft craft;
+	private int smoke;
 
 	public MapUpdateCommand( MovecraftLocation blockLocation, MovecraftLocation newBlockLocation, int typeID, Rotation rotation, Craft craft ) {
 		this.blockLocation = blockLocation;
@@ -35,6 +36,7 @@ public class MapUpdateCommand {
 		this.typeID = typeID;
 		this.rotation = rotation;
 		this.craft = craft;
+		this.smoke = 0;
 	}
 
 	public MapUpdateCommand( MovecraftLocation blockLocation, MovecraftLocation newBlockLocation, int typeID, Craft craft ) {
@@ -43,6 +45,7 @@ public class MapUpdateCommand {
 		this.typeID = typeID;
 		this.rotation = Rotation.NONE;
 		this.craft = craft;
+		this.smoke = 0;
 	}
 
 	public MapUpdateCommand( MovecraftLocation newBlockLocation, int typeID, Craft craft ) {
@@ -50,10 +53,23 @@ public class MapUpdateCommand {
 		this.typeID = typeID;
 		this.rotation = Rotation.NONE;
 		this.craft = craft;
+		this.smoke = 0;
+	}
+
+	public MapUpdateCommand( MovecraftLocation newBlockLocation, int typeID, Craft craft, int smoke ) {
+		this.newBlockLocation = newBlockLocation;
+		this.typeID = typeID;
+		this.rotation = Rotation.NONE;
+		this.craft = craft;
+		this.smoke = smoke;
 	}
 
 	public int getTypeID() {
 		return typeID;
+	}
+
+	public int getSmoke() {
+		return smoke;
 	}
 
 	public MovecraftLocation getOldBlockLocation() {
