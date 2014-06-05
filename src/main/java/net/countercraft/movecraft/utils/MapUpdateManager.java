@@ -134,7 +134,7 @@ public class MapUpdateManager extends BukkitRunnable {
 		//don't blank out block if it's already air, or if blocktype will not be changed
 		if(Settings.CompatibilityMode) {  
 			if((origType!=0)&&(origType!=newTypeID)) {
-//				w.getBlockAt( x, y, z ).setTypeIdAndData( 0, (byte) 0, false );
+/*				w.getBlockAt( x, y, z ).setTypeIdAndData( 0, (byte) 0, false );
 				boolean found=false;
 				for(BlockState bs : cmC.getTileEntities()) {
 					if( bs.getX() == (x & 15) )
@@ -145,8 +145,8 @@ public class MapUpdateManager extends BukkitRunnable {
 								bs.update();
 							}
 				}
-				if(!found)
-					w.getBlockAt( x, y, z ).setType(org.bukkit.Material.AIR);
+				if(!found)*/
+//				w.getBlockAt( x, y, z ).setType(org.bukkit.Material.AIR);
 			}
 			if(origType!=newTypeID || origData!=data) {
 				w.getBlockAt( x, y, z ).setTypeIdAndData( newTypeID, data, false );
@@ -234,11 +234,15 @@ public class MapUpdateManager extends BukkitRunnable {
 							dataMap.put( c.getNewBlockLocation(), blockDataPacket );
 						}
 						
-						//remove dispensers and replace them with stone blocks to prevent firing during ship reconstruction
-						if(w.getBlockAt( l.getX(), l.getY(), l.getZ() ).getTypeId()==23 || w.getBlockAt( l.getX(), l.getY(), l.getZ() ).getTypeId()==152) {
+						//remove dispensers and replace them with half slabs to prevent them firing during reconstruction
+						if(w.getBlockAt( l.getX(), l.getY(), l.getZ() ).getTypeId()==23) {
+							MapUpdateCommand blankCommand=new MapUpdateCommand(c.getOldBlockLocation(), 23, c.getCraft());
+							updateBlock(blankCommand, chunkList, w, dataMap, chunks, cmChunks, false);
+						}
+						//remove redstone blocks and replace them with stone to prevent redstone activation during reconstruction
+						if(w.getBlockAt( l.getX(), l.getY(), l.getZ() ).getTypeId()==152) {
 							MapUpdateCommand blankCommand=new MapUpdateCommand(c.getOldBlockLocation(), 1, c.getCraft());
 							updateBlock(blankCommand, chunkList, w, dataMap, chunks, cmChunks, false);
-//							w.getBlockAt( l.getX(), l.getY(), l.getZ() ).setTypeIdAndData( 1, (byte) 0, false );
 						}
 					}					
 				}
@@ -265,7 +269,7 @@ public class MapUpdateManager extends BukkitRunnable {
 				// Place any blocks that replace "fragiles", other than other fragiles
 				for ( MapUpdateCommand i : updatesInWorld ) {
 					if(i!=null) {
-						if(i.getTypeID()>0) {
+						if(i.getTypeID()>=0) {
 							int prevType=w.getBlockAt(i.getNewBlockLocation().getX(), i.getNewBlockLocation().getY(), i.getNewBlockLocation().getZ()).getTypeId();
 							boolean prevIsFragile=(Arrays.binarySearch(fragileBlocks,prevType)>=0);
 							boolean isFragile=(Arrays.binarySearch(fragileBlocks,i.getTypeID())>=0);
