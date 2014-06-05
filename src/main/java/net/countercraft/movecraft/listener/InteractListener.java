@@ -96,6 +96,53 @@ public class InteractListener implements Listener {
 						}
 					}
 				}
+				if ( sign.getLine(0).equalsIgnoreCase("Subcraft Rotate")) {
+					// rotate subcraft
+					String craftTypeStr=sign.getLine( 1 );
+					if ( getCraftTypeFromString( craftTypeStr ) != null ) {
+						if( sign.getLine(2).equals("") && sign.getLine(3).equals("") ) {
+							sign.setLine(2, "_\\ /_");
+							sign.setLine(3, "/ \\");
+							sign.update();
+						}
+						
+						if ( event.getPlayer().hasPermission( "movecraft." + craftTypeStr + ".pilot" ) && event.getPlayer().hasPermission( "movecraft." + craftTypeStr + ".rotate" )) {
+							Long time = timeMap.get( event.getPlayer() );
+							if ( time != null ) {
+								long ticksElapsed = ( System.currentTimeMillis() - time ) / 50;
+								if ( Math.abs( ticksElapsed ) < getCraftTypeFromString( craftTypeStr ).getTickCooldown() ) {
+									event.setCancelled( true );
+									return;
+								}
+							}
+							final Location loc = event.getClickedBlock().getLocation();
+							final Craft c = new Craft( getCraftTypeFromString( craftTypeStr ), loc.getWorld() );
+							MovecraftLocation startPoint = new MovecraftLocation( loc.getBlockX(), loc.getBlockY(), loc.getBlockZ() );
+							c.detect( null, startPoint );
+							BukkitTask releaseTask = new BukkitRunnable() {
+
+								@Override
+								public void run() {
+									CraftManager.getInstance().removeCraft( c );
+								}
+
+							}.runTaskLater( Movecraft.getInstance(), ( 20 * 5 ) );
+
+							BukkitTask rotateTask = new BukkitRunnable() {
+
+								@Override
+								public void run() {
+									c.rotate( Rotation.ANTICLOCKWISE, MathUtils.bukkit2MovecraftLoc( loc ),true );
+								}
+
+							}.runTaskLater( Movecraft.getInstance(), ( 10 ) );
+							timeMap.put( event.getPlayer(), System.currentTimeMillis() );
+							event.setCancelled( true );
+						} else {
+							event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "Insufficient Permissions" ) ) );							
+						}
+					}
+				}
 			}
 		}
 	}
@@ -187,7 +234,52 @@ public class InteractListener implements Listener {
 					event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "Insufficient Permissions" ) ) );
 				}
 			}
+		} else if ( sign.getLine( 0 ).equalsIgnoreCase( "Subcraft Rotate")) {
+			// rotate subcraft
+			String craftTypeStr=sign.getLine( 1 );
+			if ( getCraftTypeFromString( craftTypeStr ) != null ) {
+				if( sign.getLine(2).equals("") && sign.getLine(3).equals("") ) {
+					sign.setLine(2, "_\\ /_");
+					sign.setLine(3, "/ \\");
+					sign.update();
+				}
+				
+				if ( event.getPlayer().hasPermission( "movecraft." + craftTypeStr + ".pilot" ) && event.getPlayer().hasPermission( "movecraft." + craftTypeStr + ".rotate" )) {
+					Long time = timeMap.get( event.getPlayer() );
+					if ( time != null ) {
+						long ticksElapsed = ( System.currentTimeMillis() - time ) / 50;
+						if ( Math.abs( ticksElapsed ) < getCraftTypeFromString( craftTypeStr ).getTickCooldown() ) {
+							event.setCancelled( true );
+							return;
+						}
+					}
+					final Location loc = event.getClickedBlock().getLocation();
+					final Craft c = new Craft( getCraftTypeFromString( craftTypeStr ), loc.getWorld() );
+					MovecraftLocation startPoint = new MovecraftLocation( loc.getBlockX(), loc.getBlockY(), loc.getBlockZ() );
+					c.detect( null, startPoint );
+					BukkitTask releaseTask = new BukkitRunnable() {
 
+						@Override
+						public void run() {
+							CraftManager.getInstance().removeCraft( c );
+						}
+
+					}.runTaskLater( Movecraft.getInstance(), ( 20 * 5 ) );
+
+					BukkitTask rotateTask = new BukkitRunnable() {
+
+						@Override
+						public void run() {
+							c.rotate( Rotation.CLOCKWISE, MathUtils.bukkit2MovecraftLoc( loc ),true );
+						}
+
+					}.runTaskLater( Movecraft.getInstance(), ( 10 ) );
+					timeMap.put( event.getPlayer(), System.currentTimeMillis() );
+					event.setCancelled( true );
+				} else {
+					event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "Insufficient Permissions" ) ) );							
+				}
+			}		
 		} else if ( sign.getLine( 0 ).equalsIgnoreCase( "Cruise: OFF")) {
 			if(CraftManager.getInstance().getCraftByPlayer( event.getPlayer() )!=null){
 				Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());

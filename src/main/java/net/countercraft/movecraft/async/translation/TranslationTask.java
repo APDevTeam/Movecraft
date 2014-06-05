@@ -250,7 +250,7 @@ public class TranslationTask extends AsyncTask {
 		boolean checkHover = (data.getDx()!=0 || data.getDz()!=0);// we want to check only horizontal moves
 		boolean canHoverOverWater = getCraft().getType().getCanHoverOverWater();
 		
-		for ( int i = 0; i < blocksList.length; i++ ) {
+        for ( int i = 0; i < blocksList.length; i++ ) {
 			MovecraftLocation oldLoc = blocksList[i];
 			MovecraftLocation newLoc = oldLoc.translate( data.getDx(), data.getDy(), data.getDz() );
 //			newBlockList[i] = newLoc;
@@ -270,7 +270,7 @@ public class TranslationTask extends AsyncTask {
             if (testMaterial.equals(Material.CHEST) || testMaterial.equals(Material.TRAPPED_CHEST)){
                 if (!checkChests(testMaterial, newLoc, existingBlockSet)){
                     //prevent chests collision
-                    fail( String.format( I18nSupport.getInternationalisedString( "Translation - Failed Craft is obstructed" ) ) );
+                    fail( String.format( I18nSupport.getInternationalisedString( "Translation - Failed Craft is obstructed" )+" @ %d,%d,%d", oldLoc.getX(), oldLoc.getY(), oldLoc.getZ() ) );
                     break;
                 }
             } 
@@ -383,7 +383,7 @@ public class TranslationTask extends AsyncTask {
 					} else 
  				 	// Explode if the craft is set to have a CollisionExplosion. Also keep moving for spectacular ramming collisions
 				 	if( getCraft().getType().getCollisionExplosion() == 0.0F) {
-				 		fail( String.format( I18nSupport.getInternationalisedString( "Translation - Failed Craft is obstructed" ) ) );
+				 		fail( String.format( I18nSupport.getInternationalisedString( "Translation - Failed Craft is obstructed" )+" @ %d,%d,%d", oldLoc.getX(), oldLoc.getY(), oldLoc.getZ() ) );
 				 		break;
 				 		} else {
 				 		int explosionKey =  (int) (0-(getCraft().getType().getCollisionExplosion()*100));

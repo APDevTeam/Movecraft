@@ -126,6 +126,9 @@ public class Craft {
 		AsyncManager.getInstance().submitTask( new RotationTask( this, originPoint, this.getBlockList(), rotation, this.getW() ), this );
 	}
 
+	public void rotate( Rotation rotation, MovecraftLocation originPoint, boolean isSubCraft ) {
+		AsyncManager.getInstance().submitTask( new RotationTask( this, originPoint, this.getBlockList(), rotation, this.getW(), isSubCraft ), this );
+	}
 
 	public int getMinX() {
 		return minX;

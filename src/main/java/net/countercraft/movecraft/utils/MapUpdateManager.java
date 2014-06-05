@@ -519,14 +519,16 @@ public class MapUpdateManager extends BukkitRunnable {
 		}
 
 		ArrayList<MapUpdateCommand> tempSet = new ArrayList<MapUpdateCommand>();
-		for ( MapUpdateCommand m : mapUpdates ) {
-
-			if ( setContainsConflict( get, m ) ) {
-				return true;
-			} else {
-				tempSet.add( m );
+		if(mapUpdates!=null) {
+			for ( MapUpdateCommand m : mapUpdates ) {
+	
+				if ( setContainsConflict( get, m ) ) {
+					return true;
+				} else {
+					tempSet.add( m );
+				}
+	
 			}
-
 		}
 		get.addAll( tempSet );
 		updates.put( w, get );

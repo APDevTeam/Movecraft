@@ -108,6 +108,9 @@ public class AsyncManager extends BukkitRunnable {
 					if ( data.failed() ) {
 						if(p!=null)
 							p.sendMessage( data.getFailMessage() );
+						else
+							Movecraft.getInstance().getLogger().log( Level.INFO,"NULL Player Craft Detection failed:"+data.getFailMessage());
+
 					} else {
 						Craft[] craftsInWorld = CraftManager.getInstance().getCraftsInWorld( c.getW() );
 						boolean failed = false;
@@ -115,7 +118,7 @@ public class AsyncManager extends BukkitRunnable {
 						if ( craftsInWorld != null ) {
 							for ( Craft craft : craftsInWorld ) {
 
-								if ( BlockUtils.arrayContainsOverlap( craft.getBlockList(), data.getBlockList() ) && c.getType().getCruiseOnPilot()==false ) {
+								if ( BlockUtils.arrayContainsOverlap( craft.getBlockList(), data.getBlockList() ) && p!=null ) {
 									p.sendMessage( String.format( I18nSupport.getInternationalisedString( "Detection - Failed Craft is already being controlled" ) ) );
 									failed = true;
 								}
@@ -152,6 +155,8 @@ public class AsyncManager extends BukkitRunnable {
 						//The craft translation failed
 						if( p != null )
 							p.sendMessage( task.getData().getFailMessage() );
+						else
+							
 						if(task.getData().collisionExplosion()) {
 							MapUpdateCommand[] updates = task.getData().getUpdates();
 							c.setBlockList( task.getData().getBlockList() );
@@ -196,11 +201,14 @@ public class AsyncManager extends BukkitRunnable {
 				Player p = CraftManager.getInstance().getPlayerFromCraft( c );
 
 				// Check that the craft hasn't been sneakily unpiloted
-				if ( p != null ) {
+				if ( p != null || task.getIsSubCraft()) {
 
 					if ( task.isFailed() ) {
-						//The craft translation failed
-						p.sendMessage( task.getFailMessage() );
+						//The craft translation failed, don't try to notify them if there is no pilot
+						if(p!=null)
+							p.sendMessage( task.getFailMessage() );
+						else
+							Movecraft.getInstance().getLogger().log( Level.INFO,"NULL Player Rotation Failed: "+task.getFailMessage());
 					} else {
 						MapUpdateCommand[] updates = task.getUpdates();
 						EntityUpdateCommand[] eUpdates=task.getEntityUpdates();

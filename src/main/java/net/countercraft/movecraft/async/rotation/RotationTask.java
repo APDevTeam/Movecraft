@@ -22,6 +22,7 @@ import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.utils.BlockUtils;
 import net.countercraft.movecraft.utils.EntityUpdateCommand;
 import net.countercraft.movecraft.utils.MapUpdateCommand;
 import net.countercraft.movecraft.utils.MathUtils;
@@ -58,6 +59,7 @@ public class RotationTask extends AsyncTask {
 	private Integer minX, minZ;
 	private final Rotation rotation;
 	private final World w;
+	private final boolean isSubCraft;
 
 	public RotationTask( Craft c, MovecraftLocation originPoint, MovecraftLocation[] blockList, Rotation rotation, World w ) {
 		super( c );
@@ -65,6 +67,16 @@ public class RotationTask extends AsyncTask {
 		this.blockList = blockList;
 		this.rotation = rotation;
 		this.w = w;
+		this.isSubCraft = false;
+	}
+
+	public RotationTask( Craft c, MovecraftLocation originPoint, MovecraftLocation[] blockList, Rotation rotation, World w, boolean isSubCraft ) {
+		super( c );
+		this.originPoint = originPoint;
+		this.blockList = blockList;
+		this.rotation = rotation;
+		this.w = w;
+		this.isSubCraft = isSubCraft;
 	}
 
 	@Override
@@ -190,7 +202,7 @@ public class RotationTask extends AsyncTask {
                if (!checkChests(testMaterial, blockList[i], existingBlockSet)){
                     //prevent chests collision
                     failed = true;
-					failMessage = String.format( I18nSupport.getInternationalisedString( "Rotation - Craft is obstructed" ) );
+					failMessage = String.format( I18nSupport.getInternationalisedString( "Rotation - Craft is obstructed" )+" @ %d,%d,%d", blockList[i].getX(), blockList[i].getY(), blockList[i].getZ() );
                     break;
                 }
             }
@@ -198,7 +210,7 @@ public class RotationTask extends AsyncTask {
 			if (!waterCraft) {
 				if ( (typeID != 0 && typeID!=34) && !existingBlockSet.contains( blockList[i] ) ) {
 					failed = true;
-					failMessage = String.format( I18nSupport.getInternationalisedString( "Rotation - Craft is obstructed" ) );
+					failMessage = String.format( I18nSupport.getInternationalisedString( "Rotation - Craft is obstructed" )+" @ %d,%d,%d", blockList[i].getX(), blockList[i].getY(), blockList[i].getZ() );
 					break;
 				} else {
 					int id = w.getBlockTypeIdAt( originalBlockList[i].getX(), originalBlockList[i].getY(), originalBlockList[i].getZ() );
@@ -208,7 +220,7 @@ public class RotationTask extends AsyncTask {
 				// allow watercraft to rotate through water
 				if ( (typeID != 0 && typeID != 9 && typeID!=34) && !existingBlockSet.contains( blockList[i] ) ) {
 					failed = true;
-					failMessage = String.format( I18nSupport.getInternationalisedString( "Rotation - Craft is obstructed" ) );
+					failMessage = String.format( I18nSupport.getInternationalisedString( "Rotation - Craft is obstructed" )+" @ %d,%d,%d", blockList[i].getX(), blockList[i].getY(), blockList[i].getZ() );
 					break;
 				} else {
 					int id = w.getBlockTypeIdAt( originalBlockList[i].getX(), originalBlockList[i].getY(), originalBlockList[i].getZ() );
@@ -384,6 +396,66 @@ public class RotationTask extends AsyncTask {
 			}
 
 			this.hitbox = polygonalBox;
+			
+			// if you rotated a subcraft, update the parent with the new blocks
+			if(this.isSubCraft) {
+				Craft[] craftsInWorld = CraftManager.getInstance().getCraftsInWorld( getCraft().getW() );
+				for ( Craft craft : craftsInWorld ) {
+					if ( BlockUtils.arrayContainsOverlap( craft.getBlockList(), originalBlockList ) && craft!=getCraft() ) {
+						// found a parent craft
+						List<MovecraftLocation> parentBlockList=ListUtils.subtract(Arrays.asList(craft.getBlockList()), Arrays.asList(originalBlockList));
+						parentBlockList.addAll(Arrays.asList(blockList));
+						craft.setBlockList(parentBlockList.toArray( new MovecraftLocation[1] ));
+
+						// Rerun the polygonal bounding formula for the parent craft
+						Integer parentMaxX = null;
+						Integer parentMaxZ = null;
+						Integer parentMinX = null;
+						Integer parentMinZ = null;
+						for ( MovecraftLocation l : parentBlockList ) {
+							if ( parentMaxX == null || l.getX() > parentMaxX ) {
+								parentMaxX = l.getX();
+							}
+							if ( parentMaxZ == null || l.getZ() > parentMaxZ ) {
+								parentMaxZ = l.getZ();
+							}
+							if ( parentMinX == null || l.getX() < parentMinX ) {
+								parentMinX = l.getX();
+							}
+							if ( parentMinZ == null || l.getZ() < parentMinZ ) {
+								parentMinZ = l.getZ();
+							}
+						}
+						int parentSizeX, parentSizeZ;
+						parentSizeX = ( parentMaxX - parentMinX ) + 1;
+						parentSizeZ = ( parentMaxZ - parentMinZ ) + 1;
+						int[][][] parentPolygonalBox = new int[parentSizeX][][];
+						for ( MovecraftLocation l : parentBlockList ) {
+							if ( parentPolygonalBox[l.getX() - parentMinX] == null ) {
+								parentPolygonalBox[l.getX() - parentMinX] = new int[parentSizeZ][];
+							}
+							if ( parentPolygonalBox[l.getX() - parentMinX][l.getZ() - parentMinZ] == null ) {
+								parentPolygonalBox[l.getX() - parentMinX][l.getZ() - parentMinZ] = new int[2];
+								parentPolygonalBox[l.getX() - parentMinX][l.getZ() - parentMinZ][0] = l.getY();
+								parentPolygonalBox[l.getX() - parentMinX][l.getZ() - parentMinZ][1] = l.getY();
+							} else {
+								int parentMinY = parentPolygonalBox[l.getX() - parentMinX][l.getZ() - parentMinZ][0];
+								int parentMaxY = parentPolygonalBox[l.getX() - parentMinX][l.getZ() - parentMinZ][1];
+
+								if ( l.getY() < parentMinY ) {
+									parentPolygonalBox[l.getX() - parentMinX][l.getZ() - parentMinZ][0] = l.getY();
+								}
+								if ( l.getY() > parentMaxY ) {
+									parentPolygonalBox[l.getX() - parentMinX][l.getZ() - parentMinZ][1] = l.getY();
+								}
+							}
+						}
+						craft.setHitBox(parentPolygonalBox);
+					}
+				}
+			}
+
+			
 		}
 	}
 	
@@ -428,6 +500,10 @@ public class RotationTask extends AsyncTask {
 		return rotation;
 	}
     
+	public boolean getIsSubCraft() {
+		return isSubCraft;
+	}
+
     private boolean checkChests(Material mBlock, MovecraftLocation newLoc, HashSet<MovecraftLocation> existingBlockSet){
         Material testMaterial;
         MovecraftLocation aroundNewLoc;
