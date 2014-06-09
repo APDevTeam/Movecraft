@@ -3,7 +3,7 @@ Movecraft
 
 Movecraft 3 is the premier movement plugin for bukkit.
 
-Source hosted on GitHub, Localisation on gettranslation.com and Documentation on readtthedocs.org
+Source hosted on GitHub, Localisation on gettranslation.com and Documentation on Github https://github.com/msummers123/Movecraft-3/wiki
 
 This repository is built by Jenkins CI provided by cloudbees PaaS
 
