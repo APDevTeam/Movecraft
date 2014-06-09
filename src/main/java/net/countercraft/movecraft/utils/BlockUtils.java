@@ -127,7 +127,7 @@ public class BlockUtils {
 			case 33:
 			case 34:
 				direction = ( byte ) ( data & 0x7 );
-				System.out.println( direction );
+//				System.out.println( direction );
 
 				nonDirectional = direction == 0x0 || direction == 0x1 || direction == 0x6;
 
