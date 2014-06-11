@@ -413,14 +413,17 @@ public class MapUpdateManager extends BukkitRunnable {
 				
 				if(Settings.CompatibilityMode) {
 					for ( Chunk c : cmChunks ) {
-						ChunkCoordIntPair ccip = new ChunkCoordIntPair( c.getX(), c.getZ() ); // changed from c.x to c.locX and c.locZ
-
+						w.refreshChunk(c.getX(), c.getZ());
+/*						ChunkCoordIntPair ccip = new ChunkCoordIntPair( c.getX(), c.getZ() ); // changed from c.x to c.locX and c.locZ
+						Entity test; test.
+						
 						for ( Player p : w.getPlayers() ) {
+							p.sendChunkChange(arg0, arg1, arg2, arg3, arg4);
 							List<ChunkCoordIntPair> chunkCoordIntPairQueue = ( List<ChunkCoordIntPair> ) ( ( CraftPlayer ) p ).getHandle().chunkCoordIntPairQueue;
 
 							if ( !chunkCoordIntPairQueue.contains( ccip ) )
 								chunkCoordIntPairQueue.add( ccip );
-						}
+						}*/
 					}
 					
 				} else {
