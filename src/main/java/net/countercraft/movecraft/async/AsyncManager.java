@@ -155,7 +155,6 @@ public class AsyncManager extends BukkitRunnable {
 						//The craft translation failed
 						if( p != null )
 							p.sendMessage( task.getData().getFailMessage() );
-						else
 							
 						if(task.getData().collisionExplosion()) {
 							MapUpdateCommand[] updates = task.getData().getUpdates();
