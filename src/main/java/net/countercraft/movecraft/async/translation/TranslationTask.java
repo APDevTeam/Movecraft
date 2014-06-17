@@ -264,6 +264,7 @@ public class TranslationTask extends AsyncTask {
 			}
 
             boolean blockObstructed=false;
+            boolean harvestBlock=false;
             Material testMaterial;
             
             testMaterial = getCraft().getW().getBlockAt(oldLoc.getX(), oldLoc.getY(), oldLoc.getZ() ).getType();
@@ -294,6 +295,7 @@ public class TranslationTask extends AsyncTask {
 			 	// New block is not harvested block
 			 	if (harvestBlocks.contains(testMaterial) && !existingBlockSet.contains( newLoc )){
 			 		blockObstructed = false;
+			 		harvestBlock = true;
 			 		harvestedBlocks.add(newLoc); //future for possible drop items
 			 	} else {
 			 		blockObstructed = true;

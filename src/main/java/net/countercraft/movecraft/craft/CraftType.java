@@ -323,13 +323,24 @@ public class CraftType {
      	}
     	harvestBlocks = new ArrayList<Material>(); 
     	if (data.containsKey("harvestBlocks")){
-        	String[] temp = ((ArrayList<String> ) data.get( "harvestBlocks" )).toArray( new String[1] );
+/*        	String[] temp = ((ArrayList<String> ) data.get( "harvestBlocks" )).toArray( new String[1] );
         	for (int i = 0; i < temp.length; i++){
         		Material mat = Material.getMaterial(temp[i]);
         		if (mat != null ){
         			harvestBlocks.add(mat);
-        		}
-        	}
+        		}*/
+    		ArrayList objList=(ArrayList) data.get( "harvestBlocks" );
+    		for(Object i : objList) {
+    			if(i instanceof String) {
+    				Material mat = Material.getMaterial((String)i);
+	    			harvestBlocks.add(mat);
+    			} else {
+    				Integer typeID=(Integer)i;
+    				Material mat = Material.getMaterial((Integer)i);
+	    			harvestBlocks.add(mat);
+    			}
+    		}
+
     	}
 	}
 
