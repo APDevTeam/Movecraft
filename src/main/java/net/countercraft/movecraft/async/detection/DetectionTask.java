@@ -76,7 +76,6 @@ public class DetectionTask extends AsyncTask {
 			data.setBlockList( finaliseBlockList( blockList ) );
 
 			if ( confirmStructureRequirements( flyBlocks, blockTypeCount ) ) {
-
 				data.setHitBox( BoundingBoxUtils.formBoundingBox( data.getBlockList(), data.getMinX(), maxX, data.getMinZ(), maxZ ) );
 
 			}
@@ -93,6 +92,10 @@ public class DetectionTask extends AsyncTask {
 
 			int testID = data.getWorld().getBlockTypeIdAt( x, y, z );
 			int testData = data.getWorld().getBlockAt(x, y, z).getData();
+			
+			if((testID==8)||(testID==9)) {
+				data.setWaterContact(true);
+			}
 
 			if ( isForbiddenBlock( testID,testData ) ) {
 
@@ -285,22 +288,26 @@ public class DetectionTask extends AsyncTask {
 
 	private MovecraftLocation[] finaliseBlockList( HashSet<MovecraftLocation> blockSet ) {
 		//MovecraftLocation[] finalList=blockSet.toArray( new MovecraftLocation[1] );
-		MovecraftLocation[] finalList=new MovecraftLocation[blockSet.size()];
+		ArrayList <MovecraftLocation> finalList=new ArrayList <MovecraftLocation>();
 		
 		// Sort the blocks from the bottom up to minimize lower altitude block updates
-		int index=0;
 		for(int posY=this.minY;posY<=this.maxY;posY++) {
 			for(MovecraftLocation loc : blockSet) {
 				if(loc.getY()==posY) {
-					finalList[index]=loc;
-					index++;
+					finalList.add(loc);
 				}
 			}
 		}
-		return blockSet.toArray( finalList );
+		return finalList.toArray(new MovecraftLocation[1]);
 	}
 
 	private boolean confirmStructureRequirements( HashMap<ArrayList<Integer>, ArrayList<Double>> flyBlocks, HashMap<ArrayList<Integer>, Integer> countData ) {
+		if ( getCraft().getType().getRequireWaterContact()==true ) {
+			if(data.getWaterContact()==false) {
+				fail( String.format( I18nSupport.getInternationalisedString( "Detection - Failed - Water contact required but not found" )));
+				return false;
+			}
+		}
 		for ( ArrayList<Integer> i : flyBlocks.keySet() ) {
 			Integer numberOfBlocks = countData.get( i );
 

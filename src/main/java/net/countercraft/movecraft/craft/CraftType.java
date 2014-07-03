@@ -40,7 +40,7 @@ public class CraftType {
 	private String craftName;
 	private int maxSize, minSize, minHeightLimit, maxHeightLimit;
 	private Integer[] allowedBlocks, forbiddenBlocks;
-	private boolean blockedByWater, tryNudge, canCruise, canTeleport, canStaticMove, canHover, canDirectControl, useGravity, canHoverOverWater, moveEntities;
+	private boolean blockedByWater, requireWaterContact, tryNudge, canCruise, canTeleport, canStaticMove, canHover, canDirectControl, useGravity, canHoverOverWater, moveEntities;
 	private boolean allowHorizontalMovement, allowVerticalMovement, cruiseOnPilot;
 	private int maxStaticMove;
 	private int cruiseSkipBlocks;
@@ -179,6 +179,11 @@ public class CraftType {
 			blockedByWater = ( Boolean ) data.get( "blockedByWater" );			
 		} else {
 			blockedByWater = true;
+		}
+		if(data.containsKey("requireWaterContact")) {
+			requireWaterContact = ( Boolean ) data.get( "requireWaterContact" );
+		} else {
+			requireWaterContact = false;
 		}
 		if(data.containsKey("tryNudge")) {
 			tryNudge=(Boolean) data.get("tryNudge");
@@ -366,6 +371,10 @@ public class CraftType {
 
 	public boolean blockedByWater() {
 		return blockedByWater;
+	}
+
+	public boolean getRequireWaterContact() {
+		return requireWaterContact;
 	}
 
 	public boolean getCanCruise() {

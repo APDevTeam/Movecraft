@@ -25,6 +25,7 @@ import org.bukkit.entity.Player;
 public class DetectionTaskData {
 	private World w;
 	private boolean failed;
+	private boolean waterContact;
 	private String failMessage;
 	private MovecraftLocation[] blockList;
 	private Player player;
@@ -37,6 +38,7 @@ public class DetectionTaskData {
 		this.player = player;
 		this.allowedBlocks = allowedBlocks;
 		this.forbiddenBlocks = forbiddenBlocks;
+		this.waterContact = false;
 	}
 
 	public DetectionTaskData() {
@@ -60,6 +62,10 @@ public class DetectionTaskData {
 
 	public boolean failed() {
 		return failed;
+	}
+
+	public boolean getWaterContact() {
+		return waterContact;
 	}
 
 	public String getFailMessage() {
@@ -108,6 +114,10 @@ public class DetectionTaskData {
 
 	void setFailed( boolean failed ) {
 		this.failed = failed;
+	}
+
+	void setWaterContact( boolean waterContact ) {
+		this.waterContact = waterContact;
 	}
 
 	void setPlayer( Player player ) {

@@ -293,45 +293,46 @@ public class AsyncManager extends BukkitRunnable {
 							if(pcraft.getPilotLocked()==true && pcraft.isNotProcessing()) {
 								
 								Player p = CraftManager.getInstance().getPlayerFromCraft( pcraft );
-								if ( MathUtils.playerIsWithinBoundingPolygon( pcraft.getHitBox(), pcraft.getMinX(), pcraft.getMinZ(), MathUtils.bukkit2MovecraftLoc( p.getLocation() ) ) ) {
-									double movedX=p.getLocation().getX()-pcraft.getPilotLockedX();
-									double movedZ=p.getLocation().getZ()-pcraft.getPilotLockedZ();
-									int dX=0;
-									int dZ=0;
-									if(movedX>0.15)
-										dX=1;
-									else if(movedX<-0.15)
-										dX=-1;
-									if(movedZ>0.15)
-										dZ=1;
-									else if(movedZ<-0.15)
-										dZ=-1;
-									if(dX!=0 || dZ!=0) {
-										long timeSinceLastMoveCommand=System.currentTimeMillis()-pcraft.getLastRightClick();
-										// wait before accepting new move commands to help with bouncing. Also ignore extreme movement
-										if(Math.abs(movedX)<0.2 && Math.abs(movedZ)<0.2 && timeSinceLastMoveCommand>300) { 
-
-											pcraft.setLastRightClick(System.currentTimeMillis());
-											long ticksElapsed = ( System.currentTimeMillis() - pcraft.getLastCruiseUpdate() ) / 50;
-											if ( Math.abs( ticksElapsed ) >= pcraft.getType().getTickCooldown() ) {
-												pcraft.translate(dX, 0, dZ);
-												pcraft.setLastCruisUpdate(System.currentTimeMillis());
+								if(p!=null) 
+									if ( MathUtils.playerIsWithinBoundingPolygon( pcraft.getHitBox(), pcraft.getMinX(), pcraft.getMinZ(), MathUtils.bukkit2MovecraftLoc( p.getLocation() ) ) ) {
+										double movedX=p.getLocation().getX()-pcraft.getPilotLockedX();
+										double movedZ=p.getLocation().getZ()-pcraft.getPilotLockedZ();
+										int dX=0;
+										int dZ=0;
+										if(movedX>0.15)
+											dX=1;
+										else if(movedX<-0.15)
+											dX=-1;
+										if(movedZ>0.15)
+											dZ=1;
+										else if(movedZ<-0.15)
+											dZ=-1;
+										if(dX!=0 || dZ!=0) {
+											long timeSinceLastMoveCommand=System.currentTimeMillis()-pcraft.getLastRightClick();
+											// wait before accepting new move commands to help with bouncing. Also ignore extreme movement
+											if(Math.abs(movedX)<0.2 && Math.abs(movedZ)<0.2 && timeSinceLastMoveCommand>300) { 
+	
+												pcraft.setLastRightClick(System.currentTimeMillis());
+												long ticksElapsed = ( System.currentTimeMillis() - pcraft.getLastCruiseUpdate() ) / 50;
+												if ( Math.abs( ticksElapsed ) >= pcraft.getType().getTickCooldown() ) {
+													pcraft.translate(dX, 0, dZ);
+													pcraft.setLastCruisUpdate(System.currentTimeMillis());
+												}
+												pcraft.setLastDX(dX);
+												pcraft.setLastDY(0);
+												pcraft.setLastDZ(dZ);
+												pcraft.setKeepMoving(true);
+											} else {
+												Location loc=p.getLocation();
+												loc.setX(pcraft.getPilotLockedX());
+												loc.setY(pcraft.getPilotLockedY());
+												loc.setZ(pcraft.getPilotLockedZ());
+												Vector pVel=new Vector(0.0,0.0,0.0);
+												p.teleport(loc);
+												p.setVelocity(pVel);
 											}
-											pcraft.setLastDX(dX);
-											pcraft.setLastDY(0);
-											pcraft.setLastDZ(dZ);
-											pcraft.setKeepMoving(true);
-										} else {
-											Location loc=p.getLocation();
-											loc.setX(pcraft.getPilotLockedX());
-											loc.setY(pcraft.getPilotLockedY());
-											loc.setZ(pcraft.getPilotLockedZ());
-											Vector pVel=new Vector(0.0,0.0,0.0);
-											p.teleport(loc);
-											p.setVelocity(pVel);
-										}
-									} 
-								}
+										} 
+									}
 							}
 						}
 					}
