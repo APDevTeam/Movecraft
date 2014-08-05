@@ -101,9 +101,9 @@
         <dependency>
             <groupId>org.bukkit</groupId>
             <artifactId>craftbukkit</artifactId>
-            <version>1.7.9-R0.1-SNAPSHOT</version>
+            <version>1.7.10-R0.1-20140716.024944-5</version>
         </dependency>
-
+        
         <dependency>
             <groupId>org.mcstats.bukkit</groupId>
             <artifactId>metrics</artifactId>

@@ -27,11 +27,11 @@ import net.countercraft.movecraft.utils.datastructures.InventoryTransferHolder;
 import net.countercraft.movecraft.utils.datastructures.SignTransferHolder;
 import net.countercraft.movecraft.utils.datastructures.StorageCrateTransferHolder;
 import net.countercraft.movecraft.utils.datastructures.TransferData;
-import net.minecraft.server.v1_7_R3.ChunkCoordIntPair;
-import net.minecraft.server.v1_7_R3.IContainer;
-import net.minecraft.server.v1_7_R3.Material;
-import net.minecraft.server.v1_7_R3.TileEntity;
-import net.minecraft.server.v1_7_R3.WorldServer;
+import net.minecraft.server.v1_7_R4.ChunkCoordIntPair;
+import net.minecraft.server.v1_7_R4.IContainer;
+import net.minecraft.server.v1_7_R4.Material;
+import net.minecraft.server.v1_7_R4.TileEntity;
+import net.minecraft.server.v1_7_R4.WorldServer;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
@@ -41,10 +41,10 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
-import org.bukkit.craftbukkit.v1_7_R3.CraftChunk;
-import org.bukkit.craftbukkit.v1_7_R3.CraftWorld;
-import org.bukkit.craftbukkit.v1_7_R3.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_7_R3.util.CraftMagicNumbers;
+import org.bukkit.craftbukkit.v1_7_R4.CraftChunk;
+import org.bukkit.craftbukkit.v1_7_R4.CraftWorld;
+import org.bukkit.craftbukkit.v1_7_R4.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_7_R4.util.CraftMagicNumbers;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
@@ -72,7 +72,7 @@ public class MapUpdateManager extends BukkitRunnable {
 		private static final MapUpdateManager INSTANCE = new MapUpdateManager();
 	}
 	
-	private void updateBlock(MapUpdateCommand m, ArrayList<Chunk> chunkList, World w, Map<MovecraftLocation, TransferData> dataMap, Set<net.minecraft.server.v1_7_R3.Chunk> chunks, Set<Chunk> cmChunks, boolean placeDispensers) {
+	private void updateBlock(MapUpdateCommand m, ArrayList<Chunk> chunkList, World w, Map<MovecraftLocation, TransferData> dataMap, Set<net.minecraft.server.v1_7_R4.Chunk> chunks, Set<Chunk> cmChunks, boolean placeDispensers) {
 		MovecraftLocation workingL = m.getNewBlockLocation();
 
 		int x = workingL.getX();
@@ -102,7 +102,7 @@ public class MapUpdateManager extends BukkitRunnable {
 			chunkList.add(chunk);							
 		}
 
-		net.minecraft.server.v1_7_R3.Chunk c = null;
+		net.minecraft.server.v1_7_R4.Chunk c = null;
 		Chunk cmC = null;
 		if(Settings.CompatibilityMode) {
 			cmC = chunk;
@@ -208,12 +208,12 @@ public class MapUpdateManager extends BukkitRunnable {
 				List<EntityUpdateCommand> entityUpdatesInWorld = entityUpdates.get( w );
 				Map<MovecraftLocation, List<EntityUpdateCommand>> entityMap = new HashMap<MovecraftLocation, List<EntityUpdateCommand>>();
 				Map<MovecraftLocation, TransferData> dataMap = new HashMap<MovecraftLocation, TransferData>();
-				Set<net.minecraft.server.v1_7_R3.Chunk> chunks = null; 
+				Set<net.minecraft.server.v1_7_R4.Chunk> chunks = null; 
 				Set<Chunk> cmChunks = null;
 				if(Settings.CompatibilityMode) {
 					cmChunks = new HashSet<Chunk>();					
 				} else {
-					chunks = new HashSet<net.minecraft.server.v1_7_R3.Chunk>();
+					chunks = new HashSet<net.minecraft.server.v1_7_R4.Chunk>();
 				}
 				ArrayList<Player> unupdatedPlayers=new ArrayList<Player>(Arrays.asList(Movecraft.getInstance().getServer().getOnlinePlayers()));
 
@@ -427,7 +427,7 @@ public class MapUpdateManager extends BukkitRunnable {
 					}
 					
 				} else {
-					for ( net.minecraft.server.v1_7_R3.Chunk c : chunks ) {
+					for ( net.minecraft.server.v1_7_R4.Chunk c : chunks ) {
 						c.initLighting();
 						ChunkCoordIntPair ccip = new ChunkCoordIntPair( c.locX, c.locZ ); // changed from c.x to c.locX and c.locZ
 
@@ -557,9 +557,10 @@ public class MapUpdateManager extends BukkitRunnable {
 
 	private boolean setContainsConflict( ArrayList<MapUpdateCommand> set, MapUpdateCommand c ) {
 		for ( MapUpdateCommand command : set ) {
-			if ( command.getNewBlockLocation().equals( c.getNewBlockLocation() ) ) {
-				return true;
-			}
+			if( command!=null && c!=null)
+				if ( command.getNewBlockLocation().equals( c.getNewBlockLocation() ) ) {
+					return true;
+				}
 		}
 
 		return false;

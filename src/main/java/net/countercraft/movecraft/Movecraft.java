@@ -60,6 +60,15 @@ public class Movecraft extends JavaPlugin {
 		// if the CompatibilityMode is specified in the config.yml file, use it.
 		// Otherwise set to false.
 		Settings.CompatibilityMode = getConfig().getBoolean("CompatibilityMode", false);
+		if(Settings.CompatibilityMode==false) {
+			try {
+				 	Class.forName( "net.minecraft.server.v1_7_R4.Chunk" );
+				} catch( ClassNotFoundException e ) {
+					Settings.CompatibilityMode=true;
+					logger.log(Level.INFO, "WARNING: CompatibilityMode was set to false, but required build-specific classes were not found. You may need a different Movecraft build for your server. FORCING COMPATIBILITY MODE");
+				}
+		}
+		logger.log(Level.INFO, "CompatiblityMode is set to "+Settings.CompatibilityMode);
 		Settings.SinkRateTicks = getConfig().getDouble("SinkRateTicks", 20.0);
 		Settings.SinkCheckTicks = getConfig().getDouble("SinkCheckTicks", 100.0);
 

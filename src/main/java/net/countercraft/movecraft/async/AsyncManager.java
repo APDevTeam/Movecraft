@@ -41,6 +41,7 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
@@ -420,6 +421,13 @@ public class AsyncManager extends BukkitRunnable {
 									pcraft.setKeepMoving(false);
 									pcraft.setSinking(true);
 									CraftManager.getInstance().removePlayerFromCraft(pcraft);
+									final Craft releaseCraft=pcraft;
+									BukkitTask releaseTask = new BukkitRunnable() {
+										@Override
+										public void run() {
+											CraftManager.getInstance().removeCraft(releaseCraft);
+										}
+									}.runTaskLater( Movecraft.getInstance(), ( 20 * 250 ) );
 								} else {
 									pcraft.setLastBlockCheck(System.currentTimeMillis());
 								}
@@ -431,6 +439,9 @@ public class AsyncManager extends BukkitRunnable {
 				// sink all the sinking ships
 				for (Craft pcraft : CraftManager.getInstance().getCraftsInWorld(w)) {
 					if(pcraft!=null && pcraft.getSinking()==true) {
+						if(pcraft.getBlockList().length==0) {
+							CraftManager.getInstance().removeCraft( pcraft );
+						}
 						long ticksElapsed = ( System.currentTimeMillis() - pcraft.getLastCruiseUpdate() ) / 50;
 						if ( Math.abs( ticksElapsed ) >= pcraft.getType().getSinkRateTicks() ) {
 							int dx=0;

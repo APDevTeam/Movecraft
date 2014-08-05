@@ -109,7 +109,7 @@ public class RotationTask extends AsyncTask {
 		int distX=maxX-minX;
 		int distZ=maxZ-minZ; 
 		
-		// Load any chunks that you could possibly rotate into that are not loaded 
+/*		// Load any chunks that you could possibly rotate into that are not loaded 
 		for (int posX=minX-distZ;posX<=maxX+distZ;posX++) {
 			for (int posZ=minZ-distX;posZ<=maxZ+distX;posZ++) {
 				Chunk chunk=getCraft().getW().getBlockAt(posX,minY,posZ).getChunk();
@@ -117,7 +117,7 @@ public class RotationTask extends AsyncTask {
 					chunk.load();
 				}
 			}
-		}
+		}*/
 		
 		// blockedByWater=false means an ocean-going vessel
 		boolean waterCraft=!getCraft().getType().blockedByWater();

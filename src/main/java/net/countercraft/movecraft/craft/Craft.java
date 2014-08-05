@@ -119,10 +119,80 @@ public class Craft {
 		if(dx==0 && dy==0 && dz==0) {
 			return;
 		}
+		
+		// find region that will need to be loaded to translate this craft
+		int cminX=minX;
+		int cmaxX=minX;
+		if(dx<0)
+			cminX=cminX+dx;
+		int cminZ=minX;
+		int cmaxZ=minX;
+		if(dz<0)
+			cminZ=cminZ+dz;
+		for(MovecraftLocation m : blockList) {
+			if(m.getX()>cmaxX)
+				cmaxX=m.getX();
+			if(m.getZ()>cmaxZ)
+				cmaxZ=m.getZ();
+		}
+		if(dx>0)
+			cmaxX=cmaxX+dx;
+		if(dz>0)
+			cmaxZ=cmaxZ+dz;
+		cminX=cminX>>4;
+		cminZ=cminZ>>4;
+		cmaxX=cmaxX>>4;
+		cmaxZ=cmaxZ>>4;
+		
+		// load all chunks that will be needed to translate this craft
+		for (int posX=cminX-1;posX<=cmaxX+1;posX++) {
+			for (int posZ=cminZ-1;posZ<=cmaxZ+1;posZ++) {
+				if(this.getW().isChunkLoaded(posX, posZ) == false) {
+					this.getW().loadChunk(posX, posZ);
+				}
+			}
+		}
+		
 		AsyncManager.getInstance().submitTask( new TranslationTask( this, new TranslationTaskData( dx, dz, dy, getBlockList(), getHitBox(), minZ, minX, type.getMaxHeightLimit(), type.getMinHeightLimit() ) ), this );
 	}
 
 	public void rotate( Rotation rotation, MovecraftLocation originPoint ) {
+		// find region that will need to be loaded to rotate this craft
+		int cminX=minX;
+		int cmaxX=minX;
+		int cminZ=minX;
+		int cmaxZ=minX;
+		for(MovecraftLocation m : blockList) {
+			if(m.getX()>cmaxX)
+				cmaxX=m.getX();
+			if(m.getZ()>cmaxZ)
+				cmaxZ=m.getZ();
+		}
+		int distX=cmaxX-cminX;
+		int distZ=cmaxZ-cminZ;
+		if(distX>distZ) {
+			cminZ-=(distX-distZ)/2;
+			cmaxZ+=(distX-distZ)/2;
+		}
+		if(distZ>distX) {
+			cminX-=(distZ-distX)/2;
+			cmaxX+=(distZ-distX)/2;
+		}
+		cminX=cminX>>4;
+		cminZ=cminZ>>4;
+		cmaxX=cmaxX>>4;
+		cmaxZ=cmaxZ>>4;
+		
+		
+		// load all chunks that will be needed to rotate this craft
+		for (int posX=cminX;posX<=cmaxX;posX++) {
+			for (int posZ=cminZ;posZ<=cmaxZ;posZ++) {
+				if(this.getW().isChunkLoaded(posX, posZ) == false) {
+					this.getW().loadChunk(posX, posZ);
+				}
+			}
+		}
+		
 		AsyncManager.getInstance().submitTask( new RotationTask( this, originPoint, this.getBlockList(), rotation, this.getW() ), this );
 	}
 

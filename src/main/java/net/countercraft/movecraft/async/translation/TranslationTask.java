@@ -18,6 +18,7 @@
 package net.countercraft.movecraft.async.translation;
 
 import net.countercraft.movecraft.Movecraft;
+import net.countercraft.movecraft.async.AsyncManager;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
@@ -46,6 +47,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 
 import org.bukkit.Material;
 
@@ -60,6 +62,8 @@ public class TranslationTask extends AsyncTask {
 	@Override
 	public void excecute() {
 		MovecraftLocation[] blocksList = data.getBlockList();
+		
+		final int[] fallThroughBlocks = new int[]{ 0, 8, 9, 10, 11, 31, 37, 38, 39, 40, 50, 51, 55, 59, 63, 65, 68, 69, 70, 72, 75, 76, 77, 78, 83, 85, 93, 94, 111, 141, 142, 143, 171};
 
 		// blockedByWater=false means an ocean-going vessel
 		boolean waterCraft=!getCraft().getType().blockedByWater();
@@ -91,20 +95,20 @@ public class TranslationTask extends AsyncTask {
 		int minX=getCraft().getMinX();
 		int minZ=getCraft().getMinZ();
 		
-		// Load any chunks that you are moving into that are not loaded 
+/*		// Load any chunks that you are moving into that are not loaded 
 		for (int posX=minX+data.getDx();posX<=maxX+data.getDx();posX++) {
 			for (int posZ=minZ+data.getDz();posZ<=maxZ+data.getDz();posZ++) {
-				Chunk chunk=getCraft().getW().getBlockAt(posX,minY,posZ).getChunk();
-				if (!chunk.isLoaded()) {
-					chunk.load();
+				if(getCraft().getW().isChunkLoaded(posX>>4, posZ>>4) == false) {
+					getCraft().getW().loadChunk(posX>>4, posZ>>4);
 				}
 			}
-		}
+		}*/
 		
 		// treat sinking crafts specially
 		if(getCraft().getSinking()) {
 			waterCraft=true;
 			hoverCraft=false;
+//			Movecraft.getInstance().getLogger().log( Level.INFO, "Translation task at: "+System.currentTimeMillis() );
 		}
 					
 		// Find the waterline from the surrounding terrain or from the static level in the craft type
@@ -278,7 +282,6 @@ public class TranslationTask extends AsyncTask {
             
             if(getCraft().getSinking()) {
             	int testID=getCraft().getW().getBlockAt( newLoc.getX(), newLoc.getY(), newLoc.getZ() ).getTypeId();
-				final int[] fallThroughBlocks = new int[]{ 0, 8, 9, 10, 11, 31, 37, 38, 39, 40, 50, 51, 55, 59, 63, 65, 68, 69, 70, 72, 75, 76, 77, 78, 83, 93, 94, 111, 141, 142, 143, 171};
 			
             	blockObstructed = !(Arrays.binarySearch(fallThroughBlocks, testID)>=0) && !existingBlockSet.contains( newLoc ); 
             } else if(!waterCraft) {
@@ -510,16 +513,32 @@ public class TranslationTask extends AsyncTask {
 				if( existingBlockSet.contains(m.getNewBlockLocation()) ) {
 					existingBlockSet.remove(m.getNewBlockLocation());
 				}
+				// if the craft is sinking, remove all solid blocks above the one that hit the ground from the craft for smoothing sinking
+				if(getCraft().getSinking()==true && getCraft().getType().getExplodeOnCrash()==0.0) {
+					int posy=m.getNewBlockLocation().getY()+1;
+					int testID=getCraft().getW().getBlockAt( m.getNewBlockLocation().getX(), posy, m.getNewBlockLocation().getZ() ).getTypeId();
+					
+					while(posy<=maxY && !(Arrays.binarySearch(fallThroughBlocks, testID)>=0)) {
+						MovecraftLocation testLoc=new MovecraftLocation(m.getNewBlockLocation().getX(), posy, m.getNewBlockLocation().getZ());
+						if( existingBlockSet.contains(testLoc) ) {
+							existingBlockSet.remove(testLoc);
+						}
+						posy=posy+1;
+						testID=getCraft().getW().getBlockAt( m.getNewBlockLocation().getX(), posy, m.getNewBlockLocation().getZ() ).getTypeId();
+					}
+				}
 			}
 			MovecraftLocation[] newBlockList = (MovecraftLocation[]) existingBlockSet.toArray(new MovecraftLocation[0]);
 			data.setBlockList( newBlockList );
 			data.setUpdates(explosionSet.toArray( new MapUpdateCommand[1] ) );
-			if(getCraft().getType().getSinkPercent()!=0.0) {
-				getCraft().setLastBlockCheck(0);
-			}
-			// set the craft to immediately try to move again
-			getCraft().setLastCruisUpdate(-1);
+
 			fail( String.format( I18nSupport.getInternationalisedString( "Translation - Failed Craft is obstructed" ) ) );
+			if(getCraft().getSinking()==true) {
+				if(getCraft().getType().getSinkPercent()!=0.0) {
+					getCraft().setLastBlockCheck(0);
+				}				
+				getCraft().setLastCruisUpdate(-1);
+			}
 		}
 
 		if ( !data.failed() ) {
