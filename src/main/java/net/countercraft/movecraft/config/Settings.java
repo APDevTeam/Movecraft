@@ -28,4 +28,7 @@ public class Settings {
 	public static boolean CompatibilityMode = false;
 	public static double SinkRateTicks = 20.0;
 	public static double SinkCheckTicks = 100.0;
+	public static boolean WorldGuardBlockMoveOnBuildPerm = false;
+	public static boolean WorldGuardBlockSinkOnPVPPerm = false;
+	public static int ManOverBoardTimeout = 60;
 }

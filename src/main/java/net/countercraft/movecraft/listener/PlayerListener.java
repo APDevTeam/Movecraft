@@ -17,12 +17,18 @@
 
 package net.countercraft.movecraft.listener;
 
+import java.util.Arrays;
+import java.util.HashSet;
+
 import net.countercraft.movecraft.Movecraft;
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.MathUtils;
+import net.countercraft.movecraft.utils.MovecraftLocation;
 
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -33,6 +39,127 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
 public class PlayerListener implements Listener {
+	
+	private String checkCraftBorders(Craft craft) {
+		HashSet<MovecraftLocation> craftBlocks=new HashSet<MovecraftLocation>(Arrays.asList(craft.getBlockList()));
+		String ret=null;
+		for(MovecraftLocation block : craftBlocks) {
+			int x,y,z;
+			x=block.getX()+1;
+			y=block.getY()+0;
+			z=block.getZ()+0;
+			MovecraftLocation test=new MovecraftLocation(x,y,z);
+			if(!craftBlocks.contains(test))
+				if((Arrays.binarySearch(craft.getType().getAllowedBlocks(), craft.getW().getBlockTypeIdAt(x, y, z))>=0)||(Arrays.binarySearch(craft.getType().getAllowedBlocks(), (craft.getW().getBlockTypeIdAt(x, y, z)<<4)+craft.getW().getBlockAt(x, y, z).getData()+10000)>=0)) {
+					ret="@ "+x+","+y+","+z;
+				}
+			x=block.getX()-1;
+			y=block.getY()+0;
+			z=block.getZ()+0;
+			test=new MovecraftLocation(x,y,z);
+			if(!craftBlocks.contains(test))
+				if((Arrays.binarySearch(craft.getType().getAllowedBlocks(), craft.getW().getBlockTypeIdAt(x, y, z))>=0)||(Arrays.binarySearch(craft.getType().getAllowedBlocks(), (craft.getW().getBlockTypeIdAt(x, y, z)<<4)+craft.getW().getBlockAt(x, y, z).getData()+10000)>=0)) {
+					ret="@ "+x+","+y+","+z;
+				}
+			x=block.getX()+0;
+			y=block.getY()+1;
+			z=block.getZ()+0;
+			test=new MovecraftLocation(x,y,z);
+			if(!craftBlocks.contains(test))
+				if((Arrays.binarySearch(craft.getType().getAllowedBlocks(), craft.getW().getBlockTypeIdAt(x, y, z))>=0)||(Arrays.binarySearch(craft.getType().getAllowedBlocks(), (craft.getW().getBlockTypeIdAt(x, y, z)<<4)+craft.getW().getBlockAt(x, y, z).getData()+10000)>=0)) {
+					ret="@ "+x+","+y+","+z;
+				}
+			x=block.getX()+0;
+			y=block.getY()-1;
+			z=block.getZ()+0;
+			test=new MovecraftLocation(x,y,z);
+			if(!craftBlocks.contains(test))
+				if((Arrays.binarySearch(craft.getType().getAllowedBlocks(), craft.getW().getBlockTypeIdAt(x, y, z))>=0)||(Arrays.binarySearch(craft.getType().getAllowedBlocks(), (craft.getW().getBlockTypeIdAt(x, y, z)<<4)+craft.getW().getBlockAt(x, y, z).getData()+10000)>=0)) {
+					ret="@ "+x+","+y+","+z;
+				}
+			x=block.getX()+0;
+			y=block.getY()+0;
+			z=block.getZ()+1;
+			test=new MovecraftLocation(x,y,z);
+			if(!craftBlocks.contains(test))
+				if((Arrays.binarySearch(craft.getType().getAllowedBlocks(), craft.getW().getBlockTypeIdAt(x, y, z))>=0)||(Arrays.binarySearch(craft.getType().getAllowedBlocks(), (craft.getW().getBlockTypeIdAt(x, y, z)<<4)+craft.getW().getBlockAt(x, y, z).getData()+10000)>=0)) {
+					ret="@ "+x+","+y+","+z;
+				}
+			x=block.getX()+0;
+			y=block.getY()+0;
+			z=block.getZ()+1;
+			test=new MovecraftLocation(x,y,z);
+			if(!craftBlocks.contains(test))
+				if((Arrays.binarySearch(craft.getType().getAllowedBlocks(), craft.getW().getBlockTypeIdAt(x, y, z))>=0)||(Arrays.binarySearch(craft.getType().getAllowedBlocks(), (craft.getW().getBlockTypeIdAt(x, y, z)<<4)+craft.getW().getBlockAt(x, y, z).getData()+10000)>=0)) {
+					ret="@ "+x+","+y+","+z;
+				}
+			x=block.getX()+1;
+			y=block.getY()+1;
+			z=block.getZ()+0;
+			test=new MovecraftLocation(x,y,z);
+			if(!craftBlocks.contains(test))
+				if((Arrays.binarySearch(craft.getType().getAllowedBlocks(), craft.getW().getBlockTypeIdAt(x, y, z))>=0)||(Arrays.binarySearch(craft.getType().getAllowedBlocks(), (craft.getW().getBlockTypeIdAt(x, y, z)<<4)+craft.getW().getBlockAt(x, y, z).getData()+10000)>=0)) {
+					ret="@ "+x+","+y+","+z;
+				}
+			x=block.getX()+1;
+			y=block.getY()-1;
+			z=block.getZ()+0;
+			test=new MovecraftLocation(x,y,z);
+			if(!craftBlocks.contains(test))
+				if((Arrays.binarySearch(craft.getType().getAllowedBlocks(), craft.getW().getBlockTypeIdAt(x, y, z))>=0)||(Arrays.binarySearch(craft.getType().getAllowedBlocks(), (craft.getW().getBlockTypeIdAt(x, y, z)<<4)+craft.getW().getBlockAt(x, y, z).getData()+10000)>=0)) {
+					ret="@ "+x+","+y+","+z;
+				}
+			x=block.getX()-1;
+			y=block.getY()+1;
+			z=block.getZ()+0;
+			test=new MovecraftLocation(x,y,z);
+			if(!craftBlocks.contains(test))
+				if((Arrays.binarySearch(craft.getType().getAllowedBlocks(), craft.getW().getBlockTypeIdAt(x, y, z))>=0)||(Arrays.binarySearch(craft.getType().getAllowedBlocks(), (craft.getW().getBlockTypeIdAt(x, y, z)<<4)+craft.getW().getBlockAt(x, y, z).getData()+10000)>=0)) {
+					ret="@ "+x+","+y+","+z;
+				}
+			x=block.getX()-1;
+			y=block.getY()-1;
+			z=block.getZ()+0;
+			test=new MovecraftLocation(x,y,z);
+			if(!craftBlocks.contains(test))
+				if((Arrays.binarySearch(craft.getType().getAllowedBlocks(), craft.getW().getBlockTypeIdAt(x, y, z))>=0)||(Arrays.binarySearch(craft.getType().getAllowedBlocks(), (craft.getW().getBlockTypeIdAt(x, y, z)<<4)+craft.getW().getBlockAt(x, y, z).getData()+10000)>=0)) {
+					ret="@ "+x+","+y+","+z;
+				}
+			x=block.getX()+0;
+			y=block.getY()+1;
+			z=block.getZ()+1;
+			test=new MovecraftLocation(x,y,z);
+			if(!craftBlocks.contains(test))
+				if((Arrays.binarySearch(craft.getType().getAllowedBlocks(), craft.getW().getBlockTypeIdAt(x, y, z))>=0)||(Arrays.binarySearch(craft.getType().getAllowedBlocks(), (craft.getW().getBlockTypeIdAt(x, y, z)<<4)+craft.getW().getBlockAt(x, y, z).getData()+10000)>=0)) {
+					ret="@ "+x+","+y+","+z;
+				}
+			x=block.getX()+0;
+			y=block.getY()-1;
+			z=block.getZ()+1;
+			test=new MovecraftLocation(x,y,z);
+			if(!craftBlocks.contains(test))
+				if((Arrays.binarySearch(craft.getType().getAllowedBlocks(), craft.getW().getBlockTypeIdAt(x, y, z))>=0)||(Arrays.binarySearch(craft.getType().getAllowedBlocks(), (craft.getW().getBlockTypeIdAt(x, y, z)<<4)+craft.getW().getBlockAt(x, y, z).getData()+10000)>=0)) {
+					ret="@ "+x+","+y+","+z;
+				}
+			x=block.getX()+0;
+			y=block.getY()+1;
+			z=block.getZ()-1;
+			test=new MovecraftLocation(x,y,z);
+			if(!craftBlocks.contains(test))
+				if((Arrays.binarySearch(craft.getType().getAllowedBlocks(), craft.getW().getBlockTypeIdAt(x, y, z))>=0)||(Arrays.binarySearch(craft.getType().getAllowedBlocks(), (craft.getW().getBlockTypeIdAt(x, y, z)<<4)+craft.getW().getBlockAt(x, y, z).getData()+10000)>=0)) {
+					ret="@ "+x+","+y+","+z;
+				}
+			x=block.getX()+0;
+			y=block.getY()-1;
+			z=block.getZ()-1;
+			test=new MovecraftLocation(x,y,z);
+			if(!craftBlocks.contains(test))
+				if((Arrays.binarySearch(craft.getType().getAllowedBlocks(), craft.getW().getBlockTypeIdAt(x, y, z))>=0)||(Arrays.binarySearch(craft.getType().getAllowedBlocks(), (craft.getW().getBlockTypeIdAt(x, y, z)<<4)+craft.getW().getBlockAt(x, y, z).getData()+10000)>=0)) {
+					ret="@ "+x+","+y+","+z;
+				}
+		}
+		return ret;
+	}
 
 	@EventHandler
 	public void onPLayerLogout( PlayerQuitEvent e ) {
@@ -65,8 +192,16 @@ public class PlayerListener implements Listener {
 			if ( !MathUtils.playerIsWithinBoundingPolygon( c.getHitBox(), c.getMinX(), c.getMinZ(), MathUtils.bukkit2MovecraftLoc( event.getPlayer().getLocation() ) ) ) {
 
 				if ( !CraftManager.getInstance().getReleaseEvents().containsKey( event.getPlayer() ) && c.getType().getMoveEntities()) {
-					event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "Release - Player has left craft" ) ) );
-
+					if(Settings.ManOverBoardTimeout!=0)
+						event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "You have left the craft. If you accidentally fell out of the craft, you can type /manoverboard in the next "+Settings.ManOverBoardTimeout+" seconds to be returned to it" ) ) );						
+					else
+						event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "Release - Player has left craft" ) ) );
+					
+					String ret=checkCraftBorders(c);
+					if(ret!=null) {
+						event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "WARNING! There are blocks near your craft that may merge with the craft "+ret)));						
+					}
+					
 					BukkitTask releaseTask = new BukkitRunnable() {
 
 						@Override
@@ -74,7 +209,7 @@ public class PlayerListener implements Listener {
 							CraftManager.getInstance().removeCraft( c );
 						}
 
-					}.runTaskLater( Movecraft.getInstance(), ( 20 * 15 ) );
+					}.runTaskLater( Movecraft.getInstance(), ( 20 * 30 ) );
 
 					CraftManager.getInstance().getReleaseEvents().put( event.getPlayer(), releaseTask );
 				}

@@ -44,6 +44,9 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
+import com.sk89q.worldguard.protection.ApplicableRegionSet;
+import com.sk89q.worldguard.protection.flags.DefaultFlag;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -343,6 +346,20 @@ public class AsyncManager extends BukkitRunnable {
 
 	}
 	
+	private boolean isRegionBlockedPVP(MovecraftLocation loc,World w) {
+		if(Movecraft.getInstance().getWorldGuardPlugin()==null)
+			return false;
+		if(Settings.WorldGuardBlockSinkOnPVPPerm==false)
+			return false;
+		 
+		Location nativeLoc=new Location(w, loc.getX(), loc.getY(), loc.getZ());
+		ApplicableRegionSet set = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(w).getApplicableRegions(nativeLoc);
+		if(set.allows(DefaultFlag.PVP)==false) {
+			return true;
+		}
+		return false;
+	}
+	
 	public void processSinking() {
 
 		for( World w : Bukkit.getWorlds()) {
@@ -358,9 +375,12 @@ public class AsyncManager extends BukkitRunnable {
 								int totalBlocks=0;
 								int missingBlocks=0;
 								HashMap<ArrayList<Integer>, Integer> foundFlyBlocks = new HashMap<ArrayList<Integer>, Integer>();
+								boolean regionPVPBlocked=false;
 
 								// go through each block in the blocklist, and if its in the FlyBlocks, total up the number of them
 								for(MovecraftLocation l : pcraft.getBlockList()) {
+									if(isRegionBlockedPVP(l,w))
+										regionPVPBlocked=true;
 									Integer blockID=w.getBlockAt(l.getX(), l.getY(), l.getZ()).getTypeId();
 									Integer dataID=(int)w.getBlockAt(l.getX(), l.getY(), l.getZ()).getData();
 									Integer shiftedID=(blockID<<4)+dataID+10000;
@@ -412,24 +432,33 @@ public class AsyncManager extends BukkitRunnable {
 									isSinking=true;
 								}
 								
-								// if the craft is sinking, let the player know and release the craft. Otherwise update the time for the next check
-								if(isSinking) {
+								if(isSinking && regionPVPBlocked) {
 									Player p = CraftManager.getInstance().getPlayerFromCraft( pcraft );
 									if(p!=null)
-										p.sendMessage( String.format( I18nSupport.getInternationalisedString( "Player- Craft is sinking" ) ) );
+										p.sendMessage( String.format( I18nSupport.getInternationalisedString( "Player- Craft should sink but PVP is not allowed in this WorldGuard region" ) ) );
 									pcraft.setCruising(false);
 									pcraft.setKeepMoving(false);
-									pcraft.setSinking(true);
-									CraftManager.getInstance().removePlayerFromCraft(pcraft);
-									final Craft releaseCraft=pcraft;
-									BukkitTask releaseTask = new BukkitRunnable() {
-										@Override
-										public void run() {
-											CraftManager.getInstance().removeCraft(releaseCraft);
-										}
-									}.runTaskLater( Movecraft.getInstance(), ( 20 * 250 ) );
+									CraftManager.getInstance().removeCraft(pcraft);
 								} else {
-									pcraft.setLastBlockCheck(System.currentTimeMillis());
+									// if the craft is sinking, let the player know and release the craft. Otherwise update the time for the next check
+									if(isSinking) {
+										Player p = CraftManager.getInstance().getPlayerFromCraft( pcraft );
+										if(p!=null)
+											p.sendMessage( String.format( I18nSupport.getInternationalisedString( "Player- Craft is sinking" ) ) );
+										pcraft.setCruising(false);
+										pcraft.setKeepMoving(false);
+										pcraft.setSinking(true);
+										CraftManager.getInstance().removePlayerFromCraft(pcraft);
+										final Craft releaseCraft=pcraft;
+										BukkitTask releaseTask = new BukkitRunnable() {
+											@Override
+											public void run() {
+												CraftManager.getInstance().removeCraft(releaseCraft);
+											}
+										}.runTaskLater( Movecraft.getInstance(), ( 20 * 250 ) );
+									} else {
+										pcraft.setLastBlockCheck(System.currentTimeMillis());
+									}
 								}
 							}
 						}

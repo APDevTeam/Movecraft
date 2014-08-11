@@ -17,6 +17,7 @@
 
 package net.countercraft.movecraft.listener;
 
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.CraftType;
@@ -25,7 +26,9 @@ import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.utils.MovecraftLocation;
 import net.countercraft.movecraft.utils.Rotation;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -45,6 +48,41 @@ public class CommandListener implements CommandExecutor {
 		}
 
 		return null;
+	}
+	
+	private Location getCraftTeleportPoint(Craft craft, World w) {
+		int maxDX=0;
+		int maxDZ=0;
+		int maxY=0;
+		int minY=32767;
+		for(int[][] i1 : craft.getHitBox()) {
+			maxDX++;
+			if(i1!=null) {
+				int indexZ=0;
+				for(int[] i2 : i1) {
+					indexZ++;
+					if(i2!=null) {
+						if(i2[0]<minY) {
+							minY=i2[0];
+						}
+					}
+					if(i2!=null) {
+						if(i2[1]>maxY) {
+							maxY=i2[1];
+						}
+					}
+				}
+				if(indexZ>maxDZ) {
+					maxDZ=indexZ;
+				}
+				
+			}
+		}
+		int telX=craft.getMinX()+(maxDX/2);
+		int telZ=craft.getMinZ()+(maxDZ/2);
+		int telY=maxY;
+		Location telPoint=new Location(w, telX, telY, telZ);
+		return telPoint;
 	}
 	
 	private MovecraftLocation getCraftMidPoint(Craft craft) {
@@ -186,6 +224,22 @@ public class CommandListener implements CommandExecutor {
 			final Craft craft = CraftManager.getInstance().getCraftByPlayerName( player.getName() );
 			if(craft!=null) {
 				craft.setCruising(false);
+			}
+			return true;
+		}
+		
+		
+		
+		if(cmd.getName().equalsIgnoreCase("manOverBoard")) {
+			for(World w : Bukkit.getWorlds()) {
+				if(CraftManager.getInstance().getCraftsInWorld( w )!=null)
+					for(Craft tcraft : CraftManager.getInstance().getCraftsInWorld( w )) {
+						if(tcraft.getMovedPlayers().containsKey(player))
+							if((System.currentTimeMillis()-tcraft.getMovedPlayers().get(player))/1000<Settings.ManOverBoardTimeout) {
+								Location telPoint = getCraftTeleportPoint(tcraft, w);
+								player.teleport(telPoint);
+							}
+					}
 			}
 			return true;
 		}

@@ -1,5 +1,8 @@
 Locale: en
-CompatibilityMode: false
+CompatibilityMode: true
 SinkRateTicks: 20
 SinkCheckTicks: 100
 PilotTool: 280
+WorldGuardBlockMoveOnBuildPerm: true
+WorldGuardBlockSinkOnPVPPerm: true
+ManOverBoardTimeout: 30

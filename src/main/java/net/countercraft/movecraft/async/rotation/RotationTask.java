@@ -19,6 +19,7 @@ package net.countercraft.movecraft.async.rotation;
 
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.async.AsyncTask;
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
@@ -109,15 +110,7 @@ public class RotationTask extends AsyncTask {
 		int distX=maxX-minX;
 		int distZ=maxZ-minZ; 
 		
-/*		// Load any chunks that you could possibly rotate into that are not loaded 
-		for (int posX=minX-distZ;posX<=maxX+distZ;posX++) {
-			for (int posZ=minZ-distX;posZ<=maxZ+distX;posZ++) {
-				Chunk chunk=getCraft().getW().getBlockAt(posX,minY,posZ).getChunk();
-				if (!chunk.isLoaded()) {
-					chunk.load();
-				}
-			}
-		}*/
+		Player craftPilot=CraftManager.getInstance().getPlayerFromCraft(getCraft());
 		
 		// blockedByWater=false means an ocean-going vessel
 		boolean waterCraft=!getCraft().getType().blockedByWater();
@@ -206,6 +199,17 @@ public class RotationTask extends AsyncTask {
                     break;
                 }
             }
+
+			// See if they are permitted to build in the area, if WorldGuard integration is turned on
+			if(Movecraft.getInstance().getWorldGuardPlugin()!=null && Settings.WorldGuardBlockMoveOnBuildPerm)
+				if(craftPilot!=null) {
+					Location loc=new Location(w, blockList[i].getX(), blockList[i].getY(), blockList[i].getZ());
+					if(Movecraft.getInstance().getWorldGuardPlugin().canBuild(craftPilot, loc)==false) {
+						failed = true;
+						failMessage = String.format( I18nSupport.getInternationalisedString( "Rotation - Player is not permitted to build in this WorldGuard region" )+" @ %d,%d,%d", blockList[i].getX(), blockList[i].getY(), blockList[i].getZ() );
+						break;
+					}
+				}
 
 			if (!waterCraft) {
 				if ( (typeID != 0 && typeID!=34) && !existingBlockSet.contains( blockList[i] ) ) {

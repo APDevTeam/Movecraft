@@ -18,6 +18,7 @@
 package net.countercraft.movecraft;
 
 import net.countercraft.movecraft.async.AsyncManager;
+import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.items.StorageChestItem;
@@ -29,6 +30,7 @@ import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.metrics.MovecraftMetrics;  
 import net.countercraft.movecraft.utils.MapUpdateManager;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.plugin.Plugin;
 
 import java.io.File;
 import java.util.logging.Level;
@@ -36,6 +38,7 @@ import java.util.logging.Logger;
 
 public class Movecraft extends JavaPlugin {
 	private static Movecraft instance;
+	private static WorldGuardPlugin worldGuardPlugin;
 	private Logger logger;
 	private boolean shuttingDown;
 
@@ -71,6 +74,19 @@ public class Movecraft extends JavaPlugin {
 		logger.log(Level.INFO, "CompatiblityMode is set to "+Settings.CompatibilityMode);
 		Settings.SinkRateTicks = getConfig().getDouble("SinkRateTicks", 20.0);
 		Settings.SinkCheckTicks = getConfig().getDouble("SinkCheckTicks", 100.0);
+		Settings.ManOverBoardTimeout = getConfig().getInt("ManOverBoardTimeout", 30);
+		
+		//load up WorldGuard if it's present
+		Plugin wGPlugin=getServer().getPluginManager().getPlugin("WorldGuard");
+		if (wGPlugin == null || !(wGPlugin instanceof WorldGuardPlugin)) {
+			logger.log(Level.INFO, "Movecraft did not find a compatible version of WorldGuard. Disabling WorldGuard integration");			
+		} else {
+			logger.log(Level.INFO, "Found a compatible version of WorldGuard. Enabling WorldGuard integration");			
+			Settings.WorldGuardBlockMoveOnBuildPerm = getConfig().getBoolean("WorldGuardBlockMoveOnBuildPerm", false);
+			Settings.WorldGuardBlockSinkOnPVPPerm = getConfig().getBoolean("WorldGuardBlockSinkOnPVPPerm", false);
+			logger.log(Level.INFO, "Settings: WorldGuardBlockMoveOnBuildPerm - "+Settings.WorldGuardBlockMoveOnBuildPerm+", WorldGuardBlockSinkOnPVPPerm - "+Settings.WorldGuardBlockSinkOnPVPPerm);			
+		}
+		worldGuardPlugin=(WorldGuardPlugin)wGPlugin;
 
 		if (!new File(getDataFolder()
 				+ "/localisation/movecraftlang_en.properties").exists()) {
@@ -105,6 +121,7 @@ public class Movecraft extends JavaPlugin {
 			this.getCommand("rotateright").setExecutor(new CommandListener());
 			this.getCommand("cruise").setExecutor(new CommandListener());
 			this.getCommand("cruiseoff").setExecutor(new CommandListener());
+			this.getCommand("manoverboard").setExecutor(new CommandListener());
 			
 			getServer().getPluginManager().registerEvents(new BlockListener(),
 					this);
@@ -132,5 +149,9 @@ public class Movecraft extends JavaPlugin {
 
 	public static Movecraft getInstance() {
 		return instance;
+	}
+	
+	public WorldGuardPlugin getWorldGuardPlugin() {
+		return worldGuardPlugin;
 	}
 }

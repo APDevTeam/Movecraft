@@ -20,6 +20,7 @@ package net.countercraft.movecraft.async.translation;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.async.AsyncManager;
 import net.countercraft.movecraft.async.AsyncTask;
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
@@ -72,6 +73,8 @@ public class TranslationTask extends AsyncTask {
 		boolean airCraft = getCraft().getType().blockedByWater(); 
 		
 		int hoverLimit = getCraft().getType().getHoverLimit();
+		
+		Player craftPilot=CraftManager.getInstance().getPlayerFromCraft(getCraft());
 
 		int [][][] hb=getCraft().getHitBox();
 
@@ -271,6 +274,16 @@ public class TranslationTask extends AsyncTask {
             boolean harvestBlock=false;
             Material testMaterial;
             
+			// See if they are permitted to build in the area, if WorldGuard integration is turned on
+			if(Movecraft.getInstance().getWorldGuardPlugin()!=null && Settings.WorldGuardBlockMoveOnBuildPerm)
+				if(craftPilot!=null) {
+					Location loc=new Location(getCraft().getW(), newLoc.getX(), newLoc.getY(), newLoc.getZ());
+					if(Movecraft.getInstance().getWorldGuardPlugin().canBuild(craftPilot, loc)==false) {
+	                    fail( String.format( I18nSupport.getInternationalisedString( "Translation - Failed Player is not permitted to build in this WorldGuard region" )+" @ %d,%d,%d", oldLoc.getX(), oldLoc.getY(), oldLoc.getZ() ) );
+	                    break;
+					}
+				}
+			
             testMaterial = getCraft().getW().getBlockAt(oldLoc.getX(), oldLoc.getY(), oldLoc.getZ() ).getType();
             if (testMaterial.equals(Material.CHEST) || testMaterial.equals(Material.TRAPPED_CHEST)){
                 if (!checkChests(testMaterial, newLoc, existingBlockSet)){
@@ -565,6 +578,10 @@ public class TranslationTask extends AsyncTask {
 				while (i.hasNext()) {
 					Entity pTest=i.next();
 					if ( MathUtils.playerIsWithinBoundingPolygon( getCraft().getHitBox(), getCraft().getMinX(), getCraft().getMinZ(), MathUtils.bukkit2MovecraftLoc( pTest.getLocation() ) ) ) {
+						if(pTest.getType()==org.bukkit.entity.EntityType.PLAYER) {
+							Player player=(Player)pTest;
+							getCraft().getMovedPlayers().put(player, System.currentTimeMillis());
+						}
 						if(pTest.getType()!=org.bukkit.entity.EntityType.DROPPED_ITEM ) {
 							Location tempLoc = pTest.getLocation();
 							if(getCraft().getPilotLocked()==true && pTest==CraftManager.getInstance().getPlayerFromCraft(getCraft())) {

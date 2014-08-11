@@ -28,6 +28,7 @@ import net.countercraft.movecraft.utils.Rotation;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
+import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Craft {
@@ -50,6 +51,7 @@ public class Craft {
 	private double pilotLockedX;
 	private double pilotLockedY;
 	private double pilotLockedZ;
+	private HashMap<Player, Long> movedPlayers = new HashMap<Player, Long>(); 
 	
 	public Craft( CraftType type, World world ) {
 		this.type = type;
@@ -125,8 +127,8 @@ public class Craft {
 		int cmaxX=minX;
 		if(dx<0)
 			cminX=cminX+dx;
-		int cminZ=minX;
-		int cmaxZ=minX;
+		int cminZ=minZ;
+		int cmaxZ=minZ;
 		if(dz<0)
 			cminZ=cminZ+dz;
 		for(MovecraftLocation m : blockList) {
@@ -160,8 +162,8 @@ public class Craft {
 		// find region that will need to be loaded to rotate this craft
 		int cminX=minX;
 		int cmaxX=minX;
-		int cminZ=minX;
-		int cmaxZ=minX;
+		int cminZ=minZ;
+		int cmaxZ=minZ;
 		for(MovecraftLocation m : blockList) {
 			if(m.getX()>cmaxX)
 				cmaxX=m.getX();
@@ -298,6 +300,10 @@ public class Craft {
 	
 	public boolean getPilotLocked() {
 		return pilotLocked;
+	}
+	
+	public HashMap<Player, Long> getMovedPlayers() {
+		return movedPlayers;
 	}
 
 	public void setPilotLocked( boolean pilotLocked ) {

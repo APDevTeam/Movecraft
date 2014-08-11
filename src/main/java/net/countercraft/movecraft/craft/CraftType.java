@@ -28,6 +28,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
@@ -171,6 +172,7 @@ public class CraftType {
 		minSize = integerFromObject(data.get( "minSize" ));
 //		allowedBlocks = ((ArrayList<String> ) data.get( "allowedBlocks" )).toArray( new Integer[1] );
 		allowedBlocks = blockIDListFromObject(data.get( "allowedBlocks" ));
+		Arrays.sort(allowedBlocks);
 		
 		forbiddenBlocks = blockIDListFromObject(data.get( "forbiddenBlocks" ));
 		if(data.containsKey("canFly")) {

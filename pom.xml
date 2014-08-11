@@ -49,6 +49,10 @@
             <id>bukkit-repo</id>
             <url>http://repo.bukkit.org/content/groups/public/</url>
         </repository>
+        <repository>
+			<id>sk89q-repo</id>
+			<url>http://maven.sk89q.com/repo/</url>
+		</repository>
     </repositories>
 
     <build>
@@ -77,7 +81,18 @@
                                 <excludes>
                                     <exclude>org.bukkit:craftbukkit</exclude>
                                     <exclude>org.yaml:snakeyaml</exclude>
+                                    <exclude>com.sk89q:worldguard</exclude>
+                                    <exclude>com.sk89q:worldedit</exclude>
+                                    <exclude>com.sk89q:jchronic</exclude>
+                                    <exclude>com.sk89q:commandbook</exclude>
+                                    <exclude>com.nijikokun:iconomy</exclude>
                                     <exclude>org.bukkit:bukkit</exclude>
+                                    <exclude>rhino:js</exclude>
+                                    <exclude>junit:junit</exclude>
+                                    <exclude>de.schlichtherle:truezip</exclude>
+                                    <exclude>net.sf.opencsv</exclude>
+                                    <exclude>com.google.guava</exclude>
+                                    <exclude>com.google.code.findbugs:jsr305</exclude>
                                 </excludes>
                             </artifactSet>
                             <minimizeJar>true</minimizeJar>
@@ -127,7 +142,11 @@
             <version>6.1.1</version>
             <scope>test</scope>
         </dependency>
-
+        <dependency>
+        	<groupId>com.sk89q</groupId>
+        	<artifactId>worldguard</artifactId>
+        	<version>LATEST</version>
+        </dependency>
     </dependencies>
 
 
