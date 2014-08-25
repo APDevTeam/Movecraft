@@ -1,6 +1,7 @@
 name: Movecraft
 softdepend: [WorldGuard, WorldEdit]
-version: ${env.BUILD_NUMBER}
+version: 3.1.X54
+#version: ${env.BUILD_NUMBER}
 description: The original flight and movement plugin for minecraft.
 author: AJCStriker
 website: http://madrealms.net/forums/

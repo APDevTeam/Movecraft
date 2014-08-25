@@ -196,10 +196,13 @@ public class PlayerListener implements Listener {
 						event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "You have left the craft. If you accidentally fell out of the craft, you can type /manoverboard in the next "+Settings.ManOverBoardTimeout+" seconds to be returned to it" ) ) );						
 					else
 						event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "Release - Player has left craft" ) ) );
-					
-					String ret=checkCraftBorders(c);
-					if(ret!=null) {
-						event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "WARNING! There are blocks near your craft that may merge with the craft "+ret)));						
+					if(c.getBlockList().length>11000) {
+						event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "Craft is too big to check its borders. Make sure this area is safe to release your craft in.")));												
+					} else {
+						String ret=checkCraftBorders(c);
+						if(ret!=null) {
+							event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "WARNING! There are blocks near your craft that may merge with the craft "+ret)));						
+						}
 					}
 					
 					BukkitTask releaseTask = new BukkitRunnable() {

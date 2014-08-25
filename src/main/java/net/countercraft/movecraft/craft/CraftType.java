@@ -42,7 +42,7 @@ public class CraftType {
 	private int maxSize, minSize, minHeightLimit, maxHeightLimit;
 	private Integer[] allowedBlocks, forbiddenBlocks;
 	private boolean blockedByWater, requireWaterContact, tryNudge, canCruise, canTeleport, canStaticMove, canHover, canDirectControl, useGravity, canHoverOverWater, moveEntities;
-	private boolean allowHorizontalMovement, allowVerticalMovement, cruiseOnPilot;
+	private boolean allowHorizontalMovement, allowVerticalMovement, allowRemoteSign, cruiseOnPilot;
 	private int maxStaticMove;
 	private int cruiseSkipBlocks;
 	private int staticWaterLevel;
@@ -219,6 +219,11 @@ public class CraftType {
 			allowHorizontalMovement=(Boolean) data.get("allowHorizontalMovement");
 		} else {
 			allowHorizontalMovement=true;
+		}
+		if(data.containsKey("allowRemoteSign")) {
+			allowRemoteSign=(Boolean) data.get("allowRemoteSign");
+		} else {
+			allowRemoteSign=true;
 		}
 		if(data.containsKey("canStaticMove")) {
 			canStaticMove=(Boolean) data.get("canStaticMove");
@@ -413,6 +418,10 @@ public class CraftType {
 	
 	public boolean allowHorizontalMovement() {
 		return allowHorizontalMovement;
+	}
+	
+	public boolean allowRemoteSign() {
+		return allowRemoteSign;
 	}
 	
 	public double getFuelBurnRate() {

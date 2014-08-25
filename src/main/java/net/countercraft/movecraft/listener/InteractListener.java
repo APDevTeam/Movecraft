@@ -29,6 +29,7 @@ import net.countercraft.movecraft.utils.Rotation;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -49,6 +50,80 @@ public class InteractListener implements Listener {
 
 	@EventHandler
 	public void onPlayerInteract( PlayerInteractEvent event ) {
+		
+		// check if it was a remote sign
+		if ( event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.LEFT_CLICK_BLOCK) {
+			Material m = event.getClickedBlock().getType();
+			if ( m.equals( Material.SIGN_POST ) || m.equals( Material.WALL_SIGN ) ) {
+				Sign sign = ( Sign ) event.getClickedBlock().getState();
+				String signText = sign.getLine( 0 );
+
+				if ( signText == null ) {
+					return;
+				}
+				
+				if ( sign.getLine(0).equalsIgnoreCase("Remote Sign")) {
+					MovecraftLocation sourceLocation=MathUtils.bukkit2MovecraftLoc( event.getClickedBlock().getLocation() );
+					Craft foundCraft=null;
+					if(CraftManager.getInstance().getCraftsInWorld(event.getClickedBlock().getWorld())!=null)
+						for(Craft tcraft : CraftManager.getInstance().getCraftsInWorld(event.getClickedBlock().getWorld())) {
+							if ( MathUtils.playerIsWithinBoundingPolygon( tcraft.getHitBox(), tcraft.getMinX(), tcraft.getMinZ(), sourceLocation ) ) {
+								// don't use a craft with a null player. This is mostly to avoid trying to use subcrafts
+								if(CraftManager.getInstance().getPlayerFromCraft(tcraft)!=null)
+									foundCraft=tcraft;
+							}
+						}
+					
+					if(foundCraft==null) {
+						event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "ERROR: Remote Sign must be a part of a piloted craft!" ) ) );
+						return;
+					}
+					
+					if(foundCraft.getType().allowRemoteSign()==false) {
+						event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "ERROR: Remote Signs not allowed on this craft!" ) ) );
+						return;						
+					}
+
+					String targetText=sign.getLine(1);
+					MovecraftLocation foundLoc=null;
+					for(MovecraftLocation tloc : foundCraft.getBlockList()) {
+						Block tb=event.getClickedBlock().getWorld().getBlockAt(tloc.getX(), tloc.getY(), tloc.getZ());
+						if(tb.getType().equals(Material.SIGN_POST) || tb.getType().equals(Material.WALL_SIGN)) {
+							Sign ts=( Sign ) tb.getState();
+							if(ts.getLine(0)!=null) 
+								if(ts.getLine(0).equalsIgnoreCase(targetText))
+									foundLoc=tloc;
+							if(ts.getLine(1)!=null) 
+								if(ts.getLine(1).equalsIgnoreCase(targetText)) {
+									boolean isRemoteSign=false;
+									if(ts.getLine(0)!=null)
+										if(ts.getLine(0).equalsIgnoreCase("Remote Sign"))
+											isRemoteSign=true;
+									if(!isRemoteSign)
+										foundLoc=tloc;
+								}
+							if(ts.getLine(2)!=null) 
+								if(ts.getLine(2).equalsIgnoreCase(targetText))
+									foundLoc=tloc;
+							if(ts.getLine(3)!=null) 
+								if(ts.getLine(3).equalsIgnoreCase(targetText))
+									foundLoc=tloc;
+						}
+					}
+					
+					if(foundLoc==null) {
+						event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "ERROR: Could not find target sign!" ) ) );
+						return;						
+					}
+
+					Block newBlock=event.getClickedBlock().getWorld().getBlockAt(foundLoc.getX(), foundLoc.getY(), foundLoc.getZ());
+					PlayerInteractEvent newEvent=new PlayerInteractEvent(event.getPlayer(), event.getAction(), event.getItem(), newBlock, event.getBlockFace());
+					onPlayerInteract(newEvent);
+					event.setCancelled( true );
+					return;
+				}
+			}
+		}
 
 		if ( event.getAction() == Action.RIGHT_CLICK_BLOCK ) {
 			Material m = event.getClickedBlock().getType();
