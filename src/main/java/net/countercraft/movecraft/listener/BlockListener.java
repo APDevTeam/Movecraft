@@ -18,17 +18,23 @@
 package net.countercraft.movecraft.listener;
 
 import net.countercraft.movecraft.Movecraft;
+import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.craft.CraftType;
 import net.countercraft.movecraft.items.StorageChestItem;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.MovecraftLocation;
+
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -38,6 +44,8 @@ public class BlockListener implements Listener {
 
 	@EventHandler
 	public void onBlockPlace( final BlockPlaceEvent e ) {
+		if ( Settings.DisableCrates==true )
+			return;
 		if ( e.getBlockAgainst().getTypeId() == 33 && e.getBlockAgainst().getData() == ( ( byte ) 6 ) ) {
 			e.setCancelled( true );
 		} else if ( e.getItemInHand().getItemMeta() != null && e.getItemInHand().getItemMeta().getDisplayName() != null && e.getItemInHand().getItemMeta().getDisplayName().equalsIgnoreCase( String.format( I18nSupport.getInternationalisedString( "Item - Storage Crate name" ) ) ) ) {
@@ -61,6 +69,8 @@ public class BlockListener implements Listener {
 
 		if ( event.getAction() == Action.RIGHT_CLICK_BLOCK ) {
 			if ( event.getClickedBlock().getTypeId() == 33 && event.getClickedBlock().getData() == ( ( byte ) 6 ) ) {
+				if(Settings.DisableCrates==true)
+					return;
 				Location l = event.getClickedBlock().getLocation();
 				MovecraftLocation l1 = new MovecraftLocation( l.getBlockX(), l.getBlockY(), l.getBlockZ() );
 				Inventory i = StorageChestItem.getInventoryOfCrateAtLocation( l1, event.getPlayer().getWorld() );
@@ -79,6 +89,8 @@ public class BlockListener implements Listener {
 			return;
 		}
 		if ( e.getBlock().getTypeId() == 33 && e.getBlock().getData() == ( ( byte ) 6 ) ) {
+			if(Settings.DisableCrates==true)
+				return;
 			Location l = e.getBlock().getLocation();
 			MovecraftLocation l1 = new MovecraftLocation( l.getBlockX(), l.getBlockY(), l.getBlockZ() );
 			for ( ItemStack i : StorageChestItem.getInventoryOfCrateAtLocation( l1, e.getBlock().getWorld() ).getContents() ) {
@@ -90,9 +102,32 @@ public class BlockListener implements Listener {
 			e.setCancelled( true );
 			e.getBlock().setType( Material.AIR );
 			e.getBlock().getLocation().getWorld().dropItemNaturally( e.getBlock().getLocation(), new StorageChestItem().getItemStack() );
-
-
 		}
 	}
 
+	private CraftType getCraftTypeFromString( String s ) {
+		for ( CraftType t : CraftManager.getInstance().getCraftTypes() ) {
+			if ( s.equalsIgnoreCase( t.getCraftName() ) ) {
+				return t;
+			}
+		}
+
+		return null;
+	}
+	
+	@EventHandler(priority = EventPriority.NORMAL)
+	public void onSignChange(SignChangeEvent event) {
+        Player p = event.getPlayer();
+        if(p==null)
+        	return;
+        if(getCraftTypeFromString( org.bukkit.ChatColor.stripColor(event.getLine(0)) ) != null) {
+        	if(Settings.RequireCreatePerm==false) {
+        		return;
+        	}
+			if(p.hasPermission( "movecraft." + org.bukkit.ChatColor.stripColor(event.getLine(0)) + ".create")==false) {
+				p.sendMessage( String.format( I18nSupport.getInternationalisedString( "Insufficient Permissions" ) ) );
+				event.setCancelled(true);
+			}
+        }
+    }	
 }

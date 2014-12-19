@@ -46,12 +46,12 @@ public class DetectionTask extends AsyncTask {
 	private HashMap<ArrayList<Integer>, ArrayList<Double>> dFlyBlocks;
 	private final DetectionTaskData data;
 
-	public DetectionTask( Craft c, MovecraftLocation startLocation, int minSize, int maxSize, Integer[] allowedBlocks, Integer[] forbiddenBlocks, Player player, World w ) {
+	public DetectionTask( Craft c, MovecraftLocation startLocation, int minSize, int maxSize, Integer[] allowedBlocks, Integer[] forbiddenBlocks, Player player, Player notificationPlayer, World w ) {
 		super( c );
 		this.startLocation = startLocation;
 		this.minSize = minSize;
 		this.maxSize = maxSize;
-		data = new DetectionTaskData( w, player, allowedBlocks, forbiddenBlocks );
+		data = new DetectionTaskData( w, player, notificationPlayer, allowedBlocks, forbiddenBlocks );
 	}
 
 	@Override

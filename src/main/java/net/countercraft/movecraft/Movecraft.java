@@ -44,7 +44,8 @@ public class Movecraft extends JavaPlugin {
 
 	public void onDisable() {
 		// Process the storage crates to disk
-		StorageChestItem.saveToDisk();
+		if(Settings.DisableCrates==false)
+			StorageChestItem.saveToDisk();
 		shuttingDown = true;
 	}
 
@@ -52,6 +53,7 @@ public class Movecraft extends JavaPlugin {
 		// Read in config
 		this.saveDefaultConfig();
 		Settings.LOCALE = getConfig().getString("Locale");
+		Settings.DisableCrates = getConfig().getBoolean("DisableCrates", false);
 		// if the PilotTool is specified in the config.yml file, use it
 		if (getConfig().getInt("PilotTool") != 0) {
 			logger.log(Level.INFO, "Recognized PilotTool setting of: "
@@ -65,16 +67,17 @@ public class Movecraft extends JavaPlugin {
 		Settings.CompatibilityMode = getConfig().getBoolean("CompatibilityMode", false);
 		if(Settings.CompatibilityMode==false) {
 			try {
-				 	Class.forName( "net.minecraft.server.v1_7_R4.Chunk" );
+				 	Class.forName( "net.minecraft.server.v1_8_R1.Chunk" );
 				} catch( ClassNotFoundException e ) {
 					Settings.CompatibilityMode=true;
-					logger.log(Level.INFO, "WARNING: CompatibilityMode was set to false, but required build-specific classes were not found. You may need a different Movecraft build for your server. FORCING COMPATIBILITY MODE");
+					logger.log(Level.INFO, "WARNING: CompatibilityMode was set to false, but required build-specific classes were not found. FORCING COMPATIBILITY MODE");
 				}
 		}
 		logger.log(Level.INFO, "CompatiblityMode is set to "+Settings.CompatibilityMode);
 		Settings.SinkRateTicks = getConfig().getDouble("SinkRateTicks", 20.0);
 		Settings.SinkCheckTicks = getConfig().getDouble("SinkCheckTicks", 100.0);
 		Settings.ManOverBoardTimeout = getConfig().getInt("ManOverBoardTimeout", 30);
+		Settings.RequireCreatePerm = getConfig().getBoolean("RequireCreatePerm", false);
 		
 		//load up WorldGuard if it's present
 		Plugin wGPlugin=getServer().getPluginManager().getPlugin("WorldGuard");
@@ -127,9 +130,11 @@ public class Movecraft extends JavaPlugin {
 					this);
 			getServer().getPluginManager().registerEvents(new PlayerListener(),
 					this);
-
-			StorageChestItem.readFromDisk();
-			StorageChestItem.addRecipie();
+			
+			if(Settings.DisableCrates==false) {
+				StorageChestItem.readFromDisk();
+				StorageChestItem.addRecipie();
+			}
 
 		 	new MovecraftMetrics(CraftManager.getInstance().getCraftTypes().length );
 			

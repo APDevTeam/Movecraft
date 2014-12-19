@@ -86,6 +86,8 @@ public class RotationTask extends AsyncTask {
 		int waterLine=0;
 		
 		int [][][] hb=getCraft().getHitBox();
+		if(hb==null)
+			return;
 		
 		// Determine craft borders
 		int minY=65535;
@@ -175,7 +177,7 @@ public class RotationTask extends AsyncTask {
 				int blockID=w.getBlockAt(blockList[i].getX(), blockList[i].getY(), blockList[i].getZ() ).getTypeId();
 				if(blockID==63 || blockID==68) {
 					Sign s=(Sign) w.getBlockAt(blockList[i].getX(), blockList[i].getY(), blockList[i].getZ() ).getState();
-					if ( s.getLine( 0 ).equals( "Cruise: ON")) {
+					if ( org.bukkit.ChatColor.stripColor(s.getLine( 0 )).equals( "Cruise: ON")) {
 						s.setLine(0, "Cruise: OFF");
 						s.update(true);
 					}
@@ -403,6 +405,33 @@ public class RotationTask extends AsyncTask {
 			
 			// if you rotated a subcraft, update the parent with the new blocks
 			if(this.isSubCraft) {
+				// also find the furthest extent from center and notify the player of the new direction
+				int farthestX=0;
+				int farthestZ=0;
+				for(MovecraftLocation loc : blockList) {
+					if(Math.abs(loc.getX()-originPoint.getX()) > Math.abs(farthestX))
+						farthestX=loc.getX()-originPoint.getX();
+					if(Math.abs(loc.getZ()-originPoint.getZ()) > Math.abs(farthestZ))
+						farthestZ=loc.getZ()-originPoint.getZ();
+				}
+				if(Math.abs(farthestX)>Math.abs(farthestZ)) {
+					if(farthestX>0) {
+						if(getCraft().getNotificationPlayer()!=null)
+							getCraft().getNotificationPlayer().sendMessage("The farthest extent now faces East");
+					} else { 
+						if(getCraft().getNotificationPlayer()!=null)
+							getCraft().getNotificationPlayer().sendMessage("The farthest extent now faces West");
+					}
+				} else {
+					if(farthestZ>0) {
+						if(getCraft().getNotificationPlayer()!=null)
+							getCraft().getNotificationPlayer().sendMessage("The farthest extent now faces South");
+					} else { 
+						if(getCraft().getNotificationPlayer()!=null)
+							getCraft().getNotificationPlayer().sendMessage("The farthest extent now faces North");
+					}
+				}
+				
 				Craft[] craftsInWorld = CraftManager.getInstance().getCraftsInWorld( getCraft().getW() );
 				for ( Craft craft : craftsInWorld ) {
 					if ( BlockUtils.arrayContainsOverlap( craft.getBlockList(), originalBlockList ) && craft!=getCraft() ) {

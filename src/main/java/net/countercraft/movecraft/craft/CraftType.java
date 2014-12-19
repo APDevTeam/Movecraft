@@ -43,8 +43,10 @@ public class CraftType {
 	private Integer[] allowedBlocks, forbiddenBlocks;
 	private boolean blockedByWater, requireWaterContact, tryNudge, canCruise, canTeleport, canStaticMove, canHover, canDirectControl, useGravity, canHoverOverWater, moveEntities;
 	private boolean allowHorizontalMovement, allowVerticalMovement, allowRemoteSign, cruiseOnPilot;
+	private int cruiseOnPilotVertMove;
 	private int maxStaticMove;
 	private int cruiseSkipBlocks;
+	private int cruiseTickCooldown;
 	private int staticWaterLevel;
 	private double fuelBurnRate;
 	private double sinkPercent;
@@ -193,7 +195,12 @@ public class CraftType {
 			tryNudge=false;
 		}
 		tickCooldown = (int) Math.ceil( 20 / ( doubleFromObject(data.get( "speed" )) ) );
-//		flyBlocks = ( HashMap<Integer, ArrayList<Double>> ) data.get( "flyblocks" );
+		if(data.containsKey("cruiseSpeed")) {
+			cruiseTickCooldown=(int) Math.ceil( 20 / ( doubleFromObject(data.get( "cruiseSpeed" )) ) );
+		} else {
+			cruiseTickCooldown=tickCooldown;
+		}
+
 		flyBlocks = blockIDMapListFromObject(data.get( "flyblocks" ));
 		if(data.containsKey("canCruise")) {
 			canCruise=(Boolean) data.get("canCruise");
@@ -209,6 +216,11 @@ public class CraftType {
 			cruiseOnPilot=(Boolean) data.get("cruiseOnPilot");
 		} else {
 			cruiseOnPilot=false;
+		}
+		if(data.containsKey("cruiseOnPilotVertMove")) {
+			cruiseOnPilotVertMove=integerFromObject(data.get("cruiseOnPilotVertMove"));
+		} else {
+			cruiseOnPilotVertMove=0;
 		}
 		if(data.containsKey("allowVerticalMovement")) {
 			allowVerticalMovement=(Boolean) data.get("allowVerticalMovement");
@@ -412,6 +424,10 @@ public class CraftType {
 		return cruiseOnPilot;
 	}
 	
+	public int getCruiseOnPilotVertMove() {
+		return cruiseOnPilotVertMove;
+	}
+	
 	public boolean allowVerticalMovement() {
 		return allowVerticalMovement;
 	}
@@ -458,6 +474,10 @@ public class CraftType {
 	
 	public int getTickCooldown() {
 		return tickCooldown;
+	}
+
+	public int getCruiseTickCooldown() {
+		return cruiseTickCooldown;
 	}
 
 	public boolean isTryNudge() {

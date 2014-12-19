@@ -244,6 +244,11 @@ public class BlockUtils {
 
 			case 64:
 			case 71:
+			case 193:
+			case 194:
+			case 195:
+			case 196:
+			case 197:
 				boolean isRealDoor = ( data & 0x8 ) == 0;
 
 				if ( isRealDoor ) {
@@ -601,6 +606,7 @@ public class BlockUtils {
 				return data;
 
 			case 96:
+			case 167:
 				direction = ( byte ) ( data & 0x3 );
 				switch ( direction ) {
 					case 0x2:
@@ -663,6 +669,11 @@ public class BlockUtils {
 				}
 
 			case 107:
+			case 183:
+			case 184:
+			case 185:
+			case 186:
+			case 187:
 			case 120:
 				direction = ( byte ) ( data & 0x3 );
 

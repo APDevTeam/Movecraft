@@ -77,6 +77,8 @@ public class TranslationTask extends AsyncTask {
 		Player craftPilot=CraftManager.getInstance().getPlayerFromCraft(getCraft());
 
 		int [][][] hb=getCraft().getHitBox();
+		if(hb==null)
+			return;
 
 		// start by finding the crafts borders
 		int minY=65535;

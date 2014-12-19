@@ -18,9 +18,11 @@
 package net.countercraft.movecraft.items;
 
 import net.countercraft.movecraft.Movecraft;
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.MovecraftLocation;
 import net.countercraft.movecraft.utils.external.CardboardBox;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -49,6 +51,8 @@ public class StorageChestItem {
 	}
 
 	public static Inventory getInventoryOfCrateAtLocation( MovecraftLocation location, World w ) {
+		if(Settings.DisableCrates==true)
+			return null;
 		return crateInventories.get( w ).get( location );
 	}
 

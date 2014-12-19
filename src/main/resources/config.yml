@@ -6,3 +6,5 @@ PilotTool: 280
 WorldGuardBlockMoveOnBuildPerm: true
 WorldGuardBlockSinkOnPVPPerm: true
 ManOverBoardTimeout: 30
+RequireCreatePerm: false
+DisableCrates: false

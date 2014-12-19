@@ -29,13 +29,15 @@ public class DetectionTaskData {
 	private String failMessage;
 	private MovecraftLocation[] blockList;
 	private Player player;
+	private Player notificationPlayer;
 	private int[][][] hitBox;
 	private Integer minX, minZ;
 	private Integer[] allowedBlocks, forbiddenBlocks;
 
-	public DetectionTaskData( World w, Player player, Integer[] allowedBlocks, Integer[] forbiddenBlocks ) {
+	public DetectionTaskData( World w, Player player, Player notificationPlayer, Integer[] allowedBlocks, Integer[] forbiddenBlocks ) {
 		this.w = w;
 		this.player = player;
+		this.notificationPlayer = notificationPlayer;
 		this.allowedBlocks = allowedBlocks;
 		this.forbiddenBlocks = forbiddenBlocks;
 		this.waterContact = false;
@@ -88,6 +90,10 @@ public class DetectionTaskData {
 		return player;
 	}
 
+	public Player getNotificationPlayer() {
+		return notificationPlayer;
+	}
+
 	public int[][][] getHitBox() {
 		return hitBox;
 	}
@@ -122,5 +128,8 @@ public class DetectionTaskData {
 
 	void setPlayer( Player player ) {
 		this.player = player;
+	}
+	void setNotificationPlayer( Player notificationPlayer ) {
+		this.notificationPlayer = notificationPlayer;
 	}
 }

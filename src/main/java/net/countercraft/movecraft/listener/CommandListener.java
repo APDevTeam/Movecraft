@@ -151,11 +151,11 @@ public class CommandListener implements CommandExecutor {
 					Craft c = new Craft( getCraftTypeFromString( args[0] ), player.getWorld() );
 		
 					if ( CraftManager.getInstance().getCraftByPlayerName( player.getName() ) == null ) {
-						c.detect( player, startPoint );
+						c.detect( player, player, startPoint );
 					} else {
 						Craft oldCraft=CraftManager.getInstance().getCraftByPlayerName( player.getName() );
 						CraftManager.getInstance().removeCraft( oldCraft );
-						c.detect( player, startPoint );
+						c.detect( player, player, startPoint );
 					}
 		
 				} else {

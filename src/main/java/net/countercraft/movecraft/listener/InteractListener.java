@@ -56,13 +56,13 @@ public class InteractListener implements Listener {
 			Material m = event.getClickedBlock().getType();
 			if ( m.equals( Material.SIGN_POST ) || m.equals( Material.WALL_SIGN ) ) {
 				Sign sign = ( Sign ) event.getClickedBlock().getState();
-				String signText = sign.getLine( 0 );
+				String signText = org.bukkit.ChatColor.stripColor(sign.getLine( 0 ));
 
 				if ( signText == null ) {
 					return;
 				}
 				
-				if ( sign.getLine(0).equalsIgnoreCase("Remote Sign")) {
+				if ( org.bukkit.ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Remote Sign")) {
 					MovecraftLocation sourceLocation=MathUtils.bukkit2MovecraftLoc( event.getClickedBlock().getLocation() );
 					Craft foundCraft=null;
 					if(CraftManager.getInstance().getCraftsInWorld(event.getClickedBlock().getWorld())!=null)
@@ -84,29 +84,29 @@ public class InteractListener implements Listener {
 						return;						
 					}
 
-					String targetText=sign.getLine(1);
+					String targetText=org.bukkit.ChatColor.stripColor(sign.getLine(1));
 					MovecraftLocation foundLoc=null;
 					for(MovecraftLocation tloc : foundCraft.getBlockList()) {
 						Block tb=event.getClickedBlock().getWorld().getBlockAt(tloc.getX(), tloc.getY(), tloc.getZ());
 						if(tb.getType().equals(Material.SIGN_POST) || tb.getType().equals(Material.WALL_SIGN)) {
 							Sign ts=( Sign ) tb.getState();
-							if(ts.getLine(0)!=null) 
-								if(ts.getLine(0).equalsIgnoreCase(targetText))
+							if(org.bukkit.ChatColor.stripColor(ts.getLine(0))!=null) 
+								if(org.bukkit.ChatColor.stripColor(ts.getLine(0)).equalsIgnoreCase(targetText))
 									foundLoc=tloc;
-							if(ts.getLine(1)!=null) 
-								if(ts.getLine(1).equalsIgnoreCase(targetText)) {
+							if(org.bukkit.ChatColor.stripColor(ts.getLine(1))!=null) 
+								if(org.bukkit.ChatColor.stripColor(ts.getLine(1)).equalsIgnoreCase(targetText)) {
 									boolean isRemoteSign=false;
-									if(ts.getLine(0)!=null)
-										if(ts.getLine(0).equalsIgnoreCase("Remote Sign"))
+									if(org.bukkit.ChatColor.stripColor(ts.getLine(0))!=null)
+										if(org.bukkit.ChatColor.stripColor(ts.getLine(0)).equalsIgnoreCase("Remote Sign"))
 											isRemoteSign=true;
 									if(!isRemoteSign)
 										foundLoc=tloc;
 								}
-							if(ts.getLine(2)!=null) 
-								if(ts.getLine(2).equalsIgnoreCase(targetText))
+							if(org.bukkit.ChatColor.stripColor(ts.getLine(2))!=null) 
+								if(org.bukkit.ChatColor.stripColor(ts.getLine(2)).equalsIgnoreCase(targetText))
 									foundLoc=tloc;
-							if(ts.getLine(3)!=null) 
-								if(ts.getLine(3).equalsIgnoreCase(targetText))
+							if(org.bukkit.ChatColor.stripColor(ts.getLine(3))!=null) 
+								if(org.bukkit.ChatColor.stripColor(ts.getLine(3)).equalsIgnoreCase(targetText))
 									foundLoc=tloc;
 						}
 					}
@@ -137,13 +137,13 @@ public class InteractListener implements Listener {
 					return;
 				}
 				Sign sign = ( Sign ) event.getClickedBlock().getState();
-				String signText = sign.getLine( 0 );
+				String signText = org.bukkit.ChatColor.stripColor(sign.getLine( 0 ));
 
 				if ( signText == null ) {
 					return;
 				}
 
-				if ( sign.getLine( 0 ).equals( "\\  ||  /" ) && sign.getLine( 1 ).equals( "==      ==" ) && sign.getLine( 2 ).equals( "/  ||  \\" ) ) {
+				if ( org.bukkit.ChatColor.stripColor(sign.getLine( 0 )).equals( "\\  ||  /" ) && org.bukkit.ChatColor.stripColor(sign.getLine( 1 )).equals( "==      ==" ) && org.bukkit.ChatColor.stripColor(sign.getLine( 2 )).equals( "/  ||  \\" ) ) {
 					Craft craft = CraftManager.getInstance().getCraftByPlayer( event.getPlayer() );
 					if ( craft != null ) {
 						if ( event.getPlayer().hasPermission( "movecraft." + craft.getType().getCraftName() + ".rotate" ) ) {
@@ -171,11 +171,11 @@ public class InteractListener implements Listener {
 						}
 					}
 				}
-				if ( sign.getLine(0).equalsIgnoreCase("Subcraft Rotate")) {
+				if ( org.bukkit.ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Subcraft Rotate")) {
 					// rotate subcraft
-					String craftTypeStr=sign.getLine( 1 );
+					String craftTypeStr=org.bukkit.ChatColor.stripColor(sign.getLine( 1 ));
 					if ( getCraftTypeFromString( craftTypeStr ) != null ) {
-						if( sign.getLine(2).equals("") && sign.getLine(3).equals("") ) {
+						if( org.bukkit.ChatColor.stripColor(sign.getLine(2)).equals("") && org.bukkit.ChatColor.stripColor(sign.getLine(3)).equals("") ) {
 							sign.setLine(2, "_\\ /_");
 							sign.setLine(3, "/ \\");
 							sign.update();
@@ -193,7 +193,7 @@ public class InteractListener implements Listener {
 							final Location loc = event.getClickedBlock().getLocation();
 							final Craft c = new Craft( getCraftTypeFromString( craftTypeStr ), loc.getWorld() );
 							MovecraftLocation startPoint = new MovecraftLocation( loc.getBlockX(), loc.getBlockY(), loc.getBlockZ() );
-							c.detect( null, startPoint );
+							c.detect( null, event.getPlayer(), startPoint );
 							BukkitTask releaseTask = new BukkitRunnable() {
 
 								@Override
@@ -224,7 +224,7 @@ public class InteractListener implements Listener {
 
 	private void onSignRightClick( PlayerInteractEvent event ) {
 		Sign sign = ( Sign ) event.getClickedBlock().getState();
-		String signText = sign.getLine( 0 );
+		String signText = org.bukkit.ChatColor.stripColor(sign.getLine( 0 ));
 
 		if ( signText == null ) {
 			return;
@@ -238,17 +238,17 @@ public class InteractListener implements Listener {
 		}
 
 
-		if ( getCraftTypeFromString( sign.getLine( 0 ) ) != null ) {
+		if ( getCraftTypeFromString( org.bukkit.ChatColor.stripColor(sign.getLine( 0 )) ) != null ) {
 
 			// Valid sign prompt for ship command.
-			if ( event.getPlayer().hasPermission( "movecraft." + sign.getLine( 0 ) + ".pilot" ) ) {
+			if ( event.getPlayer().hasPermission( "movecraft." + org.bukkit.ChatColor.stripColor(sign.getLine( 0 )) + ".pilot" ) ) {
 				// Attempt to run detection
 				Location loc = event.getClickedBlock().getLocation();
 				MovecraftLocation startPoint = new MovecraftLocation( loc.getBlockX(), loc.getBlockY(), loc.getBlockZ() );
-				final Craft c = new Craft( getCraftTypeFromString( sign.getLine( 0 ) ), loc.getWorld() );
+				final Craft c = new Craft( getCraftTypeFromString( org.bukkit.ChatColor.stripColor(sign.getLine( 0 )) ), loc.getWorld() );
 				
 				if(c.getType().getCruiseOnPilot()==true) {
-					c.detect( null, startPoint );
+					c.detect( null, event.getPlayer(), startPoint );
 					c.setCruiseDirection(sign.getRawData());
 					c.setLastCruisUpdate(System.currentTimeMillis());
 					c.setCruising(true);
@@ -263,11 +263,11 @@ public class InteractListener implements Listener {
 //					CraftManager.getInstance().getReleaseEvents().put( event.getPlayer(), releaseTask );
 				} else {
 					if ( CraftManager.getInstance().getCraftByPlayer( event.getPlayer() ) == null ) {
-						c.detect( event.getPlayer(), startPoint );
+						c.detect( event.getPlayer(), event.getPlayer(), startPoint );
 					} else {
 						Craft oldCraft=CraftManager.getInstance().getCraftByPlayer( event.getPlayer() );
 						CraftManager.getInstance().removeCraft( oldCraft );
-						c.detect( event.getPlayer(), startPoint );
+						c.detect( event.getPlayer(), event.getPlayer(), startPoint );
 					}
 				}
 				
@@ -277,13 +277,13 @@ public class InteractListener implements Listener {
 
 			}
 
-		} else if ( sign.getLine( 0 ).equalsIgnoreCase( "[helm]" ) ) {
+		} else if ( org.bukkit.ChatColor.stripColor(sign.getLine( 0 )).equalsIgnoreCase( "[helm]" ) ) {
 			sign.setLine( 0, "\\  ||  /" );
 			sign.setLine( 1, "==      ==" );
 			sign.setLine( 2, "/  ||  \\" );
 			sign.update( true );
 			event.setCancelled( true );
-		} else if ( sign.getLine( 0 ).equals( "\\  ||  /" ) && sign.getLine( 1 ).equals( "==      ==" ) && sign.getLine( 2 ).equals( "/  ||  \\" ) ) {
+		} else if ( org.bukkit.ChatColor.stripColor(sign.getLine( 0 )).equals( "\\  ||  /" ) && org.bukkit.ChatColor.stripColor(sign.getLine( 1 )).equals( "==      ==" ) && org.bukkit.ChatColor.stripColor(sign.getLine( 2 )).equals( "/  ||  \\" ) ) {
 			Craft craft = CraftManager.getInstance().getCraftByPlayer( event.getPlayer() );
 			if ( craft != null ) {
 				if ( event.getPlayer().hasPermission( "movecraft." + craft.getType().getCraftName() + ".rotate" ) ) {
@@ -309,11 +309,11 @@ public class InteractListener implements Listener {
 					event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "Insufficient Permissions" ) ) );
 				}
 			}
-		} else if ( sign.getLine( 0 ).equalsIgnoreCase( "Subcraft Rotate")) {
+		} else if ( org.bukkit.ChatColor.stripColor(sign.getLine( 0 )).equalsIgnoreCase( "Subcraft Rotate")) {
 			// rotate subcraft
-			String craftTypeStr=sign.getLine( 1 );
+			String craftTypeStr=org.bukkit.ChatColor.stripColor(sign.getLine( 1 ));
 			if ( getCraftTypeFromString( craftTypeStr ) != null ) {
-				if( sign.getLine(2).equals("") && sign.getLine(3).equals("") ) {
+				if( org.bukkit.ChatColor.stripColor(sign.getLine(2)).equals("") && sign.getLine(3).equals("") ) {
 					sign.setLine(2, "_\\ /_");
 					sign.setLine(3, "/ \\");
 					sign.update();
@@ -331,7 +331,7 @@ public class InteractListener implements Listener {
 					final Location loc = event.getClickedBlock().getLocation();
 					final Craft c = new Craft( getCraftTypeFromString( craftTypeStr ), loc.getWorld() );
 					MovecraftLocation startPoint = new MovecraftLocation( loc.getBlockX(), loc.getBlockY(), loc.getBlockZ() );
-					c.detect( null, startPoint );
+					c.detect( null, event.getPlayer(), startPoint );
 					BukkitTask releaseTask = new BukkitRunnable() {
 
 						@Override
@@ -355,7 +355,7 @@ public class InteractListener implements Listener {
 					event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "Insufficient Permissions" ) ) );							
 				}
 			}		
-		} else if ( sign.getLine( 0 ).equalsIgnoreCase( "Cruise: OFF")) {
+		} else if ( org.bukkit.ChatColor.stripColor(sign.getLine( 0 )).equalsIgnoreCase( "Cruise: OFF")) {
 			if(CraftManager.getInstance().getCraftByPlayer( event.getPlayer() )!=null){
 				Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
 				if(c.getType().getCanCruise()) {
@@ -371,16 +371,16 @@ public class InteractListener implements Listener {
 					}
 				}
 			}
-		} else if ( sign.getLine( 0 ).equalsIgnoreCase( "Cruise: ON")) {
+		} else if ( org.bukkit.ChatColor.stripColor(sign.getLine( 0 )).equalsIgnoreCase( "Cruise: ON")) {
 			if(CraftManager.getInstance().getCraftByPlayer( event.getPlayer() )!=null)
 				if(CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getCanCruise()) {
 					sign.setLine( 0, "Cruise: OFF" );
 					sign.update( true );
 					CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCruising(false);
 				}
-		} else if ( sign.getLine( 0 ).equalsIgnoreCase("Teleport:")) {
+		} else if ( org.bukkit.ChatColor.stripColor(sign.getLine( 0 )).equalsIgnoreCase("Teleport:")) {
 			if(CraftManager.getInstance().getCraftByPlayer( event.getPlayer() )!=null) {
-				String[] numbers = sign.getLine( 1 ).split(",");
+				String[] numbers = org.bukkit.ChatColor.stripColor(sign.getLine( 1 )).split(",");
 				int tX=Integer.parseInt(numbers[0]);
 				int tY=Integer.parseInt(numbers[1]);
 				int tZ=Integer.parseInt(numbers[2]);
@@ -396,12 +396,12 @@ public class InteractListener implements Listener {
 					event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "Insufficient Permissions" ) ) );
 				}
 			}
-		} else if ( sign.getLine( 0 ).equalsIgnoreCase( "Release")) {
+		} else if ( org.bukkit.ChatColor.stripColor(sign.getLine( 0 )).equalsIgnoreCase( "Release")) {
 			if(CraftManager.getInstance().getCraftByPlayer( event.getPlayer() )!=null) {
 				Craft oldCraft=CraftManager.getInstance().getCraftByPlayer( event.getPlayer() );
 				CraftManager.getInstance().removeCraft( oldCraft );
 			}
-		} else if ( sign.getLine( 0 ).equalsIgnoreCase("Move:")) {
+		} else if ( org.bukkit.ChatColor.stripColor(sign.getLine( 0 )).equalsIgnoreCase("Move:")) {
 			if(CraftManager.getInstance().getCraftByPlayer( event.getPlayer() )!=null) {
 				Long time = timeMap.get( event.getPlayer() );
 				if ( time != null ) {
@@ -411,7 +411,7 @@ public class InteractListener implements Listener {
 						return;
 					}
 				}
-				String[] numbers = sign.getLine( 1 ).split(",");
+				String[] numbers = org.bukkit.ChatColor.stripColor(sign.getLine( 1 )).split(",");
 				int dx=Integer.parseInt(numbers[0]);
 				int dy=Integer.parseInt(numbers[1]);
 				int dz=Integer.parseInt(numbers[2]);
@@ -434,12 +434,15 @@ public class InteractListener implements Listener {
 					if(CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getCanStaticMove()) {
 
 						CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).translate(dx, dy, dz);
+						timeMap.put( event.getPlayer(), System.currentTimeMillis() );
+						CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setLastCruisUpdate(System.currentTimeMillis());
+
 					}
 				} else {
 					event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "Insufficient Permissions" ) ) );
 				}
 			}
-		} else  if ( sign.getLine( 0 ).equalsIgnoreCase("RMove:")) {
+		} else  if ( org.bukkit.ChatColor.stripColor(sign.getLine( 0 )).equalsIgnoreCase("RMove:")) {
 			if(CraftManager.getInstance().getCraftByPlayer( event.getPlayer() )!=null) {
 				Long time = timeMap.get( event.getPlayer() );
 				if ( time != null ) {
@@ -449,7 +452,7 @@ public class InteractListener implements Listener {
 						return;
 					}
 				}
-				String[] numbers = sign.getLine( 1 ).split(",");
+				String[] numbers = org.bukkit.ChatColor.stripColor(sign.getLine( 1 )).split(",");
 				int dLeftRight=Integer.parseInt(numbers[0]); // negative = left, positive = right
 				int dy=Integer.parseInt(numbers[1]);
 				int dBackwardForward=Integer.parseInt(numbers[2]); // negative = backwards, positive = forwards
@@ -496,6 +499,9 @@ public class InteractListener implements Listener {
 					if(CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getCanStaticMove()) {
 
 						CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).translate(dx, dy, dz);
+						timeMap.put( event.getPlayer(), System.currentTimeMillis() );
+						CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setLastCruisUpdate(System.currentTimeMillis());
+						
 					}
 				} else {
 					event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "Insufficient Permissions" ) ) );

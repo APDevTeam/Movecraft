@@ -51,6 +51,7 @@ public class Craft {
 	private double pilotLockedX;
 	private double pilotLockedY;
 	private double pilotLockedZ;
+	private Player notificationPlayer;
 	private HashMap<Player, Long> movedPlayers = new HashMap<Player, Long>(); 
 	
 	public Craft( CraftType type, World world ) {
@@ -105,8 +106,8 @@ public class Craft {
 		this.hitBox = hitBox;
 	}
 
-	public void detect( Player player, MovecraftLocation startPoint ) {
-		AsyncManager.getInstance().submitTask( new DetectionTask( this, startPoint, type.getMinSize(), type.getMaxSize(), type.getAllowedBlocks(), type.getForbiddenBlocks(), player, w ), this );
+	public void detect( Player player, Player notificationPlayer, MovecraftLocation startPoint ) {
+		AsyncManager.getInstance().submitTask( new DetectionTask( this, startPoint, type.getMinSize(), type.getMaxSize(), type.getAllowedBlocks(), type.getForbiddenBlocks(), player, notificationPlayer, w ), this );
 	}
 
 	public void translate( int dx, int dy, int dz ) {
@@ -340,6 +341,14 @@ public class Craft {
 	
 	public double getBurningFuel() {
 		return burningFuel;
+	}
+	
+	public void setNotificationPlayer(Player notificationPlayer) {
+		this.notificationPlayer=notificationPlayer;
+	}
+	
+	public Player getNotificationPlayer() {
+		return notificationPlayer;
 	}
 	
 }

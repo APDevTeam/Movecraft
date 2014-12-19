@@ -116,7 +116,7 @@
         <dependency>
             <groupId>org.bukkit</groupId>
             <artifactId>craftbukkit</artifactId>
-            <version>1.7.10-R0.1-20140716.024944-5</version>
+            <version>1.8-R0.1-SNAPSHOT</version>
         </dependency>
         
         <dependency>

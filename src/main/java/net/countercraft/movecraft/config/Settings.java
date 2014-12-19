@@ -30,5 +30,7 @@ public class Settings {
 	public static double SinkCheckTicks = 100.0;
 	public static boolean WorldGuardBlockMoveOnBuildPerm = false;
 	public static boolean WorldGuardBlockSinkOnPVPPerm = false;
+	public static boolean DisableCrates = false;
+	public static boolean RequireCreatePerm = false;
 	public static int ManOverBoardTimeout = 60;
 }
