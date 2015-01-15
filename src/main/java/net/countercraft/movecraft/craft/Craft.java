@@ -26,6 +26,7 @@ import net.countercraft.movecraft.utils.MovecraftLocation;
 import net.countercraft.movecraft.utils.Rotation;
 
 import org.bukkit.World;
+import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 
 import java.util.HashMap;
@@ -50,6 +51,7 @@ public class Craft {
 	private boolean pilotLocked;
 	private double pilotLockedX;
 	private double pilotLockedY;
+	private int origBlockCount;
 	private double pilotLockedZ;
 	private Player notificationPlayer;
 	private HashMap<Player, Long> movedPlayers = new HashMap<Player, Long>(); 
@@ -158,6 +160,30 @@ public class Craft {
 		
 		AsyncManager.getInstance().submitTask( new TranslationTask( this, new TranslationTaskData( dx, dz, dy, getBlockList(), getHitBox(), minZ, minX, type.getMaxHeightLimit(), type.getMinHeightLimit() ) ), this );
 	}
+	
+	public void resetSigns( boolean resetCruise, boolean resetAscend, boolean resetDescend) {
+		for ( int i = 0; i < blockList.length; i++ ) {
+			int blockID=w.getBlockAt(blockList[i].getX(), blockList[i].getY(), blockList[i].getZ() ).getTypeId();
+			if(blockID==63 || blockID==68) {
+				Sign s=(Sign) w.getBlockAt(blockList[i].getX(), blockList[i].getY(), blockList[i].getZ() ).getState();
+				if(resetCruise)
+					if ( org.bukkit.ChatColor.stripColor(s.getLine( 0 )).equals( "Cruise: ON")) {
+						s.setLine(0, "Cruise: OFF");
+						s.update(true);
+					}
+				if(resetAscend)
+					if ( org.bukkit.ChatColor.stripColor(s.getLine( 0 )).equals( "Ascend: ON")) {
+						s.setLine(0, "Ascend: OFF");
+						s.update(true);
+					}
+				if(resetDescend)
+					if ( org.bukkit.ChatColor.stripColor(s.getLine( 0 )).equals( "Descend: ON")) {
+						s.setLine(0, "Descend: OFF");
+						s.update(true);
+					}
+			}
+		}
+	}
 
 	public void rotate( Rotation rotation, MovecraftLocation originPoint ) {
 		// find region that will need to be loaded to rotate this craft
@@ -198,9 +224,57 @@ public class Craft {
 		
 		AsyncManager.getInstance().submitTask( new RotationTask( this, originPoint, this.getBlockList(), rotation, this.getW() ), this );
 	}
-
+	
 	public void rotate( Rotation rotation, MovecraftLocation originPoint, boolean isSubCraft ) {
 		AsyncManager.getInstance().submitTask( new RotationTask( this, originPoint, this.getBlockList(), rotation, this.getW(), isSubCraft ), this );
+	}
+
+	public int getMaxX() {
+		return minX+hitBox.length;
+	}
+
+	public int getMaxZ() {
+		return minZ+hitBox[0].length;
+	}
+
+	public int getMinY() {
+		int minY=65535;
+		int maxY=-65535;
+		for (int [][] i1 : hitBox) {
+			for (int [] i2 : i1) {
+				if(i2!=null) {
+					if(i2[0]<minY) {
+						minY=i2[0];
+					}
+					if(i2[1]>maxY) {
+						maxY=i2[1];
+					}
+				}
+			}
+		}
+		return minY;
+	}
+
+	public int getMaxY() {
+		int minY=65535;
+		int maxY=-65535;
+		for (int [][] i1 : hitBox) {
+			for (int [] i2 : i1) {
+				if(i2!=null) {
+					if(i2[0]<minY) {
+						minY=i2[0];
+					}
+					if(i2[1]>maxY) {
+						maxY=i2[1];
+					}
+				}
+			}
+		}
+		return maxY;
+	}
+
+	public int getMinZ() {
+		return minZ;
 	}
 
 	public int getMinX() {
@@ -209,10 +283,6 @@ public class Craft {
 
 	public void setMinX( int minX ) {
 		this.minX = minX;
-	}
-
-	public int getMinZ() {
-		return minZ;
 	}
 
 	public void setMinZ( int minZ ) {
@@ -341,6 +411,14 @@ public class Craft {
 	
 	public double getBurningFuel() {
 		return burningFuel;
+	}
+	
+	public void setOrigBlockCount(int origBlockCount) {
+		this.origBlockCount=origBlockCount;
+	}
+	
+	public int getOrigBlockCount() {
+		return origBlockCount;
 	}
 	
 	public void setNotificationPlayer(Player notificationPlayer) {

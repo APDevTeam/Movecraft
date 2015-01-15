@@ -39,14 +39,16 @@ import java.util.logging.Level;
 
 public class CraftType {
 	private String craftName;
-	private int maxSize, minSize, minHeightLimit, maxHeightLimit;
+	private int maxSize, minSize, minHeightLimit, maxHeightLimit, maxHeightAboveGround;
 	private Integer[] allowedBlocks, forbiddenBlocks;
 	private boolean blockedByWater, requireWaterContact, tryNudge, canCruise, canTeleport, canStaticMove, canHover, canDirectControl, useGravity, canHoverOverWater, moveEntities;
 	private boolean allowHorizontalMovement, allowVerticalMovement, allowRemoteSign, cruiseOnPilot;
 	private int cruiseOnPilotVertMove;
 	private int maxStaticMove;
 	private int cruiseSkipBlocks;
+	private int vertCruiseSkipBlocks;
 	private int cruiseTickCooldown;
+	private boolean halfSpeedUnderwater;
 	private int staticWaterLevel;
 	private double fuelBurnRate;
 	private double sinkPercent;
@@ -252,6 +254,16 @@ public class CraftType {
 		} else {
 			cruiseSkipBlocks=0;
 		}
+		if(data.containsKey("vertCruiseSkipBlocks")) {
+			vertCruiseSkipBlocks=integerFromObject(data.get("vertCruiseSkipBlocks"));
+		} else {
+			vertCruiseSkipBlocks=cruiseSkipBlocks;
+		}
+		if(data.containsKey("halfSpeedUnderwater")) {
+			halfSpeedUnderwater=(Boolean) data.get("halfSpeedUnderwater");
+		} else {
+			halfSpeedUnderwater=false;
+		}
 		if(data.containsKey("staticWaterLevel")) {
 			staticWaterLevel=integerFromObject(data.get("staticWaterLevel"));
 		} else {
@@ -310,6 +322,11 @@ public class CraftType {
             if (maxHeightLimit<=minHeightLimit){maxHeightLimit=255;} 
         }else{
             maxHeightLimit=254; 
+        }
+        if (data.containsKey("maxHeightAboveGround")){
+        	maxHeightAboveGround = integerFromObject(data.get( "maxHeightAboveGround" ));
+        }else{
+        	maxHeightAboveGround=-1; 
         }
         if(data.containsKey("canDirectControl")) {
         	canDirectControl=(Boolean) data.get("canDirectControl");
@@ -404,6 +421,10 @@ public class CraftType {
 		return cruiseSkipBlocks;
 	}
 	
+	public int getVertCruiseSkipBlocks() {
+		return vertCruiseSkipBlocks;
+	}
+	
 	public int maxStaticMove() {
 		return maxStaticMove;
 	}
@@ -480,6 +501,10 @@ public class CraftType {
 		return cruiseTickCooldown;
 	}
 
+	public boolean getHalfSpeedUnderwater() {
+		return halfSpeedUnderwater;
+	}
+
 	public boolean isTryNudge() {
 		return tryNudge;
 	}
@@ -493,6 +518,9 @@ public class CraftType {
     }
     public int getMinHeightLimit(){
             return minHeightLimit;
+    }
+    public int getMaxHeightAboveGround(){
+        return maxHeightAboveGround;
     }
     public boolean getCanHover(){
     	return canHover;

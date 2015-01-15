@@ -151,6 +151,11 @@ public class InteractListener implements Listener {
 							Long time = timeMap.get( event.getPlayer() );
 							if ( time != null ) {
 								long ticksElapsed = ( System.currentTimeMillis() - time ) / 50;
+
+								// if the craft should go slower underwater, make time pass more slowly there
+								if(craft.getType().getHalfSpeedUnderwater() && craft.getMinY()<craft.getW().getSeaLevel())
+									ticksElapsed=ticksElapsed>>1;
+
 								if ( Math.abs( ticksElapsed ) < craft.getType().getTickCooldown() ) {
 									event.setCancelled( true );
 									return;
@@ -221,7 +226,7 @@ public class InteractListener implements Listener {
 			}
 		}
 	}
-
+	
 	private void onSignRightClick( PlayerInteractEvent event ) {
 		Sign sign = ( Sign ) event.getClickedBlock().getState();
 		String signText = org.bukkit.ChatColor.stripColor(sign.getLine( 0 ));
@@ -290,6 +295,11 @@ public class InteractListener implements Listener {
 					Long time = timeMap.get( event.getPlayer() );
 					if ( time != null ) {
 						long ticksElapsed = ( System.currentTimeMillis() - time ) / 50;
+
+						// if the craft should go slower underwater, make time pass more slowly there
+						if(craft.getType().getHalfSpeedUnderwater() && craft.getMinY()<craft.getW().getSeaLevel())
+							ticksElapsed=ticksElapsed>>1;
+
 						if ( Math.abs( ticksElapsed ) < craft.getType().getTickCooldown() ) {
 							event.setCancelled( true );
 							return;
@@ -359,6 +369,7 @@ public class InteractListener implements Listener {
 			if(CraftManager.getInstance().getCraftByPlayer( event.getPlayer() )!=null){
 				Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
 				if(c.getType().getCanCruise()) {
+					c.resetSigns(false, true, true);
 					sign.setLine( 0, "Cruise: ON" );
 					sign.update( true );
 
@@ -371,10 +382,58 @@ public class InteractListener implements Listener {
 					}
 				}
 			}
+		} else if ( org.bukkit.ChatColor.stripColor(sign.getLine( 0 )).equalsIgnoreCase( "Ascend: OFF")) {
+			if(CraftManager.getInstance().getCraftByPlayer( event.getPlayer() )!=null){
+				Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
+				if(c.getType().getCanCruise()) {
+					c.resetSigns(true, false, true);
+					sign.setLine( 0, "Ascend: ON" );
+					sign.update( true );
+
+					CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCruiseDirection((byte) 0x42);
+					CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setLastCruisUpdate(System.currentTimeMillis());
+					CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCruising(true);
+					
+					if (!c.getType().getMoveEntities()){
+						 CraftManager.getInstance().addReleaseTask(c);
+					}
+				}
+			}
+		} else if ( org.bukkit.ChatColor.stripColor(sign.getLine( 0 )).equalsIgnoreCase( "Descend: OFF")) {
+			if(CraftManager.getInstance().getCraftByPlayer( event.getPlayer() )!=null){
+				Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
+				if(c.getType().getCanCruise()) {
+					c.resetSigns(true, true, false);
+					sign.setLine( 0, "Descend: ON" );
+					sign.update( true );
+
+					CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCruiseDirection((byte) 0x43);
+					CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setLastCruisUpdate(System.currentTimeMillis());
+					CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCruising(true);
+					
+					if (!c.getType().getMoveEntities()){
+						 CraftManager.getInstance().addReleaseTask(c);
+					}
+				}
+			}
 		} else if ( org.bukkit.ChatColor.stripColor(sign.getLine( 0 )).equalsIgnoreCase( "Cruise: ON")) {
 			if(CraftManager.getInstance().getCraftByPlayer( event.getPlayer() )!=null)
 				if(CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getCanCruise()) {
 					sign.setLine( 0, "Cruise: OFF" );
+					sign.update( true );
+					CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCruising(false);
+				}
+		} else if ( org.bukkit.ChatColor.stripColor(sign.getLine( 0 )).equalsIgnoreCase( "Ascend: ON")) {
+			if(CraftManager.getInstance().getCraftByPlayer( event.getPlayer() )!=null)
+				if(CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getCanCruise()) {
+					sign.setLine( 0, "Ascend: OFF" );
+					sign.update( true );
+					CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCruising(false);
+				}
+		} else if ( org.bukkit.ChatColor.stripColor(sign.getLine( 0 )).equalsIgnoreCase( "Descend: ON")) {
+			if(CraftManager.getInstance().getCraftByPlayer( event.getPlayer() )!=null)
+				if(CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getCanCruise()) {
+					sign.setLine( 0, "Descend: OFF" );
 					sign.update( true );
 					CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCruising(false);
 				}
@@ -406,6 +465,12 @@ public class InteractListener implements Listener {
 				Long time = timeMap.get( event.getPlayer() );
 				if ( time != null ) {
 					long ticksElapsed = ( System.currentTimeMillis() - time ) / 50;
+					
+					Craft craft=CraftManager.getInstance().getCraftByPlayer( event.getPlayer() );
+					// if the craft should go slower underwater, make time pass more slowly there
+					if(craft.getType().getHalfSpeedUnderwater() && craft.getMinY()<craft.getW().getSeaLevel())
+						ticksElapsed=ticksElapsed>>1;
+
 					if ( Math.abs( ticksElapsed ) < CraftManager.getInstance().getCraftByPlayer( event.getPlayer() ).getType().getTickCooldown() ) {
 						event.setCancelled( true );
 						return;
@@ -447,6 +512,12 @@ public class InteractListener implements Listener {
 				Long time = timeMap.get( event.getPlayer() );
 				if ( time != null ) {
 					long ticksElapsed = ( System.currentTimeMillis() - time ) / 50;
+
+					Craft craft=CraftManager.getInstance().getCraftByPlayer( event.getPlayer() );
+					// if the craft should go slower underwater, make time pass more slowly there
+					if(craft.getType().getHalfSpeedUnderwater() && craft.getMinY()<craft.getW().getSeaLevel())
+						ticksElapsed=ticksElapsed>>1;
+
 					if ( Math.abs( ticksElapsed ) < CraftManager.getInstance().getCraftByPlayer( event.getPlayer() ).getType().getTickCooldown() ) {
 						event.setCancelled( true );
 						return;
@@ -537,6 +608,11 @@ public class InteractListener implements Listener {
 					Long time = timeMap.get( event.getPlayer() );
 					if ( time != null ) {
 						long ticksElapsed = ( System.currentTimeMillis() - time ) / 50;
+
+						// if the craft should go slower underwater, make time pass more slowly there
+						if(craft.getType().getHalfSpeedUnderwater() && craft.getMinY()<craft.getW().getSeaLevel())
+							ticksElapsed=ticksElapsed>>1;
+
 						if ( Math.abs( ticksElapsed ) < craft.getType().getTickCooldown() ) {
 							return;
 						} 						

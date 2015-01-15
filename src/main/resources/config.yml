@@ -2,9 +2,12 @@ Locale: en
 CompatibilityMode: true
 SinkRateTicks: 20
 SinkCheckTicks: 100
+TracerRateTicks: 5
 PilotTool: 280
 WorldGuardBlockMoveOnBuildPerm: true
 WorldGuardBlockSinkOnPVPPerm: true
 ManOverBoardTimeout: 30
+FireballLifespan: 6
+DisableSpillProtection: false
 RequireCreatePerm: false
 DisableCrates: false

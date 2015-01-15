@@ -39,7 +39,9 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
@@ -62,9 +64,7 @@ public class AsyncManager extends BukkitRunnable {
 	private final HashMap<AsyncTask, Craft> ownershipMap = new HashMap<AsyncTask, Craft>();
 	private final BlockingQueue<AsyncTask> finishedAlgorithms = new LinkedBlockingQueue<AsyncTask>();
 	private final HashSet<Craft> clearanceSet = new HashSet<Craft>();
-//	private final HashMap<World, ArrayList<MovecraftLocation>> sinkingBlocks = new HashMap<World, ArrayList<MovecraftLocation>>();
-//	private final HashMap<World, HashSet<MovecraftLocation>> waterFillBlocks = new HashMap<World, HashSet<MovecraftLocation>>();
-//	private long lastSinkingUpdate = 0;
+	private long lastTracerUpdate = 0;
 
 	public static AsyncManager getInstance() {
 		return instance;
@@ -132,13 +132,14 @@ public class AsyncManager extends BukkitRunnable {
 						}
 						if ( !failed ) {
 							c.setBlockList( data.getBlockList() );
+							c.setOrigBlockCount(data.getBlockList().length);
 							c.setHitBox( data.getHitBox() );
 							c.setMinX( data.getMinX() );
 							c.setMinZ( data.getMinZ() );
 							c.setNotificationPlayer(notifyP);
 
 							if(notifyP!=null) {
-								notifyP.sendMessage( String.format( I18nSupport.getInternationalisedString( "Detection - Successfully piloted craft" ) ) );
+								notifyP.sendMessage( String.format( I18nSupport.getInternationalisedString( "Detection - Successfully piloted craft" ) ) +" Size: "+c.getBlockList().length);
 								Movecraft.getInstance().getLogger().log( Level.INFO, String.format( I18nSupport.getInternationalisedString( "Detection - Success - Log Output" ), notifyP.getName(), c.getType().getCraftName(), c.getBlockList().length, c.getMinX(), c.getMinZ() ) );
 							} else {
 								Movecraft.getInstance().getLogger().log( Level.INFO, String.format( I18nSupport.getInternationalisedString( "Detection - Success - Log Output" ), "NULL PLAYER", c.getType().getCraftName(), c.getBlockList().length, c.getMinX(), c.getMinZ() ) );								
@@ -161,7 +162,7 @@ public class AsyncManager extends BukkitRunnable {
 
 					if ( task.getData().failed() ) {
 						//The craft translation failed
-						if( notifyP != null )
+						if( notifyP != null && !c.getSinking())
 							notifyP.sendMessage( task.getData().getFailMessage() );
 							
 						if(task.getData().collisionExplosion()) {
@@ -256,9 +257,26 @@ public class AsyncManager extends BukkitRunnable {
 					if(pcraft!=null) {
 						if(pcraft.getCruising()) {
 							long ticksElapsed = ( System.currentTimeMillis() - pcraft.getLastCruiseUpdate() ) / 50;
+							
+							// if the craft should go slower underwater, make time pass more slowly there
+							if(pcraft.getType().getHalfSpeedUnderwater() && pcraft.getMinY()<w.getSeaLevel())
+								ticksElapsed=ticksElapsed>>1;
+		
 							if ( Math.abs( ticksElapsed ) >= pcraft.getType().getCruiseTickCooldown() ) {
 								int dx=0;
 								int dz=0;
+								int dy=0;
+
+								// ascend
+								if(pcraft.getCruiseDirection()==0x42) {
+									dy=0+1+pcraft.getType().getVertCruiseSkipBlocks();
+								}
+								// descend
+								if(pcraft.getCruiseDirection()==0x43) {
+									dy=0-1-pcraft.getType().getVertCruiseSkipBlocks();
+									if(pcraft.getMinY()<=w.getSeaLevel())
+										dy=-1;
+								}
 								// ship faces west
 								if(pcraft.getCruiseDirection()==0x5) {
 									dx=0-1-pcraft.getType().getCruiseSkipBlocks();
@@ -275,7 +293,6 @@ public class AsyncManager extends BukkitRunnable {
 								if(pcraft.getCruiseDirection()==0x3) {
 									dz=0-1-pcraft.getType().getCruiseSkipBlocks();
 								}
-								int dy=0;
 								if(pcraft.getType().getCruiseOnPilot())
 									dy=pcraft.getType().getCruiseOnPilotVertMove();
 								pcraft.translate(dx, dy, dz);
@@ -289,9 +306,13 @@ public class AsyncManager extends BukkitRunnable {
 							}
 							
 						} else {
-//							if(pcraft.getLastDX()!=0 || pcraft.getLastDY()!=0 || pcraft.getLastDZ()!=0) {
 							if(pcraft.getKeepMoving()) {
 								long rcticksElapsed = ( System.currentTimeMillis() - pcraft.getLastRightClick() ) / 50;
+
+								// if the craft should go slower underwater, make time pass more slowly there
+								if(pcraft.getType().getHalfSpeedUnderwater() && pcraft.getMinY()<w.getSeaLevel())
+									rcticksElapsed=rcticksElapsed>>1;
+			
 								rcticksElapsed=Math.abs(rcticksElapsed);
 								// if they are holding the button down, keep moving
 								if (rcticksElapsed <= 10 ) {
@@ -326,6 +347,11 @@ public class AsyncManager extends BukkitRunnable {
 	
 												pcraft.setLastRightClick(System.currentTimeMillis());
 												long ticksElapsed = ( System.currentTimeMillis() - pcraft.getLastCruiseUpdate() ) / 50;
+
+												// if the craft should go slower underwater, make time pass more slowly there
+												if(pcraft.getType().getHalfSpeedUnderwater() && pcraft.getMinY()<w.getSeaLevel())
+													ticksElapsed=ticksElapsed>>1;
+							
 												if ( Math.abs( ticksElapsed ) >= pcraft.getType().getTickCooldown() ) {
 													pcraft.translate(dX, 0, dZ);
 													pcraft.setLastCruisUpdate(System.currentTimeMillis());
@@ -380,8 +406,8 @@ public class AsyncManager extends BukkitRunnable {
 							long ticksElapsed = ( System.currentTimeMillis() - pcraft.getLastBlockCheck() ) / 50;
 						
 							if(ticksElapsed>Settings.SinkCheckTicks) {
-								int totalBlocks=0;
-								int missingBlocks=0;
+								int totalNonAirBlocks=0;
+								int totalNonAirWaterBlocks=0;
 								HashMap<ArrayList<Integer>, Integer> foundFlyBlocks = new HashMap<ArrayList<Integer>, Integer>();
 								boolean regionPVPBlocked=false;
 
@@ -404,10 +430,10 @@ public class AsyncManager extends BukkitRunnable {
 									}
 									
 									if(blockID!=0) {  
-										totalBlocks++;
+										totalNonAirBlocks++;
 									}
-									if( blockID==0 || blockID==8 || blockID==9 ) {
-										missingBlocks++;
+									if( blockID!=0 && blockID!=8 && blockID!=9 ) {
+										totalNonAirWaterBlocks++;
 									}
 								}
 								
@@ -418,7 +444,7 @@ public class AsyncManager extends BukkitRunnable {
 									if(foundFlyBlocks.get(i)!=null) {
 										numfound=foundFlyBlocks.get(i);
 									}
-									double percent=((double)numfound/(double)totalBlocks)*100.0;
+									double percent=((double)numfound/(double)totalNonAirBlocks)*100.0;
 									double flyPercent=pcraft.getType().getFlyBlocks().get(i).get(0);
 									double sinkPercent=flyPercent*pcraft.getType().getSinkPercent()/100.0;
 									if(percent<sinkPercent) {
@@ -429,14 +455,13 @@ public class AsyncManager extends BukkitRunnable {
 								
 								// And check the overallsinkpercent
 								if(pcraft.getType().getOverallSinkPercent()!=0.0) {
-									double blocksLeft=totalBlocks-missingBlocks;
-									double percent=blocksLeft/totalBlocks;
+									double percent=(double)totalNonAirWaterBlocks/(double)pcraft.getOrigBlockCount();
 									if(percent*100.0<pcraft.getType().getOverallSinkPercent()) {
 										isSinking=true;
 									}
 								}
 								
-								if(totalBlocks==0) {
+								if(totalNonAirBlocks==0) {
 									isSinking=true;
 								}
 								
@@ -501,11 +526,81 @@ public class AsyncManager extends BukkitRunnable {
 			}
 		}
 	}
+	
+	public void processTracers() {
+		if(Settings.TracerRateTicks==0)
+			return;
+		long ticksElapsed = ( System.currentTimeMillis() - lastTracerUpdate ) / 50;
+		if(ticksElapsed>Settings.TracerRateTicks) {
+			for( World w : Bukkit.getWorlds()) {
+				if(w!=null) {
+					for(org.bukkit.entity.TNTPrimed tnt : w.getEntitiesByClass(org.bukkit.entity.TNTPrimed.class)) {
+						if(tnt.getVelocity().lengthSquared()>0.25) {
+							for (Player p : w.getPlayers()) {
+								// is the TNT within the view distance (rendered world) of the player?
+								long maxDistSquared=Bukkit.getServer().getViewDistance()*16;
+								maxDistSquared=maxDistSquared*maxDistSquared;
 
+								if(p.getLocation().distanceSquared(tnt.getLocation())<maxDistSquared) {  // we use squared because its faster
+									final Location loc=tnt.getLocation();
+									final Player fp=p;
+									final World fw=w;
+									// then make a cobweb to look like smoke, place it a little later so it isn't right in the middle of the volley
+									BukkitTask placeCobweb = new BukkitRunnable() {
+										@Override
+										public void run() {
+											fp.sendBlockChange(loc, 30, (byte) 0);
+										}
+									}.runTaskLater( Movecraft.getInstance(), 5 );
+									// then remove it
+									BukkitTask removeCobweb = new BukkitRunnable() {
+										@Override
+										public void run() {
+//											fw.getBlockAt(loc).getState().update(); // this might be better, but its slower. The bottom works, but you might lose NMS data. But it only affects the client.
+											fp.sendBlockChange(loc, fw.getBlockAt(loc).getType(), fw.getBlockAt(loc).getData());
+										}
+									}.runTaskLater( Movecraft.getInstance(), 160 );
+								}
+							}
+						}
+					}
+				}
+			}
+		lastTracerUpdate=System.currentTimeMillis();
+		}
+	}
+	
+	public void processFireballs() {
+		for( World w : Bukkit.getWorlds()) {
+			if(w!=null) {
+				for(org.bukkit.entity.SmallFireball fireball : w.getEntitiesByClass(org.bukkit.entity.SmallFireball.class)) {
+					if(!(fireball.getShooter() instanceof org.bukkit.entity.LivingEntity)) {
+						if(w.getPlayers().size()>0) {
+							Player p=w.getPlayers().get(0);
+							// give it a living shooter, then delete the fireball after 4 seconds
+							fireball.setShooter(p);
+							final org.bukkit.entity.SmallFireball ffb=fireball;
+
+							BukkitTask deleteFireballTask = new BukkitRunnable() {
+								@Override
+								public void run() {
+									ffb.remove();
+								}
+							}.runTaskLater( Movecraft.getInstance(), ( 20 * Settings.FireballLifespan ) );
+
+						}
+					}
+				}
+			}
+		}
+	}
+	
 	public void run() {
 		clearAll();
 		processCruise();
 		processSinking();
+		processTracers();
+		processFireballs();
 		processAlgorithmQueue();
 	}
 

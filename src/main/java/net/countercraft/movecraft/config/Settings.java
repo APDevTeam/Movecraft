@@ -28,9 +28,12 @@ public class Settings {
 	public static boolean CompatibilityMode = false;
 	public static double SinkRateTicks = 20.0;
 	public static double SinkCheckTicks = 100.0;
+	public static double TracerRateTicks = 5.0;
 	public static boolean WorldGuardBlockMoveOnBuildPerm = false;
 	public static boolean WorldGuardBlockSinkOnPVPPerm = false;
 	public static boolean DisableCrates = false;
+	public static boolean DisableSpillProtection = false;
 	public static boolean RequireCreatePerm = false;
 	public static int ManOverBoardTimeout = 60;
+	public static int FireballLifespan = 6;
 }

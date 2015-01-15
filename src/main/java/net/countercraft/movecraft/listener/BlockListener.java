@@ -17,6 +17,9 @@
 
 package net.countercraft.movecraft.listener;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.CraftManager;
@@ -25,8 +28,13 @@ import net.countercraft.movecraft.items.StorageChestItem;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.MovecraftLocation;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -35,10 +43,12 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.SignChangeEvent;
+import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
 public class BlockListener implements Listener {
 
@@ -120,7 +130,9 @@ public class BlockListener implements Listener {
         Player p = event.getPlayer();
         if(p==null)
         	return;
-        if(getCraftTypeFromString( org.bukkit.ChatColor.stripColor(event.getLine(0)) ) != null) {
+        String signText=org.bukkit.ChatColor.stripColor(event.getLine(0));
+        // did the player try to create a craft command sign?
+        if(getCraftTypeFromString( signText ) != null) {
         	if(Settings.RequireCreatePerm==false) {
         		return;
         	}
@@ -129,5 +141,65 @@ public class BlockListener implements Listener {
 				event.setCancelled(true);
 			}
         }
+        if(signText.equalsIgnoreCase( "Cruise: OFF") || signText.equalsIgnoreCase( "Cruise: ON")) {
+        	if(p.hasPermission( "movecraft.commands")==false && Settings.RequireCreatePerm) {
+				p.sendMessage( String.format( I18nSupport.getInternationalisedString( "Insufficient Permissions" ) ) );
+				event.setCancelled(true);
+			}
+        }
     }	
+	
+	@EventHandler(priority=EventPriority.NORMAL)
+    public void explodeEvent(EntityExplodeEvent e) {
+		// Remove any blocks from the list that were adjacent to water, to prevent spillage
+		Iterator<Block> i=e.blockList().iterator();
+		if(Settings.DisableSpillProtection==false)
+			while(i.hasNext()) {
+				Block b=i.next();
+				boolean isNearWater=false;
+				if(b.getY()>e.getEntity().getWorld().getSeaLevel())
+					for(int mx=-1;mx<=1;mx++)
+						for(int mz=-1;mz<=1;mz++)
+							for(int my=0;my<=1;my++) {
+								if(b.getRelative(mx,my,mz).getType()==Material.STATIONARY_WATER)
+									isNearWater=true;
+							}
+				if(isNearWater) {
+					i.remove();
+				}
+			}
+			
+		if(e.getEntity()==null)
+			return;
+		for (Player p : e.getEntity().getWorld().getPlayers()) {
+			org.bukkit.entity.Entity tnt=e.getEntity();
+			
+	        if(e.getEntityType() == EntityType.PRIMED_TNT && Settings.TracerRateTicks!=0) {
+				long minDistSquared=60*60;
+				long maxDistSquared=Bukkit.getServer().getViewDistance()*16;
+				maxDistSquared=maxDistSquared*maxDistSquared;
+				// is the TNT within the view distance (rendered world) of the player, yet further than 60 blocks?
+				if(p.getLocation().distanceSquared(tnt.getLocation())<maxDistSquared && p.getLocation().distanceSquared(tnt.getLocation())>=minDistSquared) {  // we use squared because its faster
+					final Location loc=tnt.getLocation();
+					final Player fp=p;
+					final World fw=e.getEntity().getWorld();
+					// then make a glowstone to look like the explosion, place it a little later so it isn't right in the middle of the volley
+					BukkitTask placeCobweb = new BukkitRunnable() {
+						@Override
+						public void run() {
+							fp.sendBlockChange(loc, 89, (byte) 0);
+						}
+					}.runTaskLater( Movecraft.getInstance(), 5 );
+					// then remove it
+					BukkitTask removeCobweb = new BukkitRunnable() {
+						@Override
+						public void run() {
+//							fw.getBlockAt(loc).getState().update(); // this might be better, but its slower. The bottom works, but you might lose NMS data. But it only affects the client.
+							fp.sendBlockChange(loc, fw.getBlockAt(loc).getType(), fw.getBlockAt(loc).getData());
+						}
+					}.runTaskLater( Movecraft.getInstance(), 160 );
+				}
+			}            
+        }
+    }
 }

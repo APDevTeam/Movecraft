@@ -54,6 +54,7 @@ public class Movecraft extends JavaPlugin {
 		this.saveDefaultConfig();
 		Settings.LOCALE = getConfig().getString("Locale");
 		Settings.DisableCrates = getConfig().getBoolean("DisableCrates", false);
+		Settings.DisableSpillProtection = getConfig().getBoolean("DisableSpillProtection", false);
 		// if the PilotTool is specified in the config.yml file, use it
 		if (getConfig().getInt("PilotTool") != 0) {
 			logger.log(Level.INFO, "Recognized PilotTool setting of: "
@@ -76,7 +77,9 @@ public class Movecraft extends JavaPlugin {
 		logger.log(Level.INFO, "CompatiblityMode is set to "+Settings.CompatibilityMode);
 		Settings.SinkRateTicks = getConfig().getDouble("SinkRateTicks", 20.0);
 		Settings.SinkCheckTicks = getConfig().getDouble("SinkCheckTicks", 100.0);
+		Settings.TracerRateTicks = getConfig().getDouble("TracerRateTicks", 5.0);
 		Settings.ManOverBoardTimeout = getConfig().getInt("ManOverBoardTimeout", 30);
+		Settings.FireballLifespan = getConfig().getInt("FireballLifespan", 6);
 		Settings.RequireCreatePerm = getConfig().getBoolean("RequireCreatePerm", false);
 		
 		//load up WorldGuard if it's present

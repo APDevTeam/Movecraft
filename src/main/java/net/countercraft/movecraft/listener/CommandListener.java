@@ -132,6 +132,11 @@ public class CommandListener implements CommandExecutor {
 		Player player=(Player) sender;
 
 		if ( cmd.getName().equalsIgnoreCase( "release" ) ) {
+			if ( !player.hasPermission( "movecraft.commands" ) ) {
+				player.sendMessage( String.format( I18nSupport.getInternationalisedString( "Insufficient Permissions" ) ) );
+				return true;
+			}
+			
 			final Craft pCraft = CraftManager.getInstance().getCraftByPlayerName( player.getName() );
 
 			if ( pCraft != null ) {
@@ -145,6 +150,11 @@ public class CommandListener implements CommandExecutor {
 		}
 
 		if ( cmd.getName().equalsIgnoreCase("pilot" ) ) {
+			if ( !player.hasPermission( "movecraft.commands" ) ) {
+				player.sendMessage( String.format( I18nSupport.getInternationalisedString( "Insufficient Permissions" ) ) );
+				return true;
+			}
+			
 			if(args.length>0) {
 				if ( player.hasPermission( "movecraft." + args[0] + ".pilot" ) ) {				
 					MovecraftLocation startPoint = MathUtils.bukkit2MovecraftLoc(player.getLocation());
@@ -166,6 +176,11 @@ public class CommandListener implements CommandExecutor {
 		}
 		
 		if( cmd.getName().equalsIgnoreCase("rotateleft")) {
+			if ( !player.hasPermission( "movecraft.commands" ) ) {
+				player.sendMessage( String.format( I18nSupport.getInternationalisedString( "Insufficient Permissions" ) ) );
+				return true;
+			}
+			
 			final Craft craft = CraftManager.getInstance().getCraftByPlayerName( player.getName() );
 
 			if ( player.hasPermission( "movecraft." + craft.getType().getCraftName() + ".rotate" ) ) {
@@ -179,6 +194,11 @@ public class CommandListener implements CommandExecutor {
 		}
 
 		if(  cmd.getName().equalsIgnoreCase("rotateright")) {
+			if ( !player.hasPermission( "movecraft.commands" ) ) {
+				player.sendMessage( String.format( I18nSupport.getInternationalisedString( "Insufficient Permissions" ) ) );
+				return true;
+			}
+			
 			final Craft craft = CraftManager.getInstance().getCraftByPlayerName( player.getName() );
 
 			if ( player.hasPermission( "movecraft." + craft.getType().getCraftName() + ".rotate" ) ) {
@@ -192,6 +212,11 @@ public class CommandListener implements CommandExecutor {
 		}
 
 		if( cmd.getName().equalsIgnoreCase("cruise")) {
+			if ( !player.hasPermission( "movecraft.commands" ) ) {
+				player.sendMessage( String.format( I18nSupport.getInternationalisedString( "Insufficient Permissions" ) ) );
+				return true;
+			}
+			
 			final Craft craft = CraftManager.getInstance().getCraftByPlayerName( player.getName() );
 
 			if ( player.hasPermission( "movecraft." + craft.getType().getCraftName() + ".move" ) ) {

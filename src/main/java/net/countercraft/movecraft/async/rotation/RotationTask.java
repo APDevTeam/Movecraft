@@ -174,16 +174,10 @@ public class RotationTask extends AsyncTask {
 		for ( int i = 0; i < blockList.length; i++ ) {
 			centeredBlockList[i] = blockList[i].subtract( originPoint );
 			if(getCraft().getCruising()) {
-				int blockID=w.getBlockAt(blockList[i].getX(), blockList[i].getY(), blockList[i].getZ() ).getTypeId();
-				if(blockID==63 || blockID==68) {
-					Sign s=(Sign) w.getBlockAt(blockList[i].getX(), blockList[i].getY(), blockList[i].getZ() ).getState();
-					if ( org.bukkit.ChatColor.stripColor(s.getLine( 0 )).equals( "Cruise: ON")) {
-						s.setLine(0, "Cruise: OFF");
-						s.update(true);
-					}
+				getCraft().resetSigns(true, true, true);
 				}
 			}
-		}
+		
 		getCraft().setCruising(false);
 
 		for ( int i = 0; i < blockList.length; i++ ) {

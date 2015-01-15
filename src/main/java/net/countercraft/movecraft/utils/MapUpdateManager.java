@@ -223,7 +223,7 @@ public class MapUpdateManager extends BukkitRunnable {
 				} else {
 					chunks = new HashSet<net.minecraft.server.v1_8_R1.Chunk>();
 				}
-				ArrayList<Player> unupdatedPlayers=new ArrayList<Player>(Arrays.asList(Movecraft.getInstance().getServer().getOnlinePlayers()));
+				ArrayList<Player> unupdatedPlayers=new ArrayList<Player>(Movecraft.getInstance().getServer().getOnlinePlayers());
 
 				ArrayList<Chunk> chunkList = new ArrayList<Chunk>();
 				boolean isFirstChunk=true;

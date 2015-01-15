@@ -115,6 +115,27 @@ public class TranslationTask extends AsyncTask {
 			hoverCraft=false;
 //			Movecraft.getInstance().getLogger().log( Level.INFO, "Translation task at: "+System.currentTimeMillis() );
 		}
+		
+		// check the maxheightaboveground limitation, move 1 down if that limit is exceeded
+		if(getCraft().getType().getMaxHeightAboveGround()>0 && data.getDy()>=0) {
+			int x=getCraft().getMaxX()+getCraft().getMinX();
+			x=x>>1;
+			int y=getCraft().getMaxY();
+			int z=getCraft().getMaxZ()+getCraft().getMinZ();
+			z=z>>1;
+			int cy=getCraft().getMinY();
+			boolean done=false;
+			while(!done) {
+				cy=cy-1;
+				if(getCraft().getW().getBlockTypeIdAt(x, cy, z)!=0)
+					done=true;
+				if(cy<=1)
+					done=true;
+			}
+			if(y-cy>getCraft().getType().getMaxHeightAboveGround()) {
+				data.setDy(-1);
+			}
+		}
 					
 		// Find the waterline from the surrounding terrain or from the static level in the craft type
 		int waterLine=0;
