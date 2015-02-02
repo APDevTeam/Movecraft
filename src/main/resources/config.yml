@@ -10,4 +10,6 @@ ManOverBoardTimeout: 30
 FireballLifespan: 6
 DisableSpillProtection: false
 RequireCreatePerm: false
+TNTContactExplosives: true
 DisableCrates: false
+FadeWrecksAfter: 0

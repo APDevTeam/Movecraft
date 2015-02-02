@@ -430,6 +430,12 @@ public class RotationTask extends AsyncTask {
 				for ( Craft craft : craftsInWorld ) {
 					if ( BlockUtils.arrayContainsOverlap( craft.getBlockList(), originalBlockList ) && craft!=getCraft() ) {
 						// found a parent craft
+						if(craft.isNotProcessing()==false) {
+							failed=true;
+							failMessage = String.format( I18nSupport.getInternationalisedString( "Parent Craft is busy" ));
+							return;
+						}
+						
 						List<MovecraftLocation> parentBlockList=ListUtils.subtract(Arrays.asList(craft.getBlockList()), Arrays.asList(originalBlockList));
 						parentBlockList.addAll(Arrays.asList(blockList));
 						craft.setBlockList(parentBlockList.toArray( new MovecraftLocation[1] ));

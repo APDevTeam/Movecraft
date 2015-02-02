@@ -34,6 +34,8 @@ public class Settings {
 	public static boolean DisableCrates = false;
 	public static boolean DisableSpillProtection = false;
 	public static boolean RequireCreatePerm = false;
+	public static boolean TNTContactExplosives = true;
+	public static int FadeWrecksAfter = 0;
 	public static int ManOverBoardTimeout = 60;
 	public static int FireballLifespan = 6;
 }

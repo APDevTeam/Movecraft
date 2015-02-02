@@ -37,7 +37,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Effect;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.block.CommandBlock;
@@ -53,6 +55,7 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
 import java.util.*;
@@ -61,6 +64,7 @@ import java.util.logging.Level;
 public class MapUpdateManager extends BukkitRunnable {
 	private final HashMap<World, ArrayList<MapUpdateCommand>> updates = new HashMap<World, ArrayList<MapUpdateCommand>>();
 	private final HashMap<World, ArrayList<EntityUpdateCommand>> entityUpdates = new HashMap<World, ArrayList<EntityUpdateCommand>>();
+	private HashSet<Location> protectedBlocks = new HashSet<Location>();
 	
 	private MapUpdateManager() {
 	}
@@ -73,7 +77,7 @@ public class MapUpdateManager extends BukkitRunnable {
 		private static final MapUpdateManager INSTANCE = new MapUpdateManager();
 	}
 	
-	private void updateBlock(MapUpdateCommand m, ArrayList<Chunk> chunkList, World w, Map<MovecraftLocation, TransferData> dataMap, Set<net.minecraft.server.v1_8_R1.Chunk> chunks, Set<Chunk> cmChunks, HashMap<MovecraftLocation, Byte> origLightMap, boolean placeDispensers) {
+	private void updateBlock(MapUpdateCommand m, World w, Map<MovecraftLocation, TransferData> dataMap, Set<net.minecraft.server.v1_8_R1.Chunk> chunks, Set<Chunk> cmChunks, HashMap<MovecraftLocation, Byte> origLightMap, boolean placeDispensers) {
 		MovecraftLocation workingL = m.getNewBlockLocation();
 
 		int x = workingL.getX();
@@ -89,7 +93,7 @@ public class MapUpdateManager extends BukkitRunnable {
 			
 		// Calculate chunk if necessary, check list of chunks already loaded first
 	
-		boolean foundChunk=false;
+/*		boolean foundChunk=false;
 		for (Chunk testChunk : chunkList) {
 			int sx=x>>4;
 			int sz=z>>4;
@@ -98,10 +102,10 @@ public class MapUpdateManager extends BukkitRunnable {
 				chunk=testChunk;
 			}
 		}
-		if(!foundChunk) {
+		if(!foundChunk) {*/
 			chunk = w.getBlockAt( x, y, z ).getChunk();
-			chunkList.add(chunk);							
-		}
+//			chunkList.add(chunk);							
+//		}
 
 		net.minecraft.server.v1_8_R1.Chunk c = null;
 		Chunk cmC = null;
@@ -133,9 +137,38 @@ public class MapUpdateManager extends BukkitRunnable {
 		boolean success = false;
 
 		//don't blank out block if it's already air, or if blocktype will not be changed
-		if(Settings.CompatibilityMode) {  
+		if(Settings.CompatibilityMode) { 
+			if(origType==149 || origType==150) { // necessary because bukkit does not handle comparators correctly
+				w.getBlockAt(x, y, z).setType(org.bukkit.Material.SIGN_POST);
+				BlockState state=w.getBlockAt( x, y, z ).getState();
+				Sign s=(Sign)state;
+				s.setLine(0, "PLACEHOLDER");
+				s.update();
+				w.getBlockAt(x, y, z).setType(org.bukkit.Material.AIR);
+				}
 			if(origType!=newTypeID || origData!=data) {
-				w.getBlockAt( x, y, z ).setTypeIdAndData( newTypeID, data, false );
+				if(newTypeID==149 || newTypeID==150) {
+					if(newTypeID==149)
+						w.getBlockAt(x, y, z).setType(org.bukkit.Material.REDSTONE_COMPARATOR_OFF);
+					else
+						w.getBlockAt(x, y, z).setType(org.bukkit.Material.REDSTONE_COMPARATOR_ON);
+				} else if(newTypeID==63 || newTypeID==68) {
+					w.getBlockAt( x, y, z ).setTypeIdAndData( newTypeID, data, false );
+/*					for ( Player p : w.getPlayers() ) {
+						int playerChunkX=p.getLocation().getBlockX()>>4;
+						int playerChunkZ=p.getLocation().getBlockZ()>>4;
+						if(Math.abs(playerChunkX-cmC.getX())<Bukkit.getServer().getViewDistance())
+							if(Math.abs(playerChunkZ-cmC.getZ())<Bukkit.getServer().getViewDistance()) {
+								Location loc=new Location(w,x,y,z);
+								p.sendBlockChange(loc, newTypeID, data);
+							}
+					}*/
+//					Sign s=(Sign) w.getBlockAt( x, y, z ).getState();
+//					s.setLine(0, "PLACEHOLDER");
+//					s.update();
+				} else {
+					w.getBlockAt( x, y, z ).setTypeIdAndData( newTypeID, data, false );
+				}
 			}
 			if ( !cmChunks.contains( cmC ) ) {
 				cmChunks.add( cmC );
@@ -209,6 +242,10 @@ public class MapUpdateManager extends BukkitRunnable {
 		if ( updates.isEmpty() ) return;
 
 		long startTime=System.currentTimeMillis();
+
+		final int[] fragileBlocks = new int[]{ 26, 29, 33, 34, 50, 52, 54, 55, 63, 64, 65, 68, 69, 70, 71, 72, 75, 76, 77, 93, 94, 96, 131, 132, 143, 147, 148, 149, 150, 151, 171, 323, 324, 330, 331, 356, 404 };
+		Arrays.sort(fragileBlocks);
+				
 		for ( World w : updates.keySet() ) {
 			if ( w != null ) {
 				List<MapUpdateCommand> updatesInWorld = updates.get( w );
@@ -225,8 +262,27 @@ public class MapUpdateManager extends BukkitRunnable {
 				}
 				ArrayList<Player> unupdatedPlayers=new ArrayList<Player>(Movecraft.getInstance().getServer().getOnlinePlayers());
 
-				ArrayList<Chunk> chunkList = new ArrayList<Chunk>();
+//				ArrayList<Chunk> chunkList = new ArrayList<Chunk>();
 				boolean isFirstChunk=true;
+				
+				// set all old and new blocks that are fragile to be protected
+/*				for ( MapUpdateCommand c : updatesInWorld ) {
+					if(c!=null) {
+						boolean isFragile=(Arrays.binarySearch(fragileBlocks,c.getTypeID())>=0);
+						if(isFragile) {
+							if(c.getNewBlockLocation()!=null) {
+								Location loc=new Location(w,c.getNewBlockLocation().getX(),c.getNewBlockLocation().getY(),c.getNewBlockLocation().getZ());
+								if(!protectedBlocks.contains(loc))
+									addProtectedBlock(loc);
+							}
+							if(c.getOldBlockLocation()!=null) {
+								Location loc=new Location(w,c.getOldBlockLocation().getX(),c.getOldBlockLocation().getY(),c.getOldBlockLocation().getZ());
+								if(!protectedBlocks.contains(loc))
+									addProtectedBlock(loc);
+							}
+						}
+					}
+				}*/
 				
 				// Preprocessing
 				for ( MapUpdateCommand c : updatesInWorld ) {
@@ -249,15 +305,16 @@ public class MapUpdateManager extends BukkitRunnable {
 						//remove dispensers and replace them with half slabs to prevent them firing during reconstruction
 						if(w.getBlockAt( l.getX(), l.getY(), l.getZ() ).getTypeId()==23) {
 							MapUpdateCommand blankCommand=new MapUpdateCommand(c.getOldBlockLocation(), 23, c.getCraft());
-							updateBlock(blankCommand, chunkList, w, dataMap, chunks, cmChunks, origLightMap, false);
+							updateBlock(blankCommand, w, dataMap, chunks, cmChunks, origLightMap, false);
 						}
 						//remove redstone blocks and replace them with stone to prevent redstone activation during reconstruction
 						if(w.getBlockAt( l.getX(), l.getY(), l.getZ() ).getTypeId()==152) {
 							MapUpdateCommand blankCommand=new MapUpdateCommand(c.getOldBlockLocation(), 1, c.getCraft());
-							updateBlock(blankCommand, chunkList, w, dataMap, chunks, cmChunks, origLightMap, false);
+							updateBlock(blankCommand, w, dataMap, chunks, cmChunks, origLightMap, false);
 						}
 					}					
 				}
+				
 				// track the blocks that entities will be standing on to move them smoothly with the craft
 				if(entityUpdatesInWorld!=null) {
 					for( EntityUpdateCommand i : entityUpdatesInWorld) {
@@ -271,13 +328,30 @@ public class MapUpdateManager extends BukkitRunnable {
 								List<EntityUpdateCommand> entUpdateList=entityMap.get(entityLoc);
 								entUpdateList.add(i);
 							}
+							if(i.getEntity() instanceof Player) {
+								// send a fake glass block so the player doesn't fall
+								Player p=(Player)i.getEntity();
+								Location loc=i.getNewLocation().clone();
+								loc=loc.subtract(0, 1, 0);
+								p.sendBlockChange(loc, 20, (byte) 0);
+								Location loc2=i.getNewLocation().clone();
+								loc2=loc2.add(0, 1, 0);
+								p.sendBlockChange(loc2, 0, (byte) 0);
+								
+								final Block b1=w.getBlockAt(loc);
+								final Block b2=w.getBlockAt(loc2);
+								BukkitTask restoreblockTask = new BukkitRunnable() {
+									@Override
+									public void run() {
+										b1.getState().update();
+										b2.getState().update();
+									}
+								}.runTaskLater( Movecraft.getInstance(), ( 20 * 1 ) );
+							}
 						}
 					}
 				}
 				
-				final int[] fragileBlocks = new int[]{ 26, 29, 33, 34, 50, 52, 54, 55, 63, 64, 65, 68, 69, 70, 71, 72, 75, 76, 77, 93, 94, 96, 131, 132, 143, 147, 148, 149, 150, 151, 171, 323, 324, 330, 331, 356, 404 };
-				Arrays.sort(fragileBlocks);
-						
 				// Place any blocks that replace "fragiles", other than other fragiles
 				for ( MapUpdateCommand i : updatesInWorld ) {
 					if(i!=null) {
@@ -286,11 +360,11 @@ public class MapUpdateManager extends BukkitRunnable {
 							boolean prevIsFragile=(Arrays.binarySearch(fragileBlocks,prevType)>=0);
 							boolean isFragile=(Arrays.binarySearch(fragileBlocks,i.getTypeID())>=0);
 							if(prevIsFragile && (!isFragile)) {
-								updateBlock(i, chunkList, w, dataMap, chunks, cmChunks, origLightMap, false);
+								updateBlock(i, w, dataMap, chunks, cmChunks, origLightMap, false);
 							}
 							if(prevIsFragile && isFragile) {
 								MapUpdateCommand blankCommand=new MapUpdateCommand(i.getNewBlockLocation(), 0, i.getCraft());
-								updateBlock(blankCommand, chunkList, w, dataMap, chunks, cmChunks, origLightMap, false);
+								updateBlock(blankCommand, w, dataMap, chunks, cmChunks, origLightMap, false);
 							}
 						}
 					}
@@ -310,7 +384,7 @@ public class MapUpdateManager extends BukkitRunnable {
 									w.createExplosion(m.getNewBlockLocation().getX()+0.5, m.getNewBlockLocation().getY()+0.5, m.getNewBlockLocation().getZ()+0.5, explosionPower);
 								}
 							} else {
-								updateBlock(m, chunkList, w, dataMap, chunks, cmChunks, origLightMap, false);
+								updateBlock(m, w, dataMap, chunks, cmChunks, origLightMap, false);
 							}
 						}
 						
@@ -319,13 +393,17 @@ public class MapUpdateManager extends BukkitRunnable {
 							List<EntityUpdateCommand> mapUpdateList=entityMap.get(m.getNewBlockLocation());
 							for(EntityUpdateCommand entityUpdate : mapUpdateList) {
 								Entity entity=entityUpdate.getEntity();
-								Vector pVel=new Vector(entity.getVelocity().getX(),0.0,entity.getVelocity().getZ());
-							/*	Location newLoc=entity.getLocation();
-								newLoc.setX(entityUpdate.getNewLocation().getX());
-								newLoc.setY(entityUpdate.getNewLocation().getY());
-								newLoc.setZ(entityUpdate.getNewLocation().getZ());*/
+/*								if(entity instanceof Player) {
+									Player p=(Player)entity;
+									int dx=entityUpdate.getNewLocation().getBlockX()-entityUpdate.getOldLocation().getBlockX();
+									int dy=entityUpdate.getNewLocation().getBlockY()-entityUpdate.getOldLocation().getBlockY();
+									int dz=entityUpdate.getNewLocation().getBlockZ()-entityUpdate.getOldLocation().getBlockZ();
+									Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "tp "+p.getName()+" ~"+dx+" ~"+dy+" ~"+dz);
+								}
+*/
+//								Vector pVel=new Vector(entity.getVelocity().getX(),0.0,entity.getVelocity().getZ());
 								entity.teleport(entityUpdate.getNewLocation());
-								entity.setVelocity(pVel);
+//								entity.setVelocity(pVel);
 							}
 							entityMap.remove(m.getNewBlockLocation());
 						}
@@ -338,7 +416,7 @@ public class MapUpdateManager extends BukkitRunnable {
 					if(i!=null) {
 						boolean isFragile=(Arrays.binarySearch(fragileBlocks,i.getTypeID())>=0);
 						if(isFragile) {
-							updateBlock(i, chunkList, w, dataMap, chunks, cmChunks, origLightMap, false);
+							updateBlock(i, w, dataMap, chunks, cmChunks, origLightMap, false);
 						}
 					}
 				}
@@ -347,36 +425,9 @@ public class MapUpdateManager extends BukkitRunnable {
 					if(i!=null) {
 						// Put Dispensers back in now that the ship is reconstructed
 						if(i.getTypeID()==23 || i.getTypeID()==152) {
-							updateBlock(i, chunkList, w, dataMap, chunks, cmChunks, origLightMap, true);					
+							updateBlock(i, w, dataMap, chunks, cmChunks, origLightMap, true);					
 						}
 						
-						// if a bed was moved, check to see if any spawn points need to be updated
-						if(i.getTypeID()==26) {
-							Iterator<Player> iter=unupdatedPlayers.iterator();
-							while (iter.hasNext()) {
-								Player p=iter.next();
-							
-								if(p!=null) {
-									if(p.getBedSpawnLocation()!=null) {
-										MovecraftLocation spawnLoc=MathUtils.bukkit2MovecraftLoc( p.getBedSpawnLocation() );
-										
-										// is the spawn point within 1 block of where the bed used to be?
-										boolean foundSpawn=false;
-										if(i.getOldBlockLocation().getX()-spawnLoc.getX()<=1 && i.getOldBlockLocation().getX()-spawnLoc.getX()>=-1) {
-											if(i.getOldBlockLocation().getZ()-spawnLoc.getZ()<=1 && i.getOldBlockLocation().getZ()-spawnLoc.getZ()>=-1) {
-												foundSpawn=true;
-											}
-										}
-										
-										if(foundSpawn) {
-											Location newSpawnLoc = new Location( w, i.getNewBlockLocation().getX(), i.getNewBlockLocation().getY(), i.getNewBlockLocation().getZ() );
-											p.setBedSpawnLocation(newSpawnLoc, true);
-											iter.remove();
-										}
-									}
-								}
-							}
-						}
 					}
 				}
 
@@ -402,7 +453,35 @@ public class MapUpdateManager extends BukkitRunnable {
 							for ( int i = 0; i < signData.getLines().length; i++ ) {
 								sign.setLine( i, signData.getLines()[i] );
 							}
-							sign.update( true );
+							for(Player p : w.getPlayers()) { // this is necessary because signs do not get updated client side correctly without refreshing the chunks, which causes a memory leak in the clients							
+								p.sendBlockChange(sign.getLocation(), 63, (byte) 0);
+//								p.sendSignChange(sign.getLocation(), sign.getLines());
+								p.sendBlockChange(sign.getLocation(), sign.getTypeId(), sign.getRawData());
+//								p.sendSignChange(sign.getLocation(), sign.getLines());
+							}
+							sign.update( true, false );
+/*							for(Player p : w.getPlayers()) {
+								final Sign s=sign;
+								final Player pl=p;
+								BukkitTask signupdate = new BukkitRunnable() {
+									@Override
+									public void run() {
+										pl.sendBlockChange(s.getLocation(), 63, (byte) 0);
+										pl.sendSignChange(s.getLocation(), s.getLines());
+									}
+								}.runTaskLater( Movecraft.getInstance(), ( 20 * 2 ) );
+							}
+							for(Player p : w.getPlayers()) {
+								final Sign s=sign;
+								final Player pl=p;
+								BukkitTask signupdate = new BukkitRunnable() {
+									@Override
+									public void run() {
+										pl.sendBlockChange(s.getLocation(), s.getTypeId(), s.getRawData());
+										pl.sendSignChange(s.getLocation(), s.getLines());
+									}
+								}.runTaskLater( Movecraft.getInstance(), ( 20 * 3 ) );
+							}		*/					
 
 						} else if ( transferData instanceof StorageCrateTransferHolder ) {
 							Inventory inventory = Bukkit.createInventory( null, 27, String.format( I18nSupport.getInternationalisedString( "Item - Storage Crate name" ) ) );
@@ -431,7 +510,7 @@ public class MapUpdateManager extends BukkitRunnable {
 				
 				if(Settings.CompatibilityMode) {
 					for ( Chunk c : cmChunks ) {
-						w.refreshChunk(c.getX(), c.getZ());
+//						w.refreshChunk(c.getX(), c.getZ());  for some reason uncommenting this leads to a memory leak on the CLIENT, although I'm pretty sure it shouldn't
 					}
 					
 				} else {
@@ -457,12 +536,29 @@ public class MapUpdateManager extends BukkitRunnable {
 					}
 				}
 
-				
+				// set all old and new blocks to no longer be protected
+/*				for ( MapUpdateCommand c : updatesInWorld ) {
+					if(c!=null) {
+						boolean isFragile=(Arrays.binarySearch(fragileBlocks,c.getTypeID())>=0);
+						if(isFragile) {
+							if(c.getNewBlockLocation()!=null) {
+								Location loc=new Location(w,c.getNewBlockLocation().getX(),c.getNewBlockLocation().getY(),c.getNewBlockLocation().getZ());
+								if(protectedBlocks.contains(loc))
+									removeProtectedBlock(loc);
+							}
+							if(c.getOldBlockLocation()!=null) {
+								Location loc=new Location(w,c.getOldBlockLocation().getX(),c.getOldBlockLocation().getY(),c.getOldBlockLocation().getZ());
+								if(protectedBlocks.contains(loc))
+									removeProtectedBlock(loc);
+							}
+						}
+					}
+				}*/
 				
 				if(CraftManager.getInstance().getCraftsInWorld(w)!=null) {
 					
 					//move entities again to reduce falling out of crafts
-					if(entityUpdatesInWorld!=null) {
+					/*if(entityUpdatesInWorld!=null) {
 						for(EntityUpdateCommand entityUpdate : entityUpdatesInWorld) {
 							if(entityUpdate!=null) {
 								Entity entity=entityUpdate.getEntity();
@@ -472,7 +568,7 @@ public class MapUpdateManager extends BukkitRunnable {
 								entity.setVelocity(pVel);
 							}
 						}
-					}
+					}*/
 
 					// and set all crafts that were updated to not processing
 					for ( MapUpdateCommand c : updatesInWorld ) {
@@ -538,6 +634,18 @@ public class MapUpdateManager extends BukkitRunnable {
 			entityUpdates.put(w, eGet);
 		}		
 		return false;
+	}
+	
+	public HashSet<Location> getProtectedBlocks() {
+		return protectedBlocks;
+	}
+
+	public void addProtectedBlock(Location loc) {
+		protectedBlocks.add(loc);
+	}
+
+	public void removeProtectedBlock(Location loc) {
+		protectedBlocks.remove(loc);
 	}
 
 	private boolean setContainsConflict( ArrayList<MapUpdateCommand> set, MapUpdateCommand c ) {

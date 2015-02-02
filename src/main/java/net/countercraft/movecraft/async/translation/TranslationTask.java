@@ -548,6 +548,19 @@ public class TranslationTask extends AsyncTask {
 			for(MapUpdateCommand m : explosionSet) {
 				if( existingBlockSet.contains(m.getNewBlockLocation()) ) {
 					existingBlockSet.remove(m.getNewBlockLocation());
+					if(Settings.FadeWrecksAfter>0) {
+						int typeID=getCraft().getW().getBlockAt( m.getNewBlockLocation().getX(), m.getNewBlockLocation().getY(), m.getNewBlockLocation().getZ() ).getTypeId();
+						if(typeID!=0 && typeID!=9) {
+							Movecraft.getInstance().blockFadeTimeMap.put(m.getNewBlockLocation(), System.currentTimeMillis());
+							Movecraft.getInstance().blockFadeTypeMap.put(m.getNewBlockLocation(), typeID);
+							if(m.getNewBlockLocation().getY()<=waterLine) {
+								Movecraft.getInstance().blockFadeWaterMap.put(m.getNewBlockLocation(), true);
+							} else {
+								Movecraft.getInstance().blockFadeWaterMap.put(m.getNewBlockLocation(), false);
+							}
+							Movecraft.getInstance().blockFadeWorldMap.put(m.getNewBlockLocation(), getCraft().getW());
+						}
+					}
 				}
 				// if the craft is sinking, remove all solid blocks above the one that hit the ground from the craft for smoothing sinking
 				if(getCraft().getSinking()==true && getCraft().getType().getExplodeOnCrash()==0.0) {
@@ -558,6 +571,19 @@ public class TranslationTask extends AsyncTask {
 						MovecraftLocation testLoc=new MovecraftLocation(m.getNewBlockLocation().getX(), posy, m.getNewBlockLocation().getZ());
 						if( existingBlockSet.contains(testLoc) ) {
 							existingBlockSet.remove(testLoc);
+							if(Settings.FadeWrecksAfter>0) {
+								int typeID=getCraft().getW().getBlockAt( testLoc.getX(), testLoc.getY(), testLoc.getZ() ).getTypeId();
+								if(typeID!=0 && typeID!=9) {
+									Movecraft.getInstance().blockFadeTimeMap.put(testLoc, System.currentTimeMillis());
+									Movecraft.getInstance().blockFadeTypeMap.put(testLoc, typeID);
+									if(testLoc.getY()<=waterLine) {
+										Movecraft.getInstance().blockFadeWaterMap.put(testLoc, true);
+									} else {
+										Movecraft.getInstance().blockFadeWaterMap.put(testLoc, false);
+									}
+									Movecraft.getInstance().blockFadeWorldMap.put(testLoc, getCraft().getW());
+								}
+							}
 						}
 						posy=posy+1;
 						testID=getCraft().getW().getBlockAt( m.getNewBlockLocation().getX(), posy, m.getNewBlockLocation().getZ() ).getTypeId();

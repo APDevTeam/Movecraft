@@ -55,16 +55,22 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 
 public class AsyncManager extends BukkitRunnable {
 	private static final AsyncManager instance = new AsyncManager();
 	private final HashMap<AsyncTask, Craft> ownershipMap = new HashMap<AsyncTask, Craft>();
+	private final HashMap<org.bukkit.entity.TNTPrimed, Double> TNTTracking = new HashMap<org.bukkit.entity.TNTPrimed, Double>();
 	private final BlockingQueue<AsyncTask> finishedAlgorithms = new LinkedBlockingQueue<AsyncTask>();
 	private final HashSet<Craft> clearanceSet = new HashSet<Craft>();
 	private long lastTracerUpdate = 0;
+	private long lastFireballCheck = 0;
+	private long lastTNTContactCheck = 0;
+	private long lastFadeCheck = 0;
 
 	public static AsyncManager getInstance() {
 		return instance;
@@ -123,9 +129,65 @@ public class AsyncManager extends BukkitRunnable {
 						if ( craftsInWorld != null ) {
 							for ( Craft craft : craftsInWorld ) {
 
-								if ( BlockUtils.arrayContainsOverlap( craft.getBlockList(), data.getBlockList() ) && p!=null ) {
-									notifyP.sendMessage( String.format( I18nSupport.getInternationalisedString( "Detection - Failed Craft is already being controlled" ) ) );
-									failed = true;
+								if ( BlockUtils.arrayContainsOverlap( craft.getBlockList(), data.getBlockList() ) && p!=null) {
+									if(craft.getType()==c.getType() || craft.getBlockList().length<=data.getBlockList().length) {
+										notifyP.sendMessage( String.format( I18nSupport.getInternationalisedString( "Detection - Failed Craft is already being controlled" ) ) );
+										failed = true;
+									} else { // if this is a different type than the overlapping craft, and is smaller, this must be a child craft, like a fighter on a carrier
+										if(craft.isNotProcessing()==false) {
+											failed=true;
+											notifyP.sendMessage(String.format( I18nSupport.getInternationalisedString( "Parent Craft is busy" )));
+										}
+										
+										// remove the new craft from the parent craft
+										List<MovecraftLocation> parentBlockList=ListUtils.subtract(Arrays.asList(craft.getBlockList()), Arrays.asList(data.getBlockList()));
+										craft.setBlockList(parentBlockList.toArray( new MovecraftLocation[1] ));
+
+										// Rerun the polygonal bounding formula for the parent craft
+										Integer parentMaxX = null;
+										Integer parentMaxZ = null;
+										Integer parentMinX = null;
+										Integer parentMinZ = null;
+										for ( MovecraftLocation l : parentBlockList ) {
+											if ( parentMaxX == null || l.getX() > parentMaxX ) {
+												parentMaxX = l.getX();
+											}
+											if ( parentMaxZ == null || l.getZ() > parentMaxZ ) {
+												parentMaxZ = l.getZ();
+											}
+											if ( parentMinX == null || l.getX() < parentMinX ) {
+												parentMinX = l.getX();
+											}
+											if ( parentMinZ == null || l.getZ() < parentMinZ ) {
+												parentMinZ = l.getZ();
+											}
+										}
+										int parentSizeX, parentSizeZ;
+										parentSizeX = ( parentMaxX - parentMinX ) + 1;
+										parentSizeZ = ( parentMaxZ - parentMinZ ) + 1;
+										int[][][] parentPolygonalBox = new int[parentSizeX][][];
+										for ( MovecraftLocation l : parentBlockList ) {
+											if ( parentPolygonalBox[l.getX() - parentMinX] == null ) {
+												parentPolygonalBox[l.getX() - parentMinX] = new int[parentSizeZ][];
+											}
+											if ( parentPolygonalBox[l.getX() - parentMinX][l.getZ() - parentMinZ] == null ) {
+												parentPolygonalBox[l.getX() - parentMinX][l.getZ() - parentMinZ] = new int[2];
+												parentPolygonalBox[l.getX() - parentMinX][l.getZ() - parentMinZ][0] = l.getY();
+												parentPolygonalBox[l.getX() - parentMinX][l.getZ() - parentMinZ][1] = l.getY();
+											} else {
+												int parentMinY = parentPolygonalBox[l.getX() - parentMinX][l.getZ() - parentMinZ][0];
+												int parentMaxY = parentPolygonalBox[l.getX() - parentMinX][l.getZ() - parentMinZ][1];
+
+												if ( l.getY() < parentMinY ) {
+													parentPolygonalBox[l.getX() - parentMinX][l.getZ() - parentMinZ][0] = l.getY();
+												}
+												if ( l.getY() > parentMaxY ) {
+													parentPolygonalBox[l.getX() - parentMinX][l.getZ() - parentMinZ][1] = l.getY();
+												}
+											}
+										}
+										craft.setHitBox(parentPolygonalBox);										
+									}
 								}
 
 							}
@@ -490,7 +552,7 @@ public class AsyncManager extends BukkitRunnable {
 											public void run() {
 												CraftManager.getInstance().removeCraft(releaseCraft);
 											}
-										}.runTaskLater( Movecraft.getInstance(), ( 20 * 250 ) );
+										}.runTaskLater( Movecraft.getInstance(), ( 20 * 600 ) );
 									} else {
 										pcraft.setLastBlockCheck(System.currentTimeMillis());
 									}
@@ -505,6 +567,9 @@ public class AsyncManager extends BukkitRunnable {
 					if(pcraft!=null && pcraft.getSinking()==true) {
 						if(pcraft.getBlockList().length==0) {
 							CraftManager.getInstance().removeCraft( pcraft );
+						}
+						if(pcraft.getMinY()<-1) {
+							CraftManager.getInstance().removeCraft( pcraft );							
 						}
 						long ticksElapsed = ( System.currentTimeMillis() - pcraft.getLastCruiseUpdate() ) / 50;
 						if ( Math.abs( ticksElapsed ) >= pcraft.getType().getSinkRateTicks() ) {
@@ -571,36 +636,148 @@ public class AsyncManager extends BukkitRunnable {
 	}
 	
 	public void processFireballs() {
-		for( World w : Bukkit.getWorlds()) {
-			if(w!=null) {
-				for(org.bukkit.entity.SmallFireball fireball : w.getEntitiesByClass(org.bukkit.entity.SmallFireball.class)) {
-					if(!(fireball.getShooter() instanceof org.bukkit.entity.LivingEntity)) {
-						if(w.getPlayers().size()>0) {
-							Player p=w.getPlayers().get(0);
-							// give it a living shooter, then delete the fireball after 4 seconds
-							fireball.setShooter(p);
-							final org.bukkit.entity.SmallFireball ffb=fireball;
-
-							BukkitTask deleteFireballTask = new BukkitRunnable() {
-								@Override
-								public void run() {
-									ffb.remove();
-								}
-							}.runTaskLater( Movecraft.getInstance(), ( 20 * Settings.FireballLifespan ) );
-
+		long ticksElapsed = ( System.currentTimeMillis() - lastFireballCheck ) / 50;
+		if(ticksElapsed>4) {
+			for( World w : Bukkit.getWorlds()) {
+				if(w!=null) {
+					for(org.bukkit.entity.SmallFireball fireball : w.getEntitiesByClass(org.bukkit.entity.SmallFireball.class)) {
+						if(!(fireball.getShooter() instanceof org.bukkit.entity.LivingEntity)) {
+							if(w.getPlayers().size()>0) {
+								Player p=w.getPlayers().get(0);
+								// give it a living shooter, then delete the fireball after 4 seconds
+								fireball.setShooter(p);
+								final org.bukkit.entity.SmallFireball ffb=fireball;
+	
+								BukkitTask deleteFireballTask = new BukkitRunnable() {
+									@Override
+									public void run() {
+										ffb.remove();
+									}
+								}.runTaskLater( Movecraft.getInstance(), ( 20 * Settings.FireballLifespan ) );
+	
+							}
 						}
 					}
 				}
 			}
+			lastFireballCheck=System.currentTimeMillis();
 		}
 	}
-	
+
+	public void processTNTContactExplosives() {
+		long ticksElapsed = ( System.currentTimeMillis() - lastTNTContactCheck ) / 50;
+		if(ticksElapsed>4) {
+			// see if there is any new rapid moving TNT in the worlds
+			for( World w : Bukkit.getWorlds()) {
+				if(w!=null) {
+					for(org.bukkit.entity.TNTPrimed tnt : w.getEntitiesByClass(org.bukkit.entity.TNTPrimed.class)) {
+						if(tnt.getVelocity().lengthSquared()>0.35) {
+							if(!TNTTracking.containsKey(tnt)) {
+								TNTTracking.put(tnt, tnt.getVelocity().lengthSquared());
+							}
+						}
+					}
+				}
+			}
+			
+			//then, removed any exploded TNT from tracking
+			Iterator<org.bukkit.entity.TNTPrimed> tntI=TNTTracking.keySet().iterator();
+			while(tntI.hasNext()) {
+				org.bukkit.entity.TNTPrimed tnt=tntI.next();
+				if(tnt.getFuseTicks()<=0) {
+					tntI.remove();
+				}
+			}
+
+			//now check to see if any has abruptly changed velocity, and should explode
+			for(org.bukkit.entity.TNTPrimed tnt : TNTTracking.keySet()) {
+				double vel=tnt.getVelocity().lengthSquared();
+				if(vel<TNTTracking.get(tnt)/10.0) {
+					tnt.setFuseTicks(0);
+				} else {
+					// update the tracking with the new velocity so gradual changes do not make TNT explode
+					TNTTracking.put(tnt, vel);
+				}
+			}
+			
+			lastTNTContactCheck=System.currentTimeMillis();
+		}
+	}
+
+	public void processFadingBlocks() {
+		if(Settings.FadeWrecksAfter==0)
+			return;
+		long ticksElapsed = ( System.currentTimeMillis() - lastFadeCheck ) / 50;
+		if(ticksElapsed>20) {
+			for( World w : Bukkit.getWorlds()) {
+				if(w!=null) {
+					ArrayList <MapUpdateCommand> updateCommands=new ArrayList <MapUpdateCommand>();
+					CopyOnWriteArrayList <MovecraftLocation> locations=null;
+					
+					// I know this is horrible, but I honestly don't see another way to do this...
+					int numTries=0;
+					while((locations==null)&&(numTries<100)) {
+						try {
+							locations=new CopyOnWriteArrayList <MovecraftLocation>(Movecraft.getInstance().blockFadeTimeMap.keySet());
+						}
+						catch(java.util.ConcurrentModificationException e)
+						{
+							numTries++;
+						}
+					}
+					
+					for(MovecraftLocation loc : locations) {
+						if(Movecraft.getInstance().blockFadeWorldMap.get(loc)==w) {
+							Long time=Movecraft.getInstance().blockFadeTimeMap.get(loc);
+							Integer type=Movecraft.getInstance().blockFadeTypeMap.get(loc);
+							Boolean water=Movecraft.getInstance().blockFadeWaterMap.get(loc);
+							if(time!=null && type!=null && water!=null) {
+								long secsElapsed=(System.currentTimeMillis() - Movecraft.getInstance().blockFadeTimeMap.get(loc))/1000;
+								// has enough time passed to fade the block?
+								if(secsElapsed>Settings.FadeWrecksAfter) {
+									// load the chunk if it hasn't been already
+									int cx=loc.getX()>>4;
+									int cz=loc.getZ()>>4;
+									if(w.isChunkLoaded(cx, cz) == false) {
+										w.loadChunk(cx, cz);
+									}
+									// check to see if the block type has changed, if so don't fade it
+									if(w.getBlockTypeIdAt( loc.getX(), loc.getY(), loc.getZ())==Movecraft.getInstance().blockFadeTypeMap.get(loc)) {
+										// should it become water? if not, then air
+										if(Movecraft.getInstance().blockFadeWaterMap.get(loc)==true) {
+											MapUpdateCommand updateCom=new MapUpdateCommand(loc,9,null);
+											updateCommands.add(updateCom);
+										} else {
+											MapUpdateCommand updateCom=new MapUpdateCommand(loc,0,null);
+											updateCommands.add(updateCom);									
+										}
+									}
+									Movecraft.getInstance().blockFadeTimeMap.remove(loc);
+									Movecraft.getInstance().blockFadeTypeMap.remove(loc);
+									Movecraft.getInstance().blockFadeWorldMap.remove(loc);
+									Movecraft.getInstance().blockFadeWaterMap.remove(loc);
+								}
+							}
+						}
+					}
+					if(updateCommands.size()>0) {
+						MapUpdateManager.getInstance().addWorldUpdate( w, updateCommands.toArray(new MapUpdateCommand[1]), null);
+					}
+				}
+			}
+
+		lastFadeCheck=System.currentTimeMillis();
+		}
+	}
+
 	public void run() {
 		clearAll();
 		processCruise();
 		processSinking();
 		processTracers();
 		processFireballs();
+		processTNTContactExplosives();
+		processFadingBlocks();
 		processAlgorithmQueue();
 	}
 

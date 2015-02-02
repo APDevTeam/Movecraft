@@ -18,7 +18,9 @@
 package net.countercraft.movecraft;
 
 import net.countercraft.movecraft.async.AsyncManager;
+
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
+
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.items.StorageChestItem;
@@ -29,10 +31,14 @@ import net.countercraft.movecraft.listener.PlayerListener;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.metrics.MovecraftMetrics;  
 import net.countercraft.movecraft.utils.MapUpdateManager;
+import net.countercraft.movecraft.utils.MovecraftLocation;
+
+import org.bukkit.World;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.Plugin;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -41,6 +47,10 @@ public class Movecraft extends JavaPlugin {
 	private static WorldGuardPlugin worldGuardPlugin;
 	private Logger logger;
 	private boolean shuttingDown;
+	public HashMap<MovecraftLocation, Long> blockFadeTimeMap = new HashMap<MovecraftLocation, Long>();
+	public HashMap<MovecraftLocation, Integer> blockFadeTypeMap = new HashMap<MovecraftLocation, Integer>();
+	public HashMap<MovecraftLocation, Boolean> blockFadeWaterMap = new HashMap<MovecraftLocation, Boolean>();
+	public HashMap<MovecraftLocation, World> blockFadeWorldMap = new HashMap<MovecraftLocation, World>();
 
 	public void onDisable() {
 		// Process the storage crates to disk
@@ -81,6 +91,8 @@ public class Movecraft extends JavaPlugin {
 		Settings.ManOverBoardTimeout = getConfig().getInt("ManOverBoardTimeout", 30);
 		Settings.FireballLifespan = getConfig().getInt("FireballLifespan", 6);
 		Settings.RequireCreatePerm = getConfig().getBoolean("RequireCreatePerm", false);
+		Settings.TNTContactExplosives = getConfig().getBoolean("TNTContactExplosives", true);
+		Settings.FadeWrecksAfter = getConfig().getInt("FadeWrecksAfter", 0);
 		
 		//load up WorldGuard if it's present
 		Plugin wGPlugin=getServer().getPluginManager().getPlugin("WorldGuard");
@@ -97,6 +109,14 @@ public class Movecraft extends JavaPlugin {
 		if (!new File(getDataFolder()
 				+ "/localisation/movecraftlang_en.properties").exists()) {
 			this.saveResource("localisation/movecraftlang_en.properties", false);
+		}
+		if (!new File(getDataFolder()
+				+ "/types/airship.craft").exists()) {
+			this.saveResource("types/airship.craft", false);
+		}
+		if (!new File(getDataFolder()
+				+ "/types/airskiff.craft").exists()) {
+			this.saveResource("types/airskiff.craft", false);
 		}
 		I18nSupport.init();
 		if (shuttingDown && Settings.IGNORE_RESET) {
@@ -127,6 +147,7 @@ public class Movecraft extends JavaPlugin {
 			this.getCommand("rotateright").setExecutor(new CommandListener());
 			this.getCommand("cruise").setExecutor(new CommandListener());
 			this.getCommand("cruiseoff").setExecutor(new CommandListener());
+			this.getCommand("craftreport").setExecutor(new CommandListener());
 			this.getCommand("manoverboard").setExecutor(new CommandListener());
 			
 			getServer().getPluginManager().registerEvents(new BlockListener(),

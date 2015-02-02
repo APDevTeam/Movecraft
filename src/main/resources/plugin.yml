@@ -1,6 +1,6 @@
 name: Movecraft
 softdepend: [WorldGuard, WorldEdit]
-version: 3.1.X65
+version: 3.1.X70
 #version: ${env.BUILD_NUMBER}
 description: The original flight and movement plugin for minecraft.
 author: AJCStriker
@@ -14,6 +14,9 @@ commands:
   pilot:
     description: Pilots the craft at your feet
     usage: /pilot [crafttypename]
+  craftreport:
+    description: reports on all active craft in the world you are in
+    usage: /craftreport
   cruise:
     description: Starts your craft cruising
     usage: /cruise [north|south|east|west]

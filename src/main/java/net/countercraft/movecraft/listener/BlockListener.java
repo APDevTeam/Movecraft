@@ -26,6 +26,7 @@ import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.CraftType;
 import net.countercraft.movecraft.items.StorageChestItem;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.utils.MapUpdateManager;
 import net.countercraft.movecraft.utils.MovecraftLocation;
 
 import org.bukkit.Bukkit;
@@ -41,7 +42,9 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -147,7 +150,21 @@ public class BlockListener implements Listener {
 				event.setCancelled(true);
 			}
         }
-    }	
+    }
+	
+	/*@EventHandler(priority = EventPriority.HIGHEST)
+	public void onBlockPhysicsEvent(BlockPhysicsEvent e) {
+		Location loc=e.getBlock().getLocation();
+		if(MapUpdateManager.getInstance().getProtectedBlocks().contains(loc))
+			e.setCancelled(true);
+	}
+	
+	//@EventHandler(priority = EventPriority.HIGHEST)
+	public void onBlockRedstoneEvent(BlockRedstoneEvent e) {
+		Location loc=e.getBlock().getLocation();
+		if(MapUpdateManager.getInstance().getProtectedBlocks().contains(loc))
+			e.setNewCurrent(0);
+	}*/
 	
 	@EventHandler(priority=EventPriority.NORMAL)
     public void explodeEvent(EntityExplodeEvent e) {
@@ -157,11 +174,11 @@ public class BlockListener implements Listener {
 			while(i.hasNext()) {
 				Block b=i.next();
 				boolean isNearWater=false;
-				if(b.getY()>e.getEntity().getWorld().getSeaLevel())
+				if(b.getY()>b.getWorld().getSeaLevel())
 					for(int mx=-1;mx<=1;mx++)
 						for(int mz=-1;mz<=1;mz++)
 							for(int my=0;my<=1;my++) {
-								if(b.getRelative(mx,my,mz).getType()==Material.STATIONARY_WATER)
+								if(b.getRelative(mx,my,mz).getType()==Material.STATIONARY_WATER || b.getRelative(mx,my,mz).getType()==Material.WATER)
 									isNearWater=true;
 							}
 				if(isNearWater) {

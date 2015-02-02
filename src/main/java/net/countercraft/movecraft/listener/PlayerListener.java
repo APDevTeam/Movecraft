@@ -193,7 +193,7 @@ public class PlayerListener implements Listener {
 
 				if ( !CraftManager.getInstance().getReleaseEvents().containsKey( event.getPlayer() ) && c.getType().getMoveEntities()) {
 					if(Settings.ManOverBoardTimeout!=0)
-						event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "You have left the craft. If you accidentally fell out of the craft, you can type /manoverboard in the next "+Settings.ManOverBoardTimeout+" seconds to be returned to it" ) ) );						
+						event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "You have left your craft. You may return to your craft by typing /manoverboard any time before the timeout expires" ) ) );						
 					else
 						event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "Release - Player has left craft" ) ) );
 					if(c.getBlockList().length>11000) {
