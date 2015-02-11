@@ -139,7 +139,7 @@ public class MapUpdateManager extends BukkitRunnable {
 		//don't blank out block if it's already air, or if blocktype will not be changed
 		if(Settings.CompatibilityMode) { 
 			if(origType==149 || origType==150) { // necessary because bukkit does not handle comparators correctly
-				w.getBlockAt(x, y, z).setType(org.bukkit.Material.SIGN_POST);
+				w.getBlockAt(x, y, z).setType(org.bukkit.Material.SIGN);
 				BlockState state=w.getBlockAt( x, y, z ).getState();
 				Sign s=(Sign)state;
 				s.setLine(0, "PLACEHOLDER");
@@ -454,34 +454,18 @@ public class MapUpdateManager extends BukkitRunnable {
 								sign.setLine( i, signData.getLines()[i] );
 							}
 							for(Player p : w.getPlayers()) { // this is necessary because signs do not get updated client side correctly without refreshing the chunks, which causes a memory leak in the clients							
-								p.sendBlockChange(sign.getLocation(), 63, (byte) 0);
-//								p.sendSignChange(sign.getLocation(), sign.getLines());
-								p.sendBlockChange(sign.getLocation(), sign.getTypeId(), sign.getRawData());
-//								p.sendSignChange(sign.getLocation(), sign.getLines());
+								int playerChunkX=p.getLocation().getBlockX()>>4;
+								int playerChunkZ=p.getLocation().getBlockZ()>>4;
+								if(Math.abs(playerChunkX-sign.getChunk().getX())<Bukkit.getServer().getViewDistance())
+									if(Math.abs(playerChunkZ-sign.getChunk().getZ())<Bukkit.getServer().getViewDistance()) {
+										p.sendBlockChange(sign.getLocation(), 63, (byte) 0);
+//										p.sendSignChange(sign.getLocation(), sign.getLines());
+										p.sendBlockChange(sign.getLocation(), sign.getTypeId(), sign.getRawData());
+//										p.sendSignChange(sign.getLocation(), sign.getLines());
+										
+									}
 							}
 							sign.update( true, false );
-/*							for(Player p : w.getPlayers()) {
-								final Sign s=sign;
-								final Player pl=p;
-								BukkitTask signupdate = new BukkitRunnable() {
-									@Override
-									public void run() {
-										pl.sendBlockChange(s.getLocation(), 63, (byte) 0);
-										pl.sendSignChange(s.getLocation(), s.getLines());
-									}
-								}.runTaskLater( Movecraft.getInstance(), ( 20 * 2 ) );
-							}
-							for(Player p : w.getPlayers()) {
-								final Sign s=sign;
-								final Player pl=p;
-								BukkitTask signupdate = new BukkitRunnable() {
-									@Override
-									public void run() {
-										pl.sendBlockChange(s.getLocation(), s.getTypeId(), s.getRawData());
-										pl.sendSignChange(s.getLocation(), s.getLines());
-									}
-								}.runTaskLater( Movecraft.getInstance(), ( 20 * 3 ) );
-							}		*/					
 
 						} else if ( transferData instanceof StorageCrateTransferHolder ) {
 							Inventory inventory = Bukkit.createInventory( null, 27, String.format( I18nSupport.getInternationalisedString( "Item - Storage Crate name" ) ) );
