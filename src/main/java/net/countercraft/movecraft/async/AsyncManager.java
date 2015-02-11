@@ -46,6 +46,8 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
+import at.pavlov.cannons.cannon.Cannon;
+
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.flags.DefaultFlag;
 
@@ -65,6 +67,7 @@ public class AsyncManager extends BukkitRunnable {
 	private static final AsyncManager instance = new AsyncManager();
 	private final HashMap<AsyncTask, Craft> ownershipMap = new HashMap<AsyncTask, Craft>();
 	private final HashMap<org.bukkit.entity.TNTPrimed, Double> TNTTracking = new HashMap<org.bukkit.entity.TNTPrimed, Double>();
+	private HashMap<org.bukkit.entity.SmallFireball, Long> FireballTracking = new HashMap <org.bukkit.entity.SmallFireball, Long>();
 	private final BlockingQueue<AsyncTask> finishedAlgorithms = new LinkedBlockingQueue<AsyncTask>();
 	private final HashSet<Craft> clearanceSet = new HashSet<Craft>();
 	private long lastTracerUpdate = 0;
@@ -243,17 +246,34 @@ public class AsyncManager extends BukkitRunnable {
 
 						MapUpdateCommand[] updates = task.getData().getUpdates();
 						EntityUpdateCommand[] eUpdates=task.getData().getEntityUpdates();
+
+						//get list of cannons before sending map updates, to avoid conflicts
+						HashSet<Cannon> shipCannons=null;
+						if( Movecraft.getInstance().getCannonsPlugin()!=null ) {
+							// convert blocklist to location list
+							List<Location> shipLocations=new ArrayList<Location>();
+							for(MovecraftLocation loc : task.getData().getBlockList()) {
+								Location tloc=new Location(task.getCraft().getW(),loc.getX(),loc.getY(),loc.getZ());
+								shipLocations.add(tloc);
+							}
+							shipCannons=Movecraft.getInstance().getCannonsPlugin().getCannonsAPI().getCannons(shipLocations, p, true);
+						}	
+						
 						boolean failed = MapUpdateManager.getInstance().addWorldUpdate( c.getW(), updates, eUpdates);
 
 						if ( !failed ) {
 							sentMapUpdate=true;
 							c.setBlockList( task.getData().getBlockList() );
-
-
 							c.setMinX( task.getData().getMinX() );
 							c.setMinZ( task.getData().getMinZ() );
 							c.setHitBox( task.getData().getHitbox() );
-
+							
+							// move any cannons that were present
+							if( Movecraft.getInstance().getCannonsPlugin()!=null ) {
+								for(Cannon can : shipCannons) {
+									can.move(new Vector(task.getData().getDx(),task.getData().getDy(),task.getData().getDz()));
+								}
+							}
 
 						} else {
 
@@ -284,16 +304,38 @@ public class AsyncManager extends BukkitRunnable {
 						MapUpdateCommand[] updates = task.getUpdates();
 						EntityUpdateCommand[] eUpdates=task.getEntityUpdates();
 
+						//get list of cannons before sending map updates, to avoid conflicts
+						HashSet<Cannon> shipCannons=null;
+						if( Movecraft.getInstance().getCannonsPlugin()!=null ) {
+							// convert blocklist to location list
+							List<Location> shipLocations=new ArrayList<Location>();
+							for(MovecraftLocation loc : task.getCraft().getBlockList()) {
+								Location tloc=new Location(task.getCraft().getW(),loc.getX(),loc.getY(),loc.getZ());
+								shipLocations.add(tloc);
+							}
+							shipCannons=Movecraft.getInstance().getCannonsPlugin().getCannonsAPI().getCannons(shipLocations, p, true);
+						}	
+						
 						boolean failed = MapUpdateManager.getInstance().addWorldUpdate( c.getW(), updates, eUpdates);
  
 						if ( !failed ) {
 							sentMapUpdate=true;
-							
+
 							c.setBlockList( task.getBlockList() );
 							c.setMinX( task.getMinX() );
 							c.setMinZ( task.getMinZ() );
 							c.setHitBox( task.getHitbox() );
 
+							// rotate any cannons that were present
+							if( Movecraft.getInstance().getCannonsPlugin()!=null ) {
+								Location tloc=new Location(task.getCraft().getW(),task.getOriginPoint().getX(),task.getOriginPoint().getY(),task.getOriginPoint().getZ());
+								for(Cannon can : shipCannons) {
+									if(task.getRotation()==net.countercraft.movecraft.utils.Rotation.CLOCKWISE)
+										can.rotateRight(tloc.toVector());
+									if(task.getRotation()==net.countercraft.movecraft.utils.Rotation.ANTICLOCKWISE)
+										can.rotateLeft(tloc.toVector());
+								}
+							}
 						} else {
 
 							Movecraft.getInstance().getLogger().log( Level.SEVERE, String.format( I18nSupport.getInternationalisedString( "Rotation - Craft Collision" ) ) );
@@ -641,25 +683,46 @@ public class AsyncManager extends BukkitRunnable {
 			for( World w : Bukkit.getWorlds()) {
 				if(w!=null) {
 					for(org.bukkit.entity.SmallFireball fireball : w.getEntitiesByClass(org.bukkit.entity.SmallFireball.class)) {
-						if(!(fireball.getShooter() instanceof org.bukkit.entity.LivingEntity)) {
+						if(!(fireball.getShooter() instanceof org.bukkit.entity.LivingEntity)) { // means it was launched by a dispenser
 							if(w.getPlayers().size()>0) {
 								Player p=w.getPlayers().get(0);
-								// give it a living shooter, then delete the fireball after 4 seconds
+								double closest=1000000000.0;
+								for(Player pi : w.getPlayers()) {
+									if(pi.getLocation().distanceSquared(fireball.getLocation())<closest) {
+										closest=pi.getLocation().distanceSquared(fireball.getLocation());
+										p=pi;
+									}
+								}
+								// give it a living shooter, then set the fireball to be deleted
 								fireball.setShooter(p);
 								final org.bukkit.entity.SmallFireball ffb=fireball;
-	
-								BukkitTask deleteFireballTask = new BukkitRunnable() {
+								if(!FireballTracking.containsKey(fireball)) {
+									FireballTracking.put(fireball, System.currentTimeMillis());
+								}
+/*								BukkitTask deleteFireballTask = new BukkitRunnable() {
 									@Override
 									public void run() {
 										ffb.remove();
 									}
-								}.runTaskLater( Movecraft.getInstance(), ( 20 * Settings.FireballLifespan ) );
-	
+								}.runTaskLater( Movecraft.getInstance(), ( 20 * Settings.FireballLifespan ) );*/
 							}
 						}
 					}
 				}
 			}
+			
+			int timelimit= 20 * Settings.FireballLifespan * 50;
+			//then, removed any exploded TNT from tracking
+			Iterator<org.bukkit.entity.SmallFireball> fireballI=FireballTracking.keySet().iterator();
+			while(fireballI.hasNext()) {
+				org.bukkit.entity.SmallFireball fireball=fireballI.next();
+				if(fireball!=null)
+					if(System.currentTimeMillis()-FireballTracking.get(fireball) > timelimit) {
+						fireball.remove();
+						fireballI.remove();
+					}
+				}
+			
 			lastFireballCheck=System.currentTimeMillis();
 		}
 	}

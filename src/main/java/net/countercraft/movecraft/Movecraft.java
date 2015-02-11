@@ -18,6 +18,7 @@
 package net.countercraft.movecraft;
 
 import net.countercraft.movecraft.async.AsyncManager;
+import at.pavlov.cannons.Cannons;
 
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 
@@ -45,6 +46,7 @@ import java.util.logging.Logger;
 public class Movecraft extends JavaPlugin {
 	private static Movecraft instance;
 	private static WorldGuardPlugin worldGuardPlugin;
+	private static Cannons cannonsPlugin=null;
 	private Logger logger;
 	private boolean shuttingDown;
 	public HashMap<MovecraftLocation, Long> blockFadeTimeMap = new HashMap<MovecraftLocation, Long>();
@@ -105,7 +107,13 @@ public class Movecraft extends JavaPlugin {
 			logger.log(Level.INFO, "Settings: WorldGuardBlockMoveOnBuildPerm - "+Settings.WorldGuardBlockMoveOnBuildPerm+", WorldGuardBlockSinkOnPVPPerm - "+Settings.WorldGuardBlockSinkOnPVPPerm);			
 		}
 		worldGuardPlugin=(WorldGuardPlugin)wGPlugin;
-
+		
+		Plugin plug = getServer().getPluginManager().getPlugin("Cannons");
+        if (plug != null && plug instanceof Cannons) {
+            cannonsPlugin = (Cannons) plug;
+			logger.log(Level.INFO, "Found a compatible version of Cannons. Enabling Cannons integration");			
+        }
+        
 		if (!new File(getDataFolder()
 				+ "/localisation/movecraftlang_en.properties").exists()) {
 			this.saveResource("localisation/movecraftlang_en.properties", false);
@@ -182,5 +190,9 @@ public class Movecraft extends JavaPlugin {
 	
 	public WorldGuardPlugin getWorldGuardPlugin() {
 		return worldGuardPlugin;
+	}
+	
+	public Cannons getCannonsPlugin() {
+		return cannonsPlugin;
 	}
 }
