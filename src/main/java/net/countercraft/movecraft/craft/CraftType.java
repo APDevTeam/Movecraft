@@ -152,10 +152,22 @@ public class CraftType {
 				Integer typeID=(Integer)i;
 				rowList.add(typeID);
 			}
-
+			
+			// then read in the limitation values, low and high
 			ArrayList<Object> objList=(ArrayList<Object>)objMap.get(i);
 			ArrayList<Double> limitList=new ArrayList<Double>();
 			for(Object limitObj : objList) {
+				if(limitObj instanceof String) {
+					String str=(String)limitObj;
+					if(str.contains("N")) { // a # indicates a specific quantity, IE: #2 for exactly 2 of the block
+						String[] parts=str.split("N");
+						Double val=Double.valueOf(parts[1]);
+						limitList.add(10000.0+val);  // limit greater than 10000 indicates an specific quantity (not a ratio)
+					} else {
+						Double val=Double.valueOf(str);
+						limitList.add(val);
+					}
+				} else
 				if(limitObj instanceof Integer) {
 					Double ret=((Integer)limitObj).doubleValue();
 					limitList.add(ret);

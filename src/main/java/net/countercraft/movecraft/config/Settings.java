@@ -38,4 +38,5 @@ public class Settings {
 	public static int FadeWrecksAfter = 0;
 	public static int ManOverBoardTimeout = 60;
 	public static int FireballLifespan = 6;
+	public static boolean FireballPenetration = true;
 }

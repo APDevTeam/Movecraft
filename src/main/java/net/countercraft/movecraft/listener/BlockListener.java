@@ -19,6 +19,7 @@ package net.countercraft.movecraft.listener;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Random;
 
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
@@ -42,6 +43,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockIgniteEvent;
 import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.BlockRedstoneEvent;
@@ -52,6 +54,9 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
+
+import com.sk89q.worldguard.protection.ApplicableRegionSet;
+import com.sk89q.worldguard.protection.flags.DefaultFlag;
 
 public class BlockListener implements Listener {
 
@@ -152,6 +157,35 @@ public class BlockListener implements Listener {
         }
     }
 	
+	@EventHandler(priority = EventPriority.NORMAL)
+	public void onBlockIgnite(BlockIgniteEvent event) {
+		if(!Settings.FireballPenetration)
+			return;
+		// replace blocks with fire occasionally, to prevent fast craft from simply ignoring fire
+		if(event.getCause()==BlockIgniteEvent.IgniteCause.FIREBALL) {
+			Block testBlock=event.getBlock().getRelative(-1, 0, 0);
+			if(!testBlock.getType().isBurnable())
+				testBlock=event.getBlock().getRelative(1, 0, 0);
+			if(!testBlock.getType().isBurnable())
+				testBlock=event.getBlock().getRelative(0, 0, -1);
+			if(!testBlock.getType().isBurnable())
+				testBlock=event.getBlock().getRelative(0, 0, 1);
+			
+			if(testBlock.getType().isBurnable()) {
+				boolean isBurnAllowed=true;
+				// check to see if fire spread is allowed, don't check if worldguard integration is not enabled
+				if(Movecraft.getInstance().getWorldGuardPlugin()!=null && (Settings.WorldGuardBlockMoveOnBuildPerm || Settings.WorldGuardBlockSinkOnPVPPerm)) {
+					ApplicableRegionSet set = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(testBlock.getWorld()).getApplicableRegions(testBlock.getLocation());
+					if(set.allows(DefaultFlag.FIRE_SPREAD)==false) {
+						isBurnAllowed=false;
+					}
+				}
+				if(isBurnAllowed)
+					testBlock.setType(org.bukkit.Material.AIR);
+			}
+		}
+    }
+
 	/*@EventHandler(priority = EventPriority.HIGHEST)
 	public void onBlockPhysicsEvent(BlockPhysicsEvent e) {
 		Location loc=e.getBlock().getLocation();

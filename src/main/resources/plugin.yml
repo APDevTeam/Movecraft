@@ -3,8 +3,8 @@ softdepend: [WorldGuard, WorldEdit, Cannons]
 version: 3.1.X71
 #version: ${env.BUILD_NUMBER}
 description: The original flight and movement plugin for minecraft.
-author: AJCStriker
-website: http://madrealms.net/forums/
+author: BaccaYarro
+website: http://www.youtube.com/BaccaYarro
 main: net.countercraft.movecraft.Movecraft
 database: false
 commands:

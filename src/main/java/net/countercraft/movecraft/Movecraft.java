@@ -92,6 +92,7 @@ public class Movecraft extends JavaPlugin {
 		Settings.TracerRateTicks = getConfig().getDouble("TracerRateTicks", 5.0);
 		Settings.ManOverBoardTimeout = getConfig().getInt("ManOverBoardTimeout", 30);
 		Settings.FireballLifespan = getConfig().getInt("FireballLifespan", 6);
+		Settings.FireballPenetration = getConfig().getBoolean("FireballPenetration", true);
 		Settings.RequireCreatePerm = getConfig().getBoolean("RequireCreatePerm", false);
 		Settings.TNTContactExplosives = getConfig().getBoolean("TNTContactExplosives", true);
 		Settings.FadeWrecksAfter = getConfig().getInt("FadeWrecksAfter", 0);

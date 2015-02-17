@@ -132,7 +132,7 @@ public class AsyncManager extends BukkitRunnable {
 						if ( craftsInWorld != null ) {
 							for ( Craft craft : craftsInWorld ) {
 
-								if ( BlockUtils.arrayContainsOverlap( craft.getBlockList(), data.getBlockList() ) && p!=null) {
+								if ( BlockUtils.arrayContainsOverlap( craft.getBlockList(), data.getBlockList() ) && notifyP!=null) {  // changed from p!=null
 									if(craft.getType()==c.getType() || craft.getBlockList().length<=data.getBlockList().length) {
 										notifyP.sendMessage( String.format( I18nSupport.getInternationalisedString( "Detection - Failed Craft is already being controlled" ) ) );
 										failed = true;
@@ -145,6 +145,7 @@ public class AsyncManager extends BukkitRunnable {
 										// remove the new craft from the parent craft
 										List<MovecraftLocation> parentBlockList=ListUtils.subtract(Arrays.asList(craft.getBlockList()), Arrays.asList(data.getBlockList()));
 										craft.setBlockList(parentBlockList.toArray( new MovecraftLocation[1] ));
+										craft.setOrigBlockCount(craft.getOrigBlockCount()-data.getBlockList().length);
 
 										// Rerun the polygonal bounding formula for the parent craft
 										Integer parentMaxX = null;
@@ -249,14 +250,14 @@ public class AsyncManager extends BukkitRunnable {
 
 						//get list of cannons before sending map updates, to avoid conflicts
 						HashSet<Cannon> shipCannons=null;
-						if( Movecraft.getInstance().getCannonsPlugin()!=null ) {
+						if( Movecraft.getInstance().getCannonsPlugin()!=null && c.getNotificationPlayer()!=null) {
 							// convert blocklist to location list
 							List<Location> shipLocations=new ArrayList<Location>();
-							for(MovecraftLocation loc : task.getData().getBlockList()) {
-								Location tloc=new Location(task.getCraft().getW(),loc.getX(),loc.getY(),loc.getZ());
+							for(MovecraftLocation loc : c.getBlockList()) {
+								Location tloc=new Location(c.getW(),loc.getX(),loc.getY(),loc.getZ());
 								shipLocations.add(tloc);
 							}
-							shipCannons=Movecraft.getInstance().getCannonsPlugin().getCannonsAPI().getCannons(shipLocations, p, true);
+							shipCannons=Movecraft.getInstance().getCannonsPlugin().getCannonsAPI().getCannons(shipLocations, c.getNotificationPlayer().getUniqueId(), true);
 						}	
 						
 						boolean failed = MapUpdateManager.getInstance().addWorldUpdate( c.getW(), updates, eUpdates);
@@ -269,7 +270,7 @@ public class AsyncManager extends BukkitRunnable {
 							c.setHitBox( task.getData().getHitbox() );
 							
 							// move any cannons that were present
-							if( Movecraft.getInstance().getCannonsPlugin()!=null ) {
+							if( Movecraft.getInstance().getCannonsPlugin()!=null && shipCannons!=null) {
 								for(Cannon can : shipCannons) {
 									can.move(new Vector(task.getData().getDx(),task.getData().getDy(),task.getData().getDz()));
 								}
@@ -306,14 +307,14 @@ public class AsyncManager extends BukkitRunnable {
 
 						//get list of cannons before sending map updates, to avoid conflicts
 						HashSet<Cannon> shipCannons=null;
-						if( Movecraft.getInstance().getCannonsPlugin()!=null ) {
+						if( Movecraft.getInstance().getCannonsPlugin()!=null && c.getNotificationPlayer()!=null) {
 							// convert blocklist to location list
 							List<Location> shipLocations=new ArrayList<Location>();
-							for(MovecraftLocation loc : task.getCraft().getBlockList()) {
-								Location tloc=new Location(task.getCraft().getW(),loc.getX(),loc.getY(),loc.getZ());
+							for(MovecraftLocation loc : c.getBlockList()) {
+								Location tloc=new Location(c.getW(),loc.getX(),loc.getY(),loc.getZ());
 								shipLocations.add(tloc);
 							}
-							shipCannons=Movecraft.getInstance().getCannonsPlugin().getCannonsAPI().getCannons(shipLocations, p, true);
+							shipCannons=Movecraft.getInstance().getCannonsPlugin().getCannonsAPI().getCannons(shipLocations, c.getNotificationPlayer().getUniqueId(), true);
 						}	
 						
 						boolean failed = MapUpdateManager.getInstance().addWorldUpdate( c.getW(), updates, eUpdates);
@@ -327,7 +328,7 @@ public class AsyncManager extends BukkitRunnable {
 							c.setHitBox( task.getHitbox() );
 
 							// rotate any cannons that were present
-							if( Movecraft.getInstance().getCannonsPlugin()!=null ) {
+							if( Movecraft.getInstance().getCannonsPlugin()!=null && shipCannons!=null) {
 								Location tloc=new Location(task.getCraft().getW(),task.getOriginPoint().getX(),task.getOriginPoint().getY(),task.getOriginPoint().getZ());
 								for(Cannon can : shipCannons) {
 									if(task.getRotation()==net.countercraft.movecraft.utils.Rotation.CLOCKWISE)
@@ -605,31 +606,32 @@ public class AsyncManager extends BukkitRunnable {
 				}
 
 				// sink all the sinking ships
-				for (Craft pcraft : CraftManager.getInstance().getCraftsInWorld(w)) {
-					if(pcraft!=null && pcraft.getSinking()==true) {
-						if(pcraft.getBlockList().length==0) {
-							CraftManager.getInstance().removeCraft( pcraft );
-						}
-						if(pcraft.getMinY()<-1) {
-							CraftManager.getInstance().removeCraft( pcraft );							
-						}
-						long ticksElapsed = ( System.currentTimeMillis() - pcraft.getLastCruiseUpdate() ) / 50;
-						if ( Math.abs( ticksElapsed ) >= pcraft.getType().getSinkRateTicks() ) {
-							int dx=0;
-							int dz=0;
-							if(pcraft.getType().getKeepMovingOnSink()) {
-								dx=pcraft.getLastDX();
-								dz=pcraft.getLastDZ();								
+				if(CraftManager.getInstance().getCraftsInWorld(w)!=null)
+					for (Craft pcraft : CraftManager.getInstance().getCraftsInWorld(w)) {
+						if(pcraft!=null && pcraft.getSinking()==true) {
+							if(pcraft.getBlockList().length==0) {
+								CraftManager.getInstance().removeCraft( pcraft );
 							}
-							pcraft.translate(dx, -1, dz);
-							if(pcraft.getLastCruiseUpdate()!=-1) {
-								pcraft.setLastCruisUpdate(System.currentTimeMillis());
-							} else {
-								pcraft.setLastCruisUpdate(0);
+							if(pcraft.getMinY()<-1) {
+								CraftManager.getInstance().removeCraft( pcraft );							
+							}
+							long ticksElapsed = ( System.currentTimeMillis() - pcraft.getLastCruiseUpdate() ) / 50;
+							if ( Math.abs( ticksElapsed ) >= pcraft.getType().getSinkRateTicks() ) {
+								int dx=0;
+								int dz=0;
+								if(pcraft.getType().getKeepMovingOnSink()) {
+									dx=pcraft.getLastDX();
+									dz=pcraft.getLastDZ();								
+								}
+								pcraft.translate(dx, -1, dz);
+								if(pcraft.getLastCruiseUpdate()!=-1) {
+									pcraft.setLastCruisUpdate(System.currentTimeMillis());
+								} else {
+									pcraft.setLastCruisUpdate(0);
+								}
 							}
 						}
 					}
-				}
 			}
 		}
 	}

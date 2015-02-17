@@ -318,25 +318,47 @@ public class DetectionTask extends AsyncTask {
 			float blockPercentage = ( ( ( float ) numberOfBlocks / data.getBlockList().length ) * 100 );
 			Double minPercentage = flyBlocks.get( i ).get( 0 );
 			Double maxPercentage = flyBlocks.get( i ).get( 1 );
-
-			if ( blockPercentage < minPercentage ) {
-				if(i.get(0)<10000) {
-					fail( String.format( I18nSupport.getInternationalisedString( "Detection - Failed - Not enough flyblock" ), i.get(0), minPercentage, blockPercentage ) );
-					return false;
-				} else {
-					fail( String.format( I18nSupport.getInternationalisedString( "Detection - Failed - Not enough flyblock" ), (i.get(0)-10000)>>4, minPercentage, blockPercentage ) );
-					return false;
+			if ( minPercentage<10000.0 ) {
+				if ( blockPercentage < minPercentage ) {
+					if(i.get(0)<10000) {
+						fail( String.format( I18nSupport.getInternationalisedString( "Detection - Failed - Not enough flyblock" ), i.get(0), minPercentage, blockPercentage ) );
+						return false;
+					} else {
+						fail( String.format( I18nSupport.getInternationalisedString( "Detection - Failed - Not enough flyblock" ), (i.get(0)-10000)>>4, minPercentage, blockPercentage ) );
+						return false;
+					}
 				}
-
-			} else if ( blockPercentage > maxPercentage ) {
-				if(i.get(0)<10000) {
-					fail( String.format( I18nSupport.getInternationalisedString( "Detection - Failed - Too much flyblock" ), i.get(0), maxPercentage, blockPercentage ) );
-					return false;
-				} else {
-					fail( String.format( I18nSupport.getInternationalisedString( "Detection - Failed - Too much flyblock" ), (i.get(0)-10000)>>4, maxPercentage, blockPercentage ) );
-					return false;
+			} else {
+				if(numberOfBlocks<flyBlocks.get( i ).get( 0 )-10000.0) {
+					if(i.get(0)<10000) {
+						fail( String.format( I18nSupport.getInternationalisedString( "Detection - Failed - Not enough flyblock" ), i.get(0), numberOfBlocks, flyBlocks.get( i ).get( 0 )-10000 ) );
+						return false;
+					} else {
+						fail( String.format( I18nSupport.getInternationalisedString( "Detection - Failed - Not enough flyblock" ), (i.get(0)-10000)>>4, numberOfBlocks, flyBlocks.get( i ).get( 0 )-10000 ) );						
+						return false;
+					}
 				}
-
+			}
+			if ( maxPercentage<10000.0 ) {				
+				if ( blockPercentage > maxPercentage ) {
+					if(i.get(0)<10000) {
+						fail( String.format( I18nSupport.getInternationalisedString( "Detection - Failed - Too much flyblock" ), i.get(0), maxPercentage, blockPercentage ) );
+						return false;
+					} else {
+						fail( String.format( I18nSupport.getInternationalisedString( "Detection - Failed - Too much flyblock" ), (i.get(0)-10000)>>4, maxPercentage, blockPercentage ) );
+						return false;
+					}
+				}
+			} else {
+				if(numberOfBlocks>flyBlocks.get( i ).get( 1 )-10000.0) {
+					if(i.get(0)<10000) {
+						fail( String.format( I18nSupport.getInternationalisedString( "Detection - Failed - Too much flyblock" ), i.get(0), numberOfBlocks.doubleValue(), flyBlocks.get( i ).get( 1 )-10000 ) );
+						return false;
+					} else {
+						fail( String.format( I18nSupport.getInternationalisedString( "Detection - Failed - Too much flyblock" ), (i.get(0)-10000)>>4, numberOfBlocks.doubleValue(), flyBlocks.get( i ).get( 1 )-10000 ) );						
+						return false;
+					}
+				}				
 			}
 		}
 
