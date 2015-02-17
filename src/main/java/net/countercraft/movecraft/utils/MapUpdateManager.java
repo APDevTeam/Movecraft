@@ -139,7 +139,7 @@ public class MapUpdateManager extends BukkitRunnable {
 		//don't blank out block if it's already air, or if blocktype will not be changed
 		if(Settings.CompatibilityMode) { 
 			if(origType==149 || origType==150) { // necessary because bukkit does not handle comparators correctly
-				w.getBlockAt(x, y, z).setType(org.bukkit.Material.SIGN_POST);
+				w.getBlockAt(x, y, z).setType(org.bukkit.Material.SIGN);
 				BlockState state=w.getBlockAt( x, y, z ).getState();
 				Sign s=(Sign)state;
 				s.setLine(0, "PLACEHOLDER");
