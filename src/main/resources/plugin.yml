@@ -1,6 +1,6 @@
 name: Movecraft
 softdepend: [WorldGuard, WorldEdit, Cannons]
-version: 3.1.X71
+version: 3.1.X73
 #version: ${env.BUILD_NUMBER}
 description: The original flight and movement plugin for minecraft.
 author: BaccaYarro
