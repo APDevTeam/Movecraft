@@ -45,6 +45,7 @@ import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
+import org.mozilla.javascript.JavaScriptException;
 
 import at.pavlov.cannons.cannon.Cannon;
 
@@ -788,6 +789,14 @@ public class AsyncManager extends BukkitRunnable {
 						catch(java.util.ConcurrentModificationException e)
 						{
 							numTries++;
+						}
+						catch(java.lang.NegativeArraySizeException e) 
+						{
+							Movecraft.getInstance().blockFadeTimeMap = new HashMap<MovecraftLocation, Long>();
+							Movecraft.getInstance().blockFadeTypeMap = new HashMap<MovecraftLocation, Integer>();
+							Movecraft.getInstance().blockFadeWaterMap = new HashMap<MovecraftLocation, Boolean>();
+							Movecraft.getInstance().blockFadeWorldMap = new HashMap<MovecraftLocation, World>();
+							locations=new CopyOnWriteArrayList <MovecraftLocation>(Movecraft.getInstance().blockFadeTimeMap.keySet());
 						}
 					}
 					

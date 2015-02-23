@@ -119,14 +119,7 @@ public class Movecraft extends JavaPlugin {
 				+ "/localisation/movecraftlang_en.properties").exists()) {
 			this.saveResource("localisation/movecraftlang_en.properties", false);
 		}
-		if (!new File(getDataFolder()
-				+ "/types/airship.craft").exists()) {
-			this.saveResource("types/airship.craft", false);
-		}
-		if (!new File(getDataFolder()
-				+ "/types/airskiff.craft").exists()) {
-			this.saveResource("types/airskiff.craft", false);
-		}
+
 		I18nSupport.init();
 		if (shuttingDown && Settings.IGNORE_RESET) {
 			logger.log(

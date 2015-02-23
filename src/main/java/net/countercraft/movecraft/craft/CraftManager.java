@@ -56,6 +56,16 @@ public class CraftManager {
 
 		if ( !craftsFile.exists() ) {
 			craftsFile.mkdirs();
+			Movecraft.getInstance().saveResource("types/airship.craft", false);
+			Movecraft.getInstance().saveResource("types/airskiff.craft", false);
+			Movecraft.getInstance().saveResource("types/BigAirship.craft", false);
+			Movecraft.getInstance().saveResource("types/BigSubAirship.craft", false);
+			Movecraft.getInstance().saveResource("types/elevator.craft", false);
+			Movecraft.getInstance().saveResource("types/LaunchTorpedo.craft", false);
+			Movecraft.getInstance().saveResource("types/Ship.craft", false);
+			Movecraft.getInstance().saveResource("types/SubAirship.craft", false);
+			Movecraft.getInstance().saveResource("types/Submarine.craft", false);
+			Movecraft.getInstance().saveResource("types/Turret.craft", false);
 		}
 
 		HashSet<CraftType> craftTypesSet = new HashSet<CraftType>();
