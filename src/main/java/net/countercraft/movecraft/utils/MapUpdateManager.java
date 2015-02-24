@@ -79,6 +79,7 @@ public class MapUpdateManager extends BukkitRunnable {
 	
 	private void updateBlock(MapUpdateCommand m, World w, Map<MovecraftLocation, TransferData> dataMap, Set<net.minecraft.server.v1_8_R1.Chunk> chunks, Set<Chunk> cmChunks, HashMap<MovecraftLocation, Byte> origLightMap, boolean placeDispensers) {
 		MovecraftLocation workingL = m.getNewBlockLocation();
+		final int[] blocksToBlankOut = new int[]{ 23, 54, 61, 62, 63, 68, 116, 117, 146, 149, 150, 154, 158, 145 };		
 
 		int x = workingL.getX();
 		int y = workingL.getY();
@@ -91,21 +92,8 @@ public class MapUpdateManager extends BukkitRunnable {
 			return;
 		}
 			
-		// Calculate chunk if necessary, check list of chunks already loaded first
-	
-/*		boolean foundChunk=false;
-		for (Chunk testChunk : chunkList) {
-			int sx=x>>4;
-			int sz=z>>4;
-			if((testChunk.getX()==sx)&&(testChunk.getZ()==sz)) {
-				foundChunk=true;
-				chunk=testChunk;
-			}
-		}
-		if(!foundChunk) {*/
-			chunk = w.getBlockAt( x, y, z ).getChunk();
-//			chunkList.add(chunk);							
-//		}
+		
+		chunk = w.getBlockAt( x, y, z ).getChunk();
 
 		net.minecraft.server.v1_8_R1.Chunk c = null;
 		Chunk cmC = null;
@@ -114,9 +102,6 @@ public class MapUpdateManager extends BukkitRunnable {
 		} else {
 			c = ( ( CraftChunk ) chunk ).getHandle();
 		}
-
-		//get the inner-chunk index of the block to change
-		//modify the block in the chunk
 
 		TransferData transferData = dataMap.get( workingL );
 
@@ -136,36 +121,27 @@ public class MapUpdateManager extends BukkitRunnable {
 		byte origData=w.getBlockAt( x, y, z ).getData();
 		boolean success = false;
 
-		//don't blank out block if it's already air, or if blocktype will not be changed
 		if(Settings.CompatibilityMode) { 
-			if(origType==149 || origType==150) { // necessary because bukkit does not handle comparators correctly. This code does not prevent console spam, but it does prevent chunk corruption
-				w.getBlockAt(x, y, z).setType(org.bukkit.Material.SIGN_POST);
-				BlockState state=w.getBlockAt( x, y, z ).getState();
-				Sign s=(Sign)state;
-				s.setLine(0, "PLACEHOLDER");
-				s.update();
-				w.getBlockAt(x, y, z).setType(org.bukkit.Material.AIR);
-				}
+
 			if(origType!=newTypeID || origData!=data) {
+				boolean doBlankOut=(Arrays.binarySearch(blocksToBlankOut,newTypeID)>=0);
+				if(doBlankOut) {
+					w.getBlockAt(x, y, z).setType(org.bukkit.Material.AIR);
+				}
+				
+				if(origType==149 || origType==150) { // necessary because bukkit does not handle comparators correctly. This code does not prevent console spam, but it does prevent chunk corruption
+					w.getBlockAt(x, y, z).setType(org.bukkit.Material.SIGN_POST);
+					BlockState state=w.getBlockAt( x, y, z ).getState();
+					Sign s=(Sign)state;
+					s.setLine(0, "PLACEHOLDER");
+					s.update();
+					w.getBlockAt(x, y, z).setType(org.bukkit.Material.AIR);
+					}
 				if(newTypeID==149 || newTypeID==150) {
 					if(newTypeID==149)
 						w.getBlockAt(x, y, z).setType(org.bukkit.Material.REDSTONE_COMPARATOR_OFF);
 					else
 						w.getBlockAt(x, y, z).setType(org.bukkit.Material.REDSTONE_COMPARATOR_ON);
-				} else if(newTypeID==63 || newTypeID==68) {
-					w.getBlockAt( x, y, z ).setTypeIdAndData( newTypeID, data, false );
-/*					for ( Player p : w.getPlayers() ) {
-						int playerChunkX=p.getLocation().getBlockX()>>4;
-						int playerChunkZ=p.getLocation().getBlockZ()>>4;
-						if(Math.abs(playerChunkX-cmC.getX())<Bukkit.getServer().getViewDistance())
-							if(Math.abs(playerChunkZ-cmC.getZ())<Bukkit.getServer().getViewDistance()) {
-								Location loc=new Location(w,x,y,z);
-								p.sendBlockChange(loc, newTypeID, data);
-							}
-					}*/
-//					Sign s=(Sign) w.getBlockAt( x, y, z ).getState();
-//					s.setLine(0, "PLACEHOLDER");
-//					s.update();
 				} else {
 					w.getBlockAt( x, y, z ).setTypeIdAndData( newTypeID, data, false );
 				}
@@ -174,9 +150,9 @@ public class MapUpdateManager extends BukkitRunnable {
 				cmChunks.add( cmC );
 			}
 		} else {
+			BlockPosition position = new BlockPosition(x, y, z);
 			if(origType==149 || origType==150) { // bukkit can't remove comparators safely, it screws up the NBT data. So turn it to a sign, then remove it.
 
-		        BlockPosition position = new BlockPosition(x, y, z);
 				c.a( position, CraftMagicNumbers.getBlock(org.bukkit.Material.AIR).fromLegacyData(0));
 				c.a( position, CraftMagicNumbers.getBlock(org.bukkit.Material.SIGN_POST).fromLegacyData(0));
 				
@@ -207,8 +183,8 @@ public class MapUpdateManager extends BukkitRunnable {
 									linearDist+=Math.abs(posz-centerZ);
 									if(linearDist<=15) {
 //										((CraftWorld) w).getHandle().b(EnumSkyBlock.BLOCK, x, y, z, lightLevel); Changed for 1.8, and quite possibly wrong:
-										BlockPosition position = new BlockPosition(x, y, z);
-										((CraftWorld) w).getHandle().b(EnumSkyBlock.BLOCK, position);
+										BlockPosition positioni = new BlockPosition(posx, posy, posz);
+										((CraftWorld) w).getHandle().b(EnumSkyBlock.BLOCK, positioni);
 									}
 								}
 						}
@@ -216,7 +192,6 @@ public class MapUpdateManager extends BukkitRunnable {
 				}
 		
 				if(origType!=newTypeID || origData!=data) {
-					BlockPosition position = new BlockPosition(x, y, z);
 					success = c.a( position, CraftMagicNumbers.getBlock(newTypeID).fromLegacyData(data) ) != null;
 				} else {
 					success=true;
@@ -227,7 +202,6 @@ public class MapUpdateManager extends BukkitRunnable {
 				// set light level to whatever it was before the move
 				if(m.getOldBlockLocation()!=null) {
 //					((CraftWorld) w).getHandle().b(EnumSkyBlock.BLOCK, x, y, z, lightLevel); Changed for 1.8, and quite possibly wrong:
-					BlockPosition position = new BlockPosition(x, y, z);
 					((CraftWorld) w).getHandle().b(EnumSkyBlock.BLOCK, position);
 				}
 				if ( !chunks.contains( c ) ) {
@@ -473,11 +447,9 @@ public class MapUpdateManager extends BukkitRunnable {
 							StorageChestItem.setInventoryOfCrateAtLocation( inventory, l, w );
 
 						} else if ( transferData instanceof InventoryTransferHolder ) {
-
 							InventoryTransferHolder invData = ( InventoryTransferHolder ) transferData;
 							InventoryHolder inventoryHolder = ( InventoryHolder ) w.getBlockAt( l.getX(), l.getY(), l.getZ() ).getState();
 							inventoryHolder.getInventory().setContents( invData.getInvetory() );
-
 						} else if ( transferData instanceof CommandBlockTransferHolder) {
 							CommandBlockTransferHolder cbData=(CommandBlockTransferHolder) transferData;
 							CommandBlock cblock=(CommandBlock) w.getBlockAt( l.getX(), l.getY(), l.getZ() ).getState();
