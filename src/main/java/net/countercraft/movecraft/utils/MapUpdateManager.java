@@ -64,6 +64,7 @@ import java.util.logging.Level;
 public class MapUpdateManager extends BukkitRunnable {
 	private final HashMap<World, ArrayList<MapUpdateCommand>> updates = new HashMap<World, ArrayList<MapUpdateCommand>>();
 	private final HashMap<World, ArrayList<EntityUpdateCommand>> entityUpdates = new HashMap<World, ArrayList<EntityUpdateCommand>>();
+        private final HashMap<World, ArrayList<ItemDropUpdateCommand>> itemDropUpdates = new HashMap<World, ArrayList<ItemDropUpdateCommand>>();
 	private HashSet<Location> protectedBlocks = new HashSet<Location>();
 	
 	private MapUpdateManager() {
@@ -224,7 +225,9 @@ public class MapUpdateManager extends BukkitRunnable {
 			if ( w != null ) {
 				List<MapUpdateCommand> updatesInWorld = updates.get( w );
 				List<EntityUpdateCommand> entityUpdatesInWorld = entityUpdates.get( w );
+                                List<ItemDropUpdateCommand> itemDropUpdatesInWorld = itemDropUpdates.get( w );
 				Map<MovecraftLocation, List<EntityUpdateCommand>> entityMap = new HashMap<MovecraftLocation, List<EntityUpdateCommand>>();
+                                Map<MovecraftLocation, List<ItemDropUpdateCommand>> itemMap = new HashMap<MovecraftLocation, List<ItemDropUpdateCommand>>();
 				Map<MovecraftLocation, TransferData> dataMap = new HashMap<MovecraftLocation, TransferData>();
 				HashMap<MovecraftLocation, Byte> origLightMap = new HashMap<MovecraftLocation, Byte>();
 				Set<net.minecraft.server.v1_8_R1.Chunk> chunks = null; 
@@ -234,10 +237,10 @@ public class MapUpdateManager extends BukkitRunnable {
 				} else {
 					chunks = new HashSet<net.minecraft.server.v1_8_R1.Chunk>();
 				}
-				ArrayList<Player> unupdatedPlayers=new ArrayList<Player>(Movecraft.getInstance().getServer().getOnlinePlayers());
+//unused			ArrayList<Player> unupdatedPlayers=new ArrayList<Player>(Movecraft.getInstance().getServer().getOnlinePlayers());
 
 //				ArrayList<Chunk> chunkList = new ArrayList<Chunk>();
-				boolean isFirstChunk=true;
+//unused			boolean isFirstChunk=true;
 				
 				// set all old and new blocks that are fragile to be protected
 /*				for ( MapUpdateCommand c : updatesInWorld ) {
@@ -257,6 +260,27 @@ public class MapUpdateManager extends BukkitRunnable {
 						}
 					}
 				}*/
+                                
+                                
+                                //drop harvested yield before update blocks, because in blocks update can be part of double block (f.e: double_plant,bed, etc.)
+                                if(itemDropUpdatesInWorld!=null) {
+					for( ItemDropUpdateCommand i : itemDropUpdatesInWorld) {
+						if(i!=null) {                                                        
+                                                        final World world = w;
+                                                        final Location loc = i.getLocation();
+                                                        final ItemStack stack = i.getItemStack();
+							if(i.getItemStack() instanceof ItemStack) {
+								// drop Item
+								BukkitTask dropTask = new BukkitRunnable() {
+									@Override
+									public void run() {
+                                                                            world.dropItemNaturally(loc, stack);
+									}
+								}.runTaskLater( Movecraft.getInstance(), ( 20 * 1 ) );
+							}
+						}
+					}
+				}
 				
 				// Preprocessing
 				for ( MapUpdateCommand c : updatesInWorld ) {
@@ -458,9 +482,11 @@ public class MapUpdateManager extends BukkitRunnable {
 							cblock.update();
 						}
 						w.getBlockAt( l.getX(), l.getY(), l.getZ() ).setData( transferData.getData() );
-					} catch ( Exception e ) {
+					} catch ( IndexOutOfBoundsException e ) {
 						Movecraft.getInstance().getLogger().log( Level.SEVERE, "Severe error in map updater" );
-					}
+					} catch (IllegalArgumentException e) {
+                                            Movecraft.getInstance().getLogger().log( Level.SEVERE, "Severe error in map updater" );
+                    }
 
 				}
 				
@@ -549,8 +575,8 @@ public class MapUpdateManager extends BukkitRunnable {
 		long endTime=System.currentTimeMillis();
 //		Movecraft.getInstance().getServer().broadcastMessage("Map update took (ms): "+(endTime-startTime));
 	}
-
-	public boolean addWorldUpdate( World w, MapUpdateCommand[] mapUpdates, EntityUpdateCommand[] eUpdates) {
+        
+        public boolean addWorldUpdate( World w, MapUpdateCommand[] mapUpdates, EntityUpdateCommand[] eUpdates, ItemDropUpdateCommand[] iUpdates) {
 		ArrayList<MapUpdateCommand> get = updates.get( w );
 		if ( get != null ) {
 			updates.remove( w );
@@ -583,12 +609,10 @@ public class MapUpdateManager extends BukkitRunnable {
 			}
 			
 			ArrayList<EntityUpdateCommand> tempEUpdates = new ArrayList<EntityUpdateCommand>();
-			for(EntityUpdateCommand e : eUpdates) {
-				tempEUpdates.add(e);
-			}
+                        tempEUpdates.addAll(Arrays.asList(eUpdates));
 			eGet.addAll( tempEUpdates );
 			entityUpdates.put(w, eGet);
-		}		
+		}
 		return false;
 	}
 	
