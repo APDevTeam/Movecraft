@@ -262,26 +262,6 @@ public class MapUpdateManager extends BukkitRunnable {
 				}*/
                                 
                                 
-                                //drop harvested yield before update blocks, because in blocks update can be part of double block (f.e: double_plant,bed, etc.)
-                                if(itemDropUpdatesInWorld!=null) {
-					for( ItemDropUpdateCommand i : itemDropUpdatesInWorld) {
-						if(i!=null) {                                                        
-                                                        final World world = w;
-                                                        final Location loc = i.getLocation();
-                                                        final ItemStack stack = i.getItemStack();
-							if(i.getItemStack() instanceof ItemStack) {
-								// drop Item
-								BukkitTask dropTask = new BukkitRunnable() {
-									@Override
-									public void run() {
-                                                                            world.dropItemNaturally(loc, stack);
-									}
-								}.runTaskLater( Movecraft.getInstance(), ( 20 * 1 ) );
-							}
-						}
-					}
-				}
-				
 				// Preprocessing
 				for ( MapUpdateCommand c : updatesInWorld ) {
 					MovecraftLocation l;
@@ -312,7 +292,7 @@ public class MapUpdateManager extends BukkitRunnable {
 						}
 					}					
 				}
-				
+                                
 				// track the blocks that entities will be standing on to move them smoothly with the craft
 				if(entityUpdatesInWorld!=null) {
 					for( EntityUpdateCommand i : entityUpdatesInWorld) {
@@ -536,6 +516,26 @@ public class MapUpdateManager extends BukkitRunnable {
 						}
 					}
 				}*/
+                                
+                                //drop harvested yield 
+                                if(itemDropUpdatesInWorld!=null) {
+					for( ItemDropUpdateCommand i : itemDropUpdatesInWorld) {
+						if(i!=null) {                                                        
+                                                        final World world = w;
+                                                        final Location loc = i.getLocation();
+                                                        final ItemStack stack = i.getItemStack();
+							if(i.getItemStack() instanceof ItemStack) {
+								// drop Item
+								BukkitTask dropTask = new BukkitRunnable() {
+									@Override
+									public void run() {
+                                                                            world.dropItemNaturally(loc, stack);
+									}
+								}.runTaskLater( Movecraft.getInstance(), ( 20 * 1 ) );
+							}
+						}
+					}
+				}
 				
 				if(CraftManager.getInstance().getCraftsInWorld(w)!=null) {
 					
@@ -572,6 +572,7 @@ public class MapUpdateManager extends BukkitRunnable {
 		
 		updates.clear();
 		entityUpdates.clear();
+                itemDropUpdates.clear();
 		long endTime=System.currentTimeMillis();
 //		Movecraft.getInstance().getServer().broadcastMessage("Map update took (ms): "+(endTime-startTime));
 	}
@@ -613,6 +614,22 @@ public class MapUpdateManager extends BukkitRunnable {
 			eGet.addAll( tempEUpdates );
 			entityUpdates.put(w, eGet);
 		}
+                
+                //now do item drop updates
+		if(iUpdates!=null) {
+			ArrayList<ItemDropUpdateCommand> iGet = itemDropUpdates.get( w );
+			if ( iGet != null ) {
+				entityUpdates.remove( w ); 
+			} else {
+				iGet = new ArrayList<ItemDropUpdateCommand>();
+			}
+			
+			ArrayList<ItemDropUpdateCommand> tempIDUpdates = new ArrayList<ItemDropUpdateCommand>();
+                        tempIDUpdates.addAll(Arrays.asList(iUpdates));
+			iGet.addAll( tempIDUpdates );
+			itemDropUpdates.put(w, iGet);
+		}
+                
 		return false;
 	}
 	
