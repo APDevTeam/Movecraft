@@ -666,8 +666,8 @@ public class AsyncManager extends BukkitRunnable {
 									BukkitTask removeCobweb = new BukkitRunnable() {
 										@Override
 										public void run() {
-//											fw.getBlockAt(loc).getState().update(); // this might be better, but its slower. The bottom works, but you might lose NMS data. But it only affects the client.
-											fp.sendBlockChange(loc, fw.getBlockAt(loc).getType(), fw.getBlockAt(loc).getData());
+//											fp.sendBlockChange(loc, fw.getBlockAt(loc).getType(), fw.getBlockAt(loc).getData());
+											fp.sendBlockChange(loc, 0, (byte) 0);
 										}
 									}.runTaskLater( Movecraft.getInstance(), 160 );
 								}
