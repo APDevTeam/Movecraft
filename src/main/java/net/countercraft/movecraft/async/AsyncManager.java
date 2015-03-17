@@ -63,6 +63,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
+import net.countercraft.movecraft.utils.ItemDropUpdateCommand;
 
 public class AsyncManager extends BukkitRunnable {
 	private static final AsyncManager instance = new AsyncManager();
@@ -235,7 +236,7 @@ public class AsyncManager extends BukkitRunnable {
 						if(task.getData().collisionExplosion()) {
 							MapUpdateCommand[] updates = task.getData().getUpdates();
 							c.setBlockList( task.getData().getBlockList() );
-							boolean failed = MapUpdateManager.getInstance().addWorldUpdate( c.getW(), updates, null);
+							boolean failed = MapUpdateManager.getInstance().addWorldUpdate( c.getW(), updates, null,null);
 
 							if ( failed ) {
 								Movecraft.getInstance().getLogger().log( Level.SEVERE, String.format( I18nSupport.getInternationalisedString( "Translation - Craft collision" ) ) );
@@ -248,7 +249,7 @@ public class AsyncManager extends BukkitRunnable {
 
 						MapUpdateCommand[] updates = task.getData().getUpdates();
 						EntityUpdateCommand[] eUpdates=task.getData().getEntityUpdates();
-
+                                                ItemDropUpdateCommand[] iUpdates = task.getData().getItemDropUpdateCommands();
 						//get list of cannons before sending map updates, to avoid conflicts
 						HashSet<Cannon> shipCannons=null;
 						if( Movecraft.getInstance().getCannonsPlugin()!=null && c.getNotificationPlayer()!=null) {
@@ -260,7 +261,7 @@ public class AsyncManager extends BukkitRunnable {
 							}
 							shipCannons=Movecraft.getInstance().getCannonsPlugin().getCannonsAPI().getCannons(shipLocations, c.getNotificationPlayer().getUniqueId(), true);
 						}
-						boolean failed = MapUpdateManager.getInstance().addWorldUpdate( c.getW(), updates, eUpdates);
+						boolean failed = MapUpdateManager.getInstance().addWorldUpdate( c.getW(), updates, eUpdates, iUpdates);
 						
 						
 						if ( !failed ) {
@@ -318,7 +319,7 @@ public class AsyncManager extends BukkitRunnable {
 							shipCannons=Movecraft.getInstance().getCannonsPlugin().getCannonsAPI().getCannons(shipLocations, c.getNotificationPlayer().getUniqueId(), true);
 						}	
 						
-						boolean failed = MapUpdateManager.getInstance().addWorldUpdate( c.getW(), updates, eUpdates);
+						boolean failed = MapUpdateManager.getInstance().addWorldUpdate( c.getW(), updates, eUpdates,null);
  
 						if ( !failed ) {
 							sentMapUpdate=true;
@@ -835,7 +836,7 @@ public class AsyncManager extends BukkitRunnable {
 						}
 					}
 					if(updateCommands.size()>0) {
-						MapUpdateManager.getInstance().addWorldUpdate( w, updateCommands.toArray(new MapUpdateCommand[1]), null);
+						MapUpdateManager.getInstance().addWorldUpdate( w, updateCommands.toArray(new MapUpdateCommand[1]), null,null);
 					}
 				}
 			}
