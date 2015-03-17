@@ -62,7 +62,8 @@ public class CraftType {
 	private HashMap<ArrayList<Integer>, ArrayList<Double>> flyBlocks = new HashMap<ArrayList<Integer>, ArrayList<Double>>();
 	private int hoverLimit;
 	private List<Material> harvestBlocks;
-	
+        private List<Material> harvesterBladeBlocks;
+	        
 	public CraftType( File f ) {
 		try {
 			parseCraftDataFromFile( f );
@@ -178,7 +179,7 @@ public class CraftType {
 		}
 		return returnMap;
 	}
-
+   
 	private void parseCraftDataFromFile( File file ) throws FileNotFoundException {
 		InputStream input = new FileInputStream(file);
 		Yaml yaml = new Yaml();
@@ -374,27 +375,41 @@ public class CraftType {
     	}else{
         	hoverLimit=0;
      	}
-    	harvestBlocks = new ArrayList<Material>(); 
-    	if (data.containsKey("harvestBlocks")){
-/*        	String[] temp = ((ArrayList<String> ) data.get( "harvestBlocks" )).toArray( new String[1] );
-        	for (int i = 0; i < temp.length; i++){
-        		Material mat = Material.getMaterial(temp[i]);
-        		if (mat != null ){
-        			harvestBlocks.add(mat);
-        		}*/
-    		ArrayList objList=(ArrayList) data.get( "harvestBlocks" );
-    		for(Object i : objList) {
-    			if(i instanceof String) {
-    				Material mat = Material.getMaterial((String)i);
-	    			harvestBlocks.add(mat);
-    			} else {
-    				Integer typeID=(Integer)i;
-    				Material mat = Material.getMaterial((Integer)i);
-	    			harvestBlocks.add(mat);
-    			}
-    		}
+            harvestBlocks = new ArrayList<Material>(); 
+            harvesterBladeBlocks = new ArrayList<Material>();
+            if (data.containsKey("harvestBlocks")){
+    /*        	String[] temp = ((ArrayList<String> ) data.get( "harvestBlocks" )).toArray( new String[1] );
+                    for (int i = 0; i < temp.length; i++){
+                            Material mat = Material.getMaterial(temp[i]);
+                            if (mat != null ){
+                                    harvestBlocks.add(mat);
+                            }*/
+                    ArrayList objList=(ArrayList) data.get( "harvestBlocks" );
+                    for(Object i : objList) {
+                            if(i instanceof String) {
+                                    Material mat = Material.getMaterial((String)i);
+                                    harvestBlocks.add(mat);
+                            } else {
+                                    Integer typeID=(Integer)i;
+                                    Material mat = Material.getMaterial((Integer)i);
+                                    harvestBlocks.add(mat);
+                            }
+                    }
 
-    	}
+            }
+            if (data.containsKey("harvesterBladeBlocks")){
+                    ArrayList objList=(ArrayList) data.get( "harvesterBladeBlocks" );
+                    for(Object i : objList) {
+                            if(i instanceof String) {
+                                    Material mat = Material.getMaterial((String)i);
+                                    harvesterBladeBlocks.add(mat);
+                            } else {
+                                    Integer typeID = (Integer)i;
+                                    Material mat = Material.getMaterial((Integer)i);
+                                    harvesterBladeBlocks.add(mat);
+                            }
+                    }
+            }
 	}
 
 	public String getCraftName() {
@@ -525,21 +540,21 @@ public class CraftType {
 		return flyBlocks;
 	}
 	
-    public int getMaxHeightLimit(){
-        return maxHeightLimit;
-    }
-    public int getMinHeightLimit(){
+        public int getMaxHeightLimit(){
+            return maxHeightLimit;
+        }
+        public int getMinHeightLimit(){
             return minHeightLimit;
-    }
-    public int getMaxHeightAboveGround(){
-        return maxHeightAboveGround;
-    }
-    public boolean getCanHover(){
-    	return canHover;
-    	}
-    	   
-    public boolean getCanDirectControl(){
-    	return canDirectControl;
+        }
+        public int getMaxHeightAboveGround(){
+            return maxHeightAboveGround;
+        }
+        public boolean getCanHover(){
+            return canHover;
+        }
+
+        public boolean getCanDirectControl(){
+            return canDirectControl;
     	}
     	   
   	public int getHoverLimit(){
@@ -549,6 +564,10 @@ public class CraftType {
 	public List<Material> getHarvestBlocks() {
     	return harvestBlocks;
    	}
+        
+        public List<Material> getHarvesterBladeBlocks(){
+            return harvesterBladeBlocks;
+        }
     	   
     public boolean getCanHoverOverWater(){
     	return canHoverOverWater;
@@ -558,7 +577,7 @@ public class CraftType {
     	return moveEntities;
     }
     	     
-   	public boolean getUseGravity(){
+    public boolean getUseGravity(){
     	return useGravity;
-  	}
+    }
 }
