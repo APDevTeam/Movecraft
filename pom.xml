@@ -42,20 +42,24 @@
 
     <repositories>
         <repository>
-            <id>Plugin Metrics</id>
-            <url>http://repo.mcstats.org/content/repositories/public</url>
+        	<id>Plugin Metrics</id>
+        	<url>http://repo.mcstats.org/content/repositories/public</url>
         </repository>
         <repository>
-            <id>bukkit-repo</id>
-            <url>http://repo.bukkit.org/content/groups/public/</url>
+        	<id>bukkit-repo</id>
+        	<url>http://repo.bukkit.org/content/groups/public/</url>
         </repository>
         <repository>
-			<id>sk89q-repo</id>
-			<url>http://maven.sk89q.com/repo/</url>
-		</repository>
+        	<id>spigot-repo</id>
+        	<url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
+        </repository>
+        <repository>
+        	<id>sk89q-repo</id>
+		<url>http://maven.sk89q.com/repo/</url>
+	</repository>
     	<repository>
         	<id>cannons-repo</id>
-	        <url>https://github.com/DerPavlov/mvn-repo/raw/master/</url>
+		<url>https://github.com/DerPavlov/mvn-repo/raw/master/</url>
     	</repository>
     </repositories>
 
@@ -119,21 +123,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.bukkit</groupId>
-            <artifactId>bukkit</artifactId>
-            <version>1.8-R0.1-SNAPSHOT</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.bukkit</groupId>
-            <artifactId>craftbukkit</artifactId>
-            <version>1.8-R0.1-SNAPSHOT</version>
-        </dependency>
-        
-        <dependency>
             <groupId>org.mcstats.bukkit</groupId>
             <artifactId>metrics</artifactId>
-            <version>R6</version>
+            <version>R8-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
 
@@ -142,27 +134,45 @@
             <artifactId>snakeyaml</artifactId>
             <version>1.10</version>
         </dependency>
+        
         <dependency>
             <groupId>commons-collections</groupId>
             <artifactId>commons-collections</artifactId>
             <version>3.2.1</version>
         </dependency>
+        
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
             <version>6.1.1</version>
             <scope>test</scope>
         </dependency>
+        
         <dependency>
         	<groupId>com.sk89q</groupId>
         	<artifactId>worldguard</artifactId>
         	<version>LATEST</version>
         </dependency>
+        
         <dependency>
 	        <groupId>at.pavlov</groupId>
     	    <artifactId>Cannons</artifactId>
         	<version>LATEST</version>
     	</dependency>
+    	
+    	<dependency>
+            <groupId>org.spigotmc</groupId>
+            <artifactId>spigot-api</artifactId>
+            <version>1.8-R0.1-SNAPSHOT</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.bukkit</groupId>
+            <artifactId>bukkit</artifactId>
+            <version>1.8-R0.1-SNAPSHOT</version>
+            <type>jar</type>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
 
