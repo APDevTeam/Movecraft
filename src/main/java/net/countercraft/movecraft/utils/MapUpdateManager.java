@@ -77,7 +77,7 @@ public class MapUpdateManager extends BukkitRunnable {
 	private static class MapUpdateManagerHolder {
 		private static final MapUpdateManager INSTANCE = new MapUpdateManager();
 	}
-	
+
 	private void updateBlock(MapUpdateCommand m, World w, Map<MovecraftLocation, TransferData> dataMap, Set<net.minecraft.server.v1_8_R1.Chunk> chunks, Set<Chunk> cmChunks, HashMap<MovecraftLocation, Byte> origLightMap, boolean placeDispensers) {
 		MovecraftLocation workingL = m.getNewBlockLocation();
 		final int[] blocksToBlankOut = new int[]{ 54, 61, 62, 63, 68, 116, 117, 146, 149, 150, 154, 158, 145 };		
