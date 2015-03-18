@@ -218,7 +218,7 @@ public class MapUpdateManager extends BukkitRunnable {
 
 		long startTime=System.currentTimeMillis();
 
-		final int[] fragileBlocks = new int[]{ 26, 29, 33, 34, 50, 52, 54, 55, 63, 64, 65, 68, 69, 70, 71, 72, 75, 76, 77, 93, 94, 96, 131, 132, 143, 147, 148, 149, 150, 151, 171, 323, 324, 330, 331, 356, 404 };
+		final int[] fragileBlocks = new int[]{ 34, 50, 55, 63, 64, 65, 68, 69, 70, 71, 72, 75, 76, 77, 93, 94, 96, 131, 132, 143, 147, 148, 149, 150, 151, 171, 323, 324, 330, 331, 356, 404 };
 		Arrays.sort(fragileBlocks);
 				
 		for ( World w : updates.keySet() ) {
@@ -315,14 +315,19 @@ public class MapUpdateManager extends BukkitRunnable {
 								Location loc2=i.getNewLocation().clone();
 								loc2=loc2.add(0, 1, 0);
 								p.sendBlockChange(loc2, 0, (byte) 0);
+								Location loc3=i.getNewLocation().clone();
+								loc3=loc3.add(0, 2, 0);
+								p.sendBlockChange(loc3, 0, (byte) 0);
 								
 								final Block b1=w.getBlockAt(loc);
 								final Block b2=w.getBlockAt(loc2);
+								final Block b3=w.getBlockAt(loc3);
 								BukkitTask restoreblockTask = new BukkitRunnable() {
 									@Override
 									public void run() {
 										b1.getState().update();
 										b2.getState().update();
+										b3.getState().update();
 									}
 								}.runTaskLater( Movecraft.getInstance(), ( 20 * 1 ) );
 							}

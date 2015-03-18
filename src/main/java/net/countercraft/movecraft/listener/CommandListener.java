@@ -132,7 +132,7 @@ public class CommandListener implements CommandExecutor {
 		Player player=(Player) sender;
 
 		if ( cmd.getName().equalsIgnoreCase( "release" ) ) {
-			if ( !player.hasPermission( "movecraft.commands" ) ) {
+			if ( !player.hasPermission( "movecraft.commands" ) && !player.hasPermission( "movecraft.commands.release" ) ) {
 				player.sendMessage( String.format( I18nSupport.getInternationalisedString( "Insufficient Permissions" ) ) );
 				return true;
 			}
@@ -150,7 +150,7 @@ public class CommandListener implements CommandExecutor {
 		}
 
 		if ( cmd.getName().equalsIgnoreCase("pilot" ) ) {
-			if ( !player.hasPermission( "movecraft.commands" ) ) {
+			if ( !player.hasPermission( "movecraft.commands" ) && !player.hasPermission( "movecraft.commands.pilot" ) ) {
 				player.sendMessage( String.format( I18nSupport.getInternationalisedString( "Insufficient Permissions" ) ) );
 				return true;
 			}
@@ -176,7 +176,7 @@ public class CommandListener implements CommandExecutor {
 		}
 		
 		if( cmd.getName().equalsIgnoreCase("rotateleft")) {
-			if ( !player.hasPermission( "movecraft.commands" ) ) {
+			if ( !player.hasPermission( "movecraft.commands" ) && !player.hasPermission( "movecraft.commands.rotateleft" ) ) {
 				player.sendMessage( String.format( I18nSupport.getInternationalisedString( "Insufficient Permissions" ) ) );
 				return true;
 			}
@@ -194,7 +194,7 @@ public class CommandListener implements CommandExecutor {
 		}
 
 		if(  cmd.getName().equalsIgnoreCase("rotateright")) {
-			if ( !player.hasPermission( "movecraft.commands" ) ) {
+			if ( !player.hasPermission( "movecraft.commands" ) && !player.hasPermission( "movecraft.commands.rotateright" ) ) {
 				player.sendMessage( String.format( I18nSupport.getInternationalisedString( "Insufficient Permissions" ) ) );
 				return true;
 			}
@@ -212,7 +212,7 @@ public class CommandListener implements CommandExecutor {
 		}
 
 		if( cmd.getName().equalsIgnoreCase("cruise")) {
-			if ( !player.hasPermission( "movecraft.commands" ) ) {
+			if ( !player.hasPermission( "movecraft.commands" ) && !player.hasPermission( "movecraft.commands.cruise" ) ) {
 				player.sendMessage( String.format( I18nSupport.getInternationalisedString( "Insufficient Permissions" ) ) );
 				return true;
 			}
@@ -254,7 +254,7 @@ public class CommandListener implements CommandExecutor {
 		}
 		
 		if(cmd.getName().equalsIgnoreCase("craftreport")) {
-			if ( !player.hasPermission( "movecraft.commands" ) ) {
+			if ( !player.hasPermission( "movecraft.commands" ) &&  !player.hasPermission( "movecraft.commands.craftreport" ) ) {
 				player.sendMessage( String.format( I18nSupport.getInternationalisedString( "Insufficient Permissions" ) ) );
 				return true;
 			}
