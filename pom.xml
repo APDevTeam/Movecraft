@@ -88,6 +88,7 @@
                             <artifactSet>
                                 <excludes>
                                     <exclude>org.bukkit:craftbukkit</exclude>
+                                    <exclude>org.spigotmc:spigot-api</exclude>
                                     <exclude>org.yaml:snakeyaml</exclude>
                                     <exclude>com.sk89q:worldguard</exclude>
                                     <exclude>com.sk89q:worldedit</exclude>
@@ -160,11 +161,11 @@
         	<version>LATEST</version>
     	</dependency>
     	
-    	<dependency>
+  <!--   	<dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
             <version>1.8-R0.1-SNAPSHOT</version>
-        </dependency>
+        </dependency>   -->
         
         <dependency>
             <groupId>org.bukkit</groupId>

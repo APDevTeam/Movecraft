@@ -436,6 +436,17 @@ public class MapUpdateManager extends BukkitRunnable {
 							for ( int i = 0; i < signData.getLines().length; i++ ) {
 								sign.setLine( i, signData.getLines()[i] );
 							}
+							if(signData.getLines()[0].equalsIgnoreCase("Crew:")) {
+								String crewName=signData.getLines()[1];
+								Player crewPlayer=Movecraft.getInstance().getServer().getPlayer(crewName);
+								if(crewPlayer!=null) {
+									Location loc=sign.getLocation();
+									loc=loc.subtract(0, 1, 0);
+									if(w.getBlockAt(loc).getType().equals(Material.BED_BLOCK)) {
+										crewPlayer.setBedSpawnLocation(loc);
+									}
+								}
+							}
 							for(Player p : w.getPlayers()) { // this is necessary because signs do not get updated client side correctly without refreshing the chunks, which causes a memory leak in the clients							
 								int playerChunkX=p.getLocation().getBlockX()>>4;
 								int playerChunkZ=p.getLocation().getBlockZ()>>4;
