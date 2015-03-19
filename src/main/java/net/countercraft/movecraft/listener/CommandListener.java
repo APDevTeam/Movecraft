@@ -221,6 +221,26 @@ public class CommandListener implements CommandExecutor {
 
 			if ( player.hasPermission( "movecraft." + craft.getType().getCraftName() + ".move" ) ) {
 				if(craft.getType().getCanCruise()) {
+					if(args.length == 0) {
+						float yaw = player.getLocation().getYaw();
+						if(yaw >= 135 || yaw < -135) {
+							// north
+							craft.setCruiseDirection((byte)0x3);
+							craft.setCruising(true);
+						} else if(yaw >= 45) {
+							// west
+							craft.setCruiseDirection((byte)0x5);
+							craft.setCruising(true);
+						} else if(yaw > -45) {
+							// south
+							craft.setCruiseDirection((byte)0x2);
+							craft.setCruising(true);
+						} else {
+							// east
+							craft.setCruiseDirection((byte)0x4);
+							craft.setCruising(true);
+						}
+					}
 					if(args[0].equalsIgnoreCase("north")) {
 						craft.setCruiseDirection((byte)0x3);
 						craft.setCruising(true);
