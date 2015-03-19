@@ -20,6 +20,7 @@ package net.countercraft.movecraft;
 import net.countercraft.movecraft.async.AsyncManager;
 import at.pavlov.cannons.Cannons;
 
+import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 
 import net.countercraft.movecraft.config.Settings;
@@ -33,10 +34,12 @@ import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.metrics.MovecraftMetrics;  
 import net.countercraft.movecraft.utils.MapUpdateManager;
 import net.countercraft.movecraft.utils.MovecraftLocation;
+import net.milkbowl.vault.economy.Economy;
 
 import org.bukkit.World;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.RegisteredServiceProvider;
 
 import java.io.File;
 import java.util.HashMap;
@@ -46,6 +49,8 @@ import java.util.logging.Logger;
 public class Movecraft extends JavaPlugin {
 	private static Movecraft instance;
 	private static WorldGuardPlugin worldGuardPlugin;
+	private static WorldEditPlugin worldEditPlugin;
+	private static Economy economy;
 	private static Cannons cannonsPlugin=null;
 	private Logger logger;
 	private boolean shuttingDown;
@@ -109,10 +114,37 @@ public class Movecraft extends JavaPlugin {
 		}
 		worldGuardPlugin=(WorldGuardPlugin)wGPlugin;
 		
+		//load up WorldEdit if it's present
+		Plugin wEPlugin=getServer().getPluginManager().getPlugin("WorldEdit");
+		if (wEPlugin == null || !(wEPlugin instanceof WorldEditPlugin)) {
+			logger.log(Level.INFO, "Movecraft did not find a compatible version of WorldEdit. Disabling WorldEdit integration");			
+		} else {
+			logger.log(Level.INFO, "Found a compatible version of WorldEdit. Enabling WorldEdit integration");			
+			Settings.RepairTicksPerBlock = getConfig().getInt("RepairTicksPerBlock", 0);
+		}
+		worldEditPlugin=(WorldEditPlugin)wEPlugin;
+		
+		// next is Cannons
 		Plugin plug = getServer().getPluginManager().getPlugin("Cannons");
         if (plug != null && plug instanceof Cannons) {
             cannonsPlugin = (Cannons) plug;
 			logger.log(Level.INFO, "Found a compatible version of Cannons. Enabling Cannons integration");			
+        }
+        
+        // and now Vault
+        if (getServer().getPluginManager().getPlugin("Vault") != null) {
+            RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
+            if (rsp != null) {
+                economy = rsp.getProvider();
+                Settings.RepairMoneyPerBlock=getConfig().getInt("RepairMoneyPerBlock", 0);
+    			logger.log(Level.INFO, "Found a compatible Vault plugin.");			
+            } else {
+    			logger.log(Level.INFO, "Could not find compatible Vault plugin. Disabling Vault integration.");			
+            	economy = null;
+            }
+        } else {
+			logger.log(Level.INFO, "Could not find compatible Vault plugin. Disabling Vault integration.");			
+        	economy = null;
         }
         
 		if (!new File(getDataFolder()
@@ -184,6 +216,10 @@ public class Movecraft extends JavaPlugin {
 	
 	public WorldGuardPlugin getWorldGuardPlugin() {
 		return worldGuardPlugin;
+	}
+	
+	public WorldEditPlugin getWorldEditPlugin() {
+		return worldEditPlugin;
 	}
 	
 	public Cannons getCannonsPlugin() {

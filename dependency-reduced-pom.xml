@@ -88,6 +88,10 @@
       <id>cannons-repo</id>
       <url>https://github.com/DerPavlov/mvn-repo/raw/master/</url>
     </repository>
+    <repository>
+      <id>vault-repo</id>
+      <url>http://nexus.theyeticave.net/content/repositories/pub_releases</url>
+    </repository>
   </repositories>
   <dependencies>
     <dependency>
@@ -115,6 +119,12 @@
     <dependency>
       <groupId>com.sk89q</groupId>
       <artifactId>worldguard</artifactId>
+      <version>LATEST</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.sk89q</groupId>
+      <artifactId>worldedit</artifactId>
       <version>LATEST</version>
       <scope>compile</scope>
     </dependency>
@@ -149,6 +159,12 @@
       <artifactId>craftbukkit</artifactId>
       <version>1.8-R0.1-SNAPSHOT</version>
       <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>net.milkbowl.vault</groupId>
+      <artifactId>VaultAPI</artifactId>
+      <version>1.5</version>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
   <properties>

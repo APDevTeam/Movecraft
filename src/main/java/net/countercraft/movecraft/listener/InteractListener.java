@@ -30,6 +30,7 @@ import net.countercraft.movecraft.utils.Rotation;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -41,6 +42,15 @@ import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
+import com.sk89q.worldedit.CuboidClipboard;
+import com.sk89q.worldedit.EditSession;
+import com.sk89q.worldedit.Vector;
+import com.sk89q.worldedit.blocks.BaseBlock;
+import com.sk89q.worldedit.blocks.SignBlock;
+import com.sk89q.worldedit.world.DataException;
+
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -51,7 +61,6 @@ public class InteractListener implements Listener {
 	@EventHandler
 	public void onPlayerInteract( PlayerInteractEvent event ) {
 		
-		// check if it was a remote sign
 		if ( event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.LEFT_CLICK_BLOCK) {
 			Material m = event.getClickedBlock().getType();
 			if ( m.equals( Material.SIGN_POST ) || m.equals( Material.WALL_SIGN ) ) {
@@ -222,6 +231,60 @@ public class InteractListener implements Listener {
 							event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "Insufficient Permissions" ) ) );							
 						}
 					}
+				}
+				if ( org.bukkit.ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Repair:")) { // left click the Repair sign, and it saves the state
+					if( Settings.RepairTicksPerBlock==0) {
+						event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "Repair functionality is disabled or WorldEdit was not detected" ) ) );
+						return;
+					}
+					Craft pCraft = CraftManager.getInstance().getCraftByPlayer( event.getPlayer() );
+					if(pCraft==null) {
+						event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "You must be piloting a craft" ) ) );
+						return;
+					}
+					
+					String repairStateName=Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/RepairStates";
+					File file = new File(repairStateName);
+					if( !file.exists() ) {
+						file.mkdirs();
+					}
+					repairStateName+="/";
+					repairStateName+=event.getPlayer().getName();
+					repairStateName+=sign.getLine(1);
+					file = new File(repairStateName);
+					
+					Vector size=new Vector(pCraft.getMaxX()-pCraft.getMinX(),(pCraft.getMaxY()-pCraft.getMinY())+1,pCraft.getMaxZ()-pCraft.getMinZ());
+					Vector origin=new Vector(sign.getX(),sign.getY(),sign.getZ());
+					Vector offset=new Vector(pCraft.getMinX()-sign.getX(),pCraft.getMinY()-sign.getY(),pCraft.getMinZ()-sign.getZ());
+					CuboidClipboard cc = new CuboidClipboard(size,origin,offset);
+					for(MovecraftLocation loc : pCraft.getBlockList()) {
+						Vector ccpos = new Vector(loc.getX()-pCraft.getMinX(),loc.getY()-pCraft.getMinY(),loc.getZ()-pCraft.getMinZ());
+						Block b=sign.getWorld().getBlockAt(loc.getX(), loc.getY(), loc.getZ());
+						BaseBlock bb;
+						BlockState state=b.getState();
+						if(state instanceof Sign) {
+							Sign s=(Sign)state;
+							SignBlock sb=new SignBlock(b.getTypeId(), b.getData(), s.getLines());
+							bb=(BaseBlock)sb;
+						} else {
+							bb=new BaseBlock(b.getTypeId(),b.getData());
+						}
+						cc.setBlock(ccpos, bb);
+					}
+					try {
+						cc.saveSchematic(file);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "Could not save file" ) ) );
+						e.printStackTrace();
+						return;
+					} catch (DataException e) {
+						// TODO Auto-generated catch block
+						event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "Could not save file" ) ) );
+						e.printStackTrace();
+						return;
+					}
+					event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "State saved" ) ) );					
 				}
 			}
 		}

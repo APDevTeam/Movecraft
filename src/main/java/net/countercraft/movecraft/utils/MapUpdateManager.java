@@ -432,35 +432,37 @@ public class MapUpdateManager extends BukkitRunnable {
 						if ( transferData instanceof SignTransferHolder ) {
 
 							SignTransferHolder signData = ( SignTransferHolder ) transferData;
-							Sign sign = ( Sign ) w.getBlockAt( l.getX(), l.getY(), l.getZ() ).getState();
-							for ( int i = 0; i < signData.getLines().length; i++ ) {
-								sign.setLine( i, signData.getLines()[i] );
-							}
-							if(signData.getLines()[0].equalsIgnoreCase("Crew:")) {
-								String crewName=signData.getLines()[1];
-								Player crewPlayer=Movecraft.getInstance().getServer().getPlayer(crewName);
-								if(crewPlayer!=null) {
-									Location loc=sign.getLocation();
-									loc=loc.subtract(0, 1, 0);
-									if(w.getBlockAt(loc).getType().equals(Material.BED_BLOCK)) {
-										crewPlayer.setBedSpawnLocation(loc);
+							BlockState bs=w.getBlockAt( l.getX(), l.getY(), l.getZ() ).getState();
+							if(bs instanceof Sign) {
+								Sign sign = ( Sign ) bs;
+								for ( int i = 0; i < signData.getLines().length; i++ ) {
+									sign.setLine( i, signData.getLines()[i] );
+								}
+								if(signData.getLines()[0].equalsIgnoreCase("Crew:")) {
+									String crewName=signData.getLines()[1];
+									Player crewPlayer=Movecraft.getInstance().getServer().getPlayer(crewName);
+									if(crewPlayer!=null) {
+										Location loc=sign.getLocation();
+										loc=loc.subtract(0, 1, 0);
+										if(w.getBlockAt(loc).getType().equals(Material.BED_BLOCK)) {
+											crewPlayer.setBedSpawnLocation(loc);
+										}
 									}
 								}
+								for(Player p : w.getPlayers()) { // this is necessary because signs do not get updated client side correctly without refreshing the chunks, which causes a memory leak in the clients							
+									int playerChunkX=p.getLocation().getBlockX()>>4;
+									int playerChunkZ=p.getLocation().getBlockZ()>>4;
+									if(Math.abs(playerChunkX-sign.getChunk().getX())<Bukkit.getServer().getViewDistance())
+										if(Math.abs(playerChunkZ-sign.getChunk().getZ())<Bukkit.getServer().getViewDistance()) {
+											p.sendBlockChange(sign.getLocation(), 63, (byte) 0);
+	//										p.sendSignChange(sign.getLocation(), sign.getLines());
+											p.sendBlockChange(sign.getLocation(), sign.getTypeId(), sign.getRawData());
+	//										p.sendSignChange(sign.getLocation(), sign.getLines());
+											
+										}
+								}
+								sign.update( true, false );
 							}
-							for(Player p : w.getPlayers()) { // this is necessary because signs do not get updated client side correctly without refreshing the chunks, which causes a memory leak in the clients							
-								int playerChunkX=p.getLocation().getBlockX()>>4;
-								int playerChunkZ=p.getLocation().getBlockZ()>>4;
-								if(Math.abs(playerChunkX-sign.getChunk().getX())<Bukkit.getServer().getViewDistance())
-									if(Math.abs(playerChunkZ-sign.getChunk().getZ())<Bukkit.getServer().getViewDistance()) {
-										p.sendBlockChange(sign.getLocation(), 63, (byte) 0);
-//										p.sendSignChange(sign.getLocation(), sign.getLines());
-										p.sendBlockChange(sign.getLocation(), sign.getTypeId(), sign.getRawData());
-//										p.sendSignChange(sign.getLocation(), sign.getLines());
-										
-									}
-							}
-							sign.update( true, false );
-
 						} else if ( transferData instanceof StorageCrateTransferHolder ) {
 							Inventory inventory = Bukkit.createInventory( null, 27, String.format( I18nSupport.getInternationalisedString( "Item - Storage Crate name" ) ) );
 							inventory.setContents( ( ( StorageCrateTransferHolder ) transferData ).getInvetory() );
