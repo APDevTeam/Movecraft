@@ -39,6 +39,6 @@ public class Settings {
 	public static int ManOverBoardTimeout = 60;
 	public static int FireballLifespan = 6;
 	public static int RepairTicksPerBlock = 0;
-	public static int RepairMoneyPerBlock = 0;
+	public static double RepairMoneyPerBlock = 0.0;
 	public static boolean FireballPenetration = true;
 }

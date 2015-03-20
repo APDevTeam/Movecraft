@@ -32,6 +32,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
+import org.bukkit.craftbukkit.v1_8_R1.util.CraftMagicNumbers;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -39,6 +40,8 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
+import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -47,16 +50,20 @@ import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.blocks.BaseBlock;
 import com.sk89q.worldedit.blocks.SignBlock;
+import com.sk89q.worldedit.schematic.SchematicFormat;
 import com.sk89q.worldedit.world.DataException;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
 public class InteractListener implements Listener {
 	private static final Map<Player, Long> timeMap = new HashMap<Player, Long>();
+	private static final Map<Player, Long> repairRightClickTimeMap = new HashMap<Player, Long>();
 
 	@EventHandler
 	public void onPlayerInteract( PlayerInteractEvent event ) {
@@ -257,29 +264,32 @@ public class InteractListener implements Listener {
 					Vector origin=new Vector(sign.getX(),sign.getY(),sign.getZ());
 					Vector offset=new Vector(pCraft.getMinX()-sign.getX(),pCraft.getMinY()-sign.getY(),pCraft.getMinZ()-sign.getZ());
 					CuboidClipboard cc = new CuboidClipboard(size,origin,offset);
+					final int[] ignoredBlocks = new int[]{ 26,34,64,71,140,144,176,177,193,194,195,196,197 };  // BLOCKS THAT CAN'T BE PARTIALLY RECONSTRUCTED
+
 					for(MovecraftLocation loc : pCraft.getBlockList()) {
 						Vector ccpos = new Vector(loc.getX()-pCraft.getMinX(),loc.getY()-pCraft.getMinY(),loc.getZ()-pCraft.getMinZ());
 						Block b=sign.getWorld().getBlockAt(loc.getX(), loc.getY(), loc.getZ());
-						BaseBlock bb;
-						BlockState state=b.getState();
-						if(state instanceof Sign) {
-							Sign s=(Sign)state;
-							SignBlock sb=new SignBlock(b.getTypeId(), b.getData(), s.getLines());
-							bb=(BaseBlock)sb;
-						} else {
-							bb=new BaseBlock(b.getTypeId(),b.getData());
+						boolean isIgnored=(Arrays.binarySearch(ignoredBlocks,b.getTypeId())>=0);
+						if(!isIgnored) {
+							BaseBlock bb;
+							BlockState state=b.getState();
+							if(state instanceof Sign) {
+								Sign s=(Sign)state;
+								SignBlock sb=new SignBlock(b.getTypeId(), b.getData(), s.getLines());
+								bb=(BaseBlock)sb;
+							} else {
+								bb=new BaseBlock(b.getTypeId(),b.getData());
+							}
+							cc.setBlock(ccpos, bb);
 						}
-						cc.setBlock(ccpos, bb);
 					}
 					try {
 						cc.saveSchematic(file);
 					} catch (IOException e) {
-						// TODO Auto-generated catch block
 						event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "Could not save file" ) ) );
 						e.printStackTrace();
 						return;
 					} catch (DataException e) {
-						// TODO Auto-generated catch block
 						event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "Could not save file" ) ) );
 						e.printStackTrace();
 						return;
@@ -641,6 +651,185 @@ public class InteractListener implements Listener {
 					event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "Insufficient Permissions" ) ) );
 				}
 			}
+		} else if ( org.bukkit.ChatColor.stripColor(sign.getLine( 0 )).equalsIgnoreCase("Repair:")) {
+			if( Settings.RepairTicksPerBlock==0) {
+				event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "Repair functionality is disabled or WorldEdit was not detected" ) ) );
+				return;
+			}
+			Craft pCraft = CraftManager.getInstance().getCraftByPlayer( event.getPlayer() );
+			if(pCraft==null) {
+				event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "You must be piloting a craft" ) ) );
+				return;
+			}
+			// load up the repair state
+			
+			String repairStateName=Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/RepairStates";
+			repairStateName+="/";
+			repairStateName+=event.getPlayer().getName();
+			repairStateName+=sign.getLine(1);
+			File file = new File(repairStateName);
+			if( !file.exists() ) {
+				event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "REPAIR STATE NOT FOUND" ) ) );
+				return;
+			}
+			SchematicFormat sf=SchematicFormat.getFormat(file);
+			CuboidClipboard cc;
+			try {
+				cc = sf.load(file);
+			} catch (com.sk89q.worldedit.data.DataException e) {
+				event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "REPAIR STATE NOT FOUND" ) ) );
+				e.printStackTrace();
+				return;				
+			} catch (IOException e) {
+				event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "REPAIR STATE NOT FOUND" ) ) );
+				e.printStackTrace();
+				return;				
+			}
+			
+			// calculate how many and where the blocks need to be replaced
+			Location worldLoc=new Location(sign.getWorld(),sign.getX(),sign.getY(),sign.getZ());
+			int numdiffblocks=0;
+			HashMap<Integer,Integer> numMissingItems=new HashMap<Integer,Integer>(); // block type, number missing
+			HashSet<Vector> locMissingBlocks=new HashSet<Vector>(); 
+			for(int x=0;x<cc.getWidth();x++) {
+				for(int y=0;y<cc.getHeight();y++) {
+					for(int z=0;z<cc.getLength();z++) {
+						Vector ccLoc=new Vector(x,y,z);
+						worldLoc.setX(sign.getX()+cc.getOffset().getBlockX()+x);
+						worldLoc.setY(sign.getY()+cc.getOffset().getBlockY()+y);
+						worldLoc.setZ(sign.getZ()+cc.getOffset().getBlockZ()+z);
+						Boolean isImportant=true;
+						if(!pCraft.getType().blockedByWater())
+							if(cc.getBlock(ccLoc).getId()==8 || cc.getBlock(ccLoc).getId()==9)
+								isImportant=false;
+						if(cc.getBlock(ccLoc).getId()==0)
+							isImportant=false;
+						if(isImportant && worldLoc.getWorld().getBlockAt(worldLoc).getTypeId()!=cc.getBlock(ccLoc).getId() ) {
+							numdiffblocks++;
+							int itemToConsume=cc.getBlock(ccLoc).getId();
+							//some blocks aren't represented by items with the same number as the block
+							if(itemToConsume==63 || itemToConsume==68) // signs
+								itemToConsume=323;
+							if(itemToConsume==93 || itemToConsume==94) // repeaters
+								itemToConsume=356;
+							if(itemToConsume==149 || itemToConsume==150) // comparators
+								itemToConsume=404;
+							if(itemToConsume==55) // redstone
+								itemToConsume=331;
+							if(itemToConsume==118) // cauldron
+								itemToConsume=380;
+							if(itemToConsume==124) // lit redstone lamp
+								itemToConsume=123;
+							if(itemToConsume==76) // lit redstone torch
+								itemToConsume=75;
+							if( !numMissingItems.containsKey(itemToConsume) ) {
+								numMissingItems.put(itemToConsume, 1);
+							} else {
+								Integer num=numMissingItems.get(itemToConsume);
+								num++;
+								numMissingItems.put(itemToConsume, num);
+							}
+							locMissingBlocks.add(ccLoc);
+						}
+					}
+				}
+			}
+			
+			// if this is the second click in the last 5 seconds, start the repair, otherwise give them the info on the repair
+			Boolean secondClick=false;
+			Long time=repairRightClickTimeMap.get(event.getPlayer());
+			if(time!=null) {
+				long ticksElapsed = ( System.currentTimeMillis() - time ) / 50;
+				if(ticksElapsed>100) {
+					secondClick=true;
+				}
+			}
+			if(secondClick) {
+				// check all the chests for materials for the repair
+				HashMap<Integer,ArrayList<InventoryHolder>> chestsToTakeFrom=new HashMap<Integer,ArrayList<InventoryHolder>>(); // typeid, list of chest inventories
+				boolean enoughMaterial=true;
+				for (Integer typeID : numMissingItems.keySet()) {
+					int remainingQty=numMissingItems.get(typeID);
+					ArrayList<InventoryHolder> chests=new ArrayList<InventoryHolder>();
+					for (MovecraftLocation loc : pCraft.getBlockList()) {
+	                    Block b=pCraft.getW().getBlockAt(loc.getX(), loc.getY(), loc.getZ());
+	                    if(b.getTypeId()==54) {
+	                        InventoryHolder inventoryHolder = ( InventoryHolder ) b.getState();
+	                        if(inventoryHolder.getInventory().contains(typeID) && remainingQty>0) {
+	                        	HashMap<Integer, ? extends ItemStack> foundItems=inventoryHolder.getInventory().all(typeID);
+	                        	// count how many were in the chest
+	                        	int numfound=0;
+	                        	for(ItemStack istack : foundItems.values()) {
+	                        		numfound+=istack.getAmount();
+	                        	}
+	                        	remainingQty-=numfound;
+	                        	chests.add(inventoryHolder);
+	                        }					
+	                    }
+	                }
+	                if(remainingQty>0) {
+						event.getPlayer().sendMessage(String.format( I18nSupport.getInternationalisedString( "Need more of material" )+": %s - %d",Material.getMaterial(typeID).name().toLowerCase().replace("_"," "),remainingQty));
+						enoughMaterial=false;
+	                } else {
+	                	chestsToTakeFrom.put(typeID, chests);
+	                }
+				}
+				if(Movecraft.getInstance().getEconomy()!=null && enoughMaterial) {
+					double moneyCost=numdiffblocks*Settings.RepairMoneyPerBlock;
+					if(Movecraft.getInstance().getEconomy().has(event.getPlayer(), moneyCost)) {
+						Movecraft.getInstance().getEconomy().withdrawPlayer(event.getPlayer(), moneyCost);
+					} else {
+						event.getPlayer().sendMessage(String.format( I18nSupport.getInternationalisedString( "You do not have enough money" )));
+						enoughMaterial=false;
+					}
+				}
+				if(!enoughMaterial) {
+					return;
+				} else {
+					// we know we have enough materials to make the repairs, so remove the materials from the chests and do the actual repair
+					for (Integer typeID : numMissingItems.keySet()) {
+						int remainingQty=numMissingItems.get(typeID);
+						for (InventoryHolder inventoryHolder : chestsToTakeFrom.get(typeID)) {
+							HashMap<Integer, ? extends ItemStack> foundItems=inventoryHolder.getInventory().all(typeID);
+                        	// count how many were in the chest
+                        	int numfound=0;
+                        	for(ItemStack istack : foundItems.values()) {
+                        		numfound+=istack.getAmount();
+                        	}
+                        	if(numfound<=remainingQty) {
+                        		remainingQty-=numfound;
+                        		inventoryHolder.getInventory().remove(typeID);
+                        	} else {
+                        		ItemStack istack=new ItemStack(typeID,remainingQty);
+                        		inventoryHolder.getInventory().removeItem(istack);
+                        	}
+						}
+					}
+				}
+				
+			} else {
+				// if this is the first time they have clicked the sign, show the summary of repair costs and requirements
+				event.getPlayer().sendMessage(String.format( I18nSupport.getInternationalisedString( "Total damaged blocks" )+": %d", numdiffblocks));
+				float percent=(numdiffblocks*100)/pCraft.getOrigBlockCount();
+				event.getPlayer().sendMessage(String.format( I18nSupport.getInternationalisedString( "Percentage of craft" )+": %.2f%%",percent));
+				if(percent>50) {
+					event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "This craft is too damaged and can not be repaired" ) ) );					
+					return;
+				}
+				if(numdiffblocks!=0) {
+					event.getPlayer().sendMessage(String.format( I18nSupport.getInternationalisedString( "SUPPLIES NEEDED" )));
+					for(Integer blockTypeInteger : numMissingItems.keySet()) {
+						event.getPlayer().sendMessage( String.format( "%s : %d",Material.getMaterial(blockTypeInteger).name().toLowerCase().replace("_"," "),numMissingItems.get(blockTypeInteger)));
+					}
+					int durationInSeconds=numdiffblocks*Settings.RepairTicksPerBlock/20;
+					event.getPlayer().sendMessage(String.format( I18nSupport.getInternationalisedString( "Seconds to complete repair" )+": %d",durationInSeconds));
+					int moneyCost=(int) (numdiffblocks*Settings.RepairMoneyPerBlock);
+					event.getPlayer().sendMessage(String.format( I18nSupport.getInternationalisedString( "Money to complete repair" )+": %d",moneyCost));
+					repairRightClickTimeMap.put(event.getPlayer(), ( System.currentTimeMillis() - time ) / 50);
+				}
+			}
+			
+			
 		}
 	}
 

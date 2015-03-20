@@ -136,7 +136,7 @@ public class Movecraft extends JavaPlugin {
             RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
             if (rsp != null) {
                 economy = rsp.getProvider();
-                Settings.RepairMoneyPerBlock=getConfig().getInt("RepairMoneyPerBlock", 0);
+                Settings.RepairMoneyPerBlock=getConfig().getDouble("RepairMoneyPerBlock", 0.0);
     			logger.log(Level.INFO, "Found a compatible Vault plugin.");			
             } else {
     			logger.log(Level.INFO, "Could not find compatible Vault plugin. Disabling Vault integration.");			
@@ -220,6 +220,10 @@ public class Movecraft extends JavaPlugin {
 	
 	public WorldEditPlugin getWorldEditPlugin() {
 		return worldEditPlugin;
+	}
+	
+	public Economy getEconomy() {
+		return economy;
 	}
 	
 	public Cannons getCannonsPlugin() {
