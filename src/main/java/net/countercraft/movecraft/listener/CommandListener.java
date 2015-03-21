@@ -240,6 +240,7 @@ public class CommandListener implements CommandExecutor {
 							craft.setCruiseDirection((byte)0x4);
 							craft.setCruising(true);
 						}
+						return true;
 					}
 					if(args[0].equalsIgnoreCase("north")) {
 						craft.setCruiseDirection((byte)0x3);
