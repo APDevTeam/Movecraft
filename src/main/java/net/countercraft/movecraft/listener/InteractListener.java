@@ -23,6 +23,8 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.CraftType;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.utils.MapUpdateCommand;
+import net.countercraft.movecraft.utils.MapUpdateManager;
 import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.utils.MovecraftLocation;
 import net.countercraft.movecraft.utils.Rotation;
@@ -294,7 +296,8 @@ public class InteractListener implements Listener {
 						e.printStackTrace();
 						return;
 					}
-					event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "State saved" ) ) );					
+					event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "State saved" ) ) );
+					event.setCancelled(true);
 				}
 			}
 		}
@@ -661,6 +664,10 @@ public class InteractListener implements Listener {
 				event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "You must be piloting a craft" ) ) );
 				return;
 			}
+			if( !event.getPlayer().hasPermission( "movecraft." + pCraft.getType().getCraftName() + ".repair")) {
+				event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "Insufficient Permissions" ) ) );
+				return;
+			}
 			// load up the repair state
 			
 			String repairStateName=Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/RepairStates";
@@ -720,8 +727,8 @@ public class InteractListener implements Listener {
 								itemToConsume=380;
 							if(itemToConsume==124) // lit redstone lamp
 								itemToConsume=123;
-							if(itemToConsume==76) // lit redstone torch
-								itemToConsume=75;
+							if(itemToConsume==75) // lit redstone torch
+								itemToConsume=76;
 							if( !numMissingItems.containsKey(itemToConsume) ) {
 								numMissingItems.put(itemToConsume, 1);
 							} else {
@@ -740,7 +747,7 @@ public class InteractListener implements Listener {
 			Long time=repairRightClickTimeMap.get(event.getPlayer());
 			if(time!=null) {
 				long ticksElapsed = ( System.currentTimeMillis() - time ) / 50;
-				if(ticksElapsed>100) {
+				if(ticksElapsed<100) {
 					secondClick=true;
 				}
 			}
@@ -786,24 +793,74 @@ public class InteractListener implements Listener {
 				if(!enoughMaterial) {
 					return;
 				} else {
-					// we know we have enough materials to make the repairs, so remove the materials from the chests and do the actual repair
+					// we know we have enough materials to make the repairs, so remove the materials from the chests
 					for (Integer typeID : numMissingItems.keySet()) {
 						int remainingQty=numMissingItems.get(typeID);
 						for (InventoryHolder inventoryHolder : chestsToTakeFrom.get(typeID)) {
 							HashMap<Integer, ? extends ItemStack> foundItems=inventoryHolder.getInventory().all(typeID);
-                        	// count how many were in the chest
-                        	int numfound=0;
                         	for(ItemStack istack : foundItems.values()) {
-                        		numfound+=istack.getAmount();
+                        		if(istack.getAmount()<=remainingQty) {
+                        			remainingQty-=istack.getAmount();
+                            		inventoryHolder.getInventory().removeItem(istack);                        			
+                        		} else {
+                        			istack.setAmount(istack.getAmount()-remainingQty);
+                        			remainingQty=0;
+                        		}
                         	}
-                        	if(numfound<=remainingQty) {
-                        		remainingQty-=numfound;
-                        		inventoryHolder.getInventory().remove(typeID);
-                        	} else {
-                        		ItemStack istack=new ItemStack(typeID,remainingQty);
-                        		inventoryHolder.getInventory().removeItem(istack);
-                        	}
+
 						}
+					}
+					ArrayList <MapUpdateCommand> updateCommands=new ArrayList <MapUpdateCommand>();
+					for(Vector ccloc : locMissingBlocks) {
+						BaseBlock bb=cc.getBlock(ccloc);
+						if(bb.getId()==68 || bb.getId()==63) { // I don't know why this is necessary. I'm pretty sure WE should be loading signs as signblocks, but it doesn't seem to
+							SignBlock sb=new SignBlock(bb.getId(), bb.getData());
+							sb.setNbtData(bb.getNbtData());
+							bb=sb;
+						}
+						MovecraftLocation moveloc=new MovecraftLocation(sign.getX()+cc.getOffset().getBlockX()+ccloc.getBlockX(),sign.getY()+cc.getOffset().getBlockY()+ccloc.getBlockY(),sign.getZ()+cc.getOffset().getBlockZ()+ccloc.getBlockZ());
+						MapUpdateCommand updateCom=new MapUpdateCommand(moveloc,9999,bb,pCraft);
+						updateCommands.add(updateCom);
+					}
+					if(updateCommands.size()>0) {
+						final Craft fpCraft=pCraft;
+						final MapUpdateCommand[] fUpdateCommands=updateCommands.toArray(new MapUpdateCommand[1]);
+						int durationInTicks=numdiffblocks*Settings.RepairTicksPerBlock;
+						
+						// send out status updates every minute
+						for(int ticsFromStart=0; ticsFromStart<durationInTicks; ticsFromStart+=1200) {
+							final Player fp=event.getPlayer();
+							final int fTics=ticsFromStart/20;
+							final int fDur=durationInTicks/20;
+							BukkitTask statusTask = new BukkitRunnable() {
+								@Override
+								public void run() {
+									fp.sendMessage(String.format( I18nSupport.getInternationalisedString( "Repairs underway" )+": %d / %d",fTics,fDur));								
+								}
+							}.runTaskLater( Movecraft.getInstance(), (ticsFromStart) );
+							
+						}
+
+						// keep craft piloted during the repair process so player can not move it
+						CraftManager.getInstance().removePlayerFromCraft(pCraft);
+						final Craft releaseCraft=pCraft;
+						final Player fp=event.getPlayer();
+						BukkitTask releaseTask = new BukkitRunnable() {
+							@Override
+							public void run() {
+								CraftManager.getInstance().removeCraft(releaseCraft);
+								fp.sendMessage(String.format( I18nSupport.getInternationalisedString( "Repairs complete. You may now pilot the craft" )));								
+							}
+						}.runTaskLater( Movecraft.getInstance(), (durationInTicks+20) );
+
+						//do the actual repair
+						BukkitTask repairTask = new BukkitRunnable() {
+							@Override
+							public void run() {
+								MapUpdateManager.getInstance().addWorldUpdate( fpCraft.getW(), fUpdateCommands, null,null);
+							}
+						}.runTaskLater( Movecraft.getInstance(), (durationInTicks) );
+						
 					}
 				}
 				
@@ -825,7 +882,7 @@ public class InteractListener implements Listener {
 					event.getPlayer().sendMessage(String.format( I18nSupport.getInternationalisedString( "Seconds to complete repair" )+": %d",durationInSeconds));
 					int moneyCost=(int) (numdiffblocks*Settings.RepairMoneyPerBlock);
 					event.getPlayer().sendMessage(String.format( I18nSupport.getInternationalisedString( "Money to complete repair" )+": %d",moneyCost));
-					repairRightClickTimeMap.put(event.getPlayer(), ( System.currentTimeMillis() - time ) / 50);
+					repairRightClickTimeMap.put(event.getPlayer(), System.currentTimeMillis() );
 				}
 			}
 			

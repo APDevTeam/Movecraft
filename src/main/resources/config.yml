@@ -14,3 +14,6 @@ RequireCreatePerm: false
 TNTContactExplosives: true
 DisableCrates: false
 FadeWrecksAfter: 0
+RepairTicksPerBlock: 10
+RepairMoneyPerBlock: 10
+AllowCrewSigns: true

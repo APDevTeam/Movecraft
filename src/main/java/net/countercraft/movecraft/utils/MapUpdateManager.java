@@ -58,6 +58,9 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
+import com.sk89q.worldedit.blocks.BaseBlock;
+import com.sk89q.worldedit.blocks.SignBlock;
+
 import java.util.*;
 import java.util.logging.Level;
 
@@ -144,7 +147,20 @@ public class MapUpdateManager extends BukkitRunnable {
 					else
 						w.getBlockAt(x, y, z).setType(org.bukkit.Material.REDSTONE_COMPARATOR_ON);
 				} else {
-					w.getBlockAt( x, y, z ).setTypeIdAndData( newTypeID, data, false );
+					if(m.getWorldEditBaseBlock()==null) {
+						w.getBlockAt( x, y, z ).setTypeIdAndData( newTypeID, data, false );
+					} else {
+						w.getBlockAt( x, y, z ).setTypeIdAndData( m.getWorldEditBaseBlock().getType(), (byte)m.getWorldEditBaseBlock().getData(), false );
+						BaseBlock bb=m.getWorldEditBaseBlock();
+						if(m.getWorldEditBaseBlock() instanceof SignBlock) {
+							BlockState state=w.getBlockAt( x, y, z ).getState();
+							Sign s=(Sign)state;
+							for(int i=0; i<((SignBlock)m.getWorldEditBaseBlock()).getText().length; i++) {
+								s.setLine( i, ((SignBlock)m.getWorldEditBaseBlock()).getText()[i] );
+							}
+							s.update();
+						}
+					}
 				}
 			}
 			if ( !cmChunks.contains( cmC ) ) {
@@ -193,12 +209,36 @@ public class MapUpdateManager extends BukkitRunnable {
 				}
 		
 				if(origType!=newTypeID || origData!=data) {
-					success = c.a( position, CraftMagicNumbers.getBlock(newTypeID).fromLegacyData(data) ) != null;
+					if(m.getWorldEditBaseBlock()==null) {
+						success = c.a( position, CraftMagicNumbers.getBlock(newTypeID).fromLegacyData(data) ) != null;
+					} else {
+						success = c.a( position, CraftMagicNumbers.getBlock(newTypeID).fromLegacyData(data) ) != null;
+						if(m.getWorldEditBaseBlock() instanceof SignBlock) {
+							BlockState state=w.getBlockAt( x, y, z ).getState();
+							Sign s=(Sign)state;
+							for(int i=0; i<((SignBlock)m.getWorldEditBaseBlock()).getText().length; i++) {
+								s.setLine( i, ((SignBlock)m.getWorldEditBaseBlock()).getText()[i] );
+							}
+							s.update();
+						}						
+					}
 				} else {
 					success=true;
 				}
 				if ( !success ) {
-					w.getBlockAt( x, y, z ).setTypeIdAndData( newTypeID, data, false );
+					if(m.getWorldEditBaseBlock()==null) {
+						w.getBlockAt( x, y, z ).setTypeIdAndData( newTypeID, data, false );
+					} else {
+						w.getBlockAt( x, y, z ).setTypeIdAndData( m.getWorldEditBaseBlock().getType(), (byte)m.getWorldEditBaseBlock().getData(), false );
+						if(m.getWorldEditBaseBlock() instanceof SignBlock) {
+							BlockState state=w.getBlockAt( x, y, z ).getState();
+							Sign s=(Sign)state;
+							for(int i=0; i<((SignBlock)m.getWorldEditBaseBlock()).getText().length; i++) {
+								s.setLine( i, ((SignBlock)m.getWorldEditBaseBlock()).getText()[i] );
+							}
+							s.update();
+						}
+					}
 				}
 				// set light level to whatever it was before the move
 				if(m.getOldBlockLocation()!=null) {
@@ -218,7 +258,7 @@ public class MapUpdateManager extends BukkitRunnable {
 
 		long startTime=System.currentTimeMillis();
 
-		final int[] fragileBlocks = new int[]{ 34, 50, 55, 63, 64, 65, 68, 69, 70, 71, 72, 75, 76, 77, 93, 94, 96, 131, 132, 143, 147, 148, 149, 150, 151, 171, 323, 324, 330, 331, 356, 404 };
+		final int[] fragileBlocks = new int[]{ 26, 34, 50, 55, 63, 64, 65, 68, 69, 70, 71, 72, 75, 76, 77, 93, 94, 96, 131, 132, 143, 147, 148, 149, 150, 151, 171, 323, 324, 330, 331, 356, 404 };
 		Arrays.sort(fragileBlocks);
 				
 		for ( World w : updates.keySet() ) {
@@ -413,6 +453,16 @@ public class MapUpdateManager extends BukkitRunnable {
 						
 					}
 				}
+				
+				for ( MapUpdateCommand i : updatesInWorld ) {
+					if(i!=null) {
+						// Place beds again, they have a habit of not placing correctly the first time
+						if(i.getTypeID()==26) {
+							updateBlock(i, w, dataMap, chunks, cmChunks, origLightMap, true);					
+						}
+						
+					}
+				}
 
 				// put in smoke or effects
 				for ( MapUpdateCommand i : updatesInWorld ) {
@@ -438,7 +488,7 @@ public class MapUpdateManager extends BukkitRunnable {
 								for ( int i = 0; i < signData.getLines().length; i++ ) {
 									sign.setLine( i, signData.getLines()[i] );
 								}
-								if(signData.getLines()[0].equalsIgnoreCase("Crew:")) {
+								if(Settings.AllowCrewSigns && signData.getLines()[0].equalsIgnoreCase("Crew:")) {
 									String crewName=signData.getLines()[1];
 									Player crewPlayer=Movecraft.getInstance().getServer().getPlayer(crewName);
 									if(crewPlayer!=null) {

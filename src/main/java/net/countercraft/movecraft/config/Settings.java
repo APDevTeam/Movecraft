@@ -41,4 +41,5 @@ public class Settings {
 	public static int RepairTicksPerBlock = 0;
 	public static double RepairMoneyPerBlock = 0.0;
 	public static boolean FireballPenetration = true;
+	public static boolean AllowCrewSigns = true;
 }

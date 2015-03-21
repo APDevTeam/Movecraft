@@ -17,6 +17,8 @@
 
 package net.countercraft.movecraft.utils;
 
+import com.sk89q.worldedit.blocks.BaseBlock;
+
 import net.countercraft.movecraft.craft.Craft;
 
 /**
@@ -26,6 +28,7 @@ public class MapUpdateCommand {
 	private MovecraftLocation blockLocation;
 	private final MovecraftLocation newBlockLocation;
 	private final int typeID;
+	private final BaseBlock worldEditBaseBlock;
 	private final Rotation rotation;
 	private Craft craft;
 	private int smoke;
@@ -34,6 +37,7 @@ public class MapUpdateCommand {
 		this.blockLocation = blockLocation;
 		this.newBlockLocation = newBlockLocation;
 		this.typeID = typeID;
+		this.worldEditBaseBlock = null;
 		this.rotation = rotation;
 		this.craft = craft;
 		this.smoke = 0;
@@ -43,6 +47,7 @@ public class MapUpdateCommand {
 		this.blockLocation = blockLocation;
 		this.newBlockLocation = newBlockLocation;
 		this.typeID = typeID;
+		this.worldEditBaseBlock = null;
 		this.rotation = Rotation.NONE;
 		this.craft = craft;
 		this.smoke = 0;
@@ -51,6 +56,16 @@ public class MapUpdateCommand {
 	public MapUpdateCommand( MovecraftLocation newBlockLocation, int typeID, Craft craft ) {
 		this.newBlockLocation = newBlockLocation;
 		this.typeID = typeID;
+		this.worldEditBaseBlock = null;
+		this.rotation = Rotation.NONE;
+		this.craft = craft;
+		this.smoke = 0;
+	}
+
+	public MapUpdateCommand( MovecraftLocation newBlockLocation, int typeID, BaseBlock worldEditBaseBlock, Craft craft ) {
+		this.newBlockLocation = newBlockLocation;
+		this.typeID = typeID;
+		this.worldEditBaseBlock = worldEditBaseBlock;
 		this.rotation = Rotation.NONE;
 		this.craft = craft;
 		this.smoke = 0;
@@ -59,6 +74,7 @@ public class MapUpdateCommand {
 	public MapUpdateCommand( MovecraftLocation newBlockLocation, int typeID, Craft craft, int smoke ) {
 		this.newBlockLocation = newBlockLocation;
 		this.typeID = typeID;
+		this.worldEditBaseBlock = null;
 		this.rotation = Rotation.NONE;
 		this.craft = craft;
 		this.smoke = smoke;
@@ -66,6 +82,10 @@ public class MapUpdateCommand {
 
 	public int getTypeID() {
 		return typeID;
+	}
+
+	public BaseBlock getWorldEditBaseBlock() {
+		return worldEditBaseBlock;
 	}
 
 	public int getSmoke() {
