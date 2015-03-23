@@ -328,21 +328,27 @@ public class TranslationTask extends AsyncTask {
                     }
                 } 
             
-                if(!testMaterial.equals(Material.AIR)) { // air never obstructs with anything
-	                if(getCraft().getSinking()) {                    
-	                    int testID=getCraft().getW().getBlockAt( newLoc.getX(), newLoc.getY(), newLoc.getZ() ).getTypeId();
-	                    blockObstructed = !(Arrays.binarySearch(fallThroughBlocks, testID)>=0) && !existingBlockSet.contains( newLoc ); 
-	                } else if(!waterCraft) {
-	                    // New block is not air or a piston head and is not part of the existing ship
-	                    testMaterial = getCraft().getW().getBlockAt( newLoc.getX(), newLoc.getY(), newLoc.getZ() ).getType();
-	                    blockObstructed = (!testMaterial.equals(Material.AIR) && !testMaterial.equals(Material.PISTON_EXTENSION)) && !existingBlockSet.contains( newLoc );
-	                } else {
-	                    // New block is not air or water or a piston head and is not part of the existing ship
-	                    testMaterial = getCraft().getW().getBlockAt( newLoc.getX(), newLoc.getY(), newLoc.getZ() ).getType();
-	                    blockObstructed = (!testMaterial.equals(Material.AIR) && !testMaterial.equals(Material.STATIONARY_WATER) 
-	                        && !testMaterial.equals(Material.WATER) && !testMaterial.equals(Material.PISTON_EXTENSION)) && !existingBlockSet.contains( newLoc );
-	                }
+                if(getCraft().getSinking()) {                    
+                    int testID=getCraft().getW().getBlockAt( newLoc.getX(), newLoc.getY(), newLoc.getZ() ).getTypeId();
+                    blockObstructed = !(Arrays.binarySearch(fallThroughBlocks, testID)>=0) && !existingBlockSet.contains( newLoc ); 
+                } else if(!waterCraft) {
+                    // New block is not air or a piston head and is not part of the existing ship
+                    testMaterial = getCraft().getW().getBlockAt( newLoc.getX(), newLoc.getY(), newLoc.getZ() ).getType();
+                    blockObstructed = (!testMaterial.equals(Material.AIR) && !testMaterial.equals(Material.PISTON_EXTENSION)) && !existingBlockSet.contains( newLoc );
+                } else {
+                    // New block is not air or water or a piston head and is not part of the existing ship
+                    testMaterial = getCraft().getW().getBlockAt( newLoc.getX(), newLoc.getY(), newLoc.getZ() ).getType();
+                    blockObstructed = (!testMaterial.equals(Material.AIR) && !testMaterial.equals(Material.STATIONARY_WATER) 
+                        && !testMaterial.equals(Material.WATER) && !testMaterial.equals(Material.PISTON_EXTENSION)) && !existingBlockSet.contains( newLoc );
                 }
+
+                boolean ignoreBlock=false;
+                // air never obstructs anything
+	            if(getCraft().getW().getBlockAt( oldLoc.getX(), oldLoc.getY(), oldLoc.getZ() ).getType().equals(Material.AIR) && blockObstructed) {
+	            	ignoreBlock=true;
+	            	blockObstructed=false;
+	            }
+	            
                 testMaterial = getCraft().getW().getBlockAt( newLoc.getX(), newLoc.getY(), newLoc.getZ() ).getType();
                 if (blockObstructed){
                     if (hoverCraft || harvestBlocks.size() > 0){
@@ -467,8 +473,10 @@ public class TranslationTask extends AsyncTask {
                             oldID=0;
                     }
                     
-                    updateSet.add( new MapUpdateCommand( oldLoc, newLoc, oldID, getCraft() ) );
-                    tempBlockList.add(newLoc);
+                    if(!ignoreBlock) {
+	                    updateSet.add( new MapUpdateCommand( oldLoc, newLoc, oldID, getCraft() ) );
+	                    tempBlockList.add(newLoc);
+                    }
 
                     if ( i == blocksList.length - 1 ){
                         if ((hoverCraft && hoverUseGravity) || (hoverUseGravity && newLoc.getY() > data.getMaxHeight() && hoverOver == 0) ){

@@ -141,7 +141,7 @@ public class MapUpdateManager extends BukkitRunnable {
 					s.update();
 					w.getBlockAt(x, y, z).setType(org.bukkit.Material.AIR);
 					}
-				if(newTypeID==149 || newTypeID==150) {
+				if((newTypeID==149 || newTypeID==150) && m.getWorldEditBaseBlock()==null) {
 					if(newTypeID==149)
 						w.getBlockAt(x, y, z).setType(org.bukkit.Material.REDSTONE_COMPARATOR_OFF);
 					else
@@ -168,7 +168,7 @@ public class MapUpdateManager extends BukkitRunnable {
 			}
 		} else {
 			BlockPosition position = new BlockPosition(x, y, z);
-			if(origType==149 || origType==150) { // bukkit can't remove comparators safely, it screws up the NBT data. So turn it to a sign, then remove it.
+			if((origType==149 || origType==150) && m.getWorldEditBaseBlock()==null) { // bukkit can't remove comparators safely, it screws up the NBT data. So turn it to a sign, then remove it.
 
 				c.a( position, CraftMagicNumbers.getBlock(org.bukkit.Material.AIR).fromLegacyData(0));
 				c.a( position, CraftMagicNumbers.getBlock(org.bukkit.Material.SIGN_POST).fromLegacyData(0));

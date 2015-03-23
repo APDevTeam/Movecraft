@@ -819,7 +819,7 @@ public class InteractListener implements Listener {
 							bb=sb;
 						}
 						MovecraftLocation moveloc=new MovecraftLocation(sign.getX()+cc.getOffset().getBlockX()+ccloc.getBlockX(),sign.getY()+cc.getOffset().getBlockY()+ccloc.getBlockY(),sign.getZ()+cc.getOffset().getBlockZ()+ccloc.getBlockZ());
-						MapUpdateCommand updateCom=new MapUpdateCommand(moveloc,9999,bb,pCraft);
+						MapUpdateCommand updateCom=new MapUpdateCommand(moveloc,bb.getType(),bb,pCraft);
 						updateCommands.add(updateCom);
 					}
 					if(updateCommands.size()>0) {

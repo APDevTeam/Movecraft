@@ -231,7 +231,7 @@ public class CommandListener implements CommandExecutor {
 							// west
 							craft.setCruiseDirection((byte)0x5);
 							craft.setCruising(true);
-						} else if(yaw > -45) {
+						} else if(yaw < -45) {
 							// south
 							craft.setCruiseDirection((byte)0x2);
 							craft.setCruising(true);
