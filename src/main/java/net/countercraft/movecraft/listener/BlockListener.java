@@ -150,7 +150,7 @@ public class BlockListener implements Listener {
 			}
         }
         if(signText.equalsIgnoreCase( "Cruise: OFF") || signText.equalsIgnoreCase( "Cruise: ON")) {
-        	if(p.hasPermission( "movecraft.create")==false && Settings.RequireCreatePerm) {
+        	if(p.hasPermission( "movecraft.cruisesign")==false && Settings.RequireCreatePerm) {
 				p.sendMessage( String.format( I18nSupport.getInternationalisedString( "Insufficient Permissions" ) ) );
 				event.setCancelled(true);
 			}

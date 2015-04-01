@@ -714,6 +714,7 @@ public class InteractListener implements Listener {
 						if(isImportant && worldLoc.getWorld().getBlockAt(worldLoc).getTypeId()!=cc.getBlock(ccLoc).getId() ) {
 							numdiffblocks++;
 							int itemToConsume=cc.getBlock(ccLoc).getId();
+							int qtyToConsume=1;
 							//some blocks aren't represented by items with the same number as the block
 							if(itemToConsume==63 || itemToConsume==68) // signs
 								itemToConsume=323;
@@ -729,12 +730,35 @@ public class InteractListener implements Listener {
 								itemToConsume=123;
 							if(itemToConsume==75) // lit redstone torch
 								itemToConsume=76;
-							if( !numMissingItems.containsKey(itemToConsume) ) {
-								numMissingItems.put(itemToConsume, 1);
-							} else {
-								Integer num=numMissingItems.get(itemToConsume);
-								num++;
-								numMissingItems.put(itemToConsume, num);
+							if(itemToConsume==8 || itemToConsume==9) { // don't require water to be in the chest
+								itemToConsume=0;
+								qtyToConsume=0;
+							}
+							if(itemToConsume==10 || itemToConsume==11) { // don't require lava either, yeah you could exploit this for free lava, so make sure you set a price per block
+								itemToConsume=0;
+								qtyToConsume=0;
+							}
+							if(itemToConsume==43) { // for double slabs, require 2 slabs
+								itemToConsume=44;
+								qtyToConsume=2;
+							}
+							if(itemToConsume==125) { // for double wood slabs, require 2 wood slabs
+								itemToConsume=126;
+								qtyToConsume=2;
+							}
+							if(itemToConsume==181) { // for double red sandstone slabs, require 2 red sandstone slabs
+								itemToConsume=182;
+								qtyToConsume=2;
+							}
+							
+							if(itemToConsume!=0) {
+								if( !numMissingItems.containsKey(itemToConsume) ) {
+									numMissingItems.put(itemToConsume, qtyToConsume);
+								} else {
+									Integer num=numMissingItems.get(itemToConsume);
+									num+=qtyToConsume;
+									numMissingItems.put(itemToConsume, num);
+								}
 							}
 							locMissingBlocks.add(ccLoc);
 						}
