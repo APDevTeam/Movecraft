@@ -17,8 +17,6 @@
 
 package net.countercraft.movecraft.utils;
 
-import com.sk89q.worldedit.blocks.BaseBlock;
-
 import net.countercraft.movecraft.craft.Craft;
 
 /**
@@ -28,7 +26,7 @@ public class MapUpdateCommand {
 	private MovecraftLocation blockLocation;
 	private final MovecraftLocation newBlockLocation;
 	private final int typeID;
-	private final BaseBlock worldEditBaseBlock;
+	private final Object worldEditBaseBlock;
 	private final Rotation rotation;
 	private Craft craft;
 	private int smoke;
@@ -62,7 +60,7 @@ public class MapUpdateCommand {
 		this.smoke = 0;
 	}
 
-	public MapUpdateCommand( MovecraftLocation newBlockLocation, int typeID, BaseBlock worldEditBaseBlock, Craft craft ) {
+	public MapUpdateCommand( MovecraftLocation newBlockLocation, int typeID, Object worldEditBaseBlock, Craft craft ) {
 		this.newBlockLocation = newBlockLocation;
 		this.typeID = typeID;
 		this.worldEditBaseBlock = worldEditBaseBlock;
@@ -84,7 +82,7 @@ public class MapUpdateCommand {
 		return typeID;
 	}
 
-	public BaseBlock getWorldEditBaseBlock() {
+	public Object getWorldEditBaseBlock() {
 		return worldEditBaseBlock;
 	}
 

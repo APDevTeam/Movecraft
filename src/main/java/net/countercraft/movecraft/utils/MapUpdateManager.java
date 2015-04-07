@@ -150,8 +150,8 @@ public class MapUpdateManager extends BukkitRunnable {
 					if(m.getWorldEditBaseBlock()==null) {
 						w.getBlockAt( x, y, z ).setTypeIdAndData( newTypeID, data, false );
 					} else {
-						w.getBlockAt( x, y, z ).setTypeIdAndData( m.getWorldEditBaseBlock().getType(), (byte)m.getWorldEditBaseBlock().getData(), false );
-						BaseBlock bb=m.getWorldEditBaseBlock();
+						w.getBlockAt( x, y, z ).setTypeIdAndData( ((BaseBlock)m.getWorldEditBaseBlock()).getType(), (byte)((BaseBlock)m.getWorldEditBaseBlock()).getData(), false );
+						BaseBlock bb=(BaseBlock)m.getWorldEditBaseBlock();
 						if(m.getWorldEditBaseBlock() instanceof SignBlock) {
 							BlockState state=w.getBlockAt( x, y, z ).getState();
 							Sign s=(Sign)state;
@@ -229,7 +229,7 @@ public class MapUpdateManager extends BukkitRunnable {
 					if(m.getWorldEditBaseBlock()==null) {
 						w.getBlockAt( x, y, z ).setTypeIdAndData( newTypeID, data, false );
 					} else {
-						w.getBlockAt( x, y, z ).setTypeIdAndData( m.getWorldEditBaseBlock().getType(), (byte)m.getWorldEditBaseBlock().getData(), false );
+						w.getBlockAt( x, y, z ).setTypeIdAndData( ((BaseBlock)m.getWorldEditBaseBlock()).getType(), (byte)((BaseBlock)m.getWorldEditBaseBlock()).getData(), false );
 						if(m.getWorldEditBaseBlock() instanceof SignBlock) {
 							BlockState state=w.getBlockAt( x, y, z ).getState();
 							Sign s=(Sign)state;
@@ -347,11 +347,11 @@ public class MapUpdateManager extends BukkitRunnable {
 								entUpdateList.add(i);
 							}
 							if(i.getEntity() instanceof Player) {
-								// send a fake glass block so the player doesn't fall
+								// send a fake wool block so the player doesn't fall
 								Player p=(Player)i.getEntity();
 								Location loc=i.getNewLocation().clone();
 								loc=loc.subtract(0, 1, 0);
-								p.sendBlockChange(loc, 20, (byte) 0);
+								p.sendBlockChange(loc, 35, (byte) 0);
 								Location loc2=i.getNewLocation().clone();
 								loc2=loc2.add(0, 1, 0);
 								p.sendBlockChange(loc2, 0, (byte) 0);

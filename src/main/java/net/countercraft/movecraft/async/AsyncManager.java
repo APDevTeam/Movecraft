@@ -650,6 +650,7 @@ public class AsyncManager extends BukkitRunnable {
 							for (Player p : w.getPlayers()) {
 								// is the TNT within the view distance (rendered world) of the player?
 								long maxDistSquared=Bukkit.getServer().getViewDistance()*16;
+								maxDistSquared=maxDistSquared-16;
 								maxDistSquared=maxDistSquared*maxDistSquared;
 
 								if(p.getLocation().distanceSquared(tnt.getLocation())<maxDistSquared) {  // we use squared because its faster

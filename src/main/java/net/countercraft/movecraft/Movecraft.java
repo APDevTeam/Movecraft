@@ -30,6 +30,7 @@ import net.countercraft.movecraft.listener.BlockListener;
 import net.countercraft.movecraft.listener.CommandListener;
 import net.countercraft.movecraft.listener.InteractListener;
 import net.countercraft.movecraft.listener.PlayerListener;
+import net.countercraft.movecraft.listener.WorldEditInteractListener;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.metrics.MovecraftMetrics;  
 import net.countercraft.movecraft.utils.MapUpdateManager;
@@ -174,6 +175,10 @@ public class Movecraft extends JavaPlugin {
 
 			getServer().getPluginManager().registerEvents(
 					new InteractListener(), this);
+			if(worldEditPlugin!=null) {
+				getServer().getPluginManager().registerEvents(
+						new WorldEditInteractListener(), this);
+			}
 //			getServer().getPluginManager().registerEvents(
 //					new CommandListener(), this);
 			this.getCommand("release").setExecutor(new CommandListener());
