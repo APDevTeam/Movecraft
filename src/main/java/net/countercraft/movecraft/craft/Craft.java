@@ -124,6 +124,12 @@ public class Craft {
 		if(dx==0 && dy==0 && dz==0) {
 			return;
 		}
+                
+                if (!this.getType().allowVerticalTakeoffAndLanding() && dy != 0 && this.getSinking()==false){
+                    if (dx == 0 && dz == 0){
+                        return;
+                    }
+                }
 		
 		// find region that will need to be loaded to translate this craft
 		int cminX=minX;

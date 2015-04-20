@@ -17,6 +17,12 @@
 
 package net.countercraft.movecraft.async.rotation;
 
+import com.palmergames.bukkit.towny.object.Town;
+import com.palmergames.bukkit.towny.object.TownBlock;
+import com.palmergames.bukkit.towny.object.TownyWorld;
+import com.sk89q.worldguard.LocalPlayer;
+import com.sk89q.worldguard.protection.ApplicableRegionSet;
+import com.sk89q.worldguard.protection.flags.StateFlag;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.config.Settings;
@@ -46,6 +52,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import net.countercraft.movecraft.utils.TownyUtils;
+import net.countercraft.movecraft.utils.TownyWorldHeightLimits;
 
 import org.bukkit.Material;
 
@@ -169,7 +178,23 @@ public class RotationTask extends AsyncTask {
 		HashSet<MovecraftLocation> existingBlockSet = new HashSet<MovecraftLocation>( Arrays.asList( originalBlockList ) );
 		Set<MapUpdateCommand> mapUpdates = new HashSet<MapUpdateCommand>();
 		HashSet<EntityUpdateCommand> entityUpdateSet = new HashSet<EntityUpdateCommand>();
-
+                
+                boolean townyEnabled = Movecraft.getInstance().getTownyPlugin() != null;
+                Set<TownBlock> townBlockSet = new HashSet<TownBlock>();
+                TownyWorld townyWorld = null;
+                TownyWorldHeightLimits townyWorldHeightLimits = null;
+                
+                if (townyEnabled && Settings.TownyBlockMoveOnSwitchPerm){
+                    townyWorld = TownyUtils.getTownyWorld(getCraft().getW());
+                    if (townyWorld != null){
+                        townyEnabled = townyWorld.isUsingTowny();
+                        if (townyEnabled) townyWorldHeightLimits = TownyUtils.getWorldLimits(getCraft().getW());
+                    }
+                }else{
+                    townyEnabled = false;
+                }
+                int craftMinY = 0;
+                int craftMaxY = 0;  
 		// make the centered block list, and check for a cruise control sign to reset to off
 		for ( int i = 0; i < blockList.length; i++ ) {
 			centeredBlockList[i] = blockList[i].subtract( originPoint );
@@ -195,18 +220,72 @@ public class RotationTask extends AsyncTask {
                     break;
                 }
             }
-
-			// See if they are permitted to build in the area, if WorldGuard integration is turned on
-			if(Movecraft.getInstance().getWorldGuardPlugin()!=null && Settings.WorldGuardBlockMoveOnBuildPerm)
-				if(craftPilot!=null) {
-					Location loc=new Location(w, blockList[i].getX(), blockList[i].getY(), blockList[i].getZ());
-					if(Movecraft.getInstance().getWorldGuardPlugin().canBuild(craftPilot, loc)==false) {
-						failed = true;
-						failMessage = String.format( I18nSupport.getInternationalisedString( "Rotation - Player is not permitted to build in this WorldGuard region" )+" @ %d,%d,%d", blockList[i].getX(), blockList[i].getY(), blockList[i].getZ() );
-						break;
-					}
-				}
-
+            if(craftPilot!=null) {
+                Location plugLoc=new Location(w, blockList[i].getX(), blockList[i].getY(), blockList[i].getZ());
+                // See if they are permitted to build in the area, if WorldGuard integration is turned on
+                if(Movecraft.getInstance().getWorldGuardPlugin()!=null && Settings.WorldGuardBlockMoveOnBuildPerm){
+                    if(Movecraft.getInstance().getWorldGuardPlugin().canBuild(craftPilot, plugLoc)==false) {
+                            failed = true;
+                            failMessage = String.format( I18nSupport.getInternationalisedString( "Rotation - Player is not permitted to build in this WorldGuard region" )+" @ %d,%d,%d", blockList[i].getX(), blockList[i].getY(), blockList[i].getZ() );
+                            break;
+                    }
+                }
+                
+                if(Movecraft.getInstance().getWorldGuardPlugin()!=null && Movecraft.getInstance().getWGCustomFlagsPlugin()!= null && Settings.WGCustomFlagsUsePilotFlag){
+                    LocalPlayer lp = Movecraft.getInstance().getWorldGuardPlugin().wrapPlayer(craftPilot);
+                    StateFlag.State state = (StateFlag.State)Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(plugLoc.getWorld()).getApplicableRegions(plugLoc).getFlag(Movecraft.FLAG_ROTATE,lp);
+                    if(state != null && state == StateFlag.State.DENY){
+                        failed = true;
+                        failMessage = String.format( I18nSupport.getInternationalisedString( "WGCustomFlags - Rotation Failed" )+" @ %d,%d,%d", blockList[i].getX(), blockList[i].getY(), blockList[i].getZ() );
+                        break;
+                    }
+                }
+                
+                if (townyEnabled){
+                    TownBlock townBlock = TownyUtils.getTownBlock(plugLoc);
+                    if (townBlock != null && !townBlockSet.contains(townBlock)){
+                        if (TownyUtils.validateCraftMoveEvent(craftPilot, plugLoc, townyWorld)){
+                            townBlockSet.add(townBlock);
+                        }else{
+                            int y = plugLoc.getBlockY();
+                            boolean oChange = false;
+                            if(craftMinY > y) {craftMinY = y; oChange = true;}
+                            if(craftMaxY < y) {craftMaxY = y; oChange = true;}
+                            if (oChange){
+                                Town town = TownyUtils.getTown(townBlock);
+                                if (town != null){
+                                    Location locSpawn = TownyUtils.getTownSpawn(townBlock);
+                                    if (locSpawn != null){
+                                        if (!townyWorldHeightLimits.validate(y, locSpawn.getBlockY())){
+                                            failed = true;
+                                        }
+                                    }else{
+                                        failed = true;
+                                    }
+                                    if (failed){
+                                        if(Movecraft.getInstance().getWorldGuardPlugin()!=null && Movecraft.getInstance().getWGCustomFlagsPlugin()!= null && Settings.WGCustomFlagsUsePilotFlag){
+                                            LocalPlayer lp = Movecraft.getInstance().getWorldGuardPlugin().wrapPlayer(craftPilot);
+                                            ApplicableRegionSet regions = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(plugLoc.getWorld()).getApplicableRegions(plugLoc);
+                                            if (regions.size() != 0){
+                                                StateFlag.State state = (StateFlag.State)regions.getFlag(Movecraft.FLAG_ROTATE,lp);
+                                                if(state != null && state == StateFlag.State.ALLOW){
+                                                    failed = false;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    if (failed){
+                                        failMessage = String.format( I18nSupport.getInternationalisedString( "Towny - Rotation Failed" ) + " %s @ %d,%d,%d", town.getName(), blockList[i].getX(), blockList[i].getY(), blockList[i].getZ() );
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+                        
+                        
 			if (!waterCraft) {
 				if ( (typeID != 0 && typeID!=34) && !existingBlockSet.contains( blockList[i] ) ) {
 					failed = true;

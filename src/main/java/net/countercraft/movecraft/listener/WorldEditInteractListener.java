@@ -332,10 +332,8 @@ public class WorldEditInteractListener implements Listener {
 						event.getPlayer().sendMessage(String.format( I18nSupport.getInternationalisedString( "You do not have enough money" )));
 						enoughMaterial=false;
 					}
-				}
-				if(!enoughMaterial) {
-					return;
-				} else {
+				} 
+                                if (enoughMaterial){
 					// we know we have enough materials to make the repairs, so remove the materials from the chests
 					for (Integer typeID : numMissingItems.keySet()) {
 						int remainingQty=numMissingItems.get(typeID);

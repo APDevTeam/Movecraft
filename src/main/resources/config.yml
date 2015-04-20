@@ -17,3 +17,15 @@ FadeWrecksAfter: 0
 RepairTicksPerBlock: 10
 RepairMoneyPerBlock: 10
 AllowCrewSigns: true
+WGCustomFlagsUsePilotFlag: false
+WGCustomFlagsUseMoveFlag: false
+WGCustomFlagsUseRotateFlag: false
+WGCustomFlagsUseSinkFlag: false
+TownyBlockMoveOnSwitchPerm: false
+TownyBlockSinkOnNoPVP: false
+TownyWorldHeightLimits:
+  world:
+    worldMin: -1
+    worldMax: -1
+    aboveTownSpawn: 96
+    underTownSpawn: 255

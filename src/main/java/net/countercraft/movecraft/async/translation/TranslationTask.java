@@ -17,6 +17,8 @@
 
 package net.countercraft.movecraft.async.translation;
 
+import com.palmergames.bukkit.towny.object.Town;
+import com.sk89q.worldguard.protection.flags.StateFlag;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.async.AsyncManager;
 import net.countercraft.movecraft.async.AsyncTask;
@@ -55,6 +57,12 @@ import java.util.Random;
 import java.util.Set;
 import java.util.logging.Level;
 import net.countercraft.movecraft.utils.ItemDropUpdateCommand;
+import net.countercraft.movecraft.utils.TownyUtils;
+import com.palmergames.bukkit.towny.object.TownBlock;
+import com.palmergames.bukkit.towny.object.TownyWorld;
+import com.sk89q.worldguard.LocalPlayer;
+import com.sk89q.worldguard.protection.ApplicableRegionSet;
+import net.countercraft.movecraft.utils.TownyWorldHeightLimits;
 
 import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
@@ -274,7 +282,7 @@ public class TranslationTask extends AsyncTask {
             HashSet<MovecraftLocation> existingBlockSet = new HashSet<MovecraftLocation>( Arrays.asList( blocksList ) );
             HashSet<EntityUpdateCommand> entityUpdateSet = new HashSet<EntityUpdateCommand>();
             Set<MapUpdateCommand> updateSet = new HashSet<MapUpdateCommand>();
-
+            
             data.setCollisionExplosion(false);
             Set<MapUpdateCommand> explosionSet = new HashSet<MapUpdateCommand>();
 
@@ -285,11 +293,29 @@ public class TranslationTask extends AsyncTask {
             List<Material> harvesterBladeBlocks =  getCraft().getType().getHarvesterBladeBlocks(); 
             
             int hoverOver = data.getDy();
+            int craftMinY = 0;
+            int craftMaxY = 0;
             boolean clearNewData = false;
             boolean hoverUseGravity = getCraft().getType().getUseGravity();
             boolean checkHover = (data.getDx()!=0 || data.getDz()!=0);// we want to check only horizontal moves
             boolean canHoverOverWater = getCraft().getType().getCanHoverOverWater();
-		
+            boolean townyEnabled = Movecraft.getInstance().getTownyPlugin() != null;
+            Set<TownBlock> townBlockSet = new HashSet<TownBlock>();
+            TownyWorld townyWorld = null;
+            TownyWorldHeightLimits townyWorldHeightLimits = null;
+                    
+            if (townyEnabled && Settings.TownyBlockMoveOnSwitchPerm){
+                townyWorld = TownyUtils.getTownyWorld(getCraft().getW());
+                if (townyWorld != null){
+                    townyEnabled = townyWorld.isUsingTowny();
+                    if (townyEnabled) townyWorldHeightLimits = TownyUtils.getWorldLimits(getCraft().getW());
+                }
+            }else{
+                townyEnabled = false;
+            }
+                
+                    
+            
             for ( int i = 0; i < blocksList.length; i++ ) {
                 MovecraftLocation oldLoc = blocksList[i];
                 MovecraftLocation newLoc = oldLoc.translate( data.getDx(), data.getDy(), data.getDz() );
@@ -306,18 +332,70 @@ public class TranslationTask extends AsyncTask {
                 boolean harvestBlock = false;
                 boolean bladeOK = true;
                 Material testMaterial;
-            
-                // See if they are permitted to build in the area, if WorldGuard integration is turned on
-                if(Movecraft.getInstance().getWorldGuardPlugin()!=null && Settings.WorldGuardBlockMoveOnBuildPerm){
-                    if(craftPilot!=null) {
-                        Location loc=new Location(getCraft().getW(), newLoc.getX(), newLoc.getY(), newLoc.getZ());
-                        if(Movecraft.getInstance().getWorldGuardPlugin().canBuild(craftPilot, loc)==false) {
-	                    fail( String.format( I18nSupport.getInternationalisedString( "Translation - Failed Player is not permitted to build in this WorldGuard region" )+" @ %d,%d,%d", oldLoc.getX(), oldLoc.getY(), oldLoc.getZ() ) );
-	                    break;
+                
+                
+                Location plugLoc=new Location(getCraft().getW(), newLoc.getX(), newLoc.getY(), newLoc.getZ());
+                if(craftPilot!=null) {
+                    // See if they are permitted to build in the area, if WorldGuard integration is turned on
+                    if(Movecraft.getInstance().getWorldGuardPlugin()!=null && Settings.WorldGuardBlockMoveOnBuildPerm){   
+                        if(Movecraft.getInstance().getWorldGuardPlugin().canBuild(craftPilot, plugLoc)==false) {
+                            fail( String.format( I18nSupport.getInternationalisedString( "Translation - Failed Player is not permitted to build in this WorldGuard region" )+" @ %d,%d,%d", oldLoc.getX(), oldLoc.getY(), oldLoc.getZ() ) );
+                            break;
+                        }
+                    }
+                    if(Movecraft.getInstance().getWorldGuardPlugin()!=null && Movecraft.getInstance().getWGCustomFlagsPlugin()!= null && Settings.WGCustomFlagsUsePilotFlag){
+                        LocalPlayer lp = Movecraft.getInstance().getWorldGuardPlugin().wrapPlayer(craftPilot);
+                        StateFlag.State state = (StateFlag.State)Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(plugLoc.getWorld()).getApplicableRegions(plugLoc).getFlag(Movecraft.FLAG_MOVE,lp);
+                        if(state != null && state == StateFlag.State.DENY){
+                            fail( String.format( I18nSupport.getInternationalisedString( "WGCustomFlags - Translation Failed" )+" @ %d,%d,%d", oldLoc.getX(), oldLoc.getY(), oldLoc.getZ() ));
+                            break;        
+                        }
+                    }
+                    if (townyEnabled){
+                        TownBlock townBlock = TownyUtils.getTownBlock(plugLoc);
+                        if (townBlock != null && !townBlockSet.contains(townBlock)){
+                            if (TownyUtils.validateCraftMoveEvent(craftPilot, plugLoc, townyWorld)){
+                                townBlockSet.add(townBlock);
+                            }else{
+                                int y = plugLoc.getBlockY();
+                                boolean oChange = false;
+                                if(craftMinY > y) {craftMinY = y; oChange = true;}
+                                if(craftMaxY < y) {craftMaxY = y; oChange = true;}
+                                if (oChange){
+                                    boolean failed = false;
+                                    Town town = TownyUtils.getTown(townBlock);
+                                    if (town != null){
+                                        Location locSpawn = TownyUtils.getTownSpawn(townBlock);
+                                        if (locSpawn != null){
+                                            if (!townyWorldHeightLimits.validate(y, locSpawn.getBlockY())){
+                                                failed = true;
+                                            }
+                                        }else{
+                                            failed = true;
+                                        }
+                                        if (failed){
+                                            if(Movecraft.getInstance().getWorldGuardPlugin()!=null && Movecraft.getInstance().getWGCustomFlagsPlugin()!= null && Settings.WGCustomFlagsUsePilotFlag){
+                                                LocalPlayer lp = Movecraft.getInstance().getWorldGuardPlugin().wrapPlayer(craftPilot);
+                                                ApplicableRegionSet regions = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(plugLoc.getWorld()).getApplicableRegions(plugLoc);
+                                                if (regions.size() != 0){
+                                                    StateFlag.State state = (StateFlag.State)regions.getFlag(Movecraft.FLAG_MOVE,lp);
+                                                    if(state != null && state == StateFlag.State.ALLOW){
+                                                        failed = false;  
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        if (failed){
+                                            fail( String.format( I18nSupport.getInternationalisedString( "Towny - Translation Failed") + " %s @ %d,%d,%d", town.getName(), oldLoc.getX(), oldLoc.getY(), oldLoc.getZ() ));
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
-
+                
                 //check for chests around
                 testMaterial = getCraft().getW().getBlockAt(oldLoc.getX(), oldLoc.getY(), oldLoc.getZ() ).getType();
                 if (testMaterial.equals(Material.CHEST) || testMaterial.equals(Material.TRAPPED_CHEST)){
@@ -579,10 +657,13 @@ public class TranslationTask extends AsyncTask {
                 data.setCollisionExplosion(false);
                 explosionSet.clear();
                 clearNewData = false;
+                townBlockSet.clear();
+                craftMinY = 0;
+                craftMaxY = 0;
             }
             
         } //END OF: for ( int i = 0; i < blocksList.length; i++ ) {
-		
+	    
         if(data.collisionExplosion()) {
             // mark the craft to check for sinking, remove the exploding blocks from the blocklist, and submit the explosions for map update
             for(MapUpdateCommand m : explosionSet) {

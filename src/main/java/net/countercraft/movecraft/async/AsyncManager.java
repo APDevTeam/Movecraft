@@ -48,9 +48,12 @@ import org.bukkit.util.Vector;
 import org.mozilla.javascript.JavaScriptException;
 
 import at.pavlov.cannons.cannon.Cannon;
+import com.palmergames.bukkit.towny.object.TownBlock;
+import com.palmergames.bukkit.towny.object.TownyWorld;
 
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.flags.DefaultFlag;
+import com.sk89q.worldguard.protection.flags.StateFlag;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -64,6 +67,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import net.countercraft.movecraft.utils.ItemDropUpdateCommand;
+import net.countercraft.movecraft.utils.TownyUtils;
 
 public class AsyncManager extends BukkitRunnable {
 	private static final AsyncManager instance = new AsyncManager();
@@ -501,13 +505,48 @@ public class AsyncManager extends BukkitRunnable {
 		return false;
 	}
 	
+        private boolean isRegionFlagSinkAllowed(MovecraftLocation loc,World w) {
+            if(Movecraft.getInstance().getWorldGuardPlugin()!=null && Movecraft.getInstance().getWGCustomFlagsPlugin()!= null && Settings.WGCustomFlagsUseSinkFlag){
+                Location nativeLoc=new Location(w, loc.getX(), loc.getY(), loc.getZ());
+                StateFlag.State state = (StateFlag.State)Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(w).getApplicableRegions(nativeLoc).getFlag(Movecraft.FLAG_SINK);
+                if(state != null && state == StateFlag.State.ALLOW){
+                    return true;
+                }
+            }else{
+                return true;
+            }
+            return false;
+	}
+        
+        private Location isTownyPlotPVPEnabled(MovecraftLocation loc,World w, Set<TownBlock> townBlockSet){
+            Location plugLoc=new Location(w, loc.getX(), loc.getY(), loc.getZ());
+            TownBlock townBlock = TownyUtils.getTownBlock(plugLoc);
+            if (townBlock != null && !townBlockSet.contains(townBlock)){
+                if (TownyUtils.validatePVP(townBlock)){
+                    townBlockSet.add(townBlock);
+                    return null;
+                }else{
+                    return plugLoc;
+                }
+            }else{
+                return null;
+            }
+        }
+        
 	public void processSinking() {
-
-		for( World w : Bukkit.getWorlds()) {
+                for( World w : Bukkit.getWorlds()) {
 			if(w!=null && CraftManager.getInstance().getCraftsInWorld(w)!=null) {
-
+                                TownyWorld townyWorld = null;
+                                boolean townyEnabled = false;
+                                if (Movecraft.getInstance().getTownyPlugin() != null && Settings.TownyBlockSinkOnNoPVP){
+                                    townyWorld = TownyUtils.getTownyWorld(w);
+                                    if (townyWorld != null){
+                                        townyEnabled = townyWorld.isUsingTowny();
+                                    }
+                                }
 				// check every few seconds for every craft to see if it should be sinking
 				for (Craft pcraft : CraftManager.getInstance().getCraftsInWorld(w)) {
+                                        Set<TownBlock> townBlockSet = new HashSet<TownBlock>();                        
 					if(pcraft!=null && pcraft.getSinking()==false) {
 						if( pcraft.getType().getSinkPercent()!=0.0 && pcraft.isNotProcessing()) {
 							long ticksElapsed = ( System.currentTimeMillis() - pcraft.getLastBlockCheck() ) / 50;
@@ -517,11 +556,21 @@ public class AsyncManager extends BukkitRunnable {
 								int totalNonAirWaterBlocks=0;
 								HashMap<ArrayList<Integer>, Integer> foundFlyBlocks = new HashMap<ArrayList<Integer>, Integer>();
 								boolean regionPVPBlocked=false;
-
+                                                                boolean sinkingForbiddenByFlag = false;
+                                                                boolean sinkingForbiddenByTowny = false;
 								// go through each block in the blocklist, and if its in the FlyBlocks, total up the number of them
+                                                                Location townyLoc = null;
 								for(MovecraftLocation l : pcraft.getBlockList()) {
 									if(isRegionBlockedPVP(l,w))
-										regionPVPBlocked=true;
+                                                                            regionPVPBlocked=true;
+                                                                        if (!isRegionFlagSinkAllowed(l, w))
+                                                                            sinkingForbiddenByFlag = true;
+                                                                        if (townyLoc == null && townyEnabled && Settings.TownyBlockSinkOnNoPVP){
+                                                                            townyLoc = isTownyPlotPVPEnabled(l, w, townBlockSet);
+                                                                            if (townyLoc != null){
+                                                                                sinkingForbiddenByTowny = true;
+                                                                            }
+                                                                        } 
 									Integer blockID=w.getBlockAt(l.getX(), l.getY(), l.getZ()).getTypeId();
 									Integer dataID=(int)w.getBlockAt(l.getX(), l.getY(), l.getZ()).getData();
 									Integer shiftedID=(blockID<<4)+dataID+10000;
@@ -572,11 +621,22 @@ public class AsyncManager extends BukkitRunnable {
 									isSinking=true;
 								}
 								
-								if(isSinking && regionPVPBlocked && pcraft.isNotProcessing()) {
+								if(isSinking && (regionPVPBlocked || sinkingForbiddenByFlag || sinkingForbiddenByTowny) && pcraft.isNotProcessing()) {
 									Player p = CraftManager.getInstance().getPlayerFromCraft( pcraft );
 									Player notifyP = pcraft.getNotificationPlayer();
 									if(notifyP!=null)
-										notifyP.sendMessage( String.format( I18nSupport.getInternationalisedString( "Player- Craft should sink but PVP is not allowed in this WorldGuard region" ) ) );
+                                                                                if (regionPVPBlocked){
+                                                                                    notifyP.sendMessage( String.format( I18nSupport.getInternationalisedString( "Player- Craft should sink but PVP is not allowed in this WorldGuard region" ) ) );
+                                                                                }else if (sinkingForbiddenByFlag){
+                                                                                    notifyP.sendMessage( String.format( I18nSupport.getInternationalisedString( "WGCustomFlags - Sinking a craft is not allowed in this WorldGuard region" ) ) );
+                                                                                }else{
+                                                                                    if (townyLoc != null){
+                                                                                        notifyP.sendMessage( String.format( I18nSupport.getInternationalisedString( "Towny - Sinking a craft is not allowed in this town plot" ) +" @ %d,%d,%d", townyLoc.getBlockX(), townyLoc.getBlockY(),townyLoc.getBlockZ() ) );
+                                                                                    }else{
+                                                                                        notifyP.sendMessage( String.format( I18nSupport.getInternationalisedString( "Towny - Sinking a craft is not allowed in this town plot" ) ) );
+                                                                                    }
+                                                                                    
+                                                                                }
 									pcraft.setCruising(false);
 									pcraft.setKeepMoving(false);
 									CraftManager.getInstance().removeCraft(pcraft);

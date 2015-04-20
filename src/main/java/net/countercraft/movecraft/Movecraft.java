@@ -19,6 +19,7 @@ package net.countercraft.movecraft;
 
 import net.countercraft.movecraft.async.AsyncManager;
 import at.pavlov.cannons.Cannons;
+import com.earth2me.essentials.Essentials;
 
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
@@ -36,6 +37,9 @@ import net.countercraft.movecraft.metrics.MovecraftMetrics;
 import net.countercraft.movecraft.utils.MapUpdateManager;
 import net.countercraft.movecraft.utils.MovecraftLocation;
 import net.milkbowl.vault.economy.Economy;
+import com.mewin.WGCustomFlags.WGCustomFlagsPlugin;
+import com.palmergames.bukkit.towny.Towny;
+import com.sk89q.worldguard.protection.flags.StateFlag;
 
 import org.bukkit.World;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -46,13 +50,21 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.countercraft.movecraft.utils.TownyUtils;
 
 public class Movecraft extends JavaPlugin {
 	private static Movecraft instance;
 	private static WorldGuardPlugin worldGuardPlugin;
 	private static WorldEditPlugin worldEditPlugin;
-	private static Economy economy;
+        private static WGCustomFlagsPlugin wgCustomFlagsPlugin = null;
+        private static Economy economy;
 	private static Cannons cannonsPlugin=null;
+        private static Towny townyPlugin = null;
+	private static Essentials essentialsPlugin = null;
+        public static final StateFlag FLAG_PILOT = new StateFlag("movecraft-pilot", true);
+        public static final StateFlag FLAG_MOVE = new StateFlag("movecraft-move", true);
+        public static final StateFlag FLAG_ROTATE = new StateFlag("movecraft-rotate", true);
+        public static final StateFlag FLAG_SINK = new StateFlag("movecraft-sink", true);        
 	private Logger logger;
 	private boolean shuttingDown;
 	public HashMap<MovecraftLocation, Long> blockFadeTimeMap = new HashMap<MovecraftLocation, Long>();
@@ -60,6 +72,7 @@ public class Movecraft extends JavaPlugin {
 	public HashMap<MovecraftLocation, Boolean> blockFadeWaterMap = new HashMap<MovecraftLocation, Boolean>();
 	public HashMap<MovecraftLocation, World> blockFadeWorldMap = new HashMap<MovecraftLocation, World>();
 
+        @Override
 	public void onDisable() {
 		// Process the storage crates to disk
 		if(Settings.DisableCrates==false)
@@ -67,8 +80,9 @@ public class Movecraft extends JavaPlugin {
 		shuttingDown = true;
 	}
 
+        @Override
 	public void onEnable() {
-		// Read in config
+		// Read in config            
 		this.saveDefaultConfig();
 		Settings.LOCALE = getConfig().getString("Locale");
 		Settings.DisableCrates = getConfig().getBoolean("DisableCrates", false);
@@ -92,7 +106,7 @@ public class Movecraft extends JavaPlugin {
 					logger.log(Level.INFO, "WARNING: CompatibilityMode was set to false, but required build-specific classes were not found. FORCING COMPATIBILITY MODE");
 				}
 		}
-		logger.log(Level.INFO, "CompatiblityMode is set to "+Settings.CompatibilityMode);
+		logger.log(Level.INFO, "CompatiblityMode is set to {0}", Settings.CompatibilityMode);
 		Settings.SinkRateTicks = getConfig().getDouble("SinkRateTicks", 20.0);
 		Settings.SinkCheckTicks = getConfig().getDouble("SinkCheckTicks", 100.0);
 		Settings.TracerRateTicks = getConfig().getDouble("TracerRateTicks", 5.0);
@@ -103,7 +117,6 @@ public class Movecraft extends JavaPlugin {
 		Settings.RequireCreatePerm = getConfig().getBoolean("RequireCreatePerm", false);
 		Settings.TNTContactExplosives = getConfig().getBoolean("TNTContactExplosives", true);
 		Settings.FadeWrecksAfter = getConfig().getInt("FadeWrecksAfter", 0);
-		
 		//load up WorldGuard if it's present
 		Plugin wGPlugin=getServer().getPluginManager().getPlugin("WorldGuard");
 		if (wGPlugin == null || !(wGPlugin instanceof WorldGuardPlugin)) {
@@ -112,7 +125,8 @@ public class Movecraft extends JavaPlugin {
 			logger.log(Level.INFO, "Found a compatible version of WorldGuard. Enabling WorldGuard integration");			
 			Settings.WorldGuardBlockMoveOnBuildPerm = getConfig().getBoolean("WorldGuardBlockMoveOnBuildPerm", false);
 			Settings.WorldGuardBlockSinkOnPVPPerm = getConfig().getBoolean("WorldGuardBlockSinkOnPVPPerm", false);
-			logger.log(Level.INFO, "Settings: WorldGuardBlockMoveOnBuildPerm - "+Settings.WorldGuardBlockMoveOnBuildPerm+", WorldGuardBlockSinkOnPVPPerm - "+Settings.WorldGuardBlockSinkOnPVPPerm);			
+			logger.log(Level.INFO, "Settings: WorldGuardBlockMoveOnBuildPerm - {0}, WorldGuardBlockSinkOnPVPPerm - {1}", new Object[]{Settings.WorldGuardBlockMoveOnBuildPerm, Settings.WorldGuardBlockSinkOnPVPPerm});			
+                        			
 		}
 		worldGuardPlugin=(WorldGuardPlugin)wGPlugin;
 		
@@ -128,10 +142,61 @@ public class Movecraft extends JavaPlugin {
 		
 		// next is Cannons
 		Plugin plug = getServer().getPluginManager().getPlugin("Cannons");
-        if (plug != null && plug instanceof Cannons) {
-            cannonsPlugin = (Cannons) plug;
-			logger.log(Level.INFO, "Found a compatible version of Cannons. Enabling Cannons integration");			
-        }
+                if (plug != null && plug instanceof Cannons) {
+                    cannonsPlugin = (Cannons) plug;
+                                logger.log(Level.INFO, "Found a compatible version of Cannons. Enabling Cannons integration");			
+                }
+
+                if (wGPlugin != null || wGPlugin instanceof WorldGuardPlugin){
+                    Plugin tempWGCustomFlagsPlugin = getServer().getPluginManager().getPlugin("WGCustomFlags");
+                    if (tempWGCustomFlagsPlugin  != null && tempWGCustomFlagsPlugin  instanceof WGCustomFlagsPlugin) {
+                        logger.log(Level.INFO, "Found a compatible version of WGCustomFlags. Enabling WGCustomFlags integration.");
+                        wgCustomFlagsPlugin = (WGCustomFlagsPlugin) tempWGCustomFlagsPlugin ;
+                        wgCustomFlagsPlugin.addCustomFlag(FLAG_PILOT);
+                        wgCustomFlagsPlugin.addCustomFlag(FLAG_MOVE);
+                        wgCustomFlagsPlugin.addCustomFlag(FLAG_ROTATE);
+                        wgCustomFlagsPlugin.addCustomFlag(FLAG_SINK);
+                        Settings.WGCustomFlagsUsePilotFlag = getConfig().getBoolean("WGCustomFlagsUsePilotFlag", false);
+                        Settings.WGCustomFlagsUseMoveFlag = getConfig().getBoolean("WGCustomFlagsUseMoveFlag", false);
+                        Settings.WGCustomFlagsUseRotateFlag = getConfig().getBoolean("WGCustomFlagsUseRotateFlag", false);
+                        Settings.WGCustomFlagsUseSinkFlag = getConfig().getBoolean("WGCustomFlagsUseSinkFlag", false);
+                        logger.log(Level.INFO, "Settings: WGCustomFlagsUsePilotFlag - {0}",Settings.WGCustomFlagsUsePilotFlag);
+                        logger.log(Level.INFO, "Settings: WGCustomFlagsUseMoveFlag - {0}",Settings.WGCustomFlagsUseMoveFlag);
+                        logger.log(Level.INFO, "Settings: WGCustomFlagsUseRotateFlag - {0}",Settings.WGCustomFlagsUseRotateFlag);
+                        logger.log(Level.INFO, "Settings: WGCustomFlagsUseSinkFlag - {0}",Settings.WGCustomFlagsUseSinkFlag);
+                    }else{
+                        logger.log(Level.INFO, "Movecraft did not find a compatible version of WGCustomFlags. Disabling WGCustomFlags integration.");
+                    }
+                }
+                
+                Plugin tempTownyPlugin = getServer().getPluginManager().getPlugin("Towny");
+                if (tempTownyPlugin  != null && tempTownyPlugin  instanceof Towny) {
+                    logger.log(Level.INFO, "Found a compatible version of Towny. Enabling Towny integration.");
+                    townyPlugin = (Towny) tempTownyPlugin ;
+                    TownyUtils.initTownyConfig();
+                    Settings.TownyBlockMoveOnSwitchPerm = getConfig().getBoolean("TownyBlockMoveOnSwitchPerm", false);
+                    Settings.TownyBlockSinkOnNoPVP = getConfig().getBoolean("TownyBlockSinkOnNoPVP",false);
+                    logger.log(Level.INFO, "Settings: TownyBlockMoveOnSwitchPerm - {0}",Settings.TownyBlockMoveOnSwitchPerm);
+                    logger.log(Level.INFO, "Settings: TownyBlockSinkOnNoPVP - {0}",Settings.TownyBlockSinkOnNoPVP);
+                    
+                }else{
+                    logger.log(Level.INFO, "Movecraft did not find a compatible version of Towny. Disabling Towny integration.");
+                }
+
+                Plugin tempEssentialsPlugin = getServer().getPluginManager().getPlugin("Essentials");
+                if (tempEssentialsPlugin  != null){
+                    if (tempEssentialsPlugin.getDescription().getName().equalsIgnoreCase("essentials")){
+                        if (tempEssentialsPlugin.getClass().getName().equals((String)"com.earth2me.essentials.Essentials")){
+                            if (tempEssentialsPlugin instanceof Essentials){
+                                essentialsPlugin = (Essentials)tempEssentialsPlugin;
+                                logger.log(Level.INFO, "Found a compatible version of Essentials. Enabling Essentials integration.");
+                            }
+                        }    
+                    }
+                }
+                if (essentialsPlugin == null){
+                    logger.log(Level.INFO, "Movecraft did not find a compatible version of Essentials. Disabling Essentials integration.");
+                }
         
         // and now Vault
         if (getServer().getPluginManager().getPlugin("Vault") != null) {
@@ -155,7 +220,7 @@ public class Movecraft extends JavaPlugin {
 		}
 
 		I18nSupport.init();
-		if (shuttingDown && Settings.IGNORE_RESET) {
+                if (shuttingDown && Settings.IGNORE_RESET) {
 			logger.log(
 					Level.SEVERE,
 					String.format(I18nSupport
@@ -235,4 +300,17 @@ public class Movecraft extends JavaPlugin {
 	public Cannons getCannonsPlugin() {
 		return cannonsPlugin;
 	}
+        
+        public WGCustomFlagsPlugin getWGCustomFlagsPlugin(){
+            return wgCustomFlagsPlugin;
+        }
+        
+        public Towny getTownyPlugin(){
+            return townyPlugin;
+        }
+        
+        public Essentials getEssentialsPlugin(){
+            return essentialsPlugin;
+        }
 }
+
