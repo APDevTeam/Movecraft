@@ -18,6 +18,8 @@
 package net.countercraft.movecraft.config;
 
 import java.util.List;
+import java.util.Map;
+import net.countercraft.movecraft.utils.TownyWorldHeightLimits;
 
 public class Settings {
 	public static boolean IGNORE_RESET = false;
@@ -42,4 +44,11 @@ public class Settings {
 	public static double RepairMoneyPerBlock = 0.0;
 	public static boolean FireballPenetration = true;
 	public static boolean AllowCrewSigns = true;
+        public static boolean WGCustomFlagsUsePilotFlag = false;
+        public static boolean WGCustomFlagsUseMoveFlag = false;
+        public static boolean WGCustomFlagsUseRotateFlag = false;
+        public static boolean WGCustomFlagsUseSinkFlag = false;
+        public static boolean TownyBlockMoveOnSwitchPerm = false;
+        public static boolean TownyBlockSinkOnNoPVP = false;
+        public static Map<String, TownyWorldHeightLimits> TownProtectionHeightLimits;
 }

@@ -65,6 +65,10 @@
             <id>vault-repo</id>
             <url>http://nexus.theyeticave.net/content/repositories/pub_releases</url>
         </repository>
+        <repository>
+            <id>ess-repo</id>
+            <url>http://repo.ess3.net/content/groups/essentials</url>
+        </repository>
     </repositories>
 
     <build>
@@ -107,6 +111,7 @@
                                     <exclude>net.sf.opencsv</exclude>
                                     <exclude>com.google.guava</exclude>
                                     <exclude>com.google.code.findbugs:jsr305</exclude>
+                                    <exclude>net.ess3:Essentials</exclude>
                                 </excludes>
                             </artifactSet>
                             <minimizeJar>true</minimizeJar>
@@ -196,6 +201,28 @@
             <version>1.5</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>net.ess3</groupId>
+            <artifactId>Essentials</artifactId>
+            <version>2.13.1</version>
+        </dependency>
+        
+        <!-- This doesn't have a maven repo but its own -->
+        <dependency>
+            <groupId>com.palmergames</groupId>
+            <artifactId>Towny</artifactId>
+            <version>0.89.2.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/libs/Towny.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>com.mewin</groupId>
+            <artifactId>WGCustomFlags</artifactId>
+            <version>1.8.1-beta</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/libs/WGCustomFlags.jar</systemPath>
+        </dependency>
+        
     </dependencies>
 
 

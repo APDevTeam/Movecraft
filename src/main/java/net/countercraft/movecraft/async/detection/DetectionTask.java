@@ -17,6 +17,12 @@
 
 package net.countercraft.movecraft.async.detection;
 
+import com.palmergames.bukkit.towny.object.Town;
+import com.palmergames.bukkit.towny.object.TownBlock;
+import com.palmergames.bukkit.towny.object.TownyWorld;
+import com.sk89q.worldguard.LocalPlayer;
+import com.sk89q.worldguard.protection.ApplicableRegionSet;
+import com.sk89q.worldguard.protection.flags.StateFlag;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.localisation.I18nSupport;
@@ -30,7 +36,13 @@ import org.bukkit.entity.Player;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.Stack;
+import net.countercraft.movecraft.Movecraft;
+import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.utils.TownyUtils;
+import net.countercraft.movecraft.utils.TownyWorldHeightLimits;
+import org.bukkit.Location;
 
 public class DetectionTask extends AsyncTask {
 	private final MovecraftLocation startLocation;
@@ -46,13 +58,31 @@ public class DetectionTask extends AsyncTask {
 	private final HashMap<ArrayList<Integer>, Integer> blockTypeCount = new HashMap<ArrayList<Integer>, Integer>();
 	private HashMap<ArrayList<Integer>, ArrayList<Double>> dFlyBlocks;
 	private final DetectionTaskData data;
-
+        
+        private int craftMinY = 0;
+        private int craftMaxY = 0;
+        private boolean townyEnabled = false;
+        Set<TownBlock> townBlockSet = new HashSet<TownBlock>();
+        TownyWorld townyWorld = null;
+        TownyWorldHeightLimits townyWorldHeightLimits = null;
+        
 	public DetectionTask( Craft c, MovecraftLocation startLocation, int minSize, int maxSize, Integer[] allowedBlocks, Integer[] forbiddenBlocks, Player player, Player notificationPlayer, World w ) {
 		super( c );
 		this.startLocation = startLocation;
 		this.minSize = minSize;
 		this.maxSize = maxSize;
 		data = new DetectionTaskData( w, player, notificationPlayer, allowedBlocks, forbiddenBlocks );
+                
+                this.townyEnabled = Movecraft.getInstance().getTownyPlugin() != null;
+                if (townyEnabled && Settings.TownyBlockMoveOnSwitchPerm){
+                    this.townyWorld = TownyUtils.getTownyWorld(getCraft().getW());
+                    if (townyWorld != null){
+                        this.townyEnabled = townyWorld.isUsingTowny();
+                        if (townyEnabled) townyWorldHeightLimits = TownyUtils.getWorldLimits(getCraft().getW());
+                    }
+                }else{
+                    this.townyEnabled = false;
+                }
 	}
 
 	@Override
@@ -86,7 +116,7 @@ public class DetectionTask extends AsyncTask {
 	}
 
 	private void detectBlock( int x, int y, int z ) {
-
+                
 		MovecraftLocation workingLocation = new MovecraftLocation( x, y, z );
 
 		if ( notVisited( workingLocation, visited ) ) {
@@ -141,6 +171,59 @@ public class DetectionTask extends AsyncTask {
 						fail( String.format( I18nSupport.getInternationalisedString( "Detection - ERROR: Double chest found" ) ) );						
 					}
 				}
+                                
+                                Location loc = new Location(data.getWorld(), x, y, z);
+                                if(Movecraft.getInstance().getWorldGuardPlugin()!=null && Movecraft.getInstance().getWGCustomFlagsPlugin()!= null && Settings.WGCustomFlagsUsePilotFlag){
+                                    LocalPlayer lp = Movecraft.getInstance().getWorldGuardPlugin().wrapPlayer(data.getPlayer());
+                                    StateFlag.State state = (StateFlag.State)Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(data.getWorld()).getApplicableRegions(loc).getFlag(Movecraft.FLAG_PILOT,lp);
+                                    if(state != null && state == StateFlag.State.DENY){
+                                        fail( String.format( I18nSupport.getInternationalisedString( "WGCustomFlags - Detection Failed" )+" @ %d,%d,%d", x, y, z));        
+                                    }
+                                }
+
+                                if (this.townyEnabled){
+                                    TownBlock townBlock = TownyUtils.getTownBlock(loc);
+                                    if (townBlock != null && !this.townBlockSet.contains(townBlock)){
+                                        if (TownyUtils.validateCraftMoveEvent(data.getPlayer() , loc, this.townyWorld)){
+                                            this.townBlockSet.add(townBlock);
+                                        }else{
+                                            int tY = loc.getBlockY();
+                                            boolean oChange = false;
+                                            if(this.craftMinY > tY) {this.craftMinY = tY; oChange = true;}
+                                            if(this.craftMaxY < tY) {this.craftMaxY = tY; oChange = true;}
+                                            if (oChange){
+                                                boolean failed = false;
+                                                Town town = TownyUtils.getTown(townBlock);
+                                                if (town != null){
+                                                    Location locSpawn = TownyUtils.getTownSpawn(townBlock);
+                                                    if (locSpawn != null){
+                                                        if (!this.townyWorldHeightLimits.validate(y, locSpawn.getBlockY())){
+                                                            failed = true;
+                                                        }
+                                                    }else{
+                                                        failed = true;
+                                                    }
+                                                    if (failed){
+                                                        if(Movecraft.getInstance().getWorldGuardPlugin()!=null && Movecraft.getInstance().getWGCustomFlagsPlugin()!= null && Settings.WGCustomFlagsUsePilotFlag){
+                                                            LocalPlayer lp = (LocalPlayer) Movecraft.getInstance().getWorldGuardPlugin().wrapPlayer(data.getPlayer());
+                                                            ApplicableRegionSet regions = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(loc.getWorld()).getApplicableRegions(loc);
+                                                            if (regions.size() != 0){
+                                                                StateFlag.State state = (StateFlag.State)regions.getFlag(Movecraft.FLAG_PILOT,lp);
+                                                                if(state != null && state == StateFlag.State.ALLOW){
+                                                                    failed = false;  
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                    if (failed){
+                                                        fail( String.format( I18nSupport.getInternationalisedString( "Towny - Detection Failed")  + " %s @ %d,%d,%d", town.getName(), x, y, z ));
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                
 				addToBlockList( workingLocation );
 				Integer blockID=testID;
 				Integer dataID=testData;
