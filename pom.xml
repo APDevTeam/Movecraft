@@ -211,14 +211,14 @@
         <dependency>
             <groupId>com.palmergames</groupId>
             <artifactId>Towny</artifactId>
-            <version>0.89.2.0</version>
+            <version>LATEST</version>
             <scope>system</scope>
             <systemPath>${project.basedir}/libs/Towny.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>com.mewin</groupId>
             <artifactId>WGCustomFlags</artifactId>
-            <version>1.8.1-beta</version>
+            <version>LATEST</version>
             <scope>system</scope>
             <systemPath>${project.basedir}/libs/WGCustomFlags.jar</systemPath>
         </dependency>
