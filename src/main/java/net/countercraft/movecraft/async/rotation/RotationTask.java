@@ -55,6 +55,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import net.countercraft.movecraft.utils.TownyUtils;
 import net.countercraft.movecraft.utils.TownyWorldHeightLimits;
+import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
 
 import org.bukkit.Material;
 
@@ -220,8 +221,8 @@ public class RotationTask extends AsyncTask {
                     break;
                 }
             }
+            Location plugLoc=new Location(w, blockList[i].getX(), blockList[i].getY(), blockList[i].getZ());
             if(craftPilot!=null) {
-                Location plugLoc=new Location(w, blockList[i].getX(), blockList[i].getY(), blockList[i].getZ());
                 // See if they are permitted to build in the area, if WorldGuard integration is turned on
                 if(Movecraft.getInstance().getWorldGuardPlugin()!=null && Settings.WorldGuardBlockMoveOnBuildPerm){
                     if(Movecraft.getInstance().getWorldGuardPlugin().canBuild(craftPilot, plugLoc)==false) {
@@ -230,21 +231,29 @@ public class RotationTask extends AsyncTask {
                             break;
                     }
                 }
-                
+            }
+            
+            Player p;
+            if (craftPilot == null){
+                p = getCraft().getNotificationPlayer();
+            }else{
+                p = craftPilot;
+            }
+            if (p != null){
                 if(Movecraft.getInstance().getWorldGuardPlugin()!=null && Movecraft.getInstance().getWGCustomFlagsPlugin()!= null && Settings.WGCustomFlagsUsePilotFlag){
-                    LocalPlayer lp = Movecraft.getInstance().getWorldGuardPlugin().wrapPlayer(craftPilot);
-                    StateFlag.State state = (StateFlag.State)Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(plugLoc.getWorld()).getApplicableRegions(plugLoc).getFlag(Movecraft.FLAG_ROTATE,lp);
-                    if(state != null && state == StateFlag.State.DENY){
+                    LocalPlayer lp = Movecraft.getInstance().getWorldGuardPlugin().wrapPlayer(p);
+                    WGCustomFlagsUtils WGCFU = new WGCustomFlagsUtils();
+                    if (!WGCFU.validateFlag(plugLoc,Movecraft.FLAG_ROTATE,lp)){
                         failed = true;
                         failMessage = String.format( I18nSupport.getInternationalisedString( "WGCustomFlags - Rotation Failed" )+" @ %d,%d,%d", blockList[i].getX(), blockList[i].getY(), blockList[i].getZ() );
                         break;
                     }
                 }
-                
+
                 if (townyEnabled){
                     TownBlock townBlock = TownyUtils.getTownBlock(plugLoc);
                     if (townBlock != null && !townBlockSet.contains(townBlock)){
-                        if (TownyUtils.validateCraftMoveEvent(craftPilot, plugLoc, townyWorld)){
+                        if (TownyUtils.validateCraftMoveEvent(p, plugLoc, townyWorld)){
                             townBlockSet.add(townBlock);
                         }else{
                             int y = plugLoc.getBlockY();
@@ -264,11 +273,11 @@ public class RotationTask extends AsyncTask {
                                     }
                                     if (failed){
                                         if(Movecraft.getInstance().getWorldGuardPlugin()!=null && Movecraft.getInstance().getWGCustomFlagsPlugin()!= null && Settings.WGCustomFlagsUsePilotFlag){
-                                            LocalPlayer lp = Movecraft.getInstance().getWorldGuardPlugin().wrapPlayer(craftPilot);
+                                            LocalPlayer lp = Movecraft.getInstance().getWorldGuardPlugin().wrapPlayer(p);
                                             ApplicableRegionSet regions = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(plugLoc.getWorld()).getApplicableRegions(plugLoc);
                                             if (regions.size() != 0){
-                                                StateFlag.State state = (StateFlag.State)regions.getFlag(Movecraft.FLAG_ROTATE,lp);
-                                                if(state != null && state == StateFlag.State.ALLOW){
+                                                WGCustomFlagsUtils WGCFU = new WGCustomFlagsUtils();
+                                                if (WGCFU.validateFlag(plugLoc,Movecraft.FLAG_ROTATE,lp)){
                                                     failed = false;
                                                 }
                                             }
@@ -283,8 +292,7 @@ public class RotationTask extends AsyncTask {
                         }
                     }
                 }
-            }
-                        
+            }           
                         
 			if (!waterCraft) {
 				if ( (typeID != 0 && typeID!=34) && !existingBlockSet.contains( blockList[i] ) ) {
