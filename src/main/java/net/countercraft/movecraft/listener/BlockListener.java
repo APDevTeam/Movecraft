@@ -49,7 +49,6 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
-import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -124,16 +123,6 @@ public class BlockListener implements Listener {
 		}
 	}
 
-	@EventHandler(priority = EventPriority.HIGHEST)
-	public void onItemSpawn( final ItemSpawnEvent e ) {
-
-		if ( e.isCancelled() ) {
-			return;
-		}
-		if (true) {
-		}
-	}
-
 	private CraftType getCraftTypeFromString( String s ) {
 		for ( CraftType t : CraftManager.getInstance().getCraftTypes() ) {
 			if ( s.equalsIgnoreCase( t.getCraftName() ) ) {
@@ -175,11 +164,9 @@ public class BlockListener implements Listener {
         }
     }
 	
-	@EventHandler(priority = EventPriority.LOW)
+	@EventHandler(priority = EventPriority.NORMAL)
 	public void onBlockIgnite(BlockIgniteEvent event) {
 		if(!Settings.FireballPenetration)
-			return;
-		if(event.isCancelled())
 			return;
 		// replace blocks with fire occasionally, to prevent fast craft from simply ignoring fire
 		if(event.getCause()==BlockIgniteEvent.IgniteCause.FIREBALL) {
