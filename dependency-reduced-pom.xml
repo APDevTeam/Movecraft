@@ -180,14 +180,14 @@
     <dependency>
       <groupId>com.palmergames</groupId>
       <artifactId>Towny</artifactId>
-      <version>0.89.2.0</version>
+      <version>LATEST</version>
       <scope>system</scope>
       <systemPath>C:\Users\Kai\Documents\NetBeansProjects\_JAVA\Movecraft-3/libs/Towny.jar</systemPath>
     </dependency>
     <dependency>
       <groupId>com.mewin</groupId>
       <artifactId>WGCustomFlags</artifactId>
-      <version>1.8.1-beta</version>
+      <version>LATEST</version>
       <scope>system</scope>
       <systemPath>C:\Users\Kai\Documents\NetBeansProjects\_JAVA\Movecraft-3/libs/WGCustomFlags.jar</systemPath>
     </dependency>
@@ -196,4 +196,3 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 </project>
-

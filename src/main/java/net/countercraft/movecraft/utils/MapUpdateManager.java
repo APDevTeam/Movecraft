@@ -93,7 +93,7 @@ public class MapUpdateManager extends BukkitRunnable {
 
 		int newTypeID = m.getTypeID();
 
-		if(newTypeID==152 && !placeDispensers) {
+		if((newTypeID==152 || newTypeID==26) && !placeDispensers) {
 			return;
 		}
 			
@@ -354,10 +354,9 @@ public class MapUpdateManager extends BukkitRunnable {
 								loc=loc.subtract(0, 1, 0);
 								p.sendBlockChange(loc, 35, (byte) 0);
 								Location loc2=i.getNewLocation().clone();
-								loc2=loc2.add(0, 1, 0);
 								p.sendBlockChange(loc2, 0, (byte) 0);
 								Location loc3=i.getNewLocation().clone();
-								loc3=loc3.add(0, 2, 0);
+								loc3=loc3.add(0, 1, 0);
 								p.sendBlockChange(loc3, 0, (byte) 0);
 								
 								final Block b1=w.getBlockAt(loc);
@@ -405,6 +404,7 @@ public class MapUpdateManager extends BukkitRunnable {
 								if(m.getTypeID()<-10) { // don't bother with tiny explosions
 									float explosionPower=m.getTypeID();
 									explosionPower=0.0F-explosionPower/100.0F;
+//									FROG
 									w.createExplosion(m.getNewBlockLocation().getX()+0.5, m.getNewBlockLocation().getY()+0.5, m.getNewBlockLocation().getZ()+0.5, explosionPower);
 								}
 							} else {
@@ -457,11 +457,21 @@ public class MapUpdateManager extends BukkitRunnable {
 				
 				for ( MapUpdateCommand i : updatesInWorld ) {
 					if(i!=null) {
-						// Place beds again, they have a habit of not placing correctly the first time
+						// Place beds
 						if(i.getTypeID()==26) {
 							updateBlock(i, w, dataMap, chunks, cmChunks, origLightMap, true);					
 						}
 						
+					}
+				}
+
+				for ( MapUpdateCommand i : updatesInWorld ) {
+					if(i!=null) {
+						// Place fragiles again, in case they got screwed up the first time
+						boolean isFragile=(Arrays.binarySearch(fragileBlocks,i.getTypeID())>=0);
+						if(isFragile) {
+							updateBlock(i, w, dataMap, chunks, cmChunks, origLightMap, true);
+						}						
 					}
 				}
 
