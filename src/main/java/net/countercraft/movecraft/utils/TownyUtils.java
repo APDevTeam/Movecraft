@@ -140,6 +140,15 @@ public class TownyUtils {
         }
     }
     
+    public static boolean validateExplosion(TownBlock tb) {
+        Town t = getTown(tb);
+        if (t != null){
+            return t.getPermissions().explosion || tb.getPermissions().explosion ;
+        }else{
+            return tb.getPermissions().explosion ;
+        }
+    }
+    
     public static void initTownyConfig(){
         Settings.TownProtectionHeightLimits = getTownyConfigFromUniverse();
         loadTownyConfig();

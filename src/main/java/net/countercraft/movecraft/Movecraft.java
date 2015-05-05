@@ -36,6 +36,8 @@ import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.metrics.MovecraftMetrics;  
 import net.countercraft.movecraft.utils.MapUpdateManager;
 import net.countercraft.movecraft.utils.MovecraftLocation;
+import net.countercraft.movecraft.utils.TownyUtils;
+import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
 import net.milkbowl.vault.economy.Economy;
 import com.mewin.WGCustomFlags.WGCustomFlagsPlugin;
 import com.palmergames.bukkit.towny.Towny;
@@ -50,7 +52,6 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import net.countercraft.movecraft.utils.TownyUtils;
 
 public class Movecraft extends JavaPlugin {
 	private static Movecraft instance;
@@ -61,10 +62,10 @@ public class Movecraft extends JavaPlugin {
 	private static Cannons cannonsPlugin=null;
         private static Towny townyPlugin = null;
 	private static Essentials essentialsPlugin = null;
-        public static final StateFlag FLAG_PILOT = new StateFlag("movecraft-pilot", true);
-        public static final StateFlag FLAG_MOVE = new StateFlag("movecraft-move", true);
-        public static final StateFlag FLAG_ROTATE = new StateFlag("movecraft-rotate", true);
-        public static final StateFlag FLAG_SINK = new StateFlag("movecraft-sink", true);        
+        public static StateFlag FLAG_PILOT = null; //new StateFlag("movecraft-pilot", true);
+        public static StateFlag FLAG_MOVE = null; //new StateFlag("movecraft-move", true);
+        public static StateFlag FLAG_ROTATE = null; //new StateFlag("movecraft-rotate", true);
+        public static StateFlag FLAG_SINK = null; //new StateFlag("movecraft-sink", true);        
 	private Logger logger;
 	private boolean shuttingDown;
 	public HashMap<MovecraftLocation, Long> blockFadeTimeMap = new HashMap<MovecraftLocation, Long>();
@@ -147,25 +148,29 @@ public class Movecraft extends JavaPlugin {
                                 logger.log(Level.INFO, "Found a compatible version of Cannons. Enabling Cannons integration");			
                 }
 
-                if (wGPlugin != null || wGPlugin instanceof WorldGuardPlugin){
-                    Plugin tempWGCustomFlagsPlugin = getServer().getPluginManager().getPlugin("WGCustomFlags");
-                    if (tempWGCustomFlagsPlugin  != null && tempWGCustomFlagsPlugin  instanceof WGCustomFlagsPlugin) {
-                        logger.log(Level.INFO, "Found a compatible version of WGCustomFlags. Enabling WGCustomFlags integration.");
-                        wgCustomFlagsPlugin = (WGCustomFlagsPlugin) tempWGCustomFlagsPlugin ;
-                        wgCustomFlagsPlugin.addCustomFlag(FLAG_PILOT);
-                        wgCustomFlagsPlugin.addCustomFlag(FLAG_MOVE);
-                        wgCustomFlagsPlugin.addCustomFlag(FLAG_ROTATE);
-                        wgCustomFlagsPlugin.addCustomFlag(FLAG_SINK);
-                        Settings.WGCustomFlagsUsePilotFlag = getConfig().getBoolean("WGCustomFlagsUsePilotFlag", false);
-                        Settings.WGCustomFlagsUseMoveFlag = getConfig().getBoolean("WGCustomFlagsUseMoveFlag", false);
-                        Settings.WGCustomFlagsUseRotateFlag = getConfig().getBoolean("WGCustomFlagsUseRotateFlag", false);
-                        Settings.WGCustomFlagsUseSinkFlag = getConfig().getBoolean("WGCustomFlagsUseSinkFlag", false);
-                        logger.log(Level.INFO, "Settings: WGCustomFlagsUsePilotFlag - {0}",Settings.WGCustomFlagsUsePilotFlag);
-                        logger.log(Level.INFO, "Settings: WGCustomFlagsUseMoveFlag - {0}",Settings.WGCustomFlagsUseMoveFlag);
-                        logger.log(Level.INFO, "Settings: WGCustomFlagsUseRotateFlag - {0}",Settings.WGCustomFlagsUseRotateFlag);
-                        logger.log(Level.INFO, "Settings: WGCustomFlagsUseSinkFlag - {0}",Settings.WGCustomFlagsUseSinkFlag);
-                    }else{
-                        logger.log(Level.INFO, "Movecraft did not find a compatible version of WGCustomFlags. Disabling WGCustomFlags integration.");
+                if (worldGuardPlugin != null || worldGuardPlugin instanceof WorldGuardPlugin){
+                    if (worldGuardPlugin.isEnabled()){
+                        Plugin tempWGCustomFlagsPlugin = getServer().getPluginManager().getPlugin("WGCustomFlags");
+                        if (tempWGCustomFlagsPlugin  != null && tempWGCustomFlagsPlugin instanceof WGCustomFlagsPlugin) {
+                            logger.log(Level.INFO, "Found a compatible version of WGCustomFlags. Enabling WGCustomFlags integration.");
+                            wgCustomFlagsPlugin = (WGCustomFlagsPlugin) tempWGCustomFlagsPlugin ;                        
+                            WGCustomFlagsUtils WGCFU = new WGCustomFlagsUtils();
+                            FLAG_PILOT = WGCFU.getNewStateFlag("movecraft-pilot", true);
+                            FLAG_MOVE = WGCFU.getNewStateFlag("movecraft-move", true);
+                            FLAG_ROTATE = WGCFU.getNewStateFlag("movecraft-rotate", true);
+                            FLAG_SINK = WGCFU.getNewStateFlag("movecraft-sink", true);
+                            WGCFU.init();
+                            Settings.WGCustomFlagsUsePilotFlag = getConfig().getBoolean("WGCustomFlagsUsePilotFlag", false);
+                            Settings.WGCustomFlagsUseMoveFlag = getConfig().getBoolean("WGCustomFlagsUseMoveFlag", false);
+                            Settings.WGCustomFlagsUseRotateFlag = getConfig().getBoolean("WGCustomFlagsUseRotateFlag", false);
+                            Settings.WGCustomFlagsUseSinkFlag = getConfig().getBoolean("WGCustomFlagsUseSinkFlag", false);
+                            logger.log(Level.INFO, "Settings: WGCustomFlagsUsePilotFlag - {0}",Settings.WGCustomFlagsUsePilotFlag);
+                            logger.log(Level.INFO, "Settings: WGCustomFlagsUseMoveFlag - {0}",Settings.WGCustomFlagsUseMoveFlag);
+                            logger.log(Level.INFO, "Settings: WGCustomFlagsUseRotateFlag - {0}",Settings.WGCustomFlagsUseRotateFlag);
+                            logger.log(Level.INFO, "Settings: WGCustomFlagsUseSinkFlag - {0}",Settings.WGCustomFlagsUseSinkFlag);
+                        }else{
+                            logger.log(Level.INFO, "Movecraft did not find a compatible version of WGCustomFlags. Disabling WGCustomFlags integration.");
+                        }
                     }
                 }
                 
@@ -213,12 +218,14 @@ public class Movecraft extends JavaPlugin {
 			logger.log(Level.INFO, "Could not find compatible Vault plugin. Disabling Vault integration.");			
         	economy = null;
         }
-        
-		if (!new File(getDataFolder()
-				+ "/localisation/movecraftlang_en.properties").exists()) {
-			this.saveResource("localisation/movecraftlang_en.properties", false);
-		}
-
+                String[] localisations = {"en","cz","nl"};
+                for (String s : localisations){
+                    if (!new File(getDataFolder()
+                                    + "/localisation/movecraftlang_" + s + ".properties").exists()) {
+                            this.saveResource("localisation/movecraftlang_" + s + ".properties", false);
+                    }
+                }
+                                
 		I18nSupport.init();
                 if (shuttingDown && Settings.IGNORE_RESET) {
 			logger.log(

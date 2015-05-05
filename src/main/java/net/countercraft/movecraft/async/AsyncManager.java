@@ -68,6 +68,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import net.countercraft.movecraft.utils.ItemDropUpdateCommand;
 import net.countercraft.movecraft.utils.TownyUtils;
+import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
 
 public class AsyncManager extends BukkitRunnable {
 	private static final AsyncManager instance = new AsyncManager();
@@ -508,14 +509,11 @@ public class AsyncManager extends BukkitRunnable {
         private boolean isRegionFlagSinkAllowed(MovecraftLocation loc,World w) {
             if(Movecraft.getInstance().getWorldGuardPlugin()!=null && Movecraft.getInstance().getWGCustomFlagsPlugin()!= null && Settings.WGCustomFlagsUseSinkFlag){
                 Location nativeLoc=new Location(w, loc.getX(), loc.getY(), loc.getZ());
-                StateFlag.State state = (StateFlag.State)Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(w).getApplicableRegions(nativeLoc).getFlag(Movecraft.FLAG_SINK);
-                if(state != null && state == StateFlag.State.ALLOW){
-                    return true;
-                }
+                WGCustomFlagsUtils WGCFU = new WGCustomFlagsUtils();
+                return WGCFU.validateFlag(nativeLoc,Movecraft.FLAG_SINK);
             }else{
                 return true;
             }
-            return false;
 	}
         
         private Location isTownyPlotPVPEnabled(MovecraftLocation loc,World w, Set<TownBlock> townBlockSet){

@@ -42,6 +42,7 @@ import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.utils.TownyUtils;
 import net.countercraft.movecraft.utils.TownyWorldHeightLimits;
+import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
 import org.bukkit.Location;
 
 public class DetectionTask extends AsyncTask {
@@ -173,50 +174,58 @@ public class DetectionTask extends AsyncTask {
 				}
                                 
                                 Location loc = new Location(data.getWorld(), x, y, z);
-                                if(Movecraft.getInstance().getWorldGuardPlugin()!=null && Movecraft.getInstance().getWGCustomFlagsPlugin()!= null && Settings.WGCustomFlagsUsePilotFlag){
-                                    LocalPlayer lp = Movecraft.getInstance().getWorldGuardPlugin().wrapPlayer(data.getPlayer());
-                                    StateFlag.State state = (StateFlag.State)Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(data.getWorld()).getApplicableRegions(loc).getFlag(Movecraft.FLAG_PILOT,lp);
-                                    if(state != null && state == StateFlag.State.DENY){
-                                        fail( String.format( I18nSupport.getInternationalisedString( "WGCustomFlags - Detection Failed" )+" @ %d,%d,%d", x, y, z));        
-                                    }
+                                Player p;
+                                if (data.getPlayer() == null){
+                                    p = data.getNotificationPlayer();
+                                }else{
+                                    p = data.getPlayer();
                                 }
+                                if (p != null){
+                                    if(Movecraft.getInstance().getWorldGuardPlugin()!=null && Movecraft.getInstance().getWGCustomFlagsPlugin()!= null && Settings.WGCustomFlagsUsePilotFlag){
+                                        LocalPlayer lp = Movecraft.getInstance().getWorldGuardPlugin().wrapPlayer(p);
+                                        WGCustomFlagsUtils WGCFU = new WGCustomFlagsUtils();
+                                        if (!WGCFU.validateFlag(loc,Movecraft.FLAG_PILOT,lp)){
+                                            fail( String.format( I18nSupport.getInternationalisedString( "WGCustomFlags - Detection Failed" )+" @ %d,%d,%d", x, y, z));
+                                        }
+                                    }
 
-                                if (this.townyEnabled){
-                                    TownBlock townBlock = TownyUtils.getTownBlock(loc);
-                                    if (townBlock != null && !this.townBlockSet.contains(townBlock)){
-                                        if (TownyUtils.validateCraftMoveEvent(data.getPlayer() , loc, this.townyWorld)){
-                                            this.townBlockSet.add(townBlock);
-                                        }else{
-                                            int tY = loc.getBlockY();
-                                            boolean oChange = false;
-                                            if(this.craftMinY > tY) {this.craftMinY = tY; oChange = true;}
-                                            if(this.craftMaxY < tY) {this.craftMaxY = tY; oChange = true;}
-                                            if (oChange){
-                                                boolean failed = false;
-                                                Town town = TownyUtils.getTown(townBlock);
-                                                if (town != null){
-                                                    Location locSpawn = TownyUtils.getTownSpawn(townBlock);
-                                                    if (locSpawn != null){
-                                                        if (!this.townyWorldHeightLimits.validate(y, locSpawn.getBlockY())){
+                                    if (this.townyEnabled){
+                                        TownBlock townBlock = TownyUtils.getTownBlock(loc);
+                                        if (townBlock != null && !this.townBlockSet.contains(townBlock)){
+                                            if (TownyUtils.validateCraftMoveEvent(p , loc, this.townyWorld)){
+                                                this.townBlockSet.add(townBlock);
+                                            }else{
+                                                int tY = loc.getBlockY();
+                                                boolean oChange = false;
+                                                if(this.craftMinY > tY) {this.craftMinY = tY; oChange = true;}
+                                                if(this.craftMaxY < tY) {this.craftMaxY = tY; oChange = true;}
+                                                if (oChange){
+                                                    boolean failed = false;
+                                                    Town town = TownyUtils.getTown(townBlock);
+                                                    if (town != null){
+                                                        Location locSpawn = TownyUtils.getTownSpawn(townBlock);
+                                                        if (locSpawn != null){
+                                                            if (!this.townyWorldHeightLimits.validate(y, locSpawn.getBlockY())){
+                                                                failed = true;
+                                                            }
+                                                        }else{
                                                             failed = true;
                                                         }
-                                                    }else{
-                                                        failed = true;
-                                                    }
-                                                    if (failed){
-                                                        if(Movecraft.getInstance().getWorldGuardPlugin()!=null && Movecraft.getInstance().getWGCustomFlagsPlugin()!= null && Settings.WGCustomFlagsUsePilotFlag){
-                                                            LocalPlayer lp = (LocalPlayer) Movecraft.getInstance().getWorldGuardPlugin().wrapPlayer(data.getPlayer());
-                                                            ApplicableRegionSet regions = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(loc.getWorld()).getApplicableRegions(loc);
-                                                            if (regions.size() != 0){
-                                                                StateFlag.State state = (StateFlag.State)regions.getFlag(Movecraft.FLAG_PILOT,lp);
-                                                                if(state != null && state == StateFlag.State.ALLOW){
-                                                                    failed = false;  
+                                                        if (failed){
+                                                            if(Movecraft.getInstance().getWorldGuardPlugin()!=null && Movecraft.getInstance().getWGCustomFlagsPlugin()!= null && Settings.WGCustomFlagsUsePilotFlag){
+                                                                LocalPlayer lp = (LocalPlayer) Movecraft.getInstance().getWorldGuardPlugin().wrapPlayer(p);
+                                                                ApplicableRegionSet regions = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(loc.getWorld()).getApplicableRegions(loc);
+                                                                if (regions.size() != 0){
+                                                                    WGCustomFlagsUtils WGCFU = new WGCustomFlagsUtils();
+                                                                    if (WGCFU.validateFlag(loc,Movecraft.FLAG_PILOT,lp)){
+                                                                        failed = false;  
+                                                                    }
                                                                 }
                                                             }
                                                         }
-                                                    }
-                                                    if (failed){
-                                                        fail( String.format( I18nSupport.getInternationalisedString( "Towny - Detection Failed")  + " %s @ %d,%d,%d", town.getName(), x, y, z ));
+                                                        if (failed){
+                                                            fail( String.format( I18nSupport.getInternationalisedString( "Towny - Detection Failed")  + " %s @ %d,%d,%d", town.getName(), x, y, z ));
+                                                        }
                                                     }
                                                 }
                                             }

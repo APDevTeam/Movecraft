@@ -63,6 +63,7 @@ import com.palmergames.bukkit.towny.object.TownyWorld;
 import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import net.countercraft.movecraft.utils.TownyWorldHeightLimits;
+import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
 
 import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
@@ -300,6 +301,11 @@ public class TranslationTask extends AsyncTask {
             boolean checkHover = (data.getDx()!=0 || data.getDz()!=0);// we want to check only horizontal moves
             boolean canHoverOverWater = getCraft().getType().getCanHoverOverWater();
             boolean townyEnabled = Movecraft.getInstance().getTownyPlugin() != null;
+            boolean explosionBlockedByTowny = false;
+            boolean moveBlockedByTowny = false;
+            boolean validateTownyExplosion = false;
+            String townName = "";
+            
             Set<TownBlock> townBlockSet = new HashSet<TownBlock>();
             TownyWorld townyWorld = null;
             TownyWorldHeightLimits townyWorldHeightLimits = null;
@@ -308,7 +314,12 @@ public class TranslationTask extends AsyncTask {
                 townyWorld = TownyUtils.getTownyWorld(getCraft().getW());
                 if (townyWorld != null){
                     townyEnabled = townyWorld.isUsingTowny();
-                    if (townyEnabled) townyWorldHeightLimits = TownyUtils.getWorldLimits(getCraft().getW());
+                    if (townyEnabled) {
+                        townyWorldHeightLimits = TownyUtils.getWorldLimits(getCraft().getW());
+                        if( getCraft().getType().getCollisionExplosion() != 0.0F) {
+                            validateTownyExplosion = true;
+                        }
+                    }
                 }
             }else{
                 townyEnabled = false;
@@ -343,10 +354,18 @@ public class TranslationTask extends AsyncTask {
                             break;
                         }
                     }
+                }
+                Player p;
+                if (craftPilot == null){
+                    p = getCraft().getNotificationPlayer();
+                }else{
+                    p = craftPilot;
+                }
+                if (p != null){
                     if(Movecraft.getInstance().getWorldGuardPlugin()!=null && Movecraft.getInstance().getWGCustomFlagsPlugin()!= null && Settings.WGCustomFlagsUsePilotFlag){
-                        LocalPlayer lp = Movecraft.getInstance().getWorldGuardPlugin().wrapPlayer(craftPilot);
-                        StateFlag.State state = (StateFlag.State)Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(plugLoc.getWorld()).getApplicableRegions(plugLoc).getFlag(Movecraft.FLAG_MOVE,lp);
-                        if(state != null && state == StateFlag.State.DENY){
+                        LocalPlayer lp = Movecraft.getInstance().getWorldGuardPlugin().wrapPlayer(p);
+                        WGCustomFlagsUtils WGCFU = new WGCustomFlagsUtils();
+                        if (!WGCFU.validateFlag(plugLoc,Movecraft.FLAG_MOVE,lp)){
                             fail( String.format( I18nSupport.getInternationalisedString( "WGCustomFlags - Translation Failed" )+" @ %d,%d,%d", oldLoc.getX(), oldLoc.getY(), oldLoc.getZ() ));
                             break;        
                         }
@@ -354,7 +373,14 @@ public class TranslationTask extends AsyncTask {
                     if (townyEnabled){
                         TownBlock townBlock = TownyUtils.getTownBlock(plugLoc);
                         if (townBlock != null && !townBlockSet.contains(townBlock)){
-                            if (TownyUtils.validateCraftMoveEvent(craftPilot, plugLoc, townyWorld)){
+                            if (validateTownyExplosion){
+                                if (!explosionBlockedByTowny){
+                                    if (!TownyUtils.validateExplosion(townBlock)){
+                                        explosionBlockedByTowny = true;
+                                    }
+                                }
+                            }
+                            if (TownyUtils.validateCraftMoveEvent(p, plugLoc, townyWorld)){
                                 townBlockSet.add(townBlock);
                             }else{
                                 int y = plugLoc.getBlockY();
@@ -375,19 +401,19 @@ public class TranslationTask extends AsyncTask {
                                         }
                                         if (failed){
                                             if(Movecraft.getInstance().getWorldGuardPlugin()!=null && Movecraft.getInstance().getWGCustomFlagsPlugin()!= null && Settings.WGCustomFlagsUsePilotFlag){
-                                                LocalPlayer lp = Movecraft.getInstance().getWorldGuardPlugin().wrapPlayer(craftPilot);
+                                                LocalPlayer lp = Movecraft.getInstance().getWorldGuardPlugin().wrapPlayer(p);
                                                 ApplicableRegionSet regions = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(plugLoc.getWorld()).getApplicableRegions(plugLoc);
                                                 if (regions.size() != 0){
-                                                    StateFlag.State state = (StateFlag.State)regions.getFlag(Movecraft.FLAG_MOVE,lp);
-                                                    if(state != null && state == StateFlag.State.ALLOW){
+                                                    WGCustomFlagsUtils WGCFU = new WGCustomFlagsUtils();
+                                                    if (WGCFU.validateFlag(plugLoc,Movecraft.FLAG_MOVE,lp)){
                                                         failed = false;  
                                                     }
                                                 }
                                             }
                                         }
                                         if (failed){
-                                            fail( String.format( I18nSupport.getInternationalisedString( "Towny - Translation Failed") + " %s @ %d,%d,%d", town.getName(), oldLoc.getX(), oldLoc.getY(), oldLoc.getZ() ));
-                                            break;
+                                            townName = town.getName();
+                                            moveBlockedByTowny = true;
                                         }
                                     }
                                 }
@@ -448,7 +474,7 @@ public class TranslationTask extends AsyncTask {
                     }
                 }
                 
-                if ( blockObstructed ) {
+                if ( blockObstructed || moveBlockedByTowny) {
                     if (hoverCraft && checkHover){
                         //we check one up ever, if it is hovercraft and one down if it's using gravity
                         if (hoverOver == 0 && newLoc.getY() + 1 <= data.getMaxHeight()){
@@ -514,7 +540,7 @@ public class TranslationTask extends AsyncTask {
                     } else {
                         // handle sinking ship collisions
                         if(getCraft().getSinking()) {
-                            if(getCraft().getType().getExplodeOnCrash() != 0.0F) {
+                            if(getCraft().getType().getExplodeOnCrash() != 0.0F && !explosionBlockedByTowny) {
                                 int explosionKey =  (int) (0-(getCraft().getType().getExplodeOnCrash()*100));
                                 if (!getCraft().getW().getBlockAt(oldLoc.getX(),oldLoc.getY(), oldLoc.getZ()).getType().equals(Material.AIR)){
                                     explosionSet.add( new MapUpdateCommand( oldLoc, explosionKey, getCraft() ) );
@@ -531,8 +557,18 @@ public class TranslationTask extends AsyncTask {
                         } else {
                             // Explode if the craft is set to have a CollisionExplosion. Also keep moving for spectacular ramming collisions
                             if( getCraft().getType().getCollisionExplosion() == 0.0F) {
-                                fail( String.format( I18nSupport.getInternationalisedString( "Translation - Failed Craft is obstructed" )+" @ %d,%d,%d,%s", oldLoc.getX(), oldLoc.getY(), oldLoc.getZ(), getCraft().getW().getBlockAt(newLoc.getX(),newLoc.getY(), newLoc.getZ()).getType().toString()) );
+                                if (moveBlockedByTowny){
+                                    fail( String.format( I18nSupport.getInternationalisedString( "Towny - Translation Failed") + " %s @ %d,%d,%d", townName, oldLoc.getX(), oldLoc.getY(), oldLoc.getZ() ));
+                                }else{
+                                    fail( String.format( I18nSupport.getInternationalisedString( "Translation - Failed Craft is obstructed" )+" @ %d,%d,%d,%s", oldLoc.getX(), oldLoc.getY(), oldLoc.getZ(), getCraft().getW().getBlockAt(newLoc.getX(),newLoc.getY(), newLoc.getZ()).getType().toString()) );
+                                }
                                 break;
+                            }else if(explosionBlockedByTowny){
+                                int explosionKey =  0-1;
+                                if (!getCraft().getW().getBlockAt(oldLoc.getX(),oldLoc.getY(), oldLoc.getZ()).getType().equals(Material.AIR)){
+                                    explosionSet.add( new MapUpdateCommand( oldLoc, explosionKey, getCraft() ) );
+                                    data.setCollisionExplosion(true);
+                                }
                             } else {
                                 int explosionKey =  (int) (0-(getCraft().getType().getCollisionExplosion()*100));
                                 if (!getCraft().getW().getBlockAt(oldLoc.getX(),oldLoc.getY(), oldLoc.getZ()).getType().equals(Material.AIR)){
@@ -686,7 +722,7 @@ public class TranslationTask extends AsyncTask {
                 }
                 
                 // if the craft is sinking, remove all solid blocks above the one that hit the ground from the craft for smoothing sinking
-                if(getCraft().getSinking()==true && getCraft().getType().getExplodeOnCrash()==0.0) {
+                if(getCraft().getSinking()==true && (getCraft().getType().getExplodeOnCrash()==0.0 || explosionBlockedByTowny )) {
                     int posy=m.getNewBlockLocation().getY()+1;
                     int testID=getCraft().getW().getBlockAt( m.getNewBlockLocation().getX(), posy, m.getNewBlockLocation().getZ() ).getTypeId();
 
