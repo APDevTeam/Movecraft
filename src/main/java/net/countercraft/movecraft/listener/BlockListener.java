@@ -23,11 +23,13 @@ import java.util.Random;
 
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.CraftType;
 import net.countercraft.movecraft.items.StorageChestItem;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.MapUpdateManager;
+import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.utils.MovecraftLocation;
 
 import org.bukkit.Bukkit;
@@ -49,6 +51,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
+import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -123,6 +126,21 @@ public class BlockListener implements Listener {
 		}
 	}
 
+	@EventHandler(priority = EventPriority.HIGHEST)
+	public void onItemSpawn( final ItemSpawnEvent e ) {
+		if ( e.isCancelled() ) {
+			return;
+		}
+		if(CraftManager.getInstance().getCraftsInWorld(e.getLocation().getWorld())!=null) {
+			for(Craft tcraft : CraftManager.getInstance().getCraftsInWorld(e.getLocation().getWorld())) {
+				if ( (!tcraft.isNotProcessing()) && MathUtils.playerIsWithinBoundingPolygon( tcraft.getHitBox(), tcraft.getMinX(), tcraft.getMinZ(), MathUtils.bukkit2MovecraftLoc(e.getLocation() ) ) ) {
+					e.setCancelled(true);
+					return;
+				}
+			}
+		}
+	}
+
 	private CraftType getCraftTypeFromString( String s ) {
 		for ( CraftType t : CraftManager.getInstance().getCraftTypes() ) {
 			if ( s.equalsIgnoreCase( t.getCraftName() ) ) {
@@ -164,9 +182,11 @@ public class BlockListener implements Listener {
         }
     }
 	
-	@EventHandler(priority = EventPriority.NORMAL)
+	@EventHandler(priority = EventPriority.LOW)
 	public void onBlockIgnite(BlockIgniteEvent event) {
 		if(!Settings.FireballPenetration)
+			return;
+		if(event.isCancelled())
 			return;
 		// replace blocks with fire occasionally, to prevent fast craft from simply ignoring fire
 		if(event.getCause()==BlockIgniteEvent.IgniteCause.FIREBALL) {
