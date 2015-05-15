@@ -64,6 +64,8 @@ import com.sk89q.worldedit.blocks.SignBlock;
 
 import java.util.*;
 import java.util.logging.Level;
+import net.minecraft.server.v1_8_R2.EntityTNTPrimed;
+import org.bukkit.event.entity.ExplosionPrimeEvent;
 
 public class MapUpdateManager extends BukkitRunnable {
 	private final HashMap<World, ArrayList<MapUpdateCommand>> updates = new HashMap<World, ArrayList<MapUpdateCommand>>();
@@ -405,7 +407,9 @@ public class MapUpdateManager extends BukkitRunnable {
 									float explosionPower=m.getTypeID();
 									explosionPower=0.0F-explosionPower/100.0F;
 //									FROG
-									w.createExplosion(m.getNewBlockLocation().getX()+0.5, m.getNewBlockLocation().getY()+0.5, m.getNewBlockLocation().getZ()+0.5, explosionPower);
+                                                                        Location loc = new Location(w, m.getNewBlockLocation().getX()+0.5, m.getNewBlockLocation().getY()+0.5, m.getNewBlockLocation().getZ());
+                                                                        this.createExplosion(loc, explosionPower);
+									//w.createExplosion(m.getNewBlockLocation().getX()+0.5, m.getNewBlockLocation().getY()+0.5, m.getNewBlockLocation().getZ()+0.5, explosionPower);
 								}
 							} else {
 								updateBlock(m, w, dataMap, chunks, cmChunks, origLightMap, false);
@@ -802,5 +806,32 @@ public class MapUpdateManager extends BukkitRunnable {
 
 		}
 	}
+        
+        
+    private void createExplosion(Location loc, float explosionPower){
+        if (Settings.CompatibilityMode){
+            //using other-explosion flag ... isn't secure
+            loc.getWorld().createExplosion(loc.getX()+0.5,loc.getY()+0.5, loc.getZ()+0.5, explosionPower);
+            return;
+        }
+
+        //correct explosion ... tnt event ... may be changed to any else entity type
+        EntityTNTPrimed e = new EntityTNTPrimed(((CraftWorld)loc.getWorld()).getHandle());
+        e.setLocation(loc.getX(),loc.getBlockY(), loc.getBlockZ(), 0f, 0f);
+        e.setSize(0.89F, 0.89F);
+        e.setInvisible(true);
+        
+        org.bukkit.craftbukkit.v1_8_R2.CraftWorld craftWorld = (CraftWorld) loc.getWorld();
+        org.bukkit.craftbukkit.v1_8_R2.CraftServer server = craftWorld.getHandle().getServer();
+
+        ExplosionPrimeEvent event = new ExplosionPrimeEvent((org.bukkit.entity.Explosive) org.bukkit.craftbukkit.v1_8_R2.entity.CraftEntity.getEntity(server, e));
+        event.setRadius(explosionPower);
+        server.getPluginManager().callEvent(event);
+
+        if (!event.isCancelled()) {
+            craftWorld.getHandle().createExplosion(e, loc.getX() + 0.5D , loc.getY() + 0.5D , loc.getZ() + 0.5D , event.getRadius(), event.getFire(), true);
+        }
+        
+    }
 
 }
