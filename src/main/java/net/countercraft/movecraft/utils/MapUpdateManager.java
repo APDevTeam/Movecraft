@@ -18,6 +18,7 @@
 package net.countercraft.movecraft.utils;
 
 import com.earth2me.essentials.User;
+
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
@@ -61,10 +62,14 @@ import org.bukkit.util.Vector;
 
 import com.sk89q.worldedit.blocks.BaseBlock;
 import com.sk89q.worldedit.blocks.SignBlock;
+import com.sk89q.worldguard.protection.ApplicableRegionSet;
+import com.sk89q.worldguard.protection.flags.DefaultFlag;
 
 import java.util.*;
 import java.util.logging.Level;
+
 import net.minecraft.server.v1_8_R2.EntityTNTPrimed;
+
 import org.bukkit.event.entity.ExplosionPrimeEvent;
 
 public class MapUpdateManager extends BukkitRunnable {
@@ -139,9 +144,11 @@ public class MapUpdateManager extends BukkitRunnable {
 				if(origType==149 || origType==150) { // necessary because bukkit does not handle comparators correctly. This code does not prevent console spam, but it does prevent chunk corruption
 					w.getBlockAt(x, y, z).setType(org.bukkit.Material.SIGN_POST);
 					BlockState state=w.getBlockAt( x, y, z ).getState();
-					Sign s=(Sign)state;
-					s.setLine(0, "PLACEHOLDER");
-					s.update();
+					if(state instanceof Sign) { // for some bizarre reason the block is sometimes not a sign, which crashes unless I do this
+						Sign s=(Sign)state;
+						s.setLine(0, "PLACEHOLDER");
+						s.update();
+					}
 					w.getBlockAt(x, y, z).setType(org.bukkit.Material.AIR);
 					}
 				if((newTypeID==149 || newTypeID==150) && m.getWorldEditBaseBlock()==null) {
@@ -813,19 +820,27 @@ public class MapUpdateManager extends BukkitRunnable {
     private void createExplosion(Location loc, float explosionPower){
         if (Settings.CompatibilityMode){
             //using other-explosion flag ... isn't secure
-            loc.getWorld().createExplosion(loc.getX()+0.5,loc.getY()+0.5, loc.getZ()+0.5, explosionPower);
+        	boolean explosionblocked=false;
+    		if(Movecraft.getInstance().getWorldGuardPlugin()!=null) {
+    			ApplicableRegionSet set = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(loc.getWorld()).getApplicableRegions(loc);
+    			if(set.allows(DefaultFlag.OTHER_EXPLOSION)==false) {
+    				explosionblocked=true;
+    			}
+    		}
+    		if(!explosionblocked)
+    			loc.getWorld().createExplosion(loc.getX()+0.5,loc.getY()+0.5, loc.getZ()+0.5, explosionPower);
             return;
         }
 
+        loc.getWorld().createExplosion(loc.getX()+0.5,loc.getY()+0.5, loc.getZ()+0.5, explosionPower);
         //correct explosion ... tnt event ... may be changed to any else entity type
-        EntityTNTPrimed e = new EntityTNTPrimed(((CraftWorld)loc.getWorld()).getHandle());
+/*        EntityTNTPrimed e = new EntityTNTPrimed(((CraftWorld)loc.getWorld()).getHandle()); // this is the code that causes pre 1.8.3 builds of Spigot to fail
         e.setLocation(loc.getX(),loc.getBlockY(), loc.getBlockZ(), 0f, 0f);
         e.setSize(0.89F, 0.89F);
         e.setInvisible(true);
-        
         org.bukkit.craftbukkit.v1_8_R2.CraftWorld craftWorld = (CraftWorld) loc.getWorld();
         org.bukkit.craftbukkit.v1_8_R2.CraftServer server = craftWorld.getHandle().getServer();
-
+        
         ExplosionPrimeEvent event = new ExplosionPrimeEvent((org.bukkit.entity.Explosive) org.bukkit.craftbukkit.v1_8_R2.entity.CraftEntity.getEntity(server, e));
         event.setRadius(explosionPower);
         server.getPluginManager().callEvent(event);
@@ -833,7 +848,7 @@ public class MapUpdateManager extends BukkitRunnable {
         if (!event.isCancelled()) {
             craftWorld.getHandle().createExplosion(e, loc.getX() + 0.5D , loc.getY() + 0.5D , loc.getZ() + 0.5D , event.getRadius(), event.getFire(), true);
         }
-        
+  */      
     }
 
 }
