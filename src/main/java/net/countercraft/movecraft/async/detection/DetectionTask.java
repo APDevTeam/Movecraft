@@ -384,10 +384,12 @@ public class DetectionTask extends AsyncTask {
 		ArrayList <MovecraftLocation> finalList=new ArrayList <MovecraftLocation>();
 		
 		// Sort the blocks from the bottom up to minimize lower altitude block updates
-		for(int posY=this.minY;posY<=this.maxY;posY++) {
-			for(MovecraftLocation loc : blockSet) {
-				if(loc.getY()==posY) {
-					finalList.add(loc);
+		for(int posx=data.getMinX();posx<=this.maxX;posx++) {
+			for(int posz=data.getMinZ();posz<=this.maxZ;posz++) {
+				for(int posy=this.minY;posy<=this.maxY;posy++) {
+					MovecraftLocation test=new MovecraftLocation(posx, posy, posz);
+					if(blockSet.contains(test))
+						finalList.add(test);
 				}
 			}
 		}

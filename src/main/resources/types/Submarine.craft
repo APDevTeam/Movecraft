@@ -105,7 +105,7 @@ sinkPercent: 99.0
 overallSinkPercent: 60.0
 speed: 0.5
 requireWaterContact: true
-allowVerticalMovement: false
+allowVerticalMovement: true
 fuelBurnRate: 1.0
 tryNudge: false
 flyblocks:

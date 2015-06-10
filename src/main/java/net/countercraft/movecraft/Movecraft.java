@@ -115,6 +115,7 @@ public class Movecraft extends JavaPlugin {
 		Settings.ManOverBoardTimeout = getConfig().getInt("ManOverBoardTimeout", 30);
 		Settings.FireballLifespan = getConfig().getInt("FireballLifespan", 6);
 		Settings.FireballPenetration = getConfig().getBoolean("FireballPenetration", true);
+		Settings.BlockQueueChunkSize = getConfig().getInt("BlockQueueChunkSize", 1000);
 		Settings.AllowCrewSigns = getConfig().getBoolean("AllowCrewSigns", true);
 		Settings.RequireCreatePerm = getConfig().getBoolean("RequireCreatePerm", false);
 		Settings.TNTContactExplosives = getConfig().getBoolean("TNTContactExplosives", true);

@@ -366,7 +366,7 @@ public class AsyncManager extends BukkitRunnable {
 		for( World w : Bukkit.getWorlds()) {
 			if(w!=null && CraftManager.getInstance().getCraftsInWorld(w)!=null) {
 				for (Craft pcraft : CraftManager.getInstance().getCraftsInWorld(w)) {
-					if(pcraft!=null) {
+					if((pcraft!=null)&&pcraft.isNotProcessing()) {
 						if(pcraft.getCruising()) {
 							long ticksElapsed = ( System.currentTimeMillis() - pcraft.getLastCruiseUpdate() ) / 50;
 							

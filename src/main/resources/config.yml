@@ -16,6 +16,7 @@ DisableCrates: false
 FadeWrecksAfter: 0
 RepairTicksPerBlock: 10
 RepairMoneyPerBlock: 10
+BlockQueueChunkSize: 500
 AllowCrewSigns: true
 WGCustomFlagsUsePilotFlag: false
 WGCustomFlagsUseMoveFlag: false
