@@ -122,8 +122,14 @@ public class DetectionTask extends AsyncTask {
 
 		if ( notVisited( workingLocation, visited ) ) {
 
-			int testID = data.getWorld().getBlockTypeIdAt( x, y, z );
-			int testData = data.getWorld().getBlockAt(x, y, z).getData();
+			int testID=0;
+			int testData=0;
+			try {
+			testData = data.getWorld().getBlockAt(x, y, z).getData();
+			testID = data.getWorld().getBlockTypeIdAt( x, y, z );
+			} catch (Exception e) {
+				fail( String.format( I18nSupport.getInternationalisedString( "Detection - Craft too large" ), maxSize));
+			}
 			
 			if((testID==8)||(testID==9)) {
 				data.setWaterContact(true);

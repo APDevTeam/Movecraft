@@ -26,52 +26,58 @@ public class MapUpdateCommand {
 	private MovecraftLocation blockLocation;
 	private final MovecraftLocation newBlockLocation;
 	private final int typeID;
+	private final byte dataID;
 	private final Object worldEditBaseBlock;
 	private final Rotation rotation;
 	private Craft craft;
 	private int smoke;
 
-	public MapUpdateCommand( MovecraftLocation blockLocation, MovecraftLocation newBlockLocation, int typeID, Rotation rotation, Craft craft ) {
+	public MapUpdateCommand( MovecraftLocation blockLocation, MovecraftLocation newBlockLocation, int typeID, byte dataID, Rotation rotation, Craft craft ) {
 		this.blockLocation = blockLocation;
 		this.newBlockLocation = newBlockLocation;
 		this.typeID = typeID;
+		this.dataID = dataID;
 		this.worldEditBaseBlock = null;
 		this.rotation = rotation;
 		this.craft = craft;
 		this.smoke = 0;
 	}
 
-	public MapUpdateCommand( MovecraftLocation blockLocation, MovecraftLocation newBlockLocation, int typeID, Craft craft ) {
+	public MapUpdateCommand( MovecraftLocation blockLocation, MovecraftLocation newBlockLocation, int typeID, byte dataID, Craft craft ) {
 		this.blockLocation = blockLocation;
 		this.newBlockLocation = newBlockLocation;
 		this.typeID = typeID;
+		this.dataID = dataID;
 		this.worldEditBaseBlock = null;
 		this.rotation = Rotation.NONE;
 		this.craft = craft;
 		this.smoke = 0;
 	}
 
-	public MapUpdateCommand( MovecraftLocation newBlockLocation, int typeID, Craft craft ) {
+	public MapUpdateCommand( MovecraftLocation newBlockLocation, int typeID, byte dataID, Craft craft ) {
 		this.newBlockLocation = newBlockLocation;
 		this.typeID = typeID;
+		this.dataID = dataID;
 		this.worldEditBaseBlock = null;
 		this.rotation = Rotation.NONE;
 		this.craft = craft;
 		this.smoke = 0;
 	}
 
-	public MapUpdateCommand( MovecraftLocation newBlockLocation, int typeID, Object worldEditBaseBlock, Craft craft ) {
+	public MapUpdateCommand( MovecraftLocation newBlockLocation, int typeID, byte dataID, Object worldEditBaseBlock, Craft craft ) {
 		this.newBlockLocation = newBlockLocation;
 		this.typeID = typeID;
+		this.dataID = dataID;
 		this.worldEditBaseBlock = worldEditBaseBlock;
 		this.rotation = Rotation.NONE;
 		this.craft = craft;
 		this.smoke = 0;
 	}
 
-	public MapUpdateCommand( MovecraftLocation newBlockLocation, int typeID, Craft craft, int smoke ) {
+	public MapUpdateCommand( MovecraftLocation newBlockLocation, int typeID, byte dataID, Craft craft, int smoke ) {
 		this.newBlockLocation = newBlockLocation;
 		this.typeID = typeID;
+		this.dataID = dataID;
 		this.worldEditBaseBlock = null;
 		this.rotation = Rotation.NONE;
 		this.craft = craft;
@@ -80,6 +86,10 @@ public class MapUpdateCommand {
 
 	public int getTypeID() {
 		return typeID;
+	}
+
+	public byte getDataID() {
+		return dataID;
 	}
 
 	public Object getWorldEditBaseBlock() {

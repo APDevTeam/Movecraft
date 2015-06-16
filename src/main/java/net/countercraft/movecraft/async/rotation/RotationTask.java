@@ -23,6 +23,7 @@ import com.palmergames.bukkit.towny.object.TownyWorld;
 import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.flags.StateFlag;
+
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.config.Settings;
@@ -44,6 +45,8 @@ import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
@@ -53,6 +56,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
+
 import net.countercraft.movecraft.utils.TownyUtils;
 import net.countercraft.movecraft.utils.TownyWorldHeightLimits;
 import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
@@ -172,6 +176,52 @@ public class RotationTask extends AsyncTask {
 			}
 			blockList=newHSBlockList.toArray(new MovecraftLocation[newHSBlockList.size()]);
 		}
+		
+        // check for fuel, burn some from a furnace if needed. Blocks of coal are supported, in addition to coal and charcoal
+        double fuelBurnRate=getCraft().getType().getFuelBurnRate();
+        if(fuelBurnRate!=0.0 && getCraft().getSinking()==false) {
+            if(getCraft().getBurningFuel()<fuelBurnRate) {
+                Block fuelHolder=null;
+                for (MovecraftLocation bTest : blockList) {
+                        Block b=getCraft().getW().getBlockAt(bTest.getX(), bTest.getY(), bTest.getZ());
+                        if(b.getTypeId()==61) {
+                                InventoryHolder inventoryHolder = ( InventoryHolder ) b.getState();
+                                if(inventoryHolder.getInventory().contains(263) || inventoryHolder.getInventory().contains(173)) {
+                                        fuelHolder=b;
+                                }					
+                        }
+                }
+                if(fuelHolder==null) {
+                    failed = true;
+					failMessage = String.format( I18nSupport.getInternationalisedString( "Translation - Failed Craft out of fuel" ) );
+                } else {
+                    InventoryHolder inventoryHolder = ( InventoryHolder ) fuelHolder.getState();
+                    if(inventoryHolder.getInventory().contains(263)) {
+                        ItemStack iStack=inventoryHolder.getInventory().getItem(inventoryHolder.getInventory().first(263));
+                        int amount=iStack.getAmount();
+                        if(amount==1) {
+                                inventoryHolder.getInventory().remove(iStack);
+                        } else {
+                                iStack.setAmount(amount-1);
+                        }
+                        getCraft().setBurningFuel(getCraft().getBurningFuel()+7.0);
+                    } else {
+                        ItemStack iStack=inventoryHolder.getInventory().getItem(inventoryHolder.getInventory().first(173));
+                        int amount=iStack.getAmount();
+                        if(amount==1) {
+                        		inventoryHolder.getInventory().remove(iStack);
+                        } else {
+                                iStack.setAmount(amount-1);
+                        }
+                        getCraft().setBurningFuel(getCraft().getBurningFuel()+79.0);
+
+                    }
+                }
+            } else {
+                    getCraft().setBurningFuel(getCraft().getBurningFuel()-fuelBurnRate);
+            }
+        }
+
 		
 		// Rotate the block set
 		MovecraftLocation[] centeredBlockList = new MovecraftLocation[blockList.length];
@@ -301,7 +351,11 @@ public class RotationTask extends AsyncTask {
 					break;
 				} else {
 					int id = w.getBlockTypeIdAt( originalBlockList[i].getX(), originalBlockList[i].getY(), originalBlockList[i].getZ() );
-					mapUpdates.add( new MapUpdateCommand( originalBlockList[i], blockList[i], id, rotation, getCraft() ) );
+					byte data = w.getBlockAt( originalBlockList[i].getX(), originalBlockList[i].getY(), originalBlockList[i].getZ() ).getData();
+					if ( BlockUtils.blockRequiresRotation( id ) ) {
+						data = BlockUtils.rotate( data, id, rotation );
+					}
+					mapUpdates.add( new MapUpdateCommand( originalBlockList[i], blockList[i], id, data, rotation, getCraft() ) );
 				} 
 			} else {
 				// allow watercraft to rotate through water
@@ -311,7 +365,11 @@ public class RotationTask extends AsyncTask {
 					break;
 				} else {
 					int id = w.getBlockTypeIdAt( originalBlockList[i].getX(), originalBlockList[i].getY(), originalBlockList[i].getZ() );
-					mapUpdates.add( new MapUpdateCommand( originalBlockList[i], blockList[i], id, rotation, getCraft() ) );
+					byte data = w.getBlockAt( originalBlockList[i].getX(), originalBlockList[i].getY(), originalBlockList[i].getZ() ).getData();
+					if ( BlockUtils.blockRequiresRotation( id ) ) {
+						data = BlockUtils.rotate( data, id, rotation );
+					}
+					mapUpdates.add( new MapUpdateCommand( originalBlockList[i], blockList[i], id, data, rotation, getCraft() ) );
 				} 
 			}
 
@@ -411,12 +469,12 @@ public class RotationTask extends AsyncTask {
 				if(waterCraft) {
 						// if its below the waterline, fill in with water. Otherwise fill in with air.
 					if(l1.getY()<=waterLine) {
-						mapUpdates.add( new MapUpdateCommand( l1, 9,null ) );
+						mapUpdates.add( new MapUpdateCommand( l1, 9,(byte)0, null ) );
 					} else {
-						mapUpdates.add( new MapUpdateCommand( l1, 0,null ) );
+						mapUpdates.add( new MapUpdateCommand( l1, 0,(byte)0, null ) );
 					}
 				} else {
-					mapUpdates.add( new MapUpdateCommand( l1, 0,null ) );
+					mapUpdates.add( new MapUpdateCommand( l1, 0,(byte)0, null ) );
 				}
 			}
 			

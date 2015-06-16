@@ -879,10 +879,10 @@ public class AsyncManager extends BukkitRunnable {
 									if(w.getBlockTypeIdAt( loc.getX(), loc.getY(), loc.getZ())==Movecraft.getInstance().blockFadeTypeMap.get(loc)) {
 										// should it become water? if not, then air
 										if(Movecraft.getInstance().blockFadeWaterMap.get(loc)==true) {
-											MapUpdateCommand updateCom=new MapUpdateCommand(loc,9,null);
+											MapUpdateCommand updateCom=new MapUpdateCommand(loc,9,(byte)0,null);
 											updateCommands.add(updateCom);
 										} else {
-											MapUpdateCommand updateCom=new MapUpdateCommand(loc,0,null);
+											MapUpdateCommand updateCom=new MapUpdateCommand(loc,0,(byte)0,null);
 											updateCommands.add(updateCom);									
 										}
 									}

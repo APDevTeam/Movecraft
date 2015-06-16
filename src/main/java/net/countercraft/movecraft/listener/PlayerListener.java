@@ -189,7 +189,7 @@ public class PlayerListener implements Listener {
 	public void onPlayerMove( PlayerMoveEvent event ) {
 		final Craft c = CraftManager.getInstance().getCraftByPlayer( event.getPlayer() );
 		if ( c != null ) {
-			if ( !MathUtils.playerIsWithinBoundingPolygon( c.getHitBox(), c.getMinX(), c.getMinZ(), MathUtils.bukkit2MovecraftLoc( event.getPlayer().getLocation() ) ) ) {
+			if ( c.isNotProcessing() && (!MathUtils.playerIsWithinBoundingPolygon( c.getHitBox(), c.getMinX(), c.getMinZ(), MathUtils.bukkit2MovecraftLoc( event.getPlayer().getLocation() ) )) ) {
 
 				if ( !CraftManager.getInstance().getReleaseEvents().containsKey( event.getPlayer() ) && c.getType().getMoveEntities()) {
 					if(Settings.ManOverBoardTimeout!=0)

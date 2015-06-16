@@ -18,6 +18,7 @@
 package net.countercraft.movecraft.listener;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Random;
 
@@ -38,6 +39,7 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.BlockState;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -45,6 +47,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockFromToEvent;
 import org.bukkit.event.block.BlockIgniteEvent;
 import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
@@ -55,6 +58,7 @@ import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.material.Attachable;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -126,6 +130,7 @@ public class BlockListener implements Listener {
 		}
 	}
 
+	// prevent items from dropping from moving crafts
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onItemSpawn( final ItemSpawnEvent e ) {
 		if ( e.isCancelled() ) {
@@ -139,6 +144,49 @@ public class BlockListener implements Listener {
 				}
 			}
 		}
+	}
+	
+	// prevent water from spreading on moving crafts
+	@EventHandler(priority = EventPriority.HIGHEST)
+    public void onBlockFromTo(BlockFromToEvent e) {
+		if ( e.isCancelled() ) {
+			return;
+		}
+		Block block = e.getToBlock();
+        if (block.getType() == Material.WATER) {
+            if(CraftManager.getInstance().getCraftsInWorld(block.getWorld())!=null) {
+    			for(Craft tcraft : CraftManager.getInstance().getCraftsInWorld(block.getWorld())) {
+    				if ( (!tcraft.isNotProcessing()) && MathUtils.playerIsWithinBoundingPolygon( tcraft.getHitBox(), tcraft.getMinX(), tcraft.getMinZ(), MathUtils.bukkit2MovecraftLoc(block.getLocation() ) ) ) {
+    					e.setCancelled(true);
+    					return;
+    				}
+    			}
+    		}
+        }
+	}
+
+	// prevent fragile items from dropping on moving crafts
+	@EventHandler(priority = EventPriority.HIGHEST)
+	public void onPhysics(BlockPhysicsEvent event) {
+		if ( event.isCancelled() ) {
+			return;
+		}
+		Block block = event.getBlock();
+		final int[] fragileBlocks = new int[]{ 26, 34, 50, 55, 63, 64, 65, 68, 69, 70, 71, 72, 75, 76, 77, 93, 94, 96, 131, 132, 143, 147, 148, 149, 150, 151, 171, 193, 194, 195, 196, 197 };
+		if(CraftManager.getInstance().getCraftsInWorld(block.getWorld())!=null) {
+			for(Craft tcraft : CraftManager.getInstance().getCraftsInWorld(block.getWorld())) {
+				if ( (!tcraft.isNotProcessing()) && MathUtils.playerIsWithinBoundingPolygon( tcraft.getHitBox(), tcraft.getMinX(), tcraft.getMinZ(), MathUtils.bukkit2MovecraftLoc(block.getLocation() ) ) ) {
+					boolean isFragile=(Arrays.binarySearch(fragileBlocks,block.getTypeId())>=0);
+					if (isFragile) {
+//						BlockFace face = ((Attachable) block).getAttachedFace();
+//					    if (!event.getBlock().getRelative(face).getType().isSolid()) {
+						    event.setCancelled(true);
+						    return;
+//					    }
+					}
+				}
+			}
+        }
 	}
 
 	private CraftType getCraftTypeFromString( String s ) {
