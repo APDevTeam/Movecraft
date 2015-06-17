@@ -146,10 +146,7 @@ public class MapUpdateManager extends BukkitRunnable {
 					w.getBlockAt(x, y, z).setType(org.bukkit.Material.AIR);
 					}
 				if((newTypeID==149 || newTypeID==150) && m.getWorldEditBaseBlock()==null) {
-					if(newTypeID==149)
-						w.getBlockAt(x, y, z).setType(org.bukkit.Material.REDSTONE_COMPARATOR_OFF);
-					else
-						w.getBlockAt(x, y, z).setType(org.bukkit.Material.REDSTONE_COMPARATOR_ON);
+					w.getBlockAt( x, y, z ).setTypeIdAndData( newTypeID, data, false );
 				} else {
 					if(m.getWorldEditBaseBlock()==null) {
 						w.getBlockAt( x, y, z ).setTypeIdAndData( newTypeID, data, false );
@@ -292,8 +289,8 @@ public class MapUpdateManager extends BukkitRunnable {
 							int playerChunkZ=p.getLocation().getBlockZ()>>4;
 							if(Math.abs(playerChunkX-sign.getChunk().getX())<Bukkit.getServer().getViewDistance())
 								if(Math.abs(playerChunkZ-sign.getChunk().getZ())<Bukkit.getServer().getViewDistance()) {
-	//								p.sendBlockChange(sign.getLocation(), 63, (byte) 0);
-	//								p.sendBlockChange(sign.getLocation(), sign.getTypeId(), sign.getRawData());
+									p.sendBlockChange(sign.getLocation(), 63, (byte) 0);
+									p.sendBlockChange(sign.getLocation(), sign.getTypeId(), sign.getRawData());
 									
 								}
 						}
