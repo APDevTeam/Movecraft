@@ -1,6 +1,6 @@
 name: Movecraft
 softdepend: [WorldGuard, WorldEdit, Cannons, Vault,Essentials, WGCustomFlags, Towny]
-version: 4.0.0
+version: 4.0.1
 #version: ${env.BUILD_NUMBER}
 description: The original flight and movement plugin for minecraft.
 author: BaccaYarro
@@ -14,6 +14,9 @@ commands:
   pilot:
     description: Pilots the craft at your feet
     usage: /pilot [crafttypename]
+  contacts:
+    description: reports on all crafts within detection range
+    usage: /contacts
   craftreport:
     description: reports on all active craft in the world you are in
     usage: /craftreport

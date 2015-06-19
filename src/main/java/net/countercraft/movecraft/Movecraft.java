@@ -263,6 +263,7 @@ public class Movecraft extends JavaPlugin {
 			this.getCommand("cruiseoff").setExecutor(new CommandListener());
 			this.getCommand("craftreport").setExecutor(new CommandListener());
 			this.getCommand("manoverboard").setExecutor(new CommandListener());
+			this.getCommand("contacts").setExecutor(new CommandListener());
 			
 			getServer().getPluginManager().registerEvents(new BlockListener(),
 					this);

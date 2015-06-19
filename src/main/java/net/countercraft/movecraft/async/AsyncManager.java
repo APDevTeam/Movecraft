@@ -36,6 +36,7 @@ import net.countercraft.movecraft.utils.MovecraftLocation;
 import org.apache.commons.collections.ListUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
@@ -48,9 +49,9 @@ import org.bukkit.util.Vector;
 import org.mozilla.javascript.JavaScriptException;
 
 import at.pavlov.cannons.cannon.Cannon;
+
 import com.palmergames.bukkit.towny.object.TownBlock;
 import com.palmergames.bukkit.towny.object.TownyWorld;
-
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.flags.DefaultFlag;
 import com.sk89q.worldguard.protection.flags.StateFlag;
@@ -66,6 +67,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
+
 import net.countercraft.movecraft.utils.ItemDropUpdateCommand;
 import net.countercraft.movecraft.utils.TownyUtils;
 import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
@@ -74,6 +76,7 @@ public class AsyncManager extends BukkitRunnable {
 	private static final AsyncManager instance = new AsyncManager();
 	private final HashMap<AsyncTask, Craft> ownershipMap = new HashMap<AsyncTask, Craft>();
 	private final HashMap<org.bukkit.entity.TNTPrimed, Double> TNTTracking = new HashMap<org.bukkit.entity.TNTPrimed, Double>();
+	private final HashMap<Craft, HashMap<Craft, Long>> recentContactTracking = new HashMap<Craft, HashMap<Craft, Long>>();
 	private HashMap<org.bukkit.entity.SmallFireball, Long> FireballTracking = new HashMap <org.bukkit.entity.SmallFireball, Long>();
 	private final BlockingQueue<AsyncTask> finishedAlgorithms = new LinkedBlockingQueue<AsyncTask>();
 	private final HashSet<Craft> clearanceSet = new HashSet<Craft>();
@@ -81,6 +84,7 @@ public class AsyncManager extends BukkitRunnable {
 	private long lastFireballCheck = 0;
 	private long lastTNTContactCheck = 0;
 	private long lastFadeCheck = 0;
+	private long lastContactCheck = 0;
 
 	public static AsyncManager getInstance() {
 		return instance;
@@ -903,6 +907,93 @@ public class AsyncManager extends BukkitRunnable {
 		lastFadeCheck=System.currentTimeMillis();
 		}
 	}
+	
+	public void processDetection() {
+		long ticksElapsed = ( System.currentTimeMillis() - lastContactCheck ) / 50;
+		if(ticksElapsed>21) {
+			for( World w : Bukkit.getWorlds()) {
+				if(w!=null && CraftManager.getInstance().getCraftsInWorld(w)!=null) {
+					for (Craft ccraft : CraftManager.getInstance().getCraftsInWorld(w)) {
+						if(CraftManager.getInstance().getPlayerFromCraft(ccraft)!=null ) {
+							if(!recentContactTracking.containsKey(ccraft)) {
+								recentContactTracking.put(ccraft, new HashMap<Craft, Long>());
+							}
+							for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(w)) {
+								long cposx=ccraft.getMaxX()+ccraft.getMinX();
+								long cposy=ccraft.getMaxY()+ccraft.getMinY();
+								long cposz=ccraft.getMaxZ()+ccraft.getMinZ();
+								cposx=cposx>>1;
+								cposy=cposy>>1;
+								cposz=cposz>>1;
+								long tposx=tcraft.getMaxX()+tcraft.getMinX();
+								long tposy=tcraft.getMaxY()+tcraft.getMinY();
+								long tposz=tcraft.getMaxZ()+tcraft.getMinZ();
+								tposx=tposx>>1;
+								tposy=tposy>>1;
+								tposz=tposz>>1;
+								long diffx=cposx-tposx;
+								long diffy=cposy-tposy;
+								long diffz=cposz-tposz;
+								long distsquared=Math.abs(diffx)*Math.abs(diffx);
+								distsquared+=Math.abs(diffy)*Math.abs(diffy);
+								distsquared+=Math.abs(diffz)*Math.abs(diffz);
+								long detectionRange=0;
+								if(tposy>65) {
+									detectionRange=(long) (tcraft.getOrigBlockCount()*tcraft.getType().getDetectionMultiplier());
+								} else {
+									detectionRange=(long) (tcraft.getOrigBlockCount()*tcraft.getType().getUnderwaterDetectionMultiplier());
+								}
+								if(distsquared<detectionRange*detectionRange && tcraft.getNotificationPlayer()!=ccraft.getNotificationPlayer()) {
+									// craft has been detected
+									
+									// has the craft not been seen in the last minute, or is completely new?
+									if(recentContactTracking.get(ccraft).get(tcraft)==null || System.currentTimeMillis()-recentContactTracking.get(ccraft).get(tcraft)>60000) {
+										String notification="New contact: ";
+										notification+=tcraft.getType().getCraftName();
+										notification+=" commanded by ";
+										notification+=tcraft.getNotificationPlayer().getDisplayName();
+										notification+=", size: ";
+										notification+=tcraft.getOrigBlockCount();
+										notification+=", range: ";
+										notification+=(int)Math.sqrt(distsquared);
+										notification+=" to the ";
+										if(Math.abs(diffx) > Math.abs(diffz))
+											if(diffx>0)
+												notification+=" east.";
+											else
+												notification+=" west.";
+										else
+											if(diffz>0)
+												notification+=" south.";
+											else
+												notification+=" north.";
+											
+										ccraft.getNotificationPlayer().sendMessage(notification);
+										w.playSound(ccraft.getNotificationPlayer().getLocation(), Sound.ANVIL_LAND, 10.0f, 2.0f);
+										final World sw=w;
+										final Player sp=ccraft.getNotificationPlayer();
+										BukkitTask replaysound = new BukkitRunnable() {
+											@Override
+											public void run() {
+												sw.playSound(sp.getLocation(), Sound.ANVIL_LAND, 10.0f, 2.0f);
+											}
+										}.runTaskLater( Movecraft.getInstance(), ( 5 ) );
+
+									}
+									
+									long timestamp=System.currentTimeMillis();
+									recentContactTracking.get(ccraft).put(tcraft, timestamp);
+								}
+							}
+						}
+					}
+				}
+			}
+			
+			
+			lastContactCheck=System.currentTimeMillis();
+		}
+	}
 
 	public void run() {
 		clearAll();
@@ -912,6 +1003,7 @@ public class AsyncManager extends BukkitRunnable {
 		processFireballs();
 		processTNTContactExplosives();
 		processFadingBlocks();
+		processDetection();
 		processAlgorithmQueue();
 	}
 

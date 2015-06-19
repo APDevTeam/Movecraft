@@ -53,6 +53,8 @@ public class CraftType {
 	private double fuelBurnRate;
 	private double sinkPercent;
 	private double overallSinkPercent;
+	private double detectionMultiplier;
+	private double underwaterDetectionMultiplier;
 	private int sinkRateTicks;
 	private boolean keepMovingOnSink;
 	private int smokeOnSink;
@@ -297,6 +299,16 @@ public class CraftType {
 		} else {
 			overallSinkPercent=0.0;
 		}
+		if(data.containsKey("detectionMultiplier")) {
+			detectionMultiplier=doubleFromObject(data.get("detectionMultiplier"));
+		} else {
+			detectionMultiplier=0.0;
+		}
+		if(data.containsKey("underwaterDetectionMultiplier")) {
+			underwaterDetectionMultiplier=doubleFromObject(data.get("underwaterDetectionMultiplier"));
+		} else {
+			underwaterDetectionMultiplier=detectionMultiplier;
+		}
 		if(data.containsKey("sinkSpeed")) {
 			sinkRateTicks=(int) Math.ceil( 20 / ( doubleFromObject(data.get( "sinkSpeed" )) ) );
 		} else {
@@ -503,6 +515,14 @@ public class CraftType {
 	
 	public double getOverallSinkPercent() {
 		return overallSinkPercent;
+	}
+	
+	public double getDetectionMultiplier() {
+		return detectionMultiplier;
+	}
+	
+	public double getUnderwaterDetectionMultiplier() {
+		return underwaterDetectionMultiplier;
 	}
 	
 	public int getSinkRateTicks() {

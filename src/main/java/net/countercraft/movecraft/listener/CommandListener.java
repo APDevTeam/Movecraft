@@ -17,6 +17,8 @@
 
 package net.countercraft.movecraft.listener;
 
+import java.util.HashMap;
+
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
@@ -299,6 +301,71 @@ public class CommandListener implements CommandExecutor {
 				player.sendMessage("No crafts found");
 			}
 			return true;
+		}
+		
+		if(cmd.getName().equalsIgnoreCase("contacts")) {
+			if(CraftManager.getInstance().getCraftByPlayer(player)!=null ) {
+				Craft ccraft=CraftManager.getInstance().getCraftByPlayer(player);
+				boolean foundContact=false;
+				for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(ccraft.getW())) {
+					long cposx=ccraft.getMaxX()+ccraft.getMinX();
+					long cposy=ccraft.getMaxY()+ccraft.getMinY();
+					long cposz=ccraft.getMaxZ()+ccraft.getMinZ();
+					cposx=cposx>>1;
+					cposy=cposy>>1;
+					cposz=cposz>>1;
+					long tposx=tcraft.getMaxX()+tcraft.getMinX();
+					long tposy=tcraft.getMaxY()+tcraft.getMinY();
+					long tposz=tcraft.getMaxZ()+tcraft.getMinZ();
+					tposx=tposx>>1;
+					tposy=tposy>>1;
+					tposz=tposz>>1;
+					long diffx=cposx-tposx;
+					long diffy=cposy-tposy;
+					long diffz=cposz-tposz;
+					long distsquared=Math.abs(diffx)*Math.abs(diffx);
+					distsquared+=Math.abs(diffy)*Math.abs(diffy);
+					distsquared+=Math.abs(diffz)*Math.abs(diffz);
+					long detectionRange=0;
+					if(tposy>65) {
+						detectionRange=(long) (tcraft.getOrigBlockCount()*tcraft.getType().getDetectionMultiplier());
+					} else {
+						detectionRange=(long) (tcraft.getOrigBlockCount()*tcraft.getType().getUnderwaterDetectionMultiplier());
+					}
+					if(distsquared<detectionRange*detectionRange && tcraft.getNotificationPlayer()!=ccraft.getNotificationPlayer()) {
+						// craft has been detected				
+						foundContact=true;
+						String notification="Contact: ";
+						notification+=tcraft.getType().getCraftName();
+						notification+=" commanded by ";
+						notification+=tcraft.getNotificationPlayer().getDisplayName();
+						notification+=", size: ";
+						notification+=tcraft.getOrigBlockCount();
+						notification+=", range: ";
+						notification+=(int)Math.sqrt(distsquared);
+						notification+=" to the ";
+						if(Math.abs(diffx) > Math.abs(diffz))
+							if(diffx>0)
+								notification+=" west.";
+							else
+								notification+=" east.";
+						else
+							if(diffz>0)
+								notification+=" south.";
+							else
+								notification+=" north.";
+							
+						ccraft.getNotificationPlayer().sendMessage(notification);
+					}
+				}
+				if(!foundContact)
+					player.sendMessage( String.format( I18nSupport.getInternationalisedString( "No contacts within range" ) ) );
+				return true;	
+			} else {
+				player.sendMessage( String.format( I18nSupport.getInternationalisedString( "You must be piloting a craft" ) ) );
+				return true;	
+			}
+				
 		}
 		
 		if(cmd.getName().equalsIgnoreCase("manOverBoard")) {
