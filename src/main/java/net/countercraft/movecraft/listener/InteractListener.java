@@ -254,7 +254,6 @@ public class InteractListener implements Listener {
 
 
 		if ( getCraftTypeFromString( org.bukkit.ChatColor.stripColor(sign.getLine( 0 )) ) != null ) {
-
 			// Valid sign prompt for ship command.
 			if ( event.getPlayer().hasPermission( "movecraft." + org.bukkit.ChatColor.stripColor(sign.getLine( 0 )) + ".pilot" ) ) {
 				// Attempt to run detection
@@ -281,8 +280,10 @@ public class InteractListener implements Listener {
 						c.detect( event.getPlayer(), event.getPlayer(), startPoint );
 					} else {
 						Craft oldCraft=CraftManager.getInstance().getCraftByPlayer( event.getPlayer() );
-						CraftManager.getInstance().removeCraft( oldCraft );
-						c.detect( event.getPlayer(), event.getPlayer(), startPoint );
+						if(oldCraft.isNotProcessing()) {
+							CraftManager.getInstance().removeCraft( oldCraft );
+							c.detect( event.getPlayer(), event.getPlayer(), startPoint );
+						}
 					}
 				}
 				

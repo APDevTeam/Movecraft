@@ -247,8 +247,8 @@ public class WorldEditInteractListener implements Listener {
 								itemToConsume=380;
 							if(itemToConsume==124) // lit redstone lamp
 								itemToConsume=123;
-							if(itemToConsume==75) // lit redstone torch
-								itemToConsume=76;
+							if(itemToConsume==76) // lit redstone torch
+								itemToConsume=75;
 							if(itemToConsume==8 || itemToConsume==9) { // don't require water to be in the chest
 								itemToConsume=0;
 								qtyToConsume=0;

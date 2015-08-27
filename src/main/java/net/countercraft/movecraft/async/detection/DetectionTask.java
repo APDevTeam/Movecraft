@@ -23,6 +23,7 @@ import com.palmergames.bukkit.towny.object.TownyWorld;
 import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.flags.StateFlag;
+
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.localisation.I18nSupport;
@@ -31,6 +32,8 @@ import net.countercraft.movecraft.utils.MovecraftLocation;
 
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.BlockState;
+import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
@@ -38,11 +41,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Stack;
+
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.utils.TownyUtils;
 import net.countercraft.movecraft.utils.TownyWorldHeightLimits;
 import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
+
 import org.bukkit.Location;
 
 public class DetectionTask extends AsyncTask {
@@ -134,7 +139,23 @@ public class DetectionTask extends AsyncTask {
 			if((testID==8)||(testID==9)) {
 				data.setWaterContact(true);
 			}
-
+			if(testID==63 || testID==68) {
+				BlockState state=data.getWorld().getBlockAt(x, y, z).getState();
+				if(state instanceof Sign) {
+					Sign s=(Sign)state;
+					if(s.getLine(0).equalsIgnoreCase("Pilot:") && data.getPlayer()!=null) {
+						String playerName=data.getPlayer().getName();
+						boolean foundPilot=false;
+						if(s.getLine(1).equalsIgnoreCase(playerName) || s.getLine(2).equalsIgnoreCase(playerName) || s.getLine(3).equalsIgnoreCase(playerName)) {
+							foundPilot=true;
+						}
+						if(!foundPilot && (!data.getPlayer().hasPermission("movecraft.bypasslock"))) {
+							fail( String.format( I18nSupport.getInternationalisedString( "Not one of the registered pilots on this craft" )));							
+						}
+					}
+				}
+			}
+			
 			if ( isForbiddenBlock( testID,testData ) ) {
 
 				fail( String.format( I18nSupport.getInternationalisedString( "Detection - Forbidden block found" ) ) );

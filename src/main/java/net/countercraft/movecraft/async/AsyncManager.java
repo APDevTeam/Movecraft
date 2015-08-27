@@ -939,9 +939,9 @@ public class AsyncManager extends BukkitRunnable {
 								distsquared+=Math.abs(diffz)*Math.abs(diffz);
 								long detectionRange=0;
 								if(tposy>65) {
-									detectionRange=(long) (tcraft.getOrigBlockCount()*tcraft.getType().getDetectionMultiplier());
+									detectionRange=(long) (Math.sqrt(tcraft.getOrigBlockCount())*tcraft.getType().getDetectionMultiplier());
 								} else {
-									detectionRange=(long) (tcraft.getOrigBlockCount()*tcraft.getType().getUnderwaterDetectionMultiplier());
+									detectionRange=(long) (Math.sqrt(tcraft.getOrigBlockCount())*tcraft.getType().getUnderwaterDetectionMultiplier());
 								}
 								if(distsquared<detectionRange*detectionRange && tcraft.getNotificationPlayer()!=ccraft.getNotificationPlayer()) {
 									// craft has been detected
@@ -951,25 +951,29 @@ public class AsyncManager extends BukkitRunnable {
 										String notification="New contact: ";
 										notification+=tcraft.getType().getCraftName();
 										notification+=" commanded by ";
-										notification+=tcraft.getNotificationPlayer().getDisplayName();
+										if(tcraft.getNotificationPlayer()!=null) {
+											notification+=tcraft.getNotificationPlayer().getDisplayName();
+										} else {
+											notification+="NULL";
+										}
 										notification+=", size: ";
 										notification+=tcraft.getOrigBlockCount();
 										notification+=", range: ";
 										notification+=(int)Math.sqrt(distsquared);
-										notification+=" to the ";
+										notification+=" to the";
 										if(Math.abs(diffx) > Math.abs(diffz))
-											if(diffx>0)
+											if(diffx<0)
 												notification+=" east.";
 											else
 												notification+=" west.";
 										else
-											if(diffz>0)
+											if(diffz<0)
 												notification+=" south.";
 											else
 												notification+=" north.";
 											
 										ccraft.getNotificationPlayer().sendMessage(notification);
-										w.playSound(ccraft.getNotificationPlayer().getLocation(), Sound.ANVIL_LAND, 10.0f, 2.0f);
+										w.playSound(ccraft.getNotificationPlayer().getLocation(), Sound.ANVIL_LAND, 1.0f, 2.0f);
 										final World sw=w;
 										final Player sp=ccraft.getNotificationPlayer();
 										BukkitTask replaysound = new BukkitRunnable() {
