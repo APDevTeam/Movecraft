@@ -19,8 +19,13 @@ package net.countercraft.movecraft;
 
 import net.countercraft.movecraft.async.AsyncManager;
 import at.pavlov.cannons.Cannons;
-import com.earth2me.essentials.Essentials;
 
+
+
+
+
+
+// essentials repo is down import com.earth2me.essentials.Essentials;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 
@@ -39,6 +44,7 @@ import net.countercraft.movecraft.utils.MovecraftLocation;
 import net.countercraft.movecraft.utils.TownyUtils;
 import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
 import net.milkbowl.vault.economy.Economy;
+
 import com.mewin.WGCustomFlags.WGCustomFlagsPlugin;
 import com.palmergames.bukkit.towny.Towny;
 import com.sk89q.worldguard.protection.flags.StateFlag;
@@ -47,9 +53,17 @@ import org.bukkit.World;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
+import org.yaml.snakeyaml.Yaml;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -61,7 +75,7 @@ public class Movecraft extends JavaPlugin {
         private static Economy economy;
 	private static Cannons cannonsPlugin=null;
         private static Towny townyPlugin = null;
-	private static Essentials essentialsPlugin = null;
+//	private static Essentials essentialsPlugin = null; Essentials repo is down
         public static StateFlag FLAG_PILOT = null; //new StateFlag("movecraft-pilot", true);
         public static StateFlag FLAG_MOVE = null; //new StateFlag("movecraft-move", true);
         public static StateFlag FLAG_ROTATE = null; //new StateFlag("movecraft-rotate", true);
@@ -72,7 +86,11 @@ public class Movecraft extends JavaPlugin {
 	public HashMap<MovecraftLocation, Integer> blockFadeTypeMap = new HashMap<MovecraftLocation, Integer>();
 	public HashMap<MovecraftLocation, Boolean> blockFadeWaterMap = new HashMap<MovecraftLocation, Boolean>();
 	public HashMap<MovecraftLocation, World> blockFadeWorldMap = new HashMap<MovecraftLocation, World>();
-
+	public boolean siegeInProgress=false;
+	public String currentSiegeName=null;
+	public String currentSiegePlayer=null;
+	public long currentSiegeStartTime=0;
+	
         @Override
 	public void onDisable() {
 		// Process the storage crates to disk
@@ -117,13 +135,55 @@ public class Movecraft extends JavaPlugin {
 		Settings.FireballPenetration = getConfig().getBoolean("FireballPenetration", true);
 		Settings.BlockQueueChunkSize = getConfig().getInt("BlockQueueChunkSize", 1000);
 		Settings.AllowCrewSigns = getConfig().getBoolean("AllowCrewSigns", true);
+		Settings.SetHomeToCrewSign = getConfig().getBoolean("SetHomeToCrewSign", true);
 		Settings.RequireCreatePerm = getConfig().getBoolean("RequireCreatePerm", false);
 		Settings.TNTContactExplosives = getConfig().getBoolean("TNTContactExplosives", true);
 		Settings.FadeWrecksAfter = getConfig().getInt("FadeWrecksAfter", 0);
+		
+		//load the sieges.yml file
+		File siegesFile = new File( Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/sieges.yml" );
+		InputStream input=null;
+		try {
+			input = new FileInputStream(siegesFile);			
+		} catch (FileNotFoundException e){
+			Settings.SiegeName=null;
+			input=null;
+		}
+		if(input!=null) {
+			Yaml yaml = new Yaml();
+			Map data = ( Map ) yaml.load( input );
+			Map<String, Map> siegesMap=(Map<String, Map>)data.get("sieges");
+			Settings.SiegeName=siegesMap.keySet();
+		
+			Settings.SiegeRegion=new HashMap<String, String>();
+			Settings.SiegeCraftsToWin=new HashMap<String, ArrayList<String>>();
+			Settings.SiegeCost=new HashMap<String, Integer>();
+			Settings.SiegeDoubleCost=new HashMap<String, Boolean>();
+			Settings.SiegeIncome=new HashMap<String, Integer>();
+			Settings.SiegeScheduleStart=new HashMap<String, Integer>();
+			Settings.SiegeScheduleEnd=new HashMap<String, Integer>();
+			Settings.SiegeControlRegion=new HashMap<String, String>();
+			Settings.SiegeDelay=new HashMap<String, Integer>();
+			Settings.SiegeDuration=new HashMap<String, Integer>();
+			for(String siegeName : siegesMap.keySet()) {
+				Settings.SiegeRegion.put(siegeName, (String)siegesMap.get(siegeName).get("SiegeRegion"));
+				Settings.SiegeCraftsToWin.put(siegeName, (ArrayList<String>)siegesMap.get(siegeName).get("CraftsToWin"));
+				Settings.SiegeCost.put(siegeName, (Integer)siegesMap.get(siegeName).get("CostToSiege"));
+				Settings.SiegeDoubleCost.put(siegeName, (Boolean)siegesMap.get(siegeName).get("DoubleCostPerOwnedSiegeRegion"));
+				Settings.SiegeIncome.put(siegeName, (Integer)siegesMap.get(siegeName).get("DailyIncome"));
+				Settings.SiegeScheduleStart.put(siegeName, (Integer)siegesMap.get(siegeName).get("ScheduleStart"));
+				Settings.SiegeScheduleEnd.put(siegeName, (Integer)siegesMap.get(siegeName).get("ScheduleEnd"));
+				Settings.SiegeControlRegion.put(siegeName, (String)siegesMap.get(siegeName).get("RegionToControl"));
+				Settings.SiegeDelay.put(siegeName, (Integer)siegesMap.get(siegeName).get("DelayBeforeStart"));
+				Settings.SiegeDuration.put(siegeName, (Integer)siegesMap.get(siegeName).get("SiegeDuration"));
+			}
+			logger.log(Level.INFO, "Siege configuration loaded");
+		}
 		//load up WorldGuard if it's present
 		Plugin wGPlugin=getServer().getPluginManager().getPlugin("WorldGuard");
 		if (wGPlugin == null || !(wGPlugin instanceof WorldGuardPlugin)) {
-			logger.log(Level.INFO, "Movecraft did not find a compatible version of WorldGuard. Disabling WorldGuard integration");			
+			logger.log(Level.INFO, "Movecraft did not find a compatible version of WorldGuard. Disabling WorldGuard integration");
+			Settings.SiegeName=null;
 		} else {
 			logger.log(Level.INFO, "Found a compatible version of WorldGuard. Enabling WorldGuard integration");			
 			Settings.WorldGuardBlockMoveOnBuildPerm = getConfig().getBoolean("WorldGuardBlockMoveOnBuildPerm", false);
@@ -189,7 +249,7 @@ public class Movecraft extends JavaPlugin {
                 }else{
                     logger.log(Level.INFO, "Movecraft did not find a compatible version of Towny. Disabling Towny integration.");
                 }
-
+/* Essentials repo is down
                 Plugin tempEssentialsPlugin = getServer().getPluginManager().getPlugin("Essentials");
                 if (tempEssentialsPlugin  != null){
                     if (tempEssentialsPlugin.getDescription().getName().equalsIgnoreCase("essentials")){
@@ -203,7 +263,7 @@ public class Movecraft extends JavaPlugin {
                 }
                 if (essentialsPlugin == null){
                     logger.log(Level.INFO, "Movecraft did not find a compatible version of Essentials. Disabling Essentials integration.");
-                }
+                }*/
         
         // and now Vault
         if (getServer().getPluginManager().getPlugin("Vault") != null) {
@@ -215,10 +275,12 @@ public class Movecraft extends JavaPlugin {
             } else {
     			logger.log(Level.INFO, "Could not find compatible Vault plugin. Disabling Vault integration.");			
             	economy = null;
+    			Settings.SiegeName=null;
             }
         } else {
 			logger.log(Level.INFO, "Could not find compatible Vault plugin. Disabling Vault integration.");			
         	economy = null;
+			Settings.SiegeName=null;
         }
                 String[] localisations = {"en","cz","nl"};
                 for (String s : localisations){
@@ -264,6 +326,7 @@ public class Movecraft extends JavaPlugin {
 			this.getCommand("craftreport").setExecutor(new CommandListener());
 			this.getCommand("manoverboard").setExecutor(new CommandListener());
 			this.getCommand("contacts").setExecutor(new CommandListener());
+			this.getCommand("siege").setExecutor(new CommandListener());
 			
 			getServer().getPluginManager().registerEvents(new BlockListener(),
 					this);
@@ -318,9 +381,10 @@ public class Movecraft extends JavaPlugin {
         public Towny getTownyPlugin(){
             return townyPlugin;
         }
-        
+   /* Essentials repo is down     
         public Essentials getEssentialsPlugin(){
             return essentialsPlugin;
         }
+        */
 }
 

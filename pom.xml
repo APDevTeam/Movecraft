@@ -65,10 +65,12 @@
             <id>vault-repo</id>
             <url>http://nexus.theyeticave.net/content/repositories/pub_releases</url>
         </repository>
+<!-- essentials repo is down, taking this out until it is back up
         <repository>
             <id>ess-repo</id>
             <url>http://repo.ess3.net/content/groups/essentials</url>
         </repository>
+         -->
     </repositories>
 
     <build>
@@ -201,12 +203,13 @@
             <version>1.5</version>
             <scope>provided</scope>
         </dependency>
+        <!-- Essentials repo has been down all day, removing to see if I can get this working
         <dependency>
             <groupId>net.ess3</groupId>
             <artifactId>Essentials</artifactId>
             <version>2.13.1</version>
-        </dependency>
-        
+        </dependency> 
+         -->
         <!-- This doesn't have a maven repo but its own -->
         <dependency>
             <groupId>com.palmergames</groupId>

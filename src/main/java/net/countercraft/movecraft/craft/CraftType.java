@@ -42,7 +42,7 @@ public class CraftType {
 	private int maxSize, minSize, minHeightLimit, maxHeightLimit, maxHeightAboveGround;
 	private Integer[] allowedBlocks, forbiddenBlocks;
 	private boolean blockedByWater, requireWaterContact, tryNudge, canCruise, canTeleport, canStaticMove, canHover, canDirectControl, useGravity, canHoverOverWater, moveEntities;
-	private boolean allowHorizontalMovement, allowVerticalMovement, allowRemoteSign, cruiseOnPilot, allowVerticalTakeoffAndLanding;
+	private boolean allowHorizontalMovement, allowVerticalMovement, allowRemoteSign, cruiseOnPilot, allowVerticalTakeoffAndLanding, blockRemoteRotate;
 	private int cruiseOnPilotVertMove;
 	private int maxStaticMove;
 	private int cruiseSkipBlocks;
@@ -243,6 +243,11 @@ public class CraftType {
 			allowVerticalMovement=(Boolean) data.get("allowVerticalMovement");
 		} else {
 			allowVerticalMovement=true;
+		}
+		if(data.containsKey("blockRemoteRotate")) {
+			blockRemoteRotate=(Boolean) data.get("blockRemoteRotate");
+		} else {
+			blockRemoteRotate=false;
 		}
 		if(data.containsKey("allowHorizontalMovement")) {
 			allowHorizontalMovement=(Boolean) data.get("allowHorizontalMovement");
@@ -495,6 +500,10 @@ public class CraftType {
 	
 	public boolean allowVerticalMovement() {
 		return allowVerticalMovement;
+	}
+	
+	public boolean blockRemoteRotate() {
+		return blockRemoteRotate;
 	}
 	
 	public boolean allowHorizontalMovement() {

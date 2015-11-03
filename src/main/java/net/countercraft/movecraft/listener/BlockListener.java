@@ -225,7 +225,8 @@ public class BlockListener implements Listener {
             String crewName=org.bukkit.ChatColor.stripColor(event.getLine(1));
         	if(!p.getName().equalsIgnoreCase(crewName)) {
 				p.sendMessage( String.format( I18nSupport.getInternationalisedString( "You can only create a Crew: sign for yourself" ) ) );
-				event.setCancelled(true);
+				event.setLine(1, p.getName());
+//				event.setCancelled(true);
 			}
         }
     }

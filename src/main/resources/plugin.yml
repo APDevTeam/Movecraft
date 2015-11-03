@@ -1,6 +1,6 @@
 name: Movecraft
 softdepend: [WorldGuard, WorldEdit, Cannons, Vault,Essentials, WGCustomFlags, Towny]
-version: 4.0.1
+version: 4.5.0
 #version: ${env.BUILD_NUMBER}
 description: The original flight and movement plugin for minecraft.
 author: BaccaYarro
@@ -35,3 +35,6 @@ commands:
   manoverboard:
     description: If enabled, returns you to a craft you have fallen out of
     usage: /manoverboard
+  siege:
+    description: If the region you are standing in is configured for Siege, lays siege to it
+    usage: /siege

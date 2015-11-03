@@ -17,8 +17,11 @@
 
 package net.countercraft.movecraft.config;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
 import net.countercraft.movecraft.utils.TownyWorldHeightLimits;
 
 public class Settings {
@@ -46,6 +49,7 @@ public class Settings {
 	public static double RepairMoneyPerBlock = 0.0;
 	public static boolean FireballPenetration = true;
 	public static boolean AllowCrewSigns = true;
+	public static boolean SetHomeToCrewSign = true;
         public static boolean WGCustomFlagsUsePilotFlag = false;
         public static boolean WGCustomFlagsUseMoveFlag = false;
         public static boolean WGCustomFlagsUseRotateFlag = false;
@@ -53,4 +57,16 @@ public class Settings {
         public static boolean TownyBlockMoveOnSwitchPerm = false;
         public static boolean TownyBlockSinkOnNoPVP = false;
         public static Map<String, TownyWorldHeightLimits> TownProtectionHeightLimits;
+
+    public static Set<String> SiegeName;
+    public static Map<String, String> SiegeRegion;
+    public static Map<String, ArrayList<String>> SiegeCraftsToWin;
+	public static Map<String, Integer> SiegeCost;
+	public static Map<String, Boolean> SiegeDoubleCost;
+	public static Map<String, Integer> SiegeIncome;
+	public static Map<String, Integer> SiegeScheduleStart;
+	public static Map<String, Integer> SiegeScheduleEnd;
+    public static Map<String, String> SiegeControlRegion;
+	public static Map<String, Integer> SiegeDelay;
+	public static Map<String, Integer> SiegeDuration;
 }

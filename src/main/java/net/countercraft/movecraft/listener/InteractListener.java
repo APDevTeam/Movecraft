@@ -101,26 +101,30 @@ public class InteractListener implements Listener {
 						if(tb.getType().equals(Material.SIGN_POST) || tb.getType().equals(Material.WALL_SIGN)) {
 							Sign ts=( Sign ) tb.getState();
 							if(org.bukkit.ChatColor.stripColor(ts.getLine(0))!=null) 
-								if(org.bukkit.ChatColor.stripColor(ts.getLine(0)).equalsIgnoreCase(targetText))
-									foundLoc=tloc;
-							if(org.bukkit.ChatColor.stripColor(ts.getLine(1))!=null) 
-								if(org.bukkit.ChatColor.stripColor(ts.getLine(1)).equalsIgnoreCase(targetText)) {
-									boolean isRemoteSign=false;
-									if(org.bukkit.ChatColor.stripColor(ts.getLine(0))!=null)
-										if(org.bukkit.ChatColor.stripColor(ts.getLine(0)).equalsIgnoreCase("Remote Sign"))
-											isRemoteSign=true;
-									if(!isRemoteSign)
-										foundLoc=tloc;
+								if((foundCraft.getType().blockRemoteRotate()==false) || (org.bukkit.ChatColor.stripColor(ts.getLine(0)).equalsIgnoreCase("\\  ||  /")==false)) {
+									if(org.bukkit.ChatColor.stripColor(ts.getLine(0))!=null) 
+										if(org.bukkit.ChatColor.stripColor(ts.getLine(0)).equalsIgnoreCase(targetText))
+											foundLoc=tloc;
+									if(org.bukkit.ChatColor.stripColor(ts.getLine(1))!=null) 
+										if(org.bukkit.ChatColor.stripColor(ts.getLine(1)).equalsIgnoreCase(targetText)) {
+											boolean isRemoteSign=false;
+											if(org.bukkit.ChatColor.stripColor(ts.getLine(0))!=null)
+												if(org.bukkit.ChatColor.stripColor(ts.getLine(0)).equalsIgnoreCase("Remote Sign"))
+													isRemoteSign=true;
+											if(!isRemoteSign)
+												foundLoc=tloc;
+										}
+									if(org.bukkit.ChatColor.stripColor(ts.getLine(2))!=null) 
+										if(org.bukkit.ChatColor.stripColor(ts.getLine(2)).equalsIgnoreCase(targetText))
+											foundLoc=tloc;
+									if(org.bukkit.ChatColor.stripColor(ts.getLine(3))!=null) 
+										if(org.bukkit.ChatColor.stripColor(ts.getLine(3)).equalsIgnoreCase(targetText))
+											foundLoc=tloc;
+								} else {
+									event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "ERROR: Remote rotations are blocked on this craft type" ) ) );
 								}
-							if(org.bukkit.ChatColor.stripColor(ts.getLine(2))!=null) 
-								if(org.bukkit.ChatColor.stripColor(ts.getLine(2)).equalsIgnoreCase(targetText))
-									foundLoc=tloc;
-							if(org.bukkit.ChatColor.stripColor(ts.getLine(3))!=null) 
-								if(org.bukkit.ChatColor.stripColor(ts.getLine(3)).equalsIgnoreCase(targetText))
-									foundLoc=tloc;
 						}
 					}
-					
 					if(foundLoc==null) {
 						event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "ERROR: Could not find target sign!" ) ) );
 						return;						

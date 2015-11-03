@@ -18,6 +18,7 @@ RepairTicksPerBlock: 10
 RepairMoneyPerBlock: 10
 BlockQueueChunkSize: 1000
 AllowCrewSigns: true
+SetHomeToCrewSign: false
 WGCustomFlagsUsePilotFlag: false
 WGCustomFlagsUseMoveFlag: false
 WGCustomFlagsUseRotateFlag: false

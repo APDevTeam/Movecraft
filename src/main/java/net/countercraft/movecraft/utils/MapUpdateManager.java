@@ -17,7 +17,7 @@
 
 package net.countercraft.movecraft.utils;
 
-import com.earth2me.essentials.User;
+// essentials repo is down import com.earth2me.essentials.User;
 
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
@@ -285,10 +285,14 @@ public class MapUpdateManager extends BukkitRunnable {
 								loc=loc.subtract(0, 1, 0);
 								if(w.getBlockAt(loc).getType().equals(Material.BED_BLOCK)) {
 									crewPlayer.setBedSpawnLocation(loc);
-	                                                                            if (Movecraft.getInstance().getEssentialsPlugin() != null){
-	                                                                                User u = Movecraft.getInstance().getEssentialsPlugin().getUser(crewPlayer);
-	                                                                                u.setHome("home", loc);
-	                                                                            }
+									/* Essentials repo is down, removing this until it is available									
+									if(Settings.SetHomeToCrewSign==true)
+
+										if (Movecraft.getInstance().getEssentialsPlugin() != null){
+                                            User u = Movecraft.getInstance().getEssentialsPlugin().getUser(crewPlayer);
+                                            u.setHome("home", loc);
+                                        }
+                                        */
 								}
 							}
 						}

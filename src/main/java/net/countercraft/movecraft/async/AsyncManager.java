@@ -52,12 +52,15 @@ import at.pavlov.cannons.cannon.Cannon;
 
 import com.palmergames.bukkit.towny.object.TownBlock;
 import com.palmergames.bukkit.towny.object.TownyWorld;
+import com.sk89q.worldguard.domains.DefaultDomain;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.flags.DefaultFlag;
 import com.sk89q.worldguard.protection.flags.StateFlag;
+import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -85,6 +88,8 @@ public class AsyncManager extends BukkitRunnable {
 	private long lastTNTContactCheck = 0;
 	private long lastFadeCheck = 0;
 	private long lastContactCheck = 0;
+	private long lastSiegeNotification = 0;
+	private long lastSiegePayout = 0;
 
 	public static AsyncManager getInstance() {
 		return instance;
@@ -998,6 +1003,89 @@ public class AsyncManager extends BukkitRunnable {
 			lastContactCheck=System.currentTimeMillis();
 		}
 	}
+	
+	public void processSiege() {
+		if(Movecraft.getInstance().currentSiegeName!=null) {
+			long secsElapsed = ( System.currentTimeMillis() - lastSiegeNotification ) / 1000;
+			if(secsElapsed > 180) {
+				lastSiegeNotification=System.currentTimeMillis();
+				boolean siegeLeaderPilotingShip=false;
+				Player siegeLeader=Movecraft.getInstance().getServer().getPlayer(Movecraft.getInstance().currentSiegePlayer);
+				if(siegeLeader!=null) {
+					if(CraftManager.getInstance().getCraftByPlayer(siegeLeader)!=null) {
+						for(String tTypeName : Settings.SiegeCraftsToWin.get(Movecraft.getInstance().currentSiegeName)) {
+							if(tTypeName.equalsIgnoreCase(CraftManager.getInstance().getCraftByPlayer(siegeLeader).getType().getCraftName())) {
+								siegeLeaderPilotingShip=true;
+							}
+						}
+					}
+				}
+				boolean siegeLeaderShipInRegion=false;
+				int midX=0;
+				int midY=0;
+				int midZ=0;
+				if(siegeLeaderPilotingShip==true) {
+					midX=(CraftManager.getInstance().getCraftByPlayer(siegeLeader).getMaxX()+CraftManager.getInstance().getCraftByPlayer(siegeLeader).getMinX())/2;
+					midY=(CraftManager.getInstance().getCraftByPlayer(siegeLeader).getMaxY()+CraftManager.getInstance().getCraftByPlayer(siegeLeader).getMinY())/2;
+					midZ=(CraftManager.getInstance().getCraftByPlayer(siegeLeader).getMaxZ()+CraftManager.getInstance().getCraftByPlayer(siegeLeader).getMinZ())/2;
+					if(Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(siegeLeader.getWorld()).getRegion(Settings.SiegeRegion.get(Movecraft.getInstance().currentSiegeName)).contains(midX, midY, midZ)) {
+						siegeLeaderShipInRegion=true;
+					}
+				}
+				long timeLapsed=(System.currentTimeMillis()-Movecraft.getInstance().currentSiegeStartTime) / 1000;
+				int timeLeft=(int) (Settings.SiegeDuration.get(Movecraft.getInstance().currentSiegeName)-timeLapsed);
+				if(timeLeft>10) {
+					if(siegeLeaderShipInRegion==true) {
+						Bukkit.getServer().broadcastMessage(String.format("The Siege of %s is under way. The Siege Flagship is a %s of size %d under the command of %s at %d, %d, %d. Siege will end in %d minutes"
+								, Movecraft.getInstance().currentSiegeName, CraftManager.getInstance().getCraftByPlayer(siegeLeader).getType().getCraftName(), CraftManager.getInstance().getCraftByPlayer(siegeLeader).getOrigBlockCount(),siegeLeader.getDisplayName(), midX, midY, midZ, timeLeft/60 ));
+					} else {
+						Bukkit.getServer().broadcastMessage(String.format("The Siege of %s is under way. The Siege Leader, %s, is not in command of a Flagship within the Siege Region! If they are still not when the duration expires, the siege will fail! Siege will end in %d minutes"
+								, Movecraft.getInstance().currentSiegeName, siegeLeader.getDisplayName(), timeLeft/60 ));
+					}
+				} else {
+					if(siegeLeaderShipInRegion==true) {
+						Bukkit.getServer().broadcastMessage(String.format("The Siege of %s has succeeded! The forces of %s have been victorious!"
+								, Movecraft.getInstance().currentSiegeName, siegeLeader.getDisplayName()));						
+						ProtectedRegion controlRegion=Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(siegeLeader.getWorld()).getRegion(Settings.SiegeControlRegion.get(Movecraft.getInstance().currentSiegeName));
+						DefaultDomain newOwner=new DefaultDomain();
+						newOwner.addPlayer(Movecraft.getInstance().currentSiegePlayer);
+						controlRegion.setOwners(newOwner);
+						DefaultDomain newMember=new DefaultDomain();
+						newOwner.addPlayer(Movecraft.getInstance().currentSiegePlayer);
+						controlRegion.setMembers(newMember);
+					} else {
+						Bukkit.getServer().broadcastMessage(String.format("The Siege of %s has failed! The forces of %s have been crushed!"
+								, Movecraft.getInstance().currentSiegeName, siegeLeader.getDisplayName()));						
+					}
+					Movecraft.getInstance().currentSiegeName=null;
+					Movecraft.getInstance().siegeInProgress=false;
+				}
+			}
+		}
+		// and now process payments every morning at 1:01 AM, as long as it has been 23 hours after the last payout
+		long secsElapsed=( System.currentTimeMillis() - lastSiegePayout ) / 1000;
+		if(secsElapsed > 23 * 60 * 60) {
+			Calendar rightNow = Calendar.getInstance();
+    		int hour = rightNow.get(Calendar.HOUR_OF_DAY);
+    		int minute = rightNow.get(Calendar.MINUTE);
+    		if((hour==1)&&(minute==1)) {
+    			lastSiegePayout=System.currentTimeMillis();
+    			for (String tSiegeName : Settings.SiegeName) {
+    				int payment=Settings.SiegeIncome.get(tSiegeName);
+    				for(World tW : Movecraft.getInstance().getServer().getWorlds()) {
+    					ProtectedRegion tRegion=Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(tW).getRegion(Settings.SiegeControlRegion.get(tSiegeName));
+    					if(tRegion!=null) {
+    						for(String tPlayerName : tRegion.getOwners().getPlayers()) {
+    							int share=payment / tRegion.getOwners().getPlayers().size();
+    							Movecraft.getInstance().getEconomy().depositPlayer(tPlayerName, share);
+    							Movecraft.getInstance().getLogger().log( Level.INFO,String.format("Player %s paid %d for their ownership in %s",tPlayerName,share,tSiegeName));
+    						}
+    					}
+    				}
+    			}
+    		}
+		}
+	}
 
 	public void run() {
 		clearAll();
@@ -1008,6 +1096,7 @@ public class AsyncManager extends BukkitRunnable {
 		processTNTContactExplosives();
 		processFadingBlocks();
 		processDetection();
+		processSiege();
 		processAlgorithmQueue();
 	}
 
