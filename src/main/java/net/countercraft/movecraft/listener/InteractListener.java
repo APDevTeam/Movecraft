@@ -101,28 +101,24 @@ public class InteractListener implements Listener {
 						if(tb.getType().equals(Material.SIGN_POST) || tb.getType().equals(Material.WALL_SIGN)) {
 							Sign ts=( Sign ) tb.getState();
 							if(org.bukkit.ChatColor.stripColor(ts.getLine(0))!=null) 
-								if((foundCraft.getType().blockRemoteRotate()==false) || (org.bukkit.ChatColor.stripColor(ts.getLine(0)).equalsIgnoreCase("\\  ||  /")==false)) {
-									if(org.bukkit.ChatColor.stripColor(ts.getLine(0))!=null) 
-										if(org.bukkit.ChatColor.stripColor(ts.getLine(0)).equalsIgnoreCase(targetText))
+								if(org.bukkit.ChatColor.stripColor(ts.getLine(0))!=null) 
+									if(org.bukkit.ChatColor.stripColor(ts.getLine(0)).equalsIgnoreCase(targetText))
+										foundLoc=tloc;
+								if(org.bukkit.ChatColor.stripColor(ts.getLine(1))!=null) 
+									if(org.bukkit.ChatColor.stripColor(ts.getLine(1)).equalsIgnoreCase(targetText)) {
+										boolean isRemoteSign=false;
+										if(org.bukkit.ChatColor.stripColor(ts.getLine(0))!=null)
+											if(org.bukkit.ChatColor.stripColor(ts.getLine(0)).equalsIgnoreCase("Remote Sign"))
+												isRemoteSign=true;
+										if(!isRemoteSign)
 											foundLoc=tloc;
-									if(org.bukkit.ChatColor.stripColor(ts.getLine(1))!=null) 
-										if(org.bukkit.ChatColor.stripColor(ts.getLine(1)).equalsIgnoreCase(targetText)) {
-											boolean isRemoteSign=false;
-											if(org.bukkit.ChatColor.stripColor(ts.getLine(0))!=null)
-												if(org.bukkit.ChatColor.stripColor(ts.getLine(0)).equalsIgnoreCase("Remote Sign"))
-													isRemoteSign=true;
-											if(!isRemoteSign)
-												foundLoc=tloc;
-										}
-									if(org.bukkit.ChatColor.stripColor(ts.getLine(2))!=null) 
-										if(org.bukkit.ChatColor.stripColor(ts.getLine(2)).equalsIgnoreCase(targetText))
-											foundLoc=tloc;
-									if(org.bukkit.ChatColor.stripColor(ts.getLine(3))!=null) 
-										if(org.bukkit.ChatColor.stripColor(ts.getLine(3)).equalsIgnoreCase(targetText))
-											foundLoc=tloc;
-								} else {
-									event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "ERROR: Remote rotations are blocked on this craft type" ) ) );
-								}
+									}
+								if(org.bukkit.ChatColor.stripColor(ts.getLine(2))!=null) 
+									if(org.bukkit.ChatColor.stripColor(ts.getLine(2)).equalsIgnoreCase(targetText))
+										foundLoc=tloc;
+								if(org.bukkit.ChatColor.stripColor(ts.getLine(3))!=null) 
+									if(org.bukkit.ChatColor.stripColor(ts.getLine(3)).equalsIgnoreCase(targetText))
+										foundLoc=tloc;
 						}
 					}
 					if(foundLoc==null) {
@@ -177,8 +173,12 @@ public class InteractListener implements Listener {
 							}
 
 							if ( MathUtils.playerIsWithinBoundingPolygon( craft.getHitBox(), craft.getMinX(), craft.getMinZ(), MathUtils.bukkit2MovecraftLoc( event.getPlayer().getLocation() ) ) ) {
-
-								CraftManager.getInstance().getCraftByPlayer( event.getPlayer() ).rotate( Rotation.ANTICLOCKWISE, MathUtils.bukkit2MovecraftLoc( sign.getLocation() ) );
+								if(craft.getType().rotateAtMidpoint()==true) {
+									MovecraftLocation midpoint=new MovecraftLocation((craft.getMaxX()+craft.getMinX())/2,(craft.getMaxY()+craft.getMinY())/2,(craft.getMaxZ()+craft.getMinZ())/2);
+									CraftManager.getInstance().getCraftByPlayer( event.getPlayer() ).rotate( Rotation.ANTICLOCKWISE, midpoint );									
+								} else {
+									CraftManager.getInstance().getCraftByPlayer( event.getPlayer() ).rotate( Rotation.ANTICLOCKWISE, MathUtils.bukkit2MovecraftLoc( sign.getLocation() ) );
+								}
 
 								timeMap.put( event.getPlayer(), System.currentTimeMillis() );
 								event.setCancelled( true );
@@ -322,9 +322,13 @@ public class InteractListener implements Listener {
 					}
 
 					if ( MathUtils.playerIsWithinBoundingPolygon( craft.getHitBox(), craft.getMinX(), craft.getMinZ(), MathUtils.bukkit2MovecraftLoc( event.getPlayer().getLocation() ) ) ) {
-
-						CraftManager.getInstance().getCraftByPlayer( event.getPlayer() ).rotate( Rotation.CLOCKWISE, MathUtils.bukkit2MovecraftLoc( sign.getLocation() ) );
-
+						if(craft.getType().rotateAtMidpoint()==true) {
+							MovecraftLocation midpoint=new MovecraftLocation((craft.getMaxX()+craft.getMinX())/2,(craft.getMaxY()+craft.getMinY())/2,(craft.getMaxZ()+craft.getMinZ())/2);
+							CraftManager.getInstance().getCraftByPlayer( event.getPlayer() ).rotate( Rotation.CLOCKWISE, midpoint );									
+						} else {
+							CraftManager.getInstance().getCraftByPlayer( event.getPlayer() ).rotate( Rotation.CLOCKWISE, MathUtils.bukkit2MovecraftLoc( sign.getLocation() ) );
+						}
+						
 						timeMap.put( event.getPlayer(), System.currentTimeMillis() );
 						event.setCancelled( true );
 

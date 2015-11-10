@@ -25,7 +25,7 @@ import at.pavlov.cannons.Cannons;
 
 
 
-// essentials repo is down import com.earth2me.essentials.Essentials;
+import com.earth2me.essentials.Essentials;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 
@@ -75,7 +75,7 @@ public class Movecraft extends JavaPlugin {
         private static Economy economy;
 	private static Cannons cannonsPlugin=null;
         private static Towny townyPlugin = null;
-//	private static Essentials essentialsPlugin = null; Essentials repo is down
+	private static Essentials essentialsPlugin = null; 
         public static StateFlag FLAG_PILOT = null; //new StateFlag("movecraft-pilot", true);
         public static StateFlag FLAG_MOVE = null; //new StateFlag("movecraft-move", true);
         public static StateFlag FLAG_ROTATE = null; //new StateFlag("movecraft-rotate", true);
@@ -249,7 +249,7 @@ public class Movecraft extends JavaPlugin {
                 }else{
                     logger.log(Level.INFO, "Movecraft did not find a compatible version of Towny. Disabling Towny integration.");
                 }
-/* Essentials repo is down
+
                 Plugin tempEssentialsPlugin = getServer().getPluginManager().getPlugin("Essentials");
                 if (tempEssentialsPlugin  != null){
                     if (tempEssentialsPlugin.getDescription().getName().equalsIgnoreCase("essentials")){
@@ -263,7 +263,7 @@ public class Movecraft extends JavaPlugin {
                 }
                 if (essentialsPlugin == null){
                     logger.log(Level.INFO, "Movecraft did not find a compatible version of Essentials. Disabling Essentials integration.");
-                }*/
+                }
         
         // and now Vault
         if (getServer().getPluginManager().getPlugin("Vault") != null) {
@@ -381,10 +381,10 @@ public class Movecraft extends JavaPlugin {
         public Towny getTownyPlugin(){
             return townyPlugin;
         }
-   /* Essentials repo is down     
+    
         public Essentials getEssentialsPlugin(){
             return essentialsPlugin;
         }
-        */
+        
 }
 

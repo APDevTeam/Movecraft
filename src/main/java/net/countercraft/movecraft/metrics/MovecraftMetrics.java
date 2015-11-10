@@ -20,7 +20,7 @@ package net.countercraft.movecraft.metrics;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import org.mcstats.Metrics;
+// removed because repo is down import org.mcstats.Metrics;
 
 import java.io.IOException;
 import java.util.logging.Level;
@@ -30,9 +30,9 @@ public class MovecraftMetrics {
 
 	public MovecraftMetrics( int classTypes ) {
 		this.classTypes = classTypes;
-		uploadStatistics();
+// removed because repo is down		uploadStatistics();
 	}
-
+/* removed becuase repo is down
 	private void uploadStatistics() {
 		try {
 			Metrics metrics = new Metrics( Movecraft.getInstance() );
@@ -63,6 +63,6 @@ public class MovecraftMetrics {
 		} catch ( IOException e ) {
 			Movecraft.getInstance().getLogger().log( Level.WARNING, String.format( I18nSupport.getInternationalisedString( "MCStats - Error - Unable to upload stats" ) ) );
 		}
-	}
+	}*/
 
 }

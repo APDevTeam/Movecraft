@@ -41,10 +41,10 @@
     </scm>
 
     <repositories>
-        <repository>
+<!--  removed because repo is down        <repository>
         	<id>Plugin Metrics</id>
         	<url>http://repo.mcstats.org/content/repositories/public</url>
-        </repository>
+        </repository>-->
         <repository>
         	<id>bukkit-repo</id>
         	<url>http://repo.bukkit.org/content/groups/public/</url>
@@ -65,12 +65,10 @@
             <id>vault-repo</id>
             <url>http://nexus.theyeticave.net/content/repositories/pub_releases</url>
         </repository>
-<!-- essentials repo is down, taking this out until it is back up
         <repository>
             <id>ess-repo</id>
             <url>http://repo.ess3.net/content/groups/essentials</url>
         </repository>
-         -->
     </repositories>
 
     <build>
@@ -134,12 +132,12 @@
     </build>
 
     <dependencies>
-        <dependency>
+        <!--  removed because repo is down <dependency>
             <groupId>org.mcstats.bukkit</groupId>
             <artifactId>metrics</artifactId>
             <version>R8-SNAPSHOT</version>
             <scope>compile</scope>
-        </dependency>
+        </dependency>-->
 
         <dependency>
             <groupId>org.yaml</groupId>
@@ -203,13 +201,11 @@
             <version>1.5</version>
             <scope>provided</scope>
         </dependency>
-        <!-- Essentials repo has been down all day, removing to see if I can get this working
         <dependency>
             <groupId>net.ess3</groupId>
             <artifactId>Essentials</artifactId>
             <version>2.13.1</version>
         </dependency> 
-         -->
         <!-- This doesn't have a maven repo but its own -->
         <dependency>
             <groupId>com.palmergames</groupId>
