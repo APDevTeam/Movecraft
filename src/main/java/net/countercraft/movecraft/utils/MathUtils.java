@@ -55,15 +55,21 @@ public class MathUtils {
 
 	public static MovecraftLocation rotateVec( Rotation r, MovecraftLocation l ) {
 		MovecraftLocation newLocation = new MovecraftLocation( 0, l.getY(), 0 );
-		double theta;
+		// double theta;
+		
+		int cos = 0; // SINE OF 90 OR -90 DEGREES
+		int sin = (r == Rotation.CLOCKWISE) ? 1 : -1; // SINE OF 90 DEGREES OR -90 DEGREES
+		
+		/* This is wasteful
 		if ( r == Rotation.CLOCKWISE ) {
 			theta = 0.5 * Math.PI;
 		} else {
 			theta = -1 * 0.5 * Math.PI;
-		}
-
-		int x = ( int ) Math.round( ( l.getX() * Math.cos( theta ) ) + ( l.getZ() * ( -1 * Math.sin( theta ) ) ) );
-		int z = ( int ) Math.round( ( l.getX() * Math.sin( theta ) ) + ( l.getZ() * Math.cos( theta ) ) );
+		} */
+		
+		// We can just work with ints here, no doubles needed
+		int x = /* ( int ) Math.round */( ( l.getX() * cos ) + ( l.getZ() * -sin ) );
+		int z = /* ( int ) Math.round */( ( l.getX() * sin ) + ( l.getZ() * cos ) );
 
 		newLocation.setX( x );
 		newLocation.setZ( z );
@@ -72,29 +78,41 @@ public class MathUtils {
 	}
 
 	public static double[] rotateVec( Rotation r, double x, double z ) {
+		
+		int cos = 0;
+		int sin = (r == Rotation.CLOCKWISE) ? 1 : -1;
+		
+		/*
 		double theta;
 		if ( r == Rotation.CLOCKWISE ) {
 			theta = 0.5 * Math.PI;
 		} else {
 			theta = -1 * 0.5 * Math.PI;
 		}
+		*/
 
-		double newX = Math.round( ( x * Math.cos( theta ) ) + ( z * ( -1 * Math.sin( theta ) ) ) );
-		double newZ = Math.round( ( x * Math.sin( theta ) ) + ( z * Math.cos( theta ) ) );
+		double newX = /*Math.round*/( ( x * cos ) + ( z * -sin ) );
+		double newZ = /*Math.round*/( ( x * sin ) + ( z * cos ) );
 
 		return new double[]{ newX, newZ };
 	}
 
 	public static double[] rotateVecNoRound( Rotation r, double x, double z ) {
+		
+		int cos = 0;
+		int sin = (r == Rotation.CLOCKWISE) ? 1 : -1;
+		
+		/*
 		double theta;
 		if ( r == Rotation.CLOCKWISE ) {
 			theta = 0.5 * Math.PI;
 		} else {
 			theta = -1 * 0.5 * Math.PI;
 		}
+		*/
 
-		double newX =  ( x * Math.cos( theta ) ) + ( z * ( -1 * Math.sin( theta ) ) ) ;
-		double newZ =  ( x * Math.sin( theta ) ) + ( z * Math.cos( theta ) ) ;
+		double newX =  ( x * cos ) + ( z * -sin ) ;
+		double newZ =  ( x * sin ) + ( z * cos ) ;
 
 		return new double[]{ newX, newZ };
 	}
