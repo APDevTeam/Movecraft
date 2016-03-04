@@ -30,10 +30,10 @@ import net.countercraft.movecraft.utils.datastructures.SignTransferHolder;
 import net.countercraft.movecraft.utils.datastructures.CommandBlockTransferHolder;
 import net.countercraft.movecraft.utils.datastructures.StorageCrateTransferHolder;
 import net.countercraft.movecraft.utils.datastructures.TransferData;
-import net.minecraft.server.v1_8_R2.BlockPosition;
-import net.minecraft.server.v1_8_R2.ChunkCoordIntPair;
-import net.minecraft.server.v1_8_R2.EnumSkyBlock;
-import net.minecraft.server.v1_8_R2.IBlockData;
+import net.minecraft.server.v1_8_R3.BlockPosition;
+import net.minecraft.server.v1_8_R3.ChunkCoordIntPair;
+import net.minecraft.server.v1_8_R3.EnumSkyBlock;
+import net.minecraft.server.v1_8_R3.IBlockData;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
@@ -45,10 +45,10 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.block.CommandBlock;
-import org.bukkit.craftbukkit.v1_8_R2.CraftChunk;
-import org.bukkit.craftbukkit.v1_8_R2.CraftWorld;
-import org.bukkit.craftbukkit.v1_8_R2.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_8_R2.util.CraftMagicNumbers;
+import org.bukkit.craftbukkit.v1_8_R3.CraftChunk;
+import org.bukkit.craftbukkit.v1_8_R3.CraftWorld;
+import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_8_R3.util.CraftMagicNumbers;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
@@ -70,7 +70,7 @@ import java.io.StringWriter;
 import java.util.*;
 import java.util.logging.Level;
 
-import net.minecraft.server.v1_8_R2.EntityTNTPrimed;
+import net.minecraft.server.v1_8_R3.EntityTNTPrimed;
 
 import org.bukkit.event.entity.ExplosionPrimeEvent;
 
@@ -90,7 +90,7 @@ public class MapUpdateManager extends BukkitRunnable {
 		private static final MapUpdateManager INSTANCE = new MapUpdateManager();
 	}
 	
-	private void updateBlock(MapUpdateCommand m, World w, Map<MovecraftLocation, TransferData> dataMap, Set<net.minecraft.server.v1_8_R2.Chunk> chunks, Set<Chunk> cmChunks, HashMap<MovecraftLocation, Byte> origLightMap, boolean placeDispensers) {
+	private void updateBlock(MapUpdateCommand m, World w, Map<MovecraftLocation, TransferData> dataMap, Set<net.minecraft.server.v1_8_R3.Chunk> chunks, Set<Chunk> cmChunks, HashMap<MovecraftLocation, Byte> origLightMap, boolean placeDispensers) {
 		MovecraftLocation workingL = m.getNewBlockLocation();
 		final int[] blocksToBlankOut = new int[]{ 54, 61, 62, 63, 68, 116, 117, 146, 149, 150, 154, 158, 145 };		
 
@@ -108,7 +108,7 @@ public class MapUpdateManager extends BukkitRunnable {
 		
 		chunk = w.getBlockAt( x, y, z ).getChunk();
 
-		net.minecraft.server.v1_8_R2.Chunk c = null;
+		net.minecraft.server.v1_8_R3.Chunk c = null;
 		Chunk cmC = null;
 		if(Settings.CompatibilityMode) {
 			cmC = chunk;
@@ -332,7 +332,7 @@ public class MapUpdateManager extends BukkitRunnable {
 		}
 	}
 	
-	private void runQueue(final ArrayList<MapUpdateCommand> queuedMapUpdateCommands, final ArrayList<Boolean> queuedPlaceDispensers, final World w, final Set<net.minecraft.server.v1_8_R2.Chunk> chunks, final Set<Chunk> cmChunks, 
+	private void runQueue(final ArrayList<MapUpdateCommand> queuedMapUpdateCommands, final ArrayList<Boolean> queuedPlaceDispensers, final World w, final Set<net.minecraft.server.v1_8_R3.Chunk> chunks, final Set<Chunk> cmChunks, 
 			  			  final HashMap<MovecraftLocation, Byte> origLightMap, final Map<MovecraftLocation, TransferData> dataMap, final List<MapUpdateCommand> updatesInWorld, final Map<MovecraftLocation, List<EntityUpdateCommand>> entityMap) {
 		int numToRun=queuedMapUpdateCommands.size();
 		if(numToRun>Settings.BlockQueueChunkSize)
@@ -389,7 +389,7 @@ public class MapUpdateManager extends BukkitRunnable {
 					Location loc=new Location(w,c.getNewBlockLocation().getX(),c.getNewBlockLocation().getY(),c.getNewBlockLocation().getZ());
 					w.getBlockAt(loc).getState().update();
 				}
-//				for ( net.minecraft.server.v1_8_R2.Chunk c : chunks ) {
+//				for ( net.minecraft.server.v1_8_R3.Chunk c : chunks ) {
 //					c.initLighting();
 //				}
 /*				for(MovecraftLocation mloc : origLightMap.keySet()) {
@@ -436,7 +436,7 @@ public class MapUpdateManager extends BukkitRunnable {
                                 Map<MovecraftLocation, List<ItemDropUpdateCommand>> itemMap = new HashMap<MovecraftLocation, List<ItemDropUpdateCommand>>();
 				Map<MovecraftLocation, TransferData> dataMap = new HashMap<MovecraftLocation, TransferData>();
 				HashMap<MovecraftLocation, Byte> origLightMap = new HashMap<MovecraftLocation, Byte>();
-				Set<net.minecraft.server.v1_8_R2.Chunk> chunks = null; 
+				Set<net.minecraft.server.v1_8_R3.Chunk> chunks = null; 
 				Set<Chunk> cmChunks = null;
 				ArrayList<MapUpdateCommand> queuedMapUpdateCommands = new ArrayList<MapUpdateCommand>();
 				ArrayList<Boolean> queuedPlaceDispensers = new ArrayList<Boolean>();
@@ -444,7 +444,7 @@ public class MapUpdateManager extends BukkitRunnable {
 				if(Settings.CompatibilityMode) {
 					cmChunks = new HashSet<Chunk>();					
 				} else {
-					chunks = new HashSet<net.minecraft.server.v1_8_R2.Chunk>();
+					chunks = new HashSet<net.minecraft.server.v1_8_R3.Chunk>();
 				}
                                 
 				// Preprocessing
@@ -695,7 +695,7 @@ public class MapUpdateManager extends BukkitRunnable {
 					// update signs, inventories, other special data
 					updateData(dataMap, w);
 					
-					for ( net.minecraft.server.v1_8_R2.Chunk c : chunks ) {
+					for ( net.minecraft.server.v1_8_R3.Chunk c : chunks ) {
 //						c.initLighting();
 						ChunkCoordIntPair ccip = new ChunkCoordIntPair( c.locX, c.locZ ); // changed from c.x to c.locX and c.locZ
 
@@ -947,10 +947,10 @@ public class MapUpdateManager extends BukkitRunnable {
         e.setLocation(loc.getX(),loc.getBlockY(), loc.getBlockZ(), 0f, 0f);
         e.setSize(0.89F, 0.89F);
         e.setInvisible(true);
-        org.bukkit.craftbukkit.v1_8_R2.CraftWorld craftWorld = (CraftWorld) loc.getWorld();
-        org.bukkit.craftbukkit.v1_8_R2.CraftServer server = craftWorld.getHandle().getServer();
+        org.bukkit.craftbukkit.v1_8_R3.CraftWorld craftWorld = (CraftWorld) loc.getWorld();
+        org.bukkit.craftbukkit.v1_8_R3.CraftServer server = craftWorld.getHandle().getServer();
         
-        ExplosionPrimeEvent event = new ExplosionPrimeEvent((org.bukkit.entity.Explosive) org.bukkit.craftbukkit.v1_8_R2.entity.CraftEntity.getEntity(server, e));
+        ExplosionPrimeEvent event = new ExplosionPrimeEvent((org.bukkit.entity.Explosive) org.bukkit.craftbukkit.v1_8_R3.entity.CraftEntity.getEntity(server, e));
         event.setRadius(explosionPower);
         server.getPluginManager().callEvent(event);
 

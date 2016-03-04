@@ -138,7 +138,7 @@
     <dependency>
       <groupId>org.bukkit</groupId>
       <artifactId>bukkit</artifactId>
-      <version>1.8.3-R0.1-SNAPSHOT</version>
+      <version>1.8.7-R0.1-SNAPSHOT</version>
       <scope>provided</scope>
       <exclusions>
         <exclusion>
@@ -150,8 +150,9 @@
     <dependency>
       <groupId>org.bukkit</groupId>
       <artifactId>craftbukkit</artifactId>
-      <version>1.8.3-R0.1-SNAPSHOT</version>
-      <scope>compile</scope>
+      <version>1.8.7-R0.1-SNAPSHOT</version>
+      <scope>system</scope>
+      <systemPath>C:\Users\Mark Summers\git\Movecraft-3/libs/craftbukkit.jar</systemPath>
     </dependency>
     <dependency>
       <groupId>net.milkbowl.vault</groupId>
