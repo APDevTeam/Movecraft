@@ -19,6 +19,7 @@ package net.countercraft.movecraft.listener;
 
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.TimeZone;
 import java.util.logging.Level;
 
 import net.countercraft.movecraft.Movecraft;
@@ -434,7 +435,7 @@ public class CommandListener implements CommandExecutor {
             	}
 
             	if(Movecraft.getInstance().getEconomy().has(player, cost)) {
-            		Calendar rightNow = Calendar.getInstance();
+            		Calendar rightNow = Calendar.getInstance(TimeZone.getTimeZone("MST"));
             		int hour = rightNow.get(Calendar.HOUR_OF_DAY);
             		int minute = rightNow.get(Calendar.MINUTE);
             		int currMilitaryTime=hour*100+minute;
