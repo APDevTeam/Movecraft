@@ -113,6 +113,23 @@ public class BlockListener implements Listener {
 		if ( e.isCancelled() ) {
 			return;
 		}
+		if(Settings.ProtectPilotedCrafts) {
+			MovecraftLocation mloc=MathUtils.bukkit2MovecraftLoc(e.getBlock().getLocation());
+			boolean blockInCraft=false;
+			if(CraftManager.getInstance().getCraftsInWorld(e.getBlock().getWorld())!=null)
+				for(Craft craft : CraftManager.getInstance().getCraftsInWorld(e.getBlock().getWorld())) {
+					if(craft!=null) {
+						for(MovecraftLocation tloc : craft.getBlockList()) {
+							if(tloc.getX()==mloc.getX() && tloc.getY()==mloc.getY() && tloc.getZ()==mloc.getZ())
+								blockInCraft=true;
+						}
+					}				
+				}
+			if(blockInCraft) {
+				e.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "BLOCK IS PART OF A PILOTED CRAFT" ) ) );
+				e.setCancelled(true);
+			}
+		}
 		if ( e.getBlock().getTypeId() == 33 && e.getBlock().getData() == ( ( byte ) 6 ) ) {
 			if(Settings.DisableCrates==true)
 				return;

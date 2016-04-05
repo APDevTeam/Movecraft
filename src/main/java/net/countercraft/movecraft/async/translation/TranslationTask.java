@@ -1214,8 +1214,8 @@ public class TranslationTask extends AsyncTask {
                 mat.equals(Material.WOODEN_DOOR)
             || 
                 mat.equals(Material.IRON_DOOR_BLOCK)
-            || 
-                mat.equals(Material.BANNER)
+//            ||                            
+//                mat.equals(Material.BANNER)    // Aparently Material.Banner was removed from the class
         ){
             if (getCraft().getW().getBlockAt( loc.getX(), loc.getY()+1, loc.getZ() ).getType().equals(mat)){
                 MovecraftLocation tmpLoc = loc.translate(0, 1, 0);

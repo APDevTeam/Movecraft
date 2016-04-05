@@ -134,6 +134,7 @@ public class Movecraft extends JavaPlugin {
 		Settings.FireballLifespan = getConfig().getInt("FireballLifespan", 6);
 		Settings.FireballPenetration = getConfig().getBoolean("FireballPenetration", true);
 		Settings.BlockQueueChunkSize = getConfig().getInt("BlockQueueChunkSize", 1000);
+		Settings.ProtectPilotedCrafts = getConfig().getBoolean("ProtectPilotedCrafts", false);
 		Settings.AllowCrewSigns = getConfig().getBoolean("AllowCrewSigns", true);
 		Settings.SetHomeToCrewSign = getConfig().getBoolean("SetHomeToCrewSign", true);
 		Settings.RequireCreatePerm = getConfig().getBoolean("RequireCreatePerm", false);

@@ -38,6 +38,7 @@ public class Settings {
 	public static boolean WorldGuardBlockMoveOnBuildPerm = false;
 	public static boolean WorldGuardBlockSinkOnPVPPerm = false;
 	public static boolean DisableCrates = false;
+	public static boolean ProtectPilotedCrafts = false;
 	public static boolean DisableSpillProtection = false;
 	public static boolean RequireCreatePerm = false;
 	public static boolean TNTContactExplosives = true;

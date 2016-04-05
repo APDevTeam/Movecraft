@@ -9,6 +9,7 @@ WorldGuardBlockSinkOnPVPPerm: true
 ManOverBoardTimeout: 30
 FireballLifespan: 6
 FireballPenetration: true
+ProtectPilotedCrafts: true
 DisableSpillProtection: false
 RequireCreatePerm: false
 TNTContactExplosives: true
