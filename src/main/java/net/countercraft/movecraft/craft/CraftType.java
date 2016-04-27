@@ -36,6 +36,7 @@ import java.util.List;
 import org.bukkit.Material;
 
 import java.util.logging.Level;
+import net.countercraft.movecraft.utils.MovecraftLocation;
 
 public class CraftType {
 	private String craftName;
@@ -65,6 +66,7 @@ public class CraftType {
 	private int hoverLimit;
 	private List<Material> harvestBlocks;
         private List<Material> harvesterBladeBlocks;
+        private MovecraftLocation maxRotateOffset = new MovecraftLocation(0, 0, 0);
 	        
 	public CraftType( File f ) {
 		try {
@@ -432,6 +434,21 @@ public class CraftType {
             }else{
                 allowVerticalTakeoffAndLanding = true;
             }
+            if (data.containsKey("maxRotateOffset")){
+              HashMap<Object, Object> tmpMaxRotateOffset =(HashMap<Object, Object>) data.get("maxRotateOffset");
+              for(Object i : tmpMaxRotateOffset.keySet()) {
+                if(i instanceof String) {
+                  String str=(String)i;  
+                  if(str.equalsIgnoreCase("x")) {
+                    maxRotateOffset.setX(integerFromObject(tmpMaxRotateOffset.get(i))); 
+                  }else if(str.equalsIgnoreCase("y")) {
+                    maxRotateOffset.setY(integerFromObject(tmpMaxRotateOffset.get(i))); 
+                  }else if(str.equalsIgnoreCase("z")) {
+                    maxRotateOffset.setZ(integerFromObject(tmpMaxRotateOffset.get(i))); 
+                  }
+                } 
+              }
+            }
 	}
 
 	public String getCraftName() {
@@ -617,5 +634,8 @@ public class CraftType {
     
     public boolean  allowVerticalTakeoffAndLanding(){
         return allowVerticalTakeoffAndLanding;
+    }
+    public MovecraftLocation getMaxRotateOffset(){
+      return maxRotateOffset;
     }
 }
