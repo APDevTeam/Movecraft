@@ -112,6 +112,9 @@
                                     <exclude>com.google.guava</exclude>
                                     <exclude>com.google.code.findbugs:jsr305</exclude>
                                     <exclude>net.ess3:Essentials</exclude>
+                                    <exclude>com.palmergames:Towny</exclude>
+                                    <exclude>net.milkbowl.vault:VaultAPI</exclude>
+                                    <exclude>com.mewin:WGCustomFlags</exclude>
                                 </excludes>
                             </artifactSet>
                             <minimizeJar>true</minimizeJar>
@@ -174,7 +177,13 @@
 	        <groupId>at.pavlov</groupId>
     	    <artifactId>Cannons</artifactId>
         	<version>LATEST</version>
-    	</dependency>
+        	<exclusions>
+        		<exclusion>
+        			<artifactId>dummypermscompat</artifactId>
+        			<groupId>com.sk89q</groupId>
+        		</exclusion>
+        	</exclusions>
+        </dependency>
     	
   <!--   	<dependency>
             <groupId>org.spigotmc</groupId>
@@ -185,7 +194,7 @@
         <dependency>
             <groupId>org.bukkit</groupId>
             <artifactId>bukkit</artifactId>
-            <version>1.8.7-R0.1-SNAPSHOT</version>
+            <version>1.9.2-R0.1-SNAPSHOT</version>
             <type>jar</type>
             <scope>provided</scope>
         </dependency>
@@ -193,7 +202,7 @@
 		<dependency>
             <groupId>org.bukkit</groupId>
             <artifactId>craftbukkit</artifactId>
-            <version>1.8.7-R0.1-SNAPSHOT</version>
+            <version>1.9.2-R0.1-SNAPSHOT</version>
             <scope>system</scope>
             <systemPath>${project.basedir}/libs/craftbukkit.jar</systemPath>
         </dependency>

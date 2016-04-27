@@ -1,5 +1,5 @@
 Locale: en
-CompatibilityMode: true
+CompatibilityMode: false
 SinkRateTicks: 20
 SinkCheckTicks: 100
 TracerRateTicks: 5
@@ -13,11 +13,11 @@ ProtectPilotedCrafts: true
 DisableSpillProtection: false
 RequireCreatePerm: false
 TNTContactExplosives: true
-DisableCrates: false
+DisableCrates: true
 FadeWrecksAfter: 0
 RepairTicksPerBlock: 10
 RepairMoneyPerBlock: 10
-BlockQueueChunkSize: 1000
+BlockQueueChunkSize: 2000
 AllowCrewSigns: true
 SetHomeToCrewSign: false
 WGCustomFlagsUsePilotFlag: false

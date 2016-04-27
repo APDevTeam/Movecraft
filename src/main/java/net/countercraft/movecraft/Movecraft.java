@@ -120,7 +120,7 @@ public class Movecraft extends JavaPlugin {
 		Settings.CompatibilityMode = getConfig().getBoolean("CompatibilityMode", false);
 		if(Settings.CompatibilityMode==false) {
 			try {
-				 	Class.forName( "net.minecraft.server.v1_8_R3.Chunk" );
+				 	Class.forName( "net.minecraft.server.v1_9_R1.Chunk" );
 				} catch( ClassNotFoundException e ) {
 					Settings.CompatibilityMode=true;
 					logger.log(Level.INFO, "WARNING: CompatibilityMode was set to false, but required build-specific classes were not found. FORCING COMPATIBILITY MODE");
