@@ -182,6 +182,10 @@
         			<artifactId>dummypermscompat</artifactId>
         			<groupId>com.sk89q</groupId>
         		</exclusion>
+        		<exclusion>
+        			<artifactId>worldedit-bukkit</artifactId>
+        			<groupId>com.sk89q.worldedit</groupId>
+        		</exclusion>
         	</exclusions>
         </dependency>
     	

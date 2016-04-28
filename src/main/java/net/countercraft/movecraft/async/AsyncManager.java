@@ -978,13 +978,13 @@ public class AsyncManager extends BukkitRunnable {
 												notification+=" north.";
 											
 										ccraft.getNotificationPlayer().sendMessage(notification);
-										w.playSound(ccraft.getNotificationPlayer().getLocation(), Sound.ANVIL_LAND, 1.0f, 2.0f);
+										w.playSound(ccraft.getNotificationPlayer().getLocation(), Sound.BLOCK_ANVIL_LAND, 1.0f, 2.0f);
 										final World sw=w;
 										final Player sp=ccraft.getNotificationPlayer();
 										BukkitTask replaysound = new BukkitRunnable() {
 											@Override
 											public void run() {
-												sw.playSound(sp.getLocation(), Sound.ANVIL_LAND, 10.0f, 2.0f);
+												sw.playSound(sp.getLocation(), Sound.BLOCK_ANVIL_LAND, 10.0f, 2.0f);
 											}
 										}.runTaskLater( Movecraft.getInstance(), ( 5 ) );
 

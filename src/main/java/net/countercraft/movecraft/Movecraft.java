@@ -178,7 +178,7 @@ public class Movecraft extends JavaPlugin {
 				Settings.SiegeDelay.put(siegeName, (Integer)siegesMap.get(siegeName).get("DelayBeforeStart"));
 				Settings.SiegeDuration.put(siegeName, (Integer)siegesMap.get(siegeName).get("SiegeDuration"));
 			}
-			logger.log(Level.INFO, "Siege configuration loaded");
+			logger.log(Level.INFO, "Siege configuration loaded.");
 		}
 		//load up WorldGuard if it's present
 		Plugin wGPlugin=getServer().getPluginManager().getPlugin("WorldGuard");

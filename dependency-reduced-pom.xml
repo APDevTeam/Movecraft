@@ -142,6 +142,10 @@
           <artifactId>dummypermscompat</artifactId>
           <groupId>com.sk89q</groupId>
         </exclusion>
+        <exclusion>
+          <artifactId>worldedit-bukkit</artifactId>
+          <groupId>com.sk89q.worldedit</groupId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -149,6 +153,12 @@
       <artifactId>bukkit</artifactId>
       <version>1.9.2-R0.1-SNAPSHOT</version>
       <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>gson</artifactId>
+          <groupId>com.google.code.gson</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.bukkit</groupId>
