@@ -246,6 +246,13 @@ public class BlockListener implements Listener {
 //				event.setCancelled(true);
 			}
         }
+        
+        if(signText.equalsIgnoreCase( "Pilot:")) {
+            String crewName=org.bukkit.ChatColor.stripColor(event.getLine(1));
+        	if(p.getName().isEmpty) {
+				event.setLine(1, p.getName());
+		}
+        }
     }
 	
 	@EventHandler(priority = EventPriority.LOW)
