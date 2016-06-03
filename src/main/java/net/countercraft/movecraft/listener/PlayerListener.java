@@ -242,7 +242,7 @@ public class PlayerListener implements Listener {
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onAsyncPlayerChat(AsyncPlayerChatEvent event) {
   		if (waitingForReleaseConfirmation) {
-  			if (event.getMessage() == "release") {
+  			if (event.getMessage().equalsIgnoreCase("release")) {
   				waitingForReleaseConfirmation = false;
   				
   				BukkitTask releaseTask = new BukkitRunnable() {
