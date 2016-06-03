@@ -40,9 +40,9 @@ import org.bukkit.scheduler.BukkitTask;
 
 public class PlayerListener implements Listener {
 	
-	private static boolean waitingForReleaseConfirmation = false;
+	public static boolean waitingForReleaseConfirmation = false;
 	
-	private String checkCraftBorders(Craft craft) {
+	public String checkCraftBorders(Craft craft) {
 		HashSet<MovecraftLocation> craftBlocks=new HashSet<MovecraftLocation>(Arrays.asList(craft.getBlockList()));
 		String ret=null;
 		for(MovecraftLocation block : craftBlocks) {
