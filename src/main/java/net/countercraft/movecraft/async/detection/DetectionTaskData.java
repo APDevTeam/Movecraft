@@ -33,13 +33,15 @@ public class DetectionTaskData {
 	private int[][][] hitBox;
 	private Integer minX, minZ;
 	private Integer[] allowedBlocks, forbiddenBlocks;
+	private String[] forbiddenSignStrings;
 
-	public DetectionTaskData( World w, Player player, Player notificationPlayer, Integer[] allowedBlocks, Integer[] forbiddenBlocks ) {
+	public DetectionTaskData( World w, Player player, Player notificationPlayer, Integer[] allowedBlocks, Integer[] forbiddenBlocks, String[] forbiddenSignStrings) {
 		this.w = w;
 		this.player = player;
 		this.notificationPlayer = notificationPlayer;
 		this.allowedBlocks = allowedBlocks;
 		this.forbiddenBlocks = forbiddenBlocks;
+		this.forbiddenSignStrings = forbiddenSignStrings;
 		this.waterContact = false;
 	}
 
@@ -52,6 +54,10 @@ public class DetectionTaskData {
 
 	public Integer[] getForbiddenBlocks() {
 		return forbiddenBlocks;
+	}
+	
+	public Integer[] getForbiddenSignStrings() {
+		return forbiddenSignStrings;
 	}
 
 	public World getWorld() {
