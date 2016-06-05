@@ -40,8 +40,8 @@ import org.bukkit.scheduler.BukkitTask;
 
 public class PlayerListener implements Listener {
 	
-	private static boolean waitingForReleaseConfirmation = false;
-	
+	public List<Player> playersToConfirmRelease = new ArrayList<Player>();
+
 	public String checkCraftBorders(Craft craft) {
 		HashSet<MovecraftLocation> craftBlocks=new HashSet<MovecraftLocation>(Arrays.asList(craft.getBlockList()));
 		String ret=null;
@@ -165,6 +165,8 @@ public class PlayerListener implements Listener {
 
 	@EventHandler
 	public void onPLayerLogout( PlayerQuitEvent e ) {
+		playersToConfirmRelease.remove(e.getPlayer());
+		
 		Craft c = CraftManager.getInstance().getCraftByPlayer( e.getPlayer() );
 
 		if ( c != null ) {
@@ -207,8 +209,8 @@ public class PlayerListener implements Listener {
 							event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "Reply: release to confirm the release of your ship")));						
 
 							// Wait for user confirmation
-							waitingForReleaseConfirmation = true;
-							
+							playersToConfirmRelease.add(event.getPlayer());
+
 							return;
 						}
 					}
@@ -241,10 +243,11 @@ public class PlayerListener implements Listener {
 	
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onAsyncPlayerChat(AsyncPlayerChatEvent event) {
-  		if (waitingForReleaseConfirmation) {
+		Player eventPlayer = event.getPlayer();
+  		if (playersToConfirmRelease.contains(eventPlayer {
   			if (event.getMessage().equalsIgnoreCase("release")) {
-  				final Craft c = CraftManager.getInstance().getCraftByPlayer( event.getPlayer() );
-  				waitingForReleaseConfirmation = false;
+  				final Craft c = CraftManager.getInstance().getCraftByPlayer(eventPlayer;
+				playersToConfirmRelease.remove(e.getPlayer());
   				
   				BukkitTask releaseTask = new BukkitRunnable() {
 
@@ -255,7 +258,7 @@ public class PlayerListener implements Listener {
 
 					}.runTaskLater( Movecraft.getInstance(), ( 20 * 30 ) );
 
-					CraftManager.getInstance().getReleaseEvents().put( event.getPlayer(), releaseTask );
+					CraftManager.getInstance().getReleaseEvents().put( eventPlayer, releaseTask );
   			}
   		}
 	}
