@@ -40,7 +40,7 @@ import org.bukkit.scheduler.BukkitTask;
 
 public class PlayerListener implements Listener {
 	
-	public static boolean waitingForReleaseConfirmation = false;
+	private static boolean waitingForReleaseConfirmation = false;
 	
 	public String checkCraftBorders(Craft craft) {
 		HashSet<MovecraftLocation> craftBlocks=new HashSet<MovecraftLocation>(Arrays.asList(craft.getBlockList()));
@@ -243,6 +243,7 @@ public class PlayerListener implements Listener {
 	public void onAsyncPlayerChat(AsyncPlayerChatEvent event) {
   		if (waitingForReleaseConfirmation) {
   			if (event.getMessage().equalsIgnoreCase("release")) {
+  				final Craft c = CraftManager.getInstance().getCraftByPlayer( event.getPlayer() );
   				waitingForReleaseConfirmation = false;
   				
   				BukkitTask releaseTask = new BukkitRunnable() {
