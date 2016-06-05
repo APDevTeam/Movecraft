@@ -109,7 +109,7 @@ public class Craft {
 	}
 
 	public void detect( Player player, Player notificationPlayer, MovecraftLocation startPoint ) {
-		AsyncManager.getInstance().submitTask( new DetectionTask( this, startPoint, type.getMinSize(), type.getMaxSize(), type.getAllowedBlocks(), type.getForbiddenBlocks(), player, notificationPlayer, w ), this );
+		AsyncManager.getInstance().submitTask( new DetectionTask( this, startPoint, type.getMinSize(), type.getMaxSize(), type.getAllowedBlocks(), type.getForbiddenBlocks(), type.getForbiddenSignStrings(), player, notificationPlayer, w ), this );
 	}
 
 	public void translate( int dx, int dy, int dz ) {
