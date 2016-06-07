@@ -380,7 +380,7 @@ public class CommandListener implements CommandExecutor {
 				
 		}
 		
-		if(cmd.getName().equalsIgnoreCase("manOverBoard")) {
+		if(cmd.getName().equalsIgnoreCase("manoverboard")) {
 			if(CraftManager.getInstance().getCraftByPlayerName(player.getName())!=null) {
 				Location telPoint = getCraftTeleportPoint(CraftManager.getInstance().getCraftByPlayerName(player.getName()), CraftManager.getInstance().getCraftByPlayerName(player.getName()).getW());
 				player.teleport(telPoint);
