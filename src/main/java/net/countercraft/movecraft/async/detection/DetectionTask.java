@@ -318,7 +318,7 @@ public class DetectionTask extends AsyncTask {
 	private boolean isForbiddenSignString(Sting testString){
 		
 		for(String s : data.getForbiddenSignStrings() ){
-			if( testString.equals(s) ) {
+			if( testString.equals(ChatColor.stripColor(s)) ) {
 				return true;
 			}
 		}
