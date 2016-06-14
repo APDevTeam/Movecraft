@@ -316,6 +316,11 @@ public class CommandListener implements CommandExecutor {
 		}
 		
 		if(cmd.getName().equalsIgnoreCase("contacts")) {
+			if ( !player.hasPermission( "movecraft.commands" ) && !player.hasPermission( "movecraft.commands.contacts" ) ) {
+				player.sendMessage( String.format( I18nSupport.getInternationalisedString( "Insufficient Permissions" ) ) );
+				return true;
+			}
+			
 			if(CraftManager.getInstance().getCraftByPlayer(player)!=null ) {
 				Craft ccraft=CraftManager.getInstance().getCraftByPlayer(player);
 				boolean foundContact=false;
@@ -380,7 +385,7 @@ public class CommandListener implements CommandExecutor {
 				
 		}
 		
-		if(cmd.getName().equalsIgnoreCase("manOverBoard")) {
+		if(cmd.getName().equalsIgnoreCase("manoverboard")) {
 			if(CraftManager.getInstance().getCraftByPlayerName(player.getName())!=null) {
 				Location telPoint = getCraftTeleportPoint(CraftManager.getInstance().getCraftByPlayerName(player.getName()), CraftManager.getInstance().getCraftByPlayerName(player.getName()).getW());
 				player.teleport(telPoint);
