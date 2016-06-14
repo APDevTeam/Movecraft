@@ -54,6 +54,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import net.countercraft.movecraft.utils.SignUtils;
+import org.bukkit.block.BlockFace;
 
 public class InteractListener implements Listener {
 	private static final Map<Player, Long> timeMap = new HashMap<Player, Long>();
@@ -194,13 +196,16 @@ public class InteractListener implements Listener {
 					// rotate subcraft
 					String craftTypeStr=org.bukkit.ChatColor.stripColor(sign.getLine( 1 ));
 					if ( getCraftTypeFromString( craftTypeStr ) != null ) {
+                                                boolean oRelativePos = false;
 						if( org.bukkit.ChatColor.stripColor(sign.getLine(2)).equals("") && org.bukkit.ChatColor.stripColor(sign.getLine(3)).equals("") ) {
 							sign.setLine(2, "_\\ /_");
 							sign.setLine(3, "/ \\");
 							sign.update();
-						}
-						
-						if ( event.getPlayer().hasPermission( "movecraft." + craftTypeStr + ".pilot" ) && event.getPlayer().hasPermission( "movecraft." + craftTypeStr + ".rotate" )) {
+						}else{
+                                                  oRelativePos = true;
+                                                }
+                                                
+                                                if ( event.getPlayer().hasPermission( "movecraft." + craftTypeStr + ".pilot" ) && event.getPlayer().hasPermission( "movecraft." + craftTypeStr + ".rotate" )) {
 							Long time = timeMap.get( event.getPlayer() );
 							if ( time != null ) {
 								long ticksElapsed = ( System.currentTimeMillis() - time ) / 50;
@@ -210,9 +215,51 @@ public class InteractListener implements Listener {
 								}
 							}
 							final Location loc = event.getClickedBlock().getLocation();
-							final Craft c = new Craft( getCraftTypeFromString( craftTypeStr ), loc.getWorld() );
-							MovecraftLocation startPoint = new MovecraftLocation( loc.getBlockX(), loc.getBlockY(), loc.getBlockZ() );
-							c.detect( null, event.getPlayer(), startPoint );
+                                                        MovecraftLocation startPoint = new MovecraftLocation( loc.getBlockX(), loc.getBlockY(), loc.getBlockZ() );
+                                                        CraftType cType = getCraftTypeFromString( craftTypeStr );
+                                                        if (oRelativePos){
+                                                          MovecraftLocation locFromSign = MovecraftLocation.getMLocationFromString(sign.getLine(3));
+                                                          if (locFromSign.getX() != 0 || locFromSign.getZ() != 0 ){
+                                                            BlockFace signFace = SignUtils.getFacing(sign);
+                                                            if (signFace.equals(BlockFace.SOUTH)){
+                                                              locFromSign.setZ(-locFromSign.getZ());
+                                                            }else if (signFace.equals(BlockFace.NORTH)){
+                                                              locFromSign.setX(-locFromSign.getX());
+                                                            }else if (signFace.equals(BlockFace.WEST)){
+                                                              int tmpZ = locFromSign.getZ();
+                                                              locFromSign.setZ(locFromSign.getX());
+                                                              locFromSign.setX(tmpZ);
+                                                            }else if (signFace.equals(BlockFace.EAST)){
+                                                              int tmpZ = locFromSign.getZ();
+                                                              locFromSign.setZ(-locFromSign.getX());
+                                                              locFromSign.setX(-tmpZ);
+                                                            }else {
+                                                              if (sign.getLine(2).equals("") || sign.getLine(3).equals("")){
+                                                                sign.setLine( 3, "0,0,0");
+                                                              }
+                                                              locFromSign.setX(0);
+                                                              locFromSign.setY(0);
+                                                              locFromSign.setZ(0);
+                                                            }
+                                                            if (sign.getLine(2).equals("") || sign.getLine(3).equals("")){
+                                                              sign.setLine( 2, "⎈");
+                                                              sign.update();
+                                                            }
+                                                          }
+                                                          MovecraftLocation maxLoc = cType.getMaxRotateOffset();
+                                                          if (
+                                                              Math.abs(locFromSign.getX()) <= maxLoc.getX()
+                                                            &&
+                                                              Math.abs(locFromSign.getY()) <= maxLoc.getY()
+                                                            &&
+                                                              Math.abs(locFromSign.getZ()) <= maxLoc.getZ()
+                                                          ){
+                                                            startPoint = startPoint.translate(locFromSign.getX(), locFromSign.getY(), locFromSign.getZ());
+                                                            loc.add((double) locFromSign.getX(), (double) locFromSign.getY(), (double) locFromSign.getZ());
+                                                          }
+                                                        }
+                                                        final Craft c = new Craft( cType, loc.getWorld() );
+                                                        c.detect( null, event.getPlayer(), startPoint );
 							BukkitTask releaseTask = new BukkitRunnable() {
 
 								@Override
@@ -342,11 +389,14 @@ public class InteractListener implements Listener {
 			// rotate subcraft
 			String craftTypeStr=org.bukkit.ChatColor.stripColor(sign.getLine( 1 ));
 			if ( getCraftTypeFromString( craftTypeStr ) != null ) {
+                                boolean oRelativePos = false;
 				if( org.bukkit.ChatColor.stripColor(sign.getLine(2)).equals("") && sign.getLine(3).equals("") ) {
 					sign.setLine(2, "_\\ /_");
 					sign.setLine(3, "/ \\");
 					sign.update();
-				}
+				}else{
+                                  oRelativePos = true;
+                                }
 				
 				if ( event.getPlayer().hasPermission( "movecraft." + craftTypeStr + ".pilot" ) && event.getPlayer().hasPermission( "movecraft." + craftTypeStr + ".rotate" )) {
 					Long time = timeMap.get( event.getPlayer() );
@@ -358,8 +408,50 @@ public class InteractListener implements Listener {
 						}
 					}
 					final Location loc = event.getClickedBlock().getLocation();
-					final Craft c = new Craft( getCraftTypeFromString( craftTypeStr ), loc.getWorld() );
-					MovecraftLocation startPoint = new MovecraftLocation( loc.getBlockX(), loc.getBlockY(), loc.getBlockZ() );
+                                        MovecraftLocation startPoint = new MovecraftLocation( loc.getBlockX(), loc.getBlockY(), loc.getBlockZ() );
+                                        CraftType cType = getCraftTypeFromString(craftTypeStr);
+                                        if (oRelativePos){
+                                          MovecraftLocation locFromSign = MovecraftLocation.getMLocationFromString(sign.getLine(3));
+                                          if (locFromSign.getX() != 0 || locFromSign.getZ() != 0 ){
+                                            BlockFace signFace = SignUtils.getFacing(sign);
+                                            if (signFace.equals(BlockFace.SOUTH)){
+                                              locFromSign.setZ(-locFromSign.getZ());
+                                            }else if (signFace.equals(BlockFace.NORTH)){
+                                              locFromSign.setX(-locFromSign.getX());
+                                            }else if (signFace.equals(BlockFace.WEST)){
+                                              int tmpZ = locFromSign.getZ();
+                                              locFromSign.setZ(locFromSign.getX());
+                                              locFromSign.setX(tmpZ);
+                                            }else if (signFace.equals(BlockFace.EAST)){
+                                              int tmpZ = locFromSign.getZ();
+                                              locFromSign.setZ(-locFromSign.getX());
+                                              locFromSign.setX(-tmpZ);
+                                            }else {
+                                              if (sign.getLine(2).equals("") || sign.getLine(3).equals("")){
+                                                sign.setLine( 3, "0,0,0");
+                                              }
+                                              locFromSign.setX(0);
+                                              locFromSign.setY(0);
+                                              locFromSign.setZ(0);
+                                            }
+                                            if (sign.getLine(2).equals("") || sign.getLine(3).equals("")){
+                                              sign.setLine( 2, "⎈");
+                                              sign.update();
+                                            }
+                                          }
+                                          MovecraftLocation maxLoc = cType.getMaxRotateOffset();
+                                          if (
+                                              Math.abs(locFromSign.getX()) <= maxLoc.getX()
+                                            &&
+                                              Math.abs(locFromSign.getY()) <= maxLoc.getY()
+                                            &&
+                                              Math.abs(locFromSign.getZ()) <= maxLoc.getZ()
+                                          ){
+                                            startPoint = startPoint.translate(locFromSign.getX(), locFromSign.getY(), locFromSign.getZ());
+                                            loc.add((double) locFromSign.getX(), (double) locFromSign.getY(), (double) locFromSign.getZ());
+                                          }
+                                        }
+					final Craft c = new Craft( cType, loc.getWorld() );
 					c.detect( null, event.getPlayer(), startPoint );
 					BukkitTask releaseTask = new BukkitRunnable() {
 
