@@ -634,13 +634,17 @@ public class AsyncManager extends BukkitRunnable {
 									if(notifyP!=null)
                                                                                 if (regionPVPBlocked){
                                                                                     notifyP.sendMessage( String.format( I18nSupport.getInternationalisedString( "Player- Craft should sink but PVP is not allowed in this WorldGuard region" ) ) );
+                                                                                    Movecraft.getInstance().getLogger().log( Level.INFO,String.format( I18nSupport.getInternationalisedString( "Player- Craft should sink but PVP is not allowed in this WorldGuard region" ) ) );
                                                                                 }else if (sinkingForbiddenByFlag){
                                                                                     notifyP.sendMessage( String.format( I18nSupport.getInternationalisedString( "WGCustomFlags - Sinking a craft is not allowed in this WorldGuard region" ) ) );
+                                                                                    Movecraft.getInstance().getLogger().log( Level.INFO,String.format( I18nSupport.getInternationalisedString( "WGCustomFlags - Sinking a craft is not allowed in this WorldGuard region" ) ) );
                                                                                 }else{
                                                                                     if (townyLoc != null){
                                                                                         notifyP.sendMessage( String.format( I18nSupport.getInternationalisedString( "Towny - Sinking a craft is not allowed in this town plot" ) +" @ %d,%d,%d", townyLoc.getBlockX(), townyLoc.getBlockY(),townyLoc.getBlockZ() ) );
+                                                                                        Movecraft.getInstance().getLogger().log( Level.INFO,String.format( I18nSupport.getInternationalisedString( "Towny - Sinking a craft is not allowed in this town plot" ) +" @ %d,%d,%d", townyLoc.getBlockX(), townyLoc.getBlockY(),townyLoc.getBlockZ() ) );
                                                                                     }else{
                                                                                         notifyP.sendMessage( String.format( I18nSupport.getInternationalisedString( "Towny - Sinking a craft is not allowed in this town plot" ) ) );
+                                                                                        Movecraft.getInstance().getLogger().log( Level.INFO,I18nSupport.getInternationalisedString( "Towny - Sinking a craft is not allowed in this town plot" ));
                                                                                     }
                                                                                     
                                                                                 }
@@ -652,8 +656,10 @@ public class AsyncManager extends BukkitRunnable {
 									if(isSinking && pcraft.isNotProcessing()) {
 										Player p = CraftManager.getInstance().getPlayerFromCraft( pcraft );
 										Player notifyP=pcraft.getNotificationPlayer();
-										if(notifyP!=null)
+										if(notifyP!=null) {
 											notifyP.sendMessage( String.format( I18nSupport.getInternationalisedString( "Player- Craft is sinking" ) ) );
+											Movecraft.getInstance().getLogger().log( Level.INFO,String.format( I18nSupport.getInternationalisedString( "Player- Craft is sinking" ) ));
+										}
 										pcraft.setCruising(false);
 										pcraft.setKeepMoving(false);
 										pcraft.setSinking(true);
