@@ -72,12 +72,12 @@ public class DetectionTask extends AsyncTask {
         TownyWorld townyWorld = null;
         TownyWorldHeightLimits townyWorldHeightLimits = null;
         
-	public DetectionTask( Craft c, MovecraftLocation startLocation, int minSize, int maxSize, Integer[] allowedBlocks, Integer[] forbiddenBlocks, Player player, Player notificationPlayer, World w ) {
+	public DetectionTask( Craft c, MovecraftLocation startLocation, int minSize, int maxSize, Integer[] allowedBlocks, Integer[] forbiddenBlocks, String[] forbiddenSignStrings, Player player, Player notificationPlayer, World w ) {
 		super( c );
 		this.startLocation = startLocation;
 		this.minSize = minSize;
 		this.maxSize = maxSize;
-		data = new DetectionTaskData( w, player, notificationPlayer, allowedBlocks, forbiddenBlocks );
+		data = new DetectionTaskData( w, player, notificationPlayer, allowedBlocks, forbiddenBlocks, forbiddenSignStrings );
                 
                 this.townyEnabled = Movecraft.getInstance().getTownyPlugin() != null;
                 if (townyEnabled && Settings.TownyBlockMoveOnSwitchPerm){
@@ -143,6 +143,13 @@ public class DetectionTask extends AsyncTask {
 				BlockState state=data.getWorld().getBlockAt(x, y, z).getState();
 				if(state instanceof Sign) {
 					Sign s=(Sign)state;
+					for(int i=0;i<=4;i++)
+					{
+						if( isForbiddenSignString( getLine(i) ) ){
+							fail( String.format( I18nSupport.getInternationalisedString( "Detection - Forbidden sign string found" ) ) )
+							
+						}
+					}
 					if(s.getLine(0).equalsIgnoreCase("Pilot:") && data.getPlayer()!=null) {
 						String playerName=data.getPlayer().getName();
 						boolean foundPilot=false;
@@ -307,7 +314,18 @@ public class DetectionTask extends AsyncTask {
 
 		return false;
 	}
-
+	
+	private boolean isForbiddenSignString(Sting testString){
+		
+		for(String s : data.getForbiddenSignStrings() ){
+			if( testString.equals(ChatColor.stripColor(s)) ) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
 	public DetectionTaskData getData() {
 		return data;
 	}
