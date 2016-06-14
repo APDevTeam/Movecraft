@@ -690,9 +690,9 @@ public class InteractListener implements Listener {
 				}
 			}
 		} else if (org.bukkit.ChatColor.stripColor(sign.getLine( 0 )).equalsIgnoreCase("contacts")) {
-			if (event.getPlayer().hasPermission( "movecraft." + craftTypeStr + ".contacts" )) {
-				if(CraftManager.getInstance().getCraftByPlayer(event.getPlayer())!=null ) {
-					Craft ccraft=CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
+			if(CraftManager.getInstance().getCraftByPlayer(event.getPlayer())!=null ) {
+				Craft ccraft=CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
+				if (event.getPlayer().hasPermission( "movecraft." + ccraft.getType().getCraftName() + ".contacts" )) {
 					boolean foundContact=false;
 					for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(ccraft.getW())) {
 						long cposx=ccraft.getMaxX()+ccraft.getMinX();

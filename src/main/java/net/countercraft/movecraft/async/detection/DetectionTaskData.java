@@ -56,7 +56,7 @@ public class DetectionTaskData {
 		return forbiddenBlocks;
 	}
 	
-	public Integer[] getForbiddenSignStrings() {
+	public String[] getForbiddenSignStrings() {
 		return forbiddenSignStrings;
 	}
 

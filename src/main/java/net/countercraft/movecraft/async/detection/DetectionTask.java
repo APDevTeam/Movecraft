@@ -145,8 +145,8 @@ public class DetectionTask extends AsyncTask {
 					Sign s=(Sign)state;
 					for(int i=0;i<=4;i++)
 					{
-						if( isForbiddenSignString( getLine(i) ) ){
-							fail( String.format( I18nSupport.getInternationalisedString( "Detection - Forbidden sign string found" ) ) )
+						if( isForbiddenSignString( s.getLine(i) ) ){
+							fail( String.format( I18nSupport.getInternationalisedString( "Detection - Forbidden sign string found" ) ) );
 							
 						}
 					}
@@ -315,10 +315,10 @@ public class DetectionTask extends AsyncTask {
 		return false;
 	}
 	
-	private boolean isForbiddenSignString(Sting testString){
+	private boolean isForbiddenSignString(String testString){
 		
 		for(String s : data.getForbiddenSignStrings() ){
-			if( testString.equals(ChatColor.stripColor(s)) ) {
+			if( testString.equals(org.bukkit.ChatColor.stripColor(s)) ) {
 				return true;
 			}
 		}
