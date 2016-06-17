@@ -24,6 +24,9 @@ WGCustomFlagsUsePilotFlag: false
 WGCustomFlagsUseMoveFlag: false
 WGCustomFlagsUseRotateFlag: false
 WGCustomFlagsUseSinkFlag: false
+DurabilityOverride:
+  121: 70
+  206: 75
 TownyBlockMoveOnSwitchPerm: false
 TownyBlockSinkOnNoPVP: false
 TownyWorldHeightLimits:

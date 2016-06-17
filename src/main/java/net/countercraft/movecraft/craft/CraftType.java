@@ -36,7 +36,6 @@ import java.util.List;
 import org.bukkit.Material;
 
 import java.util.logging.Level;
-import net.countercraft.movecraft.utils.MovecraftLocation;
 
 public class CraftType {
 	private String craftName;
@@ -44,7 +43,7 @@ public class CraftType {
 	private Integer[] allowedBlocks, forbiddenBlocks;
 	private String[] forbiddenSignStrings;
 	private boolean blockedByWater, requireWaterContact, tryNudge, canCruise, canTeleport, canStaticMove, canHover, canDirectControl, useGravity, canHoverOverWater, moveEntities;
-	private boolean allowHorizontalMovement, allowVerticalMovement, allowRemoteSign, cruiseOnPilot, allowVerticalTakeoffAndLanding, rotateAtMidpoint;
+	private boolean allowHorizontalMovement, allowVerticalMovement, allowRemoteSign, allowCannonDirectorSign, allowAADirectorSign, cruiseOnPilot, allowVerticalTakeoffAndLanding, rotateAtMidpoint;
 	private int cruiseOnPilotVertMove;
 	private int maxStaticMove;
 	private int cruiseSkipBlocks;
@@ -67,7 +66,6 @@ public class CraftType {
 	private int hoverLimit;
 	private List<Material> harvestBlocks;
         private List<Material> harvesterBladeBlocks;
-        private MovecraftLocation maxRotateOffset = new MovecraftLocation(0, 0, 0);
 	        
 	public CraftType( File f ) {
 		try {
@@ -117,6 +115,9 @@ public class CraftType {
 	
 	private String[] stringListFromObject(Object obj) {
 		ArrayList<String> returnList=new ArrayList<String>();
+		if(obj==null) {
+			return returnList.toArray(new String[1]);
+		}
 		ArrayList objList=(ArrayList) obj;
 		for(Object i : objList) {
 			if(i instanceof String) {
@@ -274,6 +275,16 @@ public class CraftType {
 			allowRemoteSign=(Boolean) data.get("allowRemoteSign");
 		} else {
 			allowRemoteSign=true;
+		}
+		if(data.containsKey("allowCannonDirectorSign")) {
+			allowCannonDirectorSign=(Boolean) data.get("allowCannonDirectorSign");
+		} else {
+			allowCannonDirectorSign=true;
+		}
+		if(data.containsKey("allowAADirectorSign")) {
+			allowAADirectorSign=(Boolean) data.get("allowAADirectorSign");
+		} else {
+			allowAADirectorSign=true;
 		}
 		if(data.containsKey("canStaticMove")) {
 			canStaticMove=(Boolean) data.get("canStaticMove");
@@ -448,21 +459,6 @@ public class CraftType {
             }else{
                 allowVerticalTakeoffAndLanding = true;
             }
-            if (data.containsKey("maxRotateOffset")){
-              HashMap<Object, Object> tmpMaxRotateOffset =(HashMap<Object, Object>) data.get("maxRotateOffset");
-              for(Object i : tmpMaxRotateOffset.keySet()) {
-                if(i instanceof String) {
-                  String str=(String)i;  
-                  if(str.equalsIgnoreCase("x")) {
-                    maxRotateOffset.setX(integerFromObject(tmpMaxRotateOffset.get(i))); 
-                  }else if(str.equalsIgnoreCase("y")) {
-                    maxRotateOffset.setY(integerFromObject(tmpMaxRotateOffset.get(i))); 
-                  }else if(str.equalsIgnoreCase("z")) {
-                    maxRotateOffset.setZ(integerFromObject(tmpMaxRotateOffset.get(i))); 
-                  }
-                } 
-              }
-            }
 	}
 
 	public String getCraftName() {
@@ -547,6 +543,14 @@ public class CraftType {
 	
 	public boolean allowRemoteSign() {
 		return allowRemoteSign;
+	}
+	
+	public boolean allowCannonDirectorSign() {
+		return allowCannonDirectorSign;
+	}
+	
+	public boolean allowAADirectorSign() {
+		return allowAADirectorSign;
 	}
 	
 	public double getFuelBurnRate() {
@@ -652,8 +656,5 @@ public class CraftType {
     
     public boolean  allowVerticalTakeoffAndLanding(){
         return allowVerticalTakeoffAndLanding;
-    }
-    public MovecraftLocation getMaxRotateOffset(){
-      return maxRotateOffset;
     }
 }

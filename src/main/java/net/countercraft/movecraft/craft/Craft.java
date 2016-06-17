@@ -54,6 +54,8 @@ public class Craft {
 	private int origBlockCount;
 	private double pilotLockedZ;
 	private Player notificationPlayer;
+	private Player cannonDirector;
+	private Player AADirector;
 	private HashMap<Player, Long> movedPlayers = new HashMap<Player, Long>(); 
 	
 	public Craft( CraftType type, World world ) {
@@ -70,6 +72,8 @@ public class Craft {
 		this.pilotLockedY=0.0;
 		this.pilotLockedZ=0.0;
 		this.keepMoving=false;
+		this.cannonDirector=null;
+		this.AADirector=null;
 	}
 
 	public boolean isNotProcessing() {
@@ -434,6 +438,22 @@ public class Craft {
 	
 	public Player getNotificationPlayer() {
 		return notificationPlayer;
+	}
+	
+	public void setCannonDirector(Player cannonDirector) {
+		this.cannonDirector=cannonDirector;
+	}
+	
+	public Player getCannonDirector() {
+		return cannonDirector;
+	}
+	
+	public void setAADirector(Player AADirector) {
+		this.AADirector=AADirector;
+	}
+	
+	public Player getAADirector() {
+		return AADirector;
 	}
 	
 }

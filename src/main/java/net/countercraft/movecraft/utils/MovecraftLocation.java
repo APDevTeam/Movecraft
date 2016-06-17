@@ -94,22 +94,5 @@ public class MovecraftLocation {
 	public MovecraftLocation subtract( MovecraftLocation l ) {
 		return new MovecraftLocation( getX() - l.getX(), getY() - l.getY(), getZ() - l.getZ() );
 	}
-        
-        public static MovecraftLocation getMLocationFromString(String str){
-          MovecraftLocation mLoc = new MovecraftLocation(0, 0, 0);
-          str = org.bukkit.ChatColor.stripColor(str);
-          if (str.indexOf(",") <= 0){
-            return mLoc;
-          }
-          String[] numbers = str.split(",");
-          mLoc.setX(Integer.parseInt(numbers[0].trim()));
-          if (numbers.length == 2){
-            mLoc.setZ(Integer.parseInt(numbers[1].trim()));
-          }
-          if (numbers.length == 3){
-            mLoc.setY(Integer.parseInt(numbers[1].trim()));
-            mLoc.setZ(Integer.parseInt(numbers[2].trim()));
-          }
-          return mLoc;
-        }
+
 }

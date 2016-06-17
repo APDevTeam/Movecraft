@@ -29,6 +29,7 @@ import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.utils.MovecraftLocation;
 import net.countercraft.movecraft.utils.Rotation;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -351,6 +352,8 @@ public class WorldEditInteractListener implements Listener {
 
 						}
 					}
+					double Cost=numdiffblocks*Settings.RepairMoneyPerBlock;
+					Bukkit.getLogger().info(event.getPlayer().toString() + " has begun a repair with the cost of " + String.valueOf(Cost));
 					ArrayList <MapUpdateCommand> updateCommands=new ArrayList <MapUpdateCommand>();
 					for(Vector ccloc : locMissingBlocks) {
 						com.sk89q.worldedit.blocks.BaseBlock bb=cc.getBlock(ccloc);

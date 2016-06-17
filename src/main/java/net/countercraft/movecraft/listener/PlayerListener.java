@@ -17,10 +17,8 @@
 
 package net.countercraft.movecraft.listener;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
@@ -33,10 +31,8 @@ import net.countercraft.movecraft.utils.MovecraftLocation;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -44,9 +40,7 @@ import org.bukkit.scheduler.BukkitTask;
 
 public class PlayerListener implements Listener {
 	
-	public List<Player> playersToConfirmRelease = new ArrayList<Player>();
-
-	public String checkCraftBorders(Craft craft) {
+	private String checkCraftBorders(Craft craft) {
 		HashSet<MovecraftLocation> craftBlocks=new HashSet<MovecraftLocation>(Arrays.asList(craft.getBlockList()));
 		String ret=null;
 		for(MovecraftLocation block : craftBlocks) {
@@ -169,8 +163,6 @@ public class PlayerListener implements Listener {
 
 	@EventHandler
 	public void onPLayerLogout( PlayerQuitEvent e ) {
-		playersToConfirmRelease.remove(e.getPlayer());
-		
 		Craft c = CraftManager.getInstance().getCraftByPlayer( e.getPlayer() );
 
 		if ( c != null ) {
@@ -200,6 +192,7 @@ public class PlayerListener implements Listener {
 			if ( c.isNotProcessing() && (!MathUtils.playerIsWithinBoundingPolygon( c.getHitBox(), c.getMinX(), c.getMinZ(), MathUtils.bukkit2MovecraftLoc( event.getPlayer().getLocation() ) )) ) {
 
 				if ( !CraftManager.getInstance().getReleaseEvents().containsKey( event.getPlayer() ) && c.getType().getMoveEntities()) {
+					boolean releaseBlocked=false;
 					if(Settings.ManOverBoardTimeout!=0)
 						event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "You have left your craft. You may return to your craft by typing /manoverboard any time before the timeout expires" ) ) );						
 					else
@@ -209,24 +202,24 @@ public class PlayerListener implements Listener {
 					} else {
 						String ret=checkCraftBorders(c);
 						if(ret!=null) {
-							event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "WARNING! There are blocks near your craft that may merge with the craft "+ret)));						
-							event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "Reply: release to confirm the release of your ship")));						
-
-							// Wait for user confirmation
-							playersToConfirmRelease.add(event.getPlayer());
-
-							return;
+							event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "WARNING! There are blocks near your craft that may merge with the craft "+ret)));
+							releaseBlocked=true;
 						}
 					}
 					
-					BukkitTask releaseTask = new BukkitRunnable() {
-
-						@Override
-						public void run() {
-							CraftManager.getInstance().removeCraft( c );
-						}
-
-					}.runTaskLater( Movecraft.getInstance(), ( 20 * 30 ) );
+					BukkitTask releaseTask;
+					if(!releaseBlocked) {
+						releaseTask = new BukkitRunnable() {
+	
+							@Override
+							public void run() {
+								CraftManager.getInstance().removeCraft( c );
+							}
+	
+						}.runTaskLater( Movecraft.getInstance(), ( 20 * 30 ) );
+					} else {
+						releaseTask=null; // put the task in as a null just so it doesn't keep pestering the pilot
+					}
 
 					CraftManager.getInstance().getReleaseEvents().put( event.getPlayer(), releaseTask );
 				}
@@ -244,26 +237,5 @@ public class PlayerListener implements Listener {
 			CraftManager.getInstance().removeCraft( CraftManager.getInstance().getCraftByPlayer( ( Player ) event.getEntity() ) );
 		}
 	}   */
-	
-	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-	public void onAsyncPlayerChat(AsyncPlayerChatEvent event) {
-		Player eventPlayer = event.getPlayer();
-  		if (playersToConfirmRelease.contains(eventPlayer)) {
-  			if (event.getMessage().equalsIgnoreCase("release")) {
-  				final Craft c = CraftManager.getInstance().getCraftByPlayer(eventPlayer);
-				playersToConfirmRelease.remove(event.getPlayer());
-  				
-  				BukkitTask releaseTask = new BukkitRunnable() {
 
-						@Override
-						public void run() {
-							CraftManager.getInstance().removeCraft( c );
-						}
-
-					}.runTaskLater( Movecraft.getInstance(), ( 20 * 30 ) );
-
-					CraftManager.getInstance().getReleaseEvents().put( eventPlayer, releaseTask );
-  			}
-  		}
-	}
 }

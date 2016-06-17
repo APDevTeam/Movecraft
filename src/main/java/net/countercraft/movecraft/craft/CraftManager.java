@@ -193,7 +193,8 @@ public class CraftManager {
 		Player p = getPlayerFromCraft( c );
 		if (p!= null){
 			if ( releaseEvents.containsKey(p) ) {
-				releaseEvents.get(p).cancel();
+				if(releaseEvents.get(p)!=null)
+					releaseEvents.get(p).cancel();
 				releaseEvents.remove(p);
 			}
 		}
