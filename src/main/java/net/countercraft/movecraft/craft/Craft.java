@@ -74,6 +74,7 @@ public class Craft {
 		this.keepMoving=false;
 		this.cannonDirector=null;
 		this.AADirector=null;
+		this.lastCruiseUpdate=System.currentTimeMillis()-10000;
 	}
 
 	public boolean isNotProcessing() {

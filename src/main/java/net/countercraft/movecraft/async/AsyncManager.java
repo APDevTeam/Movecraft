@@ -474,7 +474,7 @@ public class AsyncManager extends BukkitRunnable {
 								if (pcraft.getLastCruiseUpdate() != -1) {
 									pcraft.setLastCruisUpdate(System.currentTimeMillis());
 								} else {
-									pcraft.setLastCruisUpdate(0);
+									pcraft.setLastCruisUpdate(System.currentTimeMillis()-30000);
 								}
 							}
 
@@ -780,7 +780,7 @@ public class AsyncManager extends BukkitRunnable {
 								if (pcraft.getLastCruiseUpdate() != -1) {
 									pcraft.setLastCruisUpdate(System.currentTimeMillis());
 								} else {
-									pcraft.setLastCruisUpdate(0);
+									pcraft.setLastCruisUpdate(System.currentTimeMillis()-30000);
 								}
 							}
 						}
@@ -846,7 +846,7 @@ public class AsyncManager extends BukkitRunnable {
 	public void processFireballs() {
 		long ticksElapsed = (System.currentTimeMillis() - lastFireballCheck) / 50;
 
-		if (ticksElapsed > 4) {
+		if (ticksElapsed > 3) {
 			for (World w : Bukkit.getWorlds()) {
 				if (w != null) {
 					for (org.bukkit.entity.SmallFireball fireball : w
@@ -863,7 +863,7 @@ public class AsyncManager extends BukkitRunnable {
 
 								final org.bukkit.entity.SmallFireball ffb = fireball;
 								if (!FireballTracking.containsKey(fireball)) {
-									Craft c=nearestCraftToLoc(ffb.getLocation());
+									Craft c=fastNearestCraftToLoc(ffb.getLocation());
 									if(c!=null) {
 										int distX=c.getMinX()+c.getMaxX();
 										distX=distX>>1;
@@ -945,18 +945,18 @@ public class AsyncManager extends BukkitRunnable {
 		}
 	}
 	
-	private Craft nearestCraftToLoc(Location loc) {
+	private Craft fastNearestCraftToLoc(Location loc) {
 		Craft ret=null;
 		long closestDistSquared=1000000000l;
 		Craft[] craftsList=CraftManager.getInstance().getCraftsInWorld(loc.getWorld());
 		if (craftsList != null) {
 			for(Craft i : craftsList) {
 				int midX=(i.getMaxX()+i.getMinX())>>1;
-				int midY=(i.getMaxY()+i.getMinY())>>1;
+//				int midY=(i.getMaxY()+i.getMinY())>>1; don't check Y because it is slow
 				int midZ=(i.getMaxZ()+i.getMinZ())>>1;
-				long distSquared=(midX-(int)loc.getX())*(midX-(int)loc.getX());
-				distSquared+=(midY-(int)loc.getY())*(midY-(int)loc.getY());
-				distSquared+=(midZ-(int)loc.getZ())*(midZ-(int)loc.getZ());
+				long distSquared=Math.abs(midX-(int)loc.getX());
+//				distSquared+=Math.abs(midY-(int)loc.getY());
+				distSquared+=Math.abs(midZ-(int)loc.getZ());
 				if(distSquared<closestDistSquared) {
 					closestDistSquared=distSquared;
 					ret=i;
@@ -968,14 +968,14 @@ public class AsyncManager extends BukkitRunnable {
 
 	public void processTNTContactExplosives() {
 		long ticksElapsed = (System.currentTimeMillis() - lastTNTContactCheck) / 50;
-		if (ticksElapsed > 4) {
+		if (ticksElapsed > 0) {
 			// see if there is any new rapid moving TNT in the worlds
 			for (World w : Bukkit.getWorlds()) {
 				if (w != null) {
 					for (org.bukkit.entity.TNTPrimed tnt : w.getEntitiesByClass(org.bukkit.entity.TNTPrimed.class)) {
-						if ( (tnt.getVelocity().lengthSquared() > 0.35) && (tnt.getFuseTicks() < 78)) {
+						if ( (tnt.getVelocity().lengthSquared() > 0.35) ) {
 							if (!TNTTracking.containsKey(tnt)) {
-								Craft c=nearestCraftToLoc(tnt.getLocation());
+								Craft c=fastNearestCraftToLoc(tnt.getLocation());
 								if(c!=null) {
 									int distX=c.getMinX()+c.getMaxX();
 									distX=distX>>1;
@@ -986,7 +986,7 @@ public class AsyncManager extends BukkitRunnable {
 									int distZ=c.getMinZ()+c.getMaxZ();
 									distZ=distZ>>1;
 									distZ=Math.abs(distZ-tnt.getLocation().getBlockZ());
-									boolean inRange=(distX<50)&&(distY<50)&&(distZ<50);	
+									boolean inRange=(distX<100)&&(distY<100)&&(distZ<100);	
 									if((c.getCannonDirector()!=null) && inRange) {
 										Player p=c.getCannonDirector();
 										if(p.getItemInHand().getTypeId() == Settings.PilotTool) {
@@ -1204,14 +1204,14 @@ public class AsyncManager extends BukkitRunnable {
 										ccraft.getNotificationPlayer().sendMessage(notification);
 										w.playSound(ccraft.getNotificationPlayer().getLocation(),
 												Sound.BLOCK_ANVIL_LAND, 1.0f, 2.0f);
-										final World sw = w;
+/*										final World sw = w; 
 										final Player sp = ccraft.getNotificationPlayer();
 										BukkitTask replaysound = new BukkitRunnable() {
 											@Override
 											public void run() {
 												sw.playSound(sp.getLocation(), Sound.BLOCK_ANVIL_LAND, 10.0f, 2.0f);
 											}
-										}.runTaskLater(Movecraft.getInstance(), (5));
+										}.runTaskLater(Movecraft.getInstance(), (5));*/
 
 									}
 
@@ -1374,6 +1374,18 @@ public class AsyncManager extends BukkitRunnable {
 		processSiege();
 		processAlgorithmQueue();
 		FastBlockChanger.getInstance().run();
+		// now cleanup craft that are bugged and have not moved in the past 60 seconds, but have no pilot
+		for (World w : Bukkit.getWorlds()) {
+			if (w != null && CraftManager.getInstance().getCraftsInWorld(w) != null) {
+				for (Craft pcraft : CraftManager.getInstance().getCraftsInWorld(w)) {
+					if(CraftManager.getInstance().getPlayerFromCraft(pcraft)==null) {
+						if(pcraft.getLastCruiseUpdate()<System.currentTimeMillis()-60000) {
+							CraftManager.getInstance().forceRemoveCraft(pcraft);							
+						}
+					}
+				}
+			}
+		}
 	}
 
 	private void clear(Craft c) {

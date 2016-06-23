@@ -120,6 +120,12 @@ public class CraftManager {
 		}
 		craftPlayerIndex.remove( getPlayerFromCraft( c ) );
 	}
+	
+	public void forceRemoveCraft( Craft c ) {
+		craftList.get( c.getW() ).remove( c );
+		if(getPlayerFromCraft( c )!=null)
+			craftPlayerIndex.remove( getPlayerFromCraft( c ) );					
+	}
 
 	public Craft[] getCraftsInWorld( World w ) {
 		Set<Craft> crafts = craftList.get( w );

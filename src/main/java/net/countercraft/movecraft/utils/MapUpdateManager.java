@@ -37,6 +37,7 @@ import net.minecraft.server.v1_9_R1.EnumSkyBlock;
 import net.minecraft.server.v1_9_R1.IBlockData;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.Effect;
 import org.bukkit.Location;
@@ -170,9 +171,18 @@ public class MapUpdateManager extends BukkitRunnable {
 				cmChunks.add( cmC );
 			}
 		} else {
-			ChunkUpdater fChunk=FastBlockChanger.getInstance().getChunk(w, x>>4, z>>4, false);
-			IBlockData ibd=net.minecraft.server.v1_9_R1.Block.getByCombinedId(newTypeID+(data<<12));
-			fChunk.setBlock(new BlockPosition(x, y, z), ibd);
+			int origType=w.getBlockAt( x, y, z ).getTypeId();
+			byte origData=w.getBlockAt( x, y, z ).getData();
+
+			if(origType!=newTypeID || origData!=data) {
+				ChunkUpdater fChunk=FastBlockChanger.getInstance().getChunk(w, x>>4, z>>4, false);
+				IBlockData ibd=net.minecraft.server.v1_9_R1.Block.getByCombinedId(newTypeID+(data<<12));
+				boolean doBlankOut=(Arrays.binarySearch(blocksToBlankOut,newTypeID)>=0);
+				if(doBlankOut) {
+					fChunk.setBlock(new BlockPosition(x, y, z), CraftMagicNumbers.getBlock(org.bukkit.Material.AIR).fromLegacyData(0));
+				}
+				fChunk.setBlock(new BlockPosition(x, y, z), ibd);
+			}
 //			 removing to try new fast block changer system
 /*			BlockPosition position = new BlockPosition(x, y, z);
 			
@@ -249,7 +259,35 @@ public class MapUpdateManager extends BukkitRunnable {
 
 	private void updateData(Map<MovecraftLocation, TransferData> dataMap, World w) {
 		// Restore block specific information
-		for ( MovecraftLocation l : dataMap.keySet() ) {
+		for ( MovecraftLocation l : dataMap.keySet() ) { // everything but signs first
+			try {
+				TransferData transferData = dataMap.get( l );
+				if ( transferData instanceof SignTransferHolder ) {
+					//do nothing... TODO: make this cleaner
+				} else if ( transferData instanceof StorageCrateTransferHolder ) {
+					Inventory inventory = Bukkit.createInventory( null, 27, String.format( I18nSupport.getInternationalisedString( "Item - Storage Crate name" ) ) );
+					inventory.setContents( ( ( StorageCrateTransferHolder ) transferData ).getInvetory() );
+					StorageChestItem.setInventoryOfCrateAtLocation( inventory, l, w );
+	
+				} else if ( transferData instanceof InventoryTransferHolder ) {
+					InventoryTransferHolder invData = ( InventoryTransferHolder ) transferData;
+					InventoryHolder inventoryHolder = ( InventoryHolder ) w.getBlockAt( l.getX(), l.getY(), l.getZ() ).getState();
+					inventoryHolder.getInventory().setContents( invData.getInvetory() );
+				} else if ( transferData instanceof CommandBlockTransferHolder) {
+					CommandBlockTransferHolder cbData=(CommandBlockTransferHolder) transferData;
+					CommandBlock cblock=(CommandBlock) w.getBlockAt( l.getX(), l.getY(), l.getZ() ).getState();
+					cblock.setCommand(cbData.getText());
+					cblock.setName(cbData.getName());
+					cblock.update();
+				}
+				w.getBlockAt( l.getX(), l.getY(), l.getZ() ).setData( transferData.getData() );
+			} catch ( IndexOutOfBoundsException e ) {
+				Movecraft.getInstance().getLogger().log( Level.SEVERE, "Severe error in map updater" );
+			} catch (IllegalArgumentException e) {
+	                                Movecraft.getInstance().getLogger().log( Level.SEVERE, "Severe error in map updater" );
+			}
+		}
+		for ( MovecraftLocation l : dataMap.keySet() ) { // now do signs
 			try {
 				TransferData transferData = dataMap.get( l );
 	
@@ -280,9 +318,9 @@ public class MapUpdateManager extends BukkitRunnable {
 								}
 							}
 						}
-						if(signData.getLines()[0].equalsIgnoreCase("Contacts:")) {
+						if(sign.getLines()[0].equalsIgnoreCase("Contacts:")) {
+							MovecraftLocation mloc=new MovecraftLocation(sign.getLocation().getBlockX(),sign.getLocation().getBlockY(),sign.getLocation().getBlockZ());
 							if(CraftManager.getInstance().getCraftsInWorld(w)!=null) {
-								MovecraftLocation mloc=new MovecraftLocation(l.getX(),l.getY(),l.getZ());
 								Craft foundCraft=null;
 								for(Craft c : CraftManager.getInstance().getCraftsInWorld(w)) {
 									if(MathUtils.playerIsWithinBoundingPolygon(c.getHitBox(),c.getMinX(),c.getMinZ(),mloc))
@@ -319,8 +357,9 @@ public class MapUpdateManager extends BukkitRunnable {
 										if(distsquared<detectionRange*detectionRange && tcraft.getNotificationPlayer()!=foundCraft.getNotificationPlayer()) {
 											// craft has been detected				
 											foundContact=true;
-											String notification=tcraft.getType().getCraftName();
-											if(notification.length()>7)
+											String notification=""+ChatColor.BLUE;
+											notification+=tcraft.getType().getCraftName();
+											if(notification.length()>9)
 												notification=notification.substring(0, 7);
 											notification+=" ";
 											notification+=(int)Math.sqrt(distsquared);
@@ -340,13 +379,127 @@ public class MapUpdateManager extends BukkitRunnable {
 											}
 										}
 									}
+									if(signLine<4) {
+										for(int i=signLine; i<4; i++) {
+											sign.setLine(i, "");
+										}
+									}
 								}
 							} else {
 								sign.setLine(1, "");
 								sign.setLine(2, "");
 								sign.setLine(3, "");
 							}
+							
+						} else if(sign.getLines()[0].equalsIgnoreCase("Status:")) {
+							MovecraftLocation mloc=new MovecraftLocation(sign.getLocation().getBlockX(),sign.getLocation().getBlockY(),sign.getLocation().getBlockZ());
+							Craft foundCraft=null;
+							for(Craft c : CraftManager.getInstance().getCraftsInWorld(w)) {
+								if(MathUtils.playerIsWithinBoundingPolygon(c.getHitBox(),c.getMinX(),c.getMinZ(),mloc))
+									foundCraft=c;
+							}
+							if(foundCraft!=null) {
+								int fuel=0;
+								int totalBlocks=0;
+								HashMap<Integer, Integer> foundBlocks = new HashMap<Integer, Integer>();
+								for (MovecraftLocation ml : foundCraft.getBlockList()) {
+									Integer blockID = w.getBlockAt(ml.getX(), ml.getY(), ml.getZ()).getTypeId();
+
+									if (foundBlocks.containsKey(blockID)) {
+										Integer count = foundBlocks.get(blockID);
+										if (count == null) { 
+											foundBlocks.put(blockID, 1);
+										} else {
+											foundBlocks.put(blockID, count + 1);
+										}
+									} else {
+										foundBlocks.put(blockID, 1);
+									}
+									
+									if (blockID == 61) {
+										Block b = w.getBlockAt(ml.getX(), ml.getY(), ml.getZ());
+										InventoryHolder inventoryHolder = (InventoryHolder) w.getBlockAt(ml.getX(), ml.getY(),
+												ml.getZ()).getState();
+										if (inventoryHolder.getInventory().contains(263)
+												|| inventoryHolder.getInventory().contains(173)) {
+											ItemStack[] istack=inventoryHolder.getInventory().getContents();
+											for(ItemStack i : istack) {
+												if(i!=null) {
+													if(i.getTypeId()==263) {
+														fuel+=i.getAmount()*8;
+													}
+													if(i.getTypeId()==173) {
+														fuel+=i.getAmount()*80;
+													}
+												}
+											}
+										}
+									}
+									if (blockID != 0) {
+										totalBlocks++;
+									}
+								}
+								int signLine=1;
+								int signColumn=0;
+								for(ArrayList<Integer> alFlyBlockID : foundCraft.getType().getFlyBlocks().keySet()) {
+									int flyBlockID=alFlyBlockID.get(0);
+									Double minimum=foundCraft.getType().getFlyBlocks().get(alFlyBlockID).get(0);
+									if(foundBlocks.containsKey(flyBlockID) && minimum>0) { // if it has a minimum, it should be considered for sinking consideration
+										int amount=foundBlocks.get(flyBlockID);
+										Double percentPresent=(double) (amount*100/totalBlocks);
+										int deshiftedID=flyBlockID;
+										if(deshiftedID>10000) {
+											deshiftedID=(deshiftedID-10000)>>4;
+										}
+										String signText="";
+										if(percentPresent>minimum*1.3) {
+											signText+=ChatColor.GREEN;
+										} else if(percentPresent>minimum*1.1) {
+											signText+=ChatColor.YELLOW;											
+										} else {
+											signText+=ChatColor.RED;											
+										}
+										if(deshiftedID==152) {
+											signText+="R";
+										} else if(deshiftedID==42) {
+											signText+="I";
+										} else {
+											signText+=CraftMagicNumbers.getBlock(deshiftedID).getName().substring(0, 1);											
+										}
+										
+										signText+=" ";
+										signText+=percentPresent.intValue();
+										signText+="/";
+										signText+=minimum.intValue();
+										signText+="  ";
+										if(signColumn==0) {
+											sign.setLine(signLine, signText);
+											signColumn++;
+										} else if(signLine<3) {
+											String existingLine=sign.getLine(signLine);
+											existingLine+=signText;
+											sign.setLine(signLine, existingLine);
+											signLine++;
+											signColumn=0;
+										}
+									}
+								}
+								String fuelText="";
+								Integer fuelRange=(int) ((fuel*(1+foundCraft.getType().getCruiseSkipBlocks()))/foundCraft.getType().getFuelBurnRate());
+								if(fuelRange>1000) {
+									fuelText+=ChatColor.GREEN;
+								} else if(fuelRange>100) {
+									fuelText+=ChatColor.YELLOW;
+								} else {
+									fuelText+=ChatColor.RED;									
+								}
+								fuelText+="Fuel range:";
+								fuelText+=fuelRange.toString();
+								sign.setLine(3, fuelText);
+							}
+
 						}
+
 						for(Player p : w.getPlayers()) { // this is necessary because signs do not get updated client side correctly without refreshing the chunks, which causes a memory leak in the clients							
 							int playerChunkX=p.getLocation().getBlockX()>>4;
 							int playerChunkZ=p.getLocation().getBlockZ()>>4;
@@ -359,21 +512,6 @@ public class MapUpdateManager extends BukkitRunnable {
 						}
 						sign.update( true, false );
 					}
-				} else if ( transferData instanceof StorageCrateTransferHolder ) {
-					Inventory inventory = Bukkit.createInventory( null, 27, String.format( I18nSupport.getInternationalisedString( "Item - Storage Crate name" ) ) );
-					inventory.setContents( ( ( StorageCrateTransferHolder ) transferData ).getInvetory() );
-					StorageChestItem.setInventoryOfCrateAtLocation( inventory, l, w );
-	
-				} else if ( transferData instanceof InventoryTransferHolder ) {
-					InventoryTransferHolder invData = ( InventoryTransferHolder ) transferData;
-					InventoryHolder inventoryHolder = ( InventoryHolder ) w.getBlockAt( l.getX(), l.getY(), l.getZ() ).getState();
-					inventoryHolder.getInventory().setContents( invData.getInvetory() );
-				} else if ( transferData instanceof CommandBlockTransferHolder) {
-					CommandBlockTransferHolder cbData=(CommandBlockTransferHolder) transferData;
-					CommandBlock cblock=(CommandBlock) w.getBlockAt( l.getX(), l.getY(), l.getZ() ).getState();
-					cblock.setCommand(cbData.getText());
-					cblock.setName(cbData.getName());
-					cblock.update();
 				}
 				w.getBlockAt( l.getX(), l.getY(), l.getZ() ).setData( transferData.getData() );
 			} catch ( IndexOutOfBoundsException e ) {
@@ -565,13 +703,15 @@ public class MapUpdateManager extends BukkitRunnable {
 								// send the blocks around the player first
 								Player p=(Player)i.getEntity();
 								for ( MapUpdateCommand muc : updatesInWorld ) {
-									int disty=Math.abs(muc.getNewBlockLocation().getY()-i.getNewLocation().getBlockY());
-									int distx=Math.abs(muc.getNewBlockLocation().getX()-i.getNewLocation().getBlockX());
-									int distz=Math.abs(muc.getNewBlockLocation().getZ()-i.getNewLocation().getBlockZ());
-									if(disty<2 && distx<2 && distz<2) {
-										updateBlock(muc, w, dataMap, chunks, cmChunks, origLightMap, false);
-										Location nloc=new Location(w, muc.getNewBlockLocation().getX(), muc.getNewBlockLocation().getY(), muc.getNewBlockLocation().getZ());
-										p.sendBlockChange(nloc, muc.getTypeID(), muc.getDataID());
+									if(muc!=null) {
+										int disty=Math.abs(muc.getNewBlockLocation().getY()-i.getNewLocation().getBlockY());
+										int distx=Math.abs(muc.getNewBlockLocation().getX()-i.getNewLocation().getBlockX());
+										int distz=Math.abs(muc.getNewBlockLocation().getZ()-i.getNewLocation().getBlockZ());
+										if(disty<2 && distx<2 && distz<2) {
+											updateBlock(muc, w, dataMap, chunks, cmChunks, origLightMap, false);
+											Location nloc=new Location(w, muc.getNewBlockLocation().getX(), muc.getNewBlockLocation().getY(), muc.getNewBlockLocation().getZ());
+											p.sendBlockChange(nloc, muc.getTypeID(), muc.getDataID());
+										}
 									}
 								}
 							}
@@ -826,7 +966,9 @@ public class MapUpdateManager extends BukkitRunnable {
 		if ( get != null ) {
 			updates.remove( w );
 		} else {
-			get = new ArrayList<MapUpdateCommand>(Arrays.asList(mapUpdates));
+			if(mapUpdates!=null) {
+				get = new ArrayList<MapUpdateCommand>(Arrays.asList(mapUpdates));
+			}
 		}
 
 	/*	Integer minx=Integer.MAX_VALUE,miny=Integer.MAX_VALUE,minz=Integer.MAX_VALUE;
@@ -959,7 +1101,8 @@ public class MapUpdateManager extends BukkitRunnable {
 			case 68:
 			case 63:
 				// Data and sign lines
-				return new SignTransferHolder( data, ( ( Sign ) s ).getLines() );
+				Sign signData=(Sign)s;
+				return new SignTransferHolder( data, signData.getLines() );
 
 			case 33:
 				MovecraftLocation l = MathUtils.bukkit2MovecraftLoc( s.getLocation() );
