@@ -246,15 +246,11 @@ public class RotationTask extends AsyncTask {
                 }
                 int craftMinY = 0;
                 int craftMaxY = 0;  
-		// make the centered block list, and check for a cruise control sign to reset to off
+		// make the centered block list
 		for ( int i = 0; i < blockList.length; i++ ) {
 			centeredBlockList[i] = blockList[i].subtract( originPoint );
-			if(getCraft().getCruising()) {
-				getCraft().resetSigns(true, true, true);
-				}
+
 			}
-		
-		getCraft().setCruising(false);
 
 		for ( int i = 0; i < blockList.length; i++ ) {
 
@@ -541,6 +537,43 @@ public class RotationTask extends AsyncTask {
 			}
 
 			this.hitbox = polygonalBox;
+			if(getCraft().getCruising()) {
+				if(rotation==Rotation.ANTICLOCKWISE) {
+					// ship faces west
+					if (getCraft().getCruiseDirection() == 0x5) {
+						getCraft().setCruiseDirection((byte) 0x2);
+					} else 
+					// ship faces east
+					if (getCraft().getCruiseDirection() == 0x4) {
+						getCraft().setCruiseDirection((byte) 0x3);
+					} else 
+					// ship faces north
+					if (getCraft().getCruiseDirection() == 0x2) {
+						getCraft().setCruiseDirection((byte) 0x4);
+					} else 
+					// ship faces south
+					if (getCraft().getCruiseDirection() == 0x3) {
+						getCraft().setCruiseDirection((byte) 0x5);
+					}
+				} else if(rotation==Rotation.CLOCKWISE) {
+					// ship faces west
+					if (getCraft().getCruiseDirection() == 0x5) {
+						getCraft().setCruiseDirection((byte) 0x3);
+					} else 
+					// ship faces east
+					if (getCraft().getCruiseDirection() == 0x4) {
+						getCraft().setCruiseDirection((byte) 0x2);
+					} else 
+					// ship faces north
+					if (getCraft().getCruiseDirection() == 0x2) {
+						getCraft().setCruiseDirection((byte) 0x5);
+					} else 
+					// ship faces south
+					if (getCraft().getCruiseDirection() == 0x3) {
+						getCraft().setCruiseDirection((byte) 0x4);
+					}
+				}
+			}
 			
 			// if you rotated a subcraft, update the parent with the new blocks
 			if(this.isSubCraft) {

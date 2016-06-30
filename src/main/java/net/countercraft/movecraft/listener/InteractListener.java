@@ -191,6 +191,7 @@ public class InteractListener implements Listener {
 
 							if (MathUtils.playerIsWithinBoundingPolygon(craft.getHitBox(), craft.getMinX(),
 									craft.getMinZ(), MathUtils.bukkit2MovecraftLoc(event.getPlayer().getLocation()))) {
+
 								if (craft.getType().rotateAtMidpoint() == true) {
 									MovecraftLocation midpoint = new MovecraftLocation(
 											(craft.getMaxX() + craft.getMinX()) / 2,

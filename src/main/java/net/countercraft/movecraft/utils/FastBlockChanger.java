@@ -154,12 +154,12 @@ public class FastBlockChanger extends BukkitRunnable
        cu=chunks.get(i);
        if((cu.last_modified < doneForSend) && (System.currentTimeMillis()-cu.last_sent) > 100) { // send chunk to players if no activity for 1/10 second, and you have not sent in the past 1/10 second
     	   if( cu.nChangedSinceSend>0 ) {
-    		   sendToPlayers(cu);
+//    		   sendToPlayers(cu);
     	   }
        }
        if((System.currentTimeMillis()-cu.last_sent) > 1000) { // send chunk if it has been at least 2 seconds since you last sent it, if there is still activity
     	   if( cu.nChangedSinceSend>0 ) {
-    		   sendToPlayers(cu);
+//    		   sendToPlayers(cu);
     	   }
        }
        if(cu.last_modified < done)// if the timer is up and the chunk is either modified or needs to be updated regardless of modification

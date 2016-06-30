@@ -167,7 +167,7 @@ public class CommandListener implements CommandExecutor {
 									
 							}
 						}
-							player.sendMessage("You forced release very player's ship");
+							player.sendMessage("You forced release every player's ship");
 						} else {
 						final Craft pCraft = CraftManager.getInstance().getCraftByPlayerName(args[0]);
 						if(pCraft != null) {

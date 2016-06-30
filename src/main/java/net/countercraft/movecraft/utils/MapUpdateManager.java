@@ -521,7 +521,8 @@ public class MapUpdateManager extends BukkitRunnable {
 			}
 		}
 	}
-	
+
+	/*
 	private void runQueue(final ArrayList<MapUpdateCommand> queuedMapUpdateCommands, final ArrayList<Boolean> queuedPlaceDispensers, final World w, final Set<net.minecraft.server.v1_9_R1.Chunk> chunks, final Set<Chunk> cmChunks, 
 			  			  final HashMap<MovecraftLocation, Byte> origLightMap, final Map<MovecraftLocation, TransferData> dataMap, final List<MapUpdateCommand> updatesInWorld, final Map<MovecraftLocation, List<EntityUpdateCommand>> entityMap) {
 		int numToRun=queuedMapUpdateCommands.size();
@@ -587,32 +588,14 @@ public class MapUpdateManager extends BukkitRunnable {
 				//				for ( net.minecraft.server.v1_8_R3.Chunk c : chunks ) {
 //					c.initLighting();
 //				}
-/*				for(MovecraftLocation mloc : origLightMap.keySet()) {
-					Location loc=new Location(w, mloc.getX(), mloc.getY(), mloc.getZ());
-					for ( Player p : w.getPlayers() ) {
-						Chunk c=p.getLocation().getChunk();
-						int playerChunkX=p.getLocation().getBlockX()>>4;
-						int playerChunkZ=p.getLocation().getBlockZ()>>4;
 
-						if(Math.abs(playerChunkX-c.getX())<Bukkit.getServer().getViewDistance())
-							if(Math.abs(playerChunkZ-c.getZ())<Bukkit.getServer().getViewDistance())
-								p.sendBlockChange(loc, w.getBlockTypeIdAt(loc), w.getBlockAt(loc).getData());
-					}
-					w.getBlockAt(loc).getState().update();
-				}*/
 			}
 			
 			
-/*			// move all players one final time
-			for(List<EntityUpdateCommand> listE : entityMap.values()) {
-				for(EntityUpdateCommand e : listE) {
-					if(e.getEntity() instanceof Player) {
-						e.getEntity().teleport(e.getNewLocation());
-					}
-				}
-			}*/
+
 		}
 	}
+	*/
 	
 	public void run() {
 		if ( updates.isEmpty() ) return;
@@ -633,8 +616,8 @@ public class MapUpdateManager extends BukkitRunnable {
 				HashMap<MovecraftLocation, Byte> origLightMap = new HashMap<MovecraftLocation, Byte>();
 				Set<net.minecraft.server.v1_9_R1.Chunk> chunks = null; 
 				Set<Chunk> cmChunks = null;
-				ArrayList<MapUpdateCommand> queuedMapUpdateCommands = new ArrayList<MapUpdateCommand>();
-				ArrayList<Boolean> queuedPlaceDispensers = new ArrayList<Boolean>();
+//				ArrayList<MapUpdateCommand> queuedMapUpdateCommands = new ArrayList<MapUpdateCommand>();
+//				ArrayList<Boolean> queuedPlaceDispensers = new ArrayList<Boolean>();
 
 				if(Settings.CompatibilityMode) {
 					cmChunks = new HashSet<Chunk>();					
@@ -664,19 +647,19 @@ public class MapUpdateManager extends BukkitRunnable {
 						if(w.getBlockAt( l.getX(), l.getY(), l.getZ() ).getTypeId()==23) {
 							MapUpdateCommand blankCommand=new MapUpdateCommand(c.getOldBlockLocation(), 23, c.getDataID(), c.getCraft());
 //							if(Settings.CompatibilityMode) {
-								queuedMapUpdateCommands.add(blankCommand);
-								queuedPlaceDispensers.add(false);
+//								queuedMapUpdateCommands.add(blankCommand);
+//								queuedPlaceDispensers.add(false);
 //							} else 
-//								updateBlock(blankCommand, w, dataMap, chunks, cmChunks, origLightMap, false);
+								updateBlock(blankCommand, w, dataMap, chunks, cmChunks, origLightMap, false);
 						}
 						//remove redstone blocks and replace them with stone to prevent redstone activation during reconstruction
 						if(w.getBlockAt( l.getX(), l.getY(), l.getZ() ).getTypeId()==152) {
 							MapUpdateCommand blankCommand=new MapUpdateCommand(c.getOldBlockLocation(), 1, (byte)0, c.getCraft());
 //							if(Settings.CompatibilityMode) {
-								queuedMapUpdateCommands.add(blankCommand);
-								queuedPlaceDispensers.add(false);
+//								queuedMapUpdateCommands.add(blankCommand);
+//								queuedPlaceDispensers.add(false);
 //							} else 
-//								updateBlock(blankCommand, w, dataMap, chunks, cmChunks, origLightMap, false);
+								updateBlock(blankCommand, w, dataMap, chunks, cmChunks, origLightMap, false);
 						}
 						//remove water and lava blocks and replace them with stone to prevent spillage during reconstruction
 						if(w.getBlockAt( l.getX(), l.getY(), l.getZ() ).getTypeId()>=8 && w.getBlockAt( l.getX(), l.getY(), l.getZ() ).getTypeId()<=11) {
@@ -729,18 +712,18 @@ public class MapUpdateManager extends BukkitRunnable {
 							boolean isFragile=(Arrays.binarySearch(fragileBlocks,i.getTypeID())>=0);
 							if(prevIsFragile && (!isFragile)) {
 //								if(Settings.CompatibilityMode) {
-									queuedMapUpdateCommands.add(i);
-									queuedPlaceDispensers.add(false);
+//									queuedMapUpdateCommands.add(i);
+//									queuedPlaceDispensers.add(false);
 //								} else 
-//									updateBlock(i, w, dataMap, chunks, cmChunks, origLightMap, false);
+									updateBlock(i, w, dataMap, chunks, cmChunks, origLightMap, false);
 							}
 							if(prevIsFragile && isFragile) {
 								MapUpdateCommand blankCommand=new MapUpdateCommand(i.getNewBlockLocation(), 0, (byte)0, i.getCraft());
 //								if(Settings.CompatibilityMode) {
-									queuedMapUpdateCommands.add(blankCommand);
-									queuedPlaceDispensers.add(false);
+//									queuedMapUpdateCommands.add(blankCommand);
+//									queuedPlaceDispensers.add(false);
 //								} else 
-//									updateBlock(blankCommand, w, dataMap, chunks, cmChunks, origLightMap, false);
+									updateBlock(blankCommand, w, dataMap, chunks, cmChunks, origLightMap, false);
 							}
 						}
 					}
@@ -763,10 +746,10 @@ public class MapUpdateManager extends BukkitRunnable {
 								}
 							} else {
 	//							if(Settings.CompatibilityMode) {
-									queuedMapUpdateCommands.add(m);
-									queuedPlaceDispensers.add(false);
+//									queuedMapUpdateCommands.add(m);
+//									queuedPlaceDispensers.add(false);
 	//							} else 
-	//								updateBlock(m, w, dataMap, chunks, cmChunks, origLightMap, false);
+									updateBlock(m, w, dataMap, chunks, cmChunks, origLightMap, false);
 							}
 						}
 						
@@ -790,10 +773,10 @@ public class MapUpdateManager extends BukkitRunnable {
 						boolean isFragile=(Arrays.binarySearch(fragileBlocks,i.getTypeID())>=0);
 						if(isFragile) {
 		//					if(Settings.CompatibilityMode) {
-								queuedMapUpdateCommands.add(i);
-								queuedPlaceDispensers.add(false);
+//								queuedMapUpdateCommands.add(i);
+//								queuedPlaceDispensers.add(false);
 		//					} else 
-		//						updateBlock(i, w, dataMap, chunks, cmChunks, origLightMap, false);
+								updateBlock(i, w, dataMap, chunks, cmChunks, origLightMap, false);
 						}
 					}
 				}
@@ -803,10 +786,10 @@ public class MapUpdateManager extends BukkitRunnable {
 						// Put Dispensers back in now that the ship is reconstructed
 						if(i.getTypeID()==23 || i.getTypeID()==152) {
 		//					if(Settings.CompatibilityMode) {
-								queuedMapUpdateCommands.add(i);
-								queuedPlaceDispensers.add(true);
+//								queuedMapUpdateCommands.add(i);
+//								queuedPlaceDispensers.add(true);
 		//					} else 
-		//						updateBlock(i, w, dataMap, chunks, cmChunks, origLightMap, true);					
+								updateBlock(i, w, dataMap, chunks, cmChunks, origLightMap, true);					
 						}
 						
 					}
@@ -831,10 +814,10 @@ public class MapUpdateManager extends BukkitRunnable {
 						// Place beds
 						if(i.getTypeID()==26) {
 		//					if(Settings.CompatibilityMode) {
-								queuedMapUpdateCommands.add(i);
-								queuedPlaceDispensers.add(true);
+//								queuedMapUpdateCommands.add(i);
+//								queuedPlaceDispensers.add(true);
 		//					} else 
-		//						updateBlock(i, w, dataMap, chunks, cmChunks, origLightMap, true);					
+								updateBlock(i, w, dataMap, chunks, cmChunks, origLightMap, true);					
 						}
 						
 					}
@@ -846,10 +829,10 @@ public class MapUpdateManager extends BukkitRunnable {
 						boolean isFragile=(Arrays.binarySearch(fragileBlocks,i.getTypeID())>=0);
 						if(isFragile) {
 		//					if(Settings.CompatibilityMode) {
-								queuedMapUpdateCommands.add(i);
-								queuedPlaceDispensers.add(true);
+//								queuedMapUpdateCommands.add(i);
+//								queuedPlaceDispensers.add(true);
 		//					} else 
-		//						updateBlock(i, w, dataMap, chunks, cmChunks, origLightMap, true);
+								updateBlock(i, w, dataMap, chunks, cmChunks, origLightMap, true);
 						}						
 					}
 				}
@@ -874,44 +857,15 @@ public class MapUpdateManager extends BukkitRunnable {
 					}
 				}
 			
-//				if(Settings.CompatibilityMode) {
+/*				if(Settings.CompatibilityMode) {
 					long endTime=System.currentTimeMillis();
 					if(Settings.Debug) {
-						Movecraft.getInstance().getServer().broadcastMessage("Map update setup took (ms): "+(endTime-startTime));
+						Movecraft.getInstance().getServer().broadcastMessage("Map update took (ms): "+(endTime-startTime));
 					}
-					try {
-					runQueue(queuedMapUpdateCommands,queuedPlaceDispensers, w, chunks, cmChunks, origLightMap, dataMap, updatesInWorld, entityMap);
-					} catch (Exception e) {
-						StringWriter sw = new StringWriter();
-						PrintWriter pw = new PrintWriter(sw);
-						e.printStackTrace(pw);
-						sw.toString(); 
-						Movecraft.getInstance().getLogger().log( Level.SEVERE, sw.toString() );
-					}
-/*				} else {
-					// update signs, inventories, other special data
-					updateData(dataMap, w);
-					
-					for ( net.minecraft.server.v1_8_R3.Chunk c : chunks ) {
-//						c.initLighting();
-						ChunkCoordIntPair ccip = new ChunkCoordIntPair( c.locX, c.locZ ); // changed from c.x to c.locX and c.locZ
 
-						for ( Player p : w.getPlayers() ) {
-							List<ChunkCoordIntPair> chunkCoordIntPairQueue = ( List<ChunkCoordIntPair> ) ( ( CraftPlayer ) p ).getHandle().chunkCoordIntPairQueue;
-							int playerChunkX=p.getLocation().getBlockX()>>4;
-							int playerChunkZ=p.getLocation().getBlockZ()>>4;
-							
-							// only send the chunk if the player is near enough to see it and it's not still in the queue, but always send the chunk if the player is standing in it
-							if(playerChunkX==c.locX && playerChunkZ==c.locZ) {
-								chunkCoordIntPairQueue.add( 0, ccip );
-							} else {
-								if(Math.abs(playerChunkX-c.locX)<Bukkit.getServer().getViewDistance())
-									if(Math.abs(playerChunkZ-c.locZ)<Bukkit.getServer().getViewDistance())
-										if ( !chunkCoordIntPairQueue.contains( ccip ) )
-											chunkCoordIntPairQueue.add( ccip );
-							}
-						}
-					}
+				} else {
+					// update signs, inventories, other special data */
+					updateData(dataMap, w);
 					
 					if(CraftManager.getInstance().getCraftsInWorld(w)!=null) {
 						
@@ -928,11 +882,18 @@ public class MapUpdateManager extends BukkitRunnable {
 							}						
 						}
 					}
+					// send updates to clients
+					for ( MapUpdateCommand c : updatesInWorld ) {
+						if(c!=null) {
+							Location loc=new Location(w,c.getNewBlockLocation().getX(),c.getNewBlockLocation().getY(),c.getNewBlockLocation().getZ());
+							w.getBlockAt(loc).getState().update();
+						}
+					}
 					long endTime=System.currentTimeMillis();
 					if(Settings.Debug) {
 						Movecraft.getInstance().getServer().broadcastMessage("Map update took (ms): "+(endTime-startTime));
 					}
-				}*/
+//				}
 
                                 //drop harvested yield 
                                 if(itemDropUpdatesInWorld!=null) {
