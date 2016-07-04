@@ -1092,7 +1092,20 @@ public class AsyncManager extends BukkitRunnable {
 								long secsElapsed = (System.currentTimeMillis()
 										- Movecraft.getInstance().blockFadeTimeMap.get(loc)) / 1000;
 								// has enough time passed to fade the block?
-								if (secsElapsed > Settings.FadeWrecksAfter) {
+								boolean timeElapsed=false;
+								// make containers take longer to fade so their loot can be recovered
+								if(w.getBlockTypeIdAt(loc.getX(), loc.getY(),loc.getZ())==54) {
+									timeElapsed=secsElapsed > Settings.FadeWrecksAfter*5;
+								} else if(w.getBlockTypeIdAt(loc.getX(), loc.getY(),loc.getZ())==146) {
+									timeElapsed=secsElapsed > Settings.FadeWrecksAfter*5;
+								} else if(w.getBlockTypeIdAt(loc.getX(), loc.getY(),loc.getZ())==158) {
+									timeElapsed=secsElapsed > Settings.FadeWrecksAfter*5;
+								} else if(w.getBlockTypeIdAt(loc.getX(), loc.getY(),loc.getZ())==23) {
+									timeElapsed=secsElapsed > Settings.FadeWrecksAfter*5;
+								} else {
+									timeElapsed=secsElapsed > Settings.FadeWrecksAfter;									
+								}
+								if (timeElapsed) {
 									// load the chunk if it hasn't been already
 									int cx = loc.getX() >> 4;
 									int cz = loc.getZ() >> 4;
