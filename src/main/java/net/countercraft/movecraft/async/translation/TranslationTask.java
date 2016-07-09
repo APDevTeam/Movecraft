@@ -567,6 +567,9 @@ public class TranslationTask extends AsyncTask {
                                     fail( String.format( I18nSupport.getInternationalisedString( "Towny - Translation Failed") + " %s @ %d,%d,%d", townName, oldLoc.getX(), oldLoc.getY(), oldLoc.getZ() ));
                                 }else{
                                     fail( String.format( I18nSupport.getInternationalisedString( "Translation - Failed Craft is obstructed" )+" @ %d,%d,%d,%s", oldLoc.getX(), oldLoc.getY(), oldLoc.getZ(), getCraft().getW().getBlockAt(newLoc.getX(),newLoc.getY(), newLoc.getZ()).getType().toString()) );
+                                    if(getCraft().getNotificationPlayer()!=null) {
+                        	            Location location = getCraft().getNotificationPlayer().getLocation();
+                                    }
                                 }
                                 break;
                             }else if(explosionBlockedByTowny){
@@ -637,6 +640,7 @@ public class TranslationTask extends AsyncTask {
                                             fail( String.format( I18nSupport.getInternationalisedString( "Translation - Failed Craft hit height limit" ) ) );
                                         }else{
                                             fail( String.format( I18nSupport.getInternationalisedString( "Translation - Failed Craft is obstructed" )+" @ %d,%d,%d,%s", oldLoc.getX(), oldLoc.getY(), oldLoc.getZ(), getCraft().getW().getBlockAt(newLoc.getX(),newLoc.getY(), newLoc.getZ()).getType().toString()) );
+
                                         }
                                         break;
                                 }
@@ -763,16 +767,12 @@ public class TranslationTask extends AsyncTask {
             data.setUpdates(explosionSet.toArray( new MapUpdateCommand[1] ) );
 
             fail( String.format( I18nSupport.getInternationalisedString( "Translation - Failed Craft is obstructed" ) ) );
-            if(craftPilot!=null) {
-	            Location location = craftPilot.getLocation();
-	            String name = craftPilot.getName();
-	            Bukkit.getPlayerExact(name).getWorld().playSound(location,Sound.BLOCK_ANVIL_LAND,1, 0);
-	            if(getCraft().getSinking()==true) {
-	                if(getCraft().getType().getSinkPercent()!=0.0) {
-	                    getCraft().setLastBlockCheck(0);
-	                }				
-	                getCraft().setLastCruisUpdate(System.currentTimeMillis()-30000);
-	            }
+            
+            if(getCraft().getSinking()==true) {
+                if(getCraft().getType().getSinkPercent()!=0.0) {
+                    getCraft().setLastBlockCheck(0);
+                }				
+                getCraft().setLastCruisUpdate(System.currentTimeMillis()-30000);
             }
         }
 
@@ -951,6 +951,12 @@ public class TranslationTask extends AsyncTask {
 	private void fail( String message ) {
 		data.setFailed( true );
 		data.setFailMessage( message );
+		Player craftPilot=CraftManager.getInstance().getPlayerFromCraft(getCraft());
+        if(craftPilot!=null) {
+            Location location = craftPilot.getLocation();
+            getCraft().getW().playSound(location,Sound.BLOCK_ANVIL_LAND,1.0f, 0.5f);
+        }
+
 	}
 
 	public TranslationTaskData getData() {

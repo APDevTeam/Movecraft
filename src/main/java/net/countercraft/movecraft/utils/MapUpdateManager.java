@@ -94,7 +94,7 @@ public class MapUpdateManager extends BukkitRunnable {
 	
 	private void updateBlock(MapUpdateCommand m, World w, Map<MovecraftLocation, TransferData> dataMap, Set<net.minecraft.server.v1_9_R1.Chunk> chunks, Set<Chunk> cmChunks, HashMap<MovecraftLocation, Byte> origLightMap, boolean placeDispensers) {
 		MovecraftLocation workingL = m.getNewBlockLocation();
-		final int[] blocksToBlankOut = new int[]{ 54, 61, 62, 63, 68, 116, 117, 146, 149, 150, 154, 158, 145 };		
+		final int[] blocksToBlankOut = new int[]{ 54, 61, 62, 63, 68, 116, 117, 145, 146, 149, 150, 154, 158 };		
 
 		int x = workingL.getX();
 		int y = workingL.getY();
@@ -181,6 +181,16 @@ public class MapUpdateManager extends BukkitRunnable {
 				if(doBlankOut) {
 					fChunk.setBlock(new BlockPosition(x, y, z), CraftMagicNumbers.getBlock(org.bukkit.Material.AIR).fromLegacyData(0));
 				}
+				if(origType==149 || origType==150) { // necessary because bukkit does not handle comparators correctly. This code does not prevent console spam, but it does prevent chunk corruption
+					w.getBlockAt(x, y, z).setType(org.bukkit.Material.SIGN_POST);
+					BlockState state=w.getBlockAt( x, y, z ).getState();
+					if(state instanceof Sign) { // for some bizarre reason the block is sometimes not a sign, which crashes unless I do this
+						Sign s=(Sign)state;
+						s.setLine(0, "PLACEHOLDER");
+//						s.update();   FROGGG
+					}
+					w.getBlockAt(x, y, z).setType(org.bukkit.Material.AIR);
+					}
 				fChunk.setBlock(new BlockPosition(x, y, z), ibd);
 			}
 //			 removing to try new fast block changer system
@@ -857,14 +867,6 @@ public class MapUpdateManager extends BukkitRunnable {
 					}
 				}
 			
-/*				if(Settings.CompatibilityMode) {
-					long endTime=System.currentTimeMillis();
-					if(Settings.Debug) {
-						Movecraft.getInstance().getServer().broadcastMessage("Map update took (ms): "+(endTime-startTime));
-					}
-
-				} else {
-					// update signs, inventories, other special data */
 					updateData(dataMap, w);
 					
 					if(CraftManager.getInstance().getCraftsInWorld(w)!=null) {
@@ -893,7 +895,7 @@ public class MapUpdateManager extends BukkitRunnable {
 					if(Settings.Debug) {
 						Movecraft.getInstance().getServer().broadcastMessage("Map update took (ms): "+(endTime-startTime));
 					}
-//				}
+
 
                                 //drop harvested yield 
                                 if(itemDropUpdatesInWorld!=null) {
@@ -923,71 +925,31 @@ public class MapUpdateManager extends BukkitRunnable {
 	}
         
         public boolean addWorldUpdate( World w, MapUpdateCommand[] mapUpdates, EntityUpdateCommand[] eUpdates, ItemDropUpdateCommand[] iUpdates) {
-		ArrayList<MapUpdateCommand> get = updates.get( w );
-		if ( get != null ) {
-			updates.remove( w );
-		} else {
-			if(mapUpdates!=null) {
-				get = new ArrayList<MapUpdateCommand>(Arrays.asList(mapUpdates));
-			}
-		}
-
-	/*	Integer minx=Integer.MAX_VALUE,miny=Integer.MAX_VALUE,minz=Integer.MAX_VALUE;
-		Integer maxx=Integer.MIN_VALUE,maxy=Integer.MIN_VALUE,maxz=Integer.MIN_VALUE;
-		HashMap<MovecraftLocation,MapUpdateCommand> sortRef = new HashMap<MovecraftLocation,MapUpdateCommand>();
-		if(mapUpdates!=null) {
-			for ( MapUpdateCommand m : mapUpdates ) {
-				if ( setContainsConflict( get, m ) ) {
-					return true;
-				}
-				if(m!=null) {
-					if(m.getNewBlockLocation().getX()<minx)
-						minx=m.getNewBlockLocation().getX();
-					if(m.getNewBlockLocation().getY()<miny)
-						miny=m.getNewBlockLocation().getY();
-					if(m.getNewBlockLocation().getZ()<minz)
-						minz=m.getNewBlockLocation().getZ();
-					if(m.getNewBlockLocation().getX()>maxx)
-						maxx=m.getNewBlockLocation().getX();
-					if(m.getNewBlockLocation().getY()>maxy)
-						maxy=m.getNewBlockLocation().getY();
-					if(m.getNewBlockLocation().getZ()>maxz)
-						maxz=m.getNewBlockLocation().getZ();
-					sortRef.put(m.getNewBlockLocation(), m);
-				}
-			}
-		}
-
-		ArrayList<MapUpdateCommand> tempSet=null;
-		if(mapUpdates!=null) {
-			tempSet = new ArrayList<MapUpdateCommand>();//(Arrays.asList(mapUpdates));
-			// Sort the blocks from the bottom up to minimize lower altitude block updates
-//			for(int posy=maxy;posy>=miny;posy--) {
-//				for(MapUpdateCommand test : mapUpdates) {
-//					if(test.getNewBlockLocation().getY()==posy) {
-//						tempSet.add(test);
-//					}
-//				}
-//			}
-		} else {
-			tempSet = new ArrayList<MapUpdateCommand>();
-		}
 		
-		get.addAll( mapUpdates );*/
-		updates.put( w, get );
+        if(mapUpdates!=null)	 {
+	        ArrayList<MapUpdateCommand> get = updates.get( w );	
+			if ( get != null ) {
+				updates.remove( w ); 
+				ArrayList<MapUpdateCommand> tempUpdates = new ArrayList<MapUpdateCommand>();
+		        tempUpdates.addAll(Arrays.asList(mapUpdates));
+				get.addAll( tempUpdates );
+			} else {
+				get = new ArrayList<MapUpdateCommand>(Arrays.asList(mapUpdates));		
+			}
+			updates.put(w, get);
+        }
 
 		//now do entity updates
 		if(eUpdates!=null) {
 			ArrayList<EntityUpdateCommand> eGet = entityUpdates.get( w );
 			if ( eGet != null ) {
 				entityUpdates.remove( w ); 
+				ArrayList<EntityUpdateCommand> tempEUpdates = new ArrayList<EntityUpdateCommand>();
+	            tempEUpdates.addAll(Arrays.asList(eUpdates));
+				eGet.addAll( tempEUpdates );
 			} else {
-				eGet = new ArrayList<EntityUpdateCommand>();
+				eGet = new ArrayList<EntityUpdateCommand>(Arrays.asList(eUpdates));
 			}
-			
-			ArrayList<EntityUpdateCommand> tempEUpdates = new ArrayList<EntityUpdateCommand>();
-                        tempEUpdates.addAll(Arrays.asList(eUpdates));
-			eGet.addAll( tempEUpdates );
 			entityUpdates.put(w, eGet);
 		}
                 
@@ -995,14 +957,13 @@ public class MapUpdateManager extends BukkitRunnable {
 		if(iUpdates!=null) {
 			ArrayList<ItemDropUpdateCommand> iGet = itemDropUpdates.get( w );
 			if ( iGet != null ) {
-				entityUpdates.remove( w ); 
+				entityUpdates.remove( w );
+				ArrayList<ItemDropUpdateCommand> tempIDUpdates = new ArrayList<ItemDropUpdateCommand>();
+	            tempIDUpdates.addAll(Arrays.asList(iUpdates));
+				iGet.addAll( tempIDUpdates );
 			} else {
-				iGet = new ArrayList<ItemDropUpdateCommand>();
+				iGet = new ArrayList<ItemDropUpdateCommand>(Arrays.asList(iUpdates));
 			}
-			
-			ArrayList<ItemDropUpdateCommand> tempIDUpdates = new ArrayList<ItemDropUpdateCommand>();
-                        tempIDUpdates.addAll(Arrays.asList(iUpdates));
-			iGet.addAll( tempIDUpdates );
 			itemDropUpdates.put(w, iGet);
 		}
                 
