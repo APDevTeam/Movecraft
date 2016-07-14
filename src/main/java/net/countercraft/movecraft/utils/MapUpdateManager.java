@@ -108,14 +108,14 @@ public class MapUpdateManager extends BukkitRunnable {
 		}
 			
 		
-	//	chunk = w.getBlockAt( x, y, z ).getChunk();
+		chunk = w.getBlockAt( x, y, z ).getChunk();
 
-	//	net.minecraft.server.v1_9_R1.Chunk c = null;
+		net.minecraft.server.v1_9_R1.Chunk c = null;
 		Chunk cmC = null;
 		if(Settings.CompatibilityMode) {
 			cmC = w.getBlockAt( x, y, z ).getChunk();
 		} else {
-		//	c = ( ( CraftChunk ) chunk ).getHandle();
+			c = ( ( CraftChunk ) chunk ).getHandle();
 		}
 
 		byte data=m.getDataID();
@@ -173,10 +173,10 @@ public class MapUpdateManager extends BukkitRunnable {
 		} else {
 			int origType=w.getBlockAt( x, y, z ).getTypeId();
 			byte origData=w.getBlockAt( x, y, z ).getData();
-
+/*
 			if(origType!=newTypeID || origData!=data) {
 				ChunkUpdater fChunk=FastBlockChanger.getInstance().getChunk(w, x>>4, z>>4, false);
-				IBlockData ibd=net.minecraft.server.v1_9_R1.Block.getByCombinedId(newTypeID+(data<<12));
+				IBlockData ibd=CraftMagicNumbers.getBlock(newTypeID).fromLegacyData(data);//net.minecraft.server.v1_9_R1.Block.getByCombinedId(newTypeID+(data<<12));
 				boolean doBlankOut=(Arrays.binarySearch(blocksToBlankOut,newTypeID)>=0);
 				if(doBlankOut) {
 					fChunk.setBlock(new BlockPosition(x, y, z), CraftMagicNumbers.getBlock(org.bukkit.Material.AIR).fromLegacyData(0));
@@ -192,9 +192,9 @@ public class MapUpdateManager extends BukkitRunnable {
 					w.getBlockAt(x, y, z).setType(org.bukkit.Material.AIR);
 					}
 				fChunk.setBlock(new BlockPosition(x, y, z), ibd);
-			}
+			}*/
 //			 removing to try new fast block changer system
-/*			BlockPosition position = new BlockPosition(x, y, z);
+			BlockPosition position = new BlockPosition(x, y, z);
 			
 			if((origType==149 || origType==150) && m.getWorldEditBaseBlock()==null) { // bukkit can't remove comparators safely, it screws up the NBT data. So turn it to a sign, then remove it.
 
@@ -222,24 +222,21 @@ public class MapUpdateManager extends BukkitRunnable {
 						w.getBlockAt(x, y, z).setType(org.bukkit.Material.AIR);
 					}
 					
-					if( newTypeID==50 || newTypeID==89 || newTypeID==169 || newTypeID==124
-					 || origType==50 || origType==89 || origType==169 || origType==124) // don't use native code for lights
-						w.getBlockAt( x, y, z ).setTypeIdAndData( newTypeID, data, false );
-					else {
-						if(m.getWorldEditBaseBlock()==null) {
-							success = c.a( position, CraftMagicNumbers.getBlock(newTypeID).fromLegacyData(data) ) != null;
-						} else {
-							success = c.a( position, CraftMagicNumbers.getBlock(newTypeID).fromLegacyData(data) ) != null;
-							if(m.getWorldEditBaseBlock() instanceof SignBlock) {
-								BlockState state=w.getBlockAt( x, y, z ).getState();
-								Sign s=(Sign)state;
-								for(int i=0; i<((SignBlock)m.getWorldEditBaseBlock()).getText().length; i++) {
-									s.setLine( i, ((SignBlock)m.getWorldEditBaseBlock()).getText()[i] );
-								}
-								s.update();
-							}						
-						}
+
+					if(m.getWorldEditBaseBlock()==null) {
+						success = c.a( position, CraftMagicNumbers.getBlock(newTypeID).fromLegacyData(data) ) != null;
+					} else {
+						success = c.a( position, CraftMagicNumbers.getBlock(newTypeID).fromLegacyData(data) ) != null;
+						if(m.getWorldEditBaseBlock() instanceof SignBlock) {
+							BlockState state=w.getBlockAt( x, y, z ).getState();
+							Sign s=(Sign)state;
+							for(int i=0; i<((SignBlock)m.getWorldEditBaseBlock()).getText().length; i++) {
+								s.setLine( i, ((SignBlock)m.getWorldEditBaseBlock()).getText()[i] );
+							}
+							s.update();
+						}						
 					}
+
 				} else {
 					success=true;
 				}
@@ -263,6 +260,7 @@ public class MapUpdateManager extends BukkitRunnable {
 					chunks.add( c );
 				}
 			}//*/
+			
 		}						
 
 	}
@@ -634,6 +632,22 @@ public class MapUpdateManager extends BukkitRunnable {
 				} else {
 					chunks = new HashSet<net.minecraft.server.v1_9_R1.Chunk>();
 				}
+				
+				// Make sure all chunks are loaded
+				for ( MapUpdateCommand c : updatesInWorld ) {
+					if(c!=null) {
+						if(c.getNewBlockLocation()!=null) {
+							if(!w.isChunkLoaded(c.getNewBlockLocation().getX()>>4, c.getNewBlockLocation().getZ()>>4)) {
+								w.loadChunk(c.getNewBlockLocation().getX()>>4, c.getNewBlockLocation().getZ()>>4);
+							}
+						}
+						if(c.getOldBlockLocation()!=null) {
+							if(!w.isChunkLoaded(c.getOldBlockLocation().getX()>>4, c.getOldBlockLocation().getZ()>>4)) {
+								w.loadChunk(c.getOldBlockLocation().getX()>>4, c.getOldBlockLocation().getZ()>>4);
+							}
+						}
+					}
+				}
                                 
 				// Preprocessing
 				for ( MapUpdateCommand c : updatesInWorld ) {
@@ -891,6 +905,22 @@ public class MapUpdateManager extends BukkitRunnable {
 							w.getBlockAt(loc).getState().update();
 						}
 					}
+					// queue chunks for lighting recalc
+					if(Settings.CompatibilityMode==false) {
+						for(net.minecraft.server.v1_9_R1.Chunk c : chunks) {
+							ChunkUpdater fChunk=FastBlockChanger.getInstance().getChunk(c.world,c.locX,c.locZ,true);
+							for(int bx=0;bx<16;bx++) {
+								for(int bz=0;bz<16;bz++) {
+									for(int by=0;by<4;by++) {
+										fChunk.bits[bx][bz][by]=Long.MAX_VALUE;										
+									}
+								}
+							}
+
+							fChunk.last_modified=System.currentTimeMillis();
+						}
+					}
+					
 					long endTime=System.currentTimeMillis();
 					if(Settings.Debug) {
 						Movecraft.getInstance().getServer().broadcastMessage("Map update took (ms): "+(endTime-startTime));

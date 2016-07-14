@@ -118,15 +118,6 @@ public class TranslationTask extends AsyncTask {
             int minX=getCraft().getMinX();
             int minZ=getCraft().getMinZ();
 		
-/*		// Load any chunks that you are moving into that are not loaded 
-		for (int posX=minX+data.getDx();posX<=maxX+data.getDx();posX++) {
-			for (int posZ=minZ+data.getDz();posZ<=maxZ+data.getDz();posZ++) {
-				if(getCraft().getW().isChunkLoaded(posX>>4, posZ>>4) == false) {
-					getCraft().getW().loadChunk(posX>>4, posZ>>4);
-				}
-			}
-		}*/
-		
             // treat sinking crafts specially
             if(getCraft().getSinking()) {
                     waterCraft=true;

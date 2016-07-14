@@ -160,6 +160,7 @@ public class Craft {
 		cmaxX=cmaxX>>4;
 		cmaxZ=cmaxZ>>4;
 		
+		
 		// load all chunks that will be needed to translate this craft
 		for (int posX=cminX-1;posX<=cmaxX+1;posX++) {
 			for (int posZ=cminZ-1;posZ<=cmaxZ+1;posZ++) {

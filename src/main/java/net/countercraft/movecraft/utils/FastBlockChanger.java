@@ -154,12 +154,12 @@ public class FastBlockChanger extends BukkitRunnable
        cu=chunks.get(i);
        if((cu.last_modified < doneForSend) && (System.currentTimeMillis()-cu.last_sent) > 100) { // send chunk to players if no activity for 1/10 second, and you have not sent in the past 1/10 second
     	   if( cu.nChangedSinceSend>0 ) {
-//    		   sendToPlayers(cu);
+//    		   sendToPlayers(cu); this has issues, changed to old non-native method
     	   }
        }
        if((System.currentTimeMillis()-cu.last_sent) > 1000) { // send chunk if it has been at least 2 seconds since you last sent it, if there is still activity
     	   if( cu.nChangedSinceSend>0 ) {
-//    		   sendToPlayers(cu);
+//    		   sendToPlayers(cu); this has issues, changed to old non-native method
     	   }
        }
        if(cu.last_modified < done)// if the timer is up and the chunk is either modified or needs to be updated regardless of modification
@@ -170,6 +170,7 @@ public class FastBlockChanger extends BukkitRunnable
            {
              
              cu.recalcLighting();// determine what blocks need relighting, recalculate it
+//        	   cu.relightEntireChunk();
              //ch = cu.ch;
              //sendToPlayers(cu);
              
@@ -254,7 +255,7 @@ public class FastBlockChanger extends BukkitRunnable
        private boolean isSent=false;
        public boolean isFBCPacket=false; // block the chunk load packet?
         // x  z  y
-       private long[][][] bits = new long[16][16][4]; // an array of long bitfields, each representing 64 blocks along Y-axis
+       public long[][][] bits = new long[16][16][4]; // an array of long bitfields, each representing 64 blocks along Y-axis
                           // 16x16x(4x64) is 65536 blocks, or one chunk
        
        private ChunkUpdater(World w, int x, int z, Chunk ch, boolean update)
@@ -276,8 +277,10 @@ public class FastBlockChanger extends BukkitRunnable
          if(this.chnk==null)
          {
            this.chnk=this.w.getChunkIfLoaded(x, z);
-           if(this.chnk==null)
-             return;
+           if(this.chnk==null) {
+        	   Movecraft.getInstance().getLogger().log(Level.INFO,"ChunkUpdater.setBlock ERROR unloadable chunk at "+this.x+","+this.z);
+        	   return;
+           }
          }
          
          int x = (b.getX()%16 + 16)%16;
@@ -331,6 +334,17 @@ public class FastBlockChanger extends BukkitRunnable
          w.c(EnumSkyBlock.BLOCK, bp);
        }
        
+       private void relightEntireChunk() {
+			for(int bx=0;bx<16;bx++) {
+				for(int bz=0;bz<16;bz++) {
+					for(int by=0;by<255;by++) {
+						BlockPosition bp=new BlockPosition(bx+(x<<4), by, bz+(z<<4));
+						relight(bp);
+					}
+				}
+			}
+       }
+       
        private void finalizeRelightBlocks()
        {
          long[][][] newbits = new long[16][16][4]; // cant add more blocks to bits directly without it adding more blocks around the blocks we just added, ad infinitum
@@ -373,7 +387,7 @@ public class FastBlockChanger extends BukkitRunnable
                bb = bits[bx][bz][by] | newbits[bx][bz][by]; // OR all the things
        }
        
-       private void recalcLighting()
+       public void recalcLighting()
        {
          // fix lighting for all the new blocks and transparent blocks around them
          finalizeRelightBlocks();
