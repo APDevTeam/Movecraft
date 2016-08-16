@@ -618,7 +618,7 @@ public class AsyncManager extends BukkitRunnable {
 					}
 				}
 				// check every few seconds for every craft to see if it should
-				// be sinking
+				// be sinking or disabled
 				for (Craft pcraft : CraftManager.getInstance().getCraftsInWorld(w)) {
 					Set<TownBlock> townBlockSet = new HashSet<TownBlock>();
 					if (pcraft != null && pcraft.getSinking() == false) {
@@ -629,6 +629,7 @@ public class AsyncManager extends BukkitRunnable {
 								int totalNonAirBlocks = 0;
 								int totalNonAirWaterBlocks = 0;
 								HashMap<ArrayList<Integer>, Integer> foundFlyBlocks = new HashMap<ArrayList<Integer>, Integer>();
+								HashMap<ArrayList<Integer>, Integer> foundMoveBlocks = new HashMap<ArrayList<Integer>, Integer>();
 								boolean regionPVPBlocked = false;
 								boolean sinkingForbiddenByFlag = false;
 								boolean sinkingForbiddenByTowny = false;
@@ -660,6 +661,18 @@ public class AsyncManager extends BukkitRunnable {
 											}
 										}
 									}
+									if(pcraft.getType().getMoveBlocks()!=null) {
+										for (ArrayList<Integer> moveBlockDef : pcraft.getType().getMoveBlocks().keySet()) {
+											if (moveBlockDef.contains(blockID) || moveBlockDef.contains(shiftedID)) {
+												Integer count = foundMoveBlocks.get(moveBlockDef);
+												if (count == null) {
+													foundMoveBlocks.put(moveBlockDef, 1);
+												} else {
+													foundMoveBlocks.put(moveBlockDef, count + 1);
+												}
+											}
+										}
+									}
 
 									if (blockID != 0) {
 										totalNonAirBlocks++;
@@ -673,6 +686,7 @@ public class AsyncManager extends BukkitRunnable {
 								// are below the threshold specified in
 								// SinkPercent
 								boolean isSinking = false;
+
 								for (ArrayList<Integer> i : pcraft.getType().getFlyBlocks().keySet()) {
 									int numfound = 0;
 									if (foundFlyBlocks.get(i) != null) {
@@ -684,7 +698,15 @@ public class AsyncManager extends BukkitRunnable {
 									if (percent < sinkPercent) {
 										isSinking = true;
 									}
-
+									double movePercent = pcraft.getType().getMoveBlocks().get(i).get(0);
+									double disablePercent = movePercent * pcraft.getType().getSinkPercent() / 100.0;
+									if (percent < disablePercent && pcraft.getDisabled()==false && pcraft.isNotProcessing()) {
+										pcraft.setDisabled(true);
+										if(pcraft.getNotificationPlayer()!=null) {
+											Location loc = pcraft.getNotificationPlayer().getLocation();
+							            	pcraft.getW().playSound(loc,Sound.ENTITY_IRONGOLEM_DEATH,5.0f, 5.0f);  
+										}
+									}
 								}
 
 								// And check the overallsinkpercent

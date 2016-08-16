@@ -127,7 +127,12 @@ public class RotationTask extends AsyncTask {
 		int distZ=maxZ-minZ; 
 		
 		Player craftPilot=CraftManager.getInstance().getPlayerFromCraft(getCraft());
-		
+        
+        if(getCraft().getDisabled() && (!getCraft().getSinking())) {
+            failed = true;
+			failMessage = String.format( I18nSupport.getInternationalisedString( "Craft is disabled!" ) );				
+        }
+        
 		// blockedByWater=false means an ocean-going vessel
 		boolean waterCraft=!getCraft().getType().blockedByWater();
 

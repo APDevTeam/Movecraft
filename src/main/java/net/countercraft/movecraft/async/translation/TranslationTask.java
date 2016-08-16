@@ -122,7 +122,10 @@ public class TranslationTask extends AsyncTask {
             if(getCraft().getSinking()) {
                     waterCraft=true;
                     hoverCraft=false;
-//			Movecraft.getInstance().getLogger().log( Level.INFO, "Translation task at: "+System.currentTimeMillis() );
+            }
+            
+            if(getCraft().getDisabled() && (!getCraft().getSinking())) {
+            	fail( String.format( I18nSupport.getInternationalisedString( "Craft is disabled!" ) ) );					
             }
 		
             // check the maxheightaboveground limitation, move 1 down if that limit is exceeded
@@ -951,7 +954,11 @@ public class TranslationTask extends AsyncTask {
 		Player craftPilot=CraftManager.getInstance().getPlayerFromCraft(getCraft());
         if(craftPilot!=null) {
             Location location = craftPilot.getLocation();
-            getCraft().getW().playSound(location,Sound.BLOCK_ANVIL_LAND,1.0f, 0.5f);
+            if(getCraft().getDisabled()==false) {
+            	getCraft().getW().playSound(location,Sound.BLOCK_ANVIL_LAND,1.0f, 0.25f);
+            } else {
+            	getCraft().getW().playSound(location,Sound.ENTITY_IRONGOLEM_DEATH,5.0f, 5.0f);            	
+            }
         }
 
 	}

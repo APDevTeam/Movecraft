@@ -41,6 +41,7 @@ public class Craft {
 	private int minX, minZ, maxHeightLimit;
 	private boolean cruising;
 	private boolean sinking;
+	private boolean disabled;
 	private byte cruiseDirection;
 	private long lastCruiseUpdate;
 	private long lastBlockCheck;
@@ -75,6 +76,9 @@ public class Craft {
 		this.cannonDirector=null;
 		this.AADirector=null;
 		this.lastCruiseUpdate=System.currentTimeMillis()-10000;
+		this.cruising=false;
+		this.sinking=false;
+		this.disabled=false;
 	}
 
 	public boolean isNotProcessing() {
@@ -311,6 +315,10 @@ public class Craft {
 		return sinking;
 	}
 	
+	public boolean getDisabled() {
+		return disabled;
+	}
+	
 	public void setCruiseDirection(byte cruiseDirection) {
 		this.cruiseDirection=cruiseDirection;
 	}
@@ -325,6 +333,10 @@ public class Craft {
 
 	public void setSinking(boolean sinking) {
 		this.sinking=sinking;
+	}
+
+	public void setDisabled(boolean disabled) {
+		this.disabled=disabled;
 	}
 
 	public void setLastCruisUpdate(long update) {
