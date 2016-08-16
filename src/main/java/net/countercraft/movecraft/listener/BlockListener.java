@@ -326,7 +326,7 @@ public class BlockListener implements Listener {
 			while(bi.hasNext()) {
 				Block b=bi.next();
 				if(Settings.DurabilityOverride.containsKey(b.getTypeId())) {
-					long seed=b.getX()+b.getY()+b.getZ()+(System.currentTimeMillis()/50);
+					long seed=b.getX()+b.getY()+b.getZ()+(System.currentTimeMillis()>>12);
 					Random ran=new Random(seed);
 					float chance=ran.nextInt(100);
 					if(chance<Settings.DurabilityOverride.get(b.getTypeId())) {

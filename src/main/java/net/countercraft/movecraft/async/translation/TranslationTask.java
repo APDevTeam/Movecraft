@@ -793,8 +793,6 @@ public class TranslationTask extends AsyncTask {
                                     if(pTest.getType()==org.bukkit.entity.EntityType.PLAYER) {
                                         Player player=(Player)pTest;
                                         getCraft().getMovedPlayers().put(player, System.currentTimeMillis());
-//                                    } only move players for now, reduce monsters on airships
-//                                   if(pTest.getType()!=org.bukkit.entity.EntityType.DROPPED_ITEM ) {
                                         Location tempLoc = pTest.getLocation();
                                         if(getCraft().getPilotLocked()==true && pTest==CraftManager.getInstance().getPlayerFromCraft(getCraft())) {
                                             tempLoc.setX(getCraft().getPilotLockedX());
@@ -814,6 +812,14 @@ public class TranslationTask extends AsyncTask {
                                             getCraft().setPilotLockedZ(tempLoc.getZ());
                                         }
                                     }
+                                    if(pTest.getType()==org.bukkit.entity.EntityType.PRIMED_TNT) {
+                                    	Entity ent=(Entity)pTest;
+                                    	Location tempLoc = pTest.getLocation();
+                                    	tempLoc=tempLoc.add( data.getDx(), data.getDy(), data.getDz() );
+                                    	EntityUpdateCommand eUp=new EntityUpdateCommand(pTest.getLocation().clone(),tempLoc,pTest);
+                                        entityUpdateSet.add(eUp);
+                                    }
+
                                 }
                             }
 			} else {
