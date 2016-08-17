@@ -698,15 +698,26 @@ public class AsyncManager extends BukkitRunnable {
 									if (percent < sinkPercent) {
 										isSinking = true;
 									}
-									double movePercent = pcraft.getType().getMoveBlocks().get(i).get(0);
-									double disablePercent = movePercent * pcraft.getType().getSinkPercent() / 100.0;
-									if (percent < disablePercent && pcraft.getDisabled()==false && pcraft.isNotProcessing()) {
-										pcraft.setDisabled(true);
-										if(pcraft.getNotificationPlayer()!=null) {
-											Location loc = pcraft.getNotificationPlayer().getLocation();
-							            	pcraft.getW().playSound(loc,Sound.ENTITY_IRONGOLEM_DEATH,5.0f, 5.0f);  
+									
+								}
+								if(pcraft.getType().getMoveBlocks()!=null) {
+									for (ArrayList<Integer> i : pcraft.getType().getMoveBlocks().keySet()) {
+										int numfound = 0;
+										if (foundMoveBlocks.get(i) != null) {
+											numfound = foundMoveBlocks.get(i);
+										}
+										double percent = ((double) numfound / (double) totalNonAirBlocks) * 100.0;
+										double movePercent = pcraft.getType().getMoveBlocks().get(i).get(0);
+										double disablePercent = movePercent * pcraft.getType().getSinkPercent() / 100.0;
+										if (percent < disablePercent && pcraft.getDisabled()==false && pcraft.isNotProcessing()) {
+											pcraft.setDisabled(true);
+											if(pcraft.getNotificationPlayer()!=null) {
+												Location loc = pcraft.getNotificationPlayer().getLocation();
+								            	pcraft.getW().playSound(loc,Sound.ENTITY_IRONGOLEM_DEATH,5.0f, 5.0f);  
+											}
 										}
 									}
+										
 								}
 
 								// And check the overallsinkpercent
