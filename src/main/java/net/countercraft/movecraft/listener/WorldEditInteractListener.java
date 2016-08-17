@@ -118,7 +118,8 @@ public class WorldEditInteractListener implements Listener {
 					}
 					repairStateName+="/";
 					repairStateName+=event.getPlayer().getName();
-					repairStateName+=sign.getLine(1);
+					repairStateName+=sign.getLine(1).replaceAll("\\s+","_");
+					repairStateName+=".schematic";					
 					file = new File(repairStateName);
 					
 					Vector size=new Vector(pCraft.getMaxX()-pCraft.getMinX(),(pCraft.getMaxY()-pCraft.getMinY())+1,pCraft.getMaxZ()-pCraft.getMinZ());
@@ -193,12 +194,32 @@ public class WorldEditInteractListener implements Listener {
 			String repairStateName=Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/RepairStates";
 			repairStateName+="/";
 			repairStateName+=event.getPlayer().getName();
-			repairStateName+=sign.getLine(1);
+			repairStateName+=sign.getLine(1).replaceAll("\\s+","_");
 			File file = new File(repairStateName);
 			if( !file.exists() ) {
-				event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "REPAIR STATE NOT FOUND" ) ) );
-				return;
-			}
+				repairStateName+=".schematic";
+				file = new File(repairStateName);
+				if( !file.exists() ) {
+					repairStateName=Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/RepairStates";
+					repairStateName+="/";
+					repairStateName+=event.getPlayer().getName();
+					repairStateName+=sign.getLine(1).replaceAll("_"," ");
+					file = new File(repairStateName);
+					if( !file.exists() ) {
+						repairStateName+=".schematic";
+						file = new File(repairStateName);
+						if( !file.exists() ) {
+							event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "REPAIR STATE NOT FOUND" ) ) );
+							return;
+						}else{
+							event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "RESAVE YOUR REPAIR STATE" ) ) );
+						}
+					}else{
+						event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "RESAVE YOUR REPAIR STATE" ) ) );
+					}
+				}else{
+					event.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "RESAVE YOUR REPAIR STATE" ) ) );			}
+				}
 			SchematicFormat sf=SchematicFormat.getFormat(file);
 			CuboidClipboard cc;
 			try {
