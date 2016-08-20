@@ -75,4 +75,12 @@ public class Settings {
 	public static Map<String, ArrayList<String>> SiegeCommandsOnStart;
 	public static Map<String, ArrayList<String>> SiegeCommandsOnWin;
 	public static Map<String, ArrayList<String>> SiegeCommandsOnLose;
+	public static boolean AssaultEnable;
+	public static double AssaultDamagesCapPercent;
+	public static int AssaultCooldownHours;
+	public static int AssaultDelay;
+	public static int AssaultRequiredDefendersOnline;
+	public static double AssaultCostPercent;
+	public static List<Integer> AssaultDestroyableBlocks;
+	public static int AssaultDamagesPerBlock;
 }

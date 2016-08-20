@@ -17,9 +17,14 @@
 
 package net.countercraft.movecraft.listener;
 
+import java.io.File;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.TimeZone;
+import java.util.UUID;
 import java.util.logging.Level;
 
 import net.countercraft.movecraft.Movecraft;
@@ -35,6 +40,7 @@ import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.command.Command;
@@ -49,6 +55,8 @@ import org.bukkit.scheduler.BukkitTask;
 
 import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
+import com.sk89q.worldguard.protection.flags.DefaultFlag;
+import com.sk89q.worldguard.protection.flags.StateFlag.State;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 
 //public class CommandListener implements Listener {
@@ -437,6 +445,180 @@ public class CommandListener implements CommandExecutor {
 			return true;
 		}
 		
+		if(cmd.getName().equalsIgnoreCase("assaultinfo")) {
+			if(!Settings.AssaultEnable==false) {
+				player.sendMessage( String.format( I18nSupport.getInternationalisedString( "Assault is not enabled" ) ) );
+				return true;
+			}
+			if(!player.hasPermission( "movecraft.assaultinfo" )) {
+				player.sendMessage( String.format( I18nSupport.getInternationalisedString( "Insufficient Permissions" ) ) );
+				return true;
+			}
+            ApplicableRegionSet regions = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(player.getWorld()).getApplicableRegions(player.getLocation());
+            if (regions.size() != 0){
+                LocalPlayer lp = (LocalPlayer) Movecraft.getInstance().getWorldGuardPlugin().wrapPlayer(player);
+                Map<String, ProtectedRegion> allRegions = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(player.getWorld()).getRegions();
+                boolean foundOwnedRegion=false;
+    			for(ProtectedRegion iRegion : allRegions.values()) {
+    				if(iRegion.isOwner(lp) && iRegion.getFlag(DefaultFlag.TNT)==State.DENY) {
+    					foundOwnedRegion=true;
+/*            					String regionRepairStateName=Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/RegionRepairStates";
+    					regionRepairStateName+="/";
+    					regionRepairStateName+=iRegion.getId().replaceAll("_"," ");
+    					regionRepairStateName+=".schematic";
+
+    					File file = new File(regionRepairStateName);
+    					if( file.exists() ) {
+    						player.sendMessage( String.format( I18nSupport.getInternationalisedString( "You own a region that is destroyed and can not assault until it is repaired." ) ) );
+    						return true;
+    					}*/
+    				}
+    			}
+    			if(foundOwnedRegion==false) {
+					player.sendMessage( String.format( I18nSupport.getInternationalisedString( "You are not the owner of any assaultable region and can not assault others" ) ) );
+					return true;
+    			}
+
+    			boolean foundAssaultableRegion=false;
+            	for(ProtectedRegion tRegion : regions.getRegions()) {
+        			boolean canBeAssaulted=true;
+            		for(String tSiegeName : Settings.SiegeName) {
+            			// siegable regions can not be assaulted
+            			if(tRegion.getId().equalsIgnoreCase(Settings.SiegeRegion.get(tSiegeName)))
+            				canBeAssaulted=false;
+            			if(tRegion.getId().equalsIgnoreCase(Settings.SiegeControlRegion.get(tSiegeName)))
+            				canBeAssaulted=false;
+            		}
+            		// a region can only be assaulted if it disables TNT, this is to prevent child regions or sub regions from being assaulted
+            		if(tRegion.getFlag(DefaultFlag.TNT)!=State.DENY)
+        				canBeAssaulted=false;            			
+        			// regions with no owners can not be assaulted
+        			if(tRegion.getOwners().size()==0)
+        				canBeAssaulted=false;
+            		if(canBeAssaulted==true) {
+            			String output="REGION NAME: ";
+            			output+=tRegion.getId();
+            			output+=", OWNED BY: ";
+            			output+=getRegionOwnerList(tRegion);
+            			output+=", MAX DAMAGES: ";
+            			double maxDamage=getMaxDamages(tRegion);
+            			output+=maxDamage;
+            			output+=", COST TO ASSAULT: ";
+            			double cost=getCostToAssault(tRegion);
+            			output+=cost;
+            			if(Movecraft.getInstance().assaultStartTime.containsKey(tRegion.getId())) {
+            				long startTime=Movecraft.getInstance().assaultStartTime.get(tRegion.getId());
+            				long curtime=System.currentTimeMillis();
+            				if(curtime-startTime<Settings.AssaultCooldownHours*(60*60*1000)) {
+            					canBeAssaulted=false;
+            					output+=", NOT ASSAULTABLE DUE TO RECENT ASSAULT ACTIVITY";
+            				}
+            			}
+            			if(!areDefendersOnline(tRegion)) {
+        					canBeAssaulted=false;
+            				output+=", NOT ASSAULTABLE DUE TO INSUFFICIENT ONLINE DEFENDERS";
+            			}
+            			if(tRegion.isMember(lp)) {
+            				output+=", NOT ASSAULTABLE BECAUSE YOU ARE A MEMBER";
+            				canBeAssaulted=false;
+            			}
+            			if(canBeAssaulted) {
+            				output+=", AVAILABLE FOR ASSAULT";
+            			}
+            			player.sendMessage(output);
+            			foundAssaultableRegion=true;
+            		}
+
+                }
+            	if(foundAssaultableRegion==false) {
+					player.sendMessage( String.format( I18nSupport.getInternationalisedString( "No Assault eligible regions found" ) ) );
+					return true;
+            	}
+            } else {
+				player.sendMessage( String.format( I18nSupport.getInternationalisedString( "No Assault eligible regions found" ) ) );
+				return true;            	
+            }
+            return true;
+		}
+
+		if(cmd.getName().equalsIgnoreCase("assault")) {
+			if(!Settings.AssaultEnable==false) {
+				player.sendMessage( String.format( I18nSupport.getInternationalisedString( "Assault is not enabled" ) ) );
+				return true;
+			}
+			if(!player.hasPermission( "movecraft.assaultinfo" )) {
+				player.sendMessage( String.format( I18nSupport.getInternationalisedString( "Insufficient Permissions" ) ) );
+				return true;
+			}
+			if(args.length==0) {
+				player.sendMessage( String.format( I18nSupport.getInternationalisedString( "No region specified" ) ) );
+				return true;				
+			}
+            ProtectedRegion aRegion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(player.getWorld()).getRegion(args[0]);
+			if(aRegion==null) {
+				player.sendMessage( String.format( I18nSupport.getInternationalisedString( "Region not found" ) ) );
+				return true;				
+			}
+            LocalPlayer lp = (LocalPlayer) Movecraft.getInstance().getWorldGuardPlugin().wrapPlayer(player);
+            Map<String, ProtectedRegion> allRegions = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(player.getWorld()).getRegions();
+            boolean foundOwnedRegion=false;
+			for(ProtectedRegion iRegion : allRegions.values()) {
+				if(iRegion.isOwner(lp) && iRegion.getFlag(DefaultFlag.TNT)==State.DENY) {
+					foundOwnedRegion=true;
+				}
+			}
+			if(foundOwnedRegion==false) {
+				player.sendMessage( String.format( I18nSupport.getInternationalisedString( "You are not the owner of any assaultable region and can not assault others" ) ) );
+				return true;
+			}
+     		boolean canBeAssaulted=true;
+    		for(String tSiegeName : Settings.SiegeName) {
+    			// siegable regions can not be assaulted
+    			if(aRegion.getId().equalsIgnoreCase(Settings.SiegeRegion.get(tSiegeName)))
+    				canBeAssaulted=false;
+    			if(aRegion.getId().equalsIgnoreCase(Settings.SiegeControlRegion.get(tSiegeName)))
+    				canBeAssaulted=false;
+    		}
+    		// a region can only be assaulted if it disables TNT, this is to prevent child regions or sub regions from being assaulted
+    		if(aRegion.getFlag(DefaultFlag.TNT)!=State.DENY)
+				canBeAssaulted=false;            			
+			// regions with no owners can not be assaulted
+			if(aRegion.getOwners().size()==0)
+				canBeAssaulted=false;
+			if(Movecraft.getInstance().assaultStartTime.containsKey(aRegion.getId())) {
+				long startTime=Movecraft.getInstance().assaultStartTime.get(aRegion.getId());
+				long curtime=System.currentTimeMillis();
+				if(curtime-startTime<Settings.AssaultCooldownHours*(60*60*1000)) {
+					canBeAssaulted=false;
+				}
+			}
+			if(!areDefendersOnline(aRegion)) {
+				canBeAssaulted=false;
+			}
+			if(aRegion.isMember(lp)) {
+				canBeAssaulted=false;
+			}
+			if(!canBeAssaulted) {
+				player.sendMessage( String.format( I18nSupport.getInternationalisedString( "You can not assault this region, check AssaultInfo" ) ) );
+				return true;
+			}
+			OfflinePlayer offP=Bukkit.getOfflinePlayer(player.getUniqueId());
+			if(Movecraft.getInstance().getEconomy().getBalance(offP)<getCostToAssault(aRegion)) {
+				player.sendMessage( String.format( I18nSupport.getInternationalisedString( "You can not afford to assault this region" ) ) );
+				return true;				
+			}
+			Movecraft.getInstance().getEconomy().withdrawPlayer(offP, getCostToAssault(aRegion));
+			Bukkit.getServer().broadcastMessage(String.format("%s is preparing to assault %s! All players wishing to participate in the defense should head there immediately! Assault will begin in %d minutes"
+					, player.getDisplayName(), args[0], Settings.AssaultDelay/60));
+            for(Player p : Bukkit.getOnlinePlayers()) {
+                p.playSound(p.getLocation(), Sound.ENTITY_WITHER_DEATH, 1, (float) 0.25);
+            }
+			Movecraft.getInstance().assaultsRunning.add(args[0]);
+			Movecraft.getInstance().assaultStarter.put(args[0], player.getUniqueId());
+			Movecraft.getInstance().assaultStartTime.put(args[0], System.currentTimeMillis());
+			Movecraft.getInstance().assaultDamages.put(args[0], (long) 0);
+		}
+		
 		if(cmd.getName().equalsIgnoreCase("siege")) {
 			if(!player.hasPermission( "movecraft.siege" )) {
 				player.sendMessage( String.format( I18nSupport.getInternationalisedString( "Insufficient Permissions" ) ) );
@@ -554,6 +736,69 @@ public class CommandListener implements CommandExecutor {
 		}
 		
 		return false;
+	}
+
+	private boolean areDefendersOnline(ProtectedRegion tRegion) {
+		HashSet<UUID> players=new HashSet<UUID>();
+		players.addAll(tRegion.getMembers().getUniqueIds());
+		players.addAll(tRegion.getOwners().getUniqueIds());
+		int numOnline=0;
+		for(UUID playerName : players) {
+			if(Bukkit.getPlayer(playerName)!=null) {
+				numOnline++;
+			}
+		}
+		if(numOnline>=Settings.AssaultRequiredDefendersOnline)
+			return true;
+		else
+			return false;
+	}
+
+	private String getRegionOwnerList(ProtectedRegion tRegion) {
+		String output=new String();
+		if(tRegion==null)
+			return output;
+		boolean first=true;
+		if(tRegion.getOwners().size()>0) {
+			for(UUID owner : tRegion.getOwners().getUniqueIds()) {
+				if(owner!=null) {
+					if(!first) {
+						output+=",";
+					} else {
+						first=false;
+					}
+					OfflinePlayer offP=Bukkit.getOfflinePlayer(owner);
+					output+=offP.getName();
+				}
+			}
+		}
+		return output;
+	}
+
+	private double getCostToAssault(ProtectedRegion tRegion) {
+		HashSet<UUID> players=new HashSet<UUID>();
+		players.addAll(tRegion.getMembers().getUniqueIds());
+		players.addAll(tRegion.getOwners().getUniqueIds());
+		double total=0.0;
+		for(UUID playerName : players) {
+			OfflinePlayer offP=Bukkit.getOfflinePlayer(playerName);		
+			if(offP.getName()!=null)
+				total+=Movecraft.getInstance().getEconomy().getBalance(offP);				
+		}
+		return total*Settings.AssaultCostPercent/100.0;
+	}
+
+	private double getMaxDamages(ProtectedRegion tRegion) {
+		HashSet<UUID> players=new HashSet<UUID>();
+		players.addAll(tRegion.getMembers().getUniqueIds());
+		players.addAll(tRegion.getOwners().getUniqueIds());
+		double total=0.0;
+		for(UUID playerName : players) {
+			OfflinePlayer offP=Bukkit.getOfflinePlayer(playerName);
+			if(offP.getName()!=null)
+				total+=Movecraft.getInstance().getEconomy().getBalance(offP);				
+		}
+		return total*Settings.AssaultDamagesCapPercent/100.0;
 	}
 
 }

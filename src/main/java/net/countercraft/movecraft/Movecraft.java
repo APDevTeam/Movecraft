@@ -63,9 +63,11 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -92,6 +94,10 @@ public class Movecraft extends JavaPlugin {
 	public String currentSiegeName=null;
 	public String currentSiegePlayer=null;
 	public long currentSiegeStartTime=0;
+	public HashSet<String> assaultsRunning = new HashSet<String>(); 
+	public HashMap<String, UUID> assaultStarter = new HashMap<String, UUID>(); 
+	public HashMap<String, Long> assaultStartTime = new HashMap<String, Long>(); 
+	public HashMap<String, Long> assaultDamages = new HashMap<String, Long>(); 
 	
         @Override
 	public void onDisable() {
@@ -150,7 +156,15 @@ public class Movecraft extends JavaPlugin {
 			}
 			
 		}
-		
+		Settings.AssaultEnable = getConfig().getBoolean("AssaultEnable", false);
+		Settings.AssaultDamagesCapPercent = getConfig().getDouble("AssaultDamageCapPercent", 1.0);
+		Settings.AssaultCooldownHours = getConfig().getInt("AssaultCooldownHours", 24);
+		Settings.AssaultDelay = getConfig().getInt("AssaultDelay", 1800);
+		Settings.AssaultCostPercent = getConfig().getDouble("AssaultCostPercent", 0.25);
+		Settings.AssaultDamagesPerBlock = getConfig().getInt("AssaultDamagesPerBlock", 150);
+		Settings.AssaultRequiredDefendersOnline = getConfig().getInt("AssaultRequiredDefendersOnline", 3);
+		Settings.AssaultDestroyableBlocks = getConfig().getIntegerList("AssaultDestroyableBlocks");
+				
 		//load the sieges.yml file
 		File siegesFile = new File( Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/sieges.yml" );
 		InputStream input=null;
@@ -203,6 +217,7 @@ public class Movecraft extends JavaPlugin {
 		if (wGPlugin == null || !(wGPlugin instanceof WorldGuardPlugin)) {
 			logger.log(Level.INFO, "Movecraft did not find a compatible version of WorldGuard. Disabling WorldGuard integration");
 			Settings.SiegeName=null;
+			Settings.AssaultEnable=false;
 		} else {
 			logger.log(Level.INFO, "Found a compatible version of WorldGuard. Enabling WorldGuard integration");			
 			Settings.WorldGuardBlockMoveOnBuildPerm = getConfig().getBoolean("WorldGuardBlockMoveOnBuildPerm", false);
@@ -215,7 +230,8 @@ public class Movecraft extends JavaPlugin {
 		//load up WorldEdit if it's present
 		Plugin wEPlugin=getServer().getPluginManager().getPlugin("WorldEdit");
 		if (wEPlugin == null || !(wEPlugin instanceof WorldEditPlugin)) {
-			logger.log(Level.INFO, "Movecraft did not find a compatible version of WorldEdit. Disabling WorldEdit integration");			
+			logger.log(Level.INFO, "Movecraft did not find a compatible version of WorldEdit. Disabling WorldEdit integration");
+			Settings.AssaultEnable=false;
 		} else {
 			logger.log(Level.INFO, "Found a compatible version of WorldEdit. Enabling WorldEdit integration");			
 			Settings.RepairTicksPerBlock = getConfig().getInt("RepairTicksPerBlock", 0);
@@ -295,6 +311,7 @@ public class Movecraft extends JavaPlugin {
     			logger.log(Level.INFO, "Could not find compatible Vault plugin. Disabling Vault integration.");			
             	economy = null;
     			Settings.SiegeName=null;
+    			Settings.AssaultEnable=false;
             }
         } else {
 			logger.log(Level.INFO, "Could not find compatible Vault plugin. Disabling Vault integration.");			
@@ -346,6 +363,8 @@ public class Movecraft extends JavaPlugin {
 			this.getCommand("manoverboard").setExecutor(new CommandListener());
 			this.getCommand("contacts").setExecutor(new CommandListener());
 			this.getCommand("siege").setExecutor(new CommandListener());
+			this.getCommand("assaultinfo").setExecutor(new CommandListener());
+			this.getCommand("assault").setExecutor(new CommandListener());
 			
 			getServer().getPluginManager().registerEvents(new BlockListener(),
 					this);

@@ -11,15 +11,65 @@ FireballLifespan: 6
 FireballPenetration: true
 ProtectPilotedCrafts: true
 DisableSpillProtection: false
-RequireCreatePerm: false
+RequireCreatePerm: false # require users to have the movecract.<CraftTypeName>.create permission in order to place command signs
 TNTContactExplosives: true
 DisableCrates: true
 FadeWrecksAfter: 0
 RepairTicksPerBlock: 10
 RepairMoneyPerBlock: 10
-BlockQueueChunkSize: 2000
 AllowCrewSigns: true
 SetHomeToCrewSign: false
+AssaultEnable: false # system to damage a region, incurring money damages. If enough damage is inflicted, ownership is lost. Ownership can be restored, and the region repaired, by paying damages
+AssaultDamagesCapPercent: 1.0 # percentage of the total wealth of all members of the region which is the maximum damages that can be inflicted
+AssaultCooldownHours: 24 # time before a region owner can have one of their regions assaulted again
+AssaultDelay: 1800 # time (in seconds) between when an assault is announced, and when it happens
+AssaultCostPercent: 0.25 # percentage of the total wealth of all members of the region which is the cost to assault it
+AssaultDamagesPerBlock: 150 # the damages incurred for every block that would have been destroyed in an assault
+AssaultRequiredDefendersOnline: 3 # At least this many members or owners must be online for the region to be assaulted
+AssaultDestroyableBlocks: # these blocks will be removed if destroyed in assault. Other blocks will not be removed, but still count for damages. Don't include craft flyblocks, or blocks with metadata, or you can have issues.
+  1
+  2
+  3
+  4
+  12
+  13
+  14
+  15
+  16
+  18
+  19
+  24
+  31
+  37
+  38
+  39
+  40
+  46
+  48
+  60
+  67
+  73
+  74
+  78
+  79
+  80
+  81
+  98
+  108
+  128
+  129
+  161
+  162
+  163
+  168
+  169
+  174
+  175
+  179
+  180
+  181
+  182
+  212
 WGCustomFlagsUsePilotFlag: false
 WGCustomFlagsUseMoveFlag: false
 WGCustomFlagsUseRotateFlag: false
