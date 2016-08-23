@@ -18,6 +18,7 @@
 package net.countercraft.movecraft.config;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -79,8 +80,9 @@ public class Settings {
 	public static double AssaultDamagesCapPercent;
 	public static int AssaultCooldownHours;
 	public static int AssaultDelay;
+	public static int AssaultDuration;
 	public static int AssaultRequiredDefendersOnline;
 	public static double AssaultCostPercent;
-	public static List<Integer> AssaultDestroyableBlocks;
+	public static HashSet<Integer> AssaultDestroyableBlocks;
 	public static int AssaultDamagesPerBlock;
 }

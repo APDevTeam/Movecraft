@@ -30,8 +30,10 @@ import net.countercraft.movecraft.utils.MovecraftLocation;
 import net.countercraft.movecraft.utils.Rotation;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
@@ -55,6 +57,8 @@ import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.blocks.SignBlock;
 import com.sk89q.worldedit.schematic.SchematicFormat;
 //import com.sk89q.worldedit.world.DataException;
+import com.sk89q.worldguard.domains.DefaultDomain;
+import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 
 import java.io.File;
 import java.io.IOException;
@@ -63,10 +67,66 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.UUID;
 
 public class WorldEditInteractListener implements Listener {
 	private static final Map<Player, Long> timeMap = new HashMap<Player, Long>();
 	private static final Map<Player, Long> repairRightClickTimeMap = new HashMap<Player, Long>();
+
+	public boolean repairRegion(World w, String regionName) {
+		if(w==null || regionName==null)
+			return false;
+		String repairStateName=Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/RegionRepairStates";
+		repairStateName+="/";
+		repairStateName+=regionName.replaceAll("\\s+","_");
+		repairStateName+=".schematic";					
+		File file = new File(repairStateName);
+		if( !file.exists() ) {
+			return false;
+		}
+		SchematicFormat sf=SchematicFormat.getFormat(file);
+		CuboidClipboard cc;
+		try {
+			cc = sf.load(file);
+		} catch (com.sk89q.worldedit.data.DataException e) {
+			e.printStackTrace();
+			return false;				
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;				
+		}
+		ArrayList <MapUpdateCommand> updateCommands=new ArrayList <MapUpdateCommand>();
+		int minx=cc.getOrigin().getBlockX();
+		int miny=cc.getOrigin().getBlockY();
+		int minz=cc.getOrigin().getBlockZ();
+		int maxx=minx+cc.getWidth();
+		int maxy=miny+cc.getHeight();
+		int maxz=minz+cc.getLength();
+		for(int x=minx; x<maxx; x++) {
+			for(int y=miny; y<maxy; y++) {
+				for(int z=minz; z<maxz; z++) {
+					Vector ccloc=new Vector(x-minx, y-miny, z-minz);
+					com.sk89q.worldedit.blocks.BaseBlock bb=cc.getBlock(ccloc);
+					if(!bb.isAir()) { // most blocks will be air, quickly move on to the next. This loop will run 16 million times, needs to be fast
+						if(Settings.AssaultDestroyableBlocks.contains(bb.getId()) ) {
+							if(w.getChunkAt(x>>4, z>>4).isLoaded()==false)
+								w.loadChunk(x>>4, z>>4);
+							if(w.getBlockAt(x, y, z).isEmpty() || w.getBlockAt(x, y, z).isLiquid()) {
+								MovecraftLocation moveloc=new MovecraftLocation(x, y, z);
+								MapUpdateCommand updateCom=new MapUpdateCommand(moveloc,bb.getType(),(byte)bb.getData(),bb,null);
+								updateCommands.add(updateCom);
+							}	
+						}
+					}
+				}
+			}
+		}
+		if(!updateCommands.isEmpty()) {
+			MapUpdateManager.getInstance().addWorldUpdate(w,
+					updateCommands.toArray(new MapUpdateCommand[1]), null, null);
+		}
+		return true;
+	}
 
 	@EventHandler
 	public void WEOnPlayerInteract( PlayerInteractEvent event ) {
@@ -451,6 +511,40 @@ public class WorldEditInteractListener implements Listener {
 				}
 			}
 		}
+		if(sign.getLine(0).equalsIgnoreCase(ChatColor.RED+"REGION DAMAGED!")) {
+			String regionName=sign.getLine(1).substring(7);
+			Long damages=Long.parseLong(sign.getLine(2).substring(7));
+			String []owners=sign.getLine(3).substring(6).split(",");
+			if(Movecraft.getInstance().getEconomy().has(event.getPlayer(), damages)) {
+				Movecraft.getInstance().getEconomy().withdrawPlayer(event.getPlayer(), damages);
+			} else {
+				event.getPlayer().sendMessage(String.format( I18nSupport.getInternationalisedString( "You do not have enough money" )));
+				return;
+			}
+			event.getPlayer().sendMessage(String.format( I18nSupport.getInternationalisedString( "Repairing region" )));
+			if(repairRegion(event.getClickedBlock().getWorld(), regionName)==false) {
+				Bukkit.getServer().broadcastMessage(String.format("REPAIR OF %s FAILED, CONTACT AN ADMIN",regionName));
+			}
+			ProtectedRegion aRegion=Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(event.getClickedBlock().getWorld()).getRegion(regionName);
+			for(String ownerName : owners) {
+				if(ownerName.length()>16) {
+					aRegion.getOwners().addPlayer(UUID.fromString(ownerName));
+				} else {
+					aRegion.getOwners().addPlayer(ownerName);
+				}
+			}
+			int beaconX=sign.getX()-2;
+			int beaconY=sign.getY()-3;
+			int beaconZ=sign.getZ()-1;
+			for(int x=beaconX; x<beaconX+5; x++) {
+				for(int y=beaconY; y<beaconY+4; y++) {
+					for(int z=beaconZ; z<beaconZ+5; z++) {
+						event.getClickedBlock().getWorld().getBlockAt(x, y, z).setType(Material.AIR);
+					}
+				}
+			}
+
+		}	
 	}
 	
 }

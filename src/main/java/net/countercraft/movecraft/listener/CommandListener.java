@@ -18,6 +18,7 @@
 package net.countercraft.movecraft.listener;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -43,6 +44,9 @@ import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Sound;
 import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
+import org.bukkit.block.Sign;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -53,15 +57,21 @@ import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
+import com.sk89q.worldedit.CuboidClipboard;
+import com.sk89q.worldedit.Vector;
+import com.sk89q.worldedit.blocks.BaseBlock;
+import com.sk89q.worldedit.blocks.SignBlock;
+import com.sk89q.worldedit.bukkit.selections.CuboidSelection;
 import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.flags.DefaultFlag;
 import com.sk89q.worldguard.protection.flags.StateFlag.State;
+import com.sk89q.worldguard.protection.regions.ProtectedCuboidRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 
 //public class CommandListener implements Listener {
 public class CommandListener implements CommandExecutor {
-
+	
 	private CraftType getCraftTypeFromString(String s) {
 		for (CraftType t : CraftManager.getInstance().getCraftTypes()) {
 			if (s.equalsIgnoreCase(t.getCraftName())) {
@@ -462,16 +472,6 @@ public class CommandListener implements CommandExecutor {
     			for(ProtectedRegion iRegion : allRegions.values()) {
     				if(iRegion.isOwner(lp) && iRegion.getFlag(DefaultFlag.TNT)==State.DENY) {
     					foundOwnedRegion=true;
-/*            					String regionRepairStateName=Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/RegionRepairStates";
-    					regionRepairStateName+="/";
-    					regionRepairStateName+=iRegion.getId().replaceAll("_"," ");
-    					regionRepairStateName+=".schematic";
-
-    					File file = new File(regionRepairStateName);
-    					if( file.exists() ) {
-    						player.sendMessage( String.format( I18nSupport.getInternationalisedString( "You own a region that is destroyed and can not assault until it is repaired." ) ) );
-    						return true;
-    					}*/
     				}
     			}
     			if(foundOwnedRegion==false) {
@@ -607,16 +607,102 @@ public class CommandListener implements CommandExecutor {
 				player.sendMessage( String.format( I18nSupport.getInternationalisedString( "You can not afford to assault this region" ) ) );
 				return true;				
 			}
+//			if(aRegion.getType() instanceof ProtectedCuboidRegion) { // Originally I wasn't going to do non-cubes, but we'll try it and see how it goes. In theory it may repair more than it should but... meh...
+				ProtectedRegion cubRegion=(ProtectedRegion) aRegion;
+				String repairStateName=Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/RegionRepairStates";
+				File file = new File(repairStateName);
+				if( !file.exists() ) {
+					file.mkdirs();
+				}
+				repairStateName+="/";
+				repairStateName+=aRegion.getId().replaceAll("\\s+","_");
+				repairStateName+=".schematic";					
+				file = new File(repairStateName);
+				
+				Vector min = new Vector(cubRegion.getMinimumPoint().getBlockX(),cubRegion.getMinimumPoint().getBlockY(),cubRegion.getMinimumPoint().getBlockZ()); 
+				Vector max = new Vector(cubRegion.getMaximumPoint().getBlockX(),cubRegion.getMaximumPoint().getBlockY(),cubRegion.getMaximumPoint().getBlockZ());
+				
+				if(max.subtract(min).getBlockX()>256) {
+					if(min.getBlockX()<player.getLocation().getBlockX()-128) {
+						min=min.setX(player.getLocation().getBlockX()-128);
+					}
+					if(max.getBlockX()>player.getLocation().getBlockX()+128) {
+						max=max.setX(player.getLocation().getBlockX()+128);
+					}
+				}
+				if(max.subtract(min).getBlockZ()>256) {
+					if(min.getBlockZ()<player.getLocation().getBlockZ()-128) {
+						min=min.setZ(player.getLocation().getBlockZ()-128);
+					}
+					if(max.getBlockZ()>player.getLocation().getBlockZ()+128) {
+						max=max.setZ(player.getLocation().getBlockZ()+128);
+					}
+				}
+				 
+				Movecraft.getInstance().assaultDamagablePartMin.put(cubRegion.getId(), min);
+				Movecraft.getInstance().assaultDamagablePartMax.put(cubRegion.getId(), max);
+				CuboidClipboard clipboard = new CuboidClipboard(max.subtract(min).add(Vector.ONE), min); 
+				CuboidSelection selection = new CuboidSelection(player.getWorld(), min, max); 
+
+				for (int x = 0; x < selection.getWidth(); ++x) { 
+				    for (int y = 0; y < selection.getHeight(); ++y) { 
+				    	 for (int z = 0; z < selection.getLength(); ++z) { 
+						      Vector vector = new Vector(x, y, z); 
+						      int bx=selection.getMinimumPoint().getBlockX() + x;
+						      int by=selection.getMinimumPoint().getBlockY() + y;
+						      int bz=selection.getMinimumPoint().getBlockZ() + z;
+						      Block block = player.getWorld().getBlockAt(bx,by,bz); 
+						      if(!player.getWorld().isChunkLoaded(bx>>4, bz>>4))
+						    	  player.getWorld().loadChunk(bx>>4, bz>>4);
+						      BaseBlock baseBlock = new BaseBlock(block.getTypeId(), block.getData()); 
+						 
+						      clipboard.setBlock(vector, baseBlock); 
+				    	 }	    
+				    }  
+				}
+				try {
+					clipboard.saveSchematic(file);
+				} catch (Exception e) {
+					player.sendMessage( String.format( I18nSupport.getInternationalisedString( "Could not save file" ) ) );
+					e.printStackTrace();
+					return true;
+				}
+//			} else {
+//				player.sendMessage( String.format( I18nSupport.getInternationalisedString( "This region is not a cuboid - see an admin" ) ) );
+//				return true;
+//			}
 			Movecraft.getInstance().getEconomy().withdrawPlayer(offP, getCostToAssault(aRegion));
 			Bukkit.getServer().broadcastMessage(String.format("%s is preparing to assault %s! All players wishing to participate in the defense should head there immediately! Assault will begin in %d minutes"
 					, player.getDisplayName(), args[0], Settings.AssaultDelay/60));
             for(Player p : Bukkit.getOnlinePlayers()) {
                 p.playSound(p.getLocation(), Sound.ENTITY_WITHER_DEATH, 1, (float) 0.25);
             }
-			Movecraft.getInstance().assaultsRunning.add(args[0]);
-			Movecraft.getInstance().assaultStarter.put(args[0], player.getUniqueId());
-			Movecraft.getInstance().assaultStartTime.put(args[0], System.currentTimeMillis());
-			Movecraft.getInstance().assaultDamages.put(args[0], (long) 0);
+            final String taskAssaultName=args[0];
+            final String taskPlayerDisplayName=player.getDisplayName();
+            final String taskPlayerName=player.getName();
+            final World taskWorld=player.getWorld();
+            final Long taskMaxDamages=(long) getMaxDamages(aRegion);
+            
+			BukkitTask commencetask = new BukkitRunnable() {
+				@Override
+				public void run() {
+					Bukkit.getServer().broadcastMessage(String.format("The Assault of %s has commenced! The assault leader is %s. Destroy the enemy region!"
+    						, taskAssaultName, taskPlayerDisplayName));
+                    for(Player p : Bukkit.getOnlinePlayers()) {
+                        p.playSound(p.getLocation(), Sound.ENTITY_WITHER_DEATH, 1, (float) 0.25);
+                    }
+        			Movecraft.getInstance().assaultsRunning.add(taskAssaultName);
+        			Movecraft.getInstance().assaultStarter.put(taskAssaultName, taskPlayerName);
+        			Movecraft.getInstance().assaultStartTime.put(taskAssaultName, System.currentTimeMillis());
+        			Movecraft.getInstance().assaultDamages.put(taskAssaultName, (long) 0);
+        			Movecraft.getInstance().assaultWorlds.put(taskAssaultName, taskWorld);
+        			Movecraft.getInstance().assaultMaxDamages.put(taskAssaultName, taskMaxDamages);
+        			ProtectedRegion tRegion=Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(taskWorld).getRegion(taskAssaultName);
+        			tRegion.setFlag(DefaultFlag.TNT,State.ALLOW);
+				}
+			}.runTaskLater( Movecraft.getInstance(), ( 20 * Settings.AssaultDelay ));
+			return true;
+
 		}
 		
 		if(cmd.getName().equalsIgnoreCase("siege")) {
@@ -670,7 +756,7 @@ public class CommandListener implements CommandExecutor {
             			Bukkit.getServer().broadcastMessage(String.format("%s is preparing to siege %s! All players wishing to participate in the defense should head there immediately! Siege will begin in %d minutes"
             						, player.getDisplayName(), foundSiegeName, Settings.SiegeDelay.get(foundSiegeName) / 60));
                         for(Player p : Bukkit.getOnlinePlayers()) {
-                            p.playSound(p.getLocation(), Sound.ENTITY_WITHER_DEATH, 1, 0);
+                            p.playSound(p.getLocation(), Sound.ENTITY_WITHER_DEATH, 1, (float) 0.25);
                         }
                         final String taskPlayerDisplayName=player.getDisplayName();
                         final String taskPlayerName=player.getName();
@@ -711,7 +797,7 @@ public class CommandListener implements CommandExecutor {
 								Bukkit.getServer().broadcastMessage(String.format("The Siege of %s has commenced! The siege leader is %s. Destroy the enemy vessels!"
 	            						, taskSiegeName, taskPlayerDisplayName, (Settings.SiegeDuration.get(taskSiegeName) / 60) ));
 		                        for(Player p : Bukkit.getOnlinePlayers()) {
-		                            p.playSound(p.getLocation(), Sound.ENTITY_WITHER_DEATH, 1, 0);
+		                            p.playSound(p.getLocation(), Sound.ENTITY_WITHER_DEATH, 1, (float) 0.25);
 		                        }
 								Movecraft.getInstance().currentSiegeName=taskSiegeName;
 								Movecraft.getInstance().currentSiegePlayer=taskPlayerName;
@@ -754,22 +840,31 @@ public class CommandListener implements CommandExecutor {
 			return false;
 	}
 
-	private String getRegionOwnerList(ProtectedRegion tRegion) {
+	public String getRegionOwnerList(ProtectedRegion tRegion) {
 		String output=new String();
 		if(tRegion==null)
 			return output;
 		boolean first=true;
-		if(tRegion.getOwners().size()>0) {
-			for(UUID owner : tRegion.getOwners().getUniqueIds()) {
-				if(owner!=null) {
-					if(!first) {
-						output+=",";
-					} else {
-						first=false;
-					}
-					OfflinePlayer offP=Bukkit.getOfflinePlayer(owner);
+		if(tRegion.getOwners().getUniqueIds().size()>0) {
+			for(UUID uid : tRegion.getOwners().getUniqueIds()) {
+				if(!first)
+					output+=",";
+				else
+					first=false;
+				OfflinePlayer offP=Bukkit.getOfflinePlayer(uid);
+				if(offP.getName()==null)
+					output+=uid.toString();
+				else
 					output+=offP.getName();
-				}
+			}
+		}
+		if(tRegion.getOwners().getPlayers().size()>0) {
+			for(String player : tRegion.getOwners().getPlayers()) {
+				if(!first)
+					output+=",";
+				else
+					first=false;
+				output+=player;
 			}
 		}
 		return output;

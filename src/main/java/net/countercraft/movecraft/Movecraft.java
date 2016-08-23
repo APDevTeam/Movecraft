@@ -49,10 +49,12 @@ import com.mewin.WGCustomFlags.WGCustomFlagsPlugin;
 import com.palmergames.bukkit.towny.Towny;
 import com.sk89q.worldguard.protection.flags.StateFlag;
 
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.v1_9_R1.util.CraftMagicNumbers;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.util.Vector;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.yaml.snakeyaml.Yaml;
@@ -95,9 +97,13 @@ public class Movecraft extends JavaPlugin {
 	public String currentSiegePlayer=null;
 	public long currentSiegeStartTime=0;
 	public HashSet<String> assaultsRunning = new HashSet<String>(); 
-	public HashMap<String, UUID> assaultStarter = new HashMap<String, UUID>(); 
+	public HashMap<String, String> assaultStarter = new HashMap<String, String>(); 
 	public HashMap<String, Long> assaultStartTime = new HashMap<String, Long>(); 
 	public HashMap<String, Long> assaultDamages = new HashMap<String, Long>(); 
+	public HashMap<String, World> assaultWorlds = new HashMap<String, World>(); 
+	public HashMap<String, Long> assaultMaxDamages = new HashMap<String, Long>(); 
+	public HashMap<String, com.sk89q.worldedit.Vector> assaultDamagablePartMin = new HashMap<String, com.sk89q.worldedit.Vector>(); 
+	public HashMap<String, com.sk89q.worldedit.Vector> assaultDamagablePartMax = new HashMap<String, com.sk89q.worldedit.Vector>(); 
 	
         @Override
 	public void onDisable() {
@@ -160,10 +166,11 @@ public class Movecraft extends JavaPlugin {
 		Settings.AssaultDamagesCapPercent = getConfig().getDouble("AssaultDamageCapPercent", 1.0);
 		Settings.AssaultCooldownHours = getConfig().getInt("AssaultCooldownHours", 24);
 		Settings.AssaultDelay = getConfig().getInt("AssaultDelay", 1800);
+		Settings.AssaultDuration = getConfig().getInt("AssaultDuration", 1800);
 		Settings.AssaultCostPercent = getConfig().getDouble("AssaultCostPercent", 0.25);
-		Settings.AssaultDamagesPerBlock = getConfig().getInt("AssaultDamagesPerBlock", 150);
+		Settings.AssaultDamagesPerBlock = getConfig().getInt("AssaultDamagesPerBlock", 15);
 		Settings.AssaultRequiredDefendersOnline = getConfig().getInt("AssaultRequiredDefendersOnline", 3);
-		Settings.AssaultDestroyableBlocks = getConfig().getIntegerList("AssaultDestroyableBlocks");
+		Settings.AssaultDestroyableBlocks = new HashSet<Integer>(getConfig().getIntegerList("AssaultDestroyableBlocks"));
 				
 		//load the sieges.yml file
 		File siegesFile = new File( Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/sieges.yml" );

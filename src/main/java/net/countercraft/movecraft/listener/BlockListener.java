@@ -34,19 +34,23 @@ import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.utils.MovecraftLocation;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.Sign;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Cancellable;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockEvent;
 import org.bukkit.event.block.BlockFromToEvent;
 import org.bukkit.event.block.BlockIgniteEvent;
 import org.bukkit.event.block.BlockPhysicsEvent;
@@ -61,6 +65,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.Attachable;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.util.Vector;
 
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.flags.DefaultFlag;
@@ -130,6 +135,11 @@ public class BlockListener implements Listener {
 				e.setCancelled(true);
 			}
 		}
+		if( e.getBlock().getType()==Material.WALL_SIGN ) {
+			Sign s=(Sign) e.getBlock().getState();
+			if(s.getLine(0).equalsIgnoreCase(ChatColor.RED+"REGION DAMAGED!"))
+				e.setCancelled(true);
+		}
 		if ( e.getBlock().getTypeId() == 33 && e.getBlock().getData() == ( ( byte ) 6 ) ) {
 			if(Settings.DisableCrates==true)
 				return;
@@ -188,6 +198,7 @@ public class BlockListener implements Listener {
 		if ( event.isCancelled() ) {
 			return;
 		}
+
 		Block block = event.getBlock();
 		final int[] fragileBlocks = new int[]{ 26, 34, 50, 55, 63, 64, 65, 68, 69, 70, 71, 72, 75, 76, 77, 93, 94, 96, 131, 132, 143, 147, 148, 149, 150, 151, 171, 193, 194, 195, 196, 197 };
 		if(CraftManager.getInstance().getCraftsInWorld(block.getWorld())!=null) {
@@ -205,7 +216,7 @@ public class BlockListener implements Listener {
 			}
         }
 	}
-
+	
 	private CraftType getCraftTypeFromString( String s ) {
 		for ( CraftType t : CraftManager.getInstance().getCraftTypes() ) {
 			if ( s.equalsIgnoreCase( t.getCraftName() ) ) {
@@ -300,6 +311,9 @@ public class BlockListener implements Listener {
 			e.setNewCurrent(0);
 	}*/
 	
+	private long lastDamagesUpdate=0;
+	final int[] fragileBlocks = new int[]{ 26, 34, 50, 55, 63, 64, 65, 68, 69, 70, 71, 72, 75, 76, 77, 93, 94, 96, 131, 132, 143, 147, 148, 149, 150, 151, 171, 323, 324, 330, 331, 356, 404 };
+
 	@EventHandler(priority=EventPriority.NORMAL)
     public void explodeEvent(EntityExplodeEvent e) {
 		// Remove any blocks from the list that were adjacent to water, to prevent spillage
@@ -333,6 +347,94 @@ public class BlockListener implements Listener {
 						bi.remove();
 					}
 				}
+			}
+		}
+		
+		if(Movecraft.getInstance().assaultsRunning.size()!=0) {
+			Iterator<Block> i=e.blockList().iterator();
+			while(i.hasNext()) {
+				Block b=i.next();
+	            ApplicableRegionSet regions = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(b.getWorld()).getApplicableRegions(b.getLocation());
+				boolean isInAssaultRegion=false;
+				String foundAssaultName=null;
+	            for(com.sk89q.worldguard.protection.regions.ProtectedRegion tregion : regions.getRegions()) {
+	            	if(Movecraft.getInstance().assaultsRunning.contains(tregion.getId())) {
+	            		isInAssaultRegion=true;
+	            		foundAssaultName=tregion.getId();
+	            	}
+				}
+	            if(isInAssaultRegion) {
+	            	com.sk89q.worldedit.Vector min=Movecraft.getInstance().assaultDamagablePartMin.get(foundAssaultName);
+	            	com.sk89q.worldedit.Vector max=Movecraft.getInstance().assaultDamagablePartMax.get(foundAssaultName);
+	            	boolean destroyBlock=true;
+	            	if(b.getLocation().getBlockX()<min.getBlockX()) // first see if it is outside the destroyable area
+	            		destroyBlock=false;
+	            	if(b.getLocation().getBlockX()>max.getBlockX())
+	            		destroyBlock=false;
+	            	if(b.getLocation().getBlockZ()<min.getBlockZ())
+	            		destroyBlock=false;
+	            	if(b.getLocation().getBlockZ()>max.getBlockZ())
+	            		destroyBlock=false;
+	            	// easy stuff is done, from here its harder / slower. So check it every time to avoid redundant checks
+	            	if(destroyBlock) { //Now check to see if the block ID is on the list of destroyable blocks
+	            		Integer blockID=b.getTypeId();
+	            		if(!Settings.AssaultDestroyableBlocks.contains(blockID)) {
+	            			destroyBlock=false;
+	            		}
+	            	}
+	            	if(destroyBlock) { // does it have an attached block that might break?
+	            		int downType=b.getRelative(BlockFace.DOWN).getTypeId();
+	            		int upType=b.getRelative(BlockFace.UP).getTypeId();
+	            		int eastType=b.getRelative(BlockFace.EAST).getTypeId();
+	            		int westType=b.getRelative(BlockFace.WEST).getTypeId();
+	            		int northType=b.getRelative(BlockFace.NORTH).getTypeId();
+	            		int southType=b.getRelative(BlockFace.SOUTH).getTypeId();
+	            		if(Arrays.binarySearch(fragileBlocks,downType)>=0)
+	            			destroyBlock=false;
+	            		if(Arrays.binarySearch(fragileBlocks,upType)>=0)
+	            			destroyBlock=false;
+	            		if(Arrays.binarySearch(fragileBlocks,eastType)>=0)
+	            			destroyBlock=false;
+	            		if(Arrays.binarySearch(fragileBlocks,westType)>=0)
+	            			destroyBlock=false;
+	            		if(Arrays.binarySearch(fragileBlocks,northType)>=0)
+	            			destroyBlock=false;
+	            		if(Arrays.binarySearch(fragileBlocks,southType)>=0)
+	            			destroyBlock=false;
+	            	}
+	            	if(!destroyBlock) {
+	            		i.remove();
+	            	}
+	            	// whether or not you actually destroyed the block, add to damages
+	            	Long damages=Movecraft.getInstance().assaultDamages.get(foundAssaultName);
+	            	if(damages==null) {
+	            		damages=(long) 1;
+	            	}
+	            	damages=damages+Settings.AssaultDamagesPerBlock;
+	            	if(damages>Movecraft.getInstance().assaultMaxDamages.get(foundAssaultName))
+	            		damages=Movecraft.getInstance().assaultMaxDamages.get(foundAssaultName);
+	            	Movecraft.getInstance().assaultDamages.put(foundAssaultName,damages);
+	            	long curTime=System.currentTimeMillis();
+	            	// notify nearby players of the damages, do this 1 second later so all damages from this volley will be included
+	            	if(curTime>=lastDamagesUpdate+4000) {
+	            		final Location floc=b.getLocation();
+	            		final World fworld=b.getWorld();
+	            		final String fassaultName=foundAssaultName;
+						BukkitTask notifyDamages = new BukkitRunnable() {
+							@Override
+							public void run() {
+								long fdamages=Movecraft.getInstance().assaultDamages.get(fassaultName);
+								for(Player p : fworld.getPlayers()) {
+									if(Math.round(p.getLocation().getBlockX()/1000.0) == Math.round(floc.getBlockX()/1000.0))
+										if(Math.round(p.getLocation().getBlockZ()/1000.0) == Math.round(floc.getBlockZ()/1000.0)) {
+											p.sendMessage("Damages: "+fdamages);
+										}
+								}
+							}
+						}.runTaskLater( Movecraft.getInstance(), 20 );
+						lastDamagesUpdate=System.currentTimeMillis();
+	            	}
+	            }
 			}
 		}
 			

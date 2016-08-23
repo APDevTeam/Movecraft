@@ -23,8 +23,9 @@ AssaultEnable: false # system to damage a region, incurring money damages. If en
 AssaultDamagesCapPercent: 1.0 # percentage of the total wealth of all members of the region which is the maximum damages that can be inflicted
 AssaultCooldownHours: 24 # time before a region owner can have one of their regions assaulted again
 AssaultDelay: 1800 # time (in seconds) between when an assault is announced, and when it happens
+AssaultDuration: 1800 # time (in seconds) for the assault
 AssaultCostPercent: 0.25 # percentage of the total wealth of all members of the region which is the cost to assault it
-AssaultDamagesPerBlock: 150 # the damages incurred for every block that would have been destroyed in an assault
+AssaultDamagesPerBlock: 15 # the damages incurred for every block that would have been destroyed in an assault
 AssaultRequiredDefendersOnline: 3 # At least this many members or owners must be online for the region to be assaulted
 AssaultDestroyableBlocks: # these blocks will be removed if destroyed in assault. Other blocks will not be removed, but still count for damages. Don't include craft flyblocks, or blocks with metadata, or you can have issues.
   1
@@ -33,7 +34,6 @@ AssaultDestroyableBlocks: # these blocks will be removed if destroyed in assault
   4
   12
   13
-  14
   15
   16
   18
