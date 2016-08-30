@@ -456,7 +456,7 @@ public class CommandListener implements CommandExecutor {
 		}
 		
 		if(cmd.getName().equalsIgnoreCase("assaultinfo")) {
-			if(!Settings.AssaultEnable==false) {
+			if(Settings.AssaultEnable==false) {
 				player.sendMessage( String.format( I18nSupport.getInternationalisedString( "Assault is not enabled" ) ) );
 				return true;
 			}
@@ -502,10 +502,10 @@ public class CommandListener implements CommandExecutor {
             			output+=getRegionOwnerList(tRegion);
             			output+=", MAX DAMAGES: ";
             			double maxDamage=getMaxDamages(tRegion);
-            			output+=maxDamage;
+            			output+=String.format ("%.2f", maxDamage);
             			output+=", COST TO ASSAULT: ";
             			double cost=getCostToAssault(tRegion);
-            			output+=cost;
+            			output+=String.format ("%.2f", cost);
             			if(Movecraft.getInstance().assaultStartTime.containsKey(tRegion.getId())) {
             				long startTime=Movecraft.getInstance().assaultStartTime.get(tRegion.getId());
             				long curtime=System.currentTimeMillis();
@@ -542,11 +542,11 @@ public class CommandListener implements CommandExecutor {
 		}
 
 		if(cmd.getName().equalsIgnoreCase("assault")) {
-			if(!Settings.AssaultEnable==false) {
+			if(Settings.AssaultEnable==false) {
 				player.sendMessage( String.format( I18nSupport.getInternationalisedString( "Assault is not enabled" ) ) );
 				return true;
 			}
-			if(!player.hasPermission( "movecraft.assaultinfo" )) {
+			if(!player.hasPermission( "movecraft.assault" )) {
 				player.sendMessage( String.format( I18nSupport.getInternationalisedString( "Insufficient Permissions" ) ) );
 				return true;
 			}
