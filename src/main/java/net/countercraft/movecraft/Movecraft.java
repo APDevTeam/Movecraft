@@ -163,7 +163,7 @@ public class Movecraft extends JavaPlugin {
 			
 		}
 		Settings.AssaultEnable = getConfig().getBoolean("AssaultEnable", false);
-		Settings.AssaultDamagesCapPercent = getConfig().getDouble("AssaultDamageCapPercent", 1.0);
+		Settings.AssaultDamagesCapPercent = getConfig().getDouble("AssaultDamagesCapPercent", 1.0);
 		Settings.AssaultCooldownHours = getConfig().getInt("AssaultCooldownHours", 24);
 		Settings.AssaultDelay = getConfig().getInt("AssaultDelay", 1800);
 		Settings.AssaultDuration = getConfig().getInt("AssaultDuration", 1800);
