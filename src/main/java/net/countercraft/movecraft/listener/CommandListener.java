@@ -891,7 +891,10 @@ public class CommandListener implements CommandExecutor {
 		for(UUID playerName : players) {
 			OfflinePlayer offP=Bukkit.getOfflinePlayer(playerName);
 			if(offP.getName()!=null)
-				total+=Movecraft.getInstance().getEconomy().getBalance(offP);				
+				if(Movecraft.getInstance().getEconomy().getBalance(offP)>5000000)
+					total+=5000000;
+				else
+					total+=Movecraft.getInstance().getEconomy().getBalance(offP);				
 		}
 		return total*Settings.AssaultDamagesCapPercent/100.0;
 	}
