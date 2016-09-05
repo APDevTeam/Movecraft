@@ -747,11 +747,12 @@ public class CommandListener implements CommandExecutor {
             		int currMilitaryTime=hour*100+minute;
             		int dayOfWeek = rightNow.get(Calendar.DAY_OF_WEEK);
             		if((currMilitaryTime>Settings.SiegeScheduleStart.get(foundSiegeName))&&(currMilitaryTime<Settings.SiegeScheduleEnd.get(foundSiegeName)) && dayOfWeek == Settings.SiegeDayOfTheWeek.get(foundSiegeName)) {
-						for (String command : Settings.SiegeCommandsOnStart.get(foundSiegeName)) {
-							command.replace("%r", Settings.SiegeRegion.get(foundSiegeName));
-							command.replace("%c", Settings.SiegeCost.get(foundSiegeName).toString());
-							Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
-						}
+            			if(Settings.SiegeCommandsOnStart!=null)
+							for (String command : Settings.SiegeCommandsOnStart.get(foundSiegeName)) {
+								command.replace("%r", Settings.SiegeRegion.get(foundSiegeName));
+								command.replace("%c", Settings.SiegeCost.get(foundSiegeName).toString());
+								Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
+							}
             			
             			Bukkit.getServer().broadcastMessage(String.format("%s is preparing to siege %s! All players wishing to participate in the defense should head there immediately! Siege will begin in %d minutes"
             						, player.getDisplayName(), foundSiegeName, Settings.SiegeDelay.get(foundSiegeName) / 60));

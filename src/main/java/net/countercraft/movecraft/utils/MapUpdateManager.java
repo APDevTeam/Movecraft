@@ -293,6 +293,8 @@ public class MapUpdateManager extends BukkitRunnable {
 				Movecraft.getInstance().getLogger().log( Level.SEVERE, "Severe error in map updater" );
 			} catch (IllegalArgumentException e) {
 	                                Movecraft.getInstance().getLogger().log( Level.SEVERE, "Severe error in map updater" );
+			} catch (Exception e) {
+				Movecraft.getInstance().getLogger().log( Level.SEVERE, "Severe error in map updater" );				
 			}
 		}
 		for ( MovecraftLocation l : dataMap.keySet() ) { // now do signs

@@ -441,6 +441,22 @@ public class WorldEditInteractListener implements Listener {
 						if(bb.getId()==68 || bb.getId()==63) { // I don't know why this is necessary. I'm pretty sure WE should be loading signs as signblocks, but it doesn't seem to
 							SignBlock sb=new SignBlock(bb.getId(), bb.getData());
 							sb.setNbtData(bb.getNbtData());
+							String []textLines=sb.getText();
+							for(int i=0;i<textLines.length;i++) {
+								String str=textLines[i];
+								if(str.length()>12)
+									str=str.substring(10);
+								str=str.replaceAll("\"","");
+								str=str.replace("\\\\","\\");
+								str=str.replaceAll("\\}","");
+								textLines[i]=str;
+							}
+							if(textLines[0].equals("\\  ||  /")) {
+								textLines[1]="==      ==";
+								textLines[2]="/  ||  \\";
+								textLines[3]="";
+							}
+							sb.setText(textLines);
 							bb=sb;
 						}
 						MovecraftLocation moveloc=new MovecraftLocation(sign.getX()+cc.getOffset().getBlockX()+ccloc.getBlockX(),sign.getY()+cc.getOffset().getBlockY()+ccloc.getBlockY(),sign.getZ()+cc.getOffset().getBlockZ()+ccloc.getBlockZ());
