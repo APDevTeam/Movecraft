@@ -746,8 +746,18 @@ public class CommandListener implements CommandExecutor {
             		int minute = rightNow.get(Calendar.MINUTE);
             		int currMilitaryTime=hour*100+minute;
             		int dayOfWeek = rightNow.get(Calendar.DAY_OF_WEEK);
-            		if((currMilitaryTime>Settings.SiegeScheduleStart.get(foundSiegeName))&&(currMilitaryTime<Settings.SiegeScheduleEnd.get(foundSiegeName)) && dayOfWeek == Settings.SiegeDayOfTheWeek.get(foundSiegeName)) {
-            			if(Settings.SiegeCommandsOnStart!=null)
+            		boolean isInSchedule=false;
+            		
+            		if(Settings.SiegeDayOfTheWeek.get(foundSiegeName)!=null) {
+            			if((currMilitaryTime>Settings.SiegeScheduleStart.get(foundSiegeName))&&(currMilitaryTime<Settings.SiegeScheduleEnd.get(foundSiegeName)) && dayOfWeek == Settings.SiegeDayOfTheWeek.get(foundSiegeName))
+            				isInSchedule=true;
+            		} else {
+            			if((currMilitaryTime>Settings.SiegeScheduleStart.get(foundSiegeName))&&(currMilitaryTime<Settings.SiegeScheduleEnd.get(foundSiegeName)))
+            				isInSchedule=true;
+            		}
+            			
+            		if(isInSchedule) {
+            			if(Settings.SiegeCommandsOnStart.get(foundSiegeName)!=null)
 							for (String command : Settings.SiegeCommandsOnStart.get(foundSiegeName)) {
 								command.replace("%r", Settings.SiegeRegion.get(foundSiegeName));
 								command.replace("%c", Settings.SiegeCost.get(foundSiegeName).toString());
@@ -808,6 +818,7 @@ public class CommandListener implements CommandExecutor {
 						Movecraft.getInstance().getLogger().log(Level.INFO, String.format("Siege: %s commenced by %s for a cost of %d",foundSiegeName,player.getName(),cost));	
 						Movecraft.getInstance().getEconomy().withdrawPlayer(player, cost);
 						Movecraft.getInstance().siegeInProgress=true;
+						return true;
             		} else {
     					player.sendMessage(String.format( I18nSupport.getInternationalisedString( "The time is not during the Siege schedule" )));
         				return true;

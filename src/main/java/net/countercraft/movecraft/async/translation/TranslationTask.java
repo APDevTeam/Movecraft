@@ -573,7 +573,12 @@ public class TranslationTask extends AsyncTask {
                                     data.setCollisionExplosion(true);
                                 }
                             } else {
-                                int explosionKey =  (int) (0-(getCraft().getType().getCollisionExplosion()*100));
+                            	int explosionKey;
+                            	if(oldLoc.getY()<waterLine) { // underwater explosions require more force to do anything
+                                	explosionKey =  (int) (0-((getCraft().getType().getCollisionExplosion()+25)*100));
+                            	} else {
+                            		explosionKey =  (int) (0-(getCraft().getType().getCollisionExplosion()*100));
+                            	}
                                 if (!getCraft().getW().getBlockAt(oldLoc.getX(),oldLoc.getY(), oldLoc.getZ()).getType().equals(Material.AIR)){
                                     explosionSet.add( new MapUpdateCommand( oldLoc, explosionKey, (byte)0, getCraft() ) );
                                     data.setCollisionExplosion(true);

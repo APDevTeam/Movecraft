@@ -1351,27 +1351,29 @@ public class AsyncManager extends BukkitRunnable {
 						DefaultDomain newMember = new DefaultDomain();
 						newOwner.addPlayer(Movecraft.getInstance().currentSiegePlayer);
 						controlRegion.setMembers(newMember);
-						for (String command : Settings.SiegeCommandsOnWin
-								.get(Movecraft.getInstance().currentSiegeName)) {
-							command.replace("%r", Settings.SiegeRegion.get(Movecraft.getInstance().currentSiegeName));
-							command.replace("%c",
-									Settings.SiegeCost.get(Movecraft.getInstance().currentSiegeName).toString());
-							command.replace("%w", siegeLeader.toString());
-							Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
-						}
+						if(Settings.SiegeCommandsOnWin.get(Movecraft.getInstance().currentSiegeName)!=null) 
+							for (String command : Settings.SiegeCommandsOnWin
+									.get(Movecraft.getInstance().currentSiegeName)) {
+								command.replace("%r", Settings.SiegeRegion.get(Movecraft.getInstance().currentSiegeName));
+								command.replace("%c",
+										Settings.SiegeCost.get(Movecraft.getInstance().currentSiegeName).toString());
+								command.replace("%w", siegeLeader.toString());
+								Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
+							}
 					} else {
 						Bukkit.getServer()
 								.broadcastMessage(String.format(
 										"The Siege of %s has failed! The forces of %s have been crushed!",
 										Movecraft.getInstance().currentSiegeName, siegeLeader.getDisplayName()));
-						for (String command : Settings.SiegeCommandsOnLose
-								.get(Movecraft.getInstance().currentSiegeName)) {
-							command.replace("%r", Settings.SiegeRegion.get(Movecraft.getInstance().currentSiegeName));
-							command.replace("%c",
-									Settings.SiegeCost.get(Movecraft.getInstance().currentSiegeName).toString());
-							command.replace("%l", siegeLeader.toString());
-							Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
-						}
+						if(Settings.SiegeCommandsOnLose.get(Movecraft.getInstance().currentSiegeName)!=null)
+							for (String command : Settings.SiegeCommandsOnLose
+									.get(Movecraft.getInstance().currentSiegeName)) {
+								command.replace("%r", Settings.SiegeRegion.get(Movecraft.getInstance().currentSiegeName));
+								command.replace("%c",
+										Settings.SiegeCost.get(Movecraft.getInstance().currentSiegeName).toString());
+								command.replace("%l", siegeLeader.toString());
+								Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
+							}
 					}
 					Movecraft.getInstance().currentSiegeName = null;
 					Movecraft.getInstance().siegeInProgress = false;
