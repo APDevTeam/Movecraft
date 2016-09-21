@@ -63,6 +63,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -112,6 +114,31 @@ public class Movecraft extends JavaPlugin {
 			StorageChestItem.saveToDisk();
 		shuttingDown = true;
 	}
+        
+    private void disableShadow(int typeID) {
+		Method method;
+		try {
+			net.minecraft.server.v1_9_R1.Block tempBlock=CraftMagicNumbers.getBlock(typeID);
+			method = net.minecraft.server.v1_9_R1.Block.class.getDeclaredMethod("d", int.class);
+			method.setAccessible(true);
+			method.invoke(tempBlock, 0);
+		} catch (NoSuchMethodException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (SecurityException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalArgumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
 
         @Override
 	public void onEnable() {
@@ -171,7 +198,13 @@ public class Movecraft extends JavaPlugin {
 		Settings.AssaultDamagesPerBlock = getConfig().getInt("AssaultDamagesPerBlock", 15);
 		Settings.AssaultRequiredDefendersOnline = getConfig().getInt("AssaultRequiredDefendersOnline", 3);
 		Settings.AssaultDestroyableBlocks = new HashSet<Integer>(getConfig().getIntegerList("AssaultDestroyableBlocks"));
-				
+		Settings.DisableShadowBlocks = new HashSet<Integer>(getConfig().getIntegerList("DisableShadowBlocks"));
+		if(Settings.CompatibilityMode==false) {
+			for(int typ : Settings.DisableShadowBlocks) {
+				disableShadow(typ);
+			}
+		}
+		
 		//load the sieges.yml file
 		File siegesFile = new File( Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/sieges.yml" );
 		InputStream input=null;

@@ -195,7 +195,7 @@ public class MapUpdateManager extends BukkitRunnable {
 			}*/
 //			 removing to try new fast block changer system
 			BlockPosition position = new BlockPosition(x, y, z);
-			
+
 			if((origType==149 || origType==150) && m.getWorldEditBaseBlock()==null) { // bukkit can't remove comparators safely, it screws up the NBT data. So turn it to a sign, then remove it.
 
 				c.a( position, CraftMagicNumbers.getBlock(org.bukkit.Material.AIR).fromLegacyData(0));
@@ -265,6 +265,7 @@ public class MapUpdateManager extends BukkitRunnable {
 
 	}
 
+	@SuppressWarnings("deprecation")
 	private void updateData(Map<MovecraftLocation, TransferData> dataMap, World w) {
 		// Restore block specific information
 		for ( MovecraftLocation l : dataMap.keySet() ) { // everything but signs first
@@ -297,6 +298,7 @@ public class MapUpdateManager extends BukkitRunnable {
 				Movecraft.getInstance().getLogger().log( Level.SEVERE, "Severe error in map updater" );				
 			}
 		}
+
 		for ( MovecraftLocation l : dataMap.keySet() ) { // now do signs
 			try {
 				TransferData transferData = dataMap.get( l );

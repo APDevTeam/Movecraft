@@ -1,12 +1,13 @@
 name: BigSubAirship
 maxSize: 20000
-minSize: 1000
+minSize: 10000
 allowedBlocks: 
     - 5
     - 10
     - 11
     - 17
     - 20
+    - 22
     - 23
     - 25
     - 26
@@ -19,8 +20,8 @@ allowedBlocks:
     - 43
     - 44
     - 47
-    - 49
     - 50
+    - 51
     - 53
     - 54
     - 55
@@ -48,6 +49,7 @@ allowedBlocks:
     - 94
     - 95
     - 96
+    - 98
     - 101
     - 102
     - 107
@@ -58,6 +60,7 @@ allowedBlocks:
     - 116
     - 117
     - 118
+    - 121
     - 122
     - 123
     - 124
@@ -88,29 +91,56 @@ allowedBlocks:
     - 157
     - 158
     - 159
+    - 160
+    - 165
     - 171
     - 172
     - 173
+    - 165
+    - 167
+    - 183
+    - 184
+    - 185
+    - 186
+    - 187
+    - 188
+    - 189
+    - 190
+    - 191
+    - 192
+    - 193
+    - 194
+    - 195
+    - 196
+    - 197
+    - 206
 
 forbiddenBlocks:
-    - 7
+    - 34
 
 canCruise: true
+rotateAtMidpoint: true
+blockRemoteRotate: true
 cruiseSkipBlocks: 4
-cruiseSpeed: 0.35
+cruiseSpeed: 0.17
 canFly: false
 minHeightLimit: 1
-maxHeightLimit: 200
-maxHeightAboveGround: 100
+maxHeightLimit: 110
+maxHeightAboveGround: 50
 vertCruiseSkipBlocks: 1
-speed: 0.75
+detectionMultiplier: 10.0
+underwaterDetectionMultiplier: 1.0
+speed: 0.17
 collisionExplosion: 0.0
 fuelBurnRate: 4.0
 tryNudge: false
 sinkPercent: 99.0
 overallSinkPercent: 60.0
 halfSpeedUnderwater: true
-
+moveblocks:
+    152: # redstone represents engines
+        - 1.0
+        - 100.0
 flyblocks:
     42: # iron represents ballast tanks
         - 10.0
@@ -120,10 +150,13 @@ flyblocks:
         - 100.0
     [54,146]: # limit chests to make big airships important for merchant missions
         - 0.0
-        - 1.0
-    152: # redstone represents engines
-        - 1.0
-        - 100.0
+        - N50
+    [23,154]: # dispensers and hoppers can be used for inventory too, so limit them as well
+        - 0.0
+        - 3.0
+    61: # Furnaces for cargo? really guys?
+        - 0.0
+        - N75
     145: # anvils are OP armor, so limit it
         - 0.0
         - 1.0

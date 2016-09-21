@@ -1,5 +1,5 @@
 name: Airship
-maxSize: 10000
+maxSize: 5000
 minSize: 1000
 allowedBlocks: 
     - 5
@@ -9,6 +9,7 @@ allowedBlocks:
     - 11
     - 17
     - 20
+    - 22
     - 23
     - 25
     - 26
@@ -21,7 +22,6 @@ allowedBlocks:
     - 43
     - 44
     - 47
-    - 49
     - 50
     - 51
     - 53
@@ -62,6 +62,7 @@ allowedBlocks:
     - 116
     - 117
     - 118
+    - 121
     - 122
     - 123
     - 124
@@ -92,6 +93,8 @@ allowedBlocks:
     - 157
     - 158
     - 159
+    - 160
+    - 165
     - 171
     - 172
     - 173
@@ -112,16 +115,20 @@ allowedBlocks:
     - 195
     - 196
     - 197
+    - 206
 
 forbiddenBlocks:
-    - 7
+    - 34
 
 canCruise: true
+rotateAtMidpoint: true
 canFly: true
-maxHeightLimit: 200
-maxHeightAboveGround: 100
+maxHeightLimit: 135
+maxHeightAboveGround: 50
 vertCruiseSkipBlocks: 1
 collisionExplosion: 0.0
+detectionMultiplier: 10.0
+underwaterDetectionMultiplier: 1.0
 speed: 1.0
 cruiseSkipBlocks: 4
 cruiseSpeed: 0.5
@@ -131,16 +138,23 @@ overallSinkPercent: 60.0
 tryNudge: false
 canStaticMove: true
 maxStaticMove: 2
+moveblocks:
+    152: # redstone represents engines
+        - 1.0
+        - 100.0
 flyblocks:
     35: #wool represents lift
         - 50.0
         - 100.0
-    152: # redstone represents engines
-        - 1.0
-        - 100.0
     [54,146]: # limit chests to make big airships important for merchant missions
         - 0.0
         - 1.0
+    [23,154,158]: # dispensers and hoppers can be used for inventory too, so limit them as well
+        - 0.0
+        - 2.0
+    61: # Furnaces for cargo? really guys?
+        - 0.0
+        - N50
     145: # anvils are OP armor, so limit it
         - 0.0
         - 1.0

@@ -1,6 +1,6 @@
 name: elevator
 maxSize: 1000
-minSize: 2
+minSize: 10
 allowedBlocks: 
     - 5
     - 8
@@ -87,6 +87,7 @@ allowedBlocks:
     - 154
     - 157
     - 158
+    - 165
     - 171
     - 173
 
@@ -99,7 +100,11 @@ collisionExplosion: 0.0
 allowHorizontalMovement: false
 canStaticMove: true
 maxStaticMove: 2
-speed: 5.0
+allowCannonDirectorSign: false
+detectionMultiplier: 30.0
+underwaterDetectionMultiplier: 3.0
+allowAADirectorSign: false
+speed: 1.0
 tryNudge: false
 sinkPercent: 99.0
 flyblocks:
