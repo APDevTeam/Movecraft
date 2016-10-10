@@ -482,12 +482,14 @@ public class CommandListener implements CommandExecutor {
     			boolean foundAssaultableRegion=false;
             	for(ProtectedRegion tRegion : regions.getRegions()) {
         			boolean canBeAssaulted=true;
-            		for(String tSiegeName : Settings.SiegeName) {
-            			// siegable regions can not be assaulted
-            			if(tRegion.getId().equalsIgnoreCase(Settings.SiegeRegion.get(tSiegeName)))
-            				canBeAssaulted=false;
-            			if(tRegion.getId().equalsIgnoreCase(Settings.SiegeControlRegion.get(tSiegeName)))
-            				canBeAssaulted=false;
+        			if(Settings.SiegeName != null) {
+	            		for(String tSiegeName : Settings.SiegeName) {
+	            			// siegable regions can not be assaulted
+	            			if(tRegion.getId().equalsIgnoreCase(Settings.SiegeRegion.get(tSiegeName)))
+	            				canBeAssaulted=false;
+	            			if(tRegion.getId().equalsIgnoreCase(Settings.SiegeControlRegion.get(tSiegeName)))
+	            				canBeAssaulted=false;
+	            		}
             		}
             		// a region can only be assaulted if it disables TNT, this is to prevent child regions or sub regions from being assaulted
             		if(tRegion.getFlag(DefaultFlag.TNT)!=State.DENY)
@@ -572,12 +574,14 @@ public class CommandListener implements CommandExecutor {
 				return true;
 			}
      		boolean canBeAssaulted=true;
-    		for(String tSiegeName : Settings.SiegeName) {
-    			// siegable regions can not be assaulted
-    			if(aRegion.getId().equalsIgnoreCase(Settings.SiegeRegion.get(tSiegeName)))
-    				canBeAssaulted=false;
-    			if(aRegion.getId().equalsIgnoreCase(Settings.SiegeControlRegion.get(tSiegeName)))
-    				canBeAssaulted=false;
+     		if(Settings.SiegeName != null) {
+	    		for(String tSiegeName : Settings.SiegeName) {
+	    			// siegable regions can not be assaulted
+	    			if(aRegion.getId().equalsIgnoreCase(Settings.SiegeRegion.get(tSiegeName)))
+	    				canBeAssaulted=false;
+	    			if(aRegion.getId().equalsIgnoreCase(Settings.SiegeControlRegion.get(tSiegeName)))
+	    				canBeAssaulted=false;
+	    		}
     		}
     		// a region can only be assaulted if it disables TNT, this is to prevent child regions or sub regions from being assaulted
     		if(aRegion.getFlag(DefaultFlag.TNT)!=State.DENY)
