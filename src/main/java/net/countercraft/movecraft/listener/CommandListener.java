@@ -218,18 +218,19 @@ public class CommandListener implements CommandExecutor {
 			}
 			
 			if(args.length>0) {
-				if ( player.hasPermission( "movecraft." + args[0] + ".pilot" ) ) {				
-					MovecraftLocation startPoint = MathUtils.bukkit2MovecraftLoc(player.getLocation());
-					Craft c = new Craft( getCraftTypeFromString( args[0] ), player.getWorld() );
-		
-					if ( CraftManager.getInstance().getCraftByPlayerName( player.getName() ) == null ) {
-						c.detect( player, player, startPoint );
+				if ( player.hasPermission( "movecraft." + args[0] + ".pilot" ) ) {
+					CraftType craftType = getCraftTypeFromString( args[0] );
+					if (craftType != null) {
+						Craft oldCraft = CraftManager.getInstance().getCraftByPlayerName( player.getName() );
+						if ( oldCraft != null ) {
+							CraftManager.getInstance().removeCraft( oldCraft );
+						}
+						Craft newCraft = new Craft( craftType, player.getWorld() );
+						MovecraftLocation startPoint = MathUtils.bukkit2MovecraftLoc(player.getLocation());
+						newCraft.detect( player, player, startPoint );
 					} else {
-						Craft oldCraft=CraftManager.getInstance().getCraftByPlayerName( player.getName() );
-						CraftManager.getInstance().removeCraft( oldCraft );
-						c.detect( player, player, startPoint );
+						player.sendMessage( String.format( I18nSupport.getInternationalisedString( "Unknown craft type" ) ) );
 					}
-		
 				} else {
 					player.sendMessage( String.format( I18nSupport.getInternationalisedString( "Insufficient Permissions" ) ) );
 				}
