@@ -165,7 +165,7 @@
       <artifactId>craftbukkit</artifactId>
       <version>1.9.2-R0.1-SNAPSHOT</version>
       <scope>system</scope>
-      <systemPath>C:\Users\Mark Summers\git\Movecraft-3/libs/craftbukkit.jar</systemPath>
+      <systemPath>D:\Dekstop\Movecraft/libs/craftbukkit.jar</systemPath>
     </dependency>
     <dependency>
       <groupId>net.milkbowl.vault</groupId>
@@ -184,14 +184,14 @@
       <artifactId>Towny</artifactId>
       <version>LATEST</version>
       <scope>system</scope>
-      <systemPath>C:\Users\Mark Summers\git\Movecraft-3/libs/Towny.jar</systemPath>
+      <systemPath>D:\Dekstop\Movecraft/libs/Towny.jar</systemPath>
     </dependency>
     <dependency>
       <groupId>com.mewin</groupId>
       <artifactId>WGCustomFlags</artifactId>
       <version>LATEST</version>
       <scope>system</scope>
-      <systemPath>C:\Users\Mark Summers\git\Movecraft-3/libs/WGCustomFlags.jar</systemPath>
+      <systemPath>D:\Dekstop\Movecraft/libs/WGCustomFlags.jar</systemPath>
     </dependency>
   </dependencies>
   <properties>

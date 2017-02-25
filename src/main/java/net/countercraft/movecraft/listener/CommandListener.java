@@ -759,8 +759,8 @@ public class CommandListener implements CommandExecutor {
             		if(isInSchedule) {
             			if(Settings.SiegeCommandsOnStart.get(foundSiegeName)!=null)
 							for (String command : Settings.SiegeCommandsOnStart.get(foundSiegeName)) {
-								command.replace("%r", Settings.SiegeRegion.get(foundSiegeName));
-								command.replace("%c", Settings.SiegeCost.get(foundSiegeName).toString());
+								command = command.replaceAll("%r", Settings.SiegeRegion.get(foundSiegeName))
+										.replaceAll("%c", Settings.SiegeCost.get(foundSiegeName).toString());
 								Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
 							}
             			
