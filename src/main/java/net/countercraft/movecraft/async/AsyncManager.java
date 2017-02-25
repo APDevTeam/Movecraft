@@ -1359,7 +1359,7 @@ public class AsyncManager extends BukkitRunnable {
 												Settings.SiegeRegion.get(Movecraft.getInstance().currentSiegeName))
 										.replaceAll("%c", Settings.SiegeCost
 												.get(Movecraft.getInstance().currentSiegeName).toString())
-										.replaceAll("%w", siegeLeader.toString());
+										.replaceAll("%w", siegeLeader.getName());
 								Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
 							}
 					} else {
@@ -1375,7 +1375,7 @@ public class AsyncManager extends BukkitRunnable {
 												Settings.SiegeRegion.get(Movecraft.getInstance().currentSiegeName))
 										.replaceAll("%c", Settings.SiegeCost
 												.get(Movecraft.getInstance().currentSiegeName).toString())
-										.replaceAll("%l", siegeLeader.toString());
+										.replaceAll("%l", siegeLeader.getName());
 								Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
 							}
 					}
