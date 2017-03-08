@@ -280,6 +280,10 @@ public class CommandListener implements CommandExecutor {
 			}
 			
 			final Craft craft = CraftManager.getInstance().getCraftByPlayerName( player.getName() );
+			if (craft == null) {
+				player.sendMessage( String.format( I18nSupport.getInternationalisedString( "You must be piloting a craft" ) ) );
+				return true;
+			}
 
 			if ( player.hasPermission( "movecraft." + craft.getType().getCraftName() + ".move" ) ) {
 				if(craft.getType().getCanCruise()) {
@@ -304,19 +308,19 @@ public class CommandListener implements CommandExecutor {
 						}
 						return true;
 					}
-					if(args[0].equalsIgnoreCase("north")) {
+					if(args[0].equalsIgnoreCase("north") || args[0].equalsIgnoreCase("n")) {
 						craft.setCruiseDirection((byte)0x3);
 						craft.setCruising(true);
 					}
-					if(args[0].equalsIgnoreCase("south")) {
+					if(args[0].equalsIgnoreCase("south") || args[0].equalsIgnoreCase("s")) {
 						craft.setCruiseDirection((byte)0x2);
 						craft.setCruising(true);
 					}
-					if(args[0].equalsIgnoreCase("east")) {
+					if(args[0].equalsIgnoreCase("east") || args[0].equalsIgnoreCase("e")) {
 						craft.setCruiseDirection((byte)0x4);
 						craft.setCruising(true);
 					}
-					if(args[0].equalsIgnoreCase("west")) {
+					if(args[0].equalsIgnoreCase("west") || args[0].equalsIgnoreCase("w")) {
 						craft.setCruiseDirection((byte)0x5);
 						craft.setCruising(true);
 					}
@@ -332,6 +336,8 @@ public class CommandListener implements CommandExecutor {
 			final Craft craft = CraftManager.getInstance().getCraftByPlayerName( player.getName() );
 			if(craft!=null) {
 				craft.setCruising(false);
+			} else {
+				player.sendMessage( String.format( I18nSupport.getInternationalisedString( "You must be piloting a craft" ) ) );
 			}
 			return true;
 		}
