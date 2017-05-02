@@ -36,8 +36,9 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.Dispenser;
 import org.bukkit.block.Sign;
-import org.bukkit.craftbukkit.v1_9_R1.util.CraftMagicNumbers;
+import org.bukkit.craftbukkit.v1_10_R1.util.CraftMagicNumbers;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -52,9 +53,15 @@ import org.bukkit.scheduler.BukkitTask;
 
 import com.sk89q.worldedit.CuboidClipboard;
 import com.sk89q.worldedit.EditSession;
+import com.sk89q.worldedit.LocalWorld;
 import com.sk89q.worldedit.Vector;
+import com.sk89q.worldedit.blocks.BaseBlock;
+import com.sk89q.worldedit.blocks.BaseItemStack;
+import com.sk89q.worldedit.blocks.ContainerBlock;
+import com.sk89q.worldedit.blocks.DispenserBlock;
 //import com.sk89q.worldedit.blocks.BaseBlock;
 import com.sk89q.worldedit.blocks.SignBlock;
+import com.sk89q.worldedit.bukkit.BukkitUtil;
 import com.sk89q.worldedit.schematic.SchematicFormat;
 //import com.sk89q.worldedit.world.DataException;
 import com.sk89q.worldguard.domains.DefaultDomain;
@@ -186,7 +193,7 @@ public class WorldEditInteractListener implements Listener {
 					Vector origin=new Vector(sign.getX(),sign.getY(),sign.getZ());
 					Vector offset=new Vector(pCraft.getMinX()-sign.getX(),pCraft.getMinY()-sign.getY(),pCraft.getMinZ()-sign.getZ());
 					CuboidClipboard cc = new CuboidClipboard(size,origin,offset);
-					final int[] ignoredBlocks = new int[]{ 26,34,64,71,140,144,176,177,193,194,195,196,197 };  // BLOCKS THAT CAN'T BE PARTIALLY RECONSTRUCTED
+					final int[] ignoredBlocks = new int[]{ 64,140,144,176,177};  // BLOCKS THAT CAN'T BE PARTIALLY RECONSTRUCTED
 
 					for(MovecraftLocation loc : pCraft.getBlockList()) {
 						Vector ccpos = new Vector(loc.getX()-pCraft.getMinX(),loc.getY()-pCraft.getMinY(),loc.getZ()-pCraft.getMinZ());
@@ -199,6 +206,59 @@ public class WorldEditInteractListener implements Listener {
 								Sign s=(Sign)state;
 								SignBlock sb=new SignBlock(b.getTypeId(), b.getData(), s.getLines());
 								bb=(com.sk89q.worldedit.blocks.BaseBlock)sb;
+							} else if(state instanceof Dispenser) {
+								LocalWorld lw=BukkitUtil.getLocalWorld(event.getPlayer().getWorld());
+								Vector vectorPos=new Vector(loc.getX(),loc.getY(),loc.getZ());
+								bb=lw.getBlock(vectorPos);
+								DispenserBlock dispBlock=new DispenserBlock(bb.getData());
+								BaseItemStack[] bItemStack=new BaseItemStack[9];
+								int numTNT=0;
+								int numFireballs=0;
+								int numWater=0;
+		                        InventoryHolder inventoryHolder = ( InventoryHolder ) state;
+		                        if(inventoryHolder.getInventory().contains(46)) {
+		                        	HashMap<Integer, ? extends ItemStack> foundItems=inventoryHolder.getInventory().all(46);
+		                        	// count how many were in the chest
+		                        	for(ItemStack istack : foundItems.values()) {
+		                        		numTNT+=istack.getAmount();
+		                        	}
+		                        }
+		                        if(inventoryHolder.getInventory().contains(385)) {
+		                        	HashMap<Integer, ? extends ItemStack> foundItems=inventoryHolder.getInventory().all(385);
+		                        	// count how many were in the chest
+		                        	for(ItemStack istack : foundItems.values()) {
+		                        		numFireballs+=istack.getAmount();
+		                        	}
+		                        }
+		                        if(inventoryHolder.getInventory().contains(326)) {
+		                        	HashMap<Integer, ? extends ItemStack> foundItems=inventoryHolder.getInventory().all(326);
+		                        	// count how many were in the chest
+		                        	for(ItemStack istack : foundItems.values()) {
+		                        		numWater+=istack.getAmount();
+		                        	}
+		                        }
+		                        int index=0;
+		                        while(numTNT>64) {
+		                        	bItemStack[index]=new BaseItemStack(46, 64);
+		                        	index++;
+		                        	numTNT-=64;
+		                        }
+		                        if(numTNT>0)
+		                        	bItemStack[index]=new BaseItemStack(46, numTNT);
+		                        while(numFireballs>64) {
+		                        	bItemStack[index]=new BaseItemStack(385, 64);
+		                        	index++;
+		                        	numFireballs-=64;
+		                        }
+		                        if(numFireballs>0)
+		                        	bItemStack[index]=new BaseItemStack(385, numFireballs);
+		                        while(numWater>0) {
+		                        	bItemStack[index]=new BaseItemStack(326, 1);
+		                        	index++;
+		                        	numWater--;
+		                        }
+								dispBlock.setItems(bItemStack);
+								bb=(BaseBlock)dispBlock;
 							} else {
 								bb=new com.sk89q.worldedit.blocks.BaseBlock(b.getTypeId(),b.getData());
 							}
@@ -338,6 +398,55 @@ public class WorldEditInteractListener implements Listener {
 							if(itemToConsume==10 || itemToConsume==11) { // don't require lava either, yeah you could exploit this for free lava, so make sure you set a price per block
 								itemToConsume=0;
 								qtyToConsume=0;
+							}
+							if(itemToConsume==26 || itemToConsume==34 || itemToConsume==71 || itemToConsume==193 || itemToConsume==194 || itemToConsume==195 || itemToConsume==196 || itemToConsume==197) { // don't require doors, beds
+								itemToConsume=0;
+								qtyToConsume=0;
+							}
+							if(itemToConsume==23) { // for dispensers, count the fireballs and tnt
+								BaseBlock bb=cc.getBlock(ccLoc);
+								DispenserBlock dispBlock=new DispenserBlock(bb.getData());
+								dispBlock.setNbtData(bb.getNbtData());
+								int numFireCharges=0;
+								int numTNT=0;
+								int numWater=0;
+								for(BaseItemStack bi : dispBlock.getItems()) {
+									if(bi!=null) {
+										if(bi.getType()==46)
+											numTNT+=bi.getAmount();
+										if(bi.getType()==385)
+											numFireCharges+=bi.getAmount();
+										if(bi.getType()==326)
+											numWater+=bi.getAmount();
+									}
+								}
+								if(numFireCharges>0) {
+									if( !numMissingItems.containsKey(385) ) {
+										numMissingItems.put(385, numFireCharges);
+									} else {
+										Integer num=numMissingItems.get(385);
+										num+=numFireCharges;
+										numMissingItems.put(385, num);
+									}
+								}
+								if(numTNT>0) {
+									if( !numMissingItems.containsKey(46) ) {
+										numMissingItems.put(46, numTNT);
+									} else {
+										Integer num=numMissingItems.get(46);
+										num+=numTNT;
+										numMissingItems.put(46, num);
+									}
+								}
+								if(numWater>0) {
+									if( !numMissingItems.containsKey(326) ) {
+										numMissingItems.put(326, numWater);
+									} else {
+										Integer num=numMissingItems.get(326);
+										num+=numWater;
+										numMissingItems.put(46, num);
+									}
+								}
 							}
 							if(itemToConsume==43) { // for double slabs, require 2 slabs
 								itemToConsume=44;

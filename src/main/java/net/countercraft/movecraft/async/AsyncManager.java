@@ -30,7 +30,7 @@ import net.countercraft.movecraft.listener.WorldEditInteractListener;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.BlockUtils;
 import net.countercraft.movecraft.utils.EntityUpdateCommand;
-import net.countercraft.movecraft.utils.FastBlockChanger;
+//import net.countercraft.movecraft.utils.FastBlockChanger;
 import net.countercraft.movecraft.utils.MapUpdateCommand;
 import net.countercraft.movecraft.utils.MapUpdateManager;
 import net.countercraft.movecraft.utils.MathUtils;
@@ -75,6 +75,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -157,95 +158,102 @@ public class AsyncManager extends BukkitRunnable {
 					} else {
 						Craft[] craftsInWorld = CraftManager.getInstance().getCraftsInWorld(c.getW());
 						boolean failed = false;
+						boolean isSubcraft=false;
 
 						if (craftsInWorld != null) {
 							for (Craft craft : craftsInWorld) {
 
-								if (BlockUtils.arrayContainsOverlap(craft.getBlockList(), data.getBlockList())
-										&& (c.getType().getCruiseOnPilot() || p != null)) { // changed
-																							// from
-																							// p!=null
-									if (craft.getType() == c.getType()
-											|| craft.getBlockList().length <= data.getBlockList().length) {
-										notifyP.sendMessage(String.format(I18nSupport.getInternationalisedString(
-												"Detection - Failed Craft is already being controlled")));
-										failed = true;
-									} else { // if this is a different type than
-												// the overlapping craft, and is
-												// smaller, this must be a child
-												// craft, like a fighter on a
-												// carrier
-										if (craft.isNotProcessing() == false) {
+								if (BlockUtils.arrayContainsOverlap(craft.getBlockList(), data.getBlockList())==true) {
+									isSubcraft=true;
+									if(c.getType().getCruiseOnPilot() || p != null) {
+										if (craft.getType() == c.getType()
+												|| craft.getBlockList().length <= data.getBlockList().length) {
+											notifyP.sendMessage(String.format(I18nSupport.getInternationalisedString(
+													"Detection - Failed Craft is already being controlled")));
 											failed = true;
-											notifyP.sendMessage(String.format(
-													I18nSupport.getInternationalisedString("Parent Craft is busy")));
-										}
-
-										// remove the new craft from the parent
-										// craft
-										List<MovecraftLocation> parentBlockList = ListUtils.subtract(
-												Arrays.asList(craft.getBlockList()),
-												Arrays.asList(data.getBlockList()));
-										craft.setBlockList(parentBlockList.toArray(new MovecraftLocation[1]));
-										craft.setOrigBlockCount(craft.getOrigBlockCount() - data.getBlockList().length);
-
-										// Rerun the polygonal bounding formula
-										// for the parent craft
-										Integer parentMaxX = null;
-										Integer parentMaxZ = null;
-										Integer parentMinX = null;
-										Integer parentMinZ = null;
-										for (MovecraftLocation l : parentBlockList) {
-											if (parentMaxX == null || l.getX() > parentMaxX) {
-												parentMaxX = l.getX();
+										} else { // if this is a different type than
+													// the overlapping craft, and is
+													// smaller, this must be a child
+													// craft, like a fighter on a
+													// carrier
+											if (craft.isNotProcessing() == false) {
+												failed = true;
+												notifyP.sendMessage(String.format(
+														I18nSupport.getInternationalisedString("Parent Craft is busy")));
 											}
-											if (parentMaxZ == null || l.getZ() > parentMaxZ) {
-												parentMaxZ = l.getZ();
-											}
-											if (parentMinX == null || l.getX() < parentMinX) {
-												parentMinX = l.getX();
-											}
-											if (parentMinZ == null || l.getZ() < parentMinZ) {
-												parentMinZ = l.getZ();
-											}
-										}
-										int parentSizeX, parentSizeZ;
-										parentSizeX = (parentMaxX - parentMinX) + 1;
-										parentSizeZ = (parentMaxZ - parentMinZ) + 1;
-										int[][][] parentPolygonalBox = new int[parentSizeX][][];
-										for (MovecraftLocation l : parentBlockList) {
-											if (parentPolygonalBox[l.getX() - parentMinX] == null) {
-												parentPolygonalBox[l.getX() - parentMinX] = new int[parentSizeZ][];
-											}
-											if (parentPolygonalBox[l.getX() - parentMinX][l.getZ()
-													- parentMinZ] == null) {
-												parentPolygonalBox[l.getX() - parentMinX][l.getZ()
-														- parentMinZ] = new int[2];
-												parentPolygonalBox[l.getX() - parentMinX][l.getZ() - parentMinZ][0] = l
-														.getY();
-												parentPolygonalBox[l.getX() - parentMinX][l.getZ() - parentMinZ][1] = l
-														.getY();
-											} else {
-												int parentMinY = parentPolygonalBox[l.getX() - parentMinX][l.getZ()
-														- parentMinZ][0];
-												int parentMaxY = parentPolygonalBox[l.getX() - parentMinX][l.getZ()
-														- parentMinZ][1];
-
-												if (l.getY() < parentMinY) {
-													parentPolygonalBox[l.getX() - parentMinX][l.getZ()
-															- parentMinZ][0] = l.getY();
+	
+											// remove the new craft from the parent
+											// craft
+											List<MovecraftLocation> parentBlockList = ListUtils.subtract(
+													Arrays.asList(craft.getBlockList()),
+													Arrays.asList(data.getBlockList()));
+											craft.setBlockList(parentBlockList.toArray(new MovecraftLocation[1]));
+											craft.setOrigBlockCount(craft.getOrigBlockCount() - data.getBlockList().length);
+	
+											// Rerun the polygonal bounding formula
+											// for the parent craft
+											Integer parentMaxX = null;
+											Integer parentMaxZ = null;
+											Integer parentMinX = null;
+											Integer parentMinZ = null;
+											for (MovecraftLocation l : parentBlockList) {
+												if (parentMaxX == null || l.getX() > parentMaxX) {
+													parentMaxX = l.getX();
 												}
-												if (l.getY() > parentMaxY) {
-													parentPolygonalBox[l.getX() - parentMinX][l.getZ()
-															- parentMinZ][1] = l.getY();
+												if (parentMaxZ == null || l.getZ() > parentMaxZ) {
+													parentMaxZ = l.getZ();
+												}
+												if (parentMinX == null || l.getX() < parentMinX) {
+													parentMinX = l.getX();
+												}
+												if (parentMinZ == null || l.getZ() < parentMinZ) {
+													parentMinZ = l.getZ();
 												}
 											}
+											int parentSizeX, parentSizeZ;
+											parentSizeX = (parentMaxX - parentMinX) + 1;
+											parentSizeZ = (parentMaxZ - parentMinZ) + 1;
+											int[][][] parentPolygonalBox = new int[parentSizeX][][];
+											for (MovecraftLocation l : parentBlockList) {
+												if (parentPolygonalBox[l.getX() - parentMinX] == null) {
+													parentPolygonalBox[l.getX() - parentMinX] = new int[parentSizeZ][];
+												}
+												if (parentPolygonalBox[l.getX() - parentMinX][l.getZ()
+														- parentMinZ] == null) {
+													parentPolygonalBox[l.getX() - parentMinX][l.getZ()
+															- parentMinZ] = new int[2];
+													parentPolygonalBox[l.getX() - parentMinX][l.getZ() - parentMinZ][0] = l
+															.getY();
+													parentPolygonalBox[l.getX() - parentMinX][l.getZ() - parentMinZ][1] = l
+															.getY();
+												} else {
+													int parentMinY = parentPolygonalBox[l.getX() - parentMinX][l.getZ()
+															- parentMinZ][0];
+													int parentMaxY = parentPolygonalBox[l.getX() - parentMinX][l.getZ()
+															- parentMinZ][1];
+	
+													if (l.getY() < parentMinY) {
+														parentPolygonalBox[l.getX() - parentMinX][l.getZ()
+																- parentMinZ][0] = l.getY();
+													}
+													if (l.getY() > parentMaxY) {
+														parentPolygonalBox[l.getX() - parentMinX][l.getZ()
+																- parentMinZ][1] = l.getY();
+													}
+												}
+											}
+											craft.setHitBox(parentPolygonalBox);
 										}
-										craft.setHitBox(parentPolygonalBox);
-									}
+									}									
 								}
 
+
 							}
+						}
+						if(c.getType().getMustBeSubcraft()==true && isSubcraft==false) {
+							failed = true;
+							notifyP.sendMessage(String.format(
+									I18nSupport.getInternationalisedString("Craft must be part of another craft")));
 						}
 						if (!failed) {
 							c.setBlockList(data.getBlockList());
@@ -254,6 +262,13 @@ public class AsyncManager extends BukkitRunnable {
 							c.setMinX(data.getMinX());
 							c.setMinZ(data.getMinZ());
 							c.setNotificationPlayer(notifyP);
+							if(c.getType().getDynamicFlyBlockSpeedFactor()!=0.0) {
+								c.setCurTickCooldown(c.getType().getCruiseTickCooldown());
+								c.setMaxSpeed(c.getCurSpeed() + (data.dynamicFlyBlockSpeedMultiplier * c.getCurSpeed()));
+							} else {
+								c.setCurTickCooldown(c.getType().getCruiseTickCooldown());
+								c.setMaxSpeed(c.getCurSpeed());
+							}
 
 							if (notifyP != null) {
 								notifyP.sendMessage(String
@@ -298,6 +313,7 @@ public class AsyncManager extends BukkitRunnable {
 					if (task.getData().collisionExplosion()) {
 						MapUpdateCommand[] updates = task.getData().getUpdates();
 						c.setBlockList(task.getData().getBlockList());
+						c.setScheduledBlockChanges(task.getData().getScheduledBlockChanges());
 						boolean failed = MapUpdateManager.getInstance().addWorldUpdate(c.getW(), updates, null, null);
 
 						if (failed) {
@@ -332,6 +348,7 @@ public class AsyncManager extends BukkitRunnable {
 					if (!failed) {
 						sentMapUpdate = true;
 						c.setBlockList(task.getData().getBlockList());
+						c.setScheduledBlockChanges(task.getData().getScheduledBlockChanges());
 						c.setMinX(task.getData().getMinX());
 						c.setMinZ(task.getData().getMinZ());
 						c.setHitBox(task.getData().getHitbox());
@@ -394,6 +411,7 @@ public class AsyncManager extends BukkitRunnable {
 							sentMapUpdate = true;
 
 							c.setBlockList(task.getBlockList());
+							c.setScheduledBlockChanges(task.getScheduledBlockChanges());
 							c.setMinX(task.getMinX());
 							c.setMinZ(task.getMinZ());
 							c.setHitBox(task.getHitbox());
@@ -442,8 +460,22 @@ public class AsyncManager extends BukkitRunnable {
 							// time pass more slowly there
 							if (pcraft.getType().getHalfSpeedUnderwater() && pcraft.getMinY() < w.getSeaLevel())
 								ticksElapsed = ticksElapsed >> 1;
-
-							if (Math.abs(ticksElapsed) >= pcraft.getType().getCruiseTickCooldown()) {
+							if(pcraft.getType().getDynamicLagSpeedFactor()>0.0) { // craft speed should depend on how much lag it generates (IE: how many updates)
+								if(MapUpdateManager.getInstance().blockUpdatesPerCraft!=null) { 
+									Integer numUpdates=MapUpdateManager.getInstance().blockUpdatesPerCraft.get(pcraft);
+									if(numUpdates!=null && numUpdates!=0) { // this will only be true right after a move for this craft, so this doesn't get executed TOO often
+										double speedMultiplier = ((double) pcraft.getBlockList().length) / numUpdates;
+										speedMultiplier = Math.sqrt(speedMultiplier);
+										speedMultiplier = speedMultiplier * pcraft.getType().getDynamicLagSpeedFactor();
+										double newMaxSpeed = 20.0 / pcraft.getType().getCruiseTickCooldown(); // get current base speed in bps
+										newMaxSpeed = newMaxSpeed * speedMultiplier;
+										pcraft.setMaxSpeed(newMaxSpeed);
+										if(pcraft.getCurSpeed()>newMaxSpeed) // if craft is going too fast, slow it down. This usually happens after a turn or manuevre
+											pcraft.setCurSpeed(newMaxSpeed);
+									}
+								}
+							}
+							if (Math.abs(ticksElapsed) >= pcraft.getCurTickCooldown()) {
 								int dx = 0;
 								int dz = 0;
 								int dy = 0;
@@ -484,29 +516,20 @@ public class AsyncManager extends BukkitRunnable {
 								} else {
 									pcraft.setLastCruisUpdate(System.currentTimeMillis()-30000);
 								}
-							}
-
-						} else {
-							if (pcraft.getKeepMoving()) {
-								long rcticksElapsed = (System.currentTimeMillis() - pcraft.getLastRightClick()) / 50;
-
-								// if the craft should go slower underwater,
-								// make time pass more slowly there
-								if (pcraft.getType().getHalfSpeedUnderwater() && pcraft.getMinY() < w.getSeaLevel())
-									rcticksElapsed = rcticksElapsed >> 1;
-
-								rcticksElapsed = Math.abs(rcticksElapsed);
-								// if they are holding the button down, keep
-								// moving
-								if (rcticksElapsed <= 10) {
-									long ticksElapsed = (System.currentTimeMillis() - pcraft.getLastCruiseUpdate())
-											/ 50;
-									if (Math.abs(ticksElapsed) >= pcraft.getType().getTickCooldown()) {
-										pcraft.translate(pcraft.getLastDX(), pcraft.getLastDY(), pcraft.getLastDZ());
-										pcraft.setLastCruisUpdate(System.currentTimeMillis());
-									}
+								
+								if(pcraft.getCurSpeed()<pcraft.getMaxSpeed()) {  // increase velocity of cruising craft and logarithmically approach maxspeed
+									double difference=pcraft.getMaxSpeed()-pcraft.getCurSpeed();
+									double newSpeed=pcraft.getCurSpeed();
+									if(difference/10.0 < 0.01)
+										newSpeed+=0.01;
+									else
+										newSpeed+=difference/10.0;
+									pcraft.setCurSpeed(newSpeed);
 								}
 							}
+
+						}/* else {
+
 							if (pcraft.getPilotLocked() == true && pcraft.isNotProcessing()) {
 
 								Player p = CraftManager.getInstance().getPlayerFromCraft(pcraft);
@@ -565,7 +588,7 @@ public class AsyncManager extends BukkitRunnable {
 										}
 									}
 							}
-						}
+						}*/
 					}
 				}
 			}
@@ -730,10 +753,16 @@ public class AsyncManager extends BukkitRunnable {
 
 								// And check the overallsinkpercent
 								if (pcraft.getType().getOverallSinkPercent() != 0.0) {
-									double percent = (double) totalNonAirWaterBlocks
-											/ (double) pcraft.getOrigBlockCount();
+									double percent;
+									if(pcraft.getType().blockedByWater()) {
+										percent = (double) totalNonAirBlocks
+												/ (double) pcraft.getOrigBlockCount();	
+									} else {
+										percent = (double) totalNonAirWaterBlocks
+												/ (double) pcraft.getOrigBlockCount();									
+									}
 									if (percent * 100.0 < pcraft.getType().getOverallSinkPercent()) {
-										isSinking = true;
+										isSinking = true;	
 									}
 								}
 
@@ -767,7 +796,6 @@ public class AsyncManager extends BukkitRunnable {
 
 										}
 									pcraft.setCruising(false);
-									pcraft.setKeepMoving(false);
 									CraftManager.getInstance().removeCraft(pcraft);
 								} else {
 									// if the craft is sinking, let the player
@@ -780,7 +808,6 @@ public class AsyncManager extends BukkitRunnable {
 											notifyP.sendMessage(String.format(I18nSupport
 													.getInternationalisedString("Player- Craft is sinking")));
 										pcraft.setCruising(false);
-										pcraft.setKeepMoving(false);
 										pcraft.setSinking(true);
 										CraftManager.getInstance().removePlayerFromCraft(pcraft);
 										final Craft releaseCraft = pcraft;
@@ -806,7 +833,7 @@ public class AsyncManager extends BukkitRunnable {
 							if (pcraft.getBlockList().length == 0) {
 								CraftManager.getInstance().removeCraft(pcraft);
 							}
-							if (pcraft.getMinY() < -1) {
+							if (pcraft.getMinY() < 5) {
 								CraftManager.getInstance().removeCraft(pcraft);
 							}
 							long ticksElapsed = (System.currentTimeMillis() - pcraft.getLastCruiseUpdate()) / 50;
@@ -818,6 +845,7 @@ public class AsyncManager extends BukkitRunnable {
 									dz = pcraft.getLastDZ();
 								}
 								pcraft.translate(dx, -1, dz);
+								pcraft.setScheduledBlockChanges(null); // don't bother restoring color blocks for a sinking ship
 								if (pcraft.getLastCruiseUpdate() != -1) {
 									pcraft.setLastCruisUpdate(System.currentTimeMillis());
 								} else {
@@ -1042,17 +1070,17 @@ public class AsyncManager extends BukkitRunnable {
 												targetVector=targetBlock.getLocation().toVector().subtract(tnt.getLocation().toVector());
 												targetVector=targetVector.normalize();
 											}
-											if(targetVector.getX()-tv.getX()>0.5) {
-												tv.setX(tv.getX()+0.5);
-											} else if(targetVector.getX()-tv.getX()<-0.5) {
-												tv.setX(tv.getX()-0.5);
+											if(targetVector.getX()-tv.getX()>0.7) {
+												tv.setX(tv.getX()+0.7);
+											} else if(targetVector.getX()-tv.getX()<-0.7) {
+												tv.setX(tv.getX()-0.7);
 											} else {
 												tv.setX(targetVector.getX());
 											}
-											if(targetVector.getZ()-tv.getZ()>0.5) {
-												tv.setZ(tv.getZ()+0.5);
-											} else if(targetVector.getZ()-tv.getZ()<-0.5) {
-												tv.setZ(tv.getZ()-0.5);
+											if(targetVector.getZ()-tv.getZ()>0.7) {
+												tv.setZ(tv.getZ()+0.7);
+											} else if(targetVector.getZ()-tv.getZ()<-0.7) {
+												tv.setZ(tv.getZ()-0.7);
 											} else {
 												tv.setZ(targetVector.getZ());
 											}
@@ -1395,11 +1423,18 @@ public class AsyncManager extends BukkitRunnable {
 						ProtectedRegion tRegion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(tW)
 								.getRegion(Settings.SiegeControlRegion.get(tSiegeName));
 						if (tRegion != null) {
+							int totalSize=tRegion.getOwners().getPlayers().size()+tRegion.getOwners().getUniqueIds().size();
 							for (String tPlayerName : tRegion.getOwners().getPlayers()) {
-								int share = payment / tRegion.getOwners().getPlayers().size();
+								int share = payment / totalSize;
 								Movecraft.getInstance().getEconomy().depositPlayer(tPlayerName, share);
 								Movecraft.getInstance().getLogger().log(Level.INFO, String.format(
 										"Player %s paid %d for their ownership in %s", tPlayerName, share, tSiegeName));
+							}
+							for (UUID tPlayerUUID : tRegion.getOwners().getUniqueIds()) {
+								int share = payment / totalSize;
+								Movecraft.getInstance().getEconomy().depositPlayer(Bukkit.getPlayer(tPlayerUUID), share);
+								Movecraft.getInstance().getLogger().log(Level.INFO, String.format(
+										"Player UUID %s paid %d for their ownership in %s", tPlayerUUID.toString(), share, tSiegeName));
 							}
 						}
 					}
@@ -1429,7 +1464,7 @@ public class AsyncManager extends BukkitRunnable {
         			int x,y,z;
         			for(x=beaconX; x<beaconX+5; x++)
         				for(z=beaconZ; z<beaconZ+5; z++)
-        					if(!w.isChunkLoaded(x>>4, z>>z))
+        					if(!w.isChunkLoaded(x>>4, z>>4))
         						w.loadChunk(x>>4, z>>4);
         			boolean empty=false;
         			while(!empty && beaconY<250) {
@@ -1470,7 +1505,7 @@ public class AsyncManager extends BukkitRunnable {
         			CommandListener executor=new CommandListener();
         			s.setLine(1, "Region:"+assault);
         			s.setLine(2, "Damage:"+Movecraft.getInstance().assaultDamages.get(assault));
-        			Calendar rightNow = Calendar.getInstance(TimeZone.getTimeZone("MST"));
+        			Calendar rightNow = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
         			s.setLine(3, "Owner:"+executor.getRegionOwnerList(tRegion));
         			s.update();
                     ProtectedRegion aRegion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(w).getRegion(assault);
@@ -1499,6 +1534,43 @@ public class AsyncManager extends BukkitRunnable {
 		}
 
 	}
+	
+	private void processScheduledBlockChanges() {
+		for (World w : Bukkit.getWorlds()) {
+			if (w != null && CraftManager.getInstance().getCraftsInWorld(w) != null) {
+				ArrayList<MapUpdateCommand> updateCommands = new ArrayList<MapUpdateCommand>();
+				for (Craft pcraft : CraftManager.getInstance().getCraftsInWorld(w)) {
+					HashMap<MapUpdateCommand, Long> scheduledBlockChanges=pcraft.getScheduledBlockChanges();
+					if(scheduledBlockChanges!=null) {
+						Iterator<MapUpdateCommand> mucI = scheduledBlockChanges.keySet().iterator();
+						boolean madeChanges=false;
+						while (mucI.hasNext()) {
+							MapUpdateCommand muc=mucI.next();
+							if((pcraft.getScheduledBlockChanges().get(muc)<System.currentTimeMillis())&&(pcraft.isNotProcessing())) {
+								int cx = muc.getNewBlockLocation().getX() >> 4;
+								int cz = muc.getNewBlockLocation().getZ() >> 4;
+								if (w.isChunkLoaded(cx, cz) == false) {
+									w.loadChunk(cx, cz);
+								}
+								if(w.getBlockAt(muc.getNewBlockLocation().getX(), muc.getNewBlockLocation().getY(), muc.getNewBlockLocation().getZ()).getTypeId()==muc.getTypeID()) {
+									// if the block you will be updating later has changed type, something went horribly wrong: it burned away, was flooded, or was destroyed. Don't update it
+									updateCommands.add(muc);									
+								}
+								mucI.remove();
+								madeChanges=true;
+							}
+						}
+						if(madeChanges) {
+							pcraft.setScheduledBlockChanges(scheduledBlockChanges);
+						}
+					}
+				}
+				if (updateCommands.size() > 0) {
+					MapUpdateManager.getInstance().addWorldUpdate(w,updateCommands.toArray(new MapUpdateCommand[1]), null, null);
+				}
+			}
+		}
+	}
 
 	public void run() {
 		clearAll();
@@ -1510,6 +1582,18 @@ public class AsyncManager extends BukkitRunnable {
 			transparent.add(Material.STAINED_GLASS);
 			transparent.add(Material.STAINED_GLASS_PANE);
 			transparent.add(Material.IRON_FENCE);
+			transparent.add(Material.REDSTONE_WIRE);
+			transparent.add(Material.IRON_TRAPDOOR);
+			transparent.add(Material.TRAP_DOOR);
+			transparent.add(Material.NETHER_BRICK_STAIRS);
+			transparent.add(Material.LEVER);
+			transparent.add(Material.STONE_BUTTON);
+			transparent.add(Material.WOOD_BUTTON);
+			transparent.add(Material.STEP);
+			transparent.add(Material.SMOOTH_STAIRS);
+			transparent.add(Material.SIGN);
+			transparent.add(Material.SIGN_POST);
+			transparent.add(Material.WALL_SIGN);
 		}
 
 		processCruise();
@@ -1522,7 +1606,10 @@ public class AsyncManager extends BukkitRunnable {
 		processSiege();
 		processAssault();
 		processAlgorithmQueue();
-		FastBlockChanger.getInstance().run();
+		processScheduledBlockChanges();
+//		if(Settings.CompatibilityMode==false)
+//			FastBlockChanger.getInstance().run(); 
+		
 		// now cleanup craft that are bugged and have not moved in the past 60 seconds, but have no pilot
 		for (World w : Bukkit.getWorlds()) {
 			if (w != null && CraftManager.getInstance().getCraftsInWorld(w) != null) {

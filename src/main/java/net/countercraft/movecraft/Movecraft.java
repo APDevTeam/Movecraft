@@ -52,7 +52,7 @@ import com.sk89q.worldguard.protection.flags.StateFlag;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.craftbukkit.v1_9_R1.util.CraftMagicNumbers;
+import org.bukkit.craftbukkit.v1_10_R1.util.CraftMagicNumbers;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
 import org.bukkit.plugin.Plugin;
@@ -118,8 +118,8 @@ public class Movecraft extends JavaPlugin {
     private void disableShadow(int typeID) {
 		Method method;
 		try {
-			net.minecraft.server.v1_9_R1.Block tempBlock=CraftMagicNumbers.getBlock(typeID);
-			method = net.minecraft.server.v1_9_R1.Block.class.getDeclaredMethod("d", int.class);
+			net.minecraft.server.v1_10_R1.Block tempBlock=CraftMagicNumbers.getBlock(typeID);
+			method = net.minecraft.server.v1_10_R1.Block.class.getDeclaredMethod("d", int.class);
 			method.setAccessible(true);
 			method.invoke(tempBlock, 0);
 		} catch (NoSuchMethodException e1) {
@@ -146,6 +146,7 @@ public class Movecraft extends JavaPlugin {
 		this.saveDefaultConfig();
 		Settings.LOCALE = getConfig().getString("Locale");
 		Settings.DisableCrates = getConfig().getBoolean("DisableCrates", false);
+		Settings.RestrictSiBsToRegions = getConfig().getBoolean("DisableCrates", false);
 		Settings.Debug = getConfig().getBoolean("Debug", false);
 		Settings.DisableSpillProtection = getConfig().getBoolean("DisableSpillProtection", false);
 		// if the PilotTool is specified in the config.yml file, use it
@@ -161,13 +162,14 @@ public class Movecraft extends JavaPlugin {
 		Settings.CompatibilityMode = getConfig().getBoolean("CompatibilityMode", false);
 		if(Settings.CompatibilityMode==false) {
 			try {
-				 	Class.forName( "net.minecraft.server.v1_9_R1.Chunk" );
+				 	Class.forName( "net.minecraft.server.v1_10_R1.Chunk" );
 				} catch( ClassNotFoundException e ) {
 					Settings.CompatibilityMode=true;
 					logger.log(Level.INFO, "WARNING: CompatibilityMode was set to false, but required build-specific classes were not found. FORCING COMPATIBILITY MODE");
 				}
 		}
 		logger.log(Level.INFO, "CompatiblityMode is set to {0}", Settings.CompatibilityMode);
+		Settings.DelayColorChanges = getConfig().getBoolean("DelayColorChanges", true);
 		Settings.SinkRateTicks = getConfig().getDouble("SinkRateTicks", 20.0);
 		Settings.SinkCheckTicks = getConfig().getDouble("SinkCheckTicks", 100.0);
 		Settings.TracerRateTicks = getConfig().getDouble("TracerRateTicks", 5.0);
@@ -198,7 +200,7 @@ public class Movecraft extends JavaPlugin {
 		Settings.AssaultDamagesPerBlock = getConfig().getInt("AssaultDamagesPerBlock", 15);
 		Settings.AssaultRequiredDefendersOnline = getConfig().getInt("AssaultRequiredDefendersOnline", 3);
 		Settings.AssaultDestroyableBlocks = new HashSet<Integer>(getConfig().getIntegerList("AssaultDestroyableBlocks"));
-		Settings.DisableShadowBlocks = new HashSet<Integer>(getConfig().getIntegerList("DisableShadowBlocks"));
+		Settings.DisableShadowBlocks = new HashSet<Integer>(getConfig().getIntegerList("DisableShadowBlocks"));  //REMOVE FOR PUBLIC VERSION
 		if(Settings.CompatibilityMode==false) {
 			for(int typ : Settings.DisableShadowBlocks) {
 				disableShadow(typ);
@@ -258,6 +260,7 @@ public class Movecraft extends JavaPlugin {
 			logger.log(Level.INFO, "Movecraft did not find a compatible version of WorldGuard. Disabling WorldGuard integration");
 			Settings.SiegeName=null;
 			Settings.AssaultEnable=false;
+			Settings.RestrictSiBsToRegions=false;
 		} else {
 			logger.log(Level.INFO, "Found a compatible version of WorldGuard. Enabling WorldGuard integration");			
 			Settings.WorldGuardBlockMoveOnBuildPerm = getConfig().getBoolean("WorldGuardBlockMoveOnBuildPerm", false);

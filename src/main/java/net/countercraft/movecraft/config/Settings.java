@@ -26,6 +26,7 @@ import java.util.Set;
 import net.countercraft.movecraft.utils.TownyWorldHeightLimits;
 
 public class Settings {
+	public static boolean RestrictSiBsToRegions = false;
 	public static boolean IGNORE_RESET = false;
 	public static boolean Debug = false;
 	public static int THREAD_POOL_SIZE = 5;
@@ -33,6 +34,7 @@ public class Settings {
 	public static String LOCALE;
 	public static int PilotTool = 280;
 	public static boolean CompatibilityMode = false;
+	public static boolean DelayColorChanges = true;
 	public static double SinkRateTicks = 20.0;
 	public static double SinkCheckTicks = 100.0;
 	public static double TracerRateTicks = 5.0;

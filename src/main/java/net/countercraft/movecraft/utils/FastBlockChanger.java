@@ -25,16 +25,16 @@ import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import net.countercraft.movecraft.Movecraft;
-import net.minecraft.server.v1_9_R1.BlockPosition;
-import net.minecraft.server.v1_9_R1.Chunk;
-import net.minecraft.server.v1_9_R1.EntityPlayer;
-import net.minecraft.server.v1_9_R1.EnumSkyBlock;
-import net.minecraft.server.v1_9_R1.IBlockData;
-import net.minecraft.server.v1_9_R1.Packet;
-import net.minecraft.server.v1_9_R1.PacketPlayOutMapChunk;
-import net.minecraft.server.v1_9_R1.PlayerChunk;
-import net.minecraft.server.v1_9_R1.TileEntity;
-import net.minecraft.server.v1_9_R1.World;
+import net.minecraft.server.v1_10_R1.BlockPosition;
+import net.minecraft.server.v1_10_R1.Chunk;
+import net.minecraft.server.v1_10_R1.EntityPlayer;
+import net.minecraft.server.v1_10_R1.EnumSkyBlock;
+import net.minecraft.server.v1_10_R1.IBlockData;
+import net.minecraft.server.v1_10_R1.Packet;
+import net.minecraft.server.v1_10_R1.PacketPlayOutMapChunk;
+import net.minecraft.server.v1_10_R1.PlayerChunk;
+import net.minecraft.server.v1_10_R1.TileEntity;
+import net.minecraft.server.v1_10_R1.World;
 
 /*
    This class is intended to make it easy to rapidly place huge numbers of blocks at once (multiple whole-chunk-sized structures)
@@ -104,11 +104,11 @@ public class FastBlockChanger extends BukkitRunnable
    // get a chunkupdater from a bukkit world object
    public ChunkUpdater getChunk(org.bukkit.World cw, int cx, int cz, boolean updateIfUnchanged)
    {
-     return getChunk( ((org.bukkit.craftbukkit.v1_9_R1.CraftWorld)cw).getHandle(),cx,cz,updateIfUnchanged);
+     return getChunk( ((org.bukkit.craftbukkit.v1_10_R1.CraftWorld)cw).getHandle(),cx,cz,updateIfUnchanged);
    }
    
    // get a chunk updater from an internal world object
-   public ChunkUpdater getChunk(net.minecraft.server.v1_9_R1.World cw, int cx, int cz, boolean updateIfUnchanged)
+   public ChunkUpdater getChunk(net.minecraft.server.v1_10_R1.World cw, int cx, int cz, boolean updateIfUnchanged)
    {
      this.enabled=true;// wake up the task if needed
      for(ChunkUpdater c : chunks)
@@ -195,7 +195,7 @@ public class FastBlockChanger extends BukkitRunnable
      //RpgLogger.info("gti "+(x<<4)+","+(z<<4)+"  "+((x<<4) + 16)+","+((z<<4) + 16));
      Collection<TileEntity> lti = cu.chnk.tileEntities.values();
      d*=d;
-     PacketPlayOutMapChunk pmc = new PacketPlayOutMapChunk(cu.chnk, true, 65535);
+     PacketPlayOutMapChunk pmc = null;//new PacketPlayOutMapChunk(cu.chnk, true, 65535); don't use this class anyway, and I want this to build tonight...
      //PacketPlayOutUnloadChunk puc = new PacketPlayOutUnloadChunk(cu.x,cu.z); // may be needed in some situations or for some clients
      ArrayList<Packet<?>> te = new ArrayList<Packet<?>>(16);
      
@@ -207,7 +207,7 @@ public class FastBlockChanger extends BukkitRunnable
      }
      
      // get the playerchunk to see what players have the chunk loaded, more effective that trying to guess with view distance?
-     PlayerChunk pc = ((net.minecraft.server.v1_9_R1.WorldServer)(cu.w)).getPlayerChunkMap().b(cu.x, cu.z);
+     PlayerChunk pc = null;//((net.minecraft.server.v1_10_R1.WorldServer)(cu.w)).getPlayerChunkMap().b(cu.x, cu.z); don't use this anymore anyway, and I want this to build tonight
      if( pc==null || pc.c==null) {
          cu.isFBCPacket=false;
          cu.last_sent=System.currentTimeMillis();

@@ -29,6 +29,7 @@ import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.BoundingBoxUtils;
 import net.countercraft.movecraft.utils.EntityUpdateCommand;
 import net.countercraft.movecraft.utils.MapUpdateCommand;
+import net.countercraft.movecraft.utils.MapUpdateManager;
 import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.utils.MovecraftLocation;
 
@@ -438,19 +439,19 @@ public class TranslationTask extends AsyncTask {
                 } else if(!waterCraft) {
                     // New block is not air or a piston head and is not part of the existing ship
                     testMaterial = getCraft().getW().getBlockAt( newLoc.getX(), newLoc.getY(), newLoc.getZ() ).getType();
-                    blockObstructed = (!testMaterial.equals(Material.AIR) && !testMaterial.equals(Material.PISTON_EXTENSION)) && !existingBlockSet.contains( newLoc );
+                    blockObstructed = (!testMaterial.equals(Material.AIR)) && !existingBlockSet.contains( newLoc );
                 } else {
                     // New block is not air or water or a piston head and is not part of the existing ship
                     testMaterial = getCraft().getW().getBlockAt( newLoc.getX(), newLoc.getY(), newLoc.getZ() ).getType();
                     blockObstructed = (!testMaterial.equals(Material.AIR) && !testMaterial.equals(Material.STATIONARY_WATER) 
-                        && !testMaterial.equals(Material.WATER) && !testMaterial.equals(Material.PISTON_EXTENSION)) && !existingBlockSet.contains( newLoc );
+                        && !testMaterial.equals(Material.WATER)) && !existingBlockSet.contains( newLoc );
                 }
 
                 boolean ignoreBlock=false;
-                // air never obstructs anything
+                // air never obstructs anything (changed 4/18/2017 to prevent drilling machines)
 	            if(getCraft().getW().getBlockAt( oldLoc.getX(), oldLoc.getY(), oldLoc.getZ() ).getType().equals(Material.AIR) && blockObstructed) {
 	            	ignoreBlock=true;
-	            	blockObstructed=false;
+//	            	blockObstructed=false;
 	            }
 	            
                 testMaterial = getCraft().getW().getBlockAt( newLoc.getX(), newLoc.getY(), newLoc.getZ() ).getType();
@@ -574,14 +575,20 @@ public class TranslationTask extends AsyncTask {
                                 }
                             } else {
                             	int explosionKey;
-                            	if(oldLoc.getY()<waterLine) { // underwater explosions require more force to do anything
-                                	explosionKey =  (int) (0-((getCraft().getType().getCollisionExplosion()+25)*100));
-                            	} else {
-                            		explosionKey =  (int) (0-(getCraft().getType().getCollisionExplosion()*100));
+                            	float explosionForce=getCraft().getType().getCollisionExplosion();
+                            	if(getCraft().getType().getFocusedExplosion()==true) {
+                            		explosionForce=explosionForce*getCraft().getBlockList().length;
                             	}
+                            	if(oldLoc.getY()<waterLine) { // underwater explosions require more force to do anything
+                                	explosionForce+=25;
+                            	}
+                        		explosionKey =  (int) (0-(explosionForce*100));
                                 if (!getCraft().getW().getBlockAt(oldLoc.getX(),oldLoc.getY(), oldLoc.getZ()).getType().equals(Material.AIR)){
                                     explosionSet.add( new MapUpdateCommand( oldLoc, explosionKey, (byte)0, getCraft() ) );
                                     data.setCollisionExplosion(true);
+                                }
+                                if(getCraft().getType().getFocusedExplosion()==true) { // don't handle any further collisions if it is set to focusedexplosion
+                                	break;
                                 }
                             }
                         }
@@ -709,6 +716,20 @@ public class TranslationTask extends AsyncTask {
             }
             
         } //END OF: for ( int i = 0; i < blocksList.length; i++ ) {
+            
+        // now move the scheduled block changes along with the ship
+        HashMap <MapUpdateCommand , Long> newScheduledBlockChanges=new HashMap <MapUpdateCommand , Long>();
+        HashMap <MapUpdateCommand , Long> oldScheduledBlockChanges=getCraft().getScheduledBlockChanges();
+        if(oldScheduledBlockChanges!=null) {
+	        for(MapUpdateCommand muc : oldScheduledBlockChanges.keySet()) {
+	        	MovecraftLocation newLoc=muc.getNewBlockLocation().translate(data.getDx(),data.getDy(),data.getDz());
+	//        	Long newTime=oldScheduledBlockChanges.get(muc);
+	        	Long newTime=System.currentTimeMillis()+10000;
+	        	MapUpdateCommand newMuc=new MapUpdateCommand(newLoc, muc.getTypeID(), muc.getDataID(), getCraft());
+	        	newScheduledBlockChanges.put(newMuc, newTime);
+	        }
+	        data.setScheduledBlockChanges(newScheduledBlockChanges);
+	    }
 	    
         if(data.collisionExplosion()) {
             // mark the craft to check for sinking, remove the exploding blocks from the blocklist, and submit the explosions for map update
@@ -767,7 +788,7 @@ public class TranslationTask extends AsyncTask {
 
             fail( String.format( I18nSupport.getInternationalisedString( "Translation - Failed Craft is obstructed" ) ) );
             
-            if(getCraft().getSinking()==true) {
+            if(getCraft().getSinking()==false) {   // FROG changed from ==true, think that was a typo
                 if(getCraft().getType().getSinkPercent()!=0.0) {
                     getCraft().setLastBlockCheck(0);
                 }				
@@ -905,9 +926,9 @@ public class TranslationTask extends AsyncTask {
                             // for watercraft, fill blocks below the waterline with water
                             if(!waterCraft) {
                                 if(getCraft().getSinking()) {
-                                    updateSet.add( new MapUpdateCommand( l1, 0, (byte)0, null, getCraft().getType().getSmokeOnSink()) );
+                                    updateSet.add( new MapUpdateCommand( l1, 0, (byte)0, getCraft(), getCraft().getType().getSmokeOnSink()) );
                                 } else {
-                                    updateSet.add( new MapUpdateCommand( l1, 0, (byte)0, null) );						
+                                    updateSet.add( new MapUpdateCommand( l1, 0, (byte)0, getCraft()) );						
                                 }
                             } else {
                                 if(l1.getY()<=waterLine) {
@@ -918,18 +939,18 @@ public class TranslationTask extends AsyncTask {
                                     }
                                     if(getCraft().getW().getBlockAt(testAir.getX(), testAir.getY(), testAir.getZ()).getTypeId()==0) {
                                         if(getCraft().getSinking()) {
-                                                updateSet.add( new MapUpdateCommand( l1, 0, (byte)0, null, getCraft().getType().getSmokeOnSink()) );
+                                                updateSet.add( new MapUpdateCommand( l1, 0, (byte)0, getCraft(), getCraft().getType().getSmokeOnSink()) );
                                         } else {
-                                                updateSet.add( new MapUpdateCommand( l1, 0, (byte)0, null) );						
+                                                updateSet.add( new MapUpdateCommand( l1, 0, (byte)0, getCraft()) );						
                                         }
                                     } else {
-                                        updateSet.add( new MapUpdateCommand( l1, 9, (byte)0, null ) );
+                                        updateSet.add( new MapUpdateCommand( l1, 9, (byte)0, getCraft() ) );
                                     }
                                 } else {
                                     if(getCraft().getSinking()) {
-                                        updateSet.add( new MapUpdateCommand( l1, 0, (byte)0, null, getCraft().getType().getSmokeOnSink()) );
+                                        updateSet.add( new MapUpdateCommand( l1, 0, (byte)0, getCraft(), getCraft().getType().getSmokeOnSink()) );
                                     } else {
-                                        updateSet.add( new MapUpdateCommand( l1, 0, (byte)0, null) );						
+                                        updateSet.add( new MapUpdateCommand( l1, 0, (byte)0, getCraft()) );						
                                     }
                                 }
                             }
@@ -937,9 +958,11 @@ public class TranslationTask extends AsyncTask {
 
                         //add destroyed parts of growed
                         for (MovecraftLocation destroyedLocation : destroyedBlocks){
-                            updateSet.add( new MapUpdateCommand( destroyedLocation, 0, (byte)0, null) );
+                            updateSet.add( new MapUpdateCommand( destroyedLocation, 0, (byte)0, getCraft()) );
                         }
-			data.setUpdates(updateSet.toArray( new MapUpdateCommand[1] ) );
+            MapUpdateCommand[] updateArray=updateSet.toArray( new MapUpdateCommand[1] );
+            MapUpdateManager.getInstance().sortUpdates(updateArray);
+			data.setUpdates(updateArray);
 			data.setEntityUpdates(entityUpdateSet.toArray( new EntityUpdateCommand[1] ) );
 			
 			if ( data.getDy() != 0 ) {
@@ -961,8 +984,10 @@ public class TranslationTask extends AsyncTask {
             Location location = craftPilot.getLocation();
             if(getCraft().getDisabled()==false) {
             	getCraft().getW().playSound(location,Sound.BLOCK_ANVIL_LAND,1.0f, 0.25f);
+            	getCraft().setCurTickCooldown(getCraft().getType().getCruiseTickCooldown());
             } else {
             	getCraft().getW().playSound(location,Sound.ENTITY_IRONGOLEM_DEATH,5.0f, 5.0f);            	
+            	getCraft().setCurTickCooldown(getCraft().getType().getCruiseTickCooldown());
             }
         }
 
@@ -998,11 +1023,11 @@ public class TranslationTask extends AsyncTask {
             boolean blockObstructed;
             if(!waterCraft) {
                 // New block is not air or a piston head and is not part of the existing ship
-                blockObstructed = (!testMaterial.equals(Material.AIR) && !testMaterial.equals(Material.PISTON_EXTENSION)) && !existingBlockSet.contains( newLoc );
+                blockObstructed = (!testMaterial.equals(Material.AIR)) && !existingBlockSet.contains( newLoc );
             } else {
                 // New block is not air or water or a piston head and is not part of the existing ship
                 blockObstructed = (!testMaterial.equals(Material.AIR) && !testMaterial.equals(Material.STATIONARY_WATER) 
-                        && !testMaterial.equals(Material.WATER) && !testMaterial.equals(Material.PISTON_EXTENSION)) && !existingBlockSet.contains( newLoc );
+                        && !testMaterial.equals(Material.WATER)) && !existingBlockSet.contains( newLoc );
             }
             if (blockObstructed && hoverCraft){
                 // New block is not harvested block and is not part of the existing craft

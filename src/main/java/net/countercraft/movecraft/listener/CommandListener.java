@@ -431,7 +431,8 @@ public class CommandListener implements CommandExecutor {
 		if(cmd.getName().equalsIgnoreCase("manOverBoard")) {
 			if(CraftManager.getInstance().getCraftByPlayerName(player.getName())!=null) {
 				Location telPoint = getCraftTeleportPoint(CraftManager.getInstance().getCraftByPlayerName(player.getName()), CraftManager.getInstance().getCraftByPlayerName(player.getName()).getW());
-				player.teleport(telPoint);
+				if(!CraftManager.getInstance().getCraftByPlayerName(player.getName()).getDisabled())
+					player.teleport(telPoint);
 			} else {
 				for(World w : Bukkit.getWorlds()) {
 					if(CraftManager.getInstance().getCraftsInWorld( w )!=null)
@@ -445,7 +446,8 @@ public class CommandListener implements CommandExecutor {
 									if(telPoint.distance(player.getLocation())>1000) {
 										player.sendMessage( String.format( I18nSupport.getInternationalisedString( "Distance to craft is too far" ) ) );										
 									} else {
-										player.teleport(telPoint);
+										if(!CraftManager.getInstance().getCraftByPlayerName(player.getName()).getDisabled())
+											player.teleport(telPoint);
 									}
 								}
 							}
@@ -482,13 +484,15 @@ public class CommandListener implements CommandExecutor {
     			boolean foundAssaultableRegion=false;
             	for(ProtectedRegion tRegion : regions.getRegions()) {
         			boolean canBeAssaulted=true;
-            		for(String tSiegeName : Settings.SiegeName) {
-            			// siegable regions can not be assaulted
-            			if(tRegion.getId().equalsIgnoreCase(Settings.SiegeRegion.get(tSiegeName)))
-            				canBeAssaulted=false;
-            			if(tRegion.getId().equalsIgnoreCase(Settings.SiegeControlRegion.get(tSiegeName)))
-            				canBeAssaulted=false;
-            		}
+        			if(Settings.SiegeName!=null) {
+	            		for(String tSiegeName : Settings.SiegeName) {
+	            			// siegable regions can not be assaulted
+	            			if(tRegion.getId().equalsIgnoreCase(Settings.SiegeRegion.get(tSiegeName)))
+	            				canBeAssaulted=false;
+	            			if(tRegion.getId().equalsIgnoreCase(Settings.SiegeControlRegion.get(tSiegeName)))
+	            				canBeAssaulted=false;
+	            		}
+        			}
             		// a region can only be assaulted if it disables TNT, this is to prevent child regions or sub regions from being assaulted
             		if(tRegion.getFlag(DefaultFlag.TNT)!=State.DENY)
         				canBeAssaulted=false;            			
@@ -572,13 +576,15 @@ public class CommandListener implements CommandExecutor {
 				return true;
 			}
      		boolean canBeAssaulted=true;
-    		for(String tSiegeName : Settings.SiegeName) {
-    			// siegable regions can not be assaulted
-    			if(aRegion.getId().equalsIgnoreCase(Settings.SiegeRegion.get(tSiegeName)))
-    				canBeAssaulted=false;
-    			if(aRegion.getId().equalsIgnoreCase(Settings.SiegeControlRegion.get(tSiegeName)))
-    				canBeAssaulted=false;
-    		}
+     		if(Settings.SiegeName!=null) {
+	    		for(String tSiegeName : Settings.SiegeName) {
+	    			// siegable regions can not be assaulted
+	    			if(aRegion.getId().equals(Settings.SiegeRegion.get(tSiegeName)))
+	    				canBeAssaulted=false;
+	    			if(aRegion.getId().equals(Settings.SiegeControlRegion.get(tSiegeName)))
+	    				canBeAssaulted=false;
+	    		}
+     		}
     		// a region can only be assaulted if it disables TNT, this is to prevent child regions or sub regions from being assaulted
     		if(aRegion.getFlag(DefaultFlag.TNT)!=State.DENY)
 				canBeAssaulted=false;            			
@@ -741,7 +747,7 @@ public class CommandListener implements CommandExecutor {
             	}
 
             	if(Movecraft.getInstance().getEconomy().has(player, cost)) {
-            		Calendar rightNow = Calendar.getInstance(TimeZone.getTimeZone("MST"));
+            		Calendar rightNow = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
             		int hour = rightNow.get(Calendar.HOUR_OF_DAY);
             		int minute = rightNow.get(Calendar.MINUTE);
             		int currMilitaryTime=hour*100+minute;
