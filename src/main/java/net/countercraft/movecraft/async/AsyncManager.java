@@ -1382,10 +1382,12 @@ public class AsyncManager extends BukkitRunnable {
 						if(Settings.SiegeCommandsOnWin.get(Movecraft.getInstance().currentSiegeName)!=null) 
 							for (String command : Settings.SiegeCommandsOnWin
 									.get(Movecraft.getInstance().currentSiegeName)) {
-								command.replace("%r", Settings.SiegeRegion.get(Movecraft.getInstance().currentSiegeName));
-								command.replace("%c",
-										Settings.SiegeCost.get(Movecraft.getInstance().currentSiegeName).toString());
-								command.replace("%w", siegeLeader.toString());
+								command = command
+										.replaceAll("%r",
+												Settings.SiegeRegion.get(Movecraft.getInstance().currentSiegeName))
+										.replaceAll("%c", Settings.SiegeCost
+												.get(Movecraft.getInstance().currentSiegeName).toString())
+										.replaceAll("%w", siegeLeader.getName());
 								Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
 							}
 					} else {
@@ -1396,10 +1398,12 @@ public class AsyncManager extends BukkitRunnable {
 						if(Settings.SiegeCommandsOnLose.get(Movecraft.getInstance().currentSiegeName)!=null)
 							for (String command : Settings.SiegeCommandsOnLose
 									.get(Movecraft.getInstance().currentSiegeName)) {
-								command.replace("%r", Settings.SiegeRegion.get(Movecraft.getInstance().currentSiegeName));
-								command.replace("%c",
-										Settings.SiegeCost.get(Movecraft.getInstance().currentSiegeName).toString());
-								command.replace("%l", siegeLeader.toString());
+								command = command
+										.replaceAll("%r",
+												Settings.SiegeRegion.get(Movecraft.getInstance().currentSiegeName))
+										.replaceAll("%c", Settings.SiegeCost
+												.get(Movecraft.getInstance().currentSiegeName).toString())
+										.replaceAll("%l", siegeLeader.getName());
 								Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
 							}
 					}
