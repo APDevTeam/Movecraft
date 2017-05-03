@@ -343,13 +343,17 @@ public class MapUpdateManager extends BukkitRunnable {
 										dstSection.setType(dstBlock.getX()&15, dstBlock.getY()&15, dstBlock.getZ()&15, dstIBD);
 										addBlockUpdateTracking(i.getCraft());
 									}
+
+
 									if(srcBlock!=null) {
-										// if you had a source block, also move the tile entity, and if there is a next tick entry, move that too	
-										nativeSrcChunk.getTileEntities().remove(srcBlockPos);
+										// if you had a source block, also move the tile entity, and if there is a next tick entry, move that too
 										TileEntity tileEntity=tileMap.get(i.getOldBlockLocation());
 										if (tileEntity != null) {
 											tileEntity.setPosition(dstBlockPos);
 											addBlockUpdateTracking(i.getCraft());
+											if(i.getTypeID()==54 || i.getTypeID()==146) {
+												addBlockUpdateTracking(i.getCraft(),(int)(i.getCraft().getOrigBlockCount()*0.005));											
+											}
 											nativeDstChunk.getTileEntities().put(dstBlockPos, tileEntity);
 
 											if (nativeWorld.capturedTileEntities.containsKey(srcBlockPos)) {
@@ -371,7 +375,7 @@ public class MapUpdateManager extends BukkitRunnable {
 										}
 
 									}
-								}
+								}								
 								
 								// move entities that were on the block you just placed
 								if( entityMap.containsKey(i.getNewBlockLocation())) {
@@ -437,7 +441,25 @@ public class MapUpdateManager extends BukkitRunnable {
 								}
 
 							}
+						} else {
+							if(i.getTypeID()<-10) { // don't bother with tiny explosions
+								float explosionPower=i.getTypeID();
+								explosionPower=0.0F-explosionPower/100.0F;
+                                Location loc = new Location(w, i.getNewBlockLocation().getX()+0.5, i.getNewBlockLocation().getY()+0.5, i.getNewBlockLocation().getZ());
+                                this.createExplosion(loc, explosionPower);
+								//w.createExplosion(m.getNewBlockLocation().getX()+0.5, m.getNewBlockLocation().getY()+0.5, m.getNewBlockLocation().getZ()+0.5, explosionPower);
+							}
 						}
+					}
+				}
+				
+				// clean up any left over tile entities on blocks that do not need tile entities
+				for ( MapUpdateCommand i : updatesInWorld ) { 
+					if(Arrays.binarySearch(tileEntityBlocksToPreserve,i.getTypeID())<0) { // TODO: make this only run when the original block had tile data, but after it cleans up my corrupt chunks >.>
+						Block dstBlock=w.getBlockAt(i.getNewBlockLocation().getX(), i.getNewBlockLocation().getY(), i.getNewBlockLocation().getZ());
+						net.minecraft.server.v1_10_R1.Chunk nativeDstChunk = ( ( CraftChunk ) dstBlock.getChunk() ).getHandle();
+						BlockPosition dstBlockPos=new BlockPosition(dstBlock.getX(), dstBlock.getY(), dstBlock.getZ());
+						nativeDstChunk.getTileEntities().remove(dstBlockPos);
 					}
 				}
 				
@@ -740,12 +762,18 @@ public class MapUpdateManager extends BukkitRunnable {
 	// NOTE: The below is slow and should NOT be run synchronously if it can be avoided!
 	public void sortUpdates( MapUpdateCommand[] mapUpdates) {
 		// the point of this is to sort the block updates so that an update never overwrites the source of a later update
-		boolean sorted=false;
+
+/*		boolean sorted=false;
 		HashMap<MovecraftLocation,Integer> newBlockLocationIndexes=new HashMap<MovecraftLocation,Integer>();
 		Integer index=0;
 		for(MapUpdateCommand i : mapUpdates) {
-			if(i.getNewBlockLocation()!=null) {
-				newBlockLocationIndexes.put(i.getNewBlockLocation(), index);
+			if(i.getOldBlockLocation()!=null) {
+//				if((Arrays.binarySearch(tileEntityBlocksToPreserve,i.getTypeID())>=0) || (Arrays.binarySearch(tileEntityBlocksToPreserve,i.getCurrentTypeID())>=0)) {
+					newBlockLocationIndexes.put(i.getNewBlockLocation(), index);
+	//			}
+		//	} else {
+			//	if(Arrays.binarySearch(tileEntityBlocksToPreserve,i.getTypeID())>=0)
+					newBlockLocationIndexes.put(i.getNewBlockLocation(), index);
 			}
 			index++;
 		}
@@ -761,14 +789,14 @@ public class MapUpdateManager extends BukkitRunnable {
 					if(Arrays.binarySearch(tileEntityBlocksToPreserve,i.getTypeID())>=0) {
 						needsSort=true;
 					} else {
-						int sourceIndex=newBlockLocationIndexes.get(i.getOldBlockLocation());
-						if(Arrays.binarySearch(tileEntityBlocksToPreserve,mapUpdates[sourceIndex].getTypeID())>=0) {
+//						int sourceIndex=newBlockLocationIndexes.get(i.getOldBlockLocation());
+						if(Arrays.binarySearch(tileEntityBlocksToPreserve,i.getCurrentTypeID())>=0) {
 							needsSort=true;
 						}
 					}
 					if(needsSort) {
-						int sourceIndex=newBlockLocationIndexes.get(i.getOldBlockLocation());
-						if(sourceIndex<index) {
+						Integer sourceIndex=newBlockLocationIndexes.get(i.getOldBlockLocation());
+						if((sourceIndex!=null) && (sourceIndex<index)) {
 							sorted=false;
 							MapUpdateCommand temp=i;
 							mapUpdates[index]=mapUpdates[sourceIndex];
@@ -780,7 +808,7 @@ public class MapUpdateManager extends BukkitRunnable {
 				}
 			}
 		}
-		iterations++; // just to give a convenient breakpoint
+		iterations++; // just to give a convenient breakpoint*/
 	}
 	
     public boolean addWorldUpdate( World w, MapUpdateCommand[] mapUpdates, EntityUpdateCommand[] eUpdates, ItemDropUpdateCommand[] iUpdates) {

@@ -356,10 +356,12 @@ public class RotationTask extends AsyncTask {
 				} else {
 					int id = w.getBlockTypeIdAt( originalBlockList[i].getX(), originalBlockList[i].getY(), originalBlockList[i].getZ() );
 					byte data = w.getBlockAt( originalBlockList[i].getX(), originalBlockList[i].getY(), originalBlockList[i].getZ() ).getData();
+					int currentID = w.getBlockTypeIdAt( blockList[i].getX(), blockList[i].getY(), blockList[i].getZ() );
+					byte currentData = w.getBlockAt( blockList[i].getX(), blockList[i].getY(), blockList[i].getZ() ).getData();
 					if ( BlockUtils.blockRequiresRotation( id ) ) {
 						data = BlockUtils.rotate( data, id, rotation );
 					}
-					mapUpdates.add( new MapUpdateCommand( originalBlockList[i], blockList[i], id, data, rotation, getCraft() ) );
+					mapUpdates.add( new MapUpdateCommand( originalBlockList[i], currentID, currentData, blockList[i], id, data, rotation, getCraft() ) );
 				} 
 			} else {
 				// allow watercraft to rotate through water
@@ -370,10 +372,12 @@ public class RotationTask extends AsyncTask {
 				} else {
 					int id = w.getBlockTypeIdAt( originalBlockList[i].getX(), originalBlockList[i].getY(), originalBlockList[i].getZ() );
 					byte data = w.getBlockAt( originalBlockList[i].getX(), originalBlockList[i].getY(), originalBlockList[i].getZ() ).getData();
+					int currentID = w.getBlockTypeIdAt( blockList[i].getX(), blockList[i].getY(), blockList[i].getZ() );
+					byte currentData = w.getBlockAt( blockList[i].getX(), blockList[i].getY(), blockList[i].getZ() ).getData();
 					if ( BlockUtils.blockRequiresRotation( id ) ) {
 						data = BlockUtils.rotate( data, id, rotation );
 					}
-					mapUpdates.add( new MapUpdateCommand( originalBlockList[i], blockList[i], id, data, rotation, getCraft() ) );
+					mapUpdates.add( new MapUpdateCommand( originalBlockList[i], currentID, currentData, blockList[i], id, data, rotation, getCraft() ) );
 				} 
 			}
 
@@ -496,7 +500,7 @@ public class RotationTask extends AsyncTask {
 	        this.scheduledBlockChanges=newScheduledBlockChanges;
             
 	        MapUpdateCommand[] updateArray=mapUpdates.toArray( new MapUpdateCommand[1] );
-            MapUpdateManager.getInstance().sortUpdates(updateArray);
+//            MapUpdateManager.getInstance().sortUpdates(updateArray);
 			this.updates = updateArray;
 			this.entityUpdates = entityUpdateSet.toArray( new EntityUpdateCommand[1] );
 

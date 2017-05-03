@@ -597,6 +597,8 @@ public class TranslationTask extends AsyncTask {
                     //block not obstructed
                     int oldID = getCraft().getW().getBlockTypeIdAt( oldLoc.getX(), oldLoc.getY(), oldLoc.getZ() );
                     byte oldData = getCraft().getW().getBlockAt( oldLoc.getX(), oldLoc.getY(), oldLoc.getZ() ).getData();
+                    int currentID = getCraft().getW().getBlockTypeIdAt( newLoc.getX(), newLoc.getY(), newLoc.getZ() );
+                    byte currentData = getCraft().getW().getBlockAt( newLoc.getX(), newLoc.getY(), newLoc.getZ() ).getData();
                     // remove water from sinking crafts
                     if(getCraft().getSinking()) {
                             if((oldID==8 || oldID==9) && oldLoc.getY()>waterLine)
@@ -604,7 +606,7 @@ public class TranslationTask extends AsyncTask {
                     }
                     
                     if(!ignoreBlock) {
-	                    updateSet.add( new MapUpdateCommand( oldLoc, newLoc, oldID, oldData, getCraft() ) );
+	                    updateSet.add( new MapUpdateCommand( oldLoc, currentID, currentData, newLoc, oldID, oldData, getCraft() ) );
 	                    tempBlockList.add(newLoc);
                     }
 
@@ -961,7 +963,7 @@ public class TranslationTask extends AsyncTask {
                             updateSet.add( new MapUpdateCommand( destroyedLocation, 0, (byte)0, getCraft()) );
                         }
             MapUpdateCommand[] updateArray=updateSet.toArray( new MapUpdateCommand[1] );
-            MapUpdateManager.getInstance().sortUpdates(updateArray);
+//            MapUpdateManager.getInstance().sortUpdates(updateArray);
 			data.setUpdates(updateArray);
 			data.setEntityUpdates(entityUpdateSet.toArray( new EntityUpdateCommand[1] ) );
 			

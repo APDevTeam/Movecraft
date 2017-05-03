@@ -169,7 +169,7 @@ public class Movecraft extends JavaPlugin {
 				}
 		}
 		logger.log(Level.INFO, "CompatiblityMode is set to {0}", Settings.CompatibilityMode);
-		Settings.DelayColorChanges = getConfig().getBoolean("DelayColorChanges", true);
+		Settings.DelayColorChanges = getConfig().getBoolean("DelayColorChanges", false);
 		Settings.SinkRateTicks = getConfig().getDouble("SinkRateTicks", 20.0);
 		Settings.SinkCheckTicks = getConfig().getDouble("SinkCheckTicks", 100.0);
 		Settings.TracerRateTicks = getConfig().getDouble("TracerRateTicks", 5.0);
