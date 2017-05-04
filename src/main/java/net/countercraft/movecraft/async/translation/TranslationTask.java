@@ -726,7 +726,7 @@ public class TranslationTask extends AsyncTask {
 	        for(MapUpdateCommand muc : oldScheduledBlockChanges.keySet()) {
 	        	MovecraftLocation newLoc=muc.getNewBlockLocation().translate(data.getDx(),data.getDy(),data.getDz());
 	//        	Long newTime=oldScheduledBlockChanges.get(muc);
-	        	Long newTime=System.currentTimeMillis()+10000;
+	        	Long newTime=System.currentTimeMillis()+5000;
 	        	MapUpdateCommand newMuc=new MapUpdateCommand(newLoc, muc.getTypeID(), muc.getDataID(), getCraft());
 	        	newScheduledBlockChanges.put(newMuc, newTime);
 	        }
@@ -1090,7 +1090,7 @@ private void captureYield(MovecraftLocation[] blocksList, List<MovecraftLocation
         if (harvestedBlocks.isEmpty()) {
             return;
         }
-        ArrayList<Inventory> chests = new ArrayList<>();
+        ArrayList<Inventory> chests = new ArrayList<Inventory>();
         HashSet<ItemDropUpdateCommand> itemDropUpdateSet = new HashSet<ItemDropUpdateCommand>();
         HashMap<MovecraftLocation, ItemStack[]> harvestedMap = new HashMap<MovecraftLocation, ItemStack[]>();
         //find chests

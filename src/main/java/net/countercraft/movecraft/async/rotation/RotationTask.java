@@ -493,7 +493,7 @@ public class RotationTask extends AsyncTask {
 	        	MovecraftLocation newLoc=muc.getNewBlockLocation();
 	        	newLoc=newLoc.subtract(originPoint);
 	        	newLoc=MathUtils.rotateVec( rotation, newLoc ).add( originPoint );
-	        	Long newTime=System.currentTimeMillis()+10000;
+	        	Long newTime=System.currentTimeMillis()+5000;
 	        	MapUpdateCommand newMuc=new MapUpdateCommand(newLoc, muc.getTypeID(), muc.getDataID(), getCraft());
 	        	newScheduledBlockChanges.put(newMuc, newTime);
 	        }

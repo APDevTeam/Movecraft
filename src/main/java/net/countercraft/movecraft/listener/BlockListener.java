@@ -220,7 +220,7 @@ public class BlockListener implements Listener {
         }
 	}
 
-/*	// process certain redstone on cruising crafts
+	// process certain redstone on cruising crafts
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onRedstoneEvent(BlockRedstoneEvent event) {
 		Block block = event.getBlock();
@@ -229,42 +229,19 @@ public class BlockListener implements Listener {
 				
 				MovecraftLocation mloc=new MovecraftLocation(block.getX(),block.getY(),block.getZ());
 				if(MathUtils.locIsNearCraftFast(tcraft, mloc) && tcraft.getCruising()) {
-					if((block.getTypeId()==94) || (block.getTypeId()==93)) {
-						event.setNewCurrent(event.getOldCurrent()); // this part effectively negates the event, since Movecraft will handle it
-						return;
-					}
 					if((block.getTypeId()==29) || (block.getTypeId()==33)) { 
 						event.setNewCurrent(event.getOldCurrent()); // don't allow piston movement on cruising crafts
 						return;
 					}
-					if((block.getTypeId()==77) && (block.getData()<8)) { // button is being pushed
-						MapUpdateCommand muc = new MapUpdateCommand(mloc, 77, block.getData(), null); // make sure button gets unpushed later, even if it moves
-//						event.setNewCurrent(event.getOldCurrent()); // this part effectively negates the event, since Movecraft will handle it
-						Long timeToChange=System.currentTimeMillis();
-						timeToChange+=1000;
-						HashMap<MapUpdateCommand, Long> scheduledChanges=tcraft.getScheduledBlockChanges();
-						scheduledChanges.put(muc, timeToChange);
-						tcraft.setScheduledBlockChanges(scheduledChanges);
-						return;
-					}
-					if((block.getTypeId()==143) && (block.getData()<8)) { // button is being pushed
-						MapUpdateCommand muc = new MapUpdateCommand(mloc, 143, block.getData(), null); // make sure button gets unpushed later, even if it moves
-//						event.setNewCurrent(event.getOldCurrent()); // this part effectively negates the event, since Movecraft will handle it
-						Long timeToChange=System.currentTimeMillis();
-						timeToChange+=1500;
-						HashMap<MapUpdateCommand, Long> scheduledChanges=tcraft.getScheduledBlockChanges();
-						scheduledChanges.put(muc, timeToChange);
-						tcraft.setScheduledBlockChanges(scheduledChanges);
-						return;
-					}
+					
 					if((block.getTypeId()==23) && (!tcraft.isNotProcessing())) {
-						event.setNewCurrent(event.getOldCurrent());
+						event.setNewCurrent(event.getOldCurrent()); // don't activate dispensers while craft is reconstructing
 						return;
 					}
 				}
 			}
 		}
-	}*/
+	}
 	
 	// prevent fragile items from dropping on cruising crafts
 	@EventHandler(priority = EventPriority.HIGHEST)
@@ -328,17 +305,17 @@ public class BlockListener implements Listener {
 					}
 				}
 				*/
-/*				if ( (!tcraft.isNotProcessing()) && (MathUtils.locIsNearCraftFast(tcraft, mloc)) ) {
+				if ( (!tcraft.isNotProcessing()) && (MathUtils.locIsNearCraftFast(tcraft, mloc)) ) {
 					boolean isFragile=(Arrays.binarySearch(fragileBlocks,block.getTypeId())>=0);
 					if (isFragile) {
 //						BlockFace face = ((Attachable) block).getAttachedFace();
 //					    if (!event.getBlock().getRelative(face).getType().isSolid()) {
-						if(event.getChangedTypeId()==0) {
+//						if(event.getChangedTypeId()==0) {
 						    event.setCancelled(true);
 						    return;
-					    }
+//					    }
 					}
-				}*/
+				}
 			}
         }
 	}

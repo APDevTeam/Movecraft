@@ -174,6 +174,7 @@ public class Movecraft extends JavaPlugin {
 		Settings.SinkCheckTicks = getConfig().getDouble("SinkCheckTicks", 100.0);
 		Settings.TracerRateTicks = getConfig().getDouble("TracerRateTicks", 5.0);
 		Settings.ManOverBoardTimeout = getConfig().getInt("ManOverBoardTimeout", 30);
+		Settings.SilhouetteViewDistance = getConfig().getInt("SilhouetteViewDistance", 200);
 		Settings.FireballLifespan = getConfig().getInt("FireballLifespan", 6);
 		Settings.FireballPenetration = getConfig().getBoolean("FireballPenetration", true);
 		Settings.BlockQueueChunkSize = getConfig().getInt("BlockQueueChunkSize", 1000);

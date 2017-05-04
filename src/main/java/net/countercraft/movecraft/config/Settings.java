@@ -33,6 +33,7 @@ public class Settings {
 	public static List<Integer> DATA_BLOCKS;
 	public static String LOCALE;
 	public static int PilotTool = 280;
+	public static int SilhouetteViewDistance=200;
 	public static boolean CompatibilityMode = false;
 	public static boolean DelayColorChanges = false;
 	public static double SinkRateTicks = 20.0;
