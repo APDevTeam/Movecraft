@@ -38,6 +38,8 @@ import net.minecraft.server.v1_10_R1.EnumSkyBlock;
 import net.minecraft.server.v1_10_R1.IBlockData;
 import net.minecraft.server.v1_10_R1.NBTTagCompound;
 import net.minecraft.server.v1_10_R1.NextTickListEntry;
+import net.minecraft.server.v1_10_R1.PacketPlayOutBlockChange;
+import net.minecraft.server.v1_10_R1.PacketPlayOutWorldParticles;
 import net.minecraft.server.v1_10_R1.StructureBoundingBox;
 import net.minecraft.server.v1_10_R1.TileEntity;
 import net.minecraft.server.v1_10_R1.TileEntitySign;
@@ -83,6 +85,7 @@ import java.util.logging.Level;
 
 import net.minecraft.server.v1_10_R1.EntityTNTPrimed;
 import net.minecraft.server.v1_10_R1.EnumBlockRotation;
+import net.minecraft.server.v1_10_R1.EnumParticle;
 
 import org.bukkit.event.entity.ExplosionPrimeEvent;
 
@@ -143,6 +146,7 @@ public class MapUpdateManager extends BukkitRunnable {
 
 		for ( World w : updates.keySet() ) {
 			if ( w != null ) {
+				int silhouetteBlocksSent=0;
 				List<MapUpdateCommand> updatesInWorld = updates.get( w );
 				List<EntityUpdateCommand> entityUpdatesInWorld = entityUpdates.get( w );
                 List<ItemDropUpdateCommand> itemDropUpdatesInWorld = itemDropUpdates.get( w );
@@ -484,12 +488,13 @@ public class MapUpdateManager extends BukkitRunnable {
 				
 				// clean up any left over tile entities on blocks that do not need tile entities
 				for ( MapUpdateCommand i : updatesInWorld ) { 
-					if(Arrays.binarySearch(tileEntityBlocksToPreserve,i.getTypeID())<0) { // TODO: make this only run when the original block had tile data, but after it cleans up my corrupt chunks >.>
-						Block dstBlock=w.getBlockAt(i.getNewBlockLocation().getX(), i.getNewBlockLocation().getY(), i.getNewBlockLocation().getZ());
-						net.minecraft.server.v1_10_R1.Chunk nativeDstChunk = ( ( CraftChunk ) dstBlock.getChunk() ).getHandle();
-						BlockPosition dstBlockPos=new BlockPosition(dstBlock.getX(), dstBlock.getY(), dstBlock.getZ());
-						nativeDstChunk.getTileEntities().remove(dstBlockPos);
-					}
+					if(i!=null)
+						if(Arrays.binarySearch(tileEntityBlocksToPreserve,i.getTypeID())<0) { // TODO: make this only run when the original block had tile data, but after it cleans up my corrupt chunks >.>
+							Block dstBlock=w.getBlockAt(i.getNewBlockLocation().getX(), i.getNewBlockLocation().getY(), i.getNewBlockLocation().getZ());
+							net.minecraft.server.v1_10_R1.Chunk nativeDstChunk = ( ( CraftChunk ) dstBlock.getChunk() ).getHandle();
+							BlockPosition dstBlockPos=new BlockPosition(dstBlock.getX(), dstBlock.getY(), dstBlock.getZ());
+							nativeDstChunk.getTileEntities().remove(dstBlockPos);
+						}
 				}
 				
 				// put in smoke or effects
@@ -498,6 +503,10 @@ public class MapUpdateManager extends BukkitRunnable {
 						if(i.getSmoke()==1) {
 							Location loc=new Location(w, i.getNewBlockLocation().getX(), i.getNewBlockLocation().getY(),  i.getNewBlockLocation().getZ());
 							w.playEffect(loc, Effect.SMOKE, 4);
+						}
+						if(Settings.SilhouetteViewDistance>0 && silhouetteBlocksSent<Settings.SilhouetteBlockCount) {
+							if(sendSilhouetteToPlayers(w,i))
+								silhouetteBlocksSent++;
 						}
 					}
 				}
@@ -588,8 +597,41 @@ public class MapUpdateManager extends BukkitRunnable {
 					}
 			}
 			sign.update();
+		}
+	}
+
+	private Random rand=new Random(); 
+	
+	private boolean sendSilhouetteToPlayers(World w, MapUpdateCommand i) {
+		boolean sendSil=false;
+		if(rand.nextInt(100)<15) {
+			sendSil=true;
+		}
+/*		if(i.getTypeID()==0) 
+			sendSil=true;
+		else 
+			if(i.getCurrentTypeID()!=null)
+				if(i.getTypeID()!=0 && i.getCurrentTypeID()==0) 
+					sendSil=true;*/
+		if(sendSil) {
+			for(Player p : w.getPlayers()) { // this is necessary because signs do not get updated client side correctly without refreshing the chunks, which causes a memory leak in the clients							
+				int playerX=p.getLocation().getBlockX();
+				int playerY=p.getLocation().getBlockY();
+				int playerZ=p.getLocation().getBlockZ();
+				int dist=(i.getNewBlockLocation().getX()-playerX)*(i.getNewBlockLocation().getX()-playerX);
+				dist+=(i.getNewBlockLocation().getY()-playerY)*(i.getNewBlockLocation().getY()-playerY);
+				dist+=(i.getNewBlockLocation().getZ()-playerZ)*(i.getNewBlockLocation().getZ()-playerZ);
+				if((dist<Settings.SilhouetteViewDistance*Settings.SilhouetteViewDistance)&&(dist>32*32)) {
+					net.minecraft.server.v1_10_R1.EntityPlayer craftPlayer = ((CraftPlayer) p).getHandle();
+					BlockPosition blockPosition = new BlockPosition(i.getNewBlockLocation().getX(),i.getNewBlockLocation().getY(),i.getNewBlockLocation().getZ());
+					PacketPlayOutWorldParticles packet = new PacketPlayOutWorldParticles(EnumParticle.VILLAGER_HAPPY, true, (float)i.getNewBlockLocation().getX(), (float)i.getNewBlockLocation().getY(), (float)i.getNewBlockLocation().getZ(), (float)1, (float)1, (float)1, 0, 9);
+
+					craftPlayer.playerConnection.sendPacket(packet);
+				}
+			}
+			return true;
 		} else {
-			int WTF=42;
+			return false;
 		}
 	}
 
