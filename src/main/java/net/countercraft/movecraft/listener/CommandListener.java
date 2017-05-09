@@ -311,18 +311,21 @@ public class CommandListener implements CommandExecutor {
 					if(args[0].equalsIgnoreCase("north") || args[0].equalsIgnoreCase("n")) {
 						craft.setCruiseDirection((byte)0x3);
 						craft.setCruising(true);
-					}
+					} else
 					if(args[0].equalsIgnoreCase("south") || args[0].equalsIgnoreCase("s")) {
 						craft.setCruiseDirection((byte)0x2);
 						craft.setCruising(true);
-					}
+					} else
 					if(args[0].equalsIgnoreCase("east") || args[0].equalsIgnoreCase("e")) {
 						craft.setCruiseDirection((byte)0x4);
 						craft.setCruising(true);
-					}
+					} else
 					if(args[0].equalsIgnoreCase("west") || args[0].equalsIgnoreCase("w")) {
 						craft.setCruiseDirection((byte)0x5);
 						craft.setCruising(true);
+					} else
+					if(args[0].equalsIgnoreCase("off") || args[0].equalsIgnoreCase("o")) {
+						craft.setCruising(false);
 					}
 				}
 			} else {
