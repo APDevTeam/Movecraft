@@ -36,7 +36,7 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
-import org.bukkit.craftbukkit.v1_9_R1.util.CraftMagicNumbers;
+import org.bukkit.craftbukkit.v1_10_R1.util.CraftMagicNumbers;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -166,8 +166,7 @@ public class InteractListener implements Listener {
 				}
 
 				if (org.bukkit.ChatColor.stripColor(sign.getLine(0)).equals("\\  ||  /")
-						&& org.bukkit.ChatColor.stripColor(sign.getLine(1)).equals("==      ==")
-						&& org.bukkit.ChatColor.stripColor(sign.getLine(2)).equals("/  ||  \\")) {
+						&& org.bukkit.ChatColor.stripColor(sign.getLine(1)).equals("==      ==") ) {
 					Craft craft = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
 					if (craft != null) {
 						if (event.getPlayer()
@@ -183,7 +182,7 @@ public class InteractListener implements Listener {
 										&& craft.getMinY() < craft.getW().getSeaLevel())
 									ticksElapsed = ticksElapsed >> 1;
 
-								if (Math.abs(ticksElapsed) < craft.getType().getTickCooldown()) {
+								if (Math.abs(ticksElapsed) < craft.getCurTickCooldown()) {
 									event.setCancelled(true);
 									return;
 								}
@@ -206,6 +205,13 @@ public class InteractListener implements Listener {
 
 								timeMap.put(event.getPlayer(), System.currentTimeMillis());
 								event.setCancelled(true);
+								int curTickCooldown=CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getCurTickCooldown();
+								int baseTickCooldown=CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getCruiseTickCooldown();
+								if(curTickCooldown*2>baseTickCooldown)
+									curTickCooldown=baseTickCooldown;
+									else
+									curTickCooldown=curTickCooldown*2;
+								CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCurTickCooldown(curTickCooldown); // lose half your speed when turning
 
 							}
 
@@ -336,8 +342,7 @@ public class InteractListener implements Listener {
 			sign.update(true);
 			event.setCancelled(true);
 		} else if (org.bukkit.ChatColor.stripColor(sign.getLine(0)).equals("\\  ||  /")
-				&& org.bukkit.ChatColor.stripColor(sign.getLine(1)).equals("==      ==")
-				&& org.bukkit.ChatColor.stripColor(sign.getLine(2)).equals("/  ||  \\")) {
+				&& org.bukkit.ChatColor.stripColor(sign.getLine(1)).equals("==      ==")) {
 			Craft craft = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
 			if (craft != null) {
 				if (event.getPlayer().hasPermission("movecraft." + craft.getType().getCraftName() + ".rotate")) {
@@ -350,7 +355,7 @@ public class InteractListener implements Listener {
 						if (craft.getType().getHalfSpeedUnderwater() && craft.getMinY() < craft.getW().getSeaLevel())
 							ticksElapsed = ticksElapsed >> 1;
 
-						if (Math.abs(ticksElapsed) < craft.getType().getTickCooldown()) {
+						if (Math.abs(ticksElapsed) < craft.getCurTickCooldown()) {
 							event.setCancelled(true);
 							return;
 						}
@@ -370,6 +375,13 @@ public class InteractListener implements Listener {
 
 						timeMap.put(event.getPlayer(), System.currentTimeMillis());
 						event.setCancelled(true);
+						int curTickCooldown=CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getCurTickCooldown();
+						int baseTickCooldown=CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getCruiseTickCooldown();
+						if(curTickCooldown*2>baseTickCooldown)
+							curTickCooldown=baseTickCooldown;
+							else
+							curTickCooldown=curTickCooldown*2;
+						CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCurTickCooldown(curTickCooldown);
 
 					}
 
@@ -488,6 +500,7 @@ public class InteractListener implements Listener {
 					sign.setLine(0, "Cruise: OFF");
 					sign.update(true);
 					CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCruising(false);
+					CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCurTickCooldown(CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getCruiseTickCooldown());
 				}
 		} else if (org.bukkit.ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Ascend: ON")) {
 			if (CraftManager.getInstance().getCraftByPlayer(event.getPlayer()) != null)
@@ -495,6 +508,7 @@ public class InteractListener implements Listener {
 					sign.setLine(0, "Ascend: OFF");
 					sign.update(true);
 					CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCruising(false);
+					CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCurTickCooldown(CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getCruiseTickCooldown());
 				}
 		} else if (org.bukkit.ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Descend: ON")) {
 			if (CraftManager.getInstance().getCraftByPlayer(event.getPlayer()) != null)
@@ -502,6 +516,7 @@ public class InteractListener implements Listener {
 					sign.setLine(0, "Descend: OFF");
 					sign.update(true);
 					CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCruising(false);
+					CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCurTickCooldown(CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getCruiseTickCooldown());
 				}
 		} else if (org.bukkit.ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Teleport:")) {
 			if (CraftManager.getInstance().getCraftByPlayer(event.getPlayer()) != null) {
@@ -756,12 +771,12 @@ public class InteractListener implements Listener {
 		if (c == null)
 			return;
 		
-		if( c.getCannonDirector()==event.getPlayer() ) // if the player is the cannon director, don't let them move the ship
+/*		if( c.getCannonDirector()==event.getPlayer() ) // if the player is the cannon director, don't let them move the ship
 			return;
 
 		if( c.getAADirector()==event.getPlayer() ) // if the player is the cannon director, don't let them move the ship
 			return;
-
+*/
 		if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK) {
 			Craft craft = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
 
@@ -793,21 +808,6 @@ public class InteractListener implements Listener {
 								if (event.getPlayer().isSneaking())
 									DY = -1;
 
-								// See if the player is holding down the mouse
-								// button and update the last right clicked info
-								if (System.currentTimeMillis() - craft.getLastRightClick() < 500) {
-									craft.setLastDX(0);
-									craft.setLastDY(DY);
-									craft.setLastDZ(0);
-									craft.setKeepMoving(true);
-								} else {
-									craft.setLastDX(0);
-									craft.setLastDY(0);
-									craft.setLastDZ(0);
-									craft.setKeepMoving(false);
-								}
-								craft.setLastRightClick(System.currentTimeMillis());
-
 								craft.translate(0, DY, 0);
 								timeMap.put(event.getPlayer(), System.currentTimeMillis());
 								craft.setLastCruisUpdate(System.currentTimeMillis());
@@ -830,21 +830,6 @@ public class InteractListener implements Listener {
 									dx = 0;
 									dz = 0;
 								}
-
-								// See if the player is holding down the mouse
-								// button and update the last right clicked info
-								if (System.currentTimeMillis() - craft.getLastRightClick() < 500) {
-									craft.setLastDX(dx);
-									craft.setLastDY(dy);
-									craft.setLastDZ(dz);
-									craft.setKeepMoving(true);
-								} else {
-									craft.setLastDX(0);
-									craft.setLastDY(0);
-									craft.setLastDZ(0);
-									craft.setKeepMoving(false);
-								}
-								craft.setLastRightClick(System.currentTimeMillis());
 
 								craft.translate(dx, dy, dz);
 								timeMap.put(event.getPlayer(), System.currentTimeMillis());

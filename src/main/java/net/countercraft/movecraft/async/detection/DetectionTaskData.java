@@ -34,6 +34,7 @@ public class DetectionTaskData {
 	private Integer minX, minZ;
 	private Integer[] allowedBlocks, forbiddenBlocks;
 	private String[] forbiddenSignStrings;
+	public Double dynamicFlyBlockSpeedMultiplier;
 
 	public DetectionTaskData( World w, Player player, Player notificationPlayer, Integer[] allowedBlocks, Integer[] forbiddenBlocks, String[] forbiddenSignStrings) {
 		this.w = w;

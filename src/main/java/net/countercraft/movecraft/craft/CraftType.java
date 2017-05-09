@@ -50,6 +50,8 @@ public class CraftType {
 	private int vertCruiseSkipBlocks;
 	private int cruiseTickCooldown;
 	private boolean halfSpeedUnderwater;
+	private boolean focusedExplosion;
+	private boolean mustBeSubcraft;
 	private int staticWaterLevel;
 	private double fuelBurnRate;
 	private double sinkPercent;
@@ -66,7 +68,10 @@ public class CraftType {
 	private HashMap<ArrayList<Integer>, ArrayList<Double>> moveBlocks = new HashMap<ArrayList<Integer>, ArrayList<Double>>();
 	private int hoverLimit;
 	private List<Material> harvestBlocks;
-        private List<Material> harvesterBladeBlocks;
+    private List<Material> harvesterBladeBlocks;
+    private double dynamicLagSpeedFactor;
+    private double dynamicFlyBlockSpeedFactor;
+    private int dynamicFlyBlock;
 	        
 	public CraftType( File f ) {
 		try {
@@ -316,6 +321,16 @@ public class CraftType {
 		} else {
 			halfSpeedUnderwater=false;
 		}
+		if(data.containsKey("focusedExplosion")) {
+			focusedExplosion=(Boolean) data.get("focusedExplosion");
+		} else {
+			focusedExplosion=false;
+		}
+		if(data.containsKey("mustBeSubcraft")) {
+			mustBeSubcraft=(Boolean) data.get("mustBeSubcraft");
+		} else {
+			mustBeSubcraft=false;
+		}
 		if(data.containsKey("staticWaterLevel")) {
 			staticWaterLevel=integerFromObject(data.get("staticWaterLevel"));
 		} else {
@@ -464,6 +479,22 @@ public class CraftType {
             }else{
                 allowVerticalTakeoffAndLanding = true;
             }
+              
+    		if(data.containsKey("dynamicLagSpeedFactor")) {
+    			dynamicLagSpeedFactor=doubleFromObject(data.get("dynamicLagSpeedFactor"));
+    		} else {
+    			dynamicLagSpeedFactor=0.0;
+    		}
+    		if(data.containsKey("dynamicFlyBlockSpeedFactor")) {
+    			dynamicFlyBlockSpeedFactor=doubleFromObject(data.get("dynamicFlyBlockSpeedFactor"));
+    		} else {
+    			dynamicFlyBlockSpeedFactor=0.0;
+    		}
+    		if(data.containsKey("dynamicFlyBlock")) {
+    			dynamicFlyBlock=integerFromObject(data.get("dynamicFlyBlock"));
+    		} else {
+    			dynamicFlyBlock=0;
+    		}
 	}
 
 	public String getCraftName() {
@@ -610,6 +641,14 @@ public class CraftType {
 		return halfSpeedUnderwater;
 	}
 
+	public boolean getFocusedExplosion() {
+		return focusedExplosion;
+	}
+
+	public boolean getMustBeSubcraft() {
+		return mustBeSubcraft;
+	}
+
 	public boolean isTryNudge() {
 		return tryNudge;
 	}
@@ -665,5 +704,17 @@ public class CraftType {
     
     public boolean  allowVerticalTakeoffAndLanding(){
         return allowVerticalTakeoffAndLanding;
+    }
+    
+    public double getDynamicLagSpeedFactor() {
+    	return dynamicLagSpeedFactor;
+    }
+    
+    public double getDynamicFlyBlockSpeedFactor() {
+    	return dynamicFlyBlockSpeedFactor;
+    }
+    
+    public int getDynamicFlyBlock() {
+    	return dynamicFlyBlock;
     }
 }

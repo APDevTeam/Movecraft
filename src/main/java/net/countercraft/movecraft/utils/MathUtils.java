@@ -19,6 +19,8 @@ package net.countercraft.movecraft.utils;
 
 import org.bukkit.Location;
 
+import net.countercraft.movecraft.craft.Craft;
+
 public class MathUtils {
 
 	public static boolean playerIsWithinBoundingPolygon( int[][][] box, int minX, int minZ, MovecraftLocation l ) {
@@ -47,6 +49,23 @@ public class MathUtils {
 		}
 
 		return false;
+	}
+	
+	public static boolean locIsNearCraftFast(Craft craft,MovecraftLocation l) {
+		// optimized to be as fast as possible, it checks the easy ones first, then the more computationally intensive later
+		if(l.getX() < craft.getMinX()-3)
+			return false;
+		if(l.getZ() < craft.getMinZ()-3)
+			return false;
+		if(l.getX() > craft.getMaxX()+3)
+			return false;
+		if(l.getZ() > craft.getMaxZ()+3)
+			return false;
+		if(l.getY() < craft.getMinY()-3)
+			return false;
+		if(l.getY() > craft.getMaxY()+3)
+			return false;
+		return true;
 	}
 
 	public static MovecraftLocation bukkit2MovecraftLoc( Location l ) {

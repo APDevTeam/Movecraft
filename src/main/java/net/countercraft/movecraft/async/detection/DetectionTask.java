@@ -72,6 +72,7 @@ public class DetectionTask extends AsyncTask {
 	Set<TownBlock> townBlockSet = new HashSet<TownBlock>();
 	TownyWorld townyWorld = null;
 	TownyWorldHeightLimits townyWorldHeightLimits = null;
+	private int foundDynamicFlyBlock=0;
 
 	public DetectionTask(Craft c, MovecraftLocation startLocation, int minSize, int maxSize, Integer[] allowedBlocks,
 			Integer[] forbiddenBlocks, Player player, Player notificationPlayer, World w,
@@ -135,7 +136,18 @@ public class DetectionTask extends AsyncTask {
 		if (data.failed()) {
 			return;
 		}
-
+		if(getCraft().getType().getDynamicFlyBlockSpeedFactor()!=0.0) {
+			int totalBlocks=blockList.size();
+			double ratio=(double) foundDynamicFlyBlock / totalBlocks;
+			double foundMinimum=0.0;
+			for(ArrayList<Integer> i : flyBlocks.keySet()) {
+				if(i.contains(getCraft().getType().getDynamicFlyBlock()))
+					foundMinimum=flyBlocks.get(i).get(0);
+			}
+			ratio=ratio-(foundMinimum/100.0);
+			ratio=ratio*getCraft().getType().getDynamicFlyBlockSpeedFactor();
+			data.dynamicFlyBlockSpeedMultiplier=ratio;
+		}
 		if (isWithinLimit(blockList.size(), minSize, maxSize)) {
 
 			data.setBlockList(finaliseBlockList(blockList));
@@ -330,6 +342,11 @@ public class DetectionTask extends AsyncTask {
 							addToBlockCount(flyBlockDef);
 						} else {
 							addToBlockCount(null);
+						}
+					}
+					if(getCraft().getType().getDynamicFlyBlockSpeedFactor()!=0.0) {
+						if(blockID==getCraft().getType().getDynamicFlyBlock()) {
+							foundDynamicFlyBlock++;
 						}
 					}
 

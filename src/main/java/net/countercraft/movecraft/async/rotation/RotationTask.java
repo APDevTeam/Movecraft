@@ -33,6 +33,7 @@ import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.BlockUtils;
 import net.countercraft.movecraft.utils.EntityUpdateCommand;
 import net.countercraft.movecraft.utils.MapUpdateCommand;
+import net.countercraft.movecraft.utils.MapUpdateManager;
 import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.utils.MovecraftLocation;
 import net.countercraft.movecraft.utils.Rotation;
@@ -51,6 +52,7 @@ import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -75,6 +77,7 @@ public class RotationTask extends AsyncTask {
 	private final Rotation rotation;
 	private final World w;
 	private final boolean isSubCraft;
+	private HashMap <MapUpdateCommand , Long> scheduledBlockChanges;
 
 	public RotationTask( Craft c, MovecraftLocation originPoint, MovecraftLocation[] blockList, Rotation rotation, World w ) {
 		super( c );
@@ -353,10 +356,12 @@ public class RotationTask extends AsyncTask {
 				} else {
 					int id = w.getBlockTypeIdAt( originalBlockList[i].getX(), originalBlockList[i].getY(), originalBlockList[i].getZ() );
 					byte data = w.getBlockAt( originalBlockList[i].getX(), originalBlockList[i].getY(), originalBlockList[i].getZ() ).getData();
+					int currentID = w.getBlockTypeIdAt( blockList[i].getX(), blockList[i].getY(), blockList[i].getZ() );
+					byte currentData = w.getBlockAt( blockList[i].getX(), blockList[i].getY(), blockList[i].getZ() ).getData();
 					if ( BlockUtils.blockRequiresRotation( id ) ) {
 						data = BlockUtils.rotate( data, id, rotation );
 					}
-					mapUpdates.add( new MapUpdateCommand( originalBlockList[i], blockList[i], id, data, rotation, getCraft() ) );
+					mapUpdates.add( new MapUpdateCommand( originalBlockList[i], currentID, currentData, blockList[i], id, data, rotation, getCraft() ) );
 				} 
 			} else {
 				// allow watercraft to rotate through water
@@ -367,10 +372,12 @@ public class RotationTask extends AsyncTask {
 				} else {
 					int id = w.getBlockTypeIdAt( originalBlockList[i].getX(), originalBlockList[i].getY(), originalBlockList[i].getZ() );
 					byte data = w.getBlockAt( originalBlockList[i].getX(), originalBlockList[i].getY(), originalBlockList[i].getZ() ).getData();
+					int currentID = w.getBlockTypeIdAt( blockList[i].getX(), blockList[i].getY(), blockList[i].getZ() );
+					byte currentData = w.getBlockAt( blockList[i].getX(), blockList[i].getY(), blockList[i].getZ() ).getData();
 					if ( BlockUtils.blockRequiresRotation( id ) ) {
 						data = BlockUtils.rotate( data, id, rotation );
 					}
-					mapUpdates.add( new MapUpdateCommand( originalBlockList[i], blockList[i], id, data, rotation, getCraft() ) );
+					mapUpdates.add( new MapUpdateCommand( originalBlockList[i], currentID, currentData, blockList[i], id, data, rotation, getCraft() ) );
 				} 
 			}
 
@@ -470,17 +477,31 @@ public class RotationTask extends AsyncTask {
 				if(waterCraft) {
 						// if its below the waterline, fill in with water. Otherwise fill in with air.
 					if(l1.getY()<=waterLine) {
-						mapUpdates.add( new MapUpdateCommand( l1, 9,(byte)0, null ) );
+						mapUpdates.add( new MapUpdateCommand( l1, 9,(byte)0, getCraft() ) );
 					} else {
-						mapUpdates.add( new MapUpdateCommand( l1, 0,(byte)0, null ) );
+						mapUpdates.add( new MapUpdateCommand( l1, 0,(byte)0, getCraft() ) );
 					}
 				} else {
-					mapUpdates.add( new MapUpdateCommand( l1, 0,(byte)0, null ) );
+					mapUpdates.add( new MapUpdateCommand( l1, 0,(byte)0, getCraft() ) );
 				}
 			}
 			
-
-			this.updates = mapUpdates.toArray( new MapUpdateCommand[1] );
+			// rotate scheduled block changes
+	        HashMap <MapUpdateCommand , Long> newScheduledBlockChanges=new HashMap <MapUpdateCommand , Long>();
+	        HashMap <MapUpdateCommand , Long> oldScheduledBlockChanges=getCraft().getScheduledBlockChanges();
+	        for(MapUpdateCommand muc : oldScheduledBlockChanges.keySet()) {
+	        	MovecraftLocation newLoc=muc.getNewBlockLocation();
+	        	newLoc=newLoc.subtract(originPoint);
+	        	newLoc=MathUtils.rotateVec( rotation, newLoc ).add( originPoint );
+	        	Long newTime=System.currentTimeMillis()+5000;
+	        	MapUpdateCommand newMuc=new MapUpdateCommand(newLoc, muc.getTypeID(), muc.getDataID(), getCraft());
+	        	newScheduledBlockChanges.put(newMuc, newTime);
+	        }
+	        this.scheduledBlockChanges=newScheduledBlockChanges;
+            
+	        MapUpdateCommand[] updateArray=mapUpdates.toArray( new MapUpdateCommand[1] );
+//            MapUpdateManager.getInstance().sortUpdates(updateArray);
+			this.updates = updateArray;
 			this.entityUpdates = entityUpdateSet.toArray( new EntityUpdateCommand[1] );
 
 			maxX = null;
@@ -675,6 +696,13 @@ public class RotationTask extends AsyncTask {
 		}
 	}
 	
+	public HashMap <MapUpdateCommand , Long> getScheduledBlockChanges() {
+		return scheduledBlockChanges;
+	}
+	
+	public void setScheduledBlockChanges(HashMap <MapUpdateCommand , Long> scheduledBlockChanges) {
+		this.scheduledBlockChanges=scheduledBlockChanges;
+	}
 
 	public MovecraftLocation getOriginPoint() {
 		return originPoint;

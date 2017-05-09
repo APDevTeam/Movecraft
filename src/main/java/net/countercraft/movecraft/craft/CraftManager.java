@@ -19,10 +19,14 @@ package net.countercraft.movecraft.craft;
 
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.utils.MapUpdateCommand;
+import net.countercraft.movecraft.utils.MapUpdateManager;
+
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -99,6 +103,7 @@ public class CraftManager {
 
 	public void removeCraft( Craft c ) {
 		removeReleaseTask(c);
+
 		// if its sinking, just remove the craft without notifying or checking
 		if(c.getSinking()==true) {
 			craftList.get( c.getW() ).remove( c );
@@ -109,8 +114,19 @@ public class CraftManager {
 			c.setCruising(false);
 			c.setSinking(true);
 			c.setNotificationPlayer(null);
+			c.setScheduledBlockChanges(null);
 			return;
 		}
+		if(c.getScheduledBlockChanges()!=null) {
+			ArrayList<MapUpdateCommand> updateCommands = new ArrayList<MapUpdateCommand>();
+			for(MapUpdateCommand muc : c.getScheduledBlockChanges().keySet()) {
+				updateCommands.add(muc);
+			}
+			if (updateCommands.size() > 0) {
+				MapUpdateManager.getInstance().addWorldUpdate(c.getW(),updateCommands.toArray(new MapUpdateCommand[1]), null, null);
+			}
+		}
+		c.setScheduledBlockChanges(null);
 		craftList.get( c.getW() ).remove( c );
 		if ( getPlayerFromCraft( c ) != null ) {
 			getPlayerFromCraft( c ).sendMessage( String.format( I18nSupport.getInternationalisedString( "Release - Craft has been released message" ) ) );

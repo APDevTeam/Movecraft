@@ -17,6 +17,8 @@
 
 package net.countercraft.movecraft.async.translation;
 
+import java.util.HashMap;
+
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 
@@ -34,6 +36,7 @@ public class TranslationTaskData {
 	private MovecraftLocation[] blockList;
 	private MapUpdateCommand[] updates;
 	private EntityUpdateCommand[] entityUpdates;
+	private HashMap <MapUpdateCommand , Long> scheduledBlockChanges=null;
         private ItemDropUpdateCommand[] itemDropUpdates;
 	private int[][][] hitbox;
 	private int minX, minZ;
@@ -99,6 +102,14 @@ public class TranslationTaskData {
 
 	public void setBlockList( MovecraftLocation[] blockList ) {
 		this.blockList = blockList;
+	}
+	
+	public HashMap <MapUpdateCommand , Long> getScheduledBlockChanges() {
+		return scheduledBlockChanges;
+	}
+	
+	public void setScheduledBlockChanges(HashMap <MapUpdateCommand , Long> scheduledBlockChanges) {
+		this.scheduledBlockChanges=scheduledBlockChanges;
 	}
 
 	public MapUpdateCommand[] getUpdates() {

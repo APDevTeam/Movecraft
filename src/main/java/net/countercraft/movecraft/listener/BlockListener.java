@@ -19,8 +19,11 @@ package net.countercraft.movecraft.listener;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
+import java.util.logging.Level;
 
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
@@ -29,6 +32,7 @@ import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.CraftType;
 import net.countercraft.movecraft.items.StorageChestItem;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.utils.MapUpdateCommand;
 import net.countercraft.movecraft.utils.MapUpdateManager;
 import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.utils.MovecraftLocation;
@@ -74,6 +78,29 @@ public class BlockListener implements Listener {
 
 	@EventHandler
 	public void onBlockPlace( final BlockPlaceEvent e ) {
+		if( Settings.RestrictSiBsToRegions==true) {
+			if(e.getBlockPlaced().getTypeId()==54) {
+				if(e.getItemInHand().hasItemMeta()) {
+					if(e.getItemInHand().getItemMeta().hasLore()==true) {
+						List<String> loreList=e.getItemInHand().getItemMeta().getLore();
+						for(String lore : loreList) {
+							if(lore.contains("SiB")) {
+								boolean isMM=false;
+								if(lore.toLowerCase().contains("merchant") || lore.toLowerCase().contains("mm")) {
+									isMM=true;
+								}
+								Location loc=e.getBlockPlaced().getLocation();
+								ApplicableRegionSet regions = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(loc.getWorld()).getApplicableRegions(loc);
+								if(regions.size()==0 && isMM==false) {
+									e.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "SIB MUST BE PLACED IN REGION" ) ) );
+									e.setCancelled(true);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
 		if ( Settings.DisableCrates==true )
 			return;
 		if ( e.getBlockAgainst().getTypeId() == 33 && e.getBlockAgainst().getData() == ( ( byte ) 6 ) ) {
@@ -124,9 +151,10 @@ public class BlockListener implements Listener {
 			if(CraftManager.getInstance().getCraftsInWorld(e.getBlock().getWorld())!=null)
 				for(Craft craft : CraftManager.getInstance().getCraftsInWorld(e.getBlock().getWorld())) {
 					if(craft!=null) {
-						for(MovecraftLocation tloc : craft.getBlockList()) {
-							if(tloc.getX()==mloc.getX() && tloc.getY()==mloc.getY() && tloc.getZ()==mloc.getZ())
-								blockInCraft=true;
+						if(!craft.getDisabled())
+							for(MovecraftLocation tloc : craft.getBlockList()) {
+								if(tloc.getX()==mloc.getX() && tloc.getY()==mloc.getY() && tloc.getZ()==mloc.getZ())
+									blockInCraft=true;
 						}
 					}				
 				}
@@ -173,17 +201,17 @@ public class BlockListener implements Listener {
 		}
 	}
 	
-	// prevent water from spreading on moving crafts
+	// prevent water and lava from spreading on moving crafts
 	@EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockFromTo(BlockFromToEvent e) {
 		if ( e.isCancelled() ) {
 			return;
 		}
 		Block block = e.getToBlock();
-        if (block.getType() == Material.WATER) {
+        if (block.getType() == Material.WATER || block.getType() == Material.LAVA) {
             if(CraftManager.getInstance().getCraftsInWorld(block.getWorld())!=null) {
     			for(Craft tcraft : CraftManager.getInstance().getCraftsInWorld(block.getWorld())) {
-    				if ( (!tcraft.isNotProcessing()) && MathUtils.playerIsWithinBoundingPolygon( tcraft.getHitBox(), tcraft.getMinX(), tcraft.getMinZ(), MathUtils.bukkit2MovecraftLoc(block.getLocation() ) ) ) {
+    				if ( (!tcraft.isNotProcessing()) && MathUtils.locIsNearCraftFast( tcraft, MathUtils.bukkit2MovecraftLoc(block.getLocation() ) ) ) {
     					e.setCancelled(true);
     					return;
     				}
@@ -192,7 +220,30 @@ public class BlockListener implements Listener {
         }
 	}
 
-	// prevent fragile items from dropping on moving crafts
+	// process certain redstone on cruising crafts
+	@EventHandler(priority = EventPriority.HIGHEST)
+	public void onRedstoneEvent(BlockRedstoneEvent event) {
+		Block block = event.getBlock();
+		if(CraftManager.getInstance().getCraftsInWorld(block.getWorld())!=null) {
+			for(Craft tcraft : CraftManager.getInstance().getCraftsInWorld(block.getWorld())) {
+				
+				MovecraftLocation mloc=new MovecraftLocation(block.getX(),block.getY(),block.getZ());
+				if(MathUtils.locIsNearCraftFast(tcraft, mloc) && tcraft.getCruising()) {
+					if((block.getTypeId()==29) || (block.getTypeId()==33)) { 
+						event.setNewCurrent(event.getOldCurrent()); // don't allow piston movement on cruising crafts
+						return;
+					}
+					
+					if((block.getTypeId()==23) && (!tcraft.isNotProcessing())) {
+						event.setNewCurrent(event.getOldCurrent()); // don't activate dispensers while craft is reconstructing
+						return;
+					}
+				}
+			}
+		}
+	}
+	
+	// prevent fragile items from dropping on cruising crafts
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onPhysics(BlockPhysicsEvent event) {
 		if ( event.isCancelled() ) {
@@ -200,14 +251,66 @@ public class BlockListener implements Listener {
 		}
 
 		Block block = event.getBlock();
+
 		final int[] fragileBlocks = new int[]{ 26, 34, 50, 55, 63, 64, 65, 68, 69, 70, 71, 72, 75, 76, 77, 93, 94, 96, 131, 132, 143, 147, 148, 149, 150, 151, 171, 193, 194, 195, 196, 197 };
 		if(CraftManager.getInstance().getCraftsInWorld(block.getWorld())!=null) {
 			for(Craft tcraft : CraftManager.getInstance().getCraftsInWorld(block.getWorld())) {
-				if ( (!tcraft.isNotProcessing()) && MathUtils.playerIsWithinBoundingPolygon( tcraft.getHitBox(), tcraft.getMinX(), tcraft.getMinZ(), MathUtils.bukkit2MovecraftLoc(block.getLocation() ) ) ) {
+				MovecraftLocation mloc=new MovecraftLocation(block.getX(),block.getY(),block.getZ());
+
+/*				// on cruising crafts, movecraft will handle the repeater logic
+				if(tcraft.isNotProcessing() && MathUtils.locIsNearCraftFast(tcraft, mloc) && tcraft.getCruising()) {
+					if((block.getTypeId()==94) || (block.getTypeId()==93)) {
+						int repeaterFacing=block.getData()&3;
+						Block powerBlock=null;
+						if(repeaterFacing==0) // find the block that should be powering this one
+							powerBlock=block.getRelative(BlockFace.SOUTH);
+						if(repeaterFacing==1)
+							powerBlock=block.getRelative(BlockFace.WEST);
+						if(repeaterFacing==2)
+							powerBlock=block.getRelative(BlockFace.NORTH);
+						if(repeaterFacing==3)
+							powerBlock=block.getRelative(BlockFace.EAST);
+						MapUpdateCommand muc=null;
+						// if the power source is on, but the repeater is off, power it on. If the source is off, but the repeater is on, power it off
+						boolean sourcePowered=false;
+						if(powerBlock.getBlockPower()>0)
+							sourcePowered=true;
+						if(powerBlock.getBlockPower()==0)
+							sourcePowered=false;
+						if(powerBlock.getTypeId()==93)
+							sourcePowered=false;
+						if((powerBlock.getTypeId()==94) && ((powerBlock.getData()&3)==repeaterFacing))
+							sourcePowered=true;
+						if((powerBlock.getTypeId()==77) || (powerBlock.getTypeId()==143))
+							if(powerBlock.getData()<8)
+								sourcePowered=false;
+						if((sourcePowered) && (block.getTypeId()==93)) { // power source is on, but this repeater is off
+							muc = new MapUpdateCommand(mloc, 94, block.getData(), null);
+						}
+						if((!sourcePowered) && (block.getTypeId()==94)) { // power source is off, but this repeater is on
+							muc = new MapUpdateCommand(mloc, 93, block.getData(), null);
+						}
+						event.setCancelled(true);
+						if(muc!=null) {
+							HashMap<MapUpdateCommand, Long> blockChanges=tcraft.getScheduledBlockChanges();
+							Long timeToChange=System.currentTimeMillis();
+							int repeaterTicks=block.getData()>>2;
+							repeaterTicks++;
+							timeToChange+=repeaterTicks*100;
+							HashMap<MapUpdateCommand, Long> scheduledChanges=tcraft.getScheduledBlockChanges();
+							scheduledChanges.put(muc, timeToChange);
+							tcraft.setScheduledBlockChanges(scheduledChanges);
+							return;
+						}
+					}
+				}
+				*/
+				if ( (!tcraft.isNotProcessing()) && (MathUtils.locIsNearCraftFast(tcraft, mloc)) ) {
 					boolean isFragile=(Arrays.binarySearch(fragileBlocks,block.getTypeId())>=0);
 					if (isFragile) {
 //						BlockFace face = ((Attachable) block).getAttachedFace();
 //					    if (!event.getBlock().getRelative(face).getType().isSolid()) {
+//						if(event.getChangedTypeId()==0) {
 						    event.setCancelled(true);
 						    return;
 //					    }
