@@ -402,7 +402,8 @@ public class RotationTask extends AsyncTask {
 			Iterator<Entity> i=getCraft().getW().getEntities().iterator();
 			while (i.hasNext()) {
 				Entity pTest=i.next();
-				if ( MathUtils.playerIsWithinBoundingPolygon( getCraft().getHitBox(), getCraft().getMinX(), getCraft().getMinZ(), MathUtils.bukkit2MovecraftLoc( pTest.getLocation() ) ) ) {
+//				if ( MathUtils.playerIsWithinBoundingPolygon( getCraft().getHitBox(), getCraft().getMinX(), getCraft().getMinZ(), MathUtils.bukkit2MovecraftLoc( pTest.getLocation() ) ) ) {
+                if ( MathUtils.locIsNearCraftFast(getCraft(), MathUtils.bukkit2MovecraftLoc( pTest.getLocation() ) ) ) {
 					if(pTest.getType()!=org.bukkit.entity.EntityType.DROPPED_ITEM ) {
 						// Player is onboard this craft
 						tOP.setX(tOP.getBlockX()+0.5);

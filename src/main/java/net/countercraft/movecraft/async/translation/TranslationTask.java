@@ -820,7 +820,8 @@ public class TranslationTask extends AsyncTask {
                             Iterator<Entity> i=eList.iterator();
                             while (i.hasNext()) {
                                 Entity pTest=i.next();
-                                if ( MathUtils.playerIsWithinBoundingPolygon( getCraft().getHitBox(), getCraft().getMinX(), getCraft().getMinZ(), MathUtils.bukkit2MovecraftLoc( pTest.getLocation() ) ) ) {
+//                                if ( MathUtils.playerIsWithinBoundingPolygon( getCraft().getHitBox(), getCraft().getMinX(), getCraft().getMinZ(), MathUtils.bukkit2MovecraftLoc( pTest.getLocation() ) ) ) {
+                                  if ( MathUtils.locIsNearCraftFast(getCraft(), MathUtils.bukkit2MovecraftLoc( pTest.getLocation() ) ) ) {
                                     if(pTest.getType()==org.bukkit.entity.EntityType.PLAYER) {
                                         Player player=(Player)pTest;
                                         getCraft().getMovedPlayers().put(player, System.currentTimeMillis());
