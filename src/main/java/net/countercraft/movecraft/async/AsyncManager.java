@@ -1412,33 +1412,35 @@ public class AsyncManager extends BukkitRunnable {
 				}
 			}
 		}
-		// and now process payments every morning at 1:01 AM, as long as it has
-		// been 23 hours after the last payout
-		long secsElapsed = (System.currentTimeMillis() - lastSiegePayout) / 1000;
-		if (secsElapsed > 23 * 60 * 60) {
-			Calendar rightNow = Calendar.getInstance();
-			int hour = rightNow.get(Calendar.HOUR_OF_DAY);
-			int minute = rightNow.get(Calendar.MINUTE);
-			if ((hour == 1) && (minute == 1)) {
-				lastSiegePayout = System.currentTimeMillis();
-				for (String tSiegeName : Settings.SiegeName) {
-					int payment = Settings.SiegeIncome.get(tSiegeName);
-					for (World tW : Movecraft.getInstance().getServer().getWorlds()) {
-						ProtectedRegion tRegion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(tW)
-								.getRegion(Settings.SiegeControlRegion.get(tSiegeName));
-						if (tRegion != null) {
-							int totalSize=tRegion.getOwners().getPlayers().size()+tRegion.getOwners().getUniqueIds().size();
-							for (String tPlayerName : tRegion.getOwners().getPlayers()) {
-								int share = payment / totalSize;
-								Movecraft.getInstance().getEconomy().depositPlayer(tPlayerName, share);
-								Movecraft.getInstance().getLogger().log(Level.INFO, String.format(
-										"Player %s paid %d for their ownership in %s", tPlayerName, share, tSiegeName));
-							}
-							for (UUID tPlayerUUID : tRegion.getOwners().getUniqueIds()) {
-								int share = payment / totalSize;
-								Movecraft.getInstance().getEconomy().depositPlayer(Bukkit.getPlayer(tPlayerUUID), share);
-								Movecraft.getInstance().getLogger().log(Level.INFO, String.format(
-										"Player UUID %s paid %d for their ownership in %s", tPlayerUUID.toString(), share, tSiegeName));
+		if(Settings.SiegeName!=null) {
+			// and now process payments every morning at 1:01 AM, as long as it has
+			// been 23 hours after the last payout
+			long secsElapsed = (System.currentTimeMillis() - lastSiegePayout) / 1000;
+			if (secsElapsed > 23 * 60 * 60) {
+				Calendar rightNow = Calendar.getInstance();
+				int hour = rightNow.get(Calendar.HOUR_OF_DAY);
+				int minute = rightNow.get(Calendar.MINUTE);
+				if ((hour == 1) && (minute == 1)) {
+					lastSiegePayout = System.currentTimeMillis();
+					for (String tSiegeName : Settings.SiegeName) {
+						int payment = Settings.SiegeIncome.get(tSiegeName);
+						for (World tW : Movecraft.getInstance().getServer().getWorlds()) {
+							ProtectedRegion tRegion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(tW)
+									.getRegion(Settings.SiegeControlRegion.get(tSiegeName));
+							if (tRegion != null) {
+								int totalSize=tRegion.getOwners().getPlayers().size()+tRegion.getOwners().getUniqueIds().size();
+								for (String tPlayerName : tRegion.getOwners().getPlayers()) {
+									int share = payment / totalSize;
+									Movecraft.getInstance().getEconomy().depositPlayer(tPlayerName, share);
+									Movecraft.getInstance().getLogger().log(Level.INFO, String.format(
+											"Player %s paid %d for their ownership in %s", tPlayerName, share, tSiegeName));
+								}
+								for (UUID tPlayerUUID : tRegion.getOwners().getUniqueIds()) {
+									int share = payment / totalSize;
+									Movecraft.getInstance().getEconomy().depositPlayer(Bukkit.getPlayer(tPlayerUUID), share);
+									Movecraft.getInstance().getLogger().log(Level.INFO, String.format(
+											"Player UUID %s paid %d for their ownership in %s", tPlayerUUID.toString(), share, tSiegeName));
+								}
 							}
 						}
 					}
