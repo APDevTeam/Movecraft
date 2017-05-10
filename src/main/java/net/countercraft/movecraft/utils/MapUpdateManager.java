@@ -58,6 +58,8 @@ import org.bukkit.block.CommandBlock;
 import org.bukkit.block.Dispenser;
 import org.bukkit.craftbukkit.v1_10_R1.CraftChunk;
 import org.bukkit.craftbukkit.v1_10_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_10_R1.block.CraftBlock;
+import org.bukkit.craftbukkit.v1_10_R1.block.CraftBlockState;
 import org.bukkit.craftbukkit.v1_10_R1.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_10_R1.util.CraftMagicNumbers;
 import org.bukkit.entity.Entity;
@@ -467,7 +469,7 @@ public class MapUpdateManager extends BukkitRunnable {
 									for(int line=0; line<((SignBlock)i.getWorldEditBaseBlock()).getText().length; line++) {
 										s.setLine( line, ((SignBlock)i.getWorldEditBaseBlock()).getText()[line] );
 									}
-									s.update();										
+									((CraftBlockState)s).update(false, false);
 								}								
 							}
 						} else {
@@ -482,7 +484,7 @@ public class MapUpdateManager extends BukkitRunnable {
 					}
 					if(madeChanges) { // send map updates to clients, and perform various checks
 						Location loc=new Location(w,i.getNewBlockLocation().getX(),i.getNewBlockLocation().getY(),i.getNewBlockLocation().getZ());
-						w.getBlockAt(loc).getState().update();
+						((CraftBlockState)w.getBlockAt(loc).getState()).update(false, false);
 					}
 				}
 				
@@ -596,7 +598,7 @@ public class MapUpdateManager extends BukkitRunnable {
 						p.sendBlockChange(sign.getLocation(), sign.getTypeId(), sign.getRawData());
 					}
 			}
-			sign.update();
+			((CraftBlockState)sign).update(false, false);
 		}
 	}
 

@@ -45,6 +45,7 @@ import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
+import org.bukkit.craftbukkit.v1_10_R1.block.CraftBlockState;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -1511,7 +1512,7 @@ public class AsyncManager extends BukkitRunnable {
         			s.setLine(2, "Damage:"+Movecraft.getInstance().assaultDamages.get(assault));
         			Calendar rightNow = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
         			s.setLine(3, "Owner:"+executor.getRegionOwnerList(tRegion));
-        			s.update();
+					((CraftBlockState)s).update(false, false);
                     ProtectedRegion aRegion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(w).getRegion(assault);
         			tRegion.getOwners().clear();
 					assaultI.remove();

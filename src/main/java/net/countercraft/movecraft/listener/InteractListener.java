@@ -36,6 +36,7 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
+import org.bukkit.craftbukkit.v1_10_R1.block.CraftBlockState;
 import org.bukkit.craftbukkit.v1_10_R1.util.CraftMagicNumbers;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -229,7 +230,7 @@ public class InteractListener implements Listener {
 								&& org.bukkit.ChatColor.stripColor(sign.getLine(3)).equals("")) {
 							sign.setLine(2, "_\\ /_");
 							sign.setLine(3, "/ \\");
-							sign.update();
+							((CraftBlockState)sign).update(false, false);
 						}
 
 						if (event.getPlayer().hasPermission("movecraft." + craftTypeStr + ".pilot")
@@ -397,7 +398,7 @@ public class InteractListener implements Listener {
 				if (org.bukkit.ChatColor.stripColor(sign.getLine(2)).equals("") && sign.getLine(3).equals("")) {
 					sign.setLine(2, "_\\ /_");
 					sign.setLine(3, "/ \\");
-					sign.update();
+					((CraftBlockState)sign).update(false, false);
 				}
 
 				if (event.getPlayer().hasPermission("movecraft." + craftTypeStr + ".pilot")
