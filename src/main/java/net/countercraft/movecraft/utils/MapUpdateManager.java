@@ -139,7 +139,7 @@ public class MapUpdateManager extends BukkitRunnable {
 	// only bother to store tile entities for blocks we care about (chests, dispensers, etc)
 	// this is more important than it may seem. The more blocks that matter, the more likely
 	// a circular trap will occur (a=b, b=c. c=a), potentially damaging tile data
-	final int[] tileEntityBlocksToPreserve={ 23, 25, 54, 61, 62, 63, 68, 137, 146, 149, 150, 154, 158, 210, 211};	
+	final int[] tileEntityBlocksToPreserve={ 23, 25, 54, 61, 62, 63, 68, 137, 146, 154, 158, 210, 211};	
 	
 	public void run() {
 		if ( updates.isEmpty() ) return;
@@ -156,11 +156,32 @@ public class MapUpdateManager extends BukkitRunnable {
                 Map<MovecraftLocation, List<ItemDropUpdateCommand>> itemMap = new HashMap<MovecraftLocation, List<ItemDropUpdateCommand>>();
                 ArrayList<net.minecraft.server.v1_10_R1.Chunk> chunksToRelight = new ArrayList<net.minecraft.server.v1_10_R1.Chunk>();
 				net.minecraft.server.v1_10_R1.World nativeWorld=((CraftWorld)w).getHandle();
+				
+				Integer minx=Integer.MAX_VALUE;
+				Integer maxx=Integer.MIN_VALUE;
+				Integer miny=Integer.MAX_VALUE;
+				Integer maxy=Integer.MIN_VALUE;
+				Integer minz=Integer.MAX_VALUE;
+				Integer maxz=Integer.MIN_VALUE;
 
 				// Make sure all chunks are loaded, and mark them for relighting later
 				for ( MapUpdateCommand c : updatesInWorld ) {
 					
 					if(c!=null) {
+						if(c.getOldBlockLocation()!=null) {
+							if(c.getOldBlockLocation().getX()<minx)
+								minx=c.getOldBlockLocation().getX();
+							if(c.getOldBlockLocation().getY()<miny)
+								miny=c.getOldBlockLocation().getY();
+							if(c.getOldBlockLocation().getZ()<minz)
+								minz=c.getOldBlockLocation().getZ();
+							if(c.getOldBlockLocation().getX()>maxx)
+								maxx=c.getOldBlockLocation().getX();
+							if(c.getOldBlockLocation().getY()>maxy)
+								maxy=c.getOldBlockLocation().getY();
+							if(c.getOldBlockLocation().getZ()>maxz)
+								maxz=c.getOldBlockLocation().getZ();
+						}
 						if(c.getNewBlockLocation()!=null) {
 							if(Settings.CompatibilityMode==false) {
 								Chunk chunk=w.getBlockAt(c.getNewBlockLocation().getX(), c.getNewBlockLocation().getY(), c.getNewBlockLocation().getZ()).getChunk();
@@ -204,7 +225,23 @@ public class MapUpdateManager extends BukkitRunnable {
 				}
 				
 				// get any future redstone updates, IBData, and tile data so they can later be moved 
-//				HashMap<MovecraftLocation,NextTickListEntry> nextTickMap=new HashMap<MovecraftLocation,NextTickListEntry>();
+/*				HashMap<MovecraftLocation,NextTickListEntry> nextTickMap=new HashMap<MovecraftLocation,NextTickListEntry>();
+				
+				if(minx!=Integer.MAX_VALUE) {
+					StructureBoundingBox srcBoundingBox=new StructureBoundingBox(minx,miny,minz,maxx,maxy,maxz);
+					List<NextTickListEntry> entries=nativeWorld.a(srcBoundingBox, true);
+					if(entries!=null)
+						for(NextTickListEntry entry : entries) {
+							int x=entry.a.getX();
+							int y=entry.a.getY();
+							int z=entry.a.getZ();
+							MovecraftLocation mloc=new MovecraftLocation(x,y,z);
+							nextTickMap.put(mloc, entry);
+							long currentTime = nativeWorld.worldData.getTime();
+							Movecraft.getInstance().getServer().broadcastMessage("tick time: "+(entry.b-currentTime));
+						}
+				}*/
+				
 //				HashMap<MovecraftLocation,IBlockData> IBDMap=new HashMap<MovecraftLocation,IBlockData>();
 //				HashMap<MovecraftLocation,TileEntity> tileMap=new HashMap<MovecraftLocation,TileEntity>();
 				ArrayList<IBlockData> IBDMap=new ArrayList<IBlockData>();
@@ -217,10 +254,14 @@ public class MapUpdateManager extends BukkitRunnable {
 						if(i.getTypeID()>=0 && i.getWorldEditBaseBlock()==null && i.getOldBlockLocation()!=null) {
 							Block srcBlock=w.getBlockAt(i.getOldBlockLocation().getX(), i.getOldBlockLocation().getY(), i.getOldBlockLocation().getZ());
 							net.minecraft.server.v1_10_R1.Chunk nativeSrcChunk=( ( CraftChunk ) srcBlock.getChunk() ).getHandle();
-							StructureBoundingBox srcBoundingBox=new StructureBoundingBox(srcBlock.getX(),srcBlock.getY(),srcBlock.getZ(),srcBlock.getX()+1,srcBlock.getY()+1,srcBlock.getZ()+1);;
+							StructureBoundingBox srcBoundingBox=new StructureBoundingBox(srcBlock.getX(),srcBlock.getY(),srcBlock.getZ(),srcBlock.getX()+1,srcBlock.getY()+1,srcBlock.getZ()+1);
 							List<NextTickListEntry> entries=nativeWorld.a(srcBoundingBox, true);
 							if(entries!=null) {
 								NextTickListEntry entry=entries.get(0);//new NextTickListEntry(entries.get(0).a,entries.get(0).);
+								long currentTime = nativeWorld.worldData.getTime();
+//								if(entry.b-currentTime<100) {
+//									Movecraft.getInstance().getServer().broadcastMessage("tick time: "+(entry.b-currentTime));
+//								}
 								nextTickMap.add(entry);
 							}
 							
@@ -362,7 +403,6 @@ public class MapUpdateManager extends BukkitRunnable {
 										addBlockUpdateTracking(i.getCraft());
 									}
 
-
 									if(srcBlock!=null) {
 										// if you had a source block, also move the tile entity, and if there is a next tick entry, move that too
 										TileEntity tileEntity=tileMap.get(mapUpdateIndex);
@@ -487,16 +527,35 @@ public class MapUpdateManager extends BukkitRunnable {
 						((CraftBlockState)w.getBlockAt(loc).getState()).update(false, false);
 					}
 				}
-				
+
+				for ( MapUpdateCommand i : updatesInWorld ) {
+					if(i!=null) {
+						if(i.getTypeID()==149) { // for some reason comparators are flakey, have to do it twice sometimes
+							Block b=w.getBlockAt(i.getNewBlockLocation().getX(), i.getNewBlockLocation().getY(), i.getNewBlockLocation().getZ());
+							if(b.getTypeId()!=149) {
+								b.setTypeIdAndData(i.getTypeID(), i.getDataID(), false);
+							}
+						}
+						if(i.getTypeID()==150) { // for some reason comparators are flakey, have to do it twice sometimes
+							Block b=w.getBlockAt(i.getNewBlockLocation().getX(), i.getNewBlockLocation().getY(), i.getNewBlockLocation().getZ());
+							if(b.getTypeId()!=150) {
+								b.setTypeIdAndData(i.getTypeID(), i.getDataID(), false);
+							}
+						}
+					}
+				}
+					
 				// clean up any left over tile entities on blocks that do not need tile entities
 				for ( MapUpdateCommand i : updatesInWorld ) { 
-					if(i!=null)
-						if(Arrays.binarySearch(tileEntityBlocksToPreserve,i.getTypeID())<0) { // TODO: make this only run when the original block had tile data, but after it cleans up my corrupt chunks >.>
-							Block dstBlock=w.getBlockAt(i.getNewBlockLocation().getX(), i.getNewBlockLocation().getY(), i.getNewBlockLocation().getZ());
-							net.minecraft.server.v1_10_R1.Chunk nativeDstChunk = ( ( CraftChunk ) dstBlock.getChunk() ).getHandle();
-							BlockPosition dstBlockPos=new BlockPosition(dstBlock.getX(), dstBlock.getY(), dstBlock.getZ());
+					if(i!=null) {
+						int blockType=w.getBlockTypeIdAt(i.getOldBlockLocation().getX(), i.getOldBlockLocation().getY(), i.getOldBlockLocation().getZ());
+						if(Arrays.binarySearch(tileEntityBlocksToPreserve,blockType)<0) { // TODO: make this only run when the original block had tile data, but after it cleans up my corrupt chunks >.>
+							Block srcBlock=w.getBlockAt(i.getOldBlockLocation().getX(), i.getOldBlockLocation().getY(), i.getOldBlockLocation().getZ());
+							net.minecraft.server.v1_10_R1.Chunk nativeDstChunk = ( ( CraftChunk ) srcBlock.getChunk() ).getHandle();
+							BlockPosition dstBlockPos=new BlockPosition(srcBlock.getX(), srcBlock.getY(), srcBlock.getZ());
 							nativeDstChunk.getTileEntities().remove(dstBlockPos);
 						}
+					}
 				}
 				
 				// put in smoke or effects

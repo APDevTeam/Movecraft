@@ -47,6 +47,7 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.material.Button;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -144,6 +145,12 @@ public class InteractListener implements Listener {
 					onPlayerInteract(newEvent);
 					event.setCancelled(true);
 					return;
+				}
+			} else if(m.equals(Material.WOOD_BUTTON) || m.equals(Material.STONE_BUTTON)) {
+				if(event.getAction()==Action.LEFT_CLICK_BLOCK) { // if they left click a button which is pressed, unpress it
+					if(event.getClickedBlock().getData()>=8) {
+						event.getClickedBlock().setData((byte) (event.getClickedBlock().getData()-8));
+					}
 				}
 			}
 		}

@@ -67,6 +67,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.Attachable;
+import org.bukkit.material.MaterialData;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
@@ -303,17 +304,23 @@ public class BlockListener implements Listener {
 							return;
 						}
 					}
-				}
-				*/
-				if ( (!tcraft.isNotProcessing()) && (MathUtils.locIsNearCraftFast(tcraft, mloc)) ) {
+				}*/
+				if ( /*(!tcraft.isNotProcessing()) &&*/ (MathUtils.locIsNearCraftFast(tcraft, mloc)) ) {
 					boolean isFragile=(Arrays.binarySearch(fragileBlocks,block.getTypeId())>=0);
 					if (isFragile) {
-//						BlockFace face = ((Attachable) block).getAttachedFace();
-//					    if (!event.getBlock().getRelative(face).getType().isSolid()) {
-//						if(event.getChangedTypeId()==0) {
+				        MaterialData m = block.getState().getData();
+				        BlockFace face = BlockFace.DOWN;
+				        boolean faceAlwaysDown=false;
+				        if(block.getTypeId()==149 || block.getTypeId()==150 || block.getTypeId()==93 || block.getTypeId()==94)
+				        	faceAlwaysDown=true;
+				        if (m instanceof Attachable && faceAlwaysDown==false) {
+				            face = ((Attachable) m).getAttachedFace();
+				        }
+					    if (!event.getBlock().getRelative(face).getType().isSolid()) {
+//						if(event.getEventName().equals("BlockPhysicsEvent")) {
 						    event.setCancelled(true);
 						    return;
-//					    }
+					    }
 					}
 				}
 			}
