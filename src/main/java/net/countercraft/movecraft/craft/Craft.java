@@ -49,6 +49,7 @@ public class Craft {
 	private long lastCruiseUpdate;
 	private long lastBlockCheck;
 	private long lastRightClick;
+	private long origPilotTime;
 	private int lastDX, lastDY, lastDZ;
 	private double burningFuel;
 	private boolean pilotLocked;
@@ -84,6 +85,7 @@ public class Craft {
 		this.cruising=false;
 		this.sinking=false;
 		this.disabled=false;
+		this.origPilotTime=System.currentTimeMillis();
 	}
 
 	public boolean isNotProcessing() {
@@ -492,6 +494,10 @@ public class Craft {
 	
 	public int getCurTickCooldown() {
 		return curTickCooldown;
+	}
+	
+	public long getOrigPilotTime() {
+		return origPilotTime;
 	}
 	
 	public void setMaxSpeed(double maxSpeed) {

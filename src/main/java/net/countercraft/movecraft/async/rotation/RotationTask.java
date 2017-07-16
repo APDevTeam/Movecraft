@@ -238,22 +238,41 @@ public class RotationTask extends AsyncTask {
 		Set<MapUpdateCommand> mapUpdates = new HashSet<MapUpdateCommand>();
 		HashSet<EntityUpdateCommand> entityUpdateSet = new HashSet<EntityUpdateCommand>();
                 
-                boolean townyEnabled = Movecraft.getInstance().getTownyPlugin() != null;
-                Set<TownBlock> townBlockSet = new HashSet<TownBlock>();
-                TownyWorld townyWorld = null;
-                TownyWorldHeightLimits townyWorldHeightLimits = null;
+        boolean townyEnabled = Movecraft.getInstance().getTownyPlugin() != null;
+        Set<TownBlock> townBlockSet = new HashSet<TownBlock>();
+        TownyWorld townyWorld = null;
+        TownyWorldHeightLimits townyWorldHeightLimits = null;
+        
+        if (townyEnabled && Settings.TownyBlockMoveOnSwitchPerm){
+            townyWorld = TownyUtils.getTownyWorld(getCraft().getW());
+            if (townyWorld != null){
+                townyEnabled = townyWorld.isUsingTowny();
+                if (townyEnabled) townyWorldHeightLimits = TownyUtils.getWorldLimits(getCraft().getW());
+            }
+        }else{
+            townyEnabled = false;
+        }
                 
-                if (townyEnabled && Settings.TownyBlockMoveOnSwitchPerm){
-                    townyWorld = TownyUtils.getTownyWorld(getCraft().getW());
-                    if (townyWorld != null){
-                        townyEnabled = townyWorld.isUsingTowny();
-                        if (townyEnabled) townyWorldHeightLimits = TownyUtils.getWorldLimits(getCraft().getW());
-                    }
-                }else{
-                    townyEnabled = false;
-                }
-                int craftMinY = 0;
-                int craftMaxY = 0;  
+        // if a subcraft, find the parent craft. If not a subcraft, it is it's own parent
+		Craft[] craftsInWorld = CraftManager.getInstance().getCraftsInWorld( getCraft().getW() );
+		Craft parentCraft=getCraft();
+		for ( Craft craft : craftsInWorld ) {
+			if ( BlockUtils.arrayContainsOverlap( craft.getBlockList(), originalBlockList ) && craft!=getCraft() ) {
+				// found a parent craft
+//				if(craft.isNotProcessing()==false) {
+//					failed=true;
+//					failMessage = String.format( I18nSupport.getInternationalisedString( "Parent Craft is busy" ));
+//					return;
+//				} else {
+//					craft.setProcessing(true); // prevent the parent craft from moving or updating until the subcraft is done
+					parentCraft=craft;
+//				}
+			}
+		}
+                
+                
+        int craftMinY = 0;
+        int craftMaxY = 0;  
 		// make the centered block list
 		for ( int i = 0; i < blockList.length; i++ ) {
 			centeredBlockList[i] = blockList[i].subtract( originPoint );
@@ -361,7 +380,7 @@ public class RotationTask extends AsyncTask {
 					if ( BlockUtils.blockRequiresRotation( id ) ) {
 						data = BlockUtils.rotate( data, id, rotation );
 					}
-					mapUpdates.add( new MapUpdateCommand( originalBlockList[i], currentID, currentData, blockList[i], id, data, rotation, getCraft() ) );
+					mapUpdates.add( new MapUpdateCommand( originalBlockList[i], currentID, currentData, blockList[i], id, data, rotation, parentCraft ) );
 				} 
 			} else {
 				// allow watercraft to rotate through water
@@ -377,7 +396,7 @@ public class RotationTask extends AsyncTask {
 					if ( BlockUtils.blockRequiresRotation( id ) ) {
 						data = BlockUtils.rotate( data, id, rotation );
 					}
-					mapUpdates.add( new MapUpdateCommand( originalBlockList[i], currentID, currentData, blockList[i], id, data, rotation, getCraft() ) );
+					mapUpdates.add( new MapUpdateCommand( originalBlockList[i], currentID, currentData, blockList[i], id, data, rotation, parentCraft ) );
 				} 
 			}
 
@@ -409,11 +428,12 @@ public class RotationTask extends AsyncTask {
 						tOP.setX(tOP.getBlockX()+0.5);
 						tOP.setZ(tOP.getBlockZ()+0.5);
 						Location playerLoc = pTest.getLocation();
-						if(getCraft().getPilotLocked()==true && pTest==CraftManager.getInstance().getPlayerFromCraft(getCraft())) {
-							playerLoc.setX(getCraft().getPilotLockedX());
-							playerLoc.setY(getCraft().getPilotLockedY());
-							playerLoc.setZ(getCraft().getPilotLockedZ());
-							}
+// direct control no longer locks the player in place						
+//						if(getCraft().getPilotLocked()==true && pTest==CraftManager.getInstance().getPlayerFromCraft(getCraft())) {
+//							playerLoc.setX(getCraft().getPilotLockedX());
+//							playerLoc.setY(getCraft().getPilotLockedY());
+//							playerLoc.setZ(getCraft().getPilotLockedZ());
+//							}
 						Location adjustedPLoc = playerLoc.subtract( tOP ); 
 
 						double[] rotatedCoords = MathUtils.rotateVecNoRound( rotation, adjustedPLoc.getX(), adjustedPLoc.getZ() );
@@ -436,18 +456,18 @@ public class RotationTask extends AsyncTask {
 						}
 						newPLoc.setYaw(newYaw);
 
-						if(getCraft().getPilotLocked()==true && pTest==CraftManager.getInstance().getPlayerFromCraft(getCraft())) {
-							getCraft().setPilotLockedX(newPLoc.getX());
-							getCraft().setPilotLockedY(newPLoc.getY());
-							getCraft().setPilotLockedZ(newPLoc.getZ());
-							}
+//						if(getCraft().getPilotLocked()==true && pTest==CraftManager.getInstance().getPlayerFromCraft(getCraft())) {
+//							getCraft().setPilotLockedX(newPLoc.getX());
+//							getCraft().setPilotLockedY(newPLoc.getY());
+//							getCraft().setPilotLockedZ(newPLoc.getZ());
+//							}
 						EntityUpdateCommand eUp=new EntityUpdateCommand(pTest.getLocation().clone(),newPLoc,pTest);
 						entityUpdateSet.add(eUp);
-						if(getCraft().getPilotLocked()==true && pTest==CraftManager.getInstance().getPlayerFromCraft(getCraft())) {
-							getCraft().setPilotLockedX(newPLoc.getX());
-							getCraft().setPilotLockedY(newPLoc.getY());
-							getCraft().setPilotLockedZ(newPLoc.getZ());
-						}
+//						if(getCraft().getPilotLocked()==true && pTest==CraftManager.getInstance().getPlayerFromCraft(getCraft())) {
+//							getCraft().setPilotLockedX(newPLoc.getX());
+//							getCraft().setPilotLockedY(newPLoc.getY());
+//							getCraft().setPilotLockedZ(newPLoc.getZ());
+//						}
 					} else {
 					//	pTest.remove();   removed to test cleaner fragile item removal
 					}
@@ -478,12 +498,12 @@ public class RotationTask extends AsyncTask {
 				if(waterCraft) {
 						// if its below the waterline, fill in with water. Otherwise fill in with air.
 					if(l1.getY()<=waterLine) {
-						mapUpdates.add( new MapUpdateCommand( l1, 9,(byte)0, getCraft() ) );
+						mapUpdates.add( new MapUpdateCommand( l1, 9,(byte)0, parentCraft ) );
 					} else {
-						mapUpdates.add( new MapUpdateCommand( l1, 0,(byte)0, getCraft() ) );
+						mapUpdates.add( new MapUpdateCommand( l1, 0,(byte)0, parentCraft ) );
 					}
 				} else {
-					mapUpdates.add( new MapUpdateCommand( l1, 0,(byte)0, getCraft() ) );
+					mapUpdates.add( new MapUpdateCommand( l1, 0,(byte)0, parentCraft ) );
 				}
 			}
 			
@@ -495,7 +515,7 @@ public class RotationTask extends AsyncTask {
 	        	newLoc=newLoc.subtract(originPoint);
 	        	newLoc=MathUtils.rotateVec( rotation, newLoc ).add( originPoint );
 	        	Long newTime=System.currentTimeMillis()+5000;
-	        	MapUpdateCommand newMuc=new MapUpdateCommand(newLoc, muc.getTypeID(), muc.getDataID(), getCraft());
+	        	MapUpdateCommand newMuc=new MapUpdateCommand(newLoc, muc.getTypeID(), muc.getDataID(), parentCraft);
 	        	newScheduledBlockChanges.put(newMuc, newTime);
 	        }
 	        this.scheduledBlockChanges=newScheduledBlockChanges;
@@ -631,16 +651,9 @@ public class RotationTask extends AsyncTask {
 					}
 				}
 				
-				Craft[] craftsInWorld = CraftManager.getInstance().getCraftsInWorld( getCraft().getW() );
+				craftsInWorld = CraftManager.getInstance().getCraftsInWorld( getCraft().getW() );
 				for ( Craft craft : craftsInWorld ) {
 					if ( BlockUtils.arrayContainsOverlap( craft.getBlockList(), originalBlockList ) && craft!=getCraft() ) {
-						// found a parent craft
-						if(craft.isNotProcessing()==false) {
-							failed=true;
-							failMessage = String.format( I18nSupport.getInternationalisedString( "Parent Craft is busy" ));
-							return;
-						}
-						
 						List<MovecraftLocation> parentBlockList=ListUtils.subtract(Arrays.asList(craft.getBlockList()), Arrays.asList(originalBlockList));
 						parentBlockList.addAll(Arrays.asList(blockList));
 						craft.setBlockList(parentBlockList.toArray( new MovecraftLocation[1] ));
@@ -688,12 +701,20 @@ public class RotationTask extends AsyncTask {
 								}
 							}
 						}
+						craft.setMinX(parentMinX);
+						craft.setMinZ(parentMinZ);
 						craft.setHitBox(parentPolygonalBox);
 					}
 				}
 			}
 
 			
+		} else { // this else is for "if(!failed)"
+			if(this.isSubCraft) {
+				if(parentCraft!=getCraft()) {
+					parentCraft.setProcessing(false);
+				}
+			}
 		}
 	}
 	

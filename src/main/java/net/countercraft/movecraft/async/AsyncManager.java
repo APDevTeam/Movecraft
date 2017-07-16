@@ -476,6 +476,19 @@ public class AsyncManager extends BukkitRunnable {
 									}
 								}
 							}
+							// check direct controls to modify movement
+							boolean bankLeft=false;
+							boolean bankRight=false;
+							boolean dive=false;
+							if(pcraft.getPilotLocked()) {
+								if(pcraft.getNotificationPlayer().isSneaking())
+									dive=true;
+								if(pcraft.getNotificationPlayer().getInventory().getHeldItemSlot()==3)
+									bankLeft=true;
+								if(pcraft.getNotificationPlayer().getInventory().getHeldItemSlot()==5)
+									bankRight=true;
+							}
+							
 							if (Math.abs(ticksElapsed) >= pcraft.getCurTickCooldown()) {
 								int dx = 0;
 								int dz = 0;
@@ -490,22 +503,52 @@ public class AsyncManager extends BukkitRunnable {
 									dy = 0 - 1 - pcraft.getType().getVertCruiseSkipBlocks();
 									if (pcraft.getMinY() <= w.getSeaLevel())
 										dy = -1;
+								} else {
+									if (dive) {
+										dy = 0-((pcraft.getType().getCruiseSkipBlocks()+1)>>1);
+										if (pcraft.getMinY() <= w.getSeaLevel())
+											dy = -1;
+									}
 								}
 								// ship faces west
 								if (pcraft.getCruiseDirection() == 0x5) {
 									dx = 0 - 1 - pcraft.getType().getCruiseSkipBlocks();
+									if(bankRight) {
+										dz = (0 - 1 - pcraft.getType().getCruiseSkipBlocks())>>1;
+									}
+									if(bankLeft) {
+										dz = (1 + pcraft.getType().getCruiseSkipBlocks())>>1;
+									}
 								}
 								// ship faces east
 								if (pcraft.getCruiseDirection() == 0x4) {
 									dx = 1 + pcraft.getType().getCruiseSkipBlocks();
+									if(bankLeft) {
+										dz = (0 - 1 - pcraft.getType().getCruiseSkipBlocks())>>1;
+									}
+									if(bankRight) {
+										dz = (1 + pcraft.getType().getCruiseSkipBlocks())>>1;
+									}
 								}
 								// ship faces north
 								if (pcraft.getCruiseDirection() == 0x2) {
 									dz = 1 + pcraft.getType().getCruiseSkipBlocks();
+									if(bankRight) {
+										dx = (0 - 1 - pcraft.getType().getCruiseSkipBlocks())>>1;
+									}
+									if(bankLeft) {
+										dx = (1 + pcraft.getType().getCruiseSkipBlocks())>>1;
+									}
 								}
 								// ship faces south
 								if (pcraft.getCruiseDirection() == 0x3) {
 									dz = 0 - 1 - pcraft.getType().getCruiseSkipBlocks();
+									if(bankLeft) {
+										dx = (0 - 1 - pcraft.getType().getCruiseSkipBlocks())>>1;
+									}
+									if(bankRight) {
+										dx = (1 + pcraft.getType().getCruiseSkipBlocks())>>1;
+									}
 								}
 								if (pcraft.getType().getCruiseOnPilot())
 									dy = pcraft.getType().getCruiseOnPilotVertMove();
@@ -1617,13 +1660,20 @@ public class AsyncManager extends BukkitRunnable {
 //		if(Settings.CompatibilityMode==false)
 //			FastBlockChanger.getInstance().run(); 
 		
-		// now cleanup craft that are bugged and have not moved in the past 60 seconds, but have no pilot
+		// now cleanup craft that are bugged and have not moved in the past 60 seconds, but have no pilot or are still processing
 		for (World w : Bukkit.getWorlds()) {
 			if (w != null && CraftManager.getInstance().getCraftsInWorld(w) != null) {
 				for (Craft pcraft : CraftManager.getInstance().getCraftsInWorld(w)) {
 					if(CraftManager.getInstance().getPlayerFromCraft(pcraft)==null) {
 						if(pcraft.getLastCruiseUpdate()<System.currentTimeMillis()-60000) {
 							CraftManager.getInstance().forceRemoveCraft(pcraft);							
+						}
+					}
+					if(!pcraft.isNotProcessing()) {
+						if(pcraft.getCruising()) {
+							if(pcraft.getLastCruiseUpdate()<System.currentTimeMillis()-5000) {
+								pcraft.setProcessing(false);
+							}							
 						}
 					}
 				}

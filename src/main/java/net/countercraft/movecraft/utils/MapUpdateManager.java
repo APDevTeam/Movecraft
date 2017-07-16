@@ -139,8 +139,8 @@ public class MapUpdateManager extends BukkitRunnable {
 	// only bother to store tile entities for blocks we care about (chests, dispensers, etc)
 	// this is more important than it may seem. The more blocks that matter, the more likely
 	// a circular trap will occur (a=b, b=c. c=a), potentially damaging tile data
-	final int[] tileEntityBlocksToPreserve={ 23, 25, 54, 61, 62, 63, 68, 137, 146, 154, 158, 210, 211};	
-	
+	final int[] tileEntityBlocksToPreserve={ 23, 25, 54, 61, 62, 63, 68, 137, 146, 151, 154, 158, 178, 210, 211};	
+	   
 	public void run() {
 		if ( updates.isEmpty() ) return;
 
@@ -271,9 +271,9 @@ public class MapUpdateManager extends BukkitRunnable {
 
 							if(Arrays.binarySearch(tileEntityBlocksToPreserve, srcBlock.getTypeId())>=0) { 
 								TileEntity tileEntity=nativeSrcChunk.getTileEntities().get(srcBlockPos);
-								if(tileEntity instanceof TileEntitySign) {
-									processSign(tileEntity, i.getCraft());
-								}
+//								if(tileEntity instanceof TileEntitySign) {
+//									processSign(tileEntity, i.getCraft());
+//								}
 								tileMap.add(tileEntity);
 							}
 						}
@@ -350,7 +350,7 @@ public class MapUpdateManager extends BukkitRunnable {
 										}
 											
 										if(canBeDelayed && i.getCraft().getScheduledBlockChanges()!=null) {
-											long whenToChange=System.currentTimeMillis()+5000;
+											long whenToChange=System.currentTimeMillis()+1000;
 											MapUpdateCommand newMup=new MapUpdateCommand(i.getNewBlockLocation(),newType,newData,null);
 											HashMap<MapUpdateCommand, Long> sUpd=i.getCraft().getScheduledBlockChanges();
 											boolean alreadyPresent=false;
@@ -545,15 +545,31 @@ public class MapUpdateManager extends BukkitRunnable {
 					}
 				}
 					
-				// clean up any left over tile entities on blocks that do not need tile entities
+				// clean up any left over tile entities on blocks that do not need tile entities, also process signs
 				for ( MapUpdateCommand i : updatesInWorld ) { 
 					if(i!=null) {
-						int blockType=w.getBlockTypeIdAt(i.getOldBlockLocation().getX(), i.getOldBlockLocation().getY(), i.getOldBlockLocation().getZ());
-						if(Arrays.binarySearch(tileEntityBlocksToPreserve,blockType)<0) { // TODO: make this only run when the original block had tile data, but after it cleans up my corrupt chunks >.>
+						if(i.getOldBlockLocation()!=null) {
+							int blockType=w.getBlockTypeIdAt(i.getOldBlockLocation().getX(), i.getOldBlockLocation().getY(), i.getOldBlockLocation().getZ());
 							Block srcBlock=w.getBlockAt(i.getOldBlockLocation().getX(), i.getOldBlockLocation().getY(), i.getOldBlockLocation().getZ());
 							net.minecraft.server.v1_10_R1.Chunk nativeDstChunk = ( ( CraftChunk ) srcBlock.getChunk() ).getHandle();
 							BlockPosition dstBlockPos=new BlockPosition(srcBlock.getX(), srcBlock.getY(), srcBlock.getZ());
-							nativeDstChunk.getTileEntities().remove(dstBlockPos);
+							if(Arrays.binarySearch(tileEntityBlocksToPreserve,blockType)<0) { // TODO: make this only run when the original block had tile data, but after it cleans up my corrupt chunks >.>
+								nativeDstChunk.getTileEntities().remove(dstBlockPos);
+							}
+
+						}
+						if(i.getTypeID()==63 || i.getTypeID()==68) {
+							if(i.getCraft()!=null) {
+								Block srcBlock=w.getBlockAt(i.getNewBlockLocation().getX(), i.getNewBlockLocation().getY(), i.getNewBlockLocation().getZ());
+								net.minecraft.server.v1_10_R1.Chunk nativeDstChunk = ( ( CraftChunk ) srcBlock.getChunk() ).getHandle();
+								BlockPosition dstBlockPos=new BlockPosition(srcBlock.getX(), srcBlock.getY(), srcBlock.getZ());
+								TileEntity tileEntity=nativeDstChunk.getTileEntities().get(dstBlockPos);
+								if(tileEntity instanceof TileEntitySign) {
+									processSign(tileEntity, i.getCraft());
+									sendSignToPlayers(w,i);
+									nativeDstChunk.getTileEntities().put(dstBlockPos, tileEntity);
+								}
+							}
 						}
 					}
 				}

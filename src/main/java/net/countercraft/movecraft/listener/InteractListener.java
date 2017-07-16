@@ -23,6 +23,7 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.CraftType;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.utils.BlockUtils;
 import net.countercraft.movecraft.utils.MapUpdateCommand;
 import net.countercraft.movecraft.utils.MapUpdateManager;
 import net.countercraft.movecraft.utils.MathUtils;
@@ -252,8 +253,26 @@ public class InteractListener implements Listener {
 							}
 							final Location loc = event.getClickedBlock().getLocation();
 							final Craft c = new Craft(getCraftTypeFromString(craftTypeStr), loc.getWorld());
-							MovecraftLocation startPoint = new MovecraftLocation(loc.getBlockX(), loc.getBlockY(),
-									loc.getBlockZ());
+							MovecraftLocation startPoint = new MovecraftLocation(loc.getBlockX(), loc.getBlockY(),loc.getBlockZ());
+							// find the craft this is a subcraft of, and set it to processing so it doesn't move
+							Craft[] craftsInWorld = CraftManager.getInstance().getCraftsInWorld( event.getClickedBlock().getWorld() );
+							Craft parentCraft=null;
+							if(craftsInWorld!=null) {
+								for ( Craft craft : craftsInWorld ) {
+									for (MovecraftLocation mLoc : craft.getBlockList()) {
+										if ( mLoc.equals(startPoint)) {
+											// found a parent craft
+											if(craft.isNotProcessing()==false) {
+												event.getPlayer().sendMessage(I18nSupport.getInternationalisedString( "Parent Craft is busy" ));
+												return;
+											} else {
+												craft.setProcessing(true); // prevent the parent craft from moving or updating until the subcraft is done
+												parentCraft=craft;
+											}
+										}
+									}
+								}
+							}
 							c.detect(null, event.getPlayer(), startPoint);
 							BukkitTask releaseTask = new BukkitRunnable() {
 
@@ -262,7 +281,7 @@ public class InteractListener implements Listener {
 									CraftManager.getInstance().removeCraft(c);
 								}
 
-							}.runTaskLater(Movecraft.getInstance(), (20 * 5));
+							}.runTaskLater(Movecraft.getInstance(), (10));
 
 							BukkitTask rotateTask = new BukkitRunnable() {
 
@@ -271,7 +290,7 @@ public class InteractListener implements Listener {
 									c.rotate(Rotation.ANTICLOCKWISE, MathUtils.bukkit2MovecraftLoc(loc), true);
 								}
 
-							}.runTaskLater(Movecraft.getInstance(), (10));
+							}.runTaskLater(Movecraft.getInstance(), (5));
 							timeMap.put(event.getPlayer(), System.currentTimeMillis());
 							event.setCancelled(true);
 						} else {
@@ -420,8 +439,26 @@ public class InteractListener implements Listener {
 					}
 					final Location loc = event.getClickedBlock().getLocation();
 					final Craft c = new Craft(getCraftTypeFromString(craftTypeStr), loc.getWorld());
-					MovecraftLocation startPoint = new MovecraftLocation(loc.getBlockX(), loc.getBlockY(),
-							loc.getBlockZ());
+					MovecraftLocation startPoint = new MovecraftLocation(loc.getBlockX(), loc.getBlockY(),loc.getBlockZ());
+					// find the craft this is a subcraft of, and set it to processing so it doesn't move
+					Craft[] craftsInWorld = CraftManager.getInstance().getCraftsInWorld( event.getClickedBlock().getWorld() );
+					Craft parentCraft=null;
+					if(craftsInWorld!=null) {
+						for ( Craft craft : craftsInWorld ) {
+							for (MovecraftLocation mLoc : craft.getBlockList()) {
+								if ( mLoc.equals(startPoint)) {
+									// found a parent craft
+									if(craft.isNotProcessing()==false) {
+										event.getPlayer().sendMessage(I18nSupport.getInternationalisedString( "Parent Craft is busy" ));
+										return;
+									} else {
+										craft.setProcessing(true); // prevent the parent craft from moving or updating until the subcraft is done
+										parentCraft=craft;
+									}
+								}
+							}
+						}
+					}
 					c.detect(null, event.getPlayer(), startPoint);
 					BukkitTask releaseTask = new BukkitRunnable() {
 
@@ -430,7 +467,7 @@ public class InteractListener implements Listener {
 							CraftManager.getInstance().removeCraft(c);
 						}
 
-					}.runTaskLater(Movecraft.getInstance(), (20 * 5));
+					}.runTaskLater(Movecraft.getInstance(), (10));
 
 					BukkitTask rotateTask = new BukkitRunnable() {
 
@@ -439,7 +476,7 @@ public class InteractListener implements Listener {
 							c.rotate(Rotation.CLOCKWISE, MathUtils.bukkit2MovecraftLoc(loc), true);
 						}
 
-					}.runTaskLater(Movecraft.getInstance(), (10));
+					}.runTaskLater(Movecraft.getInstance(), (5));
 					timeMap.put(event.getPlayer(), System.currentTimeMillis());
 					event.setCancelled(true);
 				} else {
@@ -508,7 +545,7 @@ public class InteractListener implements Listener {
 					sign.setLine(0, "Cruise: OFF");
 					sign.update(true);
 					CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCruising(false);
-					CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCurTickCooldown(CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getCruiseTickCooldown());
+//					CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCurTickCooldown(CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getCruiseTickCooldown());
 				}
 		} else if (org.bukkit.ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Ascend: ON")) {
 			if (CraftManager.getInstance().getCraftByPlayer(event.getPlayer()) != null)

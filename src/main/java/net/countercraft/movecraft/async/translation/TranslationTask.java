@@ -543,10 +543,11 @@ public class TranslationTask extends AsyncTask {
                         if(getCraft().getSinking()) {
                             if(getCraft().getType().getExplodeOnCrash() != 0.0F && !explosionBlockedByTowny) {
                                 int explosionKey =  (int) (0-(getCraft().getType().getExplodeOnCrash()*100));
-                                if (!getCraft().getW().getBlockAt(oldLoc.getX(),oldLoc.getY(), oldLoc.getZ()).getType().equals(Material.AIR)){
-                                    explosionSet.add( new MapUpdateCommand( oldLoc, explosionKey, (byte)0, getCraft() ) );
-                                    data.setCollisionExplosion(true);
-                                }
+                                if(System.currentTimeMillis()-getCraft().getOrigPilotTime()>1000)
+	                                if (!getCraft().getW().getBlockAt(oldLoc.getX(),oldLoc.getY(), oldLoc.getZ()).getType().equals(Material.AIR)){
+	                                    explosionSet.add( new MapUpdateCommand( oldLoc, explosionKey, (byte)0, getCraft() ) );
+	                                    data.setCollisionExplosion(true);
+	                                }
                             } else {
                                 // use the explosion code to clean up the craft, but not with enough force to do anything
                                 int explosionKey =  0-1;
@@ -573,7 +574,7 @@ public class TranslationTask extends AsyncTask {
                                     explosionSet.add( new MapUpdateCommand( oldLoc, explosionKey, (byte)0, getCraft() ) );
                                     data.setCollisionExplosion(true);
                                 }
-                            } else {
+                            } else if (System.currentTimeMillis()-getCraft().getOrigPilotTime()>1000) {
                             	int explosionKey;
                             	float explosionForce=getCraft().getType().getCollisionExplosion();
                             	if(getCraft().getType().getFocusedExplosion()==true) {
@@ -826,11 +827,13 @@ public class TranslationTask extends AsyncTask {
                                         Player player=(Player)pTest;
                                         getCraft().getMovedPlayers().put(player, System.currentTimeMillis());
                                         Location tempLoc = pTest.getLocation();
-                                        if(getCraft().getPilotLocked()==true && pTest==CraftManager.getInstance().getPlayerFromCraft(getCraft())) {
-                                            tempLoc.setX(getCraft().getPilotLockedX());
-                                            tempLoc.setY(getCraft().getPilotLockedY());
-                                            tempLoc.setZ(getCraft().getPilotLockedZ());
-                                        } 
+                                        
+//                                        Direct control no longer locks the player in place
+//                                       if(getCraft().getPilotLocked()==true && pTest==CraftManager.getInstance().getPlayerFromCraft(getCraft())) {
+//                                            tempLoc.setX(getCraft().getPilotLockedX());
+//                                            tempLoc.setY(getCraft().getPilotLockedY());
+//                                            tempLoc.setZ(getCraft().getPilotLockedZ());
+//                                        } 
                                         tempLoc=tempLoc.add( data.getDx(), data.getDy(), data.getDz() );
                                         Location newPLoc=new Location(getCraft().getW(), tempLoc.getX(), tempLoc.getY(), tempLoc.getZ());
                                         newPLoc.setPitch(pTest.getLocation().getPitch());
@@ -838,11 +841,11 @@ public class TranslationTask extends AsyncTask {
 
                                         EntityUpdateCommand eUp=new EntityUpdateCommand(pTest.getLocation().clone(),newPLoc,pTest);
                                         entityUpdateSet.add(eUp);
-                                        if(getCraft().getPilotLocked()==true && pTest==CraftManager.getInstance().getPlayerFromCraft(getCraft())) {
-                                            getCraft().setPilotLockedX(tempLoc.getX());
-                                            getCraft().setPilotLockedY(tempLoc.getY());
-                                            getCraft().setPilotLockedZ(tempLoc.getZ());
-                                        }
+//                                        if(getCraft().getPilotLocked()==true && pTest==CraftManager.getInstance().getPlayerFromCraft(getCraft())) {
+//                                            getCraft().setPilotLockedX(tempLoc.getX());
+//                                            getCraft().setPilotLockedY(tempLoc.getY());
+//                                            getCraft().setPilotLockedZ(tempLoc.getZ());
+//                                        }
                                     }
                                     if(pTest.getType()==org.bukkit.entity.EntityType.PRIMED_TNT) {
                                     	Entity ent=(Entity)pTest;

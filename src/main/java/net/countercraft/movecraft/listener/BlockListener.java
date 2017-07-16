@@ -45,6 +45,7 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.Dispenser;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -54,6 +55,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockDispenseEvent;
 import org.bukkit.event.block.BlockEvent;
 import org.bukkit.event.block.BlockFromToEvent;
 import org.bukkit.event.block.BlockIgniteEvent;
@@ -421,6 +423,22 @@ public class BlockListener implements Listener {
 			e.setNewCurrent(0);
 	}*/
 	
+	@EventHandler(priority = EventPriority.HIGHEST)
+	public void onBlockDispense(BlockDispenseEvent e) {
+		if(CraftManager.getInstance().getCraftsInWorld(e.getBlock().getWorld())!=null) {
+			for(Craft craft : CraftManager.getInstance().getCraftsInWorld(e.getBlock().getWorld())) {
+				if(craft!=null) {
+					if(!craft.isNotProcessing()) {
+						if(MathUtils.locIsNearCraftFast( craft, MathUtils.bukkit2MovecraftLoc(e.getBlock().getLocation() ))) {
+							e.setCancelled(true);
+							return;
+						}
+					}
+				}				
+			}
+		}
+	}
+	
 	private long lastDamagesUpdate=0;
 	final int[] fragileBlocks = new int[]{ 26, 34, 50, 55, 63, 64, 65, 68, 69, 70, 71, 72, 75, 76, 77, 93, 94, 96, 131, 132, 143, 147, 148, 149, 150, 151, 171, 323, 324, 330, 331, 356, 404 };
 
@@ -436,7 +454,7 @@ public class BlockListener implements Listener {
 					for(int mx=-1;mx<=1;mx++)
 						for(int mz=-1;mz<=1;mz++)
 							for(int my=0;my<=1;my++) {
-								if(b.getRelative(mx,my,mz).getType()==Material.STATIONARY_WATER || b.getRelative(mx,my,mz).getType()==Material.WATER)
+								if(b.getRelative(mx,my,mz).getType()==Material.STATIONARY_WATER || b.getRelative(mx,my,mz).getType()==Material.WATER || b.getRelative(mx, my, mz).getType()==Material.STATIONARY_LAVA || b.getRelative(mx, my, mz).getType()==Material.LAVA)
 									isNearWater=true;
 							}
 				if(isNearWater) {

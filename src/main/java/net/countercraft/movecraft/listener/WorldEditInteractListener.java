@@ -472,6 +472,70 @@ public class WorldEditInteractListener implements Listener {
 							}
 							locMissingBlocks.add(ccLoc);
 						}
+						if((worldLoc.getWorld().getBlockAt(worldLoc).getTypeId()==23) && (cc.getBlock(ccLoc).getId()==23)) { // check to see if ammo is missing from intact dispensers
+							BaseBlock bb=cc.getBlock(ccLoc);
+							DispenserBlock dispBlock=new DispenserBlock(bb.getData());
+							dispBlock.setNbtData(bb.getNbtData());
+							int numFireCharges=0;
+							int numTNT=0;
+							int numWater=0;
+							boolean needsReplace=false;
+							for(BaseItemStack bi : dispBlock.getItems()) {
+								if(bi!=null) {
+									if(bi.getType()==46)
+										numTNT+=bi.getAmount();
+									if(bi.getType()==385)
+										numFireCharges+=bi.getAmount();
+									if(bi.getType()==326)
+										numWater+=bi.getAmount();
+								}
+							}
+							Dispenser disp=(Dispenser) worldLoc.getWorld().getBlockAt(worldLoc).getState();
+							for(ItemStack di : disp.getInventory().getContents()) {
+								if(di!=null) {
+									if(di.getTypeId()==46)
+										numTNT-=di.getAmount();
+									if(di.getTypeId()==385)
+										numFireCharges-=di.getAmount();
+									if(di.getTypeId()==326)
+										numWater-=di.getAmount();
+								}
+							}
+							if(numFireCharges>0) {
+								if( !numMissingItems.containsKey(385) ) {
+									numMissingItems.put(385, numFireCharges);
+								} else {
+									Integer num=numMissingItems.get(385);
+									num+=numFireCharges;
+									numMissingItems.put(385, num);
+								}
+								needsReplace=true;
+							}
+							if(numTNT>0) {
+								if( !numMissingItems.containsKey(46) ) {
+									numMissingItems.put(46, numTNT);
+								} else {
+									Integer num=numMissingItems.get(46);
+									num+=numTNT;
+									numMissingItems.put(46, num);
+								}
+								needsReplace=true;
+							}
+							if(numWater>0) {
+								if( !numMissingItems.containsKey(326) ) {
+									numMissingItems.put(326, numWater);
+								} else {
+									Integer num=numMissingItems.get(326);
+									num+=numWater;
+									numMissingItems.put(46, num);
+								}
+								needsReplace=true;
+							}
+							if(needsReplace) {
+								numdiffblocks++;
+								locMissingBlocks.add(ccLoc);
+							}
+						}
 					}
 				}
 			}
@@ -553,8 +617,8 @@ public class WorldEditInteractListener implements Listener {
 							String []textLines=sb.getText();
 							for(int i=0;i<textLines.length;i++) {
 								String str=textLines[i];
-								if(str.length()>12)
-									str=str.substring(10);
+								if(str.length()>=11)
+									str=str.substring(9);
 								str=str.replaceAll("\"","");
 								str=str.replace("\\\\","\\");
 								str=str.replaceAll("\\}","");
