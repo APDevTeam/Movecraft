@@ -46,6 +46,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Dispenser;
+import org.bukkit.block.Hopper;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -60,11 +61,13 @@ import org.bukkit.event.block.BlockEvent;
 import org.bukkit.event.block.BlockFromToEvent;
 import org.bukkit.event.block.BlockIgniteEvent;
 import org.bukkit.event.block.BlockPhysicsEvent;
+import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
+import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -240,6 +243,42 @@ public class BlockListener implements Listener {
 					if((block.getTypeId()==23) && (!tcraft.isNotProcessing())) {
 						event.setNewCurrent(event.getOldCurrent()); // don't activate dispensers while craft is reconstructing
 						return;
+					}
+				}
+			}
+		}
+	}
+	
+	// prevent pistons on cruising crafts
+	@EventHandler(priority = EventPriority.HIGHEST)
+	public void onPistonEvent(BlockPistonExtendEvent event){
+		Block block = event.getBlock();
+		if(CraftManager.getInstance().getCraftsInWorld(block.getWorld())!=null) {
+			for(Craft tcraft : CraftManager.getInstance().getCraftsInWorld(block.getWorld())) {
+				
+				MovecraftLocation mloc=new MovecraftLocation(block.getX(),block.getY(),block.getZ());
+				if(MathUtils.locIsNearCraftFast(tcraft, mloc)) {
+					if(tcraft.getCruising() || !tcraft.isNotProcessing()) {
+						event.setCancelled(true);
+					}
+				}
+			}
+		}
+	}
+	
+	// prevent hoppers on cruising crafts
+	@EventHandler(priority = EventPriority.HIGHEST)
+	public void onHopperEvent(InventoryMoveItemEvent event){
+		if(event.getSource().getHolder() instanceof Hopper) {
+			Hopper block = (Hopper)event.getSource().getHolder();
+			if(CraftManager.getInstance().getCraftsInWorld(block.getWorld())!=null) {
+				for(Craft tcraft : CraftManager.getInstance().getCraftsInWorld(block.getWorld())) {
+					
+					MovecraftLocation mloc=new MovecraftLocation(block.getX(),block.getY(),block.getZ());
+					if(MathUtils.locIsNearCraftFast(tcraft, mloc)) {
+						if(tcraft.getCruising() || !tcraft.isNotProcessing()) {
+							event.setCancelled(true);
+						}
 					}
 				}
 			}

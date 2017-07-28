@@ -505,11 +505,13 @@ public class MapUpdateManager extends BukkitRunnable {
 								}
 								if(i.getWorldEditBaseBlock() instanceof SignBlock) {
 									BlockState state=w.getBlockAt(i.getNewBlockLocation().getX(), i.getNewBlockLocation().getY(), i.getNewBlockLocation().getZ()).getState();
-									Sign s=(Sign)state;
-									for(int line=0; line<((SignBlock)i.getWorldEditBaseBlock()).getText().length; line++) {
-										s.setLine( line, ((SignBlock)i.getWorldEditBaseBlock()).getText()[line] );
+									if(state instanceof Sign) {
+										Sign s=(Sign)state;
+										for(int line=0; line<((SignBlock)i.getWorldEditBaseBlock()).getText().length; line++) {
+											s.setLine( line, ((SignBlock)i.getWorldEditBaseBlock()).getText()[line] );
+										}
+										((CraftBlockState)s).update(false, false);
 									}
-									((CraftBlockState)s).update(false, false);
 								}								
 							}
 						} else {
@@ -541,6 +543,20 @@ public class MapUpdateManager extends BukkitRunnable {
 							if(b.getTypeId()!=150) {
 								b.setTypeIdAndData(i.getTypeID(), i.getDataID(), false);
 							}
+						}
+						if(i.getWorldEditBaseBlock()!=null) { // worldedit updates (IE: repairs) can have reconstruction issues due to block order, so paste twice
+							w.getBlockAt(i.getNewBlockLocation().getX(), i.getNewBlockLocation().getY(), i.getNewBlockLocation().getZ()).setTypeId(i.getTypeID());
+							w.getBlockAt(i.getNewBlockLocation().getX(), i.getNewBlockLocation().getY(), i.getNewBlockLocation().getZ()).setData(i.getDataID());
+							if(i.getWorldEditBaseBlock() instanceof SignBlock) {
+								BlockState state=w.getBlockAt(i.getNewBlockLocation().getX(), i.getNewBlockLocation().getY(), i.getNewBlockLocation().getZ()).getState();
+								if(state instanceof Sign) {
+									Sign s=(Sign)state;
+									for(int line=0; line<((SignBlock)i.getWorldEditBaseBlock()).getText().length; line++) {
+										s.setLine( line, ((SignBlock)i.getWorldEditBaseBlock()).getText()[line] );
+									}
+									((CraftBlockState)s).update(false, false);
+								}
+							}															
 						}
 					}
 				}
