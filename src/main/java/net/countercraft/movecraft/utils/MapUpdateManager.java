@@ -564,21 +564,34 @@ public class MapUpdateManager extends BukkitRunnable {
 				// clean up any left over tile entities on blocks that do not need tile entities, also process signs
 				for ( MapUpdateCommand i : updatesInWorld ) { 
 					if(i!=null) {
+						int blockType;
+						Block srcBlock;
+						BlockPosition dstBlockPos;
+						net.minecraft.server.v1_10_R1.Chunk nativeDstChunk;
 						if(i.getOldBlockLocation()!=null) {
-							int blockType=w.getBlockTypeIdAt(i.getOldBlockLocation().getX(), i.getOldBlockLocation().getY(), i.getOldBlockLocation().getZ());
-							Block srcBlock=w.getBlockAt(i.getOldBlockLocation().getX(), i.getOldBlockLocation().getY(), i.getOldBlockLocation().getZ());
-							net.minecraft.server.v1_10_R1.Chunk nativeDstChunk = ( ( CraftChunk ) srcBlock.getChunk() ).getHandle();
-							BlockPosition dstBlockPos=new BlockPosition(srcBlock.getX(), srcBlock.getY(), srcBlock.getZ());
+							blockType=w.getBlockTypeIdAt(i.getOldBlockLocation().getX(), i.getOldBlockLocation().getY(), i.getOldBlockLocation().getZ());
+							srcBlock=w.getBlockAt(i.getOldBlockLocation().getX(), i.getOldBlockLocation().getY(), i.getOldBlockLocation().getZ());
+							nativeDstChunk = ( ( CraftChunk ) srcBlock.getChunk() ).getHandle();
+							dstBlockPos=new BlockPosition(srcBlock.getX(), srcBlock.getY(), srcBlock.getZ());
 							if(Arrays.binarySearch(tileEntityBlocksToPreserve,blockType)<0) { // TODO: make this only run when the original block had tile data, but after it cleans up my corrupt chunks >.>
 								nativeDstChunk.getTileEntities().remove(dstBlockPos);
 							}
 
 						}
+						// now remove the tile entities in the new location if they shouldn't be there
+						blockType=w.getBlockTypeIdAt(i.getNewBlockLocation().getX(), i.getNewBlockLocation().getY(), i.getNewBlockLocation().getZ());
+						srcBlock=w.getBlockAt(i.getNewBlockLocation().getX(), i.getNewBlockLocation().getY(), i.getNewBlockLocation().getZ());
+						nativeDstChunk = ( ( CraftChunk ) srcBlock.getChunk() ).getHandle();
+						dstBlockPos=new BlockPosition(srcBlock.getX(), srcBlock.getY(), srcBlock.getZ());
+						if(Arrays.binarySearch(tileEntityBlocksToPreserve,blockType)<0) { // TODO: make this only run when the original block had tile data, but after it cleans up my corrupt chunks >.>
+							nativeDstChunk.getTileEntities().remove(dstBlockPos);
+						}
+
 						if(i.getTypeID()==63 || i.getTypeID()==68) {
 							if(i.getCraft()!=null) {
-								Block srcBlock=w.getBlockAt(i.getNewBlockLocation().getX(), i.getNewBlockLocation().getY(), i.getNewBlockLocation().getZ());
-								net.minecraft.server.v1_10_R1.Chunk nativeDstChunk = ( ( CraftChunk ) srcBlock.getChunk() ).getHandle();
-								BlockPosition dstBlockPos=new BlockPosition(srcBlock.getX(), srcBlock.getY(), srcBlock.getZ());
+								srcBlock=w.getBlockAt(i.getNewBlockLocation().getX(), i.getNewBlockLocation().getY(), i.getNewBlockLocation().getZ());
+								nativeDstChunk = ( ( CraftChunk ) srcBlock.getChunk() ).getHandle();
+								dstBlockPos=new BlockPosition(srcBlock.getX(), srcBlock.getY(), srcBlock.getZ());
 								TileEntity tileEntity=nativeDstChunk.getTileEntities().get(dstBlockPos);
 								if(tileEntity instanceof TileEntitySign) {
 									processSign(tileEntity, i.getCraft());
