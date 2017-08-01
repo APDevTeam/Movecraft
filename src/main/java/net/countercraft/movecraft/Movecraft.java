@@ -118,7 +118,7 @@ public class Movecraft extends JavaPlugin {
         // Read in config
         this.saveDefaultConfig();
         Settings.LOCALE = getConfig().getString("Locale");
-        Settings.RestrictSiBsToRegions = getConfig().getBoolean("DisableCrates", false);
+        Settings.RestrictSiBsToRegions = getConfig().getBoolean("RestrictSiBsToRegions", false);
         Settings.Debug = getConfig().getBoolean("Debug", false);
         Settings.DisableSpillProtection = getConfig().getBoolean("DisableSpillProtection", false);
         // if the PilotTool is specified in the config.yml file, use it
