@@ -15,9 +15,11 @@
  *     along with Movecraft.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.countercraft.movecraft.utils;
+package net.countercraft.movecraft.mapUpdater;
 
 import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.utils.MovecraftLocation;
+import net.countercraft.movecraft.utils.Rotation;
 
 /**
  * Class that stores the data about a single blocks changes to the map in an unspecified world. The world is retrieved contextually from the submitting craft.

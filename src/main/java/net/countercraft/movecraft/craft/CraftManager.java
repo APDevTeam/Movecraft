@@ -19,8 +19,8 @@ package net.countercraft.movecraft.craft;
 
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.utils.MapUpdateCommand;
-import net.countercraft.movecraft.utils.MapUpdateManager;
+import net.countercraft.movecraft.mapUpdater.MapUpdateCommand;
+import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -32,7 +32,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
 public class CraftManager {
