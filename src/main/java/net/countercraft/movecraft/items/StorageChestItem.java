@@ -52,7 +52,7 @@ public class StorageChestItem {
     }
 
     public static Inventory getInventoryOfCrateAtLocation(MovecraftLocation location, World w) {
-        if (Settings.DisableCrates == true)
+        if (Settings.DisableCrates)
             return null;
         return crateInventories.get(w).get(location);
     }

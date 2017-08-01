@@ -103,7 +103,7 @@ public class WorldEditInteractListener implements Listener {
                     com.sk89q.worldedit.blocks.BaseBlock bb = cc.getBlock(ccloc);
                     if (!bb.isAir()) { // most blocks will be air, quickly move on to the next. This loop will run 16 million times, needs to be fast
                         if (Settings.AssaultDestroyableBlocks.contains(bb.getId())) {
-                            if (w.getChunkAt(x >> 4, z >> 4).isLoaded() == false)
+                            if (!w.getChunkAt(x >> 4, z >> 4).isLoaded())
                                 w.loadChunk(x >> 4, z >> 4);
                             if (w.getBlockAt(x, y, z).isEmpty() || w.getBlockAt(x, y, z).isLiquid()) {
                                 MovecraftLocation moveloc = new MovecraftLocation(x, y, z);
@@ -695,7 +695,7 @@ public class WorldEditInteractListener implements Listener {
                 return;
             }
             event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Repairing region"));
-            if (repairRegion(event.getClickedBlock().getWorld(), regionName) == false) {
+            if (!repairRegion(event.getClickedBlock().getWorld(), regionName)) {
                 Bukkit.getServer().broadcastMessage(String.format("REPAIR OF %s FAILED, CONTACT AN ADMIN", regionName));
             }
             ProtectedRegion aRegion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(event.getClickedBlock().getWorld()).getRegion(regionName);

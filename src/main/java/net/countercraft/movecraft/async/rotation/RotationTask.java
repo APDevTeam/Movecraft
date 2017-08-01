@@ -177,7 +177,7 @@ public class RotationTask extends AsyncTask {
 
         // check for fuel, burn some from a furnace if needed. Blocks of coal are supported, in addition to coal and charcoal
         double fuelBurnRate = getCraft().getType().getFuelBurnRate();
-        if (fuelBurnRate != 0.0 && getCraft().getSinking() == false) {
+        if (fuelBurnRate != 0.0 && !getCraft().getSinking()) {
             if (getCraft().getBurningFuel() < fuelBurnRate) {
                 Block fuelHolder = null;
                 for (MovecraftLocation bTest : blockList) {
@@ -288,7 +288,7 @@ public class RotationTask extends AsyncTask {
             if (craftPilot != null) {
                 // See if they are permitted to build in the area, if WorldGuard integration is turned on
                 if (Movecraft.getInstance().getWorldGuardPlugin() != null && Settings.WorldGuardBlockMoveOnBuildPerm) {
-                    if (Movecraft.getInstance().getWorldGuardPlugin().canBuild(craftPilot, plugLoc) == false) {
+                    if (!Movecraft.getInstance().getWorldGuardPlugin().canBuild(craftPilot, plugLoc)) {
                         failed = true;
                         failMessage = String.format(I18nSupport.getInternationalisedString("Rotation - Player is not permitted to build in this WorldGuard region") + " @ %d,%d,%d", blockList[i].getX(), blockList[i].getY(), blockList[i].getZ());
                         break;

@@ -450,7 +450,7 @@ public class CommandListener implements CommandExecutor {
         }
 
         if (cmd.getName().equalsIgnoreCase("assaultinfo")) {
-            if (Settings.AssaultEnable == false) {
+            if (!Settings.AssaultEnable) {
                 player.sendMessage(I18nSupport.getInternationalisedString("Assault is not enabled"));
                 return true;
             }
@@ -468,7 +468,7 @@ public class CommandListener implements CommandExecutor {
                         foundOwnedRegion = true;
                     }
                 }
-                if (foundOwnedRegion == false) {
+                if (!foundOwnedRegion) {
                     player.sendMessage(I18nSupport.getInternationalisedString("You are not the owner of any assaultable region and can not assault others"));
                     return true;
                 }
@@ -491,7 +491,7 @@ public class CommandListener implements CommandExecutor {
                     // regions with no owners can not be assaulted
                     if (tRegion.getOwners().size() == 0)
                         canBeAssaulted = false;
-                    if (canBeAssaulted == true) {
+                    if (canBeAssaulted) {
                         String output = "REGION NAME: ";
                         output += tRegion.getId();
                         output += ", OWNED BY: ";
@@ -526,7 +526,7 @@ public class CommandListener implements CommandExecutor {
                     }
 
                 }
-                if (foundAssaultableRegion == false) {
+                if (!foundAssaultableRegion) {
                     player.sendMessage(I18nSupport.getInternationalisedString("No Assault eligible regions found"));
                     return true;
                 }
@@ -538,7 +538,7 @@ public class CommandListener implements CommandExecutor {
         }
 
         if (cmd.getName().equalsIgnoreCase("assault")) {
-            if (Settings.AssaultEnable == false) {
+            if (!Settings.AssaultEnable) {
                 player.sendMessage(I18nSupport.getInternationalisedString("Assault is not enabled"));
                 return true;
             }
@@ -563,7 +563,7 @@ public class CommandListener implements CommandExecutor {
                     foundOwnedRegion = true;
                 }
             }
-            if (foundOwnedRegion == false) {
+            if (!foundOwnedRegion) {
                 player.sendMessage(I18nSupport.getInternationalisedString("You are not the owner of any assaultable region and can not assault others"));
                 return true;
             }
@@ -712,7 +712,7 @@ public class CommandListener implements CommandExecutor {
                 player.sendMessage(I18nSupport.getInternationalisedString("Siege is not configured on this server"));
                 return true;
             }
-            if (Movecraft.getInstance().siegeInProgress == true) {
+            if (Movecraft.getInstance().siegeInProgress) {
                 player.sendMessage(I18nSupport.getInternationalisedString("A Siege is already taking place"));
                 return true;
             }

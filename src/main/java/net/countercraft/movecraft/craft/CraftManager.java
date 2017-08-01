@@ -104,12 +104,12 @@ public class CraftManager {
         removeReleaseTask(c);
 
         // if its sinking, just remove the craft without notifying or checking
-        if (c.getSinking() == true) {
+        if (c.getSinking()) {
             craftList.get(c.getW()).remove(c);
             craftPlayerIndex.remove(getPlayerFromCraft(c));
         }
         // don't just release torpedoes, make them sink so they don't clutter up the place
-        if (c.getType().getCruiseOnPilot() == true) {
+        if (c.getType().getCruiseOnPilot()) {
             c.setCruising(false);
             c.setSinking(true);
             c.setNotificationPlayer(null);

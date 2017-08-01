@@ -226,7 +226,7 @@ public class TranslationTask extends AsyncTask {
         if (data.getDy() == -1 && data.getDx() == 0 && data.getDz() == 0)
             fuelBurnRate = 0.0;
 
-        if (fuelBurnRate != 0.0 && getCraft().getSinking() == false) {
+        if (fuelBurnRate != 0.0 && !getCraft().getSinking()) {
             if (getCraft().getBurningFuel() < fuelBurnRate) {
                 Block fuelHolder = null;
                 for (MovecraftLocation bTest : blocksList) {
@@ -321,7 +321,7 @@ public class TranslationTask extends AsyncTask {
             if (newLoc.getY() > data.getMaxHeight() && newLoc.getY() > oldLoc.getY()) {
                 fail(I18nSupport.getInternationalisedString("Translation - Failed Craft hit height limit"));
                 break;
-            } else if (newLoc.getY() < data.getMinHeight() && newLoc.getY() < oldLoc.getY() && getCraft().getSinking() == false) {
+            } else if (newLoc.getY() < data.getMinHeight() && newLoc.getY() < oldLoc.getY() && !getCraft().getSinking()) {
                 fail(I18nSupport.getInternationalisedString("Translation - Failed Craft hit minimum height limit"));
                 break;
             }
@@ -336,7 +336,7 @@ public class TranslationTask extends AsyncTask {
             if (craftPilot != null) {
                 // See if they are permitted to build in the area, if WorldGuard integration is turned on
                 if (Movecraft.getInstance().getWorldGuardPlugin() != null && Settings.WorldGuardBlockMoveOnBuildPerm) {
-                    if (Movecraft.getInstance().getWorldGuardPlugin().canBuild(craftPilot, plugLoc) == false) {
+                    if (!Movecraft.getInstance().getWorldGuardPlugin().canBuild(craftPilot, plugLoc)) {
                         fail(String.format(I18nSupport.getInternationalisedString("Translation - Failed Player is not permitted to build in this WorldGuard region") + " @ %d,%d,%d", oldLoc.getX(), oldLoc.getY(), oldLoc.getZ()));
                         break;
                     }
@@ -569,7 +569,7 @@ public class TranslationTask extends AsyncTask {
                         } else if (System.currentTimeMillis() - getCraft().getOrigPilotTime() > 1000) {
                             int explosionKey;
                             float explosionForce = getCraft().getType().getCollisionExplosion();
-                            if (getCraft().getType().getFocusedExplosion() == true) {
+                            if (getCraft().getType().getFocusedExplosion()) {
                                 explosionForce = explosionForce * getCraft().getBlockList().length;
                             }
                             if (oldLoc.getY() < waterLine) { // underwater explosions require more force to do anything
@@ -580,7 +580,7 @@ public class TranslationTask extends AsyncTask {
                                 explosionSet.add(new MapUpdateCommand(oldLoc, explosionKey, (byte) 0, getCraft()));
                                 data.setCollisionExplosion(true);
                             }
-                            if (getCraft().getType().getFocusedExplosion() == true) { // don't handle any further collisions if it is set to focusedexplosion
+                            if (getCraft().getType().getFocusedExplosion()) { // don't handle any further collisions if it is set to focusedexplosion
                                 break;
                             }
                         }
@@ -748,7 +748,7 @@ public class TranslationTask extends AsyncTask {
                 }
 
                 // if the craft is sinking, remove all solid blocks above the one that hit the ground from the craft for smoothing sinking
-                if (getCraft().getSinking() == true && (getCraft().getType().getExplodeOnCrash() == 0.0 || explosionBlockedByTowny)) {
+                if (getCraft().getSinking() && (getCraft().getType().getExplodeOnCrash() == 0.0 || explosionBlockedByTowny)) {
                     int posy = m.getNewBlockLocation().getY() + 1;
                     int testID = getCraft().getW().getBlockAt(m.getNewBlockLocation().getX(), posy, m.getNewBlockLocation().getZ()).getTypeId();
 
@@ -783,7 +783,7 @@ public class TranslationTask extends AsyncTask {
 
             fail(I18nSupport.getInternationalisedString("Translation - Failed Craft is obstructed"));
 
-            if (getCraft().getSinking() == false) {   // FROG changed from ==true, think that was a typo
+            if (!getCraft().getSinking()) {   // FROG changed from ==true, think that was a typo
                 if (getCraft().getType().getSinkPercent() != 0.0) {
                     getCraft().setLastBlockCheck(0);
                 }
@@ -796,7 +796,7 @@ public class TranslationTask extends AsyncTask {
             data.setBlockList(newBlockList);
 
             //prevents torpedo and rocket pilots :)
-            if (getCraft().getType().getMoveEntities() && getCraft().getSinking() == false) {
+            if (getCraft().getType().getMoveEntities() && !getCraft().getSinking()) {
                 // Move entities within the craft
                 List<Entity> eList = null;
                 int numTries = 0;
@@ -847,7 +847,7 @@ public class TranslationTask extends AsyncTask {
                 }
             } else {
                 //add releaseTask without playermove to manager
-                if (getCraft().getType().getCruiseOnPilot() == false && getCraft().getSinking() == false)  // not necessary to release cruiseonpilot crafts, because they will already be released
+                if (!getCraft().getType().getCruiseOnPilot() && !getCraft().getSinking())  // not necessary to release cruiseonpilot crafts, because they will already be released
                     CraftManager.getInstance().addReleaseTask(getCraft());
             }
 
@@ -976,7 +976,7 @@ public class TranslationTask extends AsyncTask {
         Player craftPilot = CraftManager.getInstance().getPlayerFromCraft(getCraft());
         if (craftPilot != null) {
             Location location = craftPilot.getLocation();
-            if (getCraft().getDisabled() == false) {
+            if (!getCraft().getDisabled()) {
                 getCraft().getW().playSound(location, Sound.BLOCK_ANVIL_LAND, 1.0f, 0.25f);
                 getCraft().setCurTickCooldown(getCraft().getType().getCruiseTickCooldown());
             } else {

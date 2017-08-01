@@ -157,7 +157,7 @@ public class MapUpdateManager extends BukkitRunnable {
                                 maxz = c.getOldBlockLocation().getZ();
                         }
                         if (c.getNewBlockLocation() != null) {
-                            if (Settings.CompatibilityMode == false) {
+                            if (!Settings.CompatibilityMode) {
                                 Chunk chunk = w.getBlockAt(c.getNewBlockLocation().getX(), c.getNewBlockLocation().getY(), c.getNewBlockLocation().getZ()).getChunk();
                                 net.minecraft.server.v1_10_R1.Chunk nativeChunk = ((CraftChunk) chunk).getHandle();
                                 if (!chunksToRelight.contains(nativeChunk))
@@ -168,7 +168,7 @@ public class MapUpdateManager extends BukkitRunnable {
                             }
                         }
                         if (c.getOldBlockLocation() != null) {
-                            if (Settings.CompatibilityMode == false) {
+                            if (!Settings.CompatibilityMode) {
                                 Chunk chunk = w.getBlockAt(c.getOldBlockLocation().getX(), c.getOldBlockLocation().getY(), c.getOldBlockLocation().getZ()).getChunk();
                                 net.minecraft.server.v1_10_R1.Chunk nativeChunk = ((CraftChunk) chunk).getHandle();
                                 if (!chunksToRelight.contains(nativeChunk))
@@ -610,7 +610,7 @@ public class MapUpdateManager extends BukkitRunnable {
 				}*/
 
                 // queue chunks for lighting recalc
-                if (Settings.CompatibilityMode == false) {
+                if (!Settings.CompatibilityMode) {
                     for (net.minecraft.server.v1_10_R1.Chunk c : chunksToRelight) {
                         ChunkUpdater fChunk = FastBlockChanger.getInstance().getChunk(c.world, c.locX, c.locZ, true);
                         for (int bx = 0; bx < 16; bx++) {
@@ -726,7 +726,7 @@ public class MapUpdateManager extends BukkitRunnable {
                 loc = loc.subtract(0, 1, 0);
                 if (craft.getW().getBlockAt(loc).getType().equals(Material.BED_BLOCK)) {
                     crewPlayer.setBedSpawnLocation(loc);
-                    if (Settings.SetHomeToCrewSign == true)
+                    if (Settings.SetHomeToCrewSign)
 
                         if (Movecraft.getInstance().getEssentialsPlugin() != null) {
                             User u = Movecraft.getInstance().getEssentialsPlugin().getUser(crewPlayer);
@@ -1050,7 +1050,7 @@ public class MapUpdateManager extends BukkitRunnable {
         boolean explosionblocked = false;
         if (Movecraft.getInstance().getWorldGuardPlugin() != null) {
             ApplicableRegionSet set = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(loc.getWorld()).getApplicableRegions(loc);
-            if (set.allows(DefaultFlag.OTHER_EXPLOSION) == false) {
+            if (!set.allows(DefaultFlag.OTHER_EXPLOSION)) {
                 explosionblocked = true;
             }
         }

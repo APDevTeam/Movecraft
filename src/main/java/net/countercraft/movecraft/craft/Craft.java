@@ -137,18 +137,18 @@ public class Craft {
 
     public void translate(int dx, int dy, int dz) {
         // check to see if the craft is trying to move in a direction not permitted by the type
-        if (this.getType().allowHorizontalMovement() == false && this.getSinking() == false) {
+        if (!this.getType().allowHorizontalMovement() && !this.getSinking()) {
             dx = 0;
             dz = 0;
         }
-        if (this.getType().allowVerticalMovement() == false && this.getSinking() == false) {
+        if (!this.getType().allowVerticalMovement() && !this.getSinking()) {
             dy = 0;
         }
         if (dx == 0 && dy == 0 && dz == 0) {
             return;
         }
 
-        if (!this.getType().allowVerticalTakeoffAndLanding() && dy != 0 && this.getSinking() == false) {
+        if (!this.getType().allowVerticalTakeoffAndLanding() && dy != 0 && !this.getSinking()) {
             if (dx == 0 && dz == 0) {
                 return;
             }
@@ -182,7 +182,7 @@ public class Craft {
         // load all chunks that will be needed to translate this craft
         for (int posX = cminX - 1; posX <= cmaxX + 1; posX++) {
             for (int posZ = cminZ - 1; posZ <= cmaxZ + 1; posZ++) {
-                if (this.getW().isChunkLoaded(posX, posZ) == false) {
+                if (!this.getW().isChunkLoaded(posX, posZ)) {
                     this.getW().loadChunk(posX, posZ);
                 }
             }
@@ -246,7 +246,7 @@ public class Craft {
         // load all chunks that will be needed to rotate this craft
         for (int posX = cminX; posX <= cmaxX; posX++) {
             for (int posZ = cminZ; posZ <= cmaxZ; posZ++) {
-                if (this.getW().isChunkLoaded(posX, posZ) == false) {
+                if (!this.getW().isChunkLoaded(posX, posZ)) {
                     this.getW().loadChunk(posX, posZ);
                 }
             }

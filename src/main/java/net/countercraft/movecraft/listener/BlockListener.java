@@ -75,10 +75,10 @@ public class BlockListener implements Listener {
 
     @EventHandler
     public void onBlockPlace(final BlockPlaceEvent e) {
-        if (Settings.RestrictSiBsToRegions == true) {
+        if (Settings.RestrictSiBsToRegions) {
             if (e.getBlockPlaced().getTypeId() == 54) {
                 if (e.getItemInHand().hasItemMeta()) {
-                    if (e.getItemInHand().getItemMeta().hasLore() == true) {
+                    if (e.getItemInHand().getItemMeta().hasLore()) {
                         List<String> loreList = e.getItemInHand().getItemMeta().getLore();
                         for (String lore : loreList) {
                             if (lore.contains("SiB")) {
@@ -88,7 +88,7 @@ public class BlockListener implements Listener {
                                 }
                                 Location loc = e.getBlockPlaced().getLocation();
                                 ApplicableRegionSet regions = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(loc.getWorld()).getApplicableRegions(loc);
-                                if (regions.size() == 0 && isMM == false) {
+                                if (regions.size() == 0 && !isMM) {
                                     e.getPlayer().sendMessage(I18nSupport.getInternationalisedString("SIB MUST BE PLACED IN REGION"));
                                     e.setCancelled(true);
                                 }
@@ -98,7 +98,7 @@ public class BlockListener implements Listener {
                 }
             }
         }
-        if (Settings.DisableCrates == true)
+        if (Settings.DisableCrates)
             return;
         if (e.getBlockAgainst().getTypeId() == 33 && e.getBlockAgainst().getData() == ((byte) 6)) {
             e.setCancelled(true);
@@ -123,7 +123,7 @@ public class BlockListener implements Listener {
 
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
             if (event.getClickedBlock().getTypeId() == 33 && event.getClickedBlock().getData() == ((byte) 6)) {
-                if (Settings.DisableCrates == true)
+                if (Settings.DisableCrates)
                     return;
                 Location l = event.getClickedBlock().getLocation();
                 MovecraftLocation l1 = new MovecraftLocation(l.getBlockX(), l.getBlockY(), l.getBlockZ());
@@ -166,7 +166,7 @@ public class BlockListener implements Listener {
                 e.setCancelled(true);
         }
         if (e.getBlock().getTypeId() == 33 && e.getBlock().getData() == ((byte) 6)) {
-            if (Settings.DisableCrates == true)
+            if (Settings.DisableCrates)
                 return;
             Location l = e.getBlock().getLocation();
             MovecraftLocation l1 = new MovecraftLocation(l.getBlockX(), l.getBlockY(), l.getBlockZ());
@@ -345,7 +345,7 @@ public class BlockListener implements Listener {
                         boolean faceAlwaysDown = false;
                         if (block.getTypeId() == 149 || block.getTypeId() == 150 || block.getTypeId() == 93 || block.getTypeId() == 94)
                             faceAlwaysDown = true;
-                        if (m instanceof Attachable && faceAlwaysDown == false) {
+                        if (m instanceof Attachable && !faceAlwaysDown) {
                             face = ((Attachable) m).getAttachedFace();
                         }
                         if (!event.getBlock().getRelative(face).getType().isSolid()) {
@@ -391,16 +391,16 @@ public class BlockListener implements Listener {
         String signText = org.bukkit.ChatColor.stripColor(event.getLine(0));
         // did the player try to create a craft command sign?
         if (getCraftTypeFromString(signText) != null) {
-            if (Settings.RequireCreatePerm == false) {
+            if (!Settings.RequireCreatePerm) {
                 return;
             }
-            if (p.hasPermission("movecraft." + org.bukkit.ChatColor.stripColor(event.getLine(0)) + ".create") == false) {
+            if (!p.hasPermission("movecraft." + ChatColor.stripColor(event.getLine(0)) + ".create")) {
                 p.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
                 event.setCancelled(true);
             }
         }
         if (signText.equalsIgnoreCase("Cruise: OFF") || signText.equalsIgnoreCase("Cruise: ON")) {
-            if (p.hasPermission("movecraft.cruisesign") == false && Settings.RequireCreatePerm) {
+            if (!p.hasPermission("movecraft.cruisesign") && Settings.RequireCreatePerm) {
                 p.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
                 event.setCancelled(true);
             }
@@ -443,7 +443,7 @@ public class BlockListener implements Listener {
                 // check to see if fire spread is allowed, don't check if worldguard integration is not enabled
                 if (Movecraft.getInstance().getWorldGuardPlugin() != null && (Settings.WorldGuardBlockMoveOnBuildPerm || Settings.WorldGuardBlockSinkOnPVPPerm)) {
                     ApplicableRegionSet set = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(testBlock.getWorld()).getApplicableRegions(testBlock.getLocation());
-                    if (set.allows(DefaultFlag.FIRE_SPREAD) == false) {
+                    if (!set.allows(DefaultFlag.FIRE_SPREAD)) {
                         isBurnAllowed = false;
                     }
                 }
@@ -472,7 +472,7 @@ public class BlockListener implements Listener {
     @EventHandler(priority = EventPriority.NORMAL)
     public void explodeEvent(EntityExplodeEvent e) {
         // Remove any blocks from the list that were adjacent to water, to prevent spillage
-        if (Settings.DisableSpillProtection == false) {
+        if (!Settings.DisableSpillProtection) {
             Iterator<Block> i = e.blockList().iterator();
             while (i.hasNext()) {
                 Block b = i.next();

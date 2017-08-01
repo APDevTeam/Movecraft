@@ -507,8 +507,8 @@ public class DetectionTask extends AsyncTask {
 
     private boolean confirmStructureRequirements(HashMap<ArrayList<Integer>, ArrayList<Double>> flyBlocks,
                                                  HashMap<ArrayList<Integer>, Integer> countData) {
-        if (getCraft().getType().getRequireWaterContact() == true) {
-            if (data.getWaterContact() == false) {
+        if (getCraft().getType().getRequireWaterContact()) {
+            if (!data.getWaterContact()) {
                 fail(I18nSupport
                         .getInternationalisedString("Detection - Failed - Water contact required but not found"));
                 return false;
