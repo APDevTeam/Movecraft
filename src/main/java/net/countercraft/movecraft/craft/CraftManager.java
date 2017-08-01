@@ -37,7 +37,7 @@ import java.util.logging.Level;
 
 public class CraftManager {
     private static final CraftManager ourInstance = new CraftManager();
-    private final Map<World, Set<Craft>> craftList = new ConcurrentHashMap<>();
+    private final Set<Craft> craftList = new HashSet<>();
     private final HashMap<Player, Craft> craftPlayerIndex = new HashMap<>();
     private final HashMap<Player, BukkitTask> releaseEvents = new HashMap<>();
     private CraftType[] craftTypes;
@@ -92,11 +92,7 @@ public class CraftManager {
     }
 
     public void addCraft(Craft c, Player p) {
-        Set<Craft> crafts = craftList.get(c.getW());
-        if (crafts == null) {
-            craftList.put(c.getW(), new HashSet<Craft>());
-        }
-        craftList.get(c.getW()).add(c);
+        craftList.add(c);
         craftPlayerIndex.put(p, c);
     }
 
@@ -105,7 +101,7 @@ public class CraftManager {
 
         // if its sinking, just remove the craft without notifying or checking
         if (c.getSinking()) {
-            craftList.get(c.getW()).remove(c);
+            craftList.remove(c);
             craftPlayerIndex.remove(getPlayerFromCraft(c));
         }
         // don't just release torpedoes, make them sink so they don't clutter up the place
@@ -124,7 +120,7 @@ public class CraftManager {
             }
         }
         c.setScheduledBlockChanges(null);
-        craftList.get(c.getW()).remove(c);
+        craftList.remove(c);
         if (getPlayerFromCraft(c) != null) {
             getPlayerFromCraft(c).sendMessage(I18nSupport.getInternationalisedString("Release - Craft has been released message"));
             Movecraft.getInstance().getLogger().log(Level.INFO, String.format(I18nSupport.getInternationalisedString("Release - Player has released a craft console"), c.getNotificationPlayer().getName(), c.getType().getCraftName(), c.getBlockList().length, c.getMinX(), c.getMinZ()));
@@ -135,18 +131,20 @@ public class CraftManager {
     }
 
     public void forceRemoveCraft(Craft c) {
-        craftList.get(c.getW()).remove(c);
+        craftList.remove(c);
         if (getPlayerFromCraft(c) != null)
             craftPlayerIndex.remove(getPlayerFromCraft(c));
     }
 
     public Craft[] getCraftsInWorld(World w) {
-        Set<Craft> crafts = craftList.get(w);
-        if (crafts == null || crafts.isEmpty()) {
-            return null;
-        } else {
-            return craftList.get(w).toArray(new Craft[1]);
+        Set<Craft> crafts = new HashSet<>();
+        for(Craft c : craftList){
+            if(c.getW() == w)
+                crafts.add(c);
         }
+        if(crafts.isEmpty())
+            return null;
+        return crafts.toArray(new Craft[1]);
     }
 
     public Craft getCraftByPlayer(Player p) {
