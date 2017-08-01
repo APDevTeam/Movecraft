@@ -195,7 +195,7 @@ public class WorldEditInteractListener implements Listener {
                             if (state instanceof Sign) {
                                 Sign s = (Sign) state;
                                 SignBlock sb = new SignBlock(b.getTypeId(), b.getData(), s.getLines());
-                                bb = (com.sk89q.worldedit.blocks.BaseBlock) sb;
+                                bb = sb;
                             } else if (state instanceof Dispenser) {
                                 LocalWorld lw = BukkitUtil.getLocalWorld(event.getPlayer().getWorld());
                                 Vector vectorPos = new Vector(loc.getX(), loc.getY(), loc.getZ());
@@ -248,7 +248,7 @@ public class WorldEditInteractListener implements Listener {
                                     numWater--;
                                 }
                                 dispBlock.setItems(bItemStack);
-                                bb = (BaseBlock) dispBlock;
+                                bb = dispBlock;
                             } else {
                                 bb = new com.sk89q.worldedit.blocks.BaseBlock(b.getTypeId(), b.getData());
                             }

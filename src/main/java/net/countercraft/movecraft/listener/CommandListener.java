@@ -460,7 +460,7 @@ public class CommandListener implements CommandExecutor {
             }
             ApplicableRegionSet regions = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(player.getWorld()).getApplicableRegions(player.getLocation());
             if (regions.size() != 0) {
-                LocalPlayer lp = (LocalPlayer) Movecraft.getInstance().getWorldGuardPlugin().wrapPlayer(player);
+                LocalPlayer lp = Movecraft.getInstance().getWorldGuardPlugin().wrapPlayer(player);
                 Map<String, ProtectedRegion> allRegions = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(player.getWorld()).getRegions();
                 boolean foundOwnedRegion = false;
                 for (ProtectedRegion iRegion : allRegions.values()) {
@@ -555,7 +555,7 @@ public class CommandListener implements CommandExecutor {
                 player.sendMessage(String.format(I18nSupport.getInternationalisedString("Region not found")));
                 return true;
             }
-            LocalPlayer lp = (LocalPlayer) Movecraft.getInstance().getWorldGuardPlugin().wrapPlayer(player);
+            LocalPlayer lp = Movecraft.getInstance().getWorldGuardPlugin().wrapPlayer(player);
             Map<String, ProtectedRegion> allRegions = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(player.getWorld()).getRegions();
             boolean foundOwnedRegion = false;
             for (ProtectedRegion iRegion : allRegions.values()) {
@@ -606,7 +606,7 @@ public class CommandListener implements CommandExecutor {
                 return true;
             }
 //			if(aRegion.getType() instanceof ProtectedCuboidRegion) { // Originally I wasn't going to do non-cubes, but we'll try it and see how it goes. In theory it may repair more than it should but... meh...
-            ProtectedRegion cubRegion = (ProtectedRegion) aRegion;
+            ProtectedRegion cubRegion = aRegion;
             String repairStateName = Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/RegionRepairStates";
             File file = new File(repairStateName);
             if (!file.exists()) {
@@ -717,7 +717,7 @@ public class CommandListener implements CommandExecutor {
                 return true;
             }
             String foundSiegeName = null;
-            LocalPlayer lp = (LocalPlayer) Movecraft.getInstance().getWorldGuardPlugin().wrapPlayer(player);
+            LocalPlayer lp = Movecraft.getInstance().getWorldGuardPlugin().wrapPlayer(player);
             ApplicableRegionSet regions = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(player.getWorld()).getApplicableRegions(player.getLocation());
             if (regions.size() != 0) {
                 for (ProtectedRegion tRegion : regions.getRegions()) {
@@ -844,10 +844,7 @@ public class CommandListener implements CommandExecutor {
                 numOnline++;
             }
         }
-        if (numOnline >= Settings.AssaultRequiredDefendersOnline)
-            return true;
-        else
-            return false;
+        return numOnline >= Settings.AssaultRequiredDefendersOnline;
     }
 
     public String getRegionOwnerList(ProtectedRegion tRegion) {

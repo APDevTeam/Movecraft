@@ -776,7 +776,7 @@ public class TranslationTask extends AsyncTask {
             }
 
 
-            MovecraftLocation[] newBlockList = (MovecraftLocation[]) existingBlockSet.toArray(new MovecraftLocation[0]);
+            MovecraftLocation[] newBlockList = existingBlockSet.toArray(new MovecraftLocation[0]);
             data.setBlockList(newBlockList);
             data.setUpdates(explosionSet.toArray(new MapUpdateCommand[1]));
 
@@ -791,7 +791,7 @@ public class TranslationTask extends AsyncTask {
         }
 
         if (!data.failed()) {
-            MovecraftLocation[] newBlockList = (MovecraftLocation[]) tempBlockList.toArray(new MovecraftLocation[0]);
+            MovecraftLocation[] newBlockList = tempBlockList.toArray(new MovecraftLocation[0]);
             data.setBlockList(newBlockList);
 
             //prevents torpedo and rocket pilots :)
@@ -837,7 +837,7 @@ public class TranslationTask extends AsyncTask {
 //                                        }
                         }
                         if (pTest.getType() == org.bukkit.entity.EntityType.PRIMED_TNT) {
-                            Entity ent = (Entity) pTest;
+                            Entity ent = pTest;
                             Location tempLoc = pTest.getLocation();
                             tempLoc = tempLoc.add(data.getDx(), data.getDy(), data.getDz());
                             EntityUpdateCommand eUp = new EntityUpdateCommand(pTest.getLocation().clone(), tempLoc, pTest);
@@ -1026,11 +1026,7 @@ public class TranslationTask extends AsyncTask {
             }
             if (blockObstructed && hoverCraft) {
                 // New block is not harvested block and is not part of the existing craft
-                if (harvestBlocks.contains(testMaterial) && !existingBlockSet.contains(newLoc)) {
-                    blockObstructed = false;
-                } else {
-                    blockObstructed = true;
-                }
+                blockObstructed = !(harvestBlocks.contains(testMaterial) && !existingBlockSet.contains(newLoc));
             }
 
             if (blockObstructed) {

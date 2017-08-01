@@ -83,7 +83,6 @@ public class MapUpdateManager extends BukkitRunnable {
     // a circular trap will occur (a=b, b=c. c=a), potentially damaging tile data
     final int[] tileEntityBlocksToPreserve = {23, 25, 54, 61, 62, 63, 68, 137, 146, 151, 154, 158, 178, 210, 211};
     private final HashMap<World, ArrayList<MapUpdateCommand>> updates = new HashMap<World, ArrayList<MapUpdateCommand>>();
-    ;
     private final HashMap<World, ArrayList<EntityUpdateCommand>> entityUpdates = new HashMap<World, ArrayList<EntityUpdateCommand>>();
     private final HashMap<World, ArrayList<ItemDropUpdateCommand>> itemDropUpdates = new HashMap<World, ArrayList<ItemDropUpdateCommand>>();
     public HashMap<Craft, Integer> blockUpdatesPerCraft = new HashMap<Craft, Integer>();
@@ -288,16 +287,10 @@ public class MapUpdateManager extends BukkitRunnable {
                                     if (existingType == newType && existingData != newData) {
                                         boolean canBeDelayed = false;
                                         if (existingType == 35) { // you can delay wool blocks, except light gray ones
-                                            canBeDelayed = true;
-                                            if (existingData == 8 || newData == 8) {
-                                                canBeDelayed = false;
-                                            }
+                                            canBeDelayed = !(existingData == 8 || newData == 8);
                                         }
                                         if (existingType == 159) { // you can delay stained clay, except all gray and black ones
-                                            canBeDelayed = true;
-                                            if (existingData == 7 || newData == 7) {
-                                                canBeDelayed = false;
-                                            }
+                                            canBeDelayed = !(existingData == 7 || newData == 7);
                                             if (existingData == 8 || newData == 8) {
                                                 canBeDelayed = false;
                                             }
@@ -485,7 +478,7 @@ public class MapUpdateManager extends BukkitRunnable {
                                         for (int line = 0; line < ((SignBlock) i.getWorldEditBaseBlock()).getText().length; line++) {
                                             s.setLine(line, ((SignBlock) i.getWorldEditBaseBlock()).getText()[line]);
                                         }
-                                        ((CraftBlockState) s).update(false, false);
+                                        s.update(false, false);
                                     }
                                 }
                             }
@@ -501,7 +494,7 @@ public class MapUpdateManager extends BukkitRunnable {
                     }
                     if (madeChanges) { // send map updates to clients, and perform various checks
                         Location loc = new Location(w, i.getNewBlockLocation().getX(), i.getNewBlockLocation().getY(), i.getNewBlockLocation().getZ());
-                        ((CraftBlockState) w.getBlockAt(loc).getState()).update(false, false);
+                        w.getBlockAt(loc).getState().update(false, false);
                     }
                 }
 
@@ -529,7 +522,7 @@ public class MapUpdateManager extends BukkitRunnable {
                                     for (int line = 0; line < ((SignBlock) i.getWorldEditBaseBlock()).getText().length; line++) {
                                         s.setLine(line, ((SignBlock) i.getWorldEditBaseBlock()).getText()[line]);
                                     }
-                                    ((CraftBlockState) s).update(false, false);
+                                    s.update(false, false);
                                 }
                             }
                         }
@@ -677,7 +670,7 @@ public class MapUpdateManager extends BukkitRunnable {
                         p.sendBlockChange(sign.getLocation(), sign.getTypeId(), sign.getRawData());
                     }
             }
-            ((CraftBlockState) sign).update(false, false);
+            sign.update(false, false);
         }
     }
 

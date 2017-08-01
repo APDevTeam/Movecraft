@@ -220,7 +220,7 @@ public class InteractListener implements Listener {
                                 && org.bukkit.ChatColor.stripColor(sign.getLine(3)).equals("")) {
                             sign.setLine(2, "_\\ /_");
                             sign.setLine(3, "/ \\");
-                            ((CraftBlockState) sign).update(false, false);
+                            sign.update(false, false);
                         }
 
                         if (event.getPlayer().hasPermission("movecraft." + craftTypeStr + ".pilot")
@@ -406,7 +406,7 @@ public class InteractListener implements Listener {
                 if (org.bukkit.ChatColor.stripColor(sign.getLine(2)).equals("") && sign.getLine(3).equals("")) {
                     sign.setLine(2, "_\\ /_");
                     sign.setLine(3, "/ \\");
-                    ((CraftBlockState) sign).update(false, false);
+                    sign.update(false, false);
                 }
 
                 if (event.getPlayer().hasPermission("movecraft." + craftTypeStr + ".pilot")
@@ -560,7 +560,6 @@ public class InteractListener implements Listener {
                         int dy = tY - sign.getY();
                         int dz = tZ - sign.getZ();
                         CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).translate(dx, dy, dz);
-                        ;
                     }
                 } else {
                     event.getPlayer().sendMessage(

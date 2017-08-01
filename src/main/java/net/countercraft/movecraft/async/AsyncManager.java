@@ -639,11 +639,8 @@ public class AsyncManager extends BukkitRunnable {
         Location nativeLoc = new Location(w, loc.getX(), loc.getY(), loc.getZ());
         ApplicableRegionSet set = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(w)
                 .getApplicableRegions(nativeLoc);
-        if (set.allows(DefaultFlag.PVP) == false) {
-            return true;
-        }
-        return false;
-    }
+		return set.allows(DefaultFlag.PVP) == false;
+	}
 
     private boolean isRegionFlagSinkAllowed(MovecraftLocation loc, World w) {
         if (Movecraft.getInstance().getWorldGuardPlugin() != null
@@ -1547,7 +1544,7 @@ public class AsyncManager extends BukkitRunnable {
                     s.setLine(2, "Damage:" + Movecraft.getInstance().assaultDamages.get(assault));
                     Calendar rightNow = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
                     s.setLine(3, "Owner:" + executor.getRegionOwnerList(tRegion));
-                    ((CraftBlockState) s).update(false, false);
+                    s.update(false, false);
                     ProtectedRegion aRegion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(w).getRegion(assault);
                     tRegion.getOwners().clear();
                     assaultI.remove();

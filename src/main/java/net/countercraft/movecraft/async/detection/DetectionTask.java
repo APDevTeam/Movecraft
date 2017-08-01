@@ -298,7 +298,7 @@ public class DetectionTask extends AsyncTask {
                                                     && Movecraft.getInstance()
                                                     .getWGCustomFlagsPlugin() != null
                                                     && Settings.WGCustomFlagsUsePilotFlag) {
-                                                LocalPlayer lp = (LocalPlayer) Movecraft
+                                                LocalPlayer lp = Movecraft
                                                         .getInstance().getWorldGuardPlugin()
                                                         .wrapPlayer(p);
                                                 ApplicableRegionSet regions = Movecraft

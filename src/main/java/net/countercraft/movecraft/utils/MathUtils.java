@@ -62,9 +62,7 @@ public class MathUtils {
             return false;
         if (l.getY() < craft.getMinY() - 3)
             return false;
-        if (l.getY() > craft.getMaxY() + 3)
-            return false;
-        return true;
+        return l.getY() <= craft.getMaxY() + 3;
     }
 
     public static MovecraftLocation bukkit2MovecraftLoc(Location l) {

@@ -175,7 +175,7 @@ public class Movecraft extends JavaPlugin {
         Settings.TNTContactExplosives = getConfig().getBoolean("TNTContactExplosives", true);
         Settings.FadeWrecksAfter = getConfig().getInt("FadeWrecksAfter", 0);
         if (getConfig().contains("DurabilityOverride")) {
-            Map<String, Object> temp = (Map<String, Object>) getConfig().getConfigurationSection("DurabilityOverride").getValues(false);
+            Map<String, Object> temp = getConfig().getConfigurationSection("DurabilityOverride").getValues(false);
             Settings.DurabilityOverride = new HashMap<Integer, Integer>();
             for (String str : temp.keySet()) {
                 Settings.DurabilityOverride.put(Integer.parseInt(str), (Integer) temp.get(str));
@@ -322,7 +322,7 @@ public class Movecraft extends JavaPlugin {
         Plugin tempEssentialsPlugin = getServer().getPluginManager().getPlugin("Essentials");
         if (tempEssentialsPlugin != null) {
             if (tempEssentialsPlugin.getDescription().getName().equalsIgnoreCase("essentials")) {
-                if (tempEssentialsPlugin.getClass().getName().equals((String) "com.earth2me.essentials.Essentials")) {
+                if (tempEssentialsPlugin.getClass().getName().equals("com.earth2me.essentials.Essentials")) {
                     if (tempEssentialsPlugin instanceof Essentials) {
                         essentialsPlugin = (Essentials) tempEssentialsPlugin;
                         logger.log(Level.INFO, "Found a compatible version of Essentials. Enabling Essentials integration.");
