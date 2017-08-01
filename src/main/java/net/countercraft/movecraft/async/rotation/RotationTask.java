@@ -43,6 +43,7 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
@@ -411,12 +412,10 @@ public class RotationTask extends AsyncTask {
                     numTries++;
                 }
             }
-            Iterator<Entity> i = getCraft().getW().getEntities().iterator();
-            while (i.hasNext()) {
-                Entity pTest = i.next();
-//				if ( MathUtils.playerIsWithinBoundingPolygon( getCraft().getHitBox(), getCraft().getMinX(), getCraft().getMinZ(), MathUtils.bukkit2MovecraftLoc( pTest.getLocation() ) ) ) {
+            for (Entity pTest : getCraft().getW().getEntities()) {
+                //				if ( MathUtils.playerIsWithinBoundingPolygon( getCraft().getHitBox(), getCraft().getMinX(), getCraft().getMinZ(), MathUtils.bukkit2MovecraftLoc( pTest.getLocation() ) ) ) {
                 if (MathUtils.locIsNearCraftFast(getCraft(), MathUtils.bukkit2MovecraftLoc(pTest.getLocation()))) {
-                    if (pTest.getType() != org.bukkit.entity.EntityType.DROPPED_ITEM) {
+                    if (pTest.getType() != EntityType.DROPPED_ITEM) {
                         // Player is onboard this craft
                         tOP.setX(tOP.getBlockX() + 0.5);
                         tOP.setZ(tOP.getBlockZ() + 0.5);

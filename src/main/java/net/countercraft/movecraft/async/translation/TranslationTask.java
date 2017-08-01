@@ -44,6 +44,7 @@ import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
@@ -807,12 +808,10 @@ public class TranslationTask extends AsyncTask {
                     }
                 }
 
-                Iterator<Entity> i = eList.iterator();
-                while (i.hasNext()) {
-                    Entity pTest = i.next();
-//                                if ( MathUtils.playerIsWithinBoundingPolygon( getCraft().getHitBox(), getCraft().getMinX(), getCraft().getMinZ(), MathUtils.bukkit2MovecraftLoc( pTest.getLocation() ) ) ) {
+                for (Entity pTest : eList) {
+                    //                                if ( MathUtils.playerIsWithinBoundingPolygon( getCraft().getHitBox(), getCraft().getMinX(), getCraft().getMinZ(), MathUtils.bukkit2MovecraftLoc( pTest.getLocation() ) ) ) {
                     if (MathUtils.locIsNearCraftFast(getCraft(), MathUtils.bukkit2MovecraftLoc(pTest.getLocation()))) {
-                        if (pTest.getType() == org.bukkit.entity.EntityType.PLAYER) {
+                        if (pTest.getType() == EntityType.PLAYER) {
                             Player player = (Player) pTest;
                             getCraft().getMovedPlayers().put(player, System.currentTimeMillis());
                             Location tempLoc = pTest.getLocation();
@@ -836,7 +835,7 @@ public class TranslationTask extends AsyncTask {
 //                                            getCraft().setPilotLockedZ(tempLoc.getZ());
 //                                        }
                         }
-                        if (pTest.getType() == org.bukkit.entity.EntityType.PRIMED_TNT) {
+                        if (pTest.getType() == EntityType.PRIMED_TNT) {
                             Entity ent = pTest;
                             Location tempLoc = pTest.getLocation();
                             tempLoc = tempLoc.add(data.getDx(), data.getDy(), data.getDz());

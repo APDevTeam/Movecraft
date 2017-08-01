@@ -25,6 +25,7 @@ import net.countercraft.movecraft.async.translation.TranslationTaskData;
 import net.countercraft.movecraft.utils.MapUpdateCommand;
 import net.countercraft.movecraft.utils.MovecraftLocation;
 import net.countercraft.movecraft.utils.Rotation;
+import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
@@ -191,22 +192,22 @@ public class Craft {
     }
 
     public void resetSigns(boolean resetCruise, boolean resetAscend, boolean resetDescend) {
-        for (int i = 0; i < blockList.length; i++) {
-            int blockID = w.getBlockAt(blockList[i].getX(), blockList[i].getY(), blockList[i].getZ()).getTypeId();
+        for (MovecraftLocation aBlockList : blockList) {
+            int blockID = w.getBlockAt(aBlockList.getX(), aBlockList.getY(), aBlockList.getZ()).getTypeId();
             if (blockID == 63 || blockID == 68) {
-                Sign s = (Sign) w.getBlockAt(blockList[i].getX(), blockList[i].getY(), blockList[i].getZ()).getState();
+                Sign s = (Sign) w.getBlockAt(aBlockList.getX(), aBlockList.getY(), aBlockList.getZ()).getState();
                 if (resetCruise)
-                    if (org.bukkit.ChatColor.stripColor(s.getLine(0)).equals("Cruise: ON")) {
+                    if (ChatColor.stripColor(s.getLine(0)).equals("Cruise: ON")) {
                         s.setLine(0, "Cruise: OFF");
                         s.update(true);
                     }
                 if (resetAscend)
-                    if (org.bukkit.ChatColor.stripColor(s.getLine(0)).equals("Ascend: ON")) {
+                    if (ChatColor.stripColor(s.getLine(0)).equals("Ascend: ON")) {
                         s.setLine(0, "Ascend: OFF");
                         s.update(true);
                     }
                 if (resetDescend)
-                    if (org.bukkit.ChatColor.stripColor(s.getLine(0)).equals("Descend: ON")) {
+                    if (ChatColor.stripColor(s.getLine(0)).equals("Descend: ON")) {
                         s.setLine(0, "Descend: OFF");
                         s.update(true);
                     }
