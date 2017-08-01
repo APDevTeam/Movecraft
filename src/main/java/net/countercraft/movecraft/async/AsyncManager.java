@@ -88,7 +88,6 @@ public class AsyncManager extends BukkitRunnable {
     private long lastTNTContactCheck = 0;
     private long lastFadeCheck = 0;
     private long lastContactCheck = 0;
-    private long lastAssaultCheck = 0;
     private long lastSiegeNotification = 0;
     private long lastSiegePayout = 0;
     private HashSet<Material> transparent = null;
@@ -1473,98 +1472,6 @@ public class AsyncManager extends BukkitRunnable {
         }
     }
 
-    public void processAssault() {
-        long ticksElapsed = (System.currentTimeMillis() - lastAssaultCheck) / 50;
-        if (ticksElapsed > 19) {
-            Iterator assaultI = Movecraft.getInstance().assaultsRunning.iterator();
-            while (assaultI.hasNext()) {
-                String assault = (String) assaultI.next();
-                String assaultStarter = Movecraft.getInstance().assaultStarter.get(assault);
-                World w = Movecraft.getInstance().assaultWorlds.get(assault);
-                if (Movecraft.getInstance().assaultDamages.get(assault) >= Movecraft.getInstance().assaultMaxDamages.get(assault)) {
-                    // assault was successful
-                    Bukkit.getServer().broadcastMessage(String.format("The assault of %s was successful!", assault));
-                    ProtectedRegion tRegion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(w).getRegion(assault);
-                    tRegion.setFlag(DefaultFlag.TNT, State.DENY);
-
-                    //first, find a position for the repair beacon
-                    int beaconX = Movecraft.getInstance().assaultDamagablePartMin.get(assault).getBlockX();
-                    int beaconZ = Movecraft.getInstance().assaultDamagablePartMin.get(assault).getBlockZ();
-                    int beaconY = w.getHighestBlockAt(beaconX, beaconZ).getY();
-                    int x, y, z;
-                    for (x = beaconX; x < beaconX + 5; x++)
-                        for (z = beaconZ; z < beaconZ + 5; z++)
-                            if (!w.isChunkLoaded(x >> 4, z >> 4))
-                                w.loadChunk(x >> 4, z >> 4);
-                    boolean empty = false;
-                    while (!empty && beaconY < 250) {
-                        empty = true;
-                        beaconY++;
-                        for (x = beaconX; x < beaconX + 5; x++) {
-                            for (y = beaconY; y < beaconY + 4; y++) {
-                                for (z = beaconZ; z < beaconZ + 5; z++) {
-                                    if (!w.getBlockAt(x, y, z).isEmpty())
-                                        empty = false;
-                                }
-                            }
-                        }
-                    }
-
-                    //now make the beacon
-                    y = beaconY;
-                    for (x = beaconX + 1; x < beaconX + 4; x++)
-                        for (z = beaconZ + 1; z < beaconZ + 4; z++)
-                            w.getBlockAt(x, y, z).setType(Material.BEDROCK);
-                    y = beaconY + 1;
-                    for (x = beaconX; x < beaconX + 5; x++)
-                        for (z = beaconZ; z < beaconZ + 5; z++)
-                            if (x == beaconX || z == beaconZ || x == beaconX + 4 || z == beaconZ + 4)
-                                w.getBlockAt(x, y, z).setType(Material.BEDROCK);
-                            else
-                                w.getBlockAt(x, y, z).setType(Material.IRON_BLOCK);
-                    y = beaconY + 2;
-                    for (x = beaconX + 1; x < beaconX + 4; x++)
-                        for (z = beaconZ + 1; z < beaconZ + 4; z++)
-                            w.getBlockAt(x, y, z).setType(Material.BEDROCK);
-                    w.getBlockAt(beaconX + 2, beaconY + 2, beaconZ + 2).setType(Material.BEACON);
-                    w.getBlockAt(beaconX + 2, beaconY + 3, beaconZ + 2).setType(Material.BEDROCK);
-                    // finally the sign on the beacon
-                    w.getBlockAt(beaconX + 2, beaconY + 3, beaconZ + 1).setType(Material.WALL_SIGN);
-                    Sign s = (Sign) w.getBlockAt(beaconX + 2, beaconY + 3, beaconZ + 1).getState();
-                    s.setLine(0, ChatColor.RED + "REGION DAMAGED!");
-                    CommandListener executor = new CommandListener();
-                    s.setLine(1, "Region:" + assault);
-                    s.setLine(2, "Damage:" + Movecraft.getInstance().assaultDamages.get(assault));
-                    Calendar rightNow = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-                    s.setLine(3, "Owner:" + executor.getRegionOwnerList(tRegion));
-                    s.update(false, false);
-                    ProtectedRegion aRegion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(w).getRegion(assault);
-                    tRegion.getOwners().clear();
-                    assaultI.remove();
-                } else {
-                    // assault was not successful
-                    long elapsed = System.currentTimeMillis() - Movecraft.getInstance().assaultStartTime.get(assault);
-                    if (elapsed > Settings.AssaultDuration * 1000) {
-                        // assault has failed to reach damage cap within required time
-                        Bukkit.getServer().broadcastMessage(String.format("The assault of %s has failed!", assault));
-                        ProtectedRegion tRegion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(w).getRegion(assault);
-                        tRegion.setFlag(DefaultFlag.TNT, State.DENY);
-                        // repair the damages that have occurred so far
-                        WorldEditInteractListener executor = new WorldEditInteractListener();
-                        if (!executor.repairRegion(w, assault)) {
-                            Bukkit.getServer().broadcastMessage(String.format("REPAIR OF %s FAILED, CONTACT AN ADMIN", assault));
-                        }
-                        assaultI.remove();
-                    }
-                }
-
-
-            }
-            lastAssaultCheck = System.currentTimeMillis();
-        }
-
-    }
-
     private void processScheduledBlockChanges() {
         for (World w : Bukkit.getWorlds()) {
             if (w != null && CraftManager.getInstance().getCraftsInWorld(w) != null) {
@@ -1634,7 +1541,6 @@ public class AsyncManager extends BukkitRunnable {
         processFadingBlocks();
         processDetection();
         processSiege();
-        processAssault();
         processAlgorithmQueue();
         processScheduledBlockChanges();
 //		if(Settings.CompatibilityMode==false)

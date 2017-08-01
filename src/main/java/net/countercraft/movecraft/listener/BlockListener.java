@@ -17,6 +17,7 @@
 
 package net.countercraft.movecraft.listener;
 
+import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.flags.DefaultFlag;
 import net.countercraft.movecraft.Movecraft;
@@ -27,6 +28,7 @@ import net.countercraft.movecraft.craft.CraftType;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.utils.MovecraftLocation;
+import net.countercraft.movecraft.warfare.assault.Assault;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -449,80 +451,71 @@ public class BlockListener implements Listener {
             }
         }
 
-        if (Movecraft.getInstance().assaultsRunning.size() != 0) {
-            Iterator<Block> i = e.blockList().iterator();
-            while (i.hasNext()) {
-                Block b = i.next();
-                ApplicableRegionSet regions = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(b.getWorld()).getApplicableRegions(b.getLocation());
-                boolean isInAssaultRegion = false;
-                String foundAssaultName = null;
-                for (com.sk89q.worldguard.protection.regions.ProtectedRegion tregion : regions.getRegions()) {
-                    if (Movecraft.getInstance().assaultsRunning.contains(tregion.getId())) {
-                        isInAssaultRegion = true;
-                        foundAssaultName = tregion.getId();
+        List<Assault> assaults = Movecraft.getInstance().getAssaultManager().getAssaults();
+        if (assaults.size() != 0) {
+            WorldGuardPlugin worldGuard = Movecraft.getInstance().getWorldGuardPlugin();
+            for (final Assault assault : assaults) {
+                Iterator<Block> i = e.blockList().iterator();
+                while (i.hasNext()) {
+                    Block b = i.next();
+                    if (b.getWorld() != assault.getWorld())
+                        continue;
+                    ApplicableRegionSet regions = worldGuard.getRegionManager(b.getWorld()).getApplicableRegions(b.getLocation());
+                    boolean isInAssaultRegion = false;
+                    String foundAssaultName = null;
+                    for (com.sk89q.worldguard.protection.regions.ProtectedRegion tregion : regions.getRegions()) {
+                        if (assault.getRegionName().equals(tregion.getId())) {
+                            isInAssaultRegion = true;
+                            foundAssaultName = tregion.getId();
+                        }
                     }
-                }
-                if (isInAssaultRegion) {
-                    com.sk89q.worldedit.Vector min = Movecraft.getInstance().assaultDamagablePartMin.get(foundAssaultName);
-                    com.sk89q.worldedit.Vector max = Movecraft.getInstance().assaultDamagablePartMax.get(foundAssaultName);
+                    if (!isInAssaultRegion)
+                        continue;
+                    // first see if it is outside the destroyable area
+                    com.sk89q.worldedit.Vector min = assault.getMinPos();
+                    com.sk89q.worldedit.Vector max = assault.getMaxPos();
                     boolean destroyBlock = true;
-                    if (b.getLocation().getBlockX() < min.getBlockX()) // first see if it is outside the destroyable area
+                    if (b.getLocation().getBlockX() < min.getBlockX() || b.getLocation().getBlockX() > max.getBlockX() || b.getLocation().getBlockZ() < min.getBlockZ() || b.getLocation().getBlockZ() > max.getBlockZ())
                         destroyBlock = false;
-                    if (b.getLocation().getBlockX() > max.getBlockX())
-                        destroyBlock = false;
-                    if (b.getLocation().getBlockZ() < min.getBlockZ())
-                        destroyBlock = false;
-                    if (b.getLocation().getBlockZ() > max.getBlockZ())
-                        destroyBlock = false;
+
                     // easy stuff is done, from here its harder / slower. So check it every time to avoid redundant checks
                     if (destroyBlock) { //Now check to see if the block ID is on the list of destroyable blocks
-                        Integer blockID = b.getTypeId();
+                        int blockID = b.getTypeId();
                         if (!Settings.AssaultDestroyableBlocks.contains(blockID)) {
                             destroyBlock = false;
                         }
                     }
                     if (destroyBlock) { // does it have an attached block that might break?
-                        int downType = b.getRelative(BlockFace.DOWN).getTypeId();
-                        int upType = b.getRelative(BlockFace.UP).getTypeId();
-                        int eastType = b.getRelative(BlockFace.EAST).getTypeId();
-                        int westType = b.getRelative(BlockFace.WEST).getTypeId();
-                        int northType = b.getRelative(BlockFace.NORTH).getTypeId();
-                        int southType = b.getRelative(BlockFace.SOUTH).getTypeId();
-                        if (Arrays.binarySearch(fragileBlocks, downType) >= 0)
+                        if (Arrays.binarySearch(fragileBlocks, b.getRelative(BlockFace.SOUTH).getTypeId()) >= 0) {
                             destroyBlock = false;
-                        if (Arrays.binarySearch(fragileBlocks, upType) >= 0)
+                        } else if (Arrays.binarySearch(fragileBlocks, b.getRelative(BlockFace.DOWN).getTypeId()) >= 0) {
                             destroyBlock = false;
-                        if (Arrays.binarySearch(fragileBlocks, eastType) >= 0)
+                        } else if (Arrays.binarySearch(fragileBlocks, b.getRelative(BlockFace.UP).getTypeId()) >= 0) {
                             destroyBlock = false;
-                        if (Arrays.binarySearch(fragileBlocks, westType) >= 0)
+                        } else if (Arrays.binarySearch(fragileBlocks, b.getRelative(BlockFace.EAST).getTypeId()) >= 0) {
                             destroyBlock = false;
-                        if (Arrays.binarySearch(fragileBlocks, northType) >= 0)
+                        } else if (Arrays.binarySearch(fragileBlocks, b.getRelative(BlockFace.WEST).getTypeId()) >= 0) {
                             destroyBlock = false;
-                        if (Arrays.binarySearch(fragileBlocks, southType) >= 0)
+                        } else if (Arrays.binarySearch(fragileBlocks, b.getRelative(BlockFace.NORTH).getTypeId()) >= 0) {
                             destroyBlock = false;
+                        }
                     }
                     if (!destroyBlock) {
                         i.remove();
                     }
                     // whether or not you actually destroyed the block, add to damages
-                    Long damages = Movecraft.getInstance().assaultDamages.get(foundAssaultName);
-                    if (damages == null) {
-                        damages = (long) 1;
-                    }
-                    damages = damages + Settings.AssaultDamagesPerBlock;
-                    if (damages > Movecraft.getInstance().assaultMaxDamages.get(foundAssaultName))
-                        damages = Movecraft.getInstance().assaultMaxDamages.get(foundAssaultName);
-                    Movecraft.getInstance().assaultDamages.put(foundAssaultName, damages);
+                    long damages = assault.getDamages() + Settings.AssaultDamagesPerBlock;
+                    if (damages < assault.getMaxDamages())
+                        assault.setDamages(damages);
                     long curTime = System.currentTimeMillis();
                     // notify nearby players of the damages, do this 1 second later so all damages from this volley will be included
                     if (curTime >= lastDamagesUpdate + 4000) {
                         final Location floc = b.getLocation();
                         final World fworld = b.getWorld();
-                        final String fassaultName = foundAssaultName;
-                        BukkitTask notifyDamages = new BukkitRunnable() {
+                        new BukkitRunnable() {
                             @Override
                             public void run() {
-                                long fdamages = Movecraft.getInstance().assaultDamages.get(fassaultName);
+                                long fdamages = assault.getDamages();
                                 for (Player p : fworld.getPlayers()) {
                                     if (Math.round(p.getLocation().getBlockX() / 1000.0) == Math.round(floc.getBlockX() / 1000.0))
                                         if (Math.round(p.getLocation().getBlockZ() / 1000.0) == Math.round(floc.getBlockZ() / 1000.0)) {
@@ -533,6 +526,7 @@ public class BlockListener implements Listener {
                         }.runTaskLater(Movecraft.getInstance(), 20);
                         lastDamagesUpdate = System.currentTimeMillis();
                     }
+
                 }
             }
         }

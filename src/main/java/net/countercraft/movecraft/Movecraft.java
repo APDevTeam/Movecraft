@@ -37,6 +37,7 @@ import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.utils.MovecraftLocation;
 import net.countercraft.movecraft.utils.TownyUtils;
 import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
+import net.countercraft.movecraft.warfare.assault.AssaultManager;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.v1_10_R1.util.CraftMagicNumbers;
@@ -79,16 +80,10 @@ public class Movecraft extends JavaPlugin {
     public String currentSiegeName = null;
     public String currentSiegePlayer = null;
     public long currentSiegeStartTime = 0;
-    public HashSet<String> assaultsRunning = new HashSet<>();
-    public HashMap<String, String> assaultStarter = new HashMap<>();
-    public HashMap<String, Long> assaultStartTime = new HashMap<>();
-    public HashMap<String, Long> assaultDamages = new HashMap<>();
-    public HashMap<String, World> assaultWorlds = new HashMap<>();
-    public HashMap<String, Long> assaultMaxDamages = new HashMap<>();
-    public HashMap<String, com.sk89q.worldedit.Vector> assaultDamagablePartMin = new HashMap<>();
-    public HashMap<String, com.sk89q.worldedit.Vector> assaultDamagablePartMax = new HashMap<>();
     private Logger logger;
     private boolean shuttingDown;
+
+    private final AssaultManager assaultManager = new AssaultManager(this);
 
     public static Movecraft getInstance() {
         return instance;
@@ -358,6 +353,7 @@ public class Movecraft extends JavaPlugin {
             // Startup procedure
             AsyncManager.getInstance().runTaskTimer(this, 0, 1);
             MapUpdateManager.getInstance().runTaskTimer(this, 0, 1);
+            assaultManager.runTaskTimerAsynchronously(this, 0, 20);
 
             CraftManager.getInstance();
 
@@ -426,6 +422,10 @@ public class Movecraft extends JavaPlugin {
 
     public Essentials getEssentialsPlugin() {
         return essentialsPlugin;
+    }
+
+    public AssaultManager getAssaultManager() {
+        return assaultManager;
     }
 
 }

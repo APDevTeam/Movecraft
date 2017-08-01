@@ -35,6 +35,7 @@ import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.utils.MovecraftLocation;
 import net.countercraft.movecraft.utils.Rotation;
+import net.countercraft.movecraft.warfare.assault.Assault;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
@@ -502,12 +503,12 @@ public class CommandListener implements CommandExecutor {
                         output += ", COST TO ASSAULT: ";
                         double cost = getCostToAssault(tRegion);
                         output += String.format("%.2f", cost);
-                        if (Movecraft.getInstance().assaultStartTime.containsKey(tRegion.getId())) {
-                            long startTime = Movecraft.getInstance().assaultStartTime.get(tRegion.getId());
-                            long curtime = System.currentTimeMillis();
-                            if (curtime - startTime < Settings.AssaultCooldownHours * (60 * 60 * 1000)) {
-                                canBeAssaulted = false;
-                                output += ", NOT ASSAULTABLE DUE TO RECENT ASSAULT ACTIVITY";
+                        for (Assault assault : Movecraft.getInstance().getAssaultManager().getAssaults()) {
+                            if (assault.getRegionName().equals(tRegion.getId())) {
+                                if (System.currentTimeMillis() - assault.getStartTime() < Settings.AssaultCooldownHours * (60 * 60 * 1000)) {
+                                    canBeAssaulted = false;
+                                    output += ", NOT ASSAULTABLE DUE TO RECENT ASSAULT ACTIVITY";
+                                }
                             }
                         }
                         if (!areDefendersOnline(tRegion)) {
@@ -583,11 +584,20 @@ public class CommandListener implements CommandExecutor {
             // regions with no owners can not be assaulted
             if (aRegion.getOwners().size() == 0)
                 canBeAssaulted = false;
-            if (Movecraft.getInstance().assaultStartTime.containsKey(aRegion.getId())) {
-                long startTime = Movecraft.getInstance().assaultStartTime.get(aRegion.getId());
-                long curtime = System.currentTimeMillis();
-                if (curtime - startTime < Settings.AssaultCooldownHours * (60 * 60 * 1000)) {
-                    canBeAssaulted = false;
+            {
+                Assault assault = null;
+                for (Assault tempAssault : Movecraft.getInstance().getAssaultManager().getAssaults()) {
+                    if (tempAssault.getRegionName().equals(aRegion.getId())) {
+                        assault = tempAssault;
+                        break;
+                    }
+                }
+                if (assault != null) {
+                    long startTime = assault.getStartTime();
+                    long curtime = System.currentTimeMillis();
+                    if (curtime - startTime < Settings.AssaultCooldownHours * (60 * 60 * 1000)) {
+                        canBeAssaulted = false;
+                    }
                 }
             }
             if (!areDefendersOnline(aRegion)) {
@@ -637,8 +647,6 @@ public class CommandListener implements CommandExecutor {
                 }
             }
 
-            Movecraft.getInstance().assaultDamagablePartMin.put(cubRegion.getId(), min);
-            Movecraft.getInstance().assaultDamagablePartMax.put(cubRegion.getId(), max);
             CuboidClipboard clipboard = new CuboidClipboard(max.subtract(min).add(Vector.ONE), min);
             CuboidSelection selection = new CuboidSelection(player.getWorld(), min, max);
 
@@ -676,25 +684,21 @@ public class CommandListener implements CommandExecutor {
                 p.playSound(p.getLocation(), Sound.ENTITY_WITHER_DEATH, 1, (float) 0.25);
             }
             final String taskAssaultName = args[0];
-            final String taskPlayerDisplayName = player.getDisplayName();
-            final String taskPlayerName = player.getName();
+            final Player taskPlayer = player;
             final World taskWorld = player.getWorld();
             final Long taskMaxDamages = (long) getMaxDamages(aRegion);
+            final Vector taskMin = min;
+            final Vector taskMax = max;
 
-            BukkitTask commencetask = new BukkitRunnable() {
+            new BukkitRunnable() {
                 @Override
                 public void run() {
                     Bukkit.getServer().broadcastMessage(String.format("The Assault of %s has commenced! The assault leader is %s. Destroy the enemy region!"
-                            , taskAssaultName, taskPlayerDisplayName));
+                            , taskAssaultName, taskPlayer.getDisplayName()));
                     for (Player p : Bukkit.getOnlinePlayers()) {
-                        p.playSound(p.getLocation(), Sound.ENTITY_WITHER_DEATH, 1, (float) 0.25);
+                        p.playSound(p.getLocation(), Sound.ENTITY_WITHER_DEATH, 1, 0.25F);
                     }
-                    Movecraft.getInstance().assaultsRunning.add(taskAssaultName);
-                    Movecraft.getInstance().assaultStarter.put(taskAssaultName, taskPlayerName);
-                    Movecraft.getInstance().assaultStartTime.put(taskAssaultName, System.currentTimeMillis());
-                    Movecraft.getInstance().assaultDamages.put(taskAssaultName, (long) 0);
-                    Movecraft.getInstance().assaultWorlds.put(taskAssaultName, taskWorld);
-                    Movecraft.getInstance().assaultMaxDamages.put(taskAssaultName, taskMaxDamages);
+                    Movecraft.getInstance().getAssaultManager().getAssaults().add(new Assault(taskAssaultName, taskPlayer, taskWorld, System.currentTimeMillis(), taskMaxDamages, taskMin, taskMax));
                     ProtectedRegion tRegion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(taskWorld).getRegion(taskAssaultName);
                     tRegion.setFlag(DefaultFlag.TNT, State.ALLOW);
                 }
