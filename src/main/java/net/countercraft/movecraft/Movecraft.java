@@ -27,7 +27,6 @@ import com.sk89q.worldguard.protection.flags.StateFlag;
 import net.countercraft.movecraft.async.AsyncManager;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.items.StorageChestItem;
 import net.countercraft.movecraft.listener.BlockListener;
 import net.countercraft.movecraft.listener.CommandListener;
 import net.countercraft.movecraft.listener.InteractListener;
@@ -98,9 +97,6 @@ public class Movecraft extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        // Process the storage crates to disk
-        if (!Settings.DisableCrates)
-            StorageChestItem.saveToDisk();
         shuttingDown = true;
     }
 
@@ -122,7 +118,6 @@ public class Movecraft extends JavaPlugin {
         // Read in config
         this.saveDefaultConfig();
         Settings.LOCALE = getConfig().getString("Locale");
-        Settings.DisableCrates = getConfig().getBoolean("DisableCrates", false);
         Settings.RestrictSiBsToRegions = getConfig().getBoolean("DisableCrates", false);
         Settings.Debug = getConfig().getBoolean("Debug", false);
         Settings.DisableSpillProtection = getConfig().getBoolean("DisableSpillProtection", false);
@@ -393,10 +388,7 @@ public class Movecraft extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new PlayerListener(),
                     this);
 
-            if (!Settings.DisableCrates) {
-                StorageChestItem.readFromDisk();
-                StorageChestItem.addRecipie();
-            }
+
 
             new MovecraftMetrics(CraftManager.getInstance().getCraftTypes().length);
 

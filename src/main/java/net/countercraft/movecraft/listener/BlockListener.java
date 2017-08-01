@@ -24,7 +24,6 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.CraftType;
-import net.countercraft.movecraft.items.StorageChestItem;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.utils.MovecraftLocation;
@@ -42,7 +41,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockDispenseEvent;
 import org.bukkit.event.block.BlockFromToEvent;
@@ -55,9 +53,6 @@ import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.Attachable;
 import org.bukkit.material.MaterialData;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -98,42 +93,6 @@ public class BlockListener implements Listener {
                 }
             }
         }
-        if (Settings.DisableCrates)
-            return;
-        if (e.getBlockAgainst().getTypeId() == 33 && e.getBlockAgainst().getData() == ((byte) 6)) {
-            e.setCancelled(true);
-        } else if (e.getItemInHand().getItemMeta() != null && e.getItemInHand().getItemMeta().getDisplayName() != null && e.getItemInHand().getItemMeta().getDisplayName().equalsIgnoreCase(I18nSupport.getInternationalisedString("Item - Storage Crate name"))) {
-            e.getBlockPlaced().setTypeId(33);
-            Location l = e.getBlockPlaced().getLocation();
-            MovecraftLocation l1 = new MovecraftLocation(l.getBlockX(), l.getBlockY(), l.getBlockZ());
-            StorageChestItem.createNewInventory(l1, e.getBlockPlaced().getWorld());
-            new BukkitRunnable() {
-
-                @Override
-                public void run() {
-                    e.getBlockPlaced().setData((byte) 6);
-                }
-
-            }.runTask(Movecraft.getInstance());
-        }
-    }
-
-    @EventHandler
-    public void onPlayerInteract(PlayerInteractEvent event) {
-
-        if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-            if (event.getClickedBlock().getTypeId() == 33 && event.getClickedBlock().getData() == ((byte) 6)) {
-                if (Settings.DisableCrates)
-                    return;
-                Location l = event.getClickedBlock().getLocation();
-                MovecraftLocation l1 = new MovecraftLocation(l.getBlockX(), l.getBlockY(), l.getBlockZ());
-                Inventory i = StorageChestItem.getInventoryOfCrateAtLocation(l1, event.getPlayer().getWorld());
-
-                if (i != null) {
-                    event.getPlayer().openInventory(i);
-                }
-            }
-        }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -164,21 +123,6 @@ public class BlockListener implements Listener {
             Sign s = (Sign) e.getBlock().getState();
             if (s.getLine(0).equalsIgnoreCase(ChatColor.RED + "REGION DAMAGED!"))
                 e.setCancelled(true);
-        }
-        if (e.getBlock().getTypeId() == 33 && e.getBlock().getData() == ((byte) 6)) {
-            if (Settings.DisableCrates)
-                return;
-            Location l = e.getBlock().getLocation();
-            MovecraftLocation l1 = new MovecraftLocation(l.getBlockX(), l.getBlockY(), l.getBlockZ());
-            for (ItemStack i : StorageChestItem.getInventoryOfCrateAtLocation(l1, e.getBlock().getWorld()).getContents()) {
-                if (i != null) {
-                    e.getBlock().getWorld().dropItemNaturally(e.getBlock().getLocation(), i);
-                }
-            }
-            StorageChestItem.removeInventoryAtLocation(e.getBlock().getWorld(), l1);
-            e.setCancelled(true);
-            e.getBlock().setType(Material.AIR);
-            e.getBlock().getLocation().getWorld().dropItemNaturally(e.getBlock().getLocation(), new StorageChestItem().getItemStack());
         }
     }
 
