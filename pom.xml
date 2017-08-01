@@ -16,8 +16,8 @@
   ~     along with Movecraft.  If not, see <http://www.gnu.org/licenses/>.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
@@ -41,29 +41,29 @@
     </scm>
 
     <repositories>
-<!--  removed because repo is down        <repository>
-        	<id>Plugin Metrics</id>
-        	<url>http://repo.mcstats.org/content/repositories/public</url>
-        </repository>-->
+        <!--  removed because repo is down        <repository>
+                    <id>Plugin Metrics</id>
+                    <url>http://repo.mcstats.org/content/repositories/public</url>
+                </repository>-->
         <repository>
-        	<id>bukkit-repo</id>
-        	<url>http://repo.bukkit.org/content/groups/public/</url>
+            <id>bukkit-repo</id>
+            <url>http://repo.bukkit.org/content/groups/public/</url>
         </repository>
         <repository>
-        	<id>spigot-repo</id>
-        	<url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
+            <id>spigot-repo</id>
+            <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
         </repository>
         <repository>
-        	<id>sk89q-repo</id>
-		<url>http://maven.sk89q.com/repo/</url>
-		</repository>
-    	<repository>
-        	<id>cannons-repo</id>
-		<url>https://github.com/DerPavlov/mvn-repo/raw/master/</url>
-    	</repository>
+            <id>sk89q-repo</id>
+            <url>http://maven.sk89q.com/repo/</url>
+        </repository>
+        <repository>
+            <id>cannons-repo</id>
+            <url>https://github.com/DerPavlov/mvn-repo/raw/master/</url>
+        </repository>
         <repository>
             <id>vault-repo</id>
-            <url>http://nexus.theyeticave.net/content/repositories/pub_releases</url>
+            <url>http://nexus.hc.to/content/repositories/pub_releases</url>
         </repository>
         <repository>
             <id>ess-repo</id>
@@ -147,54 +147,54 @@
             <artifactId>snakeyaml</artifactId>
             <version>1.10</version>
         </dependency>
-        
+
         <dependency>
             <groupId>commons-collections</groupId>
             <artifactId>commons-collections</artifactId>
             <version>3.2.2</version>
         </dependency>
-        
+
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
             <version>6.1.1</version>
             <scope>test</scope>
         </dependency>
-        
+
         <dependency>
-        	<groupId>com.sk89q</groupId>
-        	<artifactId>worldguard</artifactId>
-        	<version>LATEST</version>
+            <groupId>com.sk89q</groupId>
+            <artifactId>worldguard</artifactId>
+            <version>LATEST</version>
         </dependency>
-        
+
         <dependency>
-        	<groupId>com.sk89q</groupId>
-        	<artifactId>worldedit</artifactId>
-        	<version>LATEST</version>
+            <groupId>com.sk89q</groupId>
+            <artifactId>worldedit</artifactId>
+            <version>LATEST</version>
         </dependency>
-        
+
         <dependency>
-	        <groupId>at.pavlov</groupId>
-    	    <artifactId>Cannons</artifactId>
-        	<version>LATEST</version>
-        	<exclusions>
-        		<exclusion>
-        			<artifactId>dummypermscompat</artifactId>
-        			<groupId>com.sk89q</groupId>
-        		</exclusion>
-        		<exclusion>
-        			<artifactId>worldedit-bukkit</artifactId>
-        			<groupId>com.sk89q.worldedit</groupId>
-        		</exclusion>
-        	</exclusions>
+            <groupId>at.pavlov</groupId>
+            <artifactId>Cannons</artifactId>
+            <version>LATEST</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>dummypermscompat</artifactId>
+                    <groupId>com.sk89q</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>worldedit-bukkit</artifactId>
+                    <groupId>com.sk89q.worldedit</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
-    	
-  <!--   	<dependency>
-            <groupId>org.spigotmc</groupId>
-            <artifactId>spigot-api</artifactId>
-            <version>1.8.3-R0.1-SNAPSHOT</version>
-        </dependency>   -->
-        
+
+        <!--   	<dependency>
+                  <groupId>org.spigotmc</groupId>
+                  <artifactId>spigot-api</artifactId>
+                  <version>1.8.3-R0.1-SNAPSHOT</version>
+              </dependency>   -->
+
         <dependency>
             <groupId>org.bukkit</groupId>
             <artifactId>bukkit</artifactId>
@@ -203,7 +203,7 @@
             <scope>provided</scope>
         </dependency>
 
-		<dependency>
+        <dependency>
             <groupId>org.bukkit</groupId>
             <artifactId>craftbukkit</artifactId>
             <version>1.10.2-R0.1-SNAPSHOT</version>
@@ -213,14 +213,14 @@
         <dependency>
             <groupId>net.milkbowl.vault</groupId>
             <artifactId>VaultAPI</artifactId>
-            <version>1.5</version>
+            <version>1.6</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>net.ess3</groupId>
             <artifactId>Essentials</artifactId>
             <version>2.13.1</version>
-        </dependency> 
+        </dependency>
         <!-- This doesn't have a maven repo but its own -->
         <dependency>
             <groupId>com.palmergames</groupId>
@@ -236,7 +236,7 @@
             <scope>system</scope>
             <systemPath>${project.basedir}/libs/WGCustomFlags.jar</systemPath>
         </dependency>
-        
+
     </dependencies>
 
 
