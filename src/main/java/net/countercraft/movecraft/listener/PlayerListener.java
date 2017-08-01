@@ -39,7 +39,7 @@ import java.util.HashSet;
 public class PlayerListener implements Listener {
 
     private String checkCraftBorders(Craft craft) {
-        HashSet<MovecraftLocation> craftBlocks = new HashSet<MovecraftLocation>(Arrays.asList(craft.getBlockList()));
+        HashSet<MovecraftLocation> craftBlocks = new HashSet<>(Arrays.asList(craft.getBlockList()));
         String ret = null;
         for (MovecraftLocation block : craftBlocks) {
             int x, y, z;

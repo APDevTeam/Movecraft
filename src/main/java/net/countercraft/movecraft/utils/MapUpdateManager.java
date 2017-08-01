@@ -82,10 +82,10 @@ public class MapUpdateManager extends BukkitRunnable {
     // this is more important than it may seem. The more blocks that matter, the more likely
     // a circular trap will occur (a=b, b=c. c=a), potentially damaging tile data
     final int[] tileEntityBlocksToPreserve = {23, 25, 54, 61, 62, 63, 68, 137, 146, 151, 154, 158, 178, 210, 211};
-    private final HashMap<World, ArrayList<MapUpdateCommand>> updates = new HashMap<World, ArrayList<MapUpdateCommand>>();
-    private final HashMap<World, ArrayList<EntityUpdateCommand>> entityUpdates = new HashMap<World, ArrayList<EntityUpdateCommand>>();
-    private final HashMap<World, ArrayList<ItemDropUpdateCommand>> itemDropUpdates = new HashMap<World, ArrayList<ItemDropUpdateCommand>>();
-    public HashMap<Craft, Integer> blockUpdatesPerCraft = new HashMap<Craft, Integer>();
+    private final HashMap<World, ArrayList<MapUpdateCommand>> updates = new HashMap<>();
+    private final HashMap<World, ArrayList<EntityUpdateCommand>> entityUpdates = new HashMap<>();
+    private final HashMap<World, ArrayList<ItemDropUpdateCommand>> itemDropUpdates = new HashMap<>();
+    public HashMap<Craft, Integer> blockUpdatesPerCraft = new HashMap<>();
     private Random rand = new Random();
 
     private MapUpdateManager() {
@@ -126,9 +126,9 @@ public class MapUpdateManager extends BukkitRunnable {
                 List<MapUpdateCommand> updatesInWorld = updates.get(w);
                 List<EntityUpdateCommand> entityUpdatesInWorld = entityUpdates.get(w);
                 List<ItemDropUpdateCommand> itemDropUpdatesInWorld = itemDropUpdates.get(w);
-                Map<MovecraftLocation, List<EntityUpdateCommand>> entityMap = new HashMap<MovecraftLocation, List<EntityUpdateCommand>>();
-                Map<MovecraftLocation, List<ItemDropUpdateCommand>> itemMap = new HashMap<MovecraftLocation, List<ItemDropUpdateCommand>>();
-                ArrayList<net.minecraft.server.v1_10_R1.Chunk> chunksToRelight = new ArrayList<net.minecraft.server.v1_10_R1.Chunk>();
+                Map<MovecraftLocation, List<EntityUpdateCommand>> entityMap = new HashMap<>();
+                Map<MovecraftLocation, List<ItemDropUpdateCommand>> itemMap = new HashMap<>();
+                ArrayList<net.minecraft.server.v1_10_R1.Chunk> chunksToRelight = new ArrayList<>();
                 net.minecraft.server.v1_10_R1.World nativeWorld = ((CraftWorld) w).getHandle();
 
                 Integer minx = Integer.MAX_VALUE;
@@ -187,7 +187,7 @@ public class MapUpdateManager extends BukkitRunnable {
                         if (i != null) {
                             MovecraftLocation entityLoc = new MovecraftLocation(i.getNewLocation().getBlockX(), i.getNewLocation().getBlockY() - 1, i.getNewLocation().getBlockZ());
                             if (!entityMap.containsKey(entityLoc)) {
-                                List<EntityUpdateCommand> entUpdateList = new ArrayList<EntityUpdateCommand>();
+                                List<EntityUpdateCommand> entUpdateList = new ArrayList<>();
                                 entUpdateList.add(i);
                                 entityMap.put(entityLoc, entUpdateList);
                             } else {
@@ -218,9 +218,9 @@ public class MapUpdateManager extends BukkitRunnable {
 
 //				HashMap<MovecraftLocation,IBlockData> IBDMap=new HashMap<MovecraftLocation,IBlockData>();
 //				HashMap<MovecraftLocation,TileEntity> tileMap=new HashMap<MovecraftLocation,TileEntity>();
-                ArrayList<IBlockData> IBDMap = new ArrayList<IBlockData>();
-                ArrayList<TileEntity> tileMap = new ArrayList<TileEntity>();
-                ArrayList<NextTickListEntry> nextTickMap = new ArrayList<NextTickListEntry>();
+                ArrayList<IBlockData> IBDMap = new ArrayList<>();
+                ArrayList<TileEntity> tileMap = new ArrayList<>();
+                ArrayList<NextTickListEntry> nextTickMap = new ArrayList<>();
 
                 for (int mapUpdateIndex = 0; mapUpdateIndex < updatesInWorld.size(); mapUpdateIndex++) { // TODO: make this go in chunks instead of block by block, same with the block placement system
                     MapUpdateCommand i = updatesInWorld.get(mapUpdateIndex);
@@ -807,7 +807,7 @@ public class MapUpdateManager extends BukkitRunnable {
             if (craft != null) {
                 int fuel = 0;
                 int totalBlocks = 0;
-                HashMap<Integer, Integer> foundBlocks = new HashMap<Integer, Integer>();
+                HashMap<Integer, Integer> foundBlocks = new HashMap<>();
                 for (MovecraftLocation ml : craft.getBlockList()) {
                     Integer blockID = craft.getW().getBlockAt(ml.getX(), ml.getY(), ml.getZ()).getTypeId();
 
@@ -985,11 +985,11 @@ public class MapUpdateManager extends BukkitRunnable {
             ArrayList<MapUpdateCommand> get = updates.get(w);
             if (get != null) {
                 updates.remove(w);
-                ArrayList<MapUpdateCommand> tempUpdates = new ArrayList<MapUpdateCommand>();
+                ArrayList<MapUpdateCommand> tempUpdates = new ArrayList<>();
                 tempUpdates.addAll(Arrays.asList(mapUpdates));
                 get.addAll(tempUpdates);
             } else {
-                get = new ArrayList<MapUpdateCommand>(Arrays.asList(mapUpdates));
+                get = new ArrayList<>(Arrays.asList(mapUpdates));
             }
             updates.put(w, get);
         }
@@ -999,11 +999,11 @@ public class MapUpdateManager extends BukkitRunnable {
             ArrayList<EntityUpdateCommand> eGet = entityUpdates.get(w);
             if (eGet != null) {
                 entityUpdates.remove(w);
-                ArrayList<EntityUpdateCommand> tempEUpdates = new ArrayList<EntityUpdateCommand>();
+                ArrayList<EntityUpdateCommand> tempEUpdates = new ArrayList<>();
                 tempEUpdates.addAll(Arrays.asList(eUpdates));
                 eGet.addAll(tempEUpdates);
             } else {
-                eGet = new ArrayList<EntityUpdateCommand>(Arrays.asList(eUpdates));
+                eGet = new ArrayList<>(Arrays.asList(eUpdates));
             }
             entityUpdates.put(w, eGet);
         }
@@ -1013,11 +1013,11 @@ public class MapUpdateManager extends BukkitRunnable {
             ArrayList<ItemDropUpdateCommand> iGet = itemDropUpdates.get(w);
             if (iGet != null) {
                 entityUpdates.remove(w);
-                ArrayList<ItemDropUpdateCommand> tempIDUpdates = new ArrayList<ItemDropUpdateCommand>();
+                ArrayList<ItemDropUpdateCommand> tempIDUpdates = new ArrayList<>();
                 tempIDUpdates.addAll(Arrays.asList(iUpdates));
                 iGet.addAll(tempIDUpdates);
             } else {
-                iGet = new ArrayList<ItemDropUpdateCommand>(Arrays.asList(iUpdates));
+                iGet = new ArrayList<>(Arrays.asList(iUpdates));
             }
             itemDropUpdates.put(w, iGet);
         }

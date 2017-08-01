@@ -78,12 +78,12 @@ import java.util.logging.Level;
 
 public class AsyncManager extends BukkitRunnable {
     private static final AsyncManager instance = new AsyncManager();
-    private final HashMap<AsyncTask, Craft> ownershipMap = new HashMap<AsyncTask, Craft>();
-    private final HashMap<org.bukkit.entity.TNTPrimed, Double> TNTTracking = new HashMap<org.bukkit.entity.TNTPrimed, Double>();
-    private final HashMap<Craft, HashMap<Craft, Long>> recentContactTracking = new HashMap<Craft, HashMap<Craft, Long>>();
-    private final BlockingQueue<AsyncTask> finishedAlgorithms = new LinkedBlockingQueue<AsyncTask>();
-    private final HashSet<Craft> clearanceSet = new HashSet<Craft>();
-    private HashMap<org.bukkit.entity.SmallFireball, Long> FireballTracking = new HashMap<org.bukkit.entity.SmallFireball, Long>();
+    private final HashMap<AsyncTask, Craft> ownershipMap = new HashMap<>();
+    private final HashMap<org.bukkit.entity.TNTPrimed, Double> TNTTracking = new HashMap<>();
+    private final HashMap<Craft, HashMap<Craft, Long>> recentContactTracking = new HashMap<>();
+    private final BlockingQueue<AsyncTask> finishedAlgorithms = new LinkedBlockingQueue<>();
+    private final HashSet<Craft> clearanceSet = new HashSet<>();
+    private HashMap<org.bukkit.entity.SmallFireball, Long> FireballTracking = new HashMap<>();
     private long lastTracerUpdate = 0;
     private long lastFireballCheck = 0;
     private long lastTNTContactCheck = 0;
@@ -320,7 +320,7 @@ public class AsyncManager extends BukkitRunnable {
                     HashSet<Cannon> shipCannons = null;
                     if (Movecraft.getInstance().getCannonsPlugin() != null && c.getNotificationPlayer() != null) {
                         // convert blocklist to location list
-                        List<Location> shipLocations = new ArrayList<Location>();
+                        List<Location> shipLocations = new ArrayList<>();
                         for (MovecraftLocation loc : c.getBlockList()) {
                             Location tloc = new Location(c.getW(), loc.getX(), loc.getY(), loc.getZ());
                             shipLocations.add(tloc);
@@ -381,7 +381,7 @@ public class AsyncManager extends BukkitRunnable {
                         HashSet<Cannon> shipCannons = null;
                         if (Movecraft.getInstance().getCannonsPlugin() != null && c.getNotificationPlayer() != null) {
                             // convert blocklist to location list
-                            List<Location> shipLocations = new ArrayList<Location>();
+                            List<Location> shipLocations = new ArrayList<>();
                             for (MovecraftLocation loc : c.getBlockList()) {
                                 Location tloc = new Location(c.getW(), loc.getX(), loc.getY(), loc.getZ());
                                 shipLocations.add(tloc);
@@ -676,7 +676,7 @@ public class AsyncManager extends BukkitRunnable {
                 // check every few seconds for every craft to see if it should
                 // be sinking or disabled
                 for (Craft pcraft : CraftManager.getInstance().getCraftsInWorld(w)) {
-                    Set<TownBlock> townBlockSet = new HashSet<TownBlock>();
+                    Set<TownBlock> townBlockSet = new HashSet<>();
                     if (pcraft != null && pcraft.getSinking() == false) {
                         if (pcraft.getType().getSinkPercent() != 0.0 && pcraft.isNotProcessing()) {
                             long ticksElapsed = (System.currentTimeMillis() - pcraft.getLastBlockCheck()) / 50;
@@ -684,8 +684,8 @@ public class AsyncManager extends BukkitRunnable {
                             if (ticksElapsed > Settings.SinkCheckTicks) {
                                 int totalNonAirBlocks = 0;
                                 int totalNonAirWaterBlocks = 0;
-                                HashMap<ArrayList<Integer>, Integer> foundFlyBlocks = new HashMap<ArrayList<Integer>, Integer>();
-                                HashMap<ArrayList<Integer>, Integer> foundMoveBlocks = new HashMap<ArrayList<Integer>, Integer>();
+                                HashMap<ArrayList<Integer>, Integer> foundFlyBlocks = new HashMap<>();
+                                HashMap<ArrayList<Integer>, Integer> foundMoveBlocks = new HashMap<>();
                                 boolean regionPVPBlocked = false;
                                 boolean sinkingForbiddenByFlag = false;
                                 boolean sinkingForbiddenByTowny = false;
@@ -1155,7 +1155,7 @@ public class AsyncManager extends BukkitRunnable {
         if (ticksElapsed > 20) {
             for (World w : Bukkit.getWorlds()) {
                 if (w != null) {
-                    ArrayList<MapUpdateCommand> updateCommands = new ArrayList<MapUpdateCommand>();
+                    ArrayList<MapUpdateCommand> updateCommands = new ArrayList<>();
                     CopyOnWriteArrayList<MovecraftLocation> locations = null;
 
                     // I know this is horrible, but I honestly don't see another
@@ -1163,16 +1163,16 @@ public class AsyncManager extends BukkitRunnable {
                     int numTries = 0;
                     while ((locations == null) && (numTries < 100)) {
                         try {
-                            locations = new CopyOnWriteArrayList<MovecraftLocation>(
+                            locations = new CopyOnWriteArrayList<>(
                                     Movecraft.getInstance().blockFadeTimeMap.keySet());
                         } catch (java.util.ConcurrentModificationException e) {
                             numTries++;
                         } catch (java.lang.NegativeArraySizeException e) {
-                            Movecraft.getInstance().blockFadeTimeMap = new HashMap<MovecraftLocation, Long>();
-                            Movecraft.getInstance().blockFadeTypeMap = new HashMap<MovecraftLocation, Integer>();
-                            Movecraft.getInstance().blockFadeWaterMap = new HashMap<MovecraftLocation, Boolean>();
-                            Movecraft.getInstance().blockFadeWorldMap = new HashMap<MovecraftLocation, World>();
-                            locations = new CopyOnWriteArrayList<MovecraftLocation>(
+                            Movecraft.getInstance().blockFadeTimeMap = new HashMap<>();
+                            Movecraft.getInstance().blockFadeTypeMap = new HashMap<>();
+                            Movecraft.getInstance().blockFadeWaterMap = new HashMap<>();
+                            Movecraft.getInstance().blockFadeWorldMap = new HashMap<>();
+                            locations = new CopyOnWriteArrayList<>(
                                     Movecraft.getInstance().blockFadeTimeMap.keySet());
                         }
                     }
@@ -1569,7 +1569,7 @@ public class AsyncManager extends BukkitRunnable {
     private void processScheduledBlockChanges() {
         for (World w : Bukkit.getWorlds()) {
             if (w != null && CraftManager.getInstance().getCraftsInWorld(w) != null) {
-                ArrayList<MapUpdateCommand> updateCommands = new ArrayList<MapUpdateCommand>();
+                ArrayList<MapUpdateCommand> updateCommands = new ArrayList<>();
                 for (Craft pcraft : CraftManager.getInstance().getCraftsInWorld(w)) {
                     HashMap<MapUpdateCommand, Long> scheduledBlockChanges = pcraft.getScheduledBlockChanges();
                     if (scheduledBlockChanges != null) {
@@ -1606,7 +1606,7 @@ public class AsyncManager extends BukkitRunnable {
     public void run() {
         clearAll();
         if (transparent == null) {
-            transparent = new HashSet<Material>();
+            transparent = new HashSet<>();
             transparent.add(Material.AIR);
             transparent.add(Material.GLASS);
             transparent.add(Material.THIN_GLASS);

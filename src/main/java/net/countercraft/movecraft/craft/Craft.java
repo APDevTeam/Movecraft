@@ -59,7 +59,7 @@ public class Craft {
     private Player notificationPlayer;
     private Player cannonDirector;
     private Player AADirector;
-    private HashMap<Player, Long> movedPlayers = new HashMap<Player, Long>();
+    private HashMap<Player, Long> movedPlayers = new HashMap<>();
     private double curSpeed;
     private int curTickCooldown;
     private double maxSpeed;
@@ -68,7 +68,7 @@ public class Craft {
         this.type = type;
         this.w = world;
         this.blockList = new MovecraftLocation[1];
-        this.scheduledBlockChanges = new HashMap<MapUpdateCommand, Long>();
+        this.scheduledBlockChanges = new HashMap<>();
         if (type.getMaxHeightLimit() > w.getMaxHeight() - 1) {
             this.maxHeightLimit = w.getMaxHeight() - 1;
         } else {

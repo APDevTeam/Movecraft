@@ -37,9 +37,9 @@ import java.util.logging.Level;
 
 public class CraftManager {
     private static final CraftManager ourInstance = new CraftManager();
-    private final Map<World, Set<Craft>> craftList = new ConcurrentHashMap<World, Set<Craft>>();
-    private final HashMap<Player, Craft> craftPlayerIndex = new HashMap<Player, Craft>();
-    private final HashMap<Player, BukkitTask> releaseEvents = new HashMap<Player, BukkitTask>();
+    private final Map<World, Set<Craft>> craftList = new ConcurrentHashMap<>();
+    private final HashMap<Player, Craft> craftPlayerIndex = new HashMap<>();
+    private final HashMap<Player, BukkitTask> releaseEvents = new HashMap<>();
     private CraftType[] craftTypes;
 
     private CraftManager() {
@@ -71,7 +71,7 @@ public class CraftManager {
             Movecraft.getInstance().saveResource("types/Turret.craft", false);
         }
 
-        HashSet<CraftType> craftTypesSet = new HashSet<CraftType>();
+        HashSet<CraftType> craftTypesSet = new HashSet<>();
 
         boolean foundCraft = false;
         for (File file : craftsFile.listFiles()) {
@@ -117,7 +117,7 @@ public class CraftManager {
             return;
         }
         if (c.getScheduledBlockChanges() != null) {
-            ArrayList<MapUpdateCommand> updateCommands = new ArrayList<MapUpdateCommand>();
+            ArrayList<MapUpdateCommand> updateCommands = new ArrayList<>();
             for (MapUpdateCommand muc : c.getScheduledBlockChanges().keySet()) {
                 updateCommands.add(muc);
             }

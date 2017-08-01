@@ -835,7 +835,7 @@ public class CommandListener implements CommandExecutor {
     }
 
     private boolean areDefendersOnline(ProtectedRegion tRegion) {
-        HashSet<UUID> players = new HashSet<UUID>();
+        HashSet<UUID> players = new HashSet<>();
         players.addAll(tRegion.getMembers().getUniqueIds());
         players.addAll(tRegion.getOwners().getUniqueIds());
         int numOnline = 0;
@@ -878,7 +878,7 @@ public class CommandListener implements CommandExecutor {
     }
 
     private double getCostToAssault(ProtectedRegion tRegion) {
-        HashSet<UUID> players = new HashSet<UUID>();
+        HashSet<UUID> players = new HashSet<>();
         players.addAll(tRegion.getMembers().getUniqueIds());
         players.addAll(tRegion.getOwners().getUniqueIds());
         double total = 0.0;
@@ -894,7 +894,7 @@ public class CommandListener implements CommandExecutor {
     }
 
     private double getMaxDamages(ProtectedRegion tRegion) {
-        HashSet<UUID> players = new HashSet<UUID>();
+        HashSet<UUID> players = new HashSet<>();
         players.addAll(tRegion.getMembers().getUniqueIds());
         players.addAll(tRegion.getOwners().getUniqueIds());
         double total = 0.0;

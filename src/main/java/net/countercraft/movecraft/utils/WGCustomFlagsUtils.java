@@ -25,13 +25,7 @@ public class WGCustomFlagsUtils {
         try {
             o = cc.newInstance(name, def);
             return (StateFlag) o;
-        } catch (InstantiationException ex) {
-            return null;
-        } catch (IllegalAccessException ex) {
-            return null;
-        } catch (IllegalArgumentException ex) {
-            return null;
-        } catch (InvocationTargetException ex) {
+        } catch (InstantiationException | InvocationTargetException | IllegalArgumentException | IllegalAccessException ex) {
             return null;
         }
     }
@@ -41,11 +35,7 @@ public class WGCustomFlagsUtils {
             Class<?> c = Class.forName("com.sk89q.worldguard.protection.flags.StateFlag");
             Constructor<?> cc = c.getConstructor(String.class, boolean.class);
             return cc;
-        } catch (ClassNotFoundException ex) {
-            return null;
-        } catch (NoSuchMethodException ex) {
-            return null;
-        } catch (SecurityException ex) {
+        } catch (ClassNotFoundException | SecurityException | NoSuchMethodException ex) {
             return null;
         }
     }

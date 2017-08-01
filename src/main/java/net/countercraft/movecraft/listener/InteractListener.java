@@ -43,8 +43,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class InteractListener implements Listener {
-    private static final Map<Player, Long> timeMap = new HashMap<Player, Long>();
-    private static final Map<Player, Long> repairRightClickTimeMap = new HashMap<Player, Long>();
+    private static final Map<Player, Long> timeMap = new HashMap<>();
+    private static final Map<Player, Long> repairRightClickTimeMap = new HashMap<>();
 
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {

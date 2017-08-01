@@ -73,22 +73,22 @@ public class Movecraft extends JavaPlugin {
     private static Cannons cannonsPlugin = null;
     private static Towny townyPlugin = null;
     private static Essentials essentialsPlugin = null;
-    public HashMap<MovecraftLocation, Long> blockFadeTimeMap = new HashMap<MovecraftLocation, Long>();
-    public HashMap<MovecraftLocation, Integer> blockFadeTypeMap = new HashMap<MovecraftLocation, Integer>();
-    public HashMap<MovecraftLocation, Boolean> blockFadeWaterMap = new HashMap<MovecraftLocation, Boolean>();
-    public HashMap<MovecraftLocation, World> blockFadeWorldMap = new HashMap<MovecraftLocation, World>();
+    public HashMap<MovecraftLocation, Long> blockFadeTimeMap = new HashMap<>();
+    public HashMap<MovecraftLocation, Integer> blockFadeTypeMap = new HashMap<>();
+    public HashMap<MovecraftLocation, Boolean> blockFadeWaterMap = new HashMap<>();
+    public HashMap<MovecraftLocation, World> blockFadeWorldMap = new HashMap<>();
     public boolean siegeInProgress = false;
     public String currentSiegeName = null;
     public String currentSiegePlayer = null;
     public long currentSiegeStartTime = 0;
-    public HashSet<String> assaultsRunning = new HashSet<String>();
-    public HashMap<String, String> assaultStarter = new HashMap<String, String>();
-    public HashMap<String, Long> assaultStartTime = new HashMap<String, Long>();
-    public HashMap<String, Long> assaultDamages = new HashMap<String, Long>();
-    public HashMap<String, World> assaultWorlds = new HashMap<String, World>();
-    public HashMap<String, Long> assaultMaxDamages = new HashMap<String, Long>();
-    public HashMap<String, com.sk89q.worldedit.Vector> assaultDamagablePartMin = new HashMap<String, com.sk89q.worldedit.Vector>();
-    public HashMap<String, com.sk89q.worldedit.Vector> assaultDamagablePartMax = new HashMap<String, com.sk89q.worldedit.Vector>();
+    public HashSet<String> assaultsRunning = new HashSet<>();
+    public HashMap<String, String> assaultStarter = new HashMap<>();
+    public HashMap<String, Long> assaultStartTime = new HashMap<>();
+    public HashMap<String, Long> assaultDamages = new HashMap<>();
+    public HashMap<String, World> assaultWorlds = new HashMap<>();
+    public HashMap<String, Long> assaultMaxDamages = new HashMap<>();
+    public HashMap<String, com.sk89q.worldedit.Vector> assaultDamagablePartMin = new HashMap<>();
+    public HashMap<String, com.sk89q.worldedit.Vector> assaultDamagablePartMax = new HashMap<>();
     private Logger logger;
     private boolean shuttingDown;
 
@@ -111,21 +111,9 @@ public class Movecraft extends JavaPlugin {
             method = net.minecraft.server.v1_10_R1.Block.class.getDeclaredMethod("d", int.class);
             method.setAccessible(true);
             method.invoke(tempBlock, 0);
-        } catch (NoSuchMethodException e1) {
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalArgumentException | IllegalAccessException | SecurityException e1) {
             // TODO Auto-generated catch block
             e1.printStackTrace();
-        } catch (SecurityException e1) {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
-        } catch (IllegalAccessException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IllegalArgumentException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         }
     }
 
@@ -176,7 +164,7 @@ public class Movecraft extends JavaPlugin {
         Settings.FadeWrecksAfter = getConfig().getInt("FadeWrecksAfter", 0);
         if (getConfig().contains("DurabilityOverride")) {
             Map<String, Object> temp = getConfig().getConfigurationSection("DurabilityOverride").getValues(false);
-            Settings.DurabilityOverride = new HashMap<Integer, Integer>();
+            Settings.DurabilityOverride = new HashMap<>();
             for (String str : temp.keySet()) {
                 Settings.DurabilityOverride.put(Integer.parseInt(str), (Integer) temp.get(str));
             }
@@ -190,8 +178,8 @@ public class Movecraft extends JavaPlugin {
         Settings.AssaultCostPercent = getConfig().getDouble("AssaultCostPercent", 0.25);
         Settings.AssaultDamagesPerBlock = getConfig().getInt("AssaultDamagesPerBlock", 15);
         Settings.AssaultRequiredDefendersOnline = getConfig().getInt("AssaultRequiredDefendersOnline", 3);
-        Settings.AssaultDestroyableBlocks = new HashSet<Integer>(getConfig().getIntegerList("AssaultDestroyableBlocks"));
-        Settings.DisableShadowBlocks = new HashSet<Integer>(getConfig().getIntegerList("DisableShadowBlocks"));  //REMOVE FOR PUBLIC VERSION
+        Settings.AssaultDestroyableBlocks = new HashSet<>(getConfig().getIntegerList("AssaultDestroyableBlocks"));
+        Settings.DisableShadowBlocks = new HashSet<>(getConfig().getIntegerList("DisableShadowBlocks"));  //REMOVE FOR PUBLIC VERSION
         if (Settings.CompatibilityMode == false) {
             for (int typ : Settings.DisableShadowBlocks) {
                 disableShadow(typ);
@@ -213,20 +201,20 @@ public class Movecraft extends JavaPlugin {
             Map<String, Map> siegesMap = (Map<String, Map>) data.get("sieges");
             Settings.SiegeName = siegesMap.keySet();
 
-            Settings.SiegeRegion = new HashMap<String, String>();
-            Settings.SiegeCraftsToWin = new HashMap<String, ArrayList<String>>();
-            Settings.SiegeCost = new HashMap<String, Integer>();
-            Settings.SiegeDoubleCost = new HashMap<String, Boolean>();
-            Settings.SiegeIncome = new HashMap<String, Integer>();
-            Settings.SiegeScheduleStart = new HashMap<String, Integer>();
-            Settings.SiegeScheduleEnd = new HashMap<String, Integer>();
-            Settings.SiegeControlRegion = new HashMap<String, String>();
-            Settings.SiegeDelay = new HashMap<String, Integer>();
-            Settings.SiegeDuration = new HashMap<String, Integer>();
-            Settings.SiegeDayOfTheWeek = new HashMap<String, Integer>();
-            Settings.SiegeCommandsOnStart = new HashMap<String, ArrayList<String>>();
-            Settings.SiegeCommandsOnWin = new HashMap<String, ArrayList<String>>();
-            Settings.SiegeCommandsOnLose = new HashMap<String, ArrayList<String>>();
+            Settings.SiegeRegion = new HashMap<>();
+            Settings.SiegeCraftsToWin = new HashMap<>();
+            Settings.SiegeCost = new HashMap<>();
+            Settings.SiegeDoubleCost = new HashMap<>();
+            Settings.SiegeIncome = new HashMap<>();
+            Settings.SiegeScheduleStart = new HashMap<>();
+            Settings.SiegeScheduleEnd = new HashMap<>();
+            Settings.SiegeControlRegion = new HashMap<>();
+            Settings.SiegeDelay = new HashMap<>();
+            Settings.SiegeDuration = new HashMap<>();
+            Settings.SiegeDayOfTheWeek = new HashMap<>();
+            Settings.SiegeCommandsOnStart = new HashMap<>();
+            Settings.SiegeCommandsOnWin = new HashMap<>();
+            Settings.SiegeCommandsOnLose = new HashMap<>();
             for (String siegeName : siegesMap.keySet()) {
                 Settings.SiegeRegion.put(siegeName, (String) siegesMap.get(siegeName).get("SiegeRegion"));
                 Settings.SiegeCraftsToWin.put(siegeName, (ArrayList<String>) siegesMap.get(siegeName).get("CraftsToWin"));

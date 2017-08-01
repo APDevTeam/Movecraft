@@ -42,7 +42,7 @@ class ConfigManager {
     private void setupDefaults() {
         configFile.addDefault("ThreadPoolSize", 5);
         configFile.addDefault("safeReload", false);
-        List<Integer> dataBlockList = new ArrayList<Integer>();
+        List<Integer> dataBlockList = new ArrayList<>();
         dataBlockList.add(23);
         dataBlockList.add(25);
         dataBlockList.add(33);

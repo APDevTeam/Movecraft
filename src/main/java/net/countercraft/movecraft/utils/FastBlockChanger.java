@@ -67,7 +67,7 @@ public class FastBlockChanger extends BukkitRunnable {
     // these control how far to smooth lighting along edges (-2 = 2 blocks in each direction if needed)
     final byte sLow = -2;// negative value
     final byte sHigh = (byte) (Math.abs(sLow) + 1); // abs(sLow)+1
-    public ArrayList<ChunkUpdater> chunks = new ArrayList<ChunkUpdater>(64);
+    public ArrayList<ChunkUpdater> chunks = new ArrayList<>(64);
     private boolean enabled;
 
     private FastBlockChanger() {
@@ -178,7 +178,7 @@ public class FastBlockChanger extends BukkitRunnable {
         d *= d;
         PacketPlayOutMapChunk pmc = null;//new PacketPlayOutMapChunk(cu.chnk, true, 65535); don't use this class anyway, and I want this to build tonight...
         //PacketPlayOutUnloadChunk puc = new PacketPlayOutUnloadChunk(cu.x,cu.z); // may be needed in some situations or for some clients
-        ArrayList<Packet<?>> te = new ArrayList<Packet<?>>(16);
+        ArrayList<Packet<?>> te = new ArrayList<>(16);
 
         for (TileEntity ti : lti) {
             Packet<?> p = ti.getUpdatePacket();
@@ -194,7 +194,7 @@ public class FastBlockChanger extends BukkitRunnable {
             cu.nChangedSinceSend = 0;
             return n;
         }
-        ArrayList<EntityPlayer> pl = new ArrayList<EntityPlayer>(pc.c.size());
+        ArrayList<EntityPlayer> pl = new ArrayList<>(pc.c.size());
         if (pc.c != null)
             pl.addAll(pc.c);
 

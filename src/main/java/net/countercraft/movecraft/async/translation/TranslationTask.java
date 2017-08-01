@@ -191,7 +191,7 @@ public class TranslationTask extends AsyncTask {
             }
 
             // now add all the air blocks found within the craft's hitbox immediately above the waterline and below to the craft blocks so they will be translated
-            HashSet<MovecraftLocation> newHSBlockList = new HashSet<MovecraftLocation>(Arrays.asList(blocksList));
+            HashSet<MovecraftLocation> newHSBlockList = new HashSet<>(Arrays.asList(blocksList));
             int posY = waterLine + 1;
             for (int posX = minX; posX < maxX; posX++) {
                 for (int posZ = minZ; posZ < maxZ; posZ++) {
@@ -268,17 +268,17 @@ public class TranslationTask extends AsyncTask {
             }
         }
 
-        List<MovecraftLocation> tempBlockList = new ArrayList<MovecraftLocation>();
-        HashSet<MovecraftLocation> existingBlockSet = new HashSet<MovecraftLocation>(Arrays.asList(blocksList));
-        HashSet<EntityUpdateCommand> entityUpdateSet = new HashSet<EntityUpdateCommand>();
-        Set<MapUpdateCommand> updateSet = new HashSet<MapUpdateCommand>();
+        List<MovecraftLocation> tempBlockList = new ArrayList<>();
+        HashSet<MovecraftLocation> existingBlockSet = new HashSet<>(Arrays.asList(blocksList));
+        HashSet<EntityUpdateCommand> entityUpdateSet = new HashSet<>();
+        Set<MapUpdateCommand> updateSet = new HashSet<>();
 
         data.setCollisionExplosion(false);
-        Set<MapUpdateCommand> explosionSet = new HashSet<MapUpdateCommand>();
+        Set<MapUpdateCommand> explosionSet = new HashSet<>();
 
         List<Material> harvestBlocks = getCraft().getType().getHarvestBlocks();
-        List<MovecraftLocation> harvestedBlocks = new ArrayList<MovecraftLocation>();
-        List<MovecraftLocation> destroyedBlocks = new ArrayList<MovecraftLocation>();
+        List<MovecraftLocation> harvestedBlocks = new ArrayList<>();
+        List<MovecraftLocation> destroyedBlocks = new ArrayList<>();
         List<Material> harvesterBladeBlocks = getCraft().getType().getHarvesterBladeBlocks();
 
         int hoverOver = data.getDy();
@@ -294,7 +294,7 @@ public class TranslationTask extends AsyncTask {
         boolean validateTownyExplosion = false;
         String townName = "";
 
-        Set<TownBlock> townBlockSet = new HashSet<TownBlock>();
+        Set<TownBlock> townBlockSet = new HashSet<>();
         TownyWorld townyWorld = null;
         TownyWorldHeightLimits townyWorldHeightLimits = null;
 
@@ -713,7 +713,7 @@ public class TranslationTask extends AsyncTask {
         } //END OF: for ( int i = 0; i < blocksList.length; i++ ) {
 
         // now move the scheduled block changes along with the ship
-        HashMap<MapUpdateCommand, Long> newScheduledBlockChanges = new HashMap<MapUpdateCommand, Long>();
+        HashMap<MapUpdateCommand, Long> newScheduledBlockChanges = new HashMap<>();
         HashMap<MapUpdateCommand, Long> oldScheduledBlockChanges = getCraft().getScheduledBlockChanges();
         if (oldScheduledBlockChanges != null) {
             for (MapUpdateCommand muc : oldScheduledBlockChanges.keySet()) {
@@ -1078,9 +1078,9 @@ public class TranslationTask extends AsyncTask {
         if (harvestedBlocks.isEmpty()) {
             return;
         }
-        ArrayList<Inventory> chests = new ArrayList<Inventory>();
-        HashSet<ItemDropUpdateCommand> itemDropUpdateSet = new HashSet<ItemDropUpdateCommand>();
-        HashMap<MovecraftLocation, ItemStack[]> harvestedMap = new HashMap<MovecraftLocation, ItemStack[]>();
+        ArrayList<Inventory> chests = new ArrayList<>();
+        HashSet<ItemDropUpdateCommand> itemDropUpdateSet = new HashSet<>();
+        HashMap<MovecraftLocation, ItemStack[]> harvestedMap = new HashMap<>();
         //find chests
         for (MovecraftLocation loc : getCraft().getBlockList()) {
             Block block = getCraft().getW().getBlockAt(loc.getX(), loc.getY(), loc.getZ());
@@ -1097,7 +1097,7 @@ public class TranslationTask extends AsyncTask {
                 int amount = rand.nextInt(4);
                 if (amount > 0) {
                     ItemStack seeds = new ItemStack(Material.SEEDS, amount);
-                    HashSet<ItemStack> d = new HashSet<ItemStack>(Arrays.asList(drops));
+                    HashSet<ItemStack> d = new HashSet<>(Arrays.asList(drops));
                     d.add(seeds);
                     drops = d.toArray(new ItemStack[d.size()]);
                 }
@@ -1107,11 +1107,11 @@ public class TranslationTask extends AsyncTask {
                 if (block.getState() instanceof Chest) {
                     //Inventory inv = ((DoubleChest) block.getState()).getRightSide().getInventory().getLocation().equals(block.getLocation()) ?((DoubleChest) block.getState()).getRightSide().getInventory(): ((DoubleChest) block.getState()).getLeftSide().getInventory();
                     //HashSet<ItemStack> d = new HashSet<ItemStack>(Arrays.asList(inv.getContents()));
-                    HashSet<ItemStack> d = new HashSet<ItemStack>(Arrays.asList(((Chest) block.getState()).getBlockInventory().getContents()));
+                    HashSet<ItemStack> d = new HashSet<>(Arrays.asList(((Chest) block.getState()).getBlockInventory().getContents()));
                     d.addAll(block.getDrops());
                     drops = d.toArray(new ItemStack[d.size()]);
                 } else {
-                    HashSet<ItemStack> d = new HashSet<ItemStack>(Arrays.asList((((InventoryHolder) block.getState()).getInventory().getContents())));
+                    HashSet<ItemStack> d = new HashSet<>(Arrays.asList((((InventoryHolder) block.getState()).getInventory().getContents())));
                     d.addAll(block.getDrops());
                     drops = d.toArray(new ItemStack[d.size()]);
                 }

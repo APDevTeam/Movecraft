@@ -67,8 +67,8 @@ import java.util.UUID;
 //import com.sk89q.worldedit.world.DataException;
 
 public class WorldEditInteractListener implements Listener {
-    private static final Map<Player, Long> timeMap = new HashMap<Player, Long>();
-    private static final Map<Player, Long> repairRightClickTimeMap = new HashMap<Player, Long>();
+    private static final Map<Player, Long> timeMap = new HashMap<>();
+    private static final Map<Player, Long> repairRightClickTimeMap = new HashMap<>();
 
     public boolean repairRegion(World w, String regionName) {
         if (w == null || regionName == null)
@@ -85,14 +85,11 @@ public class WorldEditInteractListener implements Listener {
         CuboidClipboard cc;
         try {
             cc = sf.load(file);
-        } catch (com.sk89q.worldedit.data.DataException e) {
-            e.printStackTrace();
-            return false;
-        } catch (IOException e) {
+        } catch (com.sk89q.worldedit.data.DataException | IOException e) {
             e.printStackTrace();
             return false;
         }
-        ArrayList<MapUpdateCommand> updateCommands = new ArrayList<MapUpdateCommand>();
+        ArrayList<MapUpdateCommand> updateCommands = new ArrayList<>();
         int minx = cc.getOrigin().getBlockX();
         int miny = cc.getOrigin().getBlockY();
         int minz = cc.getOrigin().getBlockZ();
@@ -335,11 +332,7 @@ public class WorldEditInteractListener implements Listener {
             CuboidClipboard cc;
             try {
                 cc = sf.load(file);
-            } catch (com.sk89q.worldedit.data.DataException e) {
-                event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("REPAIR STATE NOT FOUND"));
-                e.printStackTrace();
-                return;
-            } catch (IOException e) {
+            } catch (com.sk89q.worldedit.data.DataException | IOException e) {
                 event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("REPAIR STATE NOT FOUND"));
                 e.printStackTrace();
                 return;
@@ -348,8 +341,8 @@ public class WorldEditInteractListener implements Listener {
             // calculate how many and where the blocks need to be replaced
             Location worldLoc = new Location(sign.getWorld(), sign.getX(), sign.getY(), sign.getZ());
             int numdiffblocks = 0;
-            HashMap<Integer, Integer> numMissingItems = new HashMap<Integer, Integer>(); // block type, number missing
-            HashSet<Vector> locMissingBlocks = new HashSet<Vector>();
+            HashMap<Integer, Integer> numMissingItems = new HashMap<>(); // block type, number missing
+            HashSet<Vector> locMissingBlocks = new HashSet<>();
             for (int x = 0; x < cc.getWidth(); x++) {
                 for (int y = 0; y < cc.getHeight(); y++) {
                     for (int z = 0; z < cc.getLength(); z++) {
@@ -542,11 +535,11 @@ public class WorldEditInteractListener implements Listener {
             }
             if (secondClick) {
                 // check all the chests for materials for the repair
-                HashMap<Integer, ArrayList<InventoryHolder>> chestsToTakeFrom = new HashMap<Integer, ArrayList<InventoryHolder>>(); // typeid, list of chest inventories
+                HashMap<Integer, ArrayList<InventoryHolder>> chestsToTakeFrom = new HashMap<>(); // typeid, list of chest inventories
                 boolean enoughMaterial = true;
                 for (Integer typeID : numMissingItems.keySet()) {
                     int remainingQty = numMissingItems.get(typeID);
-                    ArrayList<InventoryHolder> chests = new ArrayList<InventoryHolder>();
+                    ArrayList<InventoryHolder> chests = new ArrayList<>();
                     for (MovecraftLocation loc : pCraft.getBlockList()) {
                         Block b = pCraft.getW().getBlockAt(loc.getX(), loc.getY(), loc.getZ());
                         if ((b.getTypeId() == 54) || (b.getTypeId() == 146)) {
@@ -599,7 +592,7 @@ public class WorldEditInteractListener implements Listener {
                     }
                     double Cost = numdiffblocks * Settings.RepairMoneyPerBlock;
                     Bukkit.getLogger().info(event.getPlayer().toString() + " has begun a repair with the cost of " + String.valueOf(Cost));
-                    ArrayList<MapUpdateCommand> updateCommands = new ArrayList<MapUpdateCommand>();
+                    ArrayList<MapUpdateCommand> updateCommands = new ArrayList<>();
                     for (Vector ccloc : locMissingBlocks) {
                         com.sk89q.worldedit.blocks.BaseBlock bb = cc.getBlock(ccloc);
                         if (bb.getId() == 68 || bb.getId() == 63) { // I don't know why this is necessary. I'm pretty sure WE should be loading signs as signblocks, but it doesn't seem to

@@ -49,12 +49,12 @@ public class DetectionTask extends AsyncTask {
     private final MovecraftLocation startLocation;
     private final Integer minSize;
     private final Integer maxSize;
-    private final Stack<MovecraftLocation> blockStack = new Stack<MovecraftLocation>();
-    private final HashSet<MovecraftLocation> blockList = new HashSet<MovecraftLocation>();
-    private final HashSet<MovecraftLocation> visited = new HashSet<MovecraftLocation>();
-    private final HashMap<ArrayList<Integer>, Integer> blockTypeCount = new HashMap<ArrayList<Integer>, Integer>();
+    private final Stack<MovecraftLocation> blockStack = new Stack<>();
+    private final HashSet<MovecraftLocation> blockList = new HashSet<>();
+    private final HashSet<MovecraftLocation> visited = new HashSet<>();
+    private final HashMap<ArrayList<Integer>, Integer> blockTypeCount = new HashMap<>();
     private final DetectionTaskData data;
-    Set<TownBlock> townBlockSet = new HashSet<TownBlock>();
+    Set<TownBlock> townBlockSet = new HashSet<>();
     TownyWorld townyWorld = null;
     TownyWorldHeightLimits townyWorldHeightLimits = null;
     private Integer maxX;
@@ -489,7 +489,7 @@ public class DetectionTask extends AsyncTask {
     private MovecraftLocation[] finaliseBlockList(HashSet<MovecraftLocation> blockSet) {
         // MovecraftLocation[] finalList=blockSet.toArray( new
         // MovecraftLocation[1] );
-        ArrayList<MovecraftLocation> finalList = new ArrayList<MovecraftLocation>();
+        ArrayList<MovecraftLocation> finalList = new ArrayList<>();
 
         // Sort the blocks from the bottom up to minimize lower altitude block
         // updates
