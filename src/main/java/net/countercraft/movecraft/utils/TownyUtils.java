@@ -124,11 +124,7 @@ public class TownyUtils {
         if (cache.hasBlockErrMsg())
             return false;
 
-        if (status != TownBlockStatus.WARZONE) {
-            return false;
-        } else {
-            return TownyWarConfig.isAllowingSwitchesInWarZone();
-        }
+        return status == TownBlockStatus.WARZONE && TownyWarConfig.isAllowingSwitchesInWarZone();
     }
 
     public static boolean validatePVP(TownBlock tb) {

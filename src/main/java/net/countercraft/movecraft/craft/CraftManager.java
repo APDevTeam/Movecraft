@@ -118,9 +118,7 @@ public class CraftManager {
         }
         if (c.getScheduledBlockChanges() != null) {
             ArrayList<MapUpdateCommand> updateCommands = new ArrayList<>();
-            for (MapUpdateCommand muc : c.getScheduledBlockChanges().keySet()) {
-                updateCommands.add(muc);
-            }
+            updateCommands.addAll(c.getScheduledBlockChanges().keySet());
             if (updateCommands.size() > 0) {
                 MapUpdateManager.getInstance().addWorldUpdate(c.getW(), updateCommands.toArray(new MapUpdateCommand[1]), null, null);
             }
