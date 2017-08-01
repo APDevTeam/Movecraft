@@ -17,6 +17,14 @@
 
 package net.countercraft.movecraft.async;
 
+import at.pavlov.cannons.cannon.Cannon;
+import com.palmergames.bukkit.towny.object.TownBlock;
+import com.palmergames.bukkit.towny.object.TownyWorld;
+import com.sk89q.worldguard.domains.DefaultDomain;
+import com.sk89q.worldguard.protection.ApplicableRegionSet;
+import com.sk89q.worldguard.protection.flags.DefaultFlag;
+import com.sk89q.worldguard.protection.flags.StateFlag.State;
+import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.async.detection.DetectionTask;
 import net.countercraft.movecraft.async.detection.DetectionTaskData;
@@ -30,12 +38,12 @@ import net.countercraft.movecraft.listener.WorldEditInteractListener;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.BlockUtils;
 import net.countercraft.movecraft.utils.EntityUpdateCommand;
-//import net.countercraft.movecraft.utils.FastBlockChanger;
+import net.countercraft.movecraft.utils.ItemDropUpdateCommand;
 import net.countercraft.movecraft.utils.MapUpdateCommand;
 import net.countercraft.movecraft.utils.MapUpdateManager;
-import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.utils.MovecraftLocation;
-
+import net.countercraft.movecraft.utils.TownyUtils;
+import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
 import org.apache.commons.collections.ListUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -46,26 +54,10 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.craftbukkit.v1_10_R1.block.CraftBlockState;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.metadata.FixedMetadataValue;
-import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
-import org.mozilla.javascript.JavaScriptException;
-
-import at.pavlov.cannons.cannon.Cannon;
-
-import com.palmergames.bukkit.towny.object.TownBlock;
-import com.palmergames.bukkit.towny.object.TownyWorld;
-import com.sk89q.worldguard.domains.DefaultDomain;
-import com.sk89q.worldguard.protection.ApplicableRegionSet;
-import com.sk89q.worldguard.protection.flags.DefaultFlag;
-import com.sk89q.worldguard.protection.flags.StateFlag;
-import com.sk89q.worldguard.protection.flags.StateFlag.State;
-import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -82,9 +74,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 
-import net.countercraft.movecraft.utils.ItemDropUpdateCommand;
-import net.countercraft.movecraft.utils.TownyUtils;
-import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
+//import net.countercraft.movecraft.utils.FastBlockChanger;
 
 public class AsyncManager extends BukkitRunnable {
 	private static final AsyncManager instance = new AsyncManager();

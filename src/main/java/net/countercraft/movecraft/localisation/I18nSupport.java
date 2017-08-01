@@ -20,7 +20,11 @@ package net.countercraft.movecraft.localisation;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 import java.util.logging.Level;
 

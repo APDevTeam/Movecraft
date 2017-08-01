@@ -17,18 +17,24 @@
 
 package net.countercraft.movecraft.listener;
 
+import com.sk89q.worldedit.CuboidClipboard;
+import com.sk89q.worldedit.LocalWorld;
+import com.sk89q.worldedit.Vector;
+import com.sk89q.worldedit.blocks.BaseBlock;
+import com.sk89q.worldedit.blocks.BaseItemStack;
+import com.sk89q.worldedit.blocks.DispenserBlock;
+import com.sk89q.worldedit.blocks.SignBlock;
+import com.sk89q.worldedit.bukkit.BukkitUtil;
+import com.sk89q.worldedit.schematic.SchematicFormat;
+import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.craft.CraftType;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.MapUpdateCommand;
 import net.countercraft.movecraft.utils.MapUpdateManager;
-import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.utils.MovecraftLocation;
-import net.countercraft.movecraft.utils.Rotation;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -38,34 +44,15 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Dispenser;
 import org.bukkit.block.Sign;
-import org.bukkit.craftbukkit.v1_10_R1.util.CraftMagicNumbers;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
-
-import com.sk89q.worldedit.CuboidClipboard;
-import com.sk89q.worldedit.EditSession;
-import com.sk89q.worldedit.LocalWorld;
-import com.sk89q.worldedit.Vector;
-import com.sk89q.worldedit.blocks.BaseBlock;
-import com.sk89q.worldedit.blocks.BaseItemStack;
-import com.sk89q.worldedit.blocks.ContainerBlock;
-import com.sk89q.worldedit.blocks.DispenserBlock;
-//import com.sk89q.worldedit.blocks.BaseBlock;
-import com.sk89q.worldedit.blocks.SignBlock;
-import com.sk89q.worldedit.bukkit.BukkitUtil;
-import com.sk89q.worldedit.schematic.SchematicFormat;
-//import com.sk89q.worldedit.world.DataException;
-import com.sk89q.worldguard.domains.DefaultDomain;
-import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 
 import java.io.File;
 import java.io.IOException;
@@ -75,6 +62,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
+
+//import com.sk89q.worldedit.blocks.BaseBlock;
+//import com.sk89q.worldedit.world.DataException;
 
 public class WorldEditInteractListener implements Listener {
 	private static final Map<Player, Long> timeMap = new HashMap<Player, Long>();

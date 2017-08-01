@@ -18,7 +18,6 @@
 package net.countercraft.movecraft.async.detection;
 
 import net.countercraft.movecraft.utils.MovecraftLocation;
-
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 

@@ -17,13 +17,7 @@
 
 package net.countercraft.movecraft.metrics;
 
-import net.countercraft.movecraft.Movecraft;
-import net.countercraft.movecraft.config.Settings;
-import net.countercraft.movecraft.localisation.I18nSupport;
 // removed because repo is down import org.mcstats.Metrics;
-
-import java.io.IOException;
-import java.util.logging.Level;
 
 public class MovecraftMetrics {
 	private final int classTypes;

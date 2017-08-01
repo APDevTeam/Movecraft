@@ -4,10 +4,11 @@ import com.mewin.WGCustomFlags.WGCustomFlagsPlugin;
 import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.protection.flags.Flag;
 import com.sk89q.worldguard.protection.flags.StateFlag;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import net.countercraft.movecraft.Movecraft;
 import org.bukkit.Location;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  *

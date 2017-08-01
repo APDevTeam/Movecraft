@@ -18,9 +18,11 @@
 package net.countercraft.movecraft.async.translation;
 
 import com.palmergames.bukkit.towny.object.Town;
-import com.sk89q.worldguard.protection.flags.StateFlag;
+import com.palmergames.bukkit.towny.object.TownBlock;
+import com.palmergames.bukkit.towny.object.TownyWorld;
+import com.sk89q.worldguard.LocalPlayer;
+import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import net.countercraft.movecraft.Movecraft;
-import net.countercraft.movecraft.async.AsyncManager;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
@@ -28,49 +30,33 @@ import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.BoundingBoxUtils;
 import net.countercraft.movecraft.utils.EntityUpdateCommand;
+import net.countercraft.movecraft.utils.ItemDropUpdateCommand;
 import net.countercraft.movecraft.utils.MapUpdateCommand;
-import net.countercraft.movecraft.utils.MapUpdateManager;
 import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.utils.MovecraftLocation;
-
+import net.countercraft.movecraft.utils.TownyUtils;
+import net.countercraft.movecraft.utils.TownyWorldHeightLimits;
+import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
 import org.apache.commons.collections.ListUtils;
-import org.apache.commons.lang.ArrayUtils;
-import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
-import org.bukkit.Effect;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
-import java.util.logging.Level;
-import net.countercraft.movecraft.utils.ItemDropUpdateCommand;
-import net.countercraft.movecraft.utils.TownyUtils;
-import com.palmergames.bukkit.towny.object.TownBlock;
-import com.palmergames.bukkit.towny.object.TownyWorld;
-import com.sk89q.worldguard.LocalPlayer;
-import com.sk89q.worldguard.protection.ApplicableRegionSet;
-import net.countercraft.movecraft.utils.TownyWorldHeightLimits;
-import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
-
-import org.bukkit.Material;
-import org.bukkit.Sound;
-import org.bukkit.inventory.Inventory;
 
 public class TranslationTask extends AsyncTask {
 	private TranslationTaskData data;

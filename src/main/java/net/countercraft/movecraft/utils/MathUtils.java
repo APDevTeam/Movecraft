@@ -17,9 +17,8 @@
 
 package net.countercraft.movecraft.utils;
 
-import org.bukkit.Location;
-
 import net.countercraft.movecraft.craft.Craft;
+import org.bukkit.Location;
 
 public class MathUtils {
 

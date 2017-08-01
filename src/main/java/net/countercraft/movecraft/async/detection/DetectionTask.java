@@ -22,14 +22,17 @@ import com.palmergames.bukkit.towny.object.TownBlock;
 import com.palmergames.bukkit.towny.object.TownyWorld;
 import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
-import com.sk89q.worldguard.protection.flags.StateFlag;
-
+import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.async.AsyncTask;
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.BoundingBoxUtils;
 import net.countercraft.movecraft.utils.MovecraftLocation;
-
+import net.countercraft.movecraft.utils.TownyUtils;
+import net.countercraft.movecraft.utils.TownyWorldHeightLimits;
+import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.BlockState;
@@ -41,15 +44,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Stack;
-
-import net.countercraft.movecraft.Movecraft;
-import net.countercraft.movecraft.config.Settings;
-import net.countercraft.movecraft.utils.TownyUtils;
-import net.countercraft.movecraft.utils.TownyWorldHeightLimits;
-import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
-
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
 
 public class DetectionTask extends AsyncTask {
 	private final MovecraftLocation startLocation;

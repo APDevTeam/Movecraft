@@ -17,13 +17,13 @@
 
 package net.countercraft.movecraft.config;
 
+import net.countercraft.movecraft.utils.TownyWorldHeightLimits;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import net.countercraft.movecraft.utils.TownyWorldHeightLimits;
 
 public class Settings {
 	public static boolean RestrictSiBsToRegions = false;

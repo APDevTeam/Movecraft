@@ -17,13 +17,6 @@
 
 package net.countercraft.movecraft.utils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.logging.Level;
-
-import org.bukkit.Bukkit;
-import org.bukkit.scheduler.BukkitRunnable;
-
 import net.countercraft.movecraft.Movecraft;
 import net.minecraft.server.v1_10_R1.BlockPosition;
 import net.minecraft.server.v1_10_R1.Chunk;
@@ -35,6 +28,12 @@ import net.minecraft.server.v1_10_R1.PacketPlayOutMapChunk;
 import net.minecraft.server.v1_10_R1.PlayerChunk;
 import net.minecraft.server.v1_10_R1.TileEntity;
 import net.minecraft.server.v1_10_R1.World;
+import org.bukkit.Bukkit;
+import org.bukkit.scheduler.BukkitRunnable;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.logging.Level;
 
 /*
    This class is intended to make it easy to rapidly place huge numbers of blocks at once (multiple whole-chunk-sized structures)

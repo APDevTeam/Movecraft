@@ -18,33 +18,27 @@
 package net.countercraft.movecraft.utils;
 
 import com.earth2me.essentials.User;
-
+import com.sk89q.worldedit.blocks.BaseBlock;
+import com.sk89q.worldedit.blocks.BaseItemStack;
+import com.sk89q.worldedit.blocks.DispenserBlock;
+import com.sk89q.worldedit.blocks.SignBlock;
+import com.sk89q.worldguard.protection.ApplicableRegionSet;
+import com.sk89q.worldguard.protection.flags.DefaultFlag;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.items.StorageChestItem;
-import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.utils.datastructures.InventoryTransferHolder;
-import net.countercraft.movecraft.utils.datastructures.SignTransferHolder;
 import net.countercraft.movecraft.utils.FastBlockChanger.ChunkUpdater;
-import net.countercraft.movecraft.utils.datastructures.CommandBlockTransferHolder;
-import net.countercraft.movecraft.utils.datastructures.StorageCrateTransferHolder;
-import net.countercraft.movecraft.utils.datastructures.TransferData;
 import net.minecraft.server.v1_10_R1.BlockPosition;
 import net.minecraft.server.v1_10_R1.ChatComponentText;
-import net.minecraft.server.v1_10_R1.ChunkCoordIntPair;
-import net.minecraft.server.v1_10_R1.EnumSkyBlock;
+import net.minecraft.server.v1_10_R1.EnumBlockRotation;
+import net.minecraft.server.v1_10_R1.EnumParticle;
 import net.minecraft.server.v1_10_R1.IBlockData;
-import net.minecraft.server.v1_10_R1.NBTTagCompound;
 import net.minecraft.server.v1_10_R1.NextTickListEntry;
-import net.minecraft.server.v1_10_R1.PacketPlayOutBlockChange;
 import net.minecraft.server.v1_10_R1.PacketPlayOutWorldParticles;
 import net.minecraft.server.v1_10_R1.StructureBoundingBox;
 import net.minecraft.server.v1_10_R1.TileEntity;
 import net.minecraft.server.v1_10_R1.TileEntitySign;
-
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.Effect;
@@ -53,43 +47,26 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
-import org.bukkit.block.Sign;
-import org.bukkit.block.CommandBlock;
 import org.bukkit.block.Dispenser;
+import org.bukkit.block.Sign;
 import org.bukkit.craftbukkit.v1_10_R1.CraftChunk;
 import org.bukkit.craftbukkit.v1_10_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_10_R1.block.CraftBlock;
 import org.bukkit.craftbukkit.v1_10_R1.block.CraftBlockState;
 import org.bukkit.craftbukkit.v1_10_R1.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_10_R1.util.CraftMagicNumbers;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
-import org.bukkit.util.Vector;
 
-import com.sk89q.worldedit.blocks.BaseBlock;
-import com.sk89q.worldedit.blocks.BaseItemStack;
-import com.sk89q.worldedit.blocks.DispenserBlock;
-import com.sk89q.worldedit.blocks.SignBlock;
-import com.sk89q.worldguard.protection.ApplicableRegionSet;
-import com.sk89q.worldguard.protection.flags.DefaultFlag;
-
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.*;
-import java.util.logging.Level;
-
-import net.minecraft.server.v1_10_R1.EntityTNTPrimed;
-import net.minecraft.server.v1_10_R1.EnumBlockRotation;
-import net.minecraft.server.v1_10_R1.EnumParticle;
-
-import org.bukkit.event.entity.ExplosionPrimeEvent;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 public class MapUpdateManager extends BukkitRunnable {
 	private final HashMap<World, ArrayList<MapUpdateCommand>> updates = new HashMap<World, ArrayList<MapUpdateCommand>>();

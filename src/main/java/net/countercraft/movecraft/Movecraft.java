@@ -17,18 +17,14 @@
 
 package net.countercraft.movecraft;
 
-import net.countercraft.movecraft.async.AsyncManager;
 import at.pavlov.cannons.Cannons;
-
-
-
-
-
-
 import com.earth2me.essentials.Essentials;
+import com.mewin.WGCustomFlags.WGCustomFlagsPlugin;
+import com.palmergames.bukkit.towny.Towny;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
-
+import com.sk89q.worldguard.protection.flags.StateFlag;
+import net.countercraft.movecraft.async.AsyncManager;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.items.StorageChestItem;
@@ -38,25 +34,17 @@ import net.countercraft.movecraft.listener.InteractListener;
 import net.countercraft.movecraft.listener.PlayerListener;
 import net.countercraft.movecraft.listener.WorldEditInteractListener;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.metrics.MovecraftMetrics;  
+import net.countercraft.movecraft.metrics.MovecraftMetrics;
 import net.countercraft.movecraft.utils.MapUpdateManager;
 import net.countercraft.movecraft.utils.MovecraftLocation;
 import net.countercraft.movecraft.utils.TownyUtils;
 import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
 import net.milkbowl.vault.economy.Economy;
-
-import com.mewin.WGCustomFlags.WGCustomFlagsPlugin;
-import com.palmergames.bukkit.towny.Towny;
-import com.sk89q.worldguard.protection.flags.StateFlag;
-
-import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.v1_10_R1.util.CraftMagicNumbers;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.util.Vector;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.File;
@@ -68,10 +56,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
