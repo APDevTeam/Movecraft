@@ -136,8 +136,7 @@ public class AsyncManager extends BukkitRunnable {
 
                 if (pCraft != null && p != null) {
                     // Player is already controlling a craft
-                    notifyP.sendMessage(String.format(
-                            I18nSupport.getInternationalisedString("Detection - Failed - Already commanding a craft")));
+                    notifyP.sendMessage(I18nSupport.getInternationalisedString("Detection - Failed - Already commanding a craft"));
                 } else {
                     if (data.failed()) {
                         if (notifyP != null)
@@ -159,8 +158,8 @@ public class AsyncManager extends BukkitRunnable {
                                     if (c.getType().getCruiseOnPilot() || p != null) {
                                         if (craft.getType() == c.getType()
                                                 || craft.getBlockList().length <= data.getBlockList().length) {
-                                            notifyP.sendMessage(String.format(I18nSupport.getInternationalisedString(
-                                                    "Detection - Failed Craft is already being controlled")));
+                                            notifyP.sendMessage(I18nSupport.getInternationalisedString(
+                                                    "Detection - Failed Craft is already being controlled"));
                                             failed = true;
                                         } else { // if this is a different type than
                                             // the overlapping craft, and is
@@ -169,8 +168,7 @@ public class AsyncManager extends BukkitRunnable {
                                             // carrier
                                             if (craft.isNotProcessing() == false) {
                                                 failed = true;
-                                                notifyP.sendMessage(String.format(
-                                                        I18nSupport.getInternationalisedString("Parent Craft is busy")));
+                                                notifyP.sendMessage(I18nSupport.getInternationalisedString("Parent Craft is busy"));
                                             }
 
                                             // remove the new craft from the parent
@@ -243,8 +241,7 @@ public class AsyncManager extends BukkitRunnable {
                         }
                         if (c.getType().getMustBeSubcraft() == true && isSubcraft == false) {
                             failed = true;
-                            notifyP.sendMessage(String.format(
-                                    I18nSupport.getInternationalisedString("Craft must be part of another craft")));
+                            notifyP.sendMessage(I18nSupport.getInternationalisedString("Craft must be part of another craft"));
                         }
                         if (!failed) {
                             c.setBlockList(data.getBlockList());
@@ -262,9 +259,8 @@ public class AsyncManager extends BukkitRunnable {
                             }
 
                             if (notifyP != null) {
-                                notifyP.sendMessage(String
-                                        .format(I18nSupport
-                                                .getInternationalisedString("Detection - Successfully piloted craft"))
+                                notifyP.sendMessage(I18nSupport
+                                        .getInternationalisedString("Detection - Successfully piloted craft")
                                         + " Size: " + c.getBlockList().length);
                                 Movecraft.getInstance().getLogger().log(Level.INFO,
                                         String.format(
@@ -308,8 +304,7 @@ public class AsyncManager extends BukkitRunnable {
                         boolean failed = MapUpdateManager.getInstance().addWorldUpdate(c.getW(), updates, null, null);
 
                         if (failed) {
-                            Movecraft.getInstance().getLogger().log(Level.SEVERE, String
-                                    .format(I18nSupport.getInternationalisedString("Translation - Craft collision")));
+                            Movecraft.getInstance().getLogger().log(Level.SEVERE, I18nSupport.getInternationalisedString("Translation - Craft collision"));
                         } else {
                             sentMapUpdate = true;
                         }
@@ -355,7 +350,7 @@ public class AsyncManager extends BukkitRunnable {
                     } else {
 
                         Movecraft.getInstance().getLogger().log(Level.SEVERE,
-                                String.format(I18nSupport.getInternationalisedString("Translation - Craft collision")));
+                                I18nSupport.getInternationalisedString("Translation - Craft collision"));
 
                     }
                 }
@@ -420,8 +415,7 @@ public class AsyncManager extends BukkitRunnable {
                             }
                         } else {
 
-                            Movecraft.getInstance().getLogger().log(Level.SEVERE, String
-                                    .format(I18nSupport.getInternationalisedString("Rotation - Craft Collision")));
+                            Movecraft.getInstance().getLogger().log(Level.SEVERE, I18nSupport.getInternationalisedString("Rotation - Craft Collision"));
 
                         }
                     }
@@ -807,11 +801,11 @@ public class AsyncManager extends BukkitRunnable {
                                     Player notifyP = pcraft.getNotificationPlayer();
                                     if (notifyP != null)
                                         if (regionPVPBlocked) {
-                                            notifyP.sendMessage(String.format(I18nSupport.getInternationalisedString(
-                                                    "Player- Craft should sink but PVP is not allowed in this WorldGuard region")));
+                                            notifyP.sendMessage(I18nSupport.getInternationalisedString(
+                                                    "Player- Craft should sink but PVP is not allowed in this WorldGuard region"));
                                         } else if (sinkingForbiddenByFlag) {
-                                            notifyP.sendMessage(String.format(I18nSupport.getInternationalisedString(
-                                                    "WGCustomFlags - Sinking a craft is not allowed in this WorldGuard region")));
+                                            notifyP.sendMessage(I18nSupport.getInternationalisedString(
+                                                    "WGCustomFlags - Sinking a craft is not allowed in this WorldGuard region"));
                                         } else {
                                             if (townyLoc != null) {
                                                 notifyP.sendMessage(String.format(
@@ -821,8 +815,8 @@ public class AsyncManager extends BukkitRunnable {
                                                         townyLoc.getBlockZ()));
                                             } else {
                                                 notifyP.sendMessage(
-                                                        String.format(I18nSupport.getInternationalisedString(
-                                                                "Towny - Sinking a craft is not allowed in this town plot")));
+                                                        I18nSupport.getInternationalisedString(
+                                                                "Towny - Sinking a craft is not allowed in this town plot"));
                                             }
 
                                         }
@@ -836,8 +830,8 @@ public class AsyncManager extends BukkitRunnable {
                                         Player p = CraftManager.getInstance().getPlayerFromCraft(pcraft);
                                         Player notifyP = pcraft.getNotificationPlayer();
                                         if (notifyP != null)
-                                            notifyP.sendMessage(String.format(I18nSupport
-                                                    .getInternationalisedString("Player- Craft is sinking")));
+                                            notifyP.sendMessage(I18nSupport
+                                                    .getInternationalisedString("Player- Craft is sinking"));
                                         pcraft.setCruising(false);
                                         pcraft.setSinking(true);
                                         CraftManager.getInstance().removePlayerFromCraft(pcraft);

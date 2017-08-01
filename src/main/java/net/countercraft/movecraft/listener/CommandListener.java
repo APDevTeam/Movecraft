@@ -152,7 +152,7 @@ public class CommandListener implements CommandExecutor {
 
         if (cmd.getName().equalsIgnoreCase("release")) {
             if (!player.hasPermission("movecraft.commands") && !player.hasPermission("movecraft.commands.release")) {
-                player.sendMessage(String.format(I18nSupport.getInternationalisedString("Insufficient Permissions")));
+                player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
                 return true;
             }
             if (args.length > 0) {
@@ -191,7 +191,7 @@ public class CommandListener implements CommandExecutor {
                     CraftManager.getInstance().removeCraft(pCraft);
                     //e.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "Player- Craft has been released" ) ) );
                 } else {
-                    player.sendMessage(String.format(I18nSupport.getInternationalisedString("Player- Error - You do not have a craft to release!")));
+                    player.sendMessage(I18nSupport.getInternationalisedString("Player- Error - You do not have a craft to release!"));
                 }
 
                 return true;
@@ -200,7 +200,7 @@ public class CommandListener implements CommandExecutor {
 
         if (cmd.getName().equalsIgnoreCase("pilot")) {
             if (!player.hasPermission("movecraft.commands") && !player.hasPermission("movecraft.commands.pilot")) {
-                player.sendMessage(String.format(I18nSupport.getInternationalisedString("Insufficient Permissions")));
+                player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
                 return true;
             }
 
@@ -216,10 +216,10 @@ public class CommandListener implements CommandExecutor {
                         MovecraftLocation startPoint = MathUtils.bukkit2MovecraftLoc(player.getLocation());
                         newCraft.detect(player, player, startPoint);
                     } else {
-                        player.sendMessage(String.format(I18nSupport.getInternationalisedString("Unknown craft type")));
+                        player.sendMessage(I18nSupport.getInternationalisedString("Unknown craft type"));
                     }
                 } else {
-                    player.sendMessage(String.format(I18nSupport.getInternationalisedString("Insufficient Permissions")));
+                    player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
                 }
                 return true;
             }
@@ -227,7 +227,7 @@ public class CommandListener implements CommandExecutor {
 
         if (cmd.getName().equalsIgnoreCase("rotateleft")) {
             if (!player.hasPermission("movecraft.commands") && !player.hasPermission("movecraft.commands.rotateleft")) {
-                player.sendMessage(String.format(I18nSupport.getInternationalisedString("Insufficient Permissions")));
+                player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
                 return true;
             }
 
@@ -237,7 +237,7 @@ public class CommandListener implements CommandExecutor {
                 MovecraftLocation midPoint = getCraftMidPoint(craft);
                 CraftManager.getInstance().getCraftByPlayerName(player.getName()).rotate(Rotation.ANTICLOCKWISE, midPoint);
             } else {
-                player.sendMessage(String.format(I18nSupport.getInternationalisedString("Insufficient Permissions")));
+                player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
             }
 
             return true;
@@ -245,7 +245,7 @@ public class CommandListener implements CommandExecutor {
 
         if (cmd.getName().equalsIgnoreCase("rotateright")) {
             if (!player.hasPermission("movecraft.commands") && !player.hasPermission("movecraft.commands.rotateright")) {
-                player.sendMessage(String.format(I18nSupport.getInternationalisedString("Insufficient Permissions")));
+                player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
                 return true;
             }
 
@@ -255,7 +255,7 @@ public class CommandListener implements CommandExecutor {
                 MovecraftLocation midPoint = getCraftMidPoint(craft);
                 CraftManager.getInstance().getCraftByPlayerName(player.getName()).rotate(Rotation.CLOCKWISE, midPoint);
             } else {
-                player.sendMessage(String.format(I18nSupport.getInternationalisedString("Insufficient Permissions")));
+                player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
             }
 
             return true;
@@ -263,13 +263,13 @@ public class CommandListener implements CommandExecutor {
 
         if (cmd.getName().equalsIgnoreCase("cruise")) {
             if (!player.hasPermission("movecraft.commands") && !player.hasPermission("movecraft.commands.cruise")) {
-                player.sendMessage(String.format(I18nSupport.getInternationalisedString("Insufficient Permissions")));
+                player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
                 return true;
             }
 
             final Craft craft = CraftManager.getInstance().getCraftByPlayerName(player.getName());
             if (craft == null) {
-                player.sendMessage(String.format(I18nSupport.getInternationalisedString("You must be piloting a craft")));
+                player.sendMessage(I18nSupport.getInternationalisedString("You must be piloting a craft"));
                 return true;
             }
 
@@ -313,7 +313,7 @@ public class CommandListener implements CommandExecutor {
                     }
                 }
             } else {
-                player.sendMessage(String.format(I18nSupport.getInternationalisedString("Insufficient Permissions")));
+                player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
             }
 
             return true;
@@ -324,14 +324,14 @@ public class CommandListener implements CommandExecutor {
             if (craft != null) {
                 craft.setCruising(false);
             } else {
-                player.sendMessage(String.format(I18nSupport.getInternationalisedString("You must be piloting a craft")));
+                player.sendMessage(I18nSupport.getInternationalisedString("You must be piloting a craft"));
             }
             return true;
         }
 
         if (cmd.getName().equalsIgnoreCase("craftreport")) {
             if (!player.hasPermission("movecraft.commands") && !player.hasPermission("movecraft.commands.craftreport")) {
-                player.sendMessage(String.format(I18nSupport.getInternationalisedString("Insufficient Permissions")));
+                player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
                 return true;
             }
 
@@ -339,7 +339,7 @@ public class CommandListener implements CommandExecutor {
             if (CraftManager.getInstance().getCraftsInWorld(player.getWorld()) != null)
                 for (Craft craft : CraftManager.getInstance().getCraftsInWorld(player.getWorld())) {
                     if (craft != null) {
-                        String output = new String();
+                        String output = "";
                         if (craft.getNotificationPlayer() != null) {
                             output = craft.getType().getCraftName() + " " + craft.getNotificationPlayer().getName() + " " + craft.getBlockList().length + " @ " + craft.getMinX() + "," + craft.getMinY() + "," + craft.getMinZ();
                         } else {
@@ -411,10 +411,10 @@ public class CommandListener implements CommandExecutor {
                     }
                 }
                 if (!foundContact)
-                    player.sendMessage(String.format(I18nSupport.getInternationalisedString("No contacts within range")));
+                    player.sendMessage(I18nSupport.getInternationalisedString("No contacts within range"));
                 return true;
             } else {
-                player.sendMessage(String.format(I18nSupport.getInternationalisedString("You must be piloting a craft")));
+                player.sendMessage(I18nSupport.getInternationalisedString("You must be piloting a craft"));
                 return true;
             }
 
@@ -431,12 +431,12 @@ public class CommandListener implements CommandExecutor {
                         for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(w)) {
                             if (tcraft.getMovedPlayers().containsKey(player)) {
                                 if (tcraft.getW() != player.getWorld()) {
-                                    player.sendMessage(String.format(I18nSupport.getInternationalisedString("Distance to craft is too far")));
+                                    player.sendMessage(I18nSupport.getInternationalisedString("Distance to craft is too far"));
                                 }
                                 if ((System.currentTimeMillis() - tcraft.getMovedPlayers().get(player)) / 1000 < Settings.ManOverBoardTimeout) {
                                     Location telPoint = getCraftTeleportPoint(tcraft, w);
                                     if (telPoint.distance(player.getLocation()) > 1000) {
-                                        player.sendMessage(String.format(I18nSupport.getInternationalisedString("Distance to craft is too far")));
+                                        player.sendMessage(I18nSupport.getInternationalisedString("Distance to craft is too far"));
                                     } else {
                                         if (!CraftManager.getInstance().getCraftByPlayerName(player.getName()).getDisabled())
                                             player.teleport(telPoint);
@@ -451,11 +451,11 @@ public class CommandListener implements CommandExecutor {
 
         if (cmd.getName().equalsIgnoreCase("assaultinfo")) {
             if (Settings.AssaultEnable == false) {
-                player.sendMessage(String.format(I18nSupport.getInternationalisedString("Assault is not enabled")));
+                player.sendMessage(I18nSupport.getInternationalisedString("Assault is not enabled"));
                 return true;
             }
             if (!player.hasPermission("movecraft.assaultinfo")) {
-                player.sendMessage(String.format(I18nSupport.getInternationalisedString("Insufficient Permissions")));
+                player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
                 return true;
             }
             ApplicableRegionSet regions = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(player.getWorld()).getApplicableRegions(player.getLocation());
@@ -469,7 +469,7 @@ public class CommandListener implements CommandExecutor {
                     }
                 }
                 if (foundOwnedRegion == false) {
-                    player.sendMessage(String.format(I18nSupport.getInternationalisedString("You are not the owner of any assaultable region and can not assault others")));
+                    player.sendMessage(I18nSupport.getInternationalisedString("You are not the owner of any assaultable region and can not assault others"));
                     return true;
                 }
 
@@ -527,11 +527,11 @@ public class CommandListener implements CommandExecutor {
 
                 }
                 if (foundAssaultableRegion == false) {
-                    player.sendMessage(String.format(I18nSupport.getInternationalisedString("No Assault eligible regions found")));
+                    player.sendMessage(I18nSupport.getInternationalisedString("No Assault eligible regions found"));
                     return true;
                 }
             } else {
-                player.sendMessage(String.format(I18nSupport.getInternationalisedString("No Assault eligible regions found")));
+                player.sendMessage(I18nSupport.getInternationalisedString("No Assault eligible regions found"));
                 return true;
             }
             return true;
@@ -539,20 +539,20 @@ public class CommandListener implements CommandExecutor {
 
         if (cmd.getName().equalsIgnoreCase("assault")) {
             if (Settings.AssaultEnable == false) {
-                player.sendMessage(String.format(I18nSupport.getInternationalisedString("Assault is not enabled")));
+                player.sendMessage(I18nSupport.getInternationalisedString("Assault is not enabled"));
                 return true;
             }
             if (!player.hasPermission("movecraft.assault")) {
-                player.sendMessage(String.format(I18nSupport.getInternationalisedString("Insufficient Permissions")));
+                player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
                 return true;
             }
             if (args.length == 0) {
-                player.sendMessage(String.format(I18nSupport.getInternationalisedString("No region specified")));
+                player.sendMessage(I18nSupport.getInternationalisedString("No region specified"));
                 return true;
             }
             ProtectedRegion aRegion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(player.getWorld()).getRegion(args[0]);
             if (aRegion == null) {
-                player.sendMessage(String.format(I18nSupport.getInternationalisedString("Region not found")));
+                player.sendMessage(I18nSupport.getInternationalisedString("Region not found"));
                 return true;
             }
             LocalPlayer lp = Movecraft.getInstance().getWorldGuardPlugin().wrapPlayer(player);
@@ -564,7 +564,7 @@ public class CommandListener implements CommandExecutor {
                 }
             }
             if (foundOwnedRegion == false) {
-                player.sendMessage(String.format(I18nSupport.getInternationalisedString("You are not the owner of any assaultable region and can not assault others")));
+                player.sendMessage(I18nSupport.getInternationalisedString("You are not the owner of any assaultable region and can not assault others"));
                 return true;
             }
             boolean canBeAssaulted = true;
@@ -597,12 +597,12 @@ public class CommandListener implements CommandExecutor {
                 canBeAssaulted = false;
             }
             if (!canBeAssaulted) {
-                player.sendMessage(String.format(I18nSupport.getInternationalisedString("You can not assault this region, check AssaultInfo")));
+                player.sendMessage(I18nSupport.getInternationalisedString("You can not assault this region, check AssaultInfo"));
                 return true;
             }
             OfflinePlayer offP = Bukkit.getOfflinePlayer(player.getUniqueId());
             if (Movecraft.getInstance().getEconomy().getBalance(offP) < getCostToAssault(aRegion)) {
-                player.sendMessage(String.format(I18nSupport.getInternationalisedString("You can not afford to assault this region")));
+                player.sendMessage(I18nSupport.getInternationalisedString("You can not afford to assault this region"));
                 return true;
             }
 //			if(aRegion.getType() instanceof ProtectedCuboidRegion) { // Originally I wasn't going to do non-cubes, but we'll try it and see how it goes. In theory it may repair more than it should but... meh...
@@ -661,7 +661,7 @@ public class CommandListener implements CommandExecutor {
             try {
                 clipboard.saveSchematic(file);
             } catch (Exception e) {
-                player.sendMessage(String.format(I18nSupport.getInternationalisedString("Could not save file")));
+                player.sendMessage(I18nSupport.getInternationalisedString("Could not save file"));
                 e.printStackTrace();
                 return true;
             }
@@ -705,15 +705,15 @@ public class CommandListener implements CommandExecutor {
 
         if (cmd.getName().equalsIgnoreCase("siege")) {
             if (!player.hasPermission("movecraft.siege")) {
-                player.sendMessage(String.format(I18nSupport.getInternationalisedString("Insufficient Permissions")));
+                player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
                 return true;
             }
             if (Settings.SiegeName == null) {
-                player.sendMessage(String.format(I18nSupport.getInternationalisedString("Siege is not configured on this server")));
+                player.sendMessage(I18nSupport.getInternationalisedString("Siege is not configured on this server"));
                 return true;
             }
             if (Movecraft.getInstance().siegeInProgress == true) {
-                player.sendMessage(String.format(I18nSupport.getInternationalisedString("A Siege is already taking place")));
+                player.sendMessage(I18nSupport.getInternationalisedString("A Siege is already taking place"));
                 return true;
             }
             String foundSiegeName = null;
@@ -818,7 +818,7 @@ public class CommandListener implements CommandExecutor {
                         Movecraft.getInstance().siegeInProgress = true;
                         return true;
                     } else {
-                        player.sendMessage(String.format(I18nSupport.getInternationalisedString("The time is not during the Siege schedule")));
+                        player.sendMessage(I18nSupport.getInternationalisedString("The time is not during the Siege schedule"));
                         return true;
                     }
                 } else {
@@ -826,7 +826,7 @@ public class CommandListener implements CommandExecutor {
                     return true;
                 }
             } else {
-                player.sendMessage(String.format(I18nSupport.getInternationalisedString("Could not find a siege configuration for the region you are in")));
+                player.sendMessage(I18nSupport.getInternationalisedString("Could not find a siege configuration for the region you are in"));
                 return true;
             }
         }
@@ -848,33 +848,33 @@ public class CommandListener implements CommandExecutor {
     }
 
     public String getRegionOwnerList(ProtectedRegion tRegion) {
-        String output = new String();
+        StringBuilder output = new StringBuilder();
         if (tRegion == null)
-            return output;
+            return output.toString();
         boolean first = true;
         if (tRegion.getOwners().getUniqueIds().size() > 0) {
             for (UUID uid : tRegion.getOwners().getUniqueIds()) {
                 if (!first)
-                    output += ",";
+                    output.append(",");
                 else
                     first = false;
                 OfflinePlayer offP = Bukkit.getOfflinePlayer(uid);
                 if (offP.getName() == null)
-                    output += uid.toString();
+                    output.append(uid.toString());
                 else
-                    output += offP.getName();
+                    output.append(offP.getName());
             }
         }
         if (tRegion.getOwners().getPlayers().size() > 0) {
             for (String player : tRegion.getOwners().getPlayers()) {
                 if (!first)
-                    output += ",";
+                    output.append(",");
                 else
                     first = false;
-                output += player;
+                output.append(player);
             }
         }
-        return output;
+        return output.toString();
     }
 
     private double getCostToAssault(ProtectedRegion tRegion) {

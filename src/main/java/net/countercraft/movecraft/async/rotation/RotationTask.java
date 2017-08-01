@@ -123,7 +123,7 @@ public class RotationTask extends AsyncTask {
 
         if (getCraft().getDisabled() && (!getCraft().getSinking())) {
             failed = true;
-            failMessage = String.format(I18nSupport.getInternationalisedString("Craft is disabled!"));
+            failMessage = I18nSupport.getInternationalisedString("Craft is disabled!");
         }
 
         // blockedByWater=false means an ocean-going vessel
@@ -191,7 +191,7 @@ public class RotationTask extends AsyncTask {
                 }
                 if (fuelHolder == null) {
                     failed = true;
-                    failMessage = String.format(I18nSupport.getInternationalisedString("Translation - Failed Craft out of fuel"));
+                    failMessage = I18nSupport.getInternationalisedString("Translation - Failed Craft out of fuel");
                 } else {
                     InventoryHolder inventoryHolder = (InventoryHolder) fuelHolder.getState();
                     if (inventoryHolder.getInventory().contains(263)) {

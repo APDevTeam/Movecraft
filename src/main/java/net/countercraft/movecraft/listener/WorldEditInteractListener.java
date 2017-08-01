@@ -159,12 +159,12 @@ public class WorldEditInteractListener implements Listener {
 
                 if (org.bukkit.ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Repair:")) { // left click the Repair sign, and it saves the state
                     if (Settings.RepairTicksPerBlock == 0) {
-                        event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("Repair functionality is disabled or WorldEdit was not detected")));
+                        event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Repair functionality is disabled or WorldEdit was not detected"));
                         return;
                     }
                     Craft pCraft = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
                     if (pCraft == null) {
-                        event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("You must be piloting a craft")));
+                        event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("You must be piloting a craft"));
                         return;
                     }
 
@@ -258,11 +258,11 @@ public class WorldEditInteractListener implements Listener {
                     try {
                         cc.saveSchematic(file);
                     } catch (Exception e) {
-                        event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("Could not save file")));
+                        event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Could not save file"));
                         e.printStackTrace();
                         return;
                     }
-                    event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("State saved")));
+                    event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("State saved"));
                     event.setCancelled(true);
                 }
             }
@@ -287,16 +287,16 @@ public class WorldEditInteractListener implements Listener {
 
         if (org.bukkit.ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Repair:")) {
             if (Settings.RepairTicksPerBlock == 0) {
-                event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("Repair functionality is disabled or WorldEdit was not detected")));
+                event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Repair functionality is disabled or WorldEdit was not detected"));
                 return;
             }
             Craft pCraft = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
             if (pCraft == null) {
-                event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("You must be piloting a craft")));
+                event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("You must be piloting a craft"));
                 return;
             }
             if (!event.getPlayer().hasPermission("movecraft." + pCraft.getType().getCraftName() + ".repair")) {
-                event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("Insufficient Permissions")));
+                event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
                 return;
             }
             // load up the repair state
@@ -319,16 +319,16 @@ public class WorldEditInteractListener implements Listener {
                         repairStateName += ".schematic";
                         file = new File(repairStateName);
                         if (!file.exists()) {
-                            event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("REPAIR STATE NOT FOUND")));
+                            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("REPAIR STATE NOT FOUND"));
                             return;
                         } else {
-                            event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("RESAVE YOUR REPAIR STATE")));
+                            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("RESAVE YOUR REPAIR STATE"));
                         }
                     } else {
-                        event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("RESAVE YOUR REPAIR STATE")));
+                        event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("RESAVE YOUR REPAIR STATE"));
                     }
                 } else {
-                    event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("RESAVE YOUR REPAIR STATE")));
+                    event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("RESAVE YOUR REPAIR STATE"));
                 }
             }
             SchematicFormat sf = SchematicFormat.getFormat(file);
@@ -336,11 +336,11 @@ public class WorldEditInteractListener implements Listener {
             try {
                 cc = sf.load(file);
             } catch (com.sk89q.worldedit.data.DataException e) {
-                event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("REPAIR STATE NOT FOUND")));
+                event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("REPAIR STATE NOT FOUND"));
                 e.printStackTrace();
                 return;
             } catch (IOException e) {
-                event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("REPAIR STATE NOT FOUND")));
+                event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("REPAIR STATE NOT FOUND"));
                 e.printStackTrace();
                 return;
             }
@@ -575,7 +575,7 @@ public class WorldEditInteractListener implements Listener {
                     if (Movecraft.getInstance().getEconomy().has(event.getPlayer(), moneyCost)) {
                         Movecraft.getInstance().getEconomy().withdrawPlayer(event.getPlayer(), moneyCost);
                     } else {
-                        event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("You do not have enough money")));
+                        event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("You do not have enough money"));
                         enoughMaterial = false;
                     }
                 }
@@ -654,7 +654,7 @@ public class WorldEditInteractListener implements Listener {
                             @Override
                             public void run() {
                                 CraftManager.getInstance().removeCraft(releaseCraft);
-                                fp.sendMessage(String.format(I18nSupport.getInternationalisedString("Repairs complete. You may now pilot the craft")));
+                                fp.sendMessage(I18nSupport.getInternationalisedString("Repairs complete. You may now pilot the craft"));
                             }
                         }.runTaskLater(Movecraft.getInstance(), (durationInTicks + 20));
 
@@ -675,11 +675,11 @@ public class WorldEditInteractListener implements Listener {
                 float percent = (numdiffblocks * 100) / pCraft.getOrigBlockCount();
                 event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("Percentage of craft") + ": %.2f%%", percent));
                 if (percent > 50) {
-                    event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("This craft is too damaged and can not be repaired")));
+                    event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("This craft is too damaged and can not be repaired"));
                     return;
                 }
                 if (numdiffblocks != 0) {
-                    event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("SUPPLIES NEEDED")));
+                    event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("SUPPLIES NEEDED"));
                     for (Integer blockTypeInteger : numMissingItems.keySet()) {
                         event.getPlayer().sendMessage(String.format("%s : %d", Material.getMaterial(blockTypeInteger).name().toLowerCase().replace("_", " "), numMissingItems.get(blockTypeInteger)));
                     }
@@ -698,10 +698,10 @@ public class WorldEditInteractListener implements Listener {
             if (Movecraft.getInstance().getEconomy().has(event.getPlayer(), damages)) {
                 Movecraft.getInstance().getEconomy().withdrawPlayer(event.getPlayer(), damages);
             } else {
-                event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("You do not have enough money")));
+                event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("You do not have enough money"));
                 return;
             }
-            event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("Repairing region")));
+            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Repairing region"));
             if (repairRegion(event.getClickedBlock().getWorld(), regionName) == false) {
                 Bukkit.getServer().broadcastMessage(String.format("REPAIR OF %s FAILED, CONTACT AN ADMIN", regionName));
             }

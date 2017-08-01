@@ -192,15 +192,15 @@ public class PlayerListener implements Listener {
                 if (!CraftManager.getInstance().getReleaseEvents().containsKey(event.getPlayer()) && c.getType().getMoveEntities()) {
                     boolean releaseBlocked = false;
                     if (Settings.ManOverBoardTimeout != 0)
-                        event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("You have left your craft. You may return to your craft by typing /manoverboard any time before the timeout expires")));
+                        event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("You have left your craft. You may return to your craft by typing /manoverboard any time before the timeout expires"));
                     else
-                        event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("Release - Player has left craft")));
+                        event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Release - Player has left craft"));
                     if (c.getBlockList().length > 11000) {
-                        event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("Craft is too big to check its borders. Make sure this area is safe to release your craft in.")));
+                        event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Craft is too big to check its borders. Make sure this area is safe to release your craft in."));
                     } else {
                         String ret = checkCraftBorders(c);
                         if (ret != null) {
-                            event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("WARNING! There are blocks near your craft that may merge with the craft " + ret)));
+                            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("WARNING! There are blocks near your craft that may merge with the craft " + ret));
                             releaseBlocked = true;
                         }
                     }
