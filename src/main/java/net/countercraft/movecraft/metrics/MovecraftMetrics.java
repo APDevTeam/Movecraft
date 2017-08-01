@@ -20,14 +20,14 @@ package net.countercraft.movecraft.metrics;
 // removed because repo is down import org.mcstats.Metrics;
 
 public class MovecraftMetrics {
-	private final int classTypes;
+    private final int classTypes;
 
-	public MovecraftMetrics( int classTypes ) {
-		this.classTypes = classTypes;
+    public MovecraftMetrics(int classTypes) {
+        this.classTypes = classTypes;
 // removed because repo is down		uploadStatistics();
-	}
+    }
 /* removed becuase repo is down
-	private void uploadStatistics() {
+    private void uploadStatistics() {
 		try {
 			Metrics metrics = new Metrics( Movecraft.getInstance() );
 

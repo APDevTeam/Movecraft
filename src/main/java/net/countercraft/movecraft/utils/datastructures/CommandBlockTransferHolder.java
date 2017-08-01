@@ -18,20 +18,20 @@
 package net.countercraft.movecraft.utils.datastructures;
 
 public class CommandBlockTransferHolder extends TransferData {
-	private final String commandText;
-	private final String commandName;
+    private final String commandText;
+    private final String commandName;
 
-	public CommandBlockTransferHolder( byte data, String commandText, String commandName ) {
-		super( data );
-		this.commandText = commandText;
-		this.commandName = commandName;
-	}
+    public CommandBlockTransferHolder(byte data, String commandText, String commandName) {
+        super(data);
+        this.commandText = commandText;
+        this.commandName = commandName;
+    }
 
-	public String getText() {
-		return this.commandText;
-	}
+    public String getText() {
+        return this.commandText;
+    }
 
-	public String getName() {
-		return this.commandName;
-	}
+    public String getName() {
+        return this.commandName;
+    }
 }

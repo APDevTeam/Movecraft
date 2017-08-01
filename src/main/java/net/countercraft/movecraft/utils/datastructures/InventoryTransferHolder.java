@@ -20,14 +20,14 @@ package net.countercraft.movecraft.utils.datastructures;
 import org.bukkit.inventory.ItemStack;
 
 public class InventoryTransferHolder extends TransferData {
-	private final ItemStack[] invetory;
+    private final ItemStack[] invetory;
 
-	public InventoryTransferHolder( byte data, ItemStack[] invetory ) {
-		super( data );
-		this.invetory = invetory;
-	}
+    public InventoryTransferHolder(byte data, ItemStack[] invetory) {
+        super(data);
+        this.invetory = invetory;
+    }
 
-	public ItemStack[] getInvetory() {
-		return invetory;
-	}
+    public ItemStack[] getInvetory() {
+        return invetory;
+    }
 }

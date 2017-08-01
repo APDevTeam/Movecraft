@@ -25,143 +25,143 @@ import net.countercraft.movecraft.utils.MovecraftLocation;
 import java.util.HashMap;
 
 public class TranslationTaskData {
-	private int dx;
-	private int dy;
-	private int dz;
-	private boolean failed = false;
-	private String failMessage;
-	private MovecraftLocation[] blockList;
-	private MapUpdateCommand[] updates;
-	private EntityUpdateCommand[] entityUpdates;
-	private HashMap <MapUpdateCommand , Long> scheduledBlockChanges=null;
-        private ItemDropUpdateCommand[] itemDropUpdates;
-	private int[][][] hitbox;
-	private int minX, minZ;
-	private int maxHeight, minHeight;
-	private boolean collisionExplosion;
+    private int dx;
+    private int dy;
+    private int dz;
+    private boolean failed = false;
+    private String failMessage;
+    private MovecraftLocation[] blockList;
+    private MapUpdateCommand[] updates;
+    private EntityUpdateCommand[] entityUpdates;
+    private HashMap<MapUpdateCommand, Long> scheduledBlockChanges = null;
+    private ItemDropUpdateCommand[] itemDropUpdates;
+    private int[][][] hitbox;
+    private int minX, minZ;
+    private int maxHeight, minHeight;
+    private boolean collisionExplosion;
 
-	public TranslationTaskData( int dx, int dz, int dy, MovecraftLocation[] blockList, int[][][] hitbox, int minZ, int minX, int maxHeight, int minHeight ) {
-		this.dx = dx;
-		this.dz = dz;
-		this.dy = dy;
-		this.blockList = blockList;
-		this.hitbox = hitbox;
-		this.minZ = minZ;
-		this.minX = minX;
-		this.maxHeight = maxHeight;
-		this.minHeight = minHeight;
-	}
+    public TranslationTaskData(int dx, int dz, int dy, MovecraftLocation[] blockList, int[][][] hitbox, int minZ, int minX, int maxHeight, int minHeight) {
+        this.dx = dx;
+        this.dz = dz;
+        this.dy = dy;
+        this.blockList = blockList;
+        this.hitbox = hitbox;
+        this.minZ = minZ;
+        this.minX = minX;
+        this.maxHeight = maxHeight;
+        this.minHeight = minHeight;
+    }
 
-	public int getDx() {
+    public int getDx() {
 
-		return dx;
-	}
+        return dx;
+    }
 
-	public int getDy() {
-		return dy;
-	}
+    public int getDy() {
+        return dy;
+    }
 
-	public int getDz() {
-		return dz;
-	}
-	
-	public void setDy(int dY) {
-		this.dy = dY;
-	}
+    public void setDy(int dY) {
+        this.dy = dY;
+    }
 
-	public boolean failed() {
-		return failed;
-	}
+    public int getDz() {
+        return dz;
+    }
 
-	public void setFailed( boolean failed ) {
-		this.failed = failed;
-	}
+    public boolean failed() {
+        return failed;
+    }
 
-	public boolean collisionExplosion() {
-		return collisionExplosion;
-	}
+    public void setFailed(boolean failed) {
+        this.failed = failed;
+    }
 
-	public void setCollisionExplosion( boolean collisionExplosion ) {
-		this.collisionExplosion = collisionExplosion;
-	}
+    public boolean collisionExplosion() {
+        return collisionExplosion;
+    }
 
-	public String getFailMessage() {
-		return failMessage;
-	}
+    public void setCollisionExplosion(boolean collisionExplosion) {
+        this.collisionExplosion = collisionExplosion;
+    }
 
-	public void setFailMessage( String failMessage ) {
-		this.failMessage = failMessage;
-	}
+    public String getFailMessage() {
+        return failMessage;
+    }
 
-	public MovecraftLocation[] getBlockList() {
-		return blockList;
-	}
+    public void setFailMessage(String failMessage) {
+        this.failMessage = failMessage;
+    }
 
-	public void setBlockList( MovecraftLocation[] blockList ) {
-		this.blockList = blockList;
-	}
-	
-	public HashMap <MapUpdateCommand , Long> getScheduledBlockChanges() {
-		return scheduledBlockChanges;
-	}
-	
-	public void setScheduledBlockChanges(HashMap <MapUpdateCommand , Long> scheduledBlockChanges) {
-		this.scheduledBlockChanges=scheduledBlockChanges;
-	}
+    public MovecraftLocation[] getBlockList() {
+        return blockList;
+    }
 
-	public MapUpdateCommand[] getUpdates() {
-		return updates;
-	}
+    public void setBlockList(MovecraftLocation[] blockList) {
+        this.blockList = blockList;
+    }
 
-	public void setUpdates( MapUpdateCommand[] updates ) {
-		this.updates = updates;
-	}
+    public HashMap<MapUpdateCommand, Long> getScheduledBlockChanges() {
+        return scheduledBlockChanges;
+    }
 
-	public EntityUpdateCommand[] getEntityUpdates() {
-		return entityUpdates;
-	}
+    public void setScheduledBlockChanges(HashMap<MapUpdateCommand, Long> scheduledBlockChanges) {
+        this.scheduledBlockChanges = scheduledBlockChanges;
+    }
 
-	public void setEntityUpdates( EntityUpdateCommand[] entityUpdates ) {
-		this.entityUpdates = entityUpdates;
-	}
+    public MapUpdateCommand[] getUpdates() {
+        return updates;
+    }
 
-	public int[][][] getHitbox() {
-		return hitbox;
-	}
+    public void setUpdates(MapUpdateCommand[] updates) {
+        this.updates = updates;
+    }
 
-	public void setHitbox( int[][][] hitbox ) {
-		this.hitbox = hitbox;
-	}
+    public EntityUpdateCommand[] getEntityUpdates() {
+        return entityUpdates;
+    }
 
-	public int getMinX() {
-		return minX;
-	}
+    public void setEntityUpdates(EntityUpdateCommand[] entityUpdates) {
+        this.entityUpdates = entityUpdates;
+    }
 
-	public void setMinX( int minX ) {
-		this.minX = minX;
-	}
+    public int[][][] getHitbox() {
+        return hitbox;
+    }
 
-	public int getMinZ() {
-		return minZ;
-	}
+    public void setHitbox(int[][][] hitbox) {
+        this.hitbox = hitbox;
+    }
 
-	public void setMinZ( int minZ ) {
-		this.minZ = minZ;
-	}
+    public int getMinX() {
+        return minX;
+    }
 
-	public int getMinHeight() {
-		return minHeight;
-	}
+    public void setMinX(int minX) {
+        this.minX = minX;
+    }
 
-	public int getMaxHeight() {
-		return maxHeight;
-	}
-        
-        public ItemDropUpdateCommand[] getItemDropUpdateCommands(){
-            return this.itemDropUpdates;
-        }
-        
-        public void setItemDropUpdates(ItemDropUpdateCommand[] itemDropUpdate){
-            this.itemDropUpdates = itemDropUpdate;
-        }
+    public int getMinZ() {
+        return minZ;
+    }
+
+    public void setMinZ(int minZ) {
+        this.minZ = minZ;
+    }
+
+    public int getMinHeight() {
+        return minHeight;
+    }
+
+    public int getMaxHeight() {
+        return maxHeight;
+    }
+
+    public ItemDropUpdateCommand[] getItemDropUpdateCommands() {
+        return this.itemDropUpdates;
+    }
+
+    public void setItemDropUpdates(ItemDropUpdateCommand[] itemDropUpdate) {
+        this.itemDropUpdates = itemDropUpdate;
+    }
 }

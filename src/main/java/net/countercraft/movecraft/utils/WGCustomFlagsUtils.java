@@ -11,92 +11,95 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
 /**
- *
  * @author mwkaicz <mwkaicz@gmail.com>
  */
 public class WGCustomFlagsUtils {
-    
-    
-    public StateFlag getNewStateFlag(String name, boolean def){
+
+
+    public StateFlag getNewStateFlag(String name, boolean def) {
         Constructor<?> cc = getStateFlagConstructor();
-        if (cc == null){return null;}
+        if (cc == null) {
+            return null;
+        }
         Object o;
         try {
             o = cc.newInstance(name, def);
             return (StateFlag) o;
-        } catch(InstantiationException ex){
-            return null; 
-        } catch(IllegalAccessException  ex){
-            return null; 
-        } catch(IllegalArgumentException ex){
-            return null; 
-        } catch(InvocationTargetException ex) {
-            return null; 
+        } catch (InstantiationException ex) {
+            return null;
+        } catch (IllegalAccessException ex) {
+            return null;
+        } catch (IllegalArgumentException ex) {
+            return null;
+        } catch (InvocationTargetException ex) {
+            return null;
         }
     }
-     
-    public Constructor<?> getStateFlagConstructor(){
+
+    public Constructor<?> getStateFlagConstructor() {
         try {
             Class<?> c = Class.forName("com.sk89q.worldguard.protection.flags.StateFlag");
-            Constructor<?> cc = c.getConstructor(String.class,boolean.class);
+            Constructor<?> cc = c.getConstructor(String.class, boolean.class);
             return cc;
-        } catch (ClassNotFoundException ex){
-            return null; 
-        } catch (NoSuchMethodException ex){
-            return null; 
+        } catch (ClassNotFoundException ex) {
+            return null;
+        } catch (NoSuchMethodException ex) {
+            return null;
         } catch (SecurityException ex) {
             return null;
         }
     }
-    
-    public boolean registerStageFlag(Object o){
+
+    public boolean registerStageFlag(Object o) {
         WGCustomFlagsPlugin wgcf = Movecraft.getInstance().getWGCustomFlagsPlugin();
-        if (wgcf != null){
+        if (wgcf != null) {
             Constructor<?> cc = getStateFlagConstructor();
-            if (cc == null){return false;}
+            if (cc == null) {
+                return false;
+            }
             try {
-                wgcf.addCustomFlag((Flag) o);   
-            } catch (Exception e){
+                wgcf.addCustomFlag((Flag) o);
+            } catch (Exception e) {
                 return false;
             }
             return true;
         }
         return false;
     }
-    
-    
-    public void init(){
-        if (Movecraft.FLAG_PILOT != null){
+
+
+    public void init() {
+        if (Movecraft.FLAG_PILOT != null) {
             this.registerStageFlag(Movecraft.FLAG_PILOT);
         }
-        if (Movecraft.FLAG_MOVE != null){
+        if (Movecraft.FLAG_MOVE != null) {
             this.registerStageFlag(Movecraft.FLAG_MOVE);
         }
-        if (Movecraft.FLAG_ROTATE != null){
+        if (Movecraft.FLAG_ROTATE != null) {
             this.registerStageFlag(Movecraft.FLAG_ROTATE);
         }
-        if (Movecraft.FLAG_SINK != null){
+        if (Movecraft.FLAG_SINK != null) {
             this.registerStageFlag(Movecraft.FLAG_SINK);
-        }   
-    } 
-    
-    public boolean validateFlag(Location loc, Object flag){
-        if (flag!=null){
-            StateFlag.State state = (StateFlag.State)Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(loc.getWorld()).getApplicableRegions(loc).getFlag((Flag)flag);
+        }
+    }
+
+    public boolean validateFlag(Location loc, Object flag) {
+        if (flag != null) {
+            StateFlag.State state = (StateFlag.State) Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(loc.getWorld()).getApplicableRegions(loc).getFlag((Flag) flag);
             return state != null && state == StateFlag.State.ALLOW;
-        }else{
+        } else {
             return true;
         }
     }
- 
-    public boolean validateFlag(Location loc, Object flag, LocalPlayer lp){
-        if (flag!=null){
-            StateFlag.State state = (StateFlag.State)Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(loc.getWorld()).getApplicableRegions(loc).getFlag((Flag)flag,lp);
+
+    public boolean validateFlag(Location loc, Object flag, LocalPlayer lp) {
+        if (flag != null) {
+            StateFlag.State state = (StateFlag.State) Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(loc.getWorld()).getApplicableRegions(loc).getFlag((Flag) flag, lp);
             return state != null && state == StateFlag.State.ALLOW;
-        }else{
+        } else {
             return true;
         }
     }
-    
-    
+
+
 }

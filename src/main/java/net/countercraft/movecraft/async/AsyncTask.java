@@ -25,25 +25,25 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.util.logging.Level;
 
 public abstract class AsyncTask extends BukkitRunnable {
-	private final Craft craft;
+    private final Craft craft;
 
-	protected AsyncTask( Craft c ) {
-		craft = c;
-	}
+    protected AsyncTask(Craft c) {
+        craft = c;
+    }
 
-	public void run() {
-		try {
-			excecute();
-			AsyncManager.getInstance().submitCompletedTask( this );
-		} catch ( Exception e ) {
-			Movecraft.getInstance().getLogger().log( Level.SEVERE, String.format( I18nSupport.getInternationalisedString( "Internal - Error - Proccessor thread encountered an error" ) ) );
-			e.printStackTrace();
-		}
-	}
+    public void run() {
+        try {
+            excecute();
+            AsyncManager.getInstance().submitCompletedTask(this);
+        } catch (Exception e) {
+            Movecraft.getInstance().getLogger().log(Level.SEVERE, String.format(I18nSupport.getInternationalisedString("Internal - Error - Proccessor thread encountered an error")));
+            e.printStackTrace();
+        }
+    }
 
-	protected abstract void excecute();
+    protected abstract void excecute();
 
-	protected Craft getCraft() {
-		return craft;
-	}
+    protected Craft getCraft() {
+        return craft;
+    }
 }

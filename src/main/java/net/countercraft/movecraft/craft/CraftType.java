@@ -35,683 +35,688 @@ import java.util.Map;
 import java.util.logging.Level;
 
 public class CraftType {
-	private String craftName;
-	private int maxSize, minSize, minHeightLimit, maxHeightLimit, maxHeightAboveGround;
-	private Integer[] allowedBlocks, forbiddenBlocks;
-	private String[] forbiddenSignStrings;
-	private boolean blockedByWater, requireWaterContact, tryNudge, canCruise, canTeleport, canStaticMove, canHover, canDirectControl, useGravity, canHoverOverWater, moveEntities;
-	private boolean allowHorizontalMovement, allowVerticalMovement, allowRemoteSign, allowCannonDirectorSign, allowAADirectorSign, cruiseOnPilot, allowVerticalTakeoffAndLanding, rotateAtMidpoint;
-	private int cruiseOnPilotVertMove;
-	private int maxStaticMove;
-	private int cruiseSkipBlocks;
-	private int vertCruiseSkipBlocks;
-	private int cruiseTickCooldown;
-	private boolean halfSpeedUnderwater;
-	private boolean focusedExplosion;
-	private boolean mustBeSubcraft;
-	private int staticWaterLevel;
-	private double fuelBurnRate;
-	private double sinkPercent;
-	private double overallSinkPercent;
-	private double detectionMultiplier;
-	private double underwaterDetectionMultiplier;
-	private int sinkRateTicks;
-	private boolean keepMovingOnSink;
-	private int smokeOnSink;
-	private float explodeOnCrash;
-	private float collisionExplosion;
-	private int tickCooldown;
-	private HashMap<ArrayList<Integer>, ArrayList<Double>> flyBlocks = new HashMap<ArrayList<Integer>, ArrayList<Double>>();
-	private HashMap<ArrayList<Integer>, ArrayList<Double>> moveBlocks = new HashMap<ArrayList<Integer>, ArrayList<Double>>();
-	private int hoverLimit;
-	private List<Material> harvestBlocks;
+    private String craftName;
+    private int maxSize, minSize, minHeightLimit, maxHeightLimit, maxHeightAboveGround;
+    private Integer[] allowedBlocks, forbiddenBlocks;
+    private String[] forbiddenSignStrings;
+    private boolean blockedByWater, requireWaterContact, tryNudge, canCruise, canTeleport, canStaticMove, canHover, canDirectControl, useGravity, canHoverOverWater, moveEntities;
+    private boolean allowHorizontalMovement, allowVerticalMovement, allowRemoteSign, allowCannonDirectorSign, allowAADirectorSign, cruiseOnPilot, allowVerticalTakeoffAndLanding, rotateAtMidpoint;
+    private int cruiseOnPilotVertMove;
+    private int maxStaticMove;
+    private int cruiseSkipBlocks;
+    private int vertCruiseSkipBlocks;
+    private int cruiseTickCooldown;
+    private boolean halfSpeedUnderwater;
+    private boolean focusedExplosion;
+    private boolean mustBeSubcraft;
+    private int staticWaterLevel;
+    private double fuelBurnRate;
+    private double sinkPercent;
+    private double overallSinkPercent;
+    private double detectionMultiplier;
+    private double underwaterDetectionMultiplier;
+    private int sinkRateTicks;
+    private boolean keepMovingOnSink;
+    private int smokeOnSink;
+    private float explodeOnCrash;
+    private float collisionExplosion;
+    private int tickCooldown;
+    private HashMap<ArrayList<Integer>, ArrayList<Double>> flyBlocks = new HashMap<ArrayList<Integer>, ArrayList<Double>>();
+    private HashMap<ArrayList<Integer>, ArrayList<Double>> moveBlocks = new HashMap<ArrayList<Integer>, ArrayList<Double>>();
+    private int hoverLimit;
+    private List<Material> harvestBlocks;
     private List<Material> harvesterBladeBlocks;
     private double dynamicLagSpeedFactor;
     private double dynamicFlyBlockSpeedFactor;
     private int dynamicFlyBlock;
-	        
-	public CraftType( File f ) {
-		try {
-			parseCraftDataFromFile( f );
-		} catch ( Exception e ) {
-			Movecraft.getInstance().getLogger().log( Level.SEVERE, String.format( I18nSupport.getInternationalisedString( "Startup - Error parsing CraftType file" ) , f.getAbsolutePath() ) );
-			e.printStackTrace();
-		}
-	}
-	
-	private Integer integerFromObject(Object obj) {
-		if(obj instanceof Double) {
-			return ((Double)obj).intValue();
-		}
-		return (Integer)obj;
-	}
 
-	private Double doubleFromObject(Object obj) {
-		if(obj instanceof Integer) {
-			return ((Integer)obj).doubleValue();
-		}
-		return (Double)obj;
-	}
+    public CraftType(File f) {
+        try {
+            parseCraftDataFromFile(f);
+        } catch (Exception e) {
+            Movecraft.getInstance().getLogger().log(Level.SEVERE, String.format(I18nSupport.getInternationalisedString("Startup - Error parsing CraftType file"), f.getAbsolutePath()));
+            e.printStackTrace();
+        }
+    }
 
-	private Integer[] blockIDListFromObject(Object obj) {
-		ArrayList<Integer> returnList=new ArrayList<Integer>();
-		ArrayList objList=(ArrayList) obj;
-		for(Object i : objList) {
-			if(i instanceof String) {
-				String str=(String)i;
-				if(str.contains(":")) {
-					String[] parts=str.split(":");
-					Integer typeID=Integer.valueOf(parts[0]);
-					Integer metaData=Integer.valueOf(parts[1]);
-					returnList.add(10000+(typeID<<4)+metaData);  // id greater than 10000 indicates it has a meta data / damage value
-				} else {
-					Integer typeID=Integer.valueOf(str);
-					returnList.add(typeID);
-				}
-			} else {
-				Integer typeID=(Integer)i;
-				returnList.add(typeID);
-			}
-		}
-		return returnList.toArray(new Integer[1]);
-	}
-	
-	private String[] stringListFromObject(Object obj) {
-		ArrayList<String> returnList=new ArrayList<String>();
-		if(obj==null) {
-			return returnList.toArray(new String[1]);
-		}
-		ArrayList objList=(ArrayList) obj;
-		for(Object i : objList) {
-			if(i instanceof String) {
-				String str=(String)i;
-				returnList.add(str);
-			}
-		}
-		return returnList.toArray(new String[1]);
-	}
+    private Integer integerFromObject(Object obj) {
+        if (obj instanceof Double) {
+            return ((Double) obj).intValue();
+        }
+        return (Integer) obj;
+    }
 
-	private HashMap<ArrayList<Integer>, ArrayList<Double>> blockIDMapListFromObject(Object obj) {
-		HashMap<ArrayList<Integer>, ArrayList<Double>> returnMap=new HashMap<ArrayList<Integer>, ArrayList<Double>>();
-		HashMap<Object, Object> objMap=(HashMap<Object, Object>) obj;
-		for(Object i : objMap.keySet()) {
-			ArrayList<Integer> rowList=new ArrayList<Integer>();
+    private Double doubleFromObject(Object obj) {
+        if (obj instanceof Integer) {
+            return ((Integer) obj).doubleValue();
+        }
+        return (Double) obj;
+    }
 
-			// first read in the list of the blocks that type of flyblock. It could be a single string (with or without a ":") or integer, or it could be multiple of them
-			if(i instanceof ArrayList<?>) {
-				for(Object o : (ArrayList<Object>)i) {
-					if(o instanceof String) {
-						String str=(String)o;
-						if(str.contains(":")) {
-							String[] parts=str.split(":");
-							Integer typeID=Integer.valueOf(parts[0]);
-							Integer metaData=Integer.valueOf(parts[1]);
-							rowList.add(10000+(typeID<<4)+metaData);  // id greater than 10000 indicates it has a meta data / damage value
-						} else {
-							Integer typeID=Integer.valueOf(str);
-							rowList.add(typeID);
-						}
-					} else {
-						Integer typeID=(Integer)o;
-						rowList.add(typeID);
-					}
-				}
-			} else 
-			if(i instanceof String) {
-				String str=(String)i;
-				if(str.contains(":")) {
-					String[] parts=str.split(":");
-					Integer typeID=Integer.valueOf(parts[0]);
-					Integer metaData=Integer.valueOf(parts[1]);
-					rowList.add(10000+(typeID<<4)+metaData);  // id greater than 10000 indicates it has a meta data / damage value
-				} else {
-					Integer typeID=Integer.valueOf(str);
-					rowList.add(typeID);
-				}
-			} else {
-				Integer typeID=(Integer)i;
-				rowList.add(typeID);
-			}
-			
-			// then read in the limitation values, low and high
-			ArrayList<Object> objList=(ArrayList<Object>)objMap.get(i);
-			ArrayList<Double> limitList=new ArrayList<Double>();
-			for(Object limitObj : objList) {
-				if(limitObj instanceof String) {
-					String str=(String)limitObj;
-					if(str.contains("N")) { // a # indicates a specific quantity, IE: #2 for exactly 2 of the block
-						String[] parts=str.split("N");
-						Double val=Double.valueOf(parts[1]);
-						limitList.add(10000.0+val);  // limit greater than 10000 indicates an specific quantity (not a ratio)
-					} else {
-						Double val=Double.valueOf(str);
-						limitList.add(val);
-					}
-				} else
-				if(limitObj instanceof Integer) {
-					Double ret=((Integer)limitObj).doubleValue();
-					limitList.add(ret);
-				} else
-					limitList.add((Double)limitObj);
-			}
-			returnMap.put(rowList, limitList);
-		}
-		return returnMap;
-	}
-   
-	private void parseCraftDataFromFile( File file ) throws FileNotFoundException {
-		InputStream input = new FileInputStream(file);
-		Yaml yaml = new Yaml();
-		Map data = ( Map ) yaml.load( input );
-		craftName = ( String ) data.get( "name" );
-		maxSize = integerFromObject(data.get( "maxSize" ));
-		minSize = integerFromObject(data.get( "minSize" ));
+    private Integer[] blockIDListFromObject(Object obj) {
+        ArrayList<Integer> returnList = new ArrayList<Integer>();
+        ArrayList objList = (ArrayList) obj;
+        for (Object i : objList) {
+            if (i instanceof String) {
+                String str = (String) i;
+                if (str.contains(":")) {
+                    String[] parts = str.split(":");
+                    Integer typeID = Integer.valueOf(parts[0]);
+                    Integer metaData = Integer.valueOf(parts[1]);
+                    returnList.add(10000 + (typeID << 4) + metaData);  // id greater than 10000 indicates it has a meta data / damage value
+                } else {
+                    Integer typeID = Integer.valueOf(str);
+                    returnList.add(typeID);
+                }
+            } else {
+                Integer typeID = (Integer) i;
+                returnList.add(typeID);
+            }
+        }
+        return returnList.toArray(new Integer[1]);
+    }
+
+    private String[] stringListFromObject(Object obj) {
+        ArrayList<String> returnList = new ArrayList<String>();
+        if (obj == null) {
+            return returnList.toArray(new String[1]);
+        }
+        ArrayList objList = (ArrayList) obj;
+        for (Object i : objList) {
+            if (i instanceof String) {
+                String str = (String) i;
+                returnList.add(str);
+            }
+        }
+        return returnList.toArray(new String[1]);
+    }
+
+    private HashMap<ArrayList<Integer>, ArrayList<Double>> blockIDMapListFromObject(Object obj) {
+        HashMap<ArrayList<Integer>, ArrayList<Double>> returnMap = new HashMap<ArrayList<Integer>, ArrayList<Double>>();
+        HashMap<Object, Object> objMap = (HashMap<Object, Object>) obj;
+        for (Object i : objMap.keySet()) {
+            ArrayList<Integer> rowList = new ArrayList<Integer>();
+
+            // first read in the list of the blocks that type of flyblock. It could be a single string (with or without a ":") or integer, or it could be multiple of them
+            if (i instanceof ArrayList<?>) {
+                for (Object o : (ArrayList<Object>) i) {
+                    if (o instanceof String) {
+                        String str = (String) o;
+                        if (str.contains(":")) {
+                            String[] parts = str.split(":");
+                            Integer typeID = Integer.valueOf(parts[0]);
+                            Integer metaData = Integer.valueOf(parts[1]);
+                            rowList.add(10000 + (typeID << 4) + metaData);  // id greater than 10000 indicates it has a meta data / damage value
+                        } else {
+                            Integer typeID = Integer.valueOf(str);
+                            rowList.add(typeID);
+                        }
+                    } else {
+                        Integer typeID = (Integer) o;
+                        rowList.add(typeID);
+                    }
+                }
+            } else if (i instanceof String) {
+                String str = (String) i;
+                if (str.contains(":")) {
+                    String[] parts = str.split(":");
+                    Integer typeID = Integer.valueOf(parts[0]);
+                    Integer metaData = Integer.valueOf(parts[1]);
+                    rowList.add(10000 + (typeID << 4) + metaData);  // id greater than 10000 indicates it has a meta data / damage value
+                } else {
+                    Integer typeID = Integer.valueOf(str);
+                    rowList.add(typeID);
+                }
+            } else {
+                Integer typeID = (Integer) i;
+                rowList.add(typeID);
+            }
+
+            // then read in the limitation values, low and high
+            ArrayList<Object> objList = (ArrayList<Object>) objMap.get(i);
+            ArrayList<Double> limitList = new ArrayList<Double>();
+            for (Object limitObj : objList) {
+                if (limitObj instanceof String) {
+                    String str = (String) limitObj;
+                    if (str.contains("N")) { // a # indicates a specific quantity, IE: #2 for exactly 2 of the block
+                        String[] parts = str.split("N");
+                        Double val = Double.valueOf(parts[1]);
+                        limitList.add(10000.0 + val);  // limit greater than 10000 indicates an specific quantity (not a ratio)
+                    } else {
+                        Double val = Double.valueOf(str);
+                        limitList.add(val);
+                    }
+                } else if (limitObj instanceof Integer) {
+                    Double ret = ((Integer) limitObj).doubleValue();
+                    limitList.add(ret);
+                } else
+                    limitList.add((Double) limitObj);
+            }
+            returnMap.put(rowList, limitList);
+        }
+        return returnMap;
+    }
+
+    private void parseCraftDataFromFile(File file) throws FileNotFoundException {
+        InputStream input = new FileInputStream(file);
+        Yaml yaml = new Yaml();
+        Map data = (Map) yaml.load(input);
+        craftName = (String) data.get("name");
+        maxSize = integerFromObject(data.get("maxSize"));
+        minSize = integerFromObject(data.get("minSize"));
 //		allowedBlocks = ((ArrayList<String> ) data.get( "allowedBlocks" )).toArray( new Integer[1] );
-		allowedBlocks = blockIDListFromObject(data.get( "allowedBlocks" ));
-		Arrays.sort(allowedBlocks);
-		
-		forbiddenBlocks = blockIDListFromObject(data.get( "forbiddenBlocks" ));
-		forbiddenSignStrings = stringListFromObject(data.get( "forbiddenSignStrings" ));
-		if(data.containsKey("canFly")) {
-			blockedByWater = ( Boolean ) data.get( "canFly" );
-		} else if (data.containsKey("blockedByWater")) {
-			blockedByWater = ( Boolean ) data.get( "blockedByWater" );			
-		} else {
-			blockedByWater = true;
-		}
-		if(data.containsKey("requireWaterContact")) {
-			requireWaterContact = ( Boolean ) data.get( "requireWaterContact" );
-		} else {
-			requireWaterContact = false;
-		}
-		if(data.containsKey("tryNudge")) {
-			tryNudge=(Boolean) data.get("tryNudge");
-		} else {
-			tryNudge=false;
-		}
-		tickCooldown = (int) Math.ceil( 20 / ( doubleFromObject(data.get( "speed" )) ) );
-		if(data.containsKey("cruiseSpeed")) {
-			cruiseTickCooldown=(int) Math.ceil( 20 / ( doubleFromObject(data.get( "cruiseSpeed" )) ) );
-		} else {
-			cruiseTickCooldown=tickCooldown;
-		}
+        allowedBlocks = blockIDListFromObject(data.get("allowedBlocks"));
+        Arrays.sort(allowedBlocks);
 
-		flyBlocks = blockIDMapListFromObject(data.get( "flyblocks" ));
-		if(data.containsKey("moveblocks")) {
-			moveBlocks = blockIDMapListFromObject(data.get( "moveblocks" ));			
-		} else {
-			moveBlocks=null;
-		}
+        forbiddenBlocks = blockIDListFromObject(data.get("forbiddenBlocks"));
+        forbiddenSignStrings = stringListFromObject(data.get("forbiddenSignStrings"));
+        if (data.containsKey("canFly")) {
+            blockedByWater = (Boolean) data.get("canFly");
+        } else if (data.containsKey("blockedByWater")) {
+            blockedByWater = (Boolean) data.get("blockedByWater");
+        } else {
+            blockedByWater = true;
+        }
+        if (data.containsKey("requireWaterContact")) {
+            requireWaterContact = (Boolean) data.get("requireWaterContact");
+        } else {
+            requireWaterContact = false;
+        }
+        if (data.containsKey("tryNudge")) {
+            tryNudge = (Boolean) data.get("tryNudge");
+        } else {
+            tryNudge = false;
+        }
+        tickCooldown = (int) Math.ceil(20 / (doubleFromObject(data.get("speed"))));
+        if (data.containsKey("cruiseSpeed")) {
+            cruiseTickCooldown = (int) Math.ceil(20 / (doubleFromObject(data.get("cruiseSpeed"))));
+        } else {
+            cruiseTickCooldown = tickCooldown;
+        }
 
-		if(data.containsKey("canCruise")) {
-			canCruise=(Boolean) data.get("canCruise");
-		} else {
-			canCruise=false;
-		}
-		if(data.containsKey("canTeleport")) {
-			canTeleport=(Boolean) data.get("canTeleport");
-		} else {
-			canTeleport=false;
-		}
-		if(data.containsKey("cruiseOnPilot")) {
-			cruiseOnPilot=(Boolean) data.get("cruiseOnPilot");
-		} else {
-			cruiseOnPilot=false;
-		}
-		if(data.containsKey("cruiseOnPilotVertMove")) {
-			cruiseOnPilotVertMove=integerFromObject(data.get("cruiseOnPilotVertMove"));
-		} else {
-			cruiseOnPilotVertMove=0;
-		}
-		if(data.containsKey("allowVerticalMovement")) {
-			allowVerticalMovement=(Boolean) data.get("allowVerticalMovement");
-		} else {
-			allowVerticalMovement=true;
-		}
-		if(data.containsKey("rotateAtMidpoint")) {
-			rotateAtMidpoint=(Boolean) data.get("rotateAtMidpoint");
-		} else {
-			rotateAtMidpoint=false;
-		}
-		if(data.containsKey("allowHorizontalMovement")) {
-			allowHorizontalMovement=(Boolean) data.get("allowHorizontalMovement");
-		} else {
-			allowHorizontalMovement=true;
-		}
-		if(data.containsKey("allowRemoteSign")) {
-			allowRemoteSign=(Boolean) data.get("allowRemoteSign");
-		} else {
-			allowRemoteSign=true;
-		}
-		if(data.containsKey("allowCannonDirectorSign")) {
-			allowCannonDirectorSign=(Boolean) data.get("allowCannonDirectorSign");
-		} else {
-			allowCannonDirectorSign=true;
-		}
-		if(data.containsKey("allowAADirectorSign")) {
-			allowAADirectorSign=(Boolean) data.get("allowAADirectorSign");
-		} else {
-			allowAADirectorSign=true;
-		}
-		if(data.containsKey("canStaticMove")) {
-			canStaticMove=(Boolean) data.get("canStaticMove");
-		} else {
-			canStaticMove=false;
-		}
-		if(data.containsKey("maxStaticMove")) {
-			maxStaticMove=integerFromObject(data.get("maxStaticMove"));
-		} else {
-			maxStaticMove=10000;
-		}
-		if(data.containsKey("cruiseSkipBlocks")) {
-			cruiseSkipBlocks=integerFromObject(data.get("cruiseSkipBlocks"));
-		} else {
-			cruiseSkipBlocks=0;
-		}
-		if(data.containsKey("vertCruiseSkipBlocks")) {
-			vertCruiseSkipBlocks=integerFromObject(data.get("vertCruiseSkipBlocks"));
-		} else {
-			vertCruiseSkipBlocks=cruiseSkipBlocks;
-		}
-		if(data.containsKey("halfSpeedUnderwater")) {
-			halfSpeedUnderwater=(Boolean) data.get("halfSpeedUnderwater");
-		} else {
-			halfSpeedUnderwater=false;
-		}
-		if(data.containsKey("focusedExplosion")) {
-			focusedExplosion=(Boolean) data.get("focusedExplosion");
-		} else {
-			focusedExplosion=false;
-		}
-		if(data.containsKey("mustBeSubcraft")) {
-			mustBeSubcraft=(Boolean) data.get("mustBeSubcraft");
-		} else {
-			mustBeSubcraft=false;
-		}
-		if(data.containsKey("staticWaterLevel")) {
-			staticWaterLevel=integerFromObject(data.get("staticWaterLevel"));
-		} else {
-			staticWaterLevel=0;
-		}
-		if(data.containsKey("fuelBurnRate")) {
-			fuelBurnRate=doubleFromObject(data.get("fuelBurnRate"));
-		} else {
-			fuelBurnRate=0.0;
-		}
-		if(data.containsKey("sinkPercent")) {
-			sinkPercent=doubleFromObject(data.get("sinkPercent"));
-		} else {
-			sinkPercent=0.0;
-		}
-		if(data.containsKey("overallSinkPercent")) {
-			overallSinkPercent=doubleFromObject(data.get("overallSinkPercent"));
-		} else {
-			overallSinkPercent=0.0;
-		}
-		if(data.containsKey("detectionMultiplier")) {
-			detectionMultiplier=doubleFromObject(data.get("detectionMultiplier"));
-		} else {
-			detectionMultiplier=0.0;
-		}
-		if(data.containsKey("underwaterDetectionMultiplier")) {
-			underwaterDetectionMultiplier=doubleFromObject(data.get("underwaterDetectionMultiplier"));
-		} else {
-			underwaterDetectionMultiplier=detectionMultiplier;
-		}
-		if(data.containsKey("sinkSpeed")) {
-			sinkRateTicks=(int) Math.ceil( 20 / ( doubleFromObject(data.get( "sinkSpeed" )) ) );
-		} else {
-			sinkRateTicks=(int)Settings.SinkRateTicks;
-		}
-        if(data.containsKey("keepMovingOnSink")) {
-        	keepMovingOnSink=(Boolean) data.get("keepMovingOnSink");
+        flyBlocks = blockIDMapListFromObject(data.get("flyblocks"));
+        if (data.containsKey("moveblocks")) {
+            moveBlocks = blockIDMapListFromObject(data.get("moveblocks"));
         } else {
-        	keepMovingOnSink=false;
-     	}
-        if (data.containsKey("smokeOnSink")){
-        	smokeOnSink = integerFromObject(data.get( "smokeOnSink" ));
-        }else{
-        	smokeOnSink=0; 
+            moveBlocks = null;
         }
-		if(data.containsKey("explodeOnCrash")) {
-			double temp=doubleFromObject(data.get("explodeOnCrash"));
-			explodeOnCrash=(float) temp;
-		} else {
-			explodeOnCrash=0.0F;
-		}
-		if(data.containsKey("collisionExplosion")) {
-			double temp=doubleFromObject(data.get("collisionExplosion"));
-			collisionExplosion=(float) temp;
-		} else {
-			collisionExplosion=0.0F;
-		}
-        if (data.containsKey("minHeightLimit")){
-            minHeightLimit = integerFromObject(data.get( "minHeightLimit" ));
-            if (minHeightLimit<0){minHeightLimit=0;}
-        }else{
-            minHeightLimit=0;
-        }
-        if (data.containsKey("maxHeightLimit")){
-            maxHeightLimit = integerFromObject(data.get( "maxHeightLimit" ));
-            if (maxHeightLimit<=minHeightLimit){maxHeightLimit=255;} 
-        }else{
-            maxHeightLimit=254; 
-        }
-        if (data.containsKey("maxHeightAboveGround")){
-        	maxHeightAboveGround = integerFromObject(data.get( "maxHeightAboveGround" ));
-        }else{
-        	maxHeightAboveGround=-1; 
-        }
-        if(data.containsKey("canDirectControl")) {
-        	canDirectControl=(Boolean) data.get("canDirectControl");
+
+        if (data.containsKey("canCruise")) {
+            canCruise = (Boolean) data.get("canCruise");
         } else {
-        	canDirectControl=true;
-     	}
-        if(data.containsKey("canHover")) {
-        	canHover=(Boolean) data.get("canHover");
-        } else {
-        	canHover=false;
-     	}
-        if (data.containsKey("canHoverOverWater")){
-        	canHoverOverWater=(Boolean) data.get("canHoverOverWater");
-        } else {
-        	canHoverOverWater=true;
+            canCruise = false;
         }
-        if (data.containsKey("moveEntities")){
-        	moveEntities=(Boolean) data.get("moveEntities");
-        }else{
-        	moveEntities=true;
+        if (data.containsKey("canTeleport")) {
+            canTeleport = (Boolean) data.get("canTeleport");
+        } else {
+            canTeleport = false;
         }
-    	if(data.containsKey("useGravity")) {
-    		useGravity=(Boolean) data.get("useGravity");
-     	} else {
-     		useGravity=false;
-    	}
-        	         
-    	if (data.containsKey("hoverLimit")){
-        	hoverLimit = integerFromObject(data.get( "hoverLimit" ));
-        	if (hoverLimit<0){
-        		hoverLimit=0;
-        	}
-    	}else{
-        	hoverLimit=0;
-     	}
-            harvestBlocks = new ArrayList<Material>(); 
-            harvesterBladeBlocks = new ArrayList<Material>();
-            if (data.containsKey("harvestBlocks")){
+        if (data.containsKey("cruiseOnPilot")) {
+            cruiseOnPilot = (Boolean) data.get("cruiseOnPilot");
+        } else {
+            cruiseOnPilot = false;
+        }
+        if (data.containsKey("cruiseOnPilotVertMove")) {
+            cruiseOnPilotVertMove = integerFromObject(data.get("cruiseOnPilotVertMove"));
+        } else {
+            cruiseOnPilotVertMove = 0;
+        }
+        if (data.containsKey("allowVerticalMovement")) {
+            allowVerticalMovement = (Boolean) data.get("allowVerticalMovement");
+        } else {
+            allowVerticalMovement = true;
+        }
+        if (data.containsKey("rotateAtMidpoint")) {
+            rotateAtMidpoint = (Boolean) data.get("rotateAtMidpoint");
+        } else {
+            rotateAtMidpoint = false;
+        }
+        if (data.containsKey("allowHorizontalMovement")) {
+            allowHorizontalMovement = (Boolean) data.get("allowHorizontalMovement");
+        } else {
+            allowHorizontalMovement = true;
+        }
+        if (data.containsKey("allowRemoteSign")) {
+            allowRemoteSign = (Boolean) data.get("allowRemoteSign");
+        } else {
+            allowRemoteSign = true;
+        }
+        if (data.containsKey("allowCannonDirectorSign")) {
+            allowCannonDirectorSign = (Boolean) data.get("allowCannonDirectorSign");
+        } else {
+            allowCannonDirectorSign = true;
+        }
+        if (data.containsKey("allowAADirectorSign")) {
+            allowAADirectorSign = (Boolean) data.get("allowAADirectorSign");
+        } else {
+            allowAADirectorSign = true;
+        }
+        if (data.containsKey("canStaticMove")) {
+            canStaticMove = (Boolean) data.get("canStaticMove");
+        } else {
+            canStaticMove = false;
+        }
+        if (data.containsKey("maxStaticMove")) {
+            maxStaticMove = integerFromObject(data.get("maxStaticMove"));
+        } else {
+            maxStaticMove = 10000;
+        }
+        if (data.containsKey("cruiseSkipBlocks")) {
+            cruiseSkipBlocks = integerFromObject(data.get("cruiseSkipBlocks"));
+        } else {
+            cruiseSkipBlocks = 0;
+        }
+        if (data.containsKey("vertCruiseSkipBlocks")) {
+            vertCruiseSkipBlocks = integerFromObject(data.get("vertCruiseSkipBlocks"));
+        } else {
+            vertCruiseSkipBlocks = cruiseSkipBlocks;
+        }
+        if (data.containsKey("halfSpeedUnderwater")) {
+            halfSpeedUnderwater = (Boolean) data.get("halfSpeedUnderwater");
+        } else {
+            halfSpeedUnderwater = false;
+        }
+        if (data.containsKey("focusedExplosion")) {
+            focusedExplosion = (Boolean) data.get("focusedExplosion");
+        } else {
+            focusedExplosion = false;
+        }
+        if (data.containsKey("mustBeSubcraft")) {
+            mustBeSubcraft = (Boolean) data.get("mustBeSubcraft");
+        } else {
+            mustBeSubcraft = false;
+        }
+        if (data.containsKey("staticWaterLevel")) {
+            staticWaterLevel = integerFromObject(data.get("staticWaterLevel"));
+        } else {
+            staticWaterLevel = 0;
+        }
+        if (data.containsKey("fuelBurnRate")) {
+            fuelBurnRate = doubleFromObject(data.get("fuelBurnRate"));
+        } else {
+            fuelBurnRate = 0.0;
+        }
+        if (data.containsKey("sinkPercent")) {
+            sinkPercent = doubleFromObject(data.get("sinkPercent"));
+        } else {
+            sinkPercent = 0.0;
+        }
+        if (data.containsKey("overallSinkPercent")) {
+            overallSinkPercent = doubleFromObject(data.get("overallSinkPercent"));
+        } else {
+            overallSinkPercent = 0.0;
+        }
+        if (data.containsKey("detectionMultiplier")) {
+            detectionMultiplier = doubleFromObject(data.get("detectionMultiplier"));
+        } else {
+            detectionMultiplier = 0.0;
+        }
+        if (data.containsKey("underwaterDetectionMultiplier")) {
+            underwaterDetectionMultiplier = doubleFromObject(data.get("underwaterDetectionMultiplier"));
+        } else {
+            underwaterDetectionMultiplier = detectionMultiplier;
+        }
+        if (data.containsKey("sinkSpeed")) {
+            sinkRateTicks = (int) Math.ceil(20 / (doubleFromObject(data.get("sinkSpeed"))));
+        } else {
+            sinkRateTicks = (int) Settings.SinkRateTicks;
+        }
+        if (data.containsKey("keepMovingOnSink")) {
+            keepMovingOnSink = (Boolean) data.get("keepMovingOnSink");
+        } else {
+            keepMovingOnSink = false;
+        }
+        if (data.containsKey("smokeOnSink")) {
+            smokeOnSink = integerFromObject(data.get("smokeOnSink"));
+        } else {
+            smokeOnSink = 0;
+        }
+        if (data.containsKey("explodeOnCrash")) {
+            double temp = doubleFromObject(data.get("explodeOnCrash"));
+            explodeOnCrash = (float) temp;
+        } else {
+            explodeOnCrash = 0.0F;
+        }
+        if (data.containsKey("collisionExplosion")) {
+            double temp = doubleFromObject(data.get("collisionExplosion"));
+            collisionExplosion = (float) temp;
+        } else {
+            collisionExplosion = 0.0F;
+        }
+        if (data.containsKey("minHeightLimit")) {
+            minHeightLimit = integerFromObject(data.get("minHeightLimit"));
+            if (minHeightLimit < 0) {
+                minHeightLimit = 0;
+            }
+        } else {
+            minHeightLimit = 0;
+        }
+        if (data.containsKey("maxHeightLimit")) {
+            maxHeightLimit = integerFromObject(data.get("maxHeightLimit"));
+            if (maxHeightLimit <= minHeightLimit) {
+                maxHeightLimit = 255;
+            }
+        } else {
+            maxHeightLimit = 254;
+        }
+        if (data.containsKey("maxHeightAboveGround")) {
+            maxHeightAboveGround = integerFromObject(data.get("maxHeightAboveGround"));
+        } else {
+            maxHeightAboveGround = -1;
+        }
+        if (data.containsKey("canDirectControl")) {
+            canDirectControl = (Boolean) data.get("canDirectControl");
+        } else {
+            canDirectControl = true;
+        }
+        if (data.containsKey("canHover")) {
+            canHover = (Boolean) data.get("canHover");
+        } else {
+            canHover = false;
+        }
+        if (data.containsKey("canHoverOverWater")) {
+            canHoverOverWater = (Boolean) data.get("canHoverOverWater");
+        } else {
+            canHoverOverWater = true;
+        }
+        if (data.containsKey("moveEntities")) {
+            moveEntities = (Boolean) data.get("moveEntities");
+        } else {
+            moveEntities = true;
+        }
+        if (data.containsKey("useGravity")) {
+            useGravity = (Boolean) data.get("useGravity");
+        } else {
+            useGravity = false;
+        }
+
+        if (data.containsKey("hoverLimit")) {
+            hoverLimit = integerFromObject(data.get("hoverLimit"));
+            if (hoverLimit < 0) {
+                hoverLimit = 0;
+            }
+        } else {
+            hoverLimit = 0;
+        }
+        harvestBlocks = new ArrayList<Material>();
+        harvesterBladeBlocks = new ArrayList<Material>();
+        if (data.containsKey("harvestBlocks")) {
     /*        	String[] temp = ((ArrayList<String> ) data.get( "harvestBlocks" )).toArray( new String[1] );
                     for (int i = 0; i < temp.length; i++){
                             Material mat = Material.getMaterial(temp[i]);
                             if (mat != null ){
                                     harvestBlocks.add(mat);
                             }*/
-                    ArrayList objList=(ArrayList) data.get( "harvestBlocks" );
-                    for(Object i : objList) {
-                            if(i instanceof String) {
-                                    Material mat = Material.getMaterial((String)i);
-                                    harvestBlocks.add(mat);
-                            } else {
-                                    Integer typeID=(Integer)i;
-                                    Material mat = Material.getMaterial((Integer)i);
-                                    harvestBlocks.add(mat);
-                            }
-                    }
-
+            ArrayList objList = (ArrayList) data.get("harvestBlocks");
+            for (Object i : objList) {
+                if (i instanceof String) {
+                    Material mat = Material.getMaterial((String) i);
+                    harvestBlocks.add(mat);
+                } else {
+                    Integer typeID = (Integer) i;
+                    Material mat = Material.getMaterial((Integer) i);
+                    harvestBlocks.add(mat);
+                }
             }
-            if (data.containsKey("harvesterBladeBlocks")){
-                    ArrayList objList=(ArrayList) data.get( "harvesterBladeBlocks" );
-                    for(Object i : objList) {
-                            if(i instanceof String) {
-                                    Material mat = Material.getMaterial((String)i);
-                                    harvesterBladeBlocks.add(mat);
-                            } else {
-                                    Integer typeID = (Integer)i;
-                                    Material mat = Material.getMaterial((Integer)i);
-                                    harvesterBladeBlocks.add(mat);
-                            }
-                    }
+
+        }
+        if (data.containsKey("harvesterBladeBlocks")) {
+            ArrayList objList = (ArrayList) data.get("harvesterBladeBlocks");
+            for (Object i : objList) {
+                if (i instanceof String) {
+                    Material mat = Material.getMaterial((String) i);
+                    harvesterBladeBlocks.add(mat);
+                } else {
+                    Integer typeID = (Integer) i;
+                    Material mat = Material.getMaterial((Integer) i);
+                    harvesterBladeBlocks.add(mat);
+                }
             }
-            if (data.containsKey("allowVerticalTakeoffAndLanding")){
-                allowVerticalTakeoffAndLanding = (Boolean) data.get("allowVerticalTakeoffAndLanding");
-            }else{
-                allowVerticalTakeoffAndLanding = true;
-            }
-              
-    		if(data.containsKey("dynamicLagSpeedFactor")) {
-    			dynamicLagSpeedFactor=doubleFromObject(data.get("dynamicLagSpeedFactor"));
-    		} else {
-    			dynamicLagSpeedFactor=0.0;
-    		}
-    		if(data.containsKey("dynamicFlyBlockSpeedFactor")) {
-    			dynamicFlyBlockSpeedFactor=doubleFromObject(data.get("dynamicFlyBlockSpeedFactor"));
-    		} else {
-    			dynamicFlyBlockSpeedFactor=0.0;
-    		}
-    		if(data.containsKey("dynamicFlyBlock")) {
-    			dynamicFlyBlock=integerFromObject(data.get("dynamicFlyBlock"));
-    		} else {
-    			dynamicFlyBlock=0;
-    		}
-	}
-
-	public String getCraftName() {
-		return craftName;
-	}
-
-	public int getMaxSize() {
-		return maxSize;
-	}
-        
-	public int getMinSize() {
-		return minSize;
-	}
-        
-	public Integer[] getAllowedBlocks() {
-		return allowedBlocks;
-	}
-
-	public Integer[] getForbiddenBlocks() {
-		return forbiddenBlocks;
-	}
-
-	public String[] getForbiddenSignStrings() {
-		return forbiddenSignStrings;
-	}
-
-	public boolean blockedByWater() {
-		return blockedByWater;
-	}
-
-	public boolean getRequireWaterContact() {
-		return requireWaterContact;
-	}
-
-	public boolean getCanCruise() {
-		return canCruise;
-	}
-	
-	public int getCruiseSkipBlocks() {
-		return cruiseSkipBlocks;
-	}
-	
-	public int getVertCruiseSkipBlocks() {
-		return vertCruiseSkipBlocks;
-	}
-	
-	public int maxStaticMove() {
-		return maxStaticMove;
-	}
-	
-	public int getStaticWaterLevel() {
-		return staticWaterLevel;
-	}
-
-	public boolean getCanTeleport() {
-		return canTeleport;
-	}
-	
-	public boolean getCanStaticMove() {
-		return canStaticMove;
-	}
-	
-	public boolean getCruiseOnPilot() {
-		return cruiseOnPilot;
-	}
-	
-	public int getCruiseOnPilotVertMove() {
-		return cruiseOnPilotVertMove;
-	}
-	
-	public boolean allowVerticalMovement() {
-		return allowVerticalMovement;
-	}
-	
-	public boolean rotateAtMidpoint() {
-		return rotateAtMidpoint;
-	}
-	
-	public boolean allowHorizontalMovement() {
-		return allowHorizontalMovement;
-	}
-	
-	public boolean allowRemoteSign() {
-		return allowRemoteSign;
-	}
-	
-	public boolean allowCannonDirectorSign() {
-		return allowCannonDirectorSign;
-	}
-	
-	public boolean allowAADirectorSign() {
-		return allowAADirectorSign;
-	}
-	
-	public double getFuelBurnRate() {
-		return fuelBurnRate;
-	}
-	
-	public double getSinkPercent() {
-		return sinkPercent;
-	}
-	
-	public double getOverallSinkPercent() {
-		return overallSinkPercent;
-	}
-	
-	public double getDetectionMultiplier() {
-		return detectionMultiplier;
-	}
-	
-	public double getUnderwaterDetectionMultiplier() {
-		return underwaterDetectionMultiplier;
-	}
-	
-	public int getSinkRateTicks() {
-		return sinkRateTicks;
-	}
-
-	public boolean getKeepMovingOnSink() {
-		return keepMovingOnSink;
-	}
-
-	public float getExplodeOnCrash() {
-		return explodeOnCrash;
-	}
-	
-	public int getSmokeOnSink() {
-		return smokeOnSink;
-	}
-
-	public float getCollisionExplosion() {
-		return collisionExplosion;
-	}
-	
-	public int getTickCooldown() {
-		return tickCooldown;
-	}
-
-	public int getCruiseTickCooldown() {
-		return cruiseTickCooldown;
-	}
-
-	public boolean getHalfSpeedUnderwater() {
-		return halfSpeedUnderwater;
-	}
-
-	public boolean getFocusedExplosion() {
-		return focusedExplosion;
-	}
-
-	public boolean getMustBeSubcraft() {
-		return mustBeSubcraft;
-	}
-
-	public boolean isTryNudge() {
-		return tryNudge;
-	}
-
-	public HashMap<ArrayList<Integer>, ArrayList<Double>> getFlyBlocks() {
-		return flyBlocks;
-	}
-	
-	public HashMap<ArrayList<Integer>, ArrayList<Double>> getMoveBlocks() {
-		return moveBlocks;
-	}
-	
-        public int getMaxHeightLimit(){
-            return maxHeightLimit;
         }
-        public int getMinHeightLimit(){
-            return minHeightLimit;
-        }
-        public int getMaxHeightAboveGround(){
-            return maxHeightAboveGround;
-        }
-        public boolean getCanHover(){
-            return canHover;
+        if (data.containsKey("allowVerticalTakeoffAndLanding")) {
+            allowVerticalTakeoffAndLanding = (Boolean) data.get("allowVerticalTakeoffAndLanding");
+        } else {
+            allowVerticalTakeoffAndLanding = true;
         }
 
-        public boolean getCanDirectControl(){
-            return canDirectControl;
-    	}
-    	   
-  	public int getHoverLimit(){
-    	return hoverLimit;
-  	}
-    	  
-	public List<Material> getHarvestBlocks() {
-    	return harvestBlocks;
-   	}
-        
-        public List<Material> getHarvesterBladeBlocks(){
-            return harvesterBladeBlocks;
+        if (data.containsKey("dynamicLagSpeedFactor")) {
+            dynamicLagSpeedFactor = doubleFromObject(data.get("dynamicLagSpeedFactor"));
+        } else {
+            dynamicLagSpeedFactor = 0.0;
         }
-    	   
-    public boolean getCanHoverOverWater(){
-    	return canHoverOverWater;
+        if (data.containsKey("dynamicFlyBlockSpeedFactor")) {
+            dynamicFlyBlockSpeedFactor = doubleFromObject(data.get("dynamicFlyBlockSpeedFactor"));
+        } else {
+            dynamicFlyBlockSpeedFactor = 0.0;
+        }
+        if (data.containsKey("dynamicFlyBlock")) {
+            dynamicFlyBlock = integerFromObject(data.get("dynamicFlyBlock"));
+        } else {
+            dynamicFlyBlock = 0;
+        }
     }
-    	     
- 	public boolean getMoveEntities(){
-    	return moveEntities;
+
+    public String getCraftName() {
+        return craftName;
     }
-    	     
-    public boolean getUseGravity(){
-    	return useGravity;
+
+    public int getMaxSize() {
+        return maxSize;
     }
-    
-    public boolean  allowVerticalTakeoffAndLanding(){
+
+    public int getMinSize() {
+        return minSize;
+    }
+
+    public Integer[] getAllowedBlocks() {
+        return allowedBlocks;
+    }
+
+    public Integer[] getForbiddenBlocks() {
+        return forbiddenBlocks;
+    }
+
+    public String[] getForbiddenSignStrings() {
+        return forbiddenSignStrings;
+    }
+
+    public boolean blockedByWater() {
+        return blockedByWater;
+    }
+
+    public boolean getRequireWaterContact() {
+        return requireWaterContact;
+    }
+
+    public boolean getCanCruise() {
+        return canCruise;
+    }
+
+    public int getCruiseSkipBlocks() {
+        return cruiseSkipBlocks;
+    }
+
+    public int getVertCruiseSkipBlocks() {
+        return vertCruiseSkipBlocks;
+    }
+
+    public int maxStaticMove() {
+        return maxStaticMove;
+    }
+
+    public int getStaticWaterLevel() {
+        return staticWaterLevel;
+    }
+
+    public boolean getCanTeleport() {
+        return canTeleport;
+    }
+
+    public boolean getCanStaticMove() {
+        return canStaticMove;
+    }
+
+    public boolean getCruiseOnPilot() {
+        return cruiseOnPilot;
+    }
+
+    public int getCruiseOnPilotVertMove() {
+        return cruiseOnPilotVertMove;
+    }
+
+    public boolean allowVerticalMovement() {
+        return allowVerticalMovement;
+    }
+
+    public boolean rotateAtMidpoint() {
+        return rotateAtMidpoint;
+    }
+
+    public boolean allowHorizontalMovement() {
+        return allowHorizontalMovement;
+    }
+
+    public boolean allowRemoteSign() {
+        return allowRemoteSign;
+    }
+
+    public boolean allowCannonDirectorSign() {
+        return allowCannonDirectorSign;
+    }
+
+    public boolean allowAADirectorSign() {
+        return allowAADirectorSign;
+    }
+
+    public double getFuelBurnRate() {
+        return fuelBurnRate;
+    }
+
+    public double getSinkPercent() {
+        return sinkPercent;
+    }
+
+    public double getOverallSinkPercent() {
+        return overallSinkPercent;
+    }
+
+    public double getDetectionMultiplier() {
+        return detectionMultiplier;
+    }
+
+    public double getUnderwaterDetectionMultiplier() {
+        return underwaterDetectionMultiplier;
+    }
+
+    public int getSinkRateTicks() {
+        return sinkRateTicks;
+    }
+
+    public boolean getKeepMovingOnSink() {
+        return keepMovingOnSink;
+    }
+
+    public float getExplodeOnCrash() {
+        return explodeOnCrash;
+    }
+
+    public int getSmokeOnSink() {
+        return smokeOnSink;
+    }
+
+    public float getCollisionExplosion() {
+        return collisionExplosion;
+    }
+
+    public int getTickCooldown() {
+        return tickCooldown;
+    }
+
+    public int getCruiseTickCooldown() {
+        return cruiseTickCooldown;
+    }
+
+    public boolean getHalfSpeedUnderwater() {
+        return halfSpeedUnderwater;
+    }
+
+    public boolean getFocusedExplosion() {
+        return focusedExplosion;
+    }
+
+    public boolean getMustBeSubcraft() {
+        return mustBeSubcraft;
+    }
+
+    public boolean isTryNudge() {
+        return tryNudge;
+    }
+
+    public HashMap<ArrayList<Integer>, ArrayList<Double>> getFlyBlocks() {
+        return flyBlocks;
+    }
+
+    public HashMap<ArrayList<Integer>, ArrayList<Double>> getMoveBlocks() {
+        return moveBlocks;
+    }
+
+    public int getMaxHeightLimit() {
+        return maxHeightLimit;
+    }
+
+    public int getMinHeightLimit() {
+        return minHeightLimit;
+    }
+
+    public int getMaxHeightAboveGround() {
+        return maxHeightAboveGround;
+    }
+
+    public boolean getCanHover() {
+        return canHover;
+    }
+
+    public boolean getCanDirectControl() {
+        return canDirectControl;
+    }
+
+    public int getHoverLimit() {
+        return hoverLimit;
+    }
+
+    public List<Material> getHarvestBlocks() {
+        return harvestBlocks;
+    }
+
+    public List<Material> getHarvesterBladeBlocks() {
+        return harvesterBladeBlocks;
+    }
+
+    public boolean getCanHoverOverWater() {
+        return canHoverOverWater;
+    }
+
+    public boolean getMoveEntities() {
+        return moveEntities;
+    }
+
+    public boolean getUseGravity() {
+        return useGravity;
+    }
+
+    public boolean allowVerticalTakeoffAndLanding() {
         return allowVerticalTakeoffAndLanding;
     }
-    
+
     public double getDynamicLagSpeedFactor() {
-    	return dynamicLagSpeedFactor;
+        return dynamicLagSpeedFactor;
     }
-    
+
     public double getDynamicFlyBlockSpeedFactor() {
-    	return dynamicFlyBlockSpeedFactor;
+        return dynamicFlyBlockSpeedFactor;
     }
-    
+
     public int getDynamicFlyBlock() {
-    	return dynamicFlyBlock;
+        return dynamicFlyBlock;
     }
 }

@@ -18,13 +18,13 @@
 package net.countercraft.movecraft.utils.datastructures;
 
 public class TransferData {
-	private final byte data;
+    private final byte data;
 
-	public TransferData( byte data ) {
-		this.data = data;
-	}
+    public TransferData(byte data) {
+        this.data = data;
+    }
 
-	public byte getData() {
-		return data;
-	}
+    public byte getData() {
+        return data;
+    }
 }

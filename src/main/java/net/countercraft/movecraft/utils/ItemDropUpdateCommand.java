@@ -12,20 +12,20 @@ import org.bukkit.inventory.ItemStack;
  * Class that stores the data about a item drops to the map in an unspecified world. The world is retrieved contextually from the submitting craft.
  */
 public class ItemDropUpdateCommand {
-	private final Location location;
-	private final ItemStack itemStack;
+    private final Location location;
+    private final ItemStack itemStack;
 
-	public ItemDropUpdateCommand(Location location, ItemStack itemStack ) {
-		this.location = location;
-		this.itemStack = itemStack;
-	}
+    public ItemDropUpdateCommand(Location location, ItemStack itemStack) {
+        this.location = location;
+        this.itemStack = itemStack;
+    }
 
-	public ItemStack getItemStack() {
-		return itemStack;
-	}
+    public ItemStack getItemStack() {
+        return itemStack;
+    }
 
-	public Location getLocation() {
-		return location;
-	}
+    public Location getLocation() {
+        return location;
+    }
 
 }

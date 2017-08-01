@@ -29,7 +29,6 @@ import java.util.Set;
 import java.util.logging.Level;
 
 /**
- *
  * @author mwkaicz <mwkaicz@gmail.com>
  */
 public class TownyUtils {
@@ -38,25 +37,25 @@ public class TownyUtils {
     public static final String TOWN_ABOVE = "aboveTownSpawn";
     public static final String TOWN_UNDER = "underTownSpawn";
     public static final String TOWN_HEIGHT_LIMITS = "TownyWorldHeightLimits";
-    
-    public static TownyWorld getTownyWorld(World w){       
+
+    public static TownyWorld getTownyWorld(World w) {
         TownyWorld tw;
         try {
-                tw = TownyUniverse.getDataSource().getWorld(w.getName());
-                if (!tw.isUsingTowny())
-                        return null;
-        } catch (NotRegisteredException e) {
+            tw = TownyUniverse.getDataSource().getWorld(w.getName());
+            if (!tw.isUsingTowny())
                 return null;
+        } catch (NotRegisteredException e) {
+            return null;
         }
         return tw;
     }
-        
-    public static TownBlock getTownBlock(Location loc){
+
+    public static TownBlock getTownBlock(Location loc) {
         Coord coo = Coord.parseCoord(loc);
         TownyWorld tw = getTownyWorld(loc.getWorld());
         TownBlock tb = null;
         try {
-            if (tw != null){
+            if (tw != null) {
                 tb = tw.getTownBlock(coo);
             }
         } catch (NotRegisteredException ex) {
@@ -65,9 +64,9 @@ public class TownyUtils {
         }
         return tb;
     }
-    
-    public static Town getTown(TownBlock townBlock){
-        try {	
+
+    public static Town getTown(TownBlock townBlock) {
+        try {
             Town town;
             town = townBlock.getTown();
             return town;
@@ -75,11 +74,11 @@ public class TownyUtils {
             //Logger.getLogger(TownyUtils.class.getName()).log(Level.SEVERE, null, ex);
             //none
         }
-        return null;                
+        return null;
     }
-    
-    public static Location getTownSpawn(TownBlock townBlock){
-        if (townBlock==null) return null;
+
+    public static Location getTownSpawn(TownBlock townBlock) {
+        if (townBlock == null) return null;
         Town t = getTown(townBlock);
         if (t != null) {
             try {
@@ -89,11 +88,11 @@ public class TownyUtils {
                 //town hasn't spawn
             }
         }
-        return null;                
+        return null;
     }
-       
-    
-    public static boolean validateResident(Player player){
+
+
+    public static boolean validateResident(Player player) {
         Resident resident;
         try {
             resident = TownyUniverse.getDataSource().getResident(player.getName());
@@ -104,15 +103,15 @@ public class TownyUtils {
         }
         return false;
     }
-        
+
     public static boolean validateCraftMoveEvent(Player player, Location loc, TownyWorld world) {
         // Get switch permissions (updates if none exist)
-        if (player != null && !validateResident(player)){
+        if (player != null && !validateResident(player)) {
             return true; //probably NPC or CBWrapper Dummy player
         }
         int id = Material.STONE_BUTTON.getId();
         byte data = 0;
-        
+
         boolean bSwitch = PlayerCacheUtil.getCachePermission(player, loc, id, data, TownyPermission.ActionType.SWITCH);
 
         // Allow move if we are permitted to switch
@@ -131,60 +130,60 @@ public class TownyUtils {
             return TownyWarConfig.isAllowingSwitchesInWarZone();
         }
     }
-    
+
     public static boolean validatePVP(TownBlock tb) {
         Town t = getTown(tb);
-        if (t != null){
-            return t.getPermissions().pvp || tb.getPermissions().pvp ;
-        }else{
-            return tb.getPermissions().pvp ;
+        if (t != null) {
+            return t.getPermissions().pvp || tb.getPermissions().pvp;
+        } else {
+            return tb.getPermissions().pvp;
         }
     }
-    
+
     public static boolean validateExplosion(TownBlock tb) {
         Town t = getTown(tb);
-        if (t != null){
-            return t.getPermissions().explosion || tb.getPermissions().explosion ;
-        }else{
-            return tb.getPermissions().explosion ;
+        if (t != null) {
+            return t.getPermissions().explosion || tb.getPermissions().explosion;
+        } else {
+            return tb.getPermissions().explosion;
         }
     }
-    
-    public static void initTownyConfig(){
+
+    public static void initTownyConfig() {
         Settings.TownProtectionHeightLimits = getTownyConfigFromUniverse();
         loadTownyConfig();
     }
-    
-    private static Map<String,TownyWorldHeightLimits> getTownyConfigFromUniverse(){
-        Map<String,TownyWorldHeightLimits> worldsMap = new HashMap<String,TownyWorldHeightLimits>();
+
+    private static Map<String, TownyWorldHeightLimits> getTownyConfigFromUniverse() {
+        Map<String, TownyWorldHeightLimits> worldsMap = new HashMap<String, TownyWorldHeightLimits>();
         List<World> worlds = Movecraft.getInstance().getServer().getWorlds();
-        for (World w: worlds){
+        for (World w : worlds) {
             TownyWorld tw = getTownyWorld(w);
-            if (tw != null){
-                if (tw.isUsingTowny()){
+            if (tw != null) {
+                if (tw.isUsingTowny()) {
                     worldsMap.put(w.getName(), new TownyWorldHeightLimits());
                 }
             }
         }
         return worldsMap;
     }
-    
-    public static TownyWorldHeightLimits getWorldLimits(World w){
+
+    public static TownyWorldHeightLimits getWorldLimits(World w) {
         boolean oNew = false;
         String wName = w.getName();
-        Map<String,TownyWorldHeightLimits> worldsMap = Settings.TownProtectionHeightLimits;
-        if (!worldsMap.containsKey(wName)){
+        Map<String, TownyWorldHeightLimits> worldsMap = Settings.TownProtectionHeightLimits;
+        if (!worldsMap.containsKey(wName)) {
             TownyWorld tw = getTownyWorld(w);
-            if (tw != null){
-                if (tw.isUsingTowny()){
+            if (tw != null) {
+                if (tw.isUsingTowny()) {
                     worldsMap.put(wName, new TownyWorldHeightLimits());
                     Settings.TownProtectionHeightLimits = worldsMap;
                     Movecraft.getInstance().getLogger().log(Level.INFO, "Added default Towny settings for world {0} to the config file.", w.getName());
                     oNew = true;
-                }else{
+                } else {
                     return null;
                 }
-            }else{
+            } else {
                 return null;
             }
         }
@@ -193,19 +192,19 @@ public class TownyUtils {
         }
         return worldsMap.get(wName);
     }
-    
-    private static void saveWorldLimits(){
-        Map<String,TownyWorldHeightLimits> worldsMap = Settings.TownProtectionHeightLimits;
-        Map<String,Object> townyWorldsMap = new HashMap<String,Object>();
+
+    private static void saveWorldLimits() {
+        Map<String, TownyWorldHeightLimits> worldsMap = Settings.TownProtectionHeightLimits;
+        Map<String, Object> townyWorldsMap = new HashMap<String, Object>();
         Set<String> worlds = worldsMap.keySet();
-        
-        for (String world : worlds){
+
+        for (String world : worlds) {
             World w = Movecraft.getInstance().getServer().getWorld(world);
-            if (w != null){
+            if (w != null) {
                 TownyWorld tw = getTownyWorld(w);
-                if (tw != null ){
-                    if (tw.isUsingTowny()){
-                        Map<String,Integer> townyTWorldMap = new HashMap<String,Integer>();
+                if (tw != null) {
+                    if (tw.isUsingTowny()) {
+                        Map<String, Integer> townyTWorldMap = new HashMap<String, Integer>();
                         TownyWorldHeightLimits twhl = worldsMap.get(world);
                         townyTWorldMap.put(TOWN_MIN, twhl.world_min);
                         townyTWorldMap.put(TOWN_MAX, twhl.world_max);
@@ -220,25 +219,25 @@ public class TownyUtils {
         Movecraft.getInstance().saveConfig();
         Movecraft.getInstance().getLogger().log(Level.INFO, "Saved settings for Towny worlds to the config file.");
     }
-    
-    private static void loadTownyConfig(){
+
+    private static void loadTownyConfig() {
         FileConfiguration fc = Movecraft.getInstance().getConfig();
         ConfigurationSection csObj = fc.getConfigurationSection(TOWN_HEIGHT_LIMITS);
-        Map<String,TownyWorldHeightLimits> townyWorldHeightLimits = new HashMap<String,TownyWorldHeightLimits>();
-        
-        if (csObj != null){
+        Map<String, TownyWorldHeightLimits> townyWorldHeightLimits = new HashMap<String, TownyWorldHeightLimits>();
+
+        if (csObj != null) {
             Set<String> worlds = csObj.getKeys(false);
-            for (String worldName : worlds){
+            for (String worldName : worlds) {
                 TownyWorldHeightLimits twhl = new TownyWorldHeightLimits();
-                twhl.world_min = fc.getInt(TOWN_HEIGHT_LIMITS + "." + worldName + "." + TOWN_MIN,TownyWorldHeightLimits.DEFAULT_WORLD_MIN);
-                twhl.world_max = fc.getInt(TOWN_HEIGHT_LIMITS + "." + worldName + "." + TOWN_MAX,TownyWorldHeightLimits.DEFAULT_WORLD_MAX);
-                twhl.above_town = fc.getInt(TOWN_HEIGHT_LIMITS + "." + worldName + "." + TOWN_ABOVE,TownyWorldHeightLimits.DEFAULT_TOWN_ABOVE);
-                twhl.under_town = fc.getInt(TOWN_HEIGHT_LIMITS + "." + worldName + "." + TOWN_UNDER,TownyWorldHeightLimits.DEFAULT_TOWN_UNDER);
+                twhl.world_min = fc.getInt(TOWN_HEIGHT_LIMITS + "." + worldName + "." + TOWN_MIN, TownyWorldHeightLimits.DEFAULT_WORLD_MIN);
+                twhl.world_max = fc.getInt(TOWN_HEIGHT_LIMITS + "." + worldName + "." + TOWN_MAX, TownyWorldHeightLimits.DEFAULT_WORLD_MAX);
+                twhl.above_town = fc.getInt(TOWN_HEIGHT_LIMITS + "." + worldName + "." + TOWN_ABOVE, TownyWorldHeightLimits.DEFAULT_TOWN_ABOVE);
+                twhl.under_town = fc.getInt(TOWN_HEIGHT_LIMITS + "." + worldName + "." + TOWN_UNDER, TownyWorldHeightLimits.DEFAULT_TOWN_UNDER);
                 townyWorldHeightLimits.put(worldName, twhl);
                 Movecraft.getInstance().getLogger().log(Level.INFO, "Loaded Towny settings for world {0}", worldName);
             }
         }
-        if (!townyWorldHeightLimits.equals(Settings.TownProtectionHeightLimits)){
+        if (!townyWorldHeightLimits.equals(Settings.TownProtectionHeightLimits)) {
             Settings.TownProtectionHeightLimits.putAll(townyWorldHeightLimits);
             saveWorldLimits();
         }

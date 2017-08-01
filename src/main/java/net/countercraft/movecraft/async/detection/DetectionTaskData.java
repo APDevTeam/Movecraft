@@ -22,120 +22,121 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 public class DetectionTaskData {
-	private World w;
-	private boolean failed;
-	private boolean waterContact;
-	private String failMessage;
-	private MovecraftLocation[] blockList;
-	private Player player;
-	private Player notificationPlayer;
-	private int[][][] hitBox;
-	private Integer minX, minZ;
-	private Integer[] allowedBlocks, forbiddenBlocks;
-	private String[] forbiddenSignStrings;
-	public Double dynamicFlyBlockSpeedMultiplier;
+    public Double dynamicFlyBlockSpeedMultiplier;
+    private World w;
+    private boolean failed;
+    private boolean waterContact;
+    private String failMessage;
+    private MovecraftLocation[] blockList;
+    private Player player;
+    private Player notificationPlayer;
+    private int[][][] hitBox;
+    private Integer minX, minZ;
+    private Integer[] allowedBlocks, forbiddenBlocks;
+    private String[] forbiddenSignStrings;
 
-	public DetectionTaskData( World w, Player player, Player notificationPlayer, Integer[] allowedBlocks, Integer[] forbiddenBlocks, String[] forbiddenSignStrings) {
-		this.w = w;
-		this.player = player;
-		this.notificationPlayer = notificationPlayer;
-		this.allowedBlocks = allowedBlocks;
-		this.forbiddenBlocks = forbiddenBlocks;
-		this.forbiddenSignStrings = forbiddenSignStrings;
-		this.waterContact = false;
-	}
+    public DetectionTaskData(World w, Player player, Player notificationPlayer, Integer[] allowedBlocks, Integer[] forbiddenBlocks, String[] forbiddenSignStrings) {
+        this.w = w;
+        this.player = player;
+        this.notificationPlayer = notificationPlayer;
+        this.allowedBlocks = allowedBlocks;
+        this.forbiddenBlocks = forbiddenBlocks;
+        this.forbiddenSignStrings = forbiddenSignStrings;
+        this.waterContact = false;
+    }
 
-	public DetectionTaskData() {
-	}
+    public DetectionTaskData() {
+    }
 
-	public Integer[] getAllowedBlocks() {
-		return allowedBlocks;
-	}
+    public Integer[] getAllowedBlocks() {
+        return allowedBlocks;
+    }
 
-	public Integer[] getForbiddenBlocks() {
-		return forbiddenBlocks;
-	}
-	
-	public String[] getForbiddenSignStrings() {
-		return forbiddenSignStrings;
-	}
+    public Integer[] getForbiddenBlocks() {
+        return forbiddenBlocks;
+    }
 
-	public World getWorld() {
-		return w;
-	}
+    public String[] getForbiddenSignStrings() {
+        return forbiddenSignStrings;
+    }
 
-	void setWorld( World w ) {
-		this.w = w;
-	}
+    public World getWorld() {
+        return w;
+    }
 
-	public boolean failed() {
-		return failed;
-	}
+    void setWorld(World w) {
+        this.w = w;
+    }
 
-	public boolean getWaterContact() {
-		return waterContact;
-	}
+    public boolean failed() {
+        return failed;
+    }
 
-	public String getFailMessage() {
-		return failMessage;
-	}
+    public boolean getWaterContact() {
+        return waterContact;
+    }
 
-	void setFailMessage( String failMessage ) {
-		this.failMessage = failMessage;
-	}
+    void setWaterContact(boolean waterContact) {
+        this.waterContact = waterContact;
+    }
 
-	public MovecraftLocation[] getBlockList() {
-		return blockList;
-	}
+    public String getFailMessage() {
+        return failMessage;
+    }
 
-	void setBlockList( MovecraftLocation[] blockList ) {
-		this.blockList = blockList;
-	}
+    void setFailMessage(String failMessage) {
+        this.failMessage = failMessage;
+    }
 
-	public Player getPlayer() {
-		return player;
-	}
+    public MovecraftLocation[] getBlockList() {
+        return blockList;
+    }
 
-	public Player getNotificationPlayer() {
-		return notificationPlayer;
-	}
+    void setBlockList(MovecraftLocation[] blockList) {
+        this.blockList = blockList;
+    }
 
-	public int[][][] getHitBox() {
-		return hitBox;
-	}
+    public Player getPlayer() {
+        return player;
+    }
 
-	void setHitBox( int[][][] hitBox ) {
-		this.hitBox = hitBox;
-	}
+    void setPlayer(Player player) {
+        this.player = player;
+    }
 
-	public Integer getMinX() {
-		return minX;
-	}
+    public Player getNotificationPlayer() {
+        return notificationPlayer;
+    }
 
-	void setMinX( Integer minX ) {
-		this.minX = minX;
-	}
+    void setNotificationPlayer(Player notificationPlayer) {
+        this.notificationPlayer = notificationPlayer;
+    }
 
-	public Integer getMinZ() {
-		return minZ;
-	}
+    public int[][][] getHitBox() {
+        return hitBox;
+    }
 
-	void setMinZ( Integer minZ ) {
-		this.minZ = minZ;
-	}
+    void setHitBox(int[][][] hitBox) {
+        this.hitBox = hitBox;
+    }
 
-	void setFailed( boolean failed ) {
-		this.failed = failed;
-	}
+    public Integer getMinX() {
+        return minX;
+    }
 
-	void setWaterContact( boolean waterContact ) {
-		this.waterContact = waterContact;
-	}
+    void setMinX(Integer minX) {
+        this.minX = minX;
+    }
 
-	void setPlayer( Player player ) {
-		this.player = player;
-	}
-	void setNotificationPlayer( Player notificationPlayer ) {
-		this.notificationPlayer = notificationPlayer;
-	}
+    public Integer getMinZ() {
+        return minZ;
+    }
+
+    void setMinZ(Integer minZ) {
+        this.minZ = minZ;
+    }
+
+    void setFailed(boolean failed) {
+        this.failed = failed;
+    }
 }

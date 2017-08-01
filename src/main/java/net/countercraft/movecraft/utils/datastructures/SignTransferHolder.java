@@ -18,14 +18,14 @@
 package net.countercraft.movecraft.utils.datastructures;
 
 public class SignTransferHolder extends TransferData {
-	private final String[] lines;
+    private final String[] lines;
 
-	public SignTransferHolder( byte data, String[] lines ) {
-		super( data );
-		this.lines = lines;
-	}
+    public SignTransferHolder(byte data, String[] lines) {
+        super(data);
+        this.lines = lines;
+    }
 
-	public String[] getLines() {
-		return lines;
-	}
+    public String[] getLines() {
+        return lines;
+    }
 }

@@ -19,10 +19,10 @@ package net.countercraft.movecraft.utils.datastructures;
 
 import org.bukkit.inventory.ItemStack;
 
-public class StorageCrateTransferHolder extends  InventoryTransferHolder {
+public class StorageCrateTransferHolder extends InventoryTransferHolder {
 
-	public StorageCrateTransferHolder( byte data, ItemStack[] invetory ) {
-		super( data, invetory );
-	}
+    public StorageCrateTransferHolder(byte data, ItemStack[] invetory) {
+        super(data, invetory);
+    }
 
 }

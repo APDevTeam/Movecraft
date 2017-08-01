@@ -24,32 +24,32 @@ import org.bukkit.entity.Entity;
  * Class that stores the data about a single blocks changes to the map in an unspecified world. The world is retrieved contextually from the submitting craft.
  */
 public class EntityUpdateCommand {
-	private Location location;
-	private final Location newLocation;
-	private final Entity entity;
+    private final Location newLocation;
+    private final Entity entity;
+    private Location location;
 
-	public EntityUpdateCommand( Location blockLocation, Location newLocation, Entity entity ) {
-		this.location = blockLocation;
-		this.newLocation = newLocation;
-		this.entity = entity;
-	}
+    public EntityUpdateCommand(Location blockLocation, Location newLocation, Entity entity) {
+        this.location = blockLocation;
+        this.newLocation = newLocation;
+        this.entity = entity;
+    }
 
-	public EntityUpdateCommand( Location newLocation, Entity entity ) {
-		this.newLocation = newLocation;
-		this.entity = entity;
-	}
+    public EntityUpdateCommand(Location newLocation, Entity entity) {
+        this.newLocation = newLocation;
+        this.entity = entity;
+    }
 
-	public Entity getEntity() {
-		return entity;
-	}
+    public Entity getEntity() {
+        return entity;
+    }
 
-	public Location getOldLocation() {
-		return location;
-	}
+    public Location getOldLocation() {
+        return location;
+    }
 
-	public Location getNewLocation() {
-		return newLocation;
-	}
+    public Location getNewLocation() {
+        return newLocation;
+    }
 
 }
 
