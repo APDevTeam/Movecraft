@@ -31,6 +31,7 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.mapUpdater.update.ExplosionUpdateCommand;
 import net.countercraft.movecraft.utils.BlockUtils;
 import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.ItemDropUpdateCommand;
@@ -287,9 +288,10 @@ public class AsyncManager extends BukkitRunnable {
 
                     if (task.getData().collisionExplosion()) {
                         MapUpdateCommand[] updates = task.getData().getUpdates();
+                        ExplosionUpdateCommand[] exUpdates = task.getData().getExplosionUpdateCommands();
                         c.setBlockList(task.getData().getBlockList());
                         c.setScheduledBlockChanges(task.getData().getScheduledBlockChanges());
-                        boolean failed = MapUpdateManager.getInstance().addWorldUpdate(c.getW(), updates, null, null);
+                        boolean failed = MapUpdateManager.getInstance().addWorldUpdate(c.getW(), updates, null, null, exUpdates);
 
                         if (failed) {
                             Movecraft.getInstance().getLogger().log(Level.SEVERE, I18nSupport.getInternationalisedString("Translation - Craft collision"));
@@ -303,6 +305,7 @@ public class AsyncManager extends BukkitRunnable {
                     MapUpdateCommand[] updates = task.getData().getUpdates();
                     EntityUpdateCommand[] eUpdates = task.getData().getEntityUpdates();
                     ItemDropUpdateCommand[] iUpdates = task.getData().getItemDropUpdateCommands();
+                    ExplosionUpdateCommand[] exUpdates = task.getData().getExplosionUpdateCommands();
                     // get list of cannons before sending map updates, to avoid
                     // conflicts
                     HashSet<Cannon> shipCannons = null;
@@ -317,7 +320,7 @@ public class AsyncManager extends BukkitRunnable {
                                 .getCannons(shipLocations, c.getNotificationPlayer().getUniqueId(), true);
                     }
                     boolean failed = MapUpdateManager.getInstance().addWorldUpdate(c.getW(), updates, eUpdates,
-                            iUpdates);
+                            iUpdates, exUpdates);
 
                     if (!failed) {
                         sentMapUpdate = true;
@@ -379,7 +382,7 @@ public class AsyncManager extends BukkitRunnable {
                         }
 
                         boolean failed = MapUpdateManager.getInstance().addWorldUpdate(c.getW(), updates, eUpdates,
-                                null);
+                                null, null);
 
                         if (!failed) {
                             sentMapUpdate = true;
@@ -1218,7 +1221,7 @@ public class AsyncManager extends BukkitRunnable {
                     }
                     if (updateCommands.size() > 0) {
                         MapUpdateManager.getInstance().addWorldUpdate(w,
-                                updateCommands.toArray(new MapUpdateCommand[1]), null, null);
+                                updateCommands.toArray(new MapUpdateCommand[1]), null, null, null);
                     }
                 }
             }
@@ -1354,7 +1357,7 @@ public class AsyncManager extends BukkitRunnable {
                     }
                 }
                 if (updateCommands.size() > 0) {
-                    MapUpdateManager.getInstance().addWorldUpdate(w, updateCommands.toArray(new MapUpdateCommand[1]), null, null);
+                    MapUpdateManager.getInstance().addWorldUpdate(w, updateCommands.toArray(new MapUpdateCommand[1]), null, null, null);
                 }
             }
         }

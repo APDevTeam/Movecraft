@@ -18,6 +18,7 @@
 package net.countercraft.movecraft.async.translation;
 
 import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
+import net.countercraft.movecraft.mapUpdater.update.ExplosionUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.ItemDropUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.MapUpdateCommand;
 import net.countercraft.movecraft.utils.MovecraftLocation;
@@ -35,6 +36,7 @@ public class TranslationTaskData {
     private EntityUpdateCommand[] entityUpdates;
     private HashMap<MapUpdateCommand, Long> scheduledBlockChanges = null;
     private ItemDropUpdateCommand[] itemDropUpdates;
+    private ExplosionUpdateCommand[] explosionUpdateCommands;
     private int[][][] hitbox;
     private int minX, minZ;
     private int maxHeight, minHeight;
@@ -163,5 +165,13 @@ public class TranslationTaskData {
 
     public void setItemDropUpdates(ItemDropUpdateCommand[] itemDropUpdate) {
         this.itemDropUpdates = itemDropUpdate;
+    }
+
+    public ExplosionUpdateCommand[] getExplosionUpdateCommands() {
+        return explosionUpdateCommands;
+    }
+
+    public void setExplosionUpdateCommands(ExplosionUpdateCommand[] explosionUpdateCommands) {
+        this.explosionUpdateCommands = explosionUpdateCommands;
     }
 }

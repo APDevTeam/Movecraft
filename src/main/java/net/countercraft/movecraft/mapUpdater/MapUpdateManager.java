@@ -666,6 +666,7 @@ public class MapUpdateManager extends BukkitRunnable {
         updates.clear();
         entityUpdates.clear();
         itemDropUpdates.clear();
+        explosionUpdates.clear();
     }
 
     private void sendSignToPlayers(World w, MapUpdateCommand i) {
@@ -990,7 +991,7 @@ public class MapUpdateManager extends BukkitRunnable {
 		iterations++; // just to give a convenient breakpoint*/
     }
 
-    public boolean addWorldUpdate(World w, MapUpdateCommand[] mapUpdates, EntityUpdateCommand[] eUpdates, ItemDropUpdateCommand[] iUpdates) {
+    public boolean addWorldUpdate(World w, MapUpdateCommand[] mapUpdates, EntityUpdateCommand[] eUpdates, ItemDropUpdateCommand[] iUpdates, ExplosionUpdateCommand[] exUpdates) {
 
         if (mapUpdates != null) {
             ArrayList<MapUpdateCommand> get = updates.get(w);
@@ -1023,7 +1024,7 @@ public class MapUpdateManager extends BukkitRunnable {
         if (iUpdates != null) {
             ArrayList<ItemDropUpdateCommand> iGet = itemDropUpdates.get(w);
             if (iGet != null) {
-                entityUpdates.remove(w);
+                itemDropUpdates.remove(w);
                 ArrayList<ItemDropUpdateCommand> tempIDUpdates = new ArrayList<>();
                 tempIDUpdates.addAll(Arrays.asList(iUpdates));
                 iGet.addAll(tempIDUpdates);
@@ -1031,6 +1032,19 @@ public class MapUpdateManager extends BukkitRunnable {
                 iGet = new ArrayList<>(Arrays.asList(iUpdates));
             }
             itemDropUpdates.put(w, iGet);
+        }
+
+        if (exUpdates != null) {
+            ArrayList<ExplosionUpdateCommand> exGet = explosionUpdates.get(w);
+            if (exUpdates != null) {
+                explosionUpdates.remove(w);
+                ArrayList<ExplosionUpdateCommand> tempEXUpdates = new ArrayList<>();
+                tempEXUpdates.addAll(Arrays.asList(exUpdates));
+                exGet.addAll(tempEXUpdates);
+            } else {
+                exGet = new ArrayList<>(Arrays.asList(exUpdates));
+            }
+            explosionUpdates.put(w, exGet);
         }
 
         return false;

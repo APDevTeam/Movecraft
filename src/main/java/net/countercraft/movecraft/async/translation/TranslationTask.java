@@ -777,7 +777,7 @@ public class TranslationTask extends AsyncTask {
 
             MovecraftLocation[] newBlockList = existingBlockSet.toArray(new MovecraftLocation[0]);
             data.setBlockList(newBlockList);
-            data.setUpdates(explosionSet.toArray(new MapUpdateCommand[1]));
+            data.setExplosionUpdateCommands(explosionSet.toArray(new ExplosionUpdateCommand[1]));
 
             fail(I18nSupport.getInternationalisedString("Translation - Failed Craft is obstructed"));
 
