@@ -19,7 +19,7 @@ package net.countercraft.movecraft.craft;
 
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.mapUpdater.MapUpdateCommand;
+import net.countercraft.movecraft.mapUpdater.update.MapUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import org.bukkit.World;
 import org.bukkit.entity.Player;

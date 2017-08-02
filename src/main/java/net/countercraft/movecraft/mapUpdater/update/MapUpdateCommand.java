@@ -15,7 +15,7 @@
  *     along with Movecraft.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.countercraft.movecraft.mapUpdater;
+package net.countercraft.movecraft.mapUpdater.update;
 
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.utils.MovecraftLocation;

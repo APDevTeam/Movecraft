@@ -17,9 +17,9 @@
 
 package net.countercraft.movecraft.async.translation;
 
-import net.countercraft.movecraft.utils.EntityUpdateCommand;
-import net.countercraft.movecraft.utils.ItemDropUpdateCommand;
-import net.countercraft.movecraft.mapUpdater.MapUpdateCommand;
+import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
+import net.countercraft.movecraft.mapUpdater.update.ItemDropUpdateCommand;
+import net.countercraft.movecraft.mapUpdater.update.MapUpdateCommand;
 import net.countercraft.movecraft.utils.MovecraftLocation;
 
 import java.util.HashMap;
