@@ -25,6 +25,8 @@ import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.flags.StateFlag;
 import net.countercraft.movecraft.async.AsyncManager;
+import net.countercraft.movecraft.commands.AssaultCommand;
+import net.countercraft.movecraft.commands.AssaultInfoCommand;
 import net.countercraft.movecraft.commands.ContactsCommand;
 import net.countercraft.movecraft.commands.CraftReportCommand;
 import net.countercraft.movecraft.commands.CruiseCommand;
@@ -364,8 +366,10 @@ public class Movecraft extends JavaPlugin {
             this.getCommand("manoverboard").setExecutor(new ManOverboardCommand());
             this.getCommand("contacts").setExecutor(new ContactsCommand());
 //            this.getCommand("siege").setExecutor(new CommandListener());
-//            this.getCommand("assaultinfo").setExecutor(new CommandListener());
-//            this.getCommand("assault").setExecutor(new CommandListener());
+            if(Settings.AssaultEnable) {
+                this.getCommand("assaultinfo").setExecutor(new AssaultInfoCommand());
+                this.getCommand("assault").setExecutor(new AssaultCommand());
+            }
             getServer().getPluginManager().registerEvents(new BlockListener(),
                     this);
             getServer().getPluginManager().registerEvents(new PlayerListener(),
