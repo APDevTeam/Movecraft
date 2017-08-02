@@ -827,7 +827,7 @@ public class TranslationTask extends AsyncTask {
                             newPLoc.setPitch(pTest.getLocation().getPitch());
                             newPLoc.setYaw(pTest.getLocation().getYaw());
 
-                            EntityUpdateCommand eUp = new EntityUpdateCommand(pTest.getLocation().clone(), newPLoc, pTest);
+                            EntityUpdateCommand eUp = new EntityUpdateCommand( newPLoc, pTest);
                             entityUpdateSet.add(eUp);
 //                                        if(getCraft().getPilotLocked()==true && pTest==CraftManager.getInstance().getPlayerFromCraft(getCraft())) {
 //                                            getCraft().setPilotLockedX(tempLoc.getX());
@@ -839,7 +839,7 @@ public class TranslationTask extends AsyncTask {
                             Entity ent = pTest;
                             Location tempLoc = pTest.getLocation();
                             tempLoc = tempLoc.add(data.getDx(), data.getDy(), data.getDz());
-                            EntityUpdateCommand eUp = new EntityUpdateCommand(pTest.getLocation().clone(), tempLoc, pTest);
+                            EntityUpdateCommand eUp = new EntityUpdateCommand(tempLoc, pTest);
                             entityUpdateSet.add(eUp);
                         }
 

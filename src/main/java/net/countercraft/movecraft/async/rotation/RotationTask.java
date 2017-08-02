@@ -452,7 +452,7 @@ public class RotationTask extends AsyncTask {
 //							getCraft().setPilotLockedY(newPLoc.getY());
 //							getCraft().setPilotLockedZ(newPLoc.getZ());
 //							}
-                        EntityUpdateCommand eUp = new EntityUpdateCommand(pTest.getLocation().clone(), newPLoc, pTest);
+                        EntityUpdateCommand eUp = new EntityUpdateCommand(newPLoc, pTest);
                         entityUpdateSet.add(eUp);
 //						if(getCraft().getPilotLocked()==true && pTest==CraftManager.getInstance().getPlayerFromCraft(getCraft())) {
 //							getCraft().setPilotLockedX(newPLoc.getX());

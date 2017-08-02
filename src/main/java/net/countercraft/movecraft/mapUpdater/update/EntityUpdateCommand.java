@@ -26,13 +26,6 @@ import org.bukkit.entity.Entity;
 public class EntityUpdateCommand {
     private final Location newLocation;
     private final Entity entity;
-    private Location location;
-
-    public EntityUpdateCommand(Location blockLocation, Location newLocation, Entity entity) {
-        this.location = blockLocation;
-        this.newLocation = newLocation;
-        this.entity = entity;
-    }
 
     public EntityUpdateCommand(Location newLocation, Entity entity) {
         this.newLocation = newLocation;
@@ -41,10 +34,6 @@ public class EntityUpdateCommand {
 
     public Entity getEntity() {
         return entity;
-    }
-
-    public Location getOldLocation() {
-        return location;
     }
 
     public Location getNewLocation() {
