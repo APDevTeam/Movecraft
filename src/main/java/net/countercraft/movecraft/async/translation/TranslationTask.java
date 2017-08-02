@@ -719,7 +719,7 @@ public class TranslationTask extends AsyncTask {
                 MovecraftLocation newLoc = muc.getNewBlockLocation().translate(data.getDx(), data.getDy(), data.getDz());
                 //        	Long newTime=oldScheduledBlockChanges.get(muc);
                 Long newTime = System.currentTimeMillis() + 5000;
-                MapUpdateCommand newMuc = new MapUpdateCommand(newLoc, muc.getTypeID(), muc.getDataID(), getCraft());
+                MapUpdateCommand newMuc = new MapUpdateCommand(newLoc, muc.getType(), muc.getDataID(), getCraft());
                 newScheduledBlockChanges.put(newMuc, newTime);
             }
             data.setScheduledBlockChanges(newScheduledBlockChanges);
@@ -860,7 +860,7 @@ public class TranslationTask extends AsyncTask {
                         for (posZ = minZ - 1; posZ <= maxZ + 1; posZ++) {
                             if (getCraft().getW().getBlockAt(posX, posY, posZ).getTypeId() == 9 || getCraft().getW().getBlockAt(posX, posY, posZ).getTypeId() == 8) {
                                 MovecraftLocation loc = new MovecraftLocation(posX, posY, posZ);
-                                updateSet.add(new MapUpdateCommand(loc, 0, (byte) 0, getCraft()));
+                                updateSet.add(new MapUpdateCommand(loc, Material.AIR, (byte) 0, getCraft()));
                             }
                         }
                     }
@@ -870,28 +870,28 @@ public class TranslationTask extends AsyncTask {
                     for (posX = minX - 1; posX <= maxX + 1; posX++) {
                         if (getCraft().getW().getBlockAt(posX, posY, posZ).getTypeId() == 9 || getCraft().getW().getBlockAt(posX, posY, posZ).getTypeId() == 8) {
                             MovecraftLocation loc = new MovecraftLocation(posX, posY, posZ);
-                            updateSet.add(new MapUpdateCommand(loc, 0, (byte) 0, getCraft()));
+                            updateSet.add(new MapUpdateCommand(loc, Material.AIR, (byte) 0, getCraft()));
                         }
                     }
                     posZ = maxZ + 1;
                     for (posX = minX - 1; posX <= maxX + 1; posX++) {
                         if (getCraft().getW().getBlockAt(posX, posY, posZ).getTypeId() == 9 || getCraft().getW().getBlockAt(posX, posY, posZ).getTypeId() == 8) {
                             MovecraftLocation loc = new MovecraftLocation(posX, posY, posZ);
-                            updateSet.add(new MapUpdateCommand(loc, 0, (byte) 0, getCraft()));
+                            updateSet.add(new MapUpdateCommand(loc, Material.AIR, (byte) 0, getCraft()));
                         }
                     }
                     posX = minX - 1;
                     for (posZ = minZ - 1; posZ <= maxZ + 1; posZ++) {
                         if (getCraft().getW().getBlockAt(posX, posY, posZ).getTypeId() == 9 || getCraft().getW().getBlockAt(posX, posY, posZ).getTypeId() == 8) {
                             MovecraftLocation loc = new MovecraftLocation(posX, posY, posZ);
-                            updateSet.add(new MapUpdateCommand(loc, 0, (byte) 0, getCraft()));
+                            updateSet.add(new MapUpdateCommand(loc, Material.AIR, (byte) 0, getCraft()));
                         }
                     }
                     posX = maxX + 1;
                     for (posZ = minZ - 1; posZ <= maxZ + 1; posZ++) {
                         if (getCraft().getW().getBlockAt(posX, posY, posZ).getTypeId() == 9 || getCraft().getW().getBlockAt(posX, posY, posZ).getTypeId() == 8) {
                             MovecraftLocation loc = new MovecraftLocation(posX, posY, posZ);
-                            updateSet.add(new MapUpdateCommand(loc, 0, (byte) 0, getCraft()));
+                            updateSet.add(new MapUpdateCommand(loc, Material.AIR, (byte) 0, getCraft()));
                         }
                     }
                 }
@@ -919,9 +919,9 @@ public class TranslationTask extends AsyncTask {
                 // for watercraft, fill blocks below the waterline with water
                 if (!waterCraft) {
                     if (getCraft().getSinking()) {
-                        updateSet.add(new MapUpdateCommand(l1, 0, (byte) 0, getCraft(), getCraft().getType().getSmokeOnSink()));
+                        updateSet.add(new MapUpdateCommand(l1, Material.AIR, (byte) 0, getCraft(), getCraft().getType().getSmokeOnSink()));
                     } else {
-                        updateSet.add(new MapUpdateCommand(l1, 0, (byte) 0, getCraft()));
+                        updateSet.add(new MapUpdateCommand(l1, Material.AIR, (byte) 0, getCraft()));
                     }
                 } else {
                     if (l1.getY() <= waterLine) {
@@ -932,18 +932,18 @@ public class TranslationTask extends AsyncTask {
                         }
                         if (getCraft().getW().getBlockAt(testAir.getX(), testAir.getY(), testAir.getZ()).getTypeId() == 0) {
                             if (getCraft().getSinking()) {
-                                updateSet.add(new MapUpdateCommand(l1, 0, (byte) 0, getCraft(), getCraft().getType().getSmokeOnSink()));
+                                updateSet.add(new MapUpdateCommand(l1, Material.AIR, (byte) 0, getCraft(), getCraft().getType().getSmokeOnSink()));
                             } else {
-                                updateSet.add(new MapUpdateCommand(l1, 0, (byte) 0, getCraft()));
+                                updateSet.add(new MapUpdateCommand(l1, Material.AIR, (byte) 0, getCraft()));
                             }
                         } else {
-                            updateSet.add(new MapUpdateCommand(l1, 9, (byte) 0, getCraft()));
+                            updateSet.add(new MapUpdateCommand(l1, Material.AIR, (byte) 0, getCraft()));
                         }
                     } else {
                         if (getCraft().getSinking()) {
-                            updateSet.add(new MapUpdateCommand(l1, 0, (byte) 0, getCraft(), getCraft().getType().getSmokeOnSink()));
+                            updateSet.add(new MapUpdateCommand(l1, Material.AIR, (byte) 0, getCraft(), getCraft().getType().getSmokeOnSink()));
                         } else {
-                            updateSet.add(new MapUpdateCommand(l1, 0, (byte) 0, getCraft()));
+                            updateSet.add(new MapUpdateCommand(l1, Material.AIR, (byte) 0, getCraft()));
                         }
                     }
                 }
@@ -951,7 +951,7 @@ public class TranslationTask extends AsyncTask {
 
             //add destroyed parts of growed
             for (MovecraftLocation destroyedLocation : destroyedBlocks) {
-                updateSet.add(new MapUpdateCommand(destroyedLocation, 0, (byte) 0, getCraft()));
+                updateSet.add(new MapUpdateCommand(destroyedLocation, Material.AIR, (byte) 0, getCraft()));
             }
             MapUpdateCommand[] updateArray = updateSet.toArray(new MapUpdateCommand[1]);
 //            MapUpdateManager.getInstance().sortUpdates(updateArray);

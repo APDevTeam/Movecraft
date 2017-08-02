@@ -85,7 +85,12 @@ public class MapUpdateManager extends BukkitRunnable {
     // only bother to store tile entities for blocks we care about (chests, dispensers, etc)
     // this is more important than it may seem. The more blocks that matter, the more likely
     // a circular trap will occur (a=b, b=c. c=a), potentially damaging tile data
-    final int[] tileEntityBlocksToPreserve = {23, 25, 54, 61, 62, 63, 68, 137, 146, 151, 154, 158, 178, 210, 211};
+    private final int[] tileEntityBlocksToPreserve = {
+            Material.DISPENSER.getId(), Material.NOTE_BLOCK.getId(), Material.CHEST.getId(),
+            Material.FURNACE.getId(), Material.BURNING_FURNACE.getId(), Material.SIGN_POST.getId(),
+            Material.WALL_SIGN.getId(), Material.COMMAND.getId(), Material.TRAPPED_CHEST.getId(),
+            Material.DAYLIGHT_DETECTOR.getId(), Material.HOPPER.getId(), Material.DROPPER.getId(),
+            Material.DAYLIGHT_DETECTOR_INVERTED.getId(), Material.COMMAND_REPEATING.getId(), Material.COMMAND_CHAIN.getId()};
     private final HashMap<World, ArrayList<MapUpdateCommand>> updates = new HashMap<>();
     private final HashMap<World, ArrayList<EntityUpdateCommand>> entityUpdates = new HashMap<>();
     private final HashMap<World, ArrayList<ItemDropUpdateCommand>> itemDropUpdates = new HashMap<>();
@@ -229,7 +234,7 @@ public class MapUpdateManager extends BukkitRunnable {
                 for (int mapUpdateIndex = 0; mapUpdateIndex < updatesInWorld.size(); mapUpdateIndex++) { // TODO: make this go in chunks instead of block by block, same with the block placement system
                     MapUpdateCommand i = updatesInWorld.get(mapUpdateIndex);
                     if (i != null) {
-                        if (i.getTypeID() >= 0 && i.getWorldEditBaseBlock() == null && i.getOldBlockLocation() != null) {
+                        if (i.getType() != Material.AIR && i.getWorldEditBaseBlock() == null && i.getOldBlockLocation() != null) {
                             Block srcBlock = w.getBlockAt(i.getOldBlockLocation().getX(), i.getOldBlockLocation().getY(), i.getOldBlockLocation().getZ());
                             net.minecraft.server.v1_10_R1.Chunk nativeSrcChunk = ((CraftChunk) srcBlock.getChunk()).getHandle();
                             StructureBoundingBox srcBoundingBox = new StructureBoundingBox(srcBlock.getX(), srcBlock.getY(), srcBlock.getZ(), srcBlock.getX() + 1, srcBlock.getY() + 1, srcBlock.getZ() + 1);
@@ -271,7 +276,7 @@ public class MapUpdateManager extends BukkitRunnable {
                     MapUpdateCommand i = updatesInWorld.get(mapUpdateIndex);
                     boolean madeChanges = false;
                     if (i != null) {
-                        if (i.getTypeID() >= 0) {
+                        if (i.getType() != Material.AIR) {
                             if (i.getWorldEditBaseBlock() == null) {
                                 Block srcBlock;
                                 if (i.getOldBlockLocation() != null) {
@@ -280,9 +285,9 @@ public class MapUpdateManager extends BukkitRunnable {
                                     srcBlock = null;
                                 }
                                 Block dstBlock = w.getBlockAt(i.getNewBlockLocation().getX(), i.getNewBlockLocation().getY(), i.getNewBlockLocation().getZ());
-                                int existingType = dstBlock.getTypeId();
+                                Material existingType = dstBlock.getType();
                                 byte existingData = dstBlock.getData();
-                                int newType = i.getTypeID();
+                                Material newType = i.getType();
                                 byte newData = i.getDataID();
                                 boolean delayed = false;
 
@@ -290,10 +295,10 @@ public class MapUpdateManager extends BukkitRunnable {
                                 if (Settings.DelayColorChanges && i.getCraft() != null) {
                                     if (existingType == newType && existingData != newData) {
                                         boolean canBeDelayed = false;
-                                        if (existingType == 35) { // you can delay wool blocks, except light gray ones
+                                        if (existingType == Material.WOOL) { // you can delay wool blocks, except light gray ones
                                             canBeDelayed = !(existingData == 8 || newData == 8);
                                         }
-                                        if (existingType == 159) { // you can delay stained clay, except all gray and black ones
+                                        if (existingType == Material.STAINED_CLAY) { // you can delay stained clay, except all gray and black ones
                                             canBeDelayed = !(existingData == 7 || newData == 7);
                                             if (existingData == 8 || newData == 8) {
                                                 canBeDelayed = false;
@@ -302,24 +307,24 @@ public class MapUpdateManager extends BukkitRunnable {
                                                 canBeDelayed = false;
                                             }
                                         }
-                                        if (existingType == 95) { // all stained glass can be delayed
+                                        if (existingType == Material.STAINED_GLASS) { // all stained glass can be delayed
                                             canBeDelayed = true;
                                         }
-                                        if (existingType == 160) { // all glass panes can be delayed
+                                        if (existingType == Material.STAINED_GLASS_PANE) { // all glass panes can be delayed
                                             canBeDelayed = true;
                                         }
-                                        if (existingType == 171) { // all carpet can be delayed
+                                        if (existingType == Material.CARPET) { // all carpet can be delayed
                                             canBeDelayed = true;
                                         }
-                                        if (existingType == 239) { // all glazed terracotta be delayed
-                                            canBeDelayed = true;
-                                        }
-                                        if (existingType == 251) { // all concrete can be delayed
-                                            canBeDelayed = true;
-                                        }
-                                        if (existingType == 252) { // all concrete powder can be delayed
-                                            canBeDelayed = true;
-                                        }
+//                                        if (existingType == 239) { // all glazed terracotta be delayed
+//                                            canBeDelayed = true;
+//                                        }
+//                                        if (existingType == 251) { // all concrete can be delayed
+//                                            canBeDelayed = true;
+//                                        }
+//                                        if (existingType == 252) { // all concrete powder can be delayed
+//                                            canBeDelayed = true;
+//                                        }
 
                                         if (canBeDelayed && i.getCraft().getScheduledBlockChanges() != null) {
                                             long whenToChange = System.currentTimeMillis() + 1000;
@@ -382,7 +387,7 @@ public class MapUpdateManager extends BukkitRunnable {
                                             tileEntity.setPosition(dstBlockPos);
                                             addBlockUpdateTracking(i.getCraft());
                                             madeChanges = true;
-                                            if (i.getTypeID() == 54 || i.getTypeID() == 146) {
+                                            if (i.getType() == Material.CHEST || i.getType() == Material.TRAPPED_CHEST) {
                                                 addBlockUpdateTracking(i.getCraft(), (int) (i.getCraft().getOrigBlockCount() * 0.005));
                                             }
                                             nativeDstChunk.getTileEntities().put(dstBlockPos, tileEntity);
@@ -429,7 +434,7 @@ public class MapUpdateManager extends BukkitRunnable {
                                                     int distz = Math.abs(muc.getNewBlockLocation().getZ() - entityUpdate.getNewLocation().getBlockZ());
                                                     if (disty < 2 && distx < 2 && distz < 2) {
                                                         Location nloc = new Location(w, muc.getNewBlockLocation().getX(), muc.getNewBlockLocation().getY(), muc.getNewBlockLocation().getZ());
-                                                        p.sendBlockChange(nloc, muc.getTypeID(), muc.getDataID());
+                                                        p.sendBlockChange(nloc, muc.getType(), muc.getDataID());
                                                     }
                                                 }
                                             }
@@ -440,11 +445,11 @@ public class MapUpdateManager extends BukkitRunnable {
                                     entityMap.remove(i.getNewBlockLocation());
                                 }
                             } else { // this is for worldeditbaseblock!=null, IE: a repair
-                                w.getBlockAt(i.getNewBlockLocation().getX(), i.getNewBlockLocation().getY(), i.getNewBlockLocation().getZ()).setTypeId(i.getTypeID());
+                                w.getBlockAt(i.getNewBlockLocation().getX(), i.getNewBlockLocation().getY(), i.getNewBlockLocation().getZ()).setType(i.getType());
                                 w.getBlockAt(i.getNewBlockLocation().getX(), i.getNewBlockLocation().getY(), i.getNewBlockLocation().getZ()).setData(i.getDataID());
                                 madeChanges = true;
                                 // put inventory into dispensers if its a repair
-                                if (i.getTypeID() == 23) {
+                                if (i.getType() == Material.DISPENSER) {
                                     BaseBlock bb = (BaseBlock) i.getWorldEditBaseBlock();
                                     DispenserBlock dispBlock = new DispenserBlock(bb.getData());
                                     dispBlock.setNbtData(bb.getNbtData());
@@ -487,8 +492,8 @@ public class MapUpdateManager extends BukkitRunnable {
                                 }
                             }
                         } else {
-                            if (i.getTypeID() < -10) { // don't bother with tiny explosions
-                                float explosionPower = i.getTypeID();
+                            if (i.getType() < -10) { // don't bother with tiny explosions
+                                float explosionPower = i.getType();
                                 explosionPower = 0.0F - explosionPower / 100.0F;
                                 Location loc = new Location(w, i.getNewBlockLocation().getX() + 0.5, i.getNewBlockLocation().getY() + 0.5, i.getNewBlockLocation().getZ());
                                 this.createExplosion(loc, explosionPower);
@@ -504,20 +509,20 @@ public class MapUpdateManager extends BukkitRunnable {
 
                 for (MapUpdateCommand i : updatesInWorld) {
                     if (i != null) {
-                        if (i.getTypeID() == 149) { // for some reason comparators are flakey, have to do it twice sometimes
+                        if (i.getType() == Material.REDSTONE_COMPARATOR_OFF) { // for some reason comparators are flakey, have to do it twice sometimes
                             Block b = w.getBlockAt(i.getNewBlockLocation().getX(), i.getNewBlockLocation().getY(), i.getNewBlockLocation().getZ());
-                            if (b.getTypeId() != 149) {
-                                b.setTypeIdAndData(i.getTypeID(), i.getDataID(), false);
+                            if (b.getType() != Material.REDSTONE_COMPARATOR_OFF) {
+                                b.setTypeIdAndData(i.getType().getId(), i.getDataID(), false);
                             }
                         }
-                        if (i.getTypeID() == 150) { // for some reason comparators are flakey, have to do it twice sometimes
+                        if (i.getType() == Material.REDSTONE_COMPARATOR) { // for some reason comparators are flakey, have to do it twice sometimes
                             Block b = w.getBlockAt(i.getNewBlockLocation().getX(), i.getNewBlockLocation().getY(), i.getNewBlockLocation().getZ());
-                            if (b.getTypeId() != 150) {
-                                b.setTypeIdAndData(i.getTypeID(), i.getDataID(), false);
+                            if (b.getType() != Material.REDSTONE_COMPARATOR) {
+                                b.setTypeIdAndData(i.getType().getId(), i.getDataID(), false);
                             }
                         }
                         if (i.getWorldEditBaseBlock() != null) { // worldedit updates (IE: repairs) can have reconstruction issues due to block order, so paste twice
-                            w.getBlockAt(i.getNewBlockLocation().getX(), i.getNewBlockLocation().getY(), i.getNewBlockLocation().getZ()).setTypeId(i.getTypeID());
+                            w.getBlockAt(i.getNewBlockLocation().getX(), i.getNewBlockLocation().getY(), i.getNewBlockLocation().getZ()).setType(i.getType());
                             w.getBlockAt(i.getNewBlockLocation().getX(), i.getNewBlockLocation().getY(), i.getNewBlockLocation().getZ()).setData(i.getDataID());
                             if (i.getWorldEditBaseBlock() instanceof SignBlock) {
                                 BlockState state = w.getBlockAt(i.getNewBlockLocation().getX(), i.getNewBlockLocation().getY(), i.getNewBlockLocation().getZ()).getState();
@@ -559,7 +564,7 @@ public class MapUpdateManager extends BukkitRunnable {
                             nativeDstChunk.getTileEntities().remove(dstBlockPos);
                         }
 
-                        if (i.getTypeID() == 63 || i.getTypeID() == 68) {
+                        if (i.getType() == Material.SIGN_POST || i.getType() == Material.WALL_SIGN) {
                             if (i.getCraft() != null) {
                                 srcBlock = w.getBlockAt(i.getNewBlockLocation().getX(), i.getNewBlockLocation().getY(), i.getNewBlockLocation().getZ());
                                 nativeDstChunk = ((CraftChunk) srcBlock.getChunk()).getHandle();
@@ -608,7 +613,7 @@ public class MapUpdateManager extends BukkitRunnable {
 				for ( MapUpdateCommand c : updatesInWorld ) {
 					if(c!=null) {
 						Location loc=new Location(w,c.getNewBlockLocation().getX(),c.getNewBlockLocation().getY(),c.getNewBlockLocation().getZ());
-						if(c.getTypeID()!=c.getCurrentTypeID() || c.getDataID()!=c.getCurrentDataID())
+						if(c.getType()!=c.getCurrentType() || c.getDataID()!=c.getCurrentDataID())
 							w.getBlockAt(loc).getState().update();
 					}
 				}*/
@@ -683,11 +688,11 @@ public class MapUpdateManager extends BukkitRunnable {
         if (rand.nextInt(100) < 15) {
             sendSil = true;
         }
-/*		if(i.getTypeID()==0)
+/*		if(i.getType()==0)
 			sendSil=true;
 		else
-			if(i.getCurrentTypeID()!=null)
-				if(i.getTypeID()!=0 && i.getCurrentTypeID()==0)
+			if(i.getCurrentType()!=null)
+				if(i.getType()!=0 && i.getCurrentType()==0)
 					sendSil=true;*/
         if (sendSil) {
             for (Player p : w.getPlayers()) { // this is necessary because signs do not get updated client side correctly without refreshing the chunks, which causes a memory leak in the clients
@@ -940,11 +945,11 @@ public class MapUpdateManager extends BukkitRunnable {
 		Integer index=0;
 		for(MapUpdateCommand i : mapUpdates) {
 			if(i.getOldBlockLocation()!=null) {
-//				if((Arrays.binarySearch(tileEntityBlocksToPreserve,i.getTypeID())>=0) || (Arrays.binarySearch(tileEntityBlocksToPreserve,i.getCurrentTypeID())>=0)) {
+//				if((Arrays.binarySearch(tileEntityBlocksToPreserve,i.getType())>=0) || (Arrays.binarySearch(tileEntityBlocksToPreserve,i.getCurrentType())>=0)) {
 					newBlockLocationIndexes.put(i.getNewBlockLocation(), index);
 	//			}
 		//	} else {
-			//	if(Arrays.binarySearch(tileEntityBlocksToPreserve,i.getTypeID())>=0)
+			//	if(Arrays.binarySearch(tileEntityBlocksToPreserve,i.getType())>=0)
 					newBlockLocationIndexes.put(i.getNewBlockLocation(), index);
 			}
 			index++;
@@ -958,11 +963,11 @@ public class MapUpdateManager extends BukkitRunnable {
 				MapUpdateCommand i=mapUpdates[index];
 				if(i.getOldBlockLocation()!=null) {
 					boolean needsSort=false;
-					if(Arrays.binarySearch(tileEntityBlocksToPreserve,i.getTypeID())>=0) {
+					if(Arrays.binarySearch(tileEntityBlocksToPreserve,i.getType())>=0) {
 						needsSort=true;
 					} else {
 //						int sourceIndex=newBlockLocationIndexes.get(i.getOldBlockLocation());
-						if(Arrays.binarySearch(tileEntityBlocksToPreserve,i.getCurrentTypeID())>=0) {
+						if(Arrays.binarySearch(tileEntityBlocksToPreserve,i.getCurrentType())>=0) {
 							needsSort=true;
 						}
 					}

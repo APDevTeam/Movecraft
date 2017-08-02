@@ -20,11 +20,8 @@ package net.countercraft.movecraft.async;
 import at.pavlov.cannons.cannon.Cannon;
 import com.palmergames.bukkit.towny.object.TownBlock;
 import com.palmergames.bukkit.towny.object.TownyWorld;
-import com.sk89q.worldguard.domains.DefaultDomain;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.flags.DefaultFlag;
-import com.sk89q.worldguard.protection.flags.StateFlag.State;
-import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.async.detection.DetectionTask;
 import net.countercraft.movecraft.async.detection.DetectionTaskData;
@@ -33,8 +30,6 @@ import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.listener.CommandListener;
-import net.countercraft.movecraft.listener.WorldEditInteractListener;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.BlockUtils;
 import net.countercraft.movecraft.utils.EntityUpdateCommand;
@@ -46,13 +41,11 @@ import net.countercraft.movecraft.utils.TownyUtils;
 import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
 import org.apache.commons.collections.ListUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -60,14 +53,11 @@ import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.TimeZone;
-import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -1211,10 +1201,10 @@ public class AsyncManager extends BukkitRunnable {
                                         // should it become water? if not, then
                                         // air
                                         if (Movecraft.getInstance().blockFadeWaterMap.get(loc)) {
-                                            MapUpdateCommand updateCom = new MapUpdateCommand(loc, 9, (byte) 0, null);
+                                            MapUpdateCommand updateCom = new MapUpdateCommand(loc, Material.STATIONARY_WATER, (byte) 0, null);
                                             updateCommands.add(updateCom);
                                         } else {
-                                            MapUpdateCommand updateCom = new MapUpdateCommand(loc, 0, (byte) 0, null);
+                                            MapUpdateCommand updateCom = new MapUpdateCommand(loc, Material.AIR, (byte) 0, null);
                                             updateCommands.add(updateCom);
                                         }
                                     }
@@ -1350,7 +1340,7 @@ public class AsyncManager extends BukkitRunnable {
                                 if (!w.isChunkLoaded(cx, cz)) {
                                     w.loadChunk(cx, cz);
                                 }
-                                if (w.getBlockAt(muc.getNewBlockLocation().getX(), muc.getNewBlockLocation().getY(), muc.getNewBlockLocation().getZ()).getTypeId() == muc.getTypeID()) {
+                                if (w.getBlockAt(muc.getNewBlockLocation().getX(), muc.getNewBlockLocation().getY(), muc.getNewBlockLocation().getZ()).getType() == muc.getType()) {
                                     // if the block you will be updating later has changed type, something went horribly wrong: it burned away, was flooded, or was destroyed. Don't update it
                                     updateCommands.add(muc);
                                 }

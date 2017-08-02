@@ -368,12 +368,12 @@ public class RotationTask extends AsyncTask {
                     failMessage = String.format(I18nSupport.getInternationalisedString("Rotation - Craft is obstructed") + " @ %d,%d,%d", blockList[i].getX(), blockList[i].getY(), blockList[i].getZ());
                     break;
                 } else {
-                    int id = w.getBlockTypeIdAt(originalBlockList[i].getX(), originalBlockList[i].getY(), originalBlockList[i].getZ());
+                    Material id = w.getBlockAt(originalBlockList[i].getX(), originalBlockList[i].getY(), originalBlockList[i].getZ()).getType();
                     byte data = w.getBlockAt(originalBlockList[i].getX(), originalBlockList[i].getY(), originalBlockList[i].getZ()).getData();
-                    int currentID = w.getBlockTypeIdAt(blockList[i].getX(), blockList[i].getY(), blockList[i].getZ());
+                    Material currentID = w.getBlockAt(blockList[i].getX(), blockList[i].getY(), blockList[i].getZ()).getType();
                     byte currentData = w.getBlockAt(blockList[i].getX(), blockList[i].getY(), blockList[i].getZ()).getData();
-                    if (BlockUtils.blockRequiresRotation(id)) {
-                        data = BlockUtils.rotate(data, id, rotation);
+                    if (BlockUtils.blockRequiresRotation(id.getId())) {
+                        data = BlockUtils.rotate(data, id.getId(), rotation);
                     }
                     mapUpdates.add(new MapUpdateCommand(originalBlockList[i], currentID, currentData, blockList[i], id, data, rotation, parentCraft));
                 }
@@ -384,12 +384,12 @@ public class RotationTask extends AsyncTask {
                     failMessage = String.format(I18nSupport.getInternationalisedString("Rotation - Craft is obstructed") + " @ %d,%d,%d", blockList[i].getX(), blockList[i].getY(), blockList[i].getZ());
                     break;
                 } else {
-                    int id = w.getBlockTypeIdAt(originalBlockList[i].getX(), originalBlockList[i].getY(), originalBlockList[i].getZ());
+                    Material id = w.getBlockAt(originalBlockList[i].getX(), originalBlockList[i].getY(), originalBlockList[i].getZ()).getType();
                     byte data = w.getBlockAt(originalBlockList[i].getX(), originalBlockList[i].getY(), originalBlockList[i].getZ()).getData();
-                    int currentID = w.getBlockTypeIdAt(blockList[i].getX(), blockList[i].getY(), blockList[i].getZ());
+                    Material currentID = w.getBlockAt(blockList[i].getX(), blockList[i].getY(), blockList[i].getZ()).getType();
                     byte currentData = w.getBlockAt(blockList[i].getX(), blockList[i].getY(), blockList[i].getZ()).getData();
-                    if (BlockUtils.blockRequiresRotation(id)) {
-                        data = BlockUtils.rotate(data, id, rotation);
+                    if (BlockUtils.blockRequiresRotation(id.getId())) {
+                        data = BlockUtils.rotate(data, id.getId(), rotation);
                     }
                     mapUpdates.add(new MapUpdateCommand(originalBlockList[i], currentID, currentData, blockList[i], id, data, rotation, parentCraft));
                 }
@@ -489,12 +489,12 @@ public class RotationTask extends AsyncTask {
                 if (waterCraft) {
                     // if its below the waterline, fill in with water. Otherwise fill in with air.
                     if (l1.getY() <= waterLine) {
-                        mapUpdates.add(new MapUpdateCommand(l1, 9, (byte) 0, parentCraft));
+                        mapUpdates.add(new MapUpdateCommand(l1, Material.STATIONARY_WATER, (byte) 0, parentCraft));
                     } else {
-                        mapUpdates.add(new MapUpdateCommand(l1, 0, (byte) 0, parentCraft));
+                        mapUpdates.add(new MapUpdateCommand(l1, Material.AIR, (byte) 0, parentCraft));
                     }
                 } else {
-                    mapUpdates.add(new MapUpdateCommand(l1, 0, (byte) 0, parentCraft));
+                    mapUpdates.add(new MapUpdateCommand(l1, Material.AIR, (byte) 0, parentCraft));
                 }
             }
 
@@ -506,7 +506,7 @@ public class RotationTask extends AsyncTask {
                 newLoc = newLoc.subtract(originPoint);
                 newLoc = MathUtils.rotateVec(rotation, newLoc).add(originPoint);
                 Long newTime = System.currentTimeMillis() + 5000;
-                MapUpdateCommand newMuc = new MapUpdateCommand(newLoc, muc.getTypeID(), muc.getDataID(), parentCraft);
+                MapUpdateCommand newMuc = new MapUpdateCommand(newLoc, muc.getType(), muc.getDataID(), parentCraft);
                 newScheduledBlockChanges.put(newMuc, newTime);
             }
             this.scheduledBlockChanges = newScheduledBlockChanges;

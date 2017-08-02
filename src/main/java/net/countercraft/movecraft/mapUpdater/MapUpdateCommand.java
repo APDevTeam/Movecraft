@@ -20,15 +20,16 @@ package net.countercraft.movecraft.mapUpdater;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.utils.MovecraftLocation;
 import net.countercraft.movecraft.utils.Rotation;
+import org.bukkit.Material;
 
 /**
  * Class that stores the data about a single blocks changes to the map in an unspecified world. The world is retrieved contextually from the submitting craft.
  */
 public class MapUpdateCommand {
     private final MovecraftLocation newBlockLocation;
-    private final int typeID;
+    private final Material type;
     private final byte dataID;
-    private final Integer currentTypeID;
+    private final Material currentType;
     private final Byte currentDataID;
     private final Object worldEditBaseBlock;
     private final Rotation rotation;
@@ -36,82 +37,82 @@ public class MapUpdateCommand {
     private Craft craft;
     private int smoke;
 
-    public MapUpdateCommand(MovecraftLocation blockLocation, Integer currentTypeID, Byte currentDataID, MovecraftLocation newBlockLocation, int typeID, byte dataID, Rotation rotation, Craft craft) {
+    public MapUpdateCommand(MovecraftLocation blockLocation, Material currentType, Byte currentDataID, MovecraftLocation newBlockLocation, Material type, byte dataID, Rotation rotation, Craft craft) {
         this.blockLocation = blockLocation;
         this.newBlockLocation = newBlockLocation;
-        this.typeID = typeID;
+        this.type = type;
         this.dataID = dataID;
         this.worldEditBaseBlock = null;
         this.rotation = rotation;
         this.craft = craft;
         this.smoke = 0;
-        this.currentTypeID = currentTypeID;
+        this.currentType = currentType;
         this.currentDataID = currentDataID;
     }
 
-    public MapUpdateCommand(MovecraftLocation blockLocation, Integer currentTypeID, Byte currentDataID, MovecraftLocation newBlockLocation, int typeID, byte dataID, Craft craft) {
+    public MapUpdateCommand(MovecraftLocation blockLocation, Material currentType, Byte currentDataID, MovecraftLocation newBlockLocation, Material type, byte dataID, Craft craft) {
         this.blockLocation = blockLocation;
         this.newBlockLocation = newBlockLocation;
-        this.typeID = typeID;
+        this.type = type;
         this.dataID = dataID;
         this.worldEditBaseBlock = null;
         this.rotation = Rotation.NONE;
         this.craft = craft;
         this.smoke = 0;
-        this.currentTypeID = currentTypeID;
+        this.currentType = currentType;
         this.currentDataID = currentDataID;
 
     }
 
-    public MapUpdateCommand(MovecraftLocation newBlockLocation, int typeID, byte dataID, Craft craft) {
+    public MapUpdateCommand(MovecraftLocation newBlockLocation, Material type, byte dataID, Craft craft) {
         this.newBlockLocation = newBlockLocation;
-        this.typeID = typeID;
+        this.type = type;
         this.dataID = dataID;
         this.worldEditBaseBlock = null;
         this.rotation = Rotation.NONE;
         this.craft = craft;
         this.smoke = 0;
-        this.currentTypeID = null;
+        this.currentType = null;
         this.currentDataID = null;
 
     }
 
-    public MapUpdateCommand(MovecraftLocation newBlockLocation, int typeID, byte dataID, Object worldEditBaseBlock, Craft craft) {
+    public MapUpdateCommand(MovecraftLocation newBlockLocation, Material type, byte dataID, Object worldEditBaseBlock, Craft craft) {
         this.newBlockLocation = newBlockLocation;
-        this.typeID = typeID;
+        this.type = type;
         this.dataID = dataID;
         this.worldEditBaseBlock = worldEditBaseBlock;
         this.rotation = Rotation.NONE;
         this.craft = craft;
         this.smoke = 0;
-        this.currentTypeID = null;
+        this.currentType = null;
         this.currentDataID = null;
 
     }
 
-    public MapUpdateCommand(MovecraftLocation newBlockLocation, int typeID, byte dataID, Craft craft, int smoke) {
+    public MapUpdateCommand(MovecraftLocation newBlockLocation, Material type, byte dataID, Craft craft, int smoke) {
         this.newBlockLocation = newBlockLocation;
-        this.typeID = typeID;
+        this.type = type;
         this.dataID = dataID;
         this.worldEditBaseBlock = null;
         this.rotation = Rotation.NONE;
         this.craft = craft;
         this.smoke = smoke;
-        this.currentTypeID = null;
+        this.currentType = null;
         this.currentDataID = null;
 
     }
 
-    public int getTypeID() {
-        return typeID;
+    public Material getType() {
+        return type;
     }
 
     public byte getDataID() {
         return dataID;
     }
 
-    public Integer getCurrentTypeID() {
-        return currentTypeID;
+    public Material getCurrentType() {
+        return currentType;
     }
 
     public Byte getCurrentDataID() {
