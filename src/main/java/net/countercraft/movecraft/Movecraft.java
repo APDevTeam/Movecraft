@@ -339,6 +339,7 @@ public class Movecraft extends JavaPlugin {
             AsyncManager.getInstance().runTaskTimer(this, 0, 1);
             MapUpdateManager.getInstance().runTaskTimer(this, 0, 1);
             assaultManager.runTaskTimerAsynchronously(this, 0, 20);
+            siegeManager.runTaskTimerAsynchronously(this,0,20);
 
             CraftManager.getInstance();
 
