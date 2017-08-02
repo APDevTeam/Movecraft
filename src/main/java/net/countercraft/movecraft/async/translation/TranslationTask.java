@@ -590,8 +590,6 @@ public class TranslationTask extends AsyncTask {
                 //block not obstructed
                 Material oldType = getCraft().getW().getBlockAt(oldLoc.getX(), oldLoc.getY(), oldLoc.getZ()).getType();
                 byte oldData = getCraft().getW().getBlockAt(oldLoc.getX(), oldLoc.getY(), oldLoc.getZ()).getData();
-                Material currentType = getCraft().getW().getBlockAt(newLoc.getX(), newLoc.getY(), newLoc.getZ()).getType();
-                byte currentData = getCraft().getW().getBlockAt(newLoc.getX(), newLoc.getY(), newLoc.getZ()).getData();
                 // remove water from sinking crafts
                 if (getCraft().getSinking()) {
                     if ((oldType == Material.WATER || oldType == Material.STATIONARY_WATER) && oldLoc.getY() > waterLine)
@@ -599,7 +597,7 @@ public class TranslationTask extends AsyncTask {
                 }
 
                 if (!ignoreBlock) {
-                    updateSet.add(new MapUpdateCommand(oldLoc, currentType, currentData, newLoc, oldType, oldData, getCraft()));
+                    updateSet.add(new MapUpdateCommand(oldLoc, newLoc, oldType, oldData, getCraft()));
                     tempBlockList.add(newLoc);
                 }
 

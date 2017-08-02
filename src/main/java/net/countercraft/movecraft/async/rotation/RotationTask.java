@@ -370,12 +370,10 @@ public class RotationTask extends AsyncTask {
                 } else {
                     Material id = w.getBlockAt(originalBlockList[i].getX(), originalBlockList[i].getY(), originalBlockList[i].getZ()).getType();
                     byte data = w.getBlockAt(originalBlockList[i].getX(), originalBlockList[i].getY(), originalBlockList[i].getZ()).getData();
-                    Material currentID = w.getBlockAt(blockList[i].getX(), blockList[i].getY(), blockList[i].getZ()).getType();
-                    byte currentData = w.getBlockAt(blockList[i].getX(), blockList[i].getY(), blockList[i].getZ()).getData();
                     if (BlockUtils.blockRequiresRotation(id.getId())) {
                         data = BlockUtils.rotate(data, id.getId(), rotation);
                     }
-                    mapUpdates.add(new MapUpdateCommand(originalBlockList[i], currentID, currentData, blockList[i], id, data, rotation, parentCraft));
+                    mapUpdates.add(new MapUpdateCommand(originalBlockList[i],  blockList[i], id, data, rotation, parentCraft));
                 }
             } else {
                 // allow watercraft to rotate through water
@@ -386,12 +384,10 @@ public class RotationTask extends AsyncTask {
                 } else {
                     Material id = w.getBlockAt(originalBlockList[i].getX(), originalBlockList[i].getY(), originalBlockList[i].getZ()).getType();
                     byte data = w.getBlockAt(originalBlockList[i].getX(), originalBlockList[i].getY(), originalBlockList[i].getZ()).getData();
-                    Material currentID = w.getBlockAt(blockList[i].getX(), blockList[i].getY(), blockList[i].getZ()).getType();
-                    byte currentData = w.getBlockAt(blockList[i].getX(), blockList[i].getY(), blockList[i].getZ()).getData();
                     if (BlockUtils.blockRequiresRotation(id.getId())) {
                         data = BlockUtils.rotate(data, id.getId(), rotation);
                     }
-                    mapUpdates.add(new MapUpdateCommand(originalBlockList[i], currentID, currentData, blockList[i], id, data, rotation, parentCraft));
+                    mapUpdates.add(new MapUpdateCommand(originalBlockList[i],  blockList[i], id, data, rotation, parentCraft));
                 }
             }
 
