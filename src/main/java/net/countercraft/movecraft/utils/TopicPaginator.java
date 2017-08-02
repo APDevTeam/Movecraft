@@ -44,4 +44,8 @@ public class TopicPaginator {
     public boolean isInBounds(int pageNumber){
         return pageNumber > 0 && pageNumber <= getPageCount();
     }
+
+    public boolean isEmpty(){
+        return lines.isEmpty();
+    }
 }
