@@ -117,7 +117,7 @@ public class WorldEditInteractListener implements Listener {
         }
         if (!updateCommands.isEmpty()) {
             MapUpdateManager.getInstance().addWorldUpdate(w,
-                    updateCommands.toArray(new MapUpdateCommand[1]), null, null);
+                    updateCommands.toArray(new MapUpdateCommand[1]), null, null, null);
         }
         return true;
     }
@@ -655,7 +655,7 @@ public class WorldEditInteractListener implements Listener {
                         BukkitTask repairTask = new BukkitRunnable() {
                             @Override
                             public void run() {
-                                MapUpdateManager.getInstance().addWorldUpdate(fpCraft.getW(), fUpdateCommands, null, null);
+                                MapUpdateManager.getInstance().addWorldUpdate(fpCraft.getW(), fUpdateCommands, null, null, null);
                             }
                         }.runTaskLater(Movecraft.getInstance(), (durationInTicks));
 

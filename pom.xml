@@ -72,11 +72,13 @@
     </repositories>
 
     <build>
+        <defaultGoal>clean package</defaultGoal>
+        <sourceDirectory>src/main/java</sourceDirectory>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.5.1</version>
+                <version>3.6.1</version>
                 <configuration>
                     <source>1.7</source>
                     <target>1.7</target>
@@ -85,7 +87,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>2.1</version>
+                <version>3.0.0</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
