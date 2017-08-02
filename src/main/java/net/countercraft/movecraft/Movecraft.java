@@ -25,6 +25,7 @@ import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.flags.StateFlag;
 import net.countercraft.movecraft.async.AsyncManager;
+import net.countercraft.movecraft.commands.CruiseCommand;
 import net.countercraft.movecraft.commands.PilotCommand;
 import net.countercraft.movecraft.commands.ReleaseCommand;
 import net.countercraft.movecraft.commands.RotateCommand;
@@ -355,8 +356,7 @@ public class Movecraft extends JavaPlugin {
             this.getCommand("release").setExecutor(new ReleaseCommand());
             this.getCommand("pilot").setExecutor(new PilotCommand());
             this.getCommand("rotate").setExecutor(new RotateCommand());
-//            this.getCommand("cruise").setExecutor(new CommandListener());
-//            this.getCommand("cruiseoff").setExecutor(new CommandListener());
+            this.getCommand("cruise").setExecutor(new CruiseCommand());
 //            this.getCommand("craftreport").setExecutor(new CommandListener());
 //            this.getCommand("manoverboard").setExecutor(new CommandListener());
 //            this.getCommand("contacts").setExecutor(new CommandListener());
