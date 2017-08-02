@@ -38,6 +38,8 @@ import net.countercraft.movecraft.utils.MovecraftLocation;
 import net.countercraft.movecraft.utils.TownyUtils;
 import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
 import net.countercraft.movecraft.warfare.assault.AssaultManager;
+import net.countercraft.movecraft.warfare.siege.Siege;
+import net.countercraft.movecraft.warfare.siege.SiegeManager;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.v1_10_R1.util.CraftMagicNumbers;
@@ -55,6 +57,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -76,14 +79,11 @@ public class Movecraft extends JavaPlugin {
     public HashMap<MovecraftLocation, Integer> blockFadeTypeMap = new HashMap<>();
     public HashMap<MovecraftLocation, Boolean> blockFadeWaterMap = new HashMap<>();
     public HashMap<MovecraftLocation, World> blockFadeWorldMap = new HashMap<>();
-    public boolean siegeInProgress = false;
-    public String currentSiegeName = null;
-    public String currentSiegePlayer = null;
-    public long currentSiegeStartTime = 0;
     private Logger logger;
     private boolean shuttingDown;
 
     private final AssaultManager assaultManager = new AssaultManager(this);
+    private final SiegeManager siegeManager = new SiegeManager(this);
 
     public static Movecraft getInstance() {
         return instance;
@@ -177,48 +177,33 @@ public class Movecraft extends JavaPlugin {
 
         //load the sieges.yml file
         File siegesFile = new File(Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/sieges.yml");
-        InputStream input = null;
+        InputStream input;
         try {
             input = new FileInputStream(siegesFile);
         } catch (FileNotFoundException e) {
-            Settings.SiegeName = null;
             input = null;
         }
         if (input != null) {
-            Yaml yaml = new Yaml();
-            Map data = (Map) yaml.load(input);
-            Map<String, Map> siegesMap = (Map<String, Map>) data.get("sieges");
-            Settings.SiegeName = siegesMap.keySet();
-
-            Settings.SiegeRegion = new HashMap<>();
-            Settings.SiegeCraftsToWin = new HashMap<>();
-            Settings.SiegeCost = new HashMap<>();
-            Settings.SiegeDoubleCost = new HashMap<>();
-            Settings.SiegeIncome = new HashMap<>();
-            Settings.SiegeScheduleStart = new HashMap<>();
-            Settings.SiegeScheduleEnd = new HashMap<>();
-            Settings.SiegeControlRegion = new HashMap<>();
-            Settings.SiegeDelay = new HashMap<>();
-            Settings.SiegeDuration = new HashMap<>();
-            Settings.SiegeDayOfTheWeek = new HashMap<>();
-            Settings.SiegeCommandsOnStart = new HashMap<>();
-            Settings.SiegeCommandsOnWin = new HashMap<>();
-            Settings.SiegeCommandsOnLose = new HashMap<>();
-            for (String siegeName : siegesMap.keySet()) {
-                Settings.SiegeRegion.put(siegeName, (String) siegesMap.get(siegeName).get("SiegeRegion"));
-                Settings.SiegeCraftsToWin.put(siegeName, (ArrayList<String>) siegesMap.get(siegeName).get("CraftsToWin"));
-                Settings.SiegeCost.put(siegeName, (Integer) siegesMap.get(siegeName).get("CostToSiege"));
-                Settings.SiegeDoubleCost.put(siegeName, (Boolean) siegesMap.get(siegeName).get("DoubleCostPerOwnedSiegeRegion"));
-                Settings.SiegeIncome.put(siegeName, (Integer) siegesMap.get(siegeName).get("DailyIncome"));
-                Settings.SiegeScheduleStart.put(siegeName, (Integer) siegesMap.get(siegeName).get("ScheduleStart"));
-                Settings.SiegeScheduleEnd.put(siegeName, (Integer) siegesMap.get(siegeName).get("ScheduleEnd"));
-                Settings.SiegeControlRegion.put(siegeName, (String) siegesMap.get(siegeName).get("RegionToControl"));
-                Settings.SiegeDelay.put(siegeName, (Integer) siegesMap.get(siegeName).get("DelayBeforeStart"));
-                Settings.SiegeDuration.put(siegeName, (Integer) siegesMap.get(siegeName).get("SiegeDuration"));
-                Settings.SiegeDayOfTheWeek.put(siegeName, (Integer) siegesMap.get(siegeName).get("DayOfTheWeek"));
-                Settings.SiegeCommandsOnStart.put(siegeName, (ArrayList<String>) siegesMap.get(siegeName).get("SiegeCommandsOnStart"));
-                Settings.SiegeCommandsOnWin.put(siegeName, (ArrayList<String>) siegesMap.get(siegeName).get("SiegeCommandsOnWin"));
-                Settings.SiegeCommandsOnLose.put(siegeName, (ArrayList<String>) siegesMap.get(siegeName).get("SiegeCommandsOnLose"));
+            Map data = new Yaml().loadAs(input, Map.class);
+            Map<String, Map<String, ?>> siegesMap = (Map<String, Map<String, ?>>) data.get("sieges");
+            List<Siege> sieges = siegeManager.getSieges();
+            for (Map.Entry<String, Map<String, ?>> entry : siegesMap.entrySet()) {
+                sieges.add(new Siege(
+                        entry.getKey(),
+                        (String) entry.getValue().get("RegionToControl"),
+                        (String) entry.getValue().get("SiegeRegion"),
+                        (Integer) entry.getValue().get("ScheduleStart"),
+                        (Integer) entry.getValue().get("ScheduleEnd"),
+                        (Integer) entry.getValue().get("DelayBeforeStart"),
+                        (Integer) entry.getValue().get("SiegeDuration"),
+                        (Integer) entry.getValue().get("DayOfTheWeek"),
+                        (Integer) entry.getValue().get("DailyIncome"),
+                        (Integer) entry.getValue().get("CostToSiege"),
+                        (Boolean) entry.getValue().get("DoubleCostPerOwnedSiegeRegion"),
+                        (ArrayList<String>) entry.getValue().get("CraftsToWin"),
+                        (ArrayList<String>) entry.getValue().get("SiegeCommandsOnStart"),
+                        (ArrayList<String>) entry.getValue().get("SiegeCommandsOnWin"),
+                        (ArrayList<String>) entry.getValue().get("SiegeCommandsOnLose")));
             }
             logger.log(Level.INFO, "Siege configuration loaded.");
         }
@@ -226,7 +211,7 @@ public class Movecraft extends JavaPlugin {
         Plugin wGPlugin = getServer().getPluginManager().getPlugin("WorldGuard");
         if (wGPlugin == null || !(wGPlugin instanceof WorldGuardPlugin)) {
             logger.log(Level.INFO, "Movecraft did not find a compatible version of WorldGuard. Disabling WorldGuard integration");
-            Settings.SiegeName = null;
+            //Settings.SiegeName = null;
             Settings.AssaultEnable = false;
             Settings.RestrictSiBsToRegions = false;
         } else {
@@ -321,13 +306,13 @@ public class Movecraft extends JavaPlugin {
             } else {
                 logger.log(Level.INFO, "Could not find compatible Vault plugin. Disabling Vault integration.");
                 economy = null;
-                Settings.SiegeName = null;
+                //Settings.SiegeName = null;
                 Settings.AssaultEnable = false;
             }
         } else {
             logger.log(Level.INFO, "Could not find compatible Vault plugin. Disabling Vault integration.");
             economy = null;
-            Settings.SiegeName = null;
+            //Settings.SiegeName = null;
         }
         String[] localisations = {"en", "cz", "nl"};
         for (String s : localisations) {
@@ -427,6 +412,8 @@ public class Movecraft extends JavaPlugin {
     public AssaultManager getAssaultManager() {
         return assaultManager;
     }
+
+    public SiegeManager getSiegeManager(){return siegeManager;}
 
 }
 

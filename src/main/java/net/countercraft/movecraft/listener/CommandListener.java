@@ -36,6 +36,9 @@ import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.utils.MovecraftLocation;
 import net.countercraft.movecraft.utils.Rotation;
 import net.countercraft.movecraft.warfare.assault.Assault;
+import net.countercraft.movecraft.warfare.siege.Siege;
+import net.countercraft.movecraft.warfare.siege.SiegeManager;
+import net.countercraft.movecraft.warfare.siege.SiegeStage;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
@@ -55,6 +58,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 
 //public class CommandListener implements Listener {
@@ -477,13 +481,11 @@ public class CommandListener implements CommandExecutor {
                 boolean foundAssaultableRegion = false;
                 for (ProtectedRegion tRegion : regions.getRegions()) {
                     boolean canBeAssaulted = true;
-                    if (Settings.SiegeName != null) {
-                        for (String tSiegeName : Settings.SiegeName) {
-                            // siegable regions can not be assaulted
-                            if (tRegion.getId().equalsIgnoreCase(Settings.SiegeRegion.get(tSiegeName)))
-                                canBeAssaulted = false;
-                            if (tRegion.getId().equalsIgnoreCase(Settings.SiegeControlRegion.get(tSiegeName)))
-                                canBeAssaulted = false;
+                    for (Siege siege : Movecraft.getInstance().getSiegeManager().getSieges()) {
+                        // siegable regions can not be assaulted
+                        if (tRegion.getId().equalsIgnoreCase(siege.getAttackRegion()) || tRegion.getId().equalsIgnoreCase(siege.getCaptureRegion())) {
+                            canBeAssaulted = false;
+                            break;
                         }
                     }
                     // a region can only be assaulted if it disables TNT, this is to prevent child regions or sub regions from being assaulted
@@ -569,13 +571,11 @@ public class CommandListener implements CommandExecutor {
                 return true;
             }
             boolean canBeAssaulted = true;
-            if (Settings.SiegeName != null) {
-                for (String tSiegeName : Settings.SiegeName) {
-                    // siegable regions can not be assaulted
-                    if (aRegion.getId().equals(Settings.SiegeRegion.get(tSiegeName)))
-                        canBeAssaulted = false;
-                    if (aRegion.getId().equals(Settings.SiegeControlRegion.get(tSiegeName)))
-                        canBeAssaulted = false;
+            for (Siege siege : Movecraft.getInstance().getSiegeManager().getSieges()) {
+                // siegable regions can not be assaulted
+                if (aRegion.getId().equalsIgnoreCase(siege.getAttackRegion()) || aRegion.getId().equalsIgnoreCase(siege.getCaptureRegion())) {
+                    canBeAssaulted = false;
+                    break;
                 }
             }
             // a region can only be assaulted if it disables TNT, this is to prevent child regions or sub regions from being assaulted
@@ -712,33 +712,33 @@ public class CommandListener implements CommandExecutor {
                 player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
                 return true;
             }
-            if (Settings.SiegeName == null) {
+            SiegeManager siegeManager = Movecraft.getInstance().getSiegeManager();
+            if (siegeManager.getSieges().size() == 0) {
                 player.sendMessage(I18nSupport.getInternationalisedString("Siege is not configured on this server"));
                 return true;
             }
-            if (Movecraft.getInstance().siegeInProgress) {
-                player.sendMessage(I18nSupport.getInternationalisedString("A Siege is already taking place"));
-                return true;
+            for (Siege siege : siegeManager.getSieges()) {
+                if (siege.getStage().get() != SiegeStage.INACTIVE) {
+                    player.sendMessage(I18nSupport.getInternationalisedString("A Siege is already taking place"));
+                    return true;
+                }
             }
-            String foundSiegeName = null;
-            LocalPlayer lp = Movecraft.getInstance().getWorldGuardPlugin().wrapPlayer(player);
+            Siege siege = null;
             ApplicableRegionSet regions = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(player.getWorld()).getApplicableRegions(player.getLocation());
             if (regions.size() != 0) {
                 for (ProtectedRegion tRegion : regions.getRegions()) {
-                    for (String tSiegeName : Settings.SiegeName) {
-                        if (tRegion.getId().equalsIgnoreCase(Settings.SiegeRegion.get(tSiegeName)))
-                            foundSiegeName = tSiegeName;
+                    for (Siege tempSiege : siegeManager.getSieges()) {
+                        if (tRegion.getId().equalsIgnoreCase(tempSiege.getAttackRegion()))
+                            siege = tempSiege;
                     }
                 }
             }
-            if (foundSiegeName != null) {
-                long cost = Settings.SiegeCost.get(foundSiegeName);
-                int numControlledSieges = 0;
-                for (String tSiegeName : Settings.SiegeName) {
-                    ProtectedRegion tregion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(player.getWorld()).getRegion(Settings.SiegeControlRegion.get(tSiegeName));
-                    if (tregion.getOwners().contains(player.getName())) {
-                        numControlledSieges++;
-                        cost = cost * 2;
+            if (siege != null) {
+                long cost = siege.getCost();
+                for (Siege tempSiege : siegeManager.getSieges()) {
+                    ProtectedRegion tregion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(player.getWorld()).getRegion(tempSiege.getCaptureRegion());
+                    if (tempSiege.isDoubleCostPerOwnedSiegeRegion() && tregion.getOwners().contains(player.getUniqueId())) {
+                        cost *= 2;
                     }
                 }
 
@@ -748,78 +748,19 @@ public class CommandListener implements CommandExecutor {
                     int minute = rightNow.get(Calendar.MINUTE);
                     int currMilitaryTime = hour * 100 + minute;
                     int dayOfWeek = rightNow.get(Calendar.DAY_OF_WEEK);
-                    boolean isInSchedule = false;
+                    if (currMilitaryTime > siege.getScheduleStart() && currMilitaryTime < siege.getScheduleEnd() && dayOfWeek == siege.getDayOfWeek()) {
 
-                    if (Settings.SiegeDayOfTheWeek.get(foundSiegeName) != null) {
-                        if ((currMilitaryTime > Settings.SiegeScheduleStart.get(foundSiegeName)) && (currMilitaryTime < Settings.SiegeScheduleEnd.get(foundSiegeName)) && dayOfWeek == Settings.SiegeDayOfTheWeek.get(foundSiegeName))
-                            isInSchedule = true;
-                    } else {
-                        if ((currMilitaryTime > Settings.SiegeScheduleStart.get(foundSiegeName)) && (currMilitaryTime < Settings.SiegeScheduleEnd.get(foundSiegeName)))
-                            isInSchedule = true;
-                    }
-
-                    if (isInSchedule) {
-                        if (Settings.SiegeCommandsOnStart.get(foundSiegeName) != null)
-                            for (String command : Settings.SiegeCommandsOnStart.get(foundSiegeName)) {
-                                command = command.replaceAll("%r", Settings.SiegeRegion.get(foundSiegeName))
-                                        .replaceAll("%c", Settings.SiegeCost.get(foundSiegeName).toString());
-                                Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
-                            }
-
-                        Bukkit.getServer().broadcastMessage(String.format("%s is preparing to siege %s! All players wishing to participate in the defense should head there immediately! Siege will begin in %d minutes"
-                                , player.getDisplayName(), foundSiegeName, Settings.SiegeDelay.get(foundSiegeName) / 60));
-                        for (Player p : Bukkit.getOnlinePlayers()) {
-                            p.playSound(p.getLocation(), Sound.ENTITY_WITHER_DEATH, 1, (float) 0.25);
+                        for (String command : siege.getCommandsOnStart()) {
+                            Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command.replaceAll("%r", siege.getAttackRegion()).replaceAll("%c", "" + siege.getCost()));
                         }
-                        final String taskPlayerDisplayName = player.getDisplayName();
-                        final String taskPlayerName = player.getName();
-                        final String taskSiegeName = foundSiegeName;
-                        BukkitTask warningtask1 = new BukkitRunnable() {
-                            @Override
-                            public void run() {
-                                Bukkit.getServer().broadcastMessage(String.format("%s is preparing to siege %s! All players wishing to participate in the defense should head there immediately! Siege will begin in %d minutes"
-                                        , taskPlayerDisplayName, taskSiegeName, (Settings.SiegeDelay.get(taskSiegeName) / 60) / 4 * 3));
-                                for (Player p : Bukkit.getOnlinePlayers()) {
-                                    p.playSound(p.getLocation(), Sound.ENTITY_WITHER_DEATH, 1, 0);
-                                }
-                            }
-                        }.runTaskLater(Movecraft.getInstance(), (20 * Settings.SiegeDelay.get(taskSiegeName) / 4 * 1));
-                        BukkitTask warningtask2 = new BukkitRunnable() {
-                            @Override
-                            public void run() {
-                                Bukkit.getServer().broadcastMessage(String.format("%s is preparing to siege %s! All players wishing to participate in the defense should head there immediately! Siege will begin in %d minutes"
-                                        , taskPlayerDisplayName, taskSiegeName, (Settings.SiegeDelay.get(taskSiegeName) / 60) / 4 * 2));
-                                for (Player p : Bukkit.getOnlinePlayers()) {
-                                    p.playSound(p.getLocation(), Sound.ENTITY_WITHER_DEATH, 1, 0);
-                                }
-                            }
-                        }.runTaskLater(Movecraft.getInstance(), (20 * Settings.SiegeDelay.get(taskSiegeName) / 4 * 2));
-                        BukkitTask warningtask3 = new BukkitRunnable() {
-                            @Override
-                            public void run() {
-                                Bukkit.getServer().broadcastMessage(String.format("%s is preparing to siege %s! All players wishing to participate in the defense should head there immediately! Siege will begin in %d minutes"
-                                        , taskPlayerDisplayName, taskSiegeName, (Settings.SiegeDelay.get(taskSiegeName) / 60) / 4 * 1));
-                                for (Player p : Bukkit.getOnlinePlayers()) {
-                                    p.playSound(p.getLocation(), Sound.ENTITY_WITHER_DEATH, 1, 0);
-                                }
-                            }
-                        }.runTaskLater(Movecraft.getInstance(), (20 * Settings.SiegeDelay.get(taskSiegeName) / 4 * 3));
-                        BukkitTask commencetask = new BukkitRunnable() {
-                            @Override
-                            public void run() {
-                                Bukkit.getServer().broadcastMessage(String.format("The Siege of %s has commenced! The siege leader is %s. Destroy the enemy vessels!"
-                                        , taskSiegeName, taskPlayerDisplayName, (Settings.SiegeDuration.get(taskSiegeName) / 60)));
-                                for (Player p : Bukkit.getOnlinePlayers()) {
-                                    p.playSound(p.getLocation(), Sound.ENTITY_WITHER_DEATH, 1, (float) 0.25);
-                                }
-                                Movecraft.getInstance().currentSiegeName = taskSiegeName;
-                                Movecraft.getInstance().currentSiegePlayer = taskPlayerName;
-                                Movecraft.getInstance().currentSiegeStartTime = System.currentTimeMillis();
-                            }
-                        }.runTaskLater(Movecraft.getInstance(), (20 * Settings.SiegeDelay.get(taskSiegeName)));
-                        Movecraft.getInstance().getLogger().log(Level.INFO, String.format("Siege: %s commenced by %s for a cost of %d", foundSiegeName, player.getName(), cost));
+                        Bukkit.getServer().broadcastMessage(String.format("%s is preparing to siege %s! All players wishing to participate in the defense should head there immediately! Siege will begin in %d minutes"
+                                , player.getDisplayName(), siege.getName(), siege.getDelayBeforeStart() / 60));
+                        for (Player p : Bukkit.getOnlinePlayers()) {
+                            p.playSound(p.getLocation(), Sound.ENTITY_WITHER_DEATH, 1,0.25F);
+                        }
+                        Movecraft.getInstance().getLogger().log(Level.INFO, String.format("Siege: %s commenced by %s for a cost of %d", siege.getName(), player.getName(), cost));
                         Movecraft.getInstance().getEconomy().withdrawPlayer(player, cost);
-                        Movecraft.getInstance().siegeInProgress = true;
+                        siege.setStage(new AtomicReference<SiegeStage>(SiegeStage.PREPERATION));
                         return true;
                     } else {
                         player.sendMessage(I18nSupport.getInternationalisedString("The time is not during the Siege schedule"));

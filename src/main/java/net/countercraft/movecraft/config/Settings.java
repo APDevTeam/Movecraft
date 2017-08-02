@@ -64,21 +64,6 @@ public class Settings {
     public static Map<String, TownyWorldHeightLimits> TownProtectionHeightLimits;
     public static Map<Integer, Integer> DurabilityOverride;
 
-    public static Set<String> SiegeName;
-    public static Map<String, String> SiegeRegion;
-    public static Map<String, ArrayList<String>> SiegeCraftsToWin;
-    public static Map<String, Integer> SiegeCost;
-    public static Map<String, Boolean> SiegeDoubleCost;
-    public static Map<String, Integer> SiegeIncome;
-    public static Map<String, Integer> SiegeScheduleStart;
-    public static Map<String, Integer> SiegeScheduleEnd;
-    public static Map<String, String> SiegeControlRegion;
-    public static Map<String, Integer> SiegeDelay;
-    public static Map<String, Integer> SiegeDuration;
-    public static Map<String, Integer> SiegeDayOfTheWeek;
-    public static Map<String, ArrayList<String>> SiegeCommandsOnStart;
-    public static Map<String, ArrayList<String>> SiegeCommandsOnWin;
-    public static Map<String, ArrayList<String>> SiegeCommandsOnLose;
     public static boolean AssaultEnable;
     public static double AssaultDamagesCapPercent;
     public static int AssaultCooldownHours;
