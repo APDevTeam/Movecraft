@@ -25,6 +25,8 @@ import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.flags.StateFlag;
 import net.countercraft.movecraft.async.AsyncManager;
+import net.countercraft.movecraft.commands.PilotCommand;
+import net.countercraft.movecraft.commands.ReleaseCommand;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.listener.BlockListener;
@@ -240,8 +242,7 @@ public class Movecraft extends JavaPlugin {
             cannonsPlugin = (Cannons) plug;
             logger.log(Level.INFO, "Found a compatible version of Cannons. Enabling Cannons integration");
         }
-
-        if (worldGuardPlugin != null || worldGuardPlugin instanceof WorldGuardPlugin) {
+        if (worldGuardPlugin != null && worldGuardPlugin instanceof WorldGuardPlugin) {
             if (worldGuardPlugin.isEnabled()) {
                 Plugin tempWGCustomFlagsPlugin = getServer().getPluginManager().getPlugin("WGCustomFlags");
                 if (tempWGCustomFlagsPlugin != null && tempWGCustomFlagsPlugin instanceof WGCustomFlagsPlugin) {
@@ -266,7 +267,6 @@ public class Movecraft extends JavaPlugin {
                 }
             }
         }
-
         Plugin tempTownyPlugin = getServer().getPluginManager().getPlugin("Towny");
         if (tempTownyPlugin != null && tempTownyPlugin instanceof Towny) {
             logger.log(Level.INFO, "Found a compatible version of Towny. Enabling Towny integration.");
@@ -351,19 +351,18 @@ public class Movecraft extends JavaPlugin {
             }
 //			getServer().getPluginManager().registerEvents(
 //					new CommandListener(), this);
-            this.getCommand("release").setExecutor(new CommandListener());
-            this.getCommand("pilot").setExecutor(new CommandListener());
-            this.getCommand("rotateleft").setExecutor(new CommandListener());
-            this.getCommand("rotateright").setExecutor(new CommandListener());
-            this.getCommand("cruise").setExecutor(new CommandListener());
-            this.getCommand("cruiseoff").setExecutor(new CommandListener());
-            this.getCommand("craftreport").setExecutor(new CommandListener());
-            this.getCommand("manoverboard").setExecutor(new CommandListener());
-            this.getCommand("contacts").setExecutor(new CommandListener());
-            this.getCommand("siege").setExecutor(new CommandListener());
-            this.getCommand("assaultinfo").setExecutor(new CommandListener());
-            this.getCommand("assault").setExecutor(new CommandListener());
-
+            this.getCommand("release").setExecutor(new ReleaseCommand());
+            this.getCommand("pilot").setExecutor(new PilotCommand());
+//            this.getCommand("rotateleft").setExecutor(new CommandListener());
+//            this.getCommand("rotateright").setExecutor(new CommandListener());
+//            this.getCommand("cruise").setExecutor(new CommandListener());
+//            this.getCommand("cruiseoff").setExecutor(new CommandListener());
+//            this.getCommand("craftreport").setExecutor(new CommandListener());
+//            this.getCommand("manoverboard").setExecutor(new CommandListener());
+//            this.getCommand("contacts").setExecutor(new CommandListener());
+//            this.getCommand("siege").setExecutor(new CommandListener());
+//            this.getCommand("assaultinfo").setExecutor(new CommandListener());
+//            this.getCommand("assault").setExecutor(new CommandListener());
             getServer().getPluginManager().registerEvents(new BlockListener(),
                     this);
             getServer().getPluginManager().registerEvents(new PlayerListener(),

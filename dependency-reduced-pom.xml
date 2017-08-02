@@ -14,7 +14,7 @@
     <url>https://github.com/AJCStriker/Movecraft2</url>
   </scm>
   <build>
-    <sourceDirectory>src/main</sourceDirectory>
+    <sourceDirectory>src/main/java</sourceDirectory>
     <defaultGoal>clean package</defaultGoal>
     <resources>
       <resource>

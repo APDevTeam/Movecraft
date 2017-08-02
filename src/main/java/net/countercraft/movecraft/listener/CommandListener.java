@@ -64,14 +64,8 @@ import java.util.logging.Level;
 //public class CommandListener implements Listener {
 public class CommandListener implements CommandExecutor {
 
-    private CraftType getCraftTypeFromString(String s) {
-        for (CraftType t : CraftManager.getInstance().getCraftTypes()) {
-            if (s.equalsIgnoreCase(t.getCraftName())) {
-                return t;
-            }
-        }
-
-        return null;
+    public CommandListener(){
+        Bukkit.getLogger().info("init");
     }
 
     private Location getCraftTeleportPoint(Craft craft, World w) {
@@ -155,80 +149,7 @@ public class CommandListener implements CommandExecutor {
 
         Player player = (Player) sender;
 
-        if (cmd.getName().equalsIgnoreCase("release")) {
-            if (!player.hasPermission("movecraft.commands") && !player.hasPermission("movecraft.commands.release")) {
-                player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
-                return true;
-            }
-            if (args.length > 0) {
-                Player target = Bukkit.getPlayerExact(args[0]);
-                if (target == null && args[0] != "-a") {
-                    sender.sendMessage("That player could not be found");
-                } else {
-                    if (!player.hasPermission("movecraft.commands.release.others")) {
-                        player.sendMessage("You do not have permission to make others release");
-                    } else {
-                        if (args[0] == "-a") {
-                            for (Player p : Bukkit.getOnlinePlayers()) {
-                                String name = p.getName();
-                                final Craft pCraft = CraftManager.getInstance().getCraftByPlayerName(name);
-                                if (pCraft != null) {
-                                    CraftManager.getInstance().removeCraft(pCraft);
 
-                                }
-                            }
-                            player.sendMessage("You forced release every player's ship");
-                        } else {
-                            final Craft pCraft = CraftManager.getInstance().getCraftByPlayerName(args[0]);
-                            if (pCraft != null) {
-                                CraftManager.getInstance().removeCraft(pCraft);
-                                player.sendMessage("You have successfully force released a ship");
-                            } else {
-                                player.sendMessage("That player is not piloting a craft");
-                            }
-                        }
-                    }
-                }
-            } else {
-                final Craft pCraft = CraftManager.getInstance().getCraftByPlayerName(player.getName());
-
-                if (pCraft != null) {
-                    CraftManager.getInstance().removeCraft(pCraft);
-                    //e.getPlayer().sendMessage( String.format( I18nSupport.getInternationalisedString( "Player- Craft has been released" ) ) );
-                } else {
-                    player.sendMessage(I18nSupport.getInternationalisedString("Player- Error - You do not have a craft to release!"));
-                }
-
-                return true;
-            }
-        }
-
-        if (cmd.getName().equalsIgnoreCase("pilot")) {
-            if (!player.hasPermission("movecraft.commands") && !player.hasPermission("movecraft.commands.pilot")) {
-                player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
-                return true;
-            }
-
-            if (args.length > 0) {
-                if (player.hasPermission("movecraft." + args[0] + ".pilot")) {
-                    CraftType craftType = getCraftTypeFromString(args[0]);
-                    if (craftType != null) {
-                        Craft oldCraft = CraftManager.getInstance().getCraftByPlayerName(player.getName());
-                        if (oldCraft != null) {
-                            CraftManager.getInstance().removeCraft(oldCraft);
-                        }
-                        Craft newCraft = new Craft(craftType, player.getWorld());
-                        MovecraftLocation startPoint = MathUtils.bukkit2MovecraftLoc(player.getLocation());
-                        newCraft.detect(player, player, startPoint);
-                    } else {
-                        player.sendMessage(I18nSupport.getInternationalisedString("Unknown craft type"));
-                    }
-                } else {
-                    player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
-                }
-                return true;
-            }
-        }
 
         if (cmd.getName().equalsIgnoreCase("rotateleft")) {
             if (!player.hasPermission("movecraft.commands") && !player.hasPermission("movecraft.commands.rotateleft")) {
