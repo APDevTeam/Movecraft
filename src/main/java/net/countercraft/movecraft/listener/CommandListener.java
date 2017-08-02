@@ -103,41 +103,6 @@ public class CommandListener implements CommandExecutor {
         return telPoint;
     }
 
-    private MovecraftLocation getCraftMidPoint(Craft craft) {
-        int maxDX = 0;
-        int maxDZ = 0;
-        int maxY = 0;
-        int minY = 32767;
-        for (int[][] i1 : craft.getHitBox()) {
-            maxDX++;
-            if (i1 != null) {
-                int indexZ = 0;
-                for (int[] i2 : i1) {
-                    indexZ++;
-                    if (i2 != null) {
-                        if (i2[0] < minY) {
-                            minY = i2[0];
-                        }
-                    }
-                    if (i2 != null) {
-                        if (i2[1] < maxY) {
-                            maxY = i2[1];
-                        }
-                    }
-                }
-                if (indexZ > maxDZ) {
-                    maxDZ = indexZ;
-                }
-
-            }
-        }
-        int midX = craft.getMinX() + (maxDX / 2);
-        int midY = (minY + maxY) / 2;
-        int midZ = craft.getMinZ() + (maxDZ / 2);
-        MovecraftLocation midPoint = new MovecraftLocation(midX, midY, midZ);
-        return midPoint;
-    }
-
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 //	public void onCommand( PlayerCommandPreprocessEvent e ) {
@@ -148,44 +113,6 @@ public class CommandListener implements CommandExecutor {
         }
 
         Player player = (Player) sender;
-
-
-
-        if (cmd.getName().equalsIgnoreCase("rotateleft")) {
-            if (!player.hasPermission("movecraft.commands") && !player.hasPermission("movecraft.commands.rotateleft")) {
-                player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
-                return true;
-            }
-
-            final Craft craft = CraftManager.getInstance().getCraftByPlayerName(player.getName());
-
-            if (player.hasPermission("movecraft." + craft.getType().getCraftName() + ".rotate")) {
-                MovecraftLocation midPoint = getCraftMidPoint(craft);
-                CraftManager.getInstance().getCraftByPlayerName(player.getName()).rotate(Rotation.ANTICLOCKWISE, midPoint);
-            } else {
-                player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
-            }
-
-            return true;
-        }
-
-        if (cmd.getName().equalsIgnoreCase("rotateright")) {
-            if (!player.hasPermission("movecraft.commands") && !player.hasPermission("movecraft.commands.rotateright")) {
-                player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
-                return true;
-            }
-
-            final Craft craft = CraftManager.getInstance().getCraftByPlayerName(player.getName());
-
-            if (player.hasPermission("movecraft." + craft.getType().getCraftName() + ".rotate")) {
-                MovecraftLocation midPoint = getCraftMidPoint(craft);
-                CraftManager.getInstance().getCraftByPlayerName(player.getName()).rotate(Rotation.CLOCKWISE, midPoint);
-            } else {
-                player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
-            }
-
-            return true;
-        }
 
         if (cmd.getName().equalsIgnoreCase("cruise")) {
             if (!player.hasPermission("movecraft.commands") && !player.hasPermission("movecraft.commands.cruise")) {

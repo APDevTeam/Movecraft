@@ -15,7 +15,8 @@ public class ReleaseCommand implements CommandExecutor {
         if (!command.getName().equalsIgnoreCase("release")) {
             return false;
         }
-        if(!(commandSender instanceof Player)) {
+        if(!(commandSender instanceof Player)){
+            commandSender.sendMessage("you need to be a player to pilot a craft");
             return true;
         }
         Player player = (Player) commandSender;

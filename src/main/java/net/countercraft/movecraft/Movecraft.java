@@ -27,6 +27,7 @@ import com.sk89q.worldguard.protection.flags.StateFlag;
 import net.countercraft.movecraft.async.AsyncManager;
 import net.countercraft.movecraft.commands.PilotCommand;
 import net.countercraft.movecraft.commands.ReleaseCommand;
+import net.countercraft.movecraft.commands.RotateCommand;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.listener.BlockListener;
@@ -353,8 +354,7 @@ public class Movecraft extends JavaPlugin {
 //					new CommandListener(), this);
             this.getCommand("release").setExecutor(new ReleaseCommand());
             this.getCommand("pilot").setExecutor(new PilotCommand());
-//            this.getCommand("rotateleft").setExecutor(new CommandListener());
-//            this.getCommand("rotateright").setExecutor(new CommandListener());
+            this.getCommand("rotate").setExecutor(new RotateCommand());
 //            this.getCommand("cruise").setExecutor(new CommandListener());
 //            this.getCommand("cruiseoff").setExecutor(new CommandListener());
 //            this.getCommand("craftreport").setExecutor(new CommandListener());
