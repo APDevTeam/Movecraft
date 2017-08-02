@@ -28,6 +28,7 @@ import net.countercraft.movecraft.async.AsyncManager;
 import net.countercraft.movecraft.commands.ContactsCommand;
 import net.countercraft.movecraft.commands.CraftReportCommand;
 import net.countercraft.movecraft.commands.CruiseCommand;
+import net.countercraft.movecraft.commands.ManOverboardCommand;
 import net.countercraft.movecraft.commands.PilotCommand;
 import net.countercraft.movecraft.commands.ReleaseCommand;
 import net.countercraft.movecraft.commands.RotateCommand;
@@ -360,7 +361,7 @@ public class Movecraft extends JavaPlugin {
             this.getCommand("rotate").setExecutor(new RotateCommand());
             this.getCommand("cruise").setExecutor(new CruiseCommand());
             this.getCommand("craftreport").setExecutor(new CraftReportCommand());
-//            this.getCommand("manoverboard").setExecutor(new CommandListener());
+            this.getCommand("manoverboard").setExecutor(new ManOverboardCommand());
             this.getCommand("contacts").setExecutor(new ContactsCommand());
 //            this.getCommand("siege").setExecutor(new CommandListener());
 //            this.getCommand("assaultinfo").setExecutor(new CommandListener());

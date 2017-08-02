@@ -68,41 +68,6 @@ public class CommandListener implements CommandExecutor {
         Bukkit.getLogger().info("init");
     }
 
-    private Location getCraftTeleportPoint(Craft craft, World w) {
-        int maxDX = 0;
-        int maxDZ = 0;
-        int maxY = 0;
-        int minY = 32767;
-        for (int[][] i1 : craft.getHitBox()) {
-            maxDX++;
-            if (i1 != null) {
-                int indexZ = 0;
-                for (int[] i2 : i1) {
-                    indexZ++;
-                    if (i2 != null) {
-                        if (i2[0] < minY) {
-                            minY = i2[0];
-                        }
-                    }
-                    if (i2 != null) {
-                        if (i2[1] > maxY) {
-                            maxY = i2[1];
-                        }
-                    }
-                }
-                if (indexZ > maxDZ) {
-                    maxDZ = indexZ;
-                }
-
-            }
-        }
-        double telX = craft.getMinX() + (maxDX / 2.0);
-        double telZ = craft.getMinZ() + (maxDZ / 2.0);
-        double telY = maxY + 1.0;
-        Location telPoint = new Location(w, telX, telY, telZ);
-        return telPoint;
-    }
-
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 //	public void onCommand( PlayerCommandPreprocessEvent e ) {
@@ -113,35 +78,6 @@ public class CommandListener implements CommandExecutor {
         }
 
         Player player = (Player) sender;
-
-        if (cmd.getName().equalsIgnoreCase("manOverBoard")) {
-            if (CraftManager.getInstance().getCraftByPlayerName(player.getName()) != null) {
-                Location telPoint = getCraftTeleportPoint(CraftManager.getInstance().getCraftByPlayerName(player.getName()), CraftManager.getInstance().getCraftByPlayerName(player.getName()).getW());
-                if (!CraftManager.getInstance().getCraftByPlayerName(player.getName()).getDisabled())
-                    player.teleport(telPoint);
-            } else {
-                for (World w : Bukkit.getWorlds()) {
-                    if (CraftManager.getInstance().getCraftsInWorld(w) != null)
-                        for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(w)) {
-                            if (tcraft.getMovedPlayers().containsKey(player)) {
-                                if (tcraft.getW() != player.getWorld()) {
-                                    player.sendMessage(I18nSupport.getInternationalisedString("Distance to craft is too far"));
-                                }
-                                if ((System.currentTimeMillis() - tcraft.getMovedPlayers().get(player)) / 1000 < Settings.ManOverBoardTimeout) {
-                                    Location telPoint = getCraftTeleportPoint(tcraft, w);
-                                    if (telPoint.distance(player.getLocation()) > 1000) {
-                                        player.sendMessage(I18nSupport.getInternationalisedString("Distance to craft is too far"));
-                                    } else {
-                                        if (!CraftManager.getInstance().getCraftByPlayerName(player.getName()).getDisabled())
-                                            player.teleport(telPoint);
-                                    }
-                                }
-                            }
-                        }
-                }
-            }
-            return true;
-        }
 
         if (cmd.getName().equalsIgnoreCase("assaultinfo")) {
             if (!Settings.AssaultEnable) {
