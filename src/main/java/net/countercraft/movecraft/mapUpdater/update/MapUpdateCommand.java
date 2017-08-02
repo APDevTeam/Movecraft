@@ -29,8 +29,6 @@ public class MapUpdateCommand {
     private final MovecraftLocation newBlockLocation;
     private final Material type;
     private final byte dataID;
-    private final Material currentType;
-    private final Byte currentDataID;
     private final Object worldEditBaseBlock;
     private final Rotation rotation;
     private MovecraftLocation blockLocation;
@@ -46,8 +44,6 @@ public class MapUpdateCommand {
         this.rotation = rotation;
         this.craft = craft;
         this.smoke = 0;
-        this.currentType = currentType;
-        this.currentDataID = currentDataID;
     }
 
     public MapUpdateCommand(MovecraftLocation blockLocation, Material currentType, Byte currentDataID, MovecraftLocation newBlockLocation, Material type, byte dataID, Craft craft) {
@@ -59,8 +55,6 @@ public class MapUpdateCommand {
         this.rotation = Rotation.NONE;
         this.craft = craft;
         this.smoke = 0;
-        this.currentType = currentType;
-        this.currentDataID = currentDataID;
 
     }
 
@@ -72,8 +66,6 @@ public class MapUpdateCommand {
         this.rotation = Rotation.NONE;
         this.craft = craft;
         this.smoke = 0;
-        this.currentType = null;
-        this.currentDataID = null;
 
     }
 
@@ -85,8 +77,6 @@ public class MapUpdateCommand {
         this.rotation = Rotation.NONE;
         this.craft = craft;
         this.smoke = 0;
-        this.currentType = null;
-        this.currentDataID = null;
 
     }
 
@@ -98,8 +88,6 @@ public class MapUpdateCommand {
         this.rotation = Rotation.NONE;
         this.craft = craft;
         this.smoke = smoke;
-        this.currentType = null;
-        this.currentDataID = null;
 
     }
 
@@ -109,14 +97,6 @@ public class MapUpdateCommand {
 
     public byte getDataID() {
         return dataID;
-    }
-
-    public Material getCurrentType() {
-        return currentType;
-    }
-
-    public Byte getCurrentDataID() {
-        return currentDataID;
     }
 
     public Object getWorldEditBaseBlock() {
