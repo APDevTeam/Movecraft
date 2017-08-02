@@ -29,6 +29,7 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
+import net.countercraft.movecraft.mapUpdater.update.ExplosionUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.MapUpdateCommand;
 import net.countercraft.movecraft.utils.FastBlockChanger;
 import net.countercraft.movecraft.utils.FastBlockChanger.ChunkUpdater;
@@ -95,6 +96,7 @@ public class MapUpdateManager extends BukkitRunnable {
     private final HashMap<World, ArrayList<MapUpdateCommand>> updates = new HashMap<>();
     private final HashMap<World, ArrayList<EntityUpdateCommand>> entityUpdates = new HashMap<>();
     private final HashMap<World, ArrayList<ItemDropUpdateCommand>> itemDropUpdates = new HashMap<>();
+    private final HashMap<World, ArrayList<ExplosionUpdateCommand>> explosionUpdates = new HashMap<>();
     public HashMap<Craft, Integer> blockUpdatesPerCraft = new HashMap<>();
     private Random rand = new Random();
 
@@ -135,6 +137,7 @@ public class MapUpdateManager extends BukkitRunnable {
             List<MapUpdateCommand> updatesInWorld = updates.get(w);
             List<EntityUpdateCommand> entityUpdatesInWorld = entityUpdates.get(w);
             List<ItemDropUpdateCommand> itemDropUpdatesInWorld = itemDropUpdates.get(w);
+            List<ExplosionUpdateCommand> explosionUpdatesInWorld = explosionUpdates.get(w);
             Map<MovecraftLocation, List<EntityUpdateCommand>> entityMap = new HashMap<>();
             Map<MovecraftLocation, List<ItemDropUpdateCommand>> itemMap = new HashMap<>();
             ArrayList<net.minecraft.server.v1_10_R1.Chunk> chunksToRelight = new ArrayList<>();
@@ -491,19 +494,19 @@ public class MapUpdateManager extends BukkitRunnable {
                                 }
                             }
                         }
-                    } else {
-                        if (i.getType() < -10) { // don't bother with tiny explosions
-                            float explosionPower = i.getType();
-                            explosionPower = 0.0F - explosionPower / 100.0F;
-                            Location loc = new Location(w, i.getNewBlockLocation().getX() + 0.5, i.getNewBlockLocation().getY() + 0.5, i.getNewBlockLocation().getZ());
-                            this.createExplosion(loc, explosionPower);
-                            //w.createExplosion(m.getNewBlockLocation().getX()+0.5, m.getNewBlockLocation().getY()+0.5, m.getNewBlockLocation().getZ()+0.5, explosionPower);
-                        }
                     }
                 }
                 if (madeChanges) { // send map updates to clients, and perform various checks
                     Location loc = new Location(w, i.getNewBlockLocation().getX(), i.getNewBlockLocation().getY(), i.getNewBlockLocation().getZ());
                     w.getBlockAt(loc).getState().update(false, false);
+                }
+            }
+
+            for(ExplosionUpdateCommand explosionUpdate : explosionUpdatesInWorld){
+                if (explosionUpdate.getStrength() < -10) { // don't bother with tiny explosions
+                    Location loc = new Location(w, explosionUpdate.getLocation().getX() + 0.5, explosionUpdate.getLocation().getY() + 0.5, explosionUpdate.getLocation().getZ());
+                    this.createExplosion(loc, explosionUpdate.getStrength() / -100.0F);
+                    //w.createExplosion(m.getNewBlockLocation().getX()+0.5, m.getNewBlockLocation().getY()+0.5, m.getNewBlockLocation().getZ()+0.5, explosionPower);
                 }
             }
 
