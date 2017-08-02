@@ -114,34 +114,6 @@ public class CommandListener implements CommandExecutor {
 
         Player player = (Player) sender;
 
-
-        if (cmd.getName().equalsIgnoreCase("craftreport")) {
-            if (!player.hasPermission("movecraft.commands") && !player.hasPermission("movecraft.commands.craftreport")) {
-                player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
-                return true;
-            }
-
-            boolean noCraftsFound = true;
-            if (CraftManager.getInstance().getCraftsInWorld(player.getWorld()) != null)
-                for (Craft craft : CraftManager.getInstance().getCraftsInWorld(player.getWorld())) {
-                    if (craft != null) {
-                        String output = "";
-                        if (craft.getNotificationPlayer() != null) {
-                            output = craft.getType().getCraftName() + " " + craft.getNotificationPlayer().getName() + " " + craft.getBlockList().length + " @ " + craft.getMinX() + "," + craft.getMinY() + "," + craft.getMinZ();
-                        } else {
-                            output = craft.getType().getCraftName() + " NULL " + craft.getBlockList().length + " @ " + craft.getMinX() + "," + craft.getMinY() + "," + craft.getMinZ();
-
-                        }
-                        player.sendMessage(output);
-                        noCraftsFound = false;
-                    }
-                }
-            if (noCraftsFound) {
-                player.sendMessage("No crafts found");
-            }
-            return true;
-        }
-
         if (cmd.getName().equalsIgnoreCase("contacts")) {
             if (CraftManager.getInstance().getCraftByPlayer(player) != null) {
                 Craft ccraft = CraftManager.getInstance().getCraftByPlayer(player);

@@ -15,7 +15,7 @@ public class CruiseCommand implements CommandExecutor {
             return false;
         }
         if(!(commandSender instanceof Player)){
-            commandSender.sendMessage("you need to be a player to pilot a craft");
+            commandSender.sendMessage("you need to be a player to cruise");
             return true;
         }
         Player player = (Player) commandSender;
