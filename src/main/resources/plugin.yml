@@ -16,22 +16,16 @@ commands:
     usage: /pilot [crafttypename]
   contacts:
     description: reports on all crafts within detection range
-    usage: /contacts
+    usage: /contacts <page>
   craftreport:
     description: reports on all active craft in the world you are in
-    usage: /craftreport
+    usage: /craftreport <page>
   cruise:
     description: Starts your craft cruising
-    usage: /cruise [north|south|east|west]
-  cruiseoff:
-    description: Stops your craft from cruising
-    usage: /cruiseoff
-  rotateleft:
-    description: Rotates your craft left
-    usage: /rotateleft
-  rotateright:
-    description: Rotates your craft right
-    usage: /rotateright
+    usage: /cruise [north|south|east|west|on|off]
+  rotate:
+    description: Rotates your craft
+    usage: /rotate [right|left]
   manoverboard:
     description: If enabled, returns you to a craft you have fallen out of
     usage: /manoverboard
