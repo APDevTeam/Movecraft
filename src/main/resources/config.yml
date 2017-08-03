@@ -71,6 +71,7 @@ AssaultDestroyableBlocks: # these blocks will be removed if destroyed in assault
   - 181
   - 182
   - 212
+SiegeEnable: true
 DisableShadowBlocks: # These blocks will not cast shadows. This improves the speed of moving ships of these blocks immensely.
   - 26
   - 35
