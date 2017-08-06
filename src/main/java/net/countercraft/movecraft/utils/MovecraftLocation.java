@@ -68,23 +68,14 @@ public class MovecraftLocation {
     public boolean equals(Object o) {
         if (o instanceof MovecraftLocation) {
             MovecraftLocation location = (MovecraftLocation) o;
-            if (location.getX() == getX()) {
-                if (location.getY() == getY()) {
-                    if (location.getZ() == getZ()) {
-                        return true;
-                    }
-                }
-            }
+            return location.x==this.x && location.y==this.y && location.z == this.z;
         }
-
         return false;
     }
 
     @Override
     public int hashCode() {
-        return Integer.valueOf(x).hashCode() >> 13
-                ^ Integer.valueOf(y).hashCode() >> 7
-                ^ Integer.valueOf(z).hashCode();
+        return x >> 13 ^ y >> 7 ^ z;
     }
 
     public MovecraftLocation add(MovecraftLocation l) {

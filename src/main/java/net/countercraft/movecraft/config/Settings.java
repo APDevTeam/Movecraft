@@ -74,4 +74,6 @@ public class Settings {
     public static HashSet<Integer> AssaultDestroyableBlocks;
     public static int AssaultDamagesPerBlock;
     public static HashSet<Integer> DisableShadowBlocks;
+
+    public static boolean SiegeEnable;
 }

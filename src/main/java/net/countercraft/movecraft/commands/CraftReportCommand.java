@@ -39,7 +39,8 @@ public class CraftReportCommand implements CommandExecutor{
             else
                 paginator.addLine( craft.getType().getCraftName() + " NULL " + craft.getBlockList().length + " @ " + craft.getMinX() + "," + craft.getMinY() + "," + craft.getMinZ());
         }
-        commandSender.sendMessage(paginator.getPage(page));
+        for(String line : paginator.getPage(page))
+            commandSender.sendMessage(line);
         return true;
 
     }

@@ -25,14 +25,19 @@ import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.flags.StateFlag;
 import net.countercraft.movecraft.async.AsyncManager;
+import net.countercraft.movecraft.commands.AssaultCommand;
+import net.countercraft.movecraft.commands.AssaultInfoCommand;
+import net.countercraft.movecraft.commands.ContactsCommand;
+import net.countercraft.movecraft.commands.CraftReportCommand;
 import net.countercraft.movecraft.commands.CruiseCommand;
+import net.countercraft.movecraft.commands.ManOverboardCommand;
 import net.countercraft.movecraft.commands.PilotCommand;
 import net.countercraft.movecraft.commands.ReleaseCommand;
 import net.countercraft.movecraft.commands.RotateCommand;
+import net.countercraft.movecraft.commands.SiegeCommand;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.listener.BlockListener;
-import net.countercraft.movecraft.listener.CommandListener;
 import net.countercraft.movecraft.listener.InteractListener;
 import net.countercraft.movecraft.listener.PlayerListener;
 import net.countercraft.movecraft.listener.WorldEditInteractListener;
@@ -86,8 +91,8 @@ public class Movecraft extends JavaPlugin {
     private Logger logger;
     private boolean shuttingDown;
 
-    private final AssaultManager assaultManager = new AssaultManager(this);
-    private final SiegeManager siegeManager = new SiegeManager(this);
+    private AssaultManager assaultManager;
+    private SiegeManager siegeManager;
 
     public static Movecraft getInstance() {
         return instance;
@@ -173,49 +178,55 @@ public class Movecraft extends JavaPlugin {
         Settings.AssaultRequiredDefendersOnline = getConfig().getInt("AssaultRequiredDefendersOnline", 3);
         Settings.AssaultDestroyableBlocks = new HashSet<>(getConfig().getIntegerList("AssaultDestroyableBlocks"));
         Settings.DisableShadowBlocks = new HashSet<>(getConfig().getIntegerList("DisableShadowBlocks"));  //REMOVE FOR PUBLIC VERSION
+
+        Settings.SiegeEnable = getConfig().getBoolean("SiegeEnable", true);
         if (!Settings.CompatibilityMode) {
             for (int typ : Settings.DisableShadowBlocks) {
                 disableShadow(typ);
             }
         }
 
-        //load the sieges.yml file
-        File siegesFile = new File(Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/sieges.yml");
-        InputStream input;
-        try {
-            input = new FileInputStream(siegesFile);
-        } catch (FileNotFoundException e) {
-            input = null;
-        }
-        if (input != null) {
-            Map data = new Yaml().loadAs(input, Map.class);
-            Map<String, Map<String, ?>> siegesMap = (Map<String, Map<String, ?>>) data.get("sieges");
-            List<Siege> sieges = siegeManager.getSieges();
-            for (Map.Entry<String, Map<String, ?>> entry : siegesMap.entrySet()) {
-                sieges.add(new Siege(
-                        entry.getKey(),
-                        (String) entry.getValue().get("RegionToControl"),
-                        (String) entry.getValue().get("SiegeRegion"),
-                        (Integer) entry.getValue().get("ScheduleStart"),
-                        (Integer) entry.getValue().get("ScheduleEnd"),
-                        (Integer) entry.getValue().get("DelayBeforeStart"),
-                        (Integer) entry.getValue().get("SiegeDuration"),
-                        (Integer) entry.getValue().get("DayOfTheWeek"),
-                        (Integer) entry.getValue().get("DailyIncome"),
-                        (Integer) entry.getValue().get("CostToSiege"),
-                        (Boolean) entry.getValue().get("DoubleCostPerOwnedSiegeRegion"),
-                        (ArrayList<String>) entry.getValue().get("CraftsToWin"),
-                        (ArrayList<String>) entry.getValue().get("SiegeCommandsOnStart"),
-                        (ArrayList<String>) entry.getValue().get("SiegeCommandsOnWin"),
-                        (ArrayList<String>) entry.getValue().get("SiegeCommandsOnLose")));
+        if(Settings.SiegeEnable){
+            //load the sieges.yml file
+            File siegesFile = new File(Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/sieges.yml");
+            InputStream input;
+            try {
+                input = new FileInputStream(siegesFile);
+            } catch (FileNotFoundException e) {
+                input = null;
             }
-            logger.log(Level.INFO, "Siege configuration loaded.");
+            if (input != null) {
+                Map data = new Yaml().loadAs(input, Map.class);
+                Map<String, Map<String, ?>> siegesMap = (Map<String, Map<String, ?>>) data.get("sieges");
+                List<Siege> sieges = siegeManager.getSieges();
+                for (Map.Entry<String, Map<String, ?>> entry : siegesMap.entrySet()) {
+                    sieges.add(new Siege(
+                            entry.getKey(),
+                            (String) entry.getValue().get("RegionToControl"),
+                            (String) entry.getValue().get("SiegeRegion"),
+                            (Integer) entry.getValue().get("ScheduleStart"),
+                            (Integer) entry.getValue().get("ScheduleEnd"),
+                            (Integer) entry.getValue().get("DelayBeforeStart"),
+                            (Integer) entry.getValue().get("SiegeDuration"),
+                            (Integer) entry.getValue().get("DayOfTheWeek"),
+                            (Integer) entry.getValue().get("DailyIncome"),
+                            (Integer) entry.getValue().get("CostToSiege"),
+                            (Boolean) entry.getValue().get("DoubleCostPerOwnedSiegeRegion"),
+                            (ArrayList<String>) entry.getValue().get("CraftsToWin"),
+                            (ArrayList<String>) entry.getValue().get("SiegeCommandsOnStart"),
+                            (ArrayList<String>) entry.getValue().get("SiegeCommandsOnWin"),
+                            (ArrayList<String>) entry.getValue().get("SiegeCommandsOnLose")));
+                }
+                logger.log(Level.INFO, "Siege configuration loaded.");
+            } else {
+                Settings.SiegeEnable = false;
+            }
         }
         //load up WorldGuard if it's present
         Plugin wGPlugin = getServer().getPluginManager().getPlugin("WorldGuard");
         if (wGPlugin == null || !(wGPlugin instanceof WorldGuardPlugin)) {
             logger.log(Level.INFO, "Movecraft did not find a compatible version of WorldGuard. Disabling WorldGuard integration");
-            //Settings.SiegeName = null;
+            Settings.SiegeEnable = false;
             Settings.AssaultEnable = false;
             Settings.RestrictSiBsToRegions = false;
         } else {
@@ -308,13 +319,13 @@ public class Movecraft extends JavaPlugin {
             } else {
                 logger.log(Level.INFO, "Could not find compatible Vault plugin. Disabling Vault integration.");
                 economy = null;
-                //Settings.SiegeName = null;
+                Settings.SiegeEnable = false;
                 Settings.AssaultEnable = false;
             }
         } else {
             logger.log(Level.INFO, "Could not find compatible Vault plugin. Disabling Vault integration.");
             economy = null;
-            //Settings.SiegeName = null;
+            Settings.SiegeEnable = false;
         }
         String[] localisations = {"en", "cz", "nl"};
         for (String s : localisations) {
@@ -340,9 +351,14 @@ public class Movecraft extends JavaPlugin {
             // Startup procedure
             AsyncManager.getInstance().runTaskTimer(this, 0, 1);
             MapUpdateManager.getInstance().runTaskTimer(this, 0, 1);
-            assaultManager.runTaskTimerAsynchronously(this, 0, 20);
-            siegeManager.runTaskTimerAsynchronously(this,0,20);
-
+            if(Settings.AssaultEnable) {
+                assaultManager = new AssaultManager(this);
+                assaultManager.runTaskTimerAsynchronously(this, 0, 20);
+            }
+            if(Settings.SiegeEnable) {
+                siegeManager = new SiegeManager(this);
+                siegeManager.runTaskTimerAsynchronously(this, 0, 20);
+            }
             CraftManager.getInstance();
 
             getServer().getPluginManager().registerEvents(
@@ -351,18 +367,19 @@ public class Movecraft extends JavaPlugin {
                 getServer().getPluginManager().registerEvents(
                         new WorldEditInteractListener(), this);
             }
-//			getServer().getPluginManager().registerEvents(
-//					new CommandListener(), this);
             this.getCommand("release").setExecutor(new ReleaseCommand());
             this.getCommand("pilot").setExecutor(new PilotCommand());
             this.getCommand("rotate").setExecutor(new RotateCommand());
             this.getCommand("cruise").setExecutor(new CruiseCommand());
-//            this.getCommand("craftreport").setExecutor(new CommandListener());
-//            this.getCommand("manoverboard").setExecutor(new CommandListener());
-//            this.getCommand("contacts").setExecutor(new CommandListener());
-//            this.getCommand("siege").setExecutor(new CommandListener());
-//            this.getCommand("assaultinfo").setExecutor(new CommandListener());
-//            this.getCommand("assault").setExecutor(new CommandListener());
+            this.getCommand("craftreport").setExecutor(new CraftReportCommand());
+            this.getCommand("manoverboard").setExecutor(new ManOverboardCommand());
+            this.getCommand("contacts").setExecutor(new ContactsCommand());
+            if(Settings.SiegeEnable)
+                this.getCommand("siege").setExecutor(new SiegeCommand());
+            if(Settings.AssaultEnable) {
+                this.getCommand("assaultinfo").setExecutor(new AssaultInfoCommand());
+                this.getCommand("assault").setExecutor(new AssaultCommand());
+            }
             getServer().getPluginManager().registerEvents(new BlockListener(),
                     this);
             getServer().getPluginManager().registerEvents(new PlayerListener(),
