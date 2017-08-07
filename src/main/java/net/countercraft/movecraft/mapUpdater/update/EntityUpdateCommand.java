@@ -17,13 +17,17 @@
 
 package net.countercraft.movecraft.mapUpdater.update;
 
+import net.countercraft.movecraft.utils.MovecraftLocation;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Class that stores the data about a single blocks changes to the map in an unspecified world. The world is retrieved contextually from the submitting craft.
  */
-public class EntityUpdateCommand {
+public class EntityUpdateCommand implements UpdateCommand{
     private final Location newLocation;
     private final Entity entity;
 
@@ -40,5 +44,18 @@ public class EntityUpdateCommand {
         return newLocation;
     }
 
+    @Override
+    public void doUpdate() {
+        //TODO: Fix this
+        MovecraftLocation entityLoc = new MovecraftLocation(i.getNewLocation().getBlockX(), i.getNewLocation().getBlockY() - 1, i.getNewLocation().getBlockZ());
+        if (!entityMap.containsKey(entityLoc)) {
+            List<EntityUpdateCommand> entUpdateList = new ArrayList<>();
+            entUpdateList.add(i);
+            entityMap.put(entityLoc, entUpdateList);
+        } else {
+            List<EntityUpdateCommand> entUpdateList = entityMap.get(entityLoc);
+            entUpdateList.add(i);
+        }
+    }
 }
 

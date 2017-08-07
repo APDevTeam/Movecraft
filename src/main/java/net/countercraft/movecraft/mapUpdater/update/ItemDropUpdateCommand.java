@@ -5,13 +5,17 @@
  */
 package net.countercraft.movecraft.mapUpdater.update;
 
+import net.countercraft.movecraft.Movecraft;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
 /**
  * Class that stores the data about a item drops to the map in an unspecified world. The world is retrieved contextually from the submitting craft.
  */
-public class ItemDropUpdateCommand {
+public class ItemDropUpdateCommand implements UpdateCommand{
     private final Location location;
     private final ItemStack itemStack;
 
@@ -26,6 +30,22 @@ public class ItemDropUpdateCommand {
 
     public Location getLocation() {
         return location;
+    }
+
+    @Override
+    public void doUpdate() {
+        if (itemStack != null) {
+            final World world = location.getWorld();
+            final Location loc = this.location;
+            final ItemStack stack = itemStack;
+            // drop Item
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    world.dropItemNaturally(loc, stack);
+                }
+            }.runTaskLater(Movecraft.getInstance(), 20);
+        }
     }
 
 }

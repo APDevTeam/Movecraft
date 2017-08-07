@@ -17,6 +17,9 @@
 
 package net.countercraft.movecraft.utils;
 
+import org.bukkit.Location;
+import org.bukkit.World;
+
 public class MovecraftLocation {
     private int x, y, z;
 
@@ -86,4 +89,11 @@ public class MovecraftLocation {
         return new MovecraftLocation(getX() - l.getX(), getY() - l.getY(), getZ() - l.getZ());
     }
 
+    public Location toBukkit(World world){
+        return new Location(world, this.x, this.y, this.z);
+    }
+
+    public static Location toBukkit(World world, MovecraftLocation location){
+        return new Location(world, location.x, location.y, location.z);
+    }
 }
