@@ -17,12 +17,10 @@
 
 package net.countercraft.movecraft.mapUpdater.update;
 
-import net.countercraft.movecraft.utils.MovecraftLocation;
 import org.bukkit.Location;
+import org.bukkit.craftbukkit.v1_10_R1.entity.CraftPlayer;
 import org.bukkit.entity.Entity;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.bukkit.entity.Player;
 
 /**
  * Class that stores the data about a single blocks changes to the map in an unspecified world. The world is retrieved contextually from the submitting craft.
@@ -46,15 +44,26 @@ public class EntityUpdateCommand implements UpdateCommand{
 
     @Override
     public void doUpdate() {
-        //TODO: Fix this
-        MovecraftLocation entityLoc = new MovecraftLocation(i.getNewLocation().getBlockX(), i.getNewLocation().getBlockY() - 1, i.getNewLocation().getBlockZ());
-        if (!entityMap.containsKey(entityLoc)) {
-            List<EntityUpdateCommand> entUpdateList = new ArrayList<>();
-            entUpdateList.add(i);
-            entityMap.put(entityLoc, entUpdateList);
+        if (entity instanceof Player) {
+            net.minecraft.server.v1_10_R1.EntityPlayer craftPlayer = ((CraftPlayer) entity).getHandle();
+            craftPlayer.setPositionRotation(newLocation.getX(), newLocation.getY(), newLocation.getZ(), newLocation.getYaw(), craftPlayer.pitch);
+            Location location = new Location(null, craftPlayer.locX, craftPlayer.locY, craftPlayer.locZ, craftPlayer.yaw, craftPlayer.pitch);
+            craftPlayer.playerConnection.teleport(location);
+            // send the blocks around the player to the player, so they don't fall through the floor or get bumped by other blocks
+                    /*Player p = (Player) entity;
+                    for (MapUpdateCommand muc : updatesInWorld) {
+                        if (muc != null) {
+                            int disty = Math.abs(muc.getNewBlockLocation().getY() - entityUpdate.getNewLocation().getBlockY());
+                            int distx = Math.abs(muc.getNewBlockLocation().getX() - entityUpdate.getNewLocation().getBlockX());
+                            int distz = Math.abs(muc.getNewBlockLocation().getZ() - entityUpdate.getNewLocation().getBlockZ());
+                            if (disty < 2 && distx < 2 && distz < 2) {
+                                Location nloc = new Location(w, muc.getNewBlockLocation().getX(), muc.getNewBlockLocation().getY(), muc.getNewBlockLocation().getZ());
+                                p.sendBlockChange(nloc, muc.getTypeID(), muc.getDataID());
+                            }
+                        }
+                    }*/
         } else {
-            List<EntityUpdateCommand> entUpdateList = entityMap.get(entityLoc);
-            entUpdateList.add(i);
+            entity.teleport(newLocation);
         }
     }
 }
