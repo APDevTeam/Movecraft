@@ -134,34 +134,11 @@ public class MapUpdateCommand implements UpdateCommand {
     public void doUpdate() {
         //TODO: fix this
         net.minecraft.server.v1_10_R1.World nativeWorld = ((CraftWorld) updateWorld).getHandle();
-        IBlockData IBDMap;
-        TileEntity tileMap;
-        NextTickListEntry nextTickMap;
+        IBlockData blockData = null;
+        TileEntity tile=null;
+        NextTickListEntry nextTickEntry = null;
 
-        if (c.getNewBlockLocation() != null) {
-            if (!Settings.CompatibilityMode) {
-
-                Chunk chunk = newBlockLocation.toBukkit(updateWorld).getChunk();
-                net.minecraft.server.v1_10_R1.Chunk nativeChunk = ((CraftChunk) chunk).getHandle();
-                if (!chunksToRelight.contains(nativeChunk))
-                    chunksToRelight.add(nativeChunk);
-            }
-            if (!updateWorld.isChunkLoaded(newBlockLocation.getX() >> 4, newBlockLocation.getZ() >> 4)) {
-                updateWorld.loadChunk(newBlockLocation.getX() >> 4, newBlockLocation.getZ() >> 4);
-            }
-        }
-        if (blockLocation != null) {
-            if (!Settings.CompatibilityMode) {
-                Chunk chunk = blockLocation.toBukkit(updateWorld).getChunk();
-                net.minecraft.server.v1_10_R1.Chunk nativeChunk = ((CraftChunk) chunk).getHandle();
-                if (!chunksToRelight.contains(nativeChunk))
-                    chunksToRelight.add(nativeChunk);
-            }
-            if (!updateWorld.isChunkLoaded(blockLocation.getX() >> 4, blockLocation.getZ() >> 4)) {
-                updateWorld.loadChunk(blockLocation.getX() >> 4, blockLocation.getZ() >> 4);
-            }
-        }
-
+        //Removed chunkloading and relighting
 
         // TODO: make this go in chunks instead of block by block, same with the block placement system
 
@@ -171,30 +148,18 @@ public class MapUpdateCommand implements UpdateCommand {
             StructureBoundingBox srcBoundingBox = new StructureBoundingBox(srcBlock.getX(), srcBlock.getY(), srcBlock.getZ(), srcBlock.getX() + 1, srcBlock.getY() + 1, srcBlock.getZ() + 1);
             List<NextTickListEntry> entries = nativeWorld.a(srcBoundingBox, true);
             if (entries != null) {
-                NextTickListEntry entry = entries.get(0);//new NextTickListEntry(entries.get(0).a,entries.get(0).);
-                nextTickMap.add(entry);
+                nextTickEntry = entries.get(0);//new NextTickListEntry(entries.get(0).a,entries.get(0).);
             }
 
             BlockPosition srcBlockPos = new BlockPosition(srcBlock.getX(), srcBlock.getY(), srcBlock.getZ());
-            IBlockData IBData = nativeSrcChunk.getBlockData(srcBlockPos);
-            IBDMap = IBData;
+            blockData = nativeSrcChunk.getBlockData(srcBlockPos);
 
             if (Arrays.binarySearch(tileEntityBlocksToPreserve, srcBlock.getTypeId()) >= 0) {
-                TileEntity tileEntity = nativeSrcChunk.getTileEntities().get(srcBlockPos);
-                tileMap = tileEntity;
+                tile = nativeSrcChunk.getTileEntities().get(srcBlockPos);
             }
         }
-        //TODO: figure out what this does
-/*
-        if (IBDMap.size() <= mapUpdateIndex)
-            IBDMap.add(null);
-        if (tileMap.size() <= mapUpdateIndex)
-            tileMap.add(null);
-        if (nextTickMap.size() <= mapUpdateIndex)
-            nextTickMap.add(null);*/
-
-
-        blockUpdatesPerCraft.clear();
+        //TODO: Reset block updates
+        //blockUpdatesPerCraft.clear();
 
         // now do the block updates, move entities when you set the block they are on
 
@@ -282,7 +247,7 @@ public class MapUpdateCommand implements UpdateCommand {
                 if (existingType != newType || existingData != newData) { // only place the actual block if it has changed
                     // if there is a source block, copy the data from it, modifying with rotation (note that some updates don't have source blocks, like a repair)
                     if (srcBlock != null) {
-                        dstIBD = IBDMap.a(ROTATION[i.getRotation().ordinal()]);
+                        dstIBD = blockData.a(ROTATION[rotation.ordinal()]);
 
                     } else {
                         // if no source block, just make the new block using the type and data info
@@ -298,39 +263,38 @@ public class MapUpdateCommand implements UpdateCommand {
 
                     dstSection.setType(dstBlock.getX() & 15, dstBlock.getY() & 15, dstBlock.getZ() & 15, dstIBD);
                     madeChanges = true;
-                    addBlockUpdateTracking(i.getCraft());
+                    craft.incrementBlockUpdates();
                 }
 
                 if (srcBlock != null) {
                     // if you had a source block, also move the tile entity, and if there is a next tick entry, move that too
-                    TileEntity tileEntity = tileMap.get(mapUpdateIndex);
-                    if (tileEntity != null) {
-                        tileEntity.setPosition(dstBlockPos);
-                        addBlockUpdateTracking(i.getCraft());
+                    if (tile != null) {
+                        tile.setPosition(dstBlockPos);
+                        craft.incrementBlockUpdates();
                         madeChanges = true;
-                        if (i.getType() == Material.CHEST || i.getType() == Material.TRAPPED_CHEST) {
-                            addBlockUpdateTracking(i.getCraft(), (int) (i.getCraft().getOrigBlockCount() * 0.005));
+                        if (type == Material.CHEST || type == Material.TRAPPED_CHEST) {
+                            craft.incrementBlockUpdates ((int) (craft.getOrigBlockCount() * 0.005));
                         }
-                        nativeDstChunk.getTileEntities().put(dstBlockPos, tileEntity);
-                        if (tileEntity instanceof TileEntitySign) {
-                            sendSignToPlayers(w, i);
+                        nativeDstChunk.getTileEntities().put(dstBlockPos, tile);
+                        if (tile instanceof TileEntitySign) {
+                            sendSignToPlayers(updateWorld, this);
                         }
                         if (nativeWorld.capturedTileEntities.containsKey(srcBlockPos)) {
                             // Is this really necessary?
                             nativeWorld.capturedTileEntities.remove(srcBlockPos);
-                            nativeWorld.capturedTileEntities.put(dstBlockPos, tileEntity);
+                            nativeWorld.capturedTileEntities.put(dstBlockPos, tile);
                         }
                     }
 
-                    NextTickListEntry entry = nextTickMap.get(mapUpdateIndex);
-                    if (entry != null) {
+                    //NextTickListEntry entry = nextTickMap.get(mapUpdateIndex);
+                    if (nextTickEntry != null) {
                         final long currentTime = nativeWorld.worldData.getTime();
-                        BlockPosition position = entry.a;
-                        int dx = i.getNewBlockLocation().getX() - i.getOldBlockLocation().getX();
-                        int dy = i.getNewBlockLocation().getY() - i.getOldBlockLocation().getY();
-                        int dz = i.getNewBlockLocation().getZ() - i.getOldBlockLocation().getZ();
+                        BlockPosition position = nextTickEntry.a;
+                        int dx = newBlockLocation.getX() - blockLocation.getX();
+                        int dy = newBlockLocation.getY() - blockLocation.getY();
+                        int dz = newBlockLocation.getZ() - blockLocation.getZ();
                         position = position.a(dx, dy, dz);
-                        nativeWorld.b(position, entry.a(), (int) (entry.b - currentTime), entry.c);
+                        nativeWorld.b(position, nextTickEntry.a(), (int) (nextTickEntry.b - currentTime), nextTickEntry.c);
                     }
 
                 }
@@ -339,15 +303,16 @@ public class MapUpdateCommand implements UpdateCommand {
         }
 
         if (madeChanges) { // send map updates to clients, and perform various checks
-            Location loc = new Location(updateWorld, newBlockLocation.getX(), newBlockLocation.getY(), newBlockLocation.getZ());
-            updateWorld.getBlockAt(loc).getState().update(false, false);
+            //Location loc = new Location(updateWorld, newBlockLocation.getX(), newBlockLocation.getY(), newBlockLocation.getZ());
+            updateWorld.getBlockAt(newBlockLocation.toBukkit(updateWorld)).getState().update(false, false);
         }
 
 
         //Do comperator stuff
 
         if (type == Material.REDSTONE_COMPARATOR_OFF) { // for some reason comparators are flakey, have to do it twice sometimes
-            Block b = updateWorld.getBlockAt(newBlockLocation.getX(), newBlockLocation.getY(), newBlockLocation.getZ());
+            //Block b = updateWorld.getBlockAt(newBlockLocation.getX(), newBlockLocation.getY(), newBlockLocation.getZ());
+            Block b = newBlockLocation.toBukkit(updateWorld).getBlock();
             if (b.getType() != Material.REDSTONE_COMPARATOR_OFF) {
                 b.setTypeIdAndData(type.getId(), dataID, false);
             }
@@ -355,7 +320,7 @@ public class MapUpdateCommand implements UpdateCommand {
         if (type == Material.REDSTONE_COMPARATOR) { // for some reason comparators are flakey, have to do it twice sometimes
             Block b = updateWorld.getBlockAt(newBlockLocation.getX(), newBlockLocation.getY(), newBlockLocation.getZ());
             if (b.getType() != Material.REDSTONE_COMPARATOR) {
-                b.setTypeIdAndData(i.getType().getId(), i.getDataID(), false);
+                b.setTypeIdAndData(type.getId(), dataID, false);
             }
         }
 
@@ -366,9 +331,11 @@ public class MapUpdateCommand implements UpdateCommand {
         Block srcBlock;
         BlockPosition dstBlockPos;
         net.minecraft.server.v1_10_R1.Chunk nativeDstChunk;
-        if (i.getOldBlockLocation() != null) {
-            blockType = w.getBlockTypeIdAt(i.getOldBlockLocation().getX(), i.getOldBlockLocation().getY(), i.getOldBlockLocation().getZ());
-            srcBlock = w.getBlockAt(i.getOldBlockLocation().getX(), i.getOldBlockLocation().getY(), i.getOldBlockLocation().getZ());
+        if (blockLocation != null) {
+            blockType = blockLocation.toBukkit(updateWorld).getBlock().getTypeId();
+            // updateWorld.getBlockTypeIdAt(blockLocation.getX(), blockLocation.getY(), i.getOldBlockLocation().getZ());
+            srcBlock = blockLocation.toBukkit(updateWorld).getBlock();
+            //w.getBlockAt(i.getOldBlockLocation().getX(), i.getOldBlockLocation().getY(), i.getOldBlockLocation().getZ());
             nativeDstChunk = ((CraftChunk) srcBlock.getChunk()).getHandle();
             dstBlockPos = new BlockPosition(srcBlock.getX(), srcBlock.getY(), srcBlock.getZ());
             if (Arrays.binarySearch(tileEntityBlocksToPreserve, blockType) < 0) { // TODO: make this only run when the original block had tile data, but after it cleans up my corrupt chunks >.>
@@ -377,23 +344,24 @@ public class MapUpdateCommand implements UpdateCommand {
 
         }
         // now remove the tile entities in the new location if they shouldn't be there
-        blockType = w.getBlockTypeIdAt(i.getNewBlockLocation().getX(), i.getNewBlockLocation().getY(), i.getNewBlockLocation().getZ());
-        srcBlock = w.getBlockAt(i.getNewBlockLocation().getX(), i.getNewBlockLocation().getY(), i.getNewBlockLocation().getZ());
+        //blockType = updateWorld.getBlockTypeIdAt(newBlockLocation.getX(), newBlockLocation.getY(), newBlockLocation.getZ());
+        srcBlock = updateWorld.getBlockAt(newBlockLocation.getX(), newBlockLocation.getY(), newBlockLocation.getZ());
+        blockType = srcBlock.getTypeId();
         nativeDstChunk = ((CraftChunk) srcBlock.getChunk()).getHandle();
         dstBlockPos = new BlockPosition(srcBlock.getX(), srcBlock.getY(), srcBlock.getZ());
         if (Arrays.binarySearch(tileEntityBlocksToPreserve, blockType) < 0) { // TODO: make this only run when the original block had tile data, but after it cleans up my corrupt chunks >.>
             nativeDstChunk.getTileEntities().remove(dstBlockPos);
         }
 
-        if (i.getType() == Material.SIGN_POST || i.getType() == Material.WALL_SIGN) {
-            if (i.getCraft() != null) {
-                srcBlock = w.getBlockAt(i.getNewBlockLocation().getX(), i.getNewBlockLocation().getY(), i.getNewBlockLocation().getZ());
+        if (type == Material.SIGN_POST || type == Material.WALL_SIGN) {
+            if (craft != null) {
+                //srcBlock = updateWorld.getBlockAt(i.getNewBlockLocation().getX(), i.getNewBlockLocation().getY(), i.getNewBlockLocation().getZ());
                 nativeDstChunk = ((CraftChunk) srcBlock.getChunk()).getHandle();
                 dstBlockPos = new BlockPosition(srcBlock.getX(), srcBlock.getY(), srcBlock.getZ());
                 TileEntity tileEntity = nativeDstChunk.getTileEntities().get(dstBlockPos);
                 if (tileEntity instanceof TileEntitySign) {
-                    processSign(tileEntity, i.getCraft());
-                    sendSignToPlayers(w, i);
+                    processSign(tileEntity, craft);
+                    sendSignToPlayers(updateWorld, this);
                     nativeDstChunk.getTileEntities().put(dstBlockPos, tileEntity);
                 }
             }
@@ -630,7 +598,7 @@ public class MapUpdateCommand implements UpdateCommand {
                         signText += (int) ((craft.getMaxSpeed() * 10) * (1 + craft.getType().getCruiseSkipBlocks()));
                     }
                 }
-                updateQty += blockUpdatesPerCraft.get(craft);
+                updateQty += craft.getBlockUpdates();
                 TESign.lines[2] = new ChatComponentText(signText);
                 TESign.lines[3] = new ChatComponentText(updateQty);
             }
