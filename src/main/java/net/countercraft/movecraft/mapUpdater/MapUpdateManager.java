@@ -18,6 +18,7 @@
 package net.countercraft.movecraft.mapUpdater;
 
 import net.countercraft.movecraft.Movecraft;
+import net.countercraft.movecraft.async.translation.TranslationTaskData;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.mapUpdater.update.MapUpdateCommand;
@@ -26,6 +27,7 @@ import org.bukkit.Material;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -98,6 +100,18 @@ public class MapUpdateManager extends BukkitRunnable {
 
     public void scheduleUpdate(UpdateCommand update){
         updates.add(update);
+    }
+
+    public void scheduleUpdates(UpdateCommand... updates){
+        Collections.addAll(this.updates, updates);
+    }
+
+    public void scheduleUpdates(TranslationTaskData data){
+        Collections.addAll(this.updates, data.getUpdates());
+        Collections.addAll(this.updates, data.getEntityUpdates());
+        Collections.addAll(this.updates, data.getItemDropUpdateCommands());
+        Collections.addAll(this.updates, data.getExplosionUpdateCommands());
+        Collections.addAll(this.updates, data.getParticleUpdates());
     }
 
     private static class MapUpdateManagerHolder {
