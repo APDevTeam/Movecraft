@@ -63,12 +63,14 @@ public class MapUpdateManager extends BukkitRunnable {
         // and set all crafts that were updated to not processing
 
         for (UpdateCommand update : updates) {
-            update.doUpdate();
             if (update instanceof MapUpdateCommand) {
                 Craft craft = ((MapUpdateCommand) update).getCraft();
+                craft.setBlockUpdates(0);
                 if (!craft.isNotProcessing())
                     craft.setProcessing(false);
+
             }
+            update.doUpdate();
         }
         //TODO: re-add lighting updates
         /*// queue chunks for lighting recalc
