@@ -23,8 +23,8 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.mapUpdater.update.MapUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
-import org.bukkit.Material;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,15 +33,6 @@ import java.util.List;
 
 public class MapUpdateManager extends BukkitRunnable {
 
-    // only bother to store tile entities for blocks we care about (chests, dispensers, etc)
-    // this is more important than it may seem. The more blocks that matter, the more likely
-    // a circular trap will occur (a=b, b=c. c=a), potentially damaging tile data
-    private final int[] tileEntityBlocksToPreserve = {
-            Material.DISPENSER.getId(), Material.NOTE_BLOCK.getId(), Material.CHEST.getId(),
-            Material.FURNACE.getId(), Material.BURNING_FURNACE.getId(), Material.SIGN_POST.getId(),
-            Material.WALL_SIGN.getId(), Material.COMMAND.getId(), Material.TRAPPED_CHEST.getId(),
-            Material.DAYLIGHT_DETECTOR.getId(), Material.HOPPER.getId(), Material.DROPPER.getId(),
-            Material.DAYLIGHT_DETECTOR_INVERTED.getId(), Material.COMMAND_REPEATING.getId(), Material.COMMAND_CHAIN.getId()};
     private List<UpdateCommand> updates = new ArrayList<>();
     //private PriorityQueue<UpdateCommand> updateQueue = new PriorityQueue<>();
 
@@ -60,8 +51,6 @@ public class MapUpdateManager extends BukkitRunnable {
     public void run() {
         if (updates.isEmpty()) return;
         long startTime = System.currentTimeMillis();
-        //ArrayList<net.minecraft.server.v1_10_R1.Chunk> chunksToRelight = new ArrayList<>();
-
         // and set all crafts that were updated to not processing
 
         for (UpdateCommand update : updates) {
@@ -98,15 +87,15 @@ public class MapUpdateManager extends BukkitRunnable {
     }
 
 
-    public void scheduleUpdate(UpdateCommand update){
+    public void scheduleUpdate(@NotNull UpdateCommand update){
         updates.add(update);
     }
 
-    public void scheduleUpdates(UpdateCommand... updates){
+    public void scheduleUpdates(@NotNull UpdateCommand... updates){
         Collections.addAll(this.updates, updates);
     }
 
-    public void scheduleUpdates(TranslationTaskData data){
+    public void scheduleUpdates(@NotNull TranslationTaskData data){
         Collections.addAll(this.updates, data.getUpdates());
         Collections.addAll(this.updates, data.getEntityUpdates());
         Collections.addAll(this.updates, data.getItemDropUpdateCommands());
