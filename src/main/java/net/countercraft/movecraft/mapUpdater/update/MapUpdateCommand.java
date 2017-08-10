@@ -24,23 +24,23 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.utils.MovecraftLocation;
 import net.countercraft.movecraft.utils.Rotation;
-import net.minecraft.server.v1_10_R1.BlockPosition;
-import net.minecraft.server.v1_10_R1.ChatComponentText;
-import net.minecraft.server.v1_10_R1.EnumBlockRotation;
-import net.minecraft.server.v1_10_R1.IBlockData;
-import net.minecraft.server.v1_10_R1.NextTickListEntry;
-import net.minecraft.server.v1_10_R1.StructureBoundingBox;
-import net.minecraft.server.v1_10_R1.TileEntity;
-import net.minecraft.server.v1_10_R1.TileEntitySign;
+import net.minecraft.server.v1_11_R1.BlockPosition;
+import net.minecraft.server.v1_11_R1.ChatComponentText;
+import net.minecraft.server.v1_11_R1.EnumBlockRotation;
+import net.minecraft.server.v1_11_R1.IBlockData;
+import net.minecraft.server.v1_11_R1.NextTickListEntry;
+import net.minecraft.server.v1_11_R1.StructureBoundingBox;
+import net.minecraft.server.v1_11_R1.TileEntity;
+import net.minecraft.server.v1_11_R1.TileEntitySign;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
-import org.bukkit.craftbukkit.v1_10_R1.CraftChunk;
-import org.bukkit.craftbukkit.v1_10_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_10_R1.util.CraftMagicNumbers;
+import org.bukkit.craftbukkit.v1_11_R1.CraftChunk;
+import org.bukkit.craftbukkit.v1_11_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_11_R1.util.CraftMagicNumbers;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
@@ -133,7 +133,7 @@ public class MapUpdateCommand implements UpdateCommand {
     @SuppressWarnings("deprecation")
     public void doUpdate() {
         //TODO: fix this
-        net.minecraft.server.v1_10_R1.World nativeWorld = ((CraftWorld) craft.getW()).getHandle();
+        net.minecraft.server.v1_11_R1.World nativeWorld = ((CraftWorld) craft.getW()).getHandle();
         IBlockData blockData = null;
         TileEntity tile=null;
         NextTickListEntry nextTickEntry = null;
@@ -144,7 +144,7 @@ public class MapUpdateCommand implements UpdateCommand {
 
         if (type != Material.AIR &&  blockLocation != null) {
             Block srcBlock = blockLocation.toBukkit(craft.getW()).getBlock();
-            net.minecraft.server.v1_10_R1.Chunk nativeSrcChunk = ((CraftChunk) srcBlock.getChunk()).getHandle();
+            net.minecraft.server.v1_11_R1.Chunk nativeSrcChunk = ((CraftChunk) srcBlock.getChunk()).getHandle();
             StructureBoundingBox srcBoundingBox = new StructureBoundingBox(srcBlock.getX(), srcBlock.getY(), srcBlock.getZ(), srcBlock.getX() + 1, srcBlock.getY() + 1, srcBlock.getZ() + 1);
             List<NextTickListEntry> entries = nativeWorld.a(srcBoundingBox, true);
             if (entries != null) {
@@ -234,7 +234,7 @@ public class MapUpdateCommand implements UpdateCommand {
 
             // move the actual block
             if (!delayed) {
-                net.minecraft.server.v1_10_R1.Chunk nativeDstChunk = ((CraftChunk) dstBlock.getChunk()).getHandle();
+                net.minecraft.server.v1_11_R1.Chunk nativeDstChunk = ((CraftChunk) dstBlock.getChunk()).getHandle();
                 BlockPosition dstBlockPos = new BlockPosition(dstBlock.getX(), dstBlock.getY(), dstBlock.getZ());
                 BlockPosition srcBlockPos = null;
                 if (srcBlock != null) {
@@ -252,10 +252,10 @@ public class MapUpdateCommand implements UpdateCommand {
                         dstIBD = CraftMagicNumbers.getBlock(newType).fromLegacyData(newData);
                     }
                     // this actually creates the block
-                    net.minecraft.server.v1_10_R1.ChunkSection dstSection = nativeDstChunk.getSections()[dstBlock.getY() >> 4];
+                    net.minecraft.server.v1_11_R1.ChunkSection dstSection = nativeDstChunk.getSections()[dstBlock.getY() >> 4];
                     if (dstSection == null) {
                         // Put a GLASS block to initialize the section. It will be replaced next with the real block.
-                        nativeDstChunk.a(dstBlockPos, net.minecraft.server.v1_10_R1.Blocks.GLASS.getBlockData());
+                        nativeDstChunk.a(dstBlockPos, net.minecraft.server.v1_11_R1.Blocks.GLASS.getBlockData());
                         dstSection = nativeDstChunk.getSections()[dstBlockPos.getY() >> 4];
                     }
 
@@ -328,7 +328,7 @@ public class MapUpdateCommand implements UpdateCommand {
         int blockType;
         Block srcBlock;
         BlockPosition dstBlockPos;
-        net.minecraft.server.v1_10_R1.Chunk nativeDstChunk;
+        net.minecraft.server.v1_11_R1.Chunk nativeDstChunk;
         if (blockLocation != null) {
             blockType = blockLocation.toBukkit(craft.getW()).getBlock().getTypeId();
             // updateWorld.getBlockTypeIdAt(blockLocation.getX(), blockLocation.getY(), i.getOldBlockLocation().getZ());

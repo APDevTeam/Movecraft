@@ -19,7 +19,7 @@ package net.countercraft.movecraft.mapUpdater.update;
 
 import net.countercraft.movecraft.config.Settings;
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_10_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_11_R1.entity.CraftPlayer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
@@ -47,7 +47,7 @@ public class EntityUpdateCommand implements UpdateCommand{
     public void doUpdate() {
         if (entity instanceof Player) {
             if(Settings.CompatibilityMode) {
-                net.minecraft.server.v1_10_R1.EntityPlayer craftPlayer = ((CraftPlayer) entity).getHandle();
+                net.minecraft.server.v1_11_R1.EntityPlayer craftPlayer = ((CraftPlayer) entity).getHandle();
                 craftPlayer.setPositionRotation(newLocation.getX(), newLocation.getY(), newLocation.getZ(), newLocation.getYaw(), craftPlayer.pitch);
                 Location location = new Location(null, craftPlayer.locX, craftPlayer.locY, craftPlayer.locZ, craftPlayer.yaw, craftPlayer.pitch);
                 craftPlayer.playerConnection.teleport(location);
