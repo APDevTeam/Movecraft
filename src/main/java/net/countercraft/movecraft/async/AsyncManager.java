@@ -291,21 +291,18 @@ public class AsyncManager extends BukkitRunnable {
                         ExplosionUpdateCommand[] exUpdates = task.getData().getExplosionUpdateCommands();
                         c.setBlockList(task.getData().getBlockList());
                         c.setScheduledBlockChanges(task.getData().getScheduledBlockChanges());
-                        boolean failed = MapUpdateManager.getInstance().addWorldUpdate(c.getW(), updates, null, null, exUpdates);
+                        //boolean failed = MapUpdateManager.getInstance().addWorldUpdate(c.getW(), updates, null, null, exUpdates);
+                        MapUpdateManager mapUpdateManager= MapUpdateManager.getInstance();
+                        for(ExplosionUpdateCommand explosionUpdateCommand : exUpdates)
+                            mapUpdateManager.scheduleUpdate(explosionUpdateCommand);
+                        for(MapUpdateCommand updateCommand : updates)
+                            mapUpdateManager.scheduleUpdate(updateCommand);
+                        sentMapUpdate = true;
 
-                        if (failed) {
-                            Movecraft.getInstance().getLogger().log(Level.SEVERE, I18nSupport.getInternationalisedString("Translation - Craft collision"));
-                        } else {
-                            sentMapUpdate = true;
-                        }
                     }
                 } else {
                     // The craft is clear to move, perform the block updates
-
-                    MapUpdateCommand[] updates = task.getData().getUpdates();
-                    EntityUpdateCommand[] eUpdates = task.getData().getEntityUpdates();
-                    ItemDropUpdateCommand[] iUpdates = task.getData().getItemDropUpdateCommands();
-                    ExplosionUpdateCommand[] exUpdates = task.getData().getExplosionUpdateCommands();
+                    MapUpdateManager.getInstance().scheduleUpdates(task.getData());
                     // get list of cannons before sending map updates, to avoid
                     // conflicts
                     HashSet<Cannon> shipCannons = null;
@@ -319,31 +316,23 @@ public class AsyncManager extends BukkitRunnable {
                         shipCannons = Movecraft.getInstance().getCannonsPlugin().getCannonsAPI()
                                 .getCannons(shipLocations, c.getNotificationPlayer().getUniqueId(), true);
                     }
-                    boolean failed = MapUpdateManager.getInstance().addWorldUpdate(c.getW(), updates, eUpdates,
-                            iUpdates, exUpdates);
 
-                    if (!failed) {
-                        sentMapUpdate = true;
-                        c.setBlockList(task.getData().getBlockList());
-                        c.setScheduledBlockChanges(task.getData().getScheduledBlockChanges());
-                        c.setMinX(task.getData().getMinX());
-                        c.setMinZ(task.getData().getMinZ());
-                        c.setHitBox(task.getData().getHitbox());
+                    sentMapUpdate = true;
+                    c.setBlockList(task.getData().getBlockList());
+                    c.setScheduledBlockChanges(task.getData().getScheduledBlockChanges());
+                    c.setMinX(task.getData().getMinX());
+                    c.setMinZ(task.getData().getMinZ());
+                    c.setHitBox(task.getData().getHitbox());
 
-                        // move any cannons that were present
-                        if (Movecraft.getInstance().getCannonsPlugin() != null && shipCannons != null) {
-                            for (Cannon can : shipCannons) {
-                                can.move(new Vector(task.getData().getDx(), task.getData().getDy(),
-                                        task.getData().getDz()));
-                            }
+                    // move any cannons that were present
+                    if (Movecraft.getInstance().getCannonsPlugin() != null && shipCannons != null) {
+                        for (Cannon can : shipCannons) {
+                            can.move(new Vector(task.getData().getDx(), task.getData().getDy(),
+                                    task.getData().getDz()));
                         }
-
-                    } else {
-
-                        Movecraft.getInstance().getLogger().log(Level.SEVERE,
-                                I18nSupport.getInternationalisedString("Translation - Craft collision"));
-
                     }
+
+
                 }
 
             } else if (poll instanceof RotationTask) {
@@ -381,34 +370,30 @@ public class AsyncManager extends BukkitRunnable {
                                     .getCannons(shipLocations, c.getNotificationPlayer().getUniqueId(), true);
                         }
 
-                        boolean failed = MapUpdateManager.getInstance().addWorldUpdate(c.getW(), updates, eUpdates,
-                                null, null);
+                        MapUpdateManager.getInstance().scheduleUpdates(updates);
+                        MapUpdateManager.getInstance().scheduleUpdates(eUpdates);
 
-                        if (!failed) {
-                            sentMapUpdate = true;
 
-                            c.setBlockList(task.getBlockList());
-                            c.setScheduledBlockChanges(task.getScheduledBlockChanges());
-                            c.setMinX(task.getMinX());
-                            c.setMinZ(task.getMinZ());
-                            c.setHitBox(task.getHitbox());
+                        sentMapUpdate = true;
 
-                            // rotate any cannons that were present
-                            if (Movecraft.getInstance().getCannonsPlugin() != null && shipCannons != null) {
-                                Location tloc = new Location(task.getCraft().getW(), task.getOriginPoint().getX(),
-                                        task.getOriginPoint().getY(), task.getOriginPoint().getZ());
-                                for (Cannon can : shipCannons) {
-                                    if (task.getRotation() == net.countercraft.movecraft.utils.Rotation.CLOCKWISE)
-                                        can.rotateRight(tloc.toVector());
-                                    if (task.getRotation() == net.countercraft.movecraft.utils.Rotation.ANTICLOCKWISE)
-                                        can.rotateLeft(tloc.toVector());
-                                }
+                        c.setBlockList(task.getBlockList());
+                        c.setScheduledBlockChanges(task.getScheduledBlockChanges());
+                        c.setMinX(task.getMinX());
+                        c.setMinZ(task.getMinZ());
+                        c.setHitBox(task.getHitbox());
+
+                        // rotate any cannons that were present
+                        if (Movecraft.getInstance().getCannonsPlugin() != null && shipCannons != null) {
+                            Location tloc = new Location(task.getCraft().getW(), task.getOriginPoint().getX(),
+                                    task.getOriginPoint().getY(), task.getOriginPoint().getZ());
+                            for (Cannon can : shipCannons) {
+                                if (task.getRotation() == net.countercraft.movecraft.utils.Rotation.CLOCKWISE)
+                                    can.rotateRight(tloc.toVector());
+                                if (task.getRotation() == net.countercraft.movecraft.utils.Rotation.ANTICLOCKWISE)
+                                    can.rotateLeft(tloc.toVector());
                             }
-                        } else {
-
-                            Movecraft.getInstance().getLogger().log(Level.SEVERE, I18nSupport.getInternationalisedString("Rotation - Craft Collision"));
-
                         }
+
                     }
                 }
             }
@@ -624,8 +609,8 @@ public class AsyncManager extends BukkitRunnable {
         Location nativeLoc = new Location(w, loc.getX(), loc.getY(), loc.getZ());
         ApplicableRegionSet set = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(w)
                 .getApplicableRegions(nativeLoc);
-		return !set.allows(DefaultFlag.PVP);
-	}
+        return !set.allows(DefaultFlag.PVP);
+    }
 
     private boolean isRegionFlagSinkAllowed(MovecraftLocation loc, World w) {
         if (Movecraft.getInstance().getWorldGuardPlugin() != null
@@ -1220,8 +1205,7 @@ public class AsyncManager extends BukkitRunnable {
                         }
                     }
                     if (updateCommands.size() > 0) {
-                        MapUpdateManager.getInstance().addWorldUpdate(w,
-                                updateCommands.toArray(new MapUpdateCommand[1]), null, null, null);
+                        MapUpdateManager.getInstance().scheduleUpdates(updateCommands.toArray(new MapUpdateCommand[1]));
                     }
                 }
             }
@@ -1357,7 +1341,7 @@ public class AsyncManager extends BukkitRunnable {
                     }
                 }
                 if (updateCommands.size() > 0) {
-                    MapUpdateManager.getInstance().addWorldUpdate(w, updateCommands.toArray(new MapUpdateCommand[1]), null, null, null);
+                    MapUpdateManager.getInstance().scheduleUpdates(updateCommands.toArray(new MapUpdateCommand[1]));
                 }
             }
         }

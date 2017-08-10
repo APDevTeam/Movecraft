@@ -21,6 +21,7 @@ import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.ExplosionUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.ItemDropUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.MapUpdateCommand;
+import net.countercraft.movecraft.mapUpdater.update.ParticleUpdateCommand;
 import net.countercraft.movecraft.utils.MovecraftLocation;
 
 import java.util.HashMap;
@@ -34,6 +35,7 @@ public class TranslationTaskData {
     private MovecraftLocation[] blockList;
     private MapUpdateCommand[] updates;
     private EntityUpdateCommand[] entityUpdates;
+    private ParticleUpdateCommand[] particleUpdates;
     private HashMap<MapUpdateCommand, Long> scheduledBlockChanges = null;
     private ItemDropUpdateCommand[] itemDropUpdates;
     private ExplosionUpdateCommand[] explosionUpdateCommands;
@@ -173,5 +175,13 @@ public class TranslationTaskData {
 
     public void setExplosionUpdateCommands(ExplosionUpdateCommand[] explosionUpdateCommands) {
         this.explosionUpdateCommands = explosionUpdateCommands;
+    }
+
+    public ParticleUpdateCommand[] getParticleUpdates() {
+        return particleUpdates;
+    }
+
+    public void setParticleUpdates(ParticleUpdateCommand[] particleUpdates) {
+        this.particleUpdates = particleUpdates;
     }
 }
