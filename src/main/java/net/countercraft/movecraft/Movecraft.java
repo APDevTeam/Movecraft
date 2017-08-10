@@ -51,7 +51,7 @@ import net.countercraft.movecraft.warfare.siege.Siege;
 import net.countercraft.movecraft.warfare.siege.SiegeManager;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.World;
-import org.bukkit.craftbukkit.v1_10_R1.util.CraftMagicNumbers;
+import org.bukkit.craftbukkit.v1_11_R1.util.CraftMagicNumbers;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -106,8 +106,8 @@ public class Movecraft extends JavaPlugin {
     private void disableShadow(int typeID) {
         Method method;
         try {
-            net.minecraft.server.v1_10_R1.Block tempBlock = CraftMagicNumbers.getBlock(typeID);
-            method = net.minecraft.server.v1_10_R1.Block.class.getDeclaredMethod("d", int.class);
+            net.minecraft.server.v1_11_R1.Block tempBlock = CraftMagicNumbers.getBlock(typeID);
+            method = net.minecraft.server.v1_11_R1.Block.class.getDeclaredMethod("d", int.class);
             method.setAccessible(true);
             method.invoke(tempBlock, 0);
         } catch (NoSuchMethodException | InvocationTargetException | IllegalArgumentException | IllegalAccessException | SecurityException e1) {

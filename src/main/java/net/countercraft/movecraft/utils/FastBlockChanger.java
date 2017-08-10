@@ -18,16 +18,16 @@
 package net.countercraft.movecraft.utils;
 
 import net.countercraft.movecraft.Movecraft;
-import net.minecraft.server.v1_10_R1.BlockPosition;
-import net.minecraft.server.v1_10_R1.Chunk;
-import net.minecraft.server.v1_10_R1.EntityPlayer;
-import net.minecraft.server.v1_10_R1.EnumSkyBlock;
-import net.minecraft.server.v1_10_R1.IBlockData;
-import net.minecraft.server.v1_10_R1.Packet;
-import net.minecraft.server.v1_10_R1.PacketPlayOutMapChunk;
-import net.minecraft.server.v1_10_R1.PlayerChunk;
-import net.minecraft.server.v1_10_R1.TileEntity;
-import net.minecraft.server.v1_10_R1.World;
+import net.minecraft.server.v1_11_R1.BlockPosition;
+import net.minecraft.server.v1_11_R1.Chunk;
+import net.minecraft.server.v1_11_R1.EntityPlayer;
+import net.minecraft.server.v1_11_R1.EnumSkyBlock;
+import net.minecraft.server.v1_11_R1.IBlockData;
+import net.minecraft.server.v1_11_R1.Packet;
+import net.minecraft.server.v1_11_R1.PacketPlayOutMapChunk;
+import net.minecraft.server.v1_11_R1.PlayerChunk;
+import net.minecraft.server.v1_11_R1.TileEntity;
+import net.minecraft.server.v1_11_R1.World;
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -83,11 +83,11 @@ public class FastBlockChanger {//extends BukkitRunnable {
 
     //get a chunkupdater from a bukkit world object
     public ChunkUpdater getChunk(org.bukkit.World cw, int cx, int cz, boolean updateIfUnchanged) {
-        return getChunk(((org.bukkit.craftbukkit.v1_10_R1.CraftWorld) cw).getHandle(), cx, cz, updateIfUnchanged);
+        return getChunk(((org.bukkit.craftbukkit.v1_11_R1.CraftWorld) cw).getHandle(), cx, cz, updateIfUnchanged);
     }
 
     // get a chunk updater from an internal world object
-    public ChunkUpdater getChunk(net.minecraft.server.v1_10_R1.World cw, int cx, int cz, boolean updateIfUnchanged) {
+    public ChunkUpdater getChunk(net.minecraft.server.v1_11_R1.World cw, int cx, int cz, boolean updateIfUnchanged) {
         for (ChunkUpdater c : chunks)
             if (c.x == cx && c.z == cz && c.w == cw)
                 return c;
