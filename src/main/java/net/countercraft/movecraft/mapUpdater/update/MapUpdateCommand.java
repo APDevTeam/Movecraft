@@ -35,7 +35,6 @@ import net.minecraft.server.v1_10_R1.TileEntitySign;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
@@ -55,7 +54,7 @@ import java.util.List;
  * Class that stores the data about a single blocks changes to the map in an unspecified world. The world is retrieved contextually from the submitting craft.
  */
 public class MapUpdateCommand implements UpdateCommand {
-    private static EnumBlockRotation ROTATION[];
+    private static final EnumBlockRotation ROTATION[];
 
     static {
         ROTATION = new EnumBlockRotation[3];
@@ -68,6 +67,8 @@ public class MapUpdateCommand implements UpdateCommand {
     private final Material type;
     private final byte dataID;
     private final Rotation rotation;
+
+    @SuppressWarnings("deprecation")
     private final int[] tileEntityBlocksToPreserve = {
             Material.DISPENSER.getId(), Material.NOTE_BLOCK.getId(), Material.CHEST.getId(),
             Material.FURNACE.getId(), Material.BURNING_FURNACE.getId(), Material.SIGN_POST.getId(),
@@ -76,7 +77,6 @@ public class MapUpdateCommand implements UpdateCommand {
             Material.DAYLIGHT_DETECTOR_INVERTED.getId(), Material.COMMAND_REPEATING.getId(), Material.COMMAND_CHAIN.getId()};
     private MovecraftLocation blockLocation;
     private Craft craft;
-    private World updateWorld;
 
     public MapUpdateCommand(MovecraftLocation blockLocation, MovecraftLocation newBlockLocation, Material type, byte dataID, Rotation rotation, Craft craft) {
         this.blockLocation = blockLocation;
@@ -130,9 +130,10 @@ public class MapUpdateCommand implements UpdateCommand {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public void doUpdate() {
         //TODO: fix this
-        net.minecraft.server.v1_10_R1.World nativeWorld = ((CraftWorld) updateWorld).getHandle();
+        net.minecraft.server.v1_10_R1.World nativeWorld = ((CraftWorld) craft.getW()).getHandle();
         IBlockData blockData = null;
         TileEntity tile=null;
         NextTickListEntry nextTickEntry = null;
@@ -142,7 +143,7 @@ public class MapUpdateCommand implements UpdateCommand {
         // TODO: make this go in chunks instead of block by block, same with the block placement system
 
         if (type != Material.AIR &&  blockLocation != null) {
-            Block srcBlock = updateWorld.getBlockAt(blockLocation.getX(), blockLocation.getY(), blockLocation.getZ());
+            Block srcBlock = blockLocation.toBukkit(craft.getW()).getBlock();
             net.minecraft.server.v1_10_R1.Chunk nativeSrcChunk = ((CraftChunk) srcBlock.getChunk()).getHandle();
             StructureBoundingBox srcBoundingBox = new StructureBoundingBox(srcBlock.getX(), srcBlock.getY(), srcBlock.getZ(), srcBlock.getX() + 1, srcBlock.getY() + 1, srcBlock.getZ() + 1);
             List<NextTickListEntry> entries = nativeWorld.a(srcBoundingBox, true);
@@ -166,11 +167,11 @@ public class MapUpdateCommand implements UpdateCommand {
         if (type != Material.AIR) {
             Block srcBlock;
             if (blockLocation != null) {
-                srcBlock = updateWorld.getBlockAt(blockLocation.getX(), blockLocation.getY(), blockLocation.getZ());
+                srcBlock = blockLocation.toBukkit(craft.getW()).getBlock();
             } else {
                 srcBlock = null;
             }
-            Block dstBlock = updateWorld.getBlockAt(newBlockLocation.getX(), newBlockLocation.getY(), newBlockLocation.getZ());
+            Block dstBlock = newBlockLocation.toBukkit(craft.getW()).getBlock();
             Material existingType = dstBlock.getType();
             byte existingData = dstBlock.getData();
             Material newType = type;
@@ -235,10 +236,8 @@ public class MapUpdateCommand implements UpdateCommand {
             if (!delayed) {
                 net.minecraft.server.v1_10_R1.Chunk nativeDstChunk = ((CraftChunk) dstBlock.getChunk()).getHandle();
                 BlockPosition dstBlockPos = new BlockPosition(dstBlock.getX(), dstBlock.getY(), dstBlock.getZ());
-                net.minecraft.server.v1_10_R1.Chunk nativeSrcChunk = null;
                 BlockPosition srcBlockPos = null;
                 if (srcBlock != null) {
-                    nativeSrcChunk = ((CraftChunk) srcBlock.getChunk()).getHandle();
                     srcBlockPos = new BlockPosition(srcBlock.getX(), srcBlock.getY(), srcBlock.getZ());
                 }
                 IBlockData dstIBD;
@@ -276,7 +275,7 @@ public class MapUpdateCommand implements UpdateCommand {
                         }
                         nativeDstChunk.getTileEntities().put(dstBlockPos, tile);
                         if (tile instanceof TileEntitySign) {
-                            sendSignToPlayers(updateWorld, this);
+                            sendSignToPlayers();
                         }
                         if (nativeWorld.capturedTileEntities.containsKey(srcBlockPos)) {
                             // Is this really necessary?
@@ -303,7 +302,7 @@ public class MapUpdateCommand implements UpdateCommand {
 
         if (madeChanges) { // send map updates to clients, and perform various checks
             //Location loc = new Location(updateWorld, newBlockLocation.getX(), newBlockLocation.getY(), newBlockLocation.getZ());
-            updateWorld.getBlockAt(newBlockLocation.toBukkit(updateWorld)).getState().update(false, false);
+            newBlockLocation.toBukkit(craft.getW()).getBlock().getState().update(false, false);
         }
 
 
@@ -311,13 +310,13 @@ public class MapUpdateCommand implements UpdateCommand {
 
         if (type == Material.REDSTONE_COMPARATOR_OFF) { // for some reason comparators are flakey, have to do it twice sometimes
             //Block b = updateWorld.getBlockAt(newBlockLocation.getX(), newBlockLocation.getY(), newBlockLocation.getZ());
-            Block b = newBlockLocation.toBukkit(updateWorld).getBlock();
+            Block b = newBlockLocation.toBukkit(craft.getW()).getBlock();
             if (b.getType() != Material.REDSTONE_COMPARATOR_OFF) {
                 b.setTypeIdAndData(type.getId(), dataID, false);
             }
         }
         if (type == Material.REDSTONE_COMPARATOR) { // for some reason comparators are flakey, have to do it twice sometimes
-            Block b = updateWorld.getBlockAt(newBlockLocation.getX(), newBlockLocation.getY(), newBlockLocation.getZ());
+            Block b = newBlockLocation.toBukkit(craft.getW()).getBlock();
             if (b.getType() != Material.REDSTONE_COMPARATOR) {
                 b.setTypeIdAndData(type.getId(), dataID, false);
             }
@@ -331,9 +330,9 @@ public class MapUpdateCommand implements UpdateCommand {
         BlockPosition dstBlockPos;
         net.minecraft.server.v1_10_R1.Chunk nativeDstChunk;
         if (blockLocation != null) {
-            blockType = blockLocation.toBukkit(updateWorld).getBlock().getTypeId();
+            blockType = blockLocation.toBukkit(craft.getW()).getBlock().getTypeId();
             // updateWorld.getBlockTypeIdAt(blockLocation.getX(), blockLocation.getY(), i.getOldBlockLocation().getZ());
-            srcBlock = blockLocation.toBukkit(updateWorld).getBlock();
+            srcBlock = blockLocation.toBukkit(craft.getW()).getBlock();
             //w.getBlockAt(i.getOldBlockLocation().getX(), i.getOldBlockLocation().getY(), i.getOldBlockLocation().getZ());
             nativeDstChunk = ((CraftChunk) srcBlock.getChunk()).getHandle();
             dstBlockPos = new BlockPosition(srcBlock.getX(), srcBlock.getY(), srcBlock.getZ());
@@ -344,7 +343,7 @@ public class MapUpdateCommand implements UpdateCommand {
         }
         // now remove the tile entities in the new location if they shouldn't be there
         //blockType = updateWorld.getBlockTypeIdAt(newBlockLocation.getX(), newBlockLocation.getY(), newBlockLocation.getZ());
-        srcBlock = updateWorld.getBlockAt(newBlockLocation.getX(), newBlockLocation.getY(), newBlockLocation.getZ());
+        srcBlock = newBlockLocation.toBukkit(craft.getW()).getBlock();
         blockType = srcBlock.getTypeId();
         nativeDstChunk = ((CraftChunk) srcBlock.getChunk()).getHandle();
         dstBlockPos = new BlockPosition(srcBlock.getX(), srcBlock.getY(), srcBlock.getZ());
@@ -360,18 +359,19 @@ public class MapUpdateCommand implements UpdateCommand {
                 TileEntity tileEntity = nativeDstChunk.getTileEntities().get(dstBlockPos);
                 if (tileEntity instanceof TileEntitySign) {
                     processSign(tileEntity, craft);
-                    sendSignToPlayers(updateWorld, this);
+                    sendSignToPlayers();
                     nativeDstChunk.getTileEntities().put(dstBlockPos, tileEntity);
                 }
             }
         }
     }
 
-    private void sendSignToPlayers(World w, MapUpdateCommand i) {
-        BlockState bs = w.getBlockAt(i.getNewBlockLocation().getX(), i.getNewBlockLocation().getY(), i.getNewBlockLocation().getZ()).getState();
+    @SuppressWarnings("deprecation")
+    private void sendSignToPlayers() {
+        BlockState bs = newBlockLocation.toBukkit(craft.getW()).getBlock().getState();
         if (bs instanceof Sign) {
             Sign sign = (Sign) bs;
-            for (Player p : w.getPlayers()) { // this is necessary because signs do not get updated client side correctly without refreshing the chunks, which causes a memory leak in the clients
+            for (Player p : craft.getW().getPlayers()) { // this is necessary because signs do not get updated client side correctly without refreshing the chunks, which causes a memory leak in the clients
                 int playerChunkX = p.getLocation().getBlockX() >> 4;
                 int playerChunkZ = p.getLocation().getBlockZ() >> 4;
                 if (Math.abs(playerChunkX - sign.getChunk().getX()) < 4)
@@ -384,6 +384,7 @@ public class MapUpdateCommand implements UpdateCommand {
         }
     }
 
+    @SuppressWarnings("deprecation")
     private void processSign(TileEntity tileEntity, Craft craft) {
         if (craft == null) {
             return;
@@ -416,62 +417,58 @@ public class MapUpdateCommand implements UpdateCommand {
         String firstLine = TESign.lines[0].toPlainText();
         if (firstLine.equalsIgnoreCase("Contacts:")) {
             if (CraftManager.getInstance().getCraftsInWorld(craft.getW()) != null) {
-                if (craft != null) {
-                    boolean foundContact = false;
-                    int signLine = 1;
-                    for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(craft.getW())) {
-                        long cposx = craft.getMaxX() + craft.getMinX();
-                        long cposy = craft.getMaxY() + craft.getMinY();
-                        long cposz = craft.getMaxZ() + craft.getMinZ();
-                        cposx = cposx >> 1;
-                        cposy = cposy >> 1;
-                        cposz = cposz >> 1;
-                        long tposx = tcraft.getMaxX() + tcraft.getMinX();
-                        long tposy = tcraft.getMaxY() + tcraft.getMinY();
-                        long tposz = tcraft.getMaxZ() + tcraft.getMinZ();
-                        tposx = tposx >> 1;
-                        tposy = tposy >> 1;
-                        tposz = tposz >> 1;
-                        long diffx = cposx - tposx;
-                        long diffy = cposy - tposy;
-                        long diffz = cposz - tposz;
-                        long distsquared = Math.abs(diffx) * Math.abs(diffx);
-                        distsquared += Math.abs(diffy) * Math.abs(diffy);
-                        distsquared += Math.abs(diffz) * Math.abs(diffz);
-                        long detectionRange = 0;
-                        if (tposy > tcraft.getW().getSeaLevel()) {
-                            detectionRange = (long) (Math.sqrt(tcraft.getOrigBlockCount()) * tcraft.getType().getDetectionMultiplier());
-                        } else {
-                            detectionRange = (long) (Math.sqrt(tcraft.getOrigBlockCount()) * tcraft.getType().getUnderwaterDetectionMultiplier());
-                        }
-                        if (distsquared < detectionRange * detectionRange && tcraft.getNotificationPlayer() != craft.getNotificationPlayer()) {
-                            // craft has been detected
-                            foundContact = true;
-                            String notification = "" + ChatColor.BLUE;
-                            notification += tcraft.getType().getCraftName();
-                            if (notification.length() > 9)
-                                notification = notification.substring(0, 7);
-                            notification += " ";
-                            notification += (int) Math.sqrt(distsquared);
-                            if (Math.abs(diffx) > Math.abs(diffz))
-                                if (diffx < 0)
-                                    notification += " E";
-                                else
-                                    notification += " W";
-                            else if (diffz < 0)
-                                notification += " S";
+                int signLine = 1;
+                for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(craft.getW())) {
+                    long cposx = craft.getMaxX() + craft.getMinX();
+                    long cposy = craft.getMaxY() + craft.getMinY();
+                    long cposz = craft.getMaxZ() + craft.getMinZ();
+                    cposx = cposx >> 1;
+                    cposy = cposy >> 1;
+                    cposz = cposz >> 1;
+                    long tposx = tcraft.getMaxX() + tcraft.getMinX();
+                    long tposy = tcraft.getMaxY() + tcraft.getMinY();
+                    long tposz = tcraft.getMaxZ() + tcraft.getMinZ();
+                    tposx = tposx >> 1;
+                    tposy = tposy >> 1;
+                    tposz = tposz >> 1;
+                    long diffx = cposx - tposx;
+                    long diffy = cposy - tposy;
+                    long diffz = cposz - tposz;
+                    long distsquared = Math.abs(diffx) * Math.abs(diffx);
+                    distsquared += Math.abs(diffy) * Math.abs(diffy);
+                    distsquared += Math.abs(diffz) * Math.abs(diffz);
+                    long detectionRange;
+                    if (tposy > tcraft.getW().getSeaLevel()) {
+                        detectionRange = (long) (Math.sqrt(tcraft.getOrigBlockCount()) * tcraft.getType().getDetectionMultiplier());
+                    } else {
+                        detectionRange = (long) (Math.sqrt(tcraft.getOrigBlockCount()) * tcraft.getType().getUnderwaterDetectionMultiplier());
+                    }
+                    if (distsquared < detectionRange * detectionRange && tcraft.getNotificationPlayer() != craft.getNotificationPlayer()) {
+                        // craft has been detected
+                        String notification = "" + ChatColor.BLUE;
+                        notification += tcraft.getType().getCraftName();
+                        if (notification.length() > 9)
+                            notification = notification.substring(0, 7);
+                        notification += " ";
+                        notification += (int) Math.sqrt(distsquared);
+                        if (Math.abs(diffx) > Math.abs(diffz))
+                            if (diffx < 0)
+                                notification += " E";
                             else
-                                notification += " N";
-                            if (signLine <= 3) {
-                                TESign.lines[signLine] = new ChatComponentText(notification);
-                                signLine++;
-                            }
+                                notification += " W";
+                        else if (diffz < 0)
+                            notification += " S";
+                        else
+                            notification += " N";
+                        if (signLine <= 3) {
+                            TESign.lines[signLine] = new ChatComponentText(notification);
+                            signLine++;
                         }
                     }
-                    if (signLine < 4) {
-                        for (int i = signLine; i < 4; i++) {
-                            TESign.lines[signLine] = new ChatComponentText("");
-                        }
+                }
+                if (signLine < 4) {
+                    for (int i = signLine; i < 4; i++) {
+                        TESign.lines[signLine] = new ChatComponentText("");
                     }
                 }
             } else {
@@ -481,126 +478,120 @@ public class MapUpdateCommand implements UpdateCommand {
             }
         }
         if (firstLine.equalsIgnoreCase("Status:")) {
-            if (craft != null) {
-                int fuel = 0;
-                int totalBlocks = 0;
-                HashMap<Integer, Integer> foundBlocks = new HashMap<>();
-                for (MovecraftLocation ml : craft.getBlockList()) {
-                    Integer blockID = craft.getW().getBlockAt(ml.getX(), ml.getY(), ml.getZ()).getTypeId();
+            int fuel = 0;
+            int totalBlocks = 0;
+            HashMap<Integer, Integer> foundBlocks = new HashMap<>();
+            for (MovecraftLocation ml : craft.getBlockList()) {
+                Integer blockID = craft.getW().getBlockAt(ml.getX(), ml.getY(), ml.getZ()).getTypeId();
 
-                    if (foundBlocks.containsKey(blockID)) {
-                        Integer count = foundBlocks.get(blockID);
-                        if (count == null) {
-                            foundBlocks.put(blockID, 1);
-                        } else {
-                            foundBlocks.put(blockID, count + 1);
-                        }
-                    } else {
+                if (foundBlocks.containsKey(blockID)) {
+                    Integer count = foundBlocks.get(blockID);
+                    if (count == null) {
                         foundBlocks.put(blockID, 1);
+                    } else {
+                        foundBlocks.put(blockID, count + 1);
                     }
+                } else {
+                    foundBlocks.put(blockID, 1);
+                }
 
-                    if (blockID == 61) {
-                        Block b = craft.getW().getBlockAt(ml.getX(), ml.getY(), ml.getZ());
-                        InventoryHolder inventoryHolder = (InventoryHolder) craft.getW().getBlockAt(ml.getX(), ml.getY(),
-                                ml.getZ()).getState();
-                        if (inventoryHolder.getInventory().contains(263)
-                                || inventoryHolder.getInventory().contains(173)) {
-                            ItemStack[] istack = inventoryHolder.getInventory().getContents();
-                            for (ItemStack i : istack) {
-                                if (i != null) {
-                                    if (i.getTypeId() == 263) {
-                                        fuel += i.getAmount() * 8;
-                                    }
-                                    if (i.getTypeId() == 173) {
-                                        fuel += i.getAmount() * 80;
-                                    }
+                if (blockID == 61) {
+                    InventoryHolder inventoryHolder = (InventoryHolder) ml.toBukkit(craft.getW()).getBlock().getState();
+                    if (inventoryHolder.getInventory().contains(263)
+                            || inventoryHolder.getInventory().contains(173)) {
+                        ItemStack[] istack = inventoryHolder.getInventory().getContents();
+                        for (ItemStack i : istack) {
+                            if (i != null) {
+                                if (i.getTypeId() == 263) {
+                                    fuel += i.getAmount() * 8;
+                                }
+                                if (i.getTypeId() == 173) {
+                                    fuel += i.getAmount() * 80;
                                 }
                             }
                         }
                     }
-                    if (blockID != 0) {
-                        totalBlocks++;
-                    }
                 }
-                int signLine = 1;
-                int signColumn = 0;
-                for (ArrayList<Integer> alFlyBlockID : craft.getType().getFlyBlocks().keySet()) {
-                    int flyBlockID = alFlyBlockID.get(0);
-                    Double minimum = craft.getType().getFlyBlocks().get(alFlyBlockID).get(0);
-                    if (foundBlocks.containsKey(flyBlockID) && minimum > 0) { // if it has a minimum, it should be considered for sinking consideration
-                        int amount = foundBlocks.get(flyBlockID);
-                        Double percentPresent = (double) (amount * 100 / totalBlocks);
-                        int deshiftedID = flyBlockID;
-                        if (deshiftedID > 10000) {
-                            deshiftedID = (deshiftedID - 10000) >> 4;
-                        }
-                        String signText = "";
-                        if (percentPresent > minimum * 1.04) {
-                            signText += ChatColor.GREEN;
-                        } else if (percentPresent > minimum * 1.02) {
-                            signText += ChatColor.YELLOW;
-                        } else {
-                            signText += ChatColor.RED;
-                        }
-                        if (deshiftedID == 152) {
-                            signText += "R";
-                        } else if (deshiftedID == 42) {
-                            signText += "I";
-                        } else {
-                            signText += CraftMagicNumbers.getBlock(deshiftedID).getName().substring(0, 1);
-                        }
-
-                        signText += " ";
-                        signText += percentPresent.intValue();
-                        signText += "/";
-                        signText += minimum.intValue();
-                        signText += "  ";
-                        if (signColumn == 0) {
-                            TESign.lines[signLine] = new ChatComponentText(signText);
-                            signColumn++;
-                        } else if (signLine < 3) {
-                            String existingLine = TESign.lines[signLine].getText();
-                            existingLine += signText;
-                            TESign.lines[signLine] = new ChatComponentText(existingLine);
-                            signLine++;
-                            signColumn = 0;
-                        }
-                    }
+                if (blockID != 0) {
+                    totalBlocks++;
                 }
-                String fuelText = "";
-                Integer fuelRange = (int) ((fuel * (1 + craft.getType().getCruiseSkipBlocks())) / craft.getType().getFuelBurnRate());
-                if (fuelRange > 1000) {
-                    fuelText += ChatColor.GREEN;
-                } else if (fuelRange > 100) {
-                    fuelText += ChatColor.YELLOW;
-                } else {
-                    fuelText += ChatColor.RED;
-                }
-                fuelText += "Fuel range:";
-                fuelText += fuelRange.toString();
-                TESign.lines[signLine] = new ChatComponentText(fuelText);
             }
+            int signLine = 1;
+            int signColumn = 0;
+            for (ArrayList<Integer> alFlyBlockID : craft.getType().getFlyBlocks().keySet()) {
+                int flyBlockID = alFlyBlockID.get(0);
+                Double minimum = craft.getType().getFlyBlocks().get(alFlyBlockID).get(0);
+                if (foundBlocks.containsKey(flyBlockID) && minimum > 0) { // if it has a minimum, it should be considered for sinking consideration
+                    int amount = foundBlocks.get(flyBlockID);
+                    Double percentPresent = (double) (amount * 100 / totalBlocks);
+                    int deshiftedID = flyBlockID;
+                    if (deshiftedID > 10000) {
+                        deshiftedID = (deshiftedID - 10000) >> 4;
+                    }
+                    String signText = "";
+                    if (percentPresent > minimum * 1.04) {
+                        signText += ChatColor.GREEN;
+                    } else if (percentPresent > minimum * 1.02) {
+                        signText += ChatColor.YELLOW;
+                    } else {
+                        signText += ChatColor.RED;
+                    }
+                    if (deshiftedID == 152) {
+                        signText += "R";
+                    } else if (deshiftedID == 42) {
+                        signText += "I";
+                    } else {
+                        signText += CraftMagicNumbers.getBlock(deshiftedID).getName().substring(0, 1);
+                    }
+
+                    signText += " ";
+                    signText += percentPresent.intValue();
+                    signText += "/";
+                    signText += minimum.intValue();
+                    signText += "  ";
+                    if (signColumn == 0) {
+                        TESign.lines[signLine] = new ChatComponentText(signText);
+                        signColumn++;
+                    } else if (signLine < 3) {
+                        String existingLine = TESign.lines[signLine].getText();
+                        existingLine += signText;
+                        TESign.lines[signLine] = new ChatComponentText(existingLine);
+                        signLine++;
+                        signColumn = 0;
+                    }
+                }
+            }
+            String fuelText = "";
+            Integer fuelRange = (int) ((fuel * (1 + craft.getType().getCruiseSkipBlocks())) / craft.getType().getFuelBurnRate());
+            if (fuelRange > 1000) {
+                fuelText += ChatColor.GREEN;
+            } else if (fuelRange > 100) {
+                fuelText += ChatColor.YELLOW;
+            } else {
+                fuelText += ChatColor.RED;
+            }
+            fuelText += "Fuel range:";
+            fuelText += fuelRange.toString();
+            TESign.lines[signLine] = new ChatComponentText(fuelText);
         }
 
         if (firstLine.equalsIgnoreCase("Speed:")) {
-            if (craft != null) {
-                String signText = "";
-                String updateQty = "";
-                if (craft.getCruising()) {
-                    if (craft.getCruiseDirection() > 40) { // means ship is going vertical
-                        signText += (int) ((craft.getCurSpeed() * 10) * (1 + craft.getType().getVertCruiseSkipBlocks()));
-                        signText += " / ";
-                        signText += (int) ((craft.getMaxSpeed() * 10) * (1 + craft.getType().getVertCruiseSkipBlocks()));
-                    } else { // must be horizontal
-                        signText += (int) ((craft.getCurSpeed() * 10) * (1 + craft.getType().getCruiseSkipBlocks()));
-                        signText += " / ";
-                        signText += (int) ((craft.getMaxSpeed() * 10) * (1 + craft.getType().getCruiseSkipBlocks()));
-                    }
+            String signText = "";
+            String updateQty = "";
+            if (craft.getCruising()) {
+                if (craft.getCruiseDirection() > 40) { // means ship is going vertical
+                    signText += (int) ((craft.getCurSpeed() * 10) * (1 + craft.getType().getVertCruiseSkipBlocks()));
+                    signText += " / ";
+                    signText += (int) ((craft.getMaxSpeed() * 10) * (1 + craft.getType().getVertCruiseSkipBlocks()));
+                } else { // must be horizontal
+                    signText += (int) ((craft.getCurSpeed() * 10) * (1 + craft.getType().getCruiseSkipBlocks()));
+                    signText += " / ";
+                    signText += (int) ((craft.getMaxSpeed() * 10) * (1 + craft.getType().getCruiseSkipBlocks()));
                 }
-                updateQty += craft.getBlockUpdates();
-                TESign.lines[2] = new ChatComponentText(signText);
-                TESign.lines[3] = new ChatComponentText(updateQty);
             }
+            updateQty += craft.getBlockUpdates();
+            TESign.lines[2] = new ChatComponentText(signText);
+            TESign.lines[3] = new ChatComponentText(updateQty);
         }
     }
 }
