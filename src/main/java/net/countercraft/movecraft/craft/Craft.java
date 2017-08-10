@@ -63,6 +63,7 @@ public class Craft {
     private double curSpeed;
     private int curTickCooldown;
     private double maxSpeed;
+    private int blockUpdates;
 
     public Craft(CraftType type, World world) {
         this.type = type;
@@ -507,4 +508,19 @@ public class Craft {
         this.maxSpeed = maxSpeed;
     }
 
+    public int getBlockUpdates() {
+        return blockUpdates;
+    }
+
+    public void setBlockUpdates(int blockUpdates) {
+        this.blockUpdates = blockUpdates;
+    }
+
+    public void incrementBlockUpdates(int blockUpdates){
+        this.blockUpdates+=blockUpdates;
+    }
+
+    public void incrementBlockUpdates(){
+        this.blockUpdates++;
+    }
 }

@@ -63,41 +63,31 @@ import java.util.logging.Level;
 */
 
 
-public class FastBlockChanger extends BukkitRunnable {
+public class FastBlockChanger {//extends BukkitRunnable {
     // these control how far to smooth lighting along edges (-2 = 2 blocks in each direction if needed)
     final byte sLow = -2;// negative value
     final byte sHigh = (byte) (Math.abs(sLow) + 1); // abs(sLow)+1
     public ArrayList<ChunkUpdater> chunks = new ArrayList<>(64);
-    private boolean enabled;
 
     private FastBlockChanger() {
     }
 
-    public FastBlockChanger(String name, int ticks) {
+    /*public FastBlockChanger(String name, int ticks) {
         super();
         this.enabled = true;
-    }
+    }*/
 
     public static FastBlockChanger getInstance() {
         return FastBlockChangerHolder.INSTANCE;
     }
 
-    public boolean isChunkSendable(int x, int z) {
-        boolean r = true;
-        for (ChunkUpdater c : chunks)
-            if (c.x == x && c.z == z && !c.isFBCPacket)
-                r = false;
-        return r;
-    }
-
-    // get a chunkupdater from a bukkit world object
+    //get a chunkupdater from a bukkit world object
     public ChunkUpdater getChunk(org.bukkit.World cw, int cx, int cz, boolean updateIfUnchanged) {
         return getChunk(((org.bukkit.craftbukkit.v1_10_R1.CraftWorld) cw).getHandle(), cx, cz, updateIfUnchanged);
     }
 
     // get a chunk updater from an internal world object
     public ChunkUpdater getChunk(net.minecraft.server.v1_10_R1.World cw, int cx, int cz, boolean updateIfUnchanged) {
-        this.enabled = true;// wake up the task if needed
         for (ChunkUpdater c : chunks)
             if (c.x == cx && c.z == cz && c.w == cw)
                 return c;
@@ -110,109 +100,6 @@ public class FastBlockChanger extends BukkitRunnable {
             return new ChunkUpdater(cw, cx, cz, gch, updateIfUnchanged);
         else
             return new ChunkUpdater(cw, cx, cz, null, updateIfUnchanged);
-    }
-
-    @Override
-    public void run() {
-        int i = chunks.size();
-        if (i == 0) {
-            this.enabled = false; // stop the task if nothing is left to do
-            return;
-        }
-
-        long end = System.currentTimeMillis();
-
-        long done = end - 5000; // 5 seconds without any block changes to relight a chunk
-
-        long doneForSend = end - 100; // one tenth of a second without any block changes to send chunk to player
-
-        end += 50; // time limit for this loop
-
-        // make a setting for this
-        if (i > 15)
-            i = 15; // do no more than 15 chunks per cycle to prevent stuff going potato clientside
-
-        ChunkUpdater cu;
-        //Chunk ch;
-        while (System.currentTimeMillis() < end && --i > -1) // iterate through the list backwards to delete entries without issues
-        {
-            cu = chunks.get(i);
-            if ((cu.last_modified < doneForSend) && (System.currentTimeMillis() - cu.last_sent) > 100) { // send chunk to players if no activity for 1/10 second, and you have not sent in the past 1/10 second
-                if (cu.nChangedSinceSend > 0) {
-//    		   sendToPlayers(cu); this has issues, changed to old non-native method
-                }
-            }
-            if ((System.currentTimeMillis() - cu.last_sent) > 1000) { // send chunk if it has been at least 2 seconds since you last sent it, if there is still activity
-                if (cu.nChangedSinceSend > 0) {
-//    		   sendToPlayers(cu); this has issues, changed to old non-native method
-                }
-            }
-            if (cu.last_modified < done)// if the timer is up and the chunk is either modified or needs to be updated regardless of modification
-            {
-                if (cu.nChanged > 0 || cu.updateIfUnchanged) {
-                    if (cu.chnk != null) {
-
-                        cu.recalcLighting();// determine what blocks need relighting, recalculate it
-//        	   cu.relightEntireChunk();
-                        //ch = cu.ch;
-                        //sendToPlayers(cu);
-
-                        cu.isUpdated = true;
-                        chunks.remove(i);// remove the chunk updater. it is not destroyed and will be reset and added again if modified further (if a reference is held elsewhere)
-                    }
-                } else if (!cu.updateIfUnchanged && cu.nChanged == 0)
-                    chunks.remove(i);
-            }
-        }
-    }
-
-    private short sendToPlayers(ChunkUpdater cu) {
-        if (cu.w.getWorld().unloadChunk(cu.x, cu.z, true, true)) // nobody there? dont bother, save memory.
-            return 0;
-
-        byte n = 0;
-        cu.isFBCPacket = true;
-        byte d = (byte) (Bukkit.getServer().getViewDistance() * 1.75f);
-        //RpgLogger.info("gti "+(x<<4)+","+(z<<4)+"  "+((x<<4) + 16)+","+((z<<4) + 16));
-        Collection<TileEntity> lti = cu.chnk.tileEntities.values();
-        d *= d;
-        PacketPlayOutMapChunk pmc = null;//new PacketPlayOutMapChunk(cu.chnk, true, 65535); don't use this class anyway, and I want this to build tonight...
-        //PacketPlayOutUnloadChunk puc = new PacketPlayOutUnloadChunk(cu.x,cu.z); // may be needed in some situations or for some clients
-        ArrayList<Packet<?>> te = new ArrayList<>(16);
-
-        for (TileEntity ti : lti) {
-            Packet<?> p = ti.getUpdatePacket();
-            if (p != null)
-                te.add(p);
-        }
-
-        // get the playerchunk to see what players have the chunk loaded, more effective that trying to guess with view distance?
-        PlayerChunk pc = null;//((net.minecraft.server.v1_10_R1.WorldServer)(cu.w)).getPlayerChunkMap().b(cu.x, cu.z); don't use this anymore anyway, and I want this to build tonight
-        if (pc == null || pc.c == null) {
-            cu.isFBCPacket = false;
-            cu.last_sent = System.currentTimeMillis();
-            cu.nChangedSinceSend = 0;
-            return n;
-        }
-        ArrayList<EntityPlayer> pl = new ArrayList<>(pc.c.size());
-        if (pc.c != null)
-            pl.addAll(pc.c);
-
-        if (pc == null || pl.size() == 0) {
-            //cu.w.getWorld().unloadChunk(cu.x, cu.z, true, false);
-            Movecraft.getInstance().getLogger().log(Level.INFO, "FastBlockChanger.sendToPlayers: No player in range to send " + cu.x + "," + cu.z + "  chunk unloaded=" + (cu.w.getWorld().unloadChunk(cu.x, cu.z, true, false)));
-        } else
-            for (EntityPlayer p : pl) {
-                p.playerConnection.sendPacket(pmc); // send the chunk
-
-                for (Packet<?> packet : te)
-                    p.playerConnection.sendPacket(packet); // send the tile entities
-            }
-
-        cu.isFBCPacket = false;
-        cu.last_sent = System.currentTimeMillis();
-        cu.nChangedSinceSend = 0;
-        return n;
     }
 
     private static class FastBlockChangerHolder {
@@ -278,7 +165,6 @@ public class FastBlockChanger extends BukkitRunnable {
             if (isUpdated) // this updated was used already and needs to be reset
             {
                 sections = 0;
-                enabled = true; // wake up the enclosing task if needed
                 isUpdated = false;
                 bits = new long[16][16][4];
                 chunks.add(this); // re-add to the list if it was already updated and removed

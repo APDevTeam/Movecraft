@@ -34,6 +34,8 @@ import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.update.MapUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
+import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
+import net.countercraft.movecraft.mapUpdater.update.WorldEditUpdateCommand;
 import net.countercraft.movecraft.utils.MovecraftLocation;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -89,7 +91,6 @@ public class WorldEditInteractListener implements Listener {
             e.printStackTrace();
             return false;
         }
-        ArrayList<MapUpdateCommand> updateCommands = new ArrayList<>();
         int minx = cc.getOrigin().getBlockX();
         int miny = cc.getOrigin().getBlockY();
         int minz = cc.getOrigin().getBlockZ();
@@ -107,18 +108,15 @@ public class WorldEditInteractListener implements Listener {
                                 w.loadChunk(x >> 4, z >> 4);
                             if (w.getBlockAt(x, y, z).isEmpty() || w.getBlockAt(x, y, z).isLiquid()) {
                                 MovecraftLocation moveloc = new MovecraftLocation(x, y, z);
-                                MapUpdateCommand updateCom = new MapUpdateCommand(moveloc, Material.getMaterial(bb.getType()), (byte) bb.getData(), bb, null);
-                                updateCommands.add(updateCom);
+                                WorldEditUpdateCommand updateCommand = new WorldEditUpdateCommand(bb,w,moveloc,Material.getMaterial(bb.getType()), (byte) bb.getData() );
+                                MapUpdateManager.getInstance().scheduleUpdate(updateCommand);
                             }
                         }
                     }
                 }
             }
         }
-        if (!updateCommands.isEmpty()) {
-            MapUpdateManager.getInstance().addWorldUpdate(w,
-                    updateCommands.toArray(new MapUpdateCommand[1]), null, null, null);
-        }
+
         return true;
     }
 
@@ -592,7 +590,7 @@ public class WorldEditInteractListener implements Listener {
                     }
                     double Cost = numdiffblocks * Settings.RepairMoneyPerBlock;
                     Bukkit.getLogger().info(event.getPlayer().toString() + " has begun a repair with the cost of " + String.valueOf(Cost));
-                    ArrayList<MapUpdateCommand> updateCommands = new ArrayList<>();
+                    final ArrayList<UpdateCommand> updateCommands = new ArrayList<>();
                     for (Vector ccloc : locMissingBlocks) {
                         com.sk89q.worldedit.blocks.BaseBlock bb = cc.getBlock(ccloc);
                         if (bb.getId() == 68 || bb.getId() == 63) { // I don't know why this is necessary. I'm pretty sure WE should be loading signs as signblocks, but it doesn't seem to
@@ -617,12 +615,10 @@ public class WorldEditInteractListener implements Listener {
                             bb = sb;
                         }
                         MovecraftLocation moveloc = new MovecraftLocation(sign.getX() + cc.getOffset().getBlockX() + ccloc.getBlockX(), sign.getY() + cc.getOffset().getBlockY() + ccloc.getBlockY(), sign.getZ() + cc.getOffset().getBlockZ() + ccloc.getBlockZ());
-                        MapUpdateCommand updateCom = new MapUpdateCommand(moveloc, Material.getMaterial(bb.getType()), (byte) bb.getData(), bb, pCraft);
+                        WorldEditUpdateCommand updateCom = new WorldEditUpdateCommand(bb, sign.getLocation().getWorld(), moveloc, Material.getMaterial(bb.getType()), (byte) bb.getData());
                         updateCommands.add(updateCom);
                     }
                     if (updateCommands.size() > 0) {
-                        final Craft fpCraft = pCraft;
-                        final MapUpdateCommand[] fUpdateCommands = updateCommands.toArray(new MapUpdateCommand[1]);
                         int durationInTicks = numdiffblocks * Settings.RepairTicksPerBlock;
 
                         // send out status updates every minute
@@ -630,7 +626,7 @@ public class WorldEditInteractListener implements Listener {
                             final Player fp = event.getPlayer();
                             final int fTics = ticsFromStart / 20;
                             final int fDur = durationInTicks / 20;
-                            BukkitTask statusTask = new BukkitRunnable() {
+                            new BukkitRunnable() {
                                 @Override
                                 public void run() {
                                     fp.sendMessage(String.format(I18nSupport.getInternationalisedString("Repairs underway") + ": %d / %d", fTics, fDur));
@@ -643,7 +639,7 @@ public class WorldEditInteractListener implements Listener {
                         CraftManager.getInstance().removePlayerFromCraft(pCraft);
                         final Craft releaseCraft = pCraft;
                         final Player fp = event.getPlayer();
-                        BukkitTask releaseTask = new BukkitRunnable() {
+                        new BukkitRunnable() {
                             @Override
                             public void run() {
                                 CraftManager.getInstance().removeCraft(releaseCraft);
@@ -652,10 +648,11 @@ public class WorldEditInteractListener implements Listener {
                         }.runTaskLater(Movecraft.getInstance(), (durationInTicks + 20));
 
                         //do the actual repair
-                        BukkitTask repairTask = new BukkitRunnable() {
+                        new BukkitRunnable() {
                             @Override
                             public void run() {
-                                MapUpdateManager.getInstance().addWorldUpdate(fpCraft.getW(), fUpdateCommands, null, null, null);
+                                for(UpdateCommand update : updateCommands)
+                                MapUpdateManager.getInstance().scheduleUpdate(update);
                             }
                         }.runTaskLater(Movecraft.getInstance(), (durationInTicks));
 
