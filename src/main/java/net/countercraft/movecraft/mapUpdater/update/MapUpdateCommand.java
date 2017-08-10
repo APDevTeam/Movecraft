@@ -33,7 +33,6 @@ import net.minecraft.server.v1_10_R1.StructureBoundingBox;
 import net.minecraft.server.v1_10_R1.TileEntity;
 import net.minecraft.server.v1_10_R1.TileEntitySign;
 import org.bukkit.ChatColor;
-import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -98,7 +97,7 @@ public class MapUpdateCommand implements UpdateCommand {
 
     }
 
-    public MapUpdateCommand(MovecraftLocation newBlockLocation, Material type, byte dataID, Craft craft) {
+    public MapUpdateCommand( MovecraftLocation newBlockLocation, Material type, byte dataID, Craft craft) {
         this.newBlockLocation = newBlockLocation;
         this.type = type;
         this.dataID = dataID;
@@ -171,7 +170,7 @@ public class MapUpdateCommand implements UpdateCommand {
             } else {
                 srcBlock = null;
             }
-            Block dstBlock = updateWorld.getBlockAt(blockLocation.getX(), blockLocation.getY(), blockLocation.getZ());
+            Block dstBlock = updateWorld.getBlockAt(newBlockLocation.getX(), newBlockLocation.getY(), newBlockLocation.getZ());
             Material existingType = dstBlock.getType();
             byte existingData = dstBlock.getData();
             Material newType = type;
