@@ -22,7 +22,6 @@ import net.countercraft.movecraft.async.detection.DetectionTask;
 import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.async.translation.TranslationTaskData;
-import net.countercraft.movecraft.mapUpdater.update.MapUpdateCommand;
 import net.countercraft.movecraft.utils.MovecraftLocation;
 import net.countercraft.movecraft.utils.Rotation;
 import org.bukkit.ChatColor;
@@ -37,7 +36,6 @@ public class Craft {
     private final CraftType type;
     private int[][][] hitBox;
     private MovecraftLocation[] blockList;
-    private HashMap<MapUpdateCommand, Long> scheduledBlockChanges;
     private World w;
     private AtomicBoolean processing = new AtomicBoolean();
     private int minX, minZ, maxHeightLimit;
@@ -69,7 +67,6 @@ public class Craft {
         this.type = type;
         this.w = world;
         this.blockList = new MovecraftLocation[1];
-        this.scheduledBlockChanges = new HashMap<>();
         if (type.getMaxHeightLimit() > w.getMaxHeight() - 1) {
             this.maxHeightLimit = w.getMaxHeight() - 1;
         } else {
@@ -122,14 +119,6 @@ public class Craft {
 
     public void setHitBox(int[][][] hitBox) {
         this.hitBox = hitBox;
-    }
-
-    public HashMap<MapUpdateCommand, Long> getScheduledBlockChanges() {
-        return scheduledBlockChanges;
-    }
-
-    public void setScheduledBlockChanges(HashMap<MapUpdateCommand, Long> scheduledBlockChanges) {
-        this.scheduledBlockChanges = scheduledBlockChanges;
     }
 
     public void detect(Player player, Player notificationPlayer, MovecraftLocation startPoint) {

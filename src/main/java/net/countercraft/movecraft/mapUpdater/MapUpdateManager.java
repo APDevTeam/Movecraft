@@ -21,12 +21,13 @@ import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.async.translation.TranslationTaskData;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.mapUpdater.update.MapUpdateCommand;
+import net.countercraft.movecraft.mapUpdater.update.BlockTranslateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -54,8 +55,8 @@ public class MapUpdateManager extends BukkitRunnable {
         // and set all crafts that were updated to not processing
 
         for (UpdateCommand update : updates) {
-            if (update instanceof MapUpdateCommand) {
-                Craft craft = ((MapUpdateCommand) update).getCraft();
+            if (update instanceof BlockTranslateCommand) {
+                Craft craft = ((BlockTranslateCommand) update).getCraft();
                 craft.setBlockUpdates(0);
                 if (!craft.isNotProcessing())
                     craft.setProcessing(false);
@@ -96,11 +97,12 @@ public class MapUpdateManager extends BukkitRunnable {
     }
 
     public void scheduleUpdates(@NotNull TranslationTaskData data){
-        Collections.addAll(this.updates, data.getUpdates());
-        Collections.addAll(this.updates, data.getEntityUpdates());
-        Collections.addAll(this.updates, data.getItemDropUpdateCommands());
-        Collections.addAll(this.updates, data.getExplosionUpdateCommands());
-        Collections.addAll(this.updates, data.getParticleUpdates());
+        if(data.getUpdates()!=null)
+            Collections.addAll(this.updates, data.getUpdates());
+    }
+
+    public void scheduleUpdates(@NotNull Collection<UpdateCommand> updates){
+        this.updates.addAll(updates);
     }
 
     private static class MapUpdateManagerHolder {

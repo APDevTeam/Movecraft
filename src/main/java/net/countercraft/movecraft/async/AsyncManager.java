@@ -31,12 +31,11 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.mapUpdater.update.ExplosionUpdateCommand;
-import net.countercraft.movecraft.utils.BlockUtils;
-import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
-import net.countercraft.movecraft.mapUpdater.update.ItemDropUpdateCommand;
-import net.countercraft.movecraft.mapUpdater.update.MapUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
+import net.countercraft.movecraft.mapUpdater.update.BlockCreateCommand;
+import net.countercraft.movecraft.mapUpdater.update.BlockTranslateCommand;
+import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
+import net.countercraft.movecraft.utils.BlockUtils;
 import net.countercraft.movecraft.utils.MovecraftLocation;
 import net.countercraft.movecraft.utils.TownyUtils;
 import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
@@ -287,15 +286,10 @@ public class AsyncManager extends BukkitRunnable {
                         notifyP.sendMessage(task.getData().getFailMessage());
 
                     if (task.getData().collisionExplosion()) {
-                        MapUpdateCommand[] updates = task.getData().getUpdates();
-                        ExplosionUpdateCommand[] exUpdates = task.getData().getExplosionUpdateCommands();
                         c.setBlockList(task.getData().getBlockList());
-                        c.setScheduledBlockChanges(task.getData().getScheduledBlockChanges());
                         //boolean failed = MapUpdateManager.getInstance().addWorldUpdate(c.getW(), updates, null, null, exUpdates);
                         MapUpdateManager mapUpdateManager= MapUpdateManager.getInstance();
-                        for(ExplosionUpdateCommand explosionUpdateCommand : exUpdates)
-                            mapUpdateManager.scheduleUpdate(explosionUpdateCommand);
-                        for(MapUpdateCommand updateCommand : updates)
+                        for(UpdateCommand updateCommand : task.getData().getUpdates())
                             mapUpdateManager.scheduleUpdate(updateCommand);
                         sentMapUpdate = true;
 
@@ -319,7 +313,6 @@ public class AsyncManager extends BukkitRunnable {
 
                     sentMapUpdate = true;
                     c.setBlockList(task.getData().getBlockList());
-                    c.setScheduledBlockChanges(task.getData().getScheduledBlockChanges());
                     c.setMinX(task.getData().getMinX());
                     c.setMinZ(task.getData().getMinZ());
                     c.setHitBox(task.getData().getHitbox());
@@ -353,9 +346,6 @@ public class AsyncManager extends BukkitRunnable {
                             Movecraft.getInstance().getLogger().log(Level.INFO,
                                     "NULL Player Rotation Failed: " + task.getFailMessage());
                     } else {
-                        MapUpdateCommand[] updates = task.getUpdates();
-                        EntityUpdateCommand[] eUpdates = task.getEntityUpdates();
-
                         // get list of cannons before sending map updates, to
                         // avoid conflicts
                         HashSet<Cannon> shipCannons = null;
@@ -370,14 +360,12 @@ public class AsyncManager extends BukkitRunnable {
                                     .getCannons(shipLocations, c.getNotificationPlayer().getUniqueId(), true);
                         }
 
-                        MapUpdateManager.getInstance().scheduleUpdates(updates);
-                        MapUpdateManager.getInstance().scheduleUpdates(eUpdates);
+                        MapUpdateManager.getInstance().scheduleUpdates(task.getUpdates());
 
 
                         sentMapUpdate = true;
 
                         c.setBlockList(task.getBlockList());
-                        c.setScheduledBlockChanges(task.getScheduledBlockChanges());
                         c.setMinX(task.getMinX());
                         c.setMinZ(task.getMinZ());
                         c.setHitBox(task.getHitbox());
@@ -846,7 +834,6 @@ public class AsyncManager extends BukkitRunnable {
                                     dz = pcraft.getLastDZ();
                                 }
                                 pcraft.translate(dx, -1, dz);
-                                pcraft.setScheduledBlockChanges(null); // don't bother restoring color blocks for a sinking ship
                                 if (pcraft.getLastCruiseUpdate() != -1) {
                                     pcraft.setLastCruisUpdate(System.currentTimeMillis());
                                 } else {
@@ -1131,7 +1118,7 @@ public class AsyncManager extends BukkitRunnable {
         if (ticksElapsed > 20) {
             for (World w : Bukkit.getWorlds()) {
                 if (w != null) {
-                    ArrayList<MapUpdateCommand> updateCommands = new ArrayList<>();
+                    ArrayList<UpdateCommand> updateCommands = new ArrayList<>();
                     CopyOnWriteArrayList<MovecraftLocation> locations = null;
 
                     // I know this is horrible, but I honestly don't see another
@@ -1189,10 +1176,10 @@ public class AsyncManager extends BukkitRunnable {
                                         // should it become water? if not, then
                                         // air
                                         if (Movecraft.getInstance().blockFadeWaterMap.get(loc)) {
-                                            MapUpdateCommand updateCom = new MapUpdateCommand(loc, Material.STATIONARY_WATER, (byte) 0, null);
+                                            BlockCreateCommand updateCom = new BlockCreateCommand(loc, Material.STATIONARY_WATER, (byte) 0, null);
                                             updateCommands.add(updateCom);
                                         } else {
-                                            MapUpdateCommand updateCom = new MapUpdateCommand(loc, Material.AIR, (byte) 0, null);
+                                            BlockCreateCommand updateCom = new BlockCreateCommand(loc, Material.AIR, (byte) 0, null);
                                             updateCommands.add(updateCom);
                                         }
                                     }
@@ -1205,7 +1192,7 @@ public class AsyncManager extends BukkitRunnable {
                         }
                     }
                     if (updateCommands.size() > 0) {
-                        MapUpdateManager.getInstance().scheduleUpdates(updateCommands.toArray(new MapUpdateCommand[1]));
+                        MapUpdateManager.getInstance().scheduleUpdates(updateCommands.toArray(new BlockTranslateCommand[1]));
                     }
                 }
             }
@@ -1310,17 +1297,18 @@ public class AsyncManager extends BukkitRunnable {
         }
     }
 
-    private void processScheduledBlockChanges() {
+    //Removed for refactor
+    /*private void processScheduledBlockChanges() {
         for (World w : Bukkit.getWorlds()) {
             if (w != null && CraftManager.getInstance().getCraftsInWorld(w) != null) {
-                ArrayList<MapUpdateCommand> updateCommands = new ArrayList<>();
+                ArrayList<BlockTranslateCommand> updateCommands = new ArrayList<>();
                 for (Craft pcraft : CraftManager.getInstance().getCraftsInWorld(w)) {
-                    HashMap<MapUpdateCommand, Long> scheduledBlockChanges = pcraft.getScheduledBlockChanges();
+                    HashMap<BlockTranslateCommand, Long> scheduledBlockChanges = pcraft.getScheduledBlockChanges();
                     if (scheduledBlockChanges != null) {
-                        Iterator<MapUpdateCommand> mucI = scheduledBlockChanges.keySet().iterator();
+                        Iterator<BlockTranslateCommand> mucI = scheduledBlockChanges.keySet().iterator();
                         boolean madeChanges = false;
                         while (mucI.hasNext()) {
-                            MapUpdateCommand muc = mucI.next();
+                            BlockTranslateCommand muc = mucI.next();
                             if ((pcraft.getScheduledBlockChanges().get(muc) < System.currentTimeMillis()) && (pcraft.isNotProcessing())) {
                                 int cx = muc.getNewBlockLocation().getX() >> 4;
                                 int cz = muc.getNewBlockLocation().getZ() >> 4;
@@ -1341,11 +1329,11 @@ public class AsyncManager extends BukkitRunnable {
                     }
                 }
                 if (updateCommands.size() > 0) {
-                    MapUpdateManager.getInstance().scheduleUpdates(updateCommands.toArray(new MapUpdateCommand[1]));
+                    MapUpdateManager.getInstance().scheduleUpdates(updateCommands.toArray(new BlockTranslateCommand[1]));
                 }
             }
         }
-    }
+    }*/
 
     public void run() {
         clearAll();
@@ -1379,7 +1367,7 @@ public class AsyncManager extends BukkitRunnable {
         processFadingBlocks();
         processDetection();
         processAlgorithmQueue();
-        processScheduledBlockChanges();
+        //processScheduledBlockChanges();
 //		if(Settings.CompatibilityMode==false)
 //			FastBlockChanger.getInstance().run(); 
 

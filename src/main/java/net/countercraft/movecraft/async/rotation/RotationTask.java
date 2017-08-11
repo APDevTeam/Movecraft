@@ -28,9 +28,11 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.utils.BlockUtils;
+import net.countercraft.movecraft.mapUpdater.update.BlockCreateCommand;
+import net.countercraft.movecraft.mapUpdater.update.BlockTranslateCommand;
 import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
-import net.countercraft.movecraft.mapUpdater.update.MapUpdateCommand;
+import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
+import net.countercraft.movecraft.utils.BlockUtils;
 import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.utils.MovecraftLocation;
 import net.countercraft.movecraft.utils.Rotation;
@@ -49,7 +51,6 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -62,11 +63,9 @@ public class RotationTask extends AsyncTask {
     private boolean failed = false;
     private String failMessage;
     private MovecraftLocation[] blockList;    // used to be final, not sure why. Changed by Mark / Loraxe42
-    private MapUpdateCommand[] updates;
-    private EntityUpdateCommand[] entityUpdates;
+    private Set<UpdateCommand> updates = new HashSet<>();
     private int[][][] hitbox;
     private Integer minX, minZ;
-    private HashMap<MapUpdateCommand, Long> scheduledBlockChanges;
 
     public RotationTask(Craft c, MovecraftLocation originPoint, MovecraftLocation[] blockList, Rotation rotation, World w) {
         super(c);
@@ -224,8 +223,7 @@ public class RotationTask extends AsyncTask {
         MovecraftLocation[] centeredBlockList = new MovecraftLocation[blockList.length];
         MovecraftLocation[] originalBlockList = blockList.clone();
         HashSet<MovecraftLocation> existingBlockSet = new HashSet<>(Arrays.asList(originalBlockList));
-        Set<MapUpdateCommand> mapUpdates = new HashSet<>();
-        HashSet<EntityUpdateCommand> entityUpdateSet = new HashSet<>();
+        Set<UpdateCommand> mapUpdates = new HashSet<>();
 
         boolean townyEnabled = Movecraft.getInstance().getTownyPlugin() != null;
         Set<TownBlock> townBlockSet = new HashSet<>();
@@ -373,7 +371,7 @@ public class RotationTask extends AsyncTask {
                     if (BlockUtils.blockRequiresRotation(id.getId())) {
                         data = BlockUtils.rotate(data, id.getId(), rotation);
                     }
-                    mapUpdates.add(new MapUpdateCommand(originalBlockList[i],  blockList[i], id, data, rotation, parentCraft));
+                    mapUpdates.add(new BlockTranslateCommand(originalBlockList[i],  blockList[i], id, data, rotation, parentCraft));
                 }
             } else {
                 // allow watercraft to rotate through water
@@ -387,7 +385,7 @@ public class RotationTask extends AsyncTask {
                     if (BlockUtils.blockRequiresRotation(id.getId())) {
                         data = BlockUtils.rotate(data, id.getId(), rotation);
                     }
-                    mapUpdates.add(new MapUpdateCommand(originalBlockList[i],  blockList[i], id, data, rotation, parentCraft));
+                    mapUpdates.add(new BlockTranslateCommand(originalBlockList[i],  blockList[i], id, data, rotation, parentCraft));
                 }
             }
 
@@ -449,7 +447,7 @@ public class RotationTask extends AsyncTask {
 //							getCraft().setPilotLockedZ(newPLoc.getZ());
 //							}
                         EntityUpdateCommand eUp = new EntityUpdateCommand(newPLoc, pTest);
-                        entityUpdateSet.add(eUp);
+                        updates.add(eUp);
 //						if(getCraft().getPilotLocked()==true && pTest==CraftManager.getInstance().getPlayerFromCraft(getCraft())) {
 //							getCraft().setPilotLockedX(newPLoc.getX());
 //							getCraft().setPilotLockedY(newPLoc.getY());
@@ -485,32 +483,14 @@ public class RotationTask extends AsyncTask {
                 if (waterCraft) {
                     // if its below the waterline, fill in with water. Otherwise fill in with air.
                     if (l1.getY() <= waterLine) {
-                        mapUpdates.add(new MapUpdateCommand(l1, Material.STATIONARY_WATER, (byte) 0, parentCraft));
+                        mapUpdates.add(new BlockCreateCommand(l1, Material.STATIONARY_WATER, (byte) 0, parentCraft));
                     } else {
-                        mapUpdates.add(new MapUpdateCommand(l1, Material.AIR, (byte) 0, parentCraft));
+                        mapUpdates.add(new BlockCreateCommand(l1, Material.AIR, (byte) 0, parentCraft));
                     }
                 } else {
-                    mapUpdates.add(new MapUpdateCommand(l1, Material.AIR, (byte) 0, parentCraft));
+                    mapUpdates.add(new BlockCreateCommand(l1, Material.AIR, (byte) 0, parentCraft));
                 }
             }
-
-            // rotate scheduled block changes
-            HashMap<MapUpdateCommand, Long> newScheduledBlockChanges = new HashMap<>();
-            HashMap<MapUpdateCommand, Long> oldScheduledBlockChanges = getCraft().getScheduledBlockChanges();
-            for (MapUpdateCommand muc : oldScheduledBlockChanges.keySet()) {
-                MovecraftLocation newLoc = muc.getNewBlockLocation();
-                newLoc = newLoc.subtract(originPoint);
-                newLoc = MathUtils.rotateVec(rotation, newLoc).add(originPoint);
-                Long newTime = System.currentTimeMillis() + 5000;
-                MapUpdateCommand newMuc = new MapUpdateCommand(newLoc, muc.getType(), muc.getDataID(), parentCraft);
-                newScheduledBlockChanges.put(newMuc, newTime);
-            }
-            this.scheduledBlockChanges = newScheduledBlockChanges;
-
-            MapUpdateCommand[] updateArray = mapUpdates.toArray(new MapUpdateCommand[1]);
-//            MapUpdateManager.getInstance().sortUpdates(updateArray);
-            this.updates = updateArray;
-            this.entityUpdates = entityUpdateSet.toArray(new EntityUpdateCommand[1]);
 
             maxX = null;
             maxZ = null;
@@ -705,14 +685,6 @@ public class RotationTask extends AsyncTask {
         }
     }
 
-    public HashMap<MapUpdateCommand, Long> getScheduledBlockChanges() {
-        return scheduledBlockChanges;
-    }
-
-    public void setScheduledBlockChanges(HashMap<MapUpdateCommand, Long> scheduledBlockChanges) {
-        this.scheduledBlockChanges = scheduledBlockChanges;
-    }
-
     public MovecraftLocation getOriginPoint() {
         return originPoint;
     }
@@ -729,12 +701,8 @@ public class RotationTask extends AsyncTask {
         return blockList;
     }
 
-    public MapUpdateCommand[] getUpdates() {
+    public Set<UpdateCommand> getUpdates() {
         return updates;
-    }
-
-    public EntityUpdateCommand[] getEntityUpdates() {
-        return entityUpdates;
     }
 
     public int[][][] getHitbox() {

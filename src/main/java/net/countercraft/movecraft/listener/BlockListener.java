@@ -249,7 +249,7 @@ public class BlockListener implements Listener {
 							powerBlock=block.getRelative(BlockFace.NORTH);
 						if(repeaterFacing==3)
 							powerBlock=block.getRelative(BlockFace.EAST);
-						MapUpdateCommand muc=null;
+						BlockTranslateCommand muc=null;
 						// if the power source is on, but the repeater is off, power it on. If the source is off, but the repeater is on, power it off
 						boolean sourcePowered=false;
 						if(powerBlock.getBlockPower()>0)
@@ -264,19 +264,19 @@ public class BlockListener implements Listener {
 							if(powerBlock.getData()<8)
 								sourcePowered=false;
 						if((sourcePowered) && (block.getTypeId()==93)) { // power source is on, but this repeater is off
-							muc = new MapUpdateCommand(mloc, 94, block.getData(), null);
+							muc = new BlockTranslateCommand(mloc, 94, block.getData(), null);
 						}
 						if((!sourcePowered) && (block.getTypeId()==94)) { // power source is off, but this repeater is on
-							muc = new MapUpdateCommand(mloc, 93, block.getData(), null);
+							muc = new BlockTranslateCommand(mloc, 93, block.getData(), null);
 						}
 						event.setCancelled(true);
 						if(muc!=null) {
-							HashMap<MapUpdateCommand, Long> blockChanges=tcraft.getScheduledBlockChanges();
+							HashMap<BlockTranslateCommand, Long> blockChanges=tcraft.getScheduledBlockChanges();
 							Long timeToChange=System.currentTimeMillis();
 							int repeaterTicks=block.getData()>>2;
 							repeaterTicks++;
 							timeToChange+=repeaterTicks*100;
-							HashMap<MapUpdateCommand, Long> scheduledChanges=tcraft.getScheduledBlockChanges();
+							HashMap<BlockTranslateCommand, Long> scheduledChanges=tcraft.getScheduledBlockChanges();
 							scheduledChanges.put(muc, timeToChange);
 							tcraft.setScheduledBlockChanges(scheduledChanges);
 							return;

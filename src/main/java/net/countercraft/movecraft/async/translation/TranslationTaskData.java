@@ -17,14 +17,9 @@
 
 package net.countercraft.movecraft.async.translation;
 
-import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
-import net.countercraft.movecraft.mapUpdater.update.ExplosionUpdateCommand;
-import net.countercraft.movecraft.mapUpdater.update.ItemDropUpdateCommand;
-import net.countercraft.movecraft.mapUpdater.update.MapUpdateCommand;
-import net.countercraft.movecraft.mapUpdater.update.ParticleUpdateCommand;
+import net.countercraft.movecraft.mapUpdater.update.BlockTranslateCommand;
+import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import net.countercraft.movecraft.utils.MovecraftLocation;
-
-import java.util.HashMap;
 
 public class TranslationTaskData {
     private int dx;
@@ -33,12 +28,7 @@ public class TranslationTaskData {
     private boolean failed = false;
     private String failMessage;
     private MovecraftLocation[] blockList;
-    private MapUpdateCommand[] updates;
-    private EntityUpdateCommand[] entityUpdates;
-    private ParticleUpdateCommand[] particleUpdates;
-    private HashMap<MapUpdateCommand, Long> scheduledBlockChanges = null;
-    private ItemDropUpdateCommand[] itemDropUpdates;
-    private ExplosionUpdateCommand[] explosionUpdateCommands;
+    private UpdateCommand[] updates;
     private int[][][] hitbox;
     private int minX, minZ;
     private int maxHeight, minHeight;
@@ -105,28 +95,12 @@ public class TranslationTaskData {
         this.blockList = blockList;
     }
 
-    public HashMap<MapUpdateCommand, Long> getScheduledBlockChanges() {
-        return scheduledBlockChanges;
-    }
-
-    public void setScheduledBlockChanges(HashMap<MapUpdateCommand, Long> scheduledBlockChanges) {
-        this.scheduledBlockChanges = scheduledBlockChanges;
-    }
-
-    public MapUpdateCommand[] getUpdates() {
+    public UpdateCommand[] getUpdates() {
         return updates;
     }
 
-    public void setUpdates(MapUpdateCommand[] updates) {
+    public void setUpdates(BlockTranslateCommand[] updates) {
         this.updates = updates;
-    }
-
-    public EntityUpdateCommand[] getEntityUpdates() {
-        return entityUpdates;
-    }
-
-    public void setEntityUpdates(EntityUpdateCommand[] entityUpdates) {
-        this.entityUpdates = entityUpdates;
     }
 
     public int[][][] getHitbox() {
@@ -159,29 +133,5 @@ public class TranslationTaskData {
 
     public int getMaxHeight() {
         return maxHeight;
-    }
-
-    public ItemDropUpdateCommand[] getItemDropUpdateCommands() {
-        return this.itemDropUpdates;
-    }
-
-    public void setItemDropUpdates(ItemDropUpdateCommand[] itemDropUpdate) {
-        this.itemDropUpdates = itemDropUpdate;
-    }
-
-    public ExplosionUpdateCommand[] getExplosionUpdateCommands() {
-        return explosionUpdateCommands;
-    }
-
-    public void setExplosionUpdateCommands(ExplosionUpdateCommand[] explosionUpdateCommands) {
-        this.explosionUpdateCommands = explosionUpdateCommands;
-    }
-
-    public ParticleUpdateCommand[] getParticleUpdates() {
-        return particleUpdates;
-    }
-
-    public void setParticleUpdates(ParticleUpdateCommand[] particleUpdates) {
-        this.particleUpdates = particleUpdates;
     }
 }

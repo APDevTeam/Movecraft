@@ -1,20 +1,3 @@
-/*
- * This file is part of Movecraft.
- *
- *     Movecraft is free software: you can redistribute it and/or modify
- *     it under the terms of the GNU General Public License as published by
- *     the Free Software Foundation, either version 3 of the License, or
- *     (at your option) any later version.
- *
- *     Movecraft is distributed in the hope that it will be useful,
- *     but WITHOUT ANY WARRANTY; without even the implied warranty of
- *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *     GNU General Public License for more details.
- *
- *     You should have received a copy of the GNU General Public License
- *     along with Movecraft.  If not, see <http://www.gnu.org/licenses/>.
- */
-
 package net.countercraft.movecraft.mapUpdater.update;
 
 import com.earth2me.essentials.User;
@@ -23,13 +6,12 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.utils.MovecraftLocation;
-import net.countercraft.movecraft.utils.Rotation;
 import net.minecraft.server.v1_10_R1.BlockPosition;
+import net.minecraft.server.v1_10_R1.Blocks;
 import net.minecraft.server.v1_10_R1.ChatComponentText;
-import net.minecraft.server.v1_10_R1.EnumBlockRotation;
+import net.minecraft.server.v1_10_R1.Chunk;
+import net.minecraft.server.v1_10_R1.ChunkSection;
 import net.minecraft.server.v1_10_R1.IBlockData;
-import net.minecraft.server.v1_10_R1.NextTickListEntry;
-import net.minecraft.server.v1_10_R1.StructureBoundingBox;
 import net.minecraft.server.v1_10_R1.TileEntity;
 import net.minecraft.server.v1_10_R1.TileEntitySign;
 import org.bukkit.ChatColor;
@@ -39,34 +21,17 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.craftbukkit.v1_10_R1.CraftChunk;
-import org.bukkit.craftbukkit.v1_10_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_10_R1.util.CraftMagicNumbers;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 
-/**
- * Class that stores the data about a single blocks changes to the map in an unspecified world. The world is retrieved contextually from the submitting craft.
- */
-public class MapUpdateCommand implements UpdateCommand {
-    private static final EnumBlockRotation ROTATION[];
-
-    static {
-        ROTATION = new EnumBlockRotation[3];
-        ROTATION[Rotation.NONE.ordinal()] = EnumBlockRotation.NONE;
-        ROTATION[Rotation.CLOCKWISE.ordinal()] = EnumBlockRotation.CLOCKWISE_90;
-        ROTATION[Rotation.ANTICLOCKWISE.ordinal()] = EnumBlockRotation.COUNTERCLOCKWISE_90;
-    }
-
-    private final MovecraftLocation newBlockLocation;
-    private final Material type;
-    private final byte dataID;
-    private final Rotation rotation;
+public class BlockCreateCommand implements UpdateCommand {
 
     @SuppressWarnings("deprecation")
     private final int[] tileEntityBlocksToPreserve = {
@@ -75,102 +40,29 @@ public class MapUpdateCommand implements UpdateCommand {
             Material.WALL_SIGN.getId(), Material.COMMAND.getId(), Material.TRAPPED_CHEST.getId(),
             Material.DAYLIGHT_DETECTOR.getId(), Material.HOPPER.getId(), Material.DROPPER.getId(),
             Material.DAYLIGHT_DETECTOR_INVERTED.getId(), Material.COMMAND_REPEATING.getId(), Material.COMMAND_CHAIN.getId()};
-    private MovecraftLocation blockLocation;
+
+
+    private MovecraftLocation newBlockLocation;
+    private Material type;
+    private byte dataID;
     private Craft craft;
 
-    public MapUpdateCommand(MovecraftLocation blockLocation, MovecraftLocation newBlockLocation, Material type, byte dataID, Rotation rotation, Craft craft) {
-        this.blockLocation = blockLocation;
+    public BlockCreateCommand(@NotNull MovecraftLocation newBlockLocation, @NotNull Material type, byte dataID, Craft craft) {
         this.newBlockLocation = newBlockLocation;
         this.type = type;
         this.dataID = dataID;
-        this.rotation = rotation;
         this.craft = craft;
     }
 
-    public MapUpdateCommand(MovecraftLocation blockLocation, MovecraftLocation newBlockLocation, Material type, byte dataID, Craft craft) {
-        this.blockLocation = blockLocation;
-        this.newBlockLocation = newBlockLocation;
-        this.type = type;
-        this.dataID = dataID;
-        this.rotation = Rotation.NONE;
-        this.craft = craft;
 
-    }
-
-    public MapUpdateCommand( MovecraftLocation newBlockLocation, Material type, byte dataID, Craft craft) {
-        this.newBlockLocation = newBlockLocation;
-        this.type = type;
-        this.dataID = dataID;
-        this.rotation = Rotation.NONE;
-        this.craft = craft;
-    }
-
-    public Material getType() {
-        return type;
-    }
-
-    public byte getDataID() {
-        return dataID;
-    }
-
-    public MovecraftLocation getOldBlockLocation() {
-        return blockLocation;
-    }
-
-    public MovecraftLocation getNewBlockLocation() {
-        return newBlockLocation;
-    }
-
-    public Rotation getRotation() {
-        return rotation;
-    }
-
-    public Craft getCraft() {
-        return craft;
-    }
 
     @Override
     @SuppressWarnings("deprecation")
     public void doUpdate() {
-        //TODO: fix this
-        net.minecraft.server.v1_10_R1.World nativeWorld = ((CraftWorld) craft.getW()).getHandle();
-        IBlockData blockData = null;
-        TileEntity tile=null;
-        NextTickListEntry nextTickEntry = null;
-
-        //Removed chunkloading and relighting
-
-        // TODO: make this go in chunks instead of block by block, same with the block placement system
-
-        if (type != Material.AIR &&  blockLocation != null) {
-            Block srcBlock = blockLocation.toBukkit(craft.getW()).getBlock();
-            net.minecraft.server.v1_10_R1.Chunk nativeSrcChunk = ((CraftChunk) srcBlock.getChunk()).getHandle();
-            StructureBoundingBox srcBoundingBox = new StructureBoundingBox(srcBlock.getX(), srcBlock.getY(), srcBlock.getZ(), srcBlock.getX() + 1, srcBlock.getY() + 1, srcBlock.getZ() + 1);
-            List<NextTickListEntry> entries = nativeWorld.a(srcBoundingBox, true);
-            if (entries != null) {
-                nextTickEntry = entries.get(0);//new NextTickListEntry(entries.get(0).a,entries.get(0).);
-            }
-
-            BlockPosition srcBlockPos = new BlockPosition(srcBlock.getX(), srcBlock.getY(), srcBlock.getZ());
-            blockData = nativeSrcChunk.getBlockData(srcBlockPos);
-
-            if (Arrays.binarySearch(tileEntityBlocksToPreserve, srcBlock.getTypeId()) >= 0) {
-                tile = nativeSrcChunk.getTileEntities().get(srcBlockPos);
-            }
-        }
-        //TODO: Reset block updates
-        //blockUpdatesPerCraft.clear();
-
         // now do the block updates, move entities when you set the block they are on
 
         boolean madeChanges = false;
         if (type != Material.AIR) {
-            Block srcBlock;
-            if (blockLocation != null) {
-                srcBlock = blockLocation.toBukkit(craft.getW()).getBlock();
-            } else {
-                srcBlock = null;
-            }
             Block dstBlock = newBlockLocation.toBukkit(craft.getW()).getBlock();
             Material existingType = dstBlock.getType();
             byte existingData = dstBlock.getData();
@@ -178,8 +70,10 @@ public class MapUpdateCommand implements UpdateCommand {
             byte newData = dataID;
             boolean delayed = false;
 
+
+            //Removed for refactor
             // delay color changes if possible
-            if (Settings.DelayColorChanges && craft != null) {
+            /*if (Settings.DelayColorChanges && craft != null) {
                 if (existingType == newType && existingData != newData) {
                     boolean canBeDelayed = false;
                     if (existingType == Material.WOOL) { // you can delay wool blocks, except light gray ones
@@ -187,38 +81,22 @@ public class MapUpdateCommand implements UpdateCommand {
                     }
                     if (existingType == Material.STAINED_CLAY) { // you can delay stained clay, except all gray and black ones
                         canBeDelayed = !(existingData == 7 || newData == 7);
-                        if (existingData == 8 || newData == 8) {
-                            canBeDelayed = false;
-                        }
-                        if (existingData == 15 || newData == 15) {
+                        if (existingData == 8 || newData == 8 || existingData == 15 || newData == 15) {
                             canBeDelayed = false;
                         }
                     }
-                    if (existingType == Material.STAINED_GLASS) { // all stained glass can be delayed
+                    if (
+                            existingType == Material.STAINED_GLASS ||
+                                    existingType == Material.STAINED_GLASS_PANE ||
+                                    existingType == Material.CARPET) { // all stained glass can be delayed
                         canBeDelayed = true;
                     }
-                    if (existingType == Material.STAINED_GLASS_PANE) { // all glass panes can be delayed
-                        canBeDelayed = true;
-                    }
-                    if (existingType == Material.CARPET) { // all carpet can be delayed
-                        canBeDelayed = true;
-                    }
-//                                        if (existingType == 239) { // all glazed terracotta be delayed
-//                                            canBeDelayed = true;
-//                                        }
-//                                        if (existingType == 251) { // all concrete can be delayed
-//                                            canBeDelayed = true;
-//                                        }
-//                                        if (existingType == 252) { // all concrete powder can be delayed
-//                                            canBeDelayed = true;
-//                                        }
-
                     if (canBeDelayed && craft.getScheduledBlockChanges() != null) {
                         long whenToChange = System.currentTimeMillis() + 1000;
-                        MapUpdateCommand newMup = new MapUpdateCommand(newBlockLocation, newType, newData, null);
-                        HashMap<MapUpdateCommand, Long> sUpd = craft.getScheduledBlockChanges();
+                        BlockCreateCommand newMup = new BlockCreateCommand(newBlockLocation, newType, newData, null);
+                        HashMap<BlockTranslateCommand, Long> sUpd = craft.getScheduledBlockChanges();
                         boolean alreadyPresent = false;
-                        for (MapUpdateCommand j : sUpd.keySet()) {
+                        for (BlockTranslateCommand j : sUpd.keySet()) {
                             if (j.getNewBlockLocation().equals(newMup.getNewBlockLocation())) {
                                 alreadyPresent = true;
                                 break;
@@ -230,32 +108,22 @@ public class MapUpdateCommand implements UpdateCommand {
                         delayed = true;
                     }
                 }
-            }
+            }*/
 
             // move the actual block
             if (!delayed) {
-                net.minecraft.server.v1_10_R1.Chunk nativeDstChunk = ((CraftChunk) dstBlock.getChunk()).getHandle();
+                Chunk nativeDstChunk = ((CraftChunk) dstBlock.getChunk()).getHandle();
                 BlockPosition dstBlockPos = new BlockPosition(dstBlock.getX(), dstBlock.getY(), dstBlock.getZ());
-                BlockPosition srcBlockPos = null;
-                if (srcBlock != null) {
-                    srcBlockPos = new BlockPosition(srcBlock.getX(), srcBlock.getY(), srcBlock.getZ());
-                }
                 IBlockData dstIBD;
 
                 if (existingType != newType || existingData != newData) { // only place the actual block if it has changed
-                    // if there is a source block, copy the data from it, modifying with rotation (note that some updates don't have source blocks, like a repair)
-                    if (srcBlock != null) {
-                        dstIBD = blockData.a(ROTATION[rotation.ordinal()]);
-
-                    } else {
-                        // if no source block, just make the new block using the type and data info
-                        dstIBD = CraftMagicNumbers.getBlock(newType).fromLegacyData(newData);
-                    }
+                    // if no source block, just make the new block using the type and data info
+                    dstIBD = CraftMagicNumbers.getBlock(newType).fromLegacyData(newData);
                     // this actually creates the block
-                    net.minecraft.server.v1_10_R1.ChunkSection dstSection = nativeDstChunk.getSections()[dstBlock.getY() >> 4];
+                    ChunkSection dstSection = nativeDstChunk.getSections()[dstBlock.getY() >> 4];
                     if (dstSection == null) {
                         // Put a GLASS block to initialize the section. It will be replaced next with the real block.
-                        nativeDstChunk.a(dstBlockPos, net.minecraft.server.v1_10_R1.Blocks.GLASS.getBlockData());
+                        nativeDstChunk.a(dstBlockPos, Blocks.GLASS.getBlockData());
                         dstSection = nativeDstChunk.getSections()[dstBlockPos.getY() >> 4];
                     }
 
@@ -263,40 +131,28 @@ public class MapUpdateCommand implements UpdateCommand {
                     madeChanges = true;
                     craft.incrementBlockUpdates();
                 }
-
-                if (srcBlock != null) {
-                    // if you had a source block, also move the tile entity, and if there is a next tick entry, move that too
-                    if (tile != null) {
-                        tile.setPosition(dstBlockPos);
-                        craft.incrementBlockUpdates();
-                        madeChanges = true;
-                        if (type == Material.CHEST || type == Material.TRAPPED_CHEST) {
-                            craft.incrementBlockUpdates ((int) (craft.getOrigBlockCount() * 0.005));
-                        }
-                        nativeDstChunk.getTileEntities().put(dstBlockPos, tile);
-                        if (tile instanceof TileEntitySign) {
-                            sendSignToPlayers();
-                        }
-                        if (nativeWorld.capturedTileEntities.containsKey(srcBlockPos)) {
-                            // Is this really necessary?
-                            nativeWorld.capturedTileEntities.remove(srcBlockPos);
-                            nativeWorld.capturedTileEntities.put(dstBlockPos, tile);
-                        }
-                    }
-
-                    //NextTickListEntry entry = nextTickMap.get(mapUpdateIndex);
-                    if (nextTickEntry != null) {
-                        final long currentTime = nativeWorld.worldData.getTime();
-                        BlockPosition position = nextTickEntry.a;
-                        int dx = newBlockLocation.getX() - blockLocation.getX();
-                        int dy = newBlockLocation.getY() - blockLocation.getY();
-                        int dz = newBlockLocation.getZ() - blockLocation.getZ();
-                        position = position.a(dx, dy, dz);
-                        nativeWorld.b(position, nextTickEntry.a(), (int) (nextTickEntry.b - currentTime), nextTickEntry.c);
-                    }
-
-                }
             }
+
+        }else{
+            //It's air
+            Block dstBlock = newBlockLocation.toBukkit(craft.getW()).getBlock();
+            Chunk nativeDstChunk = ((CraftChunk) dstBlock.getChunk()).getHandle();
+            BlockPosition dstBlockPos = new BlockPosition(dstBlock.getX(), dstBlock.getY(), dstBlock.getZ());
+            IBlockData dstIBD;
+            // if no source block, just make the new block using the type and data info
+            dstIBD = CraftMagicNumbers.getBlock(type).fromLegacyData(dataID);
+            // this actually creates the block
+            ChunkSection dstSection = nativeDstChunk.getSections()[dstBlock.getY() >> 4];
+            if (dstSection == null) {
+                // Put a GLASS block to initialize the section. It will be replaced next with the real block.
+                nativeDstChunk.a(dstBlockPos, Blocks.GLASS.getBlockData());
+                dstSection = nativeDstChunk.getSections()[dstBlockPos.getY() >> 4];
+            }
+
+            dstSection.setType(dstBlock.getX() & 15, dstBlock.getY() & 15, dstBlock.getZ() & 15, dstIBD);
+            madeChanges = true;
+            craft.incrementBlockUpdates();
+
 
         }
 
@@ -328,19 +184,7 @@ public class MapUpdateCommand implements UpdateCommand {
         int blockType;
         Block srcBlock;
         BlockPosition dstBlockPos;
-        net.minecraft.server.v1_10_R1.Chunk nativeDstChunk;
-        if (blockLocation != null) {
-            blockType = blockLocation.toBukkit(craft.getW()).getBlock().getTypeId();
-            // updateWorld.getBlockTypeIdAt(blockLocation.getX(), blockLocation.getY(), i.getOldBlockLocation().getZ());
-            srcBlock = blockLocation.toBukkit(craft.getW()).getBlock();
-            //w.getBlockAt(i.getOldBlockLocation().getX(), i.getOldBlockLocation().getY(), i.getOldBlockLocation().getZ());
-            nativeDstChunk = ((CraftChunk) srcBlock.getChunk()).getHandle();
-            dstBlockPos = new BlockPosition(srcBlock.getX(), srcBlock.getY(), srcBlock.getZ());
-            if (Arrays.binarySearch(tileEntityBlocksToPreserve, blockType) < 0) { // TODO: make this only run when the original block had tile data, but after it cleans up my corrupt chunks >.>
-                nativeDstChunk.getTileEntities().remove(dstBlockPos);
-            }
-
-        }
+        Chunk nativeDstChunk;
         // now remove the tile entities in the new location if they shouldn't be there
         //blockType = updateWorld.getBlockTypeIdAt(newBlockLocation.getX(), newBlockLocation.getY(), newBlockLocation.getZ());
         srcBlock = newBlockLocation.toBukkit(craft.getW()).getBlock();
@@ -595,4 +439,3 @@ public class MapUpdateCommand implements UpdateCommand {
         }
     }
 }
-

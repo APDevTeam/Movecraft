@@ -57,7 +57,7 @@ public class EntityUpdateCommand implements UpdateCommand{
             }
             // send the blocks around the player to the player, so they don't fall through the floor or get bumped by other blocks
                     /*Player p = (Player) entity;
-                    for (MapUpdateCommand muc : updatesInWorld) {
+                    for (BlockTranslateCommand muc : updatesInWorld) {
                         if (muc != null) {
                             int disty = Math.abs(muc.getNewBlockLocation().getY() - entityUpdate.getNewLocation().getBlockY());
                             int distx = Math.abs(muc.getNewBlockLocation().getX() - entityUpdate.getNewLocation().getBlockX());

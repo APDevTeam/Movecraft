@@ -28,12 +28,14 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.mapUpdater.update.ExplosionUpdateCommand;
-import net.countercraft.movecraft.mapUpdater.update.ParticleUpdateCommand;
-import net.countercraft.movecraft.utils.BoundingBoxUtils;
+import net.countercraft.movecraft.mapUpdater.update.BlockCreateCommand;
 import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
+import net.countercraft.movecraft.mapUpdater.update.ExplosionUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.ItemDropUpdateCommand;
-import net.countercraft.movecraft.mapUpdater.update.MapUpdateCommand;
+import net.countercraft.movecraft.mapUpdater.update.BlockTranslateCommand;
+import net.countercraft.movecraft.mapUpdater.update.ParticleUpdateCommand;
+import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
+import net.countercraft.movecraft.utils.BoundingBoxUtils;
 import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.utils.MovecraftLocation;
 import net.countercraft.movecraft.utils.TownyUtils;
@@ -54,7 +56,6 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
@@ -271,12 +272,9 @@ public class TranslationTask extends AsyncTask {
 
         List<MovecraftLocation> tempBlockList = new ArrayList<>();
         HashSet<MovecraftLocation> existingBlockSet = new HashSet<>(Arrays.asList(blocksList));
-        HashSet<EntityUpdateCommand> entityUpdateSet = new HashSet<>();
-        Set<MapUpdateCommand> updateSet = new HashSet<>();
+        Set<UpdateCommand> updateSet = new HashSet<>();
 
         data.setCollisionExplosion(false);
-        Set<ExplosionUpdateCommand> explosionSet = new HashSet<>();
-        Set<ParticleUpdateCommand> particleSet = new HashSet<>();
 
         List<Material> harvestBlocks = getCraft().getType().getHarvestBlocks();
         List<MovecraftLocation> harvestedBlocks = new ArrayList<>();
@@ -540,7 +538,7 @@ public class TranslationTask extends AsyncTask {
                             if (System.currentTimeMillis() - getCraft().getOrigPilotTime() > 1000){
                                 Location loc = oldLoc.toBukkit(getCraft().getW());
                                 if (!loc.getBlock().getType().equals(Material.AIR)) {
-                                    explosionSet.add(new ExplosionUpdateCommand( loc, explosionKey));
+                                    updateSet.add(new ExplosionUpdateCommand( loc, explosionKey));
                                     data.setCollisionExplosion(true);
                                 }
                             }
@@ -549,7 +547,7 @@ public class TranslationTask extends AsyncTask {
                             int explosionKey = 0 - 1;
                             Location loc = oldLoc.toBukkit(getCraft().getW());
                             if (!loc.getBlock().getType().equals(Material.AIR)) {
-                                explosionSet.add(new ExplosionUpdateCommand(loc, explosionKey));
+                                updateSet.add(new ExplosionUpdateCommand(loc, explosionKey));
                                 data.setCollisionExplosion(true);
                             }
                         }
@@ -569,7 +567,7 @@ public class TranslationTask extends AsyncTask {
                             int explosionKey = 0 - 1;
                             Location loc = oldLoc.toBukkit(getCraft().getW());
                             if (!loc.getBlock().getType().equals(Material.AIR)) {
-                                explosionSet.add(new ExplosionUpdateCommand(loc, explosionKey));
+                                updateSet.add(new ExplosionUpdateCommand(loc, explosionKey));
                                 data.setCollisionExplosion(true);
                             }
                         } else if (System.currentTimeMillis() - getCraft().getOrigPilotTime() > 1000) {
@@ -584,7 +582,7 @@ public class TranslationTask extends AsyncTask {
                             explosionKey = (int) (0 - (explosionForce * 100));
                             Location loc = oldLoc.toBukkit(getCraft().getW());
                             if (!loc.getBlock().getType().equals(Material.AIR)) {
-                                explosionSet.add(new ExplosionUpdateCommand(loc, explosionKey));
+                                updateSet.add(new ExplosionUpdateCommand(loc, explosionKey));
                                 data.setCollisionExplosion(true);
                             }
                             if (getCraft().getType().getFocusedExplosion()) { // don't handle any further collisions if it is set to focusedexplosion
@@ -604,7 +602,7 @@ public class TranslationTask extends AsyncTask {
                 }
 
                 if (!ignoreBlock) {
-                    updateSet.add(new MapUpdateCommand(oldLoc, newLoc, oldType, oldData, getCraft()));
+                    updateSet.add(new BlockTranslateCommand(oldLoc, newLoc, oldType, oldData, getCraft()));
                     tempBlockList.add(newLoc);
                 }
 
@@ -708,8 +706,6 @@ public class TranslationTask extends AsyncTask {
                 updateSet.clear();
                 harvestedBlocks.clear();
                 data.setCollisionExplosion(false);
-                explosionSet.clear();
-                particleSet.clear();
                 clearNewData = false;
                 townBlockSet.clear();
                 craftMinY = 0;
@@ -718,32 +714,21 @@ public class TranslationTask extends AsyncTask {
 
         } //END OF: for ( int i = 0; i < blocksList.length; i++ ) {
 
-        // now move the scheduled block changes along with the ship
-        HashMap<MapUpdateCommand, Long> newScheduledBlockChanges = new HashMap<>();
-        HashMap<MapUpdateCommand, Long> oldScheduledBlockChanges = getCraft().getScheduledBlockChanges();
-        if (oldScheduledBlockChanges != null) {
-            for (MapUpdateCommand muc : oldScheduledBlockChanges.keySet()) {
-                MovecraftLocation newLoc = muc.getNewBlockLocation().translate(data.getDx(), data.getDy(), data.getDz());
-                //        	Long newTime=oldScheduledBlockChanges.get(muc);
-                Long newTime = System.currentTimeMillis() + 5000;
-                MapUpdateCommand newMuc = new MapUpdateCommand(newLoc, muc.getType(), muc.getDataID(), getCraft());
-                newScheduledBlockChanges.put(newMuc, newTime);
-            }
-            data.setScheduledBlockChanges(newScheduledBlockChanges);
-        }
-
         if (data.collisionExplosion()) {
             // mark the craft to check for sinking, remove the exploding blocks from the blocklist, and submit the explosions for map update
-            for (ExplosionUpdateCommand m : explosionSet) {
-                MovecraftLocation exsplosionLocation = MathUtils.bukkit2MovecraftLoc(m.getLocation());
+            for (UpdateCommand m : updateSet) {
+                if(!(m instanceof ExplosionUpdateCommand))
+                    continue;
+                ExplosionUpdateCommand explosionCommand = (ExplosionUpdateCommand)m;
+                MovecraftLocation exsplosionLocation = MathUtils.bukkit2MovecraftLoc(explosionCommand.getLocation());
                 if (existingBlockSet.contains(exsplosionLocation)) {
                     existingBlockSet.remove(exsplosionLocation);
                     if (Settings.FadeWrecksAfter > 0) {
-                        int typeID = m.getLocation().getBlock().getTypeId();
+                        int typeID = explosionCommand.getLocation().getBlock().getTypeId();
                         if (typeID != 0 && typeID != 9) {
                             Movecraft.getInstance().blockFadeTimeMap.put(exsplosionLocation, System.currentTimeMillis());
                             Movecraft.getInstance().blockFadeTypeMap.put(exsplosionLocation, typeID);
-                            if (m.getLocation().getY() <= waterLine) {
+                            if (explosionCommand.getLocation().getY() <= waterLine) {
                                 Movecraft.getInstance().blockFadeWaterMap.put(exsplosionLocation, true);
                             } else {
                                 Movecraft.getInstance().blockFadeWaterMap.put(exsplosionLocation, false);
@@ -755,8 +740,8 @@ public class TranslationTask extends AsyncTask {
 
                 // if the craft is sinking, remove all solid blocks above the one that hit the ground from the craft for smoothing sinking
                 if (getCraft().getSinking() && (getCraft().getType().getExplodeOnCrash() == 0.0 || explosionBlockedByTowny)) {
-                    MovecraftLocation location = MathUtils.bukkit2MovecraftLoc(m.getLocation());
-                    int posy = (int) m.getLocation().getY() + 1;
+                    MovecraftLocation location = MathUtils.bukkit2MovecraftLoc(explosionCommand.getLocation());
+                    int posy = (int) explosionCommand.getLocation().getY() + 1;
                     int testID = getCraft().getW().getBlockAt(location.getX(), posy, location.getZ()).getTypeId();
                     while (posy <= maxY && !(Arrays.binarySearch(fallThroughBlocks, testID) >= 0)) {
                         MovecraftLocation testLoc = new MovecraftLocation(location.getX(), posy, location.getZ());
@@ -785,8 +770,6 @@ public class TranslationTask extends AsyncTask {
 
             MovecraftLocation[] newBlockList = existingBlockSet.toArray(new MovecraftLocation[0]);
             data.setBlockList(newBlockList);
-            data.setExplosionUpdateCommands(explosionSet.toArray(new ExplosionUpdateCommand[1]));
-
             fail(I18nSupport.getInternationalisedString("Translation - Failed Craft is obstructed"));
 
             if (!getCraft().getSinking()) {   // FROG changed from ==true, think that was a typo
@@ -834,7 +817,7 @@ public class TranslationTask extends AsyncTask {
                             newPLoc.setYaw(pTest.getLocation().getYaw());
 
                             EntityUpdateCommand eUp = new EntityUpdateCommand( newPLoc, pTest);
-                            entityUpdateSet.add(eUp);
+                            updateSet.add(eUp);
 //                                        if(getCraft().getPilotLocked()==true && pTest==CraftManager.getInstance().getPlayerFromCraft(getCraft())) {
 //                                            getCraft().setPilotLockedX(tempLoc.getX());
 //                                            getCraft().setPilotLockedY(tempLoc.getY());
@@ -846,7 +829,7 @@ public class TranslationTask extends AsyncTask {
                             Location tempLoc = pTest.getLocation();
                             tempLoc = tempLoc.add(data.getDx(), data.getDy(), data.getDz());
                             EntityUpdateCommand eUp = new EntityUpdateCommand(tempLoc, pTest);
-                            entityUpdateSet.add(eUp);
+                            updateSet.add(eUp);
                         }
 
                     }
@@ -867,7 +850,7 @@ public class TranslationTask extends AsyncTask {
                         for (posZ = minZ - 1; posZ <= maxZ + 1; posZ++) {
                             if (getCraft().getW().getBlockAt(posX, posY, posZ).getTypeId() == 9 || getCraft().getW().getBlockAt(posX, posY, posZ).getTypeId() == 8) {
                                 MovecraftLocation loc = new MovecraftLocation(posX, posY, posZ);
-                                updateSet.add(new MapUpdateCommand(loc, Material.AIR, (byte) 0, getCraft()));
+                                updateSet.add(new BlockCreateCommand(loc, Material.AIR, (byte) 0, getCraft()));
                             }
                         }
                     }
@@ -877,28 +860,28 @@ public class TranslationTask extends AsyncTask {
                     for (posX = minX - 1; posX <= maxX + 1; posX++) {
                         if (getCraft().getW().getBlockAt(posX, posY, posZ).getTypeId() == 9 || getCraft().getW().getBlockAt(posX, posY, posZ).getTypeId() == 8) {
                             MovecraftLocation loc = new MovecraftLocation(posX, posY, posZ);
-                            updateSet.add(new MapUpdateCommand(loc, Material.AIR, (byte) 0, getCraft()));
+                            updateSet.add(new BlockCreateCommand(loc, Material.AIR, (byte) 0, getCraft()));
                         }
                     }
                     posZ = maxZ + 1;
                     for (posX = minX - 1; posX <= maxX + 1; posX++) {
                         if (getCraft().getW().getBlockAt(posX, posY, posZ).getTypeId() == 9 || getCraft().getW().getBlockAt(posX, posY, posZ).getTypeId() == 8) {
                             MovecraftLocation loc = new MovecraftLocation(posX, posY, posZ);
-                            updateSet.add(new MapUpdateCommand(loc, Material.AIR, (byte) 0, getCraft()));
+                            updateSet.add(new BlockCreateCommand(loc, Material.AIR, (byte) 0, getCraft()));
                         }
                     }
                     posX = minX - 1;
                     for (posZ = minZ - 1; posZ <= maxZ + 1; posZ++) {
                         if (getCraft().getW().getBlockAt(posX, posY, posZ).getTypeId() == 9 || getCraft().getW().getBlockAt(posX, posY, posZ).getTypeId() == 8) {
                             MovecraftLocation loc = new MovecraftLocation(posX, posY, posZ);
-                            updateSet.add(new MapUpdateCommand(loc, Material.AIR, (byte) 0, getCraft()));
+                            updateSet.add(new BlockCreateCommand(loc, Material.AIR, (byte) 0, getCraft()));
                         }
                     }
                     posX = maxX + 1;
                     for (posZ = minZ - 1; posZ <= maxZ + 1; posZ++) {
                         if (getCraft().getW().getBlockAt(posX, posY, posZ).getTypeId() == 9 || getCraft().getW().getBlockAt(posX, posY, posZ).getTypeId() == 8) {
                             MovecraftLocation loc = new MovecraftLocation(posX, posY, posZ);
-                            updateSet.add(new MapUpdateCommand(loc, Material.AIR, (byte) 0, getCraft()));
+                            updateSet.add(new BlockCreateCommand(loc, Material.AIR, (byte) 0, getCraft()));
                         }
                     }
                 }
@@ -926,10 +909,10 @@ public class TranslationTask extends AsyncTask {
                 // for watercraft, fill blocks below the waterline with water
                 if (!waterCraft) {
                     if (getCraft().getSinking()) {
-                        updateSet.add(new MapUpdateCommand(l1, Material.AIR, (byte) 0, getCraft()));
-                        particleSet.add(new ParticleUpdateCommand(l1.toBukkit(getCraft().getW()), getCraft().getType().getSmokeOnSink()));
+                        updateSet.add(new BlockCreateCommand(l1, Material.AIR, (byte) 0, getCraft()));
+                        updateSet.add(new ParticleUpdateCommand(l1.toBukkit(getCraft().getW()), getCraft().getType().getSmokeOnSink()));
                     } else {
-                        updateSet.add(new MapUpdateCommand(l1, Material.AIR, (byte) 0, getCraft()));
+                        updateSet.add(new BlockCreateCommand(l1, Material.AIR, (byte) 0, getCraft()));
                     }
                 } else {
                     if (l1.getY() <= waterLine) {
@@ -940,35 +923,32 @@ public class TranslationTask extends AsyncTask {
                         }
                         if (getCraft().getW().getBlockAt(testAir.getX(), testAir.getY(), testAir.getZ()).getTypeId() == 0) {
                             if (getCraft().getSinking()) {
-                                updateSet.add(new MapUpdateCommand(l1, Material.AIR, (byte) 0, getCraft()));
-                                particleSet.add(new ParticleUpdateCommand(l1.toBukkit(getCraft().getW()), getCraft().getType().getSmokeOnSink()));
+                                updateSet.add(new BlockCreateCommand(l1, Material.AIR, (byte) 0, getCraft()));
+                                updateSet.add(new ParticleUpdateCommand(l1.toBukkit(getCraft().getW()), getCraft().getType().getSmokeOnSink()));
                             } else {
-                                updateSet.add(new MapUpdateCommand(l1, Material.AIR, (byte) 0, getCraft()));
+                                updateSet.add(new BlockCreateCommand(l1, Material.AIR, (byte) 0, getCraft()));
                             }
                         } else {
-                            updateSet.add(new MapUpdateCommand(l1, Material.AIR, (byte) 0, getCraft()));
+                            updateSet.add(new BlockCreateCommand(l1, Material.AIR, (byte) 0, getCraft()));
                         }
                     } else {
                         if (getCraft().getSinking()) {
-                            updateSet.add(new MapUpdateCommand(l1, Material.AIR, (byte) 0, getCraft()));
-                            particleSet.add(new ParticleUpdateCommand(l1.toBukkit(getCraft().getW()), getCraft().getType().getSmokeOnSink()));
+                            updateSet.add(new BlockCreateCommand(l1, Material.AIR, (byte) 0, getCraft()));
+                            updateSet.add(new ParticleUpdateCommand(l1.toBukkit(getCraft().getW()), getCraft().getType().getSmokeOnSink()));
                         } else {
-                            updateSet.add(new MapUpdateCommand(l1, Material.AIR, (byte) 0, getCraft()));
+                            updateSet.add(new BlockCreateCommand(l1, Material.AIR, (byte) 0, getCraft()));
                         }
                     }
                 }
             }
 
-            data.setParticleUpdates(particleSet.toArray(new ParticleUpdateCommand[0]));
-
             //add destroyed parts of growed
             for (MovecraftLocation destroyedLocation : destroyedBlocks) {
-                updateSet.add(new MapUpdateCommand(destroyedLocation, Material.AIR, (byte) 0, getCraft()));
+                updateSet.add(new BlockCreateCommand(destroyedLocation, Material.AIR, (byte) 0, getCraft()));
             }
-            MapUpdateCommand[] updateArray = updateSet.toArray(new MapUpdateCommand[1]);
+            BlockTranslateCommand[] updateArray = updateSet.toArray(new BlockTranslateCommand[1]);
 //            MapUpdateManager.getInstance().sortUpdates(updateArray);
             data.setUpdates(updateArray);
-            data.setEntityUpdates(entityUpdateSet.toArray(new EntityUpdateCommand[1]));
 
             if (data.getDy() != 0) {
                 data.setHitbox(BoundingBoxUtils.translateBoundingBoxVertically(data.getHitbox(), data.getDy()));
@@ -1091,7 +1071,6 @@ public class TranslationTask extends AsyncTask {
         }
         ArrayList<Inventory> chests = new ArrayList<>();
         HashSet<ItemDropUpdateCommand> itemDropUpdateSet = new HashSet<>();
-        HashMap<MovecraftLocation, ItemStack[]> harvestedMap = new HashMap<>();
         //find chests
         for (MovecraftLocation loc : getCraft().getBlockList()) {
             Block block = getCraft().getW().getBlockAt(loc.getX(), loc.getY(), loc.getZ());
@@ -1134,7 +1113,6 @@ public class TranslationTask extends AsyncTask {
                     itemDropUpdateSet.add(new ItemDropUpdateCommand(new Location(getCraft().getW(), harvestedBlock.getX(), harvestedBlock.getY(), harvestedBlock.getZ()), retStack));
             }
         }
-        data.setItemDropUpdates(itemDropUpdateSet.toArray(new ItemDropUpdateCommand[1]));
     }
 
     private ItemStack putInToChests(ItemStack stack, ArrayList<Inventory> inventories) {

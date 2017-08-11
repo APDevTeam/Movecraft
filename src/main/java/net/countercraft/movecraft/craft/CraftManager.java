@@ -19,15 +19,12 @@ package net.countercraft.movecraft.craft;
 
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.mapUpdater.update.MapUpdateCommand;
-import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -109,17 +106,17 @@ public class CraftManager {
             c.setCruising(false);
             c.setSinking(true);
             c.setNotificationPlayer(null);
-            c.setScheduledBlockChanges(null);
+            //c.setScheduledBlockChanges(null);
             return;
         }
-        if (c.getScheduledBlockChanges() != null) {
-            ArrayList<MapUpdateCommand> updateCommands = new ArrayList<>();
+       /* if (c.getScheduledBlockChanges() != null) {
+            ArrayList<BlockTranslateCommand> updateCommands = new ArrayList<>();
             updateCommands.addAll(c.getScheduledBlockChanges().keySet());
             if (updateCommands.size() > 0) {
-                MapUpdateManager.getInstance().scheduleUpdates(updateCommands.toArray(new MapUpdateCommand[1]));
+                MapUpdateManager.getInstance().scheduleUpdates(updateCommands.toArray(new BlockTranslateCommand[1]));
             }
         }
-        c.setScheduledBlockChanges(null);
+        c.setScheduledBlockChanges(null);*/
         craftList.remove(c);
         if (getPlayerFromCraft(c) != null) {
             getPlayerFromCraft(c).sendMessage(I18nSupport.getInternationalisedString("Release - Craft has been released message"));
