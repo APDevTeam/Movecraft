@@ -946,9 +946,8 @@ public class TranslationTask extends AsyncTask {
             for (MovecraftLocation destroyedLocation : destroyedBlocks) {
                 updateSet.add(new BlockCreateCommand(destroyedLocation, Material.AIR, (byte) 0, getCraft()));
             }
-            BlockTranslateCommand[] updateArray = updateSet.toArray(new BlockTranslateCommand[1]);
 //            MapUpdateManager.getInstance().sortUpdates(updateArray);
-            data.setUpdates(updateArray);
+            data.setUpdates(updateSet);
 
             if (data.getDy() != 0) {
                 data.setHitbox(BoundingBoxUtils.translateBoundingBoxVertically(data.getHitbox(), data.getDy()));

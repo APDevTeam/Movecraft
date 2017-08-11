@@ -17,9 +17,11 @@
 
 package net.countercraft.movecraft.async.translation;
 
-import net.countercraft.movecraft.mapUpdater.update.BlockTranslateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import net.countercraft.movecraft.utils.MovecraftLocation;
+
+import java.util.Collection;
+import java.util.HashSet;
 
 public class TranslationTaskData {
     private int dx;
@@ -28,7 +30,8 @@ public class TranslationTaskData {
     private boolean failed = false;
     private String failMessage;
     private MovecraftLocation[] blockList;
-    private UpdateCommand[] updates;
+    //private UpdateCommand[] updates;
+    private Collection<UpdateCommand> updates = new HashSet<>();
     private int[][][] hitbox;
     private int minX, minZ;
     private int maxHeight, minHeight;
@@ -95,11 +98,11 @@ public class TranslationTaskData {
         this.blockList = blockList;
     }
 
-    public UpdateCommand[] getUpdates() {
+    public Collection<UpdateCommand> getUpdates() {
         return updates;
     }
 
-    public void setUpdates(BlockTranslateCommand[] updates) {
+    public void setUpdates(Collection<UpdateCommand> updates) {
         this.updates = updates;
     }
 
