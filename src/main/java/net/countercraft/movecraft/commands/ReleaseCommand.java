@@ -5,11 +5,15 @@ import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 
-public class ReleaseCommand implements CommandExecutor {
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+public class ReleaseCommand implements TabExecutor {
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args) {
         if (!command.getName().equalsIgnoreCase("release")) {
@@ -65,5 +69,20 @@ public class ReleaseCommand implements CommandExecutor {
         return true;
     }
 
+    @Override
+    public List<String> onTabComplete(CommandSender commandSender, Command command, String s, String[] strings) {
+        if(strings.length !=1 || !commandSender.hasPermission("movecraft.commands.release.others"))
+            return Collections.emptyList();
+        List<String> completions = new ArrayList<>();
+        completions.add("-a");
+        for(Player player : Bukkit.getOnlinePlayers())
+            completions.add(player.getName());
+
+        List<String> returnValues = new ArrayList<>();
+        for(String completion : completions)
+            if(completion.toLowerCase().startsWith(strings[strings.length-1].toLowerCase()))
+                returnValues.add(completion);
+        return returnValues;
+    }
 }
 

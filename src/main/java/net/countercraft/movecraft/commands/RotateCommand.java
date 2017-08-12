@@ -6,11 +6,15 @@ import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.MovecraftLocation;
 import net.countercraft.movecraft.utils.Rotation;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 
-public class RotateCommand implements CommandExecutor {
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+public class RotateCommand implements TabExecutor{
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args) {
         if(!command.getName().equalsIgnoreCase("rotate")){
@@ -31,6 +35,10 @@ public class RotateCommand implements CommandExecutor {
                 return true;
             }
             final Craft craft = CraftManager.getInstance().getCraftByPlayerName(player.getName());
+            if(craft==null){
+                player.sendMessage(I18nSupport.getInternationalisedString("You need to be piloting a craft"));
+                return true;
+            }
             if (!player.hasPermission("movecraft." + craft.getType().getCraftName() + ".rotate")) {
                 player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
                 return true;
@@ -46,6 +54,10 @@ public class RotateCommand implements CommandExecutor {
                 return true;
             }
             final Craft craft = CraftManager.getInstance().getCraftByPlayerName(player.getName());
+            if(craft==null){
+                player.sendMessage(I18nSupport.getInternationalisedString("You need to be piloting a craft"));
+                return true;
+            }
             if (!player.hasPermission("movecraft." + craft.getType().getCraftName() + ".rotate")) {
                 player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
                 return true;
@@ -89,7 +101,18 @@ public class RotateCommand implements CommandExecutor {
         int midX = craft.getMinX() + (maxDX / 2);
         int midY = (minY + maxY) / 2;
         int midZ = craft.getMinZ() + (maxDZ / 2);
-        MovecraftLocation midPoint = new MovecraftLocation(midX, midY, midZ);
-        return midPoint;
+        return new MovecraftLocation(midX, midY, midZ);
+    }
+
+    private final String[] completions = {"Right", "Left"};
+    @Override
+    public List<String> onTabComplete(CommandSender commandSender, Command command, String s, String[] strings) {
+        if(strings.length !=1)
+            return Collections.emptyList();
+        List<String> returnValues = new ArrayList<>();
+        for(String completion : completions)
+            if(completion.toLowerCase().startsWith(strings[strings.length-1].toLowerCase()))
+                returnValues.add(completion);
+        return returnValues;
     }
 }

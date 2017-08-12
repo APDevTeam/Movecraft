@@ -7,11 +7,15 @@ import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.utils.MovecraftLocation;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 
-public class PilotCommand implements CommandExecutor {
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+public class PilotCommand implements TabExecutor {
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args) {
         if (!command.getName().equalsIgnoreCase("pilot"))
@@ -56,5 +60,20 @@ public class PilotCommand implements CommandExecutor {
         }
 
         return null;
+    }
+
+    @Override
+    public List<String> onTabComplete(CommandSender commandSender, Command command, String s, String[] strings) {
+        if(strings.length !=1 || !commandSender.hasPermission("movecraft.commands") || !commandSender.hasPermission("movecraft.commands.pilot"))
+            return Collections.emptyList();
+        List<String> completions = new ArrayList<>();
+        for(CraftType type : CraftManager.getInstance().getCraftTypes())
+            if(commandSender.hasPermission("movecraft." + type.getCraftName() + ".pilot"))
+                completions.add(type.getCraftName());
+        List<String> returnValues = new ArrayList<>();
+        for(String completion : completions)
+            if(completion.toLowerCase().startsWith(strings[strings.length-1].toLowerCase()))
+                returnValues.add(completion);
+        return returnValues;
     }
 }
