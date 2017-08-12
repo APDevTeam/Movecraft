@@ -66,9 +66,11 @@ public class MapUpdateManager extends BukkitRunnable {
                     craft.setProcessing(false);
 
             }
-            update.doUpdate();
         }
-        
+
+        for(UpdateCommand update : updates)
+            update.doUpdate();
+
         //TODO: re-add lighting updates
         /*// queue chunks for lighting recalc
         if (!Settings.CompatibilityMode) {
