@@ -26,7 +26,7 @@ import org.bukkit.entity.Player;
 /**
  * Class that stores the data about a single blocks changes to the map in an unspecified world. The world is retrieved contextually from the submitting craft.
  */
-public class EntityUpdateCommand implements UpdateCommand{
+public class EntityUpdateCommand extends UpdateCommand {
     private final Location newLocation;
     private final Entity entity;
 

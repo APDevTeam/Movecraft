@@ -10,12 +10,11 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
 
 /**
  * Class that stores the data about a item drops to the map in an unspecified world. The world is retrieved contextually from the submitting craft.
  */
-public class ItemDropUpdateCommand implements UpdateCommand{
+public class ItemDropUpdateCommand extends UpdateCommand {
     private final Location location;
     private final ItemStack itemStack;
 

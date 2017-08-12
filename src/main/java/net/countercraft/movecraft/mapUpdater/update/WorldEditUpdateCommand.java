@@ -12,7 +12,7 @@ import org.bukkit.block.Dispenser;
 import org.bukkit.block.Sign;
 import org.bukkit.inventory.ItemStack;
 
-public class WorldEditUpdateCommand implements UpdateCommand{
+public class WorldEditUpdateCommand extends UpdateCommand {
     private final BaseBlock worldEditBaseBlock;
     private World world;
     private MovecraftLocation location;

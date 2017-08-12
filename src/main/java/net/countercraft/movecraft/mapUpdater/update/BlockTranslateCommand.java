@@ -54,7 +54,7 @@ import java.util.List;
 /**
  * Class that stores the data about a single blocks changes to the map in an unspecified world. The world is retrieved contextually from the submitting craft.
  */
-public class BlockTranslateCommand implements UpdateCommand {
+public class BlockTranslateCommand extends UpdateCommand {
     private static final EnumBlockRotation ROTATION[];
 
     static {

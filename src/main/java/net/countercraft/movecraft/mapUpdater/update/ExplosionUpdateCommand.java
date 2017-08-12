@@ -5,7 +5,7 @@ import com.sk89q.worldguard.protection.flags.DefaultFlag;
 import net.countercraft.movecraft.Movecraft;
 import org.bukkit.Location;
 
-public class ExplosionUpdateCommand implements UpdateCommand{
+public class ExplosionUpdateCommand extends UpdateCommand {
     private final Location explosionLocation;
     private final float explosionStrength;
 

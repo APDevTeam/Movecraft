@@ -11,7 +11,7 @@ import org.bukkit.entity.Player;
 
 import java.util.Random;
 
-public class ParticleUpdateCommand implements UpdateCommand {
+public class ParticleUpdateCommand extends UpdateCommand {
     private Location location;
     private int smokeStrength;
     private Random rand = new Random();

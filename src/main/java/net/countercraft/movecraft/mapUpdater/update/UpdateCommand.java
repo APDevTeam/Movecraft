@@ -1,5 +1,5 @@
 package net.countercraft.movecraft.mapUpdater.update;
 
-public interface UpdateCommand {
-    public void doUpdate();
+public abstract class UpdateCommand{
+    public abstract void doUpdate();
 }

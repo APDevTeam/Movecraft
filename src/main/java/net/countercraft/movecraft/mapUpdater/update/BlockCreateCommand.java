@@ -31,7 +31,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
-public class BlockCreateCommand implements UpdateCommand {
+
+
+public class BlockCreateCommand extends UpdateCommand {
 
     @SuppressWarnings("deprecation")
     private final int[] tileEntityBlocksToPreserve = {
@@ -438,4 +440,5 @@ public class BlockCreateCommand implements UpdateCommand {
             TESign.lines[3] = new ChatComponentText(updateQty);
         }
     }
+
 }
