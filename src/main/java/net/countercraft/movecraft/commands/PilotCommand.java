@@ -14,7 +14,7 @@ import org.bukkit.entity.Player;
 public class PilotCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args) {
-        if (command.getName().equalsIgnoreCase("pilot"))
+        if (!command.getName().equalsIgnoreCase("pilot"))
             return false;
         if(!(commandSender instanceof Player)){
             commandSender.sendMessage("you need to be a player to pilot a craft");
