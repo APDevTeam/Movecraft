@@ -72,67 +72,25 @@ public class BlockCreateCommand extends UpdateCommand {
             byte newData = dataID;
             boolean delayed = false;
 
-
-            //Removed for refactor
-            // delay color changes if possible
-            /*if (Settings.DelayColorChanges && craft != null) {
-                if (existingType == newType && existingData != newData) {
-                    boolean canBeDelayed = false;
-                    if (existingType == Material.WOOL) { // you can delay wool blocks, except light gray ones
-                        canBeDelayed = !(existingData == 8 || newData == 8);
-                    }
-                    if (existingType == Material.STAINED_CLAY) { // you can delay stained clay, except all gray and black ones
-                        canBeDelayed = !(existingData == 7 || newData == 7);
-                        if (existingData == 8 || newData == 8 || existingData == 15 || newData == 15) {
-                            canBeDelayed = false;
-                        }
-                    }
-                    if (
-                            existingType == Material.STAINED_GLASS ||
-                                    existingType == Material.STAINED_GLASS_PANE ||
-                                    existingType == Material.CARPET) { // all stained glass can be delayed
-                        canBeDelayed = true;
-                    }
-                    if (canBeDelayed && craft.getScheduledBlockChanges() != null) {
-                        long whenToChange = System.currentTimeMillis() + 1000;
-                        BlockCreateCommand newMup = new BlockCreateCommand(newBlockLocation, newType, newData, null);
-                        HashMap<BlockTranslateCommand, Long> sUpd = craft.getScheduledBlockChanges();
-                        boolean alreadyPresent = false;
-                        for (BlockTranslateCommand j : sUpd.keySet()) {
-                            if (j.getNewBlockLocation().equals(newMup.getNewBlockLocation())) {
-                                alreadyPresent = true;
-                                break;
-                            }
-                        }
-                        if (!alreadyPresent) {
-                            craft.getScheduledBlockChanges().put(newMup, whenToChange);
-                        }
-                        delayed = true;
-                    }
-                }
-            }*/
-
             // move the actual block
-            if (!delayed) {
-                Chunk nativeDstChunk = ((CraftChunk) dstBlock.getChunk()).getHandle();
-                BlockPosition dstBlockPos = new BlockPosition(dstBlock.getX(), dstBlock.getY(), dstBlock.getZ());
-                IBlockData dstIBD;
+            Chunk nativeDstChunk = ((CraftChunk) dstBlock.getChunk()).getHandle();
+            BlockPosition dstBlockPos = new BlockPosition(dstBlock.getX(), dstBlock.getY(), dstBlock.getZ());
+            IBlockData dstIBD;
 
-                if (existingType != newType || existingData != newData) { // only place the actual block if it has changed
-                    // if no source block, just make the new block using the type and data info
-                    dstIBD = CraftMagicNumbers.getBlock(newType).fromLegacyData(newData);
-                    // this actually creates the block
-                    ChunkSection dstSection = nativeDstChunk.getSections()[dstBlock.getY() >> 4];
-                    if (dstSection == null) {
-                        // Put a GLASS block to initialize the section. It will be replaced next with the real block.
-                        nativeDstChunk.a(dstBlockPos, Blocks.GLASS.getBlockData());
-                        dstSection = nativeDstChunk.getSections()[dstBlockPos.getY() >> 4];
-                    }
-
-                    dstSection.setType(dstBlock.getX() & 15, dstBlock.getY() & 15, dstBlock.getZ() & 15, dstIBD);
-                    madeChanges = true;
-                    craft.incrementBlockUpdates();
+            if (existingType != newType || existingData != newData) { // only place the actual block if it has changed
+                // if no source block, just make the new block using the type and data info
+                dstIBD = CraftMagicNumbers.getBlock(newType).fromLegacyData(newData);
+                // this actually creates the block
+                ChunkSection dstSection = nativeDstChunk.getSections()[dstBlock.getY() >> 4];
+                if (dstSection == null) {
+                    // Put a GLASS block to initialize the section. It will be replaced next with the real block.
+                    nativeDstChunk.a(dstBlockPos, Blocks.GLASS.getBlockData());
+                    dstSection = nativeDstChunk.getSections()[dstBlockPos.getY() >> 4];
                 }
+
+                dstSection.setType(dstBlock.getX() & 15, dstBlock.getY() & 15, dstBlock.getZ() & 15, dstIBD);
+                madeChanges = true;
+                craft.incrementBlockUpdates();
             }
 
         }else{

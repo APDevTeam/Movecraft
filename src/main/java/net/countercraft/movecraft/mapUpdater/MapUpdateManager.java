@@ -29,7 +29,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
@@ -55,12 +54,7 @@ public class MapUpdateManager extends BukkitRunnable {
         long startTime = System.currentTimeMillis();
         // and set all crafts that were updated to not processing
 
-        updates.sort(new Comparator<UpdateCommand>() {
-            @Override
-            public int compare(UpdateCommand o1, UpdateCommand o2) {
-                return o1.getClass().getName().compareToIgnoreCase(o2.getClass().getName());
-            }
-        });
+        //updates.sort((o1, o2) -> o1.getClass().getName().compareToIgnoreCase(o2.getClass().getName()));
 
         for (UpdateCommand update : updates) {
             if (update instanceof BlockTranslateCommand) {

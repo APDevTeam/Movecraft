@@ -908,11 +908,10 @@ public class TranslationTask extends AsyncTask {
             for (MovecraftLocation l1 : airLocation) {
                 // for watercraft, fill blocks below the waterline with water
                 if (!waterCraft) {
+                    //TODO: Implement cleanup
+                    //updateSet.add(new BlockCreateCommand(l1, Material.AIR, (byte) 0, getCraft()));
                     if (getCraft().getSinking()) {
-                        updateSet.add(new BlockCreateCommand(l1, Material.AIR, (byte) 0, getCraft()));
                         updateSet.add(new ParticleUpdateCommand(l1.toBukkit(getCraft().getW()), getCraft().getType().getSmokeOnSink()));
-                    } else {
-                        updateSet.add(new BlockCreateCommand(l1, Material.AIR, (byte) 0, getCraft()));
                     }
                 } else {
                     if (l1.getY() <= waterLine) {
