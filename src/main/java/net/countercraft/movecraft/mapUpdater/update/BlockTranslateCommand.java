@@ -22,10 +22,12 @@ import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.utils.MovecraftLocation;
 import net.countercraft.movecraft.utils.Rotation;
 import net.minecraft.server.v1_10_R1.BlockPosition;
 import net.minecraft.server.v1_10_R1.ChatComponentText;
+import net.minecraft.server.v1_10_R1.ChunkSection;
 import net.minecraft.server.v1_10_R1.EnumBlockRotation;
 import net.minecraft.server.v1_10_R1.IBlockData;
 import net.minecraft.server.v1_10_R1.NextTickListEntry;
@@ -154,7 +156,6 @@ public class BlockTranslateCommand extends UpdateCommand {
 
         BlockPosition srcBlockPos = new BlockPosition(srcBlock.getX(), srcBlock.getY(), srcBlock.getZ());
         blockData = nativeSrcChunk.getBlockData(srcBlockPos);
-
         if (Arrays.binarySearch(tileEntityBlocksToPreserve, srcBlock.getTypeId()) >= 0) {
             tile = nativeSrcChunk.getTileEntities().get(srcBlockPos);
         }
@@ -172,14 +173,14 @@ public class BlockTranslateCommand extends UpdateCommand {
         // move the actual block
 
         net.minecraft.server.v1_10_R1.Chunk nativeDstChunk = ((CraftChunk) dstBlock.getChunk()).getHandle();
-        BlockPosition dstBlockPos = new BlockPosition(dstBlock.getX(), dstBlock.getY(), dstBlock.getZ());
+        BlockPosition dstBlockPos = new BlockPosition(newBlockLocation.getX(), newBlockLocation.getY(), newBlockLocation.getZ());
         IBlockData dstIBD;
 
         if (existingType != type || existingData != dataID) { // only place the actual block if it has changed
             // if there is a source block, copy the data from it, modifying with rotation (note that some updates don't have source blocks, like a repair)
             dstIBD = blockData.a(ROTATION[rotation.ordinal()]);
             // this actually creates the block
-            net.minecraft.server.v1_10_R1.ChunkSection dstSection = nativeDstChunk.getSections()[dstBlock.getY() >> 4];
+            ChunkSection dstSection = nativeDstChunk.getSections()[dstBlock.getY() >> 4];
             if (dstSection == null) {
                 // Put a GLASS block to initialize the section. It will be replaced next with the real block.
                 nativeDstChunk.a(dstBlockPos, net.minecraft.server.v1_10_R1.Blocks.GLASS.getBlockData());
@@ -267,7 +268,15 @@ public class BlockTranslateCommand extends UpdateCommand {
         }
 
         //Now remove the old block
-        srcBlock.setType(Material.AIR);
+        boolean foundReplacement=false;
+        for(UpdateCommand updateCommand : MapUpdateManager.getInstance().getUpdates()){
+            if(updateCommand instanceof BlockTranslateCommand && ((BlockTranslateCommand)updateCommand).newBlockLocation.equals(this.oldBlockLocation)){
+                    foundReplacement = true;
+                    break;
+            }
+        }
+        if(!foundReplacement)
+            oldBlockLocation.toBukkit(craft.getW()).getBlock().setType(Material.AIR);
 
 
         if (type == Material.SIGN_POST || type == Material.WALL_SIGN) {

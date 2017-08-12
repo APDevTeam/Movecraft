@@ -56,6 +56,8 @@ public class MapUpdateManager extends BukkitRunnable {
 
         //updates.sort((o1, o2) -> o1.getClass().getName().compareToIgnoreCase(o2.getClass().getName()));
 
+
+
         for (UpdateCommand update : updates) {
             if (update instanceof BlockTranslateCommand) {
                 Craft craft = ((BlockTranslateCommand) update).getCraft();
@@ -66,6 +68,7 @@ public class MapUpdateManager extends BukkitRunnable {
             }
             update.doUpdate();
         }
+        
         //TODO: re-add lighting updates
         /*// queue chunks for lighting recalc
         if (!Settings.CompatibilityMode) {
@@ -109,6 +112,10 @@ public class MapUpdateManager extends BukkitRunnable {
 
     private static class MapUpdateManagerHolder {
         private static final MapUpdateManager INSTANCE = new MapUpdateManager();
+    }
+
+    public List<UpdateCommand> getUpdates(){
+        return Collections.unmodifiableList(updates);
     }
 
 }

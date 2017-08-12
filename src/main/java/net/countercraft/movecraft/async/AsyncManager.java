@@ -33,7 +33,6 @@ import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.mapUpdater.update.BlockCreateCommand;
-import net.countercraft.movecraft.mapUpdater.update.BlockTranslateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import net.countercraft.movecraft.utils.BlockUtils;
 import net.countercraft.movecraft.utils.MovecraftLocation;
@@ -47,6 +46,7 @@ import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.TNTPrimed;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
@@ -68,7 +68,7 @@ import java.util.logging.Level;
 public class AsyncManager extends BukkitRunnable {
     private static final AsyncManager instance = new AsyncManager();
     private final HashMap<AsyncTask, Craft> ownershipMap = new HashMap<>();
-    private final HashMap<org.bukkit.entity.TNTPrimed, Double> TNTTracking = new HashMap<>();
+    private final HashMap<TNTPrimed, Double> TNTTracking = new HashMap<>();
     private final HashMap<Craft, HashMap<Craft, Long>> recentContactTracking = new HashMap<>();
     private final BlockingQueue<AsyncTask> finishedAlgorithms = new LinkedBlockingQueue<>();
     private final HashSet<Craft> clearanceSet = new HashSet<>();
@@ -444,7 +444,7 @@ public class AsyncManager extends BukkitRunnable {
 
                                 // ascend
                                 if (pcraft.getCruiseDirection() == 0x42) {
-                                    dy = 0 + 1 + pcraft.getType().getVertCruiseSkipBlocks();
+                                    dy = 1 + pcraft.getType().getVertCruiseSkipBlocks();
                                 }
                                 // descend
                                 if (pcraft.getCruiseDirection() == 0x43) {
@@ -800,7 +800,7 @@ public class AsyncManager extends BukkitRunnable {
                                         pcraft.setSinking(true);
                                         CraftManager.getInstance().removePlayerFromCraft(pcraft);
                                         final Craft releaseCraft = pcraft;
-                                        BukkitTask releaseTask = new BukkitRunnable() {
+                                        new BukkitRunnable() {
                                             @Override
                                             public void run() {
                                                 CraftManager.getInstance().removeCraft(releaseCraft);
@@ -853,7 +853,7 @@ public class AsyncManager extends BukkitRunnable {
         if (ticksElapsed > Settings.TracerRateTicks) {
             for (World w : Bukkit.getWorlds()) {
                 if (w != null) {
-                    for (org.bukkit.entity.TNTPrimed tnt : w.getEntitiesByClass(org.bukkit.entity.TNTPrimed.class)) {
+                    for (TNTPrimed tnt : w.getEntitiesByClass(TNTPrimed.class)) {
                         if (tnt.getVelocity().lengthSquared() > 0.25) {
                             for (Player p : w.getPlayers()) {
                                 // is the TNT within the view distance (rendered
@@ -1004,7 +1004,7 @@ public class AsyncManager extends BukkitRunnable {
 
     private Craft fastNearestCraftToLoc(Location loc) {
         Craft ret = null;
-        long closestDistSquared = 1000000000l;
+        long closestDistSquared = 1000000000L;
         Craft[] craftsList = CraftManager.getInstance().getCraftsInWorld(loc.getWorld());
         if (craftsList != null) {
             for (Craft i : craftsList) {
@@ -1029,7 +1029,7 @@ public class AsyncManager extends BukkitRunnable {
             // see if there is any new rapid moving TNT in the worlds
             for (World w : Bukkit.getWorlds()) {
                 if (w != null) {
-                    for (org.bukkit.entity.TNTPrimed tnt : w.getEntitiesByClass(org.bukkit.entity.TNTPrimed.class)) {
+                    for (TNTPrimed tnt : w.getEntitiesByClass(TNTPrimed.class)) {
                         if ((tnt.getVelocity().lengthSquared() > 0.35)) {
                             if (!TNTTracking.containsKey(tnt)) {
                                 Craft c = fastNearestCraftToLoc(tnt.getLocation());
@@ -1086,9 +1086,9 @@ public class AsyncManager extends BukkitRunnable {
             }
 
             // then, removed any exploded TNT from tracking
-            Iterator<org.bukkit.entity.TNTPrimed> tntI = TNTTracking.keySet().iterator();
+            Iterator<TNTPrimed> tntI = TNTTracking.keySet().iterator();
             while (tntI.hasNext()) {
-                org.bukkit.entity.TNTPrimed tnt = tntI.next();
+                TNTPrimed tnt = tntI.next();
                 if (tnt.getFuseTicks() <= 0) {
                     tntI.remove();
                 }
@@ -1096,7 +1096,7 @@ public class AsyncManager extends BukkitRunnable {
 
             // now check to see if any has abruptly changed velocity, and should
             // explode
-            for (org.bukkit.entity.TNTPrimed tnt : TNTTracking.keySet()) {
+            for (TNTPrimed tnt : TNTTracking.keySet()) {
                 double vel = tnt.getVelocity().lengthSquared();
                 if (vel < TNTTracking.get(tnt) / 10.0) {
                     tnt.setFuseTicks(0);
@@ -1192,7 +1192,7 @@ public class AsyncManager extends BukkitRunnable {
                         }
                     }
                     if (updateCommands.size() > 0) {
-                        MapUpdateManager.getInstance().scheduleUpdates(updateCommands.toArray(new BlockTranslateCommand[1]));
+                        MapUpdateManager.getInstance().scheduleUpdates(updateCommands);
                     }
                 }
             }
