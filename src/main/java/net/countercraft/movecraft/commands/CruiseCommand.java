@@ -11,7 +11,7 @@ import org.bukkit.entity.Player;
 public class CruiseCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args) {
-        if(!command.getName().equalsIgnoreCase("rotate")){
+        if(!command.getName().equalsIgnoreCase("cruise")){
             return false;
         }
         if(!(commandSender instanceof Player)){
@@ -33,7 +33,7 @@ public class CruiseCommand implements CommandExecutor {
             craft.setCruising(false);
             return true;
         }
-        if (!player.hasPermission("movecraft.commands") && !player.hasPermission("movecraft.commands.cruise")) {
+        if (!player.hasPermission("movecraft.commands") || !player.hasPermission("movecraft.commands.cruise")) {
             player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
             return true;
         }

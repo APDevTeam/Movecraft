@@ -21,7 +21,7 @@ public class PilotCommand implements CommandExecutor {
             return true;
         }
         Player player = (Player) commandSender;
-        if (!player.hasPermission("movecraft.commands") && !player.hasPermission("movecraft.commands.pilot")) {
+        if (!player.hasPermission("movecraft.commands") || !player.hasPermission("movecraft.commands.pilot")) {
             player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
             return true;
         }
@@ -29,7 +29,7 @@ public class PilotCommand implements CommandExecutor {
             player.sendMessage("You need to supply a craft type");
             return true;
         }
-        if (player.hasPermission("movecraft." + args[0] + ".pilot")) {
+        if (!player.hasPermission("movecraft." + args[0] + ".pilot")) {
             player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
             return true;
         }
