@@ -26,7 +26,9 @@ import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.utils.MovecraftLocation;
 import net.countercraft.movecraft.utils.Rotation;
 import net.minecraft.server.v1_10_R1.BlockPosition;
+import net.minecraft.server.v1_10_R1.Blocks;
 import net.minecraft.server.v1_10_R1.ChatComponentText;
+import net.minecraft.server.v1_10_R1.Chunk;
 import net.minecraft.server.v1_10_R1.ChunkSection;
 import net.minecraft.server.v1_10_R1.EnumBlockRotation;
 import net.minecraft.server.v1_10_R1.IBlockData;
@@ -34,6 +36,7 @@ import net.minecraft.server.v1_10_R1.NextTickListEntry;
 import net.minecraft.server.v1_10_R1.StructureBoundingBox;
 import net.minecraft.server.v1_10_R1.TileEntity;
 import net.minecraft.server.v1_10_R1.TileEntitySign;
+import net.minecraft.server.v1_10_R1.World;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -134,84 +137,69 @@ public class BlockTranslateCommand extends UpdateCommand {
 
     @Override
     @SuppressWarnings("deprecation")
-    public void doUpdate() {
-        //TODO: fix this
-        net.minecraft.server.v1_10_R1.World nativeWorld = ((CraftWorld) craft.getW()).getHandle();
-        IBlockData blockData = null;
-        TileEntity tile=null;
-        NextTickListEntry nextTickEntry = null;
+    public void doUpdate(){
+        World nativeWorld = ((CraftWorld) craft.getW()).getHandle();
+        //Old block
+        Block oldBlock = oldBlockLocation.toBukkit(craft.getW()).getBlock();
+        Chunk oldChunk = ((CraftChunk) oldBlock.getChunk()).getHandle();
+        BlockPosition oldBlockPos = new BlockPosition(oldBlock.getX(), oldBlock.getY(), oldBlock.getZ());
+        IBlockData blockData = oldChunk.getBlockData(oldBlockPos).a(ROTATION[rotation.ordinal()]);
 
-        //Removed chunkloading and relighting
+        //New block
+        Block newBlock = newBlockLocation.toBukkit(craft.getW()).getBlock();
+        Chunk newChunk = ((CraftChunk) newBlock.getChunk()).getHandle();
+        BlockPosition newBlockPosition = new BlockPosition(newBlock.getX(), newBlock.getY(), newBlock.getZ());
+        Material existingType = newBlock.getType();
+        byte existingData = newBlock.getData();
 
-        // TODO: make this go in chunks instead of block by block, same with the block placement system
+        TileEntity tile = null;
+        if (Arrays.binarySearch(tileEntityBlocksToPreserve, oldBlock.getTypeId()) >= 0) {
+            tile = oldChunk.getTileEntities().get(oldBlockPos);
+        }
+        if (existingType == type && existingData == dataID && tile == null) {
+            return;
+        }
 
-
-        Block srcBlock = oldBlockLocation.toBukkit(craft.getW()).getBlock();
-        net.minecraft.server.v1_10_R1.Chunk nativeSrcChunk = ((CraftChunk) srcBlock.getChunk()).getHandle();
-        StructureBoundingBox srcBoundingBox = new StructureBoundingBox(srcBlock.getX(), srcBlock.getY(), srcBlock.getZ(), srcBlock.getX() + 1, srcBlock.getY() + 1, srcBlock.getZ() + 1);
+        //get the nextTick to move with the tile
+        StructureBoundingBox srcBoundingBox = new StructureBoundingBox(oldBlock.getX(), oldBlock.getY(), oldBlock.getZ(), oldBlock.getX() + 1, oldBlock.getY() + 1, oldBlock.getZ() + 1);
         List<NextTickListEntry> entries = nativeWorld.a(srcBoundingBox, true);
+        NextTickListEntry nextTickEntry = null;
         if (entries != null) {
             nextTickEntry = entries.get(0);//new NextTickListEntry(entries.get(0).a,entries.get(0).);
         }
 
-        BlockPosition srcBlockPos = new BlockPosition(srcBlock.getX(), srcBlock.getY(), srcBlock.getZ());
-        blockData = nativeSrcChunk.getBlockData(srcBlockPos);
-        if (Arrays.binarySearch(tileEntityBlocksToPreserve, srcBlock.getTypeId()) >= 0) {
-            tile = nativeSrcChunk.getTileEntities().get(srcBlockPos);
+
+
+        // this actually creates the block
+        ChunkSection newSection = newChunk.getSections()[newBlockPosition.getY() >> 4];
+        if (newSection == null) {
+            // Put a GLASS block to initialize the section. It will be replaced next with the real block.
+            newChunk.a(newBlockPosition, Blocks.GLASS.getBlockData());
+            newSection = newChunk.getSections()[newBlockPosition.getY() >> 4];
         }
 
-        //TODO: Reset block updates
-        //blockUpdatesPerCraft.clear();
-
-        // now do the block updates, move entities when you set the block they are on
-
-        boolean madeChanges = false;
-        Block dstBlock = newBlockLocation.toBukkit(craft.getW()).getBlock();
-        Material existingType = dstBlock.getType();
-        byte existingData = dstBlock.getData();
-
-        // move the actual block
-
-        net.minecraft.server.v1_10_R1.Chunk nativeDstChunk = ((CraftChunk) dstBlock.getChunk()).getHandle();
-        BlockPosition dstBlockPos = new BlockPosition(newBlockLocation.getX(), newBlockLocation.getY(), newBlockLocation.getZ());
-        IBlockData dstIBD;
-
-        if (existingType != type || existingData != dataID) { // only place the actual block if it has changed
-            // if there is a source block, copy the data from it, modifying with rotation (note that some updates don't have source blocks, like a repair)
-            dstIBD = blockData.a(ROTATION[rotation.ordinal()]);
-            // this actually creates the block
-            ChunkSection dstSection = nativeDstChunk.getSections()[dstBlock.getY() >> 4];
-            if (dstSection == null) {
-                // Put a GLASS block to initialize the section. It will be replaced next with the real block.
-                nativeDstChunk.a(dstBlockPos, net.minecraft.server.v1_10_R1.Blocks.GLASS.getBlockData());
-                dstSection = nativeDstChunk.getSections()[dstBlockPos.getY() >> 4];
-            }
-
-            dstSection.setType(dstBlock.getX() & 15, dstBlock.getY() & 15, dstBlock.getZ() & 15, dstIBD);
-            madeChanges = true;
-            craft.incrementBlockUpdates();
-        }
+        //TODO: figure out what the bitwise is for
+        newSection.setType(newBlock.getX() & 15, newBlock.getY() & 15, newBlock.getZ() & 15, blockData);
+        //craft.incrementBlockUpdates();
 
         // if you had a source block, also move the tile entity, and if there is a next tick entry, move that too
         if (tile != null) {
-            tile.setPosition(dstBlockPos);
+            tile.setPosition(newBlockPosition);
             craft.incrementBlockUpdates();
-            madeChanges = true;
             if (type == Material.CHEST || type == Material.TRAPPED_CHEST) {
                 craft.incrementBlockUpdates ((int) (craft.getOrigBlockCount() * 0.005));
             }
-            nativeDstChunk.getTileEntities().put(dstBlockPos, tile);
+            newChunk.getTileEntities().put(newBlockPosition, tile);
             if (tile instanceof TileEntitySign) {
                 sendSignToPlayers();
             }
-            if (nativeWorld.capturedTileEntities.containsKey(srcBlockPos)) {
+            if (nativeWorld.capturedTileEntities.containsKey(oldBlockPos)) {
                 // Is this really necessary?
-                nativeWorld.capturedTileEntities.remove(srcBlockPos);
-                nativeWorld.capturedTileEntities.put(dstBlockPos, tile);
+                nativeWorld.capturedTileEntities.remove(oldBlockPos);
+                nativeWorld.capturedTileEntities.put(newBlockPosition, tile);
             }
         }
 
-        //NextTickListEntry entry = nextTickMap.get(mapUpdateIndex);
         if (nextTickEntry != null) {
             final long currentTime = nativeWorld.worldData.getTime();
             BlockPosition position = nextTickEntry.a;
@@ -222,17 +210,10 @@ public class BlockTranslateCommand extends UpdateCommand {
             nativeWorld.b(position, nextTickEntry.a(), (int) (nextTickEntry.b - currentTime), nextTickEntry.c);
         }
 
-
-
-
-        if (madeChanges) { // send map updates to clients, and perform various checks
-            //Location loc = new Location(updateWorld, newBlockLocation.getX(), newBlockLocation.getY(), newBlockLocation.getZ());
-            newBlockLocation.toBukkit(craft.getW()).getBlock().getState().update(false, false);
-        }
-
+        //send updates to players
+        newBlockLocation.toBukkit(craft.getW()).getBlock().getState().update(false, false);
 
         //Do comperator stuff
-
         if (type == Material.REDSTONE_COMPARATOR_OFF) { // for some reason comparators are flakey, have to do it twice sometimes
             //Block b = updateWorld.getBlockAt(newBlockLocation.getX(), newBlockLocation.getY(), newBlockLocation.getZ());
             Block b = newBlockLocation.toBukkit(craft.getW()).getBlock();
@@ -249,47 +230,40 @@ public class BlockTranslateCommand extends UpdateCommand {
 
 
         // clean up any left over tile entities on blocks that do not need tile entities, also process signs
-
         int blockType = oldBlockLocation.toBukkit(craft.getW()).getBlock().getTypeId();
-        dstBlockPos = new BlockPosition(srcBlock.getX(), srcBlock.getY(), srcBlock.getZ());
-        if (Arrays.binarySearch(tileEntityBlocksToPreserve, blockType) < 0) { // TODO: make this only run when the original block had tile data, but after it cleans up my corrupt chunks >.>
-            nativeDstChunk.getTileEntities().remove(dstBlockPos);
+        if (tile!=null && Arrays.binarySearch(tileEntityBlocksToPreserve, blockType) < 0) { // TODO: make this only run when the original block had tile data, but after it cleans up my corrupt chunks >.>
+            oldChunk.getTileEntities().remove(oldBlockPos);
         }
 
 
         // now remove the tile entities in the new location if they shouldn't be there
         //blockType = updateWorld.getBlockTypeIdAt(newBlockLocation.getX(), newBlockLocation.getY(), newBlockLocation.getZ());
-        srcBlock = newBlockLocation.toBukkit(craft.getW()).getBlock();
-        blockType = srcBlock.getTypeId();
-        nativeDstChunk = ((CraftChunk) srcBlock.getChunk()).getHandle();
-        dstBlockPos = new BlockPosition(srcBlock.getX(), srcBlock.getY(), srcBlock.getZ());
         if (Arrays.binarySearch(tileEntityBlocksToPreserve, blockType) < 0) { // TODO: make this only run when the original block had tile data, but after it cleans up my corrupt chunks >.>
-            nativeDstChunk.getTileEntities().remove(dstBlockPos);
+            newChunk.getTileEntities().remove(newBlockPosition);
         }
 
         //Now remove the old block
-        boolean foundReplacement=false;
-        for(UpdateCommand updateCommand : MapUpdateManager.getInstance().getUpdates()){
-            if(updateCommand instanceof BlockTranslateCommand && ((BlockTranslateCommand)updateCommand).newBlockLocation.equals(this.oldBlockLocation)){
-                    foundReplacement = true;
-                    break;
+        boolean foundReplacement = false;
+        for (UpdateCommand updateCommand : MapUpdateManager.getInstance().getUpdates()) {
+            if (updateCommand instanceof BlockTranslateCommand && ((BlockTranslateCommand) updateCommand).newBlockLocation.equals(this.oldBlockLocation)) {
+                foundReplacement = true;
+                break;
             }
         }
-        if(!foundReplacement)
+        if (!foundReplacement)
             oldBlockLocation.toBukkit(craft.getW()).getBlock().setType(Material.AIR);
 
 
         if (type == Material.SIGN_POST || type == Material.WALL_SIGN) {
             //srcBlock = updateWorld.getBlockAt(i.getNewBlockLocation().getX(), i.getNewBlockLocation().getY(), i.getNewBlockLocation().getZ());
-            nativeDstChunk = ((CraftChunk) srcBlock.getChunk()).getHandle();
-            dstBlockPos = new BlockPosition(srcBlock.getX(), srcBlock.getY(), srcBlock.getZ());
-            TileEntity tileEntity = nativeDstChunk.getTileEntities().get(dstBlockPos);
+            TileEntity tileEntity = newChunk.getTileEntities().get(newBlockPosition);
             if (tileEntity instanceof TileEntitySign) {
                 processSign(tileEntity, craft);
                 sendSignToPlayers();
-                nativeDstChunk.getTileEntities().put(dstBlockPos, tileEntity);
+                newChunk.getTileEntities().put(newBlockPosition, tileEntity);
             }
         }
+
     }
 
     @SuppressWarnings("deprecation")
