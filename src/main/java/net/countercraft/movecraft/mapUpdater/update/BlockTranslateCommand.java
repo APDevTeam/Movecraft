@@ -26,10 +26,8 @@ import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.utils.MovecraftLocation;
 import net.countercraft.movecraft.utils.Rotation;
 import net.minecraft.server.v1_10_R1.BlockPosition;
-import net.minecraft.server.v1_10_R1.Blocks;
 import net.minecraft.server.v1_10_R1.ChatComponentText;
 import net.minecraft.server.v1_10_R1.Chunk;
-import net.minecraft.server.v1_10_R1.ChunkSection;
 import net.minecraft.server.v1_10_R1.EnumBlockRotation;
 import net.minecraft.server.v1_10_R1.IBlockData;
 import net.minecraft.server.v1_10_R1.NextTickListEntry;
@@ -143,7 +141,7 @@ public class BlockTranslateCommand extends UpdateCommand {
         Block oldBlock = oldBlockLocation.toBukkit(craft.getW()).getBlock();
         Chunk oldChunk = ((CraftChunk) oldBlock.getChunk()).getHandle();
         BlockPosition oldBlockPos = new BlockPosition(oldBlock.getX(), oldBlock.getY(), oldBlock.getZ());
-        IBlockData blockData = oldChunk.getBlockData(oldBlockPos).a(ROTATION[rotation.ordinal()]);
+        IBlockData blockData = net.minecraft.server.v1_10_R1.Block.getByCombinedId(type.getId()+ (dataID << 12));;//.a(ROTATION[rotation.ordinal()]);
 
         //New block
         Block newBlock = newBlockLocation.toBukkit(craft.getW()).getBlock();
@@ -170,16 +168,18 @@ public class BlockTranslateCommand extends UpdateCommand {
 
 
 
-        // this actually creates the block
+        /*// this actually creates the block
         ChunkSection newSection = newChunk.getSections()[newBlockPosition.getY() >> 4];
         if (newSection == null) {
             // Put a GLASS block to initialize the section. It will be replaced next with the real block.
             newChunk.a(newBlockPosition, Blocks.GLASS.getBlockData());
             newSection = newChunk.getSections()[newBlockPosition.getY() >> 4];
-        }
+        }*/
 
         //TODO: figure out what the bitwise is for
-        newSection.setType(newBlock.getX() & 15, newBlock.getY() & 15, newBlock.getZ() & 15, blockData);
+        //newSection.setType(newBlock.getX() & 15, newBlock.getY() & 15, newBlock.getZ() & 15, blockData);
+        newChunk.a(newBlockPosition, blockData);
+
         //craft.incrementBlockUpdates();
 
         // if you had a source block, also move the tile entity, and if there is a next tick entry, move that too
@@ -229,7 +229,7 @@ public class BlockTranslateCommand extends UpdateCommand {
         }
 
 
-        // clean up any left over tile entities on blocks that do not need tile entities, also process signs
+        /*// clean up any left over tile entities on blocks that do not need tile entities, also process signs
         int blockType = oldBlockLocation.toBukkit(craft.getW()).getBlock().getTypeId();
         if (tile!=null && Arrays.binarySearch(tileEntityBlocksToPreserve, blockType) < 0) { // TODO: make this only run when the original block had tile data, but after it cleans up my corrupt chunks >.>
             oldChunk.getTileEntities().remove(oldBlockPos);
@@ -240,12 +240,12 @@ public class BlockTranslateCommand extends UpdateCommand {
         //blockType = updateWorld.getBlockTypeIdAt(newBlockLocation.getX(), newBlockLocation.getY(), newBlockLocation.getZ());
         if (Arrays.binarySearch(tileEntityBlocksToPreserve, blockType) < 0) { // TODO: make this only run when the original block had tile data, but after it cleans up my corrupt chunks >.>
             newChunk.getTileEntities().remove(newBlockPosition);
-        }
+        }*/
 
         //Now remove the old block
         boolean foundReplacement = false;
         for (UpdateCommand updateCommand : MapUpdateManager.getInstance().getUpdates()) {
-            if (updateCommand instanceof BlockTranslateCommand && ((BlockTranslateCommand) updateCommand).newBlockLocation.equals(this.oldBlockLocation)) {
+            if ( updateCommand instanceof BlockTranslateCommand && ((BlockTranslateCommand) updateCommand).newBlockLocation.equals(this.oldBlockLocation)) {
                 foundReplacement = true;
                 break;
             }
