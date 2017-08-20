@@ -29,7 +29,7 @@ public class PilotCommand implements TabExecutor {
             player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
             return true;
         }
-        if (args.length < 0) {
+        if (args.length < 1) {
             player.sendMessage("You need to supply a craft type");
             return true;
         }
