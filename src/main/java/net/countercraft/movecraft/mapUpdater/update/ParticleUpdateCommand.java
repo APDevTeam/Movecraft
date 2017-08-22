@@ -1,12 +1,9 @@
 package net.countercraft.movecraft.mapUpdater.update;
 
 import net.countercraft.movecraft.config.Settings;
-import net.minecraft.server.v1_10_R1.EntityPlayer;
-import net.minecraft.server.v1_10_R1.EnumParticle;
-import net.minecraft.server.v1_10_R1.PacketPlayOutWorldParticles;
 import org.bukkit.Effect;
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_10_R1.entity.CraftPlayer;
+import org.bukkit.Particle;
 import org.bukkit.entity.Player;
 
 import java.util.Random;
@@ -37,16 +34,11 @@ public class ParticleUpdateCommand extends UpdateCommand {
 
     private boolean sendSilhouetteToPlayers() {
         if (rand.nextInt(100) < 15) {
+
             for (Player p : location.getWorld().getPlayers()) { // this is necessary because signs do not get updated client side correctly without refreshing the chunks, which causes a memory leak in the clients
                 double distSquared = location.distanceSquared(p.getLocation());
                 if ((distSquared < Settings.SilhouetteViewDistance * Settings.SilhouetteViewDistance) && (distSquared > 32 * 32)) {
-                    EntityPlayer craftPlayer = ((CraftPlayer) p).getHandle();
-                    craftPlayer.playerConnection.sendPacket(new PacketPlayOutWorldParticles(
-                            EnumParticle.VILLAGER_HAPPY, true,
-                            (float) location.getX(),
-                            (float) location.getY(),
-                            (float) location.getZ(),
-                            1,  1,  1, 0, 9));
+                    p.spawnParticle(Particle.VILLAGER_HAPPY, location, 9);
                 }
             }
             return true;
