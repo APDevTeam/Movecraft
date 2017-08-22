@@ -66,6 +66,10 @@ public class CraftTranslateCommand extends UpdateCommand {
             //get the nextTick to move with the tile
             StructureBoundingBox srcBoundingBox = new StructureBoundingBox(position.getX(), position.getY(), position.getZ(), position.getX() + 1, position.getY() + 1, position.getZ() + 1);
             List<NextTickListEntry> originalEntries = nativeWorld.a(srcBoundingBox, true);
+            if ( nativeWorld.capturedTileEntities.containsKey(position)) {
+                nativeWorld.capturedTileEntities.remove(position);
+            }
+            nativeWorld.getChunkAtWorldCoords(position).getTileEntities().remove(position);
             if (originalEntries == null) {
                 tiles.add(new TileHolder(tile, null, position));
                 continue;
@@ -167,20 +171,15 @@ public class CraftTranslateCommand extends UpdateCommand {
     }
 
     private void moveTileEntity(@NotNull BlockPosition newPosition, @NotNull TileEntity tile){
-        logger.info("get the world");
         World nativeWorld = ((CraftWorld) craft.getW()).getHandle();
-        logger.info("get the chunk");
         Chunk chunk = nativeWorld.getChunkAtWorldCoords(newPosition);
         if(nativeWorld.captureBlockStates) {
-            logger.info("capturing states");
             tile.a(nativeWorld);
             tile.setPosition(newPosition);
             nativeWorld.capturedTileEntities.put(newPosition, tile);
             return;
         }
-        logger.info("setting position");
         tile.setPosition(newPosition);
-        logger.info("putting tiles");
         chunk.tileEntities.put(newPosition, tile);
     }
 
