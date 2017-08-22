@@ -24,6 +24,7 @@ import com.palmergames.bukkit.towny.Towny;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.flags.StateFlag;
+import net.countercraft.movecraft.api.WorldHandler;
 import net.countercraft.movecraft.async.AsyncManager;
 import net.countercraft.movecraft.commands.AssaultCommand;
 import net.countercraft.movecraft.commands.AssaultInfoCommand;
@@ -51,7 +52,6 @@ import net.countercraft.movecraft.warfare.siege.Siege;
 import net.countercraft.movecraft.warfare.siege.SiegeManager;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.World;
-
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -90,6 +90,7 @@ public class Movecraft extends JavaPlugin {
     public HashMap<MovecraftLocation, World> blockFadeWorldMap = new HashMap<>();
     private Logger logger;
     private boolean shuttingDown;
+    private WorldHandler worldHandler;
 
     private AssaultManager assaultManager;
     private SiegeManager siegeManager;
@@ -134,7 +135,7 @@ public class Movecraft extends JavaPlugin {
         }
         // if the CompatibilityMode is specified in the config.yml file, use it.
         // Otherwise set to false.
-        Settings.CompatibilityMode = getConfig().getBoolean("CompatibilityMode", false);
+        /*Settings.CompatibilityMode = getConfig().getBoolean("CompatibilityMode", false);
         if (!Settings.CompatibilityMode) {
             try {
                 Class.forName("net.minecraft.server.v1_10_R1.Chunk");
@@ -143,7 +144,25 @@ public class Movecraft extends JavaPlugin {
                 logger.log(Level.INFO, "WARNING: CompatibilityMode was set to false, but required build-specific classes were not found. FORCING COMPATIBILITY MODE");
             }
         }
-        logger.log(Level.INFO, "CompatiblityMode is set to {0}", Settings.CompatibilityMode);
+        logger.log(Level.INFO, "CompatiblityMode is set to {0}", Settings.CompatibilityMode);*/
+        //Switch to interfaces
+        String packageName = this.getServer().getClass().getPackage().getName();
+        String version = packageName.substring(packageName.lastIndexOf('.') + 1);
+        try {
+            final Class<?> clazz = Class.forName("net.countercraft.movecraft.compat.nms." + version + ".IWorldHandler");
+            // Check if we have a NMSHandler class at that location.
+            if (WorldHandler.class.isAssignableFrom(clazz)) { // Make sure it actually implements NMS
+                this.worldHandler = (WorldHandler) clazz.getConstructor().newInstance(); // Set our handler
+            }
+        } catch (final Exception e) {
+            e.printStackTrace();
+            this.getLogger().severe("Could not find support for this version.");
+            this.setEnabled(false);
+            return;
+        }
+        this.getLogger().info("Loading support for " + version);
+
+
         Settings.DelayColorChanges = getConfig().getBoolean("DelayColorChanges", false);
         Settings.SinkRateTicks = getConfig().getDouble("SinkRateTicks", 20.0);
         Settings.SinkCheckTicks = getConfig().getDouble("SinkCheckTicks", 100.0);
@@ -180,6 +199,10 @@ public class Movecraft extends JavaPlugin {
         Settings.DisableShadowBlocks = new HashSet<>(getConfig().getIntegerList("DisableShadowBlocks"));  //REMOVE FOR PUBLIC VERSION
 
         Settings.SiegeEnable = getConfig().getBoolean("SiegeEnable", true);
+
+
+
+
         if (!Settings.CompatibilityMode) {
             for (int typ : Settings.DisableShadowBlocks) {
                 disableShadow(typ);
@@ -398,6 +421,7 @@ public class Movecraft extends JavaPlugin {
         logger = getLogger();
     }
 
+
     public WorldGuardPlugin getWorldGuardPlugin() {
         return worldGuardPlugin;
     }
@@ -431,6 +455,10 @@ public class Movecraft extends JavaPlugin {
     }
 
     public SiegeManager getSiegeManager(){return siegeManager;}
+
+    public WorldHandler getWorldHandler(){
+        return worldHandler;
+    }
 
 }
 
