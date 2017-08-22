@@ -21,7 +21,7 @@ import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.async.translation.TranslationTaskData;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.mapUpdater.update.BlockTranslateCommand;
+import net.countercraft.movecraft.mapUpdater.update.CraftTranslateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
@@ -59,8 +59,8 @@ public class MapUpdateManager extends BukkitRunnable {
 
 
         for (UpdateCommand update : updates) {
-            if (update instanceof BlockTranslateCommand) {
-                Craft craft = ((BlockTranslateCommand) update).getCraft();
+            if (update instanceof CraftTranslateCommand) {
+                Craft craft = ((CraftTranslateCommand) update).getCraft();
                 craft.setBlockUpdates(0);
                 if (!craft.isNotProcessing())
                     craft.setProcessing(false);

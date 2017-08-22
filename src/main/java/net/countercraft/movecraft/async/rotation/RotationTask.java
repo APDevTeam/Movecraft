@@ -29,7 +29,7 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.update.BlockCreateCommand;
-import net.countercraft.movecraft.mapUpdater.update.BlockTranslateCommand;
+import net.countercraft.movecraft.mapUpdater.update.CraftTranslateCommand;
 import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import net.countercraft.movecraft.utils.BlockUtils;
@@ -371,7 +371,7 @@ public class RotationTask extends AsyncTask {
                     if (BlockUtils.blockRequiresRotation(id.getId())) {
                         data = BlockUtils.rotate(data, id.getId(), rotation);
                     }
-                    mapUpdates.add(new BlockTranslateCommand(originalBlockList[i],  blockList[i], id, data, rotation, parentCraft));
+                    //mapUpdates.add(new BlockTranslateCommand(originalBlockList[i],  blockList[i], id, data, rotation, parentCraft));
                 }
             } else {
                 // allow watercraft to rotate through water
@@ -385,13 +385,14 @@ public class RotationTask extends AsyncTask {
                     if (BlockUtils.blockRequiresRotation(id.getId())) {
                         data = BlockUtils.rotate(data, id.getId(), rotation);
                     }
-                    mapUpdates.add(new BlockTranslateCommand(originalBlockList[i],  blockList[i], id, data, rotation, parentCraft));
+                    //mapUpdates.add(new BlockTranslateCommand(originalBlockList[i],  blockList[i], id, data, rotation, parentCraft));
                 }
             }
 
         }
 
         if (!failed) {
+            mapUpdates.add(new CraftTranslateCommand(getCraft(), new MovecraftLocation(0,0,0), rotation));
             //rotate entities in the craft
             Location tOP = new Location(getCraft().getW(), originPoint.getX(), originPoint.getY(), originPoint.getZ());
 

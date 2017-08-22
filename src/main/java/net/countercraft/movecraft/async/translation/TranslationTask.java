@@ -29,10 +29,10 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.update.BlockCreateCommand;
+import net.countercraft.movecraft.mapUpdater.update.CraftTranslateCommand;
 import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.ExplosionUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.ItemDropUpdateCommand;
-import net.countercraft.movecraft.mapUpdater.update.BlockTranslateCommand;
 import net.countercraft.movecraft.mapUpdater.update.ParticleUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import net.countercraft.movecraft.utils.BoundingBoxUtils;
@@ -602,7 +602,7 @@ public class TranslationTask extends AsyncTask {
                 }
 
                 if (!ignoreBlock) {
-                    updateSet.add(new BlockTranslateCommand(oldLoc, newLoc, oldType, oldData, getCraft()));
+                    //updateSet.add(new BlockTranslateCommand(oldLoc, newLoc, oldType, oldData, getCraft()));
                     tempBlockList.add(newLoc);
                 }
 
@@ -781,6 +781,7 @@ public class TranslationTask extends AsyncTask {
         }
 
         if (!data.failed()) {
+            updateSet.add(new CraftTranslateCommand(getCraft(), new MovecraftLocation(data.getDx(), data.getDy(), data.getDz())));
             MovecraftLocation[] newBlockList = tempBlockList.toArray(new MovecraftLocation[0]);
             data.setBlockList(newBlockList);
 

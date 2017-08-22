@@ -35,6 +35,7 @@ import net.minecraft.server.v1_10_R1.StructureBoundingBox;
 import net.minecraft.server.v1_10_R1.TileEntity;
 import net.minecraft.server.v1_10_R1.TileEntitySign;
 import net.minecraft.server.v1_10_R1.World;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -57,6 +58,7 @@ import java.util.List;
 /**
  * Class that stores the data about a single blocks changes to the map in an unspecified world. The world is retrieved contextually from the submitting craft.
  */
+@Deprecated
 public class BlockTranslateCommand extends UpdateCommand {
     private static final EnumBlockRotation ROTATION[];
 
@@ -151,8 +153,11 @@ public class BlockTranslateCommand extends UpdateCommand {
         byte existingData = newBlock.getData();
 
         TileEntity tile = null;
-        if (Arrays.binarySearch(tileEntityBlocksToPreserve, oldBlock.getTypeId()) >= 0) {
+        Bukkit.getLogger().info("searching for a tile");
+        if (Arrays.binarySearch(tileEntityBlocksToPreserve, type.getId()) >= 0) {
+            Bukkit.getLogger().info("Getting tile");
             tile = oldChunk.getTileEntities().get(oldBlockPos);
+            Bukkit.getLogger().info("Got tile. Is it null? " + (tile ==null));
         }
         if (existingType == type && existingData == dataID && tile == null) {
             return;
@@ -164,6 +169,7 @@ public class BlockTranslateCommand extends UpdateCommand {
         NextTickListEntry nextTickEntry = null;
         if (entries != null) {
             nextTickEntry = entries.get(0);//new NextTickListEntry(entries.get(0).a,entries.get(0).);
+            entries.remove(nextTickEntry);
         }
 
 
@@ -184,21 +190,32 @@ public class BlockTranslateCommand extends UpdateCommand {
 
         // if you had a source block, also move the tile entity, and if there is a next tick entry, move that too
         if (tile != null) {
-            tile.setPosition(newBlockPosition);
-            craft.incrementBlockUpdates();
+            //nativeWorld.setTileEntity(newBlockPosition,tile);
+            moveTileEntity(newBlockPosition,tile);
             if (type == Material.CHEST || type == Material.TRAPPED_CHEST) {
                 craft.incrementBlockUpdates ((int) (craft.getOrigBlockCount() * 0.005));
             }
-            newChunk.getTileEntities().put(newBlockPosition, tile);
             if (tile instanceof TileEntitySign) {
                 sendSignToPlayers();
             }
-            if (nativeWorld.capturedTileEntities.containsKey(oldBlockPos)) {
-                // Is this really necessary?
-                nativeWorld.capturedTileEntities.remove(oldBlockPos);
-                nativeWorld.capturedTileEntities.put(newBlockPosition, tile);
-            }
+
+//            tile.setPosition(newBlockPosition);
+//            craft.incrementBlockUpdates();
+//            if (type == Material.CHEST || type == Material.TRAPPED_CHEST) {
+//                craft.incrementBlockUpdates ((int) (craft.getOrigBlockCount() * 0.005));
+//            }
+//            newChunk.getTileEntities().put(newBlockPosition, tile);
+//            if (tile instanceof TileEntitySign) {
+//                sendSignToPlayers();
+//            }
+//            if (nativeWorld.capturedTileEntities.containsKey(oldBlockPos)) {
+//                // Is this really necessary?
+//                nativeWorld.capturedTileEntities.remove(oldBlockPos);
+//                nativeWorld.capturedTileEntities.put(newBlockPosition, tile);
+//            }
         }
+
+
 
         if (nextTickEntry != null) {
             final long currentTime = nativeWorld.worldData.getTime();
@@ -265,6 +282,30 @@ public class BlockTranslateCommand extends UpdateCommand {
         }
 
     }
+
+    private void moveTileEntity(@NotNull BlockPosition newPosition,@NotNull TileEntity tile){
+        Bukkit.getLogger().info("Setting tile");
+        World nativeWorld = ((CraftWorld) craft.getW()).getHandle();
+        Chunk chunk = nativeWorld.getChunkAtWorldCoords(newPosition);
+        //nativeWorld.setTileEntity(newPosition,tile);
+        //this.a(tileentity);
+        //this.getChunkAtWorldCoords(blockposition).a(blockposition, tileentity);
+        if(nativeWorld.captureBlockStates) {
+            Bukkit.getLogger().info("capturing state");
+            tile.a(nativeWorld);
+            tile.setPosition(newPosition);
+            nativeWorld.capturedTileEntities.put(newPosition, tile);
+            return;
+        }
+
+        tile.setPosition(newPosition);
+        chunk.tileEntities.put(newPosition, tile);
+        Bukkit.getLogger().info("Is it null now? ");
+        //TileEntity replacement = ((ITileEntity)type).a(this, type.toLegacyData(this.getType(pos)));
+
+    }
+
+
 
     @SuppressWarnings("deprecation")
     private void sendSignToPlayers() {
