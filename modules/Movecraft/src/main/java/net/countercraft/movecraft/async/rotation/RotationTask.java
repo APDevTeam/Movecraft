@@ -23,23 +23,23 @@ import com.palmergames.bukkit.towny.object.TownyWorld;
 import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import net.countercraft.movecraft.Movecraft;
+import net.countercraft.movecraft.api.MovecraftLocation;
+import net.countercraft.movecraft.api.Rotation;
+import net.countercraft.movecraft.api.craft.Craft;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.config.Settings;
-import net.countercraft.movecraft.api.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.update.BlockCreateCommand;
 import net.countercraft.movecraft.mapUpdater.update.CraftTranslateCommand;
 import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
+import net.countercraft.movecraft.utils.ArrayUtils;
 import net.countercraft.movecraft.utils.BlockUtils;
 import net.countercraft.movecraft.utils.MathUtils;
-import net.countercraft.movecraft.api.MovecraftLocation;
-import net.countercraft.movecraft.api.Rotation;
 import net.countercraft.movecraft.utils.TownyUtils;
 import net.countercraft.movecraft.utils.TownyWorldHeightLimits;
 import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
-import org.apache.commons.collections.ListUtils;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -478,7 +478,7 @@ public class RotationTask extends AsyncTask {
 			}*/
 
             // Calculate air changes
-            List<MovecraftLocation> airLocation = ListUtils.subtract(Arrays.asList(originalBlockList), Arrays.asList(blockList));
+            List<MovecraftLocation> airLocation = ArrayUtils.subtractAsList(originalBlockList,blockList);
 
             for (MovecraftLocation l1 : airLocation) {
                 if (waterCraft) {
@@ -622,7 +622,7 @@ public class RotationTask extends AsyncTask {
                 craftsInWorld = CraftManager.getInstance().getCraftsInWorld(getCraft().getW());
                 for (Craft craft : craftsInWorld) {
                     if (BlockUtils.arrayContainsOverlap(craft.getBlockList(), originalBlockList) && craft != getCraft()) {
-                        List<MovecraftLocation> parentBlockList = ListUtils.subtract(Arrays.asList(craft.getBlockList()), Arrays.asList(originalBlockList));
+                        List<MovecraftLocation> parentBlockList = ArrayUtils.subtractAsList(craft.getBlockList(), originalBlockList);
                         parentBlockList.addAll(Arrays.asList(blockList));
                         craft.setBlockList(parentBlockList.toArray(new MovecraftLocation[1]));
 

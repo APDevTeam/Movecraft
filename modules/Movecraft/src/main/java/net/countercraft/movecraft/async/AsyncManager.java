@@ -23,23 +23,23 @@ import com.palmergames.bukkit.towny.object.TownyWorld;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.flags.DefaultFlag;
 import net.countercraft.movecraft.Movecraft;
+import net.countercraft.movecraft.api.MovecraftLocation;
 import net.countercraft.movecraft.api.Rotation;
+import net.countercraft.movecraft.api.craft.Craft;
 import net.countercraft.movecraft.async.detection.DetectionTask;
 import net.countercraft.movecraft.async.detection.DetectionTaskData;
 import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.config.Settings;
-import net.countercraft.movecraft.api.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.mapUpdater.update.BlockCreateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
+import net.countercraft.movecraft.utils.ArrayUtils;
 import net.countercraft.movecraft.utils.BlockUtils;
-import net.countercraft.movecraft.api.MovecraftLocation;
 import net.countercraft.movecraft.utils.TownyUtils;
 import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
-import org.apache.commons.collections.ListUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -53,7 +53,6 @@ import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -162,9 +161,9 @@ public class AsyncManager extends BukkitRunnable {
 
                                             // remove the new craft from the parent
                                             // craft
-                                            List<MovecraftLocation> parentBlockList = ListUtils.subtract(
-                                                    Arrays.asList(craft.getBlockList()),
-                                                    Arrays.asList(data.getBlockList()));
+                                            List<MovecraftLocation> parentBlockList = ArrayUtils.subtractAsList(
+                                                    craft.getBlockList(),
+                                                    data.getBlockList());
                                             craft.setBlockList(parentBlockList.toArray(new MovecraftLocation[1]));
                                             craft.setOrigBlockCount(craft.getOrigBlockCount() - data.getBlockList().length);
 

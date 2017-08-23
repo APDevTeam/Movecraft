@@ -23,9 +23,10 @@ import com.palmergames.bukkit.towny.object.TownyWorld;
 import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import net.countercraft.movecraft.Movecraft;
+import net.countercraft.movecraft.api.MovecraftLocation;
+import net.countercraft.movecraft.api.craft.Craft;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.config.Settings;
-import net.countercraft.movecraft.api.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.update.BlockCreateCommand;
@@ -35,13 +36,12 @@ import net.countercraft.movecraft.mapUpdater.update.ExplosionUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.ItemDropUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.ParticleUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
+import net.countercraft.movecraft.utils.ArrayUtils;
 import net.countercraft.movecraft.utils.BoundingBoxUtils;
 import net.countercraft.movecraft.utils.MathUtils;
-import net.countercraft.movecraft.api.MovecraftLocation;
 import net.countercraft.movecraft.utils.TownyUtils;
 import net.countercraft.movecraft.utils.TownyWorldHeightLimits;
 import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
-import org.apache.commons.collections.ListUtils;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -904,7 +904,7 @@ public class TranslationTask extends AsyncTask {
 //                        MovecraftLocation[] arrA = new MovecraftLocation[0];
 //                        arrA = setA.toArray(arrA);
 //                        List<MovecraftLocation> airLocation = Arrays.asList(arrA);                        
-            List<MovecraftLocation> airLocation = ListUtils.subtract(Arrays.asList(blocksList), Arrays.asList(newBlockList));
+            List<MovecraftLocation> airLocation = ArrayUtils.subtractAsList(blocksList, newBlockList);
 
             for (MovecraftLocation l1 : airLocation) {
                 // for watercraft, fill blocks below the waterline with water
