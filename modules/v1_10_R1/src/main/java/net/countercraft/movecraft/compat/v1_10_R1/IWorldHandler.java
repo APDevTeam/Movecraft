@@ -1,9 +1,9 @@
 package net.countercraft.movecraft.compat.v1_10_R1;
 
-import net.countercraft.movecraft.api.WorldHandler;
-import net.countercraft.movecraft.api.craft.Craft;
 import net.countercraft.movecraft.api.MovecraftLocation;
 import net.countercraft.movecraft.api.Rotation;
+import net.countercraft.movecraft.api.WorldHandler;
+import net.countercraft.movecraft.api.craft.Craft;
 import net.minecraft.server.v1_10_R1.BlockPosition;
 import net.minecraft.server.v1_10_R1.Blocks;
 import net.minecraft.server.v1_10_R1.Chunk;
@@ -12,7 +12,10 @@ import net.minecraft.server.v1_10_R1.NextTickListEntry;
 import net.minecraft.server.v1_10_R1.StructureBoundingBox;
 import net.minecraft.server.v1_10_R1.TileEntity;
 import net.minecraft.server.v1_10_R1.World;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_10_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_10_R1.util.CraftMagicNumbers;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -145,6 +148,18 @@ public class IWorldHandler extends WorldHandler {
     private void setBlockFast(@NotNull World world, @NotNull BlockPosition position,@NotNull IBlockData data) {
         Chunk chunk = world.getChunkAtWorldCoords(position);
         chunk.a(position, data);
+    }
+
+    @Override
+    public void setBlockFast(@NotNull Location location, @NotNull Material material, byte data){
+        IBlockData blockData =  CraftMagicNumbers.getBlock(material).fromLegacyData(data);
+        World world = ((CraftWorld)(location.getWorld())).getHandle();
+        BlockPosition blockPosition = locationToPosition(bukkit2MovecraftLoc(location));
+        setBlockFast(world,blockPosition,blockData);
+    }
+
+    private static MovecraftLocation bukkit2MovecraftLoc(Location l) {
+        return new MovecraftLocation(l.getBlockX(), l.getBlockY(), l.getBlockZ());
     }
 
     private void moveTileEntity(@NotNull World nativeWorld, @NotNull BlockPosition newPosition, @NotNull TileEntity tile){
