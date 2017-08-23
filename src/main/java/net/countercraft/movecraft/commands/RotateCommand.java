@@ -1,10 +1,10 @@
 package net.countercraft.movecraft.commands;
 
-import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.api.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.utils.MovecraftLocation;
-import net.countercraft.movecraft.utils.Rotation;
+import net.countercraft.movecraft.api.MovecraftLocation;
+import net.countercraft.movecraft.api.Rotation;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;

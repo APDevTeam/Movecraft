@@ -1,9 +1,9 @@
 package net.countercraft.movecraft.mapUpdater.update;
 
 import net.countercraft.movecraft.Movecraft;
-import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.utils.MovecraftLocation;
-import net.countercraft.movecraft.utils.Rotation;
+import net.countercraft.movecraft.api.craft.Craft;
+import net.countercraft.movecraft.api.MovecraftLocation;
+import net.countercraft.movecraft.api.Rotation;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.logging.Logger;

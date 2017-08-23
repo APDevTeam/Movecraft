@@ -18,7 +18,7 @@
 package net.countercraft.movecraft.async;
 
 import net.countercraft.movecraft.Movecraft;
-import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.api.craft.Craft;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.scheduler.BukkitRunnable;
 

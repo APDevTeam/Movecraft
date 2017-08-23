@@ -18,14 +18,15 @@
 package net.countercraft.movecraft.listener;
 
 import net.countercraft.movecraft.Movecraft;
+import net.countercraft.movecraft.api.MovecraftLocation;
+import net.countercraft.movecraft.api.Rotation;
+import net.countercraft.movecraft.api.craft.Craft;
+import net.countercraft.movecraft.api.craft.CraftType;
 import net.countercraft.movecraft.config.Settings;
-import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.craft.CraftType;
+import net.countercraft.movecraft.craft.ICraft;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.MathUtils;
-import net.countercraft.movecraft.utils.MovecraftLocation;
-import net.countercraft.movecraft.utils.Rotation;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -232,7 +233,7 @@ public class InteractListener implements Listener {
                                 }
                             }
                             final Location loc = event.getClickedBlock().getLocation();
-                            final Craft c = new Craft(getCraftTypeFromString(craftTypeStr), loc.getWorld());
+                            final Craft c = new ICraft(getCraftTypeFromString(craftTypeStr), loc.getWorld());
                             MovecraftLocation startPoint = new MovecraftLocation(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
                             // find the craft this is a subcraft of, and set it to processing so it doesn't move
                             Craft[] craftsInWorld = CraftManager.getInstance().getCraftsInWorld(event.getClickedBlock().getWorld());
@@ -305,7 +306,7 @@ public class InteractListener implements Listener {
                 // Attempt to run detection
                 Location loc = event.getClickedBlock().getLocation();
                 MovecraftLocation startPoint = new MovecraftLocation(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
-                final Craft c = new Craft(getCraftTypeFromString(org.bukkit.ChatColor.stripColor(sign.getLine(0))),
+                final Craft c = new ICraft(getCraftTypeFromString(org.bukkit.ChatColor.stripColor(sign.getLine(0))),
                         loc.getWorld());
 
                 if (c.getType().getCruiseOnPilot()) {
@@ -418,7 +419,7 @@ public class InteractListener implements Listener {
                         }
                     }
                     final Location loc = event.getClickedBlock().getLocation();
-                    final Craft c = new Craft(getCraftTypeFromString(craftTypeStr), loc.getWorld());
+                    final Craft c = new ICraft(getCraftTypeFromString(craftTypeStr), loc.getWorld());
                     MovecraftLocation startPoint = new MovecraftLocation(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
                     // find the craft this is a subcraft of, and set it to processing so it doesn't move
                     Craft[] craftsInWorld = CraftManager.getInstance().getCraftsInWorld(event.getClickedBlock().getWorld());

@@ -18,7 +18,7 @@
 package net.countercraft.movecraft.async.translation;
 
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
-import net.countercraft.movecraft.utils.MovecraftLocation;
+import net.countercraft.movecraft.api.MovecraftLocation;
 
 import java.util.Collection;
 import java.util.HashSet;

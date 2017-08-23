@@ -15,11 +15,8 @@
  *     along with Movecraft.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.countercraft.movecraft.craft;
+package net.countercraft.movecraft.api.craft;
 
-import net.countercraft.movecraft.Movecraft;
-import net.countercraft.movecraft.config.Settings;
-import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.Material;
 import org.yaml.snakeyaml.Yaml;
 
@@ -32,7 +29,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 
 public class CraftType {
     private String craftName;
@@ -74,7 +70,7 @@ public class CraftType {
         try {
             parseCraftDataFromFile(f);
         } catch (Exception e) {
-            Movecraft.getInstance().getLogger().log(Level.SEVERE, String.format(I18nSupport.getInternationalisedString("Startup - Error parsing CraftType file"), f.getAbsolutePath()));
+            //Movecraft.getInstance().getLogger().log(Level.SEVERE, String.format(I18nSupport.getInternationalisedString("Startup - Error parsing CraftType file"), f.getAbsolutePath()));
             e.printStackTrace();
         }
     }
@@ -359,7 +355,8 @@ public class CraftType {
         if (data.containsKey("sinkSpeed")) {
             sinkRateTicks = (int) Math.ceil(20 / (doubleFromObject(data.get("sinkSpeed"))));
         } else {
-            sinkRateTicks = (int) Settings.SinkRateTicks;
+            //sinkRateTicks = (int) Settings.SinkRateTicks;
+            sinkRateTicks = 0;
         }
         if (data.containsKey("keepMovingOnSink")) {
             keepMovingOnSink = (Boolean) data.get("keepMovingOnSink");

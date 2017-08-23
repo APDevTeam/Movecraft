@@ -44,7 +44,7 @@ import net.countercraft.movecraft.listener.PlayerListener;
 import net.countercraft.movecraft.listener.WorldEditInteractListener;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
-import net.countercraft.movecraft.utils.MovecraftLocation;
+import net.countercraft.movecraft.api.MovecraftLocation;
 import net.countercraft.movecraft.utils.TownyUtils;
 import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
 import net.countercraft.movecraft.warfare.assault.AssaultManager;
@@ -149,7 +149,7 @@ public class Movecraft extends JavaPlugin {
         String packageName = this.getServer().getClass().getPackage().getName();
         String version = packageName.substring(packageName.lastIndexOf('.') + 1);
         try {
-            final Class<?> clazz = Class.forName("net.countercraft.movecraft.compat.nms." + version + ".IWorldHandler");
+            final Class<?> clazz = Class.forName("net.countercraft.movecraft.compat." + version + ".IWorldHandler");
             // Check if we have a NMSHandler class at that location.
             if (WorldHandler.class.isAssignableFrom(clazz)) { // Make sure it actually implements NMS
                 this.worldHandler = (WorldHandler) clazz.getConstructor().newInstance(); // Set our handler

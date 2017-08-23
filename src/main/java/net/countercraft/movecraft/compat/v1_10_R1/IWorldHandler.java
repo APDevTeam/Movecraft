@@ -1,9 +1,9 @@
-package net.countercraft.movecraft.compat.v1_10_1;
+package net.countercraft.movecraft.compat.v1_10_R1;
 
 import net.countercraft.movecraft.api.WorldHandler;
-import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.utils.MovecraftLocation;
-import net.countercraft.movecraft.utils.Rotation;
+import net.countercraft.movecraft.api.craft.Craft;
+import net.countercraft.movecraft.api.MovecraftLocation;
+import net.countercraft.movecraft.api.Rotation;
 import net.minecraft.server.v1_10_R1.BlockPosition;
 import net.minecraft.server.v1_10_R1.Blocks;
 import net.minecraft.server.v1_10_R1.Chunk;

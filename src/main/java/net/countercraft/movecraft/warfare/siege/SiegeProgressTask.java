@@ -3,7 +3,7 @@ package net.countercraft.movecraft.warfare.siege;
 import com.sk89q.worldguard.domains.DefaultDomain;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.countercraft.movecraft.Movecraft;
-import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.api.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;

@@ -20,7 +20,7 @@ package net.countercraft.movecraft.mapUpdater;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.async.translation.TranslationTaskData;
 import net.countercraft.movecraft.config.Settings;
-import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.api.craft.Craft;
 import net.countercraft.movecraft.mapUpdater.update.CraftTranslateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import org.bukkit.scheduler.BukkitRunnable;

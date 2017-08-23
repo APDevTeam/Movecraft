@@ -17,7 +17,7 @@
 
 package net.countercraft.movecraft.async.detection;
 
-import net.countercraft.movecraft.utils.MovecraftLocation;
+import net.countercraft.movecraft.api.MovecraftLocation;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
