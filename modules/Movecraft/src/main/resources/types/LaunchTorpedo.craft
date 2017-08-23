@@ -1,0 +1,30 @@
+name: LaunchTorpedo
+maxSize: 7
+minSize: 1
+allowedBlocks: 
+    - 173
+
+forbiddenBlocks:
+    - 7
+
+canCruise: true
+cruiseOnPilot: true
+focusedExplosion: true
+mustBeSubcraft: true
+cruiseSkipBlocks: 1
+canFly: false
+minHeightLimit: 65
+maxHeightLimit: 65
+detectionMultiplier: 40.0
+underwaterDetectionMultiplier: 4.0
+collisionExplosion: 3.0
+explodeOnCrash: 3.0
+moveEntities: false
+speed: 9.0
+tryNudge: false
+sinkPercent: 99.0
+overallSinkPercent: 99.0
+flyblocks:
+    173:
+        - 10.0
+        - 100.0

@@ -1,11 +1,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>movecraft-v1_10_R1</artifactId>
+    <artifactId>movecraft-v1_12_R1</artifactId>
     <packaging>jar</packaging>
-    <name>Movecraft-v1_10_R1</name>
+    <name>Movecraft-v1_12_R1</name>
     <url>http://github.com/apdevteam/Movecraft</url>
-    <version>v1_10_R1</version>
+    <version>v1_12_R1</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -20,12 +20,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.bukkit</groupId>
-            <artifactId>craftbukkit</artifactId>
-            <version>1.10.2-R0.1-SNAPSHOT</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
             <groupId>net.countercraft</groupId>
             <artifactId>movecraft-api</artifactId>
             <version>API</version>
@@ -35,6 +29,11 @@
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations-java5</artifactId>
             <version>RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bukkit</groupId>
+            <artifactId>craftbukkit</artifactId>
+            <version>1.12.1-R0.1-SNAPSHOT</version>
         </dependency>
     </dependencies>
 
@@ -47,7 +46,7 @@
                 <version>3.0</version>
                 <configuration>
                     <includes>
-                        <include>net/countercraft/movecraft/compat/v1_10_R1/**</include>
+                        <include>net/countercraft/movecraft/compat/v1_12_R1/**</include>
                     </includes>
                     <source>1.8</source>
                     <target>1.8</target>
@@ -59,7 +58,7 @@
                 <version>2.4</version>
                 <configuration>
                     <includes>
-                        <include>net/countercraft/movecraft/compat/v1_10_R1/**</include>
+                        <include>net/countercraft/movecraft/compat/v1_12_R1/**</include>
                     </includes>
                 </configuration>
             </plugin>
