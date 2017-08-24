@@ -7,6 +7,7 @@ import net.countercraft.movecraft.api.craft.Craft;
 import net.minecraft.server.v1_12_R1.BlockPosition;
 import net.minecraft.server.v1_12_R1.Blocks;
 import net.minecraft.server.v1_12_R1.Chunk;
+import net.minecraft.server.v1_12_R1.EnumBlockRotation;
 import net.minecraft.server.v1_12_R1.IBlockData;
 import net.minecraft.server.v1_12_R1.NextTickListEntry;
 import net.minecraft.server.v1_12_R1.StructureBoundingBox;
@@ -23,6 +24,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class IWorldHandler extends WorldHandler {
+    private static EnumBlockRotation ROTATION[];
+    static {
+        ROTATION = new EnumBlockRotation[3];
+        ROTATION[Rotation.NONE.ordinal()] = EnumBlockRotation.NONE;
+        ROTATION[Rotation.CLOCKWISE.ordinal()] = EnumBlockRotation.CLOCKWISE_90;
+        ROTATION[Rotation.ANTICLOCKWISE.ordinal()] = EnumBlockRotation.COUNTERCLOCKWISE_90;
+    }
     @Override
     public void translateCraft(@NotNull Craft craft, @NotNull MovecraftLocation displacement, @NotNull Rotation rotation) {
         //TODO: Add supourt for rotations
@@ -72,6 +80,11 @@ public class IWorldHandler extends WorldHandler {
         List<IBlockData> blockData = new ArrayList<>();
         for(BlockPosition position : positions){
             blockData.add(nativeWorld.getType(position));
+        }
+        //Rotate the blocks
+        List<IBlockData> rotatedBlockData = new ArrayList<>();
+        for(IBlockData data : blockData){
+            rotatedBlockData.add(data.a(ROTATION[rotation.ordinal()]));
         }
         //translate the positions
         List<BlockPosition> newPositions = new ArrayList<>();
@@ -143,9 +156,22 @@ public class IWorldHandler extends WorldHandler {
         return new BlockPosition(loc.getX(), loc.getY(), loc.getZ());
     }
 
+
+
+    private void setBlockFast(@NotNull World world, @NotNull BlockPosition position,@NotNull IBlockData data) {
+        Chunk chunk = world.getChunkAtWorldCoords(position);
+        chunk.a(position, data);
+    }
+
     @Override
     public void setBlockFast(@NotNull Location location, @NotNull Material material, byte data){
+        setBlockFast(location, Rotation.NONE, material, data);
+    }
+
+    @Override
+    public void setBlockFast(@NotNull Location location, @NotNull Rotation rotation, @NotNull Material material, byte data) {
         IBlockData blockData =  CraftMagicNumbers.getBlock(material).fromLegacyData(data);
+        blockData = blockData.a(ROTATION[rotation.ordinal()]);
         World world = ((CraftWorld)(location.getWorld())).getHandle();
         BlockPosition blockPosition = locationToPosition(bukkit2MovecraftLoc(location));
         setBlockFast(world,blockPosition,blockData);
@@ -153,13 +179,6 @@ public class IWorldHandler extends WorldHandler {
 
     private static MovecraftLocation bukkit2MovecraftLoc(Location l) {
         return new MovecraftLocation(l.getBlockX(), l.getBlockY(), l.getBlockZ());
-    }
-
-
-
-    private void setBlockFast(@NotNull World world, @NotNull BlockPosition position,@NotNull IBlockData data) {
-        Chunk chunk = world.getChunkAtWorldCoords(position);
-        chunk.a(position, data);
     }
 
     private void moveTileEntity(@NotNull World nativeWorld, @NotNull BlockPosition newPosition, @NotNull TileEntity tile){

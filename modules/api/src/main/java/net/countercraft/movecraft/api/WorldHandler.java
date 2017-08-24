@@ -9,4 +9,5 @@ public abstract class WorldHandler {
     public abstract void translateCraft(@NotNull Craft craft, @NotNull MovecraftLocation newLocation, @NotNull Rotation rotation);
     public abstract void translateCraft(@NotNull Craft craft, @NotNull MovecraftLocation newLocation);
     public abstract void setBlockFast(@NotNull Location location, @NotNull Material material, byte data);
+    public abstract void setBlockFast(@NotNull Location location, @NotNull Rotation rotation, @NotNull Material material, byte data);
 }
