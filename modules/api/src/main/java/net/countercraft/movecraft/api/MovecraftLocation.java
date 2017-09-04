@@ -19,7 +19,6 @@ package net.countercraft.movecraft.api;
 
 import org.bukkit.Location;
 import org.bukkit.World;
-
 public class MovecraftLocation {
     private int x, y, z;
 
