@@ -26,7 +26,7 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.ICraft;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.utils.MathUtils;
+import net.countercraft.movecraft.api.MathUtils;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;

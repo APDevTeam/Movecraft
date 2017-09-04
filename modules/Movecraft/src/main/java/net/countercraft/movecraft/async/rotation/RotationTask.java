@@ -36,7 +36,7 @@ import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import net.countercraft.movecraft.utils.ArrayUtils;
 import net.countercraft.movecraft.utils.BlockUtils;
-import net.countercraft.movecraft.utils.MathUtils;
+import net.countercraft.movecraft.api.MathUtils;
 import net.countercraft.movecraft.utils.TownyUtils;
 import net.countercraft.movecraft.utils.TownyWorldHeightLimits;
 import net.countercraft.movecraft.utils.WGCustomFlagsUtils;

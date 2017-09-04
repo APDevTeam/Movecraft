@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.compat.v1_11_R1;
 
+import net.countercraft.movecraft.api.MathUtils;
 import net.countercraft.movecraft.api.MovecraftLocation;
 import net.countercraft.movecraft.api.Rotation;
 import net.countercraft.movecraft.api.WorldHandler;
@@ -21,7 +22,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class IWorldHandler extends WorldHandler {
     private static EnumBlockRotation ROTATION[];
@@ -31,8 +34,116 @@ public class IWorldHandler extends WorldHandler {
         ROTATION[Rotation.CLOCKWISE.ordinal()] = EnumBlockRotation.CLOCKWISE_90;
         ROTATION[Rotation.ANTICLOCKWISE.ordinal()] = EnumBlockRotation.COUNTERCLOCKWISE_90;
     }
+
     @Override
-    public void translateCraft(@NotNull Craft craft, @NotNull MovecraftLocation displacement, @NotNull Rotation rotation) {
+    public void rotateCraft(@NotNull Craft craft, @NotNull Rotation rotation) {
+        //*******************************************
+        //*      Step one: Convert to Positions     *
+        //*******************************************
+        HashMap<BlockPosition,BlockPosition> rotatedPositions = new HashMap<>();
+        MovecraftLocation originPoint = new MovecraftLocation(
+                (craft.getMaxX()+craft.getMinX())/2,
+                (craft.getMaxY()+craft.getMinY())/2,
+                (craft.getMaxZ()+craft.getMinX())/2);
+        Rotation counterRotation = rotation == Rotation.CLOCKWISE ? Rotation.ANTICLOCKWISE : Rotation.CLOCKWISE;
+        for(MovecraftLocation newLocation : craft.getBlockList()){
+            rotatedPositions.put(locationToPosition(MathUtils.rotateVec(counterRotation, newLocation).add(originPoint)),locationToPosition(newLocation));
+        }
+        //*******************************************
+        //*         Step two: Get the tiles         *
+        //*******************************************
+        World nativeWorld = ((CraftWorld) craft.getW()).getHandle();
+        List<TileHolder> tiles = new ArrayList<>();
+        //get the tiles
+        for(BlockPosition position : rotatedPositions.keySet()){
+            TileEntity tile = nativeWorld.getTileEntity(position);
+            if(tile == null)
+                continue;
+            //get the nextTick to move with the tile
+            StructureBoundingBox srcBoundingBox = new StructureBoundingBox(position.getX(), position.getY(), position.getZ(), position.getX() + 1, position.getY() + 1, position.getZ() + 1);
+            List<NextTickListEntry> originalEntries = nativeWorld.a(srcBoundingBox, true);
+            if ( nativeWorld.capturedTileEntities.containsKey(position)) {
+                nativeWorld.capturedTileEntities.remove(position);
+            }
+            nativeWorld.getChunkAtWorldCoords(position).getTileEntities().remove(position);
+            if (originalEntries == null) {
+                tiles.add(new TileHolder(tile, null, position));
+                continue;
+            }
+            NextTickListEntry entry = originalEntries.get(0);
+            tiles.add(new TileHolder(tile, originalEntries.get(0), position));
+            originalEntries.remove(originalEntries.get(0));
+
+        }
+        //*******************************************
+        //*   Step three: Translate all the blocks  *
+        //*******************************************
+        // blockedByWater=false means an ocean-going vessel
+        //TODO: Simplify
+        //TODO: go by chunks
+        //TODO: Don't move unnecessary blocks
+        //get the blocks and rotate them
+        HashMap<BlockPosition,IBlockData> blockData = new HashMap<>();
+        for(BlockPosition position : rotatedPositions.keySet()){
+            blockData.put(position,nativeWorld.getType(position).a(ROTATION[rotation.ordinal()]));
+        }
+        //create the new block
+        for(Map.Entry<BlockPosition,IBlockData> entry : blockData.entrySet()) {
+            setBlockFast(nativeWorld, rotatedPositions.get(entry.getKey()), entry.getValue());
+        }
+        //*******************************************
+        //*    Step four: replace all the tiles     *
+        //*******************************************
+        //TODO: go by chunks
+        for(TileHolder tileHolder : tiles){
+            moveTileEntity(nativeWorld, rotatedPositions.get(tileHolder.getTilePosition()),tileHolder.getTile());
+            if(tileHolder.getNextTick()==null)
+                continue;
+            final long currentTime = nativeWorld.worldData.getTime();
+            nativeWorld.b(rotatedPositions.get(tileHolder.getNextTick().a), tileHolder.getNextTick().a(), (int) (tileHolder.getNextTick().b - currentTime), tileHolder.getNextTick().c);
+        }
+
+        //*******************************************
+        //*   Step five: Destroy the leftovers      *
+        //*******************************************
+        //TODO: add support for pass-through
+        List<BlockPosition> deletePositions = new ArrayList<>(rotatedPositions.keySet());
+        deletePositions.removeAll(rotatedPositions.values());
+        for(BlockPosition position : deletePositions){
+            setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
+        }
+
+        //*******************************************
+        //*       Step six: Update the blocks       *
+        //*******************************************
+        org.bukkit.World bukkitWorld = craft.getW();
+        for(BlockPosition newPosition : rotatedPositions.values()) {
+            bukkitWorld.getBlockAt(newPosition.getX(), newPosition.getY(), newPosition.getZ()).getState().update(false, false);
+        }
+        for(BlockPosition deletedPosition : deletePositions){
+            bukkitWorld.getBlockAt(deletedPosition.getX(), deletedPosition.getY(), deletedPosition.getZ()).getState().update(false, false);
+        }
+        //*******************************************
+        //*       Step seven: Send to players       *
+        //*******************************************
+        List<Chunk> chunks = new ArrayList<>();
+        for(BlockPosition position : rotatedPositions.values()){
+            Chunk chunk = nativeWorld.getChunkAtWorldCoords(position);
+            if(!chunks.contains(chunk)){
+                chunks.add(chunk);
+            }
+        }
+        for(BlockPosition position : deletePositions){
+            Chunk chunk = nativeWorld.getChunkAtWorldCoords(position);
+            if(!chunks.contains(chunk)){
+                chunks.add(chunk);
+            }
+        }
+        //sendToPlayers(chunks.toArray(new Chunk[0]));
+    }
+
+    @Override
+    public void translateCraft(@NotNull Craft craft, @NotNull MovecraftLocation displacement) {
         //TODO: Add supourt for rotations
         //A craftTranslateCommand should only occur if the craft is moving to a valid position
         //*******************************************
@@ -80,11 +191,6 @@ public class IWorldHandler extends WorldHandler {
         List<IBlockData> blockData = new ArrayList<>();
         for(BlockPosition position : positions){
             blockData.add(nativeWorld.getType(position));
-        }
-        //Rotate the blocks
-        List<IBlockData> rotatedBlockData = new ArrayList<>();
-        for(IBlockData data : blockData){
-            rotatedBlockData.add(data.a(ROTATION[rotation.ordinal()]));
         }
         //translate the positions
         List<BlockPosition> newPositions = new ArrayList<>();
@@ -144,11 +250,6 @@ public class IWorldHandler extends WorldHandler {
             }
         }
         //sendToPlayers(chunks.toArray(new Chunk[0]));
-    }
-
-    @Override
-    public void translateCraft(@NotNull Craft craft, @NotNull MovecraftLocation displacement) {
-        translateCraft(craft, displacement, Rotation.NONE);
     }
 
     @NotNull
@@ -222,4 +323,3 @@ public class IWorldHandler extends WorldHandler {
         }
     }
 }
-
