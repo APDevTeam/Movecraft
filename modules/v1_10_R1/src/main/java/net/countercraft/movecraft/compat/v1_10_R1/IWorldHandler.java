@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@SuppressWarnings("unused")
 public class IWorldHandler extends WorldHandler {
     private static EnumBlockRotation ROTATION[];
     static {
@@ -36,18 +37,14 @@ public class IWorldHandler extends WorldHandler {
     }
 
     @Override
-    public void rotateCraft(@NotNull Craft craft, @NotNull Rotation rotation) {
+    public void rotateCraft(@NotNull Craft craft, @NotNull MovecraftLocation originPoint, @NotNull Rotation rotation) {
         //*******************************************
         //*      Step one: Convert to Positions     *
         //*******************************************
         HashMap<BlockPosition,BlockPosition> rotatedPositions = new HashMap<>();
-        MovecraftLocation originPoint = new MovecraftLocation(
-                (craft.getMaxX()+craft.getMinX())/2,
-                (craft.getMaxY()+craft.getMinY())/2,
-                (craft.getMaxZ()+craft.getMinX())/2);
         Rotation counterRotation = rotation == Rotation.CLOCKWISE ? Rotation.ANTICLOCKWISE : Rotation.CLOCKWISE;
         for(MovecraftLocation newLocation : craft.getBlockList()){
-            rotatedPositions.put(locationToPosition(MathUtils.rotateVec(counterRotation, newLocation).add(originPoint)),locationToPosition(newLocation));
+            rotatedPositions.put(locationToPosition(MathUtils.rotateVec(counterRotation, newLocation.subtract(originPoint)).add(originPoint)),locationToPosition(newLocation));
         }
         //*******************************************
         //*         Step two: Get the tiles         *
@@ -75,6 +72,7 @@ public class IWorldHandler extends WorldHandler {
             originalEntries.remove(originalEntries.get(0));
 
         }
+
         //*******************************************
         //*   Step three: Translate all the blocks  *
         //*******************************************
@@ -91,6 +89,8 @@ public class IWorldHandler extends WorldHandler {
         for(Map.Entry<BlockPosition,IBlockData> entry : blockData.entrySet()) {
             setBlockFast(nativeWorld, rotatedPositions.get(entry.getKey()), entry.getValue());
         }
+
+
         //*******************************************
         //*    Step four: replace all the tiles     *
         //*******************************************
@@ -107,11 +107,11 @@ public class IWorldHandler extends WorldHandler {
         //*   Step five: Destroy the leftovers      *
         //*******************************************
         //TODO: add support for pass-through
-        List<BlockPosition> deletePositions = new ArrayList<>(rotatedPositions.keySet());
-        deletePositions.removeAll(rotatedPositions.values());
-        for(BlockPosition position : deletePositions){
-            setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
-        }
+        List<BlockPosition> deletePositions = new ArrayList<>(rotatedPositions.values());
+        deletePositions.removeAll(rotatedPositions.keySet());
+        /*for(BlockPosition position : deletePositions){
+            setBlockFast(nativeWorld, position, Blocks.GLASS.getBlockData());
+        }*/
 
         //*******************************************
         //*       Step six: Update the blocks       *
@@ -132,14 +132,14 @@ public class IWorldHandler extends WorldHandler {
             if(!chunks.contains(chunk)){
                 chunks.add(chunk);
             }
-        }
+        }/*
         for(BlockPosition position : deletePositions){
             Chunk chunk = nativeWorld.getChunkAtWorldCoords(position);
             if(!chunks.contains(chunk)){
                 chunks.add(chunk);
             }
         }
-        //sendToPlayers(chunks.toArray(new Chunk[0]));
+        //sendToPlayers(chunks.toArray(new Chunk[0]));*/
     }
 
     @Override
@@ -257,8 +257,6 @@ public class IWorldHandler extends WorldHandler {
         return new BlockPosition(loc.getX(), loc.getY(), loc.getZ());
     }
 
-
-
     private void setBlockFast(@NotNull World world, @NotNull BlockPosition position,@NotNull IBlockData data) {
         Chunk chunk = world.getChunkAtWorldCoords(position);
         chunk.a(position, data);
@@ -294,32 +292,32 @@ public class IWorldHandler extends WorldHandler {
         chunk.tileEntities.put(newPosition, tile);
     }
 
-private class TileHolder{
-    @NotNull private final TileEntity tile;
-    @Nullable
-    private final NextTickListEntry nextTick;
-    @NotNull private final BlockPosition tilePosition;
+    private class TileHolder{
+        @NotNull private final TileEntity tile;
+        @Nullable
+        private final NextTickListEntry nextTick;
+        @NotNull private final BlockPosition tilePosition;
 
-    public TileHolder(@NotNull TileEntity tile, @Nullable NextTickListEntry nextTick, @NotNull BlockPosition tilePosition){
-        this.tile = tile;
-        this.nextTick = nextTick;
-        this.tilePosition = tilePosition;
+        public TileHolder(@NotNull TileEntity tile, @Nullable NextTickListEntry nextTick, @NotNull BlockPosition tilePosition){
+            this.tile = tile;
+            this.nextTick = nextTick;
+            this.tilePosition = tilePosition;
+        }
+
+
+        @NotNull
+        public TileEntity getTile() {
+            return tile;
+        }
+
+        @Nullable
+        public NextTickListEntry getNextTick() {
+            return nextTick;
+        }
+
+        @NotNull
+        public BlockPosition getTilePosition() {
+            return tilePosition;
+        }
     }
-
-
-    @NotNull
-    public TileEntity getTile() {
-        return tile;
-    }
-
-    @Nullable
-    public NextTickListEntry getNextTick() {
-        return nextTick;
-    }
-
-    @NotNull
-    public BlockPosition getTilePosition() {
-        return tilePosition;
-    }
-}
 }

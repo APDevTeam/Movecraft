@@ -31,6 +31,7 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.update.BlockCreateCommand;
+import net.countercraft.movecraft.mapUpdater.update.CraftRotateCommand;
 import net.countercraft.movecraft.mapUpdater.update.CraftTranslateCommand;
 import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
@@ -223,7 +224,6 @@ public class RotationTask extends AsyncTask {
         MovecraftLocation[] centeredBlockList = new MovecraftLocation[blockList.length];
         MovecraftLocation[] originalBlockList = blockList.clone();
         HashSet<MovecraftLocation> existingBlockSet = new HashSet<>(Arrays.asList(originalBlockList));
-        Set<UpdateCommand> mapUpdates = new HashSet<>();
 
         boolean townyEnabled = Movecraft.getInstance().getTownyPlugin() != null;
         Set<TownBlock> townBlockSet = new HashSet<>();
@@ -392,7 +392,7 @@ public class RotationTask extends AsyncTask {
         }
 
         if (!failed) {
-            mapUpdates.add(new CraftTranslateCommand(getCraft(), new MovecraftLocation(0,0,0), rotation));
+            updates.add(new CraftRotateCommand(getCraft(),originPoint, rotation));
             //rotate entities in the craft
             Location tOP = new Location(getCraft().getW(), originPoint.getX(), originPoint.getY(), originPoint.getZ());
 
@@ -484,12 +484,12 @@ public class RotationTask extends AsyncTask {
                 if (waterCraft) {
                     // if its below the waterline, fill in with water. Otherwise fill in with air.
                     if (l1.getY() <= waterLine) {
-                        mapUpdates.add(new BlockCreateCommand(l1, Material.STATIONARY_WATER, (byte) 0, parentCraft));
+                        updates.add(new BlockCreateCommand(l1, Material.STATIONARY_WATER, (byte) 0, parentCraft));
                     } else {
-                        mapUpdates.add(new BlockCreateCommand(l1, Material.AIR, (byte) 0, parentCraft));
+                        updates.add(new BlockCreateCommand(l1, Material.AIR, (byte) 0, parentCraft));
                     }
                 } else {
-                    mapUpdates.add(new BlockCreateCommand(l1, Material.AIR, (byte) 0, parentCraft));
+                    updates.add(new BlockCreateCommand(l1, Material.AIR, (byte) 0, parentCraft));
                 }
             }
 

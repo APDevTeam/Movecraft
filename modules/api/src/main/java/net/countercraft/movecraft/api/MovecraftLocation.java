@@ -95,4 +95,9 @@ public class MovecraftLocation {
     public static Location toBukkit(World world, MovecraftLocation location){
         return new Location(world, location.x, location.y, location.z);
     }
+
+    @Override
+    public String toString(){
+        return "(" + x + "," + y + "," + z +")";
+    }
 }

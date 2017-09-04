@@ -36,7 +36,7 @@ public class IWorldHandler extends WorldHandler {
     }
 
     @Override
-    public void rotateCraft(@NotNull Craft craft, @NotNull Rotation rotation) {
+    public void rotateCraft(@NotNull Craft craft, @NotNull MovecraftLocation originLocation, @NotNull Rotation rotation) {
         //*******************************************
         //*      Step one: Convert to Positions     *
         //*******************************************

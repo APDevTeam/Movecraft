@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.craft;
 
+import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.api.Rotation;
 import net.countercraft.movecraft.api.craft.Craft;
 import net.countercraft.movecraft.api.craft.CraftType;
@@ -117,7 +118,6 @@ public class ICraft extends Craft {
                 }
             }
         }
-
         AsyncManager.getInstance().submitTask(new RotationTask(this, originPoint, this.getBlockList(), rotation, this.getW()), this);
     }
 
