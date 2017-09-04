@@ -49,7 +49,6 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TNTPrimed;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
@@ -63,8 +62,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 
-//import net.countercraft.movecraft.utils.FastBlockChanger;
-
+@SuppressWarnings("deprecation")
 public class AsyncManager extends BukkitRunnable {
     private static final AsyncManager instance = new AsyncManager();
     private final HashMap<AsyncTask, Craft> ownershipMap = new HashMap<>();
@@ -78,8 +76,6 @@ public class AsyncManager extends BukkitRunnable {
     private long lastTNTContactCheck = 0;
     private long lastFadeCheck = 0;
     private long lastContactCheck = 0;
-    private long lastSiegeNotification = 0;
-    private long lastSiegePayout = 0;
     private HashSet<Material> transparent = null;
 
     private AsyncManager() {
@@ -101,7 +97,7 @@ public class AsyncManager extends BukkitRunnable {
         finishedAlgorithms.add(task);
     }
 
-    void processAlgorithmQueue() {
+    private void processAlgorithmQueue() {
         int runLength = 10;
         int queueLength = finishedAlgorithms.size();
 
@@ -187,6 +183,7 @@ public class AsyncManager extends BukkitRunnable {
                                                     parentMinZ = l.getZ();
                                                 }
                                             }
+                                            assert parentBlockList.size()!=0; //if the size is zero a npe will occur
                                             int parentSizeX, parentSizeZ;
                                             parentSizeX = (parentMaxX - parentMinX) + 1;
                                             parentSizeZ = (parentMaxZ - parentMinZ) + 1;
@@ -273,7 +270,6 @@ public class AsyncManager extends BukkitRunnable {
                 // Process translation task
 
                 TranslationTask task = (TranslationTask) poll;
-                Player p = CraftManager.getInstance().getPlayerFromCraft(c);
                 Player notifyP = c.getNotificationPlayer();
 
                 // Check that the craft hasn't been sneakily unpiloted
@@ -331,7 +327,6 @@ public class AsyncManager extends BukkitRunnable {
             } else if (poll instanceof RotationTask) {
                 // Process rotation task
                 RotationTask task = (RotationTask) poll;
-                Player p = CraftManager.getInstance().getPlayerFromCraft(c);
                 Player notifyP = c.getNotificationPlayer();
 
                 // Check that the craft hasn't been sneakily unpiloted
@@ -353,8 +348,7 @@ public class AsyncManager extends BukkitRunnable {
                             // convert blocklist to location list
                             List<Location> shipLocations = new ArrayList<>();
                             for (MovecraftLocation loc : c.getBlockList()) {
-                                Location tloc = new Location(c.getW(), loc.getX(), loc.getY(), loc.getZ());
-                                shipLocations.add(tloc);
+                                shipLocations.add(loc.toBukkit(c.getW()));
                             }
                             shipCannons = Movecraft.getInstance().getCannonsPlugin().getCannonsAPI()
                                     .getCannons(shipLocations, c.getNotificationPlayer().getUniqueId(), true);
@@ -372,8 +366,7 @@ public class AsyncManager extends BukkitRunnable {
 
                         // rotate any cannons that were present
                         if (Movecraft.getInstance().getCannonsPlugin() != null && shipCannons != null) {
-                            Location tloc = new Location(task.getCraft().getW(), task.getOriginPoint().getX(),
-                                    task.getOriginPoint().getY(), task.getOriginPoint().getZ());
+                            Location tloc = task.getOriginPoint().toBukkit(task.getCraft().getW());
                             for (Cannon can : shipCannons) {
                                 if (task.getRotation() == Rotation.CLOCKWISE)
                                     can.rotateRight(tloc.toVector());
@@ -397,7 +390,7 @@ public class AsyncManager extends BukkitRunnable {
         }
     }
 
-    public void processCruise() {
+    private void processCruise() {
         for (World w : Bukkit.getWorlds()) {
             if (w != null && CraftManager.getInstance().getCraftsInWorld(w) != null) {
                 for (Craft pcraft : CraftManager.getInstance().getCraftsInWorld(w)) {
@@ -626,10 +619,10 @@ public class AsyncManager extends BukkitRunnable {
         }
     }
 
-    public void processSinking() {
+    private void processSinking() {
         for (World w : Bukkit.getWorlds()) {
             if (w != null && CraftManager.getInstance().getCraftsInWorld(w) != null) {
-                TownyWorld townyWorld = null;
+                TownyWorld townyWorld;
                 boolean townyEnabled = false;
                 if (Movecraft.getInstance().getTownyPlugin() != null && Settings.TownyBlockSinkOnNoPVP) {
                     townyWorld = TownyUtils.getTownyWorld(w);
@@ -673,23 +666,13 @@ public class AsyncManager extends BukkitRunnable {
                                     Integer shiftedID = (blockID << 4) + dataID + 10000;
                                     for (ArrayList<Integer> flyBlockDef : pcraft.getType().getFlyBlocks().keySet()) {
                                         if (flyBlockDef.contains(blockID) || flyBlockDef.contains(shiftedID)) {
-                                            Integer count = foundFlyBlocks.get(flyBlockDef);
-                                            if (count == null) {
-                                                foundFlyBlocks.put(flyBlockDef, 1);
-                                            } else {
-                                                foundFlyBlocks.put(flyBlockDef, count + 1);
-                                            }
+                                            foundFlyBlocks.merge(flyBlockDef, 1, (a, b) -> a + b);
                                         }
                                     }
                                     if (pcraft.getType().getMoveBlocks() != null) {
                                         for (ArrayList<Integer> moveBlockDef : pcraft.getType().getMoveBlocks().keySet()) {
                                             if (moveBlockDef.contains(blockID) || moveBlockDef.contains(shiftedID)) {
-                                                Integer count = foundMoveBlocks.get(moveBlockDef);
-                                                if (count == null) {
-                                                    foundMoveBlocks.put(moveBlockDef, 1);
-                                                } else {
-                                                    foundMoveBlocks.put(moveBlockDef, count + 1);
-                                                }
+                                                foundMoveBlocks.merge(moveBlockDef, 1, (a, b) -> a + b);
                                             }
                                         }
                                     }
@@ -761,7 +744,6 @@ public class AsyncManager extends BukkitRunnable {
 
                                 if (isSinking && (regionPVPBlocked || sinkingForbiddenByFlag || sinkingForbiddenByTowny)
                                         && pcraft.isNotProcessing()) {
-                                    Player p = CraftManager.getInstance().getPlayerFromCraft(pcraft);
                                     Player notifyP = pcraft.getNotificationPlayer();
                                     if (notifyP != null)
                                         if (regionPVPBlocked) {
@@ -791,7 +773,6 @@ public class AsyncManager extends BukkitRunnable {
                                     // know and release the craft. Otherwise
                                     // update the time for the next check
                                     if (isSinking && pcraft.isNotProcessing()) {
-                                        Player p = CraftManager.getInstance().getPlayerFromCraft(pcraft);
                                         Player notifyP = pcraft.getNotificationPlayer();
                                         if (notifyP != null)
                                             notifyP.sendMessage(I18nSupport
@@ -846,7 +827,7 @@ public class AsyncManager extends BukkitRunnable {
         }
     }
 
-    public void processTracers() {
+    private void processTracers() {
         if (Settings.TracerRateTicks == 0)
             return;
         long ticksElapsed = (System.currentTimeMillis() - lastTracerUpdate) / 50;
@@ -870,18 +851,17 @@ public class AsyncManager extends BukkitRunnable {
                                     // faster
                                     final Location loc = tnt.getLocation();
                                     final Player fp = p;
-                                    final World fw = w;
                                     // then make a cobweb to look like smoke,
                                     // place it a little later so it isn't right
                                     // in the middle of the volley
-                                    BukkitTask placeCobweb = new BukkitRunnable() {
+                                    new BukkitRunnable() {
                                         @Override
                                         public void run() {
                                             fp.sendBlockChange(loc, 30, (byte) 0);
                                         }
                                     }.runTaskLater(Movecraft.getInstance(), 5);
                                     // then remove it
-                                    BukkitTask removeCobweb = new BukkitRunnable() {
+                                    new BukkitRunnable() {
                                         @Override
                                         public void run() {
                                             // fp.sendBlockChange(loc,
@@ -900,7 +880,7 @@ public class AsyncManager extends BukkitRunnable {
         }
     }
 
-    public void processFireballs() {
+    private void processFireballs() {
         long ticksElapsed = (System.currentTimeMillis() - lastFireballCheck) / 50;
 
         if (ticksElapsed > 3) {
@@ -918,24 +898,23 @@ public class AsyncManager extends BukkitRunnable {
                             if (w.getPlayers().size() > 0) {
                                 Player p = w.getPlayers().get(0);
 
-                                final org.bukkit.entity.SmallFireball ffb = fireball;
                                 if (!FireballTracking.containsKey(fireball)) {
-                                    Craft c = fastNearestCraftToLoc(ffb.getLocation());
+                                    Craft c = fastNearestCraftToLoc(fireball.getLocation());
                                     if (c != null) {
                                         int distX = c.getMinX() + c.getMaxX();
                                         distX = distX >> 1;
-                                        distX = Math.abs(distX - ffb.getLocation().getBlockX());
+                                        distX = Math.abs(distX - fireball.getLocation().getBlockX());
                                         int distY = c.getMinY() + c.getMaxY();
                                         distY = distY >> 1;
-                                        distY = Math.abs(distY - ffb.getLocation().getBlockY());
+                                        distY = Math.abs(distY - fireball.getLocation().getBlockY());
                                         int distZ = c.getMinZ() + c.getMaxZ();
                                         distZ = distZ >> 1;
-                                        distZ = Math.abs(distZ - ffb.getLocation().getBlockZ());
+                                        distZ = Math.abs(distZ - fireball.getLocation().getBlockZ());
                                         boolean inRange = (distX < 50) && (distY < 50) && (distZ < 50);
                                         if ((c.getAADirector() != null) && inRange) {
                                             p = c.getAADirector();
                                             if (p.getItemInHand().getTypeId() == Settings.PilotTool) {
-                                                Vector fv = ffb.getVelocity();
+                                                Vector fv = fireball.getVelocity();
                                                 double speed = fv.length(); // store the speed to add it back in later, since all the values we will be using are "normalized", IE: have a speed of 1
                                                 fv = fv.normalize(); // you normalize it for comparison with the new direction to see if we are trying to steer too far
                                                 Block targetBlock = p.getTargetBlock(transparent, 120);
@@ -943,7 +922,7 @@ public class AsyncManager extends BukkitRunnable {
                                                 if (targetBlock == null) { // the player is looking at nothing, shoot in that general direction
                                                     targetVector = p.getLocation().getDirection();
                                                 } else { // shoot directly at the block the player is looking at (IE: with convergence)
-                                                    targetVector = targetBlock.getLocation().toVector().subtract(ffb.getLocation().toVector());
+                                                    targetVector = targetBlock.getLocation().toVector().subtract(fireball.getLocation().toVector());
                                                     targetVector = targetVector.normalize();
                                                 }
                                                 if (targetVector.getX() - fv.getX() > 0.5) {
@@ -1023,7 +1002,7 @@ public class AsyncManager extends BukkitRunnable {
         return ret;
     }
 
-    public void processTNTContactExplosives() {
+    private void processTNTContactExplosives() {
         long ticksElapsed = (System.currentTimeMillis() - lastTNTContactCheck) / 50;
         if (ticksElapsed > 0) {
             // see if there is any new rapid moving TNT in the worlds
@@ -1046,7 +1025,7 @@ public class AsyncManager extends BukkitRunnable {
                                     boolean inRange = (distX < 100) && (distY < 100) && (distZ < 100);
                                     if ((c.getCannonDirector() != null) && inRange) {
                                         Player p = c.getCannonDirector();
-                                        if (p.getItemInHand().getTypeId() == Settings.PilotTool) {
+                                        if (p.getInventory().getItemInMainHand().getTypeId() == Settings.PilotTool) {
                                             Vector tv = tnt.getVelocity();
                                             double speed = tv.length(); // store the speed to add it back in later, since all the values we will be using are "normalized", IE: have a speed of 1
                                             tv = tv.normalize(); // you normalize it for comparison with the new direction to see if we are trying to steer too far
@@ -1086,13 +1065,7 @@ public class AsyncManager extends BukkitRunnable {
             }
 
             // then, removed any exploded TNT from tracking
-            Iterator<TNTPrimed> tntI = TNTTracking.keySet().iterator();
-            while (tntI.hasNext()) {
-                TNTPrimed tnt = tntI.next();
-                if (tnt.getFuseTicks() <= 0) {
-                    tntI.remove();
-                }
-            }
+            TNTTracking.keySet().removeIf(tnt -> tnt.getFuseTicks() <= 0);
 
             // now check to see if any has abruptly changed velocity, and should
             // explode
@@ -1111,7 +1084,7 @@ public class AsyncManager extends BukkitRunnable {
         }
     }
 
-    public void processFadingBlocks() {
+    private void processFadingBlocks() {
         if (Settings.FadeWrecksAfter == 0)
             return;
         long ticksElapsed = (System.currentTimeMillis() - lastFadeCheck) / 50;
@@ -1149,7 +1122,7 @@ public class AsyncManager extends BukkitRunnable {
                                 long secsElapsed = (System.currentTimeMillis()
                                         - Movecraft.getInstance().blockFadeTimeMap.get(loc)) / 1000;
                                 // has enough time passed to fade the block?
-                                boolean timeElapsed = false;
+                                boolean timeElapsed;
                                 // make containers take longer to fade so their loot can be recovered
                                 if (w.getBlockTypeIdAt(loc.getX(), loc.getY(), loc.getZ()) == 54) {
                                     timeElapsed = secsElapsed > Settings.FadeWrecksAfter * 5;
@@ -1201,7 +1174,7 @@ public class AsyncManager extends BukkitRunnable {
         }
     }
 
-    public void processDetection() {
+    private void processDetection() {
         long ticksElapsed = (System.currentTimeMillis() - lastContactCheck) / 50;
         if (ticksElapsed > 21) {
             for (World w : Bukkit.getWorlds()) {
@@ -1209,7 +1182,7 @@ public class AsyncManager extends BukkitRunnable {
                     for (Craft ccraft : CraftManager.getInstance().getCraftsInWorld(w)) {
                         if (CraftManager.getInstance().getPlayerFromCraft(ccraft) != null) {
                             if (!recentContactTracking.containsKey(ccraft)) {
-                                recentContactTracking.put(ccraft, new HashMap<Craft, Long>());
+                                recentContactTracking.put(ccraft, new HashMap<>());
                             }
                             for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(w)) {
                                 long cposx = ccraft.getMaxX() + ccraft.getMinX();
@@ -1230,7 +1203,7 @@ public class AsyncManager extends BukkitRunnable {
                                 long distsquared = Math.abs(diffx) * Math.abs(diffx);
                                 distsquared += Math.abs(diffy) * Math.abs(diffy);
                                 distsquared += Math.abs(diffz) * Math.abs(diffz);
-                                long detectionRange = 0;
+                                long detectionRange;
                                 if (tposy > 65) {
                                     detectionRange = (long) (Math.sqrt(tcraft.getOrigBlockCount())
                                             * tcraft.getType().getDetectionMultiplier());
