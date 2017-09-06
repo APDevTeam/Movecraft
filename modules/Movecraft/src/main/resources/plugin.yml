@@ -1,0 +1,42 @@
+name: Movecraft
+softdepend: [WorldGuard, WorldEdit, Cannons, Vault,Essentials, WGCustomFlags, Towny]
+version: 6.0.0
+#version: ${env.BUILD_NUMBER}
+description: The original flight and movement plugin for minecraft.
+author: BaccaYarro
+website: http://www.youtube.com/BaccaYarro
+main: net.countercraft.movecraft.Movecraft
+database: false
+commands:
+  release:
+    description: Releases your craft
+    usage: /release
+  pilot:
+    description: Pilots the craft at your feet
+    usage: /pilot [crafttypename]
+  contacts:
+    description: reports on all crafts within detection range
+    usage: /contacts <page>
+  craftreport:
+    description: reports on all active craft in the world you are in
+    usage: /craftreport <page>
+  cruise:
+    description: Starts your craft cruising
+    usage: /cruise [north|south|east|west|on|off]
+  rotate:
+    description: Rotates your craft
+    usage: /rotate [right|left]
+  manoverboard:
+    description: If enabled, returns you to a craft you have fallen out of
+    usage: /manoverboard
+  siege:
+    description: If the region you are standing in is configured for Siege, lays siege to it
+    usage: /siege
+  assaultinfo:
+    description: Gives you information about the region(s) you are in, and if they are available for Assault
+    usage: /assaultinfo
+  assault:
+    description: Begins an Assault on the specified region
+    usage: /assault <regionname>
+
+

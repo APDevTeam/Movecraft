@@ -1,0 +1,113 @@
+name: elevator
+maxSize: 1000
+minSize: 10
+allowedBlocks: 
+    - 5
+    - 8
+    - 9
+    - 10
+    - 11
+    - 17
+    - 20
+    - 23
+    - 25
+    - 26
+    - 29
+    - 33
+    - 35
+    - 41
+    - 43
+    - 44
+    - 47
+    - 50
+    - 52
+    - 53
+    - 54
+    - 55
+    - 57
+    - 58
+    - 61
+    - 62
+    - 63
+    - 64
+    - 65
+    - 68
+    - 69
+    - 72
+    - 75
+    - 76
+    - 77
+    - 85
+    - 92
+    - 93
+    - 94
+    - 95
+    - 96
+    - 101
+    - 102
+    - 107
+    - 112
+    - 113
+    - 114
+    - 117
+    - 118
+    - 123
+    - 124
+    - 125
+    - 126
+    - 130
+    - 131
+    - 133
+    - 134
+    - 135
+    - 117
+    - 118
+    - 123
+    - 124
+    - 125
+    - 126
+    - 130
+    - 131
+    - 133
+    - 134
+    - 135
+    - 136
+    - 138
+    - 140
+    - 143
+    - 144
+    - 145
+    - 146
+    - 147
+    - 148
+    - 149
+    - 150
+    - 151
+    - 152
+    - 154
+    - 157
+    - 158
+    - 165
+    - 171
+    - 173
+
+forbiddenBlocks:
+    - 7
+
+canFly: true
+canCruise: false
+collisionExplosion: 0.0
+allowHorizontalMovement: false
+canStaticMove: true
+maxStaticMove: 2
+allowCannonDirectorSign: false
+detectionMultiplier: 30.0
+underwaterDetectionMultiplier: 3.0
+allowAADirectorSign: false
+speed: 1.0
+tryNudge: false
+sinkPercent: 99.0
+flyblocks:
+    35:
+        - 0.0
+        - 100.0
