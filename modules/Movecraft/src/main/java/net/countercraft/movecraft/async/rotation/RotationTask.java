@@ -365,13 +365,6 @@ public class RotationTask extends AsyncTask {
                     failed = true;
                     failMessage = String.format(I18nSupport.getInternationalisedString("Rotation - Craft is obstructed") + " @ %d,%d,%d", blockList[i].getX(), blockList[i].getY(), blockList[i].getZ());
                     break;
-                } else {
-                    Material id = w.getBlockAt(originalBlockList[i].getX(), originalBlockList[i].getY(), originalBlockList[i].getZ()).getType();
-                    byte data = w.getBlockAt(originalBlockList[i].getX(), originalBlockList[i].getY(), originalBlockList[i].getZ()).getData();
-                    if (BlockUtils.blockRequiresRotation(id.getId())) {
-                        data = BlockUtils.rotate(data, id.getId(), rotation);
-                    }
-                    //mapUpdates.add(new BlockTranslateCommand(originalBlockList[i],  blockList[i], id, data, rotation, parentCraft));
                 }
             } else {
                 // allow watercraft to rotate through water
@@ -379,13 +372,6 @@ public class RotationTask extends AsyncTask {
                     failed = true;
                     failMessage = String.format(I18nSupport.getInternationalisedString("Rotation - Craft is obstructed") + " @ %d,%d,%d", blockList[i].getX(), blockList[i].getY(), blockList[i].getZ());
                     break;
-                } else {
-                    Material id = w.getBlockAt(originalBlockList[i].getX(), originalBlockList[i].getY(), originalBlockList[i].getZ()).getType();
-                    byte data = w.getBlockAt(originalBlockList[i].getX(), originalBlockList[i].getY(), originalBlockList[i].getZ()).getData();
-                    if (BlockUtils.blockRequiresRotation(id.getId())) {
-                        data = BlockUtils.rotate(data, id.getId(), rotation);
-                    }
-                    //mapUpdates.add(new BlockTranslateCommand(originalBlockList[i],  blockList[i], id, data, rotation, parentCraft));
                 }
             }
 
@@ -414,12 +400,6 @@ public class RotationTask extends AsyncTask {
                         tOP.setX(tOP.getBlockX() + 0.5);
                         tOP.setZ(tOP.getBlockZ() + 0.5);
                         Location playerLoc = pTest.getLocation();
-// direct control no longer locks the player in place						
-//						if(getCraft().getPilotLocked()==true && pTest==CraftManager.getInstance().getPlayerFromCraft(getCraft())) {
-//							playerLoc.setX(getCraft().getPilotLockedX());
-//							playerLoc.setY(getCraft().getPilotLockedY());
-//							playerLoc.setZ(getCraft().getPilotLockedZ());
-//							}
                         Location adjustedPLoc = playerLoc.subtract(tOP);
 
                         double[] rotatedCoords = MathUtils.rotateVecNoRound(rotation, adjustedPLoc.getX(), adjustedPLoc.getZ());
@@ -441,21 +421,8 @@ public class RotationTask extends AsyncTask {
                             }
                         }
                         newPLoc.setYaw(newYaw);
-
-//						if(getCraft().getPilotLocked()==true && pTest==CraftManager.getInstance().getPlayerFromCraft(getCraft())) {
-//							getCraft().setPilotLockedX(newPLoc.getX());
-//							getCraft().setPilotLockedY(newPLoc.getY());
-//							getCraft().setPilotLockedZ(newPLoc.getZ());
-//							}
                         EntityUpdateCommand eUp = new EntityUpdateCommand(newPLoc, pTest);
                         updates.add(eUp);
-//						if(getCraft().getPilotLocked()==true && pTest==CraftManager.getInstance().getPlayerFromCraft(getCraft())) {
-//							getCraft().setPilotLockedX(newPLoc.getX());
-//							getCraft().setPilotLockedY(newPLoc.getY());
-//							getCraft().setPilotLockedZ(newPLoc.getZ());
-//						}
-                    } else {
-                        //	pTest.remove();   removed to test cleaner fragile item removal
                     }
                 }
 
