@@ -1,4 +1,6 @@
 Locale: en
+RestrictSiBsToRegions: false
+AllowMovementOfAllEntites: true
 CompatibilityMode: false
 SinkRateTicks: 20
 SinkCheckTicks: 100
