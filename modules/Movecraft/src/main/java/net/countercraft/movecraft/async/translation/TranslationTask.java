@@ -798,7 +798,7 @@ public class TranslationTask extends AsyncTask {
                     }
                 }
 
-                for (javax.swing.text.html.parser.Entity pTest : eList) {
+                for (Entity pTest : eList) {
                     //                                if ( MathUtils.playerIsWithinBoundingPolygon( getCraft().getHitBox(), getCraft().getMinX(), getCraft().getMinZ(), MathUtils.bukkit2MovecraftLoc( pTest.getLocation() ) ) ) {
                     if (MathUtils.locIsNearCraftFast(getCraft(), MathUtils.bukkit2MovecraftLoc(pTest.getLocation()))) {
                         if (pTest.getType() == EntityType.PLAYER) {
@@ -832,14 +832,15 @@ public class TranslationTask extends AsyncTask {
                             EntityUpdateCommand eUp = new EntityUpdateCommand(tempLoc, pTest);
                             updateSet.add(eUp);
                         }
-                        if (pTest.getType() == !EntityType.DROPPED_ITEM) {
+                        if (pTest.getType() != EntityType.DROPPED_ITEM) {
                         	if (Settings.AllowMovementOfAllEntities) {
                         		Entity ent = pTest;
                         		Location tempLoc = pTest.getLocation();
                         		tempLoc = tempLoc.add(data.getDx(), data.getDy(), data.getDz());
                         		EntityUpdateCommand eUp = new EntityUpdateCommand(tempLoc, pTest);
-                        		updateSet.add(eUp)
+                        		updateSet.add(eUp);
                         	}
+                        
                         }
 
                     }

@@ -1,16 +1,11 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
     <groupId>net.countercraft</groupId>
-    <artifactId>movecraft</artifactId>
-    <packaging>jar</packaging>
-    <name>Movecraft</name>
-    <url>http://github.com/apdevteam/Movecraft</url>
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
-    <version>7.0.0</version>
-
+    <artifactId>movecraft-parent</artifactId>
+    <version>parent</version>
+  </parent>
+  <artifactId>Movecraft</artifactId>
     <repositories>
         <repository>
             <id>spigot-repo</id>
@@ -33,7 +28,6 @@
             <url>http://repo.ess3.net/content/groups/essentials</url>
         </repository>
     </repositories>
-
     <dependencies>
         <dependency>
             <groupId>net.countercraft</groupId>
@@ -59,16 +53,19 @@
             <version>API</version>
             <type>jar</type>
         </dependency>
+        <!-- WorldGuard -->
         <dependency>
             <groupId>com.sk89q</groupId>
             <artifactId>worldguard</artifactId>
             <version>LATEST</version>
         </dependency>
+        <!-- WorldEdit -->
         <dependency>
             <groupId>com.sk89q</groupId>
             <artifactId>worldedit</artifactId>
-            <version>LATEST</version>
+            <version>6.0.0-SNAPSHOT</version>
         </dependency>
+        <!-- Cannons -->
         <dependency>
             <groupId>at.pavlov</groupId>
             <artifactId>Cannons</artifactId>
@@ -89,39 +86,59 @@
             <artifactId>snakeyaml</artifactId>
             <version>1.10</version>
         </dependency>
+        <!-- Vault -->
         <dependency>
             <groupId>net.milkbowl.vault</groupId>
             <artifactId>VaultAPI</artifactId>
             <version>1.6</version>
             <scope>provided</scope>
         </dependency>
+        <!-- Essentials -->
         <dependency>
             <groupId>net.ess3</groupId>
             <artifactId>Essentials</artifactId>
             <version>2.13.1</version>
         </dependency>
         <!-- This doesn't have a maven repo but its own -->
+        <!-- Towny -->
         <dependency>
             <groupId>com.palmergames</groupId>
             <artifactId>Towny</artifactId>
-            <version>LATEST</version>
+            <version>0.91.4.11</version>
             <scope>system</scope>
             <systemPath>${project.basedir}/../../libs/Towny.jar</systemPath>
         </dependency>
+        <!-- WorldGuard Custom Flags -->
         <dependency>
             <groupId>com.mewin</groupId>
             <artifactId>WGCustomFlags</artifactId>
-            <version>LATEST</version>
+            <version>1.0</version>
             <scope>system</scope>
             <systemPath>${project.basedir}/../../libs/WGCustomFlags.jar</systemPath>
         </dependency>
+        <!-- MassiveCore -->
+        <dependency>
+            <groupId>com.massivecraft</groupId>
+            <artifactId>Massivecore</artifactId>
+            <version>2.13.1</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/../../libs/Massivecore.jar</systemPath>
+        </dependency>
+        <!-- Factions -->
+        <dependency>
+            <groupId>com.massivecraft</groupId>
+            <artifactId>Factions</artifactId>
+            <version>2.13.1</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/../../libs/Factions.jar</systemPath>
+        </dependency>
+        
         <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations-java5</artifactId>
             <version>RELEASE</version>
         </dependency>
     </dependencies>
-
     <build>
         <finalName>Movecraft</finalName>
         <directory>../../target</directory>
