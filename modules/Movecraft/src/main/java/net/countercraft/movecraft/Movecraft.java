@@ -57,6 +57,8 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.yaml.snakeyaml.Yaml;
+import com.massivecraft.factions.Factions;
+import com.massivecraft.massivecore.MassiveCore;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -84,6 +86,7 @@ public class Movecraft extends JavaPlugin {
     private static Economy economy;
     private static Cannons cannonsPlugin = null;
     private static Towny townyPlugin = null;
+    private static Factions factionsPlugin = null;
     private static Essentials essentialsPlugin = null;
     public HashMap<MovecraftLocation, Long> blockFadeTimeMap = new HashMap<>();
     public HashMap<MovecraftLocation, Integer> blockFadeTypeMap = new HashMap<>();
@@ -303,6 +306,12 @@ public class Movecraft extends JavaPlugin {
 
         } else {
             logger.log(Level.INFO, "Movecraft did not find a compatible version of Towny. Disabling Towny integration.");
+        }
+        //Load Factions if present
+        Plugin tempFactionsPlugin = getServer().getPluginManager().getPlugin("Factions");
+        if (tempFactionsPlugin != null) {
+        	logger.log(Level.INFO, "Movecraft found a compatible version of Factions. Enabling Factions integration.");
+        	factionsPlugin = (Factions) tempFactionsPlugin;
         }
 
         Plugin tempEssentialsPlugin = getServer().getPluginManager().getPlugin("Essentials");

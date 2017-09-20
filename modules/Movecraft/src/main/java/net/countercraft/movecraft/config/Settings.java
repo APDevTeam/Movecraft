@@ -64,6 +64,12 @@ public class Settings {
     public static boolean TownyBlockSinkOnNoPVP = false;
     public static Map<String, TownyWorldHeightLimits> TownProtectionHeightLimits;
     public static Map<Integer, Integer> DurabilityOverride;
+    
+    public static boolean FactionsBlockMoveInSafezone = true;
+    public static boolean FactionsBlockMoveInWarzone = false;
+    public static boolean FactionsEnableAssaultOnFactionTerritory = true;
+    public static double FactionsReduceStrengthDuringAssault;
+    
 
     public static boolean AssaultEnable;
     public static double AssaultDamagesCapPercent;
