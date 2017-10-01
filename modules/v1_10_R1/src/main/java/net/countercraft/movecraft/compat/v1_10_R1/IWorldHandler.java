@@ -110,11 +110,11 @@ public class IWorldHandler extends WorldHandler {
         //*   Step five: Destroy the leftovers      *
         //*******************************************
         //TODO: add support for pass-through
-        List<BlockPosition> deletePositions = new ArrayList<>(rotatedPositions.values());
-        deletePositions.removeAll(rotatedPositions.keySet());
-        /*for(BlockPosition position : deletePositions){
-            setBlockFast(nativeWorld, position, Blocks.GLASS.getBlockData());
-        }*/
+        List<BlockPosition> deletePositions = new ArrayList<>(rotatedPositions.keySet());
+        deletePositions.removeAll(rotatedPositions.values());
+        for(BlockPosition position : deletePositions){
+            setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
+        }
 
         //*******************************************
         //*       Step six: Update the blocks       *
