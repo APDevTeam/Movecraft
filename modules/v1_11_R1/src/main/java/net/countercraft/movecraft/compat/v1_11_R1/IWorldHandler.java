@@ -284,7 +284,7 @@ public class IWorldHandler extends WorldHandler {
         Method method;
         try {
             Block tempBlock = CraftMagicNumbers.getBlock(type.getId());
-            method = Block.class.getDeclaredMethod("d", int.class);
+            method = Block.class.getDeclaredMethod("e", int.class);
             method.setAccessible(true);
             method.invoke(tempBlock, 0);
         } catch (NoSuchMethodException | InvocationTargetException | IllegalArgumentException | IllegalAccessException | SecurityException e1) {

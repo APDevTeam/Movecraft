@@ -99,7 +99,6 @@ public class BlockListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockBreak(final BlockBreakEvent e) {
-
         if (e.isCancelled()) {
             return;
         }
