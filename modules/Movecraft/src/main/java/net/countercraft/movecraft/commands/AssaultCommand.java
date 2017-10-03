@@ -148,7 +148,8 @@ public class AssaultCommand implements CommandExecutor{
             }
         }
 
-        CuboidClipboard clipboard = new CuboidClipboard(max.subtract(min).add(Vector.ONE), min);
+        @SuppressWarnings("deprecation")
+		CuboidClipboard clipboard = new CuboidClipboard(max.subtract(min).add(Vector.ONE), min);
         CuboidSelection selection = new CuboidSelection(player.getWorld(), min, max);
 
         for (int x = 0; x < selection.getWidth(); ++x) {

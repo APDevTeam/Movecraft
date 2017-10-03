@@ -190,16 +190,18 @@ public class BlockListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPistonEvent(BlockPistonExtendEvent event) {
         Block block = event.getBlock();
-        if (CraftManager.getInstance().getCraftsInWorld(block.getWorld()) != null) {
-            for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(block.getWorld())) {
+        if (!Settings.AllowPistonExtendOnCruisingCrafts) {
+        	if (CraftManager.getInstance().getCraftsInWorld(block.getWorld()) != null) {
+        		for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(block.getWorld())) {
 
-                MovecraftLocation mloc = new MovecraftLocation(block.getX(), block.getY(), block.getZ());
-                if (MathUtils.locIsNearCraftFast(tcraft, mloc)) {
-                    if (tcraft.getCruising() || !tcraft.isNotProcessing()) {
-                        event.setCancelled(true);
-                    }
-                }
-            }
+        			MovecraftLocation mloc = new MovecraftLocation(block.getX(), block.getY(), block.getZ());
+        			if (MathUtils.locIsNearCraftFast(tcraft, mloc)) {
+        				if (tcraft.getCruising() || !tcraft.isNotProcessing()) {
+        					event.setCancelled(true);
+        				}
+        			}
+        		}
+        	}
         }
     }
 

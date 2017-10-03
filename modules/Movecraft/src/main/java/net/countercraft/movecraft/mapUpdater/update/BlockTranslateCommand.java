@@ -134,6 +134,8 @@ public class BlockTranslateCommand extends UpdateCommand {
     public Craft getCraft() {
         return craft;
     }
+    
+    
 
     @Override
     @SuppressWarnings("deprecation")
@@ -533,6 +535,14 @@ public class BlockTranslateCommand extends UpdateCommand {
             updateQty += craft.getBlockUpdates();
             TESign.lines[2] = new ChatComponentText(signText);
             TESign.lines[3] = new ChatComponentText(updateQty);
+        }
+        
+        //Give your ship a unique name
+        if (firstLine.equalsIgnoreCase("Name:")) {
+        	String nameComp1 = String.valueOf(TESign.lines[1]);
+        	String nameComp2 = String.valueOf(TESign.lines[2]);
+        	String nameComp3 = String.valueOf(TESign.lines[3]);
+        	String uShipName = nameComp1 + nameComp2 + nameComp3;        	
         }
     }
 }

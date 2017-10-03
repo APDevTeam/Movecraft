@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@SuppressWarnings("unused")
 public class IWorldHandler extends WorldHandler {
     private static EnumBlockRotation ROTATION[];
     static {
@@ -39,18 +40,14 @@ public class IWorldHandler extends WorldHandler {
     }
 
     @Override
-    public void rotateCraft(@NotNull Craft craft, @NotNull MovecraftLocation originLocation, @NotNull Rotation rotation) {
+    public void rotateCraft(@NotNull Craft craft, @NotNull MovecraftLocation originPoint, @NotNull Rotation rotation) {
         //*******************************************
         //*      Step one: Convert to Positions     *
         //*******************************************
         HashMap<BlockPosition,BlockPosition> rotatedPositions = new HashMap<>();
-        MovecraftLocation originPoint = new MovecraftLocation(
-                (craft.getMaxX()+craft.getMinX())/2,
-                (craft.getMaxY()+craft.getMinY())/2,
-                (craft.getMaxZ()+craft.getMinX())/2);
         Rotation counterRotation = rotation == Rotation.CLOCKWISE ? Rotation.ANTICLOCKWISE : Rotation.CLOCKWISE;
         for(MovecraftLocation newLocation : craft.getBlockList()){
-            rotatedPositions.put(locationToPosition(MathUtils.rotateVec(counterRotation, newLocation).add(originPoint)),locationToPosition(newLocation));
+            rotatedPositions.put(locationToPosition(MathUtils.rotateVec(counterRotation, newLocation).subtract(originPoint)),locationToPosition(newLocation));
         }
         //*******************************************
         //*         Step two: Get the tiles         *
@@ -78,6 +75,7 @@ public class IWorldHandler extends WorldHandler {
             originalEntries.remove(originalEntries.get(0));
 
         }
+        
         //*******************************************
         //*   Step three: Translate all the blocks  *
         //*******************************************
@@ -94,6 +92,8 @@ public class IWorldHandler extends WorldHandler {
         for(Map.Entry<BlockPosition,IBlockData> entry : blockData.entrySet()) {
             setBlockFast(nativeWorld, rotatedPositions.get(entry.getKey()), entry.getValue());
         }
+        
+        
         //*******************************************
         //*    Step four: replace all the tiles     *
         //*******************************************
@@ -135,14 +135,14 @@ public class IWorldHandler extends WorldHandler {
             if(!chunks.contains(chunk)){
                 chunks.add(chunk);
             }
-        }
+        }/*
         for(BlockPosition position : deletePositions){
             Chunk chunk = nativeWorld.getChunkAtWorldCoords(position);
             if(!chunks.contains(chunk)){
                 chunks.add(chunk);
             }
         }
-        //sendToPlayers(chunks.toArray(new Chunk[0]));
+        //sendToPlayers(chunks.toArray(new Chunk[0]));*/
     }
 
     @Override
@@ -260,8 +260,6 @@ public class IWorldHandler extends WorldHandler {
         return new BlockPosition(loc.getX(), loc.getY(), loc.getZ());
     }
 
-
-
     private void setBlockFast(@NotNull World world, @NotNull BlockPosition position,@NotNull IBlockData data) {
         Chunk chunk = world.getChunkAtWorldCoords(position);
         chunk.a(position, data);
@@ -286,7 +284,7 @@ public class IWorldHandler extends WorldHandler {
         Method method;
         try {
             Block tempBlock = CraftMagicNumbers.getBlock(type.getId());
-            method = Block.class.getDeclaredMethod("d", int.class);
+            method = Block.class.getDeclaredMethod("e", int.class);
             method.setAccessible(true);
             method.invoke(tempBlock, 0);
         } catch (NoSuchMethodException | InvocationTargetException | IllegalArgumentException | IllegalAccessException | SecurityException e1) {

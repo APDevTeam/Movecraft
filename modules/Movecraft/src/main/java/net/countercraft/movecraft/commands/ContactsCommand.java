@@ -3,12 +3,14 @@ package net.countercraft.movecraft.commands;
 import net.countercraft.movecraft.api.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.mapUpdater.update.BlockTranslateCommand;
 import net.countercraft.movecraft.utils.TopicPaginator;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+@SuppressWarnings("deprecation")
 public class ContactsCommand implements CommandExecutor {
 
     @Override
@@ -65,6 +67,8 @@ public class ContactsCommand implements CommandExecutor {
                 notification += tcraft.getType().getCraftName();
                 notification += " commanded by ";
                 notification += tcraft.getNotificationPlayer().getDisplayName();
+                notification += ", name:";
+                notification += 
                 notification += ", size: ";
                 notification += tcraft.getOrigBlockCount();
                 notification += ", range: ";

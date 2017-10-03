@@ -28,6 +28,7 @@ import java.util.Set;
 public class Settings {
     public static boolean RestrictSiBsToRegions = false;
     public static boolean AllowMovementOfAllEntities = true;
+    public static boolean AllowPistonExtendOnCruisingCrafts = false;
     public static boolean IGNORE_RESET = false;
     public static boolean Debug = false;
     public static int THREAD_POOL_SIZE = 5;
