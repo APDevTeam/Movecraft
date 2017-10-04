@@ -428,7 +428,6 @@ public class RotationTask extends AsyncTask {
 
             }
 
-
             maxX = null;
             maxZ = null;
             minX = null;

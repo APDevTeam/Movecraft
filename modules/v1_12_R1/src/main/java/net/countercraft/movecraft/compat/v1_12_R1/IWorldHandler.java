@@ -47,7 +47,7 @@ public class IWorldHandler extends WorldHandler {
         HashMap<BlockPosition,BlockPosition> rotatedPositions = new HashMap<>();
         Rotation counterRotation = rotation == Rotation.CLOCKWISE ? Rotation.ANTICLOCKWISE : Rotation.CLOCKWISE;
         for(MovecraftLocation newLocation : craft.getBlockList()){
-            rotatedPositions.put(locationToPosition(MathUtils.rotateVec(counterRotation, newLocation).subtract(originPoint)),locationToPosition(newLocation));
+            rotatedPositions.put(locationToPosition(MathUtils.rotateVec(counterRotation, newLocation.subtract(originPoint)).add(originPoint)),locationToPosition(newLocation));
         }
         //*******************************************
         //*         Step two: Get the tiles         *
@@ -75,7 +75,7 @@ public class IWorldHandler extends WorldHandler {
             originalEntries.remove(originalEntries.get(0));
 
         }
-        
+
         //*******************************************
         //*   Step three: Translate all the blocks  *
         //*******************************************
@@ -92,8 +92,8 @@ public class IWorldHandler extends WorldHandler {
         for(Map.Entry<BlockPosition,IBlockData> entry : blockData.entrySet()) {
             setBlockFast(nativeWorld, rotatedPositions.get(entry.getKey()), entry.getValue());
         }
-        
-        
+
+
         //*******************************************
         //*    Step four: replace all the tiles     *
         //*******************************************
