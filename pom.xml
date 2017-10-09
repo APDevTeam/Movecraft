@@ -7,9 +7,9 @@
     <version>parent</version>
     <dependencies>
         <dependency>
-            <groupId>org.bukkit</groupId>
-            <artifactId>bukkit</artifactId>
-            <version>1.11.2-R0.1-SNAPSHOT</version>
+            <groupId>org.spigotmc</groupId>
+            <artifactId>spigot-api</artifactId>
+            <version>LATEST</version>
         </dependency>
     </dependencies>
     <name>Movecraft Parent Pom</name>

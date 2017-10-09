@@ -5,6 +5,7 @@ import net.countercraft.movecraft.api.MovecraftLocation;
 import net.countercraft.movecraft.api.Rotation;
 import net.countercraft.movecraft.api.WorldHandler;
 import net.countercraft.movecraft.api.craft.Craft;
+import net.minecraft.server.v1_10_R1.Block;
 import net.minecraft.server.v1_10_R1.BlockPosition;
 import net.minecraft.server.v1_10_R1.Blocks;
 import net.minecraft.server.v1_10_R1.Chunk;
@@ -21,6 +22,8 @@ import org.bukkit.craftbukkit.v1_10_R1.util.CraftMagicNumbers;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -107,11 +110,11 @@ public class IWorldHandler extends WorldHandler {
         //*   Step five: Destroy the leftovers      *
         //*******************************************
         //TODO: add support for pass-through
-        List<BlockPosition> deletePositions = new ArrayList<>(rotatedPositions.values());
-        deletePositions.removeAll(rotatedPositions.keySet());
-        /*for(BlockPosition position : deletePositions){
-            setBlockFast(nativeWorld, position, Blocks.GLASS.getBlockData());
-        }*/
+        List<BlockPosition> deletePositions = new ArrayList<>(rotatedPositions.keySet());
+        deletePositions.removeAll(rotatedPositions.values());
+        for(BlockPosition position : deletePositions){
+            setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
+        }
 
         //*******************************************
         //*       Step six: Update the blocks       *
@@ -274,6 +277,20 @@ public class IWorldHandler extends WorldHandler {
         World world = ((CraftWorld)(location.getWorld())).getHandle();
         BlockPosition blockPosition = locationToPosition(bukkit2MovecraftLoc(location));
         setBlockFast(world,blockPosition,blockData);
+    }
+
+    @Override
+    public void disableShadow(@NotNull Material type) {
+        Method method;
+        try {
+            Block tempBlock = CraftMagicNumbers.getBlock(type.getId());
+            method = Block.class.getDeclaredMethod("d", int.class);
+            method.setAccessible(true);
+            method.invoke(tempBlock, 0);
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalArgumentException | IllegalAccessException | SecurityException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
     }
 
     private static MovecraftLocation bukkit2MovecraftLoc(Location l) {

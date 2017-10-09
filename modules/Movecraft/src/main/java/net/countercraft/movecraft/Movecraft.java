@@ -51,6 +51,7 @@ import net.countercraft.movecraft.warfare.assault.AssaultManager;
 import net.countercraft.movecraft.warfare.siege.Siege;
 import net.countercraft.movecraft.warfare.siege.SiegeManager;
 import net.milkbowl.vault.economy.Economy;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -102,19 +103,6 @@ public class Movecraft extends JavaPlugin {
     @Override
     public void onDisable() {
         shuttingDown = true;
-    }
-
-    private void disableShadow(int typeID) {
-        Method method;
-        try {
-            net.minecraft.server.v1_10_R1.Block tempBlock = org.bukkit.craftbukkit.v1_10_R1.util.CraftMagicNumbers.getBlock(typeID);
-            method = net.minecraft.server.v1_10_R1.Block.class.getDeclaredMethod("d", int.class);
-            method.setAccessible(true);
-            method.invoke(tempBlock, 0);
-        } catch (NoSuchMethodException | InvocationTargetException | IllegalArgumentException | IllegalAccessException | SecurityException e1) {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
-        }
     }
 
     @Override
@@ -205,7 +193,7 @@ public class Movecraft extends JavaPlugin {
 
         if (!Settings.CompatibilityMode) {
             for (int typ : Settings.DisableShadowBlocks) {
-                disableShadow(typ);
+                worldHandler.disableShadow(Material.getMaterial(typ));
             }
         }
 

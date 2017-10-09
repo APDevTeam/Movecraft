@@ -5,6 +5,7 @@ import net.countercraft.movecraft.api.MovecraftLocation;
 import net.countercraft.movecraft.api.Rotation;
 import net.countercraft.movecraft.api.WorldHandler;
 import net.countercraft.movecraft.api.craft.Craft;
+import net.minecraft.server.v1_11_R1.Block;
 import net.minecraft.server.v1_11_R1.BlockPosition;
 import net.minecraft.server.v1_11_R1.Blocks;
 import net.minecraft.server.v1_11_R1.Chunk;
@@ -21,11 +22,14 @@ import org.bukkit.craftbukkit.v1_11_R1.util.CraftMagicNumbers;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@SuppressWarnings("unused")
 public class IWorldHandler extends WorldHandler {
     private static EnumBlockRotation ROTATION[];
     static {
@@ -36,18 +40,14 @@ public class IWorldHandler extends WorldHandler {
     }
 
     @Override
-    public void rotateCraft(@NotNull Craft craft, @NotNull MovecraftLocation originLocation, @NotNull Rotation rotation) {
+    public void rotateCraft(@NotNull Craft craft, @NotNull MovecraftLocation originPoint, @NotNull Rotation rotation) {
         //*******************************************
         //*      Step one: Convert to Positions     *
         //*******************************************
         HashMap<BlockPosition,BlockPosition> rotatedPositions = new HashMap<>();
-        MovecraftLocation originPoint = new MovecraftLocation(
-                (craft.getMaxX()+craft.getMinX())/2,
-                (craft.getMaxY()+craft.getMinY())/2,
-                (craft.getMaxZ()+craft.getMinX())/2);
         Rotation counterRotation = rotation == Rotation.CLOCKWISE ? Rotation.ANTICLOCKWISE : Rotation.CLOCKWISE;
         for(MovecraftLocation newLocation : craft.getBlockList()){
-            rotatedPositions.put(locationToPosition(MathUtils.rotateVec(counterRotation, newLocation).add(originPoint)),locationToPosition(newLocation));
+            rotatedPositions.put(locationToPosition(MathUtils.rotateVec(counterRotation, newLocation.subtract(originPoint)).add(originPoint)),locationToPosition(newLocation));
         }
         //*******************************************
         //*         Step two: Get the tiles         *
@@ -75,6 +75,7 @@ public class IWorldHandler extends WorldHandler {
             originalEntries.remove(originalEntries.get(0));
 
         }
+
         //*******************************************
         //*   Step three: Translate all the blocks  *
         //*******************************************
@@ -91,6 +92,8 @@ public class IWorldHandler extends WorldHandler {
         for(Map.Entry<BlockPosition,IBlockData> entry : blockData.entrySet()) {
             setBlockFast(nativeWorld, rotatedPositions.get(entry.getKey()), entry.getValue());
         }
+
+
         //*******************************************
         //*    Step four: replace all the tiles     *
         //*******************************************
@@ -132,14 +135,14 @@ public class IWorldHandler extends WorldHandler {
             if(!chunks.contains(chunk)){
                 chunks.add(chunk);
             }
-        }
+        }/*
         for(BlockPosition position : deletePositions){
             Chunk chunk = nativeWorld.getChunkAtWorldCoords(position);
             if(!chunks.contains(chunk)){
                 chunks.add(chunk);
             }
         }
-        //sendToPlayers(chunks.toArray(new Chunk[0]));
+        //sendToPlayers(chunks.toArray(new Chunk[0]));*/
     }
 
     @Override
@@ -257,8 +260,6 @@ public class IWorldHandler extends WorldHandler {
         return new BlockPosition(loc.getX(), loc.getY(), loc.getZ());
     }
 
-
-
     private void setBlockFast(@NotNull World world, @NotNull BlockPosition position,@NotNull IBlockData data) {
         Chunk chunk = world.getChunkAtWorldCoords(position);
         chunk.a(position, data);
@@ -276,6 +277,20 @@ public class IWorldHandler extends WorldHandler {
         World world = ((CraftWorld)(location.getWorld())).getHandle();
         BlockPosition blockPosition = locationToPosition(bukkit2MovecraftLoc(location));
         setBlockFast(world,blockPosition,blockData);
+    }
+
+    @Override
+    public void disableShadow(@NotNull Material type) {
+        Method method;
+        try {
+            Block tempBlock = CraftMagicNumbers.getBlock(type.getId());
+            method = Block.class.getDeclaredMethod("e", int.class);
+            method.setAccessible(true);
+            method.invoke(tempBlock, 0);
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalArgumentException | IllegalAccessException | SecurityException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
     }
 
     private static MovecraftLocation bukkit2MovecraftLoc(Location l) {
