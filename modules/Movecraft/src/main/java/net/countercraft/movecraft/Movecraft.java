@@ -108,7 +108,8 @@ public class Movecraft extends JavaPlugin {
         shuttingDown = true;
     }
 
-    @Override
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+	@Override
     public void onEnable() {
         // Read in config
         this.saveDefaultConfig();

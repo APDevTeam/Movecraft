@@ -67,8 +67,12 @@ public class ContactsCommand implements CommandExecutor {
                 notification += tcraft.getType().getCraftName();
                 notification += " commanded by ";
                 notification += tcraft.getNotificationPlayer().getDisplayName();
-                notification += ", name:";
-                notification += 
+                if (BlockTranslateCommand.uniqueShipName == "") {
+                	notification += "";
+                } else {
+                	notification += ", name: ";
+                	notification += BlockTranslateCommand.uniqueShipName;
+                }
                 notification += ", size: ";
                 notification += tcraft.getOrigBlockCount();
                 notification += ", range: ";

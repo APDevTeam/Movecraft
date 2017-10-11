@@ -61,6 +61,7 @@ import java.util.List;
 @Deprecated
 public class BlockTranslateCommand extends UpdateCommand {
     private static final EnumBlockRotation ROTATION[];
+	
 
     static {
         ROTATION = new EnumBlockRotation[3];
@@ -83,6 +84,7 @@ public class BlockTranslateCommand extends UpdateCommand {
             Material.WALL_SIGN.getId(), Material.COMMAND.getId(), Material.TRAPPED_CHEST.getId(),
             Material.DAYLIGHT_DETECTOR.getId(), Material.HOPPER.getId(), Material.DROPPER.getId(),
             Material.DAYLIGHT_DETECTOR_INVERTED.getId(), Material.COMMAND_REPEATING.getId(), Material.COMMAND_CHAIN.getId()};
+	public static String uniqueShipName;
 
 
 
@@ -542,8 +544,14 @@ public class BlockTranslateCommand extends UpdateCommand {
         	String nameComp1 = String.valueOf(TESign.lines[1]);
         	String nameComp2 = String.valueOf(TESign.lines[2]);
         	String nameComp3 = String.valueOf(TESign.lines[3]);
-        	String uShipName = nameComp1 + nameComp2 + nameComp3;        	
+        	String uShipName = nameComp1 + nameComp2 + nameComp3;
+        	this.setUniqueShipName(uShipName);
         }
+    }
+    public String setUniqueShipName(String uShipName) {
+    	uniqueShipName = uShipName;
+    	return uniqueShipName;
+    	
     }
 }
 
