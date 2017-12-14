@@ -22,61 +22,23 @@ import org.bukkit.craftbukkit.v1_11_R1.util.CraftMagicNumbers;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 @SuppressWarnings("unused")
 public class IWorldHandler extends WorldHandler {
-    private static EnumBlockRotation ROTATION[];
+    private static final EnumBlockRotation ROTATION[];
     static {
         ROTATION = new EnumBlockRotation[3];
         ROTATION[Rotation.NONE.ordinal()] = EnumBlockRotation.NONE;
         ROTATION[Rotation.CLOCKWISE.ordinal()] = EnumBlockRotation.CLOCKWISE_90;
         ROTATION[Rotation.ANTICLOCKWISE.ordinal()] = EnumBlockRotation.COUNTERCLOCKWISE_90;
     }
-
-    private List<NextTickListEntry> U = new ArrayList<>();
-    private List<NextTickListEntry> nextTickList = new ArrayList<>();
-
-    @SuppressWarnings("unchecked")
-    public IWorldHandler(){
-        //Two private fields need to accessed to speed this up
-        try {
-
-            Field UField = WorldServer.class.getDeclaredField("U");
-            UField.setAccessible(true);
-            U = (List<NextTickListEntry>) UField.get(U);
-            Field nextTickListField = WorldServer.class.getDeclaredField("nextTickList");
-            nextTickListField.setAccessible(true);
-            nextTickList = (List<NextTickListEntry>) nextTickListField.get(nextTickList);
-        } catch (IllegalAccessException | IllegalArgumentException | NoSuchFieldException | SecurityException e1) {
-            e1.printStackTrace();
-        }
-    }
-    @Nullable
-    private NextTickListEntry getNextTickListEntry(@NotNull BlockPosition blockPosition) {
-        for(Iterator<NextTickListEntry> iterator = nextTickList.iterator(); iterator.hasNext();) {
-            NextTickListEntry listEntry = iterator.next();
-            if (blockPosition.equals(listEntry.a)) {
-                iterator.remove();
-                return listEntry;
-            }
-        }
-        for(Iterator<NextTickListEntry> iterator = U.iterator(); iterator.hasNext();) {
-            NextTickListEntry listEntry = iterator.next();
-            if (blockPosition.equals(listEntry.a)) {
-                iterator.remove();
-                return listEntry;
-            }
-        }
-        return null;
-    }
+    private final NextTickProvider tickProvider = new NextTickProvider();
 
     @Override
     public void rotateCraft(@NotNull Craft craft, @NotNull MovecraftLocation originPoint, @NotNull Rotation rotation) {
@@ -99,7 +61,7 @@ public class IWorldHandler extends WorldHandler {
             if(tile == null)
                 continue;
             //get the nextTick to move with the tile
-            tiles.add(new TileHolder(tile, getNextTickListEntry(position), position));
+            tiles.add(new TileHolder(tile, tickProvider.getNextTick((WorldServer)nativeWorld, position), position));
             //cleanup
             nativeWorld.capturedTileEntities.remove(position);
             nativeWorld.getChunkAtWorldCoords(position).getTileEntities().remove(position);
@@ -200,7 +162,7 @@ public class IWorldHandler extends WorldHandler {
 
             nativeWorld.capturedTileEntities.remove(position);
             nativeWorld.getChunkAtWorldCoords(position).getTileEntities().remove(position);
-            tiles.add(new TileHolder(tile, getNextTickListEntry(position), position));
+            tiles.add(new TileHolder(tile, tickProvider.getNextTick((WorldServer) nativeWorld, position), position));
 
         }
         //*******************************************
