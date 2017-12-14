@@ -12,9 +12,9 @@ import net.minecraft.server.v1_10_R1.Chunk;
 import net.minecraft.server.v1_10_R1.EnumBlockRotation;
 import net.minecraft.server.v1_10_R1.IBlockData;
 import net.minecraft.server.v1_10_R1.NextTickListEntry;
-import net.minecraft.server.v1_10_R1.StructureBoundingBox;
 import net.minecraft.server.v1_10_R1.TileEntity;
 import net.minecraft.server.v1_10_R1.World;
+import net.minecraft.server.v1_10_R1.WorldServer;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_10_R1.CraftWorld;
@@ -22,6 +22,7 @@ import org.bukkit.craftbukkit.v1_10_R1.util.CraftMagicNumbers;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -37,6 +38,39 @@ public class IWorldHandler extends WorldHandler {
         ROTATION[Rotation.NONE.ordinal()] = EnumBlockRotation.NONE;
         ROTATION[Rotation.CLOCKWISE.ordinal()] = EnumBlockRotation.CLOCKWISE_90;
         ROTATION[Rotation.ANTICLOCKWISE.ordinal()] = EnumBlockRotation.COUNTERCLOCKWISE_90;
+    }
+
+    private List<NextTickListEntry> U = new ArrayList<>();
+    private List<NextTickListEntry> nextTickList = new ArrayList<>();
+
+    @SuppressWarnings("unchecked")
+    public IWorldHandler(){
+        //Two private fields need to accessed to speed this up
+        try {
+
+            Field UField = WorldServer.class.getDeclaredField("U");
+            UField.setAccessible(true);
+            U = (List<NextTickListEntry>) UField.get(U);
+            Field nextTickListField = WorldServer.class.getDeclaredField("nextTickList");
+            nextTickListField.setAccessible(true);
+            nextTickList = (List<NextTickListEntry>) nextTickListField.get(nextTickList);
+        } catch (IllegalAccessException | IllegalArgumentException | NoSuchFieldException | SecurityException e1) {
+            e1.printStackTrace();
+        }
+    }
+    @Nullable
+    private NextTickListEntry getNextTickListEntry(@NotNull BlockPosition blockPosition) {
+        for(NextTickListEntry listEntry : nextTickList) {
+            if (blockPosition.equals(listEntry.a)) {
+                return listEntry;
+            }
+        }
+        for(NextTickListEntry listEntry : U) {
+            if (blockPosition.equals(listEntry.a)) {
+                return listEntry;
+            }
+        }
+        return null;
     }
 
     @Override
@@ -60,20 +94,10 @@ public class IWorldHandler extends WorldHandler {
             if(tile == null)
                 continue;
             //get the nextTick to move with the tile
-            StructureBoundingBox srcBoundingBox = new StructureBoundingBox(position.getX(), position.getY(), position.getZ(), position.getX() + 1, position.getY() + 1, position.getZ() + 1);
-            List<NextTickListEntry> originalEntries = nativeWorld.a(srcBoundingBox, true);
-            if ( nativeWorld.capturedTileEntities.containsKey(position)) {
-                nativeWorld.capturedTileEntities.remove(position);
-            }
+            tiles.add(new TileHolder(tile, getNextTickListEntry(position), position));
+            //cleanup
+            nativeWorld.capturedTileEntities.remove(position);
             nativeWorld.getChunkAtWorldCoords(position).getTileEntities().remove(position);
-            if (originalEntries == null) {
-                tiles.add(new TileHolder(tile, null, position));
-                continue;
-            }
-            NextTickListEntry entry = originalEntries.get(0);
-            tiles.add(new TileHolder(tile, originalEntries.get(0), position));
-            originalEntries.remove(originalEntries.get(0));
-
         }
 
         //*******************************************
@@ -168,19 +192,10 @@ public class IWorldHandler extends WorldHandler {
             if(tile == null)
                 continue;
             //get the nextTick to move with the tile
-            StructureBoundingBox srcBoundingBox = new StructureBoundingBox(position.getX(), position.getY(), position.getZ(), position.getX() + 1, position.getY() + 1, position.getZ() + 1);
-            List<NextTickListEntry> originalEntries = nativeWorld.a(srcBoundingBox, true);
-            if ( nativeWorld.capturedTileEntities.containsKey(position)) {
-                nativeWorld.capturedTileEntities.remove(position);
-            }
+
+            nativeWorld.capturedTileEntities.remove(position);
             nativeWorld.getChunkAtWorldCoords(position).getTileEntities().remove(position);
-            if (originalEntries == null) {
-                tiles.add(new TileHolder(tile, null, position));
-                continue;
-            }
-            NextTickListEntry entry = originalEntries.get(0);
-            tiles.add(new TileHolder(tile, originalEntries.get(0), position));
-            originalEntries.remove(originalEntries.get(0));
+            tiles.add(new TileHolder(tile, getNextTickListEntry(position), position));
 
         }
         //*******************************************
