@@ -27,6 +27,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -40,7 +41,7 @@ public class IWorldHandler extends WorldHandler {
         ROTATION[Rotation.ANTICLOCKWISE.ordinal()] = EnumBlockRotation.COUNTERCLOCKWISE_90;
     }
 
-    private List<NextTickListEntry> U = new ArrayList<>();
+    private List<NextTickListEntry> W = new ArrayList<>();
     private List<NextTickListEntry> nextTickList = new ArrayList<>();
 
     @SuppressWarnings("unchecked")
@@ -48,9 +49,9 @@ public class IWorldHandler extends WorldHandler {
         //Two private fields need to accessed to speed this up
         try {
 
-            Field UField = WorldServer.class.getDeclaredField("U");
+            Field UField = WorldServer.class.getDeclaredField("W");
             UField.setAccessible(true);
-            U = (List<NextTickListEntry>) UField.get(U);
+            W = (List<NextTickListEntry>) UField.get(W);
             Field nextTickListField = WorldServer.class.getDeclaredField("nextTickList");
             nextTickListField.setAccessible(true);
             nextTickList = (List<NextTickListEntry>) nextTickListField.get(nextTickList);
@@ -60,13 +61,17 @@ public class IWorldHandler extends WorldHandler {
     }
     @Nullable
     private NextTickListEntry getNextTickListEntry(@NotNull BlockPosition blockPosition) {
-        for(NextTickListEntry listEntry : nextTickList) {
+        for(Iterator<NextTickListEntry> iterator = nextTickList.iterator(); iterator.hasNext();) {
+            NextTickListEntry listEntry = iterator.next();
             if (blockPosition.equals(listEntry.a)) {
+                iterator.remove();
                 return listEntry;
             }
         }
-        for(NextTickListEntry listEntry : U) {
+        for(Iterator<NextTickListEntry> iterator = W.iterator(); iterator.hasNext();) {
+            NextTickListEntry listEntry = iterator.next();
             if (blockPosition.equals(listEntry.a)) {
+                iterator.remove();
                 return listEntry;
             }
         }

@@ -27,6 +27,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -60,13 +61,17 @@ public class IWorldHandler extends WorldHandler {
     }
     @Nullable
     private NextTickListEntry getNextTickListEntry(@NotNull BlockPosition blockPosition) {
-        for(NextTickListEntry listEntry : nextTickList) {
+        for(Iterator<NextTickListEntry> iterator = nextTickList.iterator(); iterator.hasNext();) {
+            NextTickListEntry listEntry = iterator.next();
             if (blockPosition.equals(listEntry.a)) {
+                iterator.remove();
                 return listEntry;
             }
         }
-        for(NextTickListEntry listEntry : U) {
+        for(Iterator<NextTickListEntry> iterator = U.iterator(); iterator.hasNext();) {
+            NextTickListEntry listEntry = iterator.next();
             if (blockPosition.equals(listEntry.a)) {
+                iterator.remove();
                 return listEntry;
             }
         }
