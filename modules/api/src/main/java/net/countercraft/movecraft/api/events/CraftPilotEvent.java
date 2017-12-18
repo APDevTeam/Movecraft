@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
  * Called whenever a craft is piloted
  * @see net.countercraft.movecraft.api.craft.Craft
  */
+@SuppressWarnings("unused")
 public class CraftPilotEvent extends CraftEvent{
     @NotNull private final Reason reason;
 
