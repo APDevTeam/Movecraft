@@ -38,6 +38,7 @@ public class MapUpdateManager extends BukkitRunnable {
     private List<UpdateCommand> updates = new ArrayList<>();
     //private PriorityQueue<UpdateCommand> updateQueue = new PriorityQueue<>();
 
+    @Deprecated
     public HashMap<Craft, Integer> blockUpdatesPerCraft = new HashMap<>();
 
 

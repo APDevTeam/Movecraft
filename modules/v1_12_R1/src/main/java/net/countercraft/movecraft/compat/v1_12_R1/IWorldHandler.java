@@ -3,6 +3,7 @@ package net.countercraft.movecraft.compat.v1_12_R1;
 import net.countercraft.movecraft.api.MathUtils;
 import net.countercraft.movecraft.api.MovecraftLocation;
 import net.countercraft.movecraft.api.Rotation;
+import net.countercraft.movecraft.api.Utils;
 import net.countercraft.movecraft.api.WorldHandler;
 import net.countercraft.movecraft.api.craft.Craft;
 import net.minecraft.server.v1_12_R1.Block;
@@ -25,6 +26,7 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -101,8 +103,7 @@ public class IWorldHandler extends WorldHandler {
         //*   Step five: Destroy the leftovers      *
         //*******************************************
         //TODO: add support for pass-through
-        List<BlockPosition> deletePositions = new ArrayList<>(rotatedPositions.keySet());
-        deletePositions.removeAll(rotatedPositions.values());
+        Collection<BlockPosition> deletePositions =  Utils.filter(rotatedPositions.keySet(),rotatedPositions.values());
         for(BlockPosition position : deletePositions){
             setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
         }
@@ -202,8 +203,7 @@ public class IWorldHandler extends WorldHandler {
         //*   Step five: Destroy the leftovers      *
         //*******************************************
         //TODO: add support for pass-through
-        List<BlockPosition> deletePositions = new ArrayList<>(positions);
-        deletePositions.removeAll(newPositions);
+        Collection<BlockPosition> deletePositions =  Utils.filter(positions,newPositions);
         for(BlockPosition position : deletePositions){
             setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
         }
