@@ -19,6 +19,10 @@ package net.countercraft.movecraft.api;
 
 import org.bukkit.Location;
 import org.bukkit.World;
+
+/**
+ * Represents a Block aligned coordinate triplet.
+ */
 public class MovecraftLocation {
     private int x, y, z;
 

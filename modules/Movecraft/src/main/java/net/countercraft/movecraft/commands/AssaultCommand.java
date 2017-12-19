@@ -117,7 +117,6 @@ public class AssaultCommand implements CommandExecutor{
             return true;
         }
 //			if(aRegion.getType() instanceof ProtectedCuboidRegion) { // Originally I wasn't going to do non-cubes, but we'll try it and see how it goes. In theory it may repair more than it should but... meh...
-        ProtectedRegion cubRegion = aRegion;
         String repairStateName = Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/RegionRepairStates";
         File file = new File(repairStateName);
         if (!file.exists()) {
@@ -128,8 +127,8 @@ public class AssaultCommand implements CommandExecutor{
         repairStateName += ".schematic";
         file = new File(repairStateName);
 
-        Vector min = new Vector(cubRegion.getMinimumPoint().getBlockX(), cubRegion.getMinimumPoint().getBlockY(), cubRegion.getMinimumPoint().getBlockZ());
-        Vector max = new Vector(cubRegion.getMaximumPoint().getBlockX(), cubRegion.getMaximumPoint().getBlockY(), cubRegion.getMaximumPoint().getBlockZ());
+        Vector min = new Vector(aRegion.getMinimumPoint().getBlockX(), aRegion.getMinimumPoint().getBlockY(), aRegion.getMinimumPoint().getBlockZ());
+        Vector max = new Vector(aRegion.getMaximumPoint().getBlockX(), aRegion.getMaximumPoint().getBlockY(), aRegion.getMaximumPoint().getBlockZ());
 
         if (max.subtract(min).getBlockX() > 256) {
             if (min.getBlockX() < player.getLocation().getBlockX() - 128) {

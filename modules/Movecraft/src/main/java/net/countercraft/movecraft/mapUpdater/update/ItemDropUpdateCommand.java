@@ -35,13 +35,11 @@ public class ItemDropUpdateCommand extends UpdateCommand {
     public void doUpdate() {
         if (itemStack != null) {
             final World world = location.getWorld();
-            final Location loc = this.location;
-            final ItemStack stack = itemStack;
             // drop Item
             new BukkitRunnable() {
                 @Override
                 public void run() {
-                    world.dropItemNaturally(loc, stack);
+                    world.dropItemNaturally(ItemDropUpdateCommand.this.location, itemStack);
                 }
             }.runTaskLater(Movecraft.getInstance(), 20);
         }

@@ -326,8 +326,7 @@ public class TranslationTask extends AsyncTask {
                 break;
             }
 
-            boolean blockObstructed = false;
-            boolean harvestBlock = false;
+            boolean blockObstructed;
             boolean bladeOK = true;
             Material testMaterial;
 
@@ -459,7 +458,6 @@ public class TranslationTask extends AsyncTask {
                         }
                         if (bladeOK) {
                             blockObstructed = false;
-                            harvestBlock = true;
                             tryPutToDestroyBox(testMaterial, newLoc, harvestedBlocks, destroyedBlocks);
                             harvestedBlocks.add(newLoc);
                         }
@@ -593,13 +591,13 @@ public class TranslationTask extends AsyncTask {
                 }
             } else {
                 //block not obstructed
-                Material oldType = getCraft().getW().getBlockAt(oldLoc.getX(), oldLoc.getY(), oldLoc.getZ()).getType();
+                /*Material oldType = getCraft().getW().getBlockAt(oldLoc.getX(), oldLoc.getY(), oldLoc.getZ()).getType();
                 byte oldData = getCraft().getW().getBlockAt(oldLoc.getX(), oldLoc.getY(), oldLoc.getZ()).getData();
                 // remove water from sinking crafts
                 if (getCraft().getSinking()) {
                     if ((oldType == Material.WATER || oldType == Material.STATIONARY_WATER) && oldLoc.getY() > waterLine)
                         oldType = Material.AIR;
-                }
+                }*/
 
                 if (!ignoreBlock) {
                     //updateSet.add(new BlockTranslateCommand(oldLoc, newLoc, oldType, oldData, getCraft()));
@@ -826,7 +824,6 @@ public class TranslationTask extends AsyncTask {
 //                                        }
                         }
                         if (pTest.getType() == EntityType.PRIMED_TNT) {
-                            Entity ent = pTest;
                             Location tempLoc = pTest.getLocation();
                             tempLoc = tempLoc.add(data.getDx(), data.getDy(), data.getDz());
                             EntityUpdateCommand eUp = new EntityUpdateCommand(tempLoc, pTest);
@@ -1057,12 +1054,7 @@ public class TranslationTask extends AsyncTask {
 
         aroundNewLoc = newLoc.translate(0, 0, -1);
         testMaterial = getCraft().getW().getBlockAt(aroundNewLoc.getX(), aroundNewLoc.getY(), aroundNewLoc.getZ()).getType();
-        if (testMaterial.equals(mBlock)) {
-            if (!existingBlockSet.contains(aroundNewLoc)) {
-                return false;
-            }
-        }
-        return true;
+        return !testMaterial.equals(mBlock) || existingBlockSet.contains(aroundNewLoc);
     }
 
     private void captureYield(MovecraftLocation[] blocksList, List<MovecraftLocation> harvestedBlocks) {

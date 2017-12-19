@@ -882,7 +882,6 @@ public class InteractListener implements Listener {
                             craft.setPilotLockedZ(event.getPlayer().getLocation().getBlockZ() + 0.5);
                             event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Entering Direct Control Mode"));
                             event.setCancelled(true);
-                            return;
                         } else {
                             event.getPlayer().sendMessage(
                                     I18nSupport.getInternationalisedString("Insufficient Permissions"));
@@ -892,7 +891,6 @@ public class InteractListener implements Listener {
                         event.getPlayer().sendMessage(
                                 I18nSupport.getInternationalisedString("Leaving Direct Control Mode"));
                         event.setCancelled(true);
-                        return;
                     }
                 }
             }

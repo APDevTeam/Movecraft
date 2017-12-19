@@ -33,8 +33,7 @@ public class WGCustomFlagsUtils {
     public Constructor<?> getStateFlagConstructor() {
         try {
             Class<?> c = Class.forName("com.sk89q.worldguard.protection.flags.StateFlag");
-            Constructor<?> cc = c.getConstructor(String.class, boolean.class);
-            return cc;
+            return c.getConstructor(String.class, boolean.class);
         } catch (ClassNotFoundException | SecurityException | NoSuchMethodException ex) {
             return null;
         }

@@ -121,10 +121,8 @@ public class TownyUtils {
         PlayerCache cache = Movecraft.getInstance().getTownyPlugin().getCache(player);
         TownBlockStatus status = cache.getStatus();
 
-        if (cache.hasBlockErrMsg())
-            return false;
+        return !cache.hasBlockErrMsg() && status == TownBlockStatus.WARZONE && TownyWarConfig.isAllowingSwitchesInWarZone();
 
-        return status == TownBlockStatus.WARZONE && TownyWarConfig.isAllowingSwitchesInWarZone();
     }
 
     public static boolean validatePVP(TownBlock tb) {

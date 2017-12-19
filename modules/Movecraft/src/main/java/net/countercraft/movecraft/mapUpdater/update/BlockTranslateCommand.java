@@ -19,16 +19,15 @@ package net.countercraft.movecraft.mapUpdater.update;
 
 import com.earth2me.essentials.User;
 import net.countercraft.movecraft.Movecraft;
-import net.countercraft.movecraft.config.Settings;
-import net.countercraft.movecraft.api.craft.Craft;
-import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.api.MovecraftLocation;
 import net.countercraft.movecraft.api.Rotation;
+import net.countercraft.movecraft.api.craft.Craft;
+import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.minecraft.server.v1_10_R1.BlockPosition;
 import net.minecraft.server.v1_10_R1.ChatComponentText;
 import net.minecraft.server.v1_10_R1.Chunk;
-import net.minecraft.server.v1_10_R1.EnumBlockRotation;
 import net.minecraft.server.v1_10_R1.IBlockData;
 import net.minecraft.server.v1_10_R1.NextTickListEntry;
 import net.minecraft.server.v1_10_R1.StructureBoundingBox;
@@ -60,14 +59,6 @@ import java.util.List;
  */
 @Deprecated
 public class BlockTranslateCommand extends UpdateCommand {
-    private static final EnumBlockRotation ROTATION[];
-
-    static {
-        ROTATION = new EnumBlockRotation[3];
-        ROTATION[Rotation.NONE.ordinal()] = EnumBlockRotation.NONE;
-        ROTATION[Rotation.CLOCKWISE.ordinal()] = EnumBlockRotation.CLOCKWISE_90;
-        ROTATION[Rotation.ANTICLOCKWISE.ordinal()] = EnumBlockRotation.COUNTERCLOCKWISE_90;
-    }
 
     private final @NotNull MovecraftLocation newBlockLocation;
     private final @NotNull MovecraftLocation oldBlockLocation;
@@ -86,7 +77,7 @@ public class BlockTranslateCommand extends UpdateCommand {
 
 
 
-    public BlockTranslateCommand(@NotNull MovecraftLocation oldBlockLocation, @NotNull MovecraftLocation newBlockLocation, @NotNull Material type, @NotNull byte dataID, @NotNull Rotation rotation, @NotNull Craft craft) {
+    public BlockTranslateCommand(@NotNull MovecraftLocation oldBlockLocation, @NotNull MovecraftLocation newBlockLocation, @NotNull Material type, byte dataID, @NotNull Rotation rotation, @NotNull Craft craft) {
         this.oldBlockLocation = oldBlockLocation;
         this.newBlockLocation = newBlockLocation;
         this.type = type;
@@ -95,7 +86,7 @@ public class BlockTranslateCommand extends UpdateCommand {
         this.craft = craft;
     }
 
-    public BlockTranslateCommand(@NotNull MovecraftLocation oldBlockLocation, @NotNull MovecraftLocation newBlockLocation, @NotNull Material type, @NotNull byte dataID, @NotNull Craft craft) {
+    public BlockTranslateCommand(@NotNull MovecraftLocation oldBlockLocation, @NotNull MovecraftLocation newBlockLocation, @NotNull Material type, byte dataID, @NotNull Craft craft) {
         this.oldBlockLocation = oldBlockLocation;
         this.newBlockLocation = newBlockLocation;
         this.type = type;
@@ -143,7 +134,7 @@ public class BlockTranslateCommand extends UpdateCommand {
         Block oldBlock = oldBlockLocation.toBukkit(craft.getW()).getBlock();
         Chunk oldChunk = ((CraftChunk) oldBlock.getChunk()).getHandle();
         BlockPosition oldBlockPos = new BlockPosition(oldBlock.getX(), oldBlock.getY(), oldBlock.getZ());
-        IBlockData blockData = net.minecraft.server.v1_10_R1.Block.getByCombinedId(type.getId()+ (dataID << 12));;//.a(ROTATION[rotation.ordinal()]);
+        IBlockData blockData = net.minecraft.server.v1_10_R1.Block.getByCombinedId(type.getId()+ (dataID << 12));//.a(ROTATION[rotation.ordinal()]);
 
         //New block
         Block newBlock = newBlockLocation.toBukkit(craft.getW()).getBlock();

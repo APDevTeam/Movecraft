@@ -43,6 +43,5 @@ public class ExplosionUpdateCommand extends UpdateCommand {
         }
         if (!explosionBlocked)
             loc.getWorld().createExplosion(loc.getX() + 0.5, loc.getY() + 0.5, loc.getZ() + 0.5, explosionPower);
-        return;
     }
 }
