@@ -402,6 +402,7 @@ public class AsyncManager extends BukkitRunnable {
                             // time pass more slowly there
                             if (pcraft.getType().getHalfSpeedUnderwater() && pcraft.getMinY() < w.getSeaLevel())
                                 ticksElapsed = ticksElapsed >> 1;
+                            //TODO: Make this not suck
                             if (pcraft.getType().getDynamicLagSpeedFactor() > 0.0) { // craft speed should depend on how much lag it generates (IE: how many updates)
                                 if (MapUpdateManager.getInstance().blockUpdatesPerCraft != null) {
                                     Integer numUpdates = MapUpdateManager.getInstance().blockUpdatesPerCraft.get(pcraft);
