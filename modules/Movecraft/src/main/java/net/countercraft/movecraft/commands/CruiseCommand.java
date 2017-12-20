@@ -52,7 +52,7 @@ public class CruiseCommand implements TabExecutor {
             player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
             return true;
         }
-        if (craft.getType().getCanCruise()) {
+        if (!craft.getType().getCanCruise()) {
             player.sendMessage("this craft cannot cruise");
             return true;
         }
@@ -72,7 +72,6 @@ public class CruiseCommand implements TabExecutor {
             return true;
         }
         if (args[0].equalsIgnoreCase("north") || args[0].equalsIgnoreCase("n")) {
-
             craft.setCruiseDirection((byte) 0x3);
             craft.setCruising(true);
             return true;
