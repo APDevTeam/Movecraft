@@ -92,7 +92,7 @@ public class SiegeCommand implements CommandExecutor {
         }
         Movecraft.getInstance().getLogger().log(Level.INFO, String.format("Siege: %s commenced by %s for a cost of %d", siege.getName(), player.getName(), cost));
         Movecraft.getInstance().getEconomy().withdrawPlayer(player, cost);
-        siege.setStage(new AtomicReference<SiegeStage>(SiegeStage.PREPERATION));
+        siege.setStage(new AtomicReference<>(SiegeStage.PREPERATION));
         return true;
     }
 }

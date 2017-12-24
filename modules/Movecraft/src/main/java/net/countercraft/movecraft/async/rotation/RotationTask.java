@@ -23,6 +23,7 @@ import com.palmergames.bukkit.towny.object.TownyWorld;
 import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import net.countercraft.movecraft.Movecraft;
+import net.countercraft.movecraft.api.MathUtils;
 import net.countercraft.movecraft.api.MovecraftLocation;
 import net.countercraft.movecraft.api.Rotation;
 import net.countercraft.movecraft.api.craft.Craft;
@@ -30,14 +31,11 @@ import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.mapUpdater.update.BlockCreateCommand;
 import net.countercraft.movecraft.mapUpdater.update.CraftRotateCommand;
-import net.countercraft.movecraft.mapUpdater.update.CraftTranslateCommand;
 import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import net.countercraft.movecraft.utils.ArrayUtils;
 import net.countercraft.movecraft.utils.BlockUtils;
-import net.countercraft.movecraft.api.MathUtils;
 import net.countercraft.movecraft.utils.TownyUtils;
 import net.countercraft.movecraft.utils.TownyWorldHeightLimits;
 import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
@@ -490,38 +488,42 @@ public class RotationTask extends AsyncTask {
             if (getCraft().getCruising()) {
                 if (rotation == Rotation.ANTICLOCKWISE) {
                     // ship faces west
-                    if (getCraft().getCruiseDirection() == 0x5) {
-                        getCraft().setCruiseDirection((byte) 0x2);
-                    } else
+                    switch (getCraft().getCruiseDirection()) {
+                        case 0x5:
+                            getCraft().setCruiseDirection((byte) 0x2);
+                            break;
                         // ship faces east
-                        if (getCraft().getCruiseDirection() == 0x4) {
+                        case 0x4:
                             getCraft().setCruiseDirection((byte) 0x3);
-                        } else
-                            // ship faces north
-                            if (getCraft().getCruiseDirection() == 0x2) {
-                                getCraft().setCruiseDirection((byte) 0x4);
-                            } else
-                                // ship faces south
-                                if (getCraft().getCruiseDirection() == 0x3) {
-                                    getCraft().setCruiseDirection((byte) 0x5);
-                                }
+                            break;
+                        // ship faces north
+                        case 0x2:
+                            getCraft().setCruiseDirection((byte) 0x4);
+                            break;
+                        // ship faces south
+                        case 0x3:
+                            getCraft().setCruiseDirection((byte) 0x5);
+                            break;
+                    }
                 } else if (rotation == Rotation.CLOCKWISE) {
                     // ship faces west
-                    if (getCraft().getCruiseDirection() == 0x5) {
-                        getCraft().setCruiseDirection((byte) 0x3);
-                    } else
+                    switch (getCraft().getCruiseDirection()) {
+                        case 0x5:
+                            getCraft().setCruiseDirection((byte) 0x3);
+                            break;
                         // ship faces east
-                        if (getCraft().getCruiseDirection() == 0x4) {
+                        case 0x4:
                             getCraft().setCruiseDirection((byte) 0x2);
-                        } else
-                            // ship faces north
-                            if (getCraft().getCruiseDirection() == 0x2) {
-                                getCraft().setCruiseDirection((byte) 0x5);
-                            } else
-                                // ship faces south
-                                if (getCraft().getCruiseDirection() == 0x3) {
-                                    getCraft().setCruiseDirection((byte) 0x4);
-                                }
+                            break;
+                        // ship faces north
+                        case 0x2:
+                            getCraft().setCruiseDirection((byte) 0x5);
+                            break;
+                        // ship faces south
+                        case 0x3:
+                            getCraft().setCruiseDirection((byte) 0x4);
+                            break;
+                    }
                 }
             }
 
@@ -692,9 +694,7 @@ public class RotationTask extends AsyncTask {
         aroundNewLoc = newLoc.translate(0, 0, -1);
         testMaterial = getCraft().getW().getBlockAt(aroundNewLoc.getX(), aroundNewLoc.getY(), aroundNewLoc.getZ()).getType();
         if (testMaterial.equals(mBlock)) {
-            if (!existingBlockSet.contains(aroundNewLoc)) {
-                return false;
-            }
+            return existingBlockSet.contains(aroundNewLoc);
         }
         return true;
     }

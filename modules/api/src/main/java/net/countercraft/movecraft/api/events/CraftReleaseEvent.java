@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
  * Called whenever a craft is released
  * @see net.countercraft.movecraft.api.craft.Craft
  */
+@SuppressWarnings("unused")
 public class CraftReleaseEvent extends CraftEvent{
     @NotNull private final Reason reason;
 

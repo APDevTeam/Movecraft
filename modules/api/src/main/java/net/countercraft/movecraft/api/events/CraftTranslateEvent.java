@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
  * This event is called before the craft is physically moved, but after collision is checked.
  * @see net.countercraft.movecraft.api.craft.Craft
  */
+@SuppressWarnings("unused")
 public class CraftTranslateEvent extends CraftEvent implements Cancellable {
     @NotNull private final MovecraftLocation newLocation;
     private boolean isCancelled = false;

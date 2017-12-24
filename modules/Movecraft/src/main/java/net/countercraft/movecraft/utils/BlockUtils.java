@@ -515,14 +515,19 @@ public class BlockUtils {
                     data = (byte) ((data & 0x8) | direction);
 
                 } else {
-                    if (direction == 0x5) {
-                        data = (byte) ((data & 0x8) | 0x6);
-                    } else if (direction == 0x6) {
-                        data = (byte) ((data & 0x8) | 0x5);
-                    } else if (direction == 0x7) {
-                        data = (byte) ((data & 0x8));
-                    } else if (direction == 0x0) {
-                        data = (byte) ((data & 0x8) | 0x7);
+                    switch (direction) {
+                        case 0x5:
+                            data = (byte) ((data & 0x8) | 0x6);
+                            break;
+                        case 0x6:
+                            data = (byte) ((data & 0x8) | 0x5);
+                            break;
+                        case 0x7:
+                            data = (byte) ((data & 0x8));
+                            break;
+                        case 0x0:
+                            data = (byte) ((data & 0x8) | 0x7);
+                            break;
                     }
                 }
 

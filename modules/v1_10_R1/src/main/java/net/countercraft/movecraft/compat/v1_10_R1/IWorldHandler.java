@@ -3,6 +3,7 @@ package net.countercraft.movecraft.compat.v1_10_R1;
 import net.countercraft.movecraft.api.MathUtils;
 import net.countercraft.movecraft.api.MovecraftLocation;
 import net.countercraft.movecraft.api.Rotation;
+import net.countercraft.movecraft.api.Utils;
 import net.countercraft.movecraft.api.WorldHandler;
 import net.countercraft.movecraft.api.craft.Craft;
 import net.minecraft.server.v1_10_R1.Block;
@@ -12,9 +13,9 @@ import net.minecraft.server.v1_10_R1.Chunk;
 import net.minecraft.server.v1_10_R1.EnumBlockRotation;
 import net.minecraft.server.v1_10_R1.IBlockData;
 import net.minecraft.server.v1_10_R1.NextTickListEntry;
-import net.minecraft.server.v1_10_R1.StructureBoundingBox;
 import net.minecraft.server.v1_10_R1.TileEntity;
 import net.minecraft.server.v1_10_R1.World;
+import net.minecraft.server.v1_10_R1.WorldServer;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_10_R1.CraftWorld;
@@ -25,19 +26,21 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @SuppressWarnings("unused")
 public class IWorldHandler extends WorldHandler {
-    private static EnumBlockRotation ROTATION[];
+    private static final EnumBlockRotation ROTATION[];
     static {
         ROTATION = new EnumBlockRotation[3];
         ROTATION[Rotation.NONE.ordinal()] = EnumBlockRotation.NONE;
         ROTATION[Rotation.CLOCKWISE.ordinal()] = EnumBlockRotation.CLOCKWISE_90;
         ROTATION[Rotation.ANTICLOCKWISE.ordinal()] = EnumBlockRotation.COUNTERCLOCKWISE_90;
     }
+    private final NextTickProvider tickProvider = new NextTickProvider();
 
     @Override
     public void rotateCraft(@NotNull Craft craft, @NotNull MovecraftLocation originPoint, @NotNull Rotation rotation) {
@@ -60,20 +63,10 @@ public class IWorldHandler extends WorldHandler {
             if(tile == null)
                 continue;
             //get the nextTick to move with the tile
-            StructureBoundingBox srcBoundingBox = new StructureBoundingBox(position.getX(), position.getY(), position.getZ(), position.getX() + 1, position.getY() + 1, position.getZ() + 1);
-            List<NextTickListEntry> originalEntries = nativeWorld.a(srcBoundingBox, true);
-            if ( nativeWorld.capturedTileEntities.containsKey(position)) {
-                nativeWorld.capturedTileEntities.remove(position);
-            }
+            tiles.add(new TileHolder(tile, tickProvider.getNextTick((WorldServer)nativeWorld,position), position));
+            //cleanup
+            nativeWorld.capturedTileEntities.remove(position);
             nativeWorld.getChunkAtWorldCoords(position).getTileEntities().remove(position);
-            if (originalEntries == null) {
-                tiles.add(new TileHolder(tile, null, position));
-                continue;
-            }
-            NextTickListEntry entry = originalEntries.get(0);
-            tiles.add(new TileHolder(tile, originalEntries.get(0), position));
-            originalEntries.remove(originalEntries.get(0));
-
         }
 
         //*******************************************
@@ -110,8 +103,7 @@ public class IWorldHandler extends WorldHandler {
         //*   Step five: Destroy the leftovers      *
         //*******************************************
         //TODO: add support for pass-through
-        List<BlockPosition> deletePositions = new ArrayList<>(rotatedPositions.keySet());
-        deletePositions.removeAll(rotatedPositions.values());
+        Collection<BlockPosition> deletePositions =  Utils.filter(rotatedPositions.keySet(),rotatedPositions.values());
         for(BlockPosition position : deletePositions){
             setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
         }
@@ -156,6 +148,7 @@ public class IWorldHandler extends WorldHandler {
         List<BlockPosition> positions = new ArrayList<>();
         for(MovecraftLocation movecraftLocation : craft.getBlockList()) {
             positions.add(locationToPosition((movecraftLocation)).b(translateVector));
+
         }
         //*******************************************
         //*         Step two: Get the tiles         *
@@ -168,19 +161,10 @@ public class IWorldHandler extends WorldHandler {
             if(tile == null)
                 continue;
             //get the nextTick to move with the tile
-            StructureBoundingBox srcBoundingBox = new StructureBoundingBox(position.getX(), position.getY(), position.getZ(), position.getX() + 1, position.getY() + 1, position.getZ() + 1);
-            List<NextTickListEntry> originalEntries = nativeWorld.a(srcBoundingBox, true);
-            if ( nativeWorld.capturedTileEntities.containsKey(position)) {
-                nativeWorld.capturedTileEntities.remove(position);
-            }
+
+            nativeWorld.capturedTileEntities.remove(position);
             nativeWorld.getChunkAtWorldCoords(position).getTileEntities().remove(position);
-            if (originalEntries == null) {
-                tiles.add(new TileHolder(tile, null, position));
-                continue;
-            }
-            NextTickListEntry entry = originalEntries.get(0);
-            tiles.add(new TileHolder(tile, originalEntries.get(0), position));
-            originalEntries.remove(originalEntries.get(0));
+            tiles.add(new TileHolder(tile, tickProvider.getNextTick((WorldServer)nativeWorld,position), position));
 
         }
         //*******************************************
@@ -215,17 +199,14 @@ public class IWorldHandler extends WorldHandler {
             final long currentTime = nativeWorld.worldData.getTime();
             nativeWorld.b(tileHolder.getNextTick().a.a(translateVector), tileHolder.getNextTick().a(), (int) (tileHolder.getNextTick().b - currentTime), tileHolder.getNextTick().c);
         }
-
         //*******************************************
         //*   Step five: Destroy the leftovers      *
         //*******************************************
         //TODO: add support for pass-through
-        List<BlockPosition> deletePositions = new ArrayList<>(positions);
-        deletePositions.removeAll(newPositions);
+        Collection<BlockPosition> deletePositions =  Utils.filter(positions,newPositions);
         for(BlockPosition position : deletePositions){
             setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
         }
-
         //*******************************************
         //*       Step six: Update the blocks       *
         //*******************************************
@@ -262,6 +243,8 @@ public class IWorldHandler extends WorldHandler {
 
     private void setBlockFast(@NotNull World world, @NotNull BlockPosition position,@NotNull IBlockData data) {
         Chunk chunk = world.getChunkAtWorldCoords(position);
+        if(chunk.getBlockData(position).equals(data))
+            return;
         chunk.a(position, data);
     }
 

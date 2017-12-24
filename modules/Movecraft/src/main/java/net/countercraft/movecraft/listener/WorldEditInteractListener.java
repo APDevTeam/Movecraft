@@ -187,8 +187,7 @@ public class WorldEditInteractListener implements Listener {
                             BlockState state = b.getState();
                             if (state instanceof Sign) {
                                 Sign s = (Sign) state;
-                                SignBlock sb = new SignBlock(b.getTypeId(), b.getData(), s.getLines());
-                                bb = sb;
+                                bb = new SignBlock(b.getTypeId(), b.getData(), s.getLines());
                             } else if (state instanceof Dispenser) {
                                 LocalWorld lw = BukkitUtil.getLocalWorld(event.getPlayer().getWorld());
                                 Vector vectorPos = new Vector(loc.getX(), loc.getY(), loc.getZ());

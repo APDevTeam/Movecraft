@@ -30,17 +30,11 @@ public class TownyWorldHeightLimits {
         }
 
         if (above_town > -1 && under_town > -1) {
-            if (y < spawnY + above_town && y > spawnY - under_town) {
-                return false;
-            }
+            return y >= spawnY + above_town || y <= spawnY - under_town;
         } else if (above_town > -1) {
-            if (y >= spawnY && y < spawnY + above_town) {
-                return false;
-            }
+            return y < spawnY || y >= spawnY + above_town;
         } else if (under_town > -1) {
-            if (y <= spawnY && y > spawnY - under_town) {
-                return false;
-            }
+            return y > spawnY || y <= spawnY - under_town;
         }
 
         return true;

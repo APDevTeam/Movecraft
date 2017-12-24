@@ -44,47 +44,47 @@ public class PlayerListener implements Listener {
         for (MovecraftLocation block : craftBlocks) {
             int x, y, z;
             x = block.getX() + 1;
-            y = block.getY() + 0;
-            z = block.getZ() + 0;
+            y = block.getY();
+            z = block.getZ();
             MovecraftLocation test = new MovecraftLocation(x, y, z);
             if (!craftBlocks.contains(test))
                 if ((Arrays.binarySearch(craft.getType().getAllowedBlocks(), craft.getW().getBlockTypeIdAt(x, y, z)) >= 0) || (Arrays.binarySearch(craft.getType().getAllowedBlocks(), (craft.getW().getBlockTypeIdAt(x, y, z) << 4) + craft.getW().getBlockAt(x, y, z).getData() + 10000) >= 0)) {
                     ret = "@ " + x + "," + y + "," + z;
                 }
             x = block.getX() - 1;
-            y = block.getY() + 0;
-            z = block.getZ() + 0;
+            y = block.getY();
+            z = block.getZ();
             test = new MovecraftLocation(x, y, z);
             if (!craftBlocks.contains(test))
                 if ((Arrays.binarySearch(craft.getType().getAllowedBlocks(), craft.getW().getBlockTypeIdAt(x, y, z)) >= 0) || (Arrays.binarySearch(craft.getType().getAllowedBlocks(), (craft.getW().getBlockTypeIdAt(x, y, z) << 4) + craft.getW().getBlockAt(x, y, z).getData() + 10000) >= 0)) {
                     ret = "@ " + x + "," + y + "," + z;
                 }
-            x = block.getX() + 0;
+            x = block.getX();
             y = block.getY() + 1;
-            z = block.getZ() + 0;
+            z = block.getZ();
             test = new MovecraftLocation(x, y, z);
             if (!craftBlocks.contains(test))
                 if ((Arrays.binarySearch(craft.getType().getAllowedBlocks(), craft.getW().getBlockTypeIdAt(x, y, z)) >= 0) || (Arrays.binarySearch(craft.getType().getAllowedBlocks(), (craft.getW().getBlockTypeIdAt(x, y, z) << 4) + craft.getW().getBlockAt(x, y, z).getData() + 10000) >= 0)) {
                     ret = "@ " + x + "," + y + "," + z;
                 }
-            x = block.getX() + 0;
+            x = block.getX();
             y = block.getY() - 1;
-            z = block.getZ() + 0;
+            z = block.getZ();
             test = new MovecraftLocation(x, y, z);
             if (!craftBlocks.contains(test))
                 if ((Arrays.binarySearch(craft.getType().getAllowedBlocks(), craft.getW().getBlockTypeIdAt(x, y, z)) >= 0) || (Arrays.binarySearch(craft.getType().getAllowedBlocks(), (craft.getW().getBlockTypeIdAt(x, y, z) << 4) + craft.getW().getBlockAt(x, y, z).getData() + 10000) >= 0)) {
                     ret = "@ " + x + "," + y + "," + z;
                 }
-            x = block.getX() + 0;
-            y = block.getY() + 0;
+            x = block.getX();
+            y = block.getY();
             z = block.getZ() + 1;
             test = new MovecraftLocation(x, y, z);
             if (!craftBlocks.contains(test))
                 if ((Arrays.binarySearch(craft.getType().getAllowedBlocks(), craft.getW().getBlockTypeIdAt(x, y, z)) >= 0) || (Arrays.binarySearch(craft.getType().getAllowedBlocks(), (craft.getW().getBlockTypeIdAt(x, y, z) << 4) + craft.getW().getBlockAt(x, y, z).getData() + 10000) >= 0)) {
                     ret = "@ " + x + "," + y + "," + z;
                 }
-            x = block.getX() + 0;
-            y = block.getY() + 0;
+            x = block.getX();
+            y = block.getY();
             z = block.getZ() + 1;
             test = new MovecraftLocation(x, y, z);
             if (!craftBlocks.contains(test))
@@ -93,7 +93,7 @@ public class PlayerListener implements Listener {
                 }
             x = block.getX() + 1;
             y = block.getY() + 1;
-            z = block.getZ() + 0;
+            z = block.getZ();
             test = new MovecraftLocation(x, y, z);
             if (!craftBlocks.contains(test))
                 if ((Arrays.binarySearch(craft.getType().getAllowedBlocks(), craft.getW().getBlockTypeIdAt(x, y, z)) >= 0) || (Arrays.binarySearch(craft.getType().getAllowedBlocks(), (craft.getW().getBlockTypeIdAt(x, y, z) << 4) + craft.getW().getBlockAt(x, y, z).getData() + 10000) >= 0)) {
@@ -101,7 +101,7 @@ public class PlayerListener implements Listener {
                 }
             x = block.getX() + 1;
             y = block.getY() - 1;
-            z = block.getZ() + 0;
+            z = block.getZ();
             test = new MovecraftLocation(x, y, z);
             if (!craftBlocks.contains(test))
                 if ((Arrays.binarySearch(craft.getType().getAllowedBlocks(), craft.getW().getBlockTypeIdAt(x, y, z)) >= 0) || (Arrays.binarySearch(craft.getType().getAllowedBlocks(), (craft.getW().getBlockTypeIdAt(x, y, z) << 4) + craft.getW().getBlockAt(x, y, z).getData() + 10000) >= 0)) {
@@ -109,7 +109,7 @@ public class PlayerListener implements Listener {
                 }
             x = block.getX() - 1;
             y = block.getY() + 1;
-            z = block.getZ() + 0;
+            z = block.getZ();
             test = new MovecraftLocation(x, y, z);
             if (!craftBlocks.contains(test))
                 if ((Arrays.binarySearch(craft.getType().getAllowedBlocks(), craft.getW().getBlockTypeIdAt(x, y, z)) >= 0) || (Arrays.binarySearch(craft.getType().getAllowedBlocks(), (craft.getW().getBlockTypeIdAt(x, y, z) << 4) + craft.getW().getBlockAt(x, y, z).getData() + 10000) >= 0)) {
@@ -117,13 +117,13 @@ public class PlayerListener implements Listener {
                 }
             x = block.getX() - 1;
             y = block.getY() - 1;
-            z = block.getZ() + 0;
+            z = block.getZ();
             test = new MovecraftLocation(x, y, z);
             if (!craftBlocks.contains(test))
                 if ((Arrays.binarySearch(craft.getType().getAllowedBlocks(), craft.getW().getBlockTypeIdAt(x, y, z)) >= 0) || (Arrays.binarySearch(craft.getType().getAllowedBlocks(), (craft.getW().getBlockTypeIdAt(x, y, z) << 4) + craft.getW().getBlockAt(x, y, z).getData() + 10000) >= 0)) {
                     ret = "@ " + x + "," + y + "," + z;
                 }
-            x = block.getX() + 0;
+            x = block.getX();
             y = block.getY() + 1;
             z = block.getZ() + 1;
             test = new MovecraftLocation(x, y, z);
@@ -131,7 +131,7 @@ public class PlayerListener implements Listener {
                 if ((Arrays.binarySearch(craft.getType().getAllowedBlocks(), craft.getW().getBlockTypeIdAt(x, y, z)) >= 0) || (Arrays.binarySearch(craft.getType().getAllowedBlocks(), (craft.getW().getBlockTypeIdAt(x, y, z) << 4) + craft.getW().getBlockAt(x, y, z).getData() + 10000) >= 0)) {
                     ret = "@ " + x + "," + y + "," + z;
                 }
-            x = block.getX() + 0;
+            x = block.getX();
             y = block.getY() - 1;
             z = block.getZ() + 1;
             test = new MovecraftLocation(x, y, z);
@@ -139,7 +139,7 @@ public class PlayerListener implements Listener {
                 if ((Arrays.binarySearch(craft.getType().getAllowedBlocks(), craft.getW().getBlockTypeIdAt(x, y, z)) >= 0) || (Arrays.binarySearch(craft.getType().getAllowedBlocks(), (craft.getW().getBlockTypeIdAt(x, y, z) << 4) + craft.getW().getBlockAt(x, y, z).getData() + 10000) >= 0)) {
                     ret = "@ " + x + "," + y + "," + z;
                 }
-            x = block.getX() + 0;
+            x = block.getX();
             y = block.getY() + 1;
             z = block.getZ() - 1;
             test = new MovecraftLocation(x, y, z);
@@ -147,7 +147,7 @@ public class PlayerListener implements Listener {
                 if ((Arrays.binarySearch(craft.getType().getAllowedBlocks(), craft.getW().getBlockTypeIdAt(x, y, z)) >= 0) || (Arrays.binarySearch(craft.getType().getAllowedBlocks(), (craft.getW().getBlockTypeIdAt(x, y, z) << 4) + craft.getW().getBlockAt(x, y, z).getData() + 10000) >= 0)) {
                     ret = "@ " + x + "," + y + "," + z;
                 }
-            x = block.getX() + 0;
+            x = block.getX();
             y = block.getY() - 1;
             z = block.getZ() - 1;
             test = new MovecraftLocation(x, y, z);
