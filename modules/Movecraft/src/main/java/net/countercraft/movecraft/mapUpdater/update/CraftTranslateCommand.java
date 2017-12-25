@@ -4,7 +4,6 @@ import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.api.MovecraftLocation;
 import net.countercraft.movecraft.api.craft.Craft;
 import net.countercraft.movecraft.config.Settings;
-import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.logging.Logger;
@@ -25,8 +24,9 @@ public class CraftTranslateCommand extends UpdateCommand {
         Movecraft.getInstance().getWorldHandler().translateCraft(craft,displacement);
         time = System.nanoTime() - time;
         if(Settings.Debug)
-            logger.info("Total time: " + (time / 1e9) + " seconds");
-        MapUpdateManager.getInstance().blockUpdatesPerCraft.put(craft,(int)(time * 1e18));
+            logger.info("Total time: " + (time / 1e9) + " seconds. Moving with cooldown of " + craft.getTickCooldown());
+        //MapUpdateManager.getInstance().blockUpdatesPerCraft.put(craft,(int)(time * 1e18));
+        craft.addMoveTime(time/1e9f);
     }
 
 

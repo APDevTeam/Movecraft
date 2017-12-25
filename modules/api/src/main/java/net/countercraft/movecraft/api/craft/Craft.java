@@ -60,11 +60,9 @@ public abstract class Craft {
     private Player cannonDirector;
     private Player AADirector;
     private HashMap<Player, Long> movedPlayers = new HashMap<>();
-    private double curSpeed;
-    private int curTickCooldown;
-    private double maxSpeed;
-    private int blockUpdates;
-
+    //private int blockUpdates;
+    private float meanMoveTime;
+    private int numMoves;
     public Craft(CraftType type, World world) {
         this.type = type;
         this.w = world;
@@ -85,6 +83,7 @@ public abstract class Craft {
         this.sinking = false;
         this.disabled = false;
         this.origPilotTime = System.currentTimeMillis();
+        numMoves = 0;
     }
 
     public boolean isNotProcessing() {
@@ -127,6 +126,7 @@ public abstract class Craft {
 
     public abstract void translate(int dx, int dy, int dz);
 
+    @Deprecated
     public void resetSigns(boolean resetCruise, boolean resetAscend, boolean resetDescend) {
         for (MovecraftLocation aBlockList : blockList) {
             int blockID = w.getBlockAt(aBlockList.getX(), aBlockList.getY(), aBlockList.getZ()).getTypeId();
@@ -373,51 +373,56 @@ public abstract class Craft {
         this.AADirector = AADirector;
     }
 
-    public double getCurSpeed() {
+   /* public double getCurSpeed() {
         return curSpeed;
-    }
+    }*/
 
-    public void setCurSpeed(double curSpeed) {
+   /* public void setCurSpeed(double curSpeed) {
         this.curSpeed = curSpeed;
-        this.curTickCooldown = (int) Math.ceil(20 / curSpeed); // always keep the tickcooldown and the speed in sync
-    }
+        //this.curTickCooldown = (int) Math.ceil(20 / curSpeed); // always keep the tickcooldown and the speed in sync
+    }*/
 
-    public int getCurTickCooldown() {
+    /*public int getCurTickCooldown() {
+        if(this.curSpeed == 0)
+            return this.type.getTickCooldown();
         return curTickCooldown;
-    }
+    }*/
 
+    /*@Deprecated
     public void setCurTickCooldown(int curTickCooldown) {
         this.curTickCooldown = curTickCooldown;
         this.curSpeed = 20.0 / curTickCooldown; // always keep the tickcooldown and the speed in sync
-    }
+    }*/
+
 
     public long getOrigPilotTime() {
         return origPilotTime;
     }
 
-    public double getMaxSpeed() {
+   /* public double getMaxSpeed() {
         return maxSpeed;
-    }
+    }*/
 
-    public void setMaxSpeed(double maxSpeed) {
+    /*public void setMaxSpeed(double maxSpeed) {
         this.maxSpeed = maxSpeed;
-    }
+    }*/
 
+    /*@Deprecated
     public int getBlockUpdates() {
         return blockUpdates;
-    }
+    }*/
 
-    public void setBlockUpdates(int blockUpdates) {
+    /*public void setBlockUpdates(int blockUpdates) {
         this.blockUpdates = blockUpdates;
-    }
+    }*/
 
-    public void incrementBlockUpdates(int blockUpdates){
+   /* public void incrementBlockUpdates(int blockUpdates){
         this.blockUpdates+=blockUpdates;
-    }
+    }*/
 
-    public void incrementBlockUpdates(){
+    /*public void incrementBlockUpdates(){
         this.blockUpdates++;
-    }
+    }*/
 
     public MovecraftLocation getMidPoint() {
         int maxDX=0;
@@ -455,5 +460,34 @@ public abstract class Craft {
                 (getMaxX()+getMinX())/2,
                 (getMaxY()+getMinY())/2,
                 (getMaxZ()+getMinZ())/2);*/
+    }
+
+    public float getMeanMoveTime() {
+        return meanMoveTime;
+    }
+
+    public void addMoveTime(float moveTime){
+        meanMoveTime = (meanMoveTime*numMoves + moveTime)/(++numMoves);
+    }
+
+    /**
+     *
+     * @return the amount of ticks it will take the craft to move
+     */
+    public int getTickCooldown() {
+        if(meanMoveTime==0)
+            return type.getCruiseTickCooldown();
+        if(type.getDynamicLagSpeedFactor()==0)
+            return type.getCruiseTickCooldown();
+        //TODO: modify skip blocks by an equal proportion to this, than add another modifier based on dynamic speed factor
+        return (int)(type.getCruiseTickCooldown()*meanMoveTime*20);
+    }
+
+    /**
+     * gets the speed of a craft in blocks per second.
+     * @return the speed of the craft
+     */
+    private double getSpeed(){
+        return type.getCruiseSkipBlocks()/getTickCooldown()/20;
     }
 }

@@ -43,7 +43,7 @@ public class BlockCreateCommand extends UpdateCommand {
 
         if (shouldMakeChanges()) {
             Movecraft.getInstance().getWorldHandler().setBlockFast(newBlockLocation.toBukkit(craft.getW()),type,dataID);
-            craft.incrementBlockUpdates();
+            //craft.incrementBlockUpdates();
             newBlockLocation.toBukkit(craft.getW()).getBlock().getState().update(false, false);
         }
 

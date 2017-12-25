@@ -180,7 +180,7 @@ public class InteractListener implements Listener {
                         && craft.getMinY() < craft.getW().getSeaLevel())
                     ticksElapsed = ticksElapsed >> 1;
 
-                if (Math.abs(ticksElapsed) < craft.getCurTickCooldown()) {
+                if (Math.abs(ticksElapsed) < craft.getTickCooldown()) {
                     event.setCancelled(true);
                     return;
                 }
@@ -202,13 +202,14 @@ public class InteractListener implements Listener {
 
             timeMap.put(event.getPlayer(), System.currentTimeMillis());
             event.setCancelled(true);
-            int curTickCooldown = CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getCurTickCooldown();
+            //TODO: Lower speed while turning
+            /*int curTickCooldown = CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getCurTickCooldown();
             int baseTickCooldown = CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getCruiseTickCooldown();
             if (curTickCooldown * 2 > baseTickCooldown)
                 curTickCooldown = baseTickCooldown;
             else
-                curTickCooldown = curTickCooldown * 2;
-            CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCurTickCooldown(curTickCooldown); // lose half your speed when turning
+                curTickCooldown = curTickCooldown * 2;*/
+            //CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCurTickCooldown(curTickCooldown); // lose half your speed when turning
             return;
 
         }
@@ -353,7 +354,7 @@ public class InteractListener implements Listener {
                 if (craft.getType().getHalfSpeedUnderwater() && craft.getMinY() < craft.getW().getSeaLevel())
                     ticksElapsed = ticksElapsed >> 1;
 
-                if (Math.abs(ticksElapsed) < craft.getCurTickCooldown()) {
+                if (Math.abs(ticksElapsed) < craft.getTickCooldown()) {
                     event.setCancelled(true);
                     return;
                 }
@@ -375,13 +376,14 @@ public class InteractListener implements Listener {
 
             timeMap.put(event.getPlayer(), System.currentTimeMillis());
             event.setCancelled(true);
-            int curTickCooldown = CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getCurTickCooldown();
+            //TODO: half speed underwater
+            /*int curTickCooldown = CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getCurTickCooldown();
             int baseTickCooldown = CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getCruiseTickCooldown();
             if (curTickCooldown * 2 > baseTickCooldown)
                 curTickCooldown = baseTickCooldown;
             else
-                curTickCooldown = curTickCooldown * 2;
-            CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCurTickCooldown(curTickCooldown);
+                curTickCooldown = curTickCooldown * 2;*/
+            //CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCurTickCooldown(curTickCooldown);
             return;
         }
         if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Subcraft Rotate")) {
@@ -403,6 +405,7 @@ public class InteractListener implements Listener {
             }
             Long time = timeMap.get(event.getPlayer());
             if (time != null) {
+                //TODO: remove this
                 if (Math.abs((System.currentTimeMillis() - time) / 50) < getCraftTypeFromString(craftTypeStr).getTickCooldown()) {
                     event.setCancelled(true);
                     return;
@@ -522,7 +525,7 @@ public class InteractListener implements Listener {
                 sign.setLine(0, "Ascend: OFF");
                 sign.update(true);
                 CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCruising(false);
-                CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCurTickCooldown(CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getCruiseTickCooldown());
+                //CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCurTickCooldown(CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getCruiseTickCooldown());
             }
             return;
         }
@@ -531,7 +534,7 @@ public class InteractListener implements Listener {
                 sign.setLine(0, "Descend: OFF");
                 sign.update(true);
                 CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCruising(false);
-                CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCurTickCooldown(CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getCruiseTickCooldown());
+                //CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCurTickCooldown(CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getCruiseTickCooldown());
             }
             return;
         }

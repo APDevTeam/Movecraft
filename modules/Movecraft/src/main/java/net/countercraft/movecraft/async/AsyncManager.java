@@ -236,11 +236,11 @@ public class AsyncManager extends BukkitRunnable {
                             c.setMinZ(data.getMinZ());
                             c.setNotificationPlayer(notifyP);
                             if (c.getType().getDynamicFlyBlockSpeedFactor() != 0.0) {
-                                c.setCurTickCooldown(c.getType().getCruiseTickCooldown());
-                                c.setMaxSpeed(c.getCurSpeed() + (data.dynamicFlyBlockSpeedMultiplier * c.getCurSpeed()));
+                                //c.setCurTickCooldown(c.getType().getCruiseTickCooldown());
+                                //c.setMaxSpeed(c.getCurSpeed() + (data.dynamicFlyBlockSpeedMultiplier * c.getCurSpeed()));
                             } else {
-                                c.setCurTickCooldown(c.getType().getCruiseTickCooldown());
-                                c.setMaxSpeed(c.getCurSpeed());
+                                //c.setCurTickCooldown(c.getType().getCruiseTickCooldown());
+                                //c.setMaxSpeed(c.getCurSpeed());
                             }
 
                             if (notifyP != null) {
@@ -392,191 +392,140 @@ public class AsyncManager extends BukkitRunnable {
 
     private void processCruise() {
         for (World w : Bukkit.getWorlds()) {
-            if (w != null && CraftManager.getInstance().getCraftsInWorld(w) != null) {
-                for (Craft pcraft : CraftManager.getInstance().getCraftsInWorld(w)) {
-                    if ((pcraft != null) && pcraft.isNotProcessing()) {
-                        if (pcraft.getCruising()) {
-                            long ticksElapsed = (System.currentTimeMillis() - pcraft.getLastCruiseUpdate()) / 50;
+            if (w == null || CraftManager.getInstance().getCraftsInWorld(w) == null) {
+                break;
+            }
+            for (Craft pcraft : CraftManager.getInstance().getCraftsInWorld(w)) {
+                if (pcraft == null || !pcraft.isNotProcessing() || !pcraft.getCruising()) {
+                    break;
+                }
+                long ticksElapsed = (System.currentTimeMillis() - pcraft.getLastCruiseUpdate()) / 50;
 
-                            // if the craft should go slower underwater, make
-                            // time pass more slowly there
-                            if (pcraft.getType().getHalfSpeedUnderwater() && pcraft.getMinY() < w.getSeaLevel())
-                                ticksElapsed = ticksElapsed >> 1;
-                            //TODO: Make this not suck
-                            if (pcraft.getType().getDynamicLagSpeedFactor() > 0.0) { // craft speed should depend on how much lag it generates (IE: how many updates)
-                                if (MapUpdateManager.getInstance().blockUpdatesPerCraft != null) {
-                                    Integer numUpdates = MapUpdateManager.getInstance().blockUpdatesPerCraft.get(pcraft);
-                                    if (numUpdates != null && numUpdates != 0) { // this will only be true right after a move for this craft, so this doesn't get executed TOO often
-                                        double speedMultiplier = ((double) pcraft.getBlockList().length) / numUpdates;
-                                        speedMultiplier = Math.sqrt(speedMultiplier);
-                                        speedMultiplier = speedMultiplier * pcraft.getType().getDynamicLagSpeedFactor();
-                                        double newMaxSpeed = 20.0 / pcraft.getType().getCruiseTickCooldown(); // get current base speed in bps
-                                        newMaxSpeed = newMaxSpeed * speedMultiplier;
-                                        pcraft.setMaxSpeed(newMaxSpeed);
-                                        if (pcraft.getCurSpeed() > newMaxSpeed) // if craft is going too fast, slow it down. This usually happens after a turn or manuevre
-                                            pcraft.setCurSpeed(newMaxSpeed);
-                                    }
-                                }
-                            }
-                            // check direct controls to modify movement
-                            boolean bankLeft = false;
-                            boolean bankRight = false;
-                            boolean dive = false;
-                            if (pcraft.getPilotLocked()) {
-                                if (pcraft.getNotificationPlayer().isSneaking())
-                                    dive = true;
-                                if (pcraft.getNotificationPlayer().getInventory().getHeldItemSlot() == 3)
-                                    bankLeft = true;
-                                if (pcraft.getNotificationPlayer().getInventory().getHeldItemSlot() == 5)
-                                    bankRight = true;
-                            }
+                // if the craft should go slower underwater, make
+                // time pass more slowly there
+                if (pcraft.getType().getHalfSpeedUnderwater() && pcraft.getMinY() < w.getSeaLevel())
+                    ticksElapsed >>= 1;
+                //TODO: Make this not suck
+                // craft speed should depend on how much lag it generates (IE: how many updates)
+                /*if (pcraft.getType().getDynamicLagSpeedFactor() > 0.0 && MapUpdateManager.getInstance().blockUpdatesPerCraft != null) {
+                    Integer numUpdates = MapUpdateManager.getInstance().blockUpdatesPerCraft.get(pcraft);
 
-                            if (Math.abs(ticksElapsed) >= pcraft.getCurTickCooldown()) {
-                                int dx = 0;
-                                int dz = 0;
-                                int dy = 0;
+                    if (numUpdates != null && numUpdates != 0) { // this will only be true right after a move for this craft, so this doesn't get executed TOO often
+                        double speedMultiplier = ((double) pcraft.getBlockList().length) / numUpdates;
+                        speedMultiplier = Math.sqrt(speedMultiplier);
+                        speedMultiplier = speedMultiplier * pcraft.getType().getDynamicLagSpeedFactor();
+                        double newMaxSpeed = 20.0 / pcraft.getType().getCruiseTickCooldown(); // get current base speed in bps
+                        newMaxSpeed = newMaxSpeed * speedMultiplier;
+                        pcraft.setMaxSpeed(newMaxSpeed);
+                        if (pcraft.getCurSpeed() > newMaxSpeed) // if craft is going too fast, slow it down. This usually happens after a turn or manuevre
+                            pcraft.setCurSpeed(newMaxSpeed);
+                    }
+                }*/
+                /*if (pcraft.getType().getDynamicLagSpeedFactor()>0){
+                    pcraft.setMaxSpeed(pcraft.getMeanMoveTime());
+                    pcraft.setCurSpeed(pcraft.getMeanMoveTime());
+                    if(pcraft.getCurSpeed()!= 0)
+                        Movecraft.getInstance().getLogger().info("Cruising at speed " + pcraft.getCurSpeed());
+                }*/
 
-                                // ascend
-                                if (pcraft.getCruiseDirection() == 0x42) {
-                                    dy = 1 + pcraft.getType().getVertCruiseSkipBlocks();
-                                }
-                                // descend
-                                if (pcraft.getCruiseDirection() == 0x43) {
-                                    dy = 0 - 1 - pcraft.getType().getVertCruiseSkipBlocks();
-                                    if (pcraft.getMinY() <= w.getSeaLevel())
-                                        dy = -1;
-                                } else {
-                                    if (dive) {
-                                        dy = 0 - ((pcraft.getType().getCruiseSkipBlocks() + 1) >> 1);
-                                        if (pcraft.getMinY() <= w.getSeaLevel())
-                                            dy = -1;
-                                    }
-                                }
-                                // ship faces west
-                                if (pcraft.getCruiseDirection() == 0x5) {
-                                    dx = 0 - 1 - pcraft.getType().getCruiseSkipBlocks();
-                                    if (bankRight) {
-                                        dz = (0 - 1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
-                                    }
-                                    if (bankLeft) {
-                                        dz = (1 + pcraft.getType().getCruiseSkipBlocks()) >> 1;
-                                    }
-                                }
-                                // ship faces east
-                                if (pcraft.getCruiseDirection() == 0x4) {
-                                    dx = 1 + pcraft.getType().getCruiseSkipBlocks();
-                                    if (bankLeft) {
-                                        dz = (0 - 1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
-                                    }
-                                    if (bankRight) {
-                                        dz = (1 + pcraft.getType().getCruiseSkipBlocks()) >> 1;
-                                    }
-                                }
-                                // ship faces north
-                                if (pcraft.getCruiseDirection() == 0x2) {
-                                    dz = 1 + pcraft.getType().getCruiseSkipBlocks();
-                                    if (bankRight) {
-                                        dx = (0 - 1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
-                                    }
-                                    if (bankLeft) {
-                                        dx = (1 + pcraft.getType().getCruiseSkipBlocks()) >> 1;
-                                    }
-                                }
-                                // ship faces south
-                                if (pcraft.getCruiseDirection() == 0x3) {
-                                    dz = 0 - 1 - pcraft.getType().getCruiseSkipBlocks();
-                                    if (bankLeft) {
-                                        dx = (0 - 1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
-                                    }
-                                    if (bankRight) {
-                                        dx = (1 + pcraft.getType().getCruiseSkipBlocks()) >> 1;
-                                    }
-                                }
-                                if (pcraft.getType().getCruiseOnPilot())
-                                    dy = pcraft.getType().getCruiseOnPilotVertMove();
-                                pcraft.translate(dx, dy, dz);
-                                pcraft.setLastDX(dx);
-                                pcraft.setLastDZ(dz);
-                                if (pcraft.getLastCruiseUpdate() != -1) {
-                                    pcraft.setLastCruisUpdate(System.currentTimeMillis());
-                                } else {
-                                    pcraft.setLastCruisUpdate(System.currentTimeMillis() - 30000);
-                                }
+                // check direct controls to modify movement
+                boolean bankLeft = false;
+                boolean bankRight = false;
+                boolean dive = false;
+                if (pcraft.getPilotLocked()) {
+                    if (pcraft.getNotificationPlayer().isSneaking())
+                        dive = true;
+                    if (pcraft.getNotificationPlayer().getInventory().getHeldItemSlot() == 3)
+                        bankLeft = true;
+                    if (pcraft.getNotificationPlayer().getInventory().getHeldItemSlot() == 5)
+                        bankRight = true;
+                }
 
-                                if (pcraft.getCurSpeed() < pcraft.getMaxSpeed()) {  // increase velocity of cruising craft and logarithmically approach maxspeed
-                                    double difference = pcraft.getMaxSpeed() - pcraft.getCurSpeed();
-                                    double newSpeed = pcraft.getCurSpeed();
-                                    if (difference / 10.0 < 0.01)
-                                        newSpeed += 0.01;
-                                    else
-                                        newSpeed += difference / 10.0;
-                                    pcraft.setCurSpeed(newSpeed);
-                                }
-                            }
+                if (Math.abs(ticksElapsed) < pcraft.getTickCooldown()) {
+                    return;
+                }
+                int dx = 0;
+                int dz = 0;
+                int dy = 0;
 
-                        }/* else {
-
-							if (pcraft.getPilotLocked() == true && pcraft.isNotProcessing()) {
-
-								Player p = CraftManager.getInstance().getPlayerFromCraft(pcraft);
-								if (p != null)
-									if (MathUtils.playerIsWithinBoundingPolygon(pcraft.getHitBox(), pcraft.getMinX(),
-											pcraft.getMinZ(), MathUtils.bukkit2MovecraftLoc(p.getLocation()))) {
-										double movedX = p.getLocation().getX() - pcraft.getPilotLockedX();
-										double movedZ = p.getLocation().getZ() - pcraft.getPilotLockedZ();
-										int dX = 0;
-										int dZ = 0;
-										if (movedX > 0.15)
-											dX = 1;
-										else if (movedX < -0.15)
-											dX = -1;
-										if (movedZ > 0.15)
-											dZ = 1;
-										else if (movedZ < -0.15)
-											dZ = -1;
-										if (dX != 0 || dZ != 0) {
-											long timeSinceLastMoveCommand = System.currentTimeMillis()
-													- pcraft.getLastRightClick();
-											// wait before accepting new move
-											// commands to help with bouncing.
-											// Also ignore extreme movement
-											if (Math.abs(movedX) < 0.2 && Math.abs(movedZ) < 0.2
-													&& timeSinceLastMoveCommand > 300) {
-
-												pcraft.setLastRightClick(System.currentTimeMillis());
-												long ticksElapsed = (System.currentTimeMillis()
-														- pcraft.getLastCruiseUpdate()) / 50;
-
-												// if the craft should go slower
-												// underwater, make time pass
-												// more slowly there
-												if (pcraft.getType().getHalfSpeedUnderwater()
-														&& pcraft.getMinY() < w.getSeaLevel())
-													ticksElapsed = ticksElapsed >> 1;
-
-												if (Math.abs(ticksElapsed) >= pcraft.getType().getTickCooldown()) {
-													pcraft.translate(dX, 0, dZ);
-													pcraft.setLastCruisUpdate(System.currentTimeMillis());
-												}
-												pcraft.setLastDX(dX);
-												pcraft.setLastDY(0);
-												pcraft.setLastDZ(dZ);
-												pcraft.setKeepMoving(true);
-											} else {
-												Location loc = p.getLocation();
-												loc.setX(pcraft.getPilotLockedX());
-												loc.setY(pcraft.getPilotLockedY());
-												loc.setZ(pcraft.getPilotLockedZ());
-												Vector pVel = new Vector(0.0, 0.0, 0.0);
-												p.teleport(loc);
-												p.setVelocity(pVel);
-											}
-										}
-									}
-							}
-						}*/
+                // ascend
+                if (pcraft.getCruiseDirection() == 0x42) {
+                    dy = 1 + pcraft.getType().getVertCruiseSkipBlocks();
+                }
+                // descend
+                if (pcraft.getCruiseDirection() == 0x43) {
+                    dy = 0 - 1 - pcraft.getType().getVertCruiseSkipBlocks();
+                    if (pcraft.getMinY() <= w.getSeaLevel()) {
+                        dy = -1;
+                    }
+                } else if (dive) {
+                    dy = 0 - ((pcraft.getType().getCruiseSkipBlocks() + 1) >> 1);
+                    if (pcraft.getMinY() <= w.getSeaLevel()) {
+                        dy = -1;
                     }
                 }
+                // ship faces west
+                if (pcraft.getCruiseDirection() == 0x5) {
+                    dx = 0 - 1 - pcraft.getType().getCruiseSkipBlocks();
+                    if (bankRight) {
+                        dz = (0 - 1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
+                    }
+                    if (bankLeft) {
+                        dz = (1 + pcraft.getType().getCruiseSkipBlocks()) >> 1;
+                    }
+                }
+                // ship faces east
+                if (pcraft.getCruiseDirection() == 0x4) {
+                    dx = 1 + pcraft.getType().getCruiseSkipBlocks();
+                    if (bankLeft) {
+                        dz = (0 - 1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
+                    }
+                    if (bankRight) {
+                        dz = (1 + pcraft.getType().getCruiseSkipBlocks()) >> 1;
+                    }
+                }
+                // ship faces north
+                if (pcraft.getCruiseDirection() == 0x2) {
+                    dz = 1 + pcraft.getType().getCruiseSkipBlocks();
+                    if (bankRight) {
+                        dx = (0 - 1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
+                    }
+                    if (bankLeft) {
+                        dx = (1 + pcraft.getType().getCruiseSkipBlocks()) >> 1;
+                    }
+                }
+                // ship faces south
+                if (pcraft.getCruiseDirection() == 0x3) {
+                    dz = 0 - 1 - pcraft.getType().getCruiseSkipBlocks();
+                    if (bankLeft) {
+                        dx = (0 - 1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
+                    }
+                    if (bankRight) {
+                        dx = (1 + pcraft.getType().getCruiseSkipBlocks()) >> 1;
+                    }
+                }
+                if (pcraft.getType().getCruiseOnPilot()) {
+                    dy = pcraft.getType().getCruiseOnPilotVertMove();
+                }
+                pcraft.translate(dx, dy, dz);
+                pcraft.setLastDX(dx);
+                pcraft.setLastDZ(dz);
+                if (pcraft.getLastCruiseUpdate() != -1) {
+                    pcraft.setLastCruisUpdate(System.currentTimeMillis());
+                } else {
+                    pcraft.setLastCruisUpdate(System.currentTimeMillis() - 30000);
+                }
+
+               /* if (pcraft.getCurSpeed() < pcraft.getMaxSpeed()) {  // increase velocity of cruising craft and logarithmically approach maxspeed
+                    double difference = pcraft.getMaxSpeed() - pcraft.getCurSpeed();
+                    double newSpeed = pcraft.getCurSpeed();
+                    if (difference / 10.0 < 0.01)
+                        newSpeed += 0.01;
+                    else
+                        newSpeed += difference / 10.0;
+                    pcraft.setCurSpeed(newSpeed);
+                }*/
+                return;
             }
         }
 
@@ -1247,7 +1196,7 @@ public class AsyncManager extends BukkitRunnable {
                                         ccraft.getNotificationPlayer().sendMessage(notification);
                                         w.playSound(ccraft.getNotificationPlayer().getLocation(),
                                                 Sound.BLOCK_ANVIL_LAND, 1.0f, 2.0f);
-/*										final World sw = w; 
+/*										final World sw = w;
                                         final Player sp = ccraft.getNotificationPlayer();
 										BukkitTask replaysound = new BukkitRunnable() {
 											@Override
@@ -1343,7 +1292,7 @@ public class AsyncManager extends BukkitRunnable {
         processAlgorithmQueue();
         //processScheduledBlockChanges();
 //		if(Settings.CompatibilityMode==false)
-//			FastBlockChanger.getInstance().run(); 
+//			FastBlockChanger.getInstance().run();
 
         // now cleanup craft that are bugged and have not moved in the past 60 seconds, but have no pilot or are still processing
         for (World w : Bukkit.getWorlds()) {

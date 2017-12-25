@@ -966,10 +966,10 @@ public class TranslationTask extends AsyncTask {
             Location location = craftPilot.getLocation();
             if (!getCraft().getDisabled()) {
                 getCraft().getW().playSound(location, Sound.BLOCK_ANVIL_LAND, 1.0f, 0.25f);
-                getCraft().setCurTickCooldown(getCraft().getType().getCruiseTickCooldown());
+                //getCraft().setCurTickCooldown(getCraft().getType().getCruiseTickCooldown());
             } else {
                 getCraft().getW().playSound(location, Sound.ENTITY_IRONGOLEM_DEATH, 5.0f, 5.0f);
-                getCraft().setCurTickCooldown(getCraft().getType().getCruiseTickCooldown());
+                //getCraft().setCurTickCooldown(getCraft().getType().getCruiseTickCooldown());
             }
         }
 
