@@ -20,7 +20,6 @@ package net.countercraft.movecraft.mapUpdater.update;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.util.Vector;
 
 /**
  * Class that stores the data about a single blocks changes to the map in an unspecified world. The world is retrieved contextually from the submitting craft.
@@ -48,10 +47,10 @@ public class EntityUpdateCommand extends UpdateCommand {
             entity.teleport(newLocation);
             return;
         }
-        Vector velocity = entity.getVelocity().clone();
+        //Vector velocity = entity.getVelocity().clone();
         newLocation.setPitch(entity.getLocation().getPitch());
         entity.teleport(newLocation);
-        entity.setVelocity(velocity);
+        //entity.setVelocity(velocity);
 
     }
 }

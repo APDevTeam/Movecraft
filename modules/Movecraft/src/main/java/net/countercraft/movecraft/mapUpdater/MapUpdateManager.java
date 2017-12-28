@@ -18,9 +18,9 @@
 package net.countercraft.movecraft.mapUpdater;
 
 import net.countercraft.movecraft.Movecraft;
+import net.countercraft.movecraft.api.craft.Craft;
 import net.countercraft.movecraft.async.translation.TranslationTaskData;
 import net.countercraft.movecraft.config.Settings;
-import net.countercraft.movecraft.api.craft.Craft;
 import net.countercraft.movecraft.mapUpdater.update.CraftRotateCommand;
 import net.countercraft.movecraft.mapUpdater.update.CraftTranslateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
@@ -30,7 +30,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 
 public class MapUpdateManager extends BukkitRunnable {
@@ -38,9 +37,8 @@ public class MapUpdateManager extends BukkitRunnable {
     private List<UpdateCommand> updates = new ArrayList<>();
     //private PriorityQueue<UpdateCommand> updateQueue = new PriorityQueue<>();
 
-    @Deprecated
-    public HashMap<Craft, Integer> blockUpdatesPerCraft = new HashMap<>();
-
+    //@Deprecated
+    //public HashMap<Craft, Integer> blockUpdatesPerCraft = new HashMap<>();
 
     private MapUpdateManager() {
     }
@@ -59,11 +57,13 @@ public class MapUpdateManager extends BukkitRunnable {
         //updates.sort((o1, o2) -> o1.getClass().getName().compareToIgnoreCase(o2.getClass().getName()));
 
 
+        for(UpdateCommand update : updates)
+            update.doUpdate();
 
         for (UpdateCommand update : updates) {
             if (update instanceof CraftTranslateCommand) {
                 Craft craft = ((CraftTranslateCommand) update).getCraft();
-                craft.setBlockUpdates(0);
+                //craft.setBlockUpdates(0);
                 if (!craft.isNotProcessing())
                     craft.setProcessing(false);
 
@@ -75,9 +75,6 @@ public class MapUpdateManager extends BukkitRunnable {
                     craft.setProcessing(false);
             }
         }
-
-        for(UpdateCommand update : updates)
-            update.doUpdate();
 
         //TODO: re-add lighting updates
         /*// queue chunks for lighting recalc

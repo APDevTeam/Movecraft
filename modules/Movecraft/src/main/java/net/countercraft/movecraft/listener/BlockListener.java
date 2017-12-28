@@ -450,8 +450,8 @@ public class BlockListener implements Listener {
             }
         }
 
-        List<Assault> assaults = Movecraft.getInstance().getAssaultManager().getAssaults();
-        if (assaults.size() != 0) {
+        List<Assault> assaults = Movecraft.getInstance().getAssaultManager() != null ? Movecraft.getInstance().getAssaultManager().getAssaults() : null;
+        if (assaults != null && assaults.size() != 0) {
             WorldGuardPlugin worldGuard = Movecraft.getInstance().getWorldGuardPlugin();
             for (final Assault assault : assaults) {
                 Iterator<Block> i = e.blockList().iterator();
