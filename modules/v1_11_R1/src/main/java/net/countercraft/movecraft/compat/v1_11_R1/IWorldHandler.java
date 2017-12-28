@@ -23,6 +23,7 @@ import org.bukkit.craftbukkit.v1_11_R1.util.CraftMagicNumbers;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -41,7 +42,7 @@ public class IWorldHandler extends WorldHandler {
         ROTATION[Rotation.ANTICLOCKWISE.ordinal()] = EnumBlockRotation.COUNTERCLOCKWISE_90;
     }
     private final NextTickProvider tickProvider = new NextTickProvider();
-
+    private final HashMap<World,List<TileEntity>> bMap = new HashMap<>();
     @Override
     public void rotateCraft(@NotNull Craft craft, @NotNull MovecraftLocation originPoint, @NotNull Rotation rotation) {
         //*******************************************
@@ -59,14 +60,11 @@ public class IWorldHandler extends WorldHandler {
         List<TileHolder> tiles = new ArrayList<>();
         //get the tiles
         for(BlockPosition position : rotatedPositions.keySet()){
-            TileEntity tile = nativeWorld.getTileEntity(position);
+            TileEntity tile = getTileEntity(nativeWorld,position);
             if(tile == null)
                 continue;
             //get the nextTick to move with the tile
             tiles.add(new TileHolder(tile, tickProvider.getNextTick((WorldServer)nativeWorld, position), position));
-            //cleanup
-            nativeWorld.capturedTileEntities.remove(position);
-            nativeWorld.getChunkAtWorldCoords(position).getTileEntities().remove(position);
         }
 
         //*******************************************
@@ -156,13 +154,10 @@ public class IWorldHandler extends WorldHandler {
         List<TileHolder> tiles = new ArrayList<>();
         //get the tiles
         for(BlockPosition position : positions){
-            TileEntity tile = nativeWorld.getTileEntity(position);
+            TileEntity tile = getTileEntity(nativeWorld,position);
             if(tile == null)
                 continue;
             //get the nextTick to move with the tile
-
-            nativeWorld.capturedTileEntities.remove(position);
-            nativeWorld.getChunkAtWorldCoords(position).getTileEntities().remove(position);
             tiles.add(new TileHolder(tile, tickProvider.getNextTick((WorldServer) nativeWorld, position), position));
 
         }
@@ -266,7 +261,7 @@ public class IWorldHandler extends WorldHandler {
         Method method;
         try {
             Block tempBlock = CraftMagicNumbers.getBlock(type.getId());
-            method = Block.class.getDeclaredMethod("e", int.class);
+            method = Block.class.getDeclaredMethod("d", int.class);
             method.setAccessible(true);
             method.invoke(tempBlock, 0);
         } catch (NoSuchMethodException | InvocationTargetException | IllegalArgumentException | IllegalAccessException | SecurityException e1) {
@@ -277,6 +272,29 @@ public class IWorldHandler extends WorldHandler {
 
     private static MovecraftLocation bukkit2MovecraftLoc(Location l) {
         return new MovecraftLocation(l.getBlockX(), l.getBlockY(), l.getBlockZ());
+    }
+
+    @Nullable
+    private TileEntity getTileEntity(@NotNull World world,@NotNull BlockPosition position){
+        TileEntity tile = world.getTileEntity(position);
+        if(tile == null)
+            return null;
+        //cleanup
+        world.capturedTileEntities.remove(position);
+        world.getChunkAtWorldCoords(position).getTileEntities().remove(position);
+        world.tileEntityList.remove(tile);
+        world.tileEntityListTick.remove(tile);
+        if(!bMap.containsKey(world)){
+            try {
+                Field bField = World.class.getDeclaredField("b");
+                bField.setAccessible(true);
+                bMap.put(world, (List<TileEntity>) bField.get(world));
+            } catch (IllegalAccessException | IllegalArgumentException | NoSuchFieldException | SecurityException e1) {
+                e1.printStackTrace();
+            }
+        }
+        bMap.get(world).remove(tile);
+        return tile;
     }
 
     private void moveTileEntity(@NotNull World nativeWorld, @NotNull BlockPosition newPosition, @NotNull TileEntity tile){
