@@ -38,7 +38,7 @@ public class PilotCommand implements TabExecutor {
             player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
             return true;
         }
-        CraftType craftType = getCraftTypeFromString(args[0]);
+        CraftType craftType = CraftManager.getInstance().getCraftTypeFromString(args[0]);
         if (craftType != null) {
             Craft oldCraft = CraftManager.getInstance().getCraftByPlayerName(player.getName());
             if (oldCraft != null) {
@@ -51,16 +51,6 @@ public class PilotCommand implements TabExecutor {
             player.sendMessage(I18nSupport.getInternationalisedString("Unknown craft type"));
         }
         return true;
-    }
-
-    private CraftType getCraftTypeFromString(String s) {
-        for (CraftType t : CraftManager.getInstance().getCraftTypes()) {
-            if (s.equalsIgnoreCase(t.getCraftName())) {
-                return t;
-            }
-        }
-
-        return null;
     }
 
     @Override

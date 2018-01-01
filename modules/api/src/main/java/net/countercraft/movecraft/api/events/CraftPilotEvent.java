@@ -1,6 +1,7 @@
 package net.countercraft.movecraft.api.events;
 
 import net.countercraft.movecraft.api.craft.Craft;
+import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -10,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 @SuppressWarnings("unused")
 public class CraftPilotEvent extends CraftEvent{
     @NotNull private final Reason reason;
+    private static final HandlerList HANDLERS = new HandlerList();
 
     public CraftPilotEvent(@NotNull Craft craft, @NotNull Reason reason){
         super(craft);
@@ -23,5 +25,15 @@ public class CraftPilotEvent extends CraftEvent{
 
     public enum Reason{
         SUB_CRAFT,PLAYER,FORCE
+    }
+
+    @Override
+    public HandlerList getHandlers() {
+        return HANDLERS;
+    }
+
+    @SuppressWarnings("unused")
+    public static HandlerList getHandlerList() {
+        return HANDLERS;
     }
 }

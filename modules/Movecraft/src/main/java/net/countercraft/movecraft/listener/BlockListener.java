@@ -21,13 +21,12 @@ import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.flags.DefaultFlag;
 import net.countercraft.movecraft.Movecraft;
-import net.countercraft.movecraft.config.Settings;
-import net.countercraft.movecraft.api.craft.Craft;
-import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.api.craft.CraftType;
-import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.api.MathUtils;
 import net.countercraft.movecraft.api.MovecraftLocation;
+import net.countercraft.movecraft.api.craft.Craft;
+import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.warfare.assault.Assault;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -51,7 +50,6 @@ import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.BlockRedstoneEvent;
-import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
@@ -304,16 +302,6 @@ public class BlockListener implements Listener {
         }
     }
 
-    private CraftType getCraftTypeFromString(String s) {
-        for (CraftType t : CraftManager.getInstance().getCraftTypes()) {
-            if (s.equalsIgnoreCase(t.getCraftName())) {
-                return t;
-            }
-        }
-
-        return null;
-    }
-
 	/*@EventHandler(priority = EventPriority.HIGHEST)
 	public void onBlockPhysicsEvent(BlockPhysicsEvent e) {
 		Location loc=e.getBlock().getLocation();
@@ -327,45 +315,6 @@ public class BlockListener implements Listener {
 		if(MapUpdateManager.getInstance().getProtectedBlocks().contains(loc))
 			e.setNewCurrent(0);
 	}*/
-
-    @EventHandler(priority = EventPriority.NORMAL)
-    public void onSignChange(SignChangeEvent event) {
-        Player p = event.getPlayer();
-        if (p == null)
-            return;
-        String signText = org.bukkit.ChatColor.stripColor(event.getLine(0));
-        // did the player try to create a craft command sign?
-        if (getCraftTypeFromString(signText) != null) {
-            if (!Settings.RequireCreatePerm) {
-                return;
-            }
-            if (!p.hasPermission("movecraft." + ChatColor.stripColor(event.getLine(0)) + ".create")) {
-                p.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
-                event.setCancelled(true);
-            }
-        }
-        if (signText.equalsIgnoreCase("Cruise: OFF") || signText.equalsIgnoreCase("Cruise: ON")) {
-            if (!p.hasPermission("movecraft.cruisesign") && Settings.RequireCreatePerm) {
-                p.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
-                event.setCancelled(true);
-            }
-        }
-        if (signText.equalsIgnoreCase("Crew:")) {
-            String crewName = org.bukkit.ChatColor.stripColor(event.getLine(1));
-            if (!p.getName().equalsIgnoreCase(crewName)) {
-                p.sendMessage(I18nSupport.getInternationalisedString("You can only create a Crew: sign for yourself"));
-                event.setLine(1, p.getName());
-//				event.setCancelled(true);
-            }
-        }
-        if (signText.equalsIgnoreCase("Pilot:")) {
-            String pilotName = org.bukkit.ChatColor.stripColor(event.getLine(1));
-            if (pilotName.isEmpty()) {
-                event.setLine(1, p.getName());
-//				event.setCancelled(true);
-            }
-        }
-    }
 
     @EventHandler(priority = EventPriority.LOW)
     public void onBlockIgnite(BlockIgniteEvent event) {

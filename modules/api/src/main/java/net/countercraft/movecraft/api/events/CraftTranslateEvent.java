@@ -3,6 +3,7 @@ package net.countercraft.movecraft.api.events;
 import net.countercraft.movecraft.api.MovecraftLocation;
 import net.countercraft.movecraft.api.craft.Craft;
 import org.bukkit.event.Cancellable;
+import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -12,8 +13,11 @@ import org.jetbrains.annotations.NotNull;
  */
 @SuppressWarnings("unused")
 public class CraftTranslateEvent extends CraftEvent implements Cancellable {
+    private static final HandlerList HANDLERS = new HandlerList();
+
     @NotNull private final MovecraftLocation newLocation;
     private boolean isCancelled = false;
+
     public CraftTranslateEvent(@NotNull Craft craft, @NotNull MovecraftLocation newLocation) {
         super(craft);
         this.newLocation = newLocation;
@@ -32,5 +36,15 @@ public class CraftTranslateEvent extends CraftEvent implements Cancellable {
     @Override
     public void setCancelled(boolean cancel) {
         isCancelled=cancel;
+    }
+
+    @Override
+    public HandlerList getHandlers() {
+        return HANDLERS;
+    }
+
+    @SuppressWarnings("unused")
+    public static HandlerList getHandlerList() {
+        return HANDLERS;
     }
 }

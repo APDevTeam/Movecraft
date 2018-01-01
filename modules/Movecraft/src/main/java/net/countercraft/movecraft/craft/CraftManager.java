@@ -216,4 +216,13 @@ public class CraftManager {
     public Set<Craft> getCraftList(){
         return Collections.unmodifiableSet(craftList);
     }
+
+    public CraftType getCraftTypeFromString(String s) {
+        for (CraftType t : craftTypes) {
+            if (s.equalsIgnoreCase(t.getCraftName())) {
+                return t;
+            }
+        }
+        return null;
+    }
 }

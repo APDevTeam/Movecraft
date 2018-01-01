@@ -470,10 +470,6 @@ public abstract class Craft {
         meanMoveTime = (meanMoveTime*numMoves + moveTime)/(++numMoves);
     }
 
-    /**
-     *
-     * @return the amount of ticks it will take the craft to move
-     */
     public int getTickCooldown() {
         if(meanMoveTime==0)
             return type.getCruiseTickCooldown();
@@ -487,7 +483,7 @@ public abstract class Craft {
      * gets the speed of a craft in blocks per second.
      * @return the speed of the craft
      */
-    private double getSpeed(){
+    public double getSpeed(){
         return type.getCruiseSkipBlocks()/getTickCooldown()/20;
     }
 }

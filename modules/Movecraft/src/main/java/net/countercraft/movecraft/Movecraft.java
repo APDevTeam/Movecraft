@@ -24,6 +24,7 @@ import com.palmergames.bukkit.towny.Towny;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.flags.StateFlag;
+import net.countercraft.movecraft.api.MovecraftLocation;
 import net.countercraft.movecraft.api.WorldHandler;
 import net.countercraft.movecraft.async.AsyncManager;
 import net.countercraft.movecraft.commands.AssaultCommand;
@@ -44,7 +45,24 @@ import net.countercraft.movecraft.listener.PlayerListener;
 import net.countercraft.movecraft.listener.WorldEditInteractListener;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
-import net.countercraft.movecraft.api.MovecraftLocation;
+import net.countercraft.movecraft.sign.AntiAircraftDirectorSign;
+import net.countercraft.movecraft.sign.AscendSign;
+import net.countercraft.movecraft.sign.CannonDirectorSign;
+import net.countercraft.movecraft.sign.ContactsSign;
+import net.countercraft.movecraft.sign.CraftSign;
+import net.countercraft.movecraft.sign.CrewSign;
+import net.countercraft.movecraft.sign.CruiseSign;
+import net.countercraft.movecraft.sign.DescendSign;
+import net.countercraft.movecraft.sign.HelmSign;
+import net.countercraft.movecraft.sign.MoveSign;
+import net.countercraft.movecraft.sign.PilotSign;
+import net.countercraft.movecraft.sign.RelativeMoveSign;
+import net.countercraft.movecraft.sign.ReleaseSign;
+import net.countercraft.movecraft.sign.RemoteSign;
+import net.countercraft.movecraft.sign.SpeedSign;
+import net.countercraft.movecraft.sign.StatusSign;
+import net.countercraft.movecraft.sign.SubcraftRotateSign;
+import net.countercraft.movecraft.sign.TeleportSign;
 import net.countercraft.movecraft.utils.TownyUtils;
 import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
 import net.countercraft.movecraft.warfare.assault.AssaultManager;
@@ -370,11 +388,9 @@ public class Movecraft extends JavaPlugin {
             }
             CraftManager.getInstance();
 
-            getServer().getPluginManager().registerEvents(
-                    new InteractListener(), this);
+            getServer().getPluginManager().registerEvents(new InteractListener(), this);
             if (worldEditPlugin != null) {
-                getServer().getPluginManager().registerEvents(
-                        new WorldEditInteractListener(), this);
+                getServer().getPluginManager().registerEvents(new WorldEditInteractListener(), this);
             }
             this.getCommand("release").setExecutor(new ReleaseCommand());
             this.getCommand("pilot").setExecutor(new PilotCommand());
@@ -389,13 +405,30 @@ public class Movecraft extends JavaPlugin {
                 this.getCommand("assaultinfo").setExecutor(new AssaultInfoCommand());
                 this.getCommand("assault").setExecutor(new AssaultCommand());
             }
-            getServer().getPluginManager().registerEvents(new BlockListener(),
-                    this);
-            getServer().getPluginManager().registerEvents(new PlayerListener(),
-                    this);
+            getServer().getPluginManager().registerEvents(new BlockListener(), this);
+            getServer().getPluginManager().registerEvents(new PlayerListener(), this);
+            getServer().getPluginManager().registerEvents(new AntiAircraftDirectorSign(), this);
+            getServer().getPluginManager().registerEvents(new AscendSign(), this);
+            getServer().getPluginManager().registerEvents(new CannonDirectorSign(), this);
+            getServer().getPluginManager().registerEvents(new ContactsSign(), this);
+            getServer().getPluginManager().registerEvents(new CraftSign(), this);
+            getServer().getPluginManager().registerEvents(new CrewSign(), this);
+            getServer().getPluginManager().registerEvents(new CruiseSign(), this);
+            getServer().getPluginManager().registerEvents(new DescendSign(), this);
+            getServer().getPluginManager().registerEvents(new HelmSign(), this);
+            getServer().getPluginManager().registerEvents(new MoveSign(), this);
+            getServer().getPluginManager().registerEvents(new PilotSign(), this);
+            getServer().getPluginManager().registerEvents(new RelativeMoveSign(), this);
+            getServer().getPluginManager().registerEvents(new ReleaseSign(), this);
+            getServer().getPluginManager().registerEvents(new RemoteSign(), this);
+            //getServer().getPluginManager().registerEvents(new RepairSign(), this);
+            getServer().getPluginManager().registerEvents(new SpeedSign(), this);
+            getServer().getPluginManager().registerEvents(new StatusSign(), this);
+            getServer().getPluginManager().registerEvents(new SubcraftRotateSign(), this);
+            getServer().getPluginManager().registerEvents(new TeleportSign(), this);
 
-            logger.log(Level.INFO, String.format(I18nSupport
-                            .getInternationalisedString("Startup - Enabled message"),
+            logger.log(Level.INFO, String.format(
+                    I18nSupport.getInternationalisedString("Startup - Enabled message"),
                     getDescription().getVersion()));
         }
     }
