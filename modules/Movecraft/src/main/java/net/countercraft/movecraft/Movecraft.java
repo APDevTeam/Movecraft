@@ -33,6 +33,7 @@ import net.countercraft.movecraft.commands.ContactsCommand;
 import net.countercraft.movecraft.commands.CraftReportCommand;
 import net.countercraft.movecraft.commands.CruiseCommand;
 import net.countercraft.movecraft.commands.ManOverboardCommand;
+import net.countercraft.movecraft.commands.MovecraftCommand;
 import net.countercraft.movecraft.commands.PilotCommand;
 import net.countercraft.movecraft.commands.ReleaseCommand;
 import net.countercraft.movecraft.commands.RotateCommand;
@@ -109,6 +110,8 @@ public class Movecraft extends JavaPlugin {
     private boolean shuttingDown;
     private WorldHandler worldHandler;
 
+
+    private AsyncManager asyncManager;
     private AssaultManager assaultManager;
     private SiegeManager siegeManager;
 
@@ -202,7 +205,7 @@ public class Movecraft extends JavaPlugin {
         Settings.AssaultDestroyableBlocks = new HashSet<>(getConfig().getIntegerList("AssaultDestroyableBlocks"));
         Settings.DisableShadowBlocks = new HashSet<>(getConfig().getIntegerList("DisableShadowBlocks"));  //REMOVE FOR PUBLIC VERSION
 
-        Settings.SiegeEnable = getConfig().getBoolean("SiegeEnable", true);
+        Settings.SiegeEnable = getConfig().getBoolean("SiegeEnable", false);
 
 
 
@@ -376,7 +379,8 @@ public class Movecraft extends JavaPlugin {
         } else {
 
             // Startup procedure
-            AsyncManager.getInstance().runTaskTimer(this, 0, 1);
+            asyncManager = new AsyncManager();
+            asyncManager.runTaskTimer(this, 0, 1);
             MapUpdateManager.getInstance().runTaskTimer(this, 0, 1);
             if(Settings.AssaultEnable) {
                 assaultManager = new AssaultManager(this);
@@ -386,12 +390,13 @@ public class Movecraft extends JavaPlugin {
                 siegeManager = new SiegeManager(this);
                 siegeManager.runTaskTimerAsynchronously(this, 0, 20);
             }
-            CraftManager.getInstance();
+            CraftManager.initialize();
 
             getServer().getPluginManager().registerEvents(new InteractListener(), this);
             if (worldEditPlugin != null) {
                 getServer().getPluginManager().registerEvents(new WorldEditInteractListener(), this);
             }
+            this.getCommand("movecraft").setExecutor(new MovecraftCommand());
             this.getCommand("release").setExecutor(new ReleaseCommand());
             this.getCommand("pilot").setExecutor(new PilotCommand());
             this.getCommand("rotate").setExecutor(new RotateCommand());
@@ -478,6 +483,8 @@ public class Movecraft extends JavaPlugin {
     public WorldHandler getWorldHandler(){
         return worldHandler;
     }
+
+    public AsyncManager getAsyncManager(){return asyncManager;}
 
 }
 

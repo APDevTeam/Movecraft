@@ -20,7 +20,7 @@ public final class RemoteSign implements Listener{
 
     @EventHandler
     public final void onSignClick(PlayerInteractEvent event) {
-        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK && event.getAction() != Action.LEFT_CLICK_BLOCK) {
             return;
         }
         Block block = event.getClickedBlock();
@@ -59,31 +59,30 @@ public final class RemoteSign implements Listener{
         }
 
         String targetText = ChatColor.stripColor(sign.getLine(1));
+        if(targetText.equalsIgnoreCase(HEADER)) {
+            event.getPlayer().sendMessage("ERROR: Remote Sign can't remote another Remote Sign!");
+            return;
+        }
         MovecraftLocation foundLoc = null;
         for (MovecraftLocation tloc : foundCraft.getBlockList()) {
             Block tb = event.getClickedBlock().getWorld().getBlockAt(tloc.getX(), tloc.getY(), tloc.getZ());
-            if (tb.getType().equals(Material.SIGN_POST) || tb.getType().equals(Material.WALL_SIGN)) {
-                Sign ts = (Sign) tb.getState();
-                if (ChatColor.stripColor(ts.getLine(0)) != null)
-                    if (ChatColor.stripColor(ts.getLine(0)) != null)
-                        if (ChatColor.stripColor(ts.getLine(0)).equalsIgnoreCase(targetText))
-                            foundLoc = tloc;
-                if (ChatColor.stripColor(ts.getLine(1)) != null)
-                    if (ChatColor.stripColor(ts.getLine(1)).equalsIgnoreCase(targetText)) {
-                        boolean isRemoteSign = false;
-                        if (ChatColor.stripColor(ts.getLine(0)) != null)
-                            if (ChatColor.stripColor(ts.getLine(0)).equalsIgnoreCase("Remote Sign"))
-                                isRemoteSign = true;
-                        if (!isRemoteSign)
-                            foundLoc = tloc;
-                    }
-                if (ChatColor.stripColor(ts.getLine(2)) != null)
-                    if (ChatColor.stripColor(ts.getLine(2)).equalsIgnoreCase(targetText))
-                        foundLoc = tloc;
-                if (ChatColor.stripColor(ts.getLine(3)) != null)
-                    if (ChatColor.stripColor(ts.getLine(3)).equalsIgnoreCase(targetText))
-                        foundLoc = tloc;
+            if (!tb.getType().equals(Material.SIGN_POST) && !tb.getType().equals(Material.WALL_SIGN)) {
+                continue;
             }
+            Sign ts = (Sign) tb.getState();
+            if (ChatColor.stripColor(ts.getLine(0)).equalsIgnoreCase(targetText))
+                foundLoc = tloc;
+            if (ChatColor.stripColor(ts.getLine(1)).equalsIgnoreCase(targetText)) {
+                if (ChatColor.stripColor(ts.getLine(0)).equalsIgnoreCase(HEADER))
+                    continue;
+                foundLoc = tloc;
+            }
+            if (ChatColor.stripColor(ts.getLine(2)) != null)
+                if (ChatColor.stripColor(ts.getLine(2)).equalsIgnoreCase(targetText))
+                    foundLoc = tloc;
+            if (ChatColor.stripColor(ts.getLine(3)) != null)
+                if (ChatColor.stripColor(ts.getLine(3)).equalsIgnoreCase(targetText))
+                    foundLoc = tloc;
         }
         if (foundLoc == null) {
             event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("ERROR: Could not find target sign!"));
@@ -96,7 +95,6 @@ public final class RemoteSign implements Listener{
                 event.getItem(), newBlock, event.getBlockFace());
         //TODO: DON'T DO THIS
         Bukkit.getServer().getPluginManager().callEvent(newEvent);
-        //onPlayerInteract(newEvent);
         event.setCancelled(true);
     }
 }

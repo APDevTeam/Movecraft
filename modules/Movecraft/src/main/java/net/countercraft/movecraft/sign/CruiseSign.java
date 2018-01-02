@@ -35,14 +35,13 @@ public final class CruiseSign implements Listener{
             if (!c.getType().getCanCruise()) {
                 return;
             }
-            c.resetSigns(false, true, true);
+            //c.resetSigns(false, true, true);
             sign.setLine(0, "Cruise: ON");
             sign.update(true);
 
             c.setCruiseDirection(sign.getRawData());
             c.setLastCruisUpdate(System.currentTimeMillis());
             c.setCruising(true);
-
             if (!c.getType().getMoveEntities()) {
                 CraftManager.getInstance().addReleaseTask(c);
             }

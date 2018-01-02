@@ -17,9 +17,10 @@
 
 package net.countercraft.movecraft.api.craft;
 
-import net.countercraft.movecraft.api.Rotation;
 import net.countercraft.movecraft.api.MovecraftLocation;
+import net.countercraft.movecraft.api.Rotation;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
@@ -373,56 +374,9 @@ public abstract class Craft {
         this.AADirector = AADirector;
     }
 
-   /* public double getCurSpeed() {
-        return curSpeed;
-    }*/
-
-   /* public void setCurSpeed(double curSpeed) {
-        this.curSpeed = curSpeed;
-        //this.curTickCooldown = (int) Math.ceil(20 / curSpeed); // always keep the tickcooldown and the speed in sync
-    }*/
-
-    /*public int getCurTickCooldown() {
-        if(this.curSpeed == 0)
-            return this.type.getTickCooldown();
-        return curTickCooldown;
-    }*/
-
-    /*@Deprecated
-    public void setCurTickCooldown(int curTickCooldown) {
-        this.curTickCooldown = curTickCooldown;
-        this.curSpeed = 20.0 / curTickCooldown; // always keep the tickcooldown and the speed in sync
-    }*/
-
-
     public long getOrigPilotTime() {
         return origPilotTime;
     }
-
-   /* public double getMaxSpeed() {
-        return maxSpeed;
-    }*/
-
-    /*public void setMaxSpeed(double maxSpeed) {
-        this.maxSpeed = maxSpeed;
-    }*/
-
-    /*@Deprecated
-    public int getBlockUpdates() {
-        return blockUpdates;
-    }*/
-
-    /*public void setBlockUpdates(int blockUpdates) {
-        this.blockUpdates = blockUpdates;
-    }*/
-
-   /* public void incrementBlockUpdates(int blockUpdates){
-        this.blockUpdates+=blockUpdates;
-    }*/
-
-    /*public void incrementBlockUpdates(){
-        this.blockUpdates++;
-    }*/
 
     public MovecraftLocation getMidPoint() {
         int maxDX=0;
@@ -471,12 +425,24 @@ public abstract class Craft {
     }
 
     public int getTickCooldown() {
+        if(sinking)
+            return type.getSinkRateTicks();
         if(meanMoveTime==0)
             return type.getCruiseTickCooldown();
+        if(type.getDynamicFlyBlockSpeedFactor()!=0){
+            int count = 0;
+            Material flyBlockMaterial = Material.getMaterial(type.getDynamicFlyBlock());
+            for(MovecraftLocation location : blockList){
+                if(location.toBukkit(w).getBlock().getType()==flyBlockMaterial)
+                    count++;
+            }
+            return  type.getCruiseTickCooldown()*(count/blockList.length);
+        }
+
         if(type.getDynamicLagSpeedFactor()==0)
             return type.getCruiseTickCooldown();
         //TODO: modify skip blocks by an equal proportion to this, than add another modifier based on dynamic speed factor
-        return (int)(type.getCruiseTickCooldown()*meanMoveTime*20);
+        return (int)(type.getCruiseTickCooldown()*meanMoveTime*20/type.getDynamicLagSpeedFactor());
     }
 
     /**
@@ -484,6 +450,6 @@ public abstract class Craft {
      * @return the speed of the craft
      */
     public double getSpeed(){
-        return type.getCruiseSkipBlocks()/getTickCooldown()/20;
+        return 20*type.getCruiseSkipBlocks()/(double)getTickCooldown();
     }
 }

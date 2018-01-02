@@ -35,11 +35,15 @@ import java.util.Set;
 import java.util.logging.Level;
 
 public class CraftManager {
-    private static final CraftManager ourInstance = new CraftManager();
+    private static CraftManager ourInstance;
     private final Set<Craft> craftList = new HashSet<>();
     private final HashMap<Player, Craft> craftPlayerIndex = new HashMap<>();
     private final HashMap<Player, BukkitTask> releaseEvents = new HashMap<>();
     private CraftType[] craftTypes;
+
+    public static void initialize(){
+        ourInstance = new CraftManager();
+    }
 
     private CraftManager() {
         initCraftTypes();
@@ -53,7 +57,7 @@ public class CraftManager {
         return craftTypes;
     }
 
-    private void initCraftTypes() {
+    public void initCraftTypes() {
         File craftsFile = new File(Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/types");
 
         if (craftsFile.mkdirs()) {

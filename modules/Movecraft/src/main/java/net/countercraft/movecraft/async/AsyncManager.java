@@ -64,7 +64,7 @@ import java.util.logging.Level;
 
 @SuppressWarnings("deprecation")
 public class AsyncManager extends BukkitRunnable {
-    private static final AsyncManager instance = new AsyncManager();
+    //private static AsyncManager instance = new AsyncManager();
     private final HashMap<AsyncTask, Craft> ownershipMap = new HashMap<>();
     private final HashMap<TNTPrimed, Double> TNTTracking = new HashMap<>();
     private final HashMap<Craft, HashMap<Craft, Long>> recentContactTracking = new HashMap<>();
@@ -78,12 +78,12 @@ public class AsyncManager extends BukkitRunnable {
     private long lastContactCheck = 0;
     private HashSet<Material> transparent = null;
 
-    private AsyncManager() {
+    public AsyncManager() {
     }
 
-    public static AsyncManager getInstance() {
+   /* public static AsyncManager getInstance() {
         return instance;
-    }
+    }*/
 
     public void submitTask(AsyncTask task, Craft c) {
         if (c.isNotProcessing()) {
@@ -1101,10 +1101,10 @@ public class AsyncManager extends BukkitRunnable {
                                         // should it become water? if not, then
                                         // air
                                         if (Movecraft.getInstance().blockFadeWaterMap.get(loc)) {
-                                            BlockCreateCommand updateCom = new BlockCreateCommand(loc, Material.STATIONARY_WATER, (byte) 0, null);
+                                            BlockCreateCommand updateCom = new BlockCreateCommand(w, loc, Material.STATIONARY_WATER, (byte) 0);
                                             updateCommands.add(updateCom);
                                         } else {
-                                            BlockCreateCommand updateCom = new BlockCreateCommand(loc, Material.AIR, (byte) 0, null);
+                                            BlockCreateCommand updateCom = new BlockCreateCommand(w, loc, Material.AIR, (byte) 0);
                                             updateCommands.add(updateCom);
                                         }
                                     }

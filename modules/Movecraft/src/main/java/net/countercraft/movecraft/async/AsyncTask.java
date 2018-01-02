@@ -34,7 +34,7 @@ public abstract class AsyncTask extends BukkitRunnable {
     public void run() {
         try {
             excecute();
-            AsyncManager.getInstance().submitCompletedTask(this);
+            Movecraft.getInstance().getAsyncManager().submitCompletedTask(this);
         } catch (Exception e) {
             Movecraft.getInstance().getLogger().log(Level.SEVERE, I18nSupport.getInternationalisedString("Internal - Error - Proccessor thread encountered an error"));
             e.printStackTrace();

@@ -42,7 +42,7 @@ public class ReleaseCommand implements TabExecutor {
             player.sendMessage("You do not have permission to make others release");
             return true;
         }
-        if (args[0].equalsIgnoreCase("-a")) {
+        if (args[0].equalsIgnoreCase("-p")) {
             for (Player p : Bukkit.getOnlinePlayers()) {
                 String name = p.getName();
                 final Craft pCraft = CraftManager.getInstance().getCraftByPlayerName(name);
@@ -51,9 +51,19 @@ public class ReleaseCommand implements TabExecutor {
 
                 }
             }
-            player.sendMessage("You forced release every player's ship");
+            player.sendMessage("You forcibly released all player controlled crafts");
             return true;
         }
+
+        if (args[0].equalsIgnoreCase("-a")) {
+            final List<Craft> craftsToRelease = new ArrayList<>(CraftManager.getInstance().getCraftList());
+            for (Craft craft : craftsToRelease) {
+                CraftManager.getInstance().removeCraft(craft);
+            }
+            player.sendMessage("You forcibly released all crafts");
+            return true;
+        }
+
         Player target = Bukkit.getPlayer(args[0]);
         if (target == null) {
             commandSender.sendMessage("That player could not be found");
@@ -75,6 +85,7 @@ public class ReleaseCommand implements TabExecutor {
             return Collections.emptyList();
         List<String> completions = new ArrayList<>();
         completions.add("-a");
+        completions.add("-p");
         for(Player player : Bukkit.getOnlinePlayers())
             completions.add(player.getName());
 

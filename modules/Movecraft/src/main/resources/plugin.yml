@@ -8,6 +8,9 @@ website: http://www.youtube.com/BaccaYarro
 main: net.countercraft.movecraft.Movecraft
 database: false
 commands:
+  movecraft:
+    description: base movecraft command
+    usage: /movecraft [reloadtypes]
   release:
     description: Releases your craft
     usage: /release

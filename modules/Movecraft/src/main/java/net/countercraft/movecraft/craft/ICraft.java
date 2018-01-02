@@ -1,14 +1,14 @@
 package net.countercraft.movecraft.craft;
 
+import net.countercraft.movecraft.Movecraft;
+import net.countercraft.movecraft.api.MovecraftLocation;
 import net.countercraft.movecraft.api.Rotation;
 import net.countercraft.movecraft.api.craft.Craft;
 import net.countercraft.movecraft.api.craft.CraftType;
-import net.countercraft.movecraft.async.AsyncManager;
 import net.countercraft.movecraft.async.detection.DetectionTask;
 import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.async.translation.TranslationTaskData;
-import net.countercraft.movecraft.api.MovecraftLocation;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
@@ -20,7 +20,7 @@ public class ICraft extends Craft {
 
     @Override
     public void detect(Player player, Player notificationPlayer, MovecraftLocation startPoint) {
-        AsyncManager.getInstance().submitTask(new DetectionTask(this, startPoint, type.getMinSize(), type.getMaxSize(), type.getAllowedBlocks(), type.getForbiddenBlocks(), type.getForbiddenSignStrings(), player, notificationPlayer, w), this);
+        Movecraft.getInstance().getAsyncManager().submitTask(new DetectionTask(this, startPoint, type.getMinSize(), type.getMaxSize(), type.getAllowedBlocks(), type.getForbiddenBlocks(), type.getForbiddenSignStrings(), player, notificationPlayer, w), this);
     }
 
     @Override
@@ -77,7 +77,7 @@ public class ICraft extends Craft {
             }
         }
 
-        AsyncManager.getInstance().submitTask(new TranslationTask(this, new TranslationTaskData(dx, dz, dy, getBlockList(), getHitBox(), minZ, minX, type.getMaxHeightLimit(), type.getMinHeightLimit())), this);
+        Movecraft.getInstance().getAsyncManager().submitTask(new TranslationTask(this, new TranslationTaskData(dx, dz, dy, getBlockList(), getHitBox(), minZ, minX, type.getMaxHeightLimit(), type.getMinHeightLimit())), this);
     }
 
     @Override
@@ -117,12 +117,12 @@ public class ICraft extends Craft {
                 }
             }
         }
-        AsyncManager.getInstance().submitTask(new RotationTask(this, originPoint, this.getBlockList(), rotation, this.getW()), this);
+        Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(this, originPoint, this.getBlockList(), rotation, this.getW()), this);
     }
 
     @Override
     public void rotate(Rotation rotation, MovecraftLocation originPoint, boolean isSubCraft) {
-        AsyncManager.getInstance().submitTask(new RotationTask(this, originPoint, this.getBlockList(), rotation, this.getW(), isSubCraft), this);
+        Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(this, originPoint, this.getBlockList(), rotation, this.getW(), isSubCraft), this);
     }
 
 

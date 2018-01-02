@@ -27,16 +27,18 @@ public class CraftTranslateCommand extends UpdateCommand {
     public void doUpdate() {
         long time = System.nanoTime();
         Movecraft.getInstance().getWorldHandler().translateCraft(craft,displacement);
-        time = System.nanoTime() - time;
-        if(Settings.Debug)
-            logger.info("Total time: " + (time / 1e9) + " seconds. Moving with cooldown of " + craft.getTickCooldown());
-        craft.addMoveTime(time/1e9f);
         for(MovecraftLocation location : craft.getBlockList()){
             Block block = location.toBukkit(craft.getW()).getBlock();
             if(block.getType() == Material.WALL_SIGN || block.getType() == Material.SIGN_POST){
-                Bukkit.getServer().getPluginManager().callEvent(new SignTranslateEvent(block, craft, ((Sign) block.getState()).getLines()));
+                Sign sign = (Sign) block.getState();
+                Bukkit.getServer().getPluginManager().callEvent(new SignTranslateEvent(block, craft, sign.getLines()));
+                sign.update();
             }
         }
+        time = System.nanoTime() - time;
+        if(Settings.Debug)
+            logger.info("Total time: " + (time / 1e9) + " seconds. Moving with cooldown of " + craft.getTickCooldown() + ". Speed of: " + String.format("%.2f", craft.getSpeed()));
+        craft.addMoveTime(time/1e9f);
     }
 
 

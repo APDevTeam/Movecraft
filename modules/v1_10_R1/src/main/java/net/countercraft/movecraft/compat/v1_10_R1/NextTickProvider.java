@@ -4,11 +4,11 @@ import net.minecraft.server.v1_10_R1.BlockPosition;
 import net.minecraft.server.v1_10_R1.NextTickListEntry;
 import net.minecraft.server.v1_10_R1.WorldServer;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.bukkit.craftbukkit.v1_10_R1.util.HashTreeSet;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import org.bukkit.craftbukkit.v1_10_R1.util.HashTreeSet;
-
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,10 +17,13 @@ import java.util.List;
 import java.util.Map;
 
 public class NextTickProvider {
-    private Map<WorldServer,ImmutablePair<HashTreeSet<NextTickListEntry>,List<NextTickListEntry>>> tickMap = new HashMap<>();
+    private Map<WorldServer,ImmutablePair<WeakReference<HashTreeSet<NextTickListEntry>>,WeakReference<List<NextTickListEntry>>>> tickMap = new HashMap<>();
 
     private boolean isRegistered(@NotNull WorldServer world){
-        return tickMap.containsKey(world);
+        if(!tickMap.containsKey(world))
+            return false;
+        ImmutablePair<WeakReference<HashTreeSet<NextTickListEntry>>, WeakReference<List<NextTickListEntry>>> listPair = tickMap.get(world);
+        return listPair.right.get() != null && listPair.left.get() != null;
     }
 
     @SuppressWarnings("unchecked")
@@ -39,22 +42,23 @@ public class NextTickProvider {
         } catch (IllegalAccessException | IllegalArgumentException | NoSuchFieldException | SecurityException e1) {
             e1.printStackTrace();
         }
-        tickMap.put(world, new ImmutablePair<>(nextTickList,U));
+        tickMap.put(world, new ImmutablePair<>(new WeakReference<>(nextTickList), new WeakReference<>(U)));
     }
 
     @Nullable
+    @SuppressWarnings("ConstantConditions")
     public NextTickListEntry getNextTick(@NotNull WorldServer world,@NotNull BlockPosition position){
         if(!isRegistered(world))
             registerWorld(world);
-        ImmutablePair<HashTreeSet<NextTickListEntry>, List<NextTickListEntry>> listPair = tickMap.get(world);
-        for(Iterator<NextTickListEntry> iterator = listPair.left.iterator(); iterator.hasNext();) {
+        ImmutablePair<WeakReference<HashTreeSet<NextTickListEntry>>, WeakReference<List<NextTickListEntry>>> listPair = tickMap.get(world);
+        for(Iterator<NextTickListEntry> iterator = listPair.left.get().iterator(); iterator.hasNext();) {
             NextTickListEntry listEntry = iterator.next();
             if (position.equals(listEntry.a)) {
                 iterator.remove();
                 return listEntry;
             }
         }
-        for(Iterator<NextTickListEntry> iterator = listPair.right.iterator(); iterator.hasNext();) {
+        for(Iterator<NextTickListEntry> iterator = listPair.right.get().iterator(); iterator.hasNext();) {
             NextTickListEntry listEntry = iterator.next();
             if (position.equals(listEntry.a)) {
                 iterator.remove();

@@ -532,7 +532,7 @@ public class TranslationTask extends AsyncTask {
                     // handle sinking ship collisions
                     if (getCraft().getSinking()) {
                         if (getCraft().getType().getExplodeOnCrash() != 0.0F && !explosionBlockedByTowny) {
-                            int explosionKey = (int) (0 - (getCraft().getType().getExplodeOnCrash() * 100));
+                            float explosionKey = getCraft().getType().getExplodeOnCrash();
                             if (System.currentTimeMillis() - getCraft().getOrigPilotTime() > 1000){
                                 Location loc = oldLoc.toBukkit(getCraft().getW());
                                 if (!loc.getBlock().getType().equals(Material.AIR)) {
@@ -542,7 +542,7 @@ public class TranslationTask extends AsyncTask {
                             }
                         } else {
                             // use the explosion code to clean up the craft, but not with enough force to do anything
-                            int explosionKey = 0 - 1;
+                            int explosionKey = 1;
                             Location loc = oldLoc.toBukkit(getCraft().getW());
                             if (!loc.getBlock().getType().equals(Material.AIR)) {
                                 updateSet.add(new ExplosionUpdateCommand(loc, explosionKey));
@@ -562,22 +562,22 @@ public class TranslationTask extends AsyncTask {
                             }
                             break;
                         } else if (explosionBlockedByTowny) {
-                            int explosionKey = 0 - 1;
+                            int explosionKey = 1;
                             Location loc = oldLoc.toBukkit(getCraft().getW());
                             if (!loc.getBlock().getType().equals(Material.AIR)) {
                                 updateSet.add(new ExplosionUpdateCommand(loc, explosionKey));
                                 data.setCollisionExplosion(true);
                             }
                         } else if (System.currentTimeMillis() - getCraft().getOrigPilotTime() > 1000) {
-                            int explosionKey;
+                            float explosionKey;
                             float explosionForce = getCraft().getType().getCollisionExplosion();
                             if (getCraft().getType().getFocusedExplosion()) {
                                 explosionForce = explosionForce * getCraft().getBlockList().length;
                             }
                             if (oldLoc.getY() < waterLine) { // underwater explosions require more force to do anything
-                                explosionForce += 25;
+                                explosionForce += 25;//TODO: find the correct amount
                             }
-                            explosionKey = (int) (0 - (explosionForce * 100));
+                            explosionKey = explosionForce;
                             Location loc = oldLoc.toBukkit(getCraft().getW());
                             if (!loc.getBlock().getType().equals(Material.AIR)) {
                                 updateSet.add(new ExplosionUpdateCommand(loc, explosionKey));
@@ -718,20 +718,20 @@ public class TranslationTask extends AsyncTask {
                 if(!(m instanceof ExplosionUpdateCommand))
                     continue;
                 ExplosionUpdateCommand explosionCommand = (ExplosionUpdateCommand)m;
-                MovecraftLocation exsplosionLocation = MathUtils.bukkit2MovecraftLoc(explosionCommand.getLocation());
-                if (existingBlockSet.contains(exsplosionLocation)) {
-                    existingBlockSet.remove(exsplosionLocation);
+                MovecraftLocation explosionLocation = MathUtils.bukkit2MovecraftLoc(explosionCommand.getLocation());
+                if (existingBlockSet.contains(explosionLocation)) {
+                    existingBlockSet.remove(explosionLocation);
                     if (Settings.FadeWrecksAfter > 0) {
                         int typeID = explosionCommand.getLocation().getBlock().getTypeId();
                         if (typeID != 0 && typeID != 9) {
-                            Movecraft.getInstance().blockFadeTimeMap.put(exsplosionLocation, System.currentTimeMillis());
-                            Movecraft.getInstance().blockFadeTypeMap.put(exsplosionLocation, typeID);
+                            Movecraft.getInstance().blockFadeTimeMap.put(explosionLocation, System.currentTimeMillis());
+                            Movecraft.getInstance().blockFadeTypeMap.put(explosionLocation, typeID);
                             if (explosionCommand.getLocation().getY() <= waterLine) {
-                                Movecraft.getInstance().blockFadeWaterMap.put(exsplosionLocation, true);
+                                Movecraft.getInstance().blockFadeWaterMap.put(explosionLocation, true);
                             } else {
-                                Movecraft.getInstance().blockFadeWaterMap.put(exsplosionLocation, false);
+                                Movecraft.getInstance().blockFadeWaterMap.put(explosionLocation, false);
                             }
-                            Movecraft.getInstance().blockFadeWorldMap.put(exsplosionLocation, getCraft().getW());
+                            Movecraft.getInstance().blockFadeWorldMap.put(explosionLocation, getCraft().getW());
                         }
                     }
                 }

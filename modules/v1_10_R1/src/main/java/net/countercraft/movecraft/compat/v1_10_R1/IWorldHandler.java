@@ -19,6 +19,7 @@ import net.minecraft.server.v1_10_R1.WorldServer;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_10_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_10_R1.block.CraftBlockState;
 import org.bukkit.craftbukkit.v1_10_R1.util.CraftMagicNumbers;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -61,7 +62,8 @@ public class IWorldHandler extends WorldHandler {
         List<TileHolder> tiles = new ArrayList<>();
         //get the tiles
         for(BlockPosition position : rotatedPositions.keySet()){
-            TileEntity tile = nativeWorld.getTileEntity(position);
+            //TileEntity tile = nativeWorld.getTileEntity(position);
+            TileEntity tile = getTileEntity(nativeWorld,position);
             if(tile == null)
                 continue;
             //get the nextTick to move with the tile
@@ -110,13 +112,12 @@ public class IWorldHandler extends WorldHandler {
         //*******************************************
         //*       Step six: Update the blocks       *
         //*******************************************
-        /*org.bukkit.World bukkitWorld = craft.getW();
         for(BlockPosition newPosition : rotatedPositions.values()) {
-            bukkitWorld.getBlockAt(newPosition.getX(), newPosition.getY(), newPosition.getZ()).getState().update(false, false);
+            CraftBlockState.getBlockState(nativeWorld,newPosition.getX(), newPosition.getY(), newPosition.getZ()).update(false,false);
         }
         for(BlockPosition deletedPosition : deletePositions){
-            bukkitWorld.getBlockAt(deletedPosition.getX(), deletedPosition.getY(), deletedPosition.getZ()).getState().update(false, false);
-        }*/
+            CraftBlockState.getBlockState(nativeWorld,deletedPosition.getX(), deletedPosition.getY(), deletedPosition.getZ()).update(false,false);
+        }
         //*******************************************
         //*       Step seven: Send to players       *
         //*******************************************
@@ -126,14 +127,13 @@ public class IWorldHandler extends WorldHandler {
             if(!chunks.contains(chunk)){
                 chunks.add(chunk);
             }
-        }/*
+        }
         for(BlockPosition position : deletePositions){
             Chunk chunk = nativeWorld.getChunkAtWorldCoords(position);
             if(!chunks.contains(chunk)){
                 chunks.add(chunk);
             }
         }
-        //sendToPlayers(chunks.toArray(new Chunk[0]));*/
     }
 
     @Override
@@ -212,12 +212,11 @@ public class IWorldHandler extends WorldHandler {
         //*******************************************
         //*       Step six: Update the blocks       *
         //*******************************************
-        org.bukkit.World bukkitWorld = craft.getW();
         for(BlockPosition newPosition : newPositions) {
-            bukkitWorld.getBlockAt(newPosition.getX(), newPosition.getY(), newPosition.getZ()).getState().update(false, false);
+            CraftBlockState.getBlockState(nativeWorld,newPosition.getX(), newPosition.getY(), newPosition.getZ()).update(false,false);
         }
         for(BlockPosition deletedPosition : deletePositions){
-            bukkitWorld.getBlockAt(deletedPosition.getX(), deletedPosition.getY(), deletedPosition.getZ()).getState().update(false, false);
+            CraftBlockState.getBlockState(nativeWorld,deletedPosition.getX(), deletedPosition.getY(), deletedPosition.getZ()).update(false,false);
         }
         //*******************************************
         //*       Step seven: Send to players       *
