@@ -436,13 +436,13 @@ public abstract class Craft {
                 if(location.toBukkit(w).getBlock().getType()==flyBlockMaterial)
                     count++;
             }
-            return  type.getCruiseTickCooldown()*(count/blockList.length);
+            return  Math.max(type.getCruiseTickCooldown()*(1 - count/blockList.length),1);
         }
 
         if(type.getDynamicLagSpeedFactor()==0)
             return type.getCruiseTickCooldown();
         //TODO: modify skip blocks by an equal proportion to this, than add another modifier based on dynamic speed factor
-        return (int)(type.getCruiseTickCooldown()*meanMoveTime*20/type.getDynamicLagSpeedFactor());
+        return Math.max((int)(type.getCruiseTickCooldown()*meanMoveTime*20/type.getDynamicLagSpeedFactor()),1);
     }
 
     /**
