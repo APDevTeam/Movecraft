@@ -79,6 +79,25 @@ public class AsyncManager extends BukkitRunnable {
     private HashSet<Material> transparent = null;
 
     public AsyncManager() {
+        transparent = new HashSet<>();
+        transparent.add(Material.AIR);
+        transparent.add(Material.GLASS);
+        transparent.add(Material.THIN_GLASS);
+        transparent.add(Material.STAINED_GLASS);
+        transparent.add(Material.STAINED_GLASS_PANE);
+        transparent.add(Material.IRON_FENCE);
+        transparent.add(Material.REDSTONE_WIRE);
+        transparent.add(Material.IRON_TRAPDOOR);
+        transparent.add(Material.TRAP_DOOR);
+        transparent.add(Material.NETHER_BRICK_STAIRS);
+        transparent.add(Material.LEVER);
+        transparent.add(Material.STONE_BUTTON);
+        transparent.add(Material.WOOD_BUTTON);
+        transparent.add(Material.STEP);
+        transparent.add(Material.SMOOTH_STAIRS);
+        transparent.add(Material.SIGN);
+        transparent.add(Material.SIGN_POST);
+        transparent.add(Material.WALL_SIGN);
     }
 
    /* public static AsyncManager getInstance() {
@@ -397,7 +416,7 @@ public class AsyncManager extends BukkitRunnable {
             }
             for (Craft pcraft : CraftManager.getInstance().getCraftsInWorld(w)) {
                 if (pcraft == null || !pcraft.isNotProcessing() || !pcraft.getCruising()) {
-                    break;
+                    continue;
                 }
                 long ticksElapsed = (System.currentTimeMillis() - pcraft.getLastCruiseUpdate()) / 50;
 
@@ -1262,27 +1281,6 @@ public class AsyncManager extends BukkitRunnable {
 
     public void run() {
         clearAll();
-        if (transparent == null) {
-            transparent = new HashSet<>();
-            transparent.add(Material.AIR);
-            transparent.add(Material.GLASS);
-            transparent.add(Material.THIN_GLASS);
-            transparent.add(Material.STAINED_GLASS);
-            transparent.add(Material.STAINED_GLASS_PANE);
-            transparent.add(Material.IRON_FENCE);
-            transparent.add(Material.REDSTONE_WIRE);
-            transparent.add(Material.IRON_TRAPDOOR);
-            transparent.add(Material.TRAP_DOOR);
-            transparent.add(Material.NETHER_BRICK_STAIRS);
-            transparent.add(Material.LEVER);
-            transparent.add(Material.STONE_BUTTON);
-            transparent.add(Material.WOOD_BUTTON);
-            transparent.add(Material.STEP);
-            transparent.add(Material.SMOOTH_STAIRS);
-            transparent.add(Material.SIGN);
-            transparent.add(Material.SIGN_POST);
-            transparent.add(Material.WALL_SIGN);
-        }
 
         processCruise();
         processSinking();
