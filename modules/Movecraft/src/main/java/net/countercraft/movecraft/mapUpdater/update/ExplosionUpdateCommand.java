@@ -27,12 +27,9 @@ public class ExplosionUpdateCommand extends UpdateCommand {
 
     @Override
     public void doUpdate() {
-        Movecraft.getInstance().getLogger().info("Explosion of strength " + explosionStrength);
         //if (explosionStrength > 0) { // don't bother with tiny explosions
-
-            //Location loc = new Location(explosionLocation.getWorld(), explosionLocation.getX() + 0.5, explosionLocation.getY() + 0.5, explosionLocation.getZ());
-            this.createExplosion(explosionLocation.add(.5,.5,.5), explosionStrength / 100.0F);
-
+        //Location loc = new Lo cation(explosionLocation.getWorld(), explosionLocation.getX() + 0.5, explosionLocation.getY() + 0.5, explosionLocation.getZ());
+        this.createExplosion(explosionLocation.add(.5,.5,.5), explosionStrength);
         //}
 
     }

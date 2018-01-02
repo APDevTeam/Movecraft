@@ -56,6 +56,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
@@ -272,7 +273,8 @@ public class TranslationTask extends AsyncTask {
 
         List<MovecraftLocation> tempBlockList = new ArrayList<>();
         HashSet<MovecraftLocation> existingBlockSet = new HashSet<>(Arrays.asList(blocksList));
-        Set<UpdateCommand> updateSet = new HashSet<>();
+        //Set<UpdateCommand> updateSet = new HashSet<>();
+        Collection<UpdateCommand> updateSet = data.getUpdates();
 
         data.setCollisionExplosion(false);
 
@@ -945,7 +947,7 @@ public class TranslationTask extends AsyncTask {
                 updateSet.add(new BlockCreateCommand(destroyedLocation, Material.AIR, (byte) 0, getCraft()));
             }
 //            MapUpdateManager.getInstance().sortUpdates(updateArray);
-            data.setUpdates(updateSet);
+            //data.setUpdates(updateSet);
 
             if (data.getDy() != 0) {
                 data.setHitbox(BoundingBoxUtils.translateBoundingBoxVertically(data.getHitbox(), data.getDy()));

@@ -39,7 +39,7 @@ public class CraftManager {
     private final Set<Craft> craftList = new HashSet<>();
     private final HashMap<Player, Craft> craftPlayerIndex = new HashMap<>();
     private final HashMap<Player, BukkitTask> releaseEvents = new HashMap<>();
-    private CraftType[] craftTypes;
+    private HashSet<CraftType> craftTypes;
 
     public static void initialize(){
         ourInstance = new CraftManager();
@@ -53,8 +53,8 @@ public class CraftManager {
         return ourInstance;
     }
 
-    public CraftType[] getCraftTypes() {
-        return craftTypes;
+    public Set<CraftType> getCraftTypes() {
+        return Collections.unmodifiableSet(craftTypes);
     }
 
     public void initCraftTypes() {
@@ -73,22 +73,21 @@ public class CraftManager {
             Movecraft.getInstance().saveResource("types/Turret.craft", false);
         }
 
-        HashSet<CraftType> craftTypesSet = new HashSet<>();
+        craftTypes = new HashSet<>();
 
         for (File file : craftsFile.listFiles()) {
             if (file.isFile()) {
 
                 if (file.getName().contains(".craft")) {
                     CraftType type = new CraftType(file);
-                    craftTypesSet.add(type);
+                    craftTypes.add(type);
                 }
             }
         }
-        if (craftTypesSet.isEmpty()) {
+        if (craftTypes.isEmpty()) {
             Movecraft.getInstance().getLogger().log(Level.SEVERE, "ERROR: NO CRAFTS FOUND!");
         }
-        craftTypes = craftTypesSet.toArray(new CraftType[1]);
-        Movecraft.getInstance().getLogger().log(Level.INFO, String.format(I18nSupport.getInternationalisedString("Startup - Number of craft files loaded"), craftTypes.length));
+        Movecraft.getInstance().getLogger().log(Level.INFO, String.format(I18nSupport.getInternationalisedString("Startup - Number of craft files loaded"), craftTypes.size()));
     }
 
     public void addCraft(Craft c, Player p) {
