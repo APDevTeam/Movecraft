@@ -82,6 +82,12 @@ public class ICraft extends Craft {
 
     @Override
     public void rotate(Rotation rotation, MovecraftLocation originPoint) {
+        if(getLastRotateTime()+1e9>System.nanoTime()){
+            if(getNotificationPlayer()!=null)
+                getNotificationPlayer().sendMessage("You're turning to quickly!");
+            return;
+        }
+        setLastRotateTime(System.nanoTime());
         // find region that will need to be loaded to rotate this craft
         int cminX = minX;
         int cmaxX = minX;

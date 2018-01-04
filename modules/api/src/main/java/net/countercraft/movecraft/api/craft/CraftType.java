@@ -65,6 +65,7 @@ public class CraftType {
     private double dynamicLagSpeedFactor;
     private double dynamicFlyBlockSpeedFactor;
     private int dynamicFlyBlock;
+    private double chestPenalty;
 
     public CraftType(File f) {
         try {
@@ -177,7 +178,7 @@ public class CraftType {
                     if (str.contains("N")) { // a # indicates a specific quantity, IE: #2 for exactly 2 of the block
                         String[] parts = str.split("N");
                         Double val = Double.valueOf(parts[1]);
-                        limitList.add(10000.0 + val);  // limit greater than 10000 indicates an specific quantity (not a ratio)
+                        limitList.add(10000d + val);  // limit greater than 10000 indicates an specific quantity (not a ratio)
                     } else {
                         Double val = Double.valueOf(str);
                         limitList.add(val);
@@ -330,22 +331,22 @@ public class CraftType {
         if (data.containsKey("fuelBurnRate")) {
             fuelBurnRate = doubleFromObject(data.get("fuelBurnRate"));
         } else {
-            fuelBurnRate = 0.0;
+            fuelBurnRate = 0d;
         }
         if (data.containsKey("sinkPercent")) {
             sinkPercent = doubleFromObject(data.get("sinkPercent"));
         } else {
-            sinkPercent = 0.0;
+            sinkPercent = 0d;
         }
         if (data.containsKey("overallSinkPercent")) {
             overallSinkPercent = doubleFromObject(data.get("overallSinkPercent"));
         } else {
-            overallSinkPercent = 0.0;
+            overallSinkPercent = 0d;
         }
         if (data.containsKey("detectionMultiplier")) {
             detectionMultiplier = doubleFromObject(data.get("detectionMultiplier"));
         } else {
-            detectionMultiplier = 0.0;
+            detectionMultiplier = 0d;
         }
         if (data.containsKey("underwaterDetectionMultiplier")) {
             underwaterDetectionMultiplier = doubleFromObject(data.get("underwaterDetectionMultiplier"));
@@ -372,13 +373,13 @@ public class CraftType {
             double temp = doubleFromObject(data.get("explodeOnCrash"));
             explodeOnCrash = (float) temp;
         } else {
-            explodeOnCrash = 0.0F;
+            explodeOnCrash = 0F;
         }
         if (data.containsKey("collisionExplosion")) {
             double temp = doubleFromObject(data.get("collisionExplosion"));
             collisionExplosion = (float) temp;
         } else {
-            collisionExplosion = 0.0F;
+            collisionExplosion = 0F;
         }
         if (data.containsKey("minHeightLimit")) {
             minHeightLimit = integerFromObject(data.get("minHeightLimit"));
@@ -479,18 +480,19 @@ public class CraftType {
         if (data.containsKey("dynamicLagSpeedFactor")) {
             dynamicLagSpeedFactor = doubleFromObject(data.get("dynamicLagSpeedFactor"));
         } else {
-            dynamicLagSpeedFactor = 0.0;
+            dynamicLagSpeedFactor = 0d;
         }
         if (data.containsKey("dynamicFlyBlockSpeedFactor")) {
             dynamicFlyBlockSpeedFactor = doubleFromObject(data.get("dynamicFlyBlockSpeedFactor"));
         } else {
-            dynamicFlyBlockSpeedFactor = 0.0;
+            dynamicFlyBlockSpeedFactor = 0d;
         }
         if (data.containsKey("dynamicFlyBlock")) {
             dynamicFlyBlock = integerFromObject(data.get("dynamicFlyBlock"));
         } else {
             dynamicFlyBlock = 0;
         }
+        chestPenalty = data.containsKey("chestPenalty") ? doubleFromObject(data.get("chestPenalty")) : 0d;
     }
 
     public String getCraftName() {
@@ -715,5 +717,9 @@ public class CraftType {
 
     public int getDynamicFlyBlock() {
         return dynamicFlyBlock;
+    }
+
+    public double getChestPenalty() {
+        return chestPenalty;
     }
 }

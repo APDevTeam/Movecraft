@@ -10,6 +10,7 @@ import net.minecraft.server.v1_12_R1.Block;
 import net.minecraft.server.v1_12_R1.BlockPosition;
 import net.minecraft.server.v1_12_R1.Blocks;
 import net.minecraft.server.v1_12_R1.Chunk;
+import net.minecraft.server.v1_12_R1.ChunkSection;
 import net.minecraft.server.v1_12_R1.EnumBlockRotation;
 import net.minecraft.server.v1_12_R1.IBlockData;
 import net.minecraft.server.v1_12_R1.NextTickListEntry;
@@ -239,7 +240,14 @@ public class IWorldHandler extends WorldHandler {
 
     private void setBlockFast(@NotNull World world, @NotNull BlockPosition position,@NotNull IBlockData data) {
         Chunk chunk = world.getChunkAtWorldCoords(position);
-        chunk.a(position, data);
+        ChunkSection chunkSection = chunk.getSections()[position.getY()>>4];
+        if (chunkSection == null) {
+            // Put a GLASS block to initialize the section. It will be replaced next with the real block.
+            chunk.a(position, Blocks.GLASS.getBlockData());
+            chunkSection = chunk.getSections()[position.getY() >> 4];
+        }
+
+        chunkSection.setType(position.getX()&15, position.getY()&15, position.getZ()&15, data);
     }
 
     @Override

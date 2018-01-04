@@ -48,7 +48,7 @@ public abstract class Craft {
     private byte cruiseDirection;
     private long lastCruiseUpdate;
     private long lastBlockCheck;
-    private long lastRightClick;
+    private long lastRotateTime=0;
     private long origPilotTime;
     private int lastDX, lastDY, lastDZ;
     private double burningFuel;
@@ -266,14 +266,6 @@ public abstract class Craft {
         this.lastBlockCheck = update;
     }
 
-    public long getLastRightClick() {
-        return lastRightClick;
-    }
-
-    public void setLastRightClick(long update) {
-        this.lastRightClick = update;
-    }
-
     public int getLastDX() {
         return lastDX;
     }
@@ -427,22 +419,30 @@ public abstract class Craft {
     public int getTickCooldown() {
         if(sinking)
             return type.getSinkRateTicks();
+        double chestPenalty = 0;
+        for(MovecraftLocation location : blockList){
+            if(location.toBukkit(w).getBlock().getType()==Material.CHEST)
+                chestPenalty++;
+        }
+        chestPenalty*=type.getChestPenalty();
         if(meanMoveTime==0)
-            return type.getCruiseTickCooldown();
+            return type.getCruiseTickCooldown()+(int)chestPenalty;
+        if(!cruising)
+            return type.getTickCooldown()+(int)chestPenalty;
         if(type.getDynamicFlyBlockSpeedFactor()!=0){
-            int count = 0;
+            double count = 0;
             Material flyBlockMaterial = Material.getMaterial(type.getDynamicFlyBlock());
             for(MovecraftLocation location : blockList){
                 if(location.toBukkit(w).getBlock().getType()==flyBlockMaterial)
                     count++;
             }
-            return  Math.max(type.getCruiseTickCooldown()*(1 - count/blockList.length),1);
+            return  Math.max((int)(type.getCruiseTickCooldown()* (1 - count /blockList.length) +chestPenalty),1);
         }
 
         if(type.getDynamicLagSpeedFactor()==0)
-            return type.getCruiseTickCooldown();
+            return type.getCruiseTickCooldown()+(int)chestPenalty;
         //TODO: modify skip blocks by an equal proportion to this, than add another modifier based on dynamic speed factor
-        return Math.max((int)(type.getCruiseTickCooldown()*meanMoveTime*20/type.getDynamicLagSpeedFactor()),1);
+        return Math.max((int)(type.getCruiseTickCooldown()*meanMoveTime*20/type.getDynamicLagSpeedFactor() +chestPenalty),1);
     }
 
     /**
@@ -451,5 +451,13 @@ public abstract class Craft {
      */
     public double getSpeed(){
         return 20*type.getCruiseSkipBlocks()/(double)getTickCooldown();
+    }
+
+    public long getLastRotateTime() {
+        return lastRotateTime;
+    }
+
+    public void setLastRotateTime(long lastRotateTime) {
+        this.lastRotateTime = lastRotateTime;
     }
 }
