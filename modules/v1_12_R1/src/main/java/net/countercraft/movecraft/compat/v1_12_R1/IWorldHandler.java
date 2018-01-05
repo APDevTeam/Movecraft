@@ -103,8 +103,35 @@ public class IWorldHandler extends WorldHandler {
         //*******************************************
         //TODO: add support for pass-through
         Collection<BlockPosition> deletePositions =  Utils.filter(rotatedPositions.keySet(),rotatedPositions.values());
-        for(BlockPosition position : deletePositions){
-            setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
+        if (craft.getType().blockedByWater()) {
+            for(BlockPosition position : deletePositions){
+                setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
+            }
+        } else {
+            int waterLine = craft.getWaterLine();
+            // for watercraft, fill blocks below the waterline with water
+            int maxY = craft.getMaxY();
+            int minY = craft.getMinY();
+            for(BlockPosition position : deletePositions) {
+                if (position.getY() <= waterLine) {
+                    // if there is air below the ship at the current position, don't fill in with water
+                    //MovecraftLocation testAir = new MovecraftLocation(l1.getX(), l1.getY() - 1, l1.getZ());
+                    BlockPosition testAir = position;
+                    for(BlockPosition searchPosition : deletePositions){
+                        if(searchPosition.getY() < testAir.getY()){
+                            testAir = searchPosition;
+                        }
+                    }
+
+                    if (craft.getW().getBlockAt(testAir.getX(), testAir.getY(), testAir.getZ()).getType().equals(Material.AIR)) {
+                        setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
+                    } else {
+                        setBlockFast(nativeWorld, position, Blocks.WATER.getBlockData());
+                    }
+                } else {
+                    setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
+                }
+            }
         }
 
         //*******************************************
@@ -200,8 +227,35 @@ public class IWorldHandler extends WorldHandler {
         //*******************************************
         //TODO: add support for pass-through
         Collection<BlockPosition> deletePositions =  Utils.filter(positions,newPositions);
-        for(BlockPosition position : deletePositions){
-            setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
+        if (craft.getType().blockedByWater()) {
+            for(BlockPosition position : deletePositions){
+                setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
+            }
+        } else {
+            int waterLine = craft.getWaterLine();
+            // for watercraft, fill blocks below the waterline with water
+            int maxY = craft.getMaxY();
+            int minY = craft.getMinY();
+            for(BlockPosition position : deletePositions) {
+                if (position.getY() <= waterLine) {
+                    // if there is air below the ship at the current position, don't fill in with water
+                    //MovecraftLocation testAir = new MovecraftLocation(l1.getX(), l1.getY() - 1, l1.getZ());
+                    BlockPosition testAir = position;
+                    for(BlockPosition searchPosition : deletePositions){
+                        if(searchPosition.getY() < testAir.getY()){
+                            testAir = searchPosition;
+                        }
+                    }
+
+                    if (craft.getW().getBlockAt(testAir.getX(), testAir.getY(), testAir.getZ()).getType().equals(Material.AIR)) {
+                        setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
+                    } else {
+                        setBlockFast(nativeWorld, position, Blocks.WATER.getBlockData());
+                    }
+                } else {
+                    setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
+                }
+            }
         }
 
         //*******************************************

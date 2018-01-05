@@ -460,4 +460,62 @@ public abstract class Craft {
     public void setLastRotateTime(long lastRotateTime) {
         this.lastRotateTime = lastRotateTime;
     }
+
+    public int getWaterLine(){
+        //TODO: Remove this temporary system in favor of passthrough blocks
+        // Find the waterline from the surrounding terrain or from the static level in the craft type
+        int waterLine = 0;
+        int maxY = getMaxY();
+        int minY = getMinY();
+        int maxZ = getMaxZ();
+        int minZ = getMinZ();
+        int maxX = getMaxX();
+        int minX = getMinX();
+        if (type.getStaticWaterLevel() != 0) {
+            return type.getStaticWaterLevel();
+        }
+        // figure out the water level by examining blocks next to the outer boundaries of the craft
+        for (int posY = maxY + 1; posY >= minY - 1; posY--) {
+            int numWater = 0;
+            int numAir = 0;
+            int posX;
+            int posZ;
+            posZ = minZ - 1;
+            for (posX = minX - 1; posX <= maxX + 1; posX++) {
+                int typeID = w.getBlockAt(posX, posY, posZ).getTypeId();
+                if (typeID == 9)
+                    numWater++;
+                if (typeID == 0)
+                    numAir++;
+            }
+            posZ = maxZ + 1;
+            for (posX = minX - 1; posX <= maxX + 1; posX++) {
+                int typeID = w.getBlockAt(posX, posY, posZ).getTypeId();
+                if (typeID == 9)
+                    numWater++;
+                if (typeID == 0)
+                    numAir++;
+            }
+            posX = minX - 1;
+            for (posZ = minZ; posZ <= maxZ; posZ++) {
+                int typeID = w.getBlockAt(posX, posY, posZ).getTypeId();
+                if (typeID == 9)
+                    numWater++;
+                if (typeID == 0)
+                    numAir++;
+            }
+            posX = maxX + 1;
+            for (posZ = minZ; posZ <= maxZ; posZ++) {
+                int typeID = w.getBlockAt(posX, posY, posZ).getTypeId();
+                if (typeID == 9)
+                    numWater++;
+                if (typeID == 0)
+                    numAir++;
+            }
+            if (numWater > numAir) {
+                return posY;
+            }
+        }
+        return waterLine;
+    }
 }

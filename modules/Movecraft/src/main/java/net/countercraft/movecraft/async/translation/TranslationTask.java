@@ -23,6 +23,7 @@ import com.palmergames.bukkit.towny.object.TownyWorld;
 import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import net.countercraft.movecraft.Movecraft;
+import net.countercraft.movecraft.api.MathUtils;
 import net.countercraft.movecraft.api.MovecraftLocation;
 import net.countercraft.movecraft.api.craft.Craft;
 import net.countercraft.movecraft.async.AsyncTask;
@@ -34,11 +35,8 @@ import net.countercraft.movecraft.mapUpdater.update.CraftTranslateCommand;
 import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.ExplosionUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.ItemDropUpdateCommand;
-import net.countercraft.movecraft.mapUpdater.update.ParticleUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
-import net.countercraft.movecraft.utils.ArrayUtils;
 import net.countercraft.movecraft.utils.BoundingBoxUtils;
-import net.countercraft.movecraft.api.MathUtils;
 import net.countercraft.movecraft.utils.TownyUtils;
 import net.countercraft.movecraft.utils.TownyWorldHeightLimits;
 import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
@@ -903,49 +901,24 @@ public class TranslationTask extends AsyncTask {
 //                        setA.removeAll(setB);
 //                        MovecraftLocation[] arrA = new MovecraftLocation[0];
 //                        arrA = setA.toArray(arrA);
-//                        List<MovecraftLocation> airLocation = Arrays.asList(arrA);                        
-            List<MovecraftLocation> airLocation = ArrayUtils.subtractAsList(blocksList, newBlockList);
+//                        List<MovecraftLocation> airLocation = Arrays.asList(arrA);
+            //Removed because high runtime
+            /*List<MovecraftLocation> airLocation = ArrayUtils.subtractAsList(blocksList, newBlockList);
 
             for (MovecraftLocation l1 : airLocation) {
                 // for watercraft, fill blocks below the waterline with water
                 if (!waterCraft) {
-                    //TODO: Implement cleanup
                     //updateSet.add(new BlockCreateCommand(l1, Material.AIR, (byte) 0, getCraft()));
                     if (getCraft().getSinking()) {
                         updateSet.add(new ParticleUpdateCommand(l1.toBukkit(getCraft().getW()), getCraft().getType().getSmokeOnSink()));
                     }
-                } else {
-                    if (l1.getY() <= waterLine) {
-                        // if there is air below the ship at the current position, don't fill in with water
-                        MovecraftLocation testAir = new MovecraftLocation(l1.getX(), l1.getY() - 1, l1.getZ());
-                        while (existingBlockSet.contains(testAir)) {
-                            testAir.setY(testAir.getY() - 1);
-                        }
-                        if (getCraft().getW().getBlockAt(testAir.getX(), testAir.getY(), testAir.getZ()).getType().equals(Material.AIR)) {
-                            if (getCraft().getSinking()) {
-                                updateSet.add(new BlockCreateCommand(l1, Material.AIR, (byte) 0, getCraft()));
-                                updateSet.add(new ParticleUpdateCommand(l1.toBukkit(getCraft().getW()), getCraft().getType().getSmokeOnSink()));
-                            } else {
-                                updateSet.add(new BlockCreateCommand(l1, Material.AIR, (byte) 0, getCraft()));
-                            }
-                        } else {
-                            updateSet.add(new BlockCreateCommand(l1, Material.WATER, (byte) 0, getCraft()));
-                        }
-                    } /*else {
-                        if (getCraft().getSinking()) {
-                            updateSet.add(new BlockCreateCommand(l1, Material.AIR, (byte) 0, getCraft()));
-                            updateSet.add(new ParticleUpdateCommand(l1.toBukkit(getCraft().getW()), getCraft().getType().getSmokeOnSink()));
-                        } else {
-                            updateSet.add(new BlockCreateCommand(l1, Material.AIR, (byte) 0, getCraft()));
-                        }
-                    }*/
                 }
-            }
+            }*/
 
             //add destroyed parts of growed
-            for (MovecraftLocation destroyedLocation : destroyedBlocks) {
+            /*for (MovecraftLocation destroyedLocation : destroyedBlocks) {
                 updateSet.add(new BlockCreateCommand(destroyedLocation, Material.AIR, (byte) 0, getCraft()));
-            }
+            }*/
 //            MapUpdateManager.getInstance().sortUpdates(updateArray);
             //data.setUpdates(updateSet);
 
