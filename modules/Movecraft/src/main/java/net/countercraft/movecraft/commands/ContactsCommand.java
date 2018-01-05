@@ -32,9 +32,9 @@ public class ContactsCommand implements CommandExecutor {
             if (args.length == 0)
                 page = 1;
             else
-                page = Integer.parseInt(args[1]);
+                page = Integer.parseInt(args[0]);
         }catch(NumberFormatException e){
-            commandSender.sendMessage(" Invalid page \"" + args[1] + "\"");
+            commandSender.sendMessage(" Invalid page \"" + args[0] + "\"");
             return true;
         }
 
