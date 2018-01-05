@@ -71,6 +71,7 @@ public final class SubcraftRotateSign implements Listener {
             // find the craft this is a subcraft of, and set it to processing so it doesn't move
             Craft[] craftsInWorld = CraftManager.getInstance().getCraftsInWorld(event.getClickedBlock().getWorld());
             if (craftsInWorld != null) {
+                Outer:
                 for (Craft craft : craftsInWorld) {
                     for (MovecraftLocation mLoc : craft.getBlockList()) {
                         if (mLoc.equals(startPoint)) {
@@ -80,6 +81,13 @@ public final class SubcraftRotateSign implements Listener {
                                 return;
                             }
                             craft.setProcessing(true); // prevent the parent craft from moving or updating until the subcraft is done
+                            new BukkitRunnable() {
+                                @Override
+                                public void run() {
+                                    craft.setProcessing(false);
+                                }
+                            }.runTaskLater(Movecraft.getInstance(), (10));
+                            break Outer;
                         }
                     }
                 }
