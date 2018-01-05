@@ -19,7 +19,7 @@ public final class CannonDirectorSign implements Listener {
 
     @EventHandler
     public final void onSignClick(PlayerInteractEvent event) {
-        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK && event.getAction() != Action.LEFT_CLICK_BLOCK) {
             return;
         }
         Block block = event.getClickedBlock();
@@ -53,6 +53,12 @@ public final class CannonDirectorSign implements Listener {
             event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("ERROR: Cannon Director Signs not allowed on this craft!"));
             return;
         }
+        if(event.getAction()==Action.LEFT_CLICK_BLOCK && event.getPlayer()==foundCraft.getCannonDirector()){
+            foundCraft.setCannonDirector(null);
+            event.getPlayer().sendMessage("You are no longer directing the cannons of this craft");
+            return;
+        }
+
 
         foundCraft.setCannonDirector(event.getPlayer());
         event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("You are now directing the cannons of this craft"));
