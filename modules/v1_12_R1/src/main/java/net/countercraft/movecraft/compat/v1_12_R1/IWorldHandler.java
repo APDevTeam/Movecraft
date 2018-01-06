@@ -103,7 +103,7 @@ public class IWorldHandler extends WorldHandler {
         //*******************************************
         //TODO: add support for pass-through
         Collection<BlockPosition> deletePositions =  Utils.filter(rotatedPositions.keySet(),rotatedPositions.values());
-        if (craft.getType().blockedByWater()) {
+        if (craft.getType().blockedByWater() && !craft.getSinking()) {
             for(BlockPosition position : deletePositions){
                 setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
             }
@@ -227,7 +227,7 @@ public class IWorldHandler extends WorldHandler {
         //*******************************************
         //TODO: add support for pass-through
         Collection<BlockPosition> deletePositions =  Utils.filter(positions,newPositions);
-        if (craft.getType().blockedByWater()) {
+        if (craft.getType().blockedByWater() && !craft.getSinking()) {
             for(BlockPosition position : deletePositions){
                 setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
             }
