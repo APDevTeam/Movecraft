@@ -84,7 +84,7 @@ public class ICraft extends Craft {
     public void rotate(Rotation rotation, MovecraftLocation originPoint) {
         if(getLastRotateTime()+1e9>System.nanoTime()){
             if(getNotificationPlayer()!=null)
-                getNotificationPlayer().sendMessage("You're turning to quickly!");
+                getNotificationPlayer().sendMessage("You're turning too quickly!");
             return;
         }
         setLastRotateTime(System.nanoTime());
