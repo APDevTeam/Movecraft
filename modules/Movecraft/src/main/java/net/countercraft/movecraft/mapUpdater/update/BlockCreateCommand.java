@@ -37,13 +37,9 @@ public class BlockCreateCommand extends UpdateCommand {
     @SuppressWarnings("deprecation")
     public void doUpdate() {
         // now do the block updates, move entities when you set the block they are on
-
-        if (shouldMakeChanges()) {
-            Movecraft.getInstance().getWorldHandler().setBlockFast(newBlockLocation.toBukkit(world),type,dataID);
-            //craft.incrementBlockUpdates();
-            newBlockLocation.toBukkit(world).getBlock().getState().update(false, false);
-        }
-
+        Movecraft.getInstance().getWorldHandler().setBlockFast(newBlockLocation.toBukkit(world),type,dataID);
+        //craft.incrementBlockUpdates();
+        newBlockLocation.toBukkit(world).getBlock().getState().update(false, false);
 
         //Do comperator stuff
 
@@ -62,10 +58,6 @@ public class BlockCreateCommand extends UpdateCommand {
         }
 
         //TODO: Re-add sign updating
-    }
-
-    private boolean shouldMakeChanges(){
-        return true;
     }
 
 

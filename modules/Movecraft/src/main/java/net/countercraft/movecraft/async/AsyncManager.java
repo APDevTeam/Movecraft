@@ -1295,24 +1295,21 @@ public class AsyncManager extends BukkitRunnable {
 //			FastBlockChanger.getInstance().run();
 
         // now cleanup craft that are bugged and have not moved in the past 60 seconds, but have no pilot or are still processing
-        for (World w : Bukkit.getWorlds()) {
-            if (w != null && CraftManager.getInstance().getCraftsInWorld(w) != null) {
-                for (Craft pcraft : CraftManager.getInstance().getCraftsInWorld(w)) {
-                    if (CraftManager.getInstance().getPlayerFromCraft(pcraft) == null) {
-                        if (pcraft.getLastCruiseUpdate() < System.currentTimeMillis() - 60000) {
-                            CraftManager.getInstance().forceRemoveCraft(pcraft);
-                        }
-                    }
-                    if (!pcraft.isNotProcessing()) {
-                        if (pcraft.getCruising()) {
-                            if (pcraft.getLastCruiseUpdate() < System.currentTimeMillis() - 5000) {
-                                pcraft.setProcessing(false);
-                            }
-                        }
+        for (Craft pcraft : CraftManager.getInstance().getCraftList()) {
+            if (CraftManager.getInstance().getPlayerFromCraft(pcraft) == null) {
+                if (pcraft.getLastCruiseUpdate() < System.currentTimeMillis() - 60000) {
+                    CraftManager.getInstance().forceRemoveCraft(pcraft);
+                }
+            }
+            if (!pcraft.isNotProcessing()) {
+                if (pcraft.getCruising()) {
+                    if (pcraft.getLastCruiseUpdate() < System.currentTimeMillis() - 5000) {
+                        pcraft.setProcessing(false);
                     }
                 }
             }
         }
+
     }
 
     private void clear(Craft c) {
