@@ -27,3 +27,4 @@ deploy:
   skip_cleanup: true
   on:
     repo: APDevTeam/Movecraft
+    tags: true
