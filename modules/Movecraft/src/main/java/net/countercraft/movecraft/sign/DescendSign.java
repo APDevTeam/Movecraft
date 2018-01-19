@@ -30,7 +30,7 @@ public final class DescendSign implements Listener{
             if (!c.getType().getCanCruise()) {
                 return;
             }
-            c.resetSigns(true, true, false);
+            //c.resetSigns(true, true, false);
             sign.setLine(0, "Descend: ON");
             sign.update(true);
 

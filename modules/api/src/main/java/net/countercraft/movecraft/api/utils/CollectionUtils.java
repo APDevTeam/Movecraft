@@ -1,4 +1,4 @@
-package net.countercraft.movecraft.api;
+package net.countercraft.movecraft.api.utils;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Collection;
 import java.util.HashSet;
 
-public class Utils {
+public class CollectionUtils {
     /**
      * Removes the elements from <code>collection</code> that also exist in <code>filter</code> without modifying either.
      * O(1) runtime.

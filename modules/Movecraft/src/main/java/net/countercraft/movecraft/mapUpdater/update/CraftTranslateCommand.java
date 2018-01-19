@@ -27,7 +27,7 @@ public class CraftTranslateCommand extends UpdateCommand {
     public void doUpdate() {
         long time = System.nanoTime();
         Movecraft.getInstance().getWorldHandler().translateCraft(craft,displacement);
-        for(MovecraftLocation location : craft.getBlockList()){
+        for(MovecraftLocation location : craft.getHitBox()){
             Block block = location.toBukkit(craft.getW()).getBlock();
             if(block.getType() == Material.WALL_SIGN || block.getType() == Material.SIGN_POST){
                 Sign sign = (Sign) block.getState();

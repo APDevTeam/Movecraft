@@ -15,8 +15,10 @@
  *     along with Movecraft.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.countercraft.movecraft.api;
+package net.countercraft.movecraft.api.utils;
 
+import net.countercraft.movecraft.api.MovecraftLocation;
+import net.countercraft.movecraft.api.Rotation;
 import net.countercraft.movecraft.api.craft.Craft;
 import org.bukkit.Location;
 import org.jetbrains.annotations.Contract;
@@ -53,6 +55,16 @@ public class MathUtils {
         return false;
     }
 
+    /**
+     * checks if the given bukkit <code>location</code> is within <code>hitbox</code>
+     * @param hitBox the bounding box to check within
+     * @param location the location to check
+     * @return True if the player is within the given bounding box
+     */
+    @Contract(pure=true)
+    public static boolean locationInHitbox(@NotNull final HitBox hitBox, @NotNull final Location location) {
+        return hitBox.inBounds(location.getX(),location.getY(),location.getZ());
+    }
 
     /**
      * Checks if a given <code>Location</code> is within 3 blocks from a given <code>Craft</code>
@@ -63,12 +75,12 @@ public class MathUtils {
     @Contract(pure=true)
     public static boolean locIsNearCraftFast(@NotNull final Craft craft, @NotNull final MovecraftLocation location) {
         // optimized to be as fast as possible, it checks the easy ones first, then the more computationally intensive later
-        return location.getX() >= craft.getMinX() - 3 &&
-                location.getZ() >= craft.getMinZ() - 3 &&
-                location.getX() <= craft.getMaxX() + 3 &&
-                location.getZ() <= craft.getMaxZ() + 3 &&
-                location.getY() >= craft.getMinY() - 3 &&
-                location.getY() <= craft.getMaxY() + 3;
+        return location.getX() >= craft.getHitBox().getMinX() - 3 &&
+                location.getZ() >= craft.getHitBox().getMinZ() - 3 &&
+                location.getX() <= craft.getHitBox().getMaxX() + 3 &&
+                location.getZ() <= craft.getHitBox().getMaxZ() + 3 &&
+                location.getY() >= craft.getHitBox().getMinY() - 3 &&
+                location.getY() <= craft.getHitBox().getMaxY() + 3;
     }
 
     /**
@@ -92,7 +104,6 @@ public class MathUtils {
     @NotNull
     @Contract(pure=true)
     public static MovecraftLocation rotateVec(@NotNull final Rotation rotation, @NotNull final MovecraftLocation movecraftLocation) {
-        MovecraftLocation newLocation = new MovecraftLocation(0, movecraftLocation.getY(), 0);
         double theta;
         if (rotation == Rotation.CLOCKWISE) {
             theta = 0.5 * Math.PI;
@@ -103,10 +114,7 @@ public class MathUtils {
         int x = (int) Math.round((movecraftLocation.getX() * Math.cos(theta)) + (movecraftLocation.getZ() * (-1 * Math.sin(theta))));
         int z = (int) Math.round((movecraftLocation.getX() * Math.sin(theta)) + (movecraftLocation.getZ() * Math.cos(theta)));
 
-        newLocation.setX(x);
-        newLocation.setZ(z);
-
-        return newLocation;
+        return new MovecraftLocation(x, movecraftLocation.getY(), z);
     }
 
     @NotNull

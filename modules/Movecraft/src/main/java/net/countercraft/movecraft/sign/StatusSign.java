@@ -25,7 +25,7 @@ public final class StatusSign implements Listener{
         int fuel=0;
         int totalBlocks=0;
         Map<Integer, Integer> foundBlocks = new HashMap<>();
-        for (MovecraftLocation ml : craft.getBlockList()) {
+        for (MovecraftLocation ml : craft.getHitBox()) {
             Integer blockID = craft.getW().getBlockAt(ml.getX(), ml.getY(), ml.getZ()).getTypeId();
 
             if (foundBlocks.containsKey(blockID)) {

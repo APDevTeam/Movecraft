@@ -1,7 +1,7 @@
 package net.countercraft.movecraft.sign;
 
 import net.countercraft.movecraft.Movecraft;
-import net.countercraft.movecraft.api.MathUtils;
+import net.countercraft.movecraft.api.utils.MathUtils;
 import net.countercraft.movecraft.api.MovecraftLocation;
 import net.countercraft.movecraft.api.Rotation;
 import net.countercraft.movecraft.api.craft.Craft;
@@ -73,7 +73,7 @@ public final class SubcraftRotateSign implements Listener {
             if (craftsInWorld != null) {
                 Outer:
                 for (Craft craft : craftsInWorld) {
-                    for (MovecraftLocation mLoc : craft.getBlockList()) {
+                    for (MovecraftLocation mLoc : craft.getHitBox()) {
                         if (mLoc.equals(startPoint)) {
                             // found a parent craft
                             if (!craft.isNotProcessing()) {

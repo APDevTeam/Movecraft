@@ -1,8 +1,7 @@
 package net.countercraft.movecraft.sign;
 
-import net.countercraft.movecraft.api.MathUtils;
-import net.countercraft.movecraft.api.MovecraftLocation;
 import net.countercraft.movecraft.api.craft.Craft;
+import net.countercraft.movecraft.api.utils.MathUtils;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.ChatColor;
@@ -30,14 +29,13 @@ public final class CannonDirectorSign implements Listener {
         if (!ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase(HEADER)) {
             return;
         }
-        MovecraftLocation sourceLocation = MathUtils.bukkit2MovecraftLoc(event.getClickedBlock().getLocation());
         Craft foundCraft = null;
         if (CraftManager.getInstance().getCraftsInWorld(block.getWorld()) == null) {
             event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("ERROR: Sign must be a part of a piloted craft!"));
             return;
         }
         for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(block.getWorld())) {
-            if (MathUtils.playerIsWithinBoundingPolygon(tcraft.getHitBox(), tcraft.getMinX(), tcraft.getMinZ(), sourceLocation) &&
+            if (MathUtils.locationInHitbox(tcraft.getHitBox(), event.getClickedBlock().getLocation()) &&
                     CraftManager.getInstance().getPlayerFromCraft(tcraft) != null) {
                 foundCraft = tcraft;
                 break;

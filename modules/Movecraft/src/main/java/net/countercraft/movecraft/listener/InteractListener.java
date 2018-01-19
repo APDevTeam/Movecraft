@@ -17,7 +17,7 @@
 
 package net.countercraft.movecraft.listener;
 
-import net.countercraft.movecraft.api.MathUtils;
+import net.countercraft.movecraft.api.utils.MathUtils;
 import net.countercraft.movecraft.api.craft.Craft;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.CraftManager;
@@ -82,7 +82,7 @@ public final class InteractListener implements Listener {
 
                 // if the craft should go slower underwater, make time
                 // pass more slowly there
-                if (craft.getType().getHalfSpeedUnderwater() && craft.getMinY() < craft.getW().getSeaLevel())
+                if (craft.getType().getHalfSpeedUnderwater() && craft.getHitBox().getMinY() < craft.getW().getSeaLevel())
                     ticksElapsed = ticksElapsed >> 1;
 
                 if (Math.abs(ticksElapsed) < craft.getType().getTickCooldown()) {
@@ -90,8 +90,7 @@ public final class InteractListener implements Listener {
                 }
             }
 
-            if (!MathUtils.playerIsWithinBoundingPolygon(craft.getHitBox(), craft.getMinX(), craft.getMinZ(),
-                    MathUtils.bukkit2MovecraftLoc(event.getPlayer().getLocation()))) {
+            if (!MathUtils.locationInHitbox(craft.getHitBox(),event.getPlayer().getLocation())) {
                 return;
             }
 

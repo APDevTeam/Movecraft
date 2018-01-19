@@ -24,7 +24,7 @@ import org.bukkit.World;
  * Represents a Block aligned coordinate triplet.
  */
 public class MovecraftLocation {
-    private int x, y, z;
+    private final int x, y, z;
 
     public MovecraftLocation(int x, int y, int z) {
         this.x = x;
@@ -36,24 +36,12 @@ public class MovecraftLocation {
         return x;
     }
 
-    public void setX(int x) {
-        this.x = x;
-    }
-
     public int getY() {
         return y;
     }
 
-    public void setY(int y) {
-        this.y = y;
-    }
-
     public int getZ() {
         return z;
-    }
-
-    public void setZ(int z) {
-        this.z = z;
     }
 
     /**

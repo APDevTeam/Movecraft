@@ -19,7 +19,6 @@ package net.countercraft.movecraft.mapUpdater;
 
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.api.craft.Craft;
-import net.countercraft.movecraft.async.translation.TranslationTaskData;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.mapUpdater.update.CraftRotateCommand;
 import net.countercraft.movecraft.mapUpdater.update.CraftTranslateCommand;
@@ -106,11 +105,6 @@ public class MapUpdateManager extends BukkitRunnable {
 
     public void scheduleUpdates(@NotNull UpdateCommand... updates){
         Collections.addAll(this.updates, updates);
-    }
-
-    public void scheduleUpdates(@NotNull TranslationTaskData data){
-        if(data.getUpdates()!=null)
-            this.updates.addAll( data.getUpdates());
     }
 
     public void scheduleUpdates(@NotNull Collection<UpdateCommand> updates){

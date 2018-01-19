@@ -19,15 +19,15 @@ public class ContactsSign implements Listener{
         boolean foundContact=false;
         int signLine=1;
         for(Craft tcraft : CraftManager.getInstance().getCraftsInWorld(craft.getW())) {
-            long cposx=craft.getMaxX()+craft.getMinX();
-            long cposy=craft.getMaxY()+craft.getMinY();
-            long cposz=craft.getMaxZ()+craft.getMinZ();
+            long cposx=craft.getHitBox().getMaxX()+craft.getHitBox().getMinX();
+            long cposy=craft.getHitBox().getMaxY()+craft.getHitBox().getMinY();
+            long cposz=craft.getHitBox().getMaxZ()+craft.getHitBox().getMinZ();
             cposx=cposx>>1;
             cposy=cposy>>1;
             cposz=cposz>>1;
-            long tposx=tcraft.getMaxX()+tcraft.getMinX();
-            long tposy=tcraft.getMaxY()+tcraft.getMinY();
-            long tposz=tcraft.getMaxZ()+tcraft.getMinZ();
+            long tposx=tcraft.getHitBox().getMaxX()+tcraft.getHitBox().getMinX();
+            long tposy=tcraft.getHitBox().getMaxY()+tcraft.getHitBox().getMinY();
+            long tposz=tcraft.getHitBox().getMaxZ()+tcraft.getHitBox().getMinZ();
             tposx=tposx>>1;
             tposy=tposy>>1;
             tposz=tposz>>1;

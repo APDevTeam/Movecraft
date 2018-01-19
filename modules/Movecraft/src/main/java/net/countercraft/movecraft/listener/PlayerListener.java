@@ -18,12 +18,12 @@
 package net.countercraft.movecraft.listener;
 
 import net.countercraft.movecraft.Movecraft;
-import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.api.utils.MathUtils;
+import net.countercraft.movecraft.api.MovecraftLocation;
 import net.countercraft.movecraft.api.craft.Craft;
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.api.MathUtils;
-import net.countercraft.movecraft.api.MovecraftLocation;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -34,20 +34,20 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.Set;
 
 public class PlayerListener implements Listener {
 
     private String checkCraftBorders(Craft craft) {
-        HashSet<MovecraftLocation> craftBlocks = new HashSet<>(Arrays.asList(craft.getBlockList()));
+        Set<MovecraftLocation> craftBlocks = craft.getHitBox();
         String ret = null;
-        for (MovecraftLocation block : craftBlocks) {
+        for (MovecraftLocation block : craft.getHitBox()) {
             int x, y, z;
             x = block.getX() + 1;
             y = block.getY();
             z = block.getZ();
             MovecraftLocation test = new MovecraftLocation(x, y, z);
-            if (!craftBlocks.contains(test))
+            if (!craft.getHitBox().contains(test))
                 if ((Arrays.binarySearch(craft.getType().getAllowedBlocks(), craft.getW().getBlockTypeIdAt(x, y, z)) >= 0) || (Arrays.binarySearch(craft.getType().getAllowedBlocks(), (craft.getW().getBlockTypeIdAt(x, y, z) << 4) + craft.getW().getBlockAt(x, y, z).getData() + 10000) >= 0)) {
                     ret = "@ " + x + "," + y + "," + z;
                 }
@@ -187,7 +187,7 @@ public class PlayerListener implements Listener {
     public void onPlayerMove(PlayerMoveEvent event) {
         final Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
         if (c != null) {
-            if (c.isNotProcessing() && (!MathUtils.playerIsWithinBoundingPolygon(c.getHitBox(), c.getMinX(), c.getMinZ(), MathUtils.bukkit2MovecraftLoc(event.getPlayer().getLocation())))) {
+            if (c.isNotProcessing() && (!MathUtils.locationInHitbox(c.getHitBox(),event.getPlayer().getLocation()))) {
 
                 if (!CraftManager.getInstance().getReleaseEvents().containsKey(event.getPlayer()) && c.getType().getMoveEntities()) {
                     boolean releaseBlocked = false;
@@ -195,7 +195,7 @@ public class PlayerListener implements Listener {
                         event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("You have left your craft. You may return to your craft by typing /manoverboard any time before the timeout expires"));
                     else
                         event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Release - Player has left craft"));
-                    if (c.getBlockList().length > 11000) {
+                    if (c.getHitBox().size() > 11000) {
                         event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Craft is too big to check its borders. Make sure this area is safe to release your craft in."));
                     } else {
                         String ret = checkCraftBorders(c);

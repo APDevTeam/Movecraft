@@ -1,6 +1,6 @@
 package net.countercraft.movecraft.sign;
 
-import net.countercraft.movecraft.api.MathUtils;
+import net.countercraft.movecraft.api.utils.MathUtils;
 import net.countercraft.movecraft.api.MovecraftLocation;
 import net.countercraft.movecraft.api.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
@@ -31,14 +31,13 @@ public final class RemoteSign implements Listener{
         if (!ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase(HEADER)) {
             return;
         }
-        MovecraftLocation sourceLocation = MathUtils.bukkit2MovecraftLoc(event.getClickedBlock().getLocation());
         Craft foundCraft = null;
         if (CraftManager.getInstance().getCraftsInWorld(event.getClickedBlock().getWorld()) == null) {
             event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("ERROR: Remote Sign must be a part of a piloted craft!"));
             return;
         }
         for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(event.getClickedBlock().getWorld())) {
-            if (MathUtils.playerIsWithinBoundingPolygon(tcraft.getHitBox(), tcraft.getMinX(), tcraft.getMinZ(), sourceLocation)) {
+            if (MathUtils.locationInHitbox(tcraft.getHitBox(), event.getClickedBlock().getLocation())) {
                 // don't use a craft with a null player. This is
                 // mostly to avoid trying to use subcrafts
                 if (CraftManager.getInstance().getPlayerFromCraft(tcraft) != null) {
@@ -64,7 +63,7 @@ public final class RemoteSign implements Listener{
             return;
         }
         MovecraftLocation foundLoc = null;
-        for (MovecraftLocation tloc : foundCraft.getBlockList()) {
+        for (MovecraftLocation tloc : foundCraft.getHitBox()) {
             Block tb = event.getClickedBlock().getWorld().getBlockAt(tloc.getX(), tloc.getY(), tloc.getZ());
             if (!tb.getType().equals(Material.SIGN_POST) && !tb.getType().equals(Material.WALL_SIGN)) {
                 continue;

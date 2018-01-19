@@ -32,7 +32,7 @@ public class AscendSign implements Listener {
             if (!c.getType().getCanCruise()) {
                 return;
             }
-            c.resetSigns(true, false, true);
+            //c.resetSigns(true, false, true);
             sign.setLine(0, "Ascend: ON");
             sign.update(true);
 

@@ -25,7 +25,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.util.logging.Level;
 
 public abstract class AsyncTask extends BukkitRunnable {
-    private final Craft craft;
+    protected final Craft craft;
 
     protected AsyncTask(Craft c) {
         craft = c;

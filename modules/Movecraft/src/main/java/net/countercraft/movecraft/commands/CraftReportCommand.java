@@ -1,6 +1,7 @@
 package net.countercraft.movecraft.commands;
 
 import net.countercraft.movecraft.api.craft.Craft;
+import net.countercraft.movecraft.api.utils.HitBox;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.TopicPaginator;
@@ -34,10 +35,11 @@ public class CraftReportCommand implements CommandExecutor{
         }
         TopicPaginator paginator = new TopicPaginator("Craft Report");
         for (Craft craft : CraftManager.getInstance().getCraftList()) {
+            HitBox hitBox = craft.getHitBox();
             if (craft.getNotificationPlayer() != null)
-                paginator.addLine( craft.getType().getCraftName() + " " + craft.getNotificationPlayer().getName() + " " + craft.getBlockList().length + " @ " + craft.getMinX() + "," + craft.getMinY() + "," + craft.getMinZ());
+                paginator.addLine( craft.getType().getCraftName() + " " + craft.getNotificationPlayer().getName() + " " + hitBox.size() + " @ " + hitBox.getMinX() + "," + hitBox.getMinY() + "," + hitBox.getMinZ());
             else
-                paginator.addLine( craft.getType().getCraftName() + " NULL " + craft.getBlockList().length + " @ " + craft.getMinX() + "," + craft.getMinY() + "," + craft.getMinZ());
+                paginator.addLine( craft.getType().getCraftName() + " NULL " + hitBox.size() + " @ " + hitBox.getMinX() + "," + hitBox.getMinY() + "," + hitBox.getMinZ());
         }
         for(String line : paginator.getPage(page))
             commandSender.sendMessage(line);

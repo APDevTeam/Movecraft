@@ -6,7 +6,7 @@ import net.countercraft.movecraft.api.craft.CraftType;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.ICraft;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.api.MathUtils;
+import net.countercraft.movecraft.api.utils.MathUtils;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
