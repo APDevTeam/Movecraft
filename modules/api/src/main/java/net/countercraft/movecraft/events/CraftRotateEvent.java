@@ -1,14 +1,14 @@
-package net.countercraft.movecraft.api.events;
+package net.countercraft.movecraft.events;
 
-import net.countercraft.movecraft.api.Rotation;
-import net.countercraft.movecraft.api.craft.Craft;
+import net.countercraft.movecraft.Rotation;
+import net.countercraft.movecraft.craft.Craft;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * Called whenever a craft is rotated
  * This event is called before the craft is physically moved, but after collision is checked.
- * @see net.countercraft.movecraft.api.craft.Craft
+ * @see Craft
  */
 @SuppressWarnings("unused")
 public class CraftRotateEvent extends CraftEvent{

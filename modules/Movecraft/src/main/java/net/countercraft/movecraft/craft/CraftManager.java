@@ -18,8 +18,6 @@
 package net.countercraft.movecraft.craft;
 
 import net.countercraft.movecraft.Movecraft;
-import net.countercraft.movecraft.api.craft.Craft;
-import net.countercraft.movecraft.api.craft.CraftType;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.World;
 import org.bukkit.entity.Player;

@@ -24,8 +24,6 @@ import com.palmergames.bukkit.towny.Towny;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.flags.StateFlag;
-import net.countercraft.movecraft.api.MovecraftLocation;
-import net.countercraft.movecraft.api.WorldHandler;
 import net.countercraft.movecraft.async.AsyncManager;
 import net.countercraft.movecraft.commands.AssaultCommand;
 import net.countercraft.movecraft.commands.AssaultInfoCommand;
@@ -128,6 +126,13 @@ public class Movecraft extends JavaPlugin {
     public void onEnable() {
         // Read in config
         this.saveDefaultConfig();
+        try {
+            Class.forName("com.destroystokyo.paper.Title");
+            Settings.IsPaper = true;
+        }catch (Exception e){
+            Settings.IsPaper=false;
+        }
+
         Settings.LOCALE = getConfig().getString("Locale");
         Settings.RestrictSiBsToRegions = getConfig().getBoolean("RestrictSiBsToRegions", false);
         Settings.Debug = getConfig().getBoolean("Debug", false);

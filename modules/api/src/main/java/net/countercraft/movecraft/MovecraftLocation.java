@@ -15,7 +15,7 @@
  *     along with Movecraft.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.countercraft.movecraft.api;
+package net.countercraft.movecraft;
 
 import org.bukkit.Location;
 import org.bukkit.World;

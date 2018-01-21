@@ -15,11 +15,11 @@
  *     along with Movecraft.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.countercraft.movecraft.api.utils;
+package net.countercraft.movecraft.utils;
 
-import net.countercraft.movecraft.api.MovecraftLocation;
-import net.countercraft.movecraft.api.Rotation;
-import net.countercraft.movecraft.api.craft.Craft;
+import net.countercraft.movecraft.MovecraftLocation;
+import net.countercraft.movecraft.Rotation;
+import net.countercraft.movecraft.craft.Craft;
 import org.bukkit.Location;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;

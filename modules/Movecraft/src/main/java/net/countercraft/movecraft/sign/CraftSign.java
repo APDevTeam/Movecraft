@@ -1,9 +1,9 @@
 package net.countercraft.movecraft.sign;
 
 import net.countercraft.movecraft.Movecraft;
-import net.countercraft.movecraft.api.MovecraftLocation;
-import net.countercraft.movecraft.api.craft.Craft;
-import net.countercraft.movecraft.api.craft.CraftType;
+import net.countercraft.movecraft.MovecraftLocation;
+import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.craft.CraftType;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.ICraft;

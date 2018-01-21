@@ -1,6 +1,6 @@
-package net.countercraft.movecraft.api.utils;
+package net.countercraft.movecraft.utils;
 
-import net.countercraft.movecraft.api.MovecraftLocation;
+import net.countercraft.movecraft.MovecraftLocation;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;

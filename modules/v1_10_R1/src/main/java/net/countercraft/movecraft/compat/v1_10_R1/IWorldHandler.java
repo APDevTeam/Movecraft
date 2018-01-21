@@ -1,11 +1,12 @@
 package net.countercraft.movecraft.compat.v1_10_R1;
 
-import net.countercraft.movecraft.api.utils.MathUtils;
-import net.countercraft.movecraft.api.MovecraftLocation;
-import net.countercraft.movecraft.api.Rotation;
-import net.countercraft.movecraft.api.utils.CollectionUtils;
-import net.countercraft.movecraft.api.WorldHandler;
-import net.countercraft.movecraft.api.craft.Craft;
+import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.utils.MathUtils;
+import net.countercraft.movecraft.MovecraftLocation;
+import net.countercraft.movecraft.Rotation;
+import net.countercraft.movecraft.utils.CollectionUtils;
+import net.countercraft.movecraft.WorldHandler;
+import net.countercraft.movecraft.craft.Craft;
 import net.minecraft.server.v1_10_R1.Block;
 import net.minecraft.server.v1_10_R1.BlockPosition;
 import net.minecraft.server.v1_10_R1.Blocks;
@@ -306,7 +307,8 @@ public class IWorldHandler extends WorldHandler {
         //cleanup
         world.capturedTileEntities.remove(position);
         world.getChunkAtWorldCoords(position).getTileEntities().remove(position);
-        world.tileEntityList.remove(tile);
+        if(!Settings.IsPaper)
+            world.tileEntityList.remove(tile);
         world.tileEntityListTick.remove(tile);
         if(!bMap.containsKey(world)){
             try {

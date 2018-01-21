@@ -17,7 +17,6 @@
 
 package net.countercraft.movecraft.config;
 
-import net.countercraft.movecraft.Movecraft;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import java.util.ArrayList;
@@ -32,7 +31,6 @@ class ConfigManager {
 
     public void loadConfig() {
         setupDefaults();
-
         Settings.DATA_BLOCKS = configFile.getIntegerList("dataBlocks");
         Settings.THREAD_POOL_SIZE = configFile.getInt("ThreadPoolSize");
         Settings.IGNORE_RESET = configFile.getBoolean("safeReload");
@@ -58,6 +56,6 @@ class ConfigManager {
         dataBlockList.add(65);
         configFile.addDefault("dataBlocks", dataBlockList);
         configFile.options().copyDefaults(true);
-        Movecraft.getInstance().saveConfig();
+        //Movecraft.getInstance().saveConfig();
     }
 }

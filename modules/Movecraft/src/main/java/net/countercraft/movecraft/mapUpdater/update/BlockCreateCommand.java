@@ -1,8 +1,8 @@
 package net.countercraft.movecraft.mapUpdater.update;
 
 import net.countercraft.movecraft.Movecraft;
-import net.countercraft.movecraft.api.MovecraftLocation;
-import net.countercraft.movecraft.api.craft.Craft;
+import net.countercraft.movecraft.MovecraftLocation;
+import net.countercraft.movecraft.craft.Craft;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;

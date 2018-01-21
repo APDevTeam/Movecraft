@@ -17,7 +17,7 @@
 
 package net.countercraft.movecraft.utils;
 
-import net.countercraft.movecraft.api.MovecraftLocation;
+import net.countercraft.movecraft.MovecraftLocation;
 
 public class BoundingBoxUtils {
 

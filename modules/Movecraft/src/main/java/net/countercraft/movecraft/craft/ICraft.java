@@ -1,10 +1,8 @@
 package net.countercraft.movecraft.craft;
 
 import net.countercraft.movecraft.Movecraft;
-import net.countercraft.movecraft.api.MovecraftLocation;
-import net.countercraft.movecraft.api.Rotation;
-import net.countercraft.movecraft.api.craft.Craft;
-import net.countercraft.movecraft.api.craft.CraftType;
+import net.countercraft.movecraft.MovecraftLocation;
+import net.countercraft.movecraft.Rotation;
 import net.countercraft.movecraft.async.detection.DetectionTask;
 import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;

@@ -4,7 +4,7 @@ import com.sk89q.worldedit.blocks.BaseBlock;
 import com.sk89q.worldedit.blocks.BaseItemStack;
 import com.sk89q.worldedit.blocks.DispenserBlock;
 import com.sk89q.worldedit.blocks.SignBlock;
-import net.countercraft.movecraft.api.MovecraftLocation;
+import net.countercraft.movecraft.MovecraftLocation;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.BlockState;

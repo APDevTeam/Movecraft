@@ -1,12 +1,12 @@
-package net.countercraft.movecraft.api.events;
+package net.countercraft.movecraft.events;
 
-import net.countercraft.movecraft.api.craft.Craft;
+import net.countercraft.movecraft.craft.Craft;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * A base event for all craft-related events
- * @see net.countercraft.movecraft.api.craft.Craft
+ * @see Craft
  */
 public abstract class CraftEvent extends Event{
     @NotNull protected final Craft craft;

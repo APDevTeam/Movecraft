@@ -1,7 +1,7 @@
 package net.countercraft.movecraft.sign;
 
-import net.countercraft.movecraft.api.craft.Craft;
-import net.countercraft.movecraft.api.events.SignTranslateEvent;
+import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.events.SignTranslateEvent;
 import net.countercraft.movecraft.craft.CraftManager;
 import org.bukkit.ChatColor;
 import org.bukkit.event.EventHandler;
