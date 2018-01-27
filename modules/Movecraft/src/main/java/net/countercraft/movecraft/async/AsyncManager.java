@@ -57,6 +57,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -322,8 +323,9 @@ public class AsyncManager extends BukkitRunnable {
                             Location tloc = new Location(c.getW(), loc.getX(), loc.getY(), loc.getZ());
                             shipLocations.add(tloc);
                         }
-                        shipCannons = Movecraft.getInstance().getCannonsPlugin().getCannonsAPI()
-                                .getCannons(shipLocations, c.getNotificationPlayer().getUniqueId(), true);
+                        
+                        shipCannons = Movecraft.getInstance().getCannonsPlugin().getCannonsAPI().getCannons(shipLocations, notifyP, true);
+                        		//.getCannons(shipLocations, c.getNotificationPlayer().getUniqueId(), true);
                     }
 
                     sentMapUpdate = true;
@@ -370,7 +372,7 @@ public class AsyncManager extends BukkitRunnable {
                                 shipLocations.add(loc.toBukkit(c.getW()));
                             }
                             shipCannons = Movecraft.getInstance().getCannonsPlugin().getCannonsAPI()
-                                    .getCannons(shipLocations, c.getNotificationPlayer().getUniqueId(), true);
+                                    .getCannons(shipLocations, notifyP, true);
                         }
 
                         MapUpdateManager.getInstance().scheduleUpdates(task.getUpdates());
