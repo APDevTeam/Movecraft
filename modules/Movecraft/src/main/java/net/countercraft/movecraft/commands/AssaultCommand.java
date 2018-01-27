@@ -68,9 +68,11 @@ public class AssaultCommand implements CommandExecutor{
                 break;
             }
         }
-        if (!foundOwnedRegion) {
-            player.sendMessage(I18nSupport.getInternationalisedString("You are not the owner of any assaultable region and can not assault others"));
-            return true;
+        if (Settings.AssaultRequireRegionOwnership) {
+        	if (!foundOwnedRegion) {
+        		player.sendMessage(I18nSupport.getInternationalisedString("You are not the owner of any assaultable region and can not assault others"));
+        		return true;
+        	}
         }
         boolean canBeAssaulted = true;
         for (Siege siege : Movecraft.getInstance().getSiegeManager().getSieges()) {

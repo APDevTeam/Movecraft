@@ -69,6 +69,7 @@ public class Settings {
     public static int AssaultDelay;
     public static int AssaultDuration;
     public static int AssaultRequiredDefendersOnline;
+    public static boolean AssaultRequireRegionOwnership = true;
     public static double AssaultCostPercent;
     public static HashSet<Integer> AssaultDestroyableBlocks;
     public static int AssaultDamagesPerBlock;

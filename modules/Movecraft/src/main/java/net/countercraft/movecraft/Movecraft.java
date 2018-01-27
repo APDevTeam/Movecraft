@@ -171,6 +171,8 @@ public class Movecraft extends JavaPlugin {
 
 
         Settings.DelayColorChanges = getConfig().getBoolean("DelayColorChanges", false);
+        Settings.MoveAllEntities = getConfig().getBoolean("MoveAllEntities", true);
+        Settings.RestrictSiBsToRegions = getConfig().getBoolean("RestrictSiBsToRegions", false);
         Settings.SinkRateTicks = getConfig().getDouble("SinkRateTicks", 20.0);
         Settings.SinkCheckTicks = getConfig().getDouble("SinkCheckTicks", 100.0);
         Settings.TracerRateTicks = getConfig().getDouble("TracerRateTicks", 5.0);
@@ -202,6 +204,7 @@ public class Movecraft extends JavaPlugin {
         Settings.AssaultCostPercent = getConfig().getDouble("AssaultCostPercent", 0.25);
         Settings.AssaultDamagesPerBlock = getConfig().getInt("AssaultDamagesPerBlock", 15);
         Settings.AssaultRequiredDefendersOnline = getConfig().getInt("AssaultRequiredDefendersOnline", 3);
+        Settings.AssaultRequireRegionOwnership = getConfig().getBoolean("AssaultRequireRegionOwnership", true);
         Settings.AssaultDestroyableBlocks = new HashSet<>(getConfig().getIntegerList("AssaultDestroyableBlocks"));
         Settings.DisableShadowBlocks = new HashSet<>(getConfig().getIntegerList("DisableShadowBlocks"));  //REMOVE FOR PUBLIC VERSION
 
