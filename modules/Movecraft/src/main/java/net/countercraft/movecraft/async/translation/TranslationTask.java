@@ -829,7 +829,21 @@ public class TranslationTask extends AsyncTask {
                             EntityUpdateCommand eUp = new EntityUpdateCommand(tempLoc, pTest);
                             updateSet.add(eUp);
                         }
-
+                        if (Settings.MoveAllEntities){
+                        	//Move any entity on a craft
+                        	if (!(pTest.getType() == EntityType.DROPPED_ITEM)) {
+                        		Location tempLoc = pTest.getLocation();
+                        		tempLoc = tempLoc.add(data.getDx(), data.getDy(), data.getDz());
+                        		EntityUpdateCommand eUp = new EntityUpdateCommand(tempLoc, pTest);
+                        		updateSet.add(eUp);
+                        	}
+                        	if (pTest.getType() == EntityType.DROPPED_ITEM) {
+                                Location tempLoc = pTest.getLocation();
+                                tempLoc = tempLoc.add(data.getDx(), data.getDy(), data.getDz());
+                                EntityUpdateCommand eUp = new EntityUpdateCommand(tempLoc, pTest);
+                                updateSet.add(eUp);
+                        	}
+                        }
                     }
                 }
             } else {

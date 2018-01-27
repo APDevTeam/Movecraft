@@ -25,6 +25,7 @@ import java.util.Map;
 
 public class Settings {
     public static boolean RestrictSiBsToRegions = false;
+    public static boolean MoveAllEntities = true;
     public static boolean IGNORE_RESET = false;
     public static boolean Debug = false;
     public static int THREAD_POOL_SIZE = 5;

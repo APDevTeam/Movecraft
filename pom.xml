@@ -25,6 +25,7 @@
         <module>modules/v1_12_R1</module>
         <module>modules/Movecraft</module>
         <module>Movecraft</module>
+        <module>v1_13_R1</module>
     </modules>
 
     <repositories>
