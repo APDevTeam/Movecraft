@@ -15,9 +15,8 @@
  *     along with Movecraft.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.countercraft.movecraft.config;
+package net.countercraft.movecraft.api.config;
 
-import net.countercraft.movecraft.Movecraft;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import java.util.ArrayList;
@@ -58,6 +57,6 @@ class ConfigManager {
         dataBlockList.add(65);
         configFile.addDefault("dataBlocks", dataBlockList);
         configFile.options().copyDefaults(true);
-        Movecraft.getInstance().saveConfig();
+        //Movecraft.getInstance().saveConfig();
     }
 }

@@ -4,7 +4,7 @@ import com.earth2me.essentials.User;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.api.craft.Craft;
 import net.countercraft.movecraft.api.events.SignTranslateEvent;
-import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.api.config.Settings;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;

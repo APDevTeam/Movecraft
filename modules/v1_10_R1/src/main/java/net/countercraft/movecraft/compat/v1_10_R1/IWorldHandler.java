@@ -5,6 +5,7 @@ import net.countercraft.movecraft.api.MovecraftLocation;
 import net.countercraft.movecraft.api.Rotation;
 import net.countercraft.movecraft.api.Utils;
 import net.countercraft.movecraft.api.WorldHandler;
+import net.countercraft.movecraft.api.config.Settings;
 import net.countercraft.movecraft.api.craft.Craft;
 import net.minecraft.server.v1_10_R1.Block;
 import net.minecraft.server.v1_10_R1.BlockPosition;
@@ -306,7 +307,8 @@ public class IWorldHandler extends WorldHandler {
         //cleanup
         world.capturedTileEntities.remove(position);
         world.getChunkAtWorldCoords(position).getTileEntities().remove(position);
-        world.tileEntityList.remove(tile);
+        if(!Settings.IsPaper)
+            world.tileEntityList.remove(tile);
         world.tileEntityListTick.remove(tile);
         if(!bMap.containsKey(world)){
             try {

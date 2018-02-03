@@ -1,6 +1,6 @@
 package net.countercraft.movecraft.mapUpdater.update;
 
-import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.api.config.Settings;
 import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.Particle;

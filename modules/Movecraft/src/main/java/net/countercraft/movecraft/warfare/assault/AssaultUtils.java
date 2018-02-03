@@ -2,7 +2,7 @@ package net.countercraft.movecraft.warfare.assault;
 
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.countercraft.movecraft.Movecraft;
-import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.api.config.Settings;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 
