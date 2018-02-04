@@ -41,6 +41,7 @@ public abstract class Craft {
     private AtomicBoolean processing = new AtomicBoolean();
     protected int minX;
     protected int minZ;
+    private String uCraftName = null;
     private int maxHeightLimit;
     private boolean cruising;
     private boolean sinking;
@@ -150,6 +151,21 @@ public abstract class Craft {
                     }
             }
         }
+    }
+    public void setUniqueName() {
+    	for (MovecraftLocation aBlockList : blockList) {
+    		int blockID = w.getBlockAt(aBlockList.getX(), aBlockList.getY(), aBlockList.getZ()).getTypeId();
+    		if (blockID == 63 || blockID == 68) {
+    			Sign nameSign = (Sign) w.getBlockAt(aBlockList.getX(), aBlockList.getY(), aBlockList.getZ()).getState();
+    			if (nameSign.getLine(0).equalsIgnoreCase("name:")){
+    				String l1 = nameSign.getLine(1);
+    				String l2 = nameSign.getLine(2);
+    				String l3 = nameSign.getLine(3);
+    				String uName = l1 + " " + l2 + " " + l3;
+    				uName = this.uCraftName;
+    			}
+    		}
+    	}
     }
 
     public abstract void rotate(Rotation rotation, MovecraftLocation originPoint);
@@ -517,5 +533,8 @@ public abstract class Craft {
             }
         }
         return waterLine;
+    }
+    public String getUniqueCraftName() {
+    	return uCraftName;
     }
 }

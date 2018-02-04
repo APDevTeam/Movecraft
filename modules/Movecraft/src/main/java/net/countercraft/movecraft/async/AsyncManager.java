@@ -255,6 +255,7 @@ public class AsyncManager extends BukkitRunnable {
                             c.setMinX(data.getMinX());
                             c.setMinZ(data.getMinZ());
                             c.setNotificationPlayer(notifyP);
+                            c.setUniqueName();
                             if (c.getType().getDynamicFlyBlockSpeedFactor() != 0.0) {
                                 //c.setCurTickCooldown(c.getType().getCruiseTickCooldown());
                                 //c.setMaxSpeed(c.getCurSpeed() + (data.dynamicFlyBlockSpeedMultiplier * c.getCurSpeed()));
@@ -1200,6 +1201,10 @@ public class AsyncManager extends BukkitRunnable {
                                             notification += tcraft.getNotificationPlayer().getDisplayName();
                                         } else {
                                             notification += "NULL";
+                                        }
+                                        if (tcraft.getUniqueCraftName() != null) {
+                                        	notification += "name: ";
+                                        	notification += tcraft.getUniqueCraftName();
                                         }
                                         notification += ", size: ";
                                         notification += tcraft.getOrigBlockCount();
