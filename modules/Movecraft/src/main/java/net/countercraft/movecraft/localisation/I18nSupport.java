@@ -18,7 +18,7 @@
 package net.countercraft.movecraft.localisation;
 
 import net.countercraft.movecraft.Movecraft;
-import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.api.config.Settings;
 
 import java.io.File;
 import java.io.FileInputStream;

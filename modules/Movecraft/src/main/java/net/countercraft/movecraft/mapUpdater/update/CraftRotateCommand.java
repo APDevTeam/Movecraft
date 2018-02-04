@@ -5,7 +5,7 @@ import net.countercraft.movecraft.api.MovecraftLocation;
 import net.countercraft.movecraft.api.Rotation;
 import net.countercraft.movecraft.api.craft.Craft;
 import net.countercraft.movecraft.api.events.SignTranslateEvent;
-import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.api.config.Settings;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;

@@ -4,7 +4,7 @@ import com.sk89q.worldguard.protection.flags.DefaultFlag;
 import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.countercraft.movecraft.Movecraft;
-import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.api.config.Settings;
 import net.countercraft.movecraft.listener.WorldEditInteractListener;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;

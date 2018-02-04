@@ -38,7 +38,7 @@ import net.countercraft.movecraft.commands.PilotCommand;
 import net.countercraft.movecraft.commands.ReleaseCommand;
 import net.countercraft.movecraft.commands.RotateCommand;
 import net.countercraft.movecraft.commands.SiegeCommand;
-import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.api.config.Settings;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.listener.BlockListener;
 import net.countercraft.movecraft.listener.InteractListener;
@@ -128,6 +128,12 @@ public class Movecraft extends JavaPlugin {
     public void onEnable() {
         // Read in config
         this.saveDefaultConfig();
+        try {
+            Class.forName("com.destroystokyo.paper.Title");
+            Settings.IsPaper = true;
+        }catch (Exception e){
+            Settings.IsPaper=false;
+        }
         Settings.LOCALE = getConfig().getString("Locale");
         Settings.RestrictSiBsToRegions = getConfig().getBoolean("RestrictSiBsToRegions", false);
         Settings.Debug = getConfig().getBoolean("Debug", false);

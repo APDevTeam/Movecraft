@@ -1,4 +1,4 @@
-package net.countercraft.movecraft.utils;
+package net.countercraft.movecraft.api.utils;
 
 /**
  * @author mwkaicz <mwkaicz@gmail.com>

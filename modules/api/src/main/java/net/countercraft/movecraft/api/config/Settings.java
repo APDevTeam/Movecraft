@@ -15,9 +15,9 @@
  *     along with Movecraft.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.countercraft.movecraft.config;
+package net.countercraft.movecraft.api.config;
 
-import net.countercraft.movecraft.utils.TownyWorldHeightLimits;
+import net.countercraft.movecraft.api.utils.TownyWorldHeightLimits;
 
 import java.util.HashSet;
 import java.util.List;
@@ -62,6 +62,7 @@ public class Settings {
     public static boolean TownyBlockSinkOnNoPVP = false;
     public static Map<String, TownyWorldHeightLimits> TownProtectionHeightLimits;
     public static Map<Integer, Integer> DurabilityOverride;
+    public static boolean IsPaper = false;
 
     public static boolean AssaultEnable;
     public static double AssaultDamagesCapPercent;
