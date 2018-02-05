@@ -176,7 +176,27 @@ public class HitBox implements Set<MovecraftLocation> {
 
     @Override
     public boolean remove(Object o) {
-        throw new UnsupportedOperationException();
+        if(!locationSet.contains(o))
+            return false;
+        MovecraftLocation remove = (MovecraftLocation)o;
+        locationSet.remove(remove);
+        if(minX==remove.getX() || maxX == remove.getX() || minY == remove.getY() || maxY==remove.getY() || minZ==remove.getZ() || maxZ==remove.getZ()){
+            for (MovecraftLocation location : locationSet){
+                if(location.getX()<minX)
+                    minX=location.getX();
+                if(location.getX()>maxX)
+                    maxX=location.getX();
+                if(location.getY()<minY)
+                    maxY=location.getY();
+                if(location.getY()>maxY)
+                    maxY=location.getY();
+                if(location.getZ()<minZ)
+                    minZ=location.getZ();
+                if(location.getZ()>maxZ)
+                    maxZ=location.getZ();
+            }
+        }
+        return true;
     }
 
     @Override

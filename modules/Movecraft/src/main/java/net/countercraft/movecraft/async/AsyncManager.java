@@ -249,7 +249,7 @@ public class AsyncManager extends BukkitRunnable {
                         notifyP.sendMessage(task.getFailMessage());
 
                     if (task.collisionExplosion()) {
-                        c.setHitBox(new HitBox(Arrays.asList(task.getBlockList())));
+                        c.setHitBox(task.getNewHitBox());
                         //c.setBlockList(task.getData().getBlockList());
                         //boolean failed = MapUpdateManager.getInstance().addWorldUpdate(c.getW(), updates, null, null, exUpdates);
                         MapUpdateManager mapUpdateManager= MapUpdateManager.getInstance();
@@ -280,7 +280,7 @@ public class AsyncManager extends BukkitRunnable {
                     //c.setMinX(task.getData().getMinX());
                     //c.setMinZ(task.getData().getMinZ());
                     //c.setHitBox(task.getData().getHitbox());
-                    c.setHitBox(new HitBox(Arrays.asList(task.getBlockList())));
+                    c.setHitBox(task.getNewHitBox());
 
                     // move any cannons that were present
                     if (Movecraft.getInstance().getCannonsPlugin() != null && shipCannons != null) {

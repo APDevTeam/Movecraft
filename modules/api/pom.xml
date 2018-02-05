@@ -40,7 +40,7 @@
                 <version>3.0</version>
                 <configuration>
                     <includes>
-                        <include>net/countercraft/movecraft/api/**</include>
+                        <include>net/countercraft/movecraft/**</include>
                     </includes>
                     <source>1.8</source>
                     <target>1.8</target>
@@ -52,7 +52,7 @@
                 <version>2.4</version>
                 <configuration>
                     <includes>
-                        <include>net/countercraft/movecraft/api/**</include>
+                        <include>net/countercraft/movecraft/**</include>
                     </includes>
                 </configuration>
             </plugin>
