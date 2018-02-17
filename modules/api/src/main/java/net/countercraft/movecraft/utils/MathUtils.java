@@ -67,6 +67,22 @@ public class MathUtils {
     }
 
     /**
+     * Checks if a given <code>Location</code> is within some distance, <code>distance</code>, from a given <code>HitBox</code>
+     * @param hitBox the hitbox to check
+     * @param location the location to check
+     * @return True if <code>location</code> is less or equal to 3 blocks from <code>craft</code>
+     */
+    @Contract(pure=true)
+    public static boolean locationNearHitbox(@NotNull final HitBox hitBox, @NotNull final Location location, double distance) {
+        return location.getX() >= hitBox.getMinX() - distance &&
+                location.getZ() >= hitBox.getMinZ() - distance &&
+                location.getX() <= hitBox.getMaxX() + distance &&
+                location.getZ() <= hitBox.getMaxZ() + distance &&
+                location.getY() >= hitBox.getMinY() - distance &&
+                location.getY() <= hitBox.getMaxY() + distance;
+    }
+
+    /**
      * Checks if a given <code>Location</code> is within 3 blocks from a given <code>Craft</code>
      * @param craft the craft to check
      * @param location the location to check

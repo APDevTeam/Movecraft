@@ -223,20 +223,7 @@ public class HitBox implements Set<MovecraftLocation> {
         MovecraftLocation remove = (MovecraftLocation)o;
         locationSet.remove(remove);
         if(minX==remove.getX() || maxX == remove.getX() || minY == remove.getY() || maxY==remove.getY() || minZ==remove.getZ() || maxZ==remove.getZ()){
-            for (MovecraftLocation location : locationSet){
-                if(location.getX()<minX)
-                    minX=location.getX();
-                if(location.getX()>maxX)
-                    maxX=location.getX();
-                if(location.getY()<minY)
-                    minY=location.getY();
-                if(location.getY()>maxY)
-                    maxY=location.getY();
-                if(location.getZ()<minZ)
-                    minZ=location.getZ();
-                if(location.getZ()>maxZ)
-                    maxZ=location.getZ();
-            }
+            updateBounds();
         }
         return true;
     }
@@ -263,7 +250,30 @@ public class HitBox implements Set<MovecraftLocation> {
 
     @Override
     public boolean removeAll(@NotNull Collection<?> c) {
-        throw new UnsupportedOperationException();
+        boolean updateBounds = false;
+        boolean modified = false;
+        for(Object o : c){
+            if(locationSet.remove(o)) {
+                modified = true;
+                MovecraftLocation location = (MovecraftLocation) o;
+                if (location.getX() < minX)
+                    updateBounds=true;
+                if (location.getX() > maxX)
+                    updateBounds=true;
+                if (location.getY() < minY)
+                    updateBounds=true;
+                if (location.getY() > maxY)
+                    updateBounds=true;
+                if (location.getZ() < minZ)
+                    updateBounds=true;
+                if (location.getZ() > maxZ)
+                    updateBounds=true;
+            }
+        }
+        if(updateBounds){
+            updateBounds();
+        }
+        return modified;
     }
 
 
@@ -273,4 +283,21 @@ public class HitBox implements Set<MovecraftLocation> {
     }
 
     private class EmptyHitBoxException extends RuntimeException{ }
+
+    private void updateBounds(){
+        for (MovecraftLocation location : locationSet){
+            if(location.getX()<minX)
+                minX=location.getX();
+            if(location.getX()>maxX)
+                maxX=location.getX();
+            if(location.getY()<minY)
+                minY=location.getY();
+            if(location.getY()>maxY)
+                maxY=location.getY();
+            if(location.getZ()<minZ)
+                minZ=location.getZ();
+            if(location.getZ()>maxZ)
+                maxZ=location.getZ();
+        }
+    }
 }

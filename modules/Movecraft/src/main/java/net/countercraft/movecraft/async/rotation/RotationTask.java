@@ -370,8 +370,11 @@ public class RotationTask extends AsyncTask {
             craftsInWorld = CraftManager.getInstance().getCraftsInWorld(getCraft().getW());
             for (Craft craft : craftsInWorld) {
                 if (newHitBox.intersects(craft.getHitBox()) && craft != getCraft()) {
-                    newHitBox.addAll(CollectionUtils.filter(craft.getHitBox(),newHitBox));
-                    craft.setHitBox(newHitBox);
+                    //newHitBox.addAll(CollectionUtils.filter(craft.getHitBox(),newHitBox));
+                    //craft.setHitBox(newHitBox);
+                    craft.getHitBox().removeAll(oldHitBox);
+                    craft.getHitBox().addAll(newHitBox);
+                    break;
                 }
             }
         }

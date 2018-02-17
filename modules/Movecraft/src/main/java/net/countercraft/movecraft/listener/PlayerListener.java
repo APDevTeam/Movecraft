@@ -187,7 +187,7 @@ public class PlayerListener implements Listener {
     public void onPlayerMove(PlayerMoveEvent event) {
         final Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
         if (c != null) {
-            if (c.isNotProcessing() && (!MathUtils.locationInHitbox(c.getHitBox(),event.getPlayer().getLocation()))) {
+            if (c.isNotProcessing() && (!MathUtils.locationNearHitbox(c.getHitBox(),event.getPlayer().getLocation(),2))) {
 
                 if (!CraftManager.getInstance().getReleaseEvents().containsKey(event.getPlayer()) && c.getType().getMoveEntities()) {
                     boolean releaseBlocked = false;
