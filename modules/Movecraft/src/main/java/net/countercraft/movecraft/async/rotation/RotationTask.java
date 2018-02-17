@@ -206,10 +206,10 @@ public class RotationTask extends AsyncTask {
             MovecraftLocation newLocation = MathUtils.rotateVec(rotation,originalLocation.subtract(originPoint)).add(originPoint);
             newHitBox.add(newLocation);
 
-            Material testMaterial = originalLocation.toBukkit(w).getBlock().getType();
+            Material oldMaterial = originalLocation.toBukkit(w).getBlock().getType();
             //prevent chests collision
-            if ((testMaterial.equals(Material.CHEST) || testMaterial.equals(Material.TRAPPED_CHEST)) &&
-                    !checkChests(testMaterial, newLocation)) {
+            if ((oldMaterial.equals(Material.CHEST) || oldMaterial.equals(Material.TRAPPED_CHEST)) &&
+                    !checkChests(oldMaterial, newLocation)) {
                 failed = true;
                 failMessage = String.format(I18nSupport.getInternationalisedString("Rotation - Craft is obstructed") + " @ %d,%d,%d", newLocation.getX(), newLocation.getY(), newLocation.getZ());
                 break;
@@ -229,9 +229,9 @@ public class RotationTask extends AsyncTask {
             //TODO: ADD TOWNY
 
             //isTownyBlock(plugLoc,craftPilot);
-            testMaterial = newLocation.toBukkit(w).getBlock().getType();
-            if ((testMaterial == Material.AIR) || (testMaterial == Material.PISTON_EXTENSION) || (waterCraft && (testMaterial == Material.WATER))) {
-                getCraft().getPhaseBlocks().put(newLocation, testMaterial);
+            Material newMaterial = newLocation.toBukkit(w).getBlock().getType();
+            if ((newMaterial == Material.AIR) || (newMaterial == Material.PISTON_EXTENSION) || (waterCraft && (newMaterial == Material.WATER))) {
+                //getCraft().getPhaseBlocks().put(newLocation, newMaterial);
                 continue;
             }
 
@@ -485,5 +485,9 @@ public class RotationTask extends AsyncTask {
         aroundNewLoc = newLoc.translate(0, 0, -1);
         testMaterial = craft.getW().getBlockAt(aroundNewLoc.getX(), aroundNewLoc.getY(), aroundNewLoc.getZ()).getType();
         return !testMaterial.equals(mBlock) || oldHitBox.contains(aroundNewLoc);
+    }
+
+    public HitBox getNewHitBox() {
+        return newHitBox;
     }
 }

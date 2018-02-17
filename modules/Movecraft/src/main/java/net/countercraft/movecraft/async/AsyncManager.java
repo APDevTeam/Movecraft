@@ -312,7 +312,7 @@ public class AsyncManager extends BukkitRunnable {
                         c.setMinX(task.getMinX());
                         c.setMinZ(task.getMinZ());
                         c.setHitBox(task.getHitbox());*/
-                        //c.setHitBox(task.getHitBox());
+                        c.setHitBox(task.getNewHitBox());
 
                         // rotate any cannons that were present
                         if (Movecraft.getInstance().getCannonsPlugin() != null && shipCannons != null) {
