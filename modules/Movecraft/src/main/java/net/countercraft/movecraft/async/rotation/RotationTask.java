@@ -70,15 +70,17 @@ public class RotationTask extends AsyncTask {
     private TownyWorld townyWorld;
     private TownyWorldHeightLimits townyWorldHeightLimits;
 
-    private final HitBox hitBox;
+    private final HitBox oldHitBox;
+    private final HitBox newHitBox;
 
     public RotationTask(Craft c, MovecraftLocation originPoint, Rotation rotation, World w, boolean isSubCraft) {
         super(c);
-        hitBox = c.getHitBox();
         this.originPoint = originPoint;
         this.rotation = rotation;
         this.w = w;
         this.isSubCraft = isSubCraft;
+        this.newHitBox = new HitBox();
+        this.oldHitBox = new HitBox(c.getHitBox());
     }
 
     public RotationTask(Craft c, MovecraftLocation originPoint, Rotation rotation, World w) {
@@ -86,18 +88,11 @@ public class RotationTask extends AsyncTask {
     }
 
     @Override
-    public void excecute() {
-
+    protected void excecute() {
         int waterLine = 0;
 
-        if(hitBox.isEmpty())
+        if(oldHitBox.isEmpty())
             return;
-
-        HitBox newHitBox = new HitBox(hitBox);
-
-        //TODO: REMOVE THIS BEFORE PUSH
-        //MovecraftLocation[] blockList = hitBox.toArray(new MovecraftLocation[hitBox.size()]);
-
         Player craftPilot = CraftManager.getInstance().getPlayerFromCraft(getCraft());
 
         if (getCraft().getDisabled() && (!getCraft().getSinking())) {
@@ -107,32 +102,31 @@ public class RotationTask extends AsyncTask {
 
         // blockedByWater=false means an ocean-going vessel
         boolean waterCraft = !getCraft().getType().blockedByWater();
-
         if (waterCraft) {
             // next figure out the water level by examining blocks next to the outer boundaries of the craft
-            for (int posY = hitBox.getMaxY(); (posY >= hitBox.getMinY()) && (waterLine == 0); posY--) {
+            for (int posY = oldHitBox.getMaxY(); (posY >= oldHitBox.getMinY()) && (waterLine == 0); posY--) {
                 int posX;
                 int posZ;
-                posZ = hitBox.getMinZ() - 1;
-                for (posX = hitBox.getMinX() - 1; (posX <= hitBox.getMaxX() + 1) && (waterLine == 0); posX++) {
+                posZ = oldHitBox.getMinZ() - 1;
+                for (posX = oldHitBox.getMinX() - 1; (posX <= oldHitBox.getMaxX() + 1) && (waterLine == 0); posX++) {
                     if (w.getBlockAt(posX, posY, posZ).getTypeId() == 9) {
                         waterLine = posY;
                     }
                 }
-                posZ = hitBox.getMaxZ() + 1;
-                for (posX = hitBox.getMinX() - 1; (posX <= hitBox.getMaxX() + 1) && (waterLine == 0); posX++) {
+                posZ = oldHitBox.getMaxZ() + 1;
+                for (posX = oldHitBox.getMinX() - 1; (posX <= oldHitBox.getMaxX() + 1) && (waterLine == 0); posX++) {
                     if (w.getBlockAt(posX, posY, posZ).getTypeId() == 9) {
                         waterLine = posY;
                     }
                 }
-                posX = hitBox.getMinX() - 1;
-                for (posZ = hitBox.getMinZ(); (posZ <= hitBox.getMaxZ()) && (waterLine == 0); posZ++) {
+                posX = oldHitBox.getMinX() - 1;
+                for (posZ = oldHitBox.getMinZ(); (posZ <= oldHitBox.getMaxZ()) && (waterLine == 0); posZ++) {
                     if (w.getBlockAt(posX, posY, posZ).getTypeId() == 9) {
                         waterLine = posY;
                     }
                 }
-                posX = hitBox.getMaxX() + 1;
-                for (posZ = hitBox.getMinZ(); (posZ <= hitBox.getMaxZ()) && (waterLine == 0); posZ++) {
+                posX = oldHitBox.getMaxX() + 1;
+                for (posZ = oldHitBox.getMinZ(); (posZ <= oldHitBox.getMaxZ()) && (waterLine == 0); posZ++) {
                     if (w.getBlockAt(posX, posY, posZ).getTypeId() == 9) {
                         waterLine = posY;
                     }
@@ -141,13 +135,12 @@ public class RotationTask extends AsyncTask {
 
             // now add all the air blocks found within the crafts borders below the waterline to the craft blocks so they will be rotated
             //HashSet<MovecraftLocation> newHSBlockList = new HashSet<>(hitBox);
-            for (int posY = waterLine; posY >= hitBox.getMinY(); posY--) {
-                for (int posX = hitBox.getMinX(); posX <= hitBox.getMaxX(); posX++) {
-                    for (int posZ = hitBox.getMinZ(); posZ <= hitBox.getMaxZ(); posZ++) {
+            for (int posY = waterLine; posY >= oldHitBox.getMinY(); posY--) {
+                for (int posX = oldHitBox.getMinX(); posX <= oldHitBox.getMaxX(); posX++) {
+                    for (int posZ = oldHitBox.getMinZ(); posZ <= oldHitBox.getMaxZ(); posZ++) {
                         if (w.getBlockAt(posX, posY, posZ).getTypeId() == 0) {
                             MovecraftLocation l = new MovecraftLocation(posX, posY, posZ);
-                            //newHSBlockList.add(l);
-                            newHitBox.add(l);
+                            oldHitBox.add(l);
                         }
                     }
                 }
@@ -160,7 +153,7 @@ public class RotationTask extends AsyncTask {
         if (fuelBurnRate != 0.0 && !getCraft().getSinking()) {
             if (getCraft().getBurningFuel() < fuelBurnRate) {
                 Block fuelHolder = null;
-                for (MovecraftLocation bTest : hitBox) {
+                for (MovecraftLocation bTest : oldHitBox) {
                     Block b = getCraft().getW().getBlockAt(bTest.getX(), bTest.getY(), bTest.getZ());
                     if (b.getTypeId() == 61) {
                         InventoryHolder inventoryHolder = (InventoryHolder) b.getState();
@@ -199,56 +192,24 @@ public class RotationTask extends AsyncTask {
                 getCraft().setBurningFuel(getCraft().getBurningFuel() - fuelBurnRate);
             }
         }
-
-
-        // Rotate the block set
-        //MovecraftLocation[] centeredBlockList = new MovecraftLocation[blockList.length];
-        //MovecraftLocation[] originalBlockList = blockList.clone();
-        //HashSet<MovecraftLocation> existingBlockSet = new HashSet<>(Arrays.asList(originalBlockList));
-
-        //boolean townyEnabled = Movecraft.getInstance().getTownyPlugin() != null;
-        //Set<TownBlock> townBlockSet = new HashSet<>();
-        //TownyWorld townyWorld = null;
-        //TownyWorldHeightLimits townyWorldHeightLimits = null;
-
-        if (townyEnabled && Settings.TownyBlockMoveOnSwitchPerm) {
-            townyWorld = TownyUtils.getTownyWorld(getCraft().getW());
-            if (townyWorld != null) {
-                townyEnabled = townyWorld.isUsingTowny();
-                if (townyEnabled) {
-                    townyWorldHeightLimits = TownyUtils.getWorldLimits(getCraft().getW());
-                }
-            }
-        } else {
-            townyEnabled = false;
-        }
-
         // if a subcraft, find the parent craft. If not a subcraft, it is it's own parent
         Craft[] craftsInWorld = CraftManager.getInstance().getCraftsInWorld(getCraft().getW());
         Craft parentCraft = getCraft();
         for (Craft craft : craftsInWorld) {
-            if ( craft != getCraft() && hitBox.intersects(newHitBox)) {
+            if ( craft != getCraft() && craft.getHitBox().intersects(oldHitBox)) {
                 parentCraft = craft;
                 break;
             }
         }
 
-
-        int craftMinY = 0;
-        int craftMaxY = 0;
-        // make the centered block list
-        /*for (int i = 0; i < blockList.length; i++) {
-            centeredBlockList[i] = blockList[i].subtract(originPoint);
-        }*/
-
-        for(MovecraftLocation originalLocation : hitBox){
-            MovecraftLocation newLocation = MathUtils.rotateVec(rotation,originalLocation).add(originalLocation);
+        for(MovecraftLocation originalLocation : oldHitBox){
+            MovecraftLocation newLocation = MathUtils.rotateVec(rotation,originalLocation.subtract(originPoint)).add(originPoint);
             newHitBox.add(newLocation);
 
             Material testMaterial = originalLocation.toBukkit(w).getBlock().getType();
             //prevent chests collision
             if ((testMaterial.equals(Material.CHEST) || testMaterial.equals(Material.TRAPPED_CHEST)) &&
-                    !checkChests(testMaterial, newLocation, hitBox)) {
+                    !checkChests(testMaterial, newLocation)) {
                 failed = true;
                 failMessage = String.format(I18nSupport.getInternationalisedString("Rotation - Craft is obstructed") + " @ %d,%d,%d", newLocation.getX(), newLocation.getY(), newLocation.getZ());
                 break;
@@ -267,22 +228,19 @@ public class RotationTask extends AsyncTask {
 
             //TODO: ADD TOWNY
 
-            isTownyBlock(plugLoc,craftPilot);
-
+            //isTownyBlock(plugLoc,craftPilot);
+            testMaterial = newLocation.toBukkit(w).getBlock().getType();
             if ((testMaterial == Material.AIR) || (testMaterial == Material.PISTON_EXTENSION) || (waterCraft && (testMaterial == Material.WATER))) {
                 getCraft().getPhaseBlocks().put(newLocation, testMaterial);
                 continue;
             }
 
-            if (!hitBox.contains(newLocation)) {
+            if (!oldHitBox.contains(newLocation)) {
                 failed = true;
                 failMessage = String.format(I18nSupport.getInternationalisedString("Rotation - Craft is obstructed") + " @ %d,%d,%d", newLocation.getX(), newLocation.getY(), newLocation.getZ());
                 break;
             }
-
-
         }
-
         if (failed) {
             if (this.isSubCraft && parentCraft != getCraft()) {
                 parentCraft.setProcessing(false);
@@ -305,7 +263,6 @@ public class RotationTask extends AsyncTask {
             }
         }
         for (Entity pTest : getCraft().getW().getEntities()) {
-            //				if ( MathUtils.playerIsWithinBoundingPolygon( getCraft().getHitBox(), getCraft().getMinX(), getCraft().getMinZ(), MathUtils.bukkit2MovecraftLoc( pTest.getLocation() ) ) ) {
             if (MathUtils.locIsNearCraftFast(getCraft(), MathUtils.bukkit2MovecraftLoc(pTest.getLocation())) &&
                     pTest.getType() != EntityType.DROPPED_ITEM) {
                 // Player is onboard this craft
@@ -412,12 +369,8 @@ public class RotationTask extends AsyncTask {
 
             craftsInWorld = CraftManager.getInstance().getCraftsInWorld(getCraft().getW());
             for (Craft craft : craftsInWorld) {
-                if (hitBox.intersects(craft.getHitBox()) && craft != getCraft()) {
-                    //List<MovecraftLocation> parentBlockList = ArrayUtils.subtractAsList(craft.getHitBox(), originalBlockList);
-                    //Collection<MovecraftLocation> parentBlockList = CollectionUtils.filter(craft.getHitBox(), hitBox);
-                    //parentBlockList.addAll(newHitBox);
-                    newHitBox.addAll(CollectionUtils.filter(craft.getHitBox(), hitBox));
-                    //craft.setBlockList(parentBlockList.toArray(new MovecraftLocation[1]));
+                if (newHitBox.intersects(craft.getHitBox()) && craft != getCraft()) {
+                    newHitBox.addAll(CollectionUtils.filter(craft.getHitBox(),newHitBox));
                     craft.setHitBox(newHitBox);
                 }
             }
@@ -446,10 +399,6 @@ public class RotationTask extends AsyncTask {
 
     public boolean getIsSubCraft() {
         return isSubCraft;
-    }
-
-    public HitBox getHitBox() {
-        return hitBox;
     }
 
     private void isTownyBlock(Location plugLoc, Player craftPilot){
@@ -484,7 +433,7 @@ public class RotationTask extends AsyncTask {
             return;
         }
         Location locSpawn = TownyUtils.getTownSpawn(townBlock);
-        if (locSpawn == null || !townyWorldHeightLimits.validate(hitBox.getMaxY(), locSpawn.getBlockY())) {
+        if (locSpawn == null || !townyWorldHeightLimits.validate(newHitBox.getMaxY(), locSpawn.getBlockY())) {
             failed = true;
         }
         if (failed) {
@@ -505,39 +454,36 @@ public class RotationTask extends AsyncTask {
     }
 
 
-    private boolean checkChests(Material mBlock, MovecraftLocation newLoc, Set<MovecraftLocation> existingBlockSet) {
+    private boolean checkChests(Material mBlock, MovecraftLocation newLoc) {
         Material testMaterial;
         MovecraftLocation aroundNewLoc;
 
         aroundNewLoc = newLoc.translate(1, 0, 0);
-        testMaterial = getCraft().getW().getBlockAt(aroundNewLoc.getX(), aroundNewLoc.getY(), aroundNewLoc.getZ()).getType();
+        testMaterial = craft.getW().getBlockAt(aroundNewLoc.getX(), aroundNewLoc.getY(), aroundNewLoc.getZ()).getType();
         if (testMaterial.equals(mBlock)) {
-            if (!existingBlockSet.contains(aroundNewLoc)) {
+            if (!oldHitBox.contains(aroundNewLoc)) {
                 return false;
             }
         }
 
         aroundNewLoc = newLoc.translate(-1, 0, 0);
-        testMaterial = getCraft().getW().getBlockAt(aroundNewLoc.getX(), aroundNewLoc.getY(), aroundNewLoc.getZ()).getType();
+        testMaterial = craft.getW().getBlockAt(aroundNewLoc.getX(), aroundNewLoc.getY(), aroundNewLoc.getZ()).getType();
         if (testMaterial.equals(mBlock)) {
-            if (!existingBlockSet.contains(aroundNewLoc)) {
+            if (!oldHitBox.contains(aroundNewLoc)) {
                 return false;
             }
         }
 
         aroundNewLoc = newLoc.translate(0, 0, 1);
-        testMaterial = getCraft().getW().getBlockAt(aroundNewLoc.getX(), aroundNewLoc.getY(), aroundNewLoc.getZ()).getType();
+        testMaterial = craft.getW().getBlockAt(aroundNewLoc.getX(), aroundNewLoc.getY(), aroundNewLoc.getZ()).getType();
         if (testMaterial.equals(mBlock)) {
-            if (!existingBlockSet.contains(aroundNewLoc)) {
+            if (!oldHitBox.contains(aroundNewLoc)) {
                 return false;
             }
         }
 
         aroundNewLoc = newLoc.translate(0, 0, -1);
-        testMaterial = getCraft().getW().getBlockAt(aroundNewLoc.getX(), aroundNewLoc.getY(), aroundNewLoc.getZ()).getType();
-        if (testMaterial.equals(mBlock)) {
-            return existingBlockSet.contains(aroundNewLoc);
-        }
-        return true;
+        testMaterial = craft.getW().getBlockAt(aroundNewLoc.getX(), aroundNewLoc.getY(), aroundNewLoc.getZ()).getType();
+        return !testMaterial.equals(mBlock) || oldHitBox.contains(aroundNewLoc);
     }
 }

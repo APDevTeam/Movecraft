@@ -172,10 +172,10 @@ public class TranslationTask extends AsyncTask {
         for(MovecraftLocation oldLocation : oldHitBox){
             MovecraftLocation newLocation = oldLocation.translate(dx, dy, dz);
 
-            if (newLocation.getY() > oldHitBox.getMaxY() && newLocation.getY() > oldLocation.getY()) {
+            if (dy>0 && craft.getType().getMaxHeightLimit()<newLocation.getY()) {
                 fail(I18nSupport.getInternationalisedString("Translation - Failed Craft hit height limit"));
                 break;
-            } else if (newLocation.getY() < oldHitBox.getMinY() && newLocation.getY() < oldLocation.getY() && !craft.getSinking()) {
+            } else if (newLocation.getY() < craft.getType().getMinHeightLimit() && newLocation.getY() < oldLocation.getY() && !craft.getSinking()) {
                 fail(I18nSupport.getInternationalisedString("Translation - Failed Craft hit minimum height limit"));
                 break;
             }

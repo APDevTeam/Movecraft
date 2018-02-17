@@ -20,43 +20,73 @@ public class HitBox implements Set<MovecraftLocation> {
     }
 
     public int getMinX() {
+        if(locationSet.isEmpty()){
+            throw new EmptyHitBoxException();
+        }
         return minX;
     }
 
     public int getMaxX() {
+        if(locationSet.isEmpty()){
+            throw new EmptyHitBoxException();
+        }
         return maxX;
     }
 
     public int getMinY() {
+        if(locationSet.isEmpty()){
+            throw new EmptyHitBoxException();
+        }
         return minY;
     }
 
     public int getMaxY() {
+        if(locationSet.isEmpty()){
+            throw new EmptyHitBoxException();
+        }
         return maxY;
     }
 
     public int getMinZ() {
+        if(locationSet.isEmpty()){
+            throw new EmptyHitBoxException();
+        }
         return minZ;
     }
 
     public int getMaxZ() {
+        if(locationSet.isEmpty()){
+            throw new EmptyHitBoxException();
+        }
         return maxZ;
     }
 
     public int getXLength(){
-        return maxX-minX;
+        if(locationSet.isEmpty()){
+            return 0;
+        }
+        return Math.abs(maxX-minX);
     }
 
     public int getYLength(){
+        if(locationSet.isEmpty()){
+            return 0;
+        }
         return maxY-minY;
     }
 
-    public int getZLegtnh(){
-        return maxZ-minZ;
+    public int getZLength(){
+        if(locationSet.isEmpty()){
+            throw new EmptyHitBoxException();
+        }
+        return Math.abs(maxZ-minZ);
     }
 
     //TODO: Optomize
     public int getLocalMaxY(int x, int z){
+        if(locationSet.isEmpty()){
+            throw new EmptyHitBoxException();
+        }
         int yValue=-1;
         for(MovecraftLocation location : locationSet){
             if(location.getX()==x && location.getZ() ==z && location.getY()>yValue){
@@ -67,6 +97,9 @@ public class HitBox implements Set<MovecraftLocation> {
     }
 
     public int getLocalMinY(int x, int z){
+        if(locationSet.isEmpty()){
+            throw new EmptyHitBoxException();
+        }
         int yValue=-1;
         for(MovecraftLocation location : locationSet){
             if(location.getX()==x && location.getZ() ==z && (yValue==-1 || location.getY()>yValue)){
@@ -77,16 +110,25 @@ public class HitBox implements Set<MovecraftLocation> {
     }
 
     public MovecraftLocation getMidPoint(){
-        return new MovecraftLocation(minX+getXLength()/2, minY+getYLength()/2,minZ+getZLegtnh()/2);
+        if(locationSet.isEmpty()){
+            throw new EmptyHitBoxException();
+        }
+        return new MovecraftLocation((minX+maxX)/2, (minY+maxY)/2,(minZ+maxZ)/2);
     }
 
     public boolean inBounds(MovecraftLocation location){
+        if(locationSet.isEmpty()){
+            return false;
+        }
         return location.getX()> minX && location.getX() < maxX &&
                 location.getY() > minY && location.getY() < maxY &&
                 location.getZ() > minZ && location.getZ() < maxZ;
     }
 
     public boolean inBounds(double x, double y, double z){
+        if(locationSet.isEmpty()){
+            return false;
+        }
         return x > minX && x < maxX &&
                 y > minY && y < maxY &&
                 z > minZ && z < maxZ;
@@ -159,17 +201,17 @@ public class HitBox implements Set<MovecraftLocation> {
 
     @Override
     public boolean add(MovecraftLocation movecraftLocation) {
-        if(movecraftLocation.getX()<minX)
+        if(locationSet.isEmpty() || movecraftLocation.getX() < minX)
             minX=movecraftLocation.getX();
-        if(movecraftLocation.getX()>maxX)
+        if(locationSet.isEmpty() || movecraftLocation.getX() > maxX)
             maxX=movecraftLocation.getX();
-        if(movecraftLocation.getY()<minY)
+        if(locationSet.isEmpty() || movecraftLocation.getY() < minY)
+            minY=movecraftLocation.getY();
+        if(locationSet.isEmpty() || movecraftLocation.getY() > maxY)
             maxY=movecraftLocation.getY();
-        if(movecraftLocation.getY()>maxY)
-            maxY=movecraftLocation.getY();
-        if(movecraftLocation.getZ()<minZ)
+        if(locationSet.isEmpty() || movecraftLocation.getZ() < minZ)
             minZ=movecraftLocation.getZ();
-        if(movecraftLocation.getZ()>maxZ)
+        if(locationSet.isEmpty() || movecraftLocation.getZ() > maxZ)
             maxZ=movecraftLocation.getZ();
         return locationSet.add(movecraftLocation);
     }
@@ -187,7 +229,7 @@ public class HitBox implements Set<MovecraftLocation> {
                 if(location.getX()>maxX)
                     maxX=location.getX();
                 if(location.getY()<minY)
-                    maxY=location.getY();
+                    minY=location.getY();
                 if(location.getY()>maxY)
                     maxY=location.getY();
                 if(location.getZ()<minZ)
@@ -228,11 +270,7 @@ public class HitBox implements Set<MovecraftLocation> {
     @Override
     public void clear() {
         locationSet.clear();
-        minX=-1;
-        maxX=-1;
-        minY=-1;
-        maxY=-1;
-        minZ=-1;
-        maxZ=-1;
     }
+
+    private class EmptyHitBoxException extends RuntimeException{ }
 }

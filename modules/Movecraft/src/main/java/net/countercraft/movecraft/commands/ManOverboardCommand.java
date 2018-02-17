@@ -59,7 +59,7 @@ public class ManOverboardCommand implements CommandExecutor{
         int maxY = 0;
         int minY = 32767;
         double telX = craft.getHitBox().getMinX() + (craft.getHitBox().getXLength() / 2.0);
-        double telZ = craft.getHitBox().getMinZ() + (craft.getHitBox().getZLegtnh() / 2.0);
+        double telZ = craft.getHitBox().getMinZ() + (craft.getHitBox().getZLength() / 2.0);
         double telY = maxY + 1.0;
         return new Location(craft.getW(), telX, telY, telZ);
     }

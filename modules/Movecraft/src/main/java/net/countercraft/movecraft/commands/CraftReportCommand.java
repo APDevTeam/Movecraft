@@ -29,7 +29,7 @@ public class CraftReportCommand implements CommandExecutor{
             commandSender.sendMessage(" Invalid page \"" + args[0] + "\"");
             return true;
         }
-        if (CraftManager.getInstance().getCraftList() == null || CraftManager.getInstance().getCraftList().isEmpty()){
+        if (CraftManager.getInstance().getCraftList().isEmpty()){
             commandSender.sendMessage("No crafts found");
             return true;
         }

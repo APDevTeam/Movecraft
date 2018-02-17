@@ -157,7 +157,6 @@ public class AsyncManager extends BukkitRunnable {
                         if (craftsInWorld != null) {
                             for (Craft craft : craftsInWorld) {
                                 if(craft.getHitBox().intersects(new HitBox(Arrays.asList(data.getBlockList())))){
-                                //if (BlockUtils.arrayContainsOverlap(craft.getBlockList(), data.getBlockList())) {
                                     isSubcraft = true;
                                     if (c.getType().getCruiseOnPilot() || p != null) {
                                         if (craft.getType() == c.getType()
@@ -165,7 +164,8 @@ public class AsyncManager extends BukkitRunnable {
                                             notifyP.sendMessage(I18nSupport.getInternationalisedString(
                                                     "Detection - Failed Craft is already being controlled"));
                                             failed = true;
-                                        } else { // if this is a different type than
+                                        } else {
+                                            // if this is a different type than
                                             // the overlapping craft, and is
                                             // smaller, this must be a child
                                             // craft, like a fighter on a
@@ -174,13 +174,6 @@ public class AsyncManager extends BukkitRunnable {
                                                 failed = true;
                                                 notifyP.sendMessage(I18nSupport.getInternationalisedString("Parent Craft is busy"));
                                             }
-
-                                            // remove the new craft from the parent
-                                            // craft
-                                            /*List<MovecraftLocation> parentBlockList = ArrayUtils.subtractAsList(
-                                                    craft.getBlockList(),
-                                                    data.getBlockList());
-                                            craft.setBlockList(parentBlockList.toArray(new MovecraftLocation[1]));*/
                                             craft.setHitBox(new HitBox(CollectionUtils.filter(craft.getHitBox(),Arrays.asList(data.getBlockList()))));
                                             craft.setOrigBlockCount(craft.getOrigBlockCount() - data.getBlockList().length);
                                         }
@@ -196,20 +189,8 @@ public class AsyncManager extends BukkitRunnable {
                         }
                         if (!failed) {
                             c.setHitBox(new HitBox(Arrays.asList(task.getData().getBlockList())));
-                            //c.setBlockList(data.getBlockList());
                             c.setOrigBlockCount(data.getBlockList().length);
-                            //c.setHitBox(data.getHitBox());
-                            //c.setMinX(data.getMinX());
-                            //c.setMinZ(data.getMinZ());
-                            //c.setNotificationPlayer(notifyP);
-                            if (c.getType().getDynamicFlyBlockSpeedFactor() != 0.0) {
-                                //c.setCurTickCooldown(c.getType().getCruiseTickCooldown());
-                                //c.setMaxSpeed(c.getCurSpeed() + (data.dynamicFlyBlockSpeedMultiplier * c.getCurSpeed()));
-                            } else {
-                                //c.setCurTickCooldown(c.getType().getCruiseTickCooldown());
-                                //c.setMaxSpeed(c.getCurSpeed());
-                            }
-
+                            c.setNotificationPlayer(notifyP);
                             if (notifyP != null) {
                                 notifyP.sendMessage(I18nSupport
                                         .getInternationalisedString("Detection - Successfully piloted craft")
@@ -331,7 +312,7 @@ public class AsyncManager extends BukkitRunnable {
                         c.setMinX(task.getMinX());
                         c.setMinZ(task.getMinZ());
                         c.setHitBox(task.getHitbox());*/
-                        c.setHitBox(task.getHitBox());
+                        //c.setHitBox(task.getHitBox());
 
                         // rotate any cannons that were present
                         if (Movecraft.getInstance().getCannonsPlugin() != null && shipCannons != null) {

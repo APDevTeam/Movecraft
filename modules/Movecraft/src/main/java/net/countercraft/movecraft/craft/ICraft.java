@@ -74,7 +74,7 @@ public class ICraft extends Craft {
             }
         }*/
 
-        Movecraft.getInstance().getAsyncManager().submitTask(new TranslationTask(this, dx, dz, dy), this);
+        Movecraft.getInstance().getAsyncManager().submitTask(new TranslationTask(this, dx, dy, dz), this);
     }
 
     @Override

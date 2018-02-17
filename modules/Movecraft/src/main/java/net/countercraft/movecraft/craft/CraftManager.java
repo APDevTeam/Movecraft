@@ -23,6 +23,7 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.Collections;
@@ -34,9 +35,9 @@ import java.util.logging.Level;
 
 public class CraftManager {
     private static CraftManager ourInstance;
-    private final Set<Craft> craftList = new HashSet<>();
-    private final HashMap<Player, Craft> craftPlayerIndex = new HashMap<>();
-    private final HashMap<Player, BukkitTask> releaseEvents = new HashMap<>();
+    @NotNull private final Set<Craft> craftList = new HashSet<>();
+    @NotNull private final HashMap<Player, Craft> craftPlayerIndex = new HashMap<>();
+    @NotNull private final HashMap<Player, BukkitTask> releaseEvents = new HashMap<>();
     private HashSet<CraftType> craftTypes;
 
     public static void initialize(){
@@ -184,6 +185,7 @@ public class CraftManager {
         }
     }
 
+    @NotNull
     public HashMap<Player, BukkitTask> getReleaseEvents() {
         return releaseEvents;
     }
@@ -214,6 +216,7 @@ public class CraftManager {
         }
     }
 
+    @NotNull
     public Set<Craft> getCraftList(){
         return Collections.unmodifiableSet(craftList);
     }
