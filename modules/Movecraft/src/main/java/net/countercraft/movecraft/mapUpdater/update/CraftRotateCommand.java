@@ -4,6 +4,7 @@ import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
 import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.SignTranslateEvent;
 import net.countercraft.movecraft.config.Settings;
 import org.bukkit.Bukkit;
@@ -29,6 +30,12 @@ public class CraftRotateCommand extends UpdateCommand{
 
     @Override
     public void doUpdate() {
+        if(craft.getHitBox().isEmpty()){
+            logger.warning("Attempted to move craft with empty HitBox!");
+            CraftManager.getInstance().removeCraft(craft);
+            return;
+        }
+
         long time = System.nanoTime();
         Movecraft.getInstance().getWorldHandler().rotateCraft(craft,originLocation,rotation);
         for(MovecraftLocation location : craft.getHitBox()){
