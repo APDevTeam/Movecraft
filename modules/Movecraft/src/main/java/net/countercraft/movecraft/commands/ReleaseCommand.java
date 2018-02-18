@@ -19,16 +19,17 @@ public class ReleaseCommand implements TabExecutor {
         if (!command.getName().equalsIgnoreCase("release")) {
             return false;
         }
-        if(!(commandSender instanceof Player)){
-            commandSender.sendMessage("you need to be a player to pilot a craft");
-            return true;
-        }
-        Player player = (Player) commandSender;
-        if (!player.hasPermission("movecraft.commands") && !player.hasPermission("movecraft.commands.release")) {
-            player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
+
+        if (!commandSender.hasPermission("movecraft.commands") && !commandSender.hasPermission("movecraft.commands.release")) {
+            commandSender.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
             return true;
         }
         if (args.length == 0) {
+            if(!(commandSender instanceof Player)){
+                commandSender.sendMessage(I18nSupport.getInternationalisedString("Player- Error - You do not have a craft to release!"));
+                return true;
+            }
+            Player player = (Player) commandSender;
             final Craft pCraft = CraftManager.getInstance().getCraftByPlayerName(player.getName());
 
             if (pCraft == null) {
@@ -38,8 +39,8 @@ public class ReleaseCommand implements TabExecutor {
             CraftManager.getInstance().removeCraft(pCraft);
             return true;
         }
-        if (!player.hasPermission("movecraft.commands.release.others")) {
-            player.sendMessage("You do not have permission to make others release");
+        if (!commandSender.hasPermission("movecraft.commands.release.others")) {
+            commandSender.sendMessage("You do not have permission to make others release");
             return true;
         }
         if (args[0].equalsIgnoreCase("-p")) {
@@ -51,7 +52,7 @@ public class ReleaseCommand implements TabExecutor {
 
                 }
             }
-            player.sendMessage("You forcibly released all player controlled crafts");
+            commandSender.sendMessage("You forcibly released all player controlled crafts");
             return true;
         }
 
@@ -60,7 +61,18 @@ public class ReleaseCommand implements TabExecutor {
             for (Craft craft : craftsToRelease) {
                 CraftManager.getInstance().removeCraft(craft);
             }
-            player.sendMessage("You forcibly released all crafts");
+            commandSender.sendMessage("You forcibly released all crafts");
+            return true;
+        }
+
+        if (args[0].equalsIgnoreCase("-n")) {
+            final List<Craft> craftsToRelease = new ArrayList<>(CraftManager.getInstance().getCraftList());
+            for (Craft craft : craftsToRelease) {
+                if(craft.getNotificationPlayer()==null) {
+                    CraftManager.getInstance().removeCraft(craft);
+                }
+            }
+            commandSender.sendMessage("You forcibly released all null piloted crafts");
             return true;
         }
 
@@ -72,10 +84,10 @@ public class ReleaseCommand implements TabExecutor {
         final Craft pCraft = CraftManager.getInstance().getCraftByPlayerName(args[0]);
         if (pCraft != null) {
             CraftManager.getInstance().removeCraft(pCraft);
-            player.sendMessage("You have successfully force released a ship");
+            commandSender.sendMessage("You have successfully force released a ship");
             return true;
         }
-        player.sendMessage("That player is not piloting a craft");
+        commandSender.sendMessage("That player is not piloting a craft");
         return true;
     }
 
