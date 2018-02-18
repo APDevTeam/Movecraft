@@ -427,6 +427,7 @@ public class AsyncManager extends BukkitRunnable {
             boolean bankLeft = false;
             boolean bankRight = false;
             boolean dive = false;
+            boolean climb = false;
             if (pcraft.getPilotLocked()) {
                 if (pcraft.getNotificationPlayer().isSneaking())
                     dive = true;
@@ -434,6 +435,8 @@ public class AsyncManager extends BukkitRunnable {
                     bankLeft = true;
                 if (pcraft.getNotificationPlayer().getInventory().getHeldItemSlot() == 5)
                     bankRight = true;
+                if (pcraft.getNotificationPlayer().getInventory().getHeldItemSlot() == 4)
+                	climb = true;
             }
 
             if (Math.abs(ticksElapsed) < pcraft.getTickCooldown()) {
@@ -458,6 +461,8 @@ public class AsyncManager extends BukkitRunnable {
                 if (pcraft.getMinY() <= w.getSeaLevel()) {
                     dy = -1;
                 }
+            } else if (climb) {
+            	dy = 0 + ((pcraft.getType().getCruiseSkipBlocks() + 1) >> 1);
             }
             // ship faces west
             if (pcraft.getCruiseDirection() == 0x5) {
