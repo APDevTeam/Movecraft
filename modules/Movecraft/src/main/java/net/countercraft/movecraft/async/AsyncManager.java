@@ -463,6 +463,7 @@ public class AsyncManager extends BukkitRunnable {
                 }
             } else if (climb) {
             	dy = 0 + ((pcraft.getType().getCruiseSkipBlocks() + 1) >> 1);
+            	
             }
             // ship faces west
             if (pcraft.getCruiseDirection() == 0x5) {
