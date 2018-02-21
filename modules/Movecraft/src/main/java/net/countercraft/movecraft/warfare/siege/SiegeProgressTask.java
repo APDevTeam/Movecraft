@@ -3,7 +3,8 @@ package net.countercraft.movecraft.warfare.siege;
 import com.sk89q.worldguard.domains.DefaultDomain;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.countercraft.movecraft.Movecraft;
-import net.countercraft.movecraft.api.craft.Craft;
+import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.utils.HitBox;
 import net.countercraft.movecraft.craft.CraftManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -28,9 +29,10 @@ public class SiegeProgressTask extends SiegeTask {
         int midY = 0;
         int midZ = 0;
         if (siegeLeaderPilotingShip) {
-            midX = (siegeCraft.getMaxX() + siegeCraft.getMinX()) / 2;
-            midY = (siegeCraft.getMaxY() + siegeCraft.getMinY()) / 2;
-            midZ = (siegeCraft.getMaxZ() + siegeCraft.getMinZ()) / 2;
+            HitBox hitBox = siegeCraft.getHitBox();
+            midX = (hitBox.getMaxX() + hitBox.getMinX()) / 2;
+            midY = (hitBox.getMaxY() + hitBox.getMinY()) / 2;
+            midZ = (hitBox.getMaxZ() + hitBox.getMinZ()) / 2;
             siegeLeaderShipInRegion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(siegeLeader.getWorld()).getRegion(siege.getAttackRegion()).contains(midX, midY, midZ);
 
         }

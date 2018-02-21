@@ -1,7 +1,12 @@
 package net.countercraft.movecraft.commands;
 
+<<<<<<< HEAD
 import net.countercraft.movecraft.api.config.Settings;
 import net.countercraft.movecraft.api.craft.Craft;
+=======
+import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.craft.Craft;
+>>>>>>> upstream/master
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.Location;
@@ -58,31 +63,8 @@ public class ManOverboardCommand implements CommandExecutor{
         int maxDZ = 0;
         int maxY = 0;
         int minY = 32767;
-        for (int[][] i1 : craft.getHitBox()) {
-            maxDX++;
-            if (i1 != null) {
-                int indexZ = 0;
-                for (int[] i2 : i1) {
-                    indexZ++;
-                    if (i2 != null) {
-                        if (i2[0] < minY) {
-                            minY = i2[0];
-                        }
-                    }
-                    if (i2 != null) {
-                        if (i2[1] > maxY) {
-                            maxY = i2[1];
-                        }
-                    }
-                }
-                if (indexZ > maxDZ) {
-                    maxDZ = indexZ;
-                }
-
-            }
-        }
-        double telX = craft.getMinX() + (maxDX / 2.0);
-        double telZ = craft.getMinZ() + (maxDZ / 2.0);
+        double telX = craft.getHitBox().getMinX() + (craft.getHitBox().getXLength() / 2.0);
+        double telZ = craft.getHitBox().getMinZ() + (craft.getHitBox().getZLength() / 2.0);
         double telY = maxY + 1.0;
         return new Location(craft.getW(), telX, telY, telZ);
     }

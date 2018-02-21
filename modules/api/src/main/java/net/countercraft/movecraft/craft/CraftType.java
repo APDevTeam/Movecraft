@@ -15,7 +15,7 @@
  *     along with Movecraft.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.countercraft.movecraft.api.craft;
+package net.countercraft.movecraft.craft;
 
 import org.bukkit.Material;
 import org.yaml.snakeyaml.Yaml;

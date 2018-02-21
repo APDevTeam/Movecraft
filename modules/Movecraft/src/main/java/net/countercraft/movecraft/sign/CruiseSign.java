@@ -1,7 +1,12 @@
 package net.countercraft.movecraft.sign;
 
+<<<<<<< HEAD
 import net.countercraft.movecraft.api.craft.Craft;
 import net.countercraft.movecraft.api.config.Settings;
+=======
+import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.config.Settings;
+>>>>>>> upstream/master
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.ChatColor;

@@ -15,17 +15,19 @@
  *     along with Movecraft.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.countercraft.movecraft.api.craft;
+package net.countercraft.movecraft.craft;
 
-import net.countercraft.movecraft.api.MovecraftLocation;
-import net.countercraft.movecraft.api.Rotation;
-import org.bukkit.ChatColor;
+import net.countercraft.movecraft.MovecraftLocation;
+import net.countercraft.movecraft.Rotation;
+import net.countercraft.movecraft.utils.HitBox;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /*import net.countercraft.movecraft.async.AsyncManager;
@@ -35,13 +37,18 @@ import net.countercraft.movecraft.async.translation.TranslationTaskData;*/
 
 public abstract class Craft {
     protected final CraftType type;
-    protected int[][][] hitBox;
-    protected MovecraftLocation[] blockList;
+    //protected int[][][] hitBox;
+    //protected MovecraftLocation[] blockList;
+    protected HitBox hitBox;
+
     protected World w;
     private AtomicBoolean processing = new AtomicBoolean();
+<<<<<<< HEAD:modules/api/src/main/java/net/countercraft/movecraft/api/craft/Craft.java
     protected int minX;
     protected int minZ;
     private String uCraftName = null;
+=======
+>>>>>>> upstream/master:modules/api/src/main/java/net/countercraft/movecraft/craft/Craft.java
     private int maxHeightLimit;
     private boolean cruising;
     private boolean sinking;
@@ -65,10 +72,15 @@ public abstract class Craft {
     //private int blockUpdates;
     private float meanMoveTime;
     private int numMoves;
+    //TODO: Test performance benefits vs HashSet
+    private final Map<MovecraftLocation,Material> phaseBlocks = new LinkedHashMap<>();
+
+
     public Craft(CraftType type, World world) {
         this.type = type;
         this.w = world;
-        this.blockList = new MovecraftLocation[1];
+        //this.blockList = new MovecraftLocation[1];
+        this.hitBox = new HitBox();
         if (type.getMaxHeightLimit() > w.getMaxHeight() - 1) {
             this.maxHeightLimit = w.getMaxHeight() - 1;
         } else {
@@ -96,7 +108,7 @@ public abstract class Craft {
         this.processing.set(processing);
     }
 
-    public MovecraftLocation[] getBlockList() {
+    /*public MovecraftLocation[] getBlockList() {
         synchronized (blockList) {
             return blockList.clone();
         }
@@ -106,6 +118,14 @@ public abstract class Craft {
         synchronized (this.blockList) {
             this.blockList = blockList;
         }
+    }*/
+
+    public HitBox getHitBox() {
+        return hitBox;
+    }
+
+    public void setHitBox(@NotNull HitBox hitBox){
+        this.hitBox = hitBox;
     }
 
     public CraftType getType() {
@@ -116,19 +136,19 @@ public abstract class Craft {
         return w;
     }
 
-    public int[][][] getHitBox() {
+    /*public int[][][] getHitBox() {
         return hitBox;
     }
 
     public void setHitBox(int[][][] hitBox) {
         this.hitBox = hitBox;
-    }
+    }*/
 
     public abstract void detect(Player player, Player notificationPlayer, MovecraftLocation startPoint);
 
     public abstract void translate(int dx, int dy, int dz);
 
-    @Deprecated
+    /*@Deprecated
     public void resetSigns(boolean resetCruise, boolean resetAscend, boolean resetDescend) {
         for (MovecraftLocation aBlockList : blockList) {
             int blockID = w.getBlockAt(aBlockList.getX(), aBlockList.getY(), aBlockList.getZ()).getTypeId();
@@ -151,6 +171,7 @@ public abstract class Craft {
                     }
             }
         }
+<<<<<<< HEAD:modules/api/src/main/java/net/countercraft/movecraft/api/craft/Craft.java
     }
     public void setUniqueName() {
     	for (MovecraftLocation aBlockList : blockList) {
@@ -167,72 +188,13 @@ public abstract class Craft {
     		}
     	}
     }
+=======
+    }*/
+>>>>>>> upstream/master:modules/api/src/main/java/net/countercraft/movecraft/craft/Craft.java
 
     public abstract void rotate(Rotation rotation, MovecraftLocation originPoint);
 
     public abstract void rotate(Rotation rotation, MovecraftLocation originPoint, boolean isSubCraft);
-
-    public int getMaxX() {
-        return minX + hitBox.length;
-    }
-
-    public int getMaxZ() {
-        return minZ + hitBox[0].length;
-    }
-
-    public int getMinY() {
-        int minY = 65535;
-        int maxY = -65535;
-        for (int[][] i1 : hitBox) {
-            if (i1 != null)
-                for (int[] i2 : i1) {
-                    if (i2 != null) {
-                        if (i2[0] < minY) {
-                            minY = i2[0];
-                        }
-                        if (i2[1] > maxY) {
-                            maxY = i2[1];
-                        }
-                    }
-                }
-        }
-        return minY;
-    }
-
-    public int getMaxY() {
-        int minY = 65535;
-        int maxY = -65535;
-        for (int[][] i1 : hitBox) {
-            if (i1 != null)
-                for (int[] i2 : i1) {
-                    if (i2 != null) {
-                        if (i2[0] < minY) {
-                            minY = i2[0];
-                        }
-                        if (i2[1] > maxY) {
-                            maxY = i2[1];
-                        }
-                    }
-                }
-        }
-        return maxY;
-    }
-
-    public int getMinZ() {
-        return minZ;
-    }
-
-    public void setMinZ(int minZ) {
-        this.minZ = minZ;
-    }
-
-    public int getMinX() {
-        return minX;
-    }
-
-    public void setMinX(int minX) {
-        this.minX = minX;
-    }
 
     public boolean getCruising() {
         return cruising;
@@ -386,44 +348,6 @@ public abstract class Craft {
         return origPilotTime;
     }
 
-    public MovecraftLocation getMidPoint() {
-        int maxDX=0;
-        int maxDZ=0;
-        int maxY=0;
-        int minY=32767;
-        for(int[][] i1 : hitBox) {
-            maxDX++;
-            if (i1!=null) {
-                int indexZ=0;
-                for(int[] i2 : i1) {
-                    indexZ++;
-                    if(i2!=null) {
-                        if(i2[0]<minY) {
-                            minY=i2[0];
-                        }
-                    }
-                    if (i2!=null) {
-                        if(i2[1]<maxY) {
-                            maxY=i2[1];
-                        }
-                    }
-                }
-                if (indexZ>maxDZ) {
-                    maxDZ=indexZ;
-                }
-
-            }
-        }
-        int midX=minX+(maxDX/2);
-        int midY=(minY+maxY)/2;
-        int midZ=minZ+(maxDZ/2);
-        return new MovecraftLocation(midX, midY, midZ);
-       /* return new MovecraftLocation(
-                (getMaxX()+getMinX())/2,
-                (getMaxY()+getMinY())/2,
-                (getMaxZ()+getMinZ())/2);*/
-    }
-
     public float getMeanMoveTime() {
         return meanMoveTime;
     }
@@ -436,7 +360,7 @@ public abstract class Craft {
         if(sinking)
             return type.getSinkRateTicks();
         double chestPenalty = 0;
-        for(MovecraftLocation location : blockList){
+        for(MovecraftLocation location : hitBox){
             if(location.toBukkit(w).getBlock().getType()==Material.CHEST)
                 chestPenalty++;
         }
@@ -448,11 +372,11 @@ public abstract class Craft {
         if(type.getDynamicFlyBlockSpeedFactor()!=0){
             double count = 0;
             Material flyBlockMaterial = Material.getMaterial(type.getDynamicFlyBlock());
-            for(MovecraftLocation location : blockList){
+            for(MovecraftLocation location : hitBox){
                 if(location.toBukkit(w).getBlock().getType()==flyBlockMaterial)
                     count++;
             }
-            return  Math.max((int)(type.getCruiseTickCooldown()* (1 - count /blockList.length) +chestPenalty),1);
+            return  Math.max((int)(type.getCruiseTickCooldown()* (1 - count /hitBox.size()) +chestPenalty),1);
         }
 
         if(type.getDynamicLagSpeedFactor()==0)
@@ -481,47 +405,42 @@ public abstract class Craft {
         //TODO: Remove this temporary system in favor of passthrough blocks
         // Find the waterline from the surrounding terrain or from the static level in the craft type
         int waterLine = 0;
-        int maxY = getMaxY();
-        int minY = getMinY();
-        int maxZ = getMaxZ();
-        int minZ = getMinZ();
-        int maxX = getMaxX();
-        int minX = getMinX();
-        if (type.getStaticWaterLevel() != 0) {
+        if (type.getStaticWaterLevel() != 0 || hitBox.isEmpty()) {
             return type.getStaticWaterLevel();
         }
+
         // figure out the water level by examining blocks next to the outer boundaries of the craft
-        for (int posY = maxY + 1; posY >= minY - 1; posY--) {
+        for (int posY = hitBox.getMaxY() + 1; posY >= hitBox.getMinY() - 1; posY--) {
             int numWater = 0;
             int numAir = 0;
             int posX;
             int posZ;
-            posZ = minZ - 1;
-            for (posX = minX - 1; posX <= maxX + 1; posX++) {
+            posZ = hitBox.getMinZ() - 1;
+            for (posX = hitBox.getMinX() - 1; posX <= hitBox.getMaxX() + 1; posX++) {
                 int typeID = w.getBlockAt(posX, posY, posZ).getTypeId();
                 if (typeID == 9)
                     numWater++;
                 if (typeID == 0)
                     numAir++;
             }
-            posZ = maxZ + 1;
-            for (posX = minX - 1; posX <= maxX + 1; posX++) {
+            posZ = hitBox.getMaxZ() + 1;
+            for (posX = hitBox.getMinX() - 1; posX <= hitBox.getMaxX() + 1; posX++) {
                 int typeID = w.getBlockAt(posX, posY, posZ).getTypeId();
                 if (typeID == 9)
                     numWater++;
                 if (typeID == 0)
                     numAir++;
             }
-            posX = minX - 1;
-            for (posZ = minZ; posZ <= maxZ; posZ++) {
+            posX = hitBox.getMinX() - 1;
+            for (posZ = hitBox.getMinZ(); posZ <= hitBox.getMaxZ(); posZ++) {
                 int typeID = w.getBlockAt(posX, posY, posZ).getTypeId();
                 if (typeID == 9)
                     numWater++;
                 if (typeID == 0)
                     numAir++;
             }
-            posX = maxX + 1;
-            for (posZ = minZ; posZ <= maxZ; posZ++) {
+            posX = hitBox.getMaxX() + 1;
+            for (posZ = hitBox.getMinZ(); posZ <= hitBox.getMaxZ(); posZ++) {
                 int typeID = w.getBlockAt(posX, posY, posZ).getTypeId();
                 if (typeID == 9)
                     numWater++;
@@ -534,7 +453,13 @@ public abstract class Craft {
         }
         return waterLine;
     }
+<<<<<<< HEAD:modules/api/src/main/java/net/countercraft/movecraft/api/craft/Craft.java
     public String getUniqueCraftName() {
     	return uCraftName;
+=======
+
+    public Map<MovecraftLocation,Material> getPhaseBlocks(){
+        return phaseBlocks;
+>>>>>>> upstream/master:modules/api/src/main/java/net/countercraft/movecraft/craft/Craft.java
     }
 }

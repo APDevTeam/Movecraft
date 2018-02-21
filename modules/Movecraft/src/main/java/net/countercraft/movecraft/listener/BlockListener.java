@@ -21,10 +21,17 @@ import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.flags.DefaultFlag;
 import net.countercraft.movecraft.Movecraft;
+<<<<<<< HEAD
 import net.countercraft.movecraft.api.MathUtils;
 import net.countercraft.movecraft.api.MovecraftLocation;
 import net.countercraft.movecraft.api.craft.Craft;
 import net.countercraft.movecraft.api.config.Settings;
+=======
+import net.countercraft.movecraft.utils.MathUtils;
+import net.countercraft.movecraft.MovecraftLocation;
+import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.config.Settings;
+>>>>>>> upstream/master
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.warfare.assault.Assault;
@@ -114,7 +121,7 @@ public class BlockListener implements Listener {
                 if (craft == null || craft.getDisabled()) {
                     continue;
                 }
-                for (MovecraftLocation tloc : craft.getBlockList()) {
+                for (MovecraftLocation tloc : craft.getHitBox()) {
                     if (tloc.equals(mloc)) {
                         e.getPlayer().sendMessage(I18nSupport.getInternationalisedString("BLOCK IS PART OF A PILOTED CRAFT"));
                         e.setCancelled(true);
@@ -132,7 +139,7 @@ public class BlockListener implements Listener {
             return;
         }
         for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(e.getLocation().getWorld())) {
-            if ((!tcraft.isNotProcessing()) && MathUtils.playerIsWithinBoundingPolygon(tcraft.getHitBox(), tcraft.getMinX(), tcraft.getMinZ(), MathUtils.bukkit2MovecraftLoc(e.getLocation()))) {
+            if ((!tcraft.isNotProcessing()) && MathUtils.locationInHitbox(tcraft.getHitBox(), e.getLocation())) {
                 e.setCancelled(true);
                 return;
             }
@@ -397,6 +404,7 @@ public class BlockListener implements Listener {
                         Arrays.binarySearch(fragileBlocks, b.getRelative(BlockFace.NORTH).getTypeId()) >= 0) {
                     i.remove();
                 }
+
 
                 // whether or not you actually destroyed the block, add to damages
                 long damages = assault.getDamages() + Settings.AssaultDamagesPerBlock;

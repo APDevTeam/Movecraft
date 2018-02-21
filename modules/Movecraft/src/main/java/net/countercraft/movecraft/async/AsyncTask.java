@@ -18,14 +18,14 @@
 package net.countercraft.movecraft.async;
 
 import net.countercraft.movecraft.Movecraft;
-import net.countercraft.movecraft.api.craft.Craft;
+import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.logging.Level;
 
 public abstract class AsyncTask extends BukkitRunnable {
-    private final Craft craft;
+    protected final Craft craft;
 
     protected AsyncTask(Craft c) {
         craft = c;

@@ -28,14 +28,20 @@ import com.sk89q.worldedit.bukkit.BukkitUtil;
 import com.sk89q.worldedit.schematic.SchematicFormat;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.countercraft.movecraft.Movecraft;
+<<<<<<< HEAD
 import net.countercraft.movecraft.api.config.Settings;
 import net.countercraft.movecraft.api.craft.Craft;
+=======
+import net.countercraft.movecraft.utils.HitBox;
+import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.craft.Craft;
+>>>>>>> upstream/master
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.WorldEditUpdateCommand;
-import net.countercraft.movecraft.api.MovecraftLocation;
+import net.countercraft.movecraft.MovecraftLocation;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -172,14 +178,15 @@ public class WorldEditInteractListener implements Listener {
                     repairStateName += ".schematic";
                     file = new File(repairStateName);
 
-                    Vector size = new Vector(pCraft.getMaxX() - pCraft.getMinX(), (pCraft.getMaxY() - pCraft.getMinY()) + 1, pCraft.getMaxZ() - pCraft.getMinZ());
+                    HitBox hitBox = pCraft.getHitBox();
+                    Vector size = new Vector(hitBox.getMaxX() - hitBox.getMinX(), (hitBox.getMaxY() - hitBox.getMinY()) + 1, hitBox.getMaxZ() - hitBox.getMinZ());
                     Vector origin = new Vector(sign.getX(), sign.getY(), sign.getZ());
-                    Vector offset = new Vector(pCraft.getMinX() - sign.getX(), pCraft.getMinY() - sign.getY(), pCraft.getMinZ() - sign.getZ());
+                    Vector offset = new Vector(hitBox.getMinX() - sign.getX(), hitBox.getMinY() - sign.getY(), hitBox.getMinZ() - sign.getZ());
                     CuboidClipboard cc = new CuboidClipboard(size, origin, offset);
                     final int[] ignoredBlocks = new int[]{64, 140, 144, 176, 177};  // BLOCKS THAT CAN'T BE PARTIALLY RECONSTRUCTED
 
-                    for (MovecraftLocation loc : pCraft.getBlockList()) {
-                        Vector ccpos = new Vector(loc.getX() - pCraft.getMinX(), loc.getY() - pCraft.getMinY(), loc.getZ() - pCraft.getMinZ());
+                    for (MovecraftLocation loc : hitBox) {
+                        Vector ccpos = new Vector(loc.getX() - hitBox.getMinX(), loc.getY() - hitBox.getMinY(), loc.getZ() - hitBox.getMinZ());
                         Block b = sign.getWorld().getBlockAt(loc.getX(), loc.getY(), loc.getZ());
                         boolean isIgnored = (Arrays.binarySearch(ignoredBlocks, b.getTypeId()) >= 0);
                         if (!isIgnored) {
@@ -535,7 +542,7 @@ public class WorldEditInteractListener implements Listener {
                 for (Integer typeID : numMissingItems.keySet()) {
                     int remainingQty = numMissingItems.get(typeID);
                     ArrayList<InventoryHolder> chests = new ArrayList<>();
-                    for (MovecraftLocation loc : pCraft.getBlockList()) {
+                    for (MovecraftLocation loc : pCraft.getHitBox()) {
                         Block b = pCraft.getW().getBlockAt(loc.getX(), loc.getY(), loc.getZ());
                         if ((b.getTypeId() == 54) || (b.getTypeId() == 146)) {
                             InventoryHolder inventoryHolder = (InventoryHolder) b.getState();

@@ -17,8 +17,7 @@
 
 package net.countercraft.movecraft.utils;
 
-import net.countercraft.movecraft.api.MathUtils;
-import net.countercraft.movecraft.api.Rotation;
+import net.countercraft.movecraft.Rotation;
 
 import java.util.Arrays;
 

@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.compat.v1_11_R1;
 
+<<<<<<< HEAD
 import net.countercraft.movecraft.api.MathUtils;
 import net.countercraft.movecraft.api.MovecraftLocation;
 import net.countercraft.movecraft.api.Rotation;
@@ -7,6 +8,15 @@ import net.countercraft.movecraft.api.Utils;
 import net.countercraft.movecraft.api.WorldHandler;
 import net.countercraft.movecraft.api.config.Settings;
 import net.countercraft.movecraft.api.craft.Craft;
+=======
+import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.utils.MathUtils;
+import net.countercraft.movecraft.MovecraftLocation;
+import net.countercraft.movecraft.Rotation;
+import net.countercraft.movecraft.utils.CollectionUtils;
+import net.countercraft.movecraft.WorldHandler;
+import net.countercraft.movecraft.craft.Craft;
+>>>>>>> upstream/master
 import net.minecraft.server.v1_11_R1.Block;
 import net.minecraft.server.v1_11_R1.BlockPosition;
 import net.minecraft.server.v1_11_R1.Blocks;
@@ -52,7 +62,7 @@ public class IWorldHandler extends WorldHandler {
         //*******************************************
         HashMap<BlockPosition,BlockPosition> rotatedPositions = new HashMap<>();
         Rotation counterRotation = rotation == Rotation.CLOCKWISE ? Rotation.ANTICLOCKWISE : Rotation.CLOCKWISE;
-        for(MovecraftLocation newLocation : craft.getBlockList()){
+        for(MovecraftLocation newLocation : craft.getHitBox()){
             rotatedPositions.put(locationToPosition(MathUtils.rotateVec(counterRotation, newLocation.subtract(originPoint)).add(originPoint)),locationToPosition(newLocation));
         }
         //*******************************************
@@ -104,7 +114,7 @@ public class IWorldHandler extends WorldHandler {
         //*   Step five: Destroy the leftovers      *
         //*******************************************
         //TODO: add support for pass-through
-        Collection<BlockPosition> deletePositions =  Utils.filter(rotatedPositions.keySet(),rotatedPositions.values());
+        Collection<BlockPosition> deletePositions =  CollectionUtils.filter(rotatedPositions.keySet(),rotatedPositions.values());
         if (craft.getType().blockedByWater() && !craft.getSinking()) {
             for(BlockPosition position : deletePositions){
                 setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
@@ -112,8 +122,8 @@ public class IWorldHandler extends WorldHandler {
         } else {
             int waterLine = craft.getWaterLine();
             // for watercraft, fill blocks below the waterline with water
-            int maxY = craft.getMaxY();
-            int minY = craft.getMinY();
+            int maxY = craft.getHitBox().getMaxY();
+            int minY = craft.getHitBox().getMinY();
             for(BlockPosition position : deletePositions) {
                 if (position.getY() <= waterLine) {
                     // if there is air below the ship at the current position, don't fill in with water
@@ -174,7 +184,7 @@ public class IWorldHandler extends WorldHandler {
         //*******************************************
         BlockPosition translateVector = locationToPosition(displacement);
         List<BlockPosition> positions = new ArrayList<>();
-        for(MovecraftLocation movecraftLocation : craft.getBlockList()) {
+        for(MovecraftLocation movecraftLocation : craft.getHitBox()) {
             positions.add(locationToPosition((movecraftLocation)).b(translateVector));
         }
         //*******************************************
@@ -228,7 +238,7 @@ public class IWorldHandler extends WorldHandler {
         //*   Step five: Destroy the leftovers      *
         //*******************************************
         //TODO: add support for pass-through
-        Collection<BlockPosition> deletePositions =  Utils.filter(positions,newPositions);
+        Collection<BlockPosition> deletePositions =  CollectionUtils.filter(positions,newPositions);
         if (craft.getType().blockedByWater() && !craft.getSinking()) {
             for(BlockPosition position : deletePositions){
                 setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
@@ -236,8 +246,8 @@ public class IWorldHandler extends WorldHandler {
         } else {
             int waterLine = craft.getWaterLine();
             // for watercraft, fill blocks below the waterline with water
-            int maxY = craft.getMaxY();
-            int minY = craft.getMinY();
+            int maxY = craft.getHitBox().getMaxY();
+            int minY = craft.getHitBox().getMinY();
             for(BlockPosition position : deletePositions) {
                 if (position.getY() <= waterLine) {
                     // if there is air below the ship at the current position, don't fill in with water

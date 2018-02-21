@@ -18,13 +18,12 @@
 package net.countercraft.movecraft.craft;
 
 import net.countercraft.movecraft.Movecraft;
-import net.countercraft.movecraft.api.craft.Craft;
-import net.countercraft.movecraft.api.craft.CraftType;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.Collections;
@@ -36,9 +35,9 @@ import java.util.logging.Level;
 
 public class CraftManager {
     private static CraftManager ourInstance;
-    private final Set<Craft> craftList = new HashSet<>();
-    private final HashMap<Player, Craft> craftPlayerIndex = new HashMap<>();
-    private final HashMap<Player, BukkitTask> releaseEvents = new HashMap<>();
+    @NotNull private final Set<Craft> craftList = new HashSet<>();
+    @NotNull private final HashMap<Player, Craft> craftPlayerIndex = new HashMap<>();
+    @NotNull private final HashMap<Player, BukkitTask> releaseEvents = new HashMap<>();
     private HashSet<CraftType> craftTypes;
 
     public static void initialize(){
@@ -122,9 +121,9 @@ public class CraftManager {
         craftList.remove(c);
         if (getPlayerFromCraft(c) != null) {
             getPlayerFromCraft(c).sendMessage(I18nSupport.getInternationalisedString("Release - Craft has been released message"));
-            Movecraft.getInstance().getLogger().log(Level.INFO, String.format(I18nSupport.getInternationalisedString("Release - Player has released a craft console"), c.getNotificationPlayer().getName(), c.getType().getCraftName(), c.getBlockList().length, c.getMinX(), c.getMinZ()));
+            Movecraft.getInstance().getLogger().log(Level.INFO, String.format(I18nSupport.getInternationalisedString("Release - Player has released a craft console"), c.getNotificationPlayer().getName(), c.getType().getCraftName(), c.getHitBox().size(), c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
         } else {
-            Movecraft.getInstance().getLogger().log(Level.INFO, String.format(I18nSupport.getInternationalisedString("NULL Player has released a craft of type %s with size %d at coordinates : %d x , %d z"), c.getType().getCraftName(), c.getBlockList().length, c.getMinX(), c.getMinZ()));
+            Movecraft.getInstance().getLogger().log(Level.INFO, String.format(I18nSupport.getInternationalisedString("NULL Player has released a craft of type %s with size %d at coordinates : %d x , %d z"), c.getType().getCraftName(), c.getHitBox().size(), c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
         }
         craftPlayerIndex.remove(getPlayerFromCraft(c));
     }
@@ -179,13 +178,14 @@ public class CraftManager {
         if (getPlayerFromCraft(c) != null) {
             removeReleaseTask(c);
             getPlayerFromCraft(c).sendMessage(I18nSupport.getInternationalisedString("Release - Craft has been released message"));
-            Movecraft.getInstance().getLogger().log(Level.INFO, String.format(I18nSupport.getInternationalisedString("Release - Player has released a craft console"), c.getNotificationPlayer().getName(), c.getType().getCraftName(), c.getBlockList().length, c.getMinX(), c.getMinZ()));
+            Movecraft.getInstance().getLogger().log(Level.INFO, String.format(I18nSupport.getInternationalisedString("Release - Player has released a craft console"), c.getNotificationPlayer().getName(), c.getType().getCraftName(), c.getHitBox().size(), c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
             Player p = getPlayerFromCraft(c);
             craftPlayerIndex.put(null, c);
             craftPlayerIndex.remove(p);
         }
     }
 
+    @NotNull
     public HashMap<Player, BukkitTask> getReleaseEvents() {
         return releaseEvents;
     }
@@ -216,6 +216,7 @@ public class CraftManager {
         }
     }
 
+    @NotNull
     public Set<Craft> getCraftList(){
         return Collections.unmodifiableSet(craftList);
     }

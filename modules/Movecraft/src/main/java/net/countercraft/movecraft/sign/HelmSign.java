@@ -1,9 +1,8 @@
 package net.countercraft.movecraft.sign;
 
-import net.countercraft.movecraft.api.MathUtils;
-import net.countercraft.movecraft.api.MovecraftLocation;
-import net.countercraft.movecraft.api.Rotation;
-import net.countercraft.movecraft.api.craft.Craft;
+import net.countercraft.movecraft.Rotation;
+import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.ChatColor;
@@ -72,15 +71,12 @@ public final class HelmSign implements Listener {
             }
         }*/
 
-        if (!MathUtils.playerIsWithinBoundingPolygon(craft.getHitBox(), craft.getMinX(), craft.getMinZ(), MathUtils.bukkit2MovecraftLoc(event.getPlayer().getLocation()))) {
+        if (!MathUtils.locationInHitbox(craft.getHitBox(), event.getPlayer().getLocation())) {
             return;
         }
 
         if (craft.getType().rotateAtMidpoint()) {
-            CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).rotate(rotation, new MovecraftLocation(
-                    (craft.getMaxX() + craft.getMinX()) / 2,
-                    (craft.getMaxY() + craft.getMinY()) / 2,
-                    (craft.getMaxZ() + craft.getMinZ()) / 2));
+            CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).rotate(rotation, craft.getHitBox().getMidPoint());
         } else {
             CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).rotate(rotation, MathUtils.bukkit2MovecraftLoc(sign.getLocation()));
         }

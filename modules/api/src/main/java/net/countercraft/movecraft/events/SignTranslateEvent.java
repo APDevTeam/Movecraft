@@ -1,6 +1,6 @@
-package net.countercraft.movecraft.api.events;
+package net.countercraft.movecraft.events;
 
-import net.countercraft.movecraft.api.craft.Craft;
+import net.countercraft.movecraft.craft.Craft;
 import org.bukkit.block.Block;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;

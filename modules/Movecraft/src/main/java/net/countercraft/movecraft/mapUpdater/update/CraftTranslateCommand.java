@@ -1,10 +1,18 @@
 package net.countercraft.movecraft.mapUpdater.update;
 
 import net.countercraft.movecraft.Movecraft;
+<<<<<<< HEAD
 import net.countercraft.movecraft.api.MovecraftLocation;
 import net.countercraft.movecraft.api.craft.Craft;
 import net.countercraft.movecraft.api.events.SignTranslateEvent;
 import net.countercraft.movecraft.api.config.Settings;
+=======
+import net.countercraft.movecraft.MovecraftLocation;
+import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.events.SignTranslateEvent;
+import net.countercraft.movecraft.config.Settings;
+>>>>>>> upstream/master
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -25,9 +33,14 @@ public class CraftTranslateCommand extends UpdateCommand {
 
     @Override
     public void doUpdate() {
+        if(craft.getHitBox().isEmpty()){
+            logger.warning("Attempted to move craft with empty HitBox!");
+            CraftManager.getInstance().removeCraft(craft);
+            return;
+        }
         long time = System.nanoTime();
         Movecraft.getInstance().getWorldHandler().translateCraft(craft,displacement);
-        for(MovecraftLocation location : craft.getBlockList()){
+        for(MovecraftLocation location : craft.getHitBox()){
             Block block = location.toBukkit(craft.getW()).getBlock();
             if(block.getType() == Material.WALL_SIGN || block.getType() == Material.SIGN_POST){
                 Sign sign = (Sign) block.getState();

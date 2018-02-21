@@ -1,14 +1,11 @@
 package net.countercraft.movecraft.craft;
 
 import net.countercraft.movecraft.Movecraft;
-import net.countercraft.movecraft.api.MovecraftLocation;
-import net.countercraft.movecraft.api.Rotation;
-import net.countercraft.movecraft.api.craft.Craft;
-import net.countercraft.movecraft.api.craft.CraftType;
+import net.countercraft.movecraft.MovecraftLocation;
+import net.countercraft.movecraft.Rotation;
 import net.countercraft.movecraft.async.detection.DetectionTask;
 import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
-import net.countercraft.movecraft.async.translation.TranslationTaskData;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
@@ -44,7 +41,7 @@ public class ICraft extends Craft {
         }
 
         // find region that will need to be loaded to translate this craft
-        int cminX = minX;
+        /*int cminX = minX;
         int cmaxX = minX;
         if (dx < 0)
             cminX = cminX + dx;
@@ -75,9 +72,9 @@ public class ICraft extends Craft {
                     this.getW().loadChunk(posX, posZ);
                 }
             }
-        }
+        }*/
 
-        Movecraft.getInstance().getAsyncManager().submitTask(new TranslationTask(this, new TranslationTaskData(dx, dz, dy, getBlockList(), getHitBox(), minZ, minX, type.getMaxHeightLimit(), type.getMinHeightLimit())), this);
+        Movecraft.getInstance().getAsyncManager().submitTask(new TranslationTask(this, dx, dy, dz), this);
     }
 
     @Override
@@ -89,7 +86,7 @@ public class ICraft extends Craft {
         }
         setLastRotateTime(System.nanoTime());
         // find region that will need to be loaded to rotate this craft
-        int cminX = minX;
+        /*int cminX = minX;
         int cmaxX = minX;
         int cminZ = minZ;
         int cmaxZ = minZ;
@@ -122,13 +119,13 @@ public class ICraft extends Craft {
                     this.getW().loadChunk(posX, posZ);
                 }
             }
-        }
-        Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(this, originPoint, this.getBlockList(), rotation, this.getW()), this);
+        }*/
+        Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(this, originPoint, rotation, this.getW()), this);
     }
 
     @Override
     public void rotate(Rotation rotation, MovecraftLocation originPoint, boolean isSubCraft) {
-        Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(this, originPoint, this.getBlockList(), rotation, this.getW(), isSubCraft), this);
+        Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(this, originPoint, rotation, this.getW(), isSubCraft), this);
     }
 
 

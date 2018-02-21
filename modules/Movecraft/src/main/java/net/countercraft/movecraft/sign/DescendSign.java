@@ -1,6 +1,6 @@
 package net.countercraft.movecraft.sign;
 
-import net.countercraft.movecraft.api.craft.Craft;
+import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -30,7 +30,7 @@ public final class DescendSign implements Listener{
             if (!c.getType().getCanCruise()) {
                 return;
             }
-            c.resetSigns(true, true, false);
+            //c.resetSigns(true, true, false);
             sign.setLine(0, "Descend: ON");
             sign.update(true);
 

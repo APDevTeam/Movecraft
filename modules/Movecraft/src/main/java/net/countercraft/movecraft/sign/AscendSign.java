@@ -1,6 +1,6 @@
 package net.countercraft.movecraft.sign;
 
-import net.countercraft.movecraft.api.craft.Craft;
+import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -32,7 +32,7 @@ public class AscendSign implements Listener {
             if (!c.getType().getCanCruise()) {
                 return;
             }
-            c.resetSigns(true, false, true);
+            //c.resetSigns(true, false, true);
             sign.setLine(0, "Ascend: ON");
             sign.update(true);
 
