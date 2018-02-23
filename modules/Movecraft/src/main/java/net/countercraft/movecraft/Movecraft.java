@@ -132,10 +132,7 @@ public class Movecraft extends JavaPlugin {
         }catch (Exception e){
             Settings.IsPaper=false;
         }
-<<<<<<< HEAD
-=======
 
->>>>>>> upstream/master
         Settings.LOCALE = getConfig().getString("Locale");
         Settings.RestrictSiBsToRegions = getConfig().getBoolean("RestrictSiBsToRegions", false);
         Settings.Debug = getConfig().getBoolean("Debug", false);

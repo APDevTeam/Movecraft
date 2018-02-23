@@ -28,14 +28,9 @@ import com.sk89q.worldedit.bukkit.BukkitUtil;
 import com.sk89q.worldedit.schematic.SchematicFormat;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.countercraft.movecraft.Movecraft;
-<<<<<<< HEAD
 import net.countercraft.movecraft.api.config.Settings;
-import net.countercraft.movecraft.api.craft.Craft;
-=======
 import net.countercraft.movecraft.utils.HitBox;
-import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
->>>>>>> upstream/master
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;

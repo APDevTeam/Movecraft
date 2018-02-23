@@ -43,12 +43,9 @@ public abstract class Craft {
 
     protected World w;
     private AtomicBoolean processing = new AtomicBoolean();
-<<<<<<< HEAD:modules/api/src/main/java/net/countercraft/movecraft/api/craft/Craft.java
     protected int minX;
     protected int minZ;
     private String uCraftName = null;
-=======
->>>>>>> upstream/master:modules/api/src/main/java/net/countercraft/movecraft/craft/Craft.java
     private int maxHeightLimit;
     private boolean cruising;
     private boolean sinking;
@@ -190,7 +187,6 @@ public abstract class Craft {
     }
 =======
     }*/
->>>>>>> upstream/master:modules/api/src/main/java/net/countercraft/movecraft/craft/Craft.java
 
     public abstract void rotate(Rotation rotation, MovecraftLocation originPoint);
 
@@ -453,13 +449,17 @@ public abstract class Craft {
         }
         return waterLine;
     }
-<<<<<<< HEAD:modules/api/src/main/java/net/countercraft/movecraft/api/craft/Craft.java
+
     public String getUniqueCraftName() {
     	return uCraftName;
-=======
+    }
 
     public Map<MovecraftLocation,Material> getPhaseBlocks(){
         return phaseBlocks;
->>>>>>> upstream/master:modules/api/src/main/java/net/countercraft/movecraft/craft/Craft.java
     }
+
+	public void setUniqueName() {
+		// TODO Auto-generated method stub
+		
+	}
 }

@@ -3,7 +3,6 @@ package net.countercraft.movecraft.async.translation;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.async.AsyncTask;
-<<<<<<< HEAD
 import net.countercraft.movecraft.api.config.Settings;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
@@ -17,15 +16,10 @@ import net.countercraft.movecraft.utils.BoundingBoxUtils;
 import net.countercraft.movecraft.utils.TownyUtils;
 import net.countercraft.movecraft.api.utils.TownyWorldHeightLimits;
 import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
-=======
-import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.update.*;
 import net.countercraft.movecraft.utils.HitBox;
 import net.countercraft.movecraft.utils.MathUtils;
->>>>>>> upstream/master
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -395,24 +389,6 @@ public class TranslationTask extends AsyncTask {
 //                                            tempLoc.setY(craft.getPilotLockedY());
 //                                            tempLoc.setZ(craft.getPilotLockedZ());
 //                                        }
-<<<<<<< HEAD
-                        }
-                        if (pTest.getType() == EntityType.PRIMED_TNT) {
-                            Location tempLoc = pTest.getLocation();
-                            tempLoc = tempLoc.add(data.getDx(), data.getDy(), data.getDz());
-                            EntityUpdateCommand eUp = new EntityUpdateCommand(tempLoc, pTest);
-                            updateSet.add(eUp);
-                        }
-                        if (Settings.MoveAllEntities){
-                        	//Move any entity on a craft
-                        	if ((pTest.getType() != EntityType.DROPPED_ITEM)||(pTest.getType() == EntityType.DROPPED_ITEM)) {
-                        		Location tempLoc = pTest.getLocation();
-                        		tempLoc = tempLoc.add(data.getDx(), data.getDy(), data.getDz());
-                        		EntityUpdateCommand eUp = new EntityUpdateCommand(tempLoc, pTest);
-                        		updateSet.add(eUp);
-                        	}
-                        }
-=======
                         tempLoc = tempLoc.add(dx, dy, dz);
                         Location newPLoc = new Location(craft.getW(), tempLoc.getX(), tempLoc.getY(), tempLoc.getZ());
                         newPLoc.setPitch(pTest.getLocation().getPitch());
@@ -420,6 +396,19 @@ public class TranslationTask extends AsyncTask {
 
                         EntityUpdateCommand eUp = new EntityUpdateCommand( newPLoc, pTest);
                         updates.add(eUp);
+                        }
+
+
+                    if (Settings.MoveAllEntities)
+						//Move any entity on a craft
+                        if ((pTest.getType() != EntityType.DROPPED_ITEM)||(pTest.getType() == EntityType.DROPPED_ITEM)) {
+                       		Location tempLoc = pTest.getLocation();
+                            tempLoc = tempLoc.add(dx,dy,dz);
+                            EntityUpdateCommand eUp = new EntityUpdateCommand(tempLoc, pTest);
+                            updates.add(eUp);
+                        }
+                         
+
 //                                        if(craft.getPilotLocked()==true && pTest==CraftManager.getInstance().getPlayerFromCraft(craft)) {
 //                                            craft.setPilotLockedX(tempLoc.getX());
 //                                            craft.setPilotLockedY(tempLoc.getY());
@@ -431,15 +420,15 @@ public class TranslationTask extends AsyncTask {
                         tempLoc = tempLoc.add(dx,dy,dz);
                         EntityUpdateCommand eUp = new EntityUpdateCommand(tempLoc, pTest);
                         updates.add(eUp);
->>>>>>> upstream/master
+
                     }
 
                 }
-            }
-        } else {
+            } else {
             //add releaseTask without playermove to manager
-            if (!craft.getType().getCruiseOnPilot() && !craft.getSinking())  // not necessary to release cruiseonpilot crafts, because they will already be released
+            if (!craft.getType().getCruiseOnPilot() && !craft.getSinking()) {  // not necessary to release cruiseonpilot crafts, because they will already be released
                 CraftManager.getInstance().addReleaseTask(craft);
+            }
         }
 
         // remove water near sinking crafts

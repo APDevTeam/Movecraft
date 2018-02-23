@@ -18,14 +18,10 @@
 package net.countercraft.movecraft.mapUpdater;
 
 import net.countercraft.movecraft.Movecraft;
-<<<<<<< HEAD
-import net.countercraft.movecraft.api.craft.Craft;
-import net.countercraft.movecraft.async.translation.TranslationTaskData;
-import net.countercraft.movecraft.api.config.Settings;
-=======
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.config.Settings;
->>>>>>> upstream/master
+import net.countercraft.movecraft.api.config.Settings;
+import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.api.config.Settings;
 import net.countercraft.movecraft.mapUpdater.update.CraftRotateCommand;
 import net.countercraft.movecraft.mapUpdater.update.CraftTranslateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;

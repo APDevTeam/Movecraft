@@ -2,15 +2,9 @@ package net.countercraft.movecraft.sign;
 
 import com.earth2me.essentials.User;
 import net.countercraft.movecraft.Movecraft;
-<<<<<<< HEAD
-import net.countercraft.movecraft.api.craft.Craft;
-import net.countercraft.movecraft.api.events.SignTranslateEvent;
 import net.countercraft.movecraft.api.config.Settings;
-=======
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.events.SignTranslateEvent;
-import net.countercraft.movecraft.config.Settings;
->>>>>>> upstream/master
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;

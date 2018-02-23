@@ -1,22 +1,13 @@
 package net.countercraft.movecraft.compat.v1_12_R1;
 
-<<<<<<< HEAD
-import net.countercraft.movecraft.api.MathUtils;
-import net.countercraft.movecraft.api.MovecraftLocation;
-import net.countercraft.movecraft.api.Rotation;
-import net.countercraft.movecraft.api.Utils;
-import net.countercraft.movecraft.api.WorldHandler;
+
 import net.countercraft.movecraft.api.config.Settings;
-import net.countercraft.movecraft.api.craft.Craft;
-=======
-import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
 import net.countercraft.movecraft.utils.CollectionUtils;
 import net.countercraft.movecraft.WorldHandler;
 import net.countercraft.movecraft.craft.Craft;
->>>>>>> upstream/master
 import net.minecraft.server.v1_12_R1.Block;
 import net.minecraft.server.v1_12_R1.BlockPosition;
 import net.minecraft.server.v1_12_R1.Blocks;

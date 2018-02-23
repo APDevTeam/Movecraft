@@ -192,7 +192,6 @@ public class AsyncManager extends BukkitRunnable {
                             c.setHitBox(new HitBox(Arrays.asList(task.getData().getBlockList())));
                             c.setOrigBlockCount(data.getBlockList().length);
                             c.setNotificationPlayer(notifyP);
-<<<<<<< HEAD
                             c.setUniqueName();
                             if (c.getType().getDynamicFlyBlockSpeedFactor() != 0.0) {
                                 //c.setCurTickCooldown(c.getType().getCruiseTickCooldown());
@@ -202,8 +201,7 @@ public class AsyncManager extends BukkitRunnable {
                                 //c.setMaxSpeed(c.getCurSpeed());
                             }
 
-=======
->>>>>>> upstream/master
+
                             if (notifyP != null) {
                                 notifyP.sendMessage(I18nSupport
                                         .getInternationalisedString("Detection - Successfully piloted craft")
@@ -363,20 +361,19 @@ public class AsyncManager extends BukkitRunnable {
             World w = pcraft.getW();
             // if the craft should go slower underwater, make
             // time pass more slowly there
-<<<<<<< HEAD
-            if (pcraft.getType().getHalfSpeedUnderwater() && pcraft.getMinY() < w.getSeaLevel())
-=======
+
+
             if (pcraft.getType().getHalfSpeedUnderwater() && pcraft.getHitBox().getMinY() < w.getSeaLevel())
->>>>>>> upstream/master
+
                 ticksElapsed >>= 1;
             // check direct controls to modify movement
             boolean bankLeft = false;
             boolean bankRight = false;
             boolean dive = false;
-<<<<<<< HEAD
+
             boolean climb = false;
-=======
->>>>>>> upstream/master
+
+
             if (pcraft.getPilotLocked()) {
                 if (pcraft.getNotificationPlayer().isSneaking())
                     dive = true;
@@ -384,11 +381,10 @@ public class AsyncManager extends BukkitRunnable {
                     bankLeft = true;
                 if (pcraft.getNotificationPlayer().getInventory().getHeldItemSlot() == 5)
                     bankRight = true;
-<<<<<<< HEAD
+
                 if (pcraft.getNotificationPlayer().getInventory().getHeldItemSlot() == 4)
                 	climb = true;
-=======
->>>>>>> upstream/master
+
             }
 
             if (Math.abs(ticksElapsed) < pcraft.getTickCooldown()) {
@@ -405,27 +401,24 @@ public class AsyncManager extends BukkitRunnable {
             // descend
             if (pcraft.getCruiseDirection() == 0x43) {
                 dy = 0 - 1 - pcraft.getType().getVertCruiseSkipBlocks();
-<<<<<<< HEAD
-                if (pcraft.getMinY() <= w.getSeaLevel()) {
-=======
                 if (pcraft.getHitBox().getMinY() <= w.getSeaLevel()) {
->>>>>>> upstream/master
+
                     dy = -1;
                 }
             } else if (dive) {
                 dy = 0 - ((pcraft.getType().getCruiseSkipBlocks() + 1) >> 1);
-<<<<<<< HEAD
-                if (pcraft.getMinY() <= w.getSeaLevel()) {
+
+                if (pcraft.getHitBox().getMinY() <= w.getSeaLevel()) {
                     dy = -1;
                 }
             } else if (climb) {
             	dy = 0 + ((pcraft.getType().getCruiseSkipBlocks() + 1) >> 1);
             	
-=======
+
                 if (pcraft.getHitBox().getMinY() <= w.getSeaLevel()) {
                     dy = -1;
                 }
->>>>>>> upstream/master
+
             }
             // ship faces west
             if (pcraft.getCruiseDirection() == 0x5) {
@@ -480,6 +473,8 @@ public class AsyncManager extends BukkitRunnable {
             }
         }
     }
+        
+    
 
     private boolean isRegionBlockedPVP(MovecraftLocation loc, World w) {
         if (Movecraft.getInstance().getWorldGuardPlugin() == null)
