@@ -17,7 +17,6 @@
 
 package net.countercraft.movecraft.listener;
 
-import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
@@ -178,7 +177,7 @@ public class PlayerListener implements Listener {
             return;
         }
 
-        if(MathUtils.locationNearHitbox(c.getHitBox(), event.getPlayer().getLocation(), 2)){
+        if(MathUtils.locationNearHitBox(c.getHitBox(), event.getPlayer().getLocation(), 2)){
             timeToReleaseAfter.remove(c);
             return;
         }

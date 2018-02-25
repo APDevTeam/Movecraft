@@ -73,8 +73,9 @@ public class MathUtils {
      * @return True if <code>location</code> is less or equal to 3 blocks from <code>craft</code>
      */
     @Contract(pure=true)
-    public static boolean locationNearHitbox(@NotNull final HitBox hitBox, @NotNull final Location location, double distance) {
-        return location.getX() >= hitBox.getMinX() - distance &&
+    public static boolean locationNearHitBox(@NotNull final HitBox hitBox, @NotNull final Location location, double distance) {
+        return !hitBox.isEmpty() &&
+                location.getX() >= hitBox.getMinX() - distance &&
                 location.getZ() >= hitBox.getMinZ() - distance &&
                 location.getX() <= hitBox.getMaxX() + distance &&
                 location.getZ() <= hitBox.getMaxZ() + distance &&
@@ -91,12 +92,7 @@ public class MathUtils {
     @Contract(pure=true)
     public static boolean locIsNearCraftFast(@NotNull final Craft craft, @NotNull final MovecraftLocation location) {
         // optimized to be as fast as possible, it checks the easy ones first, then the more computationally intensive later
-        return location.getX() >= craft.getHitBox().getMinX() - 3 &&
-                location.getZ() >= craft.getHitBox().getMinZ() - 3 &&
-                location.getX() <= craft.getHitBox().getMaxX() + 3 &&
-                location.getZ() <= craft.getHitBox().getMaxZ() + 3 &&
-                location.getY() >= craft.getHitBox().getMinY() - 3 &&
-                location.getY() <= craft.getHitBox().getMaxY() + 3;
+        return locationNearHitBox(craft.getHitBox(), location.toBukkit(craft.getW()), 3);
     }
 
     /**
