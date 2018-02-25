@@ -341,7 +341,7 @@ public class AsyncManager extends BukkitRunnable {
     }
 
     private void processCruise() {
-        for (Craft pcraft : CraftManager.getInstance().getCraftList()) {
+        for (Craft pcraft : CraftManager.getInstance()) {
             if (pcraft == null || !pcraft.isNotProcessing() || !pcraft.getCruising()) {
                 continue;
             }
@@ -496,164 +496,167 @@ public class AsyncManager extends BukkitRunnable {
             // be sinking or disabled
             for (Craft pcraft : CraftManager.getInstance().getCraftsInWorld(w)) {
                 Set<TownBlock> townBlockSet = new HashSet<>();
-                if (pcraft != null && !pcraft.getSinking()) {
-                    if (pcraft.getType().getSinkPercent() != 0.0 && pcraft.isNotProcessing()) {
-                        long ticksElapsed = (System.currentTimeMillis() - pcraft.getLastBlockCheck()) / 50;
+                if (pcraft.getSinking()) {
+                    continue;
+                }
+                if (pcraft.getType().getSinkPercent() == 0.0 || !pcraft.isNotProcessing()) {
+                    continue;
+                }
+                long ticksElapsed = (System.currentTimeMillis() - pcraft.getLastBlockCheck()) / 50;
 
-                        if (ticksElapsed > Settings.SinkCheckTicks) {
-                            int totalNonAirBlocks = 0;
-                            int totalNonAirWaterBlocks = 0;
-                            HashMap<ArrayList<Integer>, Integer> foundFlyBlocks = new HashMap<>();
-                            HashMap<ArrayList<Integer>, Integer> foundMoveBlocks = new HashMap<>();
-                            boolean regionPVPBlocked = false;
-                            boolean sinkingForbiddenByFlag = false;
-                            boolean sinkingForbiddenByTowny = false;
-                            // go through each block in the blocklist, and
-                            // if its in the FlyBlocks, total up the number
-                            // of them
-                            Location townyLoc = null;
-                            for (MovecraftLocation l : pcraft.getHitBox()) {
-                                if (isRegionBlockedPVP(l, w))
-                                    regionPVPBlocked = true;
-                                if (!isRegionFlagSinkAllowed(l, w))
-                                    sinkingForbiddenByFlag = true;
-                                if (townyLoc == null && townyEnabled && Settings.TownyBlockSinkOnNoPVP) {
-                                    townyLoc = isTownyPlotPVPEnabled(l, w, townBlockSet);
-                                    if (townyLoc != null) {
-                                        sinkingForbiddenByTowny = true;
-                                    }
-                                }
-                                Integer blockID = w.getBlockAt(l.getX(), l.getY(), l.getZ()).getTypeId();
-                                Integer dataID = (int) w.getBlockAt(l.getX(), l.getY(), l.getZ()).getData();
-                                Integer shiftedID = (blockID << 4) + dataID + 10000;
-                                for (ArrayList<Integer> flyBlockDef : pcraft.getType().getFlyBlocks().keySet()) {
-                                    if (flyBlockDef.contains(blockID) || flyBlockDef.contains(shiftedID)) {
-                                        foundFlyBlocks.merge(flyBlockDef, 1, (a, b) -> a + b);
-                                    }
-                                }
-                                if (pcraft.getType().getMoveBlocks() != null) {
-                                    for (ArrayList<Integer> moveBlockDef : pcraft.getType().getMoveBlocks().keySet()) {
-                                        if (moveBlockDef.contains(blockID) || moveBlockDef.contains(shiftedID)) {
-                                            foundMoveBlocks.merge(moveBlockDef, 1, (a, b) -> a + b);
-                                        }
-                                    }
-                                }
-
-                                if (blockID != 0) {
-                                    totalNonAirBlocks++;
-                                }
-                                if (blockID != 0 && blockID != 8 && blockID != 9) {
-                                    totalNonAirWaterBlocks++;
-                                }
-                            }
-
-                            // now see if any of the resulting percentages
-                            // are below the threshold specified in
-                            // SinkPercent
-                            boolean isSinking = false;
-
-                            for (ArrayList<Integer> i : pcraft.getType().getFlyBlocks().keySet()) {
-                                int numfound = 0;
-                                if (foundFlyBlocks.get(i) != null) {
-                                    numfound = foundFlyBlocks.get(i);
-                                }
-                                double percent = ((double) numfound / (double) totalNonAirBlocks) * 100.0;
-                                double flyPercent = pcraft.getType().getFlyBlocks().get(i).get(0);
-                                double sinkPercent = flyPercent * pcraft.getType().getSinkPercent() / 100.0;
-                                if (percent < sinkPercent) {
-                                    isSinking = true;
-                                }
-
-                            }
-                            if (pcraft.getType().getMoveBlocks() != null) {
-                                for (ArrayList<Integer> i : pcraft.getType().getMoveBlocks().keySet()) {
-                                    int numfound = 0;
-                                    if (foundMoveBlocks.get(i) != null) {
-                                        numfound = foundMoveBlocks.get(i);
-                                    }
-                                    double percent = ((double) numfound / (double) totalNonAirBlocks) * 100.0;
-                                    double movePercent = pcraft.getType().getMoveBlocks().get(i).get(0);
-                                    double disablePercent = movePercent * pcraft.getType().getSinkPercent() / 100.0;
-                                    if (percent < disablePercent && !pcraft.getDisabled() && pcraft.isNotProcessing()) {
-                                        pcraft.setDisabled(true);
-                                        if (pcraft.getNotificationPlayer() != null) {
-                                            Location loc = pcraft.getNotificationPlayer().getLocation();
-                                            pcraft.getW().playSound(loc, Sound.ENTITY_IRONGOLEM_DEATH, 5.0f, 5.0f);
-                                        }
-                                    }
-                                }
-
-                            }
-
-                            // And check the overallsinkpercent
-                            if (pcraft.getType().getOverallSinkPercent() != 0.0) {
-                                double percent;
-                                if (pcraft.getType().blockedByWater()) {
-                                    percent = (double) totalNonAirBlocks
-                                            / (double) pcraft.getOrigBlockCount();
-                                } else {
-                                    percent = (double) totalNonAirWaterBlocks
-                                            / (double) pcraft.getOrigBlockCount();
-                                }
-                                if (percent * 100.0 < pcraft.getType().getOverallSinkPercent()) {
-                                    isSinking = true;
-                                }
-                            }
-
-                            if (totalNonAirBlocks == 0) {
-                                isSinking = true;
-                            }
-
-                            if (isSinking && (regionPVPBlocked || sinkingForbiddenByFlag || sinkingForbiddenByTowny)
-                                    && pcraft.isNotProcessing()) {
-                                Player notifyP = pcraft.getNotificationPlayer();
-                                if (notifyP != null)
-                                    if (regionPVPBlocked) {
-                                        notifyP.sendMessage(I18nSupport.getInternationalisedString(
-                                                "Player- Craft should sink but PVP is not allowed in this WorldGuard region"));
-                                    } else if (sinkingForbiddenByFlag) {
-                                        notifyP.sendMessage(I18nSupport.getInternationalisedString(
-                                                "WGCustomFlags - Sinking a craft is not allowed in this WorldGuard region"));
-                                    } else {
-                                        if (townyLoc != null) {
-                                            notifyP.sendMessage(String.format(
-                                                    I18nSupport.getInternationalisedString(
-                                                            "Towny - Sinking a craft is not allowed in this town plot")
-                                                            + " @ %d,%d,%d", townyLoc.getBlockX(), townyLoc.getBlockY(),
-                                                    townyLoc.getBlockZ()));
-                                        } else {
-                                            notifyP.sendMessage(
-                                                    I18nSupport.getInternationalisedString(
-                                                            "Towny - Sinking a craft is not allowed in this town plot"));
-                                        }
-
-                                    }
-                                pcraft.setCruising(false);
-                                CraftManager.getInstance().removeCraft(pcraft);
-                            } else {
-                                // if the craft is sinking, let the player
-                                // know and release the craft. Otherwise
-                                // update the time for the next check
-                                if (isSinking && pcraft.isNotProcessing()) {
-                                    Player notifyP = pcraft.getNotificationPlayer();
-                                    if (notifyP != null)
-                                        notifyP.sendMessage(I18nSupport
-                                                .getInternationalisedString("Player- Craft is sinking"));
-                                    pcraft.setCruising(false);
-                                    pcraft.setSinking(true);
-                                    CraftManager.getInstance().removePlayerFromCraft(pcraft);
-                                    final Craft releaseCraft = pcraft;
-                                    new BukkitRunnable() {
-                                        @Override
-                                        public void run() {
-                                            CraftManager.getInstance().removeCraft(releaseCraft);
-                                        }
-                                    }.runTaskLater(Movecraft.getInstance(), (20 * 600));
-                                } else {
-                                    pcraft.setLastBlockCheck(System.currentTimeMillis());
-                                }
+                if (ticksElapsed <= Settings.SinkCheckTicks) {
+                    continue;
+                }
+                int totalNonAirBlocks = 0;
+                int totalNonAirWaterBlocks = 0;
+                HashMap<ArrayList<Integer>, Integer> foundFlyBlocks = new HashMap<>();
+                HashMap<ArrayList<Integer>, Integer> foundMoveBlocks = new HashMap<>();
+                boolean regionPVPBlocked = false;
+                boolean sinkingForbiddenByFlag = false;
+                boolean sinkingForbiddenByTowny = false;
+                // go through each block in the blocklist, and
+                // if its in the FlyBlocks, total up the number
+                // of them
+                Location townyLoc = null;
+                for (MovecraftLocation l : pcraft.getHitBox()) {
+                    if (isRegionBlockedPVP(l, w))
+                        regionPVPBlocked = true;
+                    if (!isRegionFlagSinkAllowed(l, w))
+                        sinkingForbiddenByFlag = true;
+                    if (townyLoc == null && townyEnabled && Settings.TownyBlockSinkOnNoPVP) {
+                        townyLoc = isTownyPlotPVPEnabled(l, w, townBlockSet);
+                        if (townyLoc != null) {
+                            sinkingForbiddenByTowny = true;
+                        }
+                    }
+                    Integer blockID = w.getBlockAt(l.getX(), l.getY(), l.getZ()).getTypeId();
+                    Integer dataID = (int) w.getBlockAt(l.getX(), l.getY(), l.getZ()).getData();
+                    Integer shiftedID = (blockID << 4) + dataID + 10000;
+                    for (ArrayList<Integer> flyBlockDef : pcraft.getType().getFlyBlocks().keySet()) {
+                        if (flyBlockDef.contains(blockID) || flyBlockDef.contains(shiftedID)) {
+                            foundFlyBlocks.merge(flyBlockDef, 1, (a, b) -> a + b);
+                        }
+                    }
+                    if (pcraft.getType().getMoveBlocks() != null) {
+                        for (ArrayList<Integer> moveBlockDef : pcraft.getType().getMoveBlocks().keySet()) {
+                            if (moveBlockDef.contains(blockID) || moveBlockDef.contains(shiftedID)) {
+                                foundMoveBlocks.merge(moveBlockDef, 1, (a, b) -> a + b);
                             }
                         }
+                    }
+
+                    if (blockID != 0) {
+                        totalNonAirBlocks++;
+                    }
+                    if (blockID != 0 && blockID != 8 && blockID != 9) {
+                        totalNonAirWaterBlocks++;
+                    }
+                }
+
+                // now see if any of the resulting percentages
+                // are below the threshold specified in
+                // SinkPercent
+                boolean isSinking = false;
+
+                for (ArrayList<Integer> i : pcraft.getType().getFlyBlocks().keySet()) {
+                    int numfound = 0;
+                    if (foundFlyBlocks.get(i) != null) {
+                        numfound = foundFlyBlocks.get(i);
+                    }
+                    double percent = ((double) numfound / (double) totalNonAirBlocks) * 100.0;
+                    double flyPercent = pcraft.getType().getFlyBlocks().get(i).get(0);
+                    double sinkPercent = flyPercent * pcraft.getType().getSinkPercent() / 100.0;
+                    if (percent < sinkPercent) {
+                        isSinking = true;
+                    }
+
+                }
+                if (pcraft.getType().getMoveBlocks() != null) {
+                    for (ArrayList<Integer> i : pcraft.getType().getMoveBlocks().keySet()) {
+                        int numfound = 0;
+                        if (foundMoveBlocks.get(i) != null) {
+                            numfound = foundMoveBlocks.get(i);
+                        }
+                        double percent = ((double) numfound / (double) totalNonAirBlocks) * 100.0;
+                        double movePercent = pcraft.getType().getMoveBlocks().get(i).get(0);
+                        double disablePercent = movePercent * pcraft.getType().getSinkPercent() / 100.0;
+                        if (percent < disablePercent && !pcraft.getDisabled() && pcraft.isNotProcessing()) {
+                            pcraft.setDisabled(true);
+                            if (pcraft.getNotificationPlayer() != null) {
+                                Location loc = pcraft.getNotificationPlayer().getLocation();
+                                pcraft.getW().playSound(loc, Sound.ENTITY_IRONGOLEM_DEATH, 5.0f, 5.0f);
+                            }
+                        }
+                    }
+
+                }
+
+                // And check the overallsinkpercent
+                if (pcraft.getType().getOverallSinkPercent() != 0.0) {
+                    double percent;
+                    if (pcraft.getType().blockedByWater()) {
+                        percent = (double) totalNonAirBlocks
+                                / (double) pcraft.getOrigBlockCount();
+                    } else {
+                        percent = (double) totalNonAirWaterBlocks
+                                / (double) pcraft.getOrigBlockCount();
+                    }
+                    if (percent * 100.0 < pcraft.getType().getOverallSinkPercent()) {
+                        isSinking = true;
+                    }
+                }
+
+                if (totalNonAirBlocks == 0) {
+                    isSinking = true;
+                }
+
+                if (isSinking && (regionPVPBlocked || sinkingForbiddenByFlag || sinkingForbiddenByTowny)
+                        && pcraft.isNotProcessing()) {
+                    Player notifyP = pcraft.getNotificationPlayer();
+                    if (notifyP != null)
+                        if (regionPVPBlocked) {
+                            notifyP.sendMessage(I18nSupport.getInternationalisedString(
+                                    "Player- Craft should sink but PVP is not allowed in this WorldGuard region"));
+                        } else if (sinkingForbiddenByFlag) {
+                            notifyP.sendMessage(I18nSupport.getInternationalisedString(
+                                    "WGCustomFlags - Sinking a craft is not allowed in this WorldGuard region"));
+                        } else {
+                            if (townyLoc != null) {
+                                notifyP.sendMessage(String.format(
+                                        I18nSupport.getInternationalisedString(
+                                                "Towny - Sinking a craft is not allowed in this town plot")
+                                                + " @ %d,%d,%d", townyLoc.getBlockX(), townyLoc.getBlockY(),
+                                        townyLoc.getBlockZ()));
+                            } else {
+                                notifyP.sendMessage(
+                                        I18nSupport.getInternationalisedString(
+                                                "Towny - Sinking a craft is not allowed in this town plot"));
+                            }
+
+                        }
+                    pcraft.setCruising(false);
+                    CraftManager.getInstance().removeCraft(pcraft);
+                } else {
+                    // if the craft is sinking, let the player
+                    // know and release the craft. Otherwise
+                    // update the time for the next check
+                    if (isSinking && pcraft.isNotProcessing()) {
+                        Player notifyP = pcraft.getNotificationPlayer();
+                        if (notifyP != null)
+                            notifyP.sendMessage(I18nSupport
+                                    .getInternationalisedString("Player- Craft is sinking"));
+                        pcraft.setCruising(false);
+                        pcraft.setSinking(true);
+                        CraftManager.getInstance().removePlayerFromCraft(pcraft);
+                        final Craft releaseCraft = pcraft;
+                        new BukkitRunnable() {
+                            @Override
+                            public void run() {
+                                CraftManager.getInstance().removeCraft(releaseCraft);
+                            }
+                        }.runTaskLater(Movecraft.getInstance(), (20 * 600));
+                    } else {
+                        pcraft.setLastBlockCheck(System.currentTimeMillis());
                     }
                 }
             }
@@ -1186,7 +1189,7 @@ public class AsyncManager extends BukkitRunnable {
 //			FastBlockChanger.getInstance().run();
 
         // now cleanup craft that are bugged and have not moved in the past 60 seconds, but have no pilot or are still processing
-        for (Craft pcraft : CraftManager.getInstance().getCraftList()) {
+        for (Craft pcraft : CraftManager.getInstance()) {
             if (CraftManager.getInstance().getPlayerFromCraft(pcraft) == null) {
                 if (pcraft.getLastCruiseUpdate() < System.currentTimeMillis() - 60000) {
                     CraftManager.getInstance().forceRemoveCraft(pcraft);

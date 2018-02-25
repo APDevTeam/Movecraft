@@ -29,12 +29,12 @@ public class CraftReportCommand implements CommandExecutor{
             commandSender.sendMessage(" Invalid page \"" + args[0] + "\"");
             return true;
         }
-        if (CraftManager.getInstance().getCraftList().isEmpty()){
+        if (CraftManager.getInstance().isEmpty()){
             commandSender.sendMessage("No crafts found");
             return true;
         }
         TopicPaginator paginator = new TopicPaginator("Craft Report");
-        for (Craft craft : CraftManager.getInstance().getCraftList()) {
+        for (Craft craft : CraftManager.getInstance()) {
             HitBox hitBox = craft.getHitBox();
             if (craft.getNotificationPlayer() != null)
                 paginator.addLine( craft.getType().getCraftName() + " " + craft.getNotificationPlayer().getName() + " " + hitBox.size() + " @ " + hitBox.getMinX() + "," + hitBox.getMinY() + "," + hitBox.getMinZ());

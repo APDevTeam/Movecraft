@@ -187,7 +187,7 @@ public class BlockListener implements Listener {
         }
         for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(block.getWorld())) {
             MovecraftLocation mloc = new MovecraftLocation(block.getX(), block.getY(), block.getZ());
-            if (MathUtils.locIsNearCraftFast(tcraft, mloc) && tcraft.getCruising() || !tcraft.isNotProcessing()) {
+            if (MathUtils.locIsNearCraftFast(tcraft, mloc) && tcraft.getCruising() && !tcraft.isNotProcessing()) {
                 event.setCancelled(true);
                 return;
             }
@@ -206,7 +206,7 @@ public class BlockListener implements Listener {
         }
         for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(block.getWorld())) {
             MovecraftLocation mloc = new MovecraftLocation(block.getX(), block.getY(), block.getZ());
-            if (MathUtils.locIsNearCraftFast(tcraft, mloc) && tcraft.getCruising() || !tcraft.isNotProcessing()) {
+            if (MathUtils.locIsNearCraftFast(tcraft, mloc) && tcraft.getCruising() && !tcraft.isNotProcessing()) {
                 event.setCancelled(true);
                 return;
             }

@@ -30,7 +30,7 @@ public class ManOverboardCommand implements CommandExecutor{
             return true;
         }
 
-        for(Craft playerCraft : CraftManager.getInstance().getCraftList()){
+        for(Craft playerCraft : CraftManager.getInstance()){
             if (playerCraft.getMovedPlayers().containsKey(player)) {
                 if (playerCraft.getW() != player.getWorld()) {
                     player.sendMessage(I18nSupport.getInternationalisedString("Distance to craft is too far"));

@@ -347,6 +347,7 @@ public class TranslationTask extends AsyncTask {
                 }
                 craft.setLastCruisUpdate(System.currentTimeMillis() - 30000);
             }
+            CraftManager.getInstance().removeCraft(craft);
         }
         if(failed)
             return;
