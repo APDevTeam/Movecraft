@@ -46,6 +46,8 @@ public class TranslationTask extends AsyncTask {
 
     @Override
     protected void excecute() {
+        if(oldHitBox.isEmpty())
+            return;
         int minY = oldHitBox.getMinY();
         int maxY = oldHitBox.getMaxY();
         int maxX = oldHitBox.getMaxX();
