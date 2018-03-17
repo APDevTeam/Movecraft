@@ -66,6 +66,7 @@ public class CraftType {
     private double dynamicFlyBlockSpeedFactor;
     private int dynamicFlyBlock;
     private double chestPenalty;
+    private String pilotSound;
 
     public CraftType(File f) {
         try {
@@ -207,6 +208,9 @@ public class CraftType {
 
         forbiddenBlocks = blockIDListFromObject(data.get("forbiddenBlocks"));
         forbiddenSignStrings = stringListFromObject(data.get("forbiddenSignStrings"));
+        if (data.containsKey("pilotSound")) {
+            pilotSound = (String) data.get("pilotSound"));
+        }
         if (data.containsKey("canFly")) {
             blockedByWater = (Boolean) data.get("canFly");
         } else if (data.containsKey("blockedByWater")) {
@@ -519,6 +523,10 @@ public class CraftType {
         return forbiddenSignStrings;
     }
 
+    public String getPilotSound() {
+        return pilotSound;
+    }
+    
     public boolean blockedByWater() {
         return blockedByWater;
     }
