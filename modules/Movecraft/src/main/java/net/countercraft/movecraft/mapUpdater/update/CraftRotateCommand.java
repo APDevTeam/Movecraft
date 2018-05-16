@@ -31,7 +31,7 @@ public class CraftRotateCommand extends UpdateCommand{
     @Override
     public void doUpdate() {
         if(craft.getHitBox().isEmpty()){
-            logger.warning("Attempted to move craft with empty HitBox!");
+            logger.warning("Attempted to move craft with empty HashHitBox!");
             CraftManager.getInstance().removeCraft(craft);
             return;
         }

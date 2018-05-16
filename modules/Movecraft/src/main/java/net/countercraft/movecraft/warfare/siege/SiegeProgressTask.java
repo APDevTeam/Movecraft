@@ -4,7 +4,7 @@ import com.sk89q.worldguard.domains.DefaultDomain;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.utils.HitBox;
+import net.countercraft.movecraft.utils.HashHitBox;
 import net.countercraft.movecraft.craft.CraftManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -29,7 +29,7 @@ public class SiegeProgressTask extends SiegeTask {
         int midY = 0;
         int midZ = 0;
         if (siegeLeaderPilotingShip) {
-            HitBox hitBox = siegeCraft.getHitBox();
+            HashHitBox hitBox = siegeCraft.getHitBox();
             midX = (hitBox.getMaxX() + hitBox.getMinX()) / 2;
             midY = (hitBox.getMaxY() + hitBox.getMinY()) / 2;
             midZ = (hitBox.getMaxZ() + hitBox.getMinZ()) / 2;

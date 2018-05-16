@@ -19,7 +19,7 @@ package net.countercraft.movecraft.craft;
 
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
-import net.countercraft.movecraft.utils.HitBox;
+import net.countercraft.movecraft.utils.HashHitBox;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -39,7 +39,7 @@ public abstract class Craft {
     protected final CraftType type;
     //protected int[][][] hitBox;
     //protected MovecraftLocation[] blockList;
-    protected HitBox hitBox;
+    protected HashHitBox hitBox;
 
     protected World w;
     private AtomicBoolean processing = new AtomicBoolean();
@@ -74,7 +74,7 @@ public abstract class Craft {
         this.type = type;
         this.w = world;
         //this.blockList = new MovecraftLocation[1];
-        this.hitBox = new HitBox();
+        this.hitBox = new HashHitBox();
         if (type.getMaxHeightLimit() > w.getMaxHeight() - 1) {
             this.maxHeightLimit = w.getMaxHeight() - 1;
         } else {
@@ -114,11 +114,11 @@ public abstract class Craft {
         }
     }*/
 
-    public HitBox getHitBox() {
+    public HashHitBox getHitBox() {
         return hitBox;
     }
 
-    public void setHitBox(@NotNull HitBox hitBox){
+    public void setHitBox(@NotNull HashHitBox hitBox){
         this.hitBox = hitBox;
     }
 

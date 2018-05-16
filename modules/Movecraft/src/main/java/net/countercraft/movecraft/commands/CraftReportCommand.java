@@ -1,7 +1,7 @@
 package net.countercraft.movecraft.commands;
 
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.utils.HitBox;
+import net.countercraft.movecraft.utils.HashHitBox;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.TopicPaginator;
@@ -35,7 +35,7 @@ public class CraftReportCommand implements CommandExecutor{
         }
         TopicPaginator paginator = new TopicPaginator("Craft Report");
         for (Craft craft : CraftManager.getInstance()) {
-            HitBox hitBox = craft.getHitBox();
+            HashHitBox hitBox = craft.getHitBox();
             if (craft.getNotificationPlayer() != null)
                 paginator.addLine( craft.getType().getCraftName() + " " + craft.getNotificationPlayer().getName() + " " + hitBox.size() + " @ " + hitBox.getMinX() + "," + hitBox.getMinY() + "," + hitBox.getMinZ());
             else

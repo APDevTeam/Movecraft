@@ -24,11 +24,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class CraftType {
     private String craftName;
@@ -62,6 +58,7 @@ public class CraftType {
     private int hoverLimit;
     private List<Material> harvestBlocks;
     private List<Material> harvesterBladeBlocks;
+    private Set<Material> passthroughBlocks;
     private double dynamicLagSpeedFactor;
     private double dynamicFlyBlockSpeedFactor;
     private int dynamicFlyBlock;
@@ -721,5 +718,9 @@ public class CraftType {
 
     public double getChestPenalty() {
         return chestPenalty;
+    }
+
+    public  Set<Material> getPassthroughBlocks(){
+        return passthroughBlocks;
     }
 }

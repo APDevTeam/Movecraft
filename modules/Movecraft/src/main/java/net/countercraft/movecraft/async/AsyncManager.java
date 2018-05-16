@@ -27,7 +27,7 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.utils.CollectionUtils;
-import net.countercraft.movecraft.utils.HitBox;
+import net.countercraft.movecraft.utils.HashHitBox;
 import net.countercraft.movecraft.async.detection.DetectionTask;
 import net.countercraft.movecraft.async.detection.DetectionTaskData;
 import net.countercraft.movecraft.async.rotation.RotationTask;
@@ -156,7 +156,7 @@ public class AsyncManager extends BukkitRunnable {
 
                         if (craftsInWorld != null) {
                             for (Craft craft : craftsInWorld) {
-                                if(craft.getHitBox().intersects(new HitBox(Arrays.asList(data.getBlockList())))){
+                                if(craft.getHitBox().intersects(new HashHitBox(Arrays.asList(data.getBlockList())))){
                                     isSubcraft = true;
                                     if (c.getType().getCruiseOnPilot() || p != null) {
                                         if (craft.getType() == c.getType()
@@ -174,7 +174,7 @@ public class AsyncManager extends BukkitRunnable {
                                                 failed = true;
                                                 notifyP.sendMessage(I18nSupport.getInternationalisedString("Parent Craft is busy"));
                                             }
-                                            craft.setHitBox(new HitBox(CollectionUtils.filter(craft.getHitBox(),Arrays.asList(data.getBlockList()))));
+                                            craft.setHitBox(new HashHitBox(CollectionUtils.filter(craft.getHitBox(),Arrays.asList(data.getBlockList()))));
                                             craft.setOrigBlockCount(craft.getOrigBlockCount() - data.getBlockList().length);
                                         }
                                     }
@@ -188,7 +188,7 @@ public class AsyncManager extends BukkitRunnable {
                             notifyP.sendMessage(I18nSupport.getInternationalisedString("Craft must be part of another craft"));
                         }
                         if (!failed) {
-                            c.setHitBox(new HitBox(Arrays.asList(task.getData().getBlockList())));
+                            c.setHitBox(new HashHitBox(Arrays.asList(task.getData().getBlockList())));
                             c.setOrigBlockCount(data.getBlockList().length);
                             c.setNotificationPlayer(notifyP);
                             if (notifyP != null) {
@@ -229,7 +229,7 @@ public class AsyncManager extends BukkitRunnable {
                     if (notifyP != null && !c.getSinking())
                         notifyP.sendMessage(task.getFailMessage());
 
-                    if (task.collisionExplosion()) {
+                    if (task.isCollisionExplosion()) {
                         c.setHitBox(task.getNewHitBox());
                         //c.setBlockList(task.getData().getBlockList());
                         //boolean failed = MapUpdateManager.getInstance().addWorldUpdate(c.getW(), updates, null, null, exUpdates);
@@ -949,7 +949,7 @@ public class AsyncManager extends BukkitRunnable {
         }
     }
 
-    private void processFadingBlocks() {
+    /*private void processFadingBlocks() {
         if (Settings.FadeWrecksAfter == 0)
             return;
         long ticksElapsed = (System.currentTimeMillis() - lastFadeCheck) / 50;
@@ -1037,7 +1037,7 @@ public class AsyncManager extends BukkitRunnable {
 
             lastFadeCheck = System.currentTimeMillis();
         }
-    }
+    }*/
 
     private void processDetection() {
         long ticksElapsed = (System.currentTimeMillis() - lastContactCheck) / 50;
@@ -1181,7 +1181,7 @@ public class AsyncManager extends BukkitRunnable {
         processTracers();
         processFireballs();
         processTNTContactExplosives();
-        processFadingBlocks();
+        //processFadingBlocks();
         processDetection();
         processAlgorithmQueue();
         //processScheduledBlockChanges();

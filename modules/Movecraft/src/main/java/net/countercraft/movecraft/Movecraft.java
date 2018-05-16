@@ -100,10 +100,10 @@ public class Movecraft extends JavaPlugin {
     private static Cannons cannonsPlugin = null;
     private static Towny townyPlugin = null;
     private static Essentials essentialsPlugin = null;
-    public HashMap<MovecraftLocation, Long> blockFadeTimeMap = new HashMap<>();
+    /*public HashMap<MovecraftLocation, Long> blockFadeTimeMap = new HashMap<>();
     public HashMap<MovecraftLocation, Integer> blockFadeTypeMap = new HashMap<>();
     public HashMap<MovecraftLocation, Boolean> blockFadeWaterMap = new HashMap<>();
-    public HashMap<MovecraftLocation, World> blockFadeWorldMap = new HashMap<>();
+    public HashMap<MovecraftLocation, World> blockFadeWorldMap = new HashMap<>();*/
     private Logger logger;
     private boolean shuttingDown;
     private WorldHandler worldHandler;

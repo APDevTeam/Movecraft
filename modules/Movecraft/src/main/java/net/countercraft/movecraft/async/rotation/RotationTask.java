@@ -26,9 +26,8 @@ import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.utils.CollectionUtils;
-import net.countercraft.movecraft.utils.HitBox;
-import net.countercraft.movecraft.utils.MathUtils;
+import net.countercraft.movecraft.utils.*;
+import net.countercraft.movecraft.utils.HashHitBox;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.CraftManager;
@@ -36,9 +35,6 @@ import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.update.CraftRotateCommand;
 import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
-import net.countercraft.movecraft.utils.TownyUtils;
-import net.countercraft.movecraft.utils.TownyWorldHeightLimits;
-import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -70,8 +66,8 @@ public class RotationTask extends AsyncTask {
     private TownyWorld townyWorld;
     private TownyWorldHeightLimits townyWorldHeightLimits;
 
-    private final HitBox oldHitBox;
-    private final HitBox newHitBox;
+    private final HashHitBox oldHitBox;
+    private final HashHitBox newHitBox;
 
     public RotationTask(Craft c, MovecraftLocation originPoint, Rotation rotation, World w, boolean isSubCraft) {
         super(c);
@@ -79,8 +75,8 @@ public class RotationTask extends AsyncTask {
         this.rotation = rotation;
         this.w = w;
         this.isSubCraft = isSubCraft;
-        this.newHitBox = new HitBox();
-        this.oldHitBox = new HitBox(c.getHitBox());
+        this.newHitBox = new HashHitBox();
+        this.oldHitBox = new HashHitBox(c.getHitBox());
     }
 
     public RotationTask(Craft c, MovecraftLocation originPoint, Rotation rotation, World w) {
@@ -490,7 +486,7 @@ public class RotationTask extends AsyncTask {
         return !testMaterial.equals(mBlock) || oldHitBox.contains(aroundNewLoc);
     }
 
-    public HitBox getNewHitBox() {
+    public HashHitBox getNewHitBox() {
         return newHitBox;
     }
 }
