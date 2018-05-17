@@ -5,6 +5,8 @@ import com.sk89q.worldguard.protection.flags.DefaultFlag;
 import net.countercraft.movecraft.Movecraft;
 import org.bukkit.Location;
 
+import java.util.Objects;
+
 public class ExplosionUpdateCommand extends UpdateCommand {
     private final Location explosionLocation;
     private final float explosionStrength;
@@ -42,5 +44,20 @@ public class ExplosionUpdateCommand extends UpdateCommand {
             }
         }
         loc.getWorld().createExplosion(loc.getX() + 0.5, loc.getY() + 0.5, loc.getZ() + 0.5, explosionPower);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(explosionLocation, explosionStrength);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(!(obj instanceof ExplosionUpdateCommand)){
+            return false;
+        }
+        ExplosionUpdateCommand other = (ExplosionUpdateCommand) obj;
+        return this.explosionLocation.equals(other.explosionLocation) &&
+                this.explosionStrength == other.explosionStrength;
     }
 }

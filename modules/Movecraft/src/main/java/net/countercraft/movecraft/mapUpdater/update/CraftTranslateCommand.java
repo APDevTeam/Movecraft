@@ -12,10 +12,10 @@ import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Objects;
 import java.util.logging.Logger;
 
 public class CraftTranslateCommand extends UpdateCommand {
-    private Logger logger = Movecraft.getInstance().getLogger();
     @NotNull private final Craft craft;
     @NotNull private final MovecraftLocation displacement;
 
@@ -26,6 +26,7 @@ public class CraftTranslateCommand extends UpdateCommand {
 
     @Override
     public void doUpdate() {
+        final Logger logger = Movecraft.getInstance().getLogger();
         if(craft.getHitBox().isEmpty()){
             logger.warning("Attempted to move craft with empty HashHitBox!");
             CraftManager.getInstance().removeCraft(craft);
@@ -47,13 +48,23 @@ public class CraftTranslateCommand extends UpdateCommand {
         craft.addMoveTime(time/1e9f);
     }
 
-
-
     @NotNull
     public Craft getCraft(){
         return craft;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if(!(obj instanceof CraftTranslateCommand)){
+            return false;
+        }
+        CraftTranslateCommand other = (CraftTranslateCommand) obj;
+        return other.craft.equals(this.craft) &&
+                other.displacement.equals(this.displacement);
+    }
 
-
+    @Override
+    public int hashCode() {
+        return Objects.hash(craft, displacement);
+    }
 }

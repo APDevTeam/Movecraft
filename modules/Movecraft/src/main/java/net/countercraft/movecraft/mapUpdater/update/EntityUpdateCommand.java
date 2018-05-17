@@ -21,6 +21,8 @@ import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
+import java.util.Objects;
+
 /**
  * Class that stores the data about a single blocks changes to the map in an unspecified world. The world is retrieved contextually from the submitting craft.
  */
@@ -51,7 +53,21 @@ public class EntityUpdateCommand extends UpdateCommand {
         newLocation.setPitch(entity.getLocation().getPitch());
         entity.teleport(newLocation);
         //entity.setVelocity(velocity);
+    }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(newLocation, entity.getUniqueId());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(!(obj instanceof EntityUpdateCommand)){
+            return false;
+        }
+        EntityUpdateCommand other = (EntityUpdateCommand) obj;
+        return this.newLocation.equals(other.newLocation) &&
+                this.entity.equals(other.entity);
     }
 }
 

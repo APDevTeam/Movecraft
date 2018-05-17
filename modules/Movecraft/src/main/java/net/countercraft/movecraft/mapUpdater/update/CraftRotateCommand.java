@@ -13,14 +13,14 @@ import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Objects;
 import java.util.logging.Logger;
 
 
 public class CraftRotateCommand extends UpdateCommand{
-    private Logger logger = Movecraft.getInstance().getLogger();
     @NotNull private final Craft craft;
     @NotNull private final Rotation rotation;
-    @NotNull final MovecraftLocation originLocation;
+    @NotNull private final MovecraftLocation originLocation;
 
     public CraftRotateCommand(@NotNull final Craft craft,@NotNull final MovecraftLocation originLocation, @NotNull final Rotation rotation){
         this.craft = craft;
@@ -30,6 +30,7 @@ public class CraftRotateCommand extends UpdateCommand{
 
     @Override
     public void doUpdate() {
+        final Logger logger = Movecraft.getInstance().getLogger();
         if(craft.getHitBox().isEmpty()){
             logger.warning("Attempted to move craft with empty HashHitBox!");
             CraftManager.getInstance().removeCraft(craft);
@@ -52,10 +53,24 @@ public class CraftRotateCommand extends UpdateCommand{
         craft.addMoveTime(time/1e9f);
     }
 
-
-
     @NotNull
     public Craft getCraft(){
         return craft;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(!(obj instanceof CraftRotateCommand)){
+            return false;
+        }
+        CraftRotateCommand other = (CraftRotateCommand) obj;
+        return other.craft.equals(this.craft) &&
+                other.rotation == this.rotation &&
+                other.originLocation.equals(this.originLocation);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(craft,rotation,originLocation);
     }
 }
