@@ -17,6 +17,7 @@
 
 package net.countercraft.movecraft.listener;
 
+import net.countercraft.movecraft.utils.HitBox;
 import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
@@ -37,7 +38,7 @@ public class PlayerListener implements Listener {
 
     @Deprecated
     private String checkCraftBorders(Craft craft) {
-        Set<MovecraftLocation> craftBlocks = craft.getHitBox();
+        HitBox craftBlocks = craft.getHitBox();
         String ret = null;
         for (MovecraftLocation block : craft.getHitBox()) {
             int x, y, z;
