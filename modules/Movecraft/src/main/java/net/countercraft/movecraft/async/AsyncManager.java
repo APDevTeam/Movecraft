@@ -509,8 +509,8 @@ public class AsyncManager extends BukkitRunnable {
                 }
                 int totalNonAirBlocks = 0;
                 int totalNonAirWaterBlocks = 0;
-                HashMap<ArrayList<Integer>, Integer> foundFlyBlocks = new HashMap<>();
-                HashMap<ArrayList<Integer>, Integer> foundMoveBlocks = new HashMap<>();
+                HashMap<List<Integer>, Integer> foundFlyBlocks = new HashMap<>();
+                HashMap<List<Integer>, Integer> foundMoveBlocks = new HashMap<>();
                 boolean regionPVPBlocked = false;
                 boolean sinkingForbiddenByFlag = false;
                 boolean sinkingForbiddenByTowny = false;
@@ -532,13 +532,13 @@ public class AsyncManager extends BukkitRunnable {
                     Integer blockID = w.getBlockAt(l.getX(), l.getY(), l.getZ()).getTypeId();
                     Integer dataID = (int) w.getBlockAt(l.getX(), l.getY(), l.getZ()).getData();
                     Integer shiftedID = (blockID << 4) + dataID + 10000;
-                    for (ArrayList<Integer> flyBlockDef : pcraft.getType().getFlyBlocks().keySet()) {
+                    for (List<Integer> flyBlockDef : pcraft.getType().getFlyBlocks().keySet()) {
                         if (flyBlockDef.contains(blockID) || flyBlockDef.contains(shiftedID)) {
                             foundFlyBlocks.merge(flyBlockDef, 1, (a, b) -> a + b);
                         }
                     }
                     if (pcraft.getType().getMoveBlocks() != null) {
-                        for (ArrayList<Integer> moveBlockDef : pcraft.getType().getMoveBlocks().keySet()) {
+                        for (List<Integer> moveBlockDef : pcraft.getType().getMoveBlocks().keySet()) {
                             if (moveBlockDef.contains(blockID) || moveBlockDef.contains(shiftedID)) {
                                 foundMoveBlocks.merge(moveBlockDef, 1, (a, b) -> a + b);
                             }
@@ -558,7 +558,7 @@ public class AsyncManager extends BukkitRunnable {
                 // SinkPercent
                 boolean isSinking = false;
 
-                for (ArrayList<Integer> i : pcraft.getType().getFlyBlocks().keySet()) {
+                for (List<Integer> i : pcraft.getType().getFlyBlocks().keySet()) {
                     int numfound = 0;
                     if (foundFlyBlocks.get(i) != null) {
                         numfound = foundFlyBlocks.get(i);
@@ -572,7 +572,7 @@ public class AsyncManager extends BukkitRunnable {
 
                 }
                 if (pcraft.getType().getMoveBlocks() != null) {
-                    for (ArrayList<Integer> i : pcraft.getType().getMoveBlocks().keySet()) {
+                    for (List<Integer> i : pcraft.getType().getMoveBlocks().keySet()) {
                         int numfound = 0;
                         if (foundMoveBlocks.get(i) != null) {
                             numfound = foundMoveBlocks.get(i);

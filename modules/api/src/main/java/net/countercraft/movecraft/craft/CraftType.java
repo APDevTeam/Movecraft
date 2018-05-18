@@ -18,183 +18,86 @@
 package net.countercraft.movecraft.craft;
 
 import org.bukkit.Material;
+import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 
-public class CraftType {
-    private String craftName;
-    private int maxSize, minSize, minHeightLimit, maxHeightLimit, maxHeightAboveGround;
-    private Integer[] allowedBlocks, forbiddenBlocks;
-    private String[] forbiddenSignStrings;
-    private boolean blockedByWater, requireWaterContact, tryNudge, canCruise, canTeleport, canStaticMove, canHover, canDirectControl, useGravity, canHoverOverWater, moveEntities;
-    private boolean allowHorizontalMovement, allowVerticalMovement, allowRemoteSign, allowCannonDirectorSign, allowAADirectorSign, cruiseOnPilot, allowVerticalTakeoffAndLanding, rotateAtMidpoint;
-    private int cruiseOnPilotVertMove;
-    private int maxStaticMove;
-    private int cruiseSkipBlocks;
-    private int vertCruiseSkipBlocks;
-    private int cruiseTickCooldown;
-    private boolean halfSpeedUnderwater;
-    private boolean focusedExplosion;
-    private boolean mustBeSubcraft;
-    private int staticWaterLevel;
-    private double fuelBurnRate;
-    private double sinkPercent;
-    private double overallSinkPercent;
-    private double detectionMultiplier;
-    private double underwaterDetectionMultiplier;
-    private int sinkRateTicks;
-    private boolean keepMovingOnSink;
-    private int smokeOnSink;
-    private float explodeOnCrash;
-    private float collisionExplosion;
-    private int tickCooldown;
-    private HashMap<ArrayList<Integer>, ArrayList<Double>> flyBlocks = new HashMap<>();
-    private HashMap<ArrayList<Integer>, ArrayList<Double>> moveBlocks = new HashMap<>();
-    private int hoverLimit;
-    private List<Material> harvestBlocks;
-    private List<Material> harvesterBladeBlocks;
-    private Set<Material> passthroughBlocks;
-    private double dynamicLagSpeedFactor;
-    private double dynamicFlyBlockSpeedFactor;
-    private int dynamicFlyBlock;
-    private double chestPenalty;
+final public class CraftType {
+    private final boolean blockedByWater;
+    private final boolean requireWaterContact;
+    private final boolean tryNudge;
+    private final boolean canCruise;
+    private final boolean canTeleport;
+    private final boolean canStaticMove;
+    private final boolean canHover;
+    private final boolean canDirectControl;
+    private final boolean useGravity;
+    private final boolean canHoverOverWater;
+    private final boolean moveEntities;
+    private final boolean allowHorizontalMovement;
+    private final boolean allowVerticalMovement;
+    private final boolean allowRemoteSign;
+    private final boolean allowCannonDirectorSign;
+    private final boolean allowAADirectorSign;
+    private final boolean cruiseOnPilot;
+    private final boolean allowVerticalTakeoffAndLanding;
+    private final boolean rotateAtMidpoint;
+    private final boolean halfSpeedUnderwater;
+    private final boolean focusedExplosion;
+    private final boolean mustBeSubcraft;
+    private final boolean keepMovingOnSink;
+    private final int maxSize;
+    private final int minSize;
+    private final int minHeightLimit;
+    private final int maxHeightLimit;
+    private final int maxHeightAboveGround;
+    private final int cruiseOnPilotVertMove;
+    private final int maxStaticMove;
+    private final int cruiseSkipBlocks;
+    private final int vertCruiseSkipBlocks;
+    private final int cruiseTickCooldown;
+    private final int staticWaterLevel;
+    private final int sinkRateTicks;
+    private final int smokeOnSink;
+    private final int tickCooldown;
+    private final int hoverLimit;
+    private final int dynamicFlyBlock;
+    private final double fuelBurnRate;
+    private final double sinkPercent;
+    private final double overallSinkPercent;
+    private final double detectionMultiplier;
+    private final double underwaterDetectionMultiplier;
+    private final double dynamicLagSpeedFactor;
+    private final double dynamicFlyBlockSpeedFactor;
+    private final double chestPenalty;
+    private final float explodeOnCrash;
+    private final float collisionExplosion;
+    @NotNull private final String craftName;
+    @NotNull private final int[] allowedBlocks;
+    @NotNull private final int[] forbiddenBlocks;
+    @NotNull private final String[] forbiddenSignStrings;
+    @NotNull private final Map<List<Integer>, List<Double>> flyBlocks;
+    @NotNull private final Map<List<Integer>, List<Double>> moveBlocks;
+    @NotNull private final List<Material> harvestBlocks;
+    @NotNull private final List<Material> harvesterBladeBlocks;
+    @NotNull private final Set<Material> passthroughBlocks;
 
     public CraftType(File f) {
+        final Map data;
         try {
-            parseCraftDataFromFile(f);
-        } catch (Exception e) {
-            //Movecraft.getInstance().getLogger().log(Level.SEVERE, String.format(I18nSupport.getInternationalisedString("Startup - Error parsing CraftType file"), f.getAbsolutePath()));
-            e.printStackTrace();
+            InputStream input = new FileInputStream(f);
+            Yaml yaml = new Yaml();
+            data = (Map) yaml.load(input);
+            input.close();
+        } catch (IOException e) {
+            throw new TypeNotFoundException("No file found at path " + f.getAbsolutePath());
         }
-    }
 
-    private Integer integerFromObject(Object obj) {
-        if (obj instanceof Double) {
-            return ((Double) obj).intValue();
-        }
-        return (Integer) obj;
-    }
-
-    private Double doubleFromObject(Object obj) {
-        if (obj instanceof Integer) {
-            return ((Integer) obj).doubleValue();
-        }
-        return (Double) obj;
-    }
-
-    private Integer[] blockIDListFromObject(Object obj) {
-        ArrayList<Integer> returnList = new ArrayList<>();
-        ArrayList objList = (ArrayList) obj;
-        for (Object i : objList) {
-            if (i instanceof String) {
-                String str = (String) i;
-                if (str.contains(":")) {
-                    String[] parts = str.split(":");
-                    Integer typeID = Integer.valueOf(parts[0]);
-                    Integer metaData = Integer.valueOf(parts[1]);
-                    returnList.add(10000 + (typeID << 4) + metaData);  // id greater than 10000 indicates it has a meta data / damage value
-                } else {
-                    Integer typeID = Integer.valueOf(str);
-                    returnList.add(typeID);
-                }
-            } else {
-                Integer typeID = (Integer) i;
-                returnList.add(typeID);
-            }
-        }
-        return returnList.toArray(new Integer[1]);
-    }
-
-    private String[] stringListFromObject(Object obj) {
-        ArrayList<String> returnList = new ArrayList<>();
-        if (obj == null) {
-            return returnList.toArray(new String[1]);
-        }
-        ArrayList objList = (ArrayList) obj;
-        for (Object i : objList) {
-            if (i instanceof String) {
-                String str = (String) i;
-                returnList.add(str);
-            }
-        }
-        return returnList.toArray(new String[1]);
-    }
-
-    private HashMap<ArrayList<Integer>, ArrayList<Double>> blockIDMapListFromObject(Object obj) {
-        HashMap<ArrayList<Integer>, ArrayList<Double>> returnMap = new HashMap<>();
-        HashMap<Object, Object> objMap = (HashMap<Object, Object>) obj;
-        for (Object i : objMap.keySet()) {
-            ArrayList<Integer> rowList = new ArrayList<>();
-
-            // first read in the list of the blocks that type of flyblock. It could be a single string (with or without a ":") or integer, or it could be multiple of them
-            if (i instanceof ArrayList<?>) {
-                for (Object o : (ArrayList<Object>) i) {
-                    if (o instanceof String) {
-                        String str = (String) o;
-                        if (str.contains(":")) {
-                            String[] parts = str.split(":");
-                            Integer typeID = Integer.valueOf(parts[0]);
-                            Integer metaData = Integer.valueOf(parts[1]);
-                            rowList.add(10000 + (typeID << 4) + metaData);  // id greater than 10000 indicates it has a meta data / damage value
-                        } else {
-                            Integer typeID = Integer.valueOf(str);
-                            rowList.add(typeID);
-                        }
-                    } else {
-                        Integer typeID = (Integer) o;
-                        rowList.add(typeID);
-                    }
-                }
-            } else if (i instanceof String) {
-                String str = (String) i;
-                if (str.contains(":")) {
-                    String[] parts = str.split(":");
-                    Integer typeID = Integer.valueOf(parts[0]);
-                    Integer metaData = Integer.valueOf(parts[1]);
-                    rowList.add(10000 + (typeID << 4) + metaData);  // id greater than 10000 indicates it has a meta data / damage value
-                } else {
-                    Integer typeID = Integer.valueOf(str);
-                    rowList.add(typeID);
-                }
-            } else {
-                Integer typeID = (Integer) i;
-                rowList.add(typeID);
-            }
-
-            // then read in the limitation values, low and high
-            ArrayList<Object> objList = (ArrayList<Object>) objMap.get(i);
-            ArrayList<Double> limitList = new ArrayList<>();
-            for (Object limitObj : objList) {
-                if (limitObj instanceof String) {
-                    String str = (String) limitObj;
-                    if (str.contains("N")) { // a # indicates a specific quantity, IE: #2 for exactly 2 of the block
-                        String[] parts = str.split("N");
-                        Double val = Double.valueOf(parts[1]);
-                        limitList.add(10000d + val);  // limit greater than 10000 indicates an specific quantity (not a ratio)
-                    } else {
-                        Double val = Double.valueOf(str);
-                        limitList.add(val);
-                    }
-                } else if (limitObj instanceof Integer) {
-                    Double ret = ((Integer) limitObj).doubleValue();
-                    limitList.add(ret);
-                } else
-                    limitList.add((Double) limitObj);
-            }
-            returnMap.put(rowList, limitList);
-        }
-        return returnMap;
-    }
-
-    private void parseCraftDataFromFile(File file) throws FileNotFoundException {
-        InputStream input = new FileInputStream(file);
-        Yaml yaml = new Yaml();
-        Map data = (Map) yaml.load(input);
         craftName = (String) data.get("name");
         maxSize = integerFromObject(data.get("maxSize"));
         minSize = integerFromObject(data.get("minSize"));
@@ -232,7 +135,7 @@ public class CraftType {
         if (data.containsKey("moveblocks")) {
             moveBlocks = blockIDMapListFromObject(data.get("moveblocks"));
         } else {
-            moveBlocks = null;
+            moveBlocks = new HashMap<>();
         }
 
         if (data.containsKey("canCruise")) {
@@ -379,18 +282,16 @@ public class CraftType {
             collisionExplosion = 0F;
         }
         if (data.containsKey("minHeightLimit")) {
-            minHeightLimit = integerFromObject(data.get("minHeightLimit"));
-            if (minHeightLimit < 0) {
-                minHeightLimit = 0;
-            }
+            minHeightLimit = Math.max(0, integerFromObject(data.get("minHeightLimit")));
         } else {
             minHeightLimit = 0;
         }
         if (data.containsKey("maxHeightLimit")) {
-            maxHeightLimit = integerFromObject(data.get("maxHeightLimit"));
-            if (maxHeightLimit <= minHeightLimit) {
-                maxHeightLimit = 255;
+            int value = integerFromObject(data.get("maxHeightLimit"));
+            if (value <= minHeightLimit) {
+                value = 255;
             }
+            maxHeightLimit = value;
         } else {
             maxHeightLimit = 254;
         }
@@ -426,10 +327,7 @@ public class CraftType {
         }
 
         if (data.containsKey("hoverLimit")) {
-            hoverLimit = integerFromObject(data.get("hoverLimit"));
-            if (hoverLimit < 0) {
-                hoverLimit = 0;
-            }
+            hoverLimit = Math.max(0, integerFromObject(data.get("hoverLimit")));
         } else {
             hoverLimit = 0;
         }
@@ -448,7 +346,6 @@ public class CraftType {
                     Material mat = Material.getMaterial((String) i);
                     harvestBlocks.add(mat);
                 } else {
-                    Integer typeID = (Integer) i;
                     Material mat = Material.getMaterial((Integer) i);
                     harvestBlocks.add(mat);
                 }
@@ -467,6 +364,20 @@ public class CraftType {
                     harvesterBladeBlocks.add(mat);
                 }
             }
+        }
+        passthroughBlocks = new HashSet<>();
+        if (data.containsKey("passthroughBlocks")) {
+            ArrayList objList = (ArrayList) data.get("passthroughBlocks");
+            for (Object i : objList) {
+                if (i instanceof String) {
+                    Material mat = Material.getMaterial((String) i);
+                    passthroughBlocks.add(mat);
+                } else {
+                    Material mat = Material.getMaterial((Integer) i);
+                    passthroughBlocks.add(mat);
+                }
+            }
+
         }
         if (data.containsKey("allowVerticalTakeoffAndLanding")) {
             allowVerticalTakeoffAndLanding = (Boolean) data.get("allowVerticalTakeoffAndLanding");
@@ -492,6 +403,128 @@ public class CraftType {
         chestPenalty = data.containsKey("chestPenalty") ? doubleFromObject(data.get("chestPenalty")) : 0d;
     }
 
+    private Integer integerFromObject(Object obj) {
+        if (obj instanceof Double) {
+            return ((Double) obj).intValue();
+        }
+        return (Integer) obj;
+    }
+
+    private Double doubleFromObject(Object obj) {
+        if (obj instanceof Integer) {
+            return ((Integer) obj).doubleValue();
+        }
+        return (Double) obj;
+    }
+
+    private int[] blockIDListFromObject(Object obj) {
+        ArrayList<Integer> returnList = new ArrayList<>();
+        ArrayList objList = (ArrayList) obj;
+        for (Object i : objList) {
+            if (i instanceof String) {
+                String str = (String) i;
+                if (str.contains(":")) {
+                    String[] parts = str.split(":");
+                    Integer typeID = Integer.valueOf(parts[0]);
+                    Integer metaData = Integer.valueOf(parts[1]);
+                    returnList.add(10000 + (typeID << 4) + metaData);  // id greater than 10000 indicates it has a meta data / damage value
+                } else {
+                    Integer typeID = Integer.valueOf(str);
+                    returnList.add(typeID);
+                }
+            } else {
+                Integer typeID = (Integer) i;
+                returnList.add(typeID);
+            }
+        }
+        int[] output = new int[returnList.size()];
+        for (int i = 0; i < output.length; i++)
+            output[i] = returnList.get(i);
+        return output;
+    }
+
+    private String[] stringListFromObject(Object obj) {
+        ArrayList<String> returnList = new ArrayList<>();
+        if (obj == null) {
+            return returnList.toArray(new String[1]);
+        }
+        ArrayList objList = (ArrayList) obj;
+        for (Object i : objList) {
+            if (i instanceof String) {
+                String str = (String) i;
+                returnList.add(str);
+            }
+        }
+        return returnList.toArray(new String[1]);
+    }
+
+    private Map<List<Integer>, List<Double>> blockIDMapListFromObject(Object obj) {
+        HashMap<List<Integer>, List<Double>> returnMap = new HashMap<>();
+        HashMap<Object, Object> objMap = (HashMap<Object, Object>) obj;
+        for (Object i : objMap.keySet()) {
+            ArrayList<Integer> rowList = new ArrayList<>();
+
+            // first read in the list of the blocks that type of flyblock. It could be a single string (with or without a ":") or integer, or it could be multiple of them
+            if (i instanceof ArrayList<?>) {
+                for (Object o : (ArrayList<Object>) i) {
+                    if (o instanceof String) {
+                        String str = (String) o;
+                        if (str.contains(":")) {
+                            String[] parts = str.split(":");
+                            Integer typeID = Integer.valueOf(parts[0]);
+                            Integer metaData = Integer.valueOf(parts[1]);
+                            rowList.add(10000 + (typeID << 4) + metaData);  // id greater than 10000 indicates it has a meta data / damage value
+                        } else {
+                            Integer typeID = Integer.valueOf(str);
+                            rowList.add(typeID);
+                        }
+                    } else {
+                        Integer typeID = (Integer) o;
+                        rowList.add(typeID);
+                    }
+                }
+            } else if (i instanceof String) {
+                String str = (String) i;
+                if (str.contains(":")) {
+                    String[] parts = str.split(":");
+                    Integer typeID = Integer.valueOf(parts[0]);
+                    Integer metaData = Integer.valueOf(parts[1]);
+                    rowList.add(10000 + (typeID << 4) + metaData);  // id greater than 10000 indicates it has a meta data / damage value
+                } else {
+                    Integer typeID = Integer.valueOf(str);
+                    rowList.add(typeID);
+                }
+            } else {
+                Integer typeID = (Integer) i;
+                rowList.add(typeID);
+            }
+
+            // then read in the limitation values, low and high
+            ArrayList<Object> objList = (ArrayList<Object>) objMap.get(i);
+            ArrayList<Double> limitList = new ArrayList<>();
+            for (Object limitObj : objList) {
+                if (limitObj instanceof String) {
+                    String str = (String) limitObj;
+                    if (str.contains("N")) { // a # indicates a specific quantity, IE: #2 for exactly 2 of the block
+                        String[] parts = str.split("N");
+                        Double val = Double.valueOf(parts[1]);
+                        limitList.add(10000d + val);  // limit greater than 10000 indicates an specific quantity (not a ratio)
+                    } else {
+                        Double val = Double.valueOf(str);
+                        limitList.add(val);
+                    }
+                } else if (limitObj instanceof Integer) {
+                    Double ret = ((Integer) limitObj).doubleValue();
+                    limitList.add(ret);
+                } else
+                    limitList.add((Double) limitObj);
+            }
+            returnMap.put(rowList, limitList);
+        }
+        return returnMap;
+    }
+
+    @NotNull
     public String getCraftName() {
         return craftName;
     }
@@ -504,11 +537,11 @@ public class CraftType {
         return minSize;
     }
 
-    public Integer[] getAllowedBlocks() {
+    public int[] getAllowedBlocks() {
         return allowedBlocks;
     }
 
-    public Integer[] getForbiddenBlocks() {
+    public int[] getForbiddenBlocks() {
         return forbiddenBlocks;
     }
 
@@ -648,11 +681,13 @@ public class CraftType {
         return tryNudge;
     }
 
-    public HashMap<ArrayList<Integer>, ArrayList<Double>> getFlyBlocks() {
+    @NotNull
+    public Map<List<Integer>, List<Double>> getFlyBlocks() {
         return flyBlocks;
     }
 
-    public HashMap<ArrayList<Integer>, ArrayList<Double>> getMoveBlocks() {
+    @NotNull
+    public Map<List<Integer>, List<Double>> getMoveBlocks() {
         return moveBlocks;
     }
 
@@ -680,10 +715,12 @@ public class CraftType {
         return hoverLimit;
     }
 
+    @NotNull
     public List<Material> getHarvestBlocks() {
         return harvestBlocks;
     }
 
+    @NotNull
     public List<Material> getHarvesterBladeBlocks() {
         return harvesterBladeBlocks;
     }
@@ -720,7 +757,14 @@ public class CraftType {
         return chestPenalty;
     }
 
-    public  Set<Material> getPassthroughBlocks(){
+    @NotNull
+    public Set<Material> getPassthroughBlocks() {
         return passthroughBlocks;
+    }
+
+    private class TypeNotFoundException extends RuntimeException {
+        public TypeNotFoundException(String s) {
+            super(s);
+        }
     }
 }
