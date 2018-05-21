@@ -2,17 +2,19 @@ package net.countercraft.movecraft.mapUpdater.update;
 
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
+import net.countercraft.movecraft.WorldHandler;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.SignTranslateEvent;
 import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.utils.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Objects;
+import java.util.*;
 import java.util.logging.Logger;
 
 public class CraftTranslateCommand extends UpdateCommand {
@@ -33,7 +35,33 @@ public class CraftTranslateCommand extends UpdateCommand {
             return;
         }
         long time = System.nanoTime();
-        Movecraft.getInstance().getWorldHandler().translateCraft(craft,displacement);
+        //Find locations that are moved out of
+        //find locations that are moved into
+        //calculate the exterior of the hitbox
+        //use the exterior to calculate the interior of the new hitbox
+        //check if the locations moved out of are in the crafts pass through blocks
+        //check if those locations are not interior locations and place the blocks
+        //check if the locations moved onto are pass through-able and add them to the pass through blocks
+        MutableHitBox originalLocations = new HashHitBox();
+        for(MovecraftLocation movecraftLocation : craft.getHitBox()) {
+            originalLocations.add((movecraftLocation).subtract(displacement));
+        }
+
+        final HitBox from = CollectionUtils.filter(originalLocations,craft.getHitBox());
+        final HitBox to = CollectionUtils.filter(craft.getHitBox(), originalLocations);
+
+        for(MovecraftLocation location: to){
+            Material material = location.toBukkit(craft.getW()).getBlock().getType();
+            if(craft.getType().getPassthroughBlocks().contains(material)){
+                craft.getPhaseBlocks().put(location,material);
+            }
+        }
+
+
+        //translate the craft
+        final WorldHandler handler = Movecraft.getInstance().getWorldHandler();
+        handler.translateCraft(craft,displacement);
+        //trigger sign events
         for(MovecraftLocation location : craft.getHitBox()){
             Block block = location.toBukkit(craft.getW()).getBlock();
             if(block.getType() == Material.WALL_SIGN || block.getType() == Material.SIGN_POST){
@@ -42,6 +70,61 @@ public class CraftTranslateCommand extends UpdateCommand {
                 sign.update();
             }
         }
+        //place phased blocks
+        final int minX = craft.getHitBox().getMinX();
+        final int maxX = craft.getHitBox().getMaxX();
+        final int minY = craft.getHitBox().getMinY();
+        final int maxY = craft.getHitBox().getMaxY();
+        final int minZ = craft.getHitBox().getMinZ();
+        final int maxZ = craft.getHitBox().getMaxZ();
+
+        final HitBox[] surfaces = {
+                new SolidHitBox(new MovecraftLocation(minX,minY,minZ), new MovecraftLocation(minX,maxY,maxZ)),
+                new SolidHitBox(new MovecraftLocation(minX,minY,minZ), new MovecraftLocation(maxX,minY,maxZ)),
+                new SolidHitBox(new MovecraftLocation(minX,minY,minZ), new MovecraftLocation(maxX,maxY,minZ)),
+                new SolidHitBox(new MovecraftLocation(maxX,maxY,maxZ), new MovecraftLocation(minX,maxY,maxZ)),
+                new SolidHitBox(new MovecraftLocation(maxX,maxY,maxZ), new MovecraftLocation(maxX,minY,maxZ)),
+                new SolidHitBox(new MovecraftLocation(maxX,maxY,maxZ), new MovecraftLocation(maxX,maxY,minZ))};
+        //Valid exterior starts as the 6 surface planes of the HitBox with the locations that lie in the HitBox removed
+        final MutableHitBox validExterior = new HashHitBox();
+        for(HitBox hitBox : surfaces){
+            validExterior.addAll(CollectionUtils.filter(hitBox, craft.getHitBox()));
+        }
+        //The subtraction of the set of coordinates in the HitBox cube and the HitBox itself
+        final HitBox invertedHitBox = CollectionUtils.filter(new SolidHitBox(new MovecraftLocation(minX,minY,minZ), new MovecraftLocation(maxX,maxY,maxZ)), craft.getHitBox());
+        //A set of locations that are confirmed to be "exterior" locations
+        final Set<MovecraftLocation> confirmed = new HashSet<>();
+        //Check to see which locations in the from set are actually outside of the craft
+        for(MovecraftLocation location : from){
+            //use a modified BFS for multiple origin elements
+            Set<MovecraftLocation> visited = new HashSet<>();
+            Queue<MovecraftLocation> queue = new LinkedList<>();
+            queue.add(location);
+            while (!queue.isEmpty()){
+                MovecraftLocation node = queue.poll();
+                //If the node is already a valid member of the exterior of the HitBox, continued search is unitary.
+                if(validExterior.contains(node)){
+                    confirmed.add(location);
+                    validExterior.addAll(visited);
+                    break;
+                }
+                for(MovecraftLocation neighbor : CollectionUtils.neighbors(invertedHitBox, node)){
+                    if(visited.contains(neighbor)){
+                        continue;
+                    }
+                    visited.add(neighbor);
+                    queue.add(neighbor);
+                }
+            }
+        }
+        //place confirmed blocks if they have been phased
+        for(MovecraftLocation location : confirmed){
+            if(!craft.getPhaseBlocks().containsKey(location)){
+                continue;
+            }
+            handler.setBlockFast(location.toBukkit(craft.getW()),craft.getPhaseBlocks().get(location), (byte)0);
+        }
+
         time = System.nanoTime() - time;
         if(Settings.Debug)
             logger.info("Total time: " + (time / 1e9) + " seconds. Moving with cooldown of " + craft.getTickCooldown() + ". Speed of: " + String.format("%.2f", craft.getSpeed()));

@@ -4,8 +4,7 @@ import net.countercraft.movecraft.MovecraftLocation;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.*;
 
 public class CollectionUtils {
     /**
@@ -37,5 +36,47 @@ public class CollectionUtils {
             }
         }
         return returnList;
+    }
+
+    @NotNull
+    @Contract(pure=true)
+    public static HitBox filter(@NotNull final HitBox collection, @NotNull final HitBox filter){
+        final MutableHitBox returnList = new HashHitBox();
+        final MutableHitBox filterBox = new HashHitBox();
+        filterBox.addAll(filter);
+        for(MovecraftLocation object : collection){
+            if(!filterBox.contains(object)){
+                returnList.add(object);
+            }
+        }
+        return returnList;
+    }
+
+    private final static MovecraftLocation[] SHIFTS = {
+            new MovecraftLocation(0, 0, 1),
+            new MovecraftLocation(0, 1, 0),
+            new MovecraftLocation(1, 0 ,0),
+            new MovecraftLocation(0, 0, -1),
+            new MovecraftLocation(0, -1, 0),
+            new MovecraftLocation(-1, 0, 0)};
+    /**
+     * finds the axial neighbors to a location. Neighbors are defined as locations that exist within one meter of a given
+     * location
+     * @param location the location to search for neighbors
+     * @return an iterable set of neighbors to the given location
+     */
+    @NotNull
+    @Contract(pure = true)
+    public static Iterable<MovecraftLocation> neighbors(@NotNull HitBox hitbox, @NotNull MovecraftLocation location){
+        if(hitbox.isEmpty()){
+            return Collections.emptyList();
+        }
+        final List<MovecraftLocation> neighbors = new ArrayList<>(6);
+        for(MovecraftLocation test : SHIFTS){
+            if(hitbox.contains(location.add(test))){
+                neighbors.add(location.add(test));
+            }
+        }
+        return neighbors;
     }
 }

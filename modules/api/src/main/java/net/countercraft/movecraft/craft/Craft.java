@@ -66,8 +66,7 @@ public abstract class Craft {
     //private int blockUpdates;
     private float meanMoveTime;
     private int numMoves;
-    //TODO: Test performance benefits vs HashSet
-    private final Map<MovecraftLocation,Material> phaseBlocks = new LinkedHashMap<>();
+    private final Map<MovecraftLocation,Material> phaseBlocks = new HashMap<>();
 
 
     public Craft(CraftType type, World world) {
