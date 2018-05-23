@@ -60,5 +60,23 @@ public interface HitBox extends Iterable<MovecraftLocation>{
 
     boolean containsAll(Collection<? extends MovecraftLocation> collection);
 
+    default boolean inBounds(double x, double y, double z){
+        if(this.isEmpty()){
+            return false;
+        }
+        return x > this.getMinX() && x < this.getMaxX() &&
+                y > this.getMinY() && y < this.getMaxY()&&
+                z > this.getMinZ() && z < this.getMaxZ();
+    }
+
+    default boolean inBounds(MovecraftLocation location){
+        return this.inBounds(location.getX(),location.getY(),location.getZ());
+    }
+
+    @NotNull
+    default SolidHitBox boundingHitBox(){
+        return new SolidHitBox(new MovecraftLocation(this.getMinX(),this.getMinY(),this.getMinZ()),
+                new MovecraftLocation(this.getMaxX(),this.getMaxY(),this.getMaxZ()));
+    }
 }
 

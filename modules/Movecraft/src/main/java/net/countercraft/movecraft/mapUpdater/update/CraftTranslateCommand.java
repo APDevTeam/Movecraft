@@ -3,18 +3,27 @@ package net.countercraft.movecraft.mapUpdater.update;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.WorldHandler;
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.SignTranslateEvent;
-import net.countercraft.movecraft.config.Settings;
-import net.countercraft.movecraft.utils.*;
+import net.countercraft.movecraft.utils.CollectionUtils;
+import net.countercraft.movecraft.utils.HashHitBox;
+import net.countercraft.movecraft.utils.HitBox;
+import net.countercraft.movecraft.utils.MutableHitBox;
+import net.countercraft.movecraft.utils.SolidHitBox;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Queue;
+import java.util.Set;
 import java.util.logging.Logger;
 
 public class CraftTranslateCommand extends UpdateCommand {
@@ -35,13 +44,6 @@ public class CraftTranslateCommand extends UpdateCommand {
             return;
         }
         long time = System.nanoTime();
-        //Find locations that are moved out of
-        //find locations that are moved into
-        //calculate the exterior of the hitbox
-        //use the exterior to calculate the interior of the new hitbox
-        //check if the locations moved out of are in the crafts pass through blocks
-        //check if those locations are not interior locations and place the blocks
-        //check if the locations moved onto are pass through-able and add them to the pass through blocks
         MutableHitBox originalLocations = new HashHitBox();
         for(MovecraftLocation movecraftLocation : craft.getHitBox()) {
             originalLocations.add((movecraftLocation).subtract(displacement));
@@ -57,19 +59,6 @@ public class CraftTranslateCommand extends UpdateCommand {
             }
         }
 
-
-        //translate the craft
-        final WorldHandler handler = Movecraft.getInstance().getWorldHandler();
-        handler.translateCraft(craft,displacement);
-        //trigger sign events
-        for(MovecraftLocation location : craft.getHitBox()){
-            Block block = location.toBukkit(craft.getW()).getBlock();
-            if(block.getType() == Material.WALL_SIGN || block.getType() == Material.SIGN_POST){
-                Sign sign = (Sign) block.getState();
-                Bukkit.getServer().getPluginManager().callEvent(new SignTranslateEvent(block, craft, sign.getLines()));
-                sign.update();
-            }
-        }
         //place phased blocks
         final int minX = craft.getHitBox().getMinX();
         final int maxX = craft.getHitBox().getMaxX();
@@ -94,8 +83,13 @@ public class CraftTranslateCommand extends UpdateCommand {
         final HitBox invertedHitBox = CollectionUtils.filter(new SolidHitBox(new MovecraftLocation(minX,minY,minZ), new MovecraftLocation(maxX,maxY,maxZ)), craft.getHitBox());
         //A set of locations that are confirmed to be "exterior" locations
         final Set<MovecraftLocation> confirmed = new HashSet<>();
+        final Set<MovecraftLocation> failed = new HashSet<>();
         //Check to see which locations in the from set are actually outside of the craft
         for(MovecraftLocation location : from){
+            if(!craft.getHitBox().inBounds(location)){
+                confirmed.add(location);
+                continue;
+            }
             //use a modified BFS for multiple origin elements
             Set<MovecraftLocation> visited = new HashSet<>();
             Queue<MovecraftLocation> queue = new LinkedList<>();
@@ -116,13 +110,56 @@ public class CraftTranslateCommand extends UpdateCommand {
                     queue.add(neighbor);
                 }
             }
+            failed.add(location);
         }
-        //place confirmed blocks if they have been phased
+
+        for(MovecraftLocation location : CollectionUtils.filter(invertedHitBox, confirmed)){
+            Material material = location.toBukkit(craft.getW()).getBlock().getType();
+            if(!craft.getType().getPassthroughBlocks().contains(material)){
+                continue;
+            }
+            craft.getPhaseBlocks().put(location,material);
+        }
+
+        //translate the craft
+        final WorldHandler handler = Movecraft.getInstance().getWorldHandler();
+        handler.translateCraft(craft,displacement);
+        //trigger sign events
+        for(MovecraftLocation location : craft.getHitBox()){
+            Block block = location.toBukkit(craft.getW()).getBlock();
+            if(block.getType() == Material.WALL_SIGN || block.getType() == Material.SIGN_POST){
+                Sign sign = (Sign) block.getState();
+                Bukkit.getServer().getPluginManager().callEvent(new SignTranslateEvent(block, craft, sign.getLines()));
+                sign.update();
+            }
+        }
+
+        //place confirmed blocks if they have been un-phased
         for(MovecraftLocation location : confirmed){
             if(!craft.getPhaseBlocks().containsKey(location)){
                 continue;
             }
             handler.setBlockFast(location.toBukkit(craft.getW()),craft.getPhaseBlocks().get(location), (byte)0);
+            craft.getPhaseBlocks().remove(location);
+        }
+
+        
+        for(MovecraftLocation location : from.boundingHitBox()){
+            if(!craft.getHitBox().contains(location) && !failed.contains(location) && craft.getPhaseBlocks().containsKey(location)){
+                handler.setBlockFast(location.toBukkit(craft.getW()), craft.getPhaseBlocks().get(location), (byte)0);
+            }
+        }
+
+        for(Map.Entry<MovecraftLocation, Material> entry : craft.getPhaseBlocks().entrySet()){
+            logger.info("Entry: " + entry.getKey() + " " + entry.getValue());
+        }
+
+        for(MovecraftLocation location : CollectionUtils.filter(invertedHitBox, confirmed)){
+            Material material = location.toBukkit(craft.getW()).getBlock().getType();
+            if(!craft.getPhaseBlocks().containsKey(location) || material.equals(Material.AIR)){
+                continue;
+            }
+            handler.setBlockFast(location.toBukkit(craft.getW()), Material.AIR, (byte)0);
         }
 
         time = System.nanoTime() - time;

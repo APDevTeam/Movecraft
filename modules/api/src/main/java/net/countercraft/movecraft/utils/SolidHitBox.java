@@ -2,6 +2,7 @@ package net.countercraft.movecraft.utils;
 
 import net.countercraft.movecraft.MovecraftLocation;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -26,11 +27,11 @@ final public class SolidHitBox implements HitBox{
             minY = endBound.getY();
         }
         if(startBound.getZ() < endBound.getZ()){
-            minZ = startBound.getX();
-            maxZ = endBound.getX();
+            minZ = startBound.getZ();
+            maxZ = endBound.getZ();
         } else {
-            maxZ = startBound.getX();
-            minZ = endBound.getX();
+            maxZ = startBound.getZ();
+            minZ = endBound.getZ();
         }
     }
 
@@ -116,5 +117,22 @@ final public class SolidHitBox implements HitBox{
             }
         }
         return true;
+    }
+
+    @Nullable
+    public SolidHitBox subtract(SolidHitBox other){
+        if(this.minX > other.maxX || this.maxX < other.minX || this.minY > other.minY || this.maxY < other.minY || this.minZ > other.maxZ || this.maxZ < other.minZ)
+            return null;
+
+        return new SolidHitBox(
+                new MovecraftLocation(
+                        Math.max(other.getMinX(), this.getMinX()),
+                        Math.max(other.getMinY(), this.getMinY()),
+                        Math.max(other.getMinZ(),this.getMinZ())),
+                new MovecraftLocation(
+                        Math.min(other.getMaxX(), this.getMaxX()),
+                        Math.min(other.getMaxY(), this.getMaxY()),
+                        Math.min(other.getMaxZ(), this.getMaxZ()))
+                );
     }
 }

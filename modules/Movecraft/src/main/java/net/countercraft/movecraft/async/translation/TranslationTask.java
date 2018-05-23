@@ -106,7 +106,7 @@ public class TranslationTask extends AsyncTask {
             if (craft.getSinking()) {
                 blockObstructed = !(Arrays.binarySearch(FALL_THROUGH_BLOCKS, testMaterial.getId()) >= 0);
             } else {
-                blockObstructed = !craft.getType().getPassthroughBlocks().contains(testMaterial);
+                blockObstructed = !craft.getType().getPassthroughBlocks().contains(testMaterial) && !testMaterial.equals(Material.AIR);
             }
 
             boolean ignoreBlock = false;
@@ -125,7 +125,7 @@ public class TranslationTask extends AsyncTask {
 
             if (blockObstructed) {
                 if (!craft.getSinking() && craft.getType().getCollisionExplosion() == 0.0F) {
-                    fail(String.format(I18nSupport.getInternationalisedString("Translation - Failed Craft is obstructed") + " @ %d,%d,%d,%s", oldLocation.getX(), oldLocation.getY(), oldLocation.getZ(), oldLocation.toBukkit(craft.getW()).getBlock().getType().toString()));
+                    fail(String.format(I18nSupport.getInternationalisedString("Translation - Failed Craft is obstructed") + " @ %d,%d,%d,%s", newLocation.getX(), newLocation.getY(), newLocation.getZ(), testMaterial.toString()));
                     return;
                 }
                 collisionBox.add(newLocation);
