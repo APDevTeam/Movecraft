@@ -18,6 +18,9 @@ import net.minecraft.server.v1_12_R1.NextTickListEntry;
 import net.minecraft.server.v1_12_R1.TileEntity;
 import net.minecraft.server.v1_12_R1.World;
 import net.minecraft.server.v1_12_R1.WorldServer;
+import net.minecraft.server.v1_12_R1.PlayerChunkMap;
+import net.minecraft.server.v1_12_R1.PlayerChunk;
+import net.minecraft.server.v1_12_R1.EntityPlayer;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
@@ -29,9 +32,11 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.Map;
 
 @SuppressWarnings("unused")
@@ -58,7 +63,7 @@ public class IWorldHandler extends WorldHandler {
         //*******************************************
         //*         Step two: Get the tiles         *
         //*******************************************
-        World nativeWorld = ((CraftWorld) craft.getW()).getHandle();
+        WorldServer nativeWorld = ((CraftWorld) craft.getW()).getHandle();
         List<TileHolder> tiles = new ArrayList<>();
         //get the tiles
         for(BlockPosition position : rotatedPositions.keySet()){
@@ -138,30 +143,24 @@ public class IWorldHandler extends WorldHandler {
         //*******************************************
         //*       Step six: Update the blocks       *
         //*******************************************
-        org.bukkit.World bukkitWorld = craft.getW();
-        for(BlockPosition newPosition : rotatedPositions.values()) {
-            bukkitWorld.getBlockAt(newPosition.getX(), newPosition.getY(), newPosition.getZ()).getState().update(false, false);
-        }
-        for(BlockPosition deletedPosition : deletePositions){
-            bukkitWorld.getBlockAt(deletedPosition.getX(), deletedPosition.getY(), deletedPosition.getZ()).getState().update(false, false);
-        }
+        //org.bukkit.World bukkitWorld = craft.getW();
+        //for(BlockPosition newPosition : rotatedPositions.values()) {
+        //    bukkitWorld.getBlockAt(newPosition.getX(), newPosition.getY(), newPosition.getZ()).getState().update(false, false);
+        //}
+        //for(BlockPosition deletedPosition : deletePositions){
+        //    bukkitWorld.getBlockAt(deletedPosition.getX(), deletedPosition.getY(), deletedPosition.getZ()).getState().update(false, false);
+        //}
         //*******************************************
         //*       Step seven: Send to players       *
         //*******************************************
-        List<Chunk> chunks = new ArrayList<>();
+        Set<Chunk> chunks = new HashSet<>();
         for(BlockPosition position : rotatedPositions.values()){
-            Chunk chunk = nativeWorld.getChunkAtWorldCoords(position);
-            if(!chunks.contains(chunk)){
-                chunks.add(chunk);
-            }
-        }/*
-        for(BlockPosition position : deletePositions){
-            Chunk chunk = nativeWorld.getChunkAtWorldCoords(position);
-            if(!chunks.contains(chunk)){
-                chunks.add(chunk);
-            }
+            chunks.add(nativeWorld.getChunkAtWorldCoords(position));
         }
-        //sendToPlayers(chunks.toArray(new Chunk[0]));*/
+        for(BlockPosition position : deletePositions){
+            chunks.add(nativeWorld.getChunkAtWorldCoords(position));
+        }
+        sendChunks(nativeWorld, chunks);
     }
 
     @Override
@@ -179,7 +178,7 @@ public class IWorldHandler extends WorldHandler {
         //*******************************************
         //*         Step two: Get the tiles         *
         //*******************************************
-        World nativeWorld = ((CraftWorld) craft.getW()).getHandle();
+        WorldServer nativeWorld = ((CraftWorld) craft.getW()).getHandle();
         List<TileHolder> tiles = new ArrayList<>();
         //get the tiles
         for(BlockPosition position : positions){
@@ -262,32 +261,36 @@ public class IWorldHandler extends WorldHandler {
         //*******************************************
         //*       Step six: Update the blocks       *
         //*******************************************
-        org.bukkit.World bukkitWorld = craft.getW();
-        for(BlockPosition newPosition : newPositions) {
-            bukkitWorld.getBlockAt(newPosition.getX(), newPosition.getY(), newPosition.getZ()).getState().update(false, false);
-        }
-        for(BlockPosition deletedPosition : deletePositions){
-            bukkitWorld.getBlockAt(deletedPosition.getX(), deletedPosition.getY(), deletedPosition.getZ()).getState().update(false, false);
-        }
+        //org.bukkit.World bukkitWorld = craft.getW();
+        //for(BlockPosition newPosition : newPositions) {
+        //    bukkitWorld.getBlockAt(newPosition.getX(), newPosition.getY(), newPosition.getZ()).getState().update(false, false);
+        //}
+        //for(BlockPosition deletedPosition : deletePositions){
+        //    bukkitWorld.getBlockAt(deletedPosition.getX(), deletedPosition.getY(), deletedPosition.getZ()).getState().update(false, false);
+        //}
         //*******************************************
         //*       Step seven: Send to players       *
         //*******************************************
-        List<Chunk> chunks = new ArrayList<>();
+        Set<Chunk> chunks = new HashSet<>();
         for(BlockPosition position : newPositions){
-            Chunk chunk = nativeWorld.getChunkAtWorldCoords(position);
-            if(!chunks.contains(chunk)){
-                chunks.add(chunk);
-            }
+            chunks.add(nativeWorld.getChunkAtWorldCoords(position));
         }
         for(BlockPosition position : deletePositions){
-            Chunk chunk = nativeWorld.getChunkAtWorldCoords(position);
-            if(!chunks.contains(chunk)){
-                chunks.add(chunk);
-            }
+            chunks.add(nativeWorld.getChunkAtWorldCoords(position));
         }
-        //sendToPlayers(chunks.toArray(new Chunk[0]));
+        sendChunks(nativeWorld, chunks);
     }
 
+    private void sendChunks(WorldServer world, Set<Chunk> chunks) {
+        PlayerChunkMap playerManager = ((CraftWorld) this.getWorld()).getHandle().getPlayerChunkMap();
+        for(Chunk chunk : chunks) {
+            PlayerChunk playerChunk = playerManager.getChunk(chunk.getX(), chunk.getZ());
+            for(EntityPlayer player : playerChunk.c) {
+                playerChunk.sendChunk(player);
+            }
+        }
+    }
+    
     @NotNull
     private BlockPosition locationToPosition(@NotNull MovecraftLocation loc) {
         return new BlockPosition(loc.getX(), loc.getY(), loc.getZ());
