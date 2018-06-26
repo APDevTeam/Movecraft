@@ -5,7 +5,9 @@ import net.countercraft.movecraft.exception.EmptyHitBoxException;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 public interface HitBox extends Iterable<MovecraftLocation>{
 
@@ -64,9 +66,9 @@ public interface HitBox extends Iterable<MovecraftLocation>{
         if(this.isEmpty()){
             return false;
         }
-        return x > this.getMinX() && x < this.getMaxX() &&
-                y > this.getMinY() && y < this.getMaxY()&&
-                z > this.getMinZ() && z < this.getMaxZ();
+        return x >= this.getMinX() && x <= this.getMaxX() &&
+                y >= this.getMinY() && y <= this.getMaxY()&&
+                z >= this.getMinZ() && z <= this.getMaxZ();
     }
 
     default boolean inBounds(MovecraftLocation location){
@@ -77,6 +79,15 @@ public interface HitBox extends Iterable<MovecraftLocation>{
     default SolidHitBox boundingHitBox(){
         return new SolidHitBox(new MovecraftLocation(this.getMinX(),this.getMinY(),this.getMinZ()),
                 new MovecraftLocation(this.getMaxX(),this.getMaxY(),this.getMaxZ()));
+    }
+
+    @NotNull
+    default Set<MovecraftLocation> asSet(){
+        Set<MovecraftLocation> output = new HashSet<>();
+        for(MovecraftLocation location : this){
+            output.add(location);
+        }
+        return output;
     }
 }
 

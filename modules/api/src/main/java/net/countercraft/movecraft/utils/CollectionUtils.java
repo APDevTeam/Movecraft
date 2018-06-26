@@ -42,10 +42,8 @@ public class CollectionUtils {
     @Contract(pure=true)
     public static HitBox filter(@NotNull final HitBox collection, @NotNull final HitBox filter){
         final MutableHitBox returnList = new HashHitBox();
-        final MutableHitBox filterBox = new HashHitBox();
-        filterBox.addAll(filter);
         for(MovecraftLocation object : collection){
-            if(!filterBox.contains(object)){
+            if(!filter.contains(object)){
                 returnList.add(object);
             }
         }
