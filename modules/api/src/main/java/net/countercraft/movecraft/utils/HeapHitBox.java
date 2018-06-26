@@ -124,18 +124,18 @@ public class HeapHitBox implements MutableHitBox {
         if(locationSet.isEmpty()){
             return false;
         }
-        return location.getX()> minX.peek() && location.getX() < maxX.peek() &&
-                location.getY() > minY.peek() && location.getY() < maxY.peek() &&
-                location.getZ() > minZ.peek() && location.getZ() < maxZ.peek();
+        return location.getX()>= minX.peek() && location.getX() <= maxX.peek() &&
+                location.getY() >= minY.peek() && location.getY() <= maxY.peek() &&
+                location.getZ() >= minZ.peek() && location.getZ() <= maxZ.peek();
     }
 
     public boolean inBounds(double x, double y, double z){
         if(locationSet.isEmpty()){
             return false;
         }
-        return x > minX.peek() && x < maxX.peek() &&
-                y > minY.peek() && y < maxY.peek() &&
-                z > minZ.peek() && z < maxZ.peek();
+        return x >= minX.peek() && x <= maxX.peek() &&
+                y >= minY.peek() && y <= maxY.peek() &&
+                z >= minZ.peek() && z <= maxZ.peek();
     }
 
     public boolean intersects(HashHitBox hitBox){

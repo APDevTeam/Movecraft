@@ -122,18 +122,18 @@ public class HashHitBox implements MutableHitBox {
         if(locationSet.isEmpty()){
             return false;
         }
-        return location.getX()> minX && location.getX() < maxX &&
-                location.getY() > minY && location.getY() < maxY &&
-                location.getZ() > minZ && location.getZ() < maxZ;
+        return location.getX() >= minX && location.getX() <= maxX &&
+                location.getY() >= minY && location.getY() <= maxY &&
+                location.getZ() >= minZ && location.getZ() <= maxZ;
     }
 
     public boolean inBounds(double x, double y, double z){
         if(locationSet.isEmpty()){
             return false;
         }
-        return x > minX && x < maxX &&
-                y > minY && y < maxY &&
-                z > minZ && z < maxZ;
+        return x >= minX && x <= maxX &&
+                y >= minY && y <= maxY &&
+                z >= minZ && z <= maxZ;
     }
 
     public boolean intersects(HashHitBox hitBox){
