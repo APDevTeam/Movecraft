@@ -70,6 +70,17 @@ final public class SolidHitBox implements HitBox{
         return this.getXLength() * this.getYLength() * this.getZLength();
     }
 
+    //overridden to prevent cyclic method calling
+    public int getXLength(){
+        return Math.abs(this.getMaxX()-this.getMinX());
+    }
+    public int getYLength(){
+        return Math.abs(this.getMaxY()-this.getMinY());
+    }
+    public int getZLength(){
+        return Math.abs(this.getMaxZ()-this.getMinZ());
+    }
+
     @NotNull
     @Override
     public Iterator<MovecraftLocation> iterator() {
