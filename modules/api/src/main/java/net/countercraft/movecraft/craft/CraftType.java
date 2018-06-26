@@ -17,6 +17,7 @@
 
 package net.countercraft.movecraft.craft;
 
+import net.countercraft.movecraft.MovecraftLocation;
 import org.bukkit.Material;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.Yaml;
@@ -377,7 +378,10 @@ final public class CraftType {
                     passthroughBlocks.add(mat);
                 }
             }
-
+        }
+        if(!blockedByWater){
+            passthroughBlocks.add(Material.WATER);
+            passthroughBlocks.add(Material.STATIONARY_WATER);
         }
         if (data.containsKey("allowVerticalTakeoffAndLanding")) {
             allowVerticalTakeoffAndLanding = (Boolean) data.get("allowVerticalTakeoffAndLanding");
