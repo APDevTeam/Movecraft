@@ -67,16 +67,24 @@ final public class SolidHitBox implements HitBox{
 
     @Override
     public int size() {
-        return this.getXLength() * this.getYLength() * this.getZLength();
+        return (this.getXLength() + 1) * (this.getYLength() + 1) * (this.getZLength() + 1);
     }
 
-    //overridden to prevent cyclic method calling
+    @Override
+    public boolean isEmpty(){
+        //can never be empty
+        return false;
+    }
+
+    @Override
     public int getXLength(){
         return Math.abs(this.getMaxX()-this.getMinX());
     }
+    @Override
     public int getYLength(){
         return Math.abs(this.getMaxY()-this.getMinY());
     }
+    @Override
     public int getZLength(){
         return Math.abs(this.getMaxZ()-this.getMinZ());
     }
