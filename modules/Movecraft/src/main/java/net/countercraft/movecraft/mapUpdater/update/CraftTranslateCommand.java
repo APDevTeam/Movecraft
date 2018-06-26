@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.mapUpdater.update;
 
+import com.google.common.collect.Sets;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.WorldHandler;
@@ -49,7 +50,6 @@ public class CraftTranslateCommand extends UpdateCommand {
             originalLocations.add((movecraftLocation).subtract(displacement));
         }
 
-        final HitBox from = CollectionUtils.filter(originalLocations,craft.getHitBox());
         final HitBox to = CollectionUtils.filter(craft.getHitBox(), originalLocations);
 
         for(MovecraftLocation location: to){
@@ -75,17 +75,21 @@ public class CraftTranslateCommand extends UpdateCommand {
                 new SolidHitBox(new MovecraftLocation(maxX,maxY,maxZ), new MovecraftLocation(maxX,minY,maxZ)),
                 new SolidHitBox(new MovecraftLocation(maxX,maxY,maxZ), new MovecraftLocation(maxX,maxY,minZ))};
         //Valid exterior starts as the 6 surface planes of the HitBox with the locations that lie in the HitBox removed
-        final MutableHitBox validExterior = new HashHitBox();
+        final Set<MovecraftLocation> validExterior = new HashSet<>();
         for(HitBox hitBox : surfaces){
-            validExterior.addAll(CollectionUtils.filter(hitBox, craft.getHitBox()));
+            validExterior.addAll(CollectionUtils.filter(hitBox, craft.getHitBox()).asSet());
         }
         //The subtraction of the set of coordinates in the HitBox cube and the HitBox itself
-        final HitBox invertedHitBox = CollectionUtils.filter(new SolidHitBox(new MovecraftLocation(minX,minY,minZ), new MovecraftLocation(maxX,maxY,maxZ)), craft.getHitBox());
+        final HitBox invertedHitBox = CollectionUtils.filter(craft.getHitBox().boundingHitBox(), craft.getHitBox());
         //A set of locations that are confirmed to be "exterior" locations
         final Set<MovecraftLocation> confirmed = new HashSet<>();
         final Set<MovecraftLocation> failed = new HashSet<>();
         //Check to see which locations in the from set are actually outside of the craft
-        for(MovecraftLocation location : from){
+        for(MovecraftLocation location : Sets.union(originalLocations.boundingHitBox().asSet(), craft.getHitBox().boundingHitBox().asSet())){
+            if(craft.getHitBox().contains(location)){
+                continue;
+            }
+
             if(!craft.getHitBox().inBounds(location)){
                 confirmed.add(location);
                 continue;
@@ -93,6 +97,7 @@ public class CraftTranslateCommand extends UpdateCommand {
             //use a modified BFS for multiple origin elements
             Set<MovecraftLocation> visited = new HashSet<>();
             Queue<MovecraftLocation> queue = new LinkedList<>();
+            boolean interior = true;
             queue.add(location);
             while (!queue.isEmpty()){
                 MovecraftLocation node = queue.poll();
@@ -100,6 +105,7 @@ public class CraftTranslateCommand extends UpdateCommand {
                 if(validExterior.contains(node)){
                     confirmed.add(location);
                     validExterior.addAll(visited);
+                    interior = false;
                     break;
                 }
                 for(MovecraftLocation neighbor : CollectionUtils.neighbors(invertedHitBox, node)){
@@ -110,9 +116,11 @@ public class CraftTranslateCommand extends UpdateCommand {
                     queue.add(neighbor);
                 }
             }
-            failed.add(location);
+            if(interior)
+                failed.add(location);
         }
 
+        final WorldHandler handler = Movecraft.getInstance().getWorldHandler();
         for(MovecraftLocation location : CollectionUtils.filter(invertedHitBox, confirmed)){
             Material material = location.toBukkit(craft.getW()).getBlock().getType();
             if(!craft.getType().getPassthroughBlocks().contains(material)){
@@ -122,7 +130,7 @@ public class CraftTranslateCommand extends UpdateCommand {
         }
 
         //translate the craft
-        final WorldHandler handler = Movecraft.getInstance().getWorldHandler();
+
         handler.translateCraft(craft,displacement);
         //trigger sign events
         for(MovecraftLocation location : craft.getHitBox()){
@@ -143,24 +151,27 @@ public class CraftTranslateCommand extends UpdateCommand {
             craft.getPhaseBlocks().remove(location);
         }
 
-        
-        for(MovecraftLocation location : from.boundingHitBox()){
-            if(!craft.getHitBox().contains(location) && !failed.contains(location) && craft.getPhaseBlocks().containsKey(location)){
-                handler.setBlockFast(location.toBukkit(craft.getW()), craft.getPhaseBlocks().get(location), (byte)0);
+        for(MovecraftLocation location: failed){
+            final Material material = location.toBukkit(craft.getW()).getBlock().getType();
+            if (craft.getType().getPassthroughBlocks().contains(material )){
+                craft.getPhaseBlocks().put(location,material);
+                handler.setBlockFast(location.toBukkit(craft.getW()), Material.AIR, (byte)0);
+
             }
         }
 
+        /*logger.info("Move");
         for(Map.Entry<MovecraftLocation, Material> entry : craft.getPhaseBlocks().entrySet()){
             logger.info("Entry: " + entry.getKey() + " " + entry.getValue());
-        }
+        }*/
 
-        for(MovecraftLocation location : CollectionUtils.filter(invertedHitBox, confirmed)){
+        /*for(MovecraftLocation location : CollectionUtils.filter(invertedHitBox, confirmed)){
             Material material = location.toBukkit(craft.getW()).getBlock().getType();
             if(!craft.getPhaseBlocks().containsKey(location) || material.equals(Material.AIR)){
                 continue;
             }
-            handler.setBlockFast(location.toBukkit(craft.getW()), Material.AIR, (byte)0);
-        }
+            handler.setBlockFast(location.toBukkit(craft.getW()), Material.WOOL, (byte)0);
+        }*/
 
         time = System.nanoTime() - time;
         if(Settings.Debug)

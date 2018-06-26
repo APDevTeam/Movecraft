@@ -26,8 +26,7 @@ import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.utils.CollectionUtils;
-import net.countercraft.movecraft.utils.HashHitBox;
+import net.countercraft.movecraft.utils.*;
 import net.countercraft.movecraft.async.detection.DetectionTask;
 import net.countercraft.movecraft.async.detection.DetectionTaskData;
 import net.countercraft.movecraft.async.rotation.RotationTask;
@@ -38,8 +37,6 @@ import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.mapUpdater.update.BlockCreateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
-import net.countercraft.movecraft.utils.TownyUtils;
-import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -51,13 +48,7 @@ import org.bukkit.entity.TNTPrimed;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -191,6 +182,15 @@ public class AsyncManager extends BukkitRunnable {
                             c.setHitBox(new HashHitBox(Arrays.asList(task.getData().getBlockList())));
                             c.setOrigBlockCount(data.getBlockList().length);
                             c.setNotificationPlayer(notifyP);
+                            final int waterLine = c.getWaterLine();
+                            if(!c.getType().blockedByWater() && c.getHitBox().getMinY() <= waterLine){
+                                for(MovecraftLocation location : c.getHitBox().boundingHitBox()){
+                                    if(location.getY() <= waterLine){
+                                        c.getPhaseBlocks().put(location, Material.WATER);
+                                    }
+                                }
+                            }
+
                             if (notifyP != null) {
                                 notifyP.sendMessage(I18nSupport
                                         .getInternationalisedString("Detection - Successfully piloted craft")
