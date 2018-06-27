@@ -195,6 +195,12 @@ public abstract class Craft {
             return;
         }
         this.sinking = true;
+        this.getType().getPassthroughBlocks().add(Material.STATIONARY_WATER);
+        this.getType().getPassthroughBlocks().add(Material.WATER);
+        this.getType().getPassthroughBlocks().add(Material.LEAVES);
+        this.getType().getPassthroughBlocks().add(Material.LEAVES_2);
+        this.getType().getPassthroughBlocks().add(Material.LONG_GRASS);
+        this.getType().getPassthroughBlocks().add(Material.DOUBLE_PLANT);
     }
 
     public boolean getDisabled() {
