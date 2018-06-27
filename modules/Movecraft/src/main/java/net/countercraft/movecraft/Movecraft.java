@@ -25,17 +25,7 @@ import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.flags.StateFlag;
 import net.countercraft.movecraft.async.AsyncManager;
-import net.countercraft.movecraft.commands.AssaultCommand;
-import net.countercraft.movecraft.commands.AssaultInfoCommand;
-import net.countercraft.movecraft.commands.ContactsCommand;
-import net.countercraft.movecraft.commands.CraftReportCommand;
-import net.countercraft.movecraft.commands.CruiseCommand;
-import net.countercraft.movecraft.commands.ManOverboardCommand;
-import net.countercraft.movecraft.commands.MovecraftCommand;
-import net.countercraft.movecraft.commands.PilotCommand;
-import net.countercraft.movecraft.commands.ReleaseCommand;
-import net.countercraft.movecraft.commands.RotateCommand;
-import net.countercraft.movecraft.commands.SiegeCommand;
+import net.countercraft.movecraft.commands.*;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.listener.BlockListener;
@@ -409,6 +399,8 @@ public class Movecraft extends JavaPlugin {
             this.getCommand("craftreport").setExecutor(new CraftReportCommand());
             this.getCommand("manoverboard").setExecutor(new ManOverboardCommand());
             this.getCommand("contacts").setExecutor(new ContactsCommand());
+            this.getCommand("scuttle").setExecutor(new ScuttleCommand());
+
             if(Settings.SiegeEnable)
                 this.getCommand("siege").setExecutor(new SiegeCommand());
             if(Settings.AssaultEnable) {
