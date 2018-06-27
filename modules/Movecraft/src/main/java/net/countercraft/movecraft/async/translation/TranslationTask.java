@@ -51,7 +51,7 @@ public class TranslationTask extends AsyncTask {
         final int maxY = oldHitBox.getMaxY();
 
         //Check if the craft is too high
-        if(craft.getType().getMaxHeightLimit() > 0){
+        if(craft.getType().getMaxHeightLimit() < craft.getHitBox().getMinY()){
             dy-=1;
         }else if(craft.getType().getMaxHeightAboveGround() > 0){
             final MovecraftLocation middle = oldHitBox.getMidPoint();
@@ -189,6 +189,7 @@ public class TranslationTask extends AsyncTask {
         if (craft.getType().getMoveEntities() && !craft.getSinking()) {
             // Move entities within the craft
             List<Entity> eList = craft.getW().getEntities();
+            boolean moveEverything = craft.getType().getOnlyMovePlayers();
             for (Entity pTest : eList) {
                 if (MathUtils.locIsNearCraftFast(craft, MathUtils.bukkit2MovecraftLoc(pTest.getLocation()))) {
                     if (pTest.getType() == EntityType.PLAYER) {
@@ -203,7 +204,7 @@ public class TranslationTask extends AsyncTask {
 
                         EntityUpdateCommand eUp = new EntityUpdateCommand( newPLoc, pTest);
                         updates.add(eUp);
-                    } else if (pTest.getType() == EntityType.PRIMED_TNT) {
+                    } else if (moveEverything || pTest.getType() == EntityType.PRIMED_TNT) {
                         Location tempLoc = pTest.getLocation();
                         tempLoc = tempLoc.add(dx,dy,dz);
                         EntityUpdateCommand eUp = new EntityUpdateCommand(tempLoc, pTest);

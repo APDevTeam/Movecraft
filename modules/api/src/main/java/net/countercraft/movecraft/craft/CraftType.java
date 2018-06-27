@@ -40,6 +40,7 @@ final public class CraftType {
     private final boolean useGravity;
     private final boolean canHoverOverWater;
     private final boolean moveEntities;
+    private final boolean onlyMovePlayers;
     private final boolean allowHorizontalMovement;
     private final boolean allowVerticalMovement;
     private final boolean allowRemoteSign;
@@ -321,6 +322,13 @@ final public class CraftType {
         } else {
             moveEntities = true;
         }
+
+        if(data.containsKey("onlyMovePlayers")){
+            onlyMovePlayers = (Boolean) data.get("onlyMovePlayers");
+        } else {
+            onlyMovePlayers = true;
+        }
+
         if (data.containsKey("useGravity")) {
             useGravity = (Boolean) data.get("useGravity");
         } else {
@@ -764,6 +772,10 @@ final public class CraftType {
     @NotNull
     public Set<Material> getPassthroughBlocks() {
         return passthroughBlocks;
+    }
+
+    public boolean getOnlyMovePlayers() {
+        return onlyMovePlayers;
     }
 
     private class TypeNotFoundException extends RuntimeException {
