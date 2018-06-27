@@ -147,7 +147,7 @@ public class DetectionTask extends AsyncTask {
 
             }
         }
-        Bukkit.getPluginManager().callEvent(new CraftDetectEvent(craft));
+
     }
 
     private void detectBlock(int x, int y, int z) {

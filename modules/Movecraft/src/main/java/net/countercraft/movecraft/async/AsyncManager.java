@@ -30,6 +30,7 @@ import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
@@ -206,7 +207,9 @@ public class AsyncManager extends BukkitRunnable {
                         }
                     }
                 }
-
+                if(c!=null){
+                    Bukkit.getPluginManager().callEvent(new CraftDetectEvent(c));
+                }
             } else if (poll instanceof TranslationTask) {
                 // Process translation task
 

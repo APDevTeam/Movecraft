@@ -1,8 +1,8 @@
 package net.countercraft.movecraft.sign;
 
 import net.countercraft.movecraft.MovecraftLocation;
-import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
