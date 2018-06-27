@@ -1,9 +1,12 @@
 package net.countercraft.movecraft.sign;
 
+import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.events.CraftDetectEvent;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.event.EventHandler;
@@ -12,6 +15,22 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 public final class DescendSign implements Listener{
+
+    @EventHandler
+    public void onCraftDetect(CraftDetectEvent event){
+        World world = event.getCraft().getW();
+        for(MovecraftLocation location: event.getCraft().getHitBox()){
+            Block block = location.toBukkit(world).getBlock();
+            if(block.getType() == Material.WALL_SIGN || block.getType() == Material.SIGN_POST){
+                Sign sign = (Sign) block.getState();
+                if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Descend: ON")) {
+                    sign.setLine(0, "Descend: OFF");
+                    sign.update();
+                }
+            }
+        }
+    }
+
     @EventHandler
     public final void onSignClick(PlayerInteractEvent event) {
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {

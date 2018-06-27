@@ -26,12 +26,15 @@ import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.events.CraftDetectEvent;
+import net.countercraft.movecraft.events.CraftPilotEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.BoundingBoxUtils;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.utils.TownyUtils;
 import net.countercraft.movecraft.utils.TownyWorldHeightLimits;
 import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -137,17 +140,14 @@ public class DetectionTask extends AsyncTask {
             data.dynamicFlyBlockSpeedMultiplier = ratio;
         }
         if (isWithinLimit(blockList.size(), minSize, maxSize)) {
-
             data.setBlockList(finaliseBlockList(blockList));
-
             if (confirmStructureRequirements(flyBlocks, blockTypeCount)) {
                 data.setHitBox(BoundingBoxUtils.formBoundingBox(data.getBlockList(), data.getMinX(), maxX,
                         data.getMinZ(), maxZ));
 
             }
-
         }
-
+        Bukkit.getPluginManager().callEvent(new CraftDetectEvent(craft));
     }
 
     private void detectBlock(int x, int y, int z) {
