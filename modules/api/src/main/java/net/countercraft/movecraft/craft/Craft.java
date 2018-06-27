@@ -65,7 +65,6 @@ public abstract class Craft {
     private Player cannonDirector;
     private Player AADirector;
     private HashMap<Player, Long> movedPlayers = new HashMap<>();
-    //private int blockUpdates;
     private float meanMoveTime;
     private int numMoves;
     private final Map<MovecraftLocation,Material> phaseBlocks = new HashMap<>();
@@ -74,7 +73,6 @@ public abstract class Craft {
     public Craft(CraftType type, World world) {
         this.type = type;
         this.w = world;
-        //this.blockList = new MovecraftLocation[1];
         this.hitBox = new HashHitBox();
         if (type.getMaxHeightLimit() > w.getMaxHeight() - 1) {
             this.maxHeightLimit = w.getMaxHeight() - 1;
@@ -103,18 +101,6 @@ public abstract class Craft {
         this.processing.set(processing);
     }
 
-    /*public MovecraftLocation[] getBlockList() {
-        synchronized (blockList) {
-            return blockList.clone();
-        }
-    }
-
-    public void setBlockList(MovecraftLocation[] blockList) {
-        synchronized (this.blockList) {
-            this.blockList = blockList;
-        }
-    }*/
-
     public HashHitBox getHitBox() {
         return hitBox;
     }
@@ -131,42 +117,9 @@ public abstract class Craft {
         return w;
     }
 
-    /*public int[][][] getHitBox() {
-        return hitBox;
-    }
-
-    public void setHitBox(int[][][] hitBox) {
-        this.hitBox = hitBox;
-    }*/
-
     public abstract void detect(Player player, Player notificationPlayer, MovecraftLocation startPoint);
 
     public abstract void translate(int dx, int dy, int dz);
-
-    /*@Deprecated
-    public void resetSigns(boolean resetCruise, boolean resetAscend, boolean resetDescend) {
-        for (MovecraftLocation aBlockList : blockList) {
-            int blockID = w.getBlockAt(aBlockList.getX(), aBlockList.getY(), aBlockList.getZ()).getTypeId();
-            if (blockID == 63 || blockID == 68) {
-                Sign s = (Sign) w.getBlockAt(aBlockList.getX(), aBlockList.getY(), aBlockList.getZ()).getState();
-                if (resetCruise)
-                    if (ChatColor.stripColor(s.getLine(0)).equals("Cruise: ON")) {
-                        s.setLine(0, "Cruise: OFF");
-                        s.update(true);
-                    }
-                if (resetAscend)
-                    if (ChatColor.stripColor(s.getLine(0)).equals("Ascend: ON")) {
-                        s.setLine(0, "Ascend: OFF");
-                        s.update(true);
-                    }
-                if (resetDescend)
-                    if (ChatColor.stripColor(s.getLine(0)).equals("Descend: ON")) {
-                        s.setLine(0, "Descend: OFF");
-                        s.update(true);
-                    }
-            }
-        }
-    }*/
 
     public abstract void rotate(Rotation rotation, MovecraftLocation originPoint);
 
