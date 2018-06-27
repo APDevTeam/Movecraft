@@ -19,7 +19,9 @@ package net.countercraft.movecraft.craft;
 
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
+import net.countercraft.movecraft.events.CraftSinkEvent;
 import net.countercraft.movecraft.utils.HashHitBox;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -182,8 +184,17 @@ public abstract class Craft {
         return sinking;
     }
 
-    public void setSinking(boolean sinking) {
+    /*public void setSinking(boolean sinking) {
         this.sinking = sinking;
+    }*/
+
+    public void sink(){
+        CraftSinkEvent event = new CraftSinkEvent(this);
+        Bukkit.getServer().getPluginManager().callEvent(event);
+        if(event.isCancelled()){
+            return;
+        }
+        this.sinking = true;
     }
 
     public boolean getDisabled() {

@@ -32,11 +32,8 @@ public class ScuttleCommand implements CommandExecutor {
                 return true;
             }
 
-            CraftManager.getInstance().getCraftByPlayer(player).setSinking(true);
-        }
-
-        // Scuttle self
-        if (commandSender.hasPermission("movecraft.commands.scuttle.self") && strings.length == 0) {
+            CraftManager.getInstance().getCraftByPlayer(player).sink();
+        } else if (commandSender.hasPermission("movecraft.commands.scuttle.self") && strings.length == 0) {
             if (!(commandSender instanceof Player)) {
                 commandSender.sendMessage("You must be a player to scuttle a craft");
                 return true;
@@ -46,7 +43,7 @@ public class ScuttleCommand implements CommandExecutor {
                 commandSender.sendMessage("You must be piloting a craft to perform this command");
                 return true;
             }
-            craft.setSinking(true);
+            craft.sink();
         }
         commandSender.sendMessage("Scuttle was activated. Abandon ship!");
         return true;

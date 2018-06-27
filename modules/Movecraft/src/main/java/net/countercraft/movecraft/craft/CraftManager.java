@@ -103,31 +103,6 @@ public class CraftManager implements Iterable<Craft>{
         removeReleaseTask(c);
         this.craftPlayerIndex.remove(getPlayerFromCraft(c));
         // if its sinking, just remove the craft without notifying or checking
-        if (c.getSinking()) {
-            this.craftList.remove(c);
-        }
-        // don't just release torpedoes, make them sink so they don't clutter up the place
-        if (c.getType().getCruiseOnPilot()) {
-            c.setCruising(false);
-            c.setSinking(true);
-            c.setNotificationPlayer(null);
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-                    CraftManager.getInstance().removeCraft(c);
-                }
-            }.runTaskLater(Movecraft.getInstance(), (20 * 600));
-            //c.setScheduledBlockChanges(null);
-            return;
-        }
-       /* if (c.getScheduledBlockChanges() != null) {
-            ArrayList<BlockTranslateCommand> updateCommands = new ArrayList<>();
-            updateCommands.addAll(c.getScheduledBlockChanges().keySet());
-            if (updateCommands.size() > 0) {
-                MapUpdateManager.getInstance().scheduleUpdates(updateCommands.toArray(new BlockTranslateCommand[1]));
-            }
-        }
-        c.setScheduledBlockChanges(null);*/
         this.craftList.remove(c);
         if(!c.getHitBox().isEmpty()) {
             if (getPlayerFromCraft(c) != null) {
