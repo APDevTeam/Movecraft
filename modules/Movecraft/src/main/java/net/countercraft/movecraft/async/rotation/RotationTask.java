@@ -26,9 +26,8 @@ import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.utils.CollectionUtils;
-import net.countercraft.movecraft.utils.HitBox;
-import net.countercraft.movecraft.utils.MathUtils;
+import net.countercraft.movecraft.utils.*;
+import net.countercraft.movecraft.utils.HashHitBox;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.api.config.Settings;
 import net.countercraft.movecraft.craft.CraftManager;
@@ -36,9 +35,12 @@ import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.update.CraftRotateCommand;
 import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
+<<<<<<< HEAD
 import net.countercraft.movecraft.utils.TownyUtils;
 import net.countercraft.movecraft.api.utils.TownyWorldHeightLimits;
 import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
+=======
+>>>>>>> upstream/master
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -70,8 +72,8 @@ public class RotationTask extends AsyncTask {
     private TownyWorld townyWorld;
     private TownyWorldHeightLimits townyWorldHeightLimits;
 
-    private final HitBox oldHitBox;
-    private final HitBox newHitBox;
+    private final HashHitBox oldHitBox;
+    private final HashHitBox newHitBox;
 
     public RotationTask(Craft c, MovecraftLocation originPoint, Rotation rotation, World w, boolean isSubCraft) {
         super(c);
@@ -79,8 +81,8 @@ public class RotationTask extends AsyncTask {
         this.rotation = rotation;
         this.w = w;
         this.isSubCraft = isSubCraft;
-        this.newHitBox = new HitBox();
-        this.oldHitBox = new HitBox(c.getHitBox());
+        this.newHitBox = new HashHitBox();
+        this.oldHitBox = new HashHitBox(c.getHitBox());
     }
 
     public RotationTask(Craft c, MovecraftLocation originPoint, Rotation rotation, World w) {
@@ -89,7 +91,6 @@ public class RotationTask extends AsyncTask {
 
     @Override
     protected void excecute() {
-        int waterLine = 0;
 
         if(oldHitBox.isEmpty())
             return;
@@ -98,54 +99,6 @@ public class RotationTask extends AsyncTask {
         if (getCraft().getDisabled() && (!getCraft().getSinking())) {
             failed = true;
             failMessage = I18nSupport.getInternationalisedString("Craft is disabled!");
-        }
-
-        // blockedByWater=false means an ocean-going vessel
-        boolean waterCraft = !getCraft().getType().blockedByWater();
-        if (waterCraft) {
-            // next figure out the water level by examining blocks next to the outer boundaries of the craft
-            for (int posY = oldHitBox.getMaxY(); (posY >= oldHitBox.getMinY()) && (waterLine == 0); posY--) {
-                int posX;
-                int posZ;
-                posZ = oldHitBox.getMinZ() - 1;
-                for (posX = oldHitBox.getMinX() - 1; (posX <= oldHitBox.getMaxX() + 1) && (waterLine == 0); posX++) {
-                    if (w.getBlockAt(posX, posY, posZ).getTypeId() == 9) {
-                        waterLine = posY;
-                    }
-                }
-                posZ = oldHitBox.getMaxZ() + 1;
-                for (posX = oldHitBox.getMinX() - 1; (posX <= oldHitBox.getMaxX() + 1) && (waterLine == 0); posX++) {
-                    if (w.getBlockAt(posX, posY, posZ).getTypeId() == 9) {
-                        waterLine = posY;
-                    }
-                }
-                posX = oldHitBox.getMinX() - 1;
-                for (posZ = oldHitBox.getMinZ(); (posZ <= oldHitBox.getMaxZ()) && (waterLine == 0); posZ++) {
-                    if (w.getBlockAt(posX, posY, posZ).getTypeId() == 9) {
-                        waterLine = posY;
-                    }
-                }
-                posX = oldHitBox.getMaxX() + 1;
-                for (posZ = oldHitBox.getMinZ(); (posZ <= oldHitBox.getMaxZ()) && (waterLine == 0); posZ++) {
-                    if (w.getBlockAt(posX, posY, posZ).getTypeId() == 9) {
-                        waterLine = posY;
-                    }
-                }
-            }
-
-            // now add all the air blocks found within the crafts borders below the waterline to the craft blocks so they will be rotated
-            //HashSet<MovecraftLocation> newHSBlockList = new HashSet<>(hitBox);
-            for (int posY = waterLine; posY >= oldHitBox.getMinY(); posY--) {
-                for (int posX = oldHitBox.getMinX(); posX <= oldHitBox.getMaxX(); posX++) {
-                    for (int posZ = oldHitBox.getMinZ(); posZ <= oldHitBox.getMaxZ(); posZ++) {
-                        if (w.getBlockAt(posX, posY, posZ).getTypeId() == 0) {
-                            MovecraftLocation l = new MovecraftLocation(posX, posY, posZ);
-                            oldHitBox.add(l);
-                        }
-                    }
-                }
-            }
-            //blockList = newHSBlockList;
         }
 
         // check for fuel, burn some from a furnace if needed. Blocks of coal are supported, in addition to coal and charcoal
@@ -230,7 +183,7 @@ public class RotationTask extends AsyncTask {
 
             //isTownyBlock(plugLoc,craftPilot);
             Material newMaterial = newLocation.toBukkit(w).getBlock().getType();
-            if ((newMaterial == Material.AIR) || (newMaterial == Material.PISTON_EXTENSION) || (waterCraft && (newMaterial == Material.WATER))) {
+            if ((newMaterial == Material.AIR) || (newMaterial == Material.PISTON_EXTENSION) || craft.getType().getPassthroughBlocks().contains(newMaterial)) {
                 //getCraft().getPhaseBlocks().put(newLocation, newMaterial);
                 continue;
             }
@@ -490,7 +443,7 @@ public class RotationTask extends AsyncTask {
         return !testMaterial.equals(mBlock) || oldHitBox.contains(aroundNewLoc);
     }
 
-    public HitBox getNewHitBox() {
+    public HashHitBox getNewHitBox() {
         return newHitBox;
     }
 }

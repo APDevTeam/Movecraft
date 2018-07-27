@@ -9,7 +9,11 @@ import net.countercraft.movecraft.async.translation.TranslationTask;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
+import java.util.UUID;
+
 public class ICraft extends Craft {
+    private final UUID id = UUID.randomUUID();
+
     public ICraft(CraftType type, World world) {
         super(type, world);
     }
@@ -128,5 +132,16 @@ public class ICraft extends Craft {
         Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(this, originPoint, rotation, this.getW(), isSubCraft), this);
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if(!(obj instanceof ICraft)){
+            return false;
+        }
+        return this.id.equals(((ICraft)obj).id);
+    }
 
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
 }

@@ -1,7 +1,7 @@
 package net.countercraft.movecraft.commands;
 
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.utils.HitBox;
+import net.countercraft.movecraft.utils.HashHitBox;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.TopicPaginator;
@@ -29,13 +29,13 @@ public class CraftReportCommand implements CommandExecutor{
             commandSender.sendMessage(" Invalid page \"" + args[0] + "\"");
             return true;
         }
-        if (CraftManager.getInstance().getCraftList().isEmpty()){
+        if (CraftManager.getInstance().isEmpty()){
             commandSender.sendMessage("No crafts found");
             return true;
         }
         TopicPaginator paginator = new TopicPaginator("Craft Report");
-        for (Craft craft : CraftManager.getInstance().getCraftList()) {
-            HitBox hitBox = craft.getHitBox();
+        for (Craft craft : CraftManager.getInstance()) {
+            HashHitBox hitBox = craft.getHitBox();
             if (craft.getNotificationPlayer() != null)
                 paginator.addLine( craft.getType().getCraftName() + " " + craft.getNotificationPlayer().getName() + " " + hitBox.size() + " @ " + hitBox.getMinX() + "," + hitBox.getMinY() + "," + hitBox.getMinZ());
             else

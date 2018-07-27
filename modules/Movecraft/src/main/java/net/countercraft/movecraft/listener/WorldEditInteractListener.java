@@ -28,8 +28,13 @@ import com.sk89q.worldedit.bukkit.BukkitUtil;
 import com.sk89q.worldedit.schematic.SchematicFormat;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.countercraft.movecraft.Movecraft;
+<<<<<<< HEAD
 import net.countercraft.movecraft.api.config.Settings;
 import net.countercraft.movecraft.utils.HitBox;
+=======
+import net.countercraft.movecraft.utils.HashHitBox;
+import net.countercraft.movecraft.config.Settings;
+>>>>>>> upstream/master
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
@@ -173,7 +178,7 @@ public class WorldEditInteractListener implements Listener {
                     repairStateName += ".schematic";
                     file = new File(repairStateName);
 
-                    HitBox hitBox = pCraft.getHitBox();
+                    HashHitBox hitBox = pCraft.getHitBox();
                     Vector size = new Vector(hitBox.getMaxX() - hitBox.getMinX(), (hitBox.getMaxY() - hitBox.getMinY()) + 1, hitBox.getMaxZ() - hitBox.getMinZ());
                     Vector origin = new Vector(sign.getX(), sign.getY(), sign.getZ());
                     Vector offset = new Vector(hitBox.getMinX() - sign.getX(), hitBox.getMinY() - sign.getY(), hitBox.getMinZ() - sign.getZ());

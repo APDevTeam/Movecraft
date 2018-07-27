@@ -17,8 +17,12 @@
 
 package net.countercraft.movecraft.listener;
 
+<<<<<<< HEAD
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.api.config.Settings;
+=======
+import net.countercraft.movecraft.utils.HitBox;
+>>>>>>> upstream/master
 import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
@@ -30,16 +34,15 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
 
-import java.util.Arrays;
-import java.util.Set;
+import java.util.*;
 
 public class PlayerListener implements Listener {
+    private final Map<Craft, Long> timeToReleaseAfter = new WeakHashMap<>();
 
+    @Deprecated
     private String checkCraftBorders(Craft craft) {
-        Set<MovecraftLocation> craftBlocks = craft.getHitBox();
+        HitBox craftBlocks = craft.getHitBox();
         String ret = null;
         for (MovecraftLocation block : craft.getHitBox()) {
             int x, y, z;
@@ -161,19 +164,8 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onPLayerLogout(PlayerQuitEvent e) {
-        Craft c = CraftManager.getInstance().getCraftByPlayer(e.getPlayer());
-
-        if (c != null) {
-            CraftManager.getInstance().removeCraft(c);
-        }
+        CraftManager.getInstance().removeCraftByPlayer(e.getPlayer());
     }
-
-/*	public void onPlayerDamaged( EntityDamageByEntityEvent e ) {
-        if ( e instanceof Player ) {
-			Player p = ( Player ) e;
-			CraftManager.getInstance().removeCraft( CraftManager.getInstance().getCraftByPlayer( p ) );
-		}
-	}*/
 
     @EventHandler
     public void onPlayerDeath(EntityDamageByEntityEvent e) {  // changed to death so when you shoot up an airship and hit the pilot, it still sinks
@@ -186,54 +178,31 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent event) {
         final Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
-        if (c != null) {
-            if (c.isNotProcessing() && (!MathUtils.locationNearHitbox(c.getHitBox(),event.getPlayer().getLocation(),2))) {
+        if (c == null) {
+            return;
+        }
 
-                if (!CraftManager.getInstance().getReleaseEvents().containsKey(event.getPlayer()) && c.getType().getMoveEntities()) {
-                    boolean releaseBlocked = false;
-                    if (Settings.ManOverBoardTimeout != 0)
-                        event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("You have left your craft. You may return to your craft by typing /manoverboard any time before the timeout expires"));
-                    else
-                        event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Release - Player has left craft"));
-                    if (c.getHitBox().size() > 11000) {
-                        event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Craft is too big to check its borders. Make sure this area is safe to release your craft in."));
-                    } else {
-                        String ret = checkCraftBorders(c);
-                        if (ret != null) {
-                            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("WARNING! There are blocks near your craft that may merge with the craft " + ret));
-                            releaseBlocked = true;
-                        }
-                    }
+        if(MathUtils.locationNearHitBox(c.getHitBox(), event.getPlayer().getLocation(), 2)){
+            timeToReleaseAfter.remove(c);
+            return;
+        }
 
-                    BukkitTask releaseTask;
-                    if (!releaseBlocked) {
-                        releaseTask = new BukkitRunnable() {
+        if(timeToReleaseAfter.containsKey(c) && timeToReleaseAfter.get(c) < System.currentTimeMillis()){
+            CraftManager.getInstance().removeCraft(c);
+            timeToReleaseAfter.remove(c);
+            return;
+        }
 
-                            @Override
-                            public void run() {
-                                CraftManager.getInstance().removeCraft(c);
-                            }
-
-                        }.runTaskLater(Movecraft.getInstance(), (20 * 30));
-                    } else {
-                        releaseTask = null; // put the task in as a null just so it doesn't keep pestering the pilot
-                    }
-
-                    CraftManager.getInstance().getReleaseEvents().put(event.getPlayer(), releaseTask);
-                }
+        if (c.isNotProcessing() && c.getType().getMoveEntities() && !timeToReleaseAfter.containsKey(c)) {
+            if (Settings.ManOverBoardTimeout != 0) {
+                event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("You have left your craft. You may return to your craft by typing /manoverboard any time before the timeout expires"));
             } else {
-                if (CraftManager.getInstance().getReleaseEvents().containsKey(event.getPlayer()) && c.getType().getMoveEntities()) {
-                    CraftManager.getInstance().removeReleaseTask(c);
-                }
+                event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Release - Player has left craft"));
             }
+            if (c.getHitBox().size() > 11000) {
+                event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Craft is too big to check its borders. Make sure this area is safe to release your craft in."));
+            }
+            timeToReleaseAfter.put(c, System.currentTimeMillis() + 30000); //30 seconds to release
         }
     }
-
-/*	@EventHandler
-	public void onPlayerHit( EntityDamageByEntityEvent event ) {
-		if ( event.getEntity() instanceof Player && CraftManager.getInstance().getCraftByPlayer( ( Player ) event.getEntity() ) != null ) {
-			CraftManager.getInstance().removeCraft( CraftManager.getInstance().getCraftByPlayer( ( Player ) event.getEntity() ) );
-		}
-	}   */
-
 }

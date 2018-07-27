@@ -19,7 +19,9 @@ package net.countercraft.movecraft.craft;
 
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
-import net.countercraft.movecraft.utils.HitBox;
+import net.countercraft.movecraft.events.CraftSinkEvent;
+import net.countercraft.movecraft.utils.HashHitBox;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -39,7 +41,7 @@ public abstract class Craft {
     protected final CraftType type;
     //protected int[][][] hitBox;
     //protected MovecraftLocation[] blockList;
-    protected HitBox hitBox;
+    protected HashHitBox hitBox;
 
     protected World w;
     private AtomicBoolean processing = new AtomicBoolean();
@@ -66,18 +68,15 @@ public abstract class Craft {
     private Player cannonDirector;
     private Player AADirector;
     private HashMap<Player, Long> movedPlayers = new HashMap<>();
-    //private int blockUpdates;
     private float meanMoveTime;
     private int numMoves;
-    //TODO: Test performance benefits vs HashSet
-    private final Map<MovecraftLocation,Material> phaseBlocks = new LinkedHashMap<>();
+    private final Map<MovecraftLocation,Material> phaseBlocks = new HashMap<>();
 
 
     public Craft(CraftType type, World world) {
         this.type = type;
         this.w = world;
-        //this.blockList = new MovecraftLocation[1];
-        this.hitBox = new HitBox();
+        this.hitBox = new HashHitBox();
         if (type.getMaxHeightLimit() > w.getMaxHeight() - 1) {
             this.maxHeightLimit = w.getMaxHeight() - 1;
         } else {
@@ -105,23 +104,11 @@ public abstract class Craft {
         this.processing.set(processing);
     }
 
-    /*public MovecraftLocation[] getBlockList() {
-        synchronized (blockList) {
-            return blockList.clone();
-        }
-    }
-
-    public void setBlockList(MovecraftLocation[] blockList) {
-        synchronized (this.blockList) {
-            this.blockList = blockList;
-        }
-    }*/
-
-    public HitBox getHitBox() {
+    public HashHitBox getHitBox() {
         return hitBox;
     }
 
-    public void setHitBox(@NotNull HitBox hitBox){
+    public void setHitBox(@NotNull HashHitBox hitBox){
         this.hitBox = hitBox;
     }
 
@@ -133,18 +120,11 @@ public abstract class Craft {
         return w;
     }
 
-    /*public int[][][] getHitBox() {
-        return hitBox;
-    }
-
-    public void setHitBox(int[][][] hitBox) {
-        this.hitBox = hitBox;
-    }*/
-
     public abstract void detect(Player player, Player notificationPlayer, MovecraftLocation startPoint);
 
     public abstract void translate(int dx, int dy, int dz);
 
+<<<<<<< HEAD
     /*@Deprecated
     public void resetSigns(boolean resetCruise, boolean resetAscend, boolean resetDescend) {
         for (MovecraftLocation aBlockList : blockList) {
@@ -188,6 +168,8 @@ public abstract class Craft {
 =======
     }*/
 
+=======
+>>>>>>> upstream/master
     public abstract void rotate(Rotation rotation, MovecraftLocation originPoint);
 
     public abstract void rotate(Rotation rotation, MovecraftLocation originPoint, boolean isSubCraft);
@@ -204,8 +186,23 @@ public abstract class Craft {
         return sinking;
     }
 
-    public void setSinking(boolean sinking) {
+    /*public void setSinking(boolean sinking) {
         this.sinking = sinking;
+    }*/
+
+    public void sink(){
+        CraftSinkEvent event = new CraftSinkEvent(this);
+        Bukkit.getServer().getPluginManager().callEvent(event);
+        if(event.isCancelled()){
+            return;
+        }
+        this.sinking = true;
+        this.getType().getPassthroughBlocks().add(Material.STATIONARY_WATER);
+        this.getType().getPassthroughBlocks().add(Material.WATER);
+        this.getType().getPassthroughBlocks().add(Material.LEAVES);
+        this.getType().getPassthroughBlocks().add(Material.LEAVES_2);
+        this.getType().getPassthroughBlocks().add(Material.LONG_GRASS);
+        this.getType().getPassthroughBlocks().add(Material.DOUBLE_PLANT);
     }
 
     public boolean getDisabled() {

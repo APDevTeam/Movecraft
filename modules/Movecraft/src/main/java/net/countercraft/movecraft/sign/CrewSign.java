@@ -5,6 +5,11 @@ import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.api.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.events.SignTranslateEvent;
+<<<<<<< HEAD
+=======
+import net.countercraft.movecraft.config.Settings;
+import org.bukkit.ChatColor;
+>>>>>>> upstream/master
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -26,8 +31,8 @@ public class CrewSign implements Listener{
     @EventHandler
     public final void onSignTranslate(SignTranslateEvent event){
         Craft craft = event.getCraft();
-        if(Settings.AllowCrewSigns && event.getLine(0).equalsIgnoreCase("Crew:")) {
-            String crewName=event.getLine(1);
+        if(Settings.AllowCrewSigns && ChatColor.stripColor(event.getLine(0)).equalsIgnoreCase("Crew:")) {
+            String crewName=ChatColor.stripColor(event.getLine(1));
             Player crewPlayer= Movecraft.getInstance().getServer().getPlayer(crewName);
             if(crewPlayer!=null) {
                 Location location = event.getBlock().getLocation();

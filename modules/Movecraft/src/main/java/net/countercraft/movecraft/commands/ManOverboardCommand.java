@@ -30,7 +30,7 @@ public class ManOverboardCommand implements CommandExecutor{
             return true;
         }
 
-        for(Craft playerCraft : CraftManager.getInstance().getCraftList()){
+        for(Craft playerCraft : CraftManager.getInstance()){
             if (playerCraft.getMovedPlayers().containsKey(player)) {
                 if (playerCraft.getW() != player.getWorld()) {
                     player.sendMessage(I18nSupport.getInternationalisedString("Distance to craft is too far"));
@@ -48,19 +48,16 @@ public class ManOverboardCommand implements CommandExecutor{
                 }
                 if (!CraftManager.getInstance().getCraftByPlayerName(player.getName()).getDisabled())
                     player.teleport(telPoint);
+                return true;
             }
         }
         return true;
     }
 
     private Location getCraftTeleportPoint(Craft craft) {
-        int maxDX = 0;
-        int maxDZ = 0;
-        int maxY = 0;
-        int minY = 32767;
-        double telX = craft.getHitBox().getMinX() + (craft.getHitBox().getXLength() / 2.0);
-        double telZ = craft.getHitBox().getMinZ() + (craft.getHitBox().getZLength() / 2.0);
-        double telY = maxY + 1.0;
+        double telX = (craft.getHitBox().getMinX() + craft.getHitBox().getMaxX())/2D;
+        double telZ = (craft.getHitBox().getMinZ() + craft.getHitBox().getMaxZ())/2D;
+        double telY = craft.getHitBox().getMaxY();
         return new Location(craft.getW(), telX, telY, telZ);
     }
 }

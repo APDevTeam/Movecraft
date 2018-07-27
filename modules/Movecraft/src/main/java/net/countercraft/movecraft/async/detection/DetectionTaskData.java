@@ -21,6 +21,7 @@ import net.countercraft.movecraft.MovecraftLocation;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
+@Deprecated
 public class DetectionTaskData {
     public Double dynamicFlyBlockSpeedMultiplier;
     private World w;
@@ -31,11 +32,11 @@ public class DetectionTaskData {
     private Player player;
     private Player notificationPlayer;
     private int[][][] hitBox;
-    private Integer minX, minZ;
-    private Integer[] allowedBlocks, forbiddenBlocks;
+    private int minX, minZ;
+    private int[] allowedBlocks, forbiddenBlocks;
     private String[] forbiddenSignStrings;
 
-    public DetectionTaskData(World w, Player player, Player notificationPlayer, Integer[] allowedBlocks, Integer[] forbiddenBlocks, String[] forbiddenSignStrings) {
+    public DetectionTaskData(World w, Player player, Player notificationPlayer, int[] allowedBlocks, int[] forbiddenBlocks, String[] forbiddenSignStrings) {
         this.w = w;
         this.player = player;
         this.notificationPlayer = notificationPlayer;
@@ -48,11 +49,11 @@ public class DetectionTaskData {
     public DetectionTaskData() {
     }
 
-    public Integer[] getAllowedBlocks() {
+    public int[] getAllowedBlocks() {
         return allowedBlocks;
     }
 
-    public Integer[] getForbiddenBlocks() {
+    public int[] getForbiddenBlocks() {
         return forbiddenBlocks;
     }
 

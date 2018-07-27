@@ -23,7 +23,7 @@ import org.bukkit.World;
 /**
  * Represents a Block aligned coordinate triplet.
  */
-public class MovecraftLocation {
+final public class MovecraftLocation {
     private final int x, y, z;
 
     public MovecraftLocation(int x, int y, int z) {

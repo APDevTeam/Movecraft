@@ -108,38 +108,9 @@ public class IWorldHandler extends WorldHandler {
         //*******************************************
         //TODO: add support for pass-through
         Collection<BlockPosition> deletePositions =  CollectionUtils.filter(rotatedPositions.keySet(),rotatedPositions.values());
-
-        if (craft.getType().blockedByWater() && !craft.getSinking()) {
-            for(BlockPosition position : deletePositions){
-                setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
-            }
-        } else {
-            int waterLine = craft.getWaterLine();
-            // for watercraft, fill blocks below the waterline with water
-            int maxY = craft.getHitBox().getMaxY();
-            int minY = craft.getHitBox().getMinY();
-            for(BlockPosition position : deletePositions) {
-                if (position.getY() <= waterLine) {
-                    // if there is air below the ship at the current position, don't fill in with water
-                    //MovecraftLocation testAir = new MovecraftLocation(l1.getX(), l1.getY() - 1, l1.getZ());
-                    BlockPosition testAir = position;
-                    for(BlockPosition searchPosition : deletePositions){
-                        if(searchPosition.getY() < testAir.getY()){
-                            testAir = searchPosition;
-                        }
-                    }
-
-                    if (craft.getW().getBlockAt(testAir.getX(), testAir.getY(), testAir.getZ()).getType().equals(Material.AIR)) {
-                        setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
-                    } else {
-                        setBlockFast(nativeWorld, position, Blocks.WATER.getBlockData());
-                    }
-                } else {
-                    setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
-                }
-            }
+        for(BlockPosition position : deletePositions){
+            setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
         }
-
 
         //*******************************************
         //*       Step six: Update the blocks       *
@@ -236,40 +207,10 @@ public class IWorldHandler extends WorldHandler {
         //*******************************************
         //*   Step five: Destroy the leftovers      *
         //*******************************************
-        //TODO: add support for pass-through
         Collection<BlockPosition> deletePositions =  CollectionUtils.filter(positions,newPositions);
-
-        if (craft.getType().blockedByWater() && !craft.getSinking()) {
-            for(BlockPosition position : deletePositions){
-                setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
-            }
-        } else {
-            int waterLine = craft.getWaterLine();
-            // for watercraft, fill blocks below the waterline with water
-            int maxY = craft.getHitBox().getMaxY();
-            int minY = craft.getHitBox().getMinY();
-            for(BlockPosition position : deletePositions) {
-                if (position.getY() <= waterLine) {
-                    // if there is air below the ship at the current position, don't fill in with water
-                    //MovecraftLocation testAir = new MovecraftLocation(l1.getX(), l1.getY() - 1, l1.getZ());
-                    BlockPosition testAir = position;
-                        for(BlockPosition searchPosition : deletePositions){
-                        if(searchPosition.getY() < testAir.getY()){
-                            testAir = searchPosition;
-                        }
-                    }
-
-                    if (craft.getW().getBlockAt(testAir.getX(), testAir.getY(), testAir.getZ()).getType().equals(Material.AIR)) {
-                        setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
-                    } else {
-                        setBlockFast(nativeWorld, position, Blocks.WATER.getBlockData());
-                    }
-                } else {
-                    setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
-                }
-            }
+        for(BlockPosition position : deletePositions){
+            setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
         }
-
 
         //*******************************************
         //*       Step six: Update the blocks       *

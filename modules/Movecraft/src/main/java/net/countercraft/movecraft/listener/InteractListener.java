@@ -90,7 +90,7 @@ public final class InteractListener implements Listener {
                 }
             }
 
-            if (!MathUtils.locationNearHitbox(craft.getHitBox(),event.getPlayer().getLocation(),2)) {
+            if (!MathUtils.locationNearHitBox(craft.getHitBox(),event.getPlayer().getLocation(),2)) {
                 return;
             }
 

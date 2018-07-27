@@ -8,14 +8,15 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Objects;
 
 
 public class BlockCreateCommand extends UpdateCommand {
 
-    private MovecraftLocation newBlockLocation;
-    private Material type;
-    private byte dataID;
-    private World world;
+    final private MovecraftLocation newBlockLocation;
+    final private Material type;
+    final private byte dataID;
+    final private World world;
 
     public BlockCreateCommand(@NotNull MovecraftLocation newBlockLocation, @NotNull Material type, byte dataID, @NotNull Craft craft) {
         this.newBlockLocation = newBlockLocation;
@@ -60,5 +61,20 @@ public class BlockCreateCommand extends UpdateCommand {
         //TODO: Re-add sign updating
     }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(newBlockLocation, type, dataID, world.getUID());
+    }
 
+    @Override
+    public boolean equals(Object obj) {
+        if(!(obj instanceof BlockCreateCommand)){
+            return false;
+        }
+        BlockCreateCommand other = (BlockCreateCommand) obj;
+        return other.newBlockLocation.equals(this.newBlockLocation) &&
+                other.type.equals(this.type) &&
+                other.dataID == this.dataID &&
+                other.world.equals(this.world);
+    }
 }

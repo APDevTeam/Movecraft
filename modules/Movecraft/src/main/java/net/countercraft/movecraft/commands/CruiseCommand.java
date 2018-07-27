@@ -25,7 +25,35 @@ public class CruiseCommand implements TabExecutor {
         Player player = (Player) commandSender;
 
         if(args.length<1){
-            commandSender.sendMessage("you need to supply an argument"); //TODO: toggle cruising
+            final Craft craft = CraftManager.getInstance().getCraftByPlayerName(player.getName());
+            if (craft == null) {
+                player.sendMessage(I18nSupport.getInternationalisedString("You must be piloting a craft"));
+                return true;
+            }
+            if (!player.hasPermission("movecraft.commands") || !player.hasPermission("movecraft.commands.cruise")) {
+                craft.setCruising(false);
+                return true;
+            }
+
+            if(craft.getCruising()){
+                craft.setCruising(false);
+                return true;
+            }
+            // Normalize yaw from [-360, 360] to [0, 360]
+            float yaw = (player.getLocation().getYaw() + 360.0f);
+            if (yaw >= 360.0f) {
+                yaw %= 360.0f;
+            }
+            if (yaw >= 45 && yaw < 135) { // west
+                craft.setCruiseDirection((byte)0x5);
+            } else if (yaw >= 135 && yaw < 225) { // north
+                craft.setCruiseDirection((byte)0x3);
+            } else if (yaw >= 225 && yaw <= 315){ // east
+                craft.setCruiseDirection((byte)0x4);
+            } else { // default south
+                craft.setCruiseDirection((byte)0x2);
+            }
+            craft.setCruising(true);
             return true;
         }
         if (args[0].equalsIgnoreCase("off")) { //This goes before because players can sometimes freeze while cruising

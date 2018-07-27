@@ -101,9 +101,10 @@ public class BlockListener implements Listener {
         }
         if (e.getBlock().getType() == Material.WALL_SIGN) {
             Sign s = (Sign) e.getBlock().getState();
-            if (s.getLine(0).equalsIgnoreCase(ChatColor.RED + "REGION DAMAGED!"))
+            if (s.getLine(0).equalsIgnoreCase(ChatColor.RED + "REGION DAMAGED!")) {
                 e.setCancelled(true);
-            return;
+                return;
+            }
         }
         if (Settings.ProtectPilotedCrafts) {
             MovecraftLocation mloc = MathUtils.bukkit2MovecraftLoc(e.getBlock().getLocation());
@@ -187,7 +188,7 @@ public class BlockListener implements Listener {
         }
         for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(block.getWorld())) {
             MovecraftLocation mloc = new MovecraftLocation(block.getX(), block.getY(), block.getZ());
-            if (MathUtils.locIsNearCraftFast(tcraft, mloc) && tcraft.getCruising() || !tcraft.isNotProcessing()) {
+            if (MathUtils.locIsNearCraftFast(tcraft, mloc) && tcraft.getCruising() && !tcraft.isNotProcessing()) {
                 event.setCancelled(true);
                 return;
             }
@@ -206,7 +207,7 @@ public class BlockListener implements Listener {
         }
         for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(block.getWorld())) {
             MovecraftLocation mloc = new MovecraftLocation(block.getX(), block.getY(), block.getZ());
-            if (MathUtils.locIsNearCraftFast(tcraft, mloc) && tcraft.getCruising() || !tcraft.isNotProcessing()) {
+            if (MathUtils.locIsNearCraftFast(tcraft, mloc) && tcraft.getCruising() && !tcraft.isNotProcessing()) {
                 event.setCancelled(true);
                 return;
             }

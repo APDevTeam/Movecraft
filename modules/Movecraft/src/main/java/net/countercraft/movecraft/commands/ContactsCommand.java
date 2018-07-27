@@ -1,7 +1,7 @@
 package net.countercraft.movecraft.commands;
 
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.utils.HitBox;
+import net.countercraft.movecraft.utils.HashHitBox;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.TopicPaginator;
@@ -41,7 +41,7 @@ public class ContactsCommand implements CommandExecutor {
 
         TopicPaginator pageinator = new TopicPaginator("Contacts");
         Craft ccraft = CraftManager.getInstance().getCraftByPlayer(player);
-        HitBox hitBox = ccraft.getHitBox();
+        HashHitBox hitBox = ccraft.getHitBox();
         long cposx = hitBox.getMaxX() + hitBox.getMinX();
         long cposy = hitBox.getMaxY() + hitBox.getMinY();
         long cposz = hitBox.getMaxZ() + hitBox.getMinZ();
@@ -49,7 +49,7 @@ public class ContactsCommand implements CommandExecutor {
         cposy = cposy >> 1;
         cposz = cposz >> 1;
         for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(ccraft.getW())) {
-            HitBox tHitBox = tcraft.getHitBox();
+            HashHitBox tHitBox = tcraft.getHitBox();
             long tposx = tHitBox.getMaxX() + tHitBox.getMinX();
             long tposy = tHitBox.getMaxY() + tHitBox.getMinY();
             long tposz = tHitBox.getMaxZ() + tHitBox.getMinZ();

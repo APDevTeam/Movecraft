@@ -11,6 +11,8 @@ import org.bukkit.World;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.util.Objects;
+
 /**
  * Class that stores the data about a item drops to the map in an unspecified world. The world is retrieved contextually from the submitting craft.
  */
@@ -43,6 +45,21 @@ public class ItemDropUpdateCommand extends UpdateCommand {
                 }
             }.runTaskLater(Movecraft.getInstance(), 20);
         }
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(location, itemStack);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(!(obj instanceof ItemDropUpdateCommand)){
+            return false;
+        }
+        ItemDropUpdateCommand other = (ItemDropUpdateCommand) obj;
+        return this.location.equals(other.location) &&
+                this.itemStack.equals(other.itemStack);
     }
 
 }

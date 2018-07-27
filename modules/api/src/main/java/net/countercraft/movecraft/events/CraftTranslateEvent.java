@@ -1,7 +1,7 @@
 package net.countercraft.movecraft.events;
 
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.utils.HitBox;
+import net.countercraft.movecraft.utils.HashHitBox;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
@@ -14,23 +14,23 @@ import org.jetbrains.annotations.NotNull;
 @SuppressWarnings("unused")
 public class CraftTranslateEvent extends CraftEvent implements Cancellable {
     private static final HandlerList HANDLERS = new HandlerList();
-    @NotNull private final HitBox oldHitBox;
-    @NotNull private final HitBox newHitBox;
+    @NotNull private final HashHitBox oldHitBox;
+    @NotNull private final HashHitBox newHitBox;
     private boolean isCancelled = false;
 
-    public CraftTranslateEvent(@NotNull Craft craft, @NotNull HitBox oldHitBox, @NotNull HitBox newHitBox) {
+    public CraftTranslateEvent(@NotNull Craft craft, @NotNull HashHitBox oldHitBox, @NotNull HashHitBox newHitBox) {
         super(craft);
         this.oldHitBox = oldHitBox;
         this.newHitBox = newHitBox;
     }
 
     @NotNull
-    public HitBox getNewHitBox() {
+    public HashHitBox getNewHitBox() {
         return newHitBox;
     }
 
     @NotNull
-    public HitBox getOldHitBox(){
+    public HashHitBox getOldHitBox(){
         return oldHitBox;
     }
 

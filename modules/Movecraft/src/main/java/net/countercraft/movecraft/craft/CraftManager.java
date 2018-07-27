@@ -26,26 +26,22 @@ import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 
-public class CraftManager {
+public class CraftManager implements Iterable<Craft>{
     private static CraftManager ourInstance;
     @NotNull private final Set<Craft> craftList = new HashSet<>();
     @NotNull private final HashMap<Player, Craft> craftPlayerIndex = new HashMap<>();
-    @NotNull private final HashMap<Player, BukkitTask> releaseEvents = new HashMap<>();
-    private HashSet<CraftType> craftTypes;
+    @NotNull private final HashMap<Craft, BukkitTask> releaseEvents = new HashMap<>();
+    @NotNull private Set<CraftType> craftTypes;
 
     public static void initialize(){
         ourInstance = new CraftManager();
     }
 
     private CraftManager() {
-        initCraftTypes();
+        this.craftTypes = loadCraftTypes();
     }
 
     public static CraftManager getInstance() {
@@ -56,7 +52,7 @@ public class CraftManager {
         return Collections.unmodifiableSet(craftTypes);
     }
 
-    public void initCraftTypes() {
+    private Set<CraftType> loadCraftTypes(){
         File craftsFile = new File(Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/types");
 
         if (craftsFile.mkdirs()) {
@@ -72,9 +68,13 @@ public class CraftManager {
             Movecraft.getInstance().saveResource("types/Turret.craft", false);
         }
 
-        craftTypes = new HashSet<>();
+        Set<CraftType> craftTypes = new HashSet<>();
+        File[] files = craftsFile.listFiles();
+        if (files == null){
+            return craftTypes;
+        }
 
-        for (File file : craftsFile.listFiles()) {
+        for (File file : files) {
             if (file.isFile()) {
 
                 if (file.getName().contains(".craft")) {
@@ -87,56 +87,45 @@ public class CraftManager {
             Movecraft.getInstance().getLogger().log(Level.SEVERE, "ERROR: NO CRAFTS FOUND!");
         }
         Movecraft.getInstance().getLogger().log(Level.INFO, String.format(I18nSupport.getInternationalisedString("Startup - Number of craft files loaded"), craftTypes.size()));
+        return craftTypes;
+    }
+
+    public void initCraftTypes() {
+        this.craftTypes = loadCraftTypes();
     }
 
     public void addCraft(Craft c, Player p) {
-        craftList.add(c);
-        craftPlayerIndex.put(p, c);
+        this.craftList.add(c);
+        this.craftPlayerIndex.put(p, c);
     }
 
     public void removeCraft(Craft c) {
         removeReleaseTask(c);
-
+        this.craftPlayerIndex.remove(getPlayerFromCraft(c));
         // if its sinking, just remove the craft without notifying or checking
-        if (c.getSinking()) {
-            craftList.remove(c);
-            craftPlayerIndex.remove(getPlayerFromCraft(c));
-        }
-        // don't just release torpedoes, make them sink so they don't clutter up the place
-        if (c.getType().getCruiseOnPilot()) {
-            c.setCruising(false);
-            c.setSinking(true);
-            c.setNotificationPlayer(null);
-            //c.setScheduledBlockChanges(null);
-            return;
-        }
-       /* if (c.getScheduledBlockChanges() != null) {
-            ArrayList<BlockTranslateCommand> updateCommands = new ArrayList<>();
-            updateCommands.addAll(c.getScheduledBlockChanges().keySet());
-            if (updateCommands.size() > 0) {
-                MapUpdateManager.getInstance().scheduleUpdates(updateCommands.toArray(new BlockTranslateCommand[1]));
+        this.craftList.remove(c);
+        if(!c.getHitBox().isEmpty()) {
+            if (getPlayerFromCraft(c) != null) {
+                getPlayerFromCraft(c).sendMessage(I18nSupport.getInternationalisedString("Release - Craft has been released message"));
+                Movecraft.getInstance().getLogger().log(Level.INFO, String.format(I18nSupport.getInternationalisedString("Release - Player has released a craft console"), c.getNotificationPlayer().getName(), c.getType().getCraftName(), c.getHitBox().size(), c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
+            } else {
+                Movecraft.getInstance().getLogger().log(Level.INFO, String.format(I18nSupport.getInternationalisedString("NULL Player has released a craft of type %s with size %d at coordinates : %d x , %d z"), c.getType().getCraftName(), c.getHitBox().size(), c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
             }
+        }else{
+            Movecraft.getInstance().getLogger().warning("Releasing empty craft!");
         }
-        c.setScheduledBlockChanges(null);*/
-        craftList.remove(c);
-        if (getPlayerFromCraft(c) != null) {
-            getPlayerFromCraft(c).sendMessage(I18nSupport.getInternationalisedString("Release - Craft has been released message"));
-            Movecraft.getInstance().getLogger().log(Level.INFO, String.format(I18nSupport.getInternationalisedString("Release - Player has released a craft console"), c.getNotificationPlayer().getName(), c.getType().getCraftName(), c.getHitBox().size(), c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
-        } else {
-            Movecraft.getInstance().getLogger().log(Level.INFO, String.format(I18nSupport.getInternationalisedString("NULL Player has released a craft of type %s with size %d at coordinates : %d x , %d z"), c.getType().getCraftName(), c.getHitBox().size(), c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
-        }
-        craftPlayerIndex.remove(getPlayerFromCraft(c));
+        this.craftPlayerIndex.remove(getPlayerFromCraft(c));
     }
 
     public void forceRemoveCraft(Craft c) {
-        craftList.remove(c);
+        this.craftList.remove(c);
         if (getPlayerFromCraft(c) != null)
-            craftPlayerIndex.remove(getPlayerFromCraft(c));
+            this.craftPlayerIndex.remove(getPlayerFromCraft(c));
     }
 
     public Craft[] getCraftsInWorld(World w) {
         Set<Craft> crafts = new HashSet<>();
-        for(Craft c : craftList){
+        for(Craft c : this.craftList){
             if(c.getW() == w)
                 crafts.add(c);
         }
@@ -153,70 +142,83 @@ public class CraftManager {
     public Craft getCraftByPlayerName(String name) {
         Set<Player> players = craftPlayerIndex.keySet();
         for (Player player : players) {
-            if (player != null) {
-                if (player.getName().equals(name)) {
-                    return craftPlayerIndex.get(player);
-                }
+            if (player != null && player.getName().equals(name)) {
+                return this.craftPlayerIndex.get(player);
             }
         }
         return null;
+    }
+
+    public void removeCraftByPlayer(Player player){
+        List<Craft> crafts = new ArrayList<>();
+        for(Craft c : craftList){
+            if(c.getNotificationPlayer() != null && c.getNotificationPlayer().equals(player)){
+                releaseEvents.remove(c);
+                crafts.add(c);
+            }
+        }
+        craftPlayerIndex.remove(player);
+        craftList.removeAll(crafts);
     }
 
     public Player getPlayerFromCraft(Craft c) {
         for (Map.Entry<Player, Craft> playerCraftEntry : craftPlayerIndex.entrySet()) {
-
             if (playerCraftEntry.getValue() == c) {
                 return playerCraftEntry.getKey();
             }
-
         }
-
         return null;
     }
 
     public void removePlayerFromCraft(Craft c) {
-        if (getPlayerFromCraft(c) != null) {
-            removeReleaseTask(c);
-            getPlayerFromCraft(c).sendMessage(I18nSupport.getInternationalisedString("Release - Craft has been released message"));
-            Movecraft.getInstance().getLogger().log(Level.INFO, String.format(I18nSupport.getInternationalisedString("Release - Player has released a craft console"), c.getNotificationPlayer().getName(), c.getType().getCraftName(), c.getHitBox().size(), c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
-            Player p = getPlayerFromCraft(c);
-            craftPlayerIndex.put(null, c);
-            craftPlayerIndex.remove(p);
+        if (getPlayerFromCraft(c) == null) {
+            return;
         }
+        removeReleaseTask(c);
+        Player p = getPlayerFromCraft(c);
+        p.sendMessage(I18nSupport.getInternationalisedString("Release - Craft has been released message"));
+        Movecraft.getInstance().getLogger().info(String.format(I18nSupport.getInternationalisedString("Release - Player has released a craft console"), p.getName(), c.getType().getCraftName(), c.getHitBox().size(), c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
+        c.setNotificationPlayer(null);
+        craftPlayerIndex.put(null, c);
+        craftPlayerIndex.remove(p);
     }
 
-    @NotNull
-    public HashMap<Player, BukkitTask> getReleaseEvents() {
-        return releaseEvents;
-    }
 
-
+    @Deprecated
     public final void addReleaseTask(final Craft c) {
         Player p = getPlayerFromCraft(c);
-        if (!getReleaseEvents().containsKey(p)) {
+        if (p!=null) {
             p.sendMessage(I18nSupport.getInternationalisedString("Release - Player has left craft"));
-            BukkitTask releaseTask = new BukkitRunnable() {
-                @Override
-                public void run() {
-                    removeCraft(c);
-                }
-            }.runTaskLater(Movecraft.getInstance(), (20 * 15));
-            CraftManager.getInstance().getReleaseEvents().put(p, releaseTask);
         }
+        BukkitTask releaseTask = new BukkitRunnable() {
+            @Override
+            public void run() {
+                removeCraft(c);
+            }
+        }.runTaskLater(Movecraft.getInstance(), (20 * 15));
+        releaseEvents.put(c, releaseTask);
+
     }
 
+    @Deprecated
     public final void removeReleaseTask(final Craft c) {
         Player p = getPlayerFromCraft(c);
         if (p != null) {
-            if (releaseEvents.containsKey(p)) {
-                if (releaseEvents.get(p) != null)
-                    releaseEvents.get(p).cancel();
-                releaseEvents.remove(p);
+            if (releaseEvents.containsKey(c)) {
+                if (releaseEvents.get(c) != null)
+                    releaseEvents.get(c).cancel();
+                releaseEvents.remove(c);
             }
         }
     }
 
+    @Deprecated
+    public boolean isReleasing(final Craft craft){
+        return releaseEvents.containsKey(craft);
+    }
+
     @NotNull
+    @Deprecated
     public Set<Craft> getCraftList(){
         return Collections.unmodifiableSet(craftList);
     }
@@ -228,5 +230,15 @@ public class CraftManager {
             }
         }
         return null;
+    }
+
+    public boolean isEmpty(){
+        return this.craftList.isEmpty();
+    }
+
+    @NotNull
+    @Override
+    public Iterator<Craft> iterator() {
+        return Collections.unmodifiableSet(this.craftList).iterator();
     }
 }
