@@ -88,7 +88,7 @@ public class ContactsSign implements Listener{
                     }
                 }
                 lines[signLine++] = notification;
-                if (signLine > 4) {
+                if (signLine >= 4) {
                     break;
                 }
             }
