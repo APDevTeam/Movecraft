@@ -209,38 +209,39 @@ public class RotationTask extends AsyncTask {
                 numTries++;
             }
         }
-        for (Entity pTest : getCraft().getW().getEntities()) {
-            if (MathUtils.locIsNearCraftFast(getCraft(), MathUtils.bukkit2MovecraftLoc(pTest.getLocation())) &&
-                    pTest.getType() != EntityType.DROPPED_ITEM) {
-                // Player is onboard this craft
-                tOP.setX(tOP.getBlockX() + 0.5);
-                tOP.setZ(tOP.getBlockZ() + 0.5);
-                Location playerLoc = pTest.getLocation();
-                Location adjustedPLoc = playerLoc.subtract(tOP);
 
-                double[] rotatedCoords = MathUtils.rotateVecNoRound(rotation, adjustedPLoc.getX(), adjustedPLoc.getZ());
-                Location rotatedPloc = new Location(getCraft().getW(), rotatedCoords[0], playerLoc.getY(), rotatedCoords[1]);
-                Location newPLoc = rotatedPloc.add(tOP);
+        if (craft.getType().getMoveEntities() && !craft.getSinking()) {
+            for(Entity entity : craft.getW().getNearbyEntities(craft.getHitBox().getMidPoint().toBukkit(craft.getW()), craft.getHitBox().getXLength()/2.0 + 1, craft.getHitBox().getYLength()/2.0 + 1, craft.getHitBox().getZLength()/2.0 + 1)){
+                if (entity.getType() == EntityType.PLAYER || !craft.getType().getOnlyMovePlayers()) {
+                    // Player is onboard this craft
+                    tOP.setX(tOP.getBlockX() + 0.5);
+                    tOP.setZ(tOP.getBlockZ() + 0.5);
+                    Location playerLoc = entity.getLocation();
+                    Location adjustedPLoc = playerLoc.subtract(tOP);
 
-                newPLoc.setPitch(playerLoc.getPitch());
-                float newYaw = playerLoc.getYaw();
-                if (rotation == Rotation.CLOCKWISE) {
-                    newYaw = newYaw + 90.0F;
-                    if (newYaw >= 360.0F) {
-                        newYaw = newYaw - 360.0F;
+                    double[] rotatedCoords = MathUtils.rotateVecNoRound(rotation, adjustedPLoc.getX(), adjustedPLoc.getZ());
+                    Location rotatedPloc = new Location(getCraft().getW(), rotatedCoords[0], playerLoc.getY(), rotatedCoords[1]);
+                    Location newPLoc = rotatedPloc.add(tOP);
+
+                    newPLoc.setPitch(playerLoc.getPitch());
+                    float newYaw = playerLoc.getYaw();
+                    if (rotation == Rotation.CLOCKWISE) {
+                        newYaw = newYaw + 90.0F;
+                        if (newYaw >= 360.0F) {
+                            newYaw = newYaw - 360.0F;
+                        }
                     }
-                }
-                if (rotation == Rotation.ANTICLOCKWISE) {
-                    newYaw = newYaw - 90;
-                    if (newYaw < 0.0F) {
-                        newYaw = newYaw + 360.0F;
+                    if (rotation == Rotation.ANTICLOCKWISE) {
+                        newYaw = newYaw - 90;
+                        if (newYaw < 0.0F) {
+                            newYaw = newYaw + 360.0F;
+                        }
                     }
+                    newPLoc.setYaw(newYaw);
+                    EntityUpdateCommand eUp = new EntityUpdateCommand(newPLoc, entity);
+                    updates.add(eUp);
                 }
-                newPLoc.setYaw(newYaw);
-                EntityUpdateCommand eUp = new EntityUpdateCommand(newPLoc, pTest);
-                updates.add(eUp);
             }
-
         }
 
         if (getCraft().getCruising()) {

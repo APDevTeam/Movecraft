@@ -187,30 +187,24 @@ public class TranslationTask extends AsyncTask {
 
         //prevents torpedo and rocket pilots
         if (craft.getType().getMoveEntities() && !craft.getSinking()) {
-            // Move entities within the craft
-            List<Entity> eList = craft.getW().getEntities();
-            boolean moveEverything = craft.getType().getOnlyMovePlayers();
-            for (Entity pTest : eList) {
-                if (MathUtils.locIsNearCraftFast(craft, MathUtils.bukkit2MovecraftLoc(pTest.getLocation()))) {
-                    if (pTest.getType() == EntityType.PLAYER) {
-                        Player player = (Player) pTest;
-                        craft.getMovedPlayers().put(player, System.currentTimeMillis());
-                        Location tempLoc = pTest.getLocation();
+            for(Entity entity : craft.getW().getNearbyEntities(craft.getHitBox().getMidPoint().toBukkit(craft.getW()), craft.getHitBox().getXLength()/2.0 + 1, craft.getHitBox().getYLength()/2.0 + 1, craft.getHitBox().getZLength()/2.0 + 1)){
+                if (entity.getType() == EntityType.PLAYER) {
+                    Player player = (Player) entity;
+                    craft.getMovedPlayers().put(player, System.currentTimeMillis());
+                    Location tempLoc = entity.getLocation();
 
-                        tempLoc = tempLoc.add(dx, dy, dz);
-                        Location newPLoc = new Location(craft.getW(), tempLoc.getX(), tempLoc.getY(), tempLoc.getZ());
-                        newPLoc.setPitch(pTest.getLocation().getPitch());
-                        newPLoc.setYaw(pTest.getLocation().getYaw());
+                    tempLoc = tempLoc.add(dx, dy, dz);
+                    Location newPLoc = new Location(craft.getW(), tempLoc.getX(), tempLoc.getY(), tempLoc.getZ());
+                    newPLoc.setPitch(entity.getLocation().getPitch());
+                    newPLoc.setYaw(entity.getLocation().getYaw());
 
-                        EntityUpdateCommand eUp = new EntityUpdateCommand( newPLoc, pTest);
-                        updates.add(eUp);
-                    } else if (moveEverything || pTest.getType() == EntityType.PRIMED_TNT) {
-                        Location tempLoc = pTest.getLocation();
-                        tempLoc = tempLoc.add(dx,dy,dz);
-                        EntityUpdateCommand eUp = new EntityUpdateCommand(tempLoc, pTest);
-                        updates.add(eUp);
-                    }
-
+                    EntityUpdateCommand eUp = new EntityUpdateCommand( newPLoc, entity);
+                    updates.add(eUp);
+                } else if (!craft.getType().getOnlyMovePlayers() || entity.getType() == EntityType.PRIMED_TNT) {
+                    Location tempLoc = entity.getLocation();
+                    tempLoc = tempLoc.add(dx,dy,dz);
+                    EntityUpdateCommand eUp = new EntityUpdateCommand(tempLoc, entity);
+                    updates.add(eUp);
                 }
             }
         } else {
