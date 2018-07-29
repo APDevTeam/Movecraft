@@ -9,6 +9,7 @@ import net.countercraft.movecraft.craft.CraftType;
 import net.countercraft.movecraft.craft.ICraft;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
+import net.countercraft.movecraft.events.CraftRotateEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.MathUtils;
 import org.bukkit.ChatColor;
@@ -22,16 +23,19 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public final class SubcraftRotateSign implements Listener {
     private static final String HEADER = "Subcraft Rotate";
     private final Map<Craft,Rotation> craftRotations = new HashMap<>();
     private final Map<Craft,MovecraftLocation> craftRotationOrigins = new HashMap<>();
+    private final Set<UUID> rotatingPlayers = new HashSet<>();
 
     @EventHandler
     public final void onSignClick(PlayerInteractEvent event) {
+        if(rotatingPlayers.contains(event.getPlayer().getUniqueId())){
+            return;
+        }
         Rotation rotation;
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
             rotation = Rotation.CLOCKWISE;
@@ -85,15 +89,11 @@ public final class SubcraftRotateSign implements Listener {
         final Craft subCraft = new ICraft(type, loc.getWorld());
         MovecraftLocation startPoint = new MovecraftLocation(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
         subCraft.detect(null, event.getPlayer(), startPoint);
+        rotatingPlayers.add(event.getPlayer().getUniqueId());
         craftRotations.put(subCraft,rotation);
         craftRotationOrigins.put(subCraft, MathUtils.bukkit2MovecraftLoc(loc));
         //timeMap.put(event.getPlayer(), System.currentTimeMillis());
         event.setCancelled(true);
-    }
-
-    @EventHandler
-    public void onCraftRelease(CraftReleaseEvent event){
-
     }
 
     @EventHandler
@@ -102,20 +102,32 @@ public final class SubcraftRotateSign implements Listener {
         if(!craftRotations.containsKey(craft)){
             return;
         }
-        Rotation rotation = craftRotations.remove(craft);
+        Rotation rotation = craftRotations.get(craft);
         MovecraftLocation origin = craftRotationOrigins.remove(craft);
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                CraftManager.getInstance().removeCraft(craft);
-            }
-        }.runTaskLater(Movecraft.getInstance(), (3));
+
 
         new BukkitRunnable() {
             @Override
             public void run() {
                 craft.rotate(rotation, origin, true);
             }
-        }.runTaskLater(Movecraft.getInstance(), (1));
+        }.runTaskLater(Movecraft.getInstance(), 3);
     }
+
+    @EventHandler
+    public void onCraftRotate(CraftRotateEvent event){
+        final Craft craft = event.getCraft();
+        if(!craftRotations.containsKey(craft)){
+            return;
+        }
+        craftRotations.remove(craft);
+        rotatingPlayers.remove(craft.getNotificationPlayer().getUniqueId());
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                CraftManager.getInstance().removeCraft(craft);
+            }
+        }.runTaskLater(Movecraft.getInstance(), 3);
+    }
+
 }
