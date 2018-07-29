@@ -15,6 +15,11 @@ public abstract class CraftEvent extends Event{
         this.craft = craft;
     }
 
+    public CraftEvent(@NotNull Craft craft, boolean isAsync){
+        super(isAsync);
+        this.craft = craft;
+    }
+
     @NotNull
     public final Craft getCraft(){
         return craft;
