@@ -8,13 +8,14 @@ import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
 public class ICraft extends Craft {
     private final UUID id = UUID.randomUUID();
 
-    public ICraft(CraftType type, World world) {
+    public ICraft(@NotNull CraftType type, @NotNull World world) {
         super(type, world);
     }
 

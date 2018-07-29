@@ -26,6 +26,7 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -38,13 +39,13 @@ import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.async.translation.TranslationTaskData;*/
 
 public abstract class Craft {
-    protected final CraftType type;
+    @NotNull protected final CraftType type;
     //protected int[][][] hitBox;
     //protected MovecraftLocation[] blockList;
-    protected HashHitBox hitBox;
+    @NotNull protected HashHitBox hitBox;
 
-    protected World w;
-    private AtomicBoolean processing = new AtomicBoolean();
+    @NotNull protected World w;
+    @NotNull private final AtomicBoolean processing = new AtomicBoolean();
     private int maxHeightLimit;
     private boolean cruising;
     private boolean sinking;
@@ -61,16 +62,16 @@ public abstract class Craft {
     private double pilotLockedY;
     private int origBlockCount;
     private double pilotLockedZ;
-    private Player notificationPlayer;
-    private Player cannonDirector;
-    private Player AADirector;
-    private HashMap<Player, Long> movedPlayers = new HashMap<>();
+    @Nullable private Player notificationPlayer;
+    @Nullable private Player cannonDirector;
+    @Nullable private Player AADirector;
+    @NotNull private final HashMap<Player, Long> movedPlayers = new HashMap<>();
     private float meanMoveTime;
     private int numMoves;
-    private final Map<MovecraftLocation,Material> phaseBlocks = new HashMap<>();
+    @NotNull private final Map<MovecraftLocation,Material> phaseBlocks = new HashMap<>();
 
 
-    public Craft(CraftType type, World world) {
+    public Craft(@NotNull CraftType type, @NotNull World world) {
         this.type = type;
         this.w = world;
         this.hitBox = new HashHitBox();
@@ -101,6 +102,7 @@ public abstract class Craft {
         this.processing.set(processing);
     }
 
+    @NotNull
     public HashHitBox getHitBox() {
         return hitBox;
     }
@@ -109,10 +111,12 @@ public abstract class Craft {
         this.hitBox = hitBox;
     }
 
+    @NotNull
     public CraftType getType() {
         return type;
     }
 
+    @NotNull
     public World getW() {
         return w;
     }
@@ -220,6 +224,7 @@ public abstract class Craft {
         this.pilotLocked = pilotLocked;
     }
 
+    @NotNull
     public HashMap<Player, Long> getMovedPlayers() {
         return movedPlayers;
     }
@@ -264,27 +269,30 @@ public abstract class Craft {
         this.origBlockCount = origBlockCount;
     }
 
+    @Nullable
     public Player getNotificationPlayer() {
         return notificationPlayer;
     }
 
-    public void setNotificationPlayer(Player notificationPlayer) {
+    public void setNotificationPlayer(@Nullable Player notificationPlayer) {
         this.notificationPlayer = notificationPlayer;
     }
 
+    @Nullable
     public Player getCannonDirector() {
         return cannonDirector;
     }
 
-    public void setCannonDirector(Player cannonDirector) {
+    public void setCannonDirector(@Nullable Player cannonDirector) {
         this.cannonDirector = cannonDirector;
     }
 
+    @Nullable
     public Player getAADirector() {
         return AADirector;
     }
 
-    public void setAADirector(Player AADirector) {
+    public void setAADirector(@Nullable Player AADirector) {
         this.AADirector = AADirector;
     }
 
@@ -399,6 +407,7 @@ public abstract class Craft {
         return waterLine;
     }
 
+    @NotNull
     public Map<MovecraftLocation,Material> getPhaseBlocks(){
         return phaseBlocks;
     }
