@@ -45,134 +45,135 @@ public class CraftTranslateCommand extends UpdateCommand {
             return;
         }
         long time = System.nanoTime();
-        MutableHitBox originalLocations = new HashHitBox();
-        for(MovecraftLocation movecraftLocation : craft.getHitBox()) {
-            originalLocations.add((movecraftLocation).subtract(displacement));
-        }
+        if(craft.getType().getPassthroughBlocks().isEmpty()){
+            //translate the craft
 
-        final HitBox to = CollectionUtils.filter(craft.getHitBox(), originalLocations);
-
-        for(MovecraftLocation location: to){
-            Material material = location.toBukkit(craft.getW()).getBlock().getType();
-            if(craft.getType().getPassthroughBlocks().contains(material)){
-                craft.getPhaseBlocks().put(location,material);
+            Movecraft.getInstance().getWorldHandler().translateCraft(craft,displacement);
+            //trigger sign events
+            for(MovecraftLocation location : craft.getHitBox()){
+                Block block = location.toBukkit(craft.getW()).getBlock();
+                if(block.getType() == Material.WALL_SIGN || block.getType() == Material.SIGN_POST){
+                    Sign sign = (Sign) block.getState();
+                    Bukkit.getServer().getPluginManager().callEvent(new SignTranslateEvent(block, craft, sign.getLines()));
+                    sign.update();
+                }
             }
-        }
-
-        //place phased blocks
-        final int minX = craft.getHitBox().getMinX();
-        final int maxX = craft.getHitBox().getMaxX();
-        final int minY = craft.getHitBox().getMinY();
-        final int maxY = craft.getHitBox().getMaxY();
-        final int minZ = craft.getHitBox().getMinZ();
-        final int maxZ = craft.getHitBox().getMaxZ();
-
-        final HitBox[] surfaces = {
-                new SolidHitBox(new MovecraftLocation(minX,minY,minZ), new MovecraftLocation(minX,maxY,maxZ)),
-                new SolidHitBox(new MovecraftLocation(minX,minY,minZ), new MovecraftLocation(maxX,minY,maxZ)),
-                new SolidHitBox(new MovecraftLocation(minX,minY,minZ), new MovecraftLocation(maxX,maxY,minZ)),
-                new SolidHitBox(new MovecraftLocation(maxX,maxY,maxZ), new MovecraftLocation(minX,maxY,maxZ)),
-                new SolidHitBox(new MovecraftLocation(maxX,maxY,maxZ), new MovecraftLocation(maxX,minY,maxZ)),
-                new SolidHitBox(new MovecraftLocation(maxX,maxY,maxZ), new MovecraftLocation(maxX,maxY,minZ))};
-        //Valid exterior starts as the 6 surface planes of the HitBox with the locations that lie in the HitBox removed
-        final Set<MovecraftLocation> validExterior = new HashSet<>();
-        for(HitBox hitBox : surfaces){
-            validExterior.addAll(CollectionUtils.filter(hitBox, craft.getHitBox()).asSet());
-        }
-        //The subtraction of the set of coordinates in the HitBox cube and the HitBox itself
-        final HitBox invertedHitBox = CollectionUtils.filter(craft.getHitBox().boundingHitBox(), craft.getHitBox());
-        //A set of locations that are confirmed to be "exterior" locations
-        final Set<MovecraftLocation> confirmed = new HashSet<>();
-        final Set<MovecraftLocation> failed = new HashSet<>();
-        //Check to see which locations in the from set are actually outside of the craft
-        for(MovecraftLocation location : Sets.union(originalLocations.boundingHitBox().asSet(), craft.getHitBox().boundingHitBox().asSet())){
-            if(craft.getHitBox().contains(location)){
-                continue;
+        } else {
+            MutableHitBox originalLocations = new HashHitBox();
+            for (MovecraftLocation movecraftLocation : craft.getHitBox()) {
+                originalLocations.add((movecraftLocation).subtract(displacement));
             }
 
-            if(!craft.getHitBox().inBounds(location)){
-                confirmed.add(location);
-                continue;
+            final HitBox to = CollectionUtils.filter(craft.getHitBox(), originalLocations);
+
+            for (MovecraftLocation location : to) {
+                Material material = location.toBukkit(craft.getW()).getBlock().getType();
+                if (craft.getType().getPassthroughBlocks().contains(material)) {
+                    craft.getPhaseBlocks().put(location, material);
+                }
             }
-            //use a modified BFS for multiple origin elements
-            Set<MovecraftLocation> visited = new HashSet<>();
-            Queue<MovecraftLocation> queue = new LinkedList<>();
-            boolean interior = true;
-            queue.add(location);
-            while (!queue.isEmpty()){
-                MovecraftLocation node = queue.poll();
-                //If the node is already a valid member of the exterior of the HitBox, continued search is unitary.
-                if(validExterior.contains(node)){
+
+            //place phased blocks
+            final int minX = craft.getHitBox().getMinX();
+            final int maxX = craft.getHitBox().getMaxX();
+            final int minY = craft.getHitBox().getMinY();
+            final int maxY = craft.getHitBox().getMaxY();
+            final int minZ = craft.getHitBox().getMinZ();
+            final int maxZ = craft.getHitBox().getMaxZ();
+
+            final HitBox[] surfaces = {
+                    new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(minX, maxY, maxZ)),
+                    new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(maxX, minY, maxZ)),
+                    new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(maxX, maxY, minZ)),
+                    new SolidHitBox(new MovecraftLocation(maxX, maxY, maxZ), new MovecraftLocation(minX, maxY, maxZ)),
+                    new SolidHitBox(new MovecraftLocation(maxX, maxY, maxZ), new MovecraftLocation(maxX, minY, maxZ)),
+                    new SolidHitBox(new MovecraftLocation(maxX, maxY, maxZ), new MovecraftLocation(maxX, maxY, minZ))};
+            //Valid exterior starts as the 6 surface planes of the HitBox with the locations that lie in the HitBox removed
+            final Set<MovecraftLocation> validExterior = new HashSet<>();
+            for (HitBox hitBox : surfaces) {
+                validExterior.addAll(CollectionUtils.filter(hitBox, craft.getHitBox()).asSet());
+            }
+            //The subtraction of the set of coordinates in the HitBox cube and the HitBox itself
+            final HitBox invertedHitBox = CollectionUtils.filter(craft.getHitBox().boundingHitBox(), craft.getHitBox());
+            //A set of locations that are confirmed to be "exterior" locations
+            final Set<MovecraftLocation> confirmed = new HashSet<>();
+            final Set<MovecraftLocation> failed = new HashSet<>();
+            //Check to see which locations in the from set are actually outside of the craft
+            for (MovecraftLocation location : Sets.union(originalLocations.boundingHitBox().asSet(), craft.getHitBox().boundingHitBox().asSet())) {
+                if (craft.getHitBox().contains(location)) {
+                    continue;
+                }
+
+                if (!craft.getHitBox().inBounds(location)) {
                     confirmed.add(location);
-                    validExterior.addAll(visited);
-                    interior = false;
-                    break;
+                    continue;
                 }
-                for(MovecraftLocation neighbor : CollectionUtils.neighbors(invertedHitBox, node)){
-                    if(visited.contains(neighbor)){
-                        continue;
+                //use a modified BFS for multiple origin elements
+                Set<MovecraftLocation> visited = new HashSet<>();
+                Queue<MovecraftLocation> queue = new LinkedList<>();
+                boolean interior = true;
+                queue.add(location);
+                while (!queue.isEmpty()) {
+                    MovecraftLocation node = queue.poll();
+                    //If the node is already a valid member of the exterior of the HitBox, continued search is unitary.
+                    if (validExterior.contains(node)) {
+                        confirmed.add(location);
+                        validExterior.addAll(visited);
+                        interior = false;
+                        break;
                     }
-                    visited.add(neighbor);
-                    queue.add(neighbor);
+                    for (MovecraftLocation neighbor : CollectionUtils.neighbors(invertedHitBox, node)) {
+                        if (visited.contains(neighbor)) {
+                            continue;
+                        }
+                        visited.add(neighbor);
+                        queue.add(neighbor);
+                    }
+                }
+                if (interior)
+                    failed.add(location);
+            }
+
+            final WorldHandler handler = Movecraft.getInstance().getWorldHandler();
+            for (MovecraftLocation location : CollectionUtils.filter(invertedHitBox, confirmed)) {
+                Material material = location.toBukkit(craft.getW()).getBlock().getType();
+                if (!craft.getType().getPassthroughBlocks().contains(material)) {
+                    continue;
+                }
+                craft.getPhaseBlocks().put(location, material);
+            }
+
+            //translate the craft
+
+            handler.translateCraft(craft, displacement);
+            //trigger sign events
+            for (MovecraftLocation location : craft.getHitBox()) {
+                Block block = location.toBukkit(craft.getW()).getBlock();
+                if (block.getType() == Material.WALL_SIGN || block.getType() == Material.SIGN_POST) {
+                    Sign sign = (Sign) block.getState();
+                    Bukkit.getServer().getPluginManager().callEvent(new SignTranslateEvent(block, craft, sign.getLines()));
+                    sign.update();
                 }
             }
-            if(interior)
-                failed.add(location);
-        }
 
-        final WorldHandler handler = Movecraft.getInstance().getWorldHandler();
-        for(MovecraftLocation location : CollectionUtils.filter(invertedHitBox, confirmed)){
-            Material material = location.toBukkit(craft.getW()).getBlock().getType();
-            if(!craft.getType().getPassthroughBlocks().contains(material)){
-                continue;
+            //place confirmed blocks if they have been un-phased
+            for (MovecraftLocation location : confirmed) {
+                if (!craft.getPhaseBlocks().containsKey(location)) {
+                    continue;
+                }
+                handler.setBlockFast(location.toBukkit(craft.getW()), craft.getPhaseBlocks().get(location), (byte) 0);
+                craft.getPhaseBlocks().remove(location);
             }
-            craft.getPhaseBlocks().put(location,material);
-        }
 
-        //translate the craft
+            for (MovecraftLocation location : failed) {
+                final Material material = location.toBukkit(craft.getW()).getBlock().getType();
+                if (craft.getType().getPassthroughBlocks().contains(material)) {
+                    craft.getPhaseBlocks().put(location, material);
+                    handler.setBlockFast(location.toBukkit(craft.getW()), Material.AIR, (byte) 0);
 
-        handler.translateCraft(craft,displacement);
-        //trigger sign events
-        for(MovecraftLocation location : craft.getHitBox()){
-            Block block = location.toBukkit(craft.getW()).getBlock();
-            if(block.getType() == Material.WALL_SIGN || block.getType() == Material.SIGN_POST){
-                Sign sign = (Sign) block.getState();
-                Bukkit.getServer().getPluginManager().callEvent(new SignTranslateEvent(block, craft, sign.getLines()));
-                sign.update();
+                }
             }
         }
-
-        //place confirmed blocks if they have been un-phased
-        for(MovecraftLocation location : confirmed){
-            if(!craft.getPhaseBlocks().containsKey(location)){
-                continue;
-            }
-            handler.setBlockFast(location.toBukkit(craft.getW()),craft.getPhaseBlocks().get(location), (byte)0);
-            craft.getPhaseBlocks().remove(location);
-        }
-
-        for(MovecraftLocation location: failed){
-            final Material material = location.toBukkit(craft.getW()).getBlock().getType();
-            if (craft.getType().getPassthroughBlocks().contains(material )){
-                craft.getPhaseBlocks().put(location,material);
-                handler.setBlockFast(location.toBukkit(craft.getW()), Material.AIR, (byte)0);
-
-            }
-        }
-
-        /*logger.info("Move");
-        for(Map.Entry<MovecraftLocation, Material> entry : craft.getPhaseBlocks().entrySet()){
-            logger.info("Entry: " + entry.getKey() + " " + entry.getValue());
-        }*/
-
-        /*for(MovecraftLocation location : CollectionUtils.filter(invertedHitBox, confirmed)){
-            Material material = location.toBukkit(craft.getW()).getBlock().getType();
-            if(!craft.getPhaseBlocks().containsKey(location) || material.equals(Material.AIR)){
-                continue;
-            }
-            handler.setBlockFast(location.toBukkit(craft.getW()), Material.WOOL, (byte)0);
-        }*/
-
         time = System.nanoTime() - time;
         if(Settings.Debug)
             logger.info("Total time: " + (time / 1e9) + " seconds. Moving with cooldown of " + craft.getTickCooldown() + ". Speed of: " + String.format("%.2f", craft.getSpeed()));
