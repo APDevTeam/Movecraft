@@ -320,7 +320,8 @@ public abstract class Craft {
                 if(location.toBukkit(w).getBlock().getType()==flyBlockMaterial)
                     count++;
             }
-            return  Math.max((int)(type.getCruiseTickCooldown()* (1 - count /hitBox.size()) +chestPenalty),1);
+            return Math.max((int) (20 / (type.getCruiseTickCooldown() * (1  + type.getDynamicFlyBlockSpeedFactor() * (count /hitBox.size() - .5)))), 1);
+            //return  Math.max((int)(type.getCruiseTickCooldown()* (1 - count /hitBox.size()) +chestPenalty),1);
         }
 
         if(type.getDynamicLagSpeedFactor()==0)
