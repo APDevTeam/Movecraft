@@ -26,6 +26,7 @@ import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
 import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.events.CraftRotateEvent;
 import net.countercraft.movecraft.utils.*;
 import net.countercraft.movecraft.utils.HashHitBox;
 import net.countercraft.movecraft.async.AsyncTask;
@@ -35,6 +36,7 @@ import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.update.CraftRotateCommand;
 import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -194,21 +196,12 @@ public class RotationTask extends AsyncTask {
             }
             return;
         }
+        //call event
+        Bukkit.getServer().getPluginManager().callEvent(new CraftRotateEvent(craft, rotation));
+
         updates.add(new CraftRotateCommand(getCraft(),originPoint, rotation));
         //rotate entities in the craft
         Location tOP = new Location(getCraft().getW(), originPoint.getX(), originPoint.getY(), originPoint.getZ());
-
-        List<Entity> eList = null;
-        int numTries = 0;
-
-        //TODO: Check if needed
-        while ((eList == null) && (numTries < 100)) {
-            try {
-                eList = getCraft().getW().getEntities();
-            } catch (java.util.ConcurrentModificationException e) {
-                numTries++;
-            }
-        }
 
         if (craft.getType().getMoveEntities() && !craft.getSinking()) {
             for(Entity entity : craft.getW().getNearbyEntities(craft.getHitBox().getMidPoint().toBukkit(craft.getW()), craft.getHitBox().getXLength()/2.0 + 1, craft.getHitBox().getYLength()/2.0 + 1, craft.getHitBox().getZLength()/2.0 + 1)){

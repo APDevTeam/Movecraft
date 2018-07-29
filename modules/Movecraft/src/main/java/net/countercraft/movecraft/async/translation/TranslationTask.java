@@ -4,10 +4,11 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.events.CraftTranslateEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.update.*;
 import net.countercraft.movecraft.utils.HashHitBox;
-import net.countercraft.movecraft.utils.MathUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -135,6 +136,9 @@ public class TranslationTask extends AsyncTask {
                 }
             } //END OF: if (blockObstructed)
         }
+
+        //call event
+        Bukkit.getServer().getPluginManager().callEvent(new CraftTranslateEvent(craft, oldHitBox, newHitBox));
 
         if(craft.getSinking()){
             for(MovecraftLocation location : collisionBox){
