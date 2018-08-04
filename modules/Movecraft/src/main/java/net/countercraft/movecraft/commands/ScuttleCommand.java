@@ -18,33 +18,33 @@ public class ScuttleCommand implements CommandExecutor {
             return false;
         }
 
+        Craft craft = null;
         // Scuttle other player
         if (commandSender.hasPermission("movecraft.commands.scuttle.others") && strings.length >= 1) {
             Player player = Bukkit.getPlayer(strings[0]);
-
             if (player == null) {
                 commandSender.sendMessage("Player supplied must be online");
                 return true;
             }
-
-            if (CraftManager.getInstance().getCraftByPlayer(player) == null) {
-                commandSender.sendMessage("Player supplied must be piloting a craft to perform this command");
-                return true;
-            }
-
-            CraftManager.getInstance().getCraftByPlayer(player).sink();
+            craft = CraftManager.getInstance().getCraftByPlayer(player);
         } else if (commandSender.hasPermission("movecraft.commands.scuttle.self") && strings.length == 0) {
             if (!(commandSender instanceof Player)) {
                 commandSender.sendMessage("You must be a player to scuttle a craft");
                 return true;
             }
-            Craft craft = CraftManager.getInstance().getCraftByPlayer(Bukkit.getPlayer(commandSender.getName()));
-            if (craft == null) {
-                commandSender.sendMessage("You must be piloting a craft to perform this command");
-                return true;
-            }
-            craft.sink();
+            craft = CraftManager.getInstance().getCraftByPlayer(Bukkit.getPlayer(commandSender.getName()));
         }
+        if (craft == null) {
+            commandSender.sendMessage("no craft found to sink!");
+            return true;
+        }
+        if(craft.getSinking()){
+            commandSender.sendMessage("the craft is already sinking!");
+            return true;
+        }
+        craft.setCruising(false);
+        craft.sink();
+        CraftManager.getInstance().removePlayerFromCraft(craft);
         commandSender.sendMessage("Scuttle was activated. Abandon ship!");
         return true;
 
