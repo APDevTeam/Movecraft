@@ -188,7 +188,6 @@ public class CraftManager implements Iterable<Craft>{
         p.sendMessage(I18nSupport.getInternationalisedString("Release - Craft has been released message"));
         Movecraft.getInstance().getLogger().info(String.format(I18nSupport.getInternationalisedString("Release - Player has released a craft console"), p.getName(), c.getType().getCraftName(), c.getHitBox().size(), c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
         c.setNotificationPlayer(null);
-        craftPlayerIndex.put(null, c);
         craftPlayerIndex.remove(p);
     }
 
