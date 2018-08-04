@@ -17,24 +17,12 @@
 
 package net.countercraft.movecraft.async.detection;
 
-import com.palmergames.bukkit.towny.object.Town;
-import com.palmergames.bukkit.towny.object.TownBlock;
-import com.palmergames.bukkit.towny.object.TownyWorld;
-import com.sk89q.worldguard.LocalPlayer;
-import com.sk89q.worldguard.protection.ApplicableRegionSet;
-import net.countercraft.movecraft.Movecraft;
+
+import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.async.AsyncTask;
-import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.events.CraftDetectEvent;
-import net.countercraft.movecraft.events.CraftPilotEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.BoundingBoxUtils;
-import net.countercraft.movecraft.MovecraftLocation;
-import net.countercraft.movecraft.utils.TownyUtils;
-import net.countercraft.movecraft.utils.TownyWorldHeightLimits;
-import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -46,75 +34,33 @@ import java.util.*;
 
 public class DetectionTask extends AsyncTask {
     private final MovecraftLocation startLocation;
-    private final Integer minSize;
-    private final Integer maxSize;
+    private final int minSize;
+    private final int maxSize;
     private final Stack<MovecraftLocation> blockStack = new Stack<>();
     private final HashSet<MovecraftLocation> blockList = new HashSet<>();
     private final HashSet<MovecraftLocation> visited = new HashSet<>();
     private final HashMap<List<Integer>, Integer> blockTypeCount = new HashMap<>();
     private final DetectionTaskData data;
-    Set<TownBlock> townBlockSet = new HashSet<>();
-    TownyWorld townyWorld = null;
-    TownyWorldHeightLimits townyWorldHeightLimits = null;
+    private final World world;
     private int maxX;
     private int maxY;
     private int maxZ;
     private int minY;
     private Map<List<Integer>, List<Double>> dFlyBlocks;
-    private int craftMinY = 0;
-    private int craftMaxY = 0;
-    private boolean townyEnabled = false;
     private int foundDynamicFlyBlock = 0;
 
-    public DetectionTask(Craft c, MovecraftLocation startLocation, int minSize, int maxSize, int[] allowedBlocks,
-                         int[] forbiddenBlocks, Player player, Player notificationPlayer, World w,
-                         String[] forbiddenSignStrings) {
+    public DetectionTask(Craft c, MovecraftLocation startLocation, Player player) {
         super(c);
         this.startLocation = startLocation;
-        this.minSize = minSize;
-        this.maxSize = maxSize;
-        data = new DetectionTaskData(w, player, notificationPlayer, allowedBlocks, forbiddenBlocks,
-                forbiddenSignStrings);
-
-        this.townyEnabled = Movecraft.getInstance().getTownyPlugin() != null;
-        if (townyEnabled && Settings.TownyBlockMoveOnSwitchPerm) {
-            this.townyWorld = TownyUtils.getTownyWorld(getCraft().getW());
-            if (townyWorld != null) {
-                this.townyEnabled = townyWorld.isUsingTowny();
-                if (townyEnabled)
-                    townyWorldHeightLimits = TownyUtils.getWorldLimits(getCraft().getW());
-            }
-        } else {
-            this.townyEnabled = false;
-        }
-    }
-
-    public DetectionTask(Craft c, MovecraftLocation startLocation, int minSize, int maxSize, int[] allowedBlocks,
-                         int[] forbiddenBlocks, String[] forbiddenSignStrings, Player player, Player notificationPlayer,
-                         World w) {
-        super(c);
-        this.startLocation = startLocation;
-        this.minSize = minSize;
-        this.maxSize = maxSize;
-        data = new DetectionTaskData(w, player, notificationPlayer, allowedBlocks, forbiddenBlocks,
-                forbiddenSignStrings);
-
-        this.townyEnabled = Movecraft.getInstance().getTownyPlugin() != null;
-        if (townyEnabled && Settings.TownyBlockMoveOnSwitchPerm) {
-            this.townyWorld = TownyUtils.getTownyWorld(getCraft().getW());
-            if (townyWorld != null) {
-                this.townyEnabled = townyWorld.isUsingTowny();
-                if (townyEnabled)
-                    townyWorldHeightLimits = TownyUtils.getWorldLimits(getCraft().getW());
-            }
-        } else {
-            this.townyEnabled = false;
-        }
+        this.minSize = craft.getType().getMinSize();
+        this.maxSize = craft.getType().getMaxSize();
+        this.world = craft.getW();
+        data = new DetectionTaskData(craft.getW(), player, craft.getNotificationPlayer(), craft.getType().getAllowedBlocks(), craft.getType().getForbiddenBlocks(),
+                craft.getType().getForbiddenSignStrings());
     }
 
     @Override
     public void excecute() {
-
         Map<List<Integer>, List<Double>> flyBlocks = getCraft().getType().getFlyBlocks();
         dFlyBlocks = flyBlocks;
 
@@ -244,82 +190,6 @@ public class DetectionTask extends AsyncTask {
                     p = data.getPlayer();
                 }
                 if (p != null) {
-                    if (Movecraft.getInstance().getWorldGuardPlugin() != null
-                            && Movecraft.getInstance().getWGCustomFlagsPlugin() != null
-                            && Settings.WGCustomFlagsUsePilotFlag) {
-                        LocalPlayer lp = Movecraft.getInstance().getWorldGuardPlugin()
-                                .wrapPlayer(p);
-                        WGCustomFlagsUtils WGCFU = new WGCustomFlagsUtils();
-                        if (!WGCFU.validateFlag(loc, Movecraft.FLAG_PILOT, lp)) {
-                            fail(String.format(
-                                    I18nSupport.getInternationalisedString(
-                                            "WGCustomFlags - Detection Failed") + " @ %d,%d,%d",
-                                    x, y, z));
-                        }
-                    }
-
-                    if (this.townyEnabled) {
-                        TownBlock townBlock = TownyUtils.getTownBlock(loc);
-                        if (townBlock != null && !this.townBlockSet.contains(townBlock)) {
-                            if (TownyUtils.validateCraftMoveEvent(p, loc, this.townyWorld)) {
-                                this.townBlockSet.add(townBlock);
-                            } else {
-                                int tY = loc.getBlockY();
-                                boolean oChange = false;
-                                if (this.craftMinY > tY) {
-                                    this.craftMinY = tY;
-                                    oChange = true;
-                                }
-                                if (this.craftMaxY < tY) {
-                                    this.craftMaxY = tY;
-                                    oChange = true;
-                                }
-                                if (oChange) {
-                                    boolean failed = false;
-                                    Town town = TownyUtils.getTown(townBlock);
-                                    if (town != null) {
-                                        Location locSpawn = TownyUtils.getTownSpawn(townBlock);
-                                        if (locSpawn != null) {
-                                            if (!this.townyWorldHeightLimits.validate(y,
-                                                    locSpawn.getBlockY())) {
-                                                failed = true;
-                                            }
-                                        } else {
-                                            failed = true;
-                                        }
-                                        if (failed) {
-                                            if (Movecraft.getInstance()
-                                                    .getWorldGuardPlugin() != null
-                                                    && Movecraft.getInstance()
-                                                    .getWGCustomFlagsPlugin() != null
-                                                    && Settings.WGCustomFlagsUsePilotFlag) {
-                                                LocalPlayer lp = Movecraft
-                                                        .getInstance().getWorldGuardPlugin()
-                                                        .wrapPlayer(p);
-                                                ApplicableRegionSet regions = Movecraft
-                                                        .getInstance().getWorldGuardPlugin()
-                                                        .getRegionManager(loc.getWorld())
-                                                        .getApplicableRegions(loc);
-                                                if (regions.size() != 0) {
-                                                    WGCustomFlagsUtils WGCFU = new WGCustomFlagsUtils();
-                                                    if (WGCFU.validateFlag(loc,
-                                                            Movecraft.FLAG_PILOT, lp)) {
-                                                        failed = false;
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        if (failed) {
-                                            fail(String
-                                                    .format(I18nSupport.getInternationalisedString(
-                                                            "Towny - Detection Failed")
-                                                            + " %s @ %d,%d,%d", town.getName(), x, y, z));
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
 
                     addToBlockList(workingLocation);
                     Integer blockID = testID;

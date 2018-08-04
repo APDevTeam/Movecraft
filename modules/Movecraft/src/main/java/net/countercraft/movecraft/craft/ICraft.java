@@ -22,7 +22,7 @@ public class ICraft extends Craft {
 
     @Override
     public void detect(Player player, Player notificationPlayer, MovecraftLocation startPoint) {
-        Movecraft.getInstance().getAsyncManager().submitTask(new DetectionTask(this, startPoint, type.getMinSize(), type.getMaxSize(), type.getAllowedBlocks(), type.getForbiddenBlocks(), type.getForbiddenSignStrings(), player, notificationPlayer, w), this);
+        Movecraft.getInstance().getAsyncManager().submitTask(new DetectionTask(this, startPoint, player), this);
     }
 
     @Override
