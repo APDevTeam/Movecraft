@@ -22,6 +22,7 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class TranslationTask extends AsyncTask {
     private static final int[] FALL_THROUGH_BLOCKS = {0, 8, 9, 10, 11, 31, 37, 38, 39, 40, 50, 51, 55, 59, 63, 65, 68, 69, 70, 72, 75, 76, 77, 78, 83, 85, 93, 94, 111, 141, 142, 143, 171};
@@ -155,7 +156,7 @@ public class TranslationTask extends AsyncTask {
                     // use the explosion code to clean up the craft, but not with enough force to do anything
                     int explosionKey = 1;
                     Location loc = location.toBukkit(craft.getW());
-                    if (!loc.getBlock().getType().equals(Material.AIR)) {
+                    if (!loc.getBlock().getType().equals(Material.AIR) && ThreadLocalRandom.current().nextDouble(1) < .05) {
                         updates.add(new ExplosionUpdateCommand(loc, explosionKey));
                         collisionExplosion = true;
                     }
