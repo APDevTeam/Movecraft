@@ -142,7 +142,7 @@ public class RotationTask extends AsyncTask {
             }
         }
         // if a subcraft, find the parent craft. If not a subcraft, it is it's own parent
-        Craft[] craftsInWorld = CraftManager.getInstance().getCraftsInWorld(getCraft().getW());
+        Set<Craft> craftsInWorld = CraftManager.getInstance().getCraftsInWorld(getCraft().getW());
         Craft parentCraft = getCraft();
         for (Craft craft : craftsInWorld) {
             if ( craft != getCraft() && craft.getHitBox().intersects(oldHitBox)) {

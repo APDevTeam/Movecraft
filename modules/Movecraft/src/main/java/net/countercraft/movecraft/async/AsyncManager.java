@@ -135,38 +135,36 @@ public class AsyncManager extends BukkitRunnable {
                                     "NULL Player Craft Detection failed:" + data.getFailMessage());
 
                     } else {
-                        Craft[] craftsInWorld = CraftManager.getInstance().getCraftsInWorld(c.getW());
+                        Set<Craft> craftsInWorld = CraftManager.getInstance().getCraftsInWorld(c.getW());
                         boolean failed = false;
                         boolean isSubcraft = false;
 
-                        if (craftsInWorld != null) {
-                            for (Craft craft : craftsInWorld) {
-                                if(craft.getHitBox().intersects(new HashHitBox(Arrays.asList(data.getBlockList())))){
-                                    isSubcraft = true;
-                                    if (c.getType().getCruiseOnPilot() || p != null) {
-                                        if (craft.getType() == c.getType()
-                                                || craft.getHitBox().size() <= data.getBlockList().length) {
-                                            notifyP.sendMessage(I18nSupport.getInternationalisedString(
-                                                    "Detection - Failed Craft is already being controlled"));
+                        for (Craft craft : craftsInWorld) {
+                            if(craft.getHitBox().intersects(new HashHitBox(Arrays.asList(data.getBlockList())))){
+                                isSubcraft = true;
+                                if (c.getType().getCruiseOnPilot() || p != null) {
+                                    if (craft.getType() == c.getType()
+                                            || craft.getHitBox().size() <= data.getBlockList().length) {
+                                        notifyP.sendMessage(I18nSupport.getInternationalisedString(
+                                                "Detection - Failed Craft is already being controlled"));
+                                        failed = true;
+                                    } else {
+                                        // if this is a different type than
+                                        // the overlapping craft, and is
+                                        // smaller, this must be a child
+                                        // craft, like a fighter on a
+                                        // carrier
+                                        if (!craft.isNotProcessing()) {
                                             failed = true;
-                                        } else {
-                                            // if this is a different type than
-                                            // the overlapping craft, and is
-                                            // smaller, this must be a child
-                                            // craft, like a fighter on a
-                                            // carrier
-                                            if (!craft.isNotProcessing()) {
-                                                failed = true;
-                                                notifyP.sendMessage(I18nSupport.getInternationalisedString("Parent Craft is busy"));
-                                            }
-                                            craft.setHitBox(new HashHitBox(CollectionUtils.filter(craft.getHitBox(),Arrays.asList(data.getBlockList()))));
-                                            craft.setOrigBlockCount(craft.getOrigBlockCount() - data.getBlockList().length);
+                                            notifyP.sendMessage(I18nSupport.getInternationalisedString("Parent Craft is busy"));
                                         }
+                                        craft.setHitBox(new HashHitBox(CollectionUtils.filter(craft.getHitBox(),Arrays.asList(data.getBlockList()))));
+                                        craft.setOrigBlockCount(craft.getOrigBlockCount() - data.getBlockList().length);
                                     }
                                 }
-
-
                             }
+
+
                         }
                         if (c.getType().getMustBeSubcraft() && !isSubcraft) {
                             failed = true;
@@ -737,19 +735,17 @@ public class AsyncManager extends BukkitRunnable {
     private Craft fastNearestCraftToLoc(Location loc) {
         Craft ret = null;
         long closestDistSquared = 1000000000L;
-        Craft[] craftsList = CraftManager.getInstance().getCraftsInWorld(loc.getWorld());
-        if (craftsList != null) {
-            for (Craft i : craftsList) {
-                int midX = (i.getHitBox().getMaxX() + i.getHitBox().getMinX()) >> 1;
+        Set<Craft> craftsList = CraftManager.getInstance().getCraftsInWorld(loc.getWorld());
+        for (Craft i : craftsList) {
+            int midX = (i.getHitBox().getMaxX() + i.getHitBox().getMinX()) >> 1;
 //				int midY=(i.getMaxY()+i.getMinY())>>1; don't check Y because it is slow
-                int midZ = (i.getHitBox().getMaxZ() + i.getHitBox().getMinZ()) >> 1;
-                long distSquared = Math.abs(midX - (int) loc.getX());
+            int midZ = (i.getHitBox().getMaxZ() + i.getHitBox().getMinZ()) >> 1;
+            long distSquared = Math.abs(midX - (int) loc.getX());
 //				distSquared+=Math.abs(midY-(int)loc.getY());
-                distSquared += Math.abs(midZ - (int) loc.getZ());
-                if (distSquared < closestDistSquared) {
-                    closestDistSquared = distSquared;
-                    ret = i;
-                }
+            distSquared += Math.abs(midZ - (int) loc.getZ());
+            if (distSquared < closestDistSquared) {
+                closestDistSquared = distSquared;
+                ret = i;
             }
         }
         return ret;
@@ -931,7 +927,7 @@ public class AsyncManager extends BukkitRunnable {
         long ticksElapsed = (System.currentTimeMillis() - lastContactCheck) / 50;
         if (ticksElapsed > 21) {
             for (World w : Bukkit.getWorlds()) {
-                if (w != null && CraftManager.getInstance().getCraftsInWorld(w) != null) {
+                if (w != null) {
                     for (Craft ccraft : CraftManager.getInstance().getCraftsInWorld(w)) {
                         if (CraftManager.getInstance().getPlayerFromCraft(ccraft) != null) {
                             if (!recentContactTracking.containsKey(ccraft)) {

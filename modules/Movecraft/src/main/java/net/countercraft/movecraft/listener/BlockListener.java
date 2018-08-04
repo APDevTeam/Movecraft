@@ -108,9 +108,7 @@ public class BlockListener implements Listener {
         }
         if (Settings.ProtectPilotedCrafts) {
             MovecraftLocation mloc = MathUtils.bukkit2MovecraftLoc(e.getBlock().getLocation());
-            if (CraftManager.getInstance().getCraftsInWorld(e.getBlock().getWorld()) == null) {
-                return;
-            }
+            CraftManager.getInstance().getCraftsInWorld(e.getBlock().getWorld());
             for (Craft craft : CraftManager.getInstance().getCraftsInWorld(e.getBlock().getWorld())) {
                 if (craft == null || craft.getDisabled()) {
                     continue;
@@ -129,7 +127,7 @@ public class BlockListener implements Listener {
     // prevent items from dropping from moving crafts
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onItemSpawn(final ItemSpawnEvent e) {
-        if (e.isCancelled() || CraftManager.getInstance().getCraftsInWorld(e.getLocation().getWorld()) == null) {
+        if (e.isCancelled()) {
             return;
         }
         for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(e.getLocation().getWorld())) {
@@ -147,9 +145,7 @@ public class BlockListener implements Listener {
             return;
         }
         Block block = e.getToBlock();
-        if (block.getType() != Material.WATER &&
-                block.getType() != Material.LAVA ||
-                CraftManager.getInstance().getCraftsInWorld(block.getWorld()) == null) {
+        if (block.getType() != Material.WATER && block.getType() != Material.LAVA) {
             return;
         }
         for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(block.getWorld())) {
@@ -164,9 +160,7 @@ public class BlockListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onRedstoneEvent(BlockRedstoneEvent event) {
         Block block = event.getBlock();
-        if (CraftManager.getInstance().getCraftsInWorld(block.getWorld()) == null) {
-            return;
-        }
+        CraftManager.getInstance().getCraftsInWorld(block.getWorld());
         for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(block.getWorld())) {
             MovecraftLocation mloc = new MovecraftLocation(block.getX(), block.getY(), block.getZ());
             if (MathUtils.locIsNearCraftFast(tcraft, mloc) &&
@@ -183,9 +177,7 @@ public class BlockListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPistonEvent(BlockPistonExtendEvent event) {
         Block block = event.getBlock();
-        if (CraftManager.getInstance().getCraftsInWorld(block.getWorld()) == null) {
-            return;
-        }
+        CraftManager.getInstance().getCraftsInWorld(block.getWorld());
         for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(block.getWorld())) {
             MovecraftLocation mloc = new MovecraftLocation(block.getX(), block.getY(), block.getZ());
             if (MathUtils.locIsNearCraftFast(tcraft, mloc) && tcraft.getCruising() && !tcraft.isNotProcessing()) {
@@ -202,9 +194,7 @@ public class BlockListener implements Listener {
             return;
         }
         Hopper block = (Hopper) event.getSource().getHolder();
-        if (CraftManager.getInstance().getCraftsInWorld(block.getWorld()) == null) {
-            return;
-        }
+        CraftManager.getInstance().getCraftsInWorld(block.getWorld());
         for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(block.getWorld())) {
             MovecraftLocation mloc = new MovecraftLocation(block.getX(), block.getY(), block.getZ());
             if (MathUtils.locIsNearCraftFast(tcraft, mloc) && tcraft.getCruising() && !tcraft.isNotProcessing()) {
@@ -224,9 +214,7 @@ public class BlockListener implements Listener {
         Block block = event.getBlock();
 
         final int[] fragileBlocks = new int[]{26, 34, 50, 55, 63, 64, 65, 68, 69, 70, 71, 72, 75, 76, 77, 93, 94, 96, 131, 132, 143, 147, 148, 149, 150, 151, 171, 193, 194, 195, 196, 197};
-        if (CraftManager.getInstance().getCraftsInWorld(block.getWorld()) == null) {
-            return;
-        }
+        CraftManager.getInstance().getCraftsInWorld(block.getWorld());
         for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(block.getWorld())) {
             MovecraftLocation mloc = new MovecraftLocation(block.getX(), block.getY(), block.getZ());
             if (!MathUtils.locIsNearCraftFast(tcraft, mloc)) {
@@ -281,9 +269,7 @@ public class BlockListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockDispense(BlockDispenseEvent e) {
-        if (CraftManager.getInstance().getCraftsInWorld(e.getBlock().getWorld()) == null) {
-            return;
-        }
+        CraftManager.getInstance().getCraftsInWorld(e.getBlock().getWorld());
         for (Craft craft : CraftManager.getInstance().getCraftsInWorld(e.getBlock().getWorld())) {
             if (craft != null &&
                     !craft.isNotProcessing() &&

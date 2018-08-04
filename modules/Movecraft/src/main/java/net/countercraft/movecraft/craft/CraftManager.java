@@ -24,16 +24,19 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 
 public class CraftManager implements Iterable<Craft>{
     private static CraftManager ourInstance;
-    @NotNull private final Set<Craft> craftList = new HashSet<>();
-    @NotNull private final HashMap<Player, Craft> craftPlayerIndex = new HashMap<>();
-    @NotNull private final HashMap<Craft, BukkitTask> releaseEvents = new HashMap<>();
+    @NotNull private final Set<Craft> craftList = ConcurrentHashMap.newKeySet();
+    @NotNull private final ConcurrentMap<Player, Craft> craftPlayerIndex = new ConcurrentHashMap<>();
+    @NotNull private final ConcurrentMap<Craft, BukkitTask> releaseEvents = new ConcurrentHashMap<>();
     @NotNull private Set<CraftType> craftTypes;
 
     public static void initialize(){
@@ -48,10 +51,12 @@ public class CraftManager implements Iterable<Craft>{
         return ourInstance;
     }
 
+    @NotNull
     public Set<CraftType> getCraftTypes() {
         return Collections.unmodifiableSet(craftTypes);
     }
 
+    @NotNull
     private Set<CraftType> loadCraftTypes(){
         File craftsFile = new File(Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/types");
 
@@ -94,19 +99,22 @@ public class CraftManager implements Iterable<Craft>{
         this.craftTypes = loadCraftTypes();
     }
 
-    public void addCraft(Craft c, Player p) {
+    public void addCraft(@NotNull Craft c, @Nullable Player p) {
         this.craftList.add(c);
-        this.craftPlayerIndex.put(p, c);
+        if(p!=null)
+            this.craftPlayerIndex.put(p, c);
     }
 
-    public void removeCraft(Craft c) {
+    public void removeCraft(@NotNull Craft c) {
         removeReleaseTask(c);
-        this.craftPlayerIndex.remove(getPlayerFromCraft(c));
+        Player player = getPlayerFromCraft(c);
+        if (player!=null)
+            this.craftPlayerIndex.remove(player);
         // if its sinking, just remove the craft without notifying or checking
         this.craftList.remove(c);
         if(!c.getHitBox().isEmpty()) {
-            if (getPlayerFromCraft(c) != null) {
-                getPlayerFromCraft(c).sendMessage(I18nSupport.getInternationalisedString("Release - Craft has been released message"));
+            if (player != null) {
+                player.sendMessage(I18nSupport.getInternationalisedString("Release - Craft has been released message"));
                 Movecraft.getInstance().getLogger().log(Level.INFO, String.format(I18nSupport.getInternationalisedString("Release - Player has released a craft console"), c.getNotificationPlayer().getName(), c.getType().getCraftName(), c.getHitBox().size(), c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
             } else {
                 Movecraft.getInstance().getLogger().log(Level.INFO, String.format(I18nSupport.getInternationalisedString("NULL Player has released a craft of type %s with size %d at coordinates : %d x , %d z"), c.getType().getCraftName(), c.getHitBox().size(), c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
@@ -114,27 +122,27 @@ public class CraftManager implements Iterable<Craft>{
         }else{
             Movecraft.getInstance().getLogger().warning("Releasing empty craft!");
         }
-        this.craftPlayerIndex.remove(getPlayerFromCraft(c));
     }
 
-    public void forceRemoveCraft(Craft c) {
+    public void forceRemoveCraft(@NotNull Craft c) {
         this.craftList.remove(c);
         if (getPlayerFromCraft(c) != null)
             this.craftPlayerIndex.remove(getPlayerFromCraft(c));
     }
 
-    public Craft[] getCraftsInWorld(World w) {
+    @NotNull
+    public Set<Craft> getCraftsInWorld(@NotNull World w) {
         Set<Craft> crafts = new HashSet<>();
         for(Craft c : this.craftList){
             if(c.getW() == w)
                 crafts.add(c);
         }
-        if(crafts.isEmpty())
-            return null;
-        return crafts.toArray(new Craft[1]);
+        return crafts;
     }
 
-    public Craft getCraftByPlayer(Player p) {
+    public Craft getCraftByPlayer(@NotNull Player p) {
+        if(p == null)
+            return null;
         return craftPlayerIndex.get(p);
     }
 
@@ -161,7 +169,8 @@ public class CraftManager implements Iterable<Craft>{
         craftList.removeAll(crafts);
     }
 
-    public Player getPlayerFromCraft(Craft c) {
+    @Nullable
+    public Player getPlayerFromCraft(@NotNull Craft c) {
         for (Map.Entry<Player, Craft> playerCraftEntry : craftPlayerIndex.entrySet()) {
             if (playerCraftEntry.getValue() == c) {
                 return playerCraftEntry.getKey();

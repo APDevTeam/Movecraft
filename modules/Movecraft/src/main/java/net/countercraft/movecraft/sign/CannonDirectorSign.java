@@ -30,10 +30,7 @@ public final class CannonDirectorSign implements Listener {
             return;
         }
         Craft foundCraft = null;
-        if (CraftManager.getInstance().getCraftsInWorld(block.getWorld()) == null) {
-            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("ERROR: Sign must be a part of a piloted craft!"));
-            return;
-        }
+        CraftManager.getInstance().getCraftsInWorld(block.getWorld());
         for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(block.getWorld())) {
             if (MathUtils.locationInHitbox(tcraft.getHitBox(), event.getClickedBlock().getLocation()) &&
                     CraftManager.getInstance().getPlayerFromCraft(tcraft) != null) {

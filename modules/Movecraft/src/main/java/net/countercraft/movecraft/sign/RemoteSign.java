@@ -32,10 +32,7 @@ public final class RemoteSign implements Listener{
             return;
         }
         Craft foundCraft = null;
-        if (CraftManager.getInstance().getCraftsInWorld(event.getClickedBlock().getWorld()) == null) {
-            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("ERROR: Remote Sign must be a part of a piloted craft!"));
-            return;
-        }
+        CraftManager.getInstance().getCraftsInWorld(event.getClickedBlock().getWorld());
         for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(event.getClickedBlock().getWorld())) {
             if (MathUtils.locationInHitbox(tcraft.getHitBox(), event.getClickedBlock().getLocation())) {
                 // don't use a craft with a null player. This is
