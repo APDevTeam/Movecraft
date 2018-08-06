@@ -69,7 +69,7 @@ final public class MovecraftLocation {
 
     @Override
     public int hashCode() {
-        return x >> 13 ^ y >> 7 ^ z;
+        return (x ^ (z << 12)) ^ (y << 24);
     }
 
     public MovecraftLocation add(MovecraftLocation l) {
