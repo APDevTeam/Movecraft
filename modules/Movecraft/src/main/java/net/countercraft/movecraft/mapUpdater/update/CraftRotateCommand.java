@@ -102,6 +102,11 @@ public class CraftRotateCommand extends UpdateCommand {
                 handler.setBlockFast(location.toBukkit(craft.getW()), craft.getPhaseBlocks().get(location), (byte) 0);
                 craft.getPhaseBlocks().remove(location);
             }
+            for(MovecraftLocation location : originalLocations){
+                if(!craft.getHitBox().inBounds(location) && craft.getPhaseBlocks().containsKey(location)){
+                    handler.setBlockFast(location.toBukkit(craft.getW()), craft.getPhaseBlocks().remove(location), (byte) 0);
+                }
+            }
 
             for (MovecraftLocation location : failed) {
                 final Material material = location.toBukkit(craft.getW()).getBlock().getType();
