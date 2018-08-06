@@ -26,27 +26,22 @@ import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class MapUpdateManager extends BukkitRunnable {
 
-    private List<UpdateCommand> updates = new ArrayList<>();
+    private final Queue<UpdateCommand> updates = new ConcurrentLinkedQueue<>();
     //private PriorityQueue<UpdateCommand> updateQueue = new PriorityQueue<>();
 
     //@Deprecated
     //public HashMap<Craft, Integer> blockUpdatesPerCraft = new HashMap<>();
 
-    private MapUpdateManager() {
-    }
+    private MapUpdateManager() { }
 
     public static MapUpdateManager getInstance() {
         return MapUpdateManagerHolder.INSTANCE;
     }
-
-
 
     public void run() {
         if (updates.isEmpty()) return;
@@ -56,22 +51,12 @@ public class MapUpdateManager extends BukkitRunnable {
         //updates.sort((o1, o2) -> o1.getClass().getName().compareToIgnoreCase(o2.getClass().getName()));
 
 
-        for(UpdateCommand update : updates)
-            update.doUpdate();
 
-        for (UpdateCommand update : updates) {
-            if (update instanceof CraftTranslateCommand) {
-                Craft craft = ((CraftTranslateCommand) update).getCraft();
-                //craft.setBlockUpdates(0);
-                if (!craft.isNotProcessing())
-                    craft.setProcessing(false);
-
-            }
-            if(update instanceof CraftRotateCommand) {
-                Craft craft = ((CraftRotateCommand) update).getCraft();
-                //craft.setBlockUpdates(0);
-                if (!craft.isNotProcessing())
-                    craft.setProcessing(false);
+        synchronized (updates) {
+            UpdateCommand next = updates.poll();
+            while(next != null) {
+                next.doUpdate();
+                next = updates.poll();
             }
         }
 
@@ -95,7 +80,6 @@ public class MapUpdateManager extends BukkitRunnable {
             long endTime = System.currentTimeMillis();
             Movecraft.getInstance().getServer().broadcastMessage("Map update took (ms): " + (endTime - startTime));
         }
-        updates.clear();
     }
 
 
@@ -113,10 +97,6 @@ public class MapUpdateManager extends BukkitRunnable {
 
     private static class MapUpdateManagerHolder {
         private static final MapUpdateManager INSTANCE = new MapUpdateManager();
-    }
-
-    public List<UpdateCommand> getUpdates(){
-        return Collections.unmodifiableList(updates);
     }
 
 }

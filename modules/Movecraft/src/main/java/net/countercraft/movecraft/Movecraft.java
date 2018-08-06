@@ -103,7 +103,7 @@ public class Movecraft extends JavaPlugin {
     private AssaultManager assaultManager;
     private SiegeManager siegeManager;
 
-    public static Movecraft getInstance() {
+    public static synchronized Movecraft getInstance() {
         return instance;
     }
 
