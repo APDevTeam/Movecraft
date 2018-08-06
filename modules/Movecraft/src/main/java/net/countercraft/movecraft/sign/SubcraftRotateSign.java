@@ -34,6 +34,8 @@ public final class SubcraftRotateSign implements Listener {
     @EventHandler
     public final void onSignClick(PlayerInteractEvent event) {
         if(rotatingPlayers.contains(event.getPlayer().getUniqueId())){
+            event.getPlayer().sendMessage("you are already rotating");
+            event.setCancelled(true);
             return;
         }
         Rotation rotation;
