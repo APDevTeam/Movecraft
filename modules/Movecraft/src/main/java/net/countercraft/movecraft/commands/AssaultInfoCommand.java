@@ -22,7 +22,7 @@ import java.util.Map;
 public class AssaultInfoCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args) {
-        if (command.getName().equalsIgnoreCase("assaultinfo")) {
+        if (!command.getName().equalsIgnoreCase("assaultinfo")) {
             return false;
         }
         if (!Settings.AssaultEnable) {
