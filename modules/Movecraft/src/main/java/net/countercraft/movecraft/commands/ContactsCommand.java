@@ -1,10 +1,11 @@
 package net.countercraft.movecraft.commands;
 
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.utils.HashHitBox;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.utils.HashHitBox;
 import net.countercraft.movecraft.utils.TopicPaginator;
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -65,7 +66,9 @@ public class ContactsCommand implements CommandExecutor {
                     (long) (tcraft.getOrigBlockCount() * tcraft.getType().getUnderwaterDetectionMultiplier());
             if (distsquared < detectionRangeSquared && tcraft.getNotificationPlayer() != ccraft.getNotificationPlayer()) {
                 String notification = "Contact: ";
+                notification += tcraft.getSinking() ? ChatColor.RED : tcraft.getDisabled() ? ChatColor.BLUE : "";
                 notification += tcraft.getType().getCraftName();
+                notification += ChatColor.RESET;
                 notification += " commanded by ";
                 notification += tcraft.getNotificationPlayer() != null ? tcraft.getNotificationPlayer().getDisplayName() : "null";
                 notification += ", size: ";

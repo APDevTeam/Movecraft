@@ -5,6 +5,7 @@ import net.countercraft.movecraft.utils.HashHitBox;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.TopicPaginator;
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -36,10 +37,14 @@ public class CraftReportCommand implements CommandExecutor{
         TopicPaginator paginator = new TopicPaginator("Craft Report");
         for (Craft craft : CraftManager.getInstance()) {
             HashHitBox hitBox = craft.getHitBox();
-            if (craft.getNotificationPlayer() != null)
-                paginator.addLine( craft.getType().getCraftName() + " " + craft.getNotificationPlayer().getName() + " " + hitBox.size() + " @ " + hitBox.getMinX() + "," + hitBox.getMinY() + "," + hitBox.getMinZ());
-            else
-                paginator.addLine( craft.getType().getCraftName() + " NULL " + hitBox.size() + " @ " + hitBox.getMinX() + "," + hitBox.getMinY() + "," + hitBox.getMinZ());
+            paginator.addLine((craft.getSinking() ? ChatColor.RED : craft.getDisabled() ? ChatColor.BLUE : "") +
+                    craft.getType().getCraftName() + " " +
+                    ChatColor.RESET +
+                    (craft.getNotificationPlayer() != null ? craft.getNotificationPlayer().getName() + " " : "None ") +
+                    hitBox.size() + " @ " +
+                    hitBox.getMinX() + "," +
+                    hitBox.getMinY() + "," +
+                    hitBox.getMinZ());
         }
         for(String line : paginator.getPage(page))
             commandSender.sendMessage(line);
