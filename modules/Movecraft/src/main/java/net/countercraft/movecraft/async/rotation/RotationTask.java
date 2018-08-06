@@ -46,6 +46,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.HashSet;
 import java.util.List;
@@ -197,7 +198,13 @@ public class RotationTask extends AsyncTask {
             return;
         }
         //call event
-        Bukkit.getServer().getPluginManager().callEvent(new CraftRotateEvent(craft, rotation));
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                Bukkit.getServer().getPluginManager().callEvent(new CraftRotateEvent(craft, rotation));
+            }
+        }.runTask(Movecraft.getInstance());
+
 
         updates.add(new CraftRotateCommand(getCraft(),originPoint, rotation));
         //rotate entities in the craft
@@ -319,8 +326,18 @@ public class RotationTask extends AsyncTask {
                 }
             }
         }
+        craft.setExteriorBox(rotateHitBox(craft.getExteriorBox(), originPoint, rotation));
+        craft.setInteriorBox(rotateHitBox(craft.getInteriorBox(), originPoint, rotation));
+
     }
 
+    private static HitBox rotateHitBox(HitBox hitBox, MovecraftLocation originPoint, Rotation rotation){
+        MutableHitBox output = new HashHitBox();
+        for(MovecraftLocation location : hitBox){
+            output.add(MathUtils.rotateVec(rotation,originPoint.subtract(originPoint)).add(originPoint));
+        }
+        return output;
+    }
     public MovecraftLocation getOriginPoint() {
         return originPoint;
     }

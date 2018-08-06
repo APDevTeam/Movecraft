@@ -21,6 +21,7 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
 import net.countercraft.movecraft.events.CraftSinkEvent;
 import net.countercraft.movecraft.utils.HashHitBox;
+import net.countercraft.movecraft.utils.HitBox;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -69,6 +70,9 @@ public abstract class Craft {
     private float meanMoveTime;
     private int numMoves;
     @NotNull private final Map<MovecraftLocation,Material> phaseBlocks = new HashMap<>();
+
+    private HitBox interiorBox;
+    private HitBox exteriorBox;
 
 
     public Craft(@NotNull CraftType type, @NotNull World world) {
@@ -152,12 +156,7 @@ public abstract class Craft {
             return;
         }
         this.sinking = true;
-        this.getType().getPassthroughBlocks().add(Material.STATIONARY_WATER);
-        this.getType().getPassthroughBlocks().add(Material.WATER);
-        this.getType().getPassthroughBlocks().add(Material.LEAVES);
-        this.getType().getPassthroughBlocks().add(Material.LEAVES_2);
-        this.getType().getPassthroughBlocks().add(Material.LONG_GRASS);
-        this.getType().getPassthroughBlocks().add(Material.DOUBLE_PLANT);
+
     }
 
     public boolean getDisabled() {
@@ -410,5 +409,21 @@ public abstract class Craft {
     @NotNull
     public Map<MovecraftLocation,Material> getPhaseBlocks(){
         return phaseBlocks;
+    }
+
+    public HitBox getInteriorBox() {
+        return interiorBox;
+    }
+
+    public void setInteriorBox(HitBox interiorBox) {
+        this.interiorBox = interiorBox;
+    }
+
+    public HitBox getExteriorBox() {
+        return exteriorBox;
+    }
+
+    public void setExteriorBox(HitBox exteriorBox) {
+        this.exteriorBox = exteriorBox;
     }
 }

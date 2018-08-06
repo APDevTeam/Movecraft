@@ -43,7 +43,16 @@ public class CraftRotateCommand extends UpdateCommand {
             return;
         }
         long time = System.nanoTime();
-        if (!craft.getPhaseBlocks().isEmpty()) {
+        final Set<Material> passthroughBlocks = new HashSet<>(craft.getType().getPassthroughBlocks());
+        if(craft.getSinking()){
+            passthroughBlocks.add(Material.STATIONARY_WATER);
+            passthroughBlocks.add(Material.WATER);
+            passthroughBlocks.add(Material.LEAVES);
+            passthroughBlocks.add(Material.LEAVES_2);
+            passthroughBlocks.add(Material.LONG_GRASS);
+            passthroughBlocks.add(Material.DOUBLE_PLANT);
+        }
+        if (!passthroughBlocks.isEmpty()) {
             MutableHitBox originalLocations = new HashHitBox();
             final Rotation counterRotation = rotation == Rotation.CLOCKWISE ? Rotation.ANTICLOCKWISE : Rotation.CLOCKWISE;
             for (MovecraftLocation movecraftLocation : craft.getHitBox()) {
@@ -54,76 +63,19 @@ public class CraftRotateCommand extends UpdateCommand {
 
             for (MovecraftLocation location : to) {
                 Material material = location.toBukkit(craft.getW()).getBlock().getType();
-                if (craft.getType().getPassthroughBlocks().contains(material)) {
+                if (passthroughBlocks.contains(material)) {
                     craft.getPhaseBlocks().put(location, material);
                 }
-            }
-
-            //place phased blocks
-            final int minX = craft.getHitBox().getMinX();
-            final int maxX = craft.getHitBox().getMaxX();
-            final int minY = craft.getHitBox().getMinY();
-            final int maxY = craft.getHitBox().getMaxY();
-            final int minZ = craft.getHitBox().getMinZ();
-            final int maxZ = craft.getHitBox().getMaxZ();
-
-            final HitBox[] surfaces = {
-                    new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(minX, maxY, maxZ)),
-                    new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(maxX, minY, maxZ)),
-                    new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(maxX, maxY, minZ)),
-                    new SolidHitBox(new MovecraftLocation(maxX, maxY, maxZ), new MovecraftLocation(minX, maxY, maxZ)),
-                    new SolidHitBox(new MovecraftLocation(maxX, maxY, maxZ), new MovecraftLocation(maxX, minY, maxZ)),
-                    new SolidHitBox(new MovecraftLocation(maxX, maxY, maxZ), new MovecraftLocation(maxX, maxY, minZ))};
-            //Valid exterior starts as the 6 surface planes of the HitBox with the locations that lie in the HitBox removed
-            final Set<MovecraftLocation> validExterior = new HashSet<>();
-            for (HitBox hitBox : surfaces) {
-                validExterior.addAll(CollectionUtils.filter(hitBox, craft.getHitBox()).asSet());
             }
             //The subtraction of the set of coordinates in the HitBox cube and the HitBox itself
             final HitBox invertedHitBox = CollectionUtils.filter(craft.getHitBox().boundingHitBox(), craft.getHitBox());
             //A set of locations that are confirmed to be "exterior" locations
-            final Set<MovecraftLocation> confirmed = new HashSet<>();
-            final Set<MovecraftLocation> failed = new HashSet<>();
-            //Check to see which locations in the from set are actually outside of the craft
-            for (MovecraftLocation location : Sets.union(originalLocations.boundingHitBox().asSet(), craft.getHitBox().boundingHitBox().asSet())) {
-                if (craft.getHitBox().contains(location)) {
-                    continue;
-                }
-
-                if (!craft.getHitBox().inBounds(location)) {
-                    confirmed.add(location);
-                    continue;
-                }
-                //use a modified BFS for multiple origin elements
-                Set<MovecraftLocation> visited = new HashSet<>();
-                Queue<MovecraftLocation> queue = new LinkedList<>();
-                boolean interior = true;
-                queue.add(location);
-                while (!queue.isEmpty()) {
-                    MovecraftLocation node = queue.poll();
-                    //If the node is already a valid member of the exterior of the HitBox, continued search is unitary.
-                    if (validExterior.contains(node)) {
-                        confirmed.add(location);
-                        validExterior.addAll(visited);
-                        interior = false;
-                        break;
-                    }
-                    for (MovecraftLocation neighbor : CollectionUtils.neighbors(invertedHitBox, node)) {
-                        if (visited.contains(neighbor)) {
-                            continue;
-                        }
-                        visited.add(neighbor);
-                        queue.add(neighbor);
-                    }
-                }
-                if (interior)
-                    failed.add(location);
-            }
-
+            final HitBox confirmed = craft.getExteriorBox();
+            final HitBox failed = craft.getInteriorBox();
             final WorldHandler handler = Movecraft.getInstance().getWorldHandler();
             for (MovecraftLocation location : CollectionUtils.filter(invertedHitBox, confirmed)) {
                 Material material = location.toBukkit(craft.getW()).getBlock().getType();
-                if (!craft.getType().getPassthroughBlocks().contains(material)) {
+                if (!passthroughBlocks.contains(material)) {
                     continue;
                 }
                 craft.getPhaseBlocks().put(location, material);
@@ -153,7 +105,7 @@ public class CraftRotateCommand extends UpdateCommand {
 
             for (MovecraftLocation location : failed) {
                 final Material material = location.toBukkit(craft.getW()).getBlock().getType();
-                if (craft.getType().getPassthroughBlocks().contains(material)) {
+                if (passthroughBlocks.contains(material)) {
                     craft.getPhaseBlocks().put(location, material);
                     handler.setBlockFast(location.toBukkit(craft.getW()), Material.AIR, (byte) 0);
 
@@ -173,7 +125,8 @@ public class CraftRotateCommand extends UpdateCommand {
                 }
             }
         }
-
+        if (!craft.isNotProcessing())
+            craft.setProcessing(false);
         time = System.nanoTime() - time;
         if (Settings.Debug)
             logger.info("Total time: " + (time / 1e9) + " seconds. Moving with cooldown of " + craft.getTickCooldown() + ". Speed of: " + String.format("%.2f", craft.getSpeed()));

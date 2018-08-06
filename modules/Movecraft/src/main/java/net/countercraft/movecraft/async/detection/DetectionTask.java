@@ -18,11 +18,12 @@
 package net.countercraft.movecraft.async.detection;
 
 
+import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.utils.BoundingBoxUtils;
+import net.countercraft.movecraft.utils.*;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -37,7 +38,7 @@ public class DetectionTask extends AsyncTask {
     private final int minSize;
     private final int maxSize;
     private final Stack<MovecraftLocation> blockStack = new Stack<>();
-    private final HashSet<MovecraftLocation> blockList = new HashSet<>();
+    private final HashHitBox blockList = new HashHitBox();
     private final HashSet<MovecraftLocation> visited = new HashSet<>();
     private final HashMap<List<Integer>, Integer> blockTypeCount = new HashMap<>();
     private final DetectionTaskData data;
@@ -48,6 +49,9 @@ public class DetectionTask extends AsyncTask {
     private int minY;
     private Map<List<Integer>, List<Double>> dFlyBlocks;
     private int foundDynamicFlyBlock = 0;
+
+    private final MutableHitBox interiorBox = new HashHitBox();
+    private final MutableHitBox exteriorBox = new HashHitBox();
 
     public DetectionTask(Craft c, MovecraftLocation startLocation, Player player) {
         super(c);
@@ -65,11 +69,9 @@ public class DetectionTask extends AsyncTask {
         dFlyBlocks = flyBlocks;
 
         blockStack.push(startLocation);
-
         do {
             detectSurrounding(blockStack.pop());
         } while (!blockStack.isEmpty());
-
         if (data.failed()) {
             return;
         }
@@ -86,14 +88,69 @@ public class DetectionTask extends AsyncTask {
             data.dynamicFlyBlockSpeedMultiplier = ratio;
         }
         if (isWithinLimit(blockList.size(), minSize, maxSize)) {
-            data.setBlockList(finaliseBlockList(blockList));
+            data.setBlockList(blockList);
             if (confirmStructureRequirements(flyBlocks, blockTypeCount)) {
-                data.setHitBox(BoundingBoxUtils.formBoundingBox(data.getBlockList(), data.getMinX(), maxX,
-                        data.getMinZ(), maxZ));
+                data.setHitBox(blockList);
 
             }
         }
+        detectInterior();
+    }
 
+    private void detectInterior(){
+        //place phased blocks
+        final int minX = data.getHitBox().getMinX();
+        final int maxX = data.getHitBox().getMaxX();
+        final int minY = data.getHitBox().getMinY();
+        final int maxY = data.getHitBox().getMaxY();
+        final int minZ = data.getHitBox().getMinZ();
+        final int maxZ = data.getHitBox().getMaxZ();
+
+        final HitBox[] surfaces = {
+                new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(minX, maxY, maxZ)),
+                new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(maxX, minY, maxZ)),
+                new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(maxX, maxY, minZ)),
+                new SolidHitBox(new MovecraftLocation(maxX, maxY, maxZ), new MovecraftLocation(minX, maxY, maxZ)),
+                new SolidHitBox(new MovecraftLocation(maxX, maxY, maxZ), new MovecraftLocation(maxX, minY, maxZ)),
+                new SolidHitBox(new MovecraftLocation(maxX, maxY, maxZ), new MovecraftLocation(maxX, maxY, minZ))};
+        //Valid exterior starts as the 6 surface planes of the HitBox with the locations that lie in the HitBox removed
+        final Set<MovecraftLocation> validExterior = new HashSet<>();
+        for (HitBox hitBox : surfaces) {
+            validExterior.addAll(CollectionUtils.filter(hitBox, data.getHitBox()).asSet());
+        }
+        //The subtraction of the set of coordinates in the HitBox cube and the HitBox itself
+        final HitBox invertedHitBox = CollectionUtils.filter(data.getHitBox().boundingHitBox(), data.getHitBox());
+
+        //Check to see which locations in the from set are actually outside of the craft
+        for (MovecraftLocation location : data.getHitBox().boundingHitBox() ) {
+            if (data.getHitBox().contains(location)) {
+                continue;
+            }
+            //use a modified BFS for multiple origin elements
+            Set<MovecraftLocation> visited = new HashSet<>();
+            Queue<MovecraftLocation> queue = new LinkedList<>();
+            boolean interior = true;
+            queue.add(location);
+            while (!queue.isEmpty()) {
+                MovecraftLocation node = queue.poll();
+                //If the node is already a valid member of the exterior of the HitBox, continued search is unitary.
+                if (validExterior.contains(node)) {
+                    exteriorBox.add(location);
+                    validExterior.addAll(visited);
+                    interior = false;
+                    break;
+                }
+                for (MovecraftLocation neighbor : CollectionUtils.neighbors(invertedHitBox, node)) {
+                    if (visited.contains(neighbor)) {
+                        continue;
+                    }
+                    visited.add(neighbor);
+                    queue.add(neighbor);
+                }
+            }
+            if (interior)
+                interiorBox.add(location);
+        }
     }
 
     private void detectBlock(int x, int y, int z) {
@@ -386,7 +443,7 @@ public class DetectionTask extends AsyncTask {
                 numberOfBlocks = 0;
             }
 
-            float blockPercentage = (((float) numberOfBlocks / data.getBlockList().length) * 100);
+            float blockPercentage = (((float) numberOfBlocks / data.getBlockList().size()) * 100);
             Double minPercentage = flyBlocks.get(i).get(0);
             Double maxPercentage = flyBlocks.get(i).get(1);
             if (minPercentage < 10000.0) {
@@ -461,5 +518,13 @@ public class DetectionTask extends AsyncTask {
     private void fail(String message) {
         data.setFailed(true);
         data.setFailMessage(message);
+    }
+
+    public HitBox getInteriorBox(){
+        return interiorBox;
+    }
+
+    public HitBox getExteriorBox(){
+        return exteriorBox;
     }
 }

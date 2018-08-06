@@ -136,15 +136,17 @@ public class AsyncManager extends BukkitRunnable {
 
                     } else {
                         Set<Craft> craftsInWorld = CraftManager.getInstance().getCraftsInWorld(c.getW());
+                        c.setInteriorBox(task.getInteriorBox());
+                        c.setExteriorBox(task.getExteriorBox());
                         boolean failed = false;
                         boolean isSubcraft = false;
 
                         for (Craft craft : craftsInWorld) {
-                            if(craft.getHitBox().intersects(new HashHitBox(Arrays.asList(data.getBlockList())))){
+                            if(craft.getHitBox().intersects(data.getBlockList())){
                                 isSubcraft = true;
                                 if (c.getType().getCruiseOnPilot() || p != null) {
                                     if (craft.getType() == c.getType()
-                                            || craft.getHitBox().size() <= data.getBlockList().length) {
+                                            || craft.getHitBox().size() <= data.getBlockList().size()) {
                                         notifyP.sendMessage(I18nSupport.getInternationalisedString(
                                                 "Detection - Failed Craft is already being controlled"));
                                         failed = true;
@@ -158,8 +160,8 @@ public class AsyncManager extends BukkitRunnable {
                                             failed = true;
                                             notifyP.sendMessage(I18nSupport.getInternationalisedString("Parent Craft is busy"));
                                         }
-                                        craft.setHitBox(new HashHitBox(CollectionUtils.filter(craft.getHitBox(),Arrays.asList(data.getBlockList()))));
-                                        craft.setOrigBlockCount(craft.getOrigBlockCount() - data.getBlockList().length);
+                                        craft.setHitBox(new HashHitBox(CollectionUtils.filter(craft.getHitBox(),data.getBlockList())));
+                                        craft.setOrigBlockCount(craft.getOrigBlockCount() - data.getBlockList().size());
                                     }
                                 }
                             }
@@ -171,8 +173,8 @@ public class AsyncManager extends BukkitRunnable {
                             notifyP.sendMessage(I18nSupport.getInternationalisedString("Craft must be part of another craft"));
                         }
                         if (!failed) {
-                            c.setHitBox(new HashHitBox(Arrays.asList(task.getData().getBlockList())));
-                            c.setOrigBlockCount(data.getBlockList().length);
+                            c.setHitBox(task.getData().getBlockList());
+                            c.setOrigBlockCount(data.getBlockList().size());
                             c.setNotificationPlayer(notifyP);
                             final int waterLine = c.getWaterLine();
                             if(!c.getType().blockedByWater() && c.getHitBox().getMinY() <= waterLine){
@@ -208,6 +210,7 @@ public class AsyncManager extends BukkitRunnable {
                 if(c!=null){
                     Bukkit.getPluginManager().callEvent(new CraftDetectEvent(c));
                 }
+
             } else if (poll instanceof TranslationTask) {
                 // Process translation task
 
@@ -227,10 +230,9 @@ public class AsyncManager extends BukkitRunnable {
                         c.setHitBox(task.getNewHitBox());
                         //c.setBlockList(task.getData().getBlockList());
                         //boolean failed = MapUpdateManager.getInstance().addWorldUpdate(c.getW(), updates, null, null, exUpdates);
-                        MapUpdateManager mapUpdateManager= MapUpdateManager.getInstance();
-                        for(UpdateCommand updateCommand : task.getUpdates())
-                            mapUpdateManager.scheduleUpdate(updateCommand);
+                        MapUpdateManager.getInstance().scheduleUpdates(task.getUpdates());
                         sentMapUpdate = true;
+                        CraftManager.getInstance().addReleaseTask(c);
 
                     }
                 } else {

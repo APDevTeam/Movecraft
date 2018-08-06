@@ -17,7 +17,8 @@
 
 package net.countercraft.movecraft.async.detection;
 
-import net.countercraft.movecraft.MovecraftLocation;
+import net.countercraft.movecraft.utils.HashHitBox;
+import net.countercraft.movecraft.utils.HitBox;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
@@ -28,10 +29,9 @@ public class DetectionTaskData {
     private boolean failed;
     private boolean waterContact;
     private String failMessage;
-    private MovecraftLocation[] blockList;
+    private HashHitBox hitBox;
     private Player player;
     private Player notificationPlayer;
-    private int[][][] hitBox;
     private int minX, minZ;
     private int[] allowedBlocks, forbiddenBlocks;
     private String[] forbiddenSignStrings;
@@ -89,12 +89,14 @@ public class DetectionTaskData {
         this.failMessage = failMessage;
     }
 
-    public MovecraftLocation[] getBlockList() {
-        return blockList;
+    @Deprecated
+    public HashHitBox getBlockList() {
+        return hitBox;
     }
 
-    void setBlockList(MovecraftLocation[] blockList) {
-        this.blockList = blockList;
+    @Deprecated
+    void setBlockList(HashHitBox blockList) {
+        this.hitBox = blockList;
     }
 
     public Player getPlayer() {
@@ -113,11 +115,11 @@ public class DetectionTaskData {
         this.notificationPlayer = notificationPlayer;
     }
 
-    public int[][][] getHitBox() {
+    public HitBox getHitBox() {
         return hitBox;
     }
 
-    void setHitBox(int[][][] hitBox) {
+    void setHitBox(HashHitBox hitBox) {
         this.hitBox = hitBox;
     }
 

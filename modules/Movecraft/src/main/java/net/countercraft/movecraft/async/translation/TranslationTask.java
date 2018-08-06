@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.async.translation;
 
+import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.craft.Craft;
@@ -8,6 +9,8 @@ import net.countercraft.movecraft.events.CraftTranslateEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.update.*;
 import net.countercraft.movecraft.utils.HashHitBox;
+import net.countercraft.movecraft.utils.HitBox;
+import net.countercraft.movecraft.utils.MutableHitBox;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -20,6 +23,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -45,6 +49,7 @@ public class TranslationTask extends AsyncTask {
 
     @Override
     protected void excecute() {
+
         //Check if theres anything to move
         if(oldHitBox.isEmpty()){
             return;
@@ -139,16 +144,22 @@ public class TranslationTask extends AsyncTask {
         }
 
         //call event
-        Bukkit.getServer().getPluginManager().callEvent(new CraftTranslateEvent(craft, oldHitBox, newHitBox));
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                Bukkit.getServer().getPluginManager().callEvent(new CraftTranslateEvent(craft, oldHitBox, newHitBox));
+            }
+        }.runTask(Movecraft.getInstance());
+
 
         if(craft.getSinking()){
             for(MovecraftLocation location : collisionBox){
-                if (craft.getType().getExplodeOnCrash() != 0.0F) {
+                if (craft.getType().getExplodeOnCrash() >= 0.0F) {
                     if (System.currentTimeMillis() - craft.getOrigPilotTime() <= 1000) {
                         continue;
                     }
                     Location loc = location.toBukkit(craft.getW());
-                    if (!loc.getBlock().getType().equals(Material.AIR)) {
+                    if (!loc.getBlock().getType().equals(Material.AIR)  && ThreadLocalRandom.current().nextDouble(1) < .05) {
                         updates.add(new ExplosionUpdateCommand( loc, craft.getType().getExplodeOnCrash()));
                         collisionExplosion=true;
                     }
@@ -192,33 +203,48 @@ public class TranslationTask extends AsyncTask {
 
         //prevents torpedo and rocket pilots
         if (craft.getType().getMoveEntities() && !craft.getSinking()) {
-            for(Entity entity : craft.getW().getNearbyEntities(craft.getHitBox().getMidPoint().toBukkit(craft.getW()), craft.getHitBox().getXLength()/2.0 + 1, craft.getHitBox().getYLength()/2.0 + 1, craft.getHitBox().getZLength()/2.0 + 1)){
-                if (entity.getType() == EntityType.PLAYER) {
-                    Player player = (Player) entity;
-                    craft.getMovedPlayers().put(player, System.currentTimeMillis());
-                    Location tempLoc = entity.getLocation();
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    for(Entity entity : craft.getW().getNearbyEntities(craft.getHitBox().getMidPoint().toBukkit(craft.getW()), craft.getHitBox().getXLength()/2.0 + 1, craft.getHitBox().getYLength()/2.0 + 1, craft.getHitBox().getZLength()/2.0 + 1)){
+                        if (entity.getType() == EntityType.PLAYER) {
+                            Player player = (Player) entity;
+                            craft.getMovedPlayers().put(player, System.currentTimeMillis());
+                            Location tempLoc = entity.getLocation();
 
-                    tempLoc = tempLoc.add(dx, dy, dz);
-                    Location newPLoc = new Location(craft.getW(), tempLoc.getX(), tempLoc.getY(), tempLoc.getZ());
-                    newPLoc.setPitch(entity.getLocation().getPitch());
-                    newPLoc.setYaw(entity.getLocation().getYaw());
+                            tempLoc = tempLoc.add(dx, dy, dz);
+                            Location newPLoc = new Location(craft.getW(), tempLoc.getX(), tempLoc.getY(), tempLoc.getZ());
+                            newPLoc.setPitch(entity.getLocation().getPitch());
+                            newPLoc.setYaw(entity.getLocation().getYaw());
 
-                    EntityUpdateCommand eUp = new EntityUpdateCommand( newPLoc, entity);
-                    updates.add(eUp);
-                } else if (!craft.getType().getOnlyMovePlayers() || entity.getType() == EntityType.PRIMED_TNT) {
-                    Location tempLoc = entity.getLocation();
-                    tempLoc = tempLoc.add(dx,dy,dz);
-                    EntityUpdateCommand eUp = new EntityUpdateCommand(tempLoc, entity);
-                    updates.add(eUp);
+                            EntityUpdateCommand eUp = new EntityUpdateCommand( newPLoc, entity);
+                            updates.add(eUp);
+                        } else if (!craft.getType().getOnlyMovePlayers() || entity.getType() == EntityType.PRIMED_TNT) {
+                            Location tempLoc = entity.getLocation();
+                            tempLoc = tempLoc.add(dx,dy,dz);
+                            EntityUpdateCommand eUp = new EntityUpdateCommand(tempLoc, entity);
+                            updates.add(eUp);
+                        }
+                    }
                 }
-            }
+            }.runTask(Movecraft.getInstance());
         } else {
             //add releaseTask without playermove to manager
             if (!craft.getType().getCruiseOnPilot() && !craft.getSinking())  // not necessary to release cruiseonpilot crafts, because they will already be released
                 CraftManager.getInstance().addReleaseTask(craft);
         }
         captureYield(harvestedBlocks);
+        craft.setExteriorBox(translateHitBox(craft.getExteriorBox(), new MovecraftLocation(dx, dy, dz)));
+        craft.setInteriorBox(translateHitBox(craft.getInteriorBox(), new MovecraftLocation(dx, dy, dz)));
 
+    }
+
+    private static HitBox translateHitBox(HitBox hitBox, MovecraftLocation shift){
+        MutableHitBox output = new HashHitBox();
+        for(MovecraftLocation location : hitBox){
+            output.add(location.add(shift));
+        }
+        return output;
     }
 
     private void fail(String message) {
