@@ -27,6 +27,7 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.events.CraftRotateEvent;
+import net.countercraft.movecraft.events.CraftTranslateEvent;
 import net.countercraft.movecraft.utils.*;
 import net.countercraft.movecraft.utils.HashHitBox;
 import net.countercraft.movecraft.async.AsyncTask;
@@ -198,12 +199,13 @@ public class RotationTask extends AsyncTask {
             return;
         }
         //call event
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                Bukkit.getServer().getPluginManager().callEvent(new CraftRotateEvent(craft, rotation));
-            }
-        }.runTask(Movecraft.getInstance());
+        CraftRotateEvent event = new CraftRotateEvent(craft, oldHitBox, newHitBox);
+        Bukkit.getServer().getPluginManager().callEvent(event);
+        if(event.isCancelled()){
+            failed = true;
+            failMessage = event.getFailMessage();
+            return;
+        }
 
 
         updates.add(new CraftRotateCommand(getCraft(),originPoint, rotation));
