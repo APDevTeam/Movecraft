@@ -136,7 +136,7 @@ public class HashHitBox implements MutableHitBox {
                 z >= minZ && z <= maxZ;
     }
 
-    public boolean intersects(HashHitBox hitBox){
+    public boolean intersects(HitBox hitBox){
         for(MovecraftLocation location : hitBox){
             if(this.contains(location)){
                 return true;
