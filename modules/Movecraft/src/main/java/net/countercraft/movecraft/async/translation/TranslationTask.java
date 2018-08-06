@@ -144,13 +144,12 @@ public class TranslationTask extends AsyncTask {
         }
 
         //call event
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                Bukkit.getServer().getPluginManager().callEvent(new CraftTranslateEvent(craft, oldHitBox, newHitBox));
-            }
-        }.runTask(Movecraft.getInstance());
-
+        CraftTranslateEvent event = new CraftTranslateEvent(craft, oldHitBox, newHitBox);
+        Bukkit.getServer().getPluginManager().callEvent(event);
+        if(event.isCancelled()){
+            this.fail(event.getFailMessage());
+            return;
+        }
 
         if(craft.getSinking()){
             for(MovecraftLocation location : collisionBox){
@@ -234,8 +233,6 @@ public class TranslationTask extends AsyncTask {
                 CraftManager.getInstance().addReleaseTask(craft);
         }
         captureYield(harvestedBlocks);
-        craft.setExteriorBox(translateHitBox(craft.getExteriorBox(), new MovecraftLocation(dx, dy, dz)));
-        craft.setInteriorBox(translateHitBox(craft.getInteriorBox(), new MovecraftLocation(dx, dy, dz)));
 
     }
 

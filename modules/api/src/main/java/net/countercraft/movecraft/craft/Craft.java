@@ -71,10 +71,6 @@ public abstract class Craft {
     private int numMoves;
     @NotNull private final Map<MovecraftLocation,Material> phaseBlocks = new HashMap<>();
 
-    private HitBox interiorBox;
-    private HitBox exteriorBox;
-
-
     public Craft(@NotNull CraftType type, @NotNull World world) {
         this.type = type;
         this.w = world;
@@ -409,21 +405,5 @@ public abstract class Craft {
     @NotNull
     public Map<MovecraftLocation,Material> getPhaseBlocks(){
         return phaseBlocks;
-    }
-
-    public HitBox getInteriorBox() {
-        return interiorBox;
-    }
-
-    public void setInteriorBox(HitBox interiorBox) {
-        this.interiorBox = interiorBox;
-    }
-
-    public HitBox getExteriorBox() {
-        return exteriorBox;
-    }
-
-    public void setExteriorBox(HitBox exteriorBox) {
-        this.exteriorBox = exteriorBox;
     }
 }

@@ -70,8 +70,53 @@ public class CraftRotateCommand extends UpdateCommand {
             //The subtraction of the set of coordinates in the HitBox cube and the HitBox itself
             final HitBox invertedHitBox = CollectionUtils.filter(craft.getHitBox().boundingHitBox(), craft.getHitBox());
             //A set of locations that are confirmed to be "exterior" locations
-            final HitBox confirmed = craft.getExteriorBox();
-            final HitBox failed = craft.getInteriorBox();
+            //A set of locations that are confirmed to be "exterior" locations
+            final MutableHitBox confirmed = new HashHitBox();
+            final MutableHitBox failed = new HashHitBox();
+
+            //place phased blocks
+            final int minX = craft.getHitBox().getMinX();
+            final int maxX = craft.getHitBox().getMaxX();
+            final int minY = craft.getHitBox().getMinY();
+            final int maxY = craft.getHitBox().getMaxY();
+            final int minZ = craft.getHitBox().getMinZ();
+            final int maxZ = craft.getHitBox().getMaxZ();
+            final HitBox[] surfaces = {
+                    new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(minX, maxY, maxZ)),
+                    new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(maxX, minY, maxZ)),
+                    new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(maxX, maxY, minZ)),
+                    new SolidHitBox(new MovecraftLocation(maxX, maxY, maxZ), new MovecraftLocation(minX, maxY, maxZ)),
+                    new SolidHitBox(new MovecraftLocation(maxX, maxY, maxZ), new MovecraftLocation(maxX, minY, maxZ)),
+                    new SolidHitBox(new MovecraftLocation(maxX, maxY, maxZ), new MovecraftLocation(maxX, maxY, minZ))};
+            //Valid exterior starts as the 6 surface planes of the HitBox with the locations that lie in the HitBox removed
+            final Set<MovecraftLocation> validExterior = new HashSet<>();
+            for (HitBox hitBox : surfaces) {
+                validExterior.addAll(CollectionUtils.filter(hitBox, craft.getHitBox()).asSet());
+            }
+            //Check to see which locations in the from set are actually outside of the craft
+            for (MovecraftLocation location :validExterior ) {
+                if (craft.getHitBox().contains(location) || confirmed.contains(location)) {
+                    continue;
+                }
+                //use a modified BFS for multiple origin elements
+                Set<MovecraftLocation> visited = new HashSet<>();
+                Queue<MovecraftLocation> queue = new LinkedList<>();
+                queue.add(location);
+                while (!queue.isEmpty()) {
+                    MovecraftLocation node = queue.poll();
+                    //If the node is already a valid member of the exterior of the HitBox, continued search is unitary.
+                    for (MovecraftLocation neighbor : CollectionUtils.neighbors(invertedHitBox, node)) {
+                        if (visited.contains(neighbor)) {
+                            continue;
+                        }
+                        visited.add(neighbor);
+                        queue.add(neighbor);
+                    }
+                }
+                confirmed.addAll(visited);
+            }
+            failed.addAll(CollectionUtils.filter(invertedHitBox, confirmed));
+
             final WorldHandler handler = Movecraft.getInstance().getWorldHandler();
             for (MovecraftLocation location : CollectionUtils.filter(invertedHitBox, confirmed)) {
                 Material material = location.toBukkit(craft.getW()).getBlock().getType();

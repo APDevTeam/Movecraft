@@ -326,8 +326,6 @@ public class RotationTask extends AsyncTask {
                 }
             }
         }
-        craft.setExteriorBox(rotateHitBox(craft.getExteriorBox(), originPoint, rotation));
-        craft.setInteriorBox(rotateHitBox(craft.getInteriorBox(), originPoint, rotation));
 
     }
 

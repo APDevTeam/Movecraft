@@ -136,8 +136,6 @@ public class AsyncManager extends BukkitRunnable {
 
                     } else {
                         Set<Craft> craftsInWorld = CraftManager.getInstance().getCraftsInWorld(c.getW());
-                        c.setInteriorBox(task.getInteriorBox());
-                        c.setExteriorBox(task.getExteriorBox());
                         boolean failed = false;
                         boolean isSubcraft = false;
 
