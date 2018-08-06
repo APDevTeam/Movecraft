@@ -16,10 +16,11 @@ public class CraftTranslateEvent extends CraftEvent implements Cancellable {
     private static final HandlerList HANDLERS = new HandlerList();
     @NotNull private final HashHitBox oldHitBox;
     @NotNull private final HashHitBox newHitBox;
+    @NotNull private String failMessage = "";
     private boolean isCancelled = false;
 
     public CraftTranslateEvent(@NotNull Craft craft, @NotNull HashHitBox oldHitBox, @NotNull HashHitBox newHitBox) {
-        super(craft);
+        super(craft, true);
         this.oldHitBox = oldHitBox;
         this.newHitBox = newHitBox;
     }
@@ -47,6 +48,15 @@ public class CraftTranslateEvent extends CraftEvent implements Cancellable {
     @Override
     public HandlerList getHandlers() {
         return HANDLERS;
+    }
+
+    @NotNull
+    public String getFailMessage() {
+        return failMessage;
+    }
+
+    public void setFailMessage(@NotNull String failMessage) {
+        this.failMessage = failMessage;
     }
 
     @SuppressWarnings("unused")
