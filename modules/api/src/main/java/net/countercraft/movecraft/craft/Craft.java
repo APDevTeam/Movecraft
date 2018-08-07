@@ -21,7 +21,8 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
 import net.countercraft.movecraft.events.CraftSinkEvent;
 import net.countercraft.movecraft.utils.HashHitBox;
-import net.countercraft.movecraft.utils.HitBox;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -30,14 +31,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-/*import net.countercraft.movecraft.async.AsyncManager;
-import net.countercraft.movecraft.async.rotation.RotationTask;
-import net.countercraft.movecraft.async.translation.TranslationTask;
-import net.countercraft.movecraft.async.translation.TranslationTaskData;*/
 
 public abstract class Craft {
     @NotNull protected final CraftType type;
@@ -134,6 +129,9 @@ public abstract class Craft {
     }
 
     public void setCruising(boolean cruising) {
+        if(notificationPlayer!=null){
+            notificationPlayer.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent("Cruising " + (cruising ? "enabled" : "disabled")));
+        }
         this.cruising = cruising;
     }
 
