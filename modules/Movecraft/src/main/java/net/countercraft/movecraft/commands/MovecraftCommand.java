@@ -21,7 +21,7 @@ public class MovecraftCommand implements TabExecutor {
         }
 
         if(args.length == 0){
-            commandSender.sendMessage("Movecraft 7.0 by cccm5");
+            commandSender.sendMessage("Movecraft 7.0 pre release 5 by cccm5");
             return true;
         }
 
