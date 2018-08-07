@@ -22,7 +22,7 @@ import java.util.logging.Level;
 public class SiegeCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args) {
-        if (command.getName().equalsIgnoreCase("siege")) {
+        if (!command.getName().equalsIgnoreCase("siege")) {
             return false;
         }
         if (!(commandSender instanceof Player)) {
