@@ -32,6 +32,13 @@ public class BlockCreateCommand extends UpdateCommand {
         this.world = world;
     }
 
+    public BlockCreateCommand(@NotNull World world, @NotNull MovecraftLocation newBlockLocation, @NotNull Material type) {
+        this.newBlockLocation = newBlockLocation;
+        this.type = type;
+        this.dataID = (byte)0;
+        this.world = world;
+    }
+
 
 
     @Override
