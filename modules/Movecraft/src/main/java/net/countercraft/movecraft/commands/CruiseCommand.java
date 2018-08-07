@@ -87,15 +87,19 @@ public class CruiseCommand implements TabExecutor {
 
 
         if (args[0].equalsIgnoreCase("on")) {
-            float yaw = player.getLocation().getYaw();
-            if (yaw >= 135 || yaw < -135) // north
-                craft.setCruiseDirection((byte) 0x3);
-            else if (yaw >= 45)  // west
-                craft.setCruiseDirection((byte) 0x5);
-            else if (yaw < -45) // south
-                craft.setCruiseDirection((byte) 0x2);
-            else // east
-                craft.setCruiseDirection((byte) 0x4);
+            float yaw = (player.getLocation().getYaw() + 360.0f);
+            if (yaw >= 360.0f) {
+                yaw %= 360.0f;
+            }
+            if (yaw >= 45 && yaw < 135) { // west
+                craft.setCruiseDirection((byte)0x5);
+            } else if (yaw >= 135 && yaw < 225) { // north
+                craft.setCruiseDirection((byte)0x3);
+            } else if (yaw >= 225 && yaw <= 315){ // east
+                craft.setCruiseDirection((byte)0x4);
+            } else { // default south
+                craft.setCruiseDirection((byte)0x2);
+            }
             craft.setCruising(true);
             return true;
         }
