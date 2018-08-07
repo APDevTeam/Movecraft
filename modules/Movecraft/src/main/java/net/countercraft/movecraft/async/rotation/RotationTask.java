@@ -211,36 +211,19 @@ public class RotationTask extends AsyncTask {
         updates.add(new CraftRotateCommand(getCraft(),originPoint, rotation));
         //rotate entities in the craft
         Location tOP = new Location(getCraft().getW(), originPoint.getX(), originPoint.getY(), originPoint.getZ());
+        tOP.setX(tOP.getBlockX() + 0.5);
+        tOP.setZ(tOP.getBlockZ() + 0.5);
 
         if (craft.getType().getMoveEntities() && !craft.getSinking()) {
             for(Entity entity : craft.getW().getNearbyEntities(craft.getHitBox().getMidPoint().toBukkit(craft.getW()), craft.getHitBox().getXLength()/2.0 + 1, craft.getHitBox().getYLength()/2.0 + 1, craft.getHitBox().getZLength()/2.0 + 1)){
                 if (entity.getType() == EntityType.PLAYER || !craft.getType().getOnlyMovePlayers()) {
                     // Player is onboard this craft
-                    tOP.setX(tOP.getBlockX() + 0.5);
-                    tOP.setZ(tOP.getBlockZ() + 0.5);
-                    Location playerLoc = entity.getLocation();
-                    Location adjustedPLoc = playerLoc.subtract(tOP);
+
+                    Location adjustedPLoc = entity.getLocation().subtract(tOP);
 
                     double[] rotatedCoords = MathUtils.rotateVecNoRound(rotation, adjustedPLoc.getX(), adjustedPLoc.getZ());
-                    Location rotatedPloc = new Location(getCraft().getW(), rotatedCoords[0], playerLoc.getY(), rotatedCoords[1]);
-                    Location newPLoc = rotatedPloc.add(tOP);
-
-                    newPLoc.setPitch(playerLoc.getPitch());
-                    float newYaw = playerLoc.getYaw();
-                    if (rotation == Rotation.CLOCKWISE) {
-                        newYaw = newYaw + 90.0F;
-                        if (newYaw >= 360.0F) {
-                            newYaw = newYaw - 360.0F;
-                        }
-                    }
-                    if (rotation == Rotation.ANTICLOCKWISE) {
-                        newYaw = newYaw - 90;
-                        if (newYaw < 0.0F) {
-                            newYaw = newYaw + 360.0F;
-                        }
-                    }
-                    newPLoc.setYaw(newYaw);
-                    EntityUpdateCommand eUp = new EntityUpdateCommand(newPLoc, entity);
+                    float newYaw = rotation == Rotation.CLOCKWISE ? 90F : -90F;
+                    EntityUpdateCommand eUp = new EntityUpdateCommand(entity, rotatedCoords[0] + tOP.getX() - entity.getLocation().getX(), 0, rotatedCoords[1] + tOP.getZ() - entity.getLocation().getZ(), newYaw, 0);
                     updates.add(eUp);
                 }
             }

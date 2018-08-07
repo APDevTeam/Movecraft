@@ -209,19 +209,10 @@ public class TranslationTask extends AsyncTask {
                         if (entity.getType() == EntityType.PLAYER) {
                             Player player = (Player) entity;
                             craft.getMovedPlayers().put(player, System.currentTimeMillis());
-                            Location tempLoc = entity.getLocation();
-
-                            tempLoc = tempLoc.add(dx, dy, dz);
-                            Location newPLoc = new Location(craft.getW(), tempLoc.getX(), tempLoc.getY(), tempLoc.getZ());
-                            newPLoc.setPitch(entity.getLocation().getPitch());
-                            newPLoc.setYaw(entity.getLocation().getYaw());
-
-                            EntityUpdateCommand eUp = new EntityUpdateCommand( newPLoc, entity);
+                            EntityUpdateCommand eUp = new EntityUpdateCommand(entity, dx, dy, dz, 0, 0);
                             updates.add(eUp);
                         } else if (!craft.getType().getOnlyMovePlayers() || entity.getType() == EntityType.PRIMED_TNT) {
-                            Location tempLoc = entity.getLocation();
-                            tempLoc = tempLoc.add(dx,dy,dz);
-                            EntityUpdateCommand eUp = new EntityUpdateCommand(tempLoc, entity);
+                            EntityUpdateCommand eUp = new EntityUpdateCommand(entity, dx, dy, dz, 0, 0);
                             updates.add(eUp);
                         }
                     }

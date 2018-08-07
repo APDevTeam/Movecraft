@@ -1,44 +1,35 @@
 package net.countercraft.movecraft.compat.v1_10_R1;
 
-import net.countercraft.movecraft.config.Settings;
-import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
-import net.countercraft.movecraft.utils.CollectionUtils;
 import net.countercraft.movecraft.WorldHandler;
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
-import net.minecraft.server.v1_10_R1.Block;
-import net.minecraft.server.v1_10_R1.BlockPosition;
-import net.minecraft.server.v1_10_R1.Blocks;
-import net.minecraft.server.v1_10_R1.Chunk;
-import net.minecraft.server.v1_10_R1.ChunkSection;
-import net.minecraft.server.v1_10_R1.EnumBlockRotation;
-import net.minecraft.server.v1_10_R1.IBlockData;
-import net.minecraft.server.v1_10_R1.NextTickListEntry;
-import net.minecraft.server.v1_10_R1.TileEntity;
-import net.minecraft.server.v1_10_R1.World;
-import net.minecraft.server.v1_10_R1.WorldServer;
+import net.countercraft.movecraft.utils.CollectionUtils;
+import net.countercraft.movecraft.utils.MathUtils;
+import net.minecraft.server.v1_10_R1.*;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_10_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_10_R1.block.CraftBlockState;
+import org.bukkit.craftbukkit.v1_10_R1.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_10_R1.util.CraftMagicNumbers;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @SuppressWarnings("unused")
 public class IWorldHandler extends WorldHandler {
     private static final EnumBlockRotation ROTATION[];
     private final HashMap<World,List<TileEntity>> bMap = new HashMap<>();
+    private MethodHandle internalTeleportMH;
     static {
         ROTATION = new EnumBlockRotation[3];
         ROTATION[Rotation.NONE.ordinal()] = EnumBlockRotation.NONE;
@@ -46,6 +37,34 @@ public class IWorldHandler extends WorldHandler {
         ROTATION[Rotation.ANTICLOCKWISE.ordinal()] = EnumBlockRotation.COUNTERCLOCKWISE_90;
     }
     private final NextTickProvider tickProvider = new NextTickProvider();
+
+    public IWorldHandler() {
+        MethodHandles.Lookup lookup = MethodHandles.lookup();
+        Method teleport = null;
+        try {
+            teleport = PlayerConnection.class.getDeclaredMethod("internalTeleport", double.class, double.class, double.class, float.class, float.class, Set.class);
+            teleport.setAccessible(true);
+            internalTeleportMH = lookup.unreflect(teleport);
+
+        } catch (NoSuchMethodException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void addPlayerLocation(Player player, double x, double y, double z, float yaw, float pitch){
+        EntityPlayer ePlayer = ((CraftPlayer) player).getHandle();
+        if(internalTeleportMH == null) {
+            //something went wrong
+            super.addPlayerLocation(player, x, y, z, yaw, pitch);
+            return;
+        }
+        try {
+            internalTeleportMH.invoke(ePlayer.playerConnection, x, y, z, yaw, pitch, EnumSet.allOf(PacketPlayOutPosition.EnumPlayerTeleportFlags.class));
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+    }
 
     @Override
     public void rotateCraft(@NotNull Craft craft, @NotNull MovecraftLocation originPoint, @NotNull Rotation rotation) {
