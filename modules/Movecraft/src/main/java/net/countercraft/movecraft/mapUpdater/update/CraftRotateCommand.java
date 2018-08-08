@@ -70,9 +70,8 @@ public class CraftRotateCommand extends UpdateCommand {
             //The subtraction of the set of coordinates in the HitBox cube and the HitBox itself
             final HitBox invertedHitBox = CollectionUtils.filter(craft.getHitBox().boundingHitBox(), craft.getHitBox());
             //A set of locations that are confirmed to be "exterior" locations
-            //A set of locations that are confirmed to be "exterior" locations
-            final MutableHitBox confirmed = new HashHitBox();
-            final MutableHitBox failed = new HashHitBox();
+            final MutableHitBox exterior = new HashHitBox();
+            final MutableHitBox interior = new HashHitBox();
 
             //place phased blocks
             final int minX = craft.getHitBox().getMinX();
@@ -95,7 +94,7 @@ public class CraftRotateCommand extends UpdateCommand {
             }
             //Check to see which locations in the from set are actually outside of the craft
             for (MovecraftLocation location :validExterior ) {
-                if (craft.getHitBox().contains(location) || confirmed.contains(location)) {
+                if (craft.getHitBox().contains(location) || exterior.contains(location)) {
                     continue;
                 }
                 //use a modified BFS for multiple origin elements
@@ -113,12 +112,12 @@ public class CraftRotateCommand extends UpdateCommand {
                         queue.add(neighbor);
                     }
                 }
-                confirmed.addAll(visited);
+                exterior.addAll(visited);
             }
-            failed.addAll(CollectionUtils.filter(invertedHitBox, confirmed));
+            interior.addAll(CollectionUtils.filter(invertedHitBox, exterior));
 
             final WorldHandler handler = Movecraft.getInstance().getWorldHandler();
-            for (MovecraftLocation location : CollectionUtils.filter(invertedHitBox, confirmed)) {
+            for (MovecraftLocation location : CollectionUtils.filter(invertedHitBox, exterior)) {
                 Material material = location.toBukkit(craft.getW()).getBlock().getType();
                 if (!passthroughBlocks.contains(material)) {
                     continue;
@@ -140,20 +139,20 @@ public class CraftRotateCommand extends UpdateCommand {
             }
 
             //place confirmed blocks if they have been un-phased
-            for (MovecraftLocation location : confirmed) {
+            for (MovecraftLocation location : exterior) {
                 if (!craft.getPhaseBlocks().containsKey(location)) {
                     continue;
                 }
                 handler.setBlockFast(location.toBukkit(craft.getW()), craft.getPhaseBlocks().get(location), (byte) 0);
                 craft.getPhaseBlocks().remove(location);
             }
-            for(MovecraftLocation location : originalLocations){
-                if(!craft.getHitBox().inBounds(location) && craft.getPhaseBlocks().containsKey(location)){
+            for(MovecraftLocation location : originalLocations.boundingHitBox()){
+                if(!to.inBounds(location) && craft.getPhaseBlocks().containsKey(location)){
                     handler.setBlockFast(location.toBukkit(craft.getW()), craft.getPhaseBlocks().remove(location), (byte) 0);
                 }
             }
 
-            for (MovecraftLocation location : failed) {
+            for (MovecraftLocation location : interior) {
                 final Material material = location.toBukkit(craft.getW()).getBlock().getType();
                 if (passthroughBlocks.contains(material)) {
                     craft.getPhaseBlocks().put(location, material);
