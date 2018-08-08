@@ -153,7 +153,7 @@ public class TranslationTask extends AsyncTask {
 
         if(craft.getSinking()){
             for(MovecraftLocation location : collisionBox){
-                if (craft.getType().getExplodeOnCrash() >= 0.0F) {
+                if (craft.getType().getExplodeOnCrash() > 0.0F) {
                     if (System.currentTimeMillis() - craft.getOrigPilotTime() <= 1000) {
                         continue;
                     }
@@ -162,16 +162,17 @@ public class TranslationTask extends AsyncTask {
                         updates.add(new ExplosionUpdateCommand( loc, craft.getType().getExplodeOnCrash()));
                         collisionExplosion=true;
                     }
-                } else {
-                    // use the explosion code to clean up the craft, but not with enough force to do anything
-                    int explosionKey = 1;
-                    Location loc = location.toBukkit(craft.getW());
-                    if (!loc.getBlock().getType().equals(Material.AIR) && ThreadLocalRandom.current().nextDouble(1) < .05) {
-                        updates.add(new ExplosionUpdateCommand(loc, explosionKey));
-                        collisionExplosion = true;
-                    }
                 }
+                List<MovecraftLocation> toRemove = new ArrayList<>();
+                MovecraftLocation next = location;
+                do {
+                    toRemove.add(next);
+                    next = next.add(new MovecraftLocation(0,1,0));
+                }while (newHitBox.contains(next));
+
+                newHitBox.removeAll(toRemove);
             }
+
         }else{
             for(MovecraftLocation location : collisionBox){
                 if (!(craft.getType().getCollisionExplosion() != 0.0F) || System.currentTimeMillis() - craft.getOrigPilotTime() <= 1000) {
