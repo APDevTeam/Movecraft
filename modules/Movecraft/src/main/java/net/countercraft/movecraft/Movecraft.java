@@ -166,8 +166,6 @@ public class Movecraft extends JavaPlugin {
         this.getLogger().info("Loading support for " + version);
 
 
-        Settings.DelayColorChanges = getConfig().getBoolean("DelayColorChanges", false);
-        Settings.SinkRateTicks = getConfig().getDouble("SinkRateTicks", 20.0);
         Settings.SinkCheckTicks = getConfig().getDouble("SinkCheckTicks", 100.0);
         Settings.TracerRateTicks = getConfig().getDouble("TracerRateTicks", 5.0);
         Settings.ManOverBoardTimeout = getConfig().getInt("ManOverBoardTimeout", 30);
@@ -175,7 +173,6 @@ public class Movecraft extends JavaPlugin {
         Settings.SilhouetteBlockCount = getConfig().getInt("SilhouetteBlockCount", 20);
         Settings.FireballLifespan = getConfig().getInt("FireballLifespan", 6);
         Settings.FireballPenetration = getConfig().getBoolean("FireballPenetration", true);
-        Settings.BlockQueueChunkSize = getConfig().getInt("BlockQueueChunkSize", 1000);
         Settings.ProtectPilotedCrafts = getConfig().getBoolean("ProtectPilotedCrafts", false);
         Settings.AllowCrewSigns = getConfig().getBoolean("AllowCrewSigns", true);
         Settings.SetHomeToCrewSign = getConfig().getBoolean("SetHomeToCrewSign", true);
