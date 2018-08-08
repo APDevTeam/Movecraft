@@ -255,7 +255,9 @@ final public class CraftType {
         } else {
             underwaterDetectionMultiplier = detectionMultiplier;
         }
-        if (data.containsKey("sinkSpeed")) {
+        if(data.containsKey("sinkTickRate")){
+            sinkRateTicks = integerFromObject(data.get("sinkRateTicks"));
+        }else if (data.containsKey("sinkSpeed")) {
             sinkRateTicks = (int) Math.ceil(20 / (doubleFromObject(data.get("sinkSpeed"))));
         } else {
             //sinkRateTicks = (int) Settings.SinkRateTicks;
