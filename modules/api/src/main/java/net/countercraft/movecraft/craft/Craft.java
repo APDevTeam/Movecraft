@@ -24,6 +24,7 @@ import net.countercraft.movecraft.utils.HashHitBox;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -32,6 +33,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class Craft {
@@ -65,6 +67,7 @@ public abstract class Craft {
     private float meanMoveTime;
     private int numMoves;
     @NotNull private final Map<MovecraftLocation,Material> phaseBlocks = new HashMap<>();
+    @NotNull private final HashMap<UUID, Location> crewSigns = new HashMap<>();
 
     public Craft(@NotNull CraftType type, @NotNull World world) {
         this.type = type;
@@ -403,5 +406,10 @@ public abstract class Craft {
     @NotNull
     public Map<MovecraftLocation,Material> getPhaseBlocks(){
         return phaseBlocks;
+    }
+
+    @NotNull
+    public Map<UUID, Location> getCrewSigns(){
+        return crewSigns;
     }
 }

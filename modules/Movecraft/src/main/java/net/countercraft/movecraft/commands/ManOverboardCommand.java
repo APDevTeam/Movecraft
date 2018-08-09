@@ -22,35 +22,38 @@ public class ManOverboardCommand implements CommandExecutor{
             return true;
         }
         Player player = (Player) commandSender;
+        Craft craft = CraftManager.getInstance().getCraftByPlayerName(player.getName());
+        if ( craft == null) { //player is in craft
+            for(Craft playerCraft : CraftManager.getInstance()) {
+                if (playerCraft.getMovedPlayers().containsKey(player)) {
+                    craft = playerCraft;
+                    break;
+                }
+            }
+        }
+        if(craft == null){
+            player.sendMessage("No craft found");
+            return true;
+        }
+        Location telPoint = craft.getCrewSigns().containsKey(player.getUniqueId()) ? craft.getCrewSigns().get(player.getUniqueId()) : getCraftTeleportPoint(craft);
+        if (craft.getW() != player.getWorld()) {
+            player.sendMessage(I18nSupport.getInternationalisedString("Distance to craft is too far"));
+            return true;
+        }
+        if ((System.currentTimeMillis() - craft.getMovedPlayers().get(player)) / 1_000 > Settings.ManOverBoardTimeout) {
+            player.sendMessage(I18nSupport.getInternationalisedString("You waited to long"));
+            return true;
 
-        if (CraftManager.getInstance().getCraftByPlayerName(player.getName()) != null) { //player is in craft
-            Location telPoint = getCraftTeleportPoint(CraftManager.getInstance().getCraftByPlayerName(player.getName()));
-            if (!CraftManager.getInstance().getCraftByPlayerName(player.getName()).getDisabled())
-                player.teleport(telPoint);
+        }
+        if (telPoint.distanceSquared(player.getLocation()) > 1_000_000) {
+            player.sendMessage(I18nSupport.getInternationalisedString("Distance to craft is too far"));
             return true;
         }
 
-        for(Craft playerCraft : CraftManager.getInstance()){
-            if (playerCraft.getMovedPlayers().containsKey(player)) {
-                if (playerCraft.getW() != player.getWorld()) {
-                    player.sendMessage(I18nSupport.getInternationalisedString("Distance to craft is too far"));
-                    return true;
-                }
-                if ((System.currentTimeMillis() - playerCraft.getMovedPlayers().get(player)) / 1_000 < Settings.ManOverBoardTimeout) {
-                    player.sendMessage(I18nSupport.getInternationalisedString("You waited to long"));
-                    return true;
-
-                }
-                Location telPoint = getCraftTeleportPoint(playerCraft);
-                if (telPoint.distanceSquared(player.getLocation()) > 1_000_000) {
-                    player.sendMessage(I18nSupport.getInternationalisedString("Distance to craft is too far"));
-                    return true;
-                }
-                if (!CraftManager.getInstance().getCraftByPlayerName(player.getName()).getDisabled())
-                    player.teleport(telPoint);
-                return true;
-            }
+        if (craft.getDisabled() || craft.getSinking()) {
+            player.sendMessage("Can't teleport to a disabled craft");
         }
+        player.teleport(telPoint);
         return true;
     }
 

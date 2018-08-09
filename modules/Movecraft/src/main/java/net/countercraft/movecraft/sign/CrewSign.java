@@ -35,6 +35,7 @@ public class CrewSign implements Listener{
                 location=location.subtract(0, 1, 0);
                 if(craft.getW().getBlockAt(location).getType().equals(Material.BED_BLOCK)) {
                     crewPlayer.setBedSpawnLocation(location);
+                    craft.getCrewSigns().put(crewPlayer.getUniqueId(), location);
                     if(Settings.SetHomeToCrewSign)
 
                         if (Movecraft.getInstance().getEssentialsPlugin() != null){
