@@ -92,7 +92,10 @@ public class ContactsCommand implements CommandExecutor {
             player.sendMessage(I18nSupport.getInternationalisedString("No contacts within range"));
             return true;
         }
-
+        if(!pageinator.isInBounds(page)){
+            commandSender.sendMessage(" Invalid page \"" + args[1] + "\"");
+            return true;
+        }
         for(String line :pageinator.getPage(page))
             commandSender.sendMessage(line);
         return true;

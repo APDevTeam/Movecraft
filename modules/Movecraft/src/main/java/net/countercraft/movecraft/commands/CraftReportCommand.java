@@ -46,6 +46,10 @@ public class CraftReportCommand implements CommandExecutor{
                     hitBox.getMinY() + "," +
                     hitBox.getMinZ());
         }
+        if(!paginator.isInBounds(page)){
+            commandSender.sendMessage(" Invalid page \"" + args[1] + "\"");
+            return true;
+        }
         for(String line : paginator.getPage(page))
             commandSender.sendMessage(line);
         return true;
