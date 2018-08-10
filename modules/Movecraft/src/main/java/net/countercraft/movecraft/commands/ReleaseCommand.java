@@ -4,6 +4,7 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -13,6 +14,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static net.countercraft.movecraft.utils.ChatUtils.MOVECRAFT_COMMAND_PREFIX;
+
 public class ReleaseCommand implements TabExecutor {
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args) {
@@ -21,26 +24,26 @@ public class ReleaseCommand implements TabExecutor {
         }
 
         if (!commandSender.hasPermission("movecraft.commands") && !commandSender.hasPermission("movecraft.commands.release")) {
-            commandSender.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Insufficient Permissions"));
             return true;
         }
         if (args.length == 0) {
             if(!(commandSender instanceof Player)){
-                commandSender.sendMessage(I18nSupport.getInternationalisedString("Player- Error - You do not have a craft to release!"));
+                commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Player- Error - You do not have a craft to release!"));
                 return true;
             }
             Player player = (Player) commandSender;
             final Craft pCraft = CraftManager.getInstance().getCraftByPlayerName(player.getName());
 
             if (pCraft == null) {
-                player.sendMessage(I18nSupport.getInternationalisedString("Player- Error - You do not have a craft to release!"));
+                player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Player- Error - You do not have a craft to release!"));
                 return true;
             }
             CraftManager.getInstance().removeCraft(pCraft);
             return true;
         }
         if (!commandSender.hasPermission("movecraft.commands.release.others")) {
-            commandSender.sendMessage("You do not have permission to make others release");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "You do not have permission to make others release");
             return true;
         }
         if (args[0].equalsIgnoreCase("-p")) {
@@ -52,7 +55,7 @@ public class ReleaseCommand implements TabExecutor {
 
                 }
             }
-            commandSender.sendMessage("You forcibly released all player controlled crafts");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "You forcibly released all player controlled crafts");
             return true;
         }
 
@@ -61,7 +64,7 @@ public class ReleaseCommand implements TabExecutor {
             for (Craft craft : craftsToRelease) {
                 CraftManager.getInstance().removeCraft(craft);
             }
-            commandSender.sendMessage("You forcibly released all crafts");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "You forcibly released all crafts");
             return true;
         }
 
@@ -72,22 +75,22 @@ public class ReleaseCommand implements TabExecutor {
                     CraftManager.getInstance().removeCraft(craft);
                 }
             }
-            commandSender.sendMessage("You forcibly released all null piloted crafts");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "You forcibly released all null piloted crafts");
             return true;
         }
 
         Player target = Bukkit.getPlayer(args[0]);
         if (target == null) {
-            commandSender.sendMessage("That player could not be found");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "That player could not be found");
             return true;
         }
         final Craft pCraft = CraftManager.getInstance().getCraftByPlayerName(args[0]);
         if (pCraft != null) {
             CraftManager.getInstance().removeCraft(pCraft);
-            commandSender.sendMessage("You have successfully force released a ship");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "You have successfully force released a ship");
             return true;
         }
-        commandSender.sendMessage("That player is not piloting a craft");
+        commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "That player is not piloting a craft");
         return true;
     }
 

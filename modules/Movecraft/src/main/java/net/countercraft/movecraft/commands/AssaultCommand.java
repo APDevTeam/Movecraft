@@ -14,10 +14,7 @@ import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.warfare.assault.Assault;
 import net.countercraft.movecraft.warfare.assault.AssaultUtils;
 import net.countercraft.movecraft.warfare.siege.Siege;
-import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.Sound;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -28,6 +25,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.io.File;
 import java.util.Map;
 
+import static net.countercraft.movecraft.utils.ChatUtils.MOVECRAFT_COMMAND_PREFIX;
 import static net.countercraft.movecraft.warfare.assault.AssaultUtils.getCostToAssault;
 
 public class AssaultCommand implements CommandExecutor{
@@ -37,26 +35,26 @@ public class AssaultCommand implements CommandExecutor{
             return false;
         }
         if (!Settings.AssaultEnable) {
-            commandSender.sendMessage(I18nSupport.getInternationalisedString("Assault is not enabled, you shouldn't even see this"));
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Assault is not enabled, you shouldn't even see this"));
             return true;
         }
         if(!(commandSender instanceof Player)){
-            commandSender.sendMessage("you need to be a player to get assault info");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "you need to be a player to get assault info");
             return true;
         }
         Player player = (Player) commandSender;
 
         if (!player.hasPermission("movecraft.assault")) {
-            player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Insufficient Permissions"));
             return true;
         }
         if (args.length == 0) {
-            player.sendMessage(I18nSupport.getInternationalisedString("No region specified"));
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("No region specified"));
             return true;
         }
         ProtectedRegion aRegion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(player.getWorld()).getRegion(args[0]);
         if (aRegion == null) {
-            player.sendMessage(I18nSupport.getInternationalisedString("Region not found"));
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Region not found"));
             return true;
         }
         LocalPlayer lp = Movecraft.getInstance().getWorldGuardPlugin().wrapPlayer(player);
@@ -69,7 +67,7 @@ public class AssaultCommand implements CommandExecutor{
             }
         }
         if (!foundOwnedRegion) {
-            player.sendMessage(I18nSupport.getInternationalisedString("You are not the owner of any assaultable region and can not assault others"));
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("You are not the owner of any assaultable region and can not assault others"));
             return true;
         }
         boolean canBeAssaulted = true;
@@ -108,12 +106,12 @@ public class AssaultCommand implements CommandExecutor{
             canBeAssaulted = false;
         }
         if (!canBeAssaulted) {
-            player.sendMessage(I18nSupport.getInternationalisedString("You can not assault this region, check AssaultInfo"));
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("You can not assault this region, check AssaultInfo"));
             return true;
         }
         OfflinePlayer offP = Bukkit.getOfflinePlayer(player.getUniqueId());
         if (Movecraft.getInstance().getEconomy().getBalance(offP) < getCostToAssault(aRegion)) {
-            player.sendMessage(I18nSupport.getInternationalisedString("You can not afford to assault this region"));
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("You can not afford to assault this region"));
             return true;
         }
 //			if(aRegion.getType() instanceof ProtectedCuboidRegion) { // Originally I wasn't going to do non-cubes, but we'll try it and see how it goes. In theory it may repair more than it should but... meh...
@@ -169,7 +167,7 @@ public class AssaultCommand implements CommandExecutor{
         try {
             clipboard.saveSchematic(file);
         } catch (Exception e) {
-            player.sendMessage(I18nSupport.getInternationalisedString("Could not save file"));
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Could not save file"));
             e.printStackTrace();
             return true;
         }

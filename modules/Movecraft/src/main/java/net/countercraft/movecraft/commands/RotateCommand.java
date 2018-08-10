@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static net.countercraft.movecraft.utils.ChatUtils.MOVECRAFT_COMMAND_PREFIX;
+
 public class RotateCommand implements TabExecutor{
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args) {
@@ -20,26 +22,26 @@ public class RotateCommand implements TabExecutor{
             return false;
         }
         if(!(commandSender instanceof Player)){
-            commandSender.sendMessage("you need to be a player to pilot a craft");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "you need to be a player to pilot a craft");
             return true;
         }
         Player player = (Player) commandSender;
         if(args.length<1){
-            commandSender.sendMessage("you need to supply a direction");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "you need to supply a direction");
             return true;
         }
         if (args[0].equalsIgnoreCase("left")) {
             if (!player.hasPermission("movecraft.commands") && !player.hasPermission("movecraft.commands.rotateleft")) {
-                player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
+                player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Insufficient Permissions"));
                 return true;
             }
             final Craft craft = CraftManager.getInstance().getCraftByPlayerName(player.getName());
             if(craft==null){
-                player.sendMessage(I18nSupport.getInternationalisedString("You need to be piloting a craft"));
+                player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("You need to be piloting a craft"));
                 return true;
             }
             if (!player.hasPermission("movecraft." + craft.getType().getCraftName() + ".rotate")) {
-                player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
+                player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Insufficient Permissions"));
                 return true;
             }
             CraftManager.getInstance().getCraftByPlayerName(player.getName()).rotate(Rotation.ANTICLOCKWISE, craft.getHitBox().getMidPoint());
@@ -48,22 +50,22 @@ public class RotateCommand implements TabExecutor{
 
         if (args[0].equalsIgnoreCase("right")) {
             if (!player.hasPermission("movecraft.commands") && !player.hasPermission("movecraft.commands.rotateright")) {
-                player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
+                player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Insufficient Permissions"));
                 return true;
             }
             final Craft craft = CraftManager.getInstance().getCraftByPlayerName(player.getName());
             if(craft==null){
-                player.sendMessage(I18nSupport.getInternationalisedString("You need to be piloting a craft"));
+                player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("You need to be piloting a craft"));
                 return true;
             }
             if (!player.hasPermission("movecraft." + craft.getType().getCraftName() + ".rotate")) {
-                player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
+                player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Insufficient Permissions"));
                 return true;
             }
             CraftManager.getInstance().getCraftByPlayerName(player.getName()).rotate(Rotation.CLOCKWISE, craft.getHitBox().getMidPoint());
             return true;
         }
-        player.sendMessage("invalid direction");
+        player.sendMessage(MOVECRAFT_COMMAND_PREFIX + "invalid direction");
         return true;
     }
 

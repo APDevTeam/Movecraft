@@ -19,6 +19,8 @@ import org.bukkit.entity.Player;
 
 import java.util.Map;
 
+import static net.countercraft.movecraft.utils.ChatUtils.MOVECRAFT_COMMAND_PREFIX;
+
 public class AssaultInfoCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args) {
@@ -26,23 +28,23 @@ public class AssaultInfoCommand implements CommandExecutor {
             return false;
         }
         if (!Settings.AssaultEnable) {
-            commandSender.sendMessage(I18nSupport.getInternationalisedString("Assault is not enabled, this shouldn't even show up"));
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Assault is not enabled, this shouldn't even show up"));
             return true;
         }
 
         if(!(commandSender instanceof Player)){
-            commandSender.sendMessage("you need to be a player to get assault info");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "you need to be a player to get assault info");
             return true;
         }
         Player player = (Player) commandSender;
 
         if (!player.hasPermission("movecraft.assaultinfo")) {
-            player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Insufficient Permissions"));
             return true;
         }
         ApplicableRegionSet regions = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(player.getWorld()).getApplicableRegions(player.getLocation());
         if (regions.size() == 0) {
-            player.sendMessage(I18nSupport.getInternationalisedString("No Assault eligible regions found"));
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("No Assault eligible regions found"));
             return true;
         }
         LocalPlayer lp = Movecraft.getInstance().getWorldGuardPlugin().wrapPlayer(player);
@@ -54,7 +56,7 @@ public class AssaultInfoCommand implements CommandExecutor {
             }
         }
         if (!foundOwnedRegion) {
-            player.sendMessage(I18nSupport.getInternationalisedString("You are not the owner of any assaultable region and can not assault others"));
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("You are not the owner of any assaultable region and can not assault others"));
             return true;
         }
 
@@ -73,7 +75,7 @@ public class AssaultInfoCommand implements CommandExecutor {
             assaultRegion = tRegion;
         }
         if (assaultRegion == null) {
-            player.sendMessage(I18nSupport.getInternationalisedString("No Assault eligible regions found"));
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("No Assault eligible regions found"));
             return true;
         }
 

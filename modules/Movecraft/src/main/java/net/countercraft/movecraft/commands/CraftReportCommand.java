@@ -10,6 +10,8 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 
+import static net.countercraft.movecraft.utils.ChatUtils.MOVECRAFT_COMMAND_PREFIX;
+
 public class CraftReportCommand implements CommandExecutor{
 
     @Override
@@ -17,7 +19,7 @@ public class CraftReportCommand implements CommandExecutor{
         if (commandSender.getName().equalsIgnoreCase("craftreport"))
             return false;
         if (!commandSender.hasPermission("movecraft.commands") && !commandSender.hasPermission("movecraft.commands.craftreport")) {
-            commandSender.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Insufficient Permissions"));
             return true;
         }
         int page;
@@ -27,11 +29,11 @@ public class CraftReportCommand implements CommandExecutor{
             else
                 page = Integer.parseInt(args[0]);
         }catch(NumberFormatException e){
-            commandSender.sendMessage(" Invalid page \"" + args[0] + "\"");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + " Invalid page \"" + args[0] + "\"");
             return true;
         }
         if (CraftManager.getInstance().isEmpty()){
-            commandSender.sendMessage("No crafts found");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "No crafts found");
             return true;
         }
         TopicPaginator paginator = new TopicPaginator("Craft Report");
@@ -47,7 +49,7 @@ public class CraftReportCommand implements CommandExecutor{
                     hitBox.getMinZ());
         }
         if(!paginator.isInBounds(page)){
-            commandSender.sendMessage(" Invalid page \"" + args[1] + "\"");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + " Invalid page \"" + args[1] + "\"");
             return true;
         }
         for(String line : paginator.getPage(page))

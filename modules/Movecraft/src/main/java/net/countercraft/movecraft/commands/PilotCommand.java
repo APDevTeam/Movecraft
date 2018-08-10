@@ -16,26 +16,28 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static net.countercraft.movecraft.utils.ChatUtils.MOVECRAFT_COMMAND_PREFIX;
+
 public class PilotCommand implements TabExecutor {
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args) {
         if (!command.getName().equalsIgnoreCase("pilot"))
             return false;
         if(!(commandSender instanceof Player)){
-            commandSender.sendMessage("you need to be a player to pilot a craft");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "you need to be a player to pilot a craft");
             return true;
         }
         Player player = (Player) commandSender;
         if (!player.hasPermission("movecraft.commands") || !player.hasPermission("movecraft.commands.pilot")) {
-            player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Insufficient Permissions"));
             return true;
         }
         if (args.length < 1) {
-            player.sendMessage("You need to supply a craft type");
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + "You need to supply a craft type");
             return true;
         }
         if (!player.hasPermission("movecraft." + args[0] + ".pilot")) {
-            player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Insufficient Permissions"));
             return true;
         }
         CraftType craftType = CraftManager.getInstance().getCraftTypeFromString(args[0]);
@@ -48,7 +50,7 @@ public class PilotCommand implements TabExecutor {
             MovecraftLocation startPoint = MathUtils.bukkit2MovecraftLoc(player.getLocation());
             newCraft.detect(player, player, startPoint);
         } else {
-            player.sendMessage(I18nSupport.getInternationalisedString("Unknown craft type"));
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Unknown craft type"));
         }
         return true;
     }

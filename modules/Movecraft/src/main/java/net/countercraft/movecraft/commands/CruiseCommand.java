@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static net.countercraft.movecraft.utils.ChatUtils.MOVECRAFT_COMMAND_PREFIX;
+
 public class CruiseCommand implements TabExecutor {
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args) {
@@ -19,7 +21,7 @@ public class CruiseCommand implements TabExecutor {
             return false;
         }
         if(!(commandSender instanceof Player)){
-            commandSender.sendMessage("you need to be a player to cruise");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "you need to be a player to cruise");
             return true;
         }
         Player player = (Player) commandSender;
@@ -27,7 +29,7 @@ public class CruiseCommand implements TabExecutor {
         if(args.length<1){
             final Craft craft = CraftManager.getInstance().getCraftByPlayerName(player.getName());
             if (craft == null) {
-                player.sendMessage(I18nSupport.getInternationalisedString("You must be piloting a craft"));
+                player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("You must be piloting a craft"));
                 return true;
             }
             if (!player.hasPermission("movecraft.commands") || !player.hasPermission("movecraft.commands.cruise")) {
@@ -59,29 +61,29 @@ public class CruiseCommand implements TabExecutor {
         if (args[0].equalsIgnoreCase("off")) { //This goes before because players can sometimes freeze while cruising
             final Craft craft = CraftManager.getInstance().getCraftByPlayerName(player.getName());
             if (craft == null) {
-                player.sendMessage(I18nSupport.getInternationalisedString("You must be piloting a craft"));
+                player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("You must be piloting a craft"));
                 return true;
             }
             craft.setCruising(false);
             return true;
         }
         if (!player.hasPermission("movecraft.commands") || !player.hasPermission("movecraft.commands.cruise")) {
-            player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Insufficient Permissions"));
             return true;
         }
 
         final Craft craft = CraftManager.getInstance().getCraftByPlayerName(player.getName());
         if (craft == null) {
-            player.sendMessage(I18nSupport.getInternationalisedString("You must be piloting a craft"));
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("You must be piloting a craft"));
             return true;
         }
 
         if (!player.hasPermission("movecraft." + craft.getType().getCraftName() + ".move")) {
-            player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Insufficient Permissions"));
             return true;
         }
         if (!craft.getType().getCanCruise()) {
-            player.sendMessage("this craft cannot cruise");
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + "this craft cannot cruise");
             return true;
         }
 

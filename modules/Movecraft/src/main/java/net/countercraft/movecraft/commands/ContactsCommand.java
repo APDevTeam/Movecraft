@@ -11,6 +11,8 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import static net.countercraft.movecraft.utils.ChatUtils.MOVECRAFT_COMMAND_PREFIX;
+
 public class ContactsCommand implements CommandExecutor {
 
     @Override
@@ -19,13 +21,13 @@ public class ContactsCommand implements CommandExecutor {
             return false;
         }
         if(!(commandSender instanceof Player)){
-            commandSender.sendMessage("you need to be a player to get contacts");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "you need to be a player to get contacts");
             return true;
         }
         Player player = (Player) commandSender;
 
         if (CraftManager.getInstance().getCraftByPlayer(player) == null) {
-            player.sendMessage(I18nSupport.getInternationalisedString("You must be piloting a craft"));
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("You must be piloting a craft"));
             return true;
         }
 
@@ -36,7 +38,7 @@ public class ContactsCommand implements CommandExecutor {
             else
                 page = Integer.parseInt(args[0]);
         }catch(NumberFormatException e){
-            commandSender.sendMessage(" Invalid page \"" + args[0] + "\"");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + " Invalid page \"" + args[0] + "\"");
             return true;
         }
 
@@ -89,11 +91,11 @@ public class ContactsCommand implements CommandExecutor {
             }
         }
         if (pageinator.isEmpty()) {
-            player.sendMessage(I18nSupport.getInternationalisedString("No contacts within range"));
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("No contacts within range"));
             return true;
         }
         if(!pageinator.isInBounds(page)){
-            commandSender.sendMessage(" Invalid page \"" + args[1] + "\"");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + " Invalid page \"" + args[1] + "\"");
             return true;
         }
         for(String line :pageinator.getPage(page))

@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static net.countercraft.movecraft.utils.ChatUtils.MOVECRAFT_COMMAND_PREFIX;
+
 public class MovecraftCommand implements TabExecutor {
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args) {
@@ -16,21 +18,21 @@ public class MovecraftCommand implements TabExecutor {
             return false;
         }
         if(!commandSender.hasPermission("movecraft.commands.movecraft")){
-            commandSender.sendMessage("Error, invalid permissions");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "Error, invalid permissions");
             return true;
         }
 
         if(args.length == 0){
-            commandSender.sendMessage("Movecraft 7.0 pre release 5 by cccm5");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "Movecraft 7.0 pre release 5 by cccm5");
             return true;
         }
 
         if(args.length==1 && args[0].equalsIgnoreCase("reloadtypes") && commandSender.hasPermission("movecraft.commands.movecraft.reloadtypes")){
             CraftManager.getInstance().initCraftTypes();
-            commandSender.sendMessage("Reloaded types");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "Reloaded types");
             return true;
         }
-        commandSender.sendMessage("Error, invalid syntax");
+        commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "Error, invalid syntax");
         return true;
 
     }
