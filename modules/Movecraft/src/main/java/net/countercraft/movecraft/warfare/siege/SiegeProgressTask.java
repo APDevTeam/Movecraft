@@ -79,7 +79,7 @@ public class SiegeProgressTask extends SiegeTask {
                                 .replaceAll("%l", siegeLeader.toString()));
                     }
             }
-            siege.setStage(new AtomicReference<>(SiegeStage.INACTIVE));
+            siege.setStage(SiegeStage.INACTIVE);
         }
     }
 }

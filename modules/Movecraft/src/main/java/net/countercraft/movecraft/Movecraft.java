@@ -70,11 +70,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -206,43 +202,6 @@ public class Movecraft extends JavaPlugin {
         if (!Settings.CompatibilityMode) {
             for (int typ : Settings.DisableShadowBlocks) {
                 worldHandler.disableShadow(Material.getMaterial(typ));
-            }
-        }
-
-        if(Settings.SiegeEnable){
-            //load the sieges.yml file
-            File siegesFile = new File(Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/sieges.yml");
-            InputStream input;
-            try {
-                input = new FileInputStream(siegesFile);
-            } catch (FileNotFoundException e) {
-                input = null;
-            }
-            if (input != null) {
-                Map data = new Yaml().loadAs(input, Map.class);
-                Map<String, Map<String, ?>> siegesMap = (Map<String, Map<String, ?>>) data.get("sieges");
-                List<Siege> sieges = siegeManager.getSieges();
-                for (Map.Entry<String, Map<String, ?>> entry : siegesMap.entrySet()) {
-                    sieges.add(new Siege(
-                            entry.getKey(),
-                            (String) entry.getValue().get("RegionToControl"),
-                            (String) entry.getValue().get("SiegeRegion"),
-                            (Integer) entry.getValue().get("ScheduleStart"),
-                            (Integer) entry.getValue().get("ScheduleEnd"),
-                            (Integer) entry.getValue().get("DelayBeforeStart"),
-                            (Integer) entry.getValue().get("SiegeDuration"),
-                            (Integer) entry.getValue().get("DayOfTheWeek"),
-                            (Integer) entry.getValue().get("DailyIncome"),
-                            (Integer) entry.getValue().get("CostToSiege"),
-                            (Boolean) entry.getValue().get("DoubleCostPerOwnedSiegeRegion"),
-                            (ArrayList<String>) entry.getValue().get("CraftsToWin"),
-                            (ArrayList<String>) entry.getValue().get("SiegeCommandsOnStart"),
-                            (ArrayList<String>) entry.getValue().get("SiegeCommandsOnWin"),
-                            (ArrayList<String>) entry.getValue().get("SiegeCommandsOnLose")));
-                }
-                logger.log(Level.INFO, "Siege configuration loaded.");
-            } else {
-                Settings.SiegeEnable = false;
             }
         }
         //load up WorldGuard if it's present
@@ -381,6 +340,41 @@ public class Movecraft extends JavaPlugin {
             }
             if(Settings.SiegeEnable) {
                 siegeManager = new SiegeManager(this);
+                logger.info("Enabling siege");
+                //load the sieges.yml file
+                File siegesFile = new File(Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/sieges.yml");
+                InputStream input;
+                try {
+                    input = new FileInputStream(siegesFile);
+                } catch (FileNotFoundException e) {
+                    input = null;
+                }
+                if (input != null) {
+                    Map data = new Yaml().loadAs(input, Map.class);
+                    Map<String, Map<String, ?>> siegesMap = (Map<String, Map<String, ?>>) data.get("sieges");
+                    List<Siege> sieges = siegeManager.getSieges();
+                    for (Map.Entry<String, Map<String, ?>> entry : siegesMap.entrySet()) {
+                        Map<String,Object> siegeMap = (Map<String, Object>) entry.getValue();
+                        sieges.add(new Siege(
+                                entry.getKey(),
+                                (String) siegeMap.get("RegionToControl"),
+                                (String) siegeMap.get("SiegeRegion"),
+                                (Integer) siegeMap.get("ScheduleStart"),
+                                (Integer) siegeMap.get("ScheduleEnd"),
+                                (Integer) siegeMap.getOrDefault("DelayBeforeStart", 0),
+                                (Integer) siegeMap.get("SiegeDuration"),
+                                (Integer) siegeMap.getOrDefault("DayOfTheWeek", 1),
+                                (Integer) siegeMap.getOrDefault("DailyIncome", 0),
+                                (Integer) siegeMap.getOrDefault("CostToSiege", 0),
+                                (Boolean) siegeMap.getOrDefault("DoubleCostPerOwnedSiegeRegion", true),
+                                (List<String>) siegeMap.getOrDefault("CraftsToWin", Collections.emptyList()),
+                                (List<String>) siegeMap.getOrDefault("SiegeCommandsOnStart", Collections.emptyList()),
+                                (List<String>) siegeMap.getOrDefault("SiegeCommandsOnWin", Collections.emptyList()),
+                                (List<String>) siegeMap.getOrDefault("SiegeCommandsOnLose", Collections.emptyList())));
+                    }
+                    logger.log(Level.INFO, "Siege configuration loaded.");
+
+                }
                 siegeManager.runTaskTimerAsynchronously(this, 0, 20);
             }
             CraftManager.initialize();

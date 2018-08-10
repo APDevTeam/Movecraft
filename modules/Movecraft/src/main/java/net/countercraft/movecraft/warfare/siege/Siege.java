@@ -1,20 +1,23 @@
 package net.countercraft.movecraft.warfare.siege;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class Siege {
+    @NotNull
     private final List<String> craftsToWin, commandsOnStart, commandsOnLose, commandsOnWin;
     private final int scheduleStart, scheduleEnd, delayBeforeStart, duration, dayOfWeek, dailyIncome, cost;
-    private final String attackRegion, captureRegion, name;
-    private AtomicReference<SiegeStage> stage;
+    @NotNull private final String attackRegion, captureRegion, name;
+    @NotNull private final AtomicReference<SiegeStage> stage;
     private int startTime, lastUpdate;
     private long lastPayout;
     private final boolean doubleCostPerOwnedSiegeRegion;
     private UUID playerUUID;
 
-    public Siege(String name, String captureRegion, String attackRegion, int scheduleStart, int scheduleEnd, int delayBeforeStart, int duration, int dayOfWeek, int dailyIncome, int cost, boolean doubleCostPerOwnedSiegeRegion, List<String> craftsToWin, List<String> commandsOnStart, List<String> commandsOnWin, List<String> commandsOnLose) {
+    public Siege(@NotNull String name, @NotNull String captureRegion, @NotNull String attackRegion, int scheduleStart, int scheduleEnd, int delayBeforeStart, int duration, int dayOfWeek, int dailyIncome, int cost, boolean doubleCostPerOwnedSiegeRegion, @NotNull List<String> craftsToWin, @NotNull List<String> commandsOnStart, @NotNull List<String> commandsOnWin, @NotNull List<String> commandsOnLose) {
         this.commandsOnWin = commandsOnWin;
         this.commandsOnLose = commandsOnLose;
         this.craftsToWin = craftsToWin;
@@ -32,16 +35,20 @@ public class Siege {
         this.commandsOnStart = commandsOnStart;
         startTime = 0;
         lastUpdate = 0;
+        stage = new AtomicReference<>();
+        stage.set(SiegeStage.INACTIVE);
     }
 
+    @NotNull
     public AtomicReference<SiegeStage> getStage() {
         return stage;
     }
 
-    public void setStage(AtomicReference<SiegeStage> stage) {
-        this.stage = stage;
+    public void setStage(SiegeStage stage) {
+        this.stage.set(stage);
     }
 
+    @NotNull
     public List<String> getCraftsToWin() {
         return craftsToWin;
     }
@@ -54,6 +61,7 @@ public class Siege {
         this.playerUUID = playerUUID;
     }
 
+    @NotNull
     public String getAttackRegion() {
         return attackRegion;
     }
@@ -74,18 +82,22 @@ public class Siege {
         return name;
     }
 
+    @NotNull
     public List<String> getCommandsOnStart() {
         return commandsOnStart;
     }
 
+    @NotNull
     public List<String> getCommandsOnWin() {
         return commandsOnWin;
     }
 
+    @NotNull
     public List<String> getCommandsOnLose() {
         return commandsOnLose;
     }
 
+    @NotNull
     public String getCaptureRegion() {
         return captureRegion;
     }

@@ -3,12 +3,11 @@ package net.countercraft.movecraft.warfare.siege;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class SiegeManager extends BukkitRunnable {
-    private final List<Siege> sieges = Collections.synchronizedList(new ArrayList<Siege>());
+    private final List<Siege> sieges = new CopyOnWriteArrayList<>();
     private final Plugin movecraft;
 
 
