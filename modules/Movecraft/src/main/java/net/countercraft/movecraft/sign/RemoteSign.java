@@ -14,6 +14,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
+import java.util.LinkedList;
 
 public final class RemoteSign implements Listener{
     private static final String HEADER = "Remote Sign";
@@ -59,7 +60,7 @@ public final class RemoteSign implements Listener{
             event.getPlayer().sendMessage("ERROR: Remote Sign can't remote another Remote Sign!");
             return;
         }
-        LinkedList<MovecraftLocation> foundLoc = new LinkedList<MovecraftLocation>;
+        LinkedList<MovecraftLocation> foundLocations = new LinkedList<MovecraftLocation>;
         for (MovecraftLocation tloc : foundCraft.getHitBox()) {
             Block tb = event.getClickedBlock().getWorld().getBlockAt(tloc.getX(), tloc.getY(), tloc.getZ());
             if (!tb.getType().equals(Material.SIGN_POST) && !tb.getType().equals(Material.WALL_SIGN)) {
@@ -69,27 +70,27 @@ public final class RemoteSign implements Listener{
             if (ChatColor.stripColor(ts.getLine(0)).equalsIgnoreCase(HEADER))
                 continue;
             if (ChatColor.stripColor(ts.getLine(0)).equalsIgnoreCase(targetText)){
-                foundLoc.add(tloc);
+                foundLocations.add(tloc);
                 continue;
             }
             if (ChatColor.stripColor(ts.getLine(1)).equalsIgnoreCase(targetText)){
-                foundLoc.add(tloc);
+                foundLocations.add(tloc);
                 continue;
             }
             if (ChatColor.stripColor(ts.getLine(2)).equalsIgnoreCase(targetText)) {
-                foundLoc.add(tloc);
+                foundLocations.add(tloc);
                 continue;
             }
             if (ChatColor.stripColor(ts.getLine(3)).equalsIgnoreCase(targetText))
-                foundLoc.add(tloc);
+                foundLocations.add(tloc);
         }
-        if (foundLoc.size() == 0) {
+        if (foundLocations.isEmpty()) {
             event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("ERROR: Could not find target sign!"));
             return;
         }
 
-        for (int i = 0; i < foundLoc.size() - 1; i++) {
-            BlockSnapshot newBlock = event.getClickedBlock().getWorld().getBlockAt(foundLoc.get(i).getX(), foundLoc.get(i).getY(), foundLoc.get(i).getZ());
+        for (MovecraftLocation foundLoc : foundLocations) {
+            Block newBlock = event.getClickedBlock().getWorld().getBlockAt(foundLoc.getX(), foundLoc.getY(), foundLoc.getZ());
 
             PlayerInteractEvent newEvent = new PlayerInteractEvent(event.getPlayer(), event.getAction(), event.getItem(), newBlock, event.getBlockFace());
 
