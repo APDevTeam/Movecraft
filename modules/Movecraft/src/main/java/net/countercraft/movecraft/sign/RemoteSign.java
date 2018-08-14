@@ -14,6 +14,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
+import java.util.LinkedList;
 
 public final class RemoteSign implements Listener{
     private static final String HEADER = "Remote Sign";
@@ -59,38 +60,44 @@ public final class RemoteSign implements Listener{
             event.getPlayer().sendMessage("ERROR: Remote Sign can't remote another Remote Sign!");
             return;
         }
-        MovecraftLocation foundLoc = null;
+        LinkedList<MovecraftLocation> foundLocations = new LinkedList<MovecraftLocation>;
         for (MovecraftLocation tloc : foundCraft.getHitBox()) {
             Block tb = event.getClickedBlock().getWorld().getBlockAt(tloc.getX(), tloc.getY(), tloc.getZ());
             if (!tb.getType().equals(Material.SIGN_POST) && !tb.getType().equals(Material.WALL_SIGN)) {
                 continue;
             }
             Sign ts = (Sign) tb.getState();
-            if (ChatColor.stripColor(ts.getLine(0)).equalsIgnoreCase(targetText))
-                foundLoc = tloc;
-            if (ChatColor.stripColor(ts.getLine(1)).equalsIgnoreCase(targetText)) {
-                if (ChatColor.stripColor(ts.getLine(0)).equalsIgnoreCase(HEADER))
-                    continue;
-                foundLoc = tloc;
+            if (ChatColor.stripColor(ts.getLine(0)).equalsIgnoreCase(HEADER))
+                continue;
+            if (ChatColor.stripColor(ts.getLine(0)).equalsIgnoreCase(targetText)){
+                foundLocations.add(tloc);
+                continue;
             }
-            if (ChatColor.stripColor(ts.getLine(2)) != null)
-                if (ChatColor.stripColor(ts.getLine(2)).equalsIgnoreCase(targetText))
-                    foundLoc = tloc;
-            if (ChatColor.stripColor(ts.getLine(3)) != null)
-                if (ChatColor.stripColor(ts.getLine(3)).equalsIgnoreCase(targetText))
-                    foundLoc = tloc;
+            if (ChatColor.stripColor(ts.getLine(1)).equalsIgnoreCase(targetText)){
+                foundLocations.add(tloc);
+                continue;
+            }
+            if (ChatColor.stripColor(ts.getLine(2)).equalsIgnoreCase(targetText)) {
+                foundLocations.add(tloc);
+                continue;
+            }
+            if (ChatColor.stripColor(ts.getLine(3)).equalsIgnoreCase(targetText))
+                foundLocations.add(tloc);
         }
-        if (foundLoc == null) {
+        if (foundLocations.isEmpty()) {
             event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("ERROR: Could not find target sign!"));
             return;
         }
 
-        Block newBlock = event.getClickedBlock().getWorld().getBlockAt(foundLoc.getX(), foundLoc.getY(),
-                foundLoc.getZ());
-        PlayerInteractEvent newEvent = new PlayerInteractEvent(event.getPlayer(), event.getAction(),
-                event.getItem(), newBlock, event.getBlockFace());
-        //TODO: DON'T DO THIS
-        Bukkit.getServer().getPluginManager().callEvent(newEvent);
+        for (MovecraftLocation foundLoc : foundLocations) {
+            Block newBlock = event.getClickedBlock().getWorld().getBlockAt(foundLoc.getX(), foundLoc.getY(), foundLoc.getZ());
+
+            PlayerInteractEvent newEvent = new PlayerInteractEvent(event.getPlayer(), event.getAction(), event.getItem(), newBlock, event.getBlockFace());
+
+            //TODO: DON'T DO THIS
+            Bukkit.getServer().getPluginManager().callEvent(newEvent);
+        }
+        
         event.setCancelled(true);
     }
 }
