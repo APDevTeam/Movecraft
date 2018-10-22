@@ -60,7 +60,7 @@ public final class RemoteSign implements Listener{
             event.getPlayer().sendMessage("ERROR: Remote Sign can't remote another Remote Sign!");
             return;
         }
-        LinkedList<MovecraftLocation> foundLocations = new LinkedList<MovecraftLocation>;
+        LinkedList<MovecraftLocation> foundLocations = new LinkedList<MovecraftLocation>();
         for (MovecraftLocation tloc : foundCraft.getHitBox()) {
             Block tb = event.getClickedBlock().getWorld().getBlockAt(tloc.getX(), tloc.getY(), tloc.getZ());
             if (!tb.getType().equals(Material.SIGN_POST) && !tb.getType().equals(Material.WALL_SIGN)) {

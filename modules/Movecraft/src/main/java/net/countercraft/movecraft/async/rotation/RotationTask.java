@@ -88,7 +88,7 @@ public class RotationTask extends AsyncTask {
     }
 
     @Override
-    protected void excecute() {
+    protected void execute() {
 
         if(oldHitBox.isEmpty())
             return;

@@ -48,7 +48,7 @@ public class TranslationTask extends AsyncTask {
     }
 
     @Override
-    protected void excecute() {
+    protected void execute() {
 
         //Check if theres anything to move
         if(oldHitBox.isEmpty()){
@@ -211,22 +211,17 @@ public class TranslationTask extends AsyncTask {
 
         //prevents torpedo and rocket pilots
         if (craft.getType().getMoveEntities() && !(craft.getSinking() && craft.getType().getOnlyMovePlayers())) {
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-                    for(Entity entity : craft.getW().getNearbyEntities(craft.getHitBox().getMidPoint().toBukkit(craft.getW()), craft.getHitBox().getXLength()/2.0 + 1, craft.getHitBox().getYLength()/2.0 + 1, craft.getHitBox().getZLength()/2.0 + 1)){
-                        if (entity.getType() == EntityType.PLAYER && !craft.getSinking()) {
-                            Player player = (Player) entity;
-                            craft.getMovedPlayers().put(player, System.currentTimeMillis());
-                            EntityUpdateCommand eUp = new EntityUpdateCommand(entity, dx, dy, dz, 0, 0);
-                            updates.add(eUp);
-                        } else if (!craft.getType().getOnlyMovePlayers() || entity.getType() == EntityType.PRIMED_TNT) {
-                            EntityUpdateCommand eUp = new EntityUpdateCommand(entity, dx, dy, dz, 0, 0);
-                            updates.add(eUp);
-                        }
-                    }
+            for (Entity entity : craft.getW().getNearbyEntities(craft.getHitBox().getMidPoint().toBukkit(craft.getW()), craft.getHitBox().getXLength() / 2.0 + 1, craft.getHitBox().getYLength() / 2.0 + 1, craft.getHitBox().getZLength() / 2.0 + 1)) {
+                if (entity.getType() == EntityType.PLAYER && !craft.getSinking()) {
+                    Player player = (Player) entity;
+                    craft.getMovedPlayers().put(player, System.currentTimeMillis());
+                    EntityUpdateCommand eUp = new EntityUpdateCommand(entity, dx, dy, dz, 0, 0);
+                    updates.add(eUp);
+                } else if (!craft.getType().getOnlyMovePlayers() || entity.getType() == EntityType.PRIMED_TNT) {
+                    EntityUpdateCommand eUp = new EntityUpdateCommand(entity, dx, dy, dz, 0, 0);
+                    updates.add(eUp);
                 }
-            }.runTask(Movecraft.getInstance());
+            }
         } else {
             //add releaseTask without playermove to manager
             if (!craft.getType().getCruiseOnPilot() && !craft.getSinking())  // not necessary to release cruiseonpilot crafts, because they will already be released
