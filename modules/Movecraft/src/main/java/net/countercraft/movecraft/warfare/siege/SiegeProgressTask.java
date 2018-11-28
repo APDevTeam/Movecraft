@@ -24,7 +24,19 @@ public class SiegeProgressTask extends SiegeTask {
         }
         Player siegeLeader = Movecraft.getInstance().getServer().getPlayer(siege.getPlayerUUID());
         Craft siegeCraft = CraftManager.getInstance().getCraftByPlayer(siegeLeader);
-        boolean siegeLeaderShipInRegion = false, siegeLeaderPilotingShip = siege.getCraftsToWin().contains(siegeCraft.getType().getCraftName());
+        boolean siegeLeaderShipInRegion = false, siegeLeaderPilotingShip;
+        //Allows the siege leader to not pilot a craft without having an NPE generated
+        try {
+            if (siege.getCraftsToWin().contains(siegeCraft.getType().getCraftName())){
+                siegeLeaderPilotingShip = true;
+            } else {
+                siegeLeaderPilotingShip = false;
+            }
+        } catch (NullPointerException npe){
+            siegeLeaderPilotingShip = false;
+        }
+
+
         int midX = 0;
         int midY = 0;
         int midZ = 0;
@@ -36,7 +48,7 @@ public class SiegeProgressTask extends SiegeTask {
             siegeLeaderShipInRegion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(siegeLeader.getWorld()).getRegion(siege.getAttackRegion()).contains(midX, midY, midZ);
 
         }
-        int timeLeft = (int) (siege.getDuration() - (System.currentTimeMillis() - siege.getStartTime()) / 1000);
+        int timeLeft = (int) (siege.getDuration() - ((System.currentTimeMillis() / 1000) - siege.getStartTime()));
         if (timeLeft > 10) {
             if (siegeLeaderShipInRegion) {
                 Bukkit.getServer().broadcastMessage(String.format(
