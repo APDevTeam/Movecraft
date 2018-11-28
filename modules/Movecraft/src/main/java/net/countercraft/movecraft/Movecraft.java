@@ -120,6 +120,7 @@ public class Movecraft extends JavaPlugin {
             Settings.IsPaper=false;
         }
 
+
         Settings.LOCALE = getConfig().getString("Locale");
         Settings.RestrictSiBsToRegions = getConfig().getBoolean("RestrictSiBsToRegions", false);
         Settings.Debug = getConfig().getBoolean("Debug", false);
@@ -303,7 +304,8 @@ public class Movecraft extends JavaPlugin {
         }
 
         // and now Vault
-        if (getServer().getPluginManager().getPlugin("Vault") != null) {
+        Plugin vaultPlugin = getServer().getPluginManager().getPlugin("Vault");
+        if (vaultPlugin != null) {
             RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
             if (rsp != null) {
                 economy = rsp.getProvider();
@@ -447,6 +449,7 @@ public class Movecraft extends JavaPlugin {
         instance = this;
         logger = getLogger();
     }
+
 
 
     public WorldGuardPlugin getWorldGuardPlugin() {
