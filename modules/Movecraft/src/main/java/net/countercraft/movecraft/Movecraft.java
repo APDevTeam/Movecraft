@@ -304,8 +304,7 @@ public class Movecraft extends JavaPlugin {
         }
 
         // and now Vault
-        Plugin vaultPlugin = getServer().getPluginManager().getPlugin("Vault");
-        if (vaultPlugin != null) {
+        if (getServer().getPluginManager().getPlugin("Vault") != null) {
             RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
             if (rsp != null) {
                 economy = rsp.getProvider();
