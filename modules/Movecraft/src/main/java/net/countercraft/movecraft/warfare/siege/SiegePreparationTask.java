@@ -4,8 +4,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 
-import java.awt.*;
-
 public class SiegePreparationTask extends SiegeTask {
 
 
@@ -28,7 +26,7 @@ public class SiegePreparationTask extends SiegeTask {
     }
 
     private void broadcastSiegePreparation(Player player, String siegeName, int timeLeft){
-        String playerName = new String();
+        String playerName = "";
         if (player != null){
             playerName = player.getDisplayName();
         }
