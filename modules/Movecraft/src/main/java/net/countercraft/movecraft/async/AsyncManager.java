@@ -970,7 +970,15 @@ public class AsyncManager extends BukkitRunnable {
                                             || System.currentTimeMillis()
                                             - recentContactTracking.get(ccraft).get(tcraft) > 60000) {
                                         String notification = "New contact: ";
+
+                                        if (tcraft.getUniqueName() != null && tcraft.getUniqueName().length() >= 1){
+                                            notification += tcraft.getUniqueName();
+                                            notification += " (";
+                                        }
                                         notification += tcraft.getType().getCraftName();
+                                        if (tcraft.getUniqueName() != null && tcraft.getUniqueName().length() >= 1){
+                                            notification += ")";
+                                        }
                                         notification += " commanded by ";
                                         if (tcraft.getNotificationPlayer() != null) {
                                             notification += tcraft.getNotificationPlayer().getDisplayName();
