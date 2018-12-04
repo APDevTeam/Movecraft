@@ -69,7 +69,9 @@ public class ContactsCommand implements CommandExecutor {
             if (distsquared < detectionRangeSquared && tcraft.getNotificationPlayer() != ccraft.getNotificationPlayer()) {
                 String notification = "Contact: ";
                 notification += tcraft.getSinking() ? ChatColor.RED : tcraft.getDisabled() ? ChatColor.BLUE : "";
+                notification += tcraft.getUniqueName() != null && tcraft.getUniqueName().length() >= 1 ? tcraft.getUniqueName() + " (" : "";
                 notification += tcraft.getType().getCraftName();
+                notification += tcraft.getUniqueName() != null && tcraft.getUniqueName().length() >= 1 ? ")" : "";
                 notification += ChatColor.RESET;
                 notification += " commanded by ";
                 notification += tcraft.getNotificationPlayer() != null ? tcraft.getNotificationPlayer().getDisplayName() : "null";

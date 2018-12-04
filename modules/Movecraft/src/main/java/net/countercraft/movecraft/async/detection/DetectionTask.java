@@ -133,6 +133,9 @@ public class DetectionTask extends AsyncTask {
                                     "Detection - Forbidden sign string found"));
                         }
                     }
+                    if (s.getLine(0).equalsIgnoreCase("Name:") && !craft.getType().getCanBeNamed()){
+                        fail("This craft type cannot be named");
+                    }
                 }
             }
             if (isForbiddenBlock(testID, testData)) {

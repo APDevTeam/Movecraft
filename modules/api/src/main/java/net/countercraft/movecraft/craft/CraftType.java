@@ -32,6 +32,7 @@ final public class CraftType {
     private final boolean blockedByWater;
     private final boolean requireWaterContact;
     private final boolean tryNudge;
+    private final boolean canBeNamed;
     private final boolean canCruise;
     private final boolean canTeleport;
     private final boolean canStaticMove;
@@ -149,6 +150,11 @@ final public class CraftType {
             canTeleport = (Boolean) data.get("canTeleport");
         } else {
             canTeleport = false;
+        }
+        if (data.containsKey("canBeNamed")){
+            canBeNamed = (Boolean) data.get("canBeNamed");
+        } else {
+            canBeNamed = true;
         }
         if (data.containsKey("cruiseOnPilot")) {
             cruiseOnPilot = (Boolean) data.get("cruiseOnPilot");
@@ -581,6 +587,10 @@ final public class CraftType {
 
     public int getVertCruiseSkipBlocks() {
         return vertCruiseSkipBlocks;
+    }
+
+    public boolean getCanBeNamed(){
+        return canBeNamed;
     }
 
     public int maxStaticMove() {
