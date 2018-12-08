@@ -350,7 +350,6 @@ public class Movecraft extends JavaPlugin {
                 assaultManager = new AssaultManager(this);
                 assaultManager.runTaskTimerAsynchronously(this, 0, 20);
             }
-            logger.info("SiegeEnable: " + String.valueOf(Settings.SiegeEnable));
 
             if(Settings.SiegeEnable) {
 
