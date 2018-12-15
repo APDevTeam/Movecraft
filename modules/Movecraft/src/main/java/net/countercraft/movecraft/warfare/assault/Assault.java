@@ -1,7 +1,12 @@
 package net.countercraft.movecraft.warfare.assault;
 
 import com.sk89q.worldedit.Vector;
+import org.bukkit.Bukkit;
 import org.bukkit.World;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarFlag;
+import org.bukkit.boss.BarStyle;
+import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 
 import java.util.UUID;
@@ -19,6 +24,8 @@ public class Assault {
     private final World world;
     private final Vector minPos, maxPos;
     private AtomicBoolean running = new AtomicBoolean(true);
+    private BossBar progressBar;
+    private BossBar damageBar;
 
     public Assault(String regionName, Player starter, World world, long startTime, long maxDamages, Vector minPos, Vector maxPos) {
         this.regionName = regionName;
@@ -28,6 +35,8 @@ public class Assault {
         this.maxDamages = maxDamages;
         this.minPos = minPos;
         this.maxPos = maxPos;
+        progressBar = Bukkit.createBossBar(this.getRegionName() + " passed time", BarColor.RED, BarStyle.SOLID, BarFlag.DARKEN_SKY);
+        damageBar = Bukkit.createBossBar(this.getRegionName() + " damages", BarColor.WHITE, BarStyle.SOLID, BarFlag.DARKEN_SKY);
     }
 
     public Vector getMaxPos() {
@@ -69,5 +78,13 @@ public class Assault {
 
     public AtomicBoolean getRunning() {
         return running;
+    }
+
+    public BossBar getDamageBar() {
+        return damageBar;
+    }
+
+    public BossBar getProgressBar() {
+        return progressBar;
     }
 }

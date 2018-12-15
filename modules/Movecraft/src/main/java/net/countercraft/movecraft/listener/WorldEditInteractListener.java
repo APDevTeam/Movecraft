@@ -250,6 +250,7 @@ public class WorldEditInteractListener implements Listener {
                 baseBlock = new BaseBlock(bukkitBlock.getTypeId(), bukkitBlock.getData());
             }
             try{
+                //TODO: Bug fix
                 cuboidClipboard.setBlock(offsetLocation, baseBlock);
             }catch (Exception e){
                 Movecraft.getInstance().getLogger().warning("Factory save failed, this is typically caused by FAWE");

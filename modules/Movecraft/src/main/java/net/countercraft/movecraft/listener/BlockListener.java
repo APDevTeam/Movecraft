@@ -406,6 +406,7 @@ public class BlockListener implements Listener {
                             if (Math.round(p.getLocation().getBlockX() / 1000.0) == Math.round(floc.getBlockX() / 1000.0) &&
                                     Math.round(p.getLocation().getBlockZ() / 1000.0) == Math.round(floc.getBlockZ() / 1000.0)) {
                                 p.sendMessage("Damages: " + fdamages);
+
                             }
                         }
                     }

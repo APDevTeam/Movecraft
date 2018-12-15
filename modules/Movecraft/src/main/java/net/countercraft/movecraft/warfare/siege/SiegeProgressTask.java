@@ -8,9 +8,8 @@ import net.countercraft.movecraft.utils.HashHitBox;
 import net.countercraft.movecraft.craft.CraftManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
+import org.bukkit.boss.BarColor;
 import org.bukkit.entity.Player;
-
-import java.util.concurrent.atomic.AtomicReference;
 
 public class SiegeProgressTask extends SiegeTask {
 
@@ -20,9 +19,8 @@ public class SiegeProgressTask extends SiegeTask {
 
     //every 180 seconds = 3600 ticks
     public void run() {
-        if ((siege.getDuration() - ((System.currentTimeMillis() - siege.getStartTime()) / 1000)) % 60 != 0) {
-            return;
-        }
+
+
         Player siegeLeader = Movecraft.getInstance().getServer().getPlayer(siege.getPlayerUUID());
         Craft siegeCraft = CraftManager.getInstance().getCraftByPlayer(siegeLeader);
         boolean siegeLeaderShipInRegion = false, siegeLeaderPilotingShip;
@@ -45,8 +43,23 @@ public class SiegeProgressTask extends SiegeTask {
             siegeLeaderShipInRegion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(siegeLeader.getWorld()).getRegion(siege.getAttackRegion()).contains(midX, midY, midZ);
 
         }
-        int timeLeft = (siege.getDuration() - (((int)System.currentTimeMillis() - siege.getStartTime())/1000));
 
+
+
+        double progress = (double) ((((int)System.currentTimeMillis() - siege.getStartTime())/1000) - siege.getDelayBeforeStart()) / (double) (siege.getDuration() - siege.getDelayBeforeStart());
+        if (progress <= 1.0 && progress >= 0.0) { //Make sure progress is between 0.0 and 1.0 when it is registered to the progressbar
+            siege.getProgressBar().setProgress(progress);
+        }
+        if (siegeLeaderShipInRegion){
+            siege.getProgressBar().setColor(BarColor.GREEN);
+        } else {
+            siege.getProgressBar().setColor(BarColor.RED);
+        }
+        if ((siege.getDuration() - ((System.currentTimeMillis() - siege.getStartTime()) / 1000)) % 60 != 0) {
+            return;
+        }
+        int timeLeft = (siege.getDuration() - (((int)System.currentTimeMillis() - siege.getStartTime())/1000));
+        Bukkit.getPlayer(siege.getPlayerUUID()).sendMessage(String.valueOf(timeLeft));
         if (timeLeft > 10) {
             if (siegeLeaderShipInRegion) {
                 Bukkit.getServer().broadcastMessage(String.format(
@@ -89,6 +102,7 @@ public class SiegeProgressTask extends SiegeTask {
                                 .replaceAll("%l", siegeLeader.toString()));
                     }
             }
+            siege.getProgressBar().setVisible(false);
             siege.setStage(SiegeStage.INACTIVE);
         }
         for (Player p : Bukkit.getOnlinePlayers()){

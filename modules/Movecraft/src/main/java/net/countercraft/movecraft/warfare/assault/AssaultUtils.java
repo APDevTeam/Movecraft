@@ -5,6 +5,7 @@ import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.boss.BossBar;
 
 import java.util.HashSet;
 import java.util.UUID;
@@ -23,6 +24,7 @@ public class AssaultUtils {
         }
         return numOnline >= Settings.AssaultRequiredDefendersOnline;
     }
+
 
     public static double getCostToAssault(ProtectedRegion tRegion) {
         HashSet<UUID> players = new HashSet<>();
@@ -53,6 +55,6 @@ public class AssaultUtils {
                 else
                     total += Movecraft.getInstance().getEconomy().getBalance(offP);
         }
-        return total * Settings.AssaultDamagesCapPercent / 100.0;
+        return total * (Settings.AssaultDamagesCapPercent / 100.0);
     }
 }

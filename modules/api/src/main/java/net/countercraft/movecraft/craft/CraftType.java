@@ -18,7 +18,10 @@
 package net.countercraft.movecraft.craft;
 
 import net.countercraft.movecraft.MovecraftLocation;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.Yaml;
 
@@ -82,7 +85,9 @@ final public class CraftType {
     private final float collisionExplosion;
     @NotNull private final String craftName;
     @NotNull private final int[] allowedBlocks;
+    //@NotNull private final Map<Material,List<Integer>> allowedBlocks;
     @NotNull private final int[] forbiddenBlocks;
+    //@NotNull private final Map<Material,List<Integer>> forbiddenBlocks;
     @NotNull private final String[] forbiddenSignStrings;
     @NotNull private final Map<List<Integer>, List<Double>> flyBlocks;
     @NotNull private final Map<List<Integer>, List<Double>> moveBlocks;
@@ -461,6 +466,34 @@ final public class CraftType {
         for (int i = 0; i < output.length; i++)
             output[i] = returnList.get(i);
         return output;
+    }
+    private Map<Material, List<Integer>> materialMapFromObject(Object obj){
+        HashMap<Material, List<Integer>> returnMap = new HashMap<>();
+        HashMap<Object, Object> objMap = (HashMap<Object, Object>) obj;
+
+        for (Object o : objMap.keySet()){
+            Block block;
+            Material type;
+            if (o instanceof Integer){
+                Integer id = (Integer) o;
+                type = Material.getMaterial(id);
+            } else if (o instanceof String){
+                String str = (String) o;
+                type = Material.getMaterial(str);
+            } else {
+                type = (Material) o;
+            }
+            ArrayList<Object> objList = (ArrayList<Object>) objMap.get(o);
+            ArrayList<Integer> dataList = new ArrayList<>();
+            for (Object dataObj : objList){
+                if (dataObj instanceof Integer){
+                    Integer data = (Integer) dataObj;
+                    dataList.add(data);
+                }
+            }
+            returnMap.put(type,dataList);
+        }
+        return returnMap;
     }
 
     private String[] stringListFromObject(Object obj) {

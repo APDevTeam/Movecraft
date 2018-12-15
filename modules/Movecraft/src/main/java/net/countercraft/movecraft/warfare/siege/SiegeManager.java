@@ -24,6 +24,7 @@ public class SiegeManager extends BukkitRunnable {
             } else if (siege.getStage().get() == SiegeStage.PREPERATION) {
                 new SiegePreparationTask(siege).runTask(movecraft);
             }
+
         }
     }
 

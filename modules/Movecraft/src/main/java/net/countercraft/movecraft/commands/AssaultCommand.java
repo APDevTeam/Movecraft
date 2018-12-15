@@ -12,10 +12,15 @@ import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.warfare.assault.Assault;
+import net.countercraft.movecraft.warfare.assault.AssaultBarTask;
 import net.countercraft.movecraft.warfare.assault.AssaultUtils;
 import net.countercraft.movecraft.warfare.siege.Siege;
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarFlag;
+import org.bukkit.boss.BarStyle;
+import org.bukkit.boss.BossBar;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -181,6 +186,7 @@ public class AssaultCommand implements CommandExecutor{
         for (Player p : Bukkit.getOnlinePlayers()) {
             p.playSound(p.getLocation(), Sound.ENTITY_WITHER_DEATH, 1, (float) 0.25);
         }
+        new AssaultBarTask(Movecraft.getInstance() ,args[0] ,System.currentTimeMillis()).runTaskTimer(Movecraft.getInstance(), 0, 20);
         final String taskAssaultName = args[0];
         final Player taskPlayer = player;
         final World taskWorld = player.getWorld();
@@ -191,6 +197,7 @@ public class AssaultCommand implements CommandExecutor{
         new BukkitRunnable() {
             @Override
             public void run() {
+                //progressBar.setVisible(false);
                 Bukkit.getServer().broadcastMessage(String.format("The Assault of %s has commenced! The assault leader is %s. Destroy the enemy region!"
                         , taskAssaultName, taskPlayer.getDisplayName()));
                 for (Player p : Bukkit.getOnlinePlayers()) {
@@ -201,6 +208,7 @@ public class AssaultCommand implements CommandExecutor{
                 tRegion.setFlag(DefaultFlag.TNT, StateFlag.State.ALLOW);
             }
         }.runTaskLater(Movecraft.getInstance(), (20 * Settings.AssaultDelay));
+
         return true;
 
 

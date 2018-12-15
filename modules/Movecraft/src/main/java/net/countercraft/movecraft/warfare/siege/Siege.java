@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.warfare.siege;
 
+import org.bukkit.boss.BossBar;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -16,6 +17,7 @@ public class Siege {
     private long lastPayout;
     private final boolean doubleCostPerOwnedSiegeRegion;
     private UUID playerUUID;
+    private BossBar progressBar;
 
     public Siege(@NotNull String name, @NotNull String captureRegion, @NotNull String attackRegion, int scheduleStart, int scheduleEnd, int delayBeforeStart, int duration, int dayOfWeek, int dailyIncome, int cost, boolean doubleCostPerOwnedSiegeRegion, @NotNull List<String> craftsToWin, @NotNull List<String> commandsOnStart, @NotNull List<String> commandsOnWin, @NotNull List<String> commandsOnLose) {
         this.commandsOnWin = commandsOnWin;
@@ -37,6 +39,7 @@ public class Siege {
         lastUpdate = 0;
         stage = new AtomicReference<>();
         stage.set(SiegeStage.INACTIVE);
+        progressBar = null;
     }
 
     @NotNull
@@ -144,5 +147,13 @@ public class Siege {
 
     public boolean isDoubleCostPerOwnedSiegeRegion() {
         return doubleCostPerOwnedSiegeRegion;
+    }
+
+    public BossBar getProgressBar(){
+        return progressBar;
+    }
+
+    public void setProgressBar(BossBar progressBar){
+        this.progressBar = progressBar;
     }
 }
