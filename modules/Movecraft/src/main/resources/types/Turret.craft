@@ -1,100 +1,196 @@
 name: Turret
 maxSize: 1000
 minSize: 1
-allowedBlocks: 
-    - 8
-    - 9
-    - 10
-    - 11
-    - 17
-    - 20
-    - 23
-    - 25
-    - 26
-    - 29
-    - 33
-    - "35:8"
-    - 41
-    - 43
-    - 44
-    - 47
-    - 50
-    - 52
-    - 53
-    - 54
-    - 55
-    - 57
-    - 58
-    - 61
-    - 62
-    - 63
-    - 64
-    - 65
-    - 68
-    - 69
-    - 70
-    - 71
-    - 72
-    - 77
-    - 85
-    - 89
-    - 92
-    - 93
-    - 94
-    - 95
-    - 96
-    - 101
-    - 102
-    - 107
-    - 113
-    - 114
-    - 117
-    - 118
-    - 123
-    - 124
-    - 125
-    - 126
-    - 130
-    - 131
-    - 133
-    - 134
-    - 135
-    - 117
-    - 118
-    - 123
-    - 124
-    - 125
-    - 126
-    - 130
-    - 131
-    - 133
-    - 134
-    - 135
-    - 136
-    - 138
-    - 140
-    - 143
-    - 144
-    - 145
-    - 146
-    - 147
-    - 148
-    - 149
-    - 150
-    - 151
-    - 152
-    - 154
-    - 157
-    - 158
-    - "159:7"
-    - "159:8"
-    - "159:15"
-    - 165
-    - 171
-    - 206
+allowedBlocks:
+    #beds
+    - WHITE_BED
+    - ORANGE_BED
+    - MAGENTA_BED
+    - LIGHT_BLUE_BED
+    - YELLOW_BED
+    - LIME_BED
+    - PINK_BED
+    - GRAY_BED
+    - LIGHT_BED
+    - CYAN_BED
+    - PURPLE_BED
+    - BLUE_BED
+    - BROWN_BED
+    - GREEN_BED
+    - RED_BED
+    - BLACK_BED
+    #buttons
+    - ACACIA_BUTTON
+    - BIRCH_BUTTON
+    - DARK_OAK_BUTTON
+    - JUNGLE_BUTTON
+    - OAK_BUTTON
+    - SPRUCE_BUTTON
+    - STONE_BUTTON
+    #doors
+    - ACACIA_DOOR
+    - BIRCH_DOOR
+    - DARK_OAK_DOOR
+    - IRON_DOOR
+    - JUNGLE_DOOR
+    - OAK_DOOR
+    - SPRUCE_DOOR
+    #fences
+    - ACACIA_FENCE
+    - BIRCH_FENCE
+    - DARK_OAK_FENCE
+    - JUNGLE_FENCE
+    - OAK_FENCE
+    - SPRUCE_FENCE
+    #fence gates
+    - ACACIA_FENCE_GATE
+    - BIRCH_FENCE_GATE
+    - DARK_OAK_FENCE_GATE
+    - JUNGLE_FENCE_GATE
+    - OAK_FENCE_GATE
+    - SPRUCE_FENCE_GATE
+    #glass
+    - GLASS
+    - WHITE_STAINED_GLASS
+    - ORANGE_STAINED_GLASS
+    - MAGENTA_STAINED_GLASS
+    - LIGHT_BLUE_STAINED_GLASS
+    - YELLOW_STAINED_GLASS
+    - LIME_STAINED_GLASS
+    - PINK_STAINED_GLASS
+    - GRAY_STAINED_GLASS
+    - LIGHT_GRAY_STAINED_GLASS
+    - CYAN_STAINED_GLASS
+    - PURPLE_STAINED_GLASS
+    - BLUE_STAINED_GLASS
+    - BROWN_STAINED_GLASS
+    - GREEN_STAINED_GLASS
+    - RED_STAINED_GLASS
+    - BLACK_STAINED_GLASS
+    #glass pane
+    - GLASS_PANE
+    - WHITE_STAINED_GLASS_PANE
+    - ORANGE_STAINED_GLASS_PANE
+    - MAGENTA_STAINED_GLASS_PANE
+    - LIGHT_BLUE_STAINED_GLASS_PANE
+    - YELLOW_STAINED_GLASS_PANE
+    - LIME_STAINED_GLASS_PANE
+    - PINK_STAINED_GLASS_PANE
+    - GRAY_STAINED_GLASS_PANE
+    - LIGHT_GRAY_STAINED_GLASS_PANE
+    - CYAN_STAINED_GLASS_PANE
+    - PURPLE_STAINED_GLASS_PANE
+    - BLUE_STAINED_GLASS_PANE
+    - BROWN_STAINED_GLASS_PANE
+    - GREEN_STAINED_GLASS_PANE
+    - RED_STAINED_GLASS_PANE
+    - BLACK_STAINED_GLASS_PANE
+    #interior
+    - BOOKSHELF
+    - BREWING_STAND
+    - CAULDRON
+    - IRON_BARS
+    - SIGN
+    - TORCH
+    - WALL_SIGN
+    - WALL_TORCH
+    #liquids
+    - LAVA
+    - WATER
+    #logs
+    - BIRCH_LOG
+    - JUNGLE_LOG
+    - OAK_LOG
+    - SPRUCE_LOG
+    - STRIPPED_BIRCH_LOG
+    - STRIPPED_JUNGLE_LOG
+    - STRIPPED_OAK_LOG
+    - STRIPPED_SPRUCE_LOG
+    #planks
+    - ACACIA_PLANKS
+    - BIRCH_PLANKS
+    - DARK_OAK_PLANKS
+    - JUNGLE_PLANKS
+    - OAK_PLANKS
+    - SPRUCE_PLANKS
+    #pressure plates
+    - ACACIA_PRESSURE_PLATE
+    - BIRCH_PRESSURE_PLATE
+    - DARK_OAK_PRESSURE_PLATE
+    - HEAVY_WEIGHTED_PRESSURE_PLATE
+    - JUNGLE_PRESSURE_PLATE
+    - LIGHT_WEIGHTED_PRESSURE_PLATE
+    - OAK_PRESSURE_PLATE
+    - SPRUCE_PRESSURE_PLATE
+    #redstone
+    - COMPARATOR
+    - NOTE_BLOCK
+    - PISTON
+    - PISTON_HEAD
+    - REDSTONE_BLOCK
+    - REDSTONE_WIRE
+    - REPEATER
+    - STICKY_PISTON
+    - TRIPWIRE_HOOK
+    #slabs
+    - ACACIA_SLAB
+    - BIRCH_SLAB
+    - BRICK_SLAB
+    - COBBLESTONE_SLAB
+    - DARK_OAK_SLAB
+    - DARK_PRISMARINE
+    - JUNGLE_SLAB
+    - NETHER_BRICK_SLAB
+    - OAK_SLAB
+    - PETRIFIED_OAK_SLAB
+    - PRISMARINE_SLAB
+    - PRISMARINE_BRICK_SLAB
+    - RED_SANDSTONE_SLAB
+    - QUARTZ_SLAB
+    - SPRUCE_SLAB
+    - STONE_SLAB
+    #stairs
+    - BIRCH_STAIRS
+    - JUNGLE_STAIRS
+    - OAK_STAIRS
+    - SMOOTH_STAIRS
+    - SPRUCE_STAIRS
+    #storage
+    - CHEST
+    - DISPENSER
+    - DROPPER
+    - HOPPER
+    - TRAPPED_CHEST
+    #terracotta
+    - GRAY_TERRACOTTA
+    - LIGHT_GRAY_TERRACOTTA
+    - BLACK_TERRACOTTA
+    #trapdoors
+    - ACACIA_TRAPDOOR
+    - BIRCH_TRAPDOOR
+    - DARK_OAK_TRAPDOOR
+    - JUNGLE_TRAPDOOR
+    - OAK_TRAPDOOR
+    - SPRUCE_TRAPDOOR
+    #weapon blocks
+    - COAL_BLOCK
+    #wood
+    - ACACIA_WOOD
+    - BIRCH_WOOD
+    - DARK_OAK_WOOD
+    - OAK_WOOD
+    - SPRUCE_WOOD
+    - STRIPPED_ACACIA_WOOD
+    - STRIPPED_BIRCH_WOOD
+    - STRIPPED_DARK_OAK_WOOD
+    - STRIPPED_OAK_WOOD
+    - STRIPPED_SPRUCE_WOOD
+    #wool
+    - LIGHT_GRAY_WOOL
 
 forbiddenBlocks:
-    - 7
+    - PISTON_HEAD
+
 
 canFly: true
 canCruise: false
@@ -109,6 +205,6 @@ speed: 1.0
 tryNudge: false
 sinkPercent: 99.0
 flyblocks:
-    35:
+    LIGHT_GRAY_WOOL:
         - 0.0
         - 100.0

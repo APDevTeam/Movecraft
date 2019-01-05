@@ -106,9 +106,9 @@ public class RotationTask extends AsyncTask {
                 Block fuelHolder = null;
                 for (MovecraftLocation bTest : oldHitBox) {
                     Block b = getCraft().getW().getBlockAt(bTest.getX(), bTest.getY(), bTest.getZ());
-                    if (b.getTypeId() == 61) {
+                    if (b.getType() == Material.FURNACE) {
                         InventoryHolder inventoryHolder = (InventoryHolder) b.getState();
-                        if (inventoryHolder.getInventory().contains(263) || inventoryHolder.getInventory().contains(173)) {
+                        if ((!Settings.IsLegacy ? (inventoryHolder.getInventory().contains(Material.COAL) || inventoryHolder.getInventory().contains(Material.CHARCOAL)) : (inventoryHolder.getInventory().contains(Material.COAL)) || inventoryHolder.getInventory().contains(Material.COAL_BLOCK))) {
                             fuelHolder = b;
                         }
                     }
@@ -118,8 +118,8 @@ public class RotationTask extends AsyncTask {
                     failMessage = I18nSupport.getInternationalisedString("Translation - Failed Craft out of fuel");
                 } else {
                     InventoryHolder inventoryHolder = (InventoryHolder) fuelHolder.getState();
-                    if (inventoryHolder.getInventory().contains(263)) {
-                        ItemStack iStack = inventoryHolder.getInventory().getItem(inventoryHolder.getInventory().first(263));
+                    if (inventoryHolder.getInventory().contains(Material.COAL)) {
+                        ItemStack iStack = inventoryHolder.getInventory().getItem(inventoryHolder.getInventory().first(Material.COAL));
                         int amount = iStack.getAmount();
                         if (amount == 1) {
                             inventoryHolder.getInventory().remove(iStack);
@@ -127,8 +127,8 @@ public class RotationTask extends AsyncTask {
                             iStack.setAmount(amount - 1);
                         }
                         getCraft().setBurningFuel(getCraft().getBurningFuel() + 7.0);
-                    } else {
-                        ItemStack iStack = inventoryHolder.getInventory().getItem(inventoryHolder.getInventory().first(173));
+                    } else if (inventoryHolder.getInventory().contains(Material.COAL_BLOCK)){
+                        ItemStack iStack = inventoryHolder.getInventory().getItem(inventoryHolder.getInventory().first(Material.COAL_BLOCK));
                         int amount = iStack.getAmount();
                         if (amount == 1) {
                             inventoryHolder.getInventory().remove(iStack);
@@ -137,6 +137,15 @@ public class RotationTask extends AsyncTask {
                         }
                         getCraft().setBurningFuel(getCraft().getBurningFuel() + 79.0);
 
+                    } else {
+                        ItemStack iStack = inventoryHolder.getInventory().getItem(inventoryHolder.getInventory().first(Material.CHARCOAL));
+                        int amount = iStack.getAmount();
+                        if (amount == 1) {
+                            inventoryHolder.getInventory().remove(iStack);
+                        } else {
+                            iStack.setAmount(amount - 1);
+                        }
+                        getCraft().setBurningFuel(getCraft().getBurningFuel() + 7.0);
                     }
                 }
             } else {
@@ -178,10 +187,10 @@ public class RotationTask extends AsyncTask {
             }
 
             //TODO: ADD TOWNY
-
+            //TODO: ADD FACTIONS
             //isTownyBlock(plugLoc,craftPilot);
             Material newMaterial = newLocation.toBukkit(w).getBlock().getType();
-            if ((newMaterial == Material.AIR) || (newMaterial == Material.PISTON_EXTENSION) || craft.getType().getPassthroughBlocks().contains(newMaterial)) {
+            if ((newMaterial == Material.AIR) || (newMaterial == LegacyUtils.PISTON_EXTENSION) || craft.getType().getPassthroughBlocks().contains(newMaterial)) {
                 //getCraft().getPhaseBlocks().put(newLocation, newMaterial);
                 continue;
             }

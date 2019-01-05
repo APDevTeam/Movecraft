@@ -17,10 +17,8 @@
 
 package net.countercraft.movecraft.craft;
 
-import net.countercraft.movecraft.MovecraftLocation;
-import org.bukkit.Bukkit;
+import net.countercraft.movecraft.config.Settings;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.Yaml;
@@ -72,7 +70,7 @@ final public class CraftType {
     private final int smokeOnSink;
     private final int tickCooldown;
     private final int hoverLimit;
-    private final int dynamicFlyBlock;
+    private final Material dynamicFlyBlock;
     private final double fuelBurnRate;
     private final double sinkPercent;
     private final double overallSinkPercent;
@@ -84,13 +82,15 @@ final public class CraftType {
     private final float explodeOnCrash;
     private final float collisionExplosion;
     @NotNull private final String craftName;
-    @NotNull private final int[] allowedBlocks;
+    //@NotNull private final int[] allowedBlocks;
+    @NotNull private final Map<Material, List<Integer>> allowedBlocks;
     //@NotNull private final Map<Material,List<Integer>> allowedBlocks;
-    @NotNull private final int[] forbiddenBlocks;
+    //@NotNull private final int[] forbiddenBlocks;
+    @NotNull private final Map<Material, List<Integer>> forbiddenBlocks;
     //@NotNull private final Map<Material,List<Integer>> forbiddenBlocks;
     @NotNull private final String[] forbiddenSignStrings;
-    @NotNull private final Map<List<Integer>, List<Double>> flyBlocks;
-    @NotNull private final Map<List<Integer>, List<Double>> moveBlocks;
+    @NotNull private final Map<Map<Material, List<Integer>>, List<Double>> flyBlocks;
+    @NotNull private final Map<Map<Material, List<Integer>>, List<Double>> moveBlocks;
     @NotNull private final List<Material> harvestBlocks;
     @NotNull private final List<Material> harvesterBladeBlocks;
     @NotNull private final Set<Material> passthroughBlocks;
@@ -110,10 +110,10 @@ final public class CraftType {
         maxSize = integerFromObject(data.get("maxSize"));
         minSize = integerFromObject(data.get("minSize"));
 //		allowedBlocks = ((ArrayList<String> ) data.get( "allowedBlocks" )).toArray( new Integer[1] );
-        allowedBlocks = blockIDListFromObject(data.get("allowedBlocks"));
-        Arrays.sort(allowedBlocks);
+        allowedBlocks = materialMapFromObject(data.get("allowedBlocks"));
+        //Collections.sort(allowedBlocks);
 
-        forbiddenBlocks = blockIDListFromObject(data.get("forbiddenBlocks"));
+        forbiddenBlocks = materialMapFromObject(data.get("forbiddenBlocks"));
         forbiddenSignStrings = stringListFromObject(data.get("forbiddenSignStrings"));
         if (data.containsKey("canFly")) {
             blockedByWater = (Boolean) data.get("canFly");
@@ -139,9 +139,9 @@ final public class CraftType {
             cruiseTickCooldown = tickCooldown;
         }
 
-        flyBlocks = blockIDMapListFromObject(data.get("flyblocks"));
+        flyBlocks = materialMapListFromObject(data.get("flyblocks"));
         if (data.containsKey("moveblocks")) {
-            moveBlocks = blockIDMapListFromObject(data.get("moveblocks"));
+            moveBlocks = materialMapListFromObject(data.get("moveblocks"));
         } else {
             moveBlocks = new HashMap<>();
         }
@@ -421,9 +421,9 @@ final public class CraftType {
             dynamicFlyBlockSpeedFactor = 0d;
         }
         if (data.containsKey("dynamicFlyBlock")) {
-            dynamicFlyBlock = integerFromObject(data.get("dynamicFlyBlock"));
+            dynamicFlyBlock = materialFromObject(data.get("dynamicFlyBlock"));
         } else {
-            dynamicFlyBlock = 0;
+            dynamicFlyBlock = null;
         }
         chestPenalty = data.containsKey("chestPenalty") ? doubleFromObject(data.get("chestPenalty")) : 0d;
     }
@@ -440,6 +440,14 @@ final public class CraftType {
             return ((Integer) obj).doubleValue();
         }
         return (Double) obj;
+    }
+    private Material materialFromObject(Object obj){
+        if (obj instanceof Integer){
+            return Material.getMaterial((Integer) obj);
+        } else {
+            return (Material) obj;
+        }
+
     }
 
     private int[] blockIDListFromObject(Object obj) {
@@ -469,29 +477,67 @@ final public class CraftType {
     }
     private Map<Material, List<Integer>> materialMapFromObject(Object obj){
         HashMap<Material, List<Integer>> returnMap = new HashMap<>();
-        HashMap<Object, Object> objMap = (HashMap<Object, Object>) obj;
+        if (obj instanceof ArrayList<?>){
+            for (Object o : (ArrayList<Object>) obj){
+                if (o instanceof Integer){
+                    Integer id = (Integer) o;
+                    Material type = Material.getMaterial(id);
+                    returnMap.put(type, new ArrayList<>());
+                } else if (o instanceof String){
+                    String string = (String) o;
+                    if (string.contains(":")){
+                        String[] parts = string.split(":");
+                        Material type;
+                        Integer data = Integer.valueOf(parts[1]);
+                        if (parts[0].contains("0")||parts[0].contains("1")||parts[0].contains("2")||parts[0].contains("3")||parts[0].contains("4")||parts[0].contains("5")||parts[0].contains("6")||parts[0].contains("7")||parts[0].contains("8")||parts[0].contains("9")){
+                            Integer typeID = Integer.valueOf(parts[0]);
+                            type = Material.getMaterial(typeID);
 
-        for (Object o : objMap.keySet()){
-            Block block;
-            Material type;
-            if (o instanceof Integer){
-                Integer id = (Integer) o;
-                type = Material.getMaterial(id);
-            } else if (o instanceof String){
-                String str = (String) o;
-                type = Material.getMaterial(str);
-            } else {
-                type = (Material) o;
-            }
-            ArrayList<Object> objList = (ArrayList<Object>) objMap.get(o);
-            ArrayList<Integer> dataList = new ArrayList<>();
-            for (Object dataObj : objList){
-                if (dataObj instanceof Integer){
-                    Integer data = (Integer) dataObj;
-                    dataList.add(data);
+                        } else {
+                            type = Material.getMaterial(parts[0]);
+                        }
+                        if (returnMap.containsKey(type)){
+                            returnMap.get(type).add(data);
+                        } else {
+                            returnMap.put(type, new ArrayList<>(data));
+                        }
+                    }
+                } else {
+                    Material type = (Material) o;
+                    returnMap.put(type, new ArrayList<>());
                 }
             }
-            returnMap.put(type,dataList);
+        } else {
+            HashMap<Object, Object> objMap = (HashMap<Object, Object>) obj;
+
+            for (Object o : objMap.keySet()) {
+                Block block;
+                Material type;
+                if (o instanceof Integer) {
+                    Integer id = (Integer) o;
+                    type = Material.getMaterial(id);
+                } else if (o instanceof String) {
+                    String str = (String) o;
+                    type = Material.getMaterial(str);
+                } else {
+                    type = (Material) o;
+                }
+                ArrayList<Object> objList = (ArrayList<Object>) objMap.get(o);
+                ArrayList<Integer> dataList = new ArrayList<>();
+                if (objList != null) {
+                    for (Object dataObj : objList) {
+                        if (dataObj instanceof String) {
+                            String s = (String) dataObj;
+                            Integer data = Integer.valueOf(s);
+                            dataList.add(data);
+                        } else {
+                            Integer data = (Integer) dataObj;
+                            dataList.add(data);
+                        }
+                    }
+                }
+                returnMap.put(type, dataList);
+            }
         }
         return returnMap;
     }
@@ -510,7 +556,143 @@ final public class CraftType {
         }
         return returnList.toArray(new String[1]);
     }
+    private Map<Map<Material, List<Integer>>, List<Double>> materialMapListFromObject(Object obj){
+        HashMap<Map<Material, List<Integer>>, List<Double>> returnMap = new HashMap<>();
+        HashMap<Object, Object> objMap = (HashMap<Object, Object>) obj;
+        for (Object i : objMap.keySet()) {
+            HashMap<Material, List<Integer>> materialMap = new HashMap<>();
+            if (i instanceof ArrayList<?>) {
+                for (Object o : (ArrayList<Object>) i) {
+                    if (o instanceof Integer) {
+                        Integer typeID = (Integer) o;
+                        Material type = Material.getMaterial(typeID);
+                        materialMap.put(type, new ArrayList<>());
+                    } else if (o instanceof String) {
+                        String string = (String) o;
+                        if (string.contains(":")) {
+                            String[] parts = string.split(":");
+                            Material type;
+                            Integer data = Integer.valueOf(parts[1]);
+                            if (parts[0].contains("0") || parts[0].contains("1") || parts[0].contains("2") || parts[0].contains("3") || parts[0].contains("4") || parts[0].contains("5") || parts[0].contains("6") || parts[0].contains("7") || parts[0].contains("8") || parts[0].contains("9")) {
+                                Integer typeID = Integer.valueOf(parts[0]);
+                                type = Material.getMaterial(typeID);
 
+                            } else {
+                                type = Material.getMaterial(parts[0]);
+                            }
+                            if (materialMap.containsKey(type)) {
+                                List<Integer> dataList = materialMap.get(type);
+                                dataList.add(data);
+                                materialMap.put(type, dataList);
+                            } else {
+                                List<Integer> dataList = new ArrayList<>();
+                                dataList.add(data);
+                                materialMap.put(type, dataList);
+                            }
+
+                        } else {
+                            Material type;
+                            if (string.contains("0") || string.contains("1") || string.contains("2") || string.contains("3") || string.contains("4") || string.contains("5") || string.contains("6") || string.contains("7") || string.contains("8") || string.contains("9")) {
+                                Integer typeID = Integer.valueOf(string);
+                                type = Material.getMaterial(typeID);
+
+                            } else {
+                                type = Material.getMaterial(string);
+                            }
+                            materialMap.put(type, new ArrayList<>());
+                        }
+                    } else {
+                        Material type = (Material) o;
+                        materialMap.put(type, new ArrayList<>());
+                    }
+                }
+            } else if (i instanceof Map) {
+                HashMap<Object, Object> objMapKey = (HashMap<Object, Object>) i;
+                for (Object o : objMapKey.keySet()) {
+                    if (o instanceof Integer) {
+                        Integer typeID = (Integer) o;
+                        Material type = Material.getMaterial(typeID);
+                        List<Integer> dataList = (List<Integer>) objMapKey.get(o);
+                        materialMap.put(type, dataList);
+                    } else {
+                        Material type = (Material) o;
+                        List<Integer> dataList = (List<Integer>) objMapKey.get(o);
+                        materialMap.put(type, dataList);
+                    }
+                }
+            } else if (i instanceof Integer) {
+                Integer typeID = (Integer) i;
+                Material type = Material.getMaterial(typeID);
+                materialMap.put(type, new ArrayList<>());
+            } else if (i instanceof String) {
+                String string = (String) i;
+                if (string.contains(":")) {
+                    String[] parts = string.split(":");
+                    Material type;
+                    Integer data = Integer.valueOf(parts[1]);
+                    if (parts[0].contains("0") || parts[0].contains("1") || parts[0].contains("2") || parts[0].contains("3") || parts[0].contains("4") || parts[0].contains("5") || parts[0].contains("6") || parts[0].contains("7") || parts[0].contains("8") || parts[0].contains("9")) {
+                        Integer typeID = Integer.valueOf(parts[0]);
+                        type = Material.getMaterial(typeID);
+
+                    } else {
+                        type = Material.getMaterial(parts[0]);
+                    }
+                    if (materialMap.containsKey(type)) {
+                        List<Integer> dataList = materialMap.get(type);
+                        dataList.add(data);
+                        materialMap.put(type, dataList);
+                    } else {
+                        List<Integer> dataList = new ArrayList<>();
+                        dataList.add(data);
+                        materialMap.put(type, dataList);
+                    }
+                } else {
+                    Material type;
+                    if (string.contains("0") || string.contains("1") || string.contains("2") || string.contains("3") || string.contains("4") || string.contains("5") || string.contains("6") || string.contains("7") || string.contains("8") || string.contains("9")) {
+                        Integer typeID = Integer.valueOf(string);
+                        type = Material.getMaterial(typeID);
+
+                    } else {
+                        type = Material.getMaterial(string);
+                    }
+                    if (materialMap.containsKey(type)) {
+                        List<Integer> dataList = materialMap.get(type);
+                        materialMap.put(type, dataList);
+                    } else {
+                        List<Integer> dataList = new ArrayList<>();
+                        materialMap.put(type, dataList);
+                    }
+                }
+            } else {
+                Material type = (Material) i;
+                materialMap.put(type, new ArrayList<>());
+            }
+
+            // then read in the limitation values, low and high
+            ArrayList<Object> objList = (ArrayList<Object>) objMap.get(i);
+            ArrayList<Double> limitList = new ArrayList<>();
+            for (Object limitObj : objList) {
+                if (limitObj instanceof String) {
+                    String str = (String) limitObj;
+                    if (str.contains("N")) { // a # indicates a specific quantity, IE: #2 for exactly 2 of the block
+                        String[] parts = str.split("N");
+                        Double val = Double.valueOf(parts[1]);
+                        limitList.add(10000d + val);  // limit greater than 10000 indicates an specific quantity (not a ratio)
+                    } else {
+                        Double val = Double.valueOf(str);
+                        limitList.add(val);
+                    }
+                } else if (limitObj instanceof Integer) {
+                    Double ret = ((Integer) limitObj).doubleValue();
+                    limitList.add(ret);
+                } else {
+                    limitList.add((Double) limitObj);
+                }
+            }
+            returnMap.put(materialMap, limitList);
+        }
+        return returnMap;
+    }
     private Map<List<Integer>, List<Double>> blockIDMapListFromObject(Object obj) {
         HashMap<List<Integer>, List<Double>> returnMap = new HashMap<>();
         HashMap<Object, Object> objMap = (HashMap<Object, Object>) obj;
@@ -556,21 +738,21 @@ final public class CraftType {
             ArrayList<Object> objList = (ArrayList<Object>) objMap.get(i);
             ArrayList<Double> limitList = new ArrayList<>();
             for (Object limitObj : objList) {
-                if (limitObj instanceof String) {
-                    String str = (String) limitObj;
-                    if (str.contains("N")) { // a # indicates a specific quantity, IE: #2 for exactly 2 of the block
-                        String[] parts = str.split("N");
-                        Double val = Double.valueOf(parts[1]);
-                        limitList.add(10000d + val);  // limit greater than 10000 indicates an specific quantity (not a ratio)
-                    } else {
-                        Double val = Double.valueOf(str);
-                        limitList.add(val);
-                    }
-                } else if (limitObj instanceof Integer) {
-                    Double ret = ((Integer) limitObj).doubleValue();
-                    limitList.add(ret);
-                } else
-                    limitList.add((Double) limitObj);
+                    if (limitObj instanceof String) {
+                        String str = (String) limitObj;
+                        if (str.contains("N")) { // a # indicates a specific quantity, IE: #2 for exactly 2 of the block
+                            String[] parts = str.split("N");
+                            Double val = Double.valueOf(parts[1]);
+                            limitList.add(10000d + val);  // limit greater than 10000 indicates an specific quantity (not a ratio)
+                        } else {
+                            Double val = Double.valueOf(str);
+                            limitList.add(val);
+                        }
+                    } else if (limitObj instanceof Integer) {
+                        Double ret = ((Integer) limitObj).doubleValue();
+                        limitList.add(ret);
+                    } else
+                        limitList.add((Double) limitObj);
             }
             returnMap.put(rowList, limitList);
         }
@@ -590,11 +772,11 @@ final public class CraftType {
         return minSize;
     }
 
-    public int[] getAllowedBlocks() {
+    public Map<Material, List<Integer>> getAllowedBlocks() {
         return allowedBlocks;
     }
 
-    public int[] getForbiddenBlocks() {
+    public Map<Material, List<Integer>> getForbiddenBlocks() {
         return forbiddenBlocks;
     }
 
@@ -739,12 +921,12 @@ final public class CraftType {
     }
 
     @NotNull
-    public Map<List<Integer>, List<Double>> getFlyBlocks() {
+    public Map<Map<Material, List<Integer>>, List<Double>> getFlyBlocks() {
         return flyBlocks;
     }
 
     @NotNull
-    public Map<List<Integer>, List<Double>> getMoveBlocks() {
+    public Map<Map<Material, List<Integer>>, List<Double>> getMoveBlocks() {
         return moveBlocks;
     }
 
@@ -806,7 +988,7 @@ final public class CraftType {
         return dynamicFlyBlockSpeedFactor;
     }
 
-    public int getDynamicFlyBlock() {
+    public Material getDynamicFlyBlock() {
         return dynamicFlyBlock;
     }
 

@@ -18,7 +18,6 @@
 package net.countercraft.movecraft.async;
 
 import at.pavlov.cannons.cannon.Cannon;
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
@@ -33,9 +32,9 @@ import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
-import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import net.countercraft.movecraft.utils.CollectionUtils;
 import net.countercraft.movecraft.utils.HashHitBox;
+import net.countercraft.movecraft.utils.LegacyUtils;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -66,24 +65,33 @@ public class AsyncManager extends BukkitRunnable {
 
     public AsyncManager() {
         transparent = new HashSet<>();
+        //These materials exists in both 1.12 and 1.13 APIs
         transparent.add(Material.AIR);
         transparent.add(Material.GLASS);
-        transparent.add(Material.THIN_GLASS);
-        transparent.add(Material.STAINED_GLASS);
-        transparent.add(Material.STAINED_GLASS_PANE);
-        transparent.add(Material.IRON_FENCE);
         transparent.add(Material.REDSTONE_WIRE);
         transparent.add(Material.IRON_TRAPDOOR);
-        transparent.add(Material.TRAP_DOOR);
         transparent.add(Material.NETHER_BRICK_STAIRS);
         transparent.add(Material.LEVER);
         transparent.add(Material.STONE_BUTTON);
-        transparent.add(Material.WOOD_BUTTON);
-        transparent.add(Material.STEP);
-        transparent.add(Material.SMOOTH_STAIRS);
         transparent.add(Material.SIGN);
-        transparent.add(Material.SIGN_POST);
         transparent.add(Material.WALL_SIGN);
+        if (Settings.IsLegacy){
+            transparent.add(LegacyUtils.THIN_GLASS);
+            transparent.add(LegacyUtils.STAINED_GLASS);
+            transparent.add(LegacyUtils.STAINED_GLASS_PANE);
+            transparent.add(LegacyUtils.IRON_FENCE);
+            transparent.add(LegacyUtils.TRAP_DOOR);
+            transparent.add(LegacyUtils.WOOD_BUTTON);
+            transparent.add(LegacyUtils.STEP);
+            transparent.add(LegacyUtils.SMOOTH_STAIRS);
+            transparent.add(LegacyUtils.SIGN_POST);
+        } else {
+            transparent.add(Material.GLASS_PANE);
+            transparent.add(Material.BLACK_STAINED_GLASS_PANE);
+            transparent.add(Material.WHITE_STAINED_GLASS_PANE);
+            transparent.add(Material.GRAY_STAINED_GLASS_PANE);
+            transparent.add(Material.GREEN_STAINED_GLASS_PANE);
+        }
     }
 
    /* public static AsyncManager getInstance() {
@@ -452,40 +460,39 @@ public class AsyncManager extends BukkitRunnable {
             final World w = pcraft.getW();
             int totalNonAirBlocks = 0;
             int totalNonAirWaterBlocks = 0;
-            HashMap<List<Integer>, Integer> foundFlyBlocks = new HashMap<>();
-            HashMap<List<Integer>, Integer> foundMoveBlocks = new HashMap<>();
+            HashMap<Map<Material, List<Integer>>, Integer> foundFlyBlocks = new HashMap<>();
+            HashMap<Map<Material, List<Integer>>, Integer> foundMoveBlocks = new HashMap<>();
             // go through each block in the blocklist, and
             // if its in the FlyBlocks, total up the number
             // of them
             for (MovecraftLocation l : pcraft.getHitBox()) {
-                int blockID = w.getBlockAt(l.getX(), l.getY(), l.getZ()).getTypeId();
-                int dataID = (int) w.getBlockAt(l.getX(), l.getY(), l.getZ()).getData();
-                int shiftedID = (blockID << 4) + dataID + 10000;
-                for (List<Integer> flyBlockDef : pcraft.getType().getFlyBlocks().keySet()) {
-                    if (flyBlockDef.contains(blockID) || flyBlockDef.contains(shiftedID)) {
+                Material blockType = w.getBlockAt(l.getX(), l.getY(), l.getZ()).getType();
+                byte dataID = w.getBlockAt(l.getX(), l.getY(), l.getZ()).getData();
+                for (Map<Material, List<Integer>> flyBlockDef : pcraft.getType().getFlyBlocks().keySet()) {
+                    if ((flyBlockDef.containsKey(blockType) && flyBlockDef.get(blockType).isEmpty())|| (flyBlockDef.containsKey(blockType) && flyBlockDef.get(blockType).contains(dataID))) {
                         foundFlyBlocks.merge(flyBlockDef, 1, (a, b) -> a + b);
                     }
                 }
-                for (List<Integer> moveBlockDef : pcraft.getType().getMoveBlocks().keySet()) {
-                    if (moveBlockDef.contains(blockID) || moveBlockDef.contains(shiftedID)) {
+                for (Map<Material, List<Integer>> moveBlockDef : pcraft.getType().getMoveBlocks().keySet()) {
+                    if ((moveBlockDef.containsKey(blockType) && moveBlockDef.get(blockType).isEmpty())|| (moveBlockDef.containsKey(blockType) && moveBlockDef.get(blockType).contains(dataID))) {
                         foundMoveBlocks.merge(moveBlockDef, 1, (a, b) -> a + b);
                     }
                 }
 
-                if (blockID != 0) {
+                if (blockType != Material.AIR) {
                     totalNonAirBlocks++;
                 }
-                if (blockID != 0 && blockID != 8 && blockID != 9) {
+                if (blockType != Material.AIR && blockType != Material.WATER && blockType != LegacyUtils.STATIONARY_WATER) {
                     totalNonAirWaterBlocks++;
                 }
             }
 
-            // now see if any of the resulting percentagesit
+            // now see if any of the resulting percentages
             // are below the threshold specified in
             // SinkPercent
             boolean isSinking = false;
 
-            for (List<Integer> i : pcraft.getType().getFlyBlocks().keySet()) {
+            for (Map<Material, List<Integer>> i : pcraft.getType().getFlyBlocks().keySet()) {
                 int numfound = 0;
                 if (foundFlyBlocks.get(i) != null) {
                     numfound = foundFlyBlocks.get(i);
@@ -498,7 +505,7 @@ public class AsyncManager extends BukkitRunnable {
                 }
 
             }
-            for (List<Integer> i : pcraft.getType().getMoveBlocks().keySet()) {
+            for (Map<Material, List<Integer>> i : pcraft.getType().getMoveBlocks().keySet()) {
                 int numfound = 0;
                 if (foundMoveBlocks.get(i) != null) {
                     numfound = foundMoveBlocks.get(i);
@@ -510,7 +517,7 @@ public class AsyncManager extends BukkitRunnable {
                     pcraft.setDisabled(true);
                     if (pcraft.getNotificationPlayer() != null) {
                         Location loc = pcraft.getNotificationPlayer().getLocation();
-                        pcraft.getW().playSound(loc, Sound.ENTITY_IRONGOLEM_DEATH, 5.0f, 5.0f);
+                        pcraft.getW().playSound(loc, Settings.IsLegacy ? LegacyUtils.ENITIY_IRONGOLEM_DEATH : Sound.ENTITY_IRON_GOLEM_DEATH , 5.0f, 5.0f);
                     }
                 }
             }
@@ -608,7 +615,7 @@ public class AsyncManager extends BukkitRunnable {
                                     new BukkitRunnable() {
                                         @Override
                                         public void run() {
-                                            fp.sendBlockChange(loc, 30, (byte) 0);
+                                            fp.sendBlockChange(loc, Settings.IsLegacy ? LegacyUtils.WEB :Material.COBWEB, (byte) 0);
                                         }
                                     }.runTaskLater(Movecraft.getInstance(), 5);
                                     // then remove it
@@ -618,7 +625,7 @@ public class AsyncManager extends BukkitRunnable {
                                             // fp.sendBlockChange(loc,
                                             // fw.getBlockAt(loc).getType(),
                                             // fw.getBlockAt(loc).getData());
-                                            fp.sendBlockChange(loc, 0, (byte) 0);
+                                            fp.sendBlockChange(loc, Material.AIR, (byte) 0);
                                         }
                                     }.runTaskLater(Movecraft.getInstance(), 160);
                                 }
@@ -664,7 +671,7 @@ public class AsyncManager extends BukkitRunnable {
                                         boolean inRange = (distX < 50) && (distY < 50) && (distZ < 50);
                                         if ((c.getAADirector() != null) && inRange) {
                                             p = c.getAADirector();
-                                            if (p.getItemInHand().getTypeId() == Settings.PilotTool) {
+                                            if (p.getItemInHand().getType() == Settings.PilotTool) {
                                                 Vector fv = fireball.getVelocity();
                                                 double speed = fv.length(); // store the speed to add it back in later, since all the values we will be using are "normalized", IE: have a speed of 1
                                                 fv = fv.normalize(); // you normalize it for comparison with the new direction to see if we are trying to steer too far
@@ -774,7 +781,7 @@ public class AsyncManager extends BukkitRunnable {
                                     boolean inRange = (distX < 100) && (distY < 100) && (distZ < 100);
                                     if ((c.getCannonDirector() != null) && inRange) {
                                         Player p = c.getCannonDirector();
-                                        if (p.getInventory().getItemInMainHand().getTypeId() == Settings.PilotTool) {
+                                        if (p.getInventory().getItemInMainHand().getType() == Settings.PilotTool) {
                                             Vector tv = tnt.getVelocity();
                                             double speed = tv.length(); // store the speed to add it back in later, since all the values we will be using are "normalized", IE: have a speed of 1
                                             tv = tv.normalize(); // you normalize it for comparison with the new direction to see if we are trying to steer too far

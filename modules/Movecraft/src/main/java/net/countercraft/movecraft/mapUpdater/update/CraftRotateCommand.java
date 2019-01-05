@@ -45,12 +45,31 @@ public class CraftRotateCommand extends UpdateCommand {
         long time = System.nanoTime();
         final Set<Material> passthroughBlocks = new HashSet<>(craft.getType().getPassthroughBlocks());
         if(craft.getSinking()){
-            passthroughBlocks.add(Material.STATIONARY_WATER);
+
             passthroughBlocks.add(Material.WATER);
-            passthroughBlocks.add(Material.LEAVES);
-            passthroughBlocks.add(Material.LEAVES_2);
-            passthroughBlocks.add(Material.LONG_GRASS);
-            passthroughBlocks.add(Material.DOUBLE_PLANT);
+            if (Settings.IsLegacy){ //use pre-1.13 values if running on 1.12.2 or lower
+                passthroughBlocks.add(LegacyUtils.STATIONARY_WATER);
+                passthroughBlocks.add(LegacyUtils.LEAVES);
+                passthroughBlocks.add(LegacyUtils.LEAVES_2);
+                passthroughBlocks.add(LegacyUtils.LONG_GRASS);
+                passthroughBlocks.add(LegacyUtils.DOUBLE_PLANT);
+            } else {//otherwise, use 1.13+ types
+                //Leaves
+                passthroughBlocks.add(Material.ACACIA_LEAVES);
+                passthroughBlocks.add(Material.BIRCH_LEAVES);
+                passthroughBlocks.add(Material.DARK_OAK_LEAVES);
+                passthroughBlocks.add(Material.JUNGLE_LEAVES);
+                passthroughBlocks.add(Material.OAK_LEAVES);
+                passthroughBlocks.add(Material.SPRUCE_LEAVES);
+                //Grass
+                passthroughBlocks.add(Material.GRASS);
+                //Double plants
+                passthroughBlocks.add(Material.ROSE_BUSH);
+                passthroughBlocks.add(Material.SUNFLOWER);
+                passthroughBlocks.add(Material.LILAC);
+                passthroughBlocks.add(Material.PEONY);
+
+            }
         }
         if (!passthroughBlocks.isEmpty()) {
             MutableHitBox originalLocations = new HashHitBox();
@@ -131,7 +150,7 @@ public class CraftRotateCommand extends UpdateCommand {
             //trigger sign events
             for (MovecraftLocation location : craft.getHitBox()) {
                 Block block = location.toBukkit(craft.getW()).getBlock();
-                if (block.getType() == Material.WALL_SIGN || block.getType() == Material.SIGN_POST) {
+                if (block.getType() == Material.WALL_SIGN || block.getType() == (Settings.IsLegacy ? LegacyUtils.SIGN_POST : Material.SIGN)) {
                     Sign sign = (Sign) block.getState();
                     Bukkit.getServer().getPluginManager().callEvent(new SignTranslateEvent(block, craft, sign.getLines()));
                     sign.update();
@@ -167,7 +186,7 @@ public class CraftRotateCommand extends UpdateCommand {
             //trigger sign events
             for (MovecraftLocation location : craft.getHitBox()) {
                 Block block = location.toBukkit(craft.getW()).getBlock();
-                if (block.getType() == Material.WALL_SIGN || block.getType() == Material.SIGN_POST) {
+                if (block.getType() == Material.WALL_SIGN || block.getType() == (Settings.IsLegacy ? LegacyUtils.SIGN_POST : Material.SIGN)) {
                     Sign sign = (Sign) block.getState();
                     Bukkit.getServer().getPluginManager().callEvent(new SignTranslateEvent(block, craft, sign.getLines()));
                     sign.update();

@@ -19,6 +19,7 @@ package net.countercraft.movecraft;
 
 import at.pavlov.cannons.Cannons;
 import com.earth2me.essentials.Essentials;
+import com.massivecraft.factions.Factions;
 import com.mewin.WGCustomFlags.WGCustomFlagsPlugin;
 import com.palmergames.bukkit.towny.Towny;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
@@ -31,9 +32,9 @@ import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.listener.BlockListener;
 import net.countercraft.movecraft.listener.InteractListener;
 import net.countercraft.movecraft.listener.PlayerListener;
-import net.countercraft.movecraft.listener.WorldEditInteractListener;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
+import net.countercraft.movecraft.repair.RepairManager;
 import net.countercraft.movecraft.sign.*;
 import net.countercraft.movecraft.utils.TownyUtils;
 import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
@@ -43,7 +44,6 @@ import net.countercraft.movecraft.warfare.siege.SiegeManager;
 import net.countercraft.movecraft.worldguard.WorldGuardCompatManager;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -70,6 +70,7 @@ public class Movecraft extends JavaPlugin {
     private static Cannons cannonsPlugin = null;
     private static Towny townyPlugin = null;
     private static Essentials essentialsPlugin = null;
+    private static Factions factionsPlugin;
     /*public HashMap<MovecraftLocation, Long> blockFadeTimeMap = new HashMap<>();
     public HashMap<MovecraftLocation, Integer> blockFadeTypeMap = new HashMap<>();
     public HashMap<MovecraftLocation, Boolean> blockFadeWaterMap = new HashMap<>();
@@ -77,11 +78,13 @@ public class Movecraft extends JavaPlugin {
     private Logger logger;
     private boolean shuttingDown;
     private WorldHandler worldHandler;
+    private MovecraftRepair movecraftRepair;
 
 
     private AsyncManager asyncManager;
     private AssaultManager assaultManager;
     private SiegeManager siegeManager;
+    private RepairManager repairManager;
 
     public static synchronized Movecraft getInstance() {
         return instance;
@@ -109,10 +112,10 @@ public class Movecraft extends JavaPlugin {
         Settings.Debug = getConfig().getBoolean("Debug", false);
         Settings.DisableSpillProtection = getConfig().getBoolean("DisableSpillProtection", false);
         // if the PilotTool is specified in the config.yml file, use it
-        if (getConfig().getInt("PilotTool") != 0) {
+        if (getConfig().getString("PilotTool") != null || getConfig().getString("PilotTool") != "") {
             logger.log(Level.INFO, "Recognized PilotTool setting of: "
-                    + getConfig().getInt("PilotTool"));
-            Settings.PilotTool = getConfig().getInt("PilotTool");
+                    + getConfig().getString("PilotTool"));
+            Settings.PilotTool = Material.getMaterial(getConfig().getString("PilotTool"));
         } else {
             logger.log(Level.INFO, "No PilotTool setting, using default of 280");
         }
@@ -131,6 +134,14 @@ public class Movecraft extends JavaPlugin {
         //Switch to interfaces
         String packageName = this.getServer().getClass().getPackage().getName();
         String version = packageName.substring(packageName.lastIndexOf('.') + 1);
+        String[] parts = version.split("_");
+        Integer versionNumber = Integer.valueOf(parts[1]);
+        //Check if the server is 1.12 and lower or 1.13 anf higher
+        if (versionNumber <= 12){
+            Settings.IsLegacy = true;
+        } else {
+            Settings.IsLegacy = false;
+        }
         try {
             final Class<?> clazz = Class.forName("net.countercraft.movecraft.compat." + version + ".IWorldHandler");
             // Check if we have a NMSHandler class at that location.
@@ -143,8 +154,9 @@ public class Movecraft extends JavaPlugin {
             this.setEnabled(false);
             return;
         }
-        this.getLogger().info("Loading support for " + version);
 
+        this.getLogger().info("Loading support for " + version);
+        this.getLogger().info("isLegacy: " + Settings.IsLegacy);
 
         Settings.SinkCheckTicks = getConfig().getDouble("SinkCheckTicks", 100.0);
         Settings.TracerRateTicks = getConfig().getDouble("TracerRateTicks", 5.0);
@@ -164,7 +176,7 @@ public class Movecraft extends JavaPlugin {
             Map<String, Object> temp = getConfig().getConfigurationSection("DurabilityOverride").getValues(false);
             Settings.DurabilityOverride = new HashMap<>();
             for (String str : temp.keySet()) {
-                Settings.DurabilityOverride.put(Integer.parseInt(str), (Integer) temp.get(str));
+                Settings.DurabilityOverride.put(Material.getMaterial(str), (Integer) temp.get(str));
             }
 
         }
@@ -176,17 +188,23 @@ public class Movecraft extends JavaPlugin {
         Settings.AssaultCostPercent = getConfig().getDouble("AssaultCostPercent", 0.25);
         Settings.AssaultDamagesPerBlock = getConfig().getInt("AssaultDamagesPerBlock", 15);
         Settings.AssaultRequiredDefendersOnline = getConfig().getInt("AssaultRequiredDefendersOnline", 3);
-        Settings.AssaultDestroyableBlocks = new HashSet<>(getConfig().getIntegerList("AssaultDestroyableBlocks"));
-        Settings.DisableShadowBlocks = new HashSet<>(getConfig().getIntegerList("DisableShadowBlocks"));  //REMOVE FOR PUBLIC VERSION
-
+        List<String> assaultDestroyableBlocks = getConfig().getStringList("AssaultDestroyableBlocks");
+        for (String matStr : assaultDestroyableBlocks){
+            Settings.AssaultDestroyableBlocks.add(Material.getMaterial(matStr));
+        }
+        List<String> disableShadowBlocks = getConfig().getStringList("DisableShadowBlocks");
+        for (String typ : disableShadowBlocks){
+            Settings.DisableShadowBlocks.add(Material.getMaterial(typ));
+        }
+        Settings.RepairMaxPercent = getConfig().getDouble("RepairMaxPercent", 50.0);
         Settings.SiegeEnable = getConfig().getBoolean("SiegeEnable", false);
 
 
 
 
         if (!Settings.CompatibilityMode) {
-            for (int typ : Settings.DisableShadowBlocks) {
-                worldHandler.disableShadow(Material.getMaterial(typ));
+            for (Material typ : Settings.DisableShadowBlocks) {
+                worldHandler.disableShadow(typ);
             }
         }
         //load up WorldGuard if it's present
@@ -213,8 +231,23 @@ public class Movecraft extends JavaPlugin {
         } else {
             logger.log(Level.INFO, "Found a compatible version of WorldEdit. Enabling WorldEdit integration");
             Settings.RepairTicksPerBlock = getConfig().getInt("RepairTicksPerBlock", 0);
+            //Test if a compatible MovecraftRepair is present
+            try {
+                final Class<?> clazz = Class.forName("net.countercraft.movecraft.compat." + version + ".IMovecraftRepair");
+                //Check if we have a Repair class at that location
+                if (MovecraftRepair.class.isAssignableFrom(clazz)){
+                    this.movecraftRepair = (MovecraftRepair) clazz.getConstructor().newInstance();
+                }
+            } catch (final Exception e){
+                e.printStackTrace();
+                this.getLogger().severe("Could not find a compatible repair class. Disabling repair function");
+                Settings.RepairTicksPerBlock = 0;
+            }
         }
         worldEditPlugin = (WorldEditPlugin) wEPlugin;
+
+
+
 
         // next is Cannons
         Plugin plug = getServer().getPluginManager().getPlugin("Cannons");
@@ -247,6 +280,7 @@ public class Movecraft extends JavaPlugin {
                 }
             }
         }
+        //Towny
         Plugin tempTownyPlugin = getServer().getPluginManager().getPlugin("Towny");
         if (tempTownyPlugin != null && tempTownyPlugin instanceof Towny) {
             logger.log(Level.INFO, "Found a compatible version of Towny. Enabling Towny integration.");
@@ -260,7 +294,7 @@ public class Movecraft extends JavaPlugin {
         } else {
             logger.log(Level.INFO, "Movecraft did not find a compatible version of Towny. Disabling Towny integration.");
         }
-
+        //Essentials
         Plugin tempEssentialsPlugin = getServer().getPluginManager().getPlugin("Essentials");
         if (tempEssentialsPlugin != null) {
             if (tempEssentialsPlugin.getDescription().getName().equalsIgnoreCase("essentials")) {
@@ -275,7 +309,17 @@ public class Movecraft extends JavaPlugin {
         if (essentialsPlugin == null) {
             logger.log(Level.INFO, "Movecraft did not find a compatible version of Essentials. Disabling Essentials integration.");
         }
-
+        //Factions
+        Plugin tempFactionsPlugin = getServer().getPluginManager().getPlugin("Factions");
+        if (tempFactionsPlugin != null){
+            if (tempFactionsPlugin instanceof Factions){
+                factionsPlugin = (Factions) tempFactionsPlugin;
+                logger.info("Movecraft found a compatible version of Factions. Enabling Factions integration.");
+            }
+        }
+        if (factionsPlugin == null){
+            logger.info("Movecraft did not find a compatible version of Factions. Disabling Factions integration");
+        }
         // and now Vault
         if (getServer().getPluginManager().getPlugin("Vault") != null) {
             RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
@@ -363,12 +407,15 @@ public class Movecraft extends JavaPlugin {
 
                 }
                 siegeManager.runTaskTimerAsynchronously(this, 0, 20);
+
             }
             CraftManager.initialize();
 
             getServer().getPluginManager().registerEvents(new InteractListener(), this);
             if (worldEditPlugin != null) {
-                getServer().getPluginManager().registerEvents(new WorldEditInteractListener(), this);
+                //getServer().getPluginManager().registerEvents(new WorldEditInteractListener(), this);
+                repairManager = new RepairManager(this);
+                repairManager.runTaskTimerAsynchronously(this, 0,1);
             }
             this.getCommand("movecraft").setExecutor(new MovecraftCommand());
             this.getCommand("release").setExecutor(new ReleaseCommand());
@@ -400,10 +447,11 @@ public class Movecraft extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new MoveSign(), this);
             getServer().getPluginManager().registerEvents(new NameSign(), this);
             getServer().getPluginManager().registerEvents(new PilotSign(), this);
+            getServer().getPluginManager().registerEvents(new RegionDamagedSign(), this);
             getServer().getPluginManager().registerEvents(new RelativeMoveSign(), this);
             getServer().getPluginManager().registerEvents(new ReleaseSign(), this);
             getServer().getPluginManager().registerEvents(new RemoteSign(), this);
-            //getServer().getPluginManager().registerEvents(new RepairSign(), this);
+            getServer().getPluginManager().registerEvents(new RepairSign(), this);
             getServer().getPluginManager().registerEvents(new SpeedSign(), this);
             getServer().getPluginManager().registerEvents(new StatusSign(), this);
             getServer().getPluginManager().registerEvents(new SubcraftRotateSign(), this);
@@ -464,5 +512,13 @@ public class Movecraft extends JavaPlugin {
 
     public AsyncManager getAsyncManager(){return asyncManager;}
 
+    public MovecraftRepair getMovecraftRepair() {return movecraftRepair;}
+
+    public RepairManager getRepairManager() {
+        return repairManager;
+    }
+    public Factions getFactionsPlugin(){
+        return factionsPlugin;
+    }
 }
 

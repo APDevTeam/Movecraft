@@ -8,6 +8,7 @@ import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
 import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.utils.LegacyUtils;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
@@ -20,8 +21,15 @@ import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 
-public class CrewSign implements Listener {
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
+public class CrewSign implements Listener {
+    //As of 1.13, each bed color have their own values
+    final Material[] beds = !Settings.IsLegacy ? new Material[]{Material.CYAN_BED, Material.BLACK_BED, Material.BLUE_BED,
+    Material.BROWN_BED, Material.GRAY_BED, Material.GREEN_BED, Material.LIGHT_BLUE_BED, Material.LIGHT_GRAY_BED, Material.LIME_BED, Material.MAGENTA_BED,
+    Material.ORANGE_BED, Material.PINK_BED, Material.PURPLE_BED, Material.RED_BED, Material.WHITE_BED, Material.YELLOW_BED} : null;
     @EventHandler
     public final void onSignChange(SignChangeEvent event) {
         if (!event.getLine(0).equalsIgnoreCase("Crew:")) {
@@ -43,7 +51,7 @@ public class CrewSign implements Listener {
             return;
         }
         Location location = event.getBlock().getLocation().subtract(0,1,0);
-        if (!craft.getW().getBlockAt(location).getType().equals(Material.BED_BLOCK)) {
+        if (Settings.IsLegacy ? !craft.getW().getBlockAt(location).getType().equals(LegacyUtils.BED_BLOCK) : Arrays.binarySearch(beds, craft.getW().getBlockAt(location).getType()) < 0) {
             return;
         }
         craft.getCrewSigns().put(crewPlayer.getUniqueId(), location);
@@ -62,7 +70,7 @@ public class CrewSign implements Listener {
         if (!sign.getLine(0).equalsIgnoreCase("Crew:")) {
             return;
         }
-        if (!sign.getBlock().getRelative(0,-1,0).getType().equals(Material.BED_BLOCK)) {
+        if (Settings.IsLegacy ? !sign.getBlock().getRelative(0,-1,0).getType().equals(LegacyUtils.BED_BLOCK) : Arrays.binarySearch(beds, sign.getBlock().getRelative(0,-1,0).getType()) < 0) {
             player.sendMessage("You need to have a bed below your crew sign");
             return;
         }
@@ -103,7 +111,7 @@ public class CrewSign implements Listener {
         World world = event.getCraft().getW();
         for(MovecraftLocation location: event.getCraft().getHitBox()){
             Block block = location.toBukkit(world).getBlock();
-            if (block.getType() != Material.WALL_SIGN && block.getType() != Material.SIGN_POST) {
+            if (block.getType() != Material.WALL_SIGN && block.getType() != (Settings.IsLegacy ? LegacyUtils.SIGN_POST : Material.SIGN)) {
                 continue;
             }
             Sign sign = (Sign) block.getState();

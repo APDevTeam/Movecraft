@@ -19,8 +19,12 @@ package net.countercraft.movecraft.async.detection;
 
 import net.countercraft.movecraft.utils.HashHitBox;
 import net.countercraft.movecraft.utils.HitBox;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+
+import java.util.List;
+import java.util.Map;
 
 @Deprecated
 public class DetectionTaskData {
@@ -33,10 +37,11 @@ public class DetectionTaskData {
     private Player player;
     private Player notificationPlayer;
     private int minX, minZ;
-    private int[] allowedBlocks, forbiddenBlocks;
+    private Map<Material, List<Integer>> allowedBlocks;
+    private Map<Material, List<Integer>> forbiddenBlocks;
     private String[] forbiddenSignStrings;
 
-    public DetectionTaskData(World w, Player player, Player notificationPlayer, int[] allowedBlocks, int[] forbiddenBlocks, String[] forbiddenSignStrings) {
+    public DetectionTaskData(World w, Player player, Player notificationPlayer, Map<Material, List<Integer>> allowedBlocks, Map<Material, List<Integer>> forbiddenBlocks, String[] forbiddenSignStrings) {
         this.w = w;
         this.player = player;
         this.notificationPlayer = notificationPlayer;
@@ -49,11 +54,11 @@ public class DetectionTaskData {
     public DetectionTaskData() {
     }
 
-    public int[] getAllowedBlocks() {
+    public Map<Material, List<Integer>> getAllowedBlocks() {
         return allowedBlocks;
     }
 
-    public int[] getForbiddenBlocks() {
+    public Map<Material, List<Integer>> getForbiddenBlocks() {
         return forbiddenBlocks;
     }
 

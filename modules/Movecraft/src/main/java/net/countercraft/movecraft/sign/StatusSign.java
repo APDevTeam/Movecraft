@@ -1,9 +1,11 @@
 package net.countercraft.movecraft.sign;
 
 import net.countercraft.movecraft.MovecraftLocation;
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
+import net.countercraft.movecraft.utils.LegacyUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -26,7 +28,7 @@ public final class StatusSign implements Listener{
         World world = event.getCraft().getW();
         for(MovecraftLocation location: event.getCraft().getHitBox()){
             Block block = location.toBukkit(world).getBlock();
-            if(block.getType() == Material.WALL_SIGN || block.getType() == Material.SIGN_POST){
+            if(block.getType() == Material.WALL_SIGN || block.getType() == (Settings.IsLegacy ? LegacyUtils.SIGN_POST : Material.SIGN)){
                 Sign sign = (Sign) block.getState();
                 if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Status:")) {
                     sign.setLine(1, "");
@@ -46,54 +48,56 @@ public final class StatusSign implements Listener{
         }
         int fuel=0;
         int totalBlocks=0;
-        Map<Integer, Integer> foundBlocks = new HashMap<>();
+        Map<Material, Integer> foundBlocks = new HashMap<>();
         for (MovecraftLocation ml : craft.getHitBox()) {
-            Integer blockID = craft.getW().getBlockAt(ml.getX(), ml.getY(), ml.getZ()).getTypeId();
+            Material blockType = craft.getW().getBlockAt(ml.getX(), ml.getY(), ml.getZ()).getType();
 
-            if (foundBlocks.containsKey(blockID)) {
-                Integer count = foundBlocks.get(blockID);
+            if (foundBlocks.containsKey(blockType)) {
+                Integer count = foundBlocks.get(blockType);
                 if (count == null) {
-                    foundBlocks.put(blockID, 1);
+                    foundBlocks.put(blockType, 1);
                 } else {
-                    foundBlocks.put(blockID, count + 1);
+                    foundBlocks.put(blockType, count + 1);
                 }
             } else {
-                foundBlocks.put(blockID, 1);
+                foundBlocks.put(blockType, 1);
             }
 
-            if (blockID == 61) {
+            if (blockType == Material.FURNACE) {
                 InventoryHolder inventoryHolder = (InventoryHolder) craft.getW().getBlockAt(ml.getX(), ml.getY(), ml.getZ()).getState();
-                if (inventoryHolder.getInventory().contains(263)
-                        || inventoryHolder.getInventory().contains(173)) {
+                if (inventoryHolder.getInventory().contains(Material.COAL)
+                        || inventoryHolder.getInventory().contains(Material.COAL_BLOCK)
+                        || inventoryHolder.getInventory().contains(Material.CHARCOAL)) {
                     ItemStack[] istack=inventoryHolder.getInventory().getContents();
                     for(ItemStack i : istack) {
                         if(i!=null) {
-                            if(i.getTypeId()==263) {
+                            if(i.getType()== Material.COAL || i.getType() == Material.CHARCOAL) {
                                 fuel+=i.getAmount()*8;
                             }
-                            if(i.getTypeId()==173) {
+                            if(i.getType()==Material.COAL_BLOCK) {
                                 fuel+=i.getAmount()*80;
                             }
                         }
                     }
                 }
             }
-            if (blockID != 0) {
+            if (blockType != Material.AIR || blockType != Material.CAVE_AIR || blockType != Material.VOID_AIR) {
                 totalBlocks++;
             }
         }
         int signLine=1;
         int signColumn=0;
-        for(List<Integer> alFlyBlockID : craft.getType().getFlyBlocks().keySet()) {
-            int flyBlockID=alFlyBlockID.get(0);
-            Double minimum=craft.getType().getFlyBlocks().get(alFlyBlockID).get(0);
-            if(foundBlocks.containsKey(flyBlockID) && minimum>0) { // if it has a minimum, it should be considered for sinking consideration
-                int amount=foundBlocks.get(flyBlockID);
+        for(Map<Material, List<Integer>> alFlyBlock : craft.getType().getFlyBlocks().keySet()) {
+            Material flyBlock = alFlyBlock.keySet().iterator().next();
+            Double minimum=craft.getType().getFlyBlocks().get(alFlyBlock).get(0);
+            if(foundBlocks.containsKey(flyBlock) && minimum>0) { // if it has a minimum, it should be considered for sinking consideration
+                int amount=foundBlocks.get(flyBlock);
                 Double percentPresent=(double) (amount*100/totalBlocks);
+                /*
                 int deshiftedID=flyBlockID;
                 if(deshiftedID>10000) {
                     deshiftedID=(deshiftedID-10000)>>4;
-                }
+                }*/
                 String signText="";
                 if(percentPresent>minimum*1.04) {
                     signText+= ChatColor.GREEN;
@@ -102,12 +106,12 @@ public final class StatusSign implements Listener{
                 } else {
                     signText+=ChatColor.RED;
                 }
-                if(deshiftedID==152) {
+                if(flyBlock == Material.REDSTONE_BLOCK) {
                     signText+="R";
-                } else if(deshiftedID==42) {
+                } else if(flyBlock == Material.IRON_BLOCK) {
                     signText+="I";
                 } else {
-                    signText+= Material.getMaterial(deshiftedID).toString().charAt(0);
+                    signText+= flyBlock.toString().charAt(0);
                 }
 
                 signText+=" ";
@@ -118,7 +122,7 @@ public final class StatusSign implements Listener{
                 if(signColumn==0) {
                     event.setLine(signLine,signText);
                     signColumn++;
-                } else if(signLine<3) {
+                } else if(signLine < 3) {
                     String existingLine=event.getLine(signLine);
                     existingLine+=signText;
                     event.setLine(signLine, existingLine);

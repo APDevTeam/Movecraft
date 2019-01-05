@@ -17,6 +17,7 @@
 
 package net.countercraft.movecraft.config;
 
+import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import java.util.ArrayList;
@@ -31,7 +32,7 @@ class ConfigManager {
 
     public void loadConfig() {
         setupDefaults();
-        Settings.DATA_BLOCKS = configFile.getIntegerList("dataBlocks");
+        Settings.DATA_BLOCKS = (List<Material>) configFile.getList("dataBlocks");
         Settings.THREAD_POOL_SIZE = configFile.getInt("ThreadPoolSize");
         Settings.IGNORE_RESET = configFile.getBoolean("safeReload");
 
@@ -40,20 +41,20 @@ class ConfigManager {
     private void setupDefaults() {
         configFile.addDefault("ThreadPoolSize", 5);
         configFile.addDefault("safeReload", false);
-        List<Integer> dataBlockList = new ArrayList<>();
-        dataBlockList.add(23);
-        dataBlockList.add(25);
-        dataBlockList.add(33);
-        dataBlockList.add(44);
-        dataBlockList.add(50);
-        dataBlockList.add(53);
-        dataBlockList.add(54);
-        dataBlockList.add(55);
-        dataBlockList.add(61);
-        dataBlockList.add(62);
-        dataBlockList.add(63);
-        dataBlockList.add(64);
-        dataBlockList.add(65);
+        List<Material> dataBlockList = new ArrayList<>();
+        dataBlockList.add(Material.DISPENSER);
+        dataBlockList.add(Material.NOTE_BLOCK);
+        dataBlockList.add(Material.PISTON_BASE);
+        dataBlockList.add(Material.STEP);
+        dataBlockList.add(Material.TORCH);
+        dataBlockList.add(Material.WOOD_STAIRS);
+        dataBlockList.add(Material.CHEST);
+        dataBlockList.add(Material.REDSTONE_WIRE);
+        dataBlockList.add(Material.FURNACE);
+        dataBlockList.add(Material.BURNING_FURNACE);
+        dataBlockList.add(Material.SIGN_POST);
+        dataBlockList.add(Material.WOOD_DOOR);
+        dataBlockList.add(Material.LADDER);
         configFile.addDefault("dataBlocks", dataBlockList);
         configFile.options().copyDefaults(true);
         //Movecraft.getInstance().saveConfig();

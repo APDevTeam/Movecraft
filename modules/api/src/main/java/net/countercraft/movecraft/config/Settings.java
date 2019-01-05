@@ -18,6 +18,7 @@
 package net.countercraft.movecraft.config;
 
 import net.countercraft.movecraft.utils.TownyWorldHeightLimits;
+import org.bukkit.Material;
 
 import java.util.HashSet;
 import java.util.List;
@@ -28,9 +29,9 @@ public class Settings {
     public static boolean IGNORE_RESET = false;
     public static boolean Debug = false;
     public static int THREAD_POOL_SIZE = 5;
-    public static List<Integer> DATA_BLOCKS;
+    public static List<Material> DATA_BLOCKS;
     public static String LOCALE;
-    public static int PilotTool = 280;
+    public static Material PilotTool = Material.STICK;
     public static int SilhouetteViewDistance = 200;
     public static int SilhouetteBlockCount = 20;
     public static boolean CompatibilityMode = false;
@@ -50,6 +51,7 @@ public class Settings {
     public static int FireballLifespan = 6;
     public static int RepairTicksPerBlock = 0;
     public static int BlockQueueChunkSize = 1000;
+    public static double RepairMaxPercent = 50.0;
     public static double RepairMoneyPerBlock = 0.0;
     public static boolean FireballPenetration = true;
     public static boolean AllowCrewSigns = true;
@@ -60,9 +62,16 @@ public class Settings {
     public static boolean WGCustomFlagsUseSinkFlag = false;
     public static boolean TownyBlockMoveOnSwitchPerm = false;
     public static boolean TownyBlockSinkOnNoPVP = false;
+    public static boolean FactionsBlockMoveInSafezone = false;
+    public static boolean FactionsBlockMoveInWarzone = false;
+    public static boolean FactionsBlockMoveInAllyTerritory = false;
+    public static boolean FactionsBlockMoveInTruceTerritory = false;
+    public static boolean FactionsBlockMoveInEnemyTerritory = false;
+    public static boolean FactionsBlockSinkOnNoPVP = false;
     public static Map<String, TownyWorldHeightLimits> TownProtectionHeightLimits;
-    public static Map<Integer, Integer> DurabilityOverride;
+    public static Map<Material, Integer> DurabilityOverride;
     public static boolean IsPaper = false;
+    public static boolean IsLegacy = true; //false if version is 1.13 or higher
 
     public static boolean AssaultEnable;
     public static double AssaultDamagesCapPercent;
@@ -71,9 +80,9 @@ public class Settings {
     public static int AssaultDuration;
     public static int AssaultRequiredDefendersOnline;
     public static double AssaultCostPercent;
-    public static HashSet<Integer> AssaultDestroyableBlocks;
+    public static HashSet<Material> AssaultDestroyableBlocks = new HashSet<>();
     public static int AssaultDamagesPerBlock;
-    public static HashSet<Integer> DisableShadowBlocks;
+    public static HashSet<Material> DisableShadowBlocks = new HashSet<>();
 
     public static boolean SiegeEnable;
 }

@@ -17,6 +17,8 @@
 
 package net.countercraft.movecraft.listener;
 
+import net.countercraft.movecraft.Movecraft;
+import net.countercraft.movecraft.repair.Repair;
 import net.countercraft.movecraft.utils.HitBox;
 import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.MovecraftLocation;
@@ -28,6 +30,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
@@ -47,7 +50,7 @@ public class PlayerListener implements Listener {
             z = block.getZ();
             MovecraftLocation test = new MovecraftLocation(x, y, z);
             if (!craft.getHitBox().contains(test))
-                if ((Arrays.binarySearch(craft.getType().getAllowedBlocks(), craft.getW().getBlockTypeIdAt(x, y, z)) >= 0) || (Arrays.binarySearch(craft.getType().getAllowedBlocks(), (craft.getW().getBlockTypeIdAt(x, y, z) << 4) + craft.getW().getBlockAt(x, y, z).getData() + 10000) >= 0)) {
+                if (craft.getType().getAllowedBlocks().containsKey(craft.getW().getBlockAt(x, y, z).getType())  || craft.getType().getAllowedBlocks().get(craft.getW().getBlockAt(x, y, z).getType()).contains(craft.getW().getBlockAt(x, y, z).getData())) {
                     ret = "@ " + x + "," + y + "," + z;
                 }
             x = block.getX() - 1;
@@ -55,7 +58,7 @@ public class PlayerListener implements Listener {
             z = block.getZ();
             test = new MovecraftLocation(x, y, z);
             if (!craftBlocks.contains(test))
-                if ((Arrays.binarySearch(craft.getType().getAllowedBlocks(), craft.getW().getBlockTypeIdAt(x, y, z)) >= 0) || (Arrays.binarySearch(craft.getType().getAllowedBlocks(), (craft.getW().getBlockTypeIdAt(x, y, z) << 4) + craft.getW().getBlockAt(x, y, z).getData() + 10000) >= 0)) {
+                if (craft.getType().getAllowedBlocks().containsKey(craft.getW().getBlockAt(x, y, z).getType())  || craft.getType().getAllowedBlocks().get(craft.getW().getBlockAt(x, y, z).getType()).contains(craft.getW().getBlockAt(x, y, z).getData())) {
                     ret = "@ " + x + "," + y + "," + z;
                 }
             x = block.getX();
@@ -63,7 +66,7 @@ public class PlayerListener implements Listener {
             z = block.getZ();
             test = new MovecraftLocation(x, y, z);
             if (!craftBlocks.contains(test))
-                if ((Arrays.binarySearch(craft.getType().getAllowedBlocks(), craft.getW().getBlockTypeIdAt(x, y, z)) >= 0) || (Arrays.binarySearch(craft.getType().getAllowedBlocks(), (craft.getW().getBlockTypeIdAt(x, y, z) << 4) + craft.getW().getBlockAt(x, y, z).getData() + 10000) >= 0)) {
+                if (craft.getType().getAllowedBlocks().containsKey(craft.getW().getBlockAt(x, y, z).getType())  || craft.getType().getAllowedBlocks().get(craft.getW().getBlockAt(x, y, z).getType()).contains(craft.getW().getBlockAt(x, y, z).getData())) {
                     ret = "@ " + x + "," + y + "," + z;
                 }
             x = block.getX();
@@ -71,7 +74,7 @@ public class PlayerListener implements Listener {
             z = block.getZ();
             test = new MovecraftLocation(x, y, z);
             if (!craftBlocks.contains(test))
-                if ((Arrays.binarySearch(craft.getType().getAllowedBlocks(), craft.getW().getBlockTypeIdAt(x, y, z)) >= 0) || (Arrays.binarySearch(craft.getType().getAllowedBlocks(), (craft.getW().getBlockTypeIdAt(x, y, z) << 4) + craft.getW().getBlockAt(x, y, z).getData() + 10000) >= 0)) {
+                if (craft.getType().getAllowedBlocks().containsKey(craft.getW().getBlockAt(x, y, z).getType())  || craft.getType().getAllowedBlocks().get(craft.getW().getBlockAt(x, y, z).getType()).contains(craft.getW().getBlockAt(x, y, z).getData())) {
                     ret = "@ " + x + "," + y + "," + z;
                 }
             x = block.getX();
@@ -79,7 +82,7 @@ public class PlayerListener implements Listener {
             z = block.getZ() + 1;
             test = new MovecraftLocation(x, y, z);
             if (!craftBlocks.contains(test))
-                if ((Arrays.binarySearch(craft.getType().getAllowedBlocks(), craft.getW().getBlockTypeIdAt(x, y, z)) >= 0) || (Arrays.binarySearch(craft.getType().getAllowedBlocks(), (craft.getW().getBlockTypeIdAt(x, y, z) << 4) + craft.getW().getBlockAt(x, y, z).getData() + 10000) >= 0)) {
+                if (craft.getType().getAllowedBlocks().containsKey(craft.getW().getBlockAt(x, y, z).getType())  || craft.getType().getAllowedBlocks().get(craft.getW().getBlockAt(x, y, z).getType()).contains(craft.getW().getBlockAt(x, y, z).getData())) {
                     ret = "@ " + x + "," + y + "," + z;
                 }
             x = block.getX();
@@ -87,7 +90,7 @@ public class PlayerListener implements Listener {
             z = block.getZ() + 1;
             test = new MovecraftLocation(x, y, z);
             if (!craftBlocks.contains(test))
-                if ((Arrays.binarySearch(craft.getType().getAllowedBlocks(), craft.getW().getBlockTypeIdAt(x, y, z)) >= 0) || (Arrays.binarySearch(craft.getType().getAllowedBlocks(), (craft.getW().getBlockTypeIdAt(x, y, z) << 4) + craft.getW().getBlockAt(x, y, z).getData() + 10000) >= 0)) {
+                if (craft.getType().getAllowedBlocks().containsKey(craft.getW().getBlockAt(x, y, z).getType())  || craft.getType().getAllowedBlocks().get(craft.getW().getBlockAt(x, y, z).getType()).contains(craft.getW().getBlockAt(x, y, z).getData())) {
                     ret = "@ " + x + "," + y + "," + z;
                 }
             x = block.getX() + 1;
@@ -95,7 +98,7 @@ public class PlayerListener implements Listener {
             z = block.getZ();
             test = new MovecraftLocation(x, y, z);
             if (!craftBlocks.contains(test))
-                if ((Arrays.binarySearch(craft.getType().getAllowedBlocks(), craft.getW().getBlockTypeIdAt(x, y, z)) >= 0) || (Arrays.binarySearch(craft.getType().getAllowedBlocks(), (craft.getW().getBlockTypeIdAt(x, y, z) << 4) + craft.getW().getBlockAt(x, y, z).getData() + 10000) >= 0)) {
+                if (craft.getType().getAllowedBlocks().containsKey(craft.getW().getBlockAt(x, y, z).getType())  || craft.getType().getAllowedBlocks().get(craft.getW().getBlockAt(x, y, z).getType()).contains(craft.getW().getBlockAt(x, y, z).getData())) {
                     ret = "@ " + x + "," + y + "," + z;
                 }
             x = block.getX() + 1;
@@ -103,7 +106,7 @@ public class PlayerListener implements Listener {
             z = block.getZ();
             test = new MovecraftLocation(x, y, z);
             if (!craftBlocks.contains(test))
-                if ((Arrays.binarySearch(craft.getType().getAllowedBlocks(), craft.getW().getBlockTypeIdAt(x, y, z)) >= 0) || (Arrays.binarySearch(craft.getType().getAllowedBlocks(), (craft.getW().getBlockTypeIdAt(x, y, z) << 4) + craft.getW().getBlockAt(x, y, z).getData() + 10000) >= 0)) {
+                if (craft.getType().getAllowedBlocks().containsKey(craft.getW().getBlockAt(x, y, z).getType())  || craft.getType().getAllowedBlocks().get(craft.getW().getBlockAt(x, y, z).getType()).contains(craft.getW().getBlockAt(x, y, z).getData())) {
                     ret = "@ " + x + "," + y + "," + z;
                 }
             x = block.getX() - 1;
@@ -111,7 +114,7 @@ public class PlayerListener implements Listener {
             z = block.getZ();
             test = new MovecraftLocation(x, y, z);
             if (!craftBlocks.contains(test))
-                if ((Arrays.binarySearch(craft.getType().getAllowedBlocks(), craft.getW().getBlockTypeIdAt(x, y, z)) >= 0) || (Arrays.binarySearch(craft.getType().getAllowedBlocks(), (craft.getW().getBlockTypeIdAt(x, y, z) << 4) + craft.getW().getBlockAt(x, y, z).getData() + 10000) >= 0)) {
+                if (craft.getType().getAllowedBlocks().containsKey(craft.getW().getBlockAt(x, y, z).getType())  || craft.getType().getAllowedBlocks().get(craft.getW().getBlockAt(x, y, z).getType()).contains(craft.getW().getBlockAt(x, y, z).getData())) {
                     ret = "@ " + x + "," + y + "," + z;
                 }
             x = block.getX() - 1;
@@ -119,7 +122,7 @@ public class PlayerListener implements Listener {
             z = block.getZ();
             test = new MovecraftLocation(x, y, z);
             if (!craftBlocks.contains(test))
-                if ((Arrays.binarySearch(craft.getType().getAllowedBlocks(), craft.getW().getBlockTypeIdAt(x, y, z)) >= 0) || (Arrays.binarySearch(craft.getType().getAllowedBlocks(), (craft.getW().getBlockTypeIdAt(x, y, z) << 4) + craft.getW().getBlockAt(x, y, z).getData() + 10000) >= 0)) {
+                if (craft.getType().getAllowedBlocks().containsKey(craft.getW().getBlockAt(x, y, z).getType())  || craft.getType().getAllowedBlocks().get(craft.getW().getBlockAt(x, y, z).getType()).contains(craft.getW().getBlockAt(x, y, z).getData())) {
                     ret = "@ " + x + "," + y + "," + z;
                 }
             x = block.getX();
@@ -127,7 +130,7 @@ public class PlayerListener implements Listener {
             z = block.getZ() + 1;
             test = new MovecraftLocation(x, y, z);
             if (!craftBlocks.contains(test))
-                if ((Arrays.binarySearch(craft.getType().getAllowedBlocks(), craft.getW().getBlockTypeIdAt(x, y, z)) >= 0) || (Arrays.binarySearch(craft.getType().getAllowedBlocks(), (craft.getW().getBlockTypeIdAt(x, y, z) << 4) + craft.getW().getBlockAt(x, y, z).getData() + 10000) >= 0)) {
+                if (craft.getType().getAllowedBlocks().containsKey(craft.getW().getBlockAt(x, y, z).getType())  || craft.getType().getAllowedBlocks().get(craft.getW().getBlockAt(x, y, z).getType()).contains(craft.getW().getBlockAt(x, y, z).getData())) {
                     ret = "@ " + x + "," + y + "," + z;
                 }
             x = block.getX();
@@ -135,7 +138,7 @@ public class PlayerListener implements Listener {
             z = block.getZ() + 1;
             test = new MovecraftLocation(x, y, z);
             if (!craftBlocks.contains(test))
-                if ((Arrays.binarySearch(craft.getType().getAllowedBlocks(), craft.getW().getBlockTypeIdAt(x, y, z)) >= 0) || (Arrays.binarySearch(craft.getType().getAllowedBlocks(), (craft.getW().getBlockTypeIdAt(x, y, z) << 4) + craft.getW().getBlockAt(x, y, z).getData() + 10000) >= 0)) {
+                if (craft.getType().getAllowedBlocks().containsKey(craft.getW().getBlockAt(x, y, z).getType())  || craft.getType().getAllowedBlocks().get(craft.getW().getBlockAt(x, y, z).getType()).contains(craft.getW().getBlockAt(x, y, z).getData())) {
                     ret = "@ " + x + "," + y + "," + z;
                 }
             x = block.getX();
@@ -143,7 +146,7 @@ public class PlayerListener implements Listener {
             z = block.getZ() - 1;
             test = new MovecraftLocation(x, y, z);
             if (!craftBlocks.contains(test))
-                if ((Arrays.binarySearch(craft.getType().getAllowedBlocks(), craft.getW().getBlockTypeIdAt(x, y, z)) >= 0) || (Arrays.binarySearch(craft.getType().getAllowedBlocks(), (craft.getW().getBlockTypeIdAt(x, y, z) << 4) + craft.getW().getBlockAt(x, y, z).getData() + 10000) >= 0)) {
+                if (craft.getType().getAllowedBlocks().containsKey(craft.getW().getBlockAt(x, y, z).getType())  || craft.getType().getAllowedBlocks().get(craft.getW().getBlockAt(x, y, z).getType()).contains(craft.getW().getBlockAt(x, y, z).getData())) {
                     ret = "@ " + x + "," + y + "," + z;
                 }
             x = block.getX();
@@ -151,7 +154,7 @@ public class PlayerListener implements Listener {
             z = block.getZ() - 1;
             test = new MovecraftLocation(x, y, z);
             if (!craftBlocks.contains(test))
-                if ((Arrays.binarySearch(craft.getType().getAllowedBlocks(), craft.getW().getBlockTypeIdAt(x, y, z)) >= 0) || (Arrays.binarySearch(craft.getType().getAllowedBlocks(), (craft.getW().getBlockTypeIdAt(x, y, z) << 4) + craft.getW().getBlockAt(x, y, z).getData() + 10000) >= 0)) {
+                if (craft.getType().getAllowedBlocks().containsKey(craft.getW().getBlockAt(x, y, z).getType())  || craft.getType().getAllowedBlocks().get(craft.getW().getBlockAt(x, y, z).getType()).contains(craft.getW().getBlockAt(x, y, z).getData())) {
                     ret = "@ " + x + "," + y + "," + z;
                 }
         }
@@ -162,6 +165,8 @@ public class PlayerListener implements Listener {
     public void onPLayerLogout(PlayerQuitEvent e) {
         CraftManager.getInstance().removeCraftByPlayer(e.getPlayer());
     }
+
+
 
     @EventHandler
     public void onPlayerDeath(EntityDamageByEntityEvent e) {  // changed to death so when you shoot up an airship and hit the pilot, it still sinks

@@ -1,7 +1,9 @@
 package net.countercraft.movecraft.sign;
 
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.utils.LegacyUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -19,7 +21,7 @@ public final class TeleportSign implements Listener {
             return;
         }
         Block block = event.getClickedBlock();
-        if (block.getType() != Material.SIGN_POST && block.getType() != Material.WALL_SIGN) {
+        if (block.getType() != (Settings.IsLegacy ? LegacyUtils.SIGN_POST : Material.SIGN) && block.getType() != Material.WALL_SIGN) {
             return;
         }
         Sign sign = (Sign) event.getClickedBlock().getState();

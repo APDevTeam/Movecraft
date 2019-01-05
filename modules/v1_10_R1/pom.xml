@@ -10,7 +10,12 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-
+    <repositories>
+        <repository>
+            <id>sk89q-repo</id>
+            <url>http://maven.sk89q.com/repo/</url>
+        </repository>
+    </repositories>
     <parent>
         <groupId>net.countercraft</groupId>
         <artifactId>movecraft-parent</artifactId>
@@ -19,6 +24,16 @@
     </parent>
 
     <dependencies>
+        <dependency>
+            <groupId>com.sk89q</groupId>
+            <artifactId>worldedit</artifactId>
+            <version>LATEST</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sk89q</groupId>
+            <artifactId>worldguard</artifactId>
+            <version>6.1.1-SNAPSHOT</version>
+        </dependency>
         <dependency>
             <groupId>org.bukkit</groupId>
             <artifactId>craftbukkit</artifactId>

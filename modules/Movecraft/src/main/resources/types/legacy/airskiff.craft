@@ -1,0 +1,126 @@
+name: Airskiff
+maxSize: 80
+minSize: 10
+allowedBlocks: 
+    WOOD:
+    STATIONARY_WATER:
+    WATER:
+    STATIONARY_LAVA:
+    LAVA:
+    LOG:
+    GLASS:
+    DISPENSER:
+    NOTE_BLOCK:
+    BED_BLOCK:
+    PISTON_STICKY_BASE:
+    PISTON_BASE:
+    WOOL:
+    GOLD_BLOCK:
+    DOUBLE_STEP:
+    STEP:
+    BOOKSHELF:
+    TORCH:
+    MOB_SPAWNER:
+    WOOD_STAIRS:
+    CHEST:
+    REDSTONE_WIRE:
+    DIAMOND_BLOCK:
+    WORKBENCH:
+    FURNACE:
+    BURNING_FURNACE:
+    SIGN_POST:
+    WOOD_DOOR:
+    LADDER:
+    WALL_SIGN:
+    LEVER:
+    STONE_PLATE:
+    IRON_DOOR:
+    WOOD_PLATE:
+    REDSTONE_TORCH_ON:
+    REDSTONE_TORCH_OFF:
+    STONE_BUTTON:
+    FENCE:
+    CAKE_BLOCK:
+    DIODE_BLOCK_OFF:
+    DIODE_BLOCK_ON:
+    STAINED_GLASS:
+    TRAP_DOOR:
+    IRON_FENCE:
+    THIN_GLASS:
+    FENCE_GATE:
+    NETHER_FENCE:
+    BREWING_STAND:
+    CAULDRON:
+    REDSTONE_LAMP_ON:
+    REDSTONE_LAMP_OFF:
+    WOOD_DOUBLE_STEP:
+    WOOD_STEP:
+    ENDER_CHEST:
+    TRIPWIRE_HOOK:
+    EMERALD_BLOCK:
+    SPRUCE_WOOD_STAIRS:
+    BIRCH_WOOD_STAIRS:
+    JUNGLE_WOOD_STAIRS:
+    BEACON:
+    WOOD_BUTTON:
+    SKULL:
+    ANVIL:
+    TRAPPED_CHEST:
+    GOLD_PLATE:
+    IRON_PLATE:
+    REDSTONE_COMPARATOR_OFF:
+    REDSTONE_COMPARATOR_ON:
+    DAYLIGHT_SENSOR:
+    REDSTONE_BLOCK:
+    HOPPER:
+    ACTIVATOR_RAIL:
+    SLIME_BLOCK:
+    CARPET:
+    COAL_BLOCK:
+
+forbiddenBlocks:
+    PISTON_EXTENSION:
+
+canFly: true
+rotateAtMidpoint: true
+allowCannonDirectorSign: false
+allowAADirectorSign: false
+canCruise: true
+cruiseSpeed: 1.5
+cruiseSkipBlocks: 1
+maxHeightLimit: 130
+maxHeightAboveGround: 46
+collisionExplosion: 0.0
+fuelBurnRate: 1.0
+explodeOnCrash: 2.0
+sinkSpeed: 3.0
+overallSinkPercent: 97.0
+detectionMultiplier: 20.0
+underwaterDetectionMultiplier: 2.0
+smokeOnSink: 1
+keepMovingOnSink: true
+speed: 3.0
+tryNudge: false
+sinkPercent: 99.0
+flyblocks:
+    WOOL: #wool represents lift
+        - 50.0
+        - 100.0
+    [CHEST, TRAPPED_CHEST]: # limit chests to make big airships important for merchant missions
+        - 0.0
+        - N2
+    [DISPENSER, HOPPER]: # dispensers and hoppers can be used for inventory too, so limit them as well
+        - 0.0
+        - 6.0
+    REDSTONE_BLOCK: # redstone represents engines
+        - 8.0
+        - 100.0
+    ANVIL: # anvils are OP armor, so limit it
+        - 0.0
+        - 1.0
+    OBSIDIAN: # so is obsidian
+        - 0.0
+        - 1.0
+    STATIONARY_WATER: # so is water
+        - 0.0
+        - 1.0

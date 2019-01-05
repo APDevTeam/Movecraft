@@ -18,7 +18,9 @@
 package net.countercraft.movecraft.craft;
 
 import net.countercraft.movecraft.Movecraft;
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -61,16 +63,29 @@ public class CraftManager implements Iterable<Craft>{
         File craftsFile = new File(Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/types");
 
         if (craftsFile.mkdirs()) {
-            Movecraft.getInstance().saveResource("types/airship.craft", false);
-            Movecraft.getInstance().saveResource("types/airskiff.craft", false);
-            Movecraft.getInstance().saveResource("types/BigAirship.craft", false);
-            Movecraft.getInstance().saveResource("types/BigSubAirship.craft", false);
-            Movecraft.getInstance().saveResource("types/elevator.craft", false);
-            Movecraft.getInstance().saveResource("types/LaunchTorpedo.craft", false);
-            Movecraft.getInstance().saveResource("types/Ship.craft", false);
-            Movecraft.getInstance().saveResource("types/SubAirship.craft", false);
-            Movecraft.getInstance().saveResource("types/Submarine.craft", false);
-            Movecraft.getInstance().saveResource("types/Turret.craft", false);
+            if (Settings.IsLegacy) { //save legacy craft files if server version is 1.12.2 or below
+                Movecraft.getInstance().saveResource("types/legacy/airship.craft", false);
+                Movecraft.getInstance().saveResource("types/legacy/airskiff.craft", false);
+                Movecraft.getInstance().saveResource("types/legacy/BigAirship.craft", false);
+                Movecraft.getInstance().saveResource("types/legacy/BigSubAirship.craft", false);
+                Movecraft.getInstance().saveResource("types/legacy/elevator.craft", false);
+                Movecraft.getInstance().saveResource("types/legacy/LaunchTorpedo.craft", false);
+                Movecraft.getInstance().saveResource("types/legacy/Ship.craft", false);
+                Movecraft.getInstance().saveResource("types/legacy/SubAirship.craft", false);
+                Movecraft.getInstance().saveResource("types/legacy/Submarine.craft", false);
+                Movecraft.getInstance().saveResource("types/legacy/Turret.craft", false);
+            } else { //if 1.13 and higher, save 1.13 files
+                Movecraft.getInstance().saveResource("types/airship.craft", false);
+                Movecraft.getInstance().saveResource("types/airskiff.craft", false);
+                Movecraft.getInstance().saveResource("types/BigAirship.craft", false);
+                Movecraft.getInstance().saveResource("types/BigSubAirship.craft", false);
+                Movecraft.getInstance().saveResource("types/elevator.craft", false);
+                Movecraft.getInstance().saveResource("types/LaunchTorpedo.craft", false);
+                Movecraft.getInstance().saveResource("types/Ship.craft", false);
+                Movecraft.getInstance().saveResource("types/SubAirship.craft", false);
+                Movecraft.getInstance().saveResource("types/Submarine.craft", false);
+                Movecraft.getInstance().saveResource("types/Turret.craft", false);
+            }
         }
 
         Set<CraftType> craftTypes = new HashSet<>();

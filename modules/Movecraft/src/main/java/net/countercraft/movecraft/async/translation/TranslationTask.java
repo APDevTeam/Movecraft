@@ -3,6 +3,7 @@ package net.countercraft.movecraft.async.translation;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.async.AsyncTask;
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.CraftTranslateEvent;
@@ -10,6 +11,7 @@ import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.update.*;
 import net.countercraft.movecraft.utils.HashHitBox;
 import net.countercraft.movecraft.utils.HitBox;
+import net.countercraft.movecraft.utils.LegacyUtils;
 import net.countercraft.movecraft.utils.MutableHitBox;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -29,7 +31,10 @@ import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class TranslationTask extends AsyncTask {
-    private static final int[] FALL_THROUGH_BLOCKS = {0, 8, 9, 10, 11, 31, 37, 38, 39, 40, 50, 51, 55, 59, 63, 65, 68, 69, 70, 72, 75, 76, 77, 78, 83, 85, 93, 94, 111, 141, 142, 143, 171};
+    private static final Material[] FALL_THROUGH_BLOCKS = {Material.AIR, Material.WATER, LegacyUtils.STATIONARY_WATER, Material.LAVA, LegacyUtils.STATIONARY_LAVA, LegacyUtils.LONG_GRASS, LegacyUtils.YELLOW_FLOWER, LegacyUtils.RED_ROSE,
+    Material.BROWN_MUSHROOM, Material.RED_MUSHROOM, Material.TORCH, Material.FIRE, Material.REDSTONE_WIRE, LegacyUtils.CROPS, LegacyUtils.SIGN_POST, Material.LADDER, Material.WALL_SIGN, Material.LEVER, LegacyUtils.STONE_PLATE, LegacyUtils.REDSTONE_TORCH_ON, LegacyUtils.REDSTONE_TORCH_OFF, Material.STONE_BUTTON,
+    Material.SNOW, LegacyUtils.SUGAR_CANE_BLOCK, LegacyUtils.FENCE, LegacyUtils.DIODE_BLOCK_OFF, LegacyUtils.DIODE_BLOCK_ON, LegacyUtils.WATER_LILY, Material.CARROT, Material.POTATO, LegacyUtils.WOOD_BUTTON, LegacyUtils.CARPET};
+    //private static final int[] FALL_THROUGH_BLOCKS = {0, 8, 9, 10, 11, 31, 37, 38, 39, 40, 50, 51, 55, 59, 63, 65, 68, 69, 70, 72, 75, 76, 77, 78, 83, 85, 93, 94, 111, 141, 142, 143, 171};
 
     private int dx, dy, dz;
     private HashHitBox newHitBox, oldHitBox;
@@ -65,7 +70,7 @@ public class TranslationTask extends AsyncTask {
             int testY = minY;
             while (testY > 0){
                 testY -= 1;
-                if (craft.getW().getBlockTypeIdAt(middle.getX(),testY,middle.getZ()) != 0)
+                if (craft.getW().getBlockAt(middle.getX(),testY,middle.getZ()).getType() != Material.AIR || !Settings.IsLegacy &&(craft.getW().getBlockAt(middle.getX(),testY,middle.getZ()).getType() != Material.CAVE_AIR || craft.getW().getBlockAt(middle.getX(),testY,middle.getZ()).getType() != Material.VOID_AIR))
                     break;
             }
             if (minY - testY > craft.getType().getMaxHeightAboveGround()) {
@@ -109,11 +114,28 @@ public class TranslationTask extends AsyncTask {
                 return;
             }
 
+            if (Movecraft.getInstance().getWorldGuardPlugin() != null ){
+
+            }
+
+            if (Movecraft.getInstance().getFactionsPlugin() != null){
+
+            }
+
+            if (Movecraft.getInstance().getTownyPlugin() != null){
+
+            }
+
             boolean blockObstructed;
             if (craft.getSinking()) {
-                blockObstructed = !(Arrays.binarySearch(FALL_THROUGH_BLOCKS, testMaterial.getId()) >= 0);
+                blockObstructed = !(Arrays.binarySearch(FALL_THROUGH_BLOCKS, testMaterial) >= 0);
             } else {
-                blockObstructed = !craft.getType().getPassthroughBlocks().contains(testMaterial) && !testMaterial.equals(Material.AIR);
+                if (Settings.IsLegacy) {
+                    blockObstructed = !craft.getType().getPassthroughBlocks().contains(testMaterial) && !testMaterial.equals(Material.AIR);
+                } else { //1.13 has more than just one air type
+                    blockObstructed = !craft.getType().getPassthroughBlocks().contains(testMaterial) && !testMaterial.equals(Material.AIR) ||
+                    !testMaterial.equals(Material.CAVE_AIR) || !testMaterial.equals(Material.VOID_AIR);
+                }
             }
 
             boolean ignoreBlock = false;
@@ -249,7 +271,7 @@ public class TranslationTask extends AsyncTask {
                 craft.getW().playSound(location, Sound.BLOCK_ANVIL_LAND, 1.0f, 0.25f);
                 //craft.setCurTickCooldown(craft.getType().getCruiseTickCooldown());
             } else {
-                craft.getW().playSound(location, Sound.ENTITY_IRONGOLEM_DEATH, 5.0f, 5.0f);
+                craft.getW().playSound(location, Settings.IsLegacy ? Sound.ENTITY_IRON_GOLEM_DEATH : LegacyUtils.ENITIY_IRONGOLEM_DEATH, 5.0f, 5.0f);
                 //craft.setCurTickCooldown(craft.getType().getCruiseTickCooldown());
             }
         }
@@ -287,13 +309,24 @@ public class TranslationTask extends AsyncTask {
         for (MovecraftLocation harvestedBlock : harvestedBlocks) {
             Block block = craft.getW().getBlockAt(harvestedBlock.getX(), harvestedBlock.getY(), harvestedBlock.getZ());
             List<ItemStack> drops = new ArrayList<>(block.getDrops());
-            //generate seed drops
-            if (block.getType() == Material.CROPS) {
-                Random rand = new Random();
-                int amount = rand.nextInt(4);
-                if (amount > 0) {
-                    ItemStack seeds = new ItemStack(Material.SEEDS, amount);
-                    drops.add(seeds);
+            if (Settings.IsLegacy) {
+                //generate seed drops
+                if (block.getType() == LegacyUtils.CROPS) {
+                    Random rand = new Random();
+                    int amount = rand.nextInt(4);
+                    if (amount > 0) {
+                        ItemStack seeds = new ItemStack(LegacyUtils.SEEDS, amount);
+                        drops.add(seeds);
+                    }
+                }
+            } else {
+                if (block.getType() == Material.WHEAT){
+                    Random rand = new Random();
+                    int amount = rand.nextInt(4);
+                    if (amount > 0){
+                        ItemStack seeds = new ItemStack(Material.WHEAT_SEEDS, amount);
+                        drops.add(seeds);
+                    }
                 }
             }
             //get contents of inventories before deposting
@@ -358,9 +391,12 @@ public class TranslationTask extends AsyncTask {
         Block fuelHolder = null;
         for (MovecraftLocation bTest : oldHitBox) {
             Block b = craft.getW().getBlockAt(bTest.getX(), bTest.getY(), bTest.getZ());
-            if (b.getTypeId() == 61) {
+            if (b.getType() == Material.FURNACE) {
                 InventoryHolder inventoryHolder = (InventoryHolder) b.getState();
-                if (inventoryHolder.getInventory().contains(263) || inventoryHolder.getInventory().contains(173)) {
+                if ((!Settings.IsLegacy ? (inventoryHolder.getInventory().contains(Material.COAL) ||
+                        inventoryHolder.getInventory().contains(Material.CHARCOAL))
+                        : (inventoryHolder.getInventory().contains(Material.COAL))  ||
+                        inventoryHolder.getInventory().contains(Material.COAL_BLOCK))) {
                     fuelHolder = b;
                 }
             }
@@ -370,8 +406,8 @@ public class TranslationTask extends AsyncTask {
             return false;
         }
         InventoryHolder inventoryHolder = (InventoryHolder) fuelHolder.getState();
-        if (inventoryHolder.getInventory().contains(263)) {
-            ItemStack iStack = inventoryHolder.getInventory().getItem(inventoryHolder.getInventory().first(263));
+        if (inventoryHolder.getInventory().contains(Material.COAL)) {
+            ItemStack iStack = inventoryHolder.getInventory().getItem(inventoryHolder.getInventory().first(Material.COAL));
             int amount = iStack.getAmount();
             if (amount == 1) {
                 inventoryHolder.getInventory().remove(iStack);
@@ -380,7 +416,7 @@ public class TranslationTask extends AsyncTask {
             }
             craft.setBurningFuel(craft.getBurningFuel() + 7.0);
         } else {
-            ItemStack iStack = inventoryHolder.getInventory().getItem(inventoryHolder.getInventory().first(173));
+            ItemStack iStack = inventoryHolder.getInventory().getItem(inventoryHolder.getInventory().first(Material.COAL_BLOCK));
             int amount = iStack.getAmount();
             if (amount == 1) {
                 inventoryHolder.getInventory().remove(iStack);

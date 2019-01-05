@@ -1,6 +1,6 @@
 package net.countercraft.movecraft.warfare.assault;
 
-import com.sk89q.worldedit.Vector;
+import org.bukkit.util.Vector;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.boss.BarColor;

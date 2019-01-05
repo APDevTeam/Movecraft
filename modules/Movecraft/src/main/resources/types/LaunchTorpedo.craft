@@ -2,10 +2,10 @@ name: LaunchTorpedo
 maxSize: 7
 minSize: 1
 allowedBlocks: 
-    - 173
+    - COAL_BLOCK
 
 forbiddenBlocks:
-    - 7
+    - BEDROCK
 
 canCruise: true
 cruiseOnPilot: true
@@ -25,6 +25,6 @@ tryNudge: false
 sinkPercent: 99.0
 overallSinkPercent: 99.0
 flyblocks:
-    173:
+    COAL_BLOCK:
         - 10.0
         - 100.0

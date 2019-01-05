@@ -4,11 +4,13 @@ import com.sk89q.worldedit.CuboidClipboard;
 import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.blocks.BaseBlock;
 import com.sk89q.worldedit.bukkit.selections.CuboidSelection;
+import com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard;
 import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.protection.flags.DefaultFlag;
 import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.countercraft.movecraft.Movecraft;
+import net.countercraft.movecraft.MovecraftRepair;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.warfare.assault.Assault;
@@ -17,10 +19,6 @@ import net.countercraft.movecraft.warfare.assault.AssaultUtils;
 import net.countercraft.movecraft.warfare.siege.Siege;
 import org.bukkit.*;
 import org.bukkit.block.Block;
-import org.bukkit.boss.BarColor;
-import org.bukkit.boss.BarFlag;
-import org.bukkit.boss.BarStyle;
-import org.bukkit.boss.BossBar;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -130,10 +128,10 @@ public class AssaultCommand implements CommandExecutor{
         repairStateName += ".schematic";
         file = new File(repairStateName);
 
-        Vector min = new Vector(aRegion.getMinimumPoint().getBlockX(), aRegion.getMinimumPoint().getBlockY(), aRegion.getMinimumPoint().getBlockZ());
-        Vector max = new Vector(aRegion.getMaximumPoint().getBlockX(), aRegion.getMaximumPoint().getBlockY(), aRegion.getMaximumPoint().getBlockZ());
+        org.bukkit.util.Vector min = new org.bukkit.util.Vector(aRegion.getMinimumPoint().getBlockX(), aRegion.getMinimumPoint().getBlockY(), aRegion.getMinimumPoint().getBlockZ());
+        org.bukkit.util.Vector max = new org.bukkit.util.Vector(aRegion.getMaximumPoint().getBlockX(), aRegion.getMaximumPoint().getBlockY(), aRegion.getMaximumPoint().getBlockZ());
 
-        if (max.subtract(min).getBlockX() > 256) {
+        /*if (max.subtract(min).getBlockX() > 256) {
             if (min.getBlockX() < player.getLocation().getBlockX() - 128) {
                 min = min.setX(player.getLocation().getBlockX() - 128);
             }
@@ -148,32 +146,10 @@ public class AssaultCommand implements CommandExecutor{
             if (max.getBlockZ() > player.getLocation().getBlockZ() + 128) {
                 max = max.setZ(player.getLocation().getBlockZ() + 128);
             }
-        }
-
-        CuboidClipboard clipboard = new CuboidClipboard(max.subtract(min).add(Vector.ONE), min);
-        CuboidSelection selection = new CuboidSelection(player.getWorld(), min, max);
-
-        for (int x = 0; x < selection.getWidth(); ++x) {
-            for (int y = 0; y < selection.getHeight(); ++y) {
-                for (int z = 0; z < selection.getLength(); ++z) {
-                    Vector vector = new Vector(x, y, z);
-                    int bx = selection.getMinimumPoint().getBlockX() + x;
-                    int by = selection.getMinimumPoint().getBlockY() + y;
-                    int bz = selection.getMinimumPoint().getBlockZ() + z;
-                    Block block = player.getWorld().getBlockAt(bx, by, bz);
-                    if (!player.getWorld().isChunkLoaded(bx >> 4, bz >> 4))
-                        player.getWorld().loadChunk(bx >> 4, bz >> 4);
-                    BaseBlock baseBlock = new BaseBlock(block.getTypeId(), block.getData());
-
-                    clipboard.setBlock(vector, baseBlock);
-                }
-            }
-        }
-        try {
-            clipboard.saveSchematic(file);
-        } catch (Exception e) {
-            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Could not save file"));
-            e.printStackTrace();
+        }*/
+        MovecraftRepair movecraftRepair = Movecraft.getInstance().getMovecraftRepair();
+        if (!movecraftRepair.saveRegionRepairState(Movecraft.getInstance(), ((Player) commandSender).getWorld(),min, max, aRegion.getId().replaceAll("´\\s+", "_"))){
+            player.sendMessage(I18nSupport.getInternationalisedString("Could not save file"));
             return true;
         }
 //			} else {
@@ -191,8 +167,8 @@ public class AssaultCommand implements CommandExecutor{
         final Player taskPlayer = player;
         final World taskWorld = player.getWorld();
         final Long taskMaxDamages = (long) AssaultUtils.getMaxDamages(aRegion);
-        final Vector taskMin = min;
-        final Vector taskMax = max;
+        final org.bukkit.util.Vector taskMin = min;
+        final org.bukkit.util.Vector taskMax = max;
         //TODO: Make async
         new BukkitRunnable() {
             @Override

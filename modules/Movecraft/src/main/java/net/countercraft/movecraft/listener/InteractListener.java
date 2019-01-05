@@ -17,6 +17,7 @@
 
 package net.countercraft.movecraft.listener;
 
+import net.countercraft.movecraft.utils.LegacyUtils;
 import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.config.Settings;
@@ -28,27 +29,38 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.material.Button;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 public final class InteractListener implements Listener {
     private static final Map<Player, Long> timeMap = new HashMap<>();
-
+    final Material[] buttons = !Settings.IsLegacy ? new Material[] {Material.STONE_BUTTON, Material.BIRCH_BUTTON, Material.ACACIA_BUTTON, Material.DARK_OAK_BUTTON, Material.JUNGLE_BUTTON, Material.OAK_BUTTON, Material.SPRUCE_BUTTON}: new Material[]{};
     @EventHandler
     public final void onPlayerInteract(PlayerInteractEvent event) {
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK && event.getAction() != Action.LEFT_CLICK_BLOCK) {
             return;
         }
         Material m = event.getClickedBlock().getType();
-        if (!m.equals(Material.WOOD_BUTTON) && !m.equals(Material.STONE_BUTTON)) {
+        if (Settings.IsLegacy ? (!m.equals(LegacyUtils.WOOD_BUTTON) && !m.equals(Material.STONE_BUTTON)) : Arrays.binarySearch(buttons, m) < 0) {
             return;
         }
         if (event.getAction() != Action.LEFT_CLICK_BLOCK) {
             return;
         } // if they left click a button which is pressed, unpress it
-        if (event.getClickedBlock().getData() >= 8) {
-            event.getClickedBlock().setData((byte) (event.getClickedBlock().getData() - 8));
+        if (Settings.IsLegacy) {
+            if (event.getClickedBlock().getData() >= 8) {
+                LegacyUtils.setData(event.getClickedBlock(), (byte) (event.getClickedBlock().getData() - 8));
+            }
+        } else {
+            if (event.getClickedBlock().getState() instanceof Button){
+                Button button = (Button) event.getClickedBlock().getState();
+                if (button.isPowered()){
+                    button.setPowered(false);
+                }
+            }
         }
     }
 
@@ -69,7 +81,7 @@ public final class InteractListener implements Listener {
         if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK) {
             Craft craft = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
 
-            if (event.getItem() == null || event.getItem().getTypeId() != Settings.PilotTool) {
+            if (event.getItem() == null || event.getItem().getType() != Settings.PilotTool) {
                 return;
             }
             event.setCancelled(true);
@@ -136,7 +148,7 @@ public final class InteractListener implements Listener {
             return;
         }
         if (event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.LEFT_CLICK_BLOCK) {
-            if (event.getItem() == null || event.getItem().getTypeId() != Settings.PilotTool) {
+            if (event.getItem() == null || event.getItem().getType() != Settings.PilotTool) {
                 return;
             }
             Craft craft = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());

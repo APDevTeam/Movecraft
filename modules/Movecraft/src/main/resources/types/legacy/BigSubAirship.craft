@@ -1,0 +1,170 @@
+name: BigSubAirship
+maxSize: 20000
+minSize: 10000
+allowedBlocks: 
+    WOOD:
+    STATIONARY_WATER:
+    WATER:
+    STATIONARY_LAVA:
+    LAVA:
+    LOG:
+    GLASS:
+    LAPIS_BLOCK:
+    DISPENSER:
+    NOTE_BLOCK:
+    BED_BLOCK:
+    PISTON_STICKY_BASE:
+    PISTON_BASE:
+    PISTON_EXTENSION:
+    WOOL:
+    GOLD_BLOCK:
+    IRON_BLOCK:
+    DOUBLE_STEP:
+    STEP:
+    BOOKSHELF:
+    TORCH:
+    FIRE:
+    WOOD_STAIRS:
+    CHEST:
+    REDSTONE_WIRE:
+    DIAMOND_BLOCK:
+    WORKBENCH:
+    FURNACE:
+    BURNING_FURNACE:
+    SIGN_POST:
+    WOOD_DOOR:
+    LADDER:
+    WALL_SIGN:
+    LEVER:
+    STONE_PLATE:
+    IRON_DOOR:
+    WOOD_PLATE:
+    REDSTONE_TORCH_ON:
+    REDSTONE_TORCH_OFF:
+    STONE_BUTTON:
+    CLAY:
+    FENCE:
+    NETHERRACK:
+    GLOWSTONE:
+    CAKE_BLOCK:
+    DIODE_BLOCK_OFF:
+    DIODE_BLOCK_ON:
+    STAINED_GLASS:
+    TRAP_DOOR:
+    SMOOTH_BRICK:
+    IRON_FENCE:
+    THIN_GLASS:
+    FENCE_GATE:
+    SMOOTH_STAIRS:
+    NETHER_BRICK:
+    NETHER_FENCE:
+    NETHER_BRICK_STAIRS:
+    ENCHANTMENT_TABLE:
+    BREWING_STAND:
+    CAULDRON:
+    ENDER_STONE:
+    DRAGON_EGG:
+    REDSTONE_LAMP_ON:
+    REDSTONE_LAMP_OFF:
+    WOOD_DOUBLE_STEP:
+    WOOD_STEP:
+    ENDER_CHEST:
+    TRIPWIRE_HOOK:
+    EMERALD_BLOCK:
+    SPRUCE_WOOD_STAIRS:
+    BIRCH_WOOD_STAIRS:
+    JUNGLE_WOOD_STAIRS:
+    BEACON:
+    COBBLE_WALL:
+    FLOWER_POT:
+    WOOD_BUTTON:
+    SKULL:
+    ANVIL:
+    TRAPPED_CHEST:
+    GOLD_PLATE:
+    IRON_PLATE:
+    REDSTONE_COMPARATOR_OFF:
+    REDSTONE_COMPARATOR_ON:
+    DAYLIGHT_SENSOR:
+    REDSTONE_BLOCK:
+    HOPPER:
+    QUARTZ_BLOCK:
+    QUARTZ_STAIRS:
+    ACTIVATOR_RAIL:
+    DROPPER:
+    STAINED_CLAY:
+    STAINED_GLASS_PANE:
+    SLIME_BLOCK:
+    CARPET:
+    HARD_CLAY:
+    COAL_BLOCK:
+    IRON_TRAPDOOR:
+    DAYLIGHT_SENSOR_INVERTED:
+    SPRUCE_FENCE_GATE:
+    BIRCH_FENCE_GATE:
+    JUNGLE_FENCE_GATE:
+    DARK_OAK_FENCE_GATE:
+    ACACIA_FENCE_GATE:
+    SPRUCE_FENCE:
+    BIRCH_FENCE:
+    JUNGLE_FENCE:
+    ACACIA_FENCE:
+    DARK_OAK_FENCE:
+    SPRUCE_DOOR:
+    BIRCH_DOOR:
+    JUNGLE_DOOR:
+    ACACIA_DOOR:
+    DARK_OAK_DOOR:
+    END_BRICKS:
+
+forbiddenBlocks:
+    PISTON_EXTENSION:
+
+canCruise: true
+rotateAtMidpoint: true
+blockRemoteRotate: true
+cruiseSkipBlocks: 4
+cruiseSpeed: 0.17
+canFly: false
+minHeightLimit: 1
+maxHeightLimit: 110
+maxHeightAboveGround: 50
+vertCruiseSkipBlocks: 1
+detectionMultiplier: 10.0
+underwaterDetectionMultiplier: 1.0
+speed: 0.17
+collisionExplosion: 0.0
+fuelBurnRate: 4.0
+tryNudge: false
+sinkPercent: 99.0
+overallSinkPercent: 60.0
+halfSpeedUnderwater: true
+moveblocks:
+    REDSTONNE_BLOCK: # redstone represents engines
+        - 1.0
+        - 100.0
+flyblocks:
+    IRON_BLOCK: # iron represents ballast tanks
+        - 10.0
+        - 100.0
+    WOOL: #wool represents lift
+        - 50.0
+        - 100.0
+    [CHEST, TRAPPED_CHEST]: # limit chests to make big airships important for merchant missions
+        - 0.0
+        - 1.0
+    [DISPENSER, DROPPER, HOPPER]: # dispensers and hoppers can be used for inventory too, so limit them as well
+        - 0.0
+        - 2.0
+    FURNACE: # Furnaces for cargo? really guys?
+        - 0.0
+        - N50
+    ANVIL: # anvils are OP armor, so limit it
+        - 0.0
+        - 1.0
+    OBSIDIAN: # so is obsidian
+        - 0.0
+        - 1.0
+    STATIONARY_WATER: # so is water
+        - 0.0
+        - 1.0

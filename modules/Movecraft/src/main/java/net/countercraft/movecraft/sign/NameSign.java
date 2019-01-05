@@ -5,6 +5,7 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.utils.ChatUtils;
+import net.countercraft.movecraft.utils.LegacyUtils;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -22,7 +23,7 @@ public final class NameSign implements Listener {
         World w = c.getW();
         for (MovecraftLocation location : event.getCraft().getHitBox()){
             Block b = location.toBukkit(w).getBlock();
-            if (b.getType() == Material.SIGN_POST || b.getType() == Material.WALL_SIGN){
+            if (b.getType() == (Settings.IsLegacy ? LegacyUtils.SIGN_POST : Material.SIGN) || b.getType() == Material.WALL_SIGN){
                 Sign s = (Sign) b.getState();
                 String name = "";
                 if (s.getLine(0).equalsIgnoreCase(HEADER)){
@@ -43,12 +44,13 @@ public final class NameSign implements Listener {
     }
     @EventHandler
     public void onSignChange(SignChangeEvent event){
-        if (event.getLine(0).equalsIgnoreCase(HEADER)){
-            if (Settings.RequireNamePerm && !event.getPlayer().hasPermission("movecraft.name")){
-                event.getPlayer().sendMessage(ChatUtils.MOVECRAFT_COMMAND_PREFIX + "Insufficient permissions");
-                event.setCancelled(true);
-                return;
-            }
+        if (!event.getLine(0).equalsIgnoreCase(HEADER)){
+            return;
+        }
+        if (Settings.RequireNamePerm && !event.getPlayer().hasPermission("movecraft.name")){
+            event.getPlayer().sendMessage(ChatUtils.MOVECRAFT_COMMAND_PREFIX + "Insufficient permissions");
+            event.setCancelled(true);
+            return;
         }
     }
 }

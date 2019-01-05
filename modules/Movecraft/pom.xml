@@ -37,6 +37,12 @@
     <dependencies>
         <dependency>
             <groupId>net.countercraft</groupId>
+            <artifactId>movecraft-v1_13_R2</artifactId>
+            <version>v1_13_R2</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>net.countercraft</groupId>
             <artifactId>movecraft-v1_10_R1</artifactId>
             <version>v1_10_R1</version>
             <type>jar</type>
@@ -53,6 +59,7 @@
             <version>v1_12_R1</version>
             <type>jar</type>
         </dependency>
+
         <dependency>
             <groupId>net.countercraft</groupId>
             <artifactId>movecraft-api</artifactId>
@@ -68,6 +75,11 @@
             <groupId>com.sk89q</groupId>
             <artifactId>worldedit</artifactId>
             <version>LATEST</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sk89q.worldedit</groupId>
+            <artifactId>worldedit-bukkit</artifactId>
+            <version>7.0.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>at.pavlov</groupId>
@@ -114,6 +126,20 @@
             <version>LATEST</version>
             <scope>system</scope>
             <systemPath>${project.basedir}/../../libs/WGCustomFlags.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>com.massivecraft</groupId>
+            <artifactId>Factions</artifactId>
+            <version>LATEST</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/../../libs/Factions.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>com.massivecraft</groupId>
+            <artifactId>MassiveCore</artifactId>
+            <version>LATEST</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/../../libs/MassiveCore.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>org.jetbrains</groupId>

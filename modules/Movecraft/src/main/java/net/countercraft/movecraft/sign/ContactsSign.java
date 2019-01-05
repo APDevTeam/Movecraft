@@ -1,10 +1,12 @@
 package net.countercraft.movecraft.sign;
 
 import net.countercraft.movecraft.MovecraftLocation;
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.utils.LegacyUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -20,7 +22,7 @@ public class ContactsSign implements Listener{
         World world = event.getCraft().getW();
         for(MovecraftLocation location: event.getCraft().getHitBox()){
             Block block = location.toBukkit(world).getBlock();
-            if(block.getType() == Material.WALL_SIGN || block.getType() == Material.SIGN_POST){
+            if(block.getType() == Material.WALL_SIGN || block.getType() == (Settings.IsLegacy ? LegacyUtils.SIGN_POST : Material.SIGN)){
                 Sign sign = (Sign) block.getState();
                 if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Contacts:")) {
                     sign.setLine(1, "");

@@ -134,6 +134,7 @@ public abstract class Craft {
 
     public void setCruising(boolean cruising) {
         if(notificationPlayer!=null){
+
             notificationPlayer.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent("Cruising " + (cruising ? "enabled" : "disabled")));
         }
         this.cruising = cruising;
@@ -320,7 +321,7 @@ public abstract class Craft {
             return type.getTickCooldown()+(int)chestPenalty;
         if(type.getDynamicFlyBlockSpeedFactor()!=0){
             double count = 0;
-            Material flyBlockMaterial = Material.getMaterial(type.getDynamicFlyBlock());
+            Material flyBlockMaterial = type.getDynamicFlyBlock();
             for(MovecraftLocation location : hitBox){
                 if(location.toBukkit(w).getBlock().getType()==flyBlockMaterial)
                     count++;

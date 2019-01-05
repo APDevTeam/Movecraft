@@ -5,15 +5,12 @@ import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
-import net.countercraft.movecraft.listener.WorldEditInteractListener;
-import net.countercraft.movecraft.utils.ChatUtils;
+import net.countercraft.movecraft.repair.RepairUtils;
 import org.bukkit.*;
-import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.boss.BarColor;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.util.Vector;
 
 import java.text.DecimalFormat;
 import java.util.UUID;
@@ -143,7 +140,7 @@ public class AssaultTask extends BukkitRunnable {
                 assert tRegion != null;
                 tRegion.setFlag(DefaultFlag.TNT, StateFlag.State.DENY);
                 // repair the damages that have occurred so far
-                if (!new WorldEditInteractListener().repairRegion(assault.getWorld(), assault.getRegionName())) {
+                if (!RepairUtils.repairRegion(assault.getRegionName(), assault.getWorld())) {
                     Bukkit.getServer().broadcastMessage(String.format("REPAIR OF %s FAILED, CONTACT AN ADMIN", assault.getRegionName().toUpperCase()));
                 }
             }
@@ -154,6 +151,7 @@ public class AssaultTask extends BukkitRunnable {
 
 
     private static String getRegionOwnerList(ProtectedRegion tRegion) {
+
         StringBuilder output = new StringBuilder();
         if (tRegion == null)
             return "";

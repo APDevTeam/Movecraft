@@ -1,5 +1,7 @@
 package net.countercraft.movecraft.sign;
 
+import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.utils.LegacyUtils;
 import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
@@ -25,7 +27,7 @@ public final class RemoteSign implements Listener{
             return;
         }
         Block block = event.getClickedBlock();
-        if (block.getType() != Material.SIGN_POST && block.getType() != Material.WALL_SIGN) {
+        if (block.getType() != (Settings.IsLegacy ? LegacyUtils.SIGN_POST : Material.SIGN) && block.getType() != Material.WALL_SIGN) {
             return;
         }
         Sign sign = (Sign) event.getClickedBlock().getState();
@@ -63,7 +65,7 @@ public final class RemoteSign implements Listener{
         LinkedList<MovecraftLocation> foundLocations = new LinkedList<MovecraftLocation>();
         for (MovecraftLocation tloc : foundCraft.getHitBox()) {
             Block tb = event.getClickedBlock().getWorld().getBlockAt(tloc.getX(), tloc.getY(), tloc.getZ());
-            if (!tb.getType().equals(Material.SIGN_POST) && !tb.getType().equals(Material.WALL_SIGN)) {
+            if (!tb.getType().equals((Settings.IsLegacy ? LegacyUtils.SIGN_POST : Material.SIGN)) && !tb.getType().equals(Material.WALL_SIGN)) {
                 continue;
             }
             Sign ts = (Sign) tb.getState();

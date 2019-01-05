@@ -35,6 +35,7 @@
             <artifactId>worldedit</artifactId>
             <version>LATEST</version>
         </dependency>
+
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot</artifactId>
