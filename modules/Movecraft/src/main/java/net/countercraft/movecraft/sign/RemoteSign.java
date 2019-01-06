@@ -73,21 +73,17 @@ public final class RemoteSign implements Listener{
                 continue;
             }
             Sign ts = (Sign) tb.getState();
-            if (ChatColor.stripColor(ts.getLine(0)).equalsIgnoreCase(HEADER))
-                continue;
+            
             if (ChatColor.stripColor(ts.getLine(0)).equalsIgnoreCase(targetText)){
                 foundLocations.add(tloc);
-                continue;
             }
-            if (ChatColor.stripColor(ts.getLine(1)).equalsIgnoreCase(targetText)){
+            else if (ChatColor.stripColor(ts.getLine(1)).equalsIgnoreCase(targetText)){
                 foundLocations.add(tloc);
-                continue;
             }
-            if (ChatColor.stripColor(ts.getLine(2)).equalsIgnoreCase(targetText)) {
+            else if (ChatColor.stripColor(ts.getLine(2)).equalsIgnoreCase(targetText)) {
                 foundLocations.add(tloc);
-                continue;
             }
-            if (ChatColor.stripColor(ts.getLine(3)).equalsIgnoreCase(targetText))
+            else if (ChatColor.stripColor(ts.getLine(3)).equalsIgnoreCase(targetText))
                 foundLocations.add(tloc);
         }
         if (foundLocations.isEmpty()) {
