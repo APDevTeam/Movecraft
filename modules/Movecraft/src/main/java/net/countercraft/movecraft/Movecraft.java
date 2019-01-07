@@ -193,7 +193,11 @@ public class Movecraft extends JavaPlugin {
         Settings.AssaultRequiredDefendersOnline = getConfig().getInt("AssaultRequiredDefendersOnline", 3);
         Settings.AssaultDestroyableBlocks = new HashSet<>(getConfig().getIntegerList("AssaultDestroyableBlocks"));
         Settings.DisableShadowBlocks = new HashSet<>(getConfig().getIntegerList("DisableShadowBlocks"));  //REMOVE FOR PUBLIC VERSION
-        Settings.ForbiddenRemoteSigns = new HashSet<>(getConfig().getStringList("ForbiddenRemoteSigns"));
+        Settings.ForbiddenRemoteSigns = new HashSet<>();
+
+        for(String s : getConfig().getStringList("ForbiddenRemoteSigns")) {
+            Settings.ForbiddenRemoteSigns.add(s.toLowerCase());
+        }
 
         Settings.SiegeEnable = getConfig().getBoolean("SiegeEnable", false);
 

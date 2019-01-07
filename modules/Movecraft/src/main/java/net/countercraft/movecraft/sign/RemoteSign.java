@@ -12,6 +12,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -19,6 +20,20 @@ import java.util.LinkedList;
 
 public final class RemoteSign implements Listener{
     private static final String HEADER = "Remote Sign";
+
+    @EventHandler
+    public final void onSignChange(SignChangeEvent event) {
+        if (!event.getLine(0).equalsIgnoreCase(HEADER)) {
+            return;
+        }
+        else if(event.getLine(1).equals("")) {
+            event.getPlayer().sendMessage("ERROR: Remote Signs can't be blank!");
+            event.setLine(0,"");
+            event.setLine(2,"");
+            event.setLine(3,"");
+            return;
+        }
+    }
 
     @EventHandler
     public final void onSignClick(PlayerInteractEvent event) {
@@ -68,6 +83,7 @@ public final class RemoteSign implements Listener{
         }
 
         LinkedList<MovecraftLocation> foundLocations = new LinkedList<MovecraftLocation>();
+        boolean firstError = true;
         for (MovecraftLocation tloc : foundCraft.getHitBox()) {
             Block tb = event.getClickedBlock().getWorld().getBlockAt(tloc.getX(), tloc.getY(), tloc.getZ());
             if (!tb.getType().equals(Material.SIGN_POST) && !tb.getType().equals(Material.WALL_SIGN)) {
@@ -76,15 +92,21 @@ public final class RemoteSign implements Listener{
             Sign ts = (Sign) tb.getState();
 
             if (isEqualSign(ts, targetText)) {
-                if(isForbidden(ts)) {
-                    event.getPlayer().sendMessage("Warning: Forbidden remote sign found and skipped.");
-                }
-                else {
+                if (isForbidden(ts)) {
+                    if (firstError) {
+                        event.getPlayer().sendMessage("Warning: Forbidden remote sign(s) found at the following locations with the following text:");
+                        firstError = false;
+                    }
+                    event.getPlayer().sendMessage(" - ".concat(tloc.toString()).concat(" : ").concat(ts.getLine(0)));
+                } else {
                     foundLocations.add(tloc);
                 }
             }
         }
-        if (foundLocations.isEmpty()) {
+        if (!firstError) {
+            return;
+        }
+        else if (foundLocations.isEmpty()) {
             event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("ERROR: Could not find target sign!"));
             return;
         }
@@ -108,11 +130,9 @@ public final class RemoteSign implements Listener{
     }
     private boolean isForbidden(Sign test) {
         for (int i = 0; i < 4; i++) {
-            for(String s : Settings.ForbiddenRemoteSigns) {
-                if(s.equalsIgnoreCase(test.getLine(i))) {
-                    return true;
-                }
-            }
+            String t = test.getLine(i).toLowerCase();
+            if(Settings.ForbiddenRemoteSigns.contains(t))
+                return true;
         }
         return false;
     }
