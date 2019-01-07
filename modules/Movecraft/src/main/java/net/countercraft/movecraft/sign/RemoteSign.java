@@ -101,10 +101,10 @@ public final class RemoteSign implements Listener{
         event.setCancelled(true);
     }
     private boolean isEqualSign(Sign test, String target) {
-        return ChatColor.stripColor(test.getLine(0)).equalsIgnoreCase(target)
+        return !ChatColor.stripColor(test.getLine(0)).equalsIgnoreCase(HEADER) && ( ChatColor.stripColor(test.getLine(0)).equalsIgnoreCase(target)
                 || ChatColor.stripColor(test.getLine(1)).equalsIgnoreCase(target)
                 || ChatColor.stripColor(test.getLine(2)).equalsIgnoreCase(target)
-                || ChatColor.stripColor(test.getLine(3)).equalsIgnoreCase(target);
+                || ChatColor.stripColor(test.getLine(3)).equalsIgnoreCase(target) );
     }
     private boolean isForbidden(Sign test) {
         for (int i = 0; i < 4; i++) {
