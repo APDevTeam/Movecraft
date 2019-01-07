@@ -14,14 +14,11 @@ Development builds can be found on [Travis](https://travis-ci.org/APDevTeam/Move
 Older builds (1.10 and below) are located on the [Spigot forums](https://www.spigotmc.org/resources/movecraft.31321/)
 
 ## Building
-Movecraft uses multiple versions of the Spigot server software for legacy support. As such, you need to run [BuildTools](https://www.spigotmc.org/wiki/buildtools/) for several versions before building the plugin.  This can be done anywhere on the same machine as Movecraft will be built.
+Movecraft uses multiple versions of the Spigot server software for legacy support. As such, you need to run [BuildTools](https://www.spigotmc.org/wiki/buildtools/) for several versions before building the plugin. It doesn't matter where you do this, but inside the Movecraft directory is probably a bad place.
 
 ```
-java -jar BuildTools.jar --rev 1.10
 java -jar BuildTools.jar --rev 1.10.2
-java -jar BuildTools.jar --rev 1.11
 java -jar BuildTools.jar --rev 1.11.2
-java -jar BuildTools.jar --rev 1.12
 java -jar BuildTools.jar --rev 1.12.1
 ```
 Then, run the following to build Movecraft through `maven`.
