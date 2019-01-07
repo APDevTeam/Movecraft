@@ -5,6 +5,7 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.config.Settings;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -73,18 +74,15 @@ public final class RemoteSign implements Listener{
                 continue;
             }
             Sign ts = (Sign) tb.getState();
-            
-            if (ChatColor.stripColor(ts.getLine(0)).equalsIgnoreCase(targetText)){
-                foundLocations.add(tloc);
+
+            if (isEqualSign(ts, targetText)) {
+                if(isForbidden(ts)) {
+                    event.getPlayer().sendMessage("Warning: Forbidden remote sign found and skipped.");
+                }
+                else {
+                    foundLocations.add(tloc);
+                }
             }
-            else if (ChatColor.stripColor(ts.getLine(1)).equalsIgnoreCase(targetText)){
-                foundLocations.add(tloc);
-            }
-            else if (ChatColor.stripColor(ts.getLine(2)).equalsIgnoreCase(targetText)) {
-                foundLocations.add(tloc);
-            }
-            else if (ChatColor.stripColor(ts.getLine(3)).equalsIgnoreCase(targetText))
-                foundLocations.add(tloc);
         }
         if (foundLocations.isEmpty()) {
             event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("ERROR: Could not find target sign!"));
@@ -101,5 +99,21 @@ public final class RemoteSign implements Listener{
         }
         
         event.setCancelled(true);
+    }
+    private boolean isEqualSign(Sign test, String target) {
+        return ChatColor.stripColor(test.getLine(0)).equalsIgnoreCase(target)
+                || ChatColor.stripColor(test.getLine(1)).equalsIgnoreCase(target)
+                || ChatColor.stripColor(test.getLine(2)).equalsIgnoreCase(target)
+                || ChatColor.stripColor(test.getLine(3)).equalsIgnoreCase(target);
+    }
+    private boolean isForbidden(Sign test) {
+        for (int i = 0; i < 4; i++) {
+            for(String s : Settings.ForbiddenRemoteSigns) {
+                if(s.equalsIgnoreCase(test.getLine(i))) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
