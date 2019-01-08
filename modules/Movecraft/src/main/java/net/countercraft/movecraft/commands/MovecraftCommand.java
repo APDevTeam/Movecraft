@@ -23,7 +23,7 @@ public class MovecraftCommand implements TabExecutor {
         }
 
         if(args.length == 0){
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "Movecraft 7.0 Pre Release 7 SNAPSHOT-4 by cccm5");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "Movecraft 7.0 Pre Release 7 SNAPSHOT-5 by cccm5");
             return true;
         }
 
