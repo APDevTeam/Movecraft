@@ -401,8 +401,7 @@ final public class CraftType {
             }
         }
         if(!blockedByWater){
-            passthroughBlocks.add(Material.WATER);
-            passthroughBlocks.add(Material.STATIONARY_WATER);
+            passthroughBlocks.add(Settings.IsLegacy ? Material.STATIONARY_WATER : Material.WATER);
         }
         if (data.containsKey("allowVerticalTakeoffAndLanding")) {
             allowVerticalTakeoffAndLanding = (Boolean) data.get("allowVerticalTakeoffAndLanding");
@@ -501,6 +500,9 @@ final public class CraftType {
                         } else {
                             returnMap.put(type, new ArrayList<>(data));
                         }
+                    } else {
+                        Material type = Material.getMaterial(string);
+                        returnMap.put(type,new ArrayList<>());
                     }
                 } else {
                     Material type = (Material) o;
@@ -622,7 +624,7 @@ final public class CraftType {
                 }
             } else if (i instanceof Integer) {
                 Integer typeID = (Integer) i;
-                Material type = Material.getMaterial(typeID);
+                Material type = Settings.IsLegacy ? Material.getMaterial(typeID) : null;
                 materialMap.put(type, new ArrayList<>());
             } else if (i instanceof String) {
                 String string = (String) i;

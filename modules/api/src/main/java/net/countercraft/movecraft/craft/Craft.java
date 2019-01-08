@@ -19,6 +19,7 @@ package net.countercraft.movecraft.craft;
 
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.events.CraftSinkEvent;
 import net.countercraft.movecraft.utils.HashHitBox;
 import net.md_5.bungee.api.ChatMessageType;
@@ -368,34 +369,34 @@ public abstract class Craft {
             int posZ;
             posZ = hitBox.getMinZ() - 1;
             for (posX = hitBox.getMinX() - 1; posX <= hitBox.getMaxX() + 1; posX++) {
-                int typeID = w.getBlockAt(posX, posY, posZ).getTypeId();
-                if (typeID == 9)
+                Material type = w.getBlockAt(posX, posY, posZ).getType();
+                if (Settings.IsLegacy ? type == Material.STATIONARY_WATER : type == Material.WATER)
                     numWater++;
-                if (typeID == 0)
+                if (Settings.IsLegacy ? type == Material.AIR : (type == Material.AIR || type == Material.getMaterial("CAVE_AIR") || type == Material.getMaterial("VOID_AIR")))
                     numAir++;
             }
             posZ = hitBox.getMaxZ() + 1;
             for (posX = hitBox.getMinX() - 1; posX <= hitBox.getMaxX() + 1; posX++) {
-                int typeID = w.getBlockAt(posX, posY, posZ).getTypeId();
-                if (typeID == 9)
+                Material type = w.getBlockAt(posX, posY, posZ).getType();
+                if (Settings.IsLegacy ? type == Material.STATIONARY_WATER : type == Material.WATER)
                     numWater++;
-                if (typeID == 0)
+                if (Settings.IsLegacy ? type == Material.AIR : (type == Material.AIR || type == Material.getMaterial("CAVE_AIR") || type == Material.getMaterial("VOID_AIR")))
                     numAir++;
             }
             posX = hitBox.getMinX() - 1;
             for (posZ = hitBox.getMinZ(); posZ <= hitBox.getMaxZ(); posZ++) {
-                int typeID = w.getBlockAt(posX, posY, posZ).getTypeId();
-                if (typeID == 9)
+                Material type = w.getBlockAt(posX, posY, posZ).getType();
+                if (Settings.IsLegacy ? type == Material.STATIONARY_WATER : type == Material.WATER)
                     numWater++;
-                if (typeID == 0)
+                if (Settings.IsLegacy ? type == Material.AIR : (type == Material.AIR || type == Material.getMaterial("CAVE_AIR") || type == Material.getMaterial("VOID_AIR")))
                     numAir++;
             }
             posX = hitBox.getMaxX() + 1;
             for (posZ = hitBox.getMinZ(); posZ <= hitBox.getMaxZ(); posZ++) {
-                int typeID = w.getBlockAt(posX, posY, posZ).getTypeId();
-                if (typeID == 9)
+                Material type = w.getBlockAt(posX, posY, posZ).getType();
+                if (Settings.IsLegacy ? type == Material.STATIONARY_WATER : type == Material.WATER)
                     numWater++;
-                if (typeID == 0)
+                if (Settings.IsLegacy ? type == Material.AIR : (type == Material.AIR || type == Material.getMaterial("CAVE_AIR") || type == Material.getMaterial("VOID_AIR")))
                     numAir++;
             }
             if (numWater > numAir) {

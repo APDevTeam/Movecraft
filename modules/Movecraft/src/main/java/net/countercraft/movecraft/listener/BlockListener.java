@@ -165,13 +165,22 @@ public class BlockListener implements Listener {
         CraftManager.getInstance().getCraftsInWorld(block.getWorld());
         for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(block.getWorld())) {
             MovecraftLocation mloc = new MovecraftLocation(block.getX(), block.getY(), block.getZ());
-            if (MathUtils.locIsNearCraftFast(tcraft, mloc) &&
-                    tcraft.getCruising() && (block.getType() == LegacyUtils.PISTON_STICKY_BASE ||
-                    block.getType() == LegacyUtils.PISTON_BASE || block.getType() == Material.DISPENSER || block.getType() == Material.PISTON ||
-                    block.getType() == Material.STICKY_PISTON &&
-                    !tcraft.isNotProcessing())) {
-                event.setNewCurrent(event.getOldCurrent()); // don't allow piston movement on cruising crafts
-                return;
+            if (Settings.IsLegacy) {
+                if (MathUtils.locIsNearCraftFast(tcraft, mloc) &&
+                        tcraft.getCruising() && (block.getType() == LegacyUtils.PISTON_STICKY_BASE ||
+                        block.getType() == LegacyUtils.PISTON_BASE || block.getType() == Material.DISPENSER &&
+                        !tcraft.isNotProcessing())) {
+                    event.setNewCurrent(event.getOldCurrent()); // don't allow piston movement on cruising crafts
+                    return;
+                }
+            } else {
+                if (MathUtils.locIsNearCraftFast(tcraft, mloc) &&
+                        tcraft.getCruising() && (block.getType() == Material.STICKY_PISTON ||
+                        block.getType() == Material.PISTON || block.getType() == Material.DISPENSER &&
+                        !tcraft.isNotProcessing())) {
+                    event.setNewCurrent(event.getOldCurrent()); // don't allow piston movement on cruising crafts
+                    return;
+                }
             }
         }
     }
@@ -216,8 +225,9 @@ public class BlockListener implements Listener {
 
         Block block = event.getBlock();
 
-        final Material[] legacyFragileBlocks = new Material[]{LegacyUtils.BED_BLOCK, LegacyUtils.PISTON_EXTENSION, Material.TORCH, Material.REDSTONE_WIRE, LegacyUtils.SIGN_POST, LegacyUtils.WOOD_DOOR, Material.LADDER, Material.WALL_SIGN, Material.LEVER, LegacyUtils.STONE_PLATE, LegacyUtils.IRON_DOOR_BLOCK, LegacyUtils.WOOD_PLATE, LegacyUtils.REDSTONE_TORCH_OFF, LegacyUtils.REDSTONE_TORCH_ON, Material.STONE_BUTTON, LegacyUtils.DIODE_BLOCK_OFF, LegacyUtils.DIODE_BLOCK_ON, LegacyUtils.TRAP_DOOR, Material.TRIPWIRE_HOOK,
-                Material.TRIPWIRE, LegacyUtils.WOOD_BUTTON, LegacyUtils.GOLD_PLATE, LegacyUtils.IRON_PLATE, LegacyUtils.REDSTONE_COMPARATOR_OFF, LegacyUtils.REDSTONE_COMPARATOR_ON, Material.DAYLIGHT_DETECTOR, LegacyUtils.CARPET, LegacyUtils.DAYLIGHT_DETECTOR_INVERTED, Material.SPRUCE_DOOR, Material.BIRCH_DOOR, Material.JUNGLE_DOOR, Material.ACACIA_DOOR, Material.DARK_OAK_DOOR};
+        final Material[] fragileBlocks = Settings.IsLegacy ? new Material[]{LegacyUtils.BED_BLOCK, LegacyUtils.PISTON_EXTENSION, Material.TORCH, Material.REDSTONE_WIRE, LegacyUtils.SIGN_POST, LegacyUtils.WOOD_DOOR, Material.LADDER, Material.WALL_SIGN, Material.LEVER, LegacyUtils.STONE_PLATE, LegacyUtils.IRON_DOOR_BLOCK, LegacyUtils.WOOD_PLATE, LegacyUtils.REDSTONE_TORCH_OFF, LegacyUtils.REDSTONE_TORCH_ON, Material.STONE_BUTTON, LegacyUtils.DIODE_BLOCK_OFF, LegacyUtils.DIODE_BLOCK_ON, LegacyUtils.TRAP_DOOR, Material.TRIPWIRE_HOOK,
+                Material.TRIPWIRE, LegacyUtils.WOOD_BUTTON, LegacyUtils.GOLD_PLATE, LegacyUtils.IRON_PLATE, LegacyUtils.REDSTONE_COMPARATOR_OFF, LegacyUtils.REDSTONE_COMPARATOR_ON, Material.DAYLIGHT_DETECTOR, LegacyUtils.CARPET, LegacyUtils.DAYLIGHT_DETECTOR_INVERTED, Material.SPRUCE_DOOR, Material.BIRCH_DOOR, Material.JUNGLE_DOOR, Material.ACACIA_DOOR, Material.DARK_OAK_DOOR}
+                : null;
         CraftManager.getInstance().getCraftsInWorld(block.getWorld());
         for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(block.getWorld())) {
             MovecraftLocation mloc = new MovecraftLocation(block.getX(), block.getY(), block.getZ());
@@ -226,7 +236,7 @@ public class BlockListener implements Listener {
             }
 
             if (Settings.IsLegacy) {
-                if (Arrays.binarySearch(legacyFragileBlocks, block.getType()) >= 0) {
+                if (Arrays.binarySearch(fragileBlocks, block.getType()) >= 0) {
                     MaterialData m = block.getState().getData();
                     BlockFace face = BlockFace.DOWN;
                     boolean faceAlwaysDown = false;

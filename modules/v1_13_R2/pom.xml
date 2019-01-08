@@ -3,7 +3,6 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>net.countercraft</groupId>
     <artifactId>movecraft-v1_13_R2</artifactId>
     <packaging>jar</packaging>
     <name>Movecraft-v1_13_R2</name>
@@ -13,12 +12,14 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
     <parent>
         <groupId>net.countercraft</groupId>
         <artifactId>movecraft-parent</artifactId>
         <version>parent</version>
         <relativePath>../../</relativePath>
     </parent>
+
     <repositories>
         <repository>
             <id>sk89q-repo</id>
@@ -57,7 +58,7 @@
                 <version>3.7.0</version>
                 <configuration>
                     <includes>
-                        <include>net/countercraft/movecraft/compat/v1_12_R1/**</include>
+                        <include>net/countercraft/movecraft/compat/v1_13_R2/**</include>
                     </includes>
                     <source>1.8</source>
                     <target>1.8</target>
@@ -69,7 +70,7 @@
                 <version>2.4</version>
                 <configuration>
                     <includes>
-                        <include>net/countercraft/movecraft/compat/v1_12_R1/**</include>
+                        <include>net/countercraft/movecraft/compat/v1_13_R2/**</include>
                     </includes>
                 </configuration>
             </plugin>

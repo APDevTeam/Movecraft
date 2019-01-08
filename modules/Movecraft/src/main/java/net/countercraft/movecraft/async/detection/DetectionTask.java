@@ -18,6 +18,7 @@
 package net.countercraft.movecraft.async.detection;
 
 
+import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.config.Settings;
@@ -70,6 +71,7 @@ public class DetectionTask extends AsyncTask {
             detectSurrounding(blockStack.pop());
         } while (!blockStack.isEmpty());
         if (data.failed()) {
+            Movecraft.getInstance().getLogger().info("failed");
             return;
         }
         if (getCraft().getType().getDynamicFlyBlockSpeedFactor() != 0.0) {
@@ -100,7 +102,6 @@ public class DetectionTask extends AsyncTask {
         if (notVisited(workingLocation, visited)) {
 
             Material testType = null;
-            int testID = 0;
             int testData = 0;
             try {
                 testData = data.getWorld().getBlockAt(x, y, z).getData();
@@ -134,9 +135,6 @@ public class DetectionTask extends AsyncTask {
                             fail(I18nSupport.getInternationalisedString(
                                     "Detection - Forbidden sign string found"));
                         }
-                    }
-                    if (s.getLine(0).equalsIgnoreCase("Name:") && !craft.getType().getCanBeNamed()){
-                        fail("This craft type cannot be named");
                     }
                 }
             }
@@ -195,9 +193,7 @@ public class DetectionTask extends AsyncTask {
 
                     addToBlockList(workingLocation);
                     Material blockType = testType;
-                    int blockID = testID;
                     int dataID = testData;
-                    Integer shiftedID = (blockID << 4) + dataID + 10000;
                     for (Map<Material, List<Integer>> flyBlockDef : dFlyBlocks.keySet()) {
                         if ((flyBlockDef.containsKey(blockType) && flyBlockDef.get(blockType).isEmpty()) || (flyBlockDef.containsKey(blockType) && flyBlockDef.get(blockType).contains(dataID))) {
                             addToBlockCount(flyBlockDef);

@@ -27,6 +27,10 @@ public final class NameSign implements Listener {
                 Sign s = (Sign) b.getState();
                 String name = "";
                 if (s.getLine(0).equalsIgnoreCase(HEADER)){
+                    if (!c.getType().getCanBeNamed()){
+                        c.getNotificationPlayer().sendMessage("Warning: Name: sign was found on the craft, but the craft type used (" + c.getType().getCraftName() + ") is unnameable");
+                        return;
+                    }
                     if (s.getLine(1) != null){
                         name += s.getLine(1) + " "; //reserved for prefix (HMA, SS, MS, USS, HMS, etc...)
                     }

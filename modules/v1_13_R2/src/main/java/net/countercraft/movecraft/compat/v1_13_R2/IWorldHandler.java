@@ -59,7 +59,7 @@ public class IWorldHandler extends WorldHandler{
             return;
         }
         try {
-            internalTeleportMH.invoke(ePlayer.playerConnection, x, y, z, yaw, pitch, EnumSet.allOf(PacketPlayOutPosition.EnumPlayerTeleportFlags.class));
+            internalTeleportMH.invoke(ePlayer.playerConnection, (player.getLocation().getX() + x), (player.getLocation().getY() + y), (player.getLocation().getZ() + z), yaw, pitch, EnumSet.allOf(PacketPlayOutPosition.EnumPlayerTeleportFlags.class));
         } catch (Throwable throwable) {
             throwable.printStackTrace();
         }
@@ -276,9 +276,9 @@ public class IWorldHandler extends WorldHandler{
         world.tileEntityListTick.remove(tile);
         if(!bMap.containsKey(world)){
             try {
-                Field bField = World.class.getDeclaredField("b");
+                Field bField = World.class.getDeclaredField("c");
                 bField.setAccessible(true);
-                bMap.put(world, (List<TileEntity>) bField.get(world));
+                bMap.put(world, (List<TileEntity>) bField.get(world));//TODO bug fix
             } catch (IllegalAccessException | IllegalArgumentException | NoSuchFieldException | SecurityException e1) {
                 e1.printStackTrace();
             }
@@ -297,8 +297,9 @@ public class IWorldHandler extends WorldHandler{
         ChunkSection chunkSection = chunk.getSections()[position.getY()>>4];
         if (chunkSection == null) {
             // Put a GLASS block to initialize the section. It will be replaced next with the real block.
-            chunk.a(position, (TileEntity) Blocks.GLASS.getBlockData());
+            chunk.setType(position, Blocks.GLASS.getBlockData(), true);
             chunkSection = chunk.getSections()[position.getY() >> 4];
+
         }
 
         chunkSection.setType(position.getX()&15, position.getY()&15, position.getZ()&15, data);
