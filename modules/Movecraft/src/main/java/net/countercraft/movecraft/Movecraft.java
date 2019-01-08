@@ -190,7 +190,11 @@ public class Movecraft extends JavaPlugin {
         Settings.AssaultDuration = getConfig().getInt("AssaultDuration", 1800);
         Settings.AssaultCostPercent = getConfig().getDouble("AssaultCostPercent", 0.25);
         Settings.AssaultDamagesPerBlock = getConfig().getInt("AssaultDamagesPerBlock", 15);
-        Settings.AssaultRequiredDefendersOnline = getConfig().getInt("AssaultRequiredDefendersOnline", 3);
+        Settings.AssaultRequiredDefendersOnline = getConfig().getInt("AssaultRequiredDefendersOnline", 2);
+        Settings.AssaultRequiredOwnersOnline = getConfig().getInt("AssaultRequiredOwnersOnline", 1);
+        Settings.AssaultMaxBalance = getConfig().getDouble("AssaultMaxBalance", 5000000);
+        Settings.AssaultOwnerWeightPercent = getConfig().getInt("AssaultOwnerWeightPercent", 100);
+        Settings.AssaultMemberWeightPercent = getConfig().getInt("AssaultMemberWeightPercent", 100);
         Settings.AssaultDestroyableBlocks = new HashSet<>(getConfig().getIntegerList("AssaultDestroyableBlocks"));
         Settings.DisableShadowBlocks = new HashSet<>(getConfig().getIntegerList("DisableShadowBlocks"));  //REMOVE FOR PUBLIC VERSION
         Settings.ForbiddenRemoteSigns = new HashSet<>();

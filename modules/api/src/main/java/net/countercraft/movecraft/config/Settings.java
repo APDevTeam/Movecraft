@@ -69,9 +69,13 @@ public class Settings {
     public static int AssaultDelay;
     public static int AssaultDuration;
     public static int AssaultRequiredDefendersOnline;
+    public static int AssaultRequiredOwnersOnline;
     public static double AssaultCostPercent;
     public static HashSet<Integer> AssaultDestroyableBlocks;
     public static int AssaultDamagesPerBlock;
+    public static double AssaultMaxBalance;
+    public static int AssaultOwnerWeightPercent;
+    public static int AssaultMemberWeightPercent;
     public static HashSet<Integer> DisableShadowBlocks;
     public static HashSet<String> ForbiddenRemoteSigns;
 
