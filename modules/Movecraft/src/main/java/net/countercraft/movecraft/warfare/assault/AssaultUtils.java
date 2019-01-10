@@ -13,46 +13,72 @@ public class AssaultUtils {
 
     public static boolean areDefendersOnline(ProtectedRegion tRegion) {
         HashSet<UUID> players = new HashSet<>();
-        players.addAll(tRegion.getMembers().getUniqueIds());
         players.addAll(tRegion.getOwners().getUniqueIds());
         int numOnline = 0;
+
+        if(Settings.AssaultRequiredOwnersOnline > 0) {
+            for (UUID playerName : players) {
+                if (Bukkit.getPlayer(playerName) != null) {
+                    numOnline++;
+                }
+            }
+
+            if (numOnline < Settings.AssaultRequiredOwnersOnline) {
+                return false;
+            }
+            numOnline = 0;
+        }
+
+        players.addAll(tRegion.getMembers().getUniqueIds());
         for (UUID playerName : players) {
             if (Bukkit.getPlayer(playerName) != null) {
                 numOnline++;
             }
         }
         return numOnline >= Settings.AssaultRequiredDefendersOnline;
+
     }
 
     public static double getCostToAssault(ProtectedRegion tRegion) {
-        HashSet<UUID> players = new HashSet<>();
-        players.addAll(tRegion.getMembers().getUniqueIds());
-        players.addAll(tRegion.getOwners().getUniqueIds());
-        double total = 0.0;
-        for (UUID playerName : players) {
-            OfflinePlayer offP = Bukkit.getOfflinePlayer(playerName);
-            if (offP.getName() != null)
-                if (Movecraft.getInstance().getEconomy().getBalance(offP) > 5000000)
-                    total += 5000000;
-                else
-                    total += Movecraft.getInstance().getEconomy().getBalance(offP);
-        }
-        return total * Settings.AssaultCostPercent / 100.0;
+        return getAssaultBalance(tRegion) * Settings.AssaultCostPercent / 100.0;
     }
 
     public static double getMaxDamages(ProtectedRegion tRegion) {
+
+        return getAssaultBalance(tRegion) * Settings.AssaultDamagesCapPercent / 100.0;
+    }
+
+    private static double getAssaultBalance(ProtectedRegion tRegion) {
+        return getOwnerBalance(tRegion) + getMemberBalance(tRegion);
+    }
+
+    private static double getOwnerBalance(ProtectedRegion tRegion) {
         HashSet<UUID> players = new HashSet<>();
-        players.addAll(tRegion.getMembers().getUniqueIds());
         players.addAll(tRegion.getOwners().getUniqueIds());
         double total = 0.0;
         for (UUID playerName : players) {
             OfflinePlayer offP = Bukkit.getOfflinePlayer(playerName);
             if (offP.getName() != null)
-                if (Movecraft.getInstance().getEconomy().getBalance(offP) > 5000000)
-                    total += 5000000;
+                if (Movecraft.getInstance().getEconomy().getBalance(offP) > Settings.AssaultMaxBalance)
+                    total += Settings.AssaultMaxBalance;
                 else
                     total += Movecraft.getInstance().getEconomy().getBalance(offP);
         }
-        return total * Settings.AssaultDamagesCapPercent / 100.0;
+        return total * (Settings.AssaultOwnerWeightPercent / 100.0);
+    }
+
+    private static double getMemberBalance(ProtectedRegion tRegion) {
+        HashSet<UUID> players = new HashSet<>();
+        players.addAll(tRegion.getMembers().getUniqueIds());
+        double total = 0.0;
+        for (UUID playerName : players) {
+            OfflinePlayer offP = Bukkit.getOfflinePlayer(playerName);
+            if (offP.getName() != null)
+                if (Movecraft.getInstance().getEconomy().getBalance(offP) > Settings.AssaultMaxBalance)
+                    total += Settings.AssaultMaxBalance;
+                else
+                    total += Movecraft.getInstance().getEconomy().getBalance(offP);
+        }
+        return total * (Settings.AssaultMemberWeightPercent / 100.0);
     }
 }
