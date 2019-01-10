@@ -181,8 +181,8 @@ public class Movecraft extends JavaPlugin {
             for (String str : temp.keySet()) {
                 Settings.DurabilityOverride.put(Integer.parseInt(str), (Integer) temp.get(str));
             }
-
         }
+
         Settings.AssaultEnable = getConfig().getBoolean("AssaultEnable", false);
         Settings.AssaultDamagesCapPercent = getConfig().getDouble("AssaultDamagesCapPercent", 1.0);
         Settings.AssaultCooldownHours = getConfig().getInt("AssaultCooldownHours", 24);
@@ -193,6 +193,11 @@ public class Movecraft extends JavaPlugin {
         Settings.AssaultRequiredDefendersOnline = getConfig().getInt("AssaultRequiredDefendersOnline", 3);
         Settings.AssaultDestroyableBlocks = new HashSet<>(getConfig().getIntegerList("AssaultDestroyableBlocks"));
         Settings.DisableShadowBlocks = new HashSet<>(getConfig().getIntegerList("DisableShadowBlocks"));  //REMOVE FOR PUBLIC VERSION
+        Settings.ForbiddenRemoteSigns = new HashSet<>();
+
+        for(String s : getConfig().getStringList("ForbiddenRemoteSigns")) {
+            Settings.ForbiddenRemoteSigns.add(s.toLowerCase());
+        }
 
         Settings.SiegeEnable = getConfig().getBoolean("SiegeEnable", false);
 

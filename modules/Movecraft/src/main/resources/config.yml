@@ -106,3 +106,7 @@ TownyWorldHeightLimits:
     worldMax: -1
     aboveTownSpawn: 96
     underTownSpawn: 255
+ForbiddenRemoteSigns: # These strings will be ignored when searching for signs to trigger from a remote sign
+  - "Mounted"
+  - "Denied"
+  - "[private]"
