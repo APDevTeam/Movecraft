@@ -3,7 +3,7 @@ softdepend: [WorldGuard, WorldEdit, Cannons, Vault,Essentials, WGCustomFlags, To
 version: ${project.version}
 #version: ${env.BUILD_NUMBER}
 description: The original flight and movement plugin for minecraft.
-author: BaccaYarro
+authors: [BaccaYarro, cccm5]
 website: http://www.youtube.com/BaccaYarro
 main: net.countercraft.movecraft.Movecraft
 database: false
