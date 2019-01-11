@@ -41,16 +41,14 @@ public class AssaultTask extends BukkitRunnable {
             //first, find a position for the repair beacon
             int beaconX = assault.getMinPos().getBlockX();
             int beaconZ = assault.getMinPos().getBlockZ();
-            boolean good = false;
-            int beaconY = 0;
-            for(int i = 0; i < 255; i++) {
-                if(w.getBlockAt(beaconX, i, beaconZ).getType() == Material.AIR) {
-                    good = true;
-                    beaconY = i;
+            int beaconY;
+            for(beaconY = 255; beaconY > 0; beaconY--) {
+                if(w.getBlockAt(beaconX, beaconY, beaconZ).getType() != Material.AIR) {
+                    beaconY++;
                     break;
                 }
             }
-            if(!good) {
+            if(beaconY > 251 || beaconY == 0) {
                 Bukkit.getServer().broadcastMessage(String.format("BEACON PLACEMENT FOR %s FAILED, CONTACT AN ADMIN!", assault));
             }
             else {
