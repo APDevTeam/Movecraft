@@ -72,8 +72,8 @@ public class Settings {
     public static int AssaultRequiredOwnersOnline;
     public static double AssaultCostPercent;
     public static double AssaultMaxBalance;
-    public static int AssaultOwnerWeightPercent;
-    public static int AssaultMemberWeightPercent;
+    public static double AssaultOwnerWeightPercent;
+    public static double AssaultMemberWeightPercent;
     public static HashSet<Integer> AssaultDestroyableBlocks;
     public static int AssaultDamagesPerBlock;
     public static HashSet<Integer> DisableShadowBlocks;

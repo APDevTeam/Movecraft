@@ -30,8 +30,8 @@ AssaultDamagesPerBlock: 15 # the damages incurred for every block that would hav
 AssaultMaxBalance: 5000000 # Maximum balance of each player that will be contributed to the cost & damages (previously hard coded at 5 million)
 AssaultRequiredDefendersOnline: 2 # At least this many members or owners must be online for the region to be assaulted
 AssaultRequiredOwnersOnline: 1 # At least this many owners must be online for the region to be assaulted, set to 0 to ignore
-AssaultOwnerWeightPercent: 100 # Percentage of each Owner's balance (under the maximum) to include in the total cost & damages (Can be greater than 100)
-AssaultMemberWeightPercent: 100 # Percentage of each Member's balance (under the maximum) to include in the total cost & damages (Can be greater than 100)
+AssaultOwnerWeightPercent: 1.0 # Percentage of each Owner's balance (under the maximum) to include in the total cost & damages (Can be greater than 100)
+AssaultMemberWeightPercent: 1.0 # Percentage of each Member's balance (under the maximum) to include in the total cost & damages (Can be greater than 100)
 AssaultDestroyableBlocks: # these blocks will be removed if destroyed in assault. Other blocks will not be removed, but still count for damages. Don't include craft flyblocks, or blocks with metadata, or you can have issues.
   - 1
   - 2
