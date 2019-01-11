@@ -164,6 +164,8 @@ public class Movecraft extends JavaPlugin {
 
         Settings.SinkCheckTicks = getConfig().getDouble("SinkCheckTicks", 100.0);
         Settings.TracerRateTicks = getConfig().getDouble("TracerRateTicks", 5.0);
+        Settings.TracerMinDistanceSqrd = getConfig().getLong("TracerMinDistance", 60);
+            Settings.TracerMinDistanceSqrd *= Settings.TracerMinDistanceSqrd;
         Settings.ManOverBoardTimeout = getConfig().getInt("ManOverBoardTimeout", 30);
         Settings.SilhouetteViewDistance = getConfig().getInt("SilhouetteViewDistance", 200);
         Settings.SilhouetteBlockCount = getConfig().getInt("SilhouetteBlockCount", 20);
