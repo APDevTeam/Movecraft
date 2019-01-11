@@ -216,7 +216,10 @@ public class TranslationTask extends AsyncTask {
         //prevents torpedo and rocket pilots
         if (craft.getType().getMoveEntities() && !(craft.getSinking() && craft.getType().getOnlyMovePlayers())) {
             for (Entity entity : craft.getW().getNearbyEntities(craft.getHitBox().getMidPoint().toBukkit(craft.getW()), craft.getHitBox().getXLength() / 2.0 + 1, craft.getHitBox().getYLength() / 2.0 + 1, craft.getHitBox().getZLength() / 2.0 + 1)) {
-                if (entity.getType() == EntityType.PLAYER && !craft.getSinking()) {
+                if (entity.getType() == EntityType.PLAYER) {
+                    if(craft.getSinking()){
+                        continue;
+                    }
                     Player player = (Player) entity;
                     craft.getMovedPlayers().put(player, System.currentTimeMillis());
                     EntityUpdateCommand eUp = new EntityUpdateCommand(entity, dx, dy, dz, 0, 0);
