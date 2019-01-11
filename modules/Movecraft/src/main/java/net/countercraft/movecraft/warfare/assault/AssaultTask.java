@@ -48,7 +48,7 @@ public class AssaultTask extends BukkitRunnable {
                     break;
                 }
             }
-            if(beaconY > 251 || beaconY == 0) {
+            if(beaconY > 250) {
                 Bukkit.getServer().broadcastMessage(String.format("BEACON PLACEMENT FOR %s FAILED, CONTACT AN ADMIN!", assault));
             }
             else {
