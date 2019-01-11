@@ -3,6 +3,7 @@ CompatibilityMode: false
 SinkRateTicks: 20
 SinkCheckTicks: 100
 TracerRateTicks: 5
+TracerMinDistance: 60 # Minimum distance for tracers to appear
 PilotTool: 280
 WorldGuardBlockMoveOnBuildPerm: true
 WorldGuardBlockSinkOnPVPPerm: true

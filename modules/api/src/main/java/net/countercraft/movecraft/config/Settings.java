@@ -38,6 +38,7 @@ public class Settings {
     public static double SinkRateTicks = 20.0;
     public static double SinkCheckTicks = 100.0;
     public static double TracerRateTicks = 5.0;
+    public static long TracerMinDistanceSqrd = 360;
     public static boolean WorldGuardBlockMoveOnBuildPerm = false;
     public static boolean WorldGuardBlockSinkOnPVPPerm = false;
     public static boolean ProtectPilotedCrafts = false;
