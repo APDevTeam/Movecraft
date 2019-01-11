@@ -41,52 +41,64 @@ public class AssaultTask extends BukkitRunnable {
             //first, find a position for the repair beacon
             int beaconX = assault.getMinPos().getBlockX();
             int beaconZ = assault.getMinPos().getBlockZ();
-            int beaconY = w.getHighestBlockAt(beaconX, beaconZ).getY();
-            int x, y, z;
-            for (x = beaconX; x < beaconX + 5; x++)
-                for (z = beaconZ; z < beaconZ + 5; z++)
-                    if (!w.isChunkLoaded(x >> 4, z >> z))
-                        w.loadChunk(x >> 4, z >> 4);
-            boolean empty = false;
-            while (!empty && beaconY < 250) {
-                empty = true;
-                beaconY++;
-                for (x = beaconX; x < beaconX + 5; x++) {
-                    for (y = beaconY; y < beaconY + 4; y++) {
-                        for (z = beaconZ; z < beaconZ + 5; z++) {
-                            if (!w.getBlockAt(x, y, z).isEmpty())
-                                empty = false;
+            int beaconY;
+            for(beaconY = 255; beaconY > 0; beaconY--) {
+                if(w.getBlockAt(beaconX, beaconY, beaconZ).getType() != Material.AIR) {
+                    beaconY++;
+                    break;
+                }
+            }
+            if(beaconY > 250) {
+                Bukkit.getServer().broadcastMessage(String.format("BEACON PLACEMENT FOR %s FAILED, CONTACT AN ADMIN!", assault));
+            }
+            else {
+                int x, y, z;
+                for (x = beaconX; x < beaconX + 5; x++)
+                    for (z = beaconZ; z < beaconZ + 5; z++)
+                        if (!w.isChunkLoaded(x >> 4, z >> z))
+                            w.loadChunk(x >> 4, z >> 4);
+                boolean empty = false;
+                while (!empty && beaconY < 250) {
+                    empty = true;
+                    beaconY++;
+                    for (x = beaconX; x < beaconX + 5; x++) {
+                        for (y = beaconY; y < beaconY + 4; y++) {
+                            for (z = beaconZ; z < beaconZ + 5; z++) {
+                                if (!w.getBlockAt(x, y, z).isEmpty())
+                                    empty = false;
+                            }
                         }
                     }
                 }
+
+                //now make the beacon
+                y = beaconY;
+                for (x = beaconX + 1; x < beaconX + 4; x++)
+                    for (z = beaconZ + 1; z < beaconZ + 4; z++)
+                        w.getBlockAt(x, y, z).setType(Material.BEDROCK);
+                y = beaconY + 1;
+                for (x = beaconX; x < beaconX + 5; x++)
+                    for (z = beaconZ; z < beaconZ + 5; z++)
+                        if (x == beaconX || z == beaconZ || x == beaconX + 4 || z == beaconZ + 4)
+                            w.getBlockAt(x, y, z).setType(Material.BEDROCK);
+                        else
+                            w.getBlockAt(x, y, z).setType(Material.IRON_BLOCK);
+                y = beaconY + 2;
+                for (x = beaconX + 1; x < beaconX + 4; x++)
+                    for (z = beaconZ + 1; z < beaconZ + 4; z++)
+                        w.getBlockAt(x, y, z).setType(Material.BEDROCK);
+                w.getBlockAt(beaconX + 2, beaconY + 2, beaconZ + 2).setType(Material.BEACON);
+                w.getBlockAt(beaconX + 2, beaconY + 3, beaconZ + 2).setType(Material.BEDROCK);
+                // finally the sign on the beacon
+                w.getBlockAt(beaconX + 2, beaconY + 3, beaconZ + 1).setType(Material.WALL_SIGN);
+                Sign s = (Sign) w.getBlockAt(beaconX + 2, beaconY + 3, beaconZ + 1).getState();
+                s.setLine(0, ChatColor.RED + "REGION DAMAGED!");
+                s.setLine(1, "Region:" + assault);
+                s.setLine(2, "Damage:" + assault.getDamages());
+                s.setLine(3, "Owner:" + getRegionOwnerList(tRegion));
+                s.update();
             }
 
-            //now make the beacon
-            y = beaconY;
-            for (x = beaconX + 1; x < beaconX + 4; x++)
-                for (z = beaconZ + 1; z < beaconZ + 4; z++)
-                    w.getBlockAt(x, y, z).setType(Material.BEDROCK);
-            y = beaconY + 1;
-            for (x = beaconX; x < beaconX + 5; x++)
-                for (z = beaconZ; z < beaconZ + 5; z++)
-                    if (x == beaconX || z == beaconZ || x == beaconX + 4 || z == beaconZ + 4)
-                        w.getBlockAt(x, y, z).setType(Material.BEDROCK);
-                    else
-                        w.getBlockAt(x, y, z).setType(Material.IRON_BLOCK);
-            y = beaconY + 2;
-            for (x = beaconX + 1; x < beaconX + 4; x++)
-                for (z = beaconZ + 1; z < beaconZ + 4; z++)
-                    w.getBlockAt(x, y, z).setType(Material.BEDROCK);
-            w.getBlockAt(beaconX + 2, beaconY + 2, beaconZ + 2).setType(Material.BEACON);
-            w.getBlockAt(beaconX + 2, beaconY + 3, beaconZ + 2).setType(Material.BEDROCK);
-            // finally the sign on the beacon
-            w.getBlockAt(beaconX + 2, beaconY + 3, beaconZ + 1).setType(Material.WALL_SIGN);
-            Sign s = (Sign) w.getBlockAt(beaconX + 2, beaconY + 3, beaconZ + 1).getState();
-            s.setLine(0, ChatColor.RED + "REGION DAMAGED!");
-            s.setLine(1, "Region:" + assault);
-            s.setLine(2, "Damage:" + assault.getDamages());
-            s.setLine(3, "Owner:" + getRegionOwnerList(tRegion));
-            s.update();
             tRegion.getOwners().clear();
         } else {
             // assault was not successful
