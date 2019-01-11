@@ -15,9 +15,7 @@ public class AssaultUtils {
         int numOnline = 0;
 
         if(Settings.AssaultRequiredOwnersOnline > 0) {
-            HashSet<UUID> owners = new HashSet<>();
-            owners.addAll(tRegion.getOwners().getUniqueIds());
-            for (UUID playerID : owners) {
+            for (UUID playerID : tRegion.getOwners().getUniqueIds()) {
                 if (Bukkit.getPlayer(playerID) != null) {
                     numOnline++;
 
@@ -34,9 +32,7 @@ public class AssaultUtils {
 
         numOnline = 0;
         if(Settings.AssaultRequiredOwnersOnline > 0) {
-            HashSet<UUID> members = new HashSet<>();
-            members.addAll(tRegion.getMembers().getUniqueIds());
-            for (UUID playerID : members) {
+            for (UUID playerID : tRegion.getMembers().getUniqueIds()) {
                 if (Bukkit.getPlayer(playerID) != null) {
                     numOnline++;
 
