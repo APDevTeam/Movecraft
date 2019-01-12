@@ -41,7 +41,7 @@ import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
 import net.countercraft.movecraft.warfare.assault.AssaultManager;
 import net.countercraft.movecraft.warfare.siege.Siege;
 import net.countercraft.movecraft.warfare.siege.SiegeManager;
-import net.countercraft.movecraft.worldguard.WorldGuardCompatManager;
+import net.countercraft.movecraft.compatmanager.WorldGuardCompatManager;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Material;
 import org.bukkit.plugin.Plugin;
@@ -97,8 +97,22 @@ public class Movecraft extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        String packageName = this.getServer().getClass().getPackage().getName();
+        String version = packageName.substring(packageName.lastIndexOf('.') + 1);
+        String[] parts = version.split("_");
+        Integer versionNumber = Integer.valueOf(parts[1]);
+        //Check if the server is 1.12 and lower or 1.13 and higher
+        if (versionNumber <= 12){
+            Settings.IsLegacy = true;
+        } else {
+            Settings.IsLegacy = false;
+        }
         // Read in config
-        this.saveDefaultConfig();
+        if (Settings.IsLegacy) {
+            this.saveDefaultConfig();
+        } else {
+            this.saveResource("legacyconfig/config.yml", false);
+        }
         try {
             Class.forName("com.destroystokyo.paper.Title");
             Settings.IsPaper = true;
@@ -132,16 +146,7 @@ public class Movecraft extends JavaPlugin {
         }
         logger.log(Level.INFO, "CompatiblityMode is set to {0}", Settings.CompatibilityMode);*/
         //Switch to interfaces
-        String packageName = this.getServer().getClass().getPackage().getName();
-        String version = packageName.substring(packageName.lastIndexOf('.') + 1);
-        String[] parts = version.split("_");
-        Integer versionNumber = Integer.valueOf(parts[1]);
-        //Check if the server is 1.12 and lower or 1.13 anf higher
-        if (versionNumber <= 12){
-            Settings.IsLegacy = true;
-        } else {
-            Settings.IsLegacy = false;
-        }
+
         try {
             final Class<?> clazz = Class.forName("net.countercraft.movecraft.compat." + version + ".IWorldHandler");
             // Check if we have a NMSHandler class at that location.
@@ -187,7 +192,11 @@ public class Movecraft extends JavaPlugin {
         Settings.AssaultDuration = getConfig().getInt("AssaultDuration", 1800);
         Settings.AssaultCostPercent = getConfig().getDouble("AssaultCostPercent", 0.25);
         Settings.AssaultDamagesPerBlock = getConfig().getInt("AssaultDamagesPerBlock", 15);
-        Settings.AssaultRequiredDefendersOnline = getConfig().getInt("AssaultRequiredDefendersOnline", 3);
+        Settings.AssaultRequiredDefendersOnline = getConfig().getInt("AssaultRequiredDefendersOnline", 2);
+        Settings.AssaultRequiredOwnersOnline = getConfig().getInt("AssaultRequiredOwnersOnline", 1);
+        Settings.AssaultMaxBalance = getConfig().getDouble("AssaultMaxBalance", 5000000);
+        Settings.AssaultOwnerWeightPercent = getConfig().getInt("AssaultOwnerWeightPercent", 100);
+        Settings.AssaultMemberWeightPercent = getConfig().getInt("AssaultMemberWeightPercent", 100);
         List<String> assaultDestroyableBlocks = getConfig().getStringList("AssaultDestroyableBlocks");
         for (String matStr : assaultDestroyableBlocks){
             Settings.AssaultDestroyableBlocks.add(Material.getMaterial(matStr));
@@ -197,6 +206,7 @@ public class Movecraft extends JavaPlugin {
             Settings.DisableShadowBlocks.add(Material.getMaterial(typ));
         }
         Settings.RepairMaxPercent = getConfig().getDouble("RepairMaxPercent", 50.0);
+        Settings.ForbiddenRemoteSigns = new HashSet<>(getConfig().getStringList("ForbiddenRemoteSigns"));
         Settings.SiegeEnable = getConfig().getBoolean("SiegeEnable", false);
 
 

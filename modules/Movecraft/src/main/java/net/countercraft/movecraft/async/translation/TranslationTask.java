@@ -62,6 +62,11 @@ public class TranslationTask extends AsyncTask {
         if(oldHitBox.isEmpty()){
             return;
         }
+        //Prevent disabled crafts from moving
+        if (getCraft().getDisabled() && (!getCraft().getSinking())) {
+            fail(I18nSupport.getInternationalisedString("Craft is disabled!"));
+            return;
+        }
         final int minY = oldHitBox.getMinY();
         final int maxY = oldHitBox.getMaxY();
 

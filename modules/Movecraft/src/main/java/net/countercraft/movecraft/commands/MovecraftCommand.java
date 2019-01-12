@@ -1,9 +1,11 @@
 package net.countercraft.movecraft.commands;
 
+import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.craft.CraftManager;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
+import org.bukkit.plugin.PluginDescriptionFile;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,7 +25,8 @@ public class MovecraftCommand implements TabExecutor {
         }
 
         if(args.length == 0){
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "Movecraft 7.0 pre release 5 by cccm5");
+            PluginDescriptionFile descriptionFile = Movecraft.getInstance().getDescription();
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "Movecraft " + descriptionFile.getVersion() + " by " + descriptionFile.getAuthors());
             return true;
         }
 

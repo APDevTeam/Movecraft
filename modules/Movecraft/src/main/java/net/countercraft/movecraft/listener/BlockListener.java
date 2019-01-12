@@ -276,7 +276,7 @@ public class BlockListener implements Listener {
         if (!testBlock.getType().isBurnable()) {
             return;
         }
-        // check to see if fire spread is allowed, don't check if worldguard integration is not enabled
+        // check to see if fire spread is allowed, don't check if compatmanager integration is not enabled
         if (Movecraft.getInstance().getWorldGuardPlugin() != null && (Settings.WorldGuardBlockMoveOnBuildPerm || Settings.WorldGuardBlockSinkOnPVPPerm)) {
             ApplicableRegionSet set = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(testBlock.getWorld()).getApplicableRegions(testBlock.getLocation());
             if (!set.allows(DefaultFlag.FIRE_SPREAD)) {

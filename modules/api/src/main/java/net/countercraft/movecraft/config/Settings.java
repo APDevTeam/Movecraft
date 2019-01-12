@@ -20,10 +20,7 @@ package net.countercraft.movecraft.config;
 import net.countercraft.movecraft.utils.TownyWorldHeightLimits;
 import org.bukkit.Material;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Settings {
     public static boolean RestrictSiBsToRegions = false;
@@ -47,6 +44,7 @@ public class Settings {
     public static boolean RequireCreatePerm = false;
     public static boolean RequireNamePerm = false;
     public static boolean TNTContactExplosives = true;
+    public static HashSet<String> ForbiddenRemoteSigns;
     public static int FadeWrecksAfter = 0;
     public static int ManOverBoardTimeout = 60;
     public static int FireballLifespan = 6;
@@ -80,7 +78,11 @@ public class Settings {
     public static int AssaultDelay;
     public static int AssaultDuration;
     public static int AssaultRequiredDefendersOnline;
+    public static int AssaultRequiredOwnersOnline;
     public static double AssaultCostPercent;
+    public static double AssaultMaxBalance;
+    public static int AssaultOwnerWeightPercent;
+    public static int AssaultMemberWeightPercent;
     public static HashSet<Material> AssaultDestroyableBlocks = new HashSet<>();
     public static int AssaultDamagesPerBlock;
     public static HashSet<Material> DisableShadowBlocks = new HashSet<>();

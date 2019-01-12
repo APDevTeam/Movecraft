@@ -1,4 +1,4 @@
-package net.countercraft.movecraft.factions;
+package net.countercraft.movecraft.compatmanager;
 
 import com.massivecraft.factions.Factions;
 import com.massivecraft.factions.entity.MPlayer;

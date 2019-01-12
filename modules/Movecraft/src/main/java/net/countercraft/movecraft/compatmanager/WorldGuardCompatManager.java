@@ -1,12 +1,14 @@
-package net.countercraft.movecraft.worldguard;
+package net.countercraft.movecraft.compatmanager;
 
 import com.sk89q.minecraft.util.commands.CommandException;
-import com.sk89q.worldedit.bukkit.adapter.BukkitImplAdapter;
+import com.sk89q.worldedit.bukkit.BukkitWorld;
 import com.sk89q.worldedit.extension.platform.Actor;
+import com.sk89q.worldedit.extent.Extent;
+import com.sk89q.worldedit.extent.world.BlockQuirkExtent;
+import com.sk89q.worldedit.extent.world.FastModeExtent;
 import com.sk89q.worldedit.util.Location;
 import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.WorldGuard;
-import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.regions.RegionQuery;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
@@ -14,6 +16,7 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.events.CraftRotateEvent;
 import net.countercraft.movecraft.events.CraftTranslateEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.utils.WorldguardUtils;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -52,20 +55,14 @@ public class WorldGuardCompatManager implements Listener {
     }
     private boolean pilotHasAccessToRegion(Player player, MovecraftLocation location, World world){
         if (Settings.IsLegacy){
-            return Movecraft.getInstance().getWorldGuardPlugin().canBuild(player, location.toBukkit(world));
+            return WorldguardUtils.canBuild(world, location, player);
         } else {
             RegionQuery query = WorldGuard.getInstance().getPlatform().getRegionContainer().createQuery();
-            LocalPlayer lPlayer;
-            Location wgLoc;
-
-            try {
-                lPlayer = WorldGuard.getInstance().checkPlayer((Actor) player);
-            } catch (CommandException e) {
-                e.printStackTrace();
-                lPlayer = null;
-            }
-            query.getApplicableRegions(location.toBukkit(world))
-            return true;
+            LocalPlayer lPlayer = Movecraft.getInstance().getWorldGuardPlugin().wrapPlayer(player);
+            Extent ext = new FastModeExtent(new BukkitWorld(world));
+            Location wgLoc = new Location(ext, location.getX(), location.getY(), location.getZ());
+            return query.getApplicableRegions(wgLoc).isOwnerOfAll(lPlayer) || query.getApplicableRegions(wgLoc).isMemberOfAll(lPlayer) ||
+                    player.hasPermission("movecraft.region.bypass");
         }
     }
 

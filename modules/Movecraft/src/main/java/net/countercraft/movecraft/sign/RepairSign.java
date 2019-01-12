@@ -15,6 +15,7 @@ import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.WorldEditUpdateCommand;
 import net.countercraft.movecraft.repair.Repair;
 import net.countercraft.movecraft.repair.RepairManager;
+import net.countercraft.movecraft.repair.RepairUtils;
 import net.countercraft.movecraft.utils.LegacyUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -216,7 +217,7 @@ public class RepairSign implements Listener{
                         MovecraftLocation moveLoc = new MovecraftLocation(cLoc.getBlockX() + distance.getBlockX(), cLoc.getBlockY() + distance.getBlockY(), cLoc.getBlockZ() + distance.getBlockZ());
                         //To avoid any issues during the repair, keep certain blocks in different linked lists
                         if (Settings.IsLegacy) {
-                            BaseBlock baseBlock = clipboard.getBlock(cLoc);
+                            BaseBlock baseBlock = RepairUtils.getBlock(clipboard, cLoc);
                             if (Arrays.binarySearch(fragileBlocks, LegacyUtils.getMaterial(baseBlock.getType())) >= 0) {
                                 WorldEditUpdateCommand updateCommand = new WorldEditUpdateCommand(baseBlock, sign.getWorld(), moveLoc, LegacyUtils.getMaterial(baseBlock.getType()), (byte) baseBlock.getData());
                                 updateCommandsFragileBlocks.add(updateCommand);

@@ -21,7 +21,14 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public class RepairUtils {
-
+    private static Method GET_BLOCK;
+    static {
+        try {
+            GET_BLOCK = BlockArrayClipboard.class.getDeclaredMethod("getBlock", Vector.class);
+        } catch (NoSuchMethodException e) {
+            GET_BLOCK = null;
+        }
+    }
 
     public static boolean repairRegion(String regionName, World world){
         MovecraftRepair movecraftRepair = Movecraft.getInstance().getMovecraftRepair();
@@ -41,7 +48,7 @@ public class RepairUtils {
                 for (int z = minZ; z <= maxZ; z++){
                     if (Settings.IsLegacy){
                         Vector pos = new Vector(x,y,z);
-                        BaseBlock bb = clipboard.getBlock(pos);
+                        BaseBlock bb = getBlock(clipboard, pos);
                         if (bb.isAir()){
                             continue;
                         }
@@ -62,6 +69,16 @@ public class RepairUtils {
             }
         }
         return true;
+    }
+
+    public static BaseBlock getBlock(Clipboard clipboard, Vector pos){
+        BlockArrayClipboard bac = (BlockArrayClipboard) clipboard;
+        try {
+            return GET_BLOCK != null ? (BaseBlock) GET_BLOCK.invoke(bac, pos) : null;
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
 
