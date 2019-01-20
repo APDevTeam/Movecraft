@@ -94,7 +94,7 @@ public class AssaultTask extends BukkitRunnable {
                 Sign s = (Sign) w.getBlockAt(beaconX + 2, beaconY + 3, beaconZ + 1).getState();
                 s.setLine(0, ChatColor.RED + "REGION DAMAGED!");
                 s.setLine(1, "Region:" + assault.getRegionName());
-                s.setLine(2, "Damage:" + assault.getDamages());
+                s.setLine(2, "Damage:" + assault.getMaxDamages());
                 s.setLine(3, "Owner:" + getRegionOwnerList(tRegion));
                 s.update();
                 tRegion.getOwners().clear();
