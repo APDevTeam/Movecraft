@@ -158,7 +158,7 @@ public class Movecraft extends JavaPlugin {
         Settings.AllowCrewSigns = getConfig().getBoolean("AllowCrewSigns", true);
         Settings.SetHomeToCrewSign = getConfig().getBoolean("SetHomeToCrewSign", true);
         Settings.RequireCreatePerm = getConfig().getBoolean("RequireCreatePerm", false);
-        Settings.RequireNamePerm = getConfig().getBoolean("RequireNamePerm", false);
+        Settings.RequireNamePerm = getConfig().getBoolean("RequireNamePerm", true);
         Settings.TNTContactExplosives = getConfig().getBoolean("TNTContactExplosives", true);
         Settings.FadeWrecksAfter = getConfig().getInt("FadeWrecksAfter", 0);
         if (getConfig().contains("DurabilityOverride")) {
