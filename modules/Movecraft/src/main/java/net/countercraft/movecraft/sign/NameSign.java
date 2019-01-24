@@ -19,32 +19,34 @@ public final class NameSign implements Listener {
     @EventHandler
     public void onCraftDetect(@NotNull CraftDetectEvent event) {
         Craft c = event.getCraft();
-        World w = c.getW();
-        if(Settings.RequireNamePerm && event.getCraft().getNotificationPlayer() == null) {
+
+        if(c.getNotificationPlayer() == null || (Settings.RequireNamePerm && !c.getNotificationPlayer().hasPermission("movecraft.name.use"))) {
+            //Player is null or does not have permission (when required)
             return;
         }
-        if(!Settings.RequireNamePerm || event.getCraft().getNotificationPlayer().hasPermission("movecraft.name.use")) {
-            for (MovecraftLocation location : event.getCraft().getHitBox()) {
-                Block b = location.toBukkit(w).getBlock();
-                if (b.getType() == Material.SIGN_POST || b.getType() == Material.WALL_SIGN) {
-                    Sign s = (Sign) b.getState();
-                    String name = "";
-                    if (s.getLine(0).equalsIgnoreCase(HEADER)) {
-                        boolean firstName = true;
-                        for (int i = 1; i <= 3; i++) {
-                            if (s.getLine(i) != "") {
-                                if (firstName) {
-                                    firstName = true;
-                                } else {
-                                    name += " ";
-                                    //Add a space between lines for all after the first.
-                                }
-                                name += s.getLine(i);
+
+        World w = c.getW();
+
+        for (MovecraftLocation location : c.getHitBox()) {
+            Block b = location.toBukkit(w).getBlock();
+            if (b.getType() == Material.SIGN_POST || b.getType() == Material.WALL_SIGN) {
+                Sign s = (Sign) b.getState();
+                String name = "";
+                if (s.getLine(0).equalsIgnoreCase(HEADER)) {
+                    boolean firstName = true;
+                    for (int i = 1; i <= 3; i++) {
+                        if (s.getLine(i) != "") {
+                            if (firstName) {
+                                firstName = true;
+                            } else {
+                                name += " ";
+                                //Add a space between lines for all after the first.
                             }
+                            name += s.getLine(i);
                         }
-                        c.setName(name);
-                        return;
                     }
+                    c.setName(name);
+                    return;
                 }
             }
         }
