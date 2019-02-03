@@ -68,6 +68,7 @@ public abstract class Craft {
     private int numMoves;
     @NotNull private final Map<MovecraftLocation,Material> phaseBlocks = new HashMap<>();
     @NotNull private final HashMap<UUID, Location> crewSigns = new HashMap<>();
+    @NotNull private String name = "";
 
     public Craft(@NotNull CraftType type, @NotNull World world) {
         this.type = type;
@@ -411,5 +412,14 @@ public abstract class Craft {
     @NotNull
     public Map<UUID, Location> getCrewSigns(){
         return crewSigns;
+    }
+
+    @NotNull
+    public String getName() {
+        return name;
+    }
+
+    public void setName(@NotNull String name) {
+        this.name = name;
     }
 }
