@@ -120,6 +120,7 @@ public class Movecraft extends JavaPlugin {
             Settings.IsPaper=false;
         }
 
+
         Settings.LOCALE = getConfig().getString("Locale");
         Settings.RestrictSiBsToRegions = getConfig().getBoolean("RestrictSiBsToRegions", false);
         Settings.Debug = getConfig().getBoolean("Debug", false);
@@ -349,7 +350,9 @@ public class Movecraft extends JavaPlugin {
                 assaultManager = new AssaultManager(this);
                 assaultManager.runTaskTimerAsynchronously(this, 0, 20);
             }
+
             if(Settings.SiegeEnable) {
+
                 siegeManager = new SiegeManager(this);
                 logger.info("Enabling siege");
                 //load the sieges.yml file
@@ -444,6 +447,7 @@ public class Movecraft extends JavaPlugin {
         instance = this;
         logger = getLogger();
     }
+
 
 
     public WorldGuardPlugin getWorldGuardPlugin() {

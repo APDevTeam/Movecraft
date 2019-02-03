@@ -302,8 +302,16 @@ public class WorldEditInteractListener implements Listener {
                 if (ownerName.length() > 16) {
                     aRegion.getOwners().addPlayer(UUID.fromString(ownerName));
                 } else {
-                    aRegion.getOwners().addPlayer(ownerName);
+
+                    if (Bukkit.getPlayer(ownerName) != null){//Cannot add names directly as bug will allow free assaults
+                        aRegion.getOwners().addPlayer(Bukkit.getPlayer(ownerName).getUniqueId());
+                    } else {
+                        aRegion.getOwners().addPlayer(Bukkit.getOfflinePlayer(ownerName).getUniqueId());
+                    }
+                    //aRegion.getOwners().addPlayer(ownerName);
+
                 }
+                //event.getPlayer().sendMessage(ownerName);
             }
             int beaconX = sign.getX() - 2;
             int beaconY = sign.getY() - 3;
