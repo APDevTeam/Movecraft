@@ -30,7 +30,7 @@ public class WorldGuardCompatManager implements Listener {
         if(event.getCraft().getNotificationPlayer() == null)
             return;
         for(MovecraftLocation location : event.getNewHitBox()){
-            if(!Movecraft.getInstance().getWorldGuardPlugin().canBuild(event.getCraft().getNotificationPlayer(),location.toBukkit(event.getCraft().getW()))){
+            if(!pilotHasAccessToRegion(event.getCraft().getNotificationPlayer(), location, event.getCraft().getW())){
                 event.setCancelled(true);
                 event.setFailMessage(String.format( I18nSupport.getInternationalisedString( "Translation - Failed Player is not permitted to build in this WorldGuard region" )+" @ %d,%d,%d", location.getX(), location.getY(), location.getZ() ) );
                 return;
@@ -55,14 +55,14 @@ public class WorldGuardCompatManager implements Listener {
     }
     private boolean pilotHasAccessToRegion(Player player, MovecraftLocation location, World world){
         if (Settings.IsLegacy){
-            return WorldguardUtils.canBuild(world, location, player);
+            return Movecraft.getInstance().getWorldGuardPlugin().canBuild(player, location.toBukkit(world));
         } else {
             RegionQuery query = WorldGuard.getInstance().getPlatform().getRegionContainer().createQuery();
             LocalPlayer lPlayer = Movecraft.getInstance().getWorldGuardPlugin().wrapPlayer(player);
-            Extent ext = new FastModeExtent(new BukkitWorld(world));
-            Location wgLoc = new Location(ext, location.getX(), location.getY(), location.getZ());
+            com.sk89q.worldedit.world.World weWorld = new BukkitWorld(world);
+            Location wgLoc = new Location(weWorld, location.getX(), location.getY(), location.getZ());
             return query.getApplicableRegions(wgLoc).isOwnerOfAll(lPlayer) || query.getApplicableRegions(wgLoc).isMemberOfAll(lPlayer) ||
-                    player.hasPermission("movecraft.region.bypass");
+                    player.hasPermission("worldguard.build.*");
         }
     }
 

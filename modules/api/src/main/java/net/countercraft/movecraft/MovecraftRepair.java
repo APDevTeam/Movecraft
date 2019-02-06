@@ -24,6 +24,7 @@ public abstract class MovecraftRepair {
     public abstract HashSet<Vector> getMissingBlockLocations(String repairName);
     public abstract long getNumDiffBlocks(String repairName);
     public abstract Vector getDistanceFromSignToLowestPoint(Clipboard clipboard, String repairName);
+    public abstract org.bukkit.util.Vector getDistanceFromClipboardToWorldOffset(org.bukkit.util.Vector offset, Clipboard clipboard);
 
 
 }

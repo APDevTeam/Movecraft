@@ -109,10 +109,7 @@ final public class CraftType {
         craftName = (String) data.get("name");
         maxSize = integerFromObject(data.get("maxSize"));
         minSize = integerFromObject(data.get("minSize"));
-//		allowedBlocks = ((ArrayList<String> ) data.get( "allowedBlocks" )).toArray( new Integer[1] );
         allowedBlocks = materialMapFromObject(data.get("allowedBlocks"));
-        //Collections.sort(allowedBlocks);
-
         forbiddenBlocks = materialMapFromObject(data.get("forbiddenBlocks"));
         forbiddenSignStrings = stringListFromObject(data.get("forbiddenSignStrings"));
         if (data.containsKey("canFly")) {
@@ -401,7 +398,11 @@ final public class CraftType {
             }
         }
         if(!blockedByWater){
-            passthroughBlocks.add(Settings.IsLegacy ? Material.STATIONARY_WATER : Material.WATER);
+            passthroughBlocks.add(Material.WATER);
+            if (Settings.IsLegacy){
+                passthroughBlocks.add(Material.STATIONARY_WATER);
+            }
+
         }
         if (data.containsKey("allowVerticalTakeoffAndLanding")) {
             allowVerticalTakeoffAndLanding = (Boolean) data.get("allowVerticalTakeoffAndLanding");

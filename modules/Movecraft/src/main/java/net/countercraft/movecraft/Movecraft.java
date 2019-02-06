@@ -111,7 +111,10 @@ public class Movecraft extends JavaPlugin {
         if (Settings.IsLegacy) {
             this.saveDefaultConfig();
         } else {
-            this.saveResource("legacyconfig/config.yml", false);
+            File configFile = new File(Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/config.yml");
+            if (!configFile.exists()) {
+                this.saveResource("legacyconfig/config.yml", false);
+            }
         }
         try {
             Class.forName("com.destroystokyo.paper.Title");
@@ -131,7 +134,7 @@ public class Movecraft extends JavaPlugin {
                     + getConfig().getString("PilotTool"));
             Settings.PilotTool = Material.getMaterial(getConfig().getString("PilotTool"));
         } else {
-            logger.log(Level.INFO, "No PilotTool setting, using default of 280");
+            logger.log(Level.INFO, "No PilotTool setting, using default of stick");
         }
         // if the CompatibilityMode is specified in the config.yml file, use it.
         // Otherwise set to false.
@@ -161,7 +164,7 @@ public class Movecraft extends JavaPlugin {
         }
 
         this.getLogger().info("Loading support for " + version);
-        this.getLogger().info("isLegacy: " + Settings.IsLegacy);
+
 
         Settings.SinkCheckTicks = getConfig().getDouble("SinkCheckTicks", 100.0);
         Settings.TracerRateTicks = getConfig().getDouble("TracerRateTicks", 5.0);

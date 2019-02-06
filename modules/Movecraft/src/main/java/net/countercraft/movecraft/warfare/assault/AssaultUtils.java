@@ -149,9 +149,11 @@ public class AssaultUtils {
 
                 // whether or not you actually destroyed the block, add to damages
                 long damages = assault.getDamages() + Settings.AssaultDamagesPerBlock;
-                //if (damages < assault.getMaxDamages()) {
+                if (damages < assault.getMaxDamages()) {
                 assault.setDamages(damages);
-                //}
+                } else {
+                    assault.setDamages(assault.getMaxDamages());
+                }
 
                 // notify nearby players of the damages, do this 1 second later so all damages from this volley will be included
                 if (System.currentTimeMillis() < lastDamagesUpdate + 4000) {

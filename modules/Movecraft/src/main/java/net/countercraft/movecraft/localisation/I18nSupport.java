@@ -20,17 +20,15 @@ package net.countercraft.movecraft.localisation;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.util.Arrays;
 import java.util.Properties;
 import java.util.logging.Level;
 
 public class I18nSupport {
     private static Properties languageFile;
-
+    private static boolean hasOtherScript = false;
+    private static final String[] otherScriptLangs = {"el", "ar", "ur", "he", "zh", "jp"};
     public static void init() {
         languageFile = new Properties();
 
@@ -47,6 +45,7 @@ public class I18nSupport {
             e.printStackTrace();
         }
 
+
         if (is == null) {
             Movecraft.getInstance().getLogger().log(Level.SEVERE, "Critical Error in Localisation System");
             Movecraft.getInstance().getServer().shutdown();
@@ -62,9 +61,22 @@ public class I18nSupport {
 
 
     }
-
+    public static boolean writtenFromRightToLeft(){
+        boolean ret = (boolean) languageFile.getOrDefault("writtenFromRightToLeft", false);
+        return ret;
+    }
     public static String getInternationalisedString(String key) {
-        String ret = languageFile.getProperty(key);
+        String ret;
+        if (Arrays.binarySearch(otherScriptLangs, Settings.LOCALE) >= 0){
+            try {
+                ret = new String(languageFile.getProperty(key).getBytes(),"UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                ret = languageFile.getProperty(key);
+                e.printStackTrace();
+            }
+        } else {
+            ret = languageFile.getProperty(key);
+        }
         if (ret != null) {
             return ret;
         } else {

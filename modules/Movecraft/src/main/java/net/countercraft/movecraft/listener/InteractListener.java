@@ -71,13 +71,6 @@ public final class InteractListener implements Listener {
         // if not in command of craft, don't process pilot tool clicks
         if (c == null)
             return;
-
-/*		if( c.getCannonDirector()==event.getPlayer() ) // if the player is the cannon director, don't let them move the ship
-			return;
-
-		if( c.getAADirector()==event.getPlayer() ) // if the player is the cannon director, don't let them move the ship
-			return;
-*/
         if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK) {
             Craft craft = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
 

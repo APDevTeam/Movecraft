@@ -266,7 +266,7 @@ public class TranslationTask extends AsyncTask {
                 craft.getW().playSound(location, Sound.BLOCK_ANVIL_LAND, 1.0f, 0.25f);
                 //craft.setCurTickCooldown(craft.getType().getCruiseTickCooldown());
             } else {
-                craft.getW().playSound(location, Settings.IsLegacy ? Sound.ENTITY_IRON_GOLEM_DEATH : LegacyUtils.ENITIY_IRONGOLEM_DEATH, 5.0f, 5.0f);
+                craft.getW().playSound(location, Settings.IsLegacy ? LegacyUtils.ENITIY_IRONGOLEM_DEATH : Sound.ENTITY_IRON_GOLEM_DEATH, 5.0f, 5.0f);
                 //craft.setCurTickCooldown(craft.getType().getCruiseTickCooldown());
             }
         }

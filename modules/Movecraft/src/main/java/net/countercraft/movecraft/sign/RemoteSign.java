@@ -17,6 +17,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 
 public final class RemoteSign implements Listener{
@@ -81,11 +83,13 @@ public final class RemoteSign implements Listener{
         }
 
         String targetText = ChatColor.stripColor(sign.getLine(1));
+
         if(targetText.equalsIgnoreCase(HEADER)) {
             event.getPlayer().sendMessage("ERROR: Remote Sign can't remote another Remote Sign!");
             return;
         }
         LinkedList<MovecraftLocation> foundLocations = new LinkedList<MovecraftLocation>();
+        LinkedHashMap<MovecraftLocation, Action> foundLocs = new LinkedHashMap<>();
         boolean firstError = true;
         for (MovecraftLocation tloc : foundCraft.getHitBox()) {
             Block tb = event.getClickedBlock().getWorld().getBlockAt(tloc.getX(), tloc.getY(), tloc.getZ());
@@ -114,9 +118,24 @@ public final class RemoteSign implements Listener{
 
         for (MovecraftLocation foundLoc : foundLocations) {
             Block newBlock = event.getClickedBlock().getWorld().getBlockAt(foundLoc.getX(), foundLoc.getY(), foundLoc.getZ());
+            Sign foundSign = (Sign) newBlock.getState();
+            boolean inverted = false;//set to true if target name has an ! in front of the text
+            //check Remote sign if the target strings are inverted
+            PlayerInteractEvent newEvent = null;
 
-            PlayerInteractEvent newEvent = new PlayerInteractEvent(event.getPlayer(), event.getAction(), event.getItem(), newBlock, event.getBlockFace());
-
+            if (inverted) {
+                Action action = null;
+                if (event.getAction() == Action.RIGHT_CLICK_BLOCK){
+                    action = Action.LEFT_CLICK_BLOCK;
+                } else if (event.getAction() == Action.LEFT_CLICK_BLOCK){
+                    action = Action.RIGHT_CLICK_BLOCK;
+                }
+                if (action != null){
+                    newEvent = new PlayerInteractEvent(event.getPlayer(), action, event.getItem(), newBlock, event.getBlockFace());
+                }
+            } else {
+                 newEvent = new PlayerInteractEvent(event.getPlayer(), event.getAction(), event.getItem(), newBlock, event.getBlockFace());
+            }
             //TODO: DON'T DO THIS
             Bukkit.getServer().getPluginManager().callEvent(newEvent);
         }
@@ -124,6 +143,9 @@ public final class RemoteSign implements Listener{
         event.setCancelled(true);
     }
     private boolean isEqualSign(Sign test, String target) {
+        if (target.charAt(0) == '!'){
+            target = target.substring(1);
+        }
         return !ChatColor.stripColor(test.getLine(0)).equalsIgnoreCase(HEADER) && ( ChatColor.stripColor(test.getLine(0)).equalsIgnoreCase(target)
                 || ChatColor.stripColor(test.getLine(1)).equalsIgnoreCase(target)
                 || ChatColor.stripColor(test.getLine(2)).equalsIgnoreCase(target)
@@ -136,5 +158,8 @@ public final class RemoteSign implements Listener{
                 return true;
         }
         return false;
+    }
+    private boolean invertAction(String line){
+        return line.charAt(0) == '!';
     }
 }

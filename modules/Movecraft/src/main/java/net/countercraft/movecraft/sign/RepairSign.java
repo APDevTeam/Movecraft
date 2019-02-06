@@ -209,8 +209,8 @@ public class RepairSign implements Listener{
                     final LinkedList<UpdateCommand> updateCommands = new LinkedList<>();
                     final LinkedList<UpdateCommand> updateCommandsFragileBlocks = new LinkedList<>();
                     final Vector distToOffset = movecraftRepair.getDistanceFromSignToLowestPoint(clipboard, sign.getLine(1));
-                    final Vector offsetFromSign = new Vector(sign.getLocation().getBlockX() - distToOffset.getBlockX(), sign.getLocation().getBlockY() - distToOffset.getBlockY(), sign.getLocation().getBlockZ() - distToOffset.getBlockZ());
-                    final Vector distance = new Vector(offsetFromSign.getBlockX() - clipboard.getMinimumPoint().getBlockX(), offsetFromSign.getBlockY() - clipboard.getMinimumPoint().getBlockY(), offsetFromSign.getBlockZ() - clipboard.getMinimumPoint().getBlockZ());
+                    final org.bukkit.util.Vector offsetFromSign = new org.bukkit.util.Vector(sign.getLocation().getBlockX() - distToOffset.getBlockX(), sign.getLocation().getBlockY() - distToOffset.getBlockY(), sign.getLocation().getBlockZ() - distToOffset.getBlockZ());
+                    final org.bukkit.util.Vector distance = movecraftRepair.getDistanceFromClipboardToWorldOffset(offsetFromSign, clipboard);
                     final TreeSet<Vector> sortedLocMissingBlocks = new TreeSet<>(locMissingBlocks);
                     for (Vector cLoc : sortedLocMissingBlocks){
 

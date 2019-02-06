@@ -128,4 +128,10 @@ public class IMovecraftRepair extends MovecraftRepair {
     public Vector getDistanceFromSignToLowestPoint(Clipboard clipboard, String s) {
         return null;
     }
+
+
+    @Override
+    public org.bukkit.util.Vector getDistanceFromClipboardToWorldOffset(org.bukkit.util.Vector offset, Clipboard clipboard) {
+        return new org.bukkit.util.Vector(offset.getBlockX() - clipboard.getMinimumPoint().getBlockX(), offset.getBlockY() - clipboard.getMinimumPoint().getBlockY(), offset.getBlockZ() - clipboard.getMinimumPoint().getBlockZ());
+    }
 }
