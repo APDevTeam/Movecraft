@@ -27,6 +27,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.*;
@@ -206,9 +207,13 @@ public class TranslationTask extends AsyncTask {
                 }*/
                 explosionKey = explosionForce;
                 Location loc = location.toBukkit(craft.getW());
+                int potEffRange = craft.getType().getEffectRange();
+                Set<PotionEffect> potionEffects = craft.getType().getPotionEffectsToApply();
                 if (!loc.getBlock().getType().equals(Material.AIR)) {
                     updates.add(new ExplosionUpdateCommand(loc, explosionKey));
                     collisionExplosion = true;
+                    if (potEffRange != 0 && !potionEffects.isEmpty())
+                        updates.add(new PotionEffectsUpdateCommand(loc,potEffRange,potionEffects));
                 }
                 if (craft.getType().getFocusedExplosion()) { // don't handle any further collisions if it is set to focusedexplosion
                     break;

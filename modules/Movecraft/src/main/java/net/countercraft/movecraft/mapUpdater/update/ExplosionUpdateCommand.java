@@ -8,9 +8,19 @@ import com.sk89q.worldguard.protection.flags.Flag;
 import com.sk89q.worldguard.protection.regions.RegionQuery;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.utils.WorldguardUtils;
 import org.bukkit.Location;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
+import org.bukkit.util.Vector;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
+
 
 public class ExplosionUpdateCommand extends UpdateCommand {
     private final Location explosionLocation;
@@ -43,20 +53,9 @@ public class ExplosionUpdateCommand extends UpdateCommand {
 
     private void createExplosion(Location loc, float explosionPower) {
         if (Movecraft.getInstance().getWorldGuardPlugin() != null) {
-            ApplicableRegionSet set;
-            if (Settings.IsLegacy) {
-                set = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(loc.getWorld()).getApplicableRegions(loc);
-                if (!set.allows(DefaultFlag.OTHER_EXPLOSION)) {
-                    return;
-                }
-            } else {
-                RegionQuery query = WorldGuard.getInstance().getPlatform().getRegionContainer().createQuery();
-                com.sk89q.worldedit.world.World weWorld = new BukkitWorld(loc.getWorld());
-                com.sk89q.worldedit.util.Location wgLoc = new com.sk89q.worldedit.util.Location(weWorld, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
-                set = query.getApplicableRegions(wgLoc);
-
+            if (!WorldguardUtils.explosionsPermitted(loc)){
+                return;
             }
-
         }
         loc.getWorld().createExplosion(loc.getX() + 0.5, loc.getY() + 0.5, loc.getZ() + 0.5, explosionPower);
     }

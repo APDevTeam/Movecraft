@@ -52,17 +52,9 @@ public class IWorldHandler extends WorldHandler{
 
     @Override
     public void addPlayerLocation(Player player, double x, double y, double z, float yaw, float pitch){
-        EntityPlayer ePlayer = ((CraftPlayer) player).getHandle();
-        if(internalTeleportMH == null) {
-            //something went wrong
-            super.addPlayerLocation(player, x, y, z, yaw, pitch);
-            return;
-        }
-        try {
-            internalTeleportMH.invoke(ePlayer.playerConnection, (player.getLocation().getX() + x), (player.getLocation().getY() + y), (player.getLocation().getZ() + z), yaw, pitch, EnumSet.allOf(PacketPlayOutPosition.EnumPlayerTeleportFlags.class));
-        } catch (Throwable throwable) {
-            throwable.printStackTrace();
-        }
+        //Due to a bug in the 1.13 NMS method, use Bukkit method instead
+        Location playerLoc = player.getLocation();
+        player.teleport(new Location(player.getWorld(), x + playerLoc.getX(),y + playerLoc.getY(),z + playerLoc.getZ(),yaw + playerLoc.getYaw(),pitch + playerLoc.getPitch()));
     }
 
     @Override

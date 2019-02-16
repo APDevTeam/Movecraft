@@ -20,6 +20,8 @@ package net.countercraft.movecraft.craft;
 import net.countercraft.movecraft.config.Settings;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.Yaml;
 
@@ -94,6 +96,8 @@ final public class CraftType {
     @NotNull private final List<Material> harvestBlocks;
     @NotNull private final List<Material> harvesterBladeBlocks;
     @NotNull private final Set<Material> passthroughBlocks;
+    @NotNull private final int effectRange;
+    @NotNull private final Set<PotionEffect> potionEffectsToApply;
 
     public CraftType(File f) {
         final Map data;
@@ -426,6 +430,8 @@ final public class CraftType {
             dynamicFlyBlock = null;
         }
         chestPenalty = data.containsKey("chestPenalty") ? doubleFromObject(data.get("chestPenalty")) : 0d;
+        effectRange = data.containsKey("effectRange") ? integerFromObject(data.get("effectRange")) : 0;
+        potionEffectsToApply = data.containsKey("potionEffectsToApply") ? effectListFromObject(data.get("potionEffectsToApply")) : Collections.emptySet();
     }
 
     private Integer integerFromObject(Object obj) {
@@ -448,6 +454,35 @@ final public class CraftType {
             return (Material) obj;
         }
 
+    }
+    private Set<PotionEffect> effectListFromObject(Object obj){
+        Map<Object,Object> objMap = (Map<Object, Object>) obj;
+        Set<PotionEffect> ret = new HashSet<>();
+        for (Object o : objMap.keySet()){
+            PotionEffectType effect = null;
+            int duration = 0;
+            int amplifier = 1;
+            if (o instanceof String){
+                String string = (String) o;
+                effect = PotionEffectType.getByName(string);
+            }
+            Map<Object, Object> subObjMap = (Map<Object, Object>) objMap.get(o);
+            for (Object i : subObjMap.keySet()){
+                String str = (String) i;
+                int integer = (int) subObjMap.get(i);
+                if (str.equals("duration")){
+                    duration = integer;
+                }
+                if (str.equals("amplifier")){
+                    amplifier = integer;
+                }
+            }
+            if (effect == null){
+                continue;
+            }
+            ret.add(new PotionEffect(effect,duration,amplifier));
+        }
+        return ret;
     }
 
     private int[] blockIDListFromObject(Object obj) {
@@ -1006,6 +1041,15 @@ final public class CraftType {
 
     public boolean getOnlyMovePlayers() {
         return onlyMovePlayers;
+    }
+
+    @NotNull
+    public Set<PotionEffect> getPotionEffectsToApply() {
+        return potionEffectsToApply;
+    }
+
+    public int getEffectRange() {
+        return effectRange;
     }
 
     private class TypeNotFoundException extends RuntimeException {

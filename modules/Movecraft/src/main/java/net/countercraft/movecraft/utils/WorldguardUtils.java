@@ -1,9 +1,18 @@
 package net.countercraft.movecraft.utils;
 
+import com.sk89q.worldedit.bukkit.BukkitWorld;
+import com.sk89q.worldguard.WorldGuard;
+import com.sk89q.worldguard.protection.ApplicableRegionSet;
+import com.sk89q.worldguard.protection.flags.DefaultFlag;
+import com.sk89q.worldguard.protection.flags.Flags;
+import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
+import com.sk89q.worldguard.protection.regions.RegionQuery;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
+import net.countercraft.movecraft.config.Settings;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -43,5 +52,27 @@ public class WorldguardUtils {
 
     public static boolean canBuild(World world, MovecraftLocation location, Player player){
         return Movecraft.getInstance().getWorldGuardPlugin().canBuild(player, location.toBukkit(world));
+    }
+
+    public static boolean explosionsPermitted(Location loc){
+        ApplicableRegionSet set;
+        if (Settings.IsLegacy) {
+            set = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(loc.getWorld()).getApplicableRegions(loc);
+            if (!set.allows(DefaultFlag.OTHER_EXPLOSION)) {
+                return false;
+            }
+        } else {
+            RegionQuery query = WorldGuard.getInstance().getPlatform().getRegionContainer().createQuery();
+            com.sk89q.worldedit.world.World weWorld = new BukkitWorld(loc.getWorld());
+            com.sk89q.worldedit.util.Location wgLoc = new com.sk89q.worldedit.util.Location(weWorld, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+            set = query.getApplicableRegions(wgLoc);
+            for (ProtectedRegion region : set.getRegions()){
+                if (region.getFlag(Flags.OTHER_EXPLOSION) == StateFlag.State.DENY){
+                    return false;
+                }
+            }
+
+        }
+        return true;
     }
 }

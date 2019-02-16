@@ -18,6 +18,7 @@
 package net.countercraft.movecraft;
 
 import at.pavlov.cannons.Cannons;
+import com.daemitus.deadbolt.DeadboltPlugin;
 import com.earth2me.essentials.Essentials;
 import com.massivecraft.factions.Factions;
 import com.mewin.WGCustomFlags.WGCustomFlagsPlugin;
@@ -49,6 +50,7 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.yaml.snakeyaml.Yaml;
 
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -71,6 +73,7 @@ public class Movecraft extends JavaPlugin {
     private static Towny townyPlugin = null;
     private static Essentials essentialsPlugin = null;
     private static Factions factionsPlugin;
+    private static DeadboltPlugin deadboltPlugin;
     /*public HashMap<MovecraftLocation, Long> blockFadeTimeMap = new HashMap<>();
     public HashMap<MovecraftLocation, Integer> blockFadeTypeMap = new HashMap<>();
     public HashMap<MovecraftLocation, Boolean> blockFadeWaterMap = new HashMap<>();
@@ -108,7 +111,7 @@ public class Movecraft extends JavaPlugin {
             Settings.IsLegacy = false;
         }
         // Read in config
-        if (Settings.IsLegacy) {
+        if (!Settings.IsLegacy) {
             this.saveDefaultConfig();
         } else {
             File configFile = new File(Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/config.yml");
@@ -227,14 +230,16 @@ public class Movecraft extends JavaPlugin {
             Settings.SiegeEnable = false;
             Settings.AssaultEnable = false;
             Settings.RestrictSiBsToRegions = false;
+            worldGuardPlugin = null;
         } else {
             logger.log(Level.INFO, "Found a compatible version of WorldGuard. Enabling WorldGuard integration");
             Settings.WorldGuardBlockMoveOnBuildPerm = getConfig().getBoolean("WorldGuardBlockMoveOnBuildPerm", false);
             Settings.WorldGuardBlockSinkOnPVPPerm = getConfig().getBoolean("WorldGuardBlockSinkOnPVPPerm", false);
             logger.log(Level.INFO, "Settings: WorldGuardBlockMoveOnBuildPerm - {0}, WorldGuardBlockSinkOnPVPPerm - {1}", new Object[]{Settings.WorldGuardBlockMoveOnBuildPerm, Settings.WorldGuardBlockSinkOnPVPPerm});
             getServer().getPluginManager().registerEvents(new WorldGuardCompatManager(), this);
+            worldGuardPlugin = (WorldGuardPlugin) wGPlugin;
         }
-        worldGuardPlugin = (WorldGuardPlugin) wGPlugin;
+
 
         //load up WorldEdit if it's present
         Plugin wEPlugin = getServer().getPluginManager().getPlugin("WorldEdit");
@@ -332,6 +337,17 @@ public class Movecraft extends JavaPlugin {
         }
         if (factionsPlugin == null){
             logger.info("Movecraft did not find a compatible version of Factions. Disabling Factions integration");
+        }
+        // Deadbolt
+        Plugin tempDeadboltPlugin = getServer().getPluginManager().getPlugin("Deadbolt");
+        if (tempDeadboltPlugin != null){
+            if (tempDeadboltPlugin instanceof DeadboltPlugin){
+                deadboltPlugin = (DeadboltPlugin) tempDeadboltPlugin;
+                logger.info("Movecraft found a compatible version of Deadbolt. Enabling Deadbolt integration");
+            }
+        }
+        if (deadboltPlugin == null){
+            logger.info("Movecraft did not find a compatible version of Deadbolt. Disabling Deadbolt integration");
         }
         // and now Vault
         if (getServer().getPluginManager().getPlugin("Vault") != null) {
@@ -532,6 +548,10 @@ public class Movecraft extends JavaPlugin {
     }
     public Factions getFactionsPlugin(){
         return factionsPlugin;
+    }
+
+    public DeadboltPlugin getDeadboltPlugin(){
+        return deadboltPlugin;
     }
 }
 
