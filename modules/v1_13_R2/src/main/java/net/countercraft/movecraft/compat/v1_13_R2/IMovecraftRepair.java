@@ -182,6 +182,8 @@ public class IMovecraftRepair extends MovecraftRepair {
                             if (type.name().endsWith("_DOOR") || type.name().endsWith("_BED")){
                                 qtyToConsume = 0.5;
                             }
+                            if (type.equals(Material.REDSTONE_WIRE))
+                                typeToConsume = Material.REDSTONE;
                             if (type.equals(Material.DISPENSER)){
                                 int numTNT = 0;
                                 int numFirecharge = 0;
