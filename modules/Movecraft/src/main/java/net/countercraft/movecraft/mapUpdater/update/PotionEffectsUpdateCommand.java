@@ -25,6 +25,7 @@ public class PotionEffectsUpdateCommand extends UpdateCommand {
     public void doUpdate() {
         for (LivingEntity entity : livingEntities){
             for (PotionEffect effect : potionEffects){
+
                 entity.addPotionEffect(effect);
             }
         }

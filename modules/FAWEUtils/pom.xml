@@ -2,36 +2,31 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <artifactId>movecraft-v1_13_R2</artifactId>
-    <packaging>jar</packaging>
-    <name>Movecraft-v1_13_R2</name>
-    <url>http://github.com/eirikh1996/Movecraft</url>
-    <version>v1_13_R2</version>
-
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
-
     <parent>
-        <groupId>net.countercraft</groupId>
         <artifactId>movecraft-parent</artifactId>
+        <groupId>net.countercraft</groupId>
         <version>parent</version>
-        <relativePath>../../</relativePath>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>movecraft-FAWEUtils</artifactId>
+    <packaging>jar</packaging>
+    <name>Movecraft-FAWEUtils</name>
+    <version>FAWEUtils</version>
+    <url>http://github.com/eirikh1996/Movecraft</url>
 
     <repositories>
-
+        <!-- FAWE repository -->
         <repository>
-            <id>sk89q-repo</id>
-            <url>http://maven.sk89q.com/repo/</url>
+            <id>fawe-repo</id>
+            <url>http://ci.athion.net/job/FastAsyncWorldEdit/ws/mvn/</url>
         </repository>
     </repositories>
     <dependencies>
         <dependency>
-            <groupId>com.sk89q.worldedit</groupId>
-            <artifactId>worldedit-bukkit</artifactId>
-            <version>7.0.0-SNAPSHOT</version>
+            <groupId>com.boydti</groupId>
+            <artifactId>fawe-api</artifactId>
+            <version>latest</version>
         </dependency>
         <dependency>
             <groupId>net.countercraft</groupId>
@@ -40,20 +35,9 @@
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>net.countercraft</groupId>
-            <artifactId>movecraft-FAWEUtils</artifactId>
-            <version>FAWEUtils</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations-java5</artifactId>
             <version>RELEASE</version>
-        </dependency>
-        <dependency>
-            <groupId>org.bukkit</groupId>
-            <artifactId>craftbukkit</artifactId>
-            <version>1.13.2-R0.1-SNAPSHOT</version>
         </dependency>
     </dependencies>
     <build>
@@ -65,7 +49,7 @@
                 <version>3.7.0</version>
                 <configuration>
                     <includes>
-                        <include>net/countercraft/movecraft/compat/v1_13_R2/**</include>
+                        <include>net/countercraft/movecraft/utils/**</include>
                     </includes>
                     <source>1.8</source>
                     <target>1.8</target>
@@ -77,7 +61,7 @@
                 <version>2.4</version>
                 <configuration>
                     <includes>
-                        <include>net/countercraft/movecraft/compat/v1_13_R2/**</include>
+                        <include>net/countercraft/movecraft/utils/**</include>
                     </includes>
                 </configuration>
             </plugin>

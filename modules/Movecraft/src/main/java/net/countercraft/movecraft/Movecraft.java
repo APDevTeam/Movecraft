@@ -261,8 +261,18 @@ public class Movecraft extends JavaPlugin {
                 this.getLogger().severe("Could not find a compatible repair class. Disabling repair function");
                 Settings.RepairTicksPerBlock = 0;
             }
+            if (!Settings.IsLegacy) {
+                //Check if FAWE us used
+                try {
+                    Class.forName("com.boydti.fawe.bukkit.FaweBukkit");
+                    Settings.UseFAWE = true;
+                } catch (ClassNotFoundException e) {
+                    Settings.UseFAWE = false;
+                }
+            }
         }
         worldEditPlugin = (WorldEditPlugin) wEPlugin;
+
 
 
 

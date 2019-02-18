@@ -98,6 +98,7 @@ final public class CraftType {
     @NotNull private final Set<Material> passthroughBlocks;
     @NotNull private final int effectRange;
     @NotNull private final Set<PotionEffect> potionEffectsToApply;
+    @NotNull private final Map<PotionEffect, Integer> potionEffectDelays = Collections.emptyMap();
 
     public CraftType(File f) {
         final Map data;
@@ -462,6 +463,7 @@ final public class CraftType {
             PotionEffectType effect = null;
             int duration = 0;
             int amplifier = 1;
+            int delay = 0;
             if (o instanceof String){
                 String string = (String) o;
                 effect = PotionEffectType.getByName(string);
@@ -471,16 +473,20 @@ final public class CraftType {
                 String str = (String) i;
                 int integer = (int) subObjMap.get(i);
                 if (str.equals("duration")){
-                    duration = integer;
+                    duration = 20 * integer;
                 }
                 if (str.equals("amplifier")){
                     amplifier = integer;
+                }
+                if (str.equals("delay")){
+                    delay = 20 * integer;
                 }
             }
             if (effect == null){
                 continue;
             }
-            ret.add(new PotionEffect(effect,duration,amplifier));
+            PotionEffect potEffect = new PotionEffect(effect,duration,amplifier);
+            ret.add(potEffect);
         }
         return ret;
     }
@@ -1050,6 +1056,11 @@ final public class CraftType {
 
     public int getEffectRange() {
         return effectRange;
+    }
+
+    @NotNull
+    public Map<PotionEffect, Integer> getPotionEffectDelays() {
+        return potionEffectDelays;
     }
 
     private class TypeNotFoundException extends RuntimeException {

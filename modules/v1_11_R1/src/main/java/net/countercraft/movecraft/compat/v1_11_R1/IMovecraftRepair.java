@@ -37,10 +37,11 @@ import org.bukkit.plugin.Plugin;
 import java.io.*;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Set;
 
 public class IMovecraftRepair extends MovecraftRepair {
-    private HashMap<String, HashSet<Vector>> locMissingBlocksMap = new HashMap<>();
+    private HashMap<String, LinkedList<org.bukkit.util.Vector>> locMissingBlocksMap = new HashMap<>();
     private HashMap<String, Long> numDiffBlocksMap = new HashMap<>();
     private HashMap<String, HashMap<Material, Double>> missingBlocksMap = new HashMap<>();
 
@@ -145,8 +146,9 @@ public class IMovecraftRepair extends MovecraftRepair {
         if (clipboard != null){
             long numDiffBlocks = 0;
             HashMap<Material, Double> missingBlocks = new HashMap<>();
-            HashSet<Vector> locMissingBlocks = new HashSet<>();
-            Vector distMP = getDistanceFromSignToLowestPoint(clipboard, sign.getLine(1));
+            LinkedList<org.bukkit.util.Vector> locMissingBlocks = new LinkedList<>();
+            org.bukkit.util.Vector bukkitDistMP = getDistanceFromSignToLowestPoint(clipboard, sign.getLine(1));
+            Vector distMP = new Vector(bukkitDistMP.getBlockX(),bukkitDistMP.getBlockY(),bukkitDistMP.getBlockZ());
             Vector minPos = new Vector(sign.getLocation().getBlockX() - distMP.getBlockX(), sign.getLocation().getBlockY() - distMP.getBlockY(), sign.getLocation().getBlockZ() - distMP.getBlockZ());
             Vector distance = new Vector(minPos.getBlockX() - clipboard.getMinimumPoint().getBlockX(), minPos.getBlockY() - clipboard.getMinimumPoint().getBlockY(), minPos.getBlockZ() - clipboard.getMinimumPoint().getBlockZ());
             for (int x = clipboard.getMinimumPoint().getBlockX(); x <= clipboard.getMaximumPoint().getBlockX(); x++){
@@ -296,7 +298,7 @@ public class IMovecraftRepair extends MovecraftRepair {
                                     num += qtyToConsume;
                                     missingBlocks.put(Material.getMaterial(itemToConsume), num);
                                 }
-                                locMissingBlocks.add(new Vector(x,y,z));
+                                locMissingBlocks.push(new org.bukkit.util.Vector(x,y,z));
                             }
                         }
                         if (bukkitBlock.getType() == Material.DISPENSER && block.getType() == 23){
@@ -374,7 +376,7 @@ public class IMovecraftRepair extends MovecraftRepair {
                             }
                             if (needReplace){
                                 numDiffBlocks++;
-                                locMissingBlocks.add(new Vector(x,y,z));
+                                locMissingBlocks.push(new org.bukkit.util.Vector(x,y,z));
                             }
                         }
                     }
@@ -401,7 +403,7 @@ public class IMovecraftRepair extends MovecraftRepair {
     }
 
     @Override
-    public HashSet<Vector> getMissingBlockLocations(String repairName) {
+    public LinkedList<org.bukkit.util.Vector> getMissingBlockLocations(String repairName) {
         return locMissingBlocksMap.get(repairName);
     }
 
@@ -411,8 +413,8 @@ public class IMovecraftRepair extends MovecraftRepair {
     }
 
     @Override
-    public Vector getDistanceFromSignToLowestPoint(Clipboard clipboard, String repairName) {
-        Vector returnDistance = null;
+    public org.bukkit.util.Vector getDistanceFromSignToLowestPoint(Clipboard clipboard, String repairName) {
+        org.bukkit.util.Vector returnDistance = null;
         for (int x = clipboard.getMinimumPoint().getBlockX(); x <= clipboard.getMaximumPoint().getBlockX(); x++) {
             for (int y = clipboard.getMinimumPoint().getBlockY(); y <= clipboard.getMaximumPoint().getBlockY(); y++) {
                 for (int z = clipboard.getMinimumPoint().getBlockZ(); z <= clipboard.getMaximumPoint().getBlockZ(); z++) {
@@ -434,7 +436,7 @@ public class IMovecraftRepair extends MovecraftRepair {
                             secondLine = parts[0];
                         }
                         if (firstLine.equalsIgnoreCase("Repair:")&& secondLine.contains(repairName)){
-                            returnDistance = new Vector(x - clipboard.getMinimumPoint().getBlockX(), y - clipboard.getMinimumPoint().getBlockY(), z - clipboard.getMinimumPoint().getBlockZ());
+                            returnDistance = new org.bukkit.util.Vector(x - clipboard.getMinimumPoint().getBlockX(), y - clipboard.getMinimumPoint().getBlockY(), z - clipboard.getMinimumPoint().getBlockZ());
                         }
                     }
                 }
@@ -446,6 +448,11 @@ public class IMovecraftRepair extends MovecraftRepair {
     @Override
     public org.bukkit.util.Vector getDistanceFromClipboardToWorldOffset(org.bukkit.util.Vector offset, Clipboard clipboard) {
         return new org.bukkit.util.Vector(offset.getBlockX() - clipboard.getMinimumPoint().getBlockX(), offset.getBlockY() - clipboard.getMinimumPoint().getBlockY(), offset.getBlockZ() - clipboard.getMinimumPoint().getBlockZ());
+    }
+
+    @Override
+    public void setFawePlugin(Plugin fawePlugin) {
+
     }
 
     private Set<BaseBlock> baseBlocksFromCraft(Craft craft){

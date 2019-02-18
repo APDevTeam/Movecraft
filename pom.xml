@@ -19,12 +19,14 @@
     </properties>
 
     <modules>
+        <module>modules/FAWEUtils</module>
         <module>modules/api</module>
         <module>modules/v1_10_R1</module>
         <module>modules/v1_11_R1</module>
         <module>modules/v1_12_R1</module>
         <module>modules/v1_13_R2</module>
         <module>modules/Movecraft</module>
+
     </modules>
 
     <repositories>

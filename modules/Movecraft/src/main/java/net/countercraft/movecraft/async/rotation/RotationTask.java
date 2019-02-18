@@ -108,7 +108,7 @@ public class RotationTask extends AsyncTask {
                     Block b = getCraft().getW().getBlockAt(bTest.getX(), bTest.getY(), bTest.getZ());
                     if (b.getType() == Material.FURNACE) {
                         InventoryHolder inventoryHolder = (InventoryHolder) b.getState();
-                        if ((!Settings.IsLegacy ? (inventoryHolder.getInventory().contains(Material.COAL) || inventoryHolder.getInventory().contains(Material.CHARCOAL)) : (inventoryHolder.getInventory().contains(Material.COAL)) || inventoryHolder.getInventory().contains(Material.COAL_BLOCK))) {
+                        if ((!Settings.IsLegacy ? (inventoryHolder.getInventory().contains(Material.COAL) || inventoryHolder.getInventory().contains(Material.CHARCOAL)) || inventoryHolder.getInventory().contains(Material.COAL_BLOCK): (inventoryHolder.getInventory().contains(Material.COAL)) || inventoryHolder.getInventory().contains(Material.COAL_BLOCK))) {
                             fuelHolder = b;
                         }
                     }
