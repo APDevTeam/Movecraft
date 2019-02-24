@@ -34,24 +34,7 @@ import net.countercraft.movecraft.listener.PlayerListener;
 import net.countercraft.movecraft.listener.WorldEditInteractListener;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
-import net.countercraft.movecraft.sign.AntiAircraftDirectorSign;
-import net.countercraft.movecraft.sign.AscendSign;
-import net.countercraft.movecraft.sign.CannonDirectorSign;
-import net.countercraft.movecraft.sign.ContactsSign;
-import net.countercraft.movecraft.sign.CraftSign;
-import net.countercraft.movecraft.sign.CrewSign;
-import net.countercraft.movecraft.sign.CruiseSign;
-import net.countercraft.movecraft.sign.DescendSign;
-import net.countercraft.movecraft.sign.HelmSign;
-import net.countercraft.movecraft.sign.MoveSign;
-import net.countercraft.movecraft.sign.PilotSign;
-import net.countercraft.movecraft.sign.RelativeMoveSign;
-import net.countercraft.movecraft.sign.ReleaseSign;
-import net.countercraft.movecraft.sign.RemoteSign;
-import net.countercraft.movecraft.sign.SpeedSign;
-import net.countercraft.movecraft.sign.StatusSign;
-import net.countercraft.movecraft.sign.SubcraftRotateSign;
-import net.countercraft.movecraft.sign.TeleportSign;
+import net.countercraft.movecraft.sign.*;
 import net.countercraft.movecraft.utils.TownyUtils;
 import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
 import net.countercraft.movecraft.warfare.assault.AssaultManager;
@@ -120,6 +103,7 @@ public class Movecraft extends JavaPlugin {
             Settings.IsPaper=false;
         }
 
+
         Settings.LOCALE = getConfig().getString("Locale");
         Settings.RestrictSiBsToRegions = getConfig().getBoolean("RestrictSiBsToRegions", false);
         Settings.Debug = getConfig().getBoolean("Debug", false);
@@ -175,6 +159,7 @@ public class Movecraft extends JavaPlugin {
         Settings.AllowCrewSigns = getConfig().getBoolean("AllowCrewSigns", true);
         Settings.SetHomeToCrewSign = getConfig().getBoolean("SetHomeToCrewSign", true);
         Settings.RequireCreatePerm = getConfig().getBoolean("RequireCreatePerm", false);
+        Settings.RequireNamePerm = getConfig().getBoolean("RequireNamePerm", true);
         Settings.TNTContactExplosives = getConfig().getBoolean("TNTContactExplosives", true);
         Settings.FadeWrecksAfter = getConfig().getInt("FadeWrecksAfter", 0);
         if (getConfig().contains("DurabilityOverride")) {
@@ -349,7 +334,9 @@ public class Movecraft extends JavaPlugin {
                 assaultManager = new AssaultManager(this);
                 assaultManager.runTaskTimerAsynchronously(this, 0, 20);
             }
+
             if(Settings.SiegeEnable) {
+
                 siegeManager = new SiegeManager(this);
                 logger.info("Enabling siege");
                 //load the sieges.yml file
@@ -422,6 +409,7 @@ public class Movecraft extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new DescendSign(), this);
             getServer().getPluginManager().registerEvents(new HelmSign(), this);
             getServer().getPluginManager().registerEvents(new MoveSign(), this);
+            getServer().getPluginManager().registerEvents(new NameSign(), this);
             getServer().getPluginManager().registerEvents(new PilotSign(), this);
             getServer().getPluginManager().registerEvents(new RelativeMoveSign(), this);
             getServer().getPluginManager().registerEvents(new ReleaseSign(), this);
@@ -444,6 +432,7 @@ public class Movecraft extends JavaPlugin {
         instance = this;
         logger = getLogger();
     }
+
 
 
     public WorldGuardPlugin getWorldGuardPlugin() {

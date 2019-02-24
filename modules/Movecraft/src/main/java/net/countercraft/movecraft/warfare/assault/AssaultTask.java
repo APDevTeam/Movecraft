@@ -33,7 +33,7 @@ public class AssaultTask extends BukkitRunnable {
             // assault was successful
             assault.getRunning().set(false);
             World w = assault.getWorld();
-            Bukkit.getServer().broadcastMessage(String.format("The assault of %s was successful!", assault));
+            Bukkit.getServer().broadcastMessage(String.format("The assault of %s was successful!", assault.getRegionName()));
             ProtectedRegion tRegion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(w).getRegion(assault.getRegionName());
             assert tRegion != null;
             tRegion.setFlag(DefaultFlag.TNT, StateFlag.State.DENY);
@@ -93,30 +93,27 @@ public class AssaultTask extends BukkitRunnable {
                 w.getBlockAt(beaconX + 2, beaconY + 3, beaconZ + 1).setType(Material.WALL_SIGN);
                 Sign s = (Sign) w.getBlockAt(beaconX + 2, beaconY + 3, beaconZ + 1).getState();
                 s.setLine(0, ChatColor.RED + "REGION DAMAGED!");
-                s.setLine(1, "Region:" + assault);
-                s.setLine(2, "Damage:" + assault.getDamages());
+                s.setLine(1, "Region:" + assault.getRegionName());
+                s.setLine(2, "Damage:" + assault.getMaxDamages());
                 s.setLine(3, "Owner:" + getRegionOwnerList(tRegion));
                 s.update();
+                tRegion.getOwners().clear();
             }
-
-            tRegion.getOwners().clear();
         } else {
             // assault was not successful
             if (System.currentTimeMillis() - assault.getStartTime() > Settings.AssaultDuration * 1000) {
                 // assault has failed to reach damage cap within required time
                 assault.getRunning().set(false);
-                Bukkit.getServer().broadcastMessage(String.format("The assault of %s has failed!", assault));
+                Bukkit.getServer().broadcastMessage(String.format("The assault of %s has failed!", assault.getRegionName()));
                 ProtectedRegion tRegion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(assault.getWorld()).getRegion(assault.getRegionName());
                 assert tRegion != null;
                 tRegion.setFlag(DefaultFlag.TNT, StateFlag.State.DENY);
                 // repair the damages that have occurred so far
                 if (!new WorldEditInteractListener().repairRegion(assault.getWorld(), assault.getRegionName())) {
-                    Bukkit.getServer().broadcastMessage(String.format("REPAIR OF %s FAILED, CONTACT AN ADMIN", assault));
+                    Bukkit.getServer().broadcastMessage(String.format("REPAIR OF %s FAILED, CONTACT AN ADMIN", assault.getRegionName().toUpperCase()));
                 }
             }
         }
-
-
     }
 
 

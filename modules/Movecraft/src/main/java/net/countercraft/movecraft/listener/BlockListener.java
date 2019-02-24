@@ -387,9 +387,7 @@ public class BlockListener implements Listener {
 
                 // whether or not you actually destroyed the block, add to damages
                 long damages = assault.getDamages() + Settings.AssaultDamagesPerBlock;
-                if (damages < assault.getMaxDamages()) {
-                    assault.setDamages(damages);
-                }
+                assault.setDamages(Math.min(damages, assault.getMaxDamages()));
 
                 // notify nearby players of the damages, do this 1 second later so all damages from this volley will be included
                 if (System.currentTimeMillis() < lastDamagesUpdate + 4000) {

@@ -7,6 +7,7 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.utils.HashHitBox;
 import net.countercraft.movecraft.craft.CraftManager;
 import org.bukkit.Bukkit;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 
 import java.util.concurrent.atomic.AtomicReference;
@@ -19,12 +20,20 @@ public class SiegeProgressTask extends SiegeTask {
 
     //every 180 seconds = 3600 ticks
     public void run() {
-        if ((siege.getDuration() - (System.currentTimeMillis() - siege.getStartTime()) / 1000) % 60 != 0) {
+        if ((siege.getDuration() - ((System.currentTimeMillis() - siege.getStartTime()) / 1000)) % 60 != 0) {
             return;
         }
         Player siegeLeader = Movecraft.getInstance().getServer().getPlayer(siege.getPlayerUUID());
         Craft siegeCraft = CraftManager.getInstance().getCraftByPlayer(siegeLeader);
-        boolean siegeLeaderShipInRegion = false, siegeLeaderPilotingShip = siege.getCraftsToWin().contains(siegeCraft.getType().getCraftName());
+        boolean siegeLeaderShipInRegion = false, siegeLeaderPilotingShip;
+        //Allows the siege leader to not pilot a craft without having an NPE generated
+        if (siegeCraft == null){
+            siegeLeaderPilotingShip = false;
+        } else if (siege.getCraftsToWin().contains(siegeCraft.getType().getCraftName())){
+            siegeLeaderPilotingShip = true;
+        } else {
+            siegeLeaderPilotingShip = false;
+        }
         int midX = 0;
         int midY = 0;
         int midZ = 0;
@@ -36,7 +45,8 @@ public class SiegeProgressTask extends SiegeTask {
             siegeLeaderShipInRegion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(siegeLeader.getWorld()).getRegion(siege.getAttackRegion()).contains(midX, midY, midZ);
 
         }
-        int timeLeft = (int) (siege.getDuration() - (System.currentTimeMillis() - siege.getStartTime()) / 1000);
+        int timeLeft = (siege.getDuration() - (((int)System.currentTimeMillis() - siege.getStartTime())/1000));
+
         if (timeLeft > 10) {
             if (siegeLeaderShipInRegion) {
                 Bukkit.getServer().broadcastMessage(String.format(
@@ -80,6 +90,9 @@ public class SiegeProgressTask extends SiegeTask {
                     }
             }
             siege.setStage(SiegeStage.INACTIVE);
+        }
+        for (Player p : Bukkit.getOnlinePlayers()){
+            p.playSound(p.getLocation(), Sound.ENTITY_WITHER_DEATH, 1,0);
         }
     }
 }
