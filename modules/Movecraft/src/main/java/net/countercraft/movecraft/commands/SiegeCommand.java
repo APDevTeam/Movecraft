@@ -1,37 +1,42 @@
 package net.countercraft.movecraft.commands;
 
+import com.sk89q.worldedit.bukkit.BukkitWorld;
+import com.sk89q.worldedit.util.Location;
+import com.sk89q.worldguard.LocalPlayer;
+import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
+import com.sk89q.worldguard.protection.regions.RegionQuery;
 import net.countercraft.movecraft.Movecraft;
-import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.utils.HashHitBox;
 import net.countercraft.movecraft.utils.TopicPaginator;
+import net.countercraft.movecraft.utils.WorldguardUtils;
 import net.countercraft.movecraft.warfare.siege.Siege;
 import net.countercraft.movecraft.warfare.siege.SiegeManager;
 import net.countercraft.movecraft.warfare.siege.SiegeStage;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Sound;
+import org.bukkit.World;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarFlag;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.text.NumberFormat;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.TimeZone;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.*;
 import java.util.logging.Level;
 
 import static net.countercraft.movecraft.utils.ChatUtils.MOVECRAFT_COMMAND_PREFIX;
 
-public class SiegeCommand implements CommandExecutor {
+public class SiegeCommand implements TabExecutor {
     //TODO: Add tab complete
     private final NumberFormat currencyFormat = NumberFormat.getCurrencyInstance();
     @Override
@@ -86,8 +91,8 @@ public class SiegeCommand implements CommandExecutor {
         commandSender.sendMessage("Cost to siege: " + ChatColor.RED + currencyFormat.format(siege.getCost()));
         commandSender.sendMessage("Daily income: " + ChatColor.RED + currencyFormat.format(siege.getDailyIncome()));
         commandSender.sendMessage("Day of week: " + ChatColor.RED + dayToString(siege.getDayOfWeek()));
-        commandSender.sendMessage("Start time: " + ChatColor.RED + String.format("%02d", siege.getStartTime()/100) + ":" + String.format("%02d", siege.getStartTime()%100) + " UTC");
-        commandSender.sendMessage("End time: " + ChatColor.RED + String.format("%02d", siege.getScheduleEnd()/100) + ":" + String.format("%02d",siege.getScheduleEnd()%100) + " UTC");
+        commandSender.sendMessage("Start time: " + ChatColor.RED + String.format("%02d", siege.getStartTime()/100) + ":" + String.format("%02d", siege.getStartTime()%100) + " " + Settings.SiegeTimeZone);
+        commandSender.sendMessage("End time: " + ChatColor.RED + String.format("%02d", siege.getScheduleEnd()/100) + ":" + String.format("%02d",siege.getScheduleEnd()%100) + " " + Settings.SiegeTimeZone);
         commandSender.sendMessage("Duration: " + ChatColor.RED + String.format("%02d", siege.getDuration()/100) + ":" + String.format("%02d", siege.getDuration()%100));
         return true;
 
@@ -134,7 +139,7 @@ public class SiegeCommand implements CommandExecutor {
             }
         }
         Siege siege = null;
-        ApplicableRegionSet regions = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(player.getWorld()).getApplicableRegions(player.getLocation());
+        ApplicableRegionSet regions = WorldguardUtils.getRegionsAt(player.getLocation());
         search:
         for (ProtectedRegion tRegion : regions.getRegions()) {
             for (Siege tempSiege : siegeManager.getSieges()) {
@@ -150,7 +155,7 @@ public class SiegeCommand implements CommandExecutor {
         }
         long cost = siege.getCost();
         for (Siege tempSiege : siegeManager.getSieges()) {
-            ProtectedRegion tregion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(player.getWorld()).getRegion(tempSiege.getCaptureRegion());
+            ProtectedRegion tregion = WorldguardUtils.getRegionManager(player.getWorld()).getRegion(tempSiege.getCaptureRegion());
             assert tregion != null;
             if (tempSiege.isDoubleCostPerOwnedSiegeRegion() && tregion.getOwners().contains(player.getUniqueId()))
                 cost *= 2;
@@ -160,14 +165,21 @@ public class SiegeCommand implements CommandExecutor {
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + String.format("You do not have enough money. You need %d", cost));
             return true;
         }
-        Calendar rightNow = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        Calendar rightNow = Calendar.getInstance(TimeZone.getTimeZone(Settings.SiegeTimeZone));
         int hour = rightNow.get(Calendar.HOUR_OF_DAY);
         int minute = rightNow.get(Calendar.MINUTE);
         int currMilitaryTime = hour * 100 + minute;
         int dayOfWeek = rightNow.get(Calendar.DAY_OF_WEEK);
-        if (currMilitaryTime <= siege.getScheduleStart() || currMilitaryTime >= siege.getScheduleEnd() || dayOfWeek != siege.getDayOfWeek()) {
+        Movecraft.getInstance().getLogger().info(String.valueOf(currMilitaryTime));
+        if (currMilitaryTime <= siege.getScheduleStart() || currMilitaryTime >= siege.getScheduleEnd()) {
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("The time is not during the Siege schedule"));
             return true;
+        }
+        if (siege.getDayOfWeek() > 0){
+            if (dayOfWeek != siege.getDayOfWeek()){
+                player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("The time is not during the Siege schedule"));
+                return true;
+            }
         }
         for (String startCommand : siege.getCommandsOnStart()) {
             Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), startCommand.replaceAll("%r", siege.getAttackRegion()).replaceAll("%c", "" + siege.getCost()));
@@ -191,6 +203,8 @@ public class SiegeCommand implements CommandExecutor {
     private String dayToString(int day){
         String output = "Error";
         switch (day){
+            case 0: output = "All days";
+                break;
             case 1: output = "Monday";
                 break;
             case 2: output = "Tuesday";
@@ -208,5 +222,23 @@ public class SiegeCommand implements CommandExecutor {
 
         }
         return output;
+    }
+
+    @Nullable
+    @Override
+    public List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] strings) {
+        List<String> completions = new ArrayList<>();
+        List<String> returnList = new ArrayList<>();
+        if (strings.length == 1){
+            completions.add("begin");
+            completions.add("info");
+            completions.add("list");
+        }
+        for (String str : completions){
+            if (str.toLowerCase().startsWith(strings[strings.length -1].toLowerCase())){
+                returnList.add(str);
+            }
+        }
+        return returnList;
     }
 }

@@ -11,6 +11,14 @@ public class WorldEditUtils {
         return new Vector(bukkitVector.getBlockX(),bukkitVector.getBlockY(),bukkitVector.getBlockZ());
     }
 
+    public static org.bukkit.util.Vector toBukkitVector(Vector vector){
+        return new org.bukkit.util.Vector(vector.getBlockX(),vector.getBlockY(),vector.getBlockZ());
+    }
+
+    public static org.bukkit.util.Vector toBukkitVector(BlockVector3 vector){
+        return new org.bukkit.util.Vector(vector.getBlockX(),vector.getBlockY(),vector.getBlockZ());
+    }
+
     public static BlockVector3 toBlockVector(org.bukkit.util.Vector bukkitVector){
         return BlockVector3.at(bukkitVector.getBlockX(),bukkitVector.getBlockY(),bukkitVector.getBlockZ());
     }

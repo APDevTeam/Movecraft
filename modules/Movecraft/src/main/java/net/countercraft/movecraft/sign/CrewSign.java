@@ -21,9 +21,7 @@ import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 public class CrewSign implements Listener {
     //As of 1.13, each bed color have their own values

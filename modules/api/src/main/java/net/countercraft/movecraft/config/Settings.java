@@ -90,4 +90,5 @@ public class Settings {
     public static Map<Material, Double> FuelTypes = new HashMap<>();
 
     public static boolean SiegeEnable;
+    public static String SiegeTimeZone;
 }

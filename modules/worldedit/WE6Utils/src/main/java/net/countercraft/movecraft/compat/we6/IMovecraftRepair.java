@@ -1,11 +1,11 @@
-package net.countercraft.movecraft.compat.v1_12_R1;
+package net.countercraft.movecraft.compat.we6;
 
-import com.sk89q.jnbt.*;
+import com.sk89q.jnbt.CompoundTag;
+import com.sk89q.jnbt.ListTag;
+import com.sk89q.jnbt.Tag;
 import com.sk89q.worldedit.MaxChangedBlocksException;
-import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.WorldEdit;
-import com.sk89q.worldedit.WorldEditException;
-import com.sk89q.worldedit.blocks.*;
+import com.sk89q.worldedit.blocks.BaseBlock;
 import com.sk89q.worldedit.bukkit.BukkitWorld;
 import com.sk89q.worldedit.extent.Extent;
 import com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard;
@@ -13,12 +13,15 @@ import com.sk89q.worldedit.extent.clipboard.Clipboard;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormat;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardWriter;
 import com.sk89q.worldedit.function.mask.BlockMask;
-import com.sk89q.worldedit.function.mask.ExistingBlockMask;
 import com.sk89q.worldedit.function.operation.ForwardExtentCopy;
 import com.sk89q.worldedit.function.operation.Operations;
-import com.sk89q.worldedit.masks.BlockTypeMask;
 import com.sk89q.worldedit.regions.CuboidRegion;
+import com.sk89q.worldedit.regions.Polygonal2DRegion;
+import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.world.registry.WorldData;
+import com.sk89q.worldguard.protection.regions.ProtectedCuboidRegion;
+import com.sk89q.worldguard.protection.regions.ProtectedPolygonalRegion;
+import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.MovecraftRepair;
 import net.countercraft.movecraft.config.Settings;
@@ -28,15 +31,21 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.block.*;
+import org.bukkit.block.Block;
+import org.bukkit.block.Dispenser;
+import org.bukkit.block.Sign;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.util.Vector;
 
 import java.io.*;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Set;
 
 public class IMovecraftRepair extends MovecraftRepair {
-    private HashMap<String, LinkedList<org.bukkit.util.Vector>> locMissingBlocksMap = new HashMap<>();
+    private HashMap<String, LinkedList<Vector>> locMissingBlocksMap = new HashMap<>();
     private HashMap<String, Long> numDiffBlocksMap = new HashMap<>();
     private HashMap<String, HashMap<Material, Double>> missingBlocksMap = new HashMap<>();
 
@@ -50,8 +59,8 @@ public class IMovecraftRepair extends MovecraftRepair {
         if (!saveDirectory.exists()){
             saveDirectory.mkdirs();
         }
-        Vector minPos = new Vector(hitBox.getMinX(), hitBox.getMinY(), hitBox.getMinZ());
-        Vector maxPos = new Vector(hitBox.getMaxX(), hitBox.getMaxY(), hitBox.getMaxZ());
+        com.sk89q.worldedit.Vector minPos = new com.sk89q.worldedit.Vector(hitBox.getMinX(), hitBox.getMinY(), hitBox.getMinZ());
+        com.sk89q.worldedit.Vector maxPos = new com.sk89q.worldedit.Vector(hitBox.getMaxX(), hitBox.getMaxY(), hitBox.getMaxZ());
         CuboidRegion cRegion = new CuboidRegion(minPos, maxPos);
         File repairStateFile = new File(saveDirectory, s + ".schematic");
         Set<BaseBlock> blockSet = baseBlocksFromCraft(craft);
@@ -69,10 +78,7 @@ public class IMovecraftRepair extends MovecraftRepair {
             writer.close();
             return true;
 
-        } catch (MaxChangedBlocksException e) {
-            e.printStackTrace();
-            return false;
-        } catch (IOException e) {
+        } catch (MaxChangedBlocksException | IOException e) {
             e.printStackTrace();
             return false;
         }
@@ -81,18 +87,28 @@ public class IMovecraftRepair extends MovecraftRepair {
     }
 
     @Override
-    public boolean saveRegionRepairState(Plugin plugin, World world, org.bukkit.util.Vector minPos, org.bukkit.util.Vector maxPos, String s) {
+    public boolean saveRegionRepairState(Plugin plugin, World world, ProtectedRegion region) {
+
         File saveDirectory = new File(plugin.getDataFolder(), "RegionRepairStates");
         com.sk89q.worldedit.world.World weWorld = new BukkitWorld(world);
         WorldData worldData = weWorld.getWorldData();
-        Vector weMinPos = new Vector(minPos.getBlockX(), minPos.getBlockY(), minPos.getBlockZ());
-        Vector weMaxPos = new Vector(maxPos.getBlockX(), maxPos.getBlockY(), maxPos.getBlockZ());
+        com.sk89q.worldedit.Vector weMinPos = region.getMinimumPoint();
+        com.sk89q.worldedit.Vector weMaxPos = region.getMaximumPoint();
         if (!saveDirectory.exists()){
             saveDirectory.mkdirs();
         }
         Set<BaseBlock> baseBlockSet = new HashSet<>();
-        CuboidRegion cRegion = new CuboidRegion(weMinPos, weMaxPos);
-        File repairStateFile = new File(saveDirectory, s + ".schematic");
+        Region weRegion = null;
+        if (region instanceof ProtectedCuboidRegion){
+            weRegion = new CuboidRegion(weMinPos, weMaxPos);
+        } else if (region instanceof ProtectedPolygonalRegion){
+            ProtectedPolygonalRegion polyReg = (ProtectedPolygonalRegion) region;
+            weRegion = new Polygonal2DRegion(weWorld,polyReg.getPoints(),polyReg.getMinimumPoint().getBlockY(),polyReg.getMaximumPoint().getBlockY());
+        }
+
+
+
+        File repairStateFile = new File(saveDirectory, region.getId().replaceAll("´\\s+", "_") + ".schematic");
         for (int x = weMinPos.getBlockX(); x <= weMaxPos.getBlockX(); x++){
             for (int y = weMinPos.getBlockY(); y <= weMaxPos.getBlockY(); y++){
                 for (int z = weMinPos.getBlockZ(); z <= weMaxPos.getBlockZ(); z++){
@@ -108,10 +124,10 @@ public class IMovecraftRepair extends MovecraftRepair {
         }
         try {
 
-            BlockArrayClipboard clipboard = new BlockArrayClipboard(cRegion);
+            BlockArrayClipboard clipboard = new BlockArrayClipboard(weRegion);
             Extent source = WorldEdit.getInstance().getEditSessionFactory().getEditSession(weWorld, -1);
             Extent destination = clipboard;
-            ForwardExtentCopy copy = new ForwardExtentCopy(source, cRegion, clipboard.getOrigin(), destination, weMinPos);
+            ForwardExtentCopy copy = new ForwardExtentCopy(source, weRegion, clipboard.getOrigin(), destination, weMinPos);
             BlockMask mask = new BlockMask(source, baseBlockSet);
             copy.setSourceMask(mask);
             Operations.completeLegacy(copy);
@@ -120,10 +136,7 @@ public class IMovecraftRepair extends MovecraftRepair {
             writer.close();
             return true;
 
-        } catch (MaxChangedBlocksException e) {
-            e.printStackTrace();
-            return false;
-        } catch (IOException e) {
+        } catch (MaxChangedBlocksException | IOException e) {
             e.printStackTrace();
             return false;
         }
@@ -135,7 +148,7 @@ public class IMovecraftRepair extends MovecraftRepair {
     }
 
     @Override
-    public Clipboard loadCraftRepairStateClipboard(Plugin plugin,Sign sign, String repairStateFile, World world) {
+    public Clipboard loadCraftRepairStateClipboard(Plugin plugin, Sign sign, String repairStateFile, World world) {
         File dataDirectory = new File(plugin.getDataFolder(), "CraftRepairStates");
         File file = new File(dataDirectory, repairStateFile + ".schematic"); // The schematic file
         com.sk89q.worldedit.world.World weWorld = new BukkitWorld(world);
@@ -144,9 +157,6 @@ public class IMovecraftRepair extends MovecraftRepair {
         try {
             clipboard = ClipboardFormat.SCHEMATIC.getReader(new FileInputStream(file)).read(worldData);
 
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            return null;
         } catch (IOException e) {
             e.printStackTrace();
             return null;
@@ -156,13 +166,13 @@ public class IMovecraftRepair extends MovecraftRepair {
             HashMap<Material, Double> missingBlocks = new HashMap<>();
             LinkedList<org.bukkit.util.Vector> locMissingBlocks = new LinkedList<>();
             org.bukkit.util.Vector bukkitDistMP = getDistanceFromSignToLowestPoint(clipboard, sign.getLine(1));
-            Vector distMP = new Vector(bukkitDistMP.getBlockX(),bukkitDistMP.getBlockY(),bukkitDistMP.getBlockZ());
-            Vector minPos = new Vector(sign.getLocation().getBlockX() - distMP.getBlockX(), sign.getLocation().getBlockY() - distMP.getBlockY(), sign.getLocation().getBlockZ() - distMP.getBlockZ());
-            Vector distance = new Vector(minPos.getBlockX() - clipboard.getMinimumPoint().getBlockX(), minPos.getBlockY() - clipboard.getMinimumPoint().getBlockY(), minPos.getBlockZ() - clipboard.getMinimumPoint().getBlockZ());
+            com.sk89q.worldedit.Vector distMP = new com.sk89q.worldedit.Vector(bukkitDistMP.getBlockX(),bukkitDistMP.getBlockY(),bukkitDistMP.getBlockZ());
+            com.sk89q.worldedit.Vector minPos = new com.sk89q.worldedit.Vector(sign.getLocation().getBlockX() - distMP.getBlockX(), sign.getLocation().getBlockY() - distMP.getBlockY(), sign.getLocation().getBlockZ() - distMP.getBlockZ());
+            com.sk89q.worldedit.Vector distance = new com.sk89q.worldedit.Vector(minPos.getBlockX() - clipboard.getMinimumPoint().getBlockX(), minPos.getBlockY() - clipboard.getMinimumPoint().getBlockY(), minPos.getBlockZ() - clipboard.getMinimumPoint().getBlockZ());
             for (int x = clipboard.getMinimumPoint().getBlockX(); x <= clipboard.getMaximumPoint().getBlockX(); x++){
                 for (int y = clipboard.getMinimumPoint().getBlockY(); y <= clipboard.getMaximumPoint().getBlockY(); y++){
                     for (int z = clipboard.getMinimumPoint().getBlockZ(); z <= clipboard.getMaximumPoint().getBlockZ(); z++){
-                        Vector position = new Vector(x,y,z);
+                        com.sk89q.worldedit.Vector position = new com.sk89q.worldedit.Vector(x,y,z);
                         Location bukkitLoc = new Location(sign.getWorld(), x + distance.getBlockX(), y + distance.getBlockY(), z + distance.getBlockZ());
                         BaseBlock block = clipboard.getBlock(position);
                         Block bukkitBlock = sign.getWorld().getBlockAt(bukkitLoc);
@@ -436,7 +446,7 @@ public class IMovecraftRepair extends MovecraftRepair {
         for (int x = clipboard.getMinimumPoint().getBlockX(); x <= clipboard.getMaximumPoint().getBlockX(); x++) {
             for (int y = clipboard.getMinimumPoint().getBlockY(); y <= clipboard.getMaximumPoint().getBlockY(); y++) {
                 for (int z = clipboard.getMinimumPoint().getBlockZ(); z <= clipboard.getMaximumPoint().getBlockZ(); z++) {
-                    Vector pos = new Vector(x,y,z);
+                    com.sk89q.worldedit.Vector pos = new com.sk89q.worldedit.Vector(x,y,z);
                     BaseBlock block = clipboard.getBlock(pos);
                     if (block.getType() == 68 || block.getType() == 63) {
                         String firstLine = block.getNbtData().getString("Text1");
@@ -486,7 +496,7 @@ public class IMovecraftRepair extends MovecraftRepair {
         return returnSet;
     }
 
-    private Set<BaseBlock> baseBlocksFromAssaultRegion(Vector minPos, Vector maxPos, World world){
+    private Set<BaseBlock> baseBlocksFromAssaultRegion(com.sk89q.worldedit.Vector minPos, com.sk89q.worldedit.Vector maxPos, World world){
         HashSet<BaseBlock> returnSet = new HashSet<>();
         for (int x = minPos.getBlockX(); x <= maxPos.getBlockX(); x++){
             for (int y = minPos.getBlockY(); y <= maxPos.getBlockY(); y++){

@@ -6,7 +6,7 @@
         <artifactId>movecraft-parent</artifactId>
         <groupId>net.countercraft</groupId>
         <version>parent</version>
-        <relativePath>../../pom.xml</relativePath>
+        <relativePath>../../../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>movecraft-FAWEUtils</artifactId>
@@ -49,7 +49,7 @@
                 <version>3.7.0</version>
                 <configuration>
                     <includes>
-                        <include>net/countercraft/movecraft/utils/**</include>
+                        <include>net/countercraft/movecraft/compat/fawe/**</include>
                     </includes>
                     <source>1.8</source>
                     <target>1.8</target>
@@ -61,7 +61,7 @@
                 <version>2.4</version>
                 <configuration>
                     <includes>
-                        <include>net/countercraft/movecraft/utils/**</include>
+                        <include>net/countercraft/movecraft/compat/fawe/**</include>
                     </includes>
                 </configuration>
             </plugin>

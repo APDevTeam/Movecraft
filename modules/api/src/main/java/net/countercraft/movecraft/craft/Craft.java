@@ -34,6 +34,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -322,9 +323,9 @@ public abstract class Craft {
             return type.getTickCooldown()+(int)chestPenalty;
         if(type.getDynamicFlyBlockSpeedFactor()!=0){
             double count = 0;
-            Material flyBlockMaterial = type.getDynamicFlyBlock();
+            Set<Material> flyBlockMaterials = type.getDynamicFlyBlocks();
             for(MovecraftLocation location : hitBox){
-                if(location.toBukkit(w).getBlock().getType()==flyBlockMaterial)
+                if(flyBlockMaterials.contains(location.toBukkit(w).getBlock().getType()))
                     count++;
             }
             return Math.max((int) (20 / (type.getCruiseTickCooldown() * (1  + type.getDynamicFlyBlockSpeedFactor() * (count /hitBox.size() - .5)))), 1);

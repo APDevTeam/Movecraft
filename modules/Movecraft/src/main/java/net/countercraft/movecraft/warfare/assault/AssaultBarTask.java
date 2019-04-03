@@ -37,6 +37,9 @@ public class AssaultBarTask extends BukkitRunnable {
         //Bukkit.broadcastMessage(String.valueOf(startTime) + ", " + String.valueOf(System.currentTimeMillis()) + ", " + String.valueOf(progress) + ", " + String.valueOf(timePassed));
         if (assaultInPreparation){
             prepBar.setVisible(true);
+            if (progress > 1.0){
+                progress = 1.0;
+            }
             if (progress >= 0.0 && progress <= 1.0){
                 prepBar.setProgress(progress);
 
@@ -45,5 +48,11 @@ public class AssaultBarTask extends BukkitRunnable {
             prepBar.setVisible(false);
             this.cancel();
         }
+    }
+
+    public void cancel(){
+        prepBar.setVisible(false);
+        prepBar = null;
+        super.cancel();
     }
 }

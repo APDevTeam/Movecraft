@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 public class NextTickProvider {
-	private Map<WorldServer,ImmutablePair<HashTreeSet<NextTickListEntry>,List<NextTickListEntry<Block>>>> tickMap = new HashMap<>();
+	private Map<WorldServer,ImmutablePair<HashTreeSet<NextTickListEntry>,List<NextTickListEntry>>> tickMap = new HashMap<>();
 
     private boolean isRegistered(@NotNull WorldServer world){
         return tickMap.containsKey(world);
@@ -23,15 +23,16 @@ public class NextTickProvider {
 
     @SuppressWarnings("unchecked")
     private void registerWorld(@NotNull WorldServer world){
-        List<NextTickListEntry<Block>> W = new ArrayList<>();
+        List<NextTickListEntry> W = new ArrayList<>();
         HashTreeSet<NextTickListEntry> nextTickList = new HashTreeSet<>();
-        Chunk chunk = world.getChunkProvider().a().iterator().next();
-
+        TickListServer<Block> blockTickListServer = world.getBlockTickList();
         try {
-            W = world.getBlockTickList().a(chunk, false);
+            Field gField = TickListServer.class.getDeclaredField("g");
+            gField.setAccessible(true);
+            W = (List<NextTickListEntry>) gField.get(blockTickListServer);
             Field ntlField = TickListServer.class.getDeclaredField("nextTickList");
             ntlField.setAccessible(true);
-            ntlField.get(world.getBlockTickList());
+            nextTickList = (HashTreeSet<NextTickListEntry>) ntlField.get(blockTickListServer);
         } catch (IllegalAccessException | IllegalArgumentException | NoSuchFieldException | SecurityException e1) {
             e1.printStackTrace();
         }
@@ -42,7 +43,7 @@ public class NextTickProvider {
     public NextTickListEntry getNextTick(@NotNull WorldServer world,@NotNull BlockPosition position){
         if(!isRegistered(world))
             registerWorld(world);
-        ImmutablePair<HashTreeSet<NextTickListEntry>, List<NextTickListEntry<Block>>> listPair = tickMap.get(world);
+        ImmutablePair<HashTreeSet<NextTickListEntry>, List<NextTickListEntry>> listPair = tickMap.get(world);
         for(Iterator<NextTickListEntry> iterator = listPair.left.iterator(); iterator.hasNext();) {
             NextTickListEntry listEntry = iterator.next();
             if (position.equals(listEntry.a)) {
@@ -50,7 +51,7 @@ public class NextTickProvider {
                 return listEntry;
             }
         }
-        for(Iterator<NextTickListEntry<Block>> iterator = listPair.right.iterator(); iterator.hasNext();) {
+        for(Iterator<NextTickListEntry> iterator = listPair.right.iterator(); iterator.hasNext();) {
             NextTickListEntry listEntry = iterator.next();
             if (position.equals(listEntry.a)) {
                 iterator.remove();

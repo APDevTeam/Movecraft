@@ -26,8 +26,10 @@ import com.palmergames.bukkit.towny.Towny;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.flags.StateFlag;
+import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import net.countercraft.movecraft.async.AsyncManager;
 import net.countercraft.movecraft.commands.*;
+import net.countercraft.movecraft.compatmanager.GriefPreventionCompatManager;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.listener.BlockListener;
@@ -74,6 +76,7 @@ public class Movecraft extends JavaPlugin {
     private static Essentials essentialsPlugin = null;
     private static Factions factionsPlugin;
     private static DeadboltPlugin deadboltPlugin;
+    private static GriefPrevention griefPreventionPlugin;
     /*public HashMap<MovecraftLocation, Long> blockFadeTimeMap = new HashMap<>();
     public HashMap<MovecraftLocation, Integer> blockFadeTypeMap = new HashMap<>();
     public HashMap<MovecraftLocation, Boolean> blockFadeWaterMap = new HashMap<>();
@@ -105,11 +108,7 @@ public class Movecraft extends JavaPlugin {
         String[] parts = version.split("_");
         Integer versionNumber = Integer.valueOf(parts[1]);
         //Check if the server is 1.12 and lower or 1.13 and higher
-        if (versionNumber <= 12){
-            Settings.IsLegacy = true;
-        } else {
-            Settings.IsLegacy = false;
-        }
+        Settings.IsLegacy = versionNumber <= 12;
         // Read in config
         if (!Settings.IsLegacy) {
             this.saveDefaultConfig();
@@ -127,6 +126,7 @@ public class Movecraft extends JavaPlugin {
         }
 
 
+
         Settings.LOCALE = getConfig().getString("Locale");
         Settings.RestrictSiBsToRegions = getConfig().getBoolean("RestrictSiBsToRegions", false);
         Settings.Debug = getConfig().getBoolean("Debug", false);
@@ -139,18 +139,6 @@ public class Movecraft extends JavaPlugin {
         } else {
             logger.log(Level.INFO, "No PilotTool setting, using default of stick");
         }
-        // if the CompatibilityMode is specified in the config.yml file, use it.
-        // Otherwise set to false.
-        /*Settings.CompatibilityMode = getConfig().getBoolean("CompatibilityMode", false);
-        if (!Settings.CompatibilityMode) {
-            try {
-                Class.forName("net.minecraft.server.v1_10_R1.Chunk");
-            } catch (ClassNotFoundException e) {
-                Settings.CompatibilityMode = true;
-                logger.log(Level.INFO, "WARNING: CompatibilityMode was set to false, but required build-specific classes were not found. FORCING COMPATIBILITY MODE");
-            }
-        }
-        logger.log(Level.INFO, "CompatiblityMode is set to {0}", Settings.CompatibilityMode);*/
         //Switch to interfaces
 
         try {
@@ -183,6 +171,25 @@ public class Movecraft extends JavaPlugin {
         Settings.RequireNamePerm = getConfig().getBoolean("RequireNamePerm", false);
         Settings.TNTContactExplosives = getConfig().getBoolean("TNTContactExplosives", true);
         Settings.FadeWrecksAfter = getConfig().getInt("FadeWrecksAfter", 0);
+        if (getConfig().contains("FuelTypes")){
+            Map<String, Object> fuelTypes = getConfig().getConfigurationSection("FuelTypes").getValues(false);
+            int numFuelTypes = 0;
+            for (String fuelTypeId : fuelTypes.keySet()){
+                Settings.FuelTypes.put(Material.getMaterial(fuelTypeId), (Double) fuelTypes.get(fuelTypeId));
+                numFuelTypes++;
+            }
+            logger.info(numFuelTypes + " fuel types registered");
+        } else {
+            Settings.FuelTypes.put(Material.COAL_BLOCK,79.0);
+            Settings.FuelTypes.put(Material.COAL,7.0);
+            if (!Settings.IsLegacy)
+                Settings.FuelTypes.put(Material.CHARCOAL,7.0);
+            String loggerMsg = "No fuel types specified in config. Registering default fuel types ";
+            for (Material fuel : Settings.FuelTypes.keySet()){
+                loggerMsg += fuel.name().toLowerCase() + " with burning time " + Settings.FuelTypes.get(fuel) + ", ";
+            }
+            logger.info(loggerMsg);
+        }
         if (getConfig().contains("DurabilityOverride")) {
             Map<String, Object> temp = getConfig().getConfigurationSection("DurabilityOverride").getValues(false);
             Settings.DurabilityOverride = new HashMap<>();
@@ -205,15 +212,16 @@ public class Movecraft extends JavaPlugin {
         Settings.AssaultMemberWeightPercent = getConfig().getInt("AssaultMemberWeightPercent", 100);
         List<String> assaultDestroyableBlocks = getConfig().getStringList("AssaultDestroyableBlocks");
         for (String matStr : assaultDestroyableBlocks){
-            Settings.AssaultDestroyableBlocks.add(Material.getMaterial(matStr));
+            Settings.AssaultDestroyableBlocks.add(Material.getMaterial(matStr.toUpperCase()));
         }
         List<String> disableShadowBlocks = getConfig().getStringList("DisableShadowBlocks");
         for (String typ : disableShadowBlocks){
-            Settings.DisableShadowBlocks.add(Material.getMaterial(typ));
+            Settings.DisableShadowBlocks.add(Material.getMaterial(typ.toUpperCase()));
         }
         Settings.RepairMaxPercent = getConfig().getDouble("RepairMaxPercent", 50.0);
         Settings.ForbiddenRemoteSigns = new HashSet<>(getConfig().getStringList("ForbiddenRemoteSigns"));
         Settings.SiegeEnable = getConfig().getBoolean("SiegeEnable", false);
+        Settings.SiegeTimeZone = getConfig().getString("SiegeTimeZone", "UTC");
 
 
 
@@ -242,25 +250,22 @@ public class Movecraft extends JavaPlugin {
 
 
         //load up WorldEdit if it's present
-        Plugin wEPlugin = getServer().getPluginManager().getPlugin("WorldEdit");
+
+        Plugin wEPlugin = null;
+        if (getServer().getPluginManager().getPlugin("WorldEdit") != null){
+            wEPlugin = getServer().getPluginManager().getPlugin("WorldEdit");
+        } else {
+            if (!Settings.IsLegacy){
+                wEPlugin = getServer().getPluginManager().getPlugin("FastAsyncWorldEdit");
+            }
+        }
         if (wEPlugin == null || !(wEPlugin instanceof WorldEditPlugin)) {
             logger.log(Level.INFO, "Movecraft did not find a compatible version of WorldEdit. Disabling WorldEdit integration");
             Settings.AssaultEnable = false;
         } else {
             logger.log(Level.INFO, "Found a compatible version of WorldEdit. Enabling WorldEdit integration");
             Settings.RepairTicksPerBlock = getConfig().getInt("RepairTicksPerBlock", 0);
-            //Test if a compatible MovecraftRepair is present
-            try {
-                final Class<?> clazz = Class.forName("net.countercraft.movecraft.compat." + version + ".IMovecraftRepair");
-                //Check if we have a Repair class at that location
-                if (MovecraftRepair.class.isAssignableFrom(clazz)){
-                    this.movecraftRepair = (MovecraftRepair) clazz.getConstructor().newInstance();
-                }
-            } catch (final Exception e){
-                e.printStackTrace();
-                this.getLogger().severe("Could not find a compatible repair class. Disabling repair function");
-                Settings.RepairTicksPerBlock = 0;
-            }
+
             if (!Settings.IsLegacy) {
                 //Check if FAWE us used
                 try {
@@ -269,6 +274,30 @@ public class Movecraft extends JavaPlugin {
                 } catch (ClassNotFoundException e) {
                     Settings.UseFAWE = false;
                 }
+            }
+            String weVersion;
+            //Now decide which WE compat should be used
+            if (!Settings.IsLegacy){
+                if (Settings.UseFAWE) {
+                    weVersion = "fawe";
+                } else {
+                    weVersion = "we7";
+                }
+            } else {
+                weVersion = "we6";
+            }
+            //Test if a compatible MovecraftRepair is present
+            try {
+                final Class<?> clazz = Class.forName("net.countercraft.movecraft.compat." + weVersion + ".IMovecraftRepair");
+                //Check if we have a Repair class at that location
+                if (MovecraftRepair.class.isAssignableFrom(clazz)){
+                    this.movecraftRepair = (MovecraftRepair) clazz.getConstructor().newInstance();
+                }
+            } catch (final Exception e){
+                e.printStackTrace();
+                this.getLogger().severe("Could not find a compatible repair class. Disabling repair and assault functions");
+                Settings.RepairTicksPerBlock = 0;
+                Settings.AssaultEnable = false;
             }
         }
         worldEditPlugin = (WorldEditPlugin) wEPlugin;
@@ -347,6 +376,15 @@ public class Movecraft extends JavaPlugin {
         }
         if (factionsPlugin == null){
             logger.info("Movecraft did not find a compatible version of Factions. Disabling Factions integration");
+        }
+        //GriefPrevention
+        Plugin gpPlugin = getServer().getPluginManager().getPlugin("GriefPrevention");
+        if (gpPlugin != null){
+            if (gpPlugin instanceof GriefPrevention){
+                logger.info("Found a compatible version of GriefPrevention. Enabling GriefPrevention integration");
+                getServer().getPluginManager().registerEvents(new GriefPreventionCompatManager(),this);
+                griefPreventionPlugin = (GriefPrevention) gpPlugin;
+            }
         }
         // Deadbolt
         Plugin tempDeadboltPlugin = getServer().getPluginManager().getPlugin("Deadbolt");
@@ -558,6 +596,10 @@ public class Movecraft extends JavaPlugin {
     }
     public Factions getFactionsPlugin(){
         return factionsPlugin;
+    }
+
+    public GriefPrevention getGriefPreventionPlugin() {
+        return griefPreventionPlugin;
     }
 
     public DeadboltPlugin getDeadboltPlugin(){

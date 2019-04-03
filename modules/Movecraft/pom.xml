@@ -71,6 +71,9 @@
             <version>API</version>
             <type>jar</type>
         </dependency>
+
+
+
         <dependency>
             <groupId>com.sk89q</groupId>
             <artifactId>worldguard</artifactId>
@@ -86,7 +89,24 @@
             <artifactId>worldedit</artifactId>
             <version>LATEST</version>
         </dependency>
-
+        <dependency>
+            <groupId>net.countercraft</groupId>
+            <artifactId>movecraft-WE7Utils</artifactId>
+            <version>WE7Utils</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>net.countercraft</groupId>
+            <artifactId>movecraft-FAWEUtils</artifactId>
+            <version>FAWEUtils</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>net.countercraft</groupId>
+            <artifactId>movecraft-WE6Utils</artifactId>
+            <version>WE6Utils</version>
+            <type>jar</type>
+        </dependency>
         <dependency>
             <groupId>at.pavlov</groupId>
             <artifactId>Cannons</artifactId>
@@ -153,6 +173,27 @@
             <version>1.0</version>
             <scope>system</scope>
             <systemPath>${project.basedir}/../../libs/Deadbolt-1.0-SNAPSHOT.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>sun.jdk</groupId>
+            <artifactId>gp</artifactId>
+            <version>1.5.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/../../libs/GriefPrevention.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>sun.jdk</groupId>
+            <artifactId>kingdoms</artifactId>
+            <version>1.5.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/../../libs/FabledKingdoms.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>sun.jdk</groupId>
+            <artifactId>redprotect</artifactId>
+            <version>1.5.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/../../libs/RedProtect-7.5.5-b129-Universal.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>org.jetbrains</groupId>

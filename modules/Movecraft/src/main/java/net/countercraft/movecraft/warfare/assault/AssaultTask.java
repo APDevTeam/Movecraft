@@ -1,11 +1,16 @@
 package net.countercraft.movecraft.warfare.assault;
 
 import com.sk89q.worldguard.protection.flags.DefaultFlag;
+import com.sk89q.worldguard.protection.flags.Flag;
+import com.sk89q.worldguard.protection.flags.Flags;
 import com.sk89q.worldguard.protection.flags.StateFlag;
+import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.repair.RepairUtils;
+import net.countercraft.movecraft.sign.RegionDamagedSign;
+import net.countercraft.movecraft.utils.WorldguardUtils;
 import org.bukkit.*;
 import org.bukkit.block.Sign;
 import org.bukkit.boss.BarColor;
@@ -17,9 +22,14 @@ import java.util.UUID;
 
 public class AssaultTask extends BukkitRunnable {
     private final Assault assault;
-
+    private final Flag flag;
     public AssaultTask(Assault assault) {
         this.assault = assault;
+        if (Settings.IsLegacy){
+            flag = DefaultFlag.TNT;
+        } else {
+            flag = Flags.TNT;
+        }
     }
 
 
@@ -74,9 +84,14 @@ public class AssaultTask extends BukkitRunnable {
             assault.getRunning().set(false);
             World w = assault.getWorld();
             Bukkit.getServer().broadcastMessage(String.format("The assault of %s was successful!", assault.getRegionName()));
-            ProtectedRegion tRegion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(w).getRegion(assault.getRegionName());
+            RegionManager manager = WorldguardUtils.getRegionManager(w);
+            ProtectedRegion tRegion = manager.getRegion(assault.getRegionName());
             assert tRegion != null;
-            tRegion.setFlag(DefaultFlag.TNT, StateFlag.State.DENY);
+            if (Settings.IsLegacy) {
+                tRegion.setFlag(flag, StateFlag.State.DENY);
+            } else {
+                tRegion.setFlag(flag, StateFlag.State.DENY);
+            }
 
             //first, find a position for the repair beacon
             int beaconX = assault.getMinPos().getBlockX();
@@ -91,7 +106,7 @@ public class AssaultTask extends BukkitRunnable {
                 }
             }
             if(!good) {
-                Bukkit.getServer().broadcastMessage(String.format("BEACON PLACEMENT FOR %s FAILED, CONTACT AN ADMIN!", assault));
+                Bukkit.getServer().broadcastMessage(String.format("BEACON PLACEMENT FOR %s FAILED, CONTACT AN ADMIN!", assault.getRegionName().toUpperCase()));
             }
             else {
                 int x, y, z;
@@ -136,7 +151,7 @@ public class AssaultTask extends BukkitRunnable {
                 w.getBlockAt(beaconX + 2, beaconY + 3, beaconZ + 1).setType(Material.WALL_SIGN);
                 Sign s = (Sign) w.getBlockAt(beaconX + 2, beaconY + 3, beaconZ + 1).getState();
                 s.setLine(0, ChatColor.RED + "REGION DAMAGED!");
-                s.setLine(1, "Region:" + assault);
+                s.setLine(1, "Region:" + assault.getRegionName());
                 s.setLine(2, "Damage:" + assault.getDamages());
                 s.setLine(3, "Owner:" + getRegionOwnerList(tRegion));
                 s.update();
@@ -152,9 +167,9 @@ public class AssaultTask extends BukkitRunnable {
                 Bukkit.getServer().broadcastMessage(String.format("The assault of %s has failed!", assault.getRegionName()));
                 ProtectedRegion tRegion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(assault.getWorld()).getRegion(assault.getRegionName());
                 assert tRegion != null;
-                tRegion.setFlag(DefaultFlag.TNT, StateFlag.State.DENY);
+                tRegion.setFlag(flag, StateFlag.State.DENY);
                 // repair the damages that have occurred so far
-                if (!RepairUtils.repairRegion(assault.getRegionName(), assault.getWorld())) {
+                if (!RegionDamagedSign.repairRegion(assault.getRegionName(), assault.getWorld())) {
                     Bukkit.getServer().broadcastMessage(String.format("REPAIR OF %s FAILED, CONTACT AN ADMIN", assault.getRegionName().toUpperCase()));
                 }
             }

@@ -1,8 +1,6 @@
 package net.countercraft.movecraft.events;
 
-import net.countercraft.movecraft.Rotation;
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.utils.HashHitBox;
 import net.countercraft.movecraft.utils.HitBox;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;

@@ -72,7 +72,7 @@ final public class CraftType {
     private final int smokeOnSink;
     private final int tickCooldown;
     private final int hoverLimit;
-    private final Material dynamicFlyBlock;
+    private final Set<Material> dynamicFlyBlocks;
     private final double fuelBurnRate;
     private final double sinkPercent;
     private final double overallSinkPercent;
@@ -97,7 +97,7 @@ final public class CraftType {
     @NotNull private final List<Material> harvesterBladeBlocks;
     @NotNull private final Set<Material> passthroughBlocks;
     @NotNull private final int effectRange;
-    @NotNull private final Set<PotionEffect> potionEffectsToApply;
+    @NotNull private final Map<PotionEffect,Integer> potionEffectsToApply;
     @NotNull private final Map<PotionEffect, Integer> potionEffectDelays = Collections.emptyMap();
 
     public CraftType(File f) {
@@ -115,7 +115,11 @@ final public class CraftType {
         maxSize = integerFromObject(data.get("maxSize"));
         minSize = integerFromObject(data.get("minSize"));
         allowedBlocks = materialMapFromObject(data.get("allowedBlocks"));
-        forbiddenBlocks = materialMapFromObject(data.get("forbiddenBlocks"));
+        if (data.containsKey("forbiddenBlocks")){
+            forbiddenBlocks = materialMapFromObject(data.get("forbiddenBlocks"));
+        } else {
+            forbiddenBlocks = Collections.emptyMap();
+        }
         forbiddenSignStrings = stringListFromObject(data.get("forbiddenSignStrings"));
         if (data.containsKey("canFly")) {
             blockedByWater = (Boolean) data.get("canFly");
@@ -406,6 +410,8 @@ final public class CraftType {
             passthroughBlocks.add(Material.WATER);
             if (Settings.IsLegacy){
                 passthroughBlocks.add(Material.STATIONARY_WATER);
+            } else {
+                passthroughBlocks.add(Material.getMaterial("BUBBLE_COLUMN"));
             }
 
         }
@@ -425,14 +431,20 @@ final public class CraftType {
         } else {
             dynamicFlyBlockSpeedFactor = 0d;
         }
-        if (data.containsKey("dynamicFlyBlock")) {
-            dynamicFlyBlock = materialFromObject(data.get("dynamicFlyBlock"));
-        } else {
-            dynamicFlyBlock = null;
+        dynamicFlyBlocks = new HashSet<>();
+        if (data.containsKey("dynamicFlyBlocks")) {
+            ArrayList entries = (ArrayList) data.get("dynamicFlyBlocks");
+            for (Object o : entries){
+                if (o instanceof String){
+                    dynamicFlyBlocks.add(Material.getMaterial((String) o));
+                } else {
+                    dynamicFlyBlocks.add(Material.getMaterial((Integer) o));
+                }
+            }
         }
         chestPenalty = data.containsKey("chestPenalty") ? doubleFromObject(data.get("chestPenalty")) : 0d;
         effectRange = data.containsKey("effectRange") ? integerFromObject(data.get("effectRange")) : 0;
-        potionEffectsToApply = data.containsKey("potionEffectsToApply") ? effectListFromObject(data.get("potionEffectsToApply")) : Collections.emptySet();
+        potionEffectsToApply = data.containsKey("potionEffectsToApply") ? effectListFromObject(data.get("potionEffectsToApply")) : Collections.emptyMap();
     }
 
     private Integer integerFromObject(Object obj) {
@@ -456,9 +468,9 @@ final public class CraftType {
         }
 
     }
-    private Set<PotionEffect> effectListFromObject(Object obj){
+    private HashMap<PotionEffect, Integer> effectListFromObject(Object obj){
         Map<Object,Object> objMap = (Map<Object, Object>) obj;
-        Set<PotionEffect> ret = new HashSet<>();
+        HashMap<PotionEffect,Integer> ret = new HashMap<>();
         for (Object o : objMap.keySet()){
             PotionEffectType effect = null;
             int duration = 0;
@@ -486,7 +498,7 @@ final public class CraftType {
                 continue;
             }
             PotionEffect potEffect = new PotionEffect(effect,duration,amplifier);
-            ret.add(potEffect);
+            ret.put(potEffect,delay);
         }
         return ret;
     }
@@ -522,7 +534,12 @@ final public class CraftType {
             for (Object o : (ArrayList<Object>) obj){
                 if (o instanceof Integer){
                     Integer id = (Integer) o;
-                    Material type = Material.getMaterial(id);
+                    Material type;
+                    try {
+                         type = Material.getMaterial(id);
+                    } catch (Throwable t){
+                        throw new CraftTypeException("Numerical block IDs are not supported by your current Minecraft version", t);
+                    }
                     returnMap.put(type, new ArrayList<>());
                 } else if (o instanceof String){
                     String string = (String) o;
@@ -1032,8 +1049,8 @@ final public class CraftType {
         return dynamicFlyBlockSpeedFactor;
     }
 
-    public Material getDynamicFlyBlock() {
-        return dynamicFlyBlock;
+    public Set<Material> getDynamicFlyBlocks() {
+        return dynamicFlyBlocks;
     }
 
     public double getChestPenalty() {
@@ -1050,7 +1067,7 @@ final public class CraftType {
     }
 
     @NotNull
-    public Set<PotionEffect> getPotionEffectsToApply() {
+    public Map<PotionEffect, Integer> getPotionEffectsToApply() {
         return potionEffectsToApply;
     }
 
@@ -1066,6 +1083,12 @@ final public class CraftType {
     private class TypeNotFoundException extends RuntimeException {
         public TypeNotFoundException(String s) {
             super(s);
+        }
+    }
+
+    private class CraftTypeException extends RuntimeException{
+        public CraftTypeException(String message, Throwable cause){
+            super(message,cause);
         }
     }
 }

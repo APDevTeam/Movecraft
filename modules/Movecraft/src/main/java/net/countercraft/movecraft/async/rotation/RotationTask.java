@@ -27,9 +27,7 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.events.CraftRotateEvent;
-import net.countercraft.movecraft.events.CraftTranslateEvent;
 import net.countercraft.movecraft.utils.*;
-import net.countercraft.movecraft.utils.HashHitBox;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.CraftManager;
@@ -42,15 +40,14 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.Furnace;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 public class RotationTask extends AsyncTask {
@@ -106,11 +103,16 @@ public class RotationTask extends AsyncTask {
                 Block fuelHolder = null;
                 for (MovecraftLocation bTest : oldHitBox) {
                     Block b = getCraft().getW().getBlockAt(bTest.getX(), bTest.getY(), bTest.getZ());
-                    if (b.getType() == Material.FURNACE) {
+                    if (b.getState() instanceof Furnace) {
                         InventoryHolder inventoryHolder = (InventoryHolder) b.getState();
-                        if ((!Settings.IsLegacy ? (inventoryHolder.getInventory().contains(Material.COAL) || inventoryHolder.getInventory().contains(Material.CHARCOAL)) || inventoryHolder.getInventory().contains(Material.COAL_BLOCK): (inventoryHolder.getInventory().contains(Material.COAL)) || inventoryHolder.getInventory().contains(Material.COAL_BLOCK))) {
-                            fuelHolder = b;
+                        for (Material fuelType : Settings.FuelTypes.keySet()){
+                            if (inventoryHolder.getInventory().contains(fuelType)){
+                                fuelHolder = b;
+                            }
                         }
+                        /*if ((!Settings.IsLegacy ? (inventoryHolder.getInventory().contains(Material.COAL) || inventoryHolder.getInventory().contains(Material.CHARCOAL)) || inventoryHolder.getInventory().contains(Material.COAL_BLOCK): (inventoryHolder.getInventory().contains(Material.COAL)) || inventoryHolder.getInventory().contains(Material.COAL_BLOCK))) {
+                            fuelHolder = b;
+                        }*/
                     }
                 }
                 if (fuelHolder == null) {
@@ -118,7 +120,19 @@ public class RotationTask extends AsyncTask {
                     failMessage = I18nSupport.getInternationalisedString("Translation - Failed Craft out of fuel");
                 } else {
                     InventoryHolder inventoryHolder = (InventoryHolder) fuelHolder.getState();
-                    if (inventoryHolder.getInventory().contains(Material.COAL)) {
+                    for (Material fuel : Settings.FuelTypes.keySet()){
+                        if (inventoryHolder.getInventory().contains(fuel)){
+                            ItemStack iStack = inventoryHolder.getInventory().getItem(inventoryHolder.getInventory().first(fuel));
+                            int amount = iStack.getAmount();
+                            if (amount == 1) {
+                                inventoryHolder.getInventory().remove(iStack);
+                            } else {
+                                iStack.setAmount(amount - 1);
+                            }
+                            craft.setBurningFuel(craft.getBurningFuel() + Settings.FuelTypes.get(fuel));
+                        }
+                    }
+                    /*if (inventoryHolder.getInventory().contains(Material.COAL)) {
                         ItemStack iStack = inventoryHolder.getInventory().getItem(inventoryHolder.getInventory().first(Material.COAL));
                         int amount = iStack.getAmount();
                         if (amount == 1) {
@@ -146,7 +160,7 @@ public class RotationTask extends AsyncTask {
                             iStack.setAmount(amount - 1);
                         }
                         getCraft().setBurningFuel(getCraft().getBurningFuel() + 7.0);
-                    }
+                    }*/
                 }
             } else {
                 getCraft().setBurningFuel(getCraft().getBurningFuel() - fuelBurnRate);

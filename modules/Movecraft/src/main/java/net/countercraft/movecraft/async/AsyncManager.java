@@ -189,6 +189,7 @@ public class AsyncManager extends BukkitRunnable {
                                         c.getPhaseBlocks().put(location, Material.WATER);
                                     }
                                 }
+
                             }
 
                             if (notifyP != null) {

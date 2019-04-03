@@ -5,8 +5,6 @@ import com.sk89q.jnbt.ListTag;
 import com.sk89q.jnbt.Tag;
 import com.sk89q.worldedit.blocks.BaseBlock;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
-import com.sk89q.worldedit.registry.state.EnumProperty;
-import com.sk89q.worldedit.registry.state.Property;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.utils.LegacyUtils;
@@ -17,7 +15,6 @@ import org.bukkit.block.BlockState;
 import org.bukkit.block.Dispenser;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.block.data.type.Slab;
 import org.bukkit.inventory.ItemStack;
 
 public class WorldEditUpdateCommand extends UpdateCommand {
@@ -86,6 +83,21 @@ public class WorldEditUpdateCommand extends UpdateCommand {
                     }
                 }
                 Dispenser disp = (Dispenser) block.getState();
+                ItemStack[] contents = disp.getInventory().getContents();
+                for (ItemStack iStack : contents){
+                    if (iStack == null){
+                        continue;
+                    }
+                    if (iStack.getType().equals(Material.TNT)){
+                        numTNT -= iStack.getAmount();
+                    }
+                    if (iStack.getType().equals(Material.WATER_BUCKET)){
+                        numWater -= iStack.getAmount();
+                    }
+                    if (iStack.getType().equals(Material.FIRE_CHARGE)){
+                        numFireCharges -= iStack.getAmount();
+                    }
+                }
                 if (numFireCharges > 0) {
                     ItemStack fireItems = new ItemStack(Material.FIRE_CHARGE, numFireCharges);
                     disp.getInventory().addItem(fireItems);

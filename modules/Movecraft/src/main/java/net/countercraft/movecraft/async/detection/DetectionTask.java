@@ -21,11 +21,11 @@ package net.countercraft.movecraft.async.detection;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.async.AsyncTask;
+import net.countercraft.movecraft.utils.HashHitBox;
+import net.countercraft.movecraft.utils.LegacyUtils;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.utils.*;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -79,8 +79,11 @@ public class DetectionTask extends AsyncTask {
             double ratio = (double) foundDynamicFlyBlock / totalBlocks;
             double foundMinimum = 0.0;
             for (Map<Material, List<Integer>> i : flyBlocks.keySet()) {
-                if (i.containsKey(getCraft().getType().getDynamicFlyBlock()))
-                    foundMinimum = flyBlocks.get(i).get(0);
+                for (Material dFlyBlock : getCraft().getType().getDynamicFlyBlocks()){
+                    if (i.containsKey(dFlyBlock))
+                        foundMinimum = flyBlocks.get(i).get(0);
+                }
+
             }
             ratio = ratio - (foundMinimum / 100.0);
             ratio = ratio * getCraft().getType().getDynamicFlyBlockSpeedFactor();
@@ -202,7 +205,7 @@ public class DetectionTask extends AsyncTask {
                         }
                     }
                     if (getCraft().getType().getDynamicFlyBlockSpeedFactor() != 0.0) {
-                        if (blockType == getCraft().getType().getDynamicFlyBlock()) {
+                        if (getCraft().getType().getDynamicFlyBlocks().contains(blockType)) {
                             foundDynamicFlyBlock++;
                         }
                     }

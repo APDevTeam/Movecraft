@@ -1,11 +1,13 @@
 package net.countercraft.movecraft.warfare.siege;
 
 import com.sk89q.worldguard.domains.DefaultDomain;
+import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.utils.HashHitBox;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.utils.WorldguardUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.boss.BarColor;
@@ -40,7 +42,8 @@ public class SiegeProgressTask extends SiegeTask {
             midX = (hitBox.getMaxX() + hitBox.getMinX()) / 2;
             midY = (hitBox.getMaxY() + hitBox.getMinY()) / 2;
             midZ = (hitBox.getMaxZ() + hitBox.getMinZ()) / 2;
-            siegeLeaderShipInRegion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(siegeLeader.getWorld()).getRegion(siege.getAttackRegion()).contains(midX, midY, midZ);
+            RegionManager manager = WorldguardUtils.getRegionManager(siegeLeader.getWorld());
+            siegeLeaderShipInRegion = manager.getRegion(siege.getAttackRegion()).contains(midX, midY, midZ);
 
         }
 
@@ -77,7 +80,8 @@ public class SiegeProgressTask extends SiegeTask {
             if (siegeLeaderShipInRegion) {
                 Bukkit.getServer().broadcastMessage(String.format("The Siege of %s has succeeded! The forces of %s have been victorious!",
                         siege.getName(), siegeLeader.getDisplayName()));
-                ProtectedRegion controlRegion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(siegeLeader.getWorld()).getRegion(siege.getCaptureRegion());
+                RegionManager manager = WorldguardUtils.getRegionManager(siegeLeader.getWorld());
+                ProtectedRegion controlRegion = manager.getRegion(siege.getCaptureRegion());
                 DefaultDomain newOwner = new DefaultDomain();
                 newOwner.addPlayer(siege.getPlayerUUID());
                 controlRegion.setOwners(newOwner);

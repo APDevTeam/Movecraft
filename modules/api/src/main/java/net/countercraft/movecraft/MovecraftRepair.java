@@ -2,6 +2,7 @@ package net.countercraft.movecraft;
 
 import com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
+import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.countercraft.movecraft.craft.Craft;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -17,7 +18,7 @@ import java.util.LinkedList;
 
 public abstract class MovecraftRepair {
     public abstract boolean saveCraftRepairState(Craft craft, Sign sign, Plugin plugin, String repairStateName);
-    public abstract boolean saveRegionRepairState(Plugin plugin, World world, org.bukkit.util.Vector minPos, org.bukkit.util.Vector maxPos, String regionName);
+    public abstract boolean saveRegionRepairState(Plugin plugin, World world, ProtectedRegion region);
     public abstract boolean repairRegion(World world, String regionName);
     public abstract Clipboard loadCraftRepairStateClipboard(Plugin plugin, Sign sign, String repairStateName, World bukkitWorld);
     public abstract Clipboard loadRegionRepairStateClipboard(Plugin plugin, String repairStateName, World bukkitWorld);

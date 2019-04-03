@@ -1,6 +1,5 @@
 package net.countercraft.movecraft.async.translation;
 
-import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.config.Settings;
@@ -17,10 +16,11 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockState;
-import org.bukkit.block.Chest;
-import org.bukkit.block.Furnace;
+import org.bukkit.block.*;
+import org.bukkit.block.data.Bisected;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.Waterlogged;
+import org.bukkit.block.data.type.TrapDoor;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -28,7 +28,6 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -208,7 +207,7 @@ public class TranslationTask extends AsyncTask {
                 explosionKey = explosionForce;
                 Location loc = location.toBukkit(craft.getW());
                 int potEffRange = craft.getType().getEffectRange();
-                Set<PotionEffect> potionEffects = craft.getType().getPotionEffectsToApply();
+                Map<PotionEffect,Integer> potionEffects = craft.getType().getPotionEffectsToApply();
                 if (!loc.getBlock().getType().equals(Material.AIR)) {
                     updates.add(new ExplosionUpdateCommand(loc, explosionKey));
                     collisionExplosion = true;
@@ -391,29 +390,37 @@ public class TranslationTask extends AsyncTask {
         Block fuelHolder = null;
         for (MovecraftLocation bTest : oldHitBox) {
             Block b = craft.getW().getBlockAt(bTest.getX(), bTest.getY(), bTest.getZ());
-            if (b.getType() == Material.FURNACE) {
-                if (Settings.IsLegacy) {
+            if (b.getState() instanceof Furnace) {
                     InventoryHolder inventoryHolder = (InventoryHolder) b.getState();
-                    if (inventoryHolder.getInventory().contains(Material.COAL)|| inventoryHolder.getInventory().contains(Material.COAL_BLOCK)) {
-                        fuelHolder = b;
-                    }
-                } else {
-                    if (b.getState() instanceof Furnace) {
-                        Furnace furnace = (Furnace) b.getState();
-                        if (furnace.getInventory().contains(Material.COAL) || furnace.getInventory().contains(Material.COAL_BLOCK) || furnace.getInventory().contains(Material.CHARCOAL)) {
+                    for (Material fuelType : Settings.FuelTypes.keySet()){
+                        if (inventoryHolder.getInventory().contains(fuelType)){
                             fuelHolder = b;
                         }
                     }
-                }
+
+                        //if (furnace.getInventory().contains(Material.COAL) || furnace.getInventory().contains(Material.COAL_BLOCK) || furnace.getInventory().contains(Material.CHARCOAL)) {
+                          //  fuelHolder = b;
+                        //}
             }
         }
         if (fuelHolder == null) {
             fail(I18nSupport.getInternationalisedString("Translation - Failed Craft out of fuel"));
             return false;
         }
-        if (Settings.IsLegacy) {
             InventoryHolder inventoryHolder = (InventoryHolder) fuelHolder.getState();
-            if (inventoryHolder.getInventory().contains(Material.COAL)) {
+            for (Material fuel : Settings.FuelTypes.keySet()){
+                if (inventoryHolder.getInventory().contains(fuel)){
+                    ItemStack iStack = inventoryHolder.getInventory().getItem(inventoryHolder.getInventory().first(fuel));
+                    int amount = iStack.getAmount();
+                    if (amount == 1) {
+                        inventoryHolder.getInventory().remove(iStack);
+                    } else {
+                        iStack.setAmount(amount - 1);
+                    }
+                    craft.setBurningFuel(craft.getBurningFuel() + Settings.FuelTypes.get(fuel));
+                }
+            }
+            /*if (inventoryHolder.getInventory().contains(Material.COAL)) {
                 ItemStack iStack = inventoryHolder.getInventory().getItem(inventoryHolder.getInventory().first(Material.COAL));
                 int amount = iStack.getAmount();
                 if (amount == 1) {
@@ -432,45 +439,35 @@ public class TranslationTask extends AsyncTask {
                 }
                 craft.setBurningFuel(craft.getBurningFuel() + 79.0);
 
-            }
-        } else {
-            BlockState state = fuelHolder.getState();
-            if (state instanceof Furnace){
-                Furnace furnace = (Furnace) state;
-                if (furnace.getInventory().contains(Material.COAL)){
-                    ItemStack iStack = furnace.getInventory().getItem(furnace.getInventory().first(Material.COAL));
-                    int amount = iStack.getAmount();
-                    if (amount == 1) {
-                        furnace.getInventory().remove(iStack);
-                    } else {
-                        iStack.setAmount(amount - 1);
-                    }
-                    craft.setBurningFuel(craft.getBurningFuel() + 7.0);
-                }
-                if (furnace.getInventory().contains(Material.CHARCOAL)){
-                    ItemStack iStack = furnace.getInventory().getItem(furnace.getInventory().first(Material.CHARCOAL));
-                    int amount = iStack.getAmount();
-                    if (amount == 1) {
-                        furnace.getInventory().remove(iStack);
-                    } else {
-                        iStack.setAmount(amount - 1);
-                    }
-                    craft.setBurningFuel(craft.getBurningFuel() + 7.0);
-                }
-                if (furnace.getInventory().contains(Material.COAL_BLOCK)){
-                    ItemStack iStack = furnace.getInventory().getItem(furnace.getInventory().first(Material.COAL_BLOCK));
-                    int amount = iStack.getAmount();
-                    if (amount == 1) {
-                        furnace.getInventory().remove(iStack);
-                    } else {
-                        iStack.setAmount(amount - 1);
-                    }
-                    craft.setBurningFuel(craft.getBurningFuel() + 79.0);
-                }
-            }
+            }*/
 
-        }
         return true;
+    }
+
+    private void processWaterlogging(){
+        HitBox hitBox = craft.getHitBox();
+        for (MovecraftLocation moveLoc : hitBox){
+            Block b = moveLoc.toBukkit(craft.getW()).getBlock();
+            BlockData data = b.getBlockData();
+            if (!(data instanceof Waterlogged)){
+                continue;
+            }
+            if (b.getLocation().getY() > craft.getWaterLine()){
+                Waterlogged wLog = (Waterlogged) data;
+                wLog.setWaterlogged(false);
+                continue;
+            }
+            if (data instanceof TrapDoor){
+                TrapDoor tDoor = (TrapDoor) data;
+                if (tDoor.getHalf() == Bisected.Half.TOP && b.getRelative(BlockFace.DOWN).getType() == Material.WATER){
+                    tDoor.setWaterlogged(true);
+                } else if (tDoor.getHalf() == Bisected.Half.BOTTOM && b.getRelative(BlockFace.UP).getType() == Material.WATER){
+                    tDoor.setWaterlogged(true);
+                } else if (b.getRelative(tDoor.getFacing().getOppositeFace()).getType() == Material.WATER){
+                    tDoor.setWaterlogged(true);
+                }
+            }
+        }
     }
 
     public boolean failed(){

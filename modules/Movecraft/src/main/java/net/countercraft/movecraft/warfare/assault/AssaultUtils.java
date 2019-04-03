@@ -1,19 +1,31 @@
 package net.countercraft.movecraft.warfare.assault;
 
+import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
+import com.sk89q.worldguard.protection.flags.DefaultFlag;
+import com.sk89q.worldguard.protection.flags.Flag;
+import com.sk89q.worldguard.protection.flags.Flags;
+import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.countercraft.movecraft.Movecraft;
+import net.countercraft.movecraft.MovecraftRepair;
 import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.LegacyUtils;
+import net.countercraft.movecraft.utils.WorldEditUtils;
+import net.countercraft.movecraft.utils.WorldguardUtils;
+import net.countercraft.movecraft.utils.weVectorUtils;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Vector;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.*;
 
 public class AssaultUtils {
@@ -36,6 +48,7 @@ public class AssaultUtils {
             Material.SPRUCE_DOOR, Material.BIRCH_DOOR, Material.JUNGLE_DOOR, Material.ACACIA_DOOR, Material.DARK_OAK_DOOR, Material.OAK_DOOR, Material.IRON_DOOR,
             //Trapdoors
             Material.IRON_TRAPDOOR, Material.ACACIA_TRAPDOOR, Material.BIRCH_TRAPDOOR};
+
     public static boolean areDefendersOnline(ProtectedRegion tRegion) {
         HashSet<UUID> players = new HashSet<>();
         players.addAll(tRegion.getOwners().getUniqueIds());
@@ -119,7 +132,7 @@ public class AssaultUtils {
                 Block b = i.next();
                 if (b.getWorld() != assault.getWorld())
                     continue;
-                ApplicableRegionSet regions = worldGuard.getRegionManager(b.getWorld()).getApplicableRegions(b.getLocation());
+                ApplicableRegionSet regions = WorldguardUtils.getRegionsAt(b.getLocation());
                 boolean isInAssaultRegion = false;
                 for (com.sk89q.worldguard.protection.regions.ProtectedRegion tregion : regions.getRegions()) {
                     if (assault.getRegionName().equals(tregion.getId())) {
@@ -180,4 +193,6 @@ public class AssaultUtils {
         }
 
     }
+
+
 }

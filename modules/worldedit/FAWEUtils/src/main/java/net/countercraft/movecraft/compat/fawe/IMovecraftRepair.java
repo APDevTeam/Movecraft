@@ -1,4 +1,4 @@
-package net.countercraft.movecraft.utils;
+package net.countercraft.movecraft.compat.fawe;
 
 import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.WorldEdit;
@@ -6,6 +6,7 @@ import com.sk89q.worldedit.WorldEditException;
 import com.sk89q.worldedit.bukkit.BukkitWorld;
 import com.sk89q.worldedit.extent.Extent;
 import com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard;
+import com.sk89q.worldedit.extent.clipboard.Clipboard;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormat;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardWriter;
 import com.sk89q.worldedit.function.mask.ExistingBlockMask;
@@ -13,7 +14,11 @@ import com.sk89q.worldedit.function.operation.ForwardExtentCopy;
 import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.world.registry.WorldData;
+import com.sk89q.worldguard.protection.regions.ProtectedRegion;
+import net.countercraft.movecraft.MovecraftRepair;
 import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.utils.HashHitBox;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Sign;
 import org.bukkit.plugin.Plugin;
@@ -22,9 +27,13 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.LinkedList;
 
-public class FAWEUtils {
-    public static boolean faweSaveCraftRepairState(Craft craft, Sign sign, Plugin plugin, String s) {
+public class IMovecraftRepair extends MovecraftRepair {
+
+    @Override
+    public  boolean saveCraftRepairState(Craft craft, Sign sign, Plugin plugin, String s) {
         HashHitBox hitBox = craft.getHitBox();
         File saveDirectory = new File(plugin.getDataFolder(), "CraftRepairStates");
         World world = craft.getW();
@@ -60,5 +69,55 @@ public class FAWEUtils {
         }
 
         return true;
+    }
+
+    @Override
+    public boolean saveRegionRepairState(Plugin plugin, World world, ProtectedRegion region) {
+        return false;
+    }
+
+    @Override
+    public boolean repairRegion(World world, String regionName) {
+        return false;
+    }
+
+    @Override
+    public Clipboard loadCraftRepairStateClipboard(Plugin plugin, Sign sign, String repairStateName, World bukkitWorld) {
+        return null;
+    }
+
+    @Override
+    public Clipboard loadRegionRepairStateClipboard(Plugin plugin, String repairStateName, World bukkitWorld) {
+        return null;
+    }
+
+    @Override
+    public HashMap<Material, Double> getMissingBlocks(String repairName) {
+        return null;
+    }
+
+    @Override
+    public LinkedList<org.bukkit.util.Vector> getMissingBlockLocations(String repairName) {
+        return null;
+    }
+
+    @Override
+    public long getNumDiffBlocks(String repairName) {
+        return 0;
+    }
+
+    @Override
+    public org.bukkit.util.Vector getDistanceFromSignToLowestPoint(Clipboard clipboard, String repairName) {
+        return null;
+    }
+
+    @Override
+    public org.bukkit.util.Vector getDistanceFromClipboardToWorldOffset(org.bukkit.util.Vector offset, Clipboard clipboard) {
+        return null;
+    }
+
+    @Override
+    public void setFawePlugin(Plugin fawePlugin) {
+
     }
 }
