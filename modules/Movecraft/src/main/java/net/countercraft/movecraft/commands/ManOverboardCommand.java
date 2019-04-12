@@ -54,6 +54,7 @@ public class ManOverboardCommand implements CommandExecutor{
 
         if (craft.getDisabled() || craft.getSinking()) {
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + "Can't teleport to a disabled craft");
+            return true;
         }
         player.teleport(telPoint);
         return true;

@@ -36,9 +36,10 @@ public class PotionEffectsUpdateCommand extends UpdateCommand {
                         if (timePassed < delay)
                             return;
                         entity.addPotionEffect(effect);
+
                         cancel();
                     }
-                }.runTaskTimerAsynchronously(Movecraft.getInstance(),0,20);
+                }.runTaskTimer(Movecraft.getInstance(),0,20);
 
             }
         }

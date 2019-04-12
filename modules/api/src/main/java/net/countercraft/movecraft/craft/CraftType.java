@@ -491,13 +491,13 @@ final public class CraftType {
                     amplifier = integer;
                 }
                 if (str.equals("delay")){
-                    delay = 20 * integer;
+                    delay = integer;
                 }
             }
             if (effect == null){
                 continue;
             }
-            PotionEffect potEffect = new PotionEffect(effect,duration,amplifier);
+            PotionEffect potEffect = new PotionEffect(effect,duration,amplifier,true,true);
             ret.put(potEffect,delay);
         }
         return ret;

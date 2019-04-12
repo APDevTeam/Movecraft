@@ -35,9 +35,11 @@ public class MovecraftCommand implements TabExecutor {
             commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "Reloaded types");
             return true;
         }
-        if (args.length == 1 && args[0].equalsIgnoreCase("reloadconfig") && commandSender.hasPermission("movecraft.commands.movecraft.reloadconfig")){
+        if (args.length == 1 && args[0].equalsIgnoreCase("reloadplugin") && commandSender.hasPermission("movecraft.commands.movecraft.reloadconfig")){
             Movecraft.getInstance().reloadConfig();
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "Reloaded config");
+            Movecraft.getInstance().getLogger().info("Reloading Movecraft");
+            Movecraft.getInstance().onEnable();
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "Reloaded Movecraft");
             return true;
         }
         commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "Error, invalid syntax");
@@ -51,7 +53,7 @@ public class MovecraftCommand implements TabExecutor {
             return Collections.emptyList();
         List<String> completions = new ArrayList<>();
         completions.add("reloadtypes");
-        completions.add("reloadconfig");
+        completions.add("reloadplugin");
         List<String> returnValues = new ArrayList<>();
         for(String completion : completions)
             if(completion.toLowerCase().startsWith(args[args.length-1].toLowerCase()))

@@ -45,6 +45,7 @@ public class ExplosionUpdateCommand extends UpdateCommand {
                 return;
             }
         }
+        Movecraft.getInstance().getLogger().info(loc.getBlock().getType().name());
         loc.getWorld().createExplosion(loc.getX() + 0.5, loc.getY() + 0.5, loc.getZ() + 0.5, explosionPower);
     }
 

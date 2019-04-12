@@ -47,16 +47,15 @@ import net.countercraft.movecraft.warfare.siege.SiegeManager;
 import net.countercraft.movecraft.compatmanager.WorldGuardCompatManager;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Material;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.yaml.snakeyaml.Yaml;
 
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -113,10 +112,7 @@ public class Movecraft extends JavaPlugin {
         if (!Settings.IsLegacy) {
             this.saveDefaultConfig();
         } else {
-            File configFile = new File(Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/config.yml");
-            if (!configFile.exists()) {
-                this.saveResource("legacyconfig/config.yml", false);
-            }
+            saveLegacyConfig();
         }
         try {
             Class.forName("com.destroystokyo.paper.Title");
@@ -131,7 +127,7 @@ public class Movecraft extends JavaPlugin {
         Settings.RestrictSiBsToRegions = getConfig().getBoolean("RestrictSiBsToRegions", false);
         Settings.Debug = getConfig().getBoolean("Debug", false);
         Settings.DisableSpillProtection = getConfig().getBoolean("DisableSpillProtection", false);
-        // if the PilotTool is specified in the config.yml file, use it
+        // if the PilotTool is specified in the config_legacy.yml file, use it
         if (getConfig().getString("PilotTool") != null || getConfig().getString("PilotTool") != "") {
             logger.log(Level.INFO, "Recognized PilotTool setting of: "
                     + getConfig().getString("PilotTool"));
@@ -545,6 +541,20 @@ public class Movecraft extends JavaPlugin {
         super.onLoad();
         instance = this;
         logger = getLogger();
+    }
+
+    private void saveLegacyConfig(){
+        File configFile = new File(getDataFolder(), "config.yml");
+        if (configFile.exists())
+            return;
+        InputStream resource = getResource("config_legacy.yml");
+        Reader reader = new InputStreamReader(resource);
+        FileConfiguration config = YamlConfiguration.loadConfiguration(reader);
+        try {
+            config.save(configFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 

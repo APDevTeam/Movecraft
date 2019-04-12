@@ -7,6 +7,7 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.SignTranslateEvent;
+import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.utils.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -65,6 +66,10 @@ public class CraftTranslateCommand extends UpdateCommand {
                 passthroughBlocks.add(Material.SUNFLOWER);
                 passthroughBlocks.add(Material.LILAC);
                 passthroughBlocks.add(Material.PEONY);
+                passthroughBlocks.add(Material.KELP_PLANT);
+                passthroughBlocks.add(Material.TALL_SEAGRASS);
+                passthroughBlocks.add(Material.SEA_PICKLE);
+                passthroughBlocks.add(Material.SEAGRASS);
 
             }
 
@@ -189,6 +194,8 @@ public class CraftTranslateCommand extends UpdateCommand {
                 }
             }
         }
+        if (!Settings.IsLegacy)
+            MapUpdateManager.getInstance().scheduleUpdate(new WaterlogUpdateCommand(craft));
         if (!craft.isNotProcessing())
             craft.setProcessing(false);
         time = System.nanoTime() - time;

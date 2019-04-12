@@ -305,15 +305,15 @@ public class IWorldHandler extends WorldHandler{
     @Override
     public void disableShadow(@NotNull Material type) {
         Method method;
-        try {
+        //try {
             Block tempBlock = CraftMagicNumbers.getBlock(type);
-            method = Block.class.getDeclaredMethod("d", int.class);
-            method.setAccessible(true);
-            method.invoke(tempBlock, 0);
-        } catch (NoSuchMethodException | InvocationTargetException | IllegalArgumentException | IllegalAccessException | SecurityException e1) {
+            //method = Block.class.getDeclaredMethod("d", int.class);
+            //method.setAccessible(true);
+            //method.invoke(tempBlock, 0);
+        //} catch (NoSuchMethodException | InvocationTargetException | IllegalArgumentException | IllegalAccessException | SecurityException e1) {
             // TODO Auto-generated catch block
-            e1.printStackTrace();
-        }
+        //    e1.printStackTrace();
+        //}
     }
 
     private static MovecraftLocation bukkit2MovecraftLoc(Location l) {

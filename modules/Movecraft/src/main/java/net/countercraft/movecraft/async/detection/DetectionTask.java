@@ -29,8 +29,10 @@ import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
+import org.bukkit.block.data.type.Chest;
 import org.bukkit.entity.Player;
 
 import java.util.*;
@@ -105,6 +107,7 @@ public class DetectionTask extends AsyncTask {
         if (notVisited(workingLocation, visited)) {
 
             Material testType = null;
+            Block testBlock = null;
             int testData = 0;
             try {
                 testData = data.getWorld().getBlockAt(x, y, z).getData();
@@ -145,19 +148,43 @@ public class DetectionTask extends AsyncTask {
                 fail(I18nSupport.getInternationalisedString("Detection - Forbidden block found"));
             } else if (isAllowedBlock(testType, testData)) {
                 // check for double chests
-                if (testType == Material.CHEST) {
+                /*if (testType == Material.CHEST) {
                     boolean foundDoubleChest = false;
                     if (data.getWorld().getBlockAt(x - 1, y, z).getType() == Material.CHEST) {
-                        foundDoubleChest = true;
+                        if (Settings.IsLegacy)
+                            foundDoubleChest = true;
+                        else {
+                            Chest chest = (Chest) data.getWorld().getBlockAt(x - 1, y, z).getBlockData();
+                            if (chest.getType() != Chest.Type.SINGLE)
+                                foundDoubleChest = true;
+                        }
                     }
                     if (data.getWorld().getBlockAt(x + 1, y, z).getType() == Material.CHEST) {
-                        foundDoubleChest = true;
+                        if (Settings.IsLegacy)
+                            foundDoubleChest = true;
+                        else {
+                            Chest chest = (Chest) data.getWorld().getBlockAt(x + 1, y, z).getBlockData();
+                            if (chest.getType() != Chest.Type.SINGLE)
+                                foundDoubleChest = true;
+                        }
                     }
                     if (data.getWorld().getBlockAt(x, y, z - 1).getType() == Material.CHEST) {
-                        foundDoubleChest = true;
+                        if (Settings.IsLegacy)
+                            foundDoubleChest = true;
+                        else {
+                            Chest chest = (Chest) data.getWorld().getBlockAt(x , y, z - 1).getBlockData();
+                            if (chest.getType() != Chest.Type.SINGLE)
+                                foundDoubleChest = true;
+                        }
                     }
                     if (data.getWorld().getBlockAt(x, y, z + 1).getType() == Material.CHEST) {
-                        foundDoubleChest = true;
+                        if (Settings.IsLegacy)
+                            foundDoubleChest = true;
+                        else {
+                            Chest chest = (Chest) data.getWorld().getBlockAt(x , y, z + 1).getBlockData();
+                            if (chest.getType() != Chest.Type.SINGLE)
+                                foundDoubleChest = true;
+                        }
                     }
                     if (foundDoubleChest) {
                         fail(I18nSupport.getInternationalisedString(
@@ -168,22 +195,46 @@ public class DetectionTask extends AsyncTask {
                 if (testType == Material.TRAPPED_CHEST) {
                     boolean foundDoubleChest = false;
                     if (data.getWorld().getBlockAt(x - 1, y, z).getType() == Material.TRAPPED_CHEST) {
-                        foundDoubleChest = true;
+                        if (Settings.IsLegacy)
+                            foundDoubleChest = true;
+                        else {
+                            Chest chest = (Chest) data.getWorld().getBlockAt(x - 1, y, z).getBlockData();
+                            if (chest.getType() != Chest.Type.SINGLE)
+                                foundDoubleChest = true;
+                        }
                     }
                     if (data.getWorld().getBlockAt(x + 1, y, z).getType() == Material.TRAPPED_CHEST) {
-                        foundDoubleChest = true;
+                        if (Settings.IsLegacy)
+                            foundDoubleChest = true;
+                        else {
+                            Chest chest = (Chest) data.getWorld().getBlockAt(x + 1, y, z).getBlockData();
+                            if (chest.getType() != Chest.Type.SINGLE)
+                                foundDoubleChest = true;
+                        }
                     }
                     if (data.getWorld().getBlockAt(x, y, z - 1).getType() == Material.TRAPPED_CHEST) {
-                        foundDoubleChest = true;
+                        if (Settings.IsLegacy)
+                            foundDoubleChest = true;
+                        else {
+                            Chest chest = (Chest) data.getWorld().getBlockAt(x, y, z - 1).getBlockData();
+                            if (chest.getType() != Chest.Type.SINGLE)
+                                foundDoubleChest = true;
+                        }
                     }
                     if (data.getWorld().getBlockAt(x, y, z + 1).getType() == Material.TRAPPED_CHEST) {
-                        foundDoubleChest = true;
+                        if (Settings.IsLegacy)
+                            foundDoubleChest = true;
+                        else {
+                            Chest chest = (Chest) data.getWorld().getBlockAt(x, y, z + 1).getBlockData();
+                            if (chest.getType() != Chest.Type.SINGLE)
+                                foundDoubleChest = true;
+                        }
                     }
                     if (foundDoubleChest) {
                         fail(I18nSupport.getInternationalisedString(
                                 "Detection - ERROR: Double chest found"));
                     }
-                }
+                }*/
 
                 Location loc = new Location(data.getWorld(), x, y, z);
                 Player p;
