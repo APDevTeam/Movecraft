@@ -317,12 +317,11 @@ public class BlockListener implements Listener {
             Entity tnt = e.getEntity();
 
             if (e.getEntityType() == EntityType.PRIMED_TNT && Settings.TracerRateTicks != 0) {
-                long minDistSquared = 60 * 60;
                 long maxDistSquared = Bukkit.getServer().getViewDistance() * 16;
                 maxDistSquared = maxDistSquared - 16;
                 maxDistSquared = maxDistSquared * maxDistSquared;
-                // is the TNT within the view distance (rendered world) of the player, yet further than 60 blocks?
-                if (p.getLocation().distanceSquared(tnt.getLocation()) < maxDistSquared && p.getLocation().distanceSquared(tnt.getLocation()) >= minDistSquared) {  // we use squared because its faster
+                // is the TNT within the view distance (rendered world) of the player, yet further than TracerMinDistance blocks?
+                if (p.getLocation().distanceSquared(tnt.getLocation()) < maxDistSquared && p.getLocation().distanceSquared(tnt.getLocation()) >= Settings.TracerMinDistanceSqrd) {  // we use squared because its faster
                     final Location loc = tnt.getLocation();
                     final Player fp = p;
                     final World fw = e.getEntity().getWorld();
@@ -388,9 +387,7 @@ public class BlockListener implements Listener {
 
                 // whether or not you actually destroyed the block, add to damages
                 long damages = assault.getDamages() + Settings.AssaultDamagesPerBlock;
-                //if (damages < assault.getMaxDamages()) {
-                    assault.setDamages(damages);
-                //}
+                assault.setDamages(Math.min(damages, assault.getMaxDamages()));
 
                 // notify nearby players of the damages, do this 1 second later so all damages from this volley will be included
                 if (System.currentTimeMillis() < lastDamagesUpdate + 4000) {

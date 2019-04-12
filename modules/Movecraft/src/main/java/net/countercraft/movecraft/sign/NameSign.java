@@ -15,36 +15,46 @@ import org.bukkit.event.block.SignChangeEvent;
 import org.jetbrains.annotations.NotNull;
 
 public final class NameSign implements Listener {
-    String HEADER = "Name:";
+    private static final String HEADER = "Name:";
     @EventHandler
-    public void onCraftDetect(@NotNull CraftDetectEvent event){
+    public void onCraftDetect(@NotNull CraftDetectEvent event) {
         Craft c = event.getCraft();
+
+        if(c.getNotificationPlayer() == null || (Settings.RequireNamePerm && !c.getNotificationPlayer().hasPermission("movecraft.name.use"))) {
+            //Player is null or does not have permission (when required)
+            return;
+        }
+
         World w = c.getW();
-        for (MovecraftLocation location : event.getCraft().getHitBox()){
+
+        for (MovecraftLocation location : c.getHitBox()) {
             Block b = location.toBukkit(w).getBlock();
-            if (b.getType() == Material.SIGN_POST || b.getType() == Material.WALL_SIGN){
+            if (b.getType() == Material.SIGN_POST || b.getType() == Material.WALL_SIGN) {
                 Sign s = (Sign) b.getState();
                 String name = "";
-                if (s.getLine(0).equalsIgnoreCase(HEADER)){
-                    if (s.getLine(1) != null){
-                        name += s.getLine(1) + " "; //reserved for prefix (HMA, SS, MS, USS, HMS, etc...)
+                if (s.getLine(0).equalsIgnoreCase(HEADER)) {
+                    boolean firstName = true;
+                    for (int i = 1; i <= 3; i++) {
+                        if (s.getLine(i) != "") {
+                            if (firstName) {
+                                firstName = true;
+                            } else {
+                                name += " ";
+                                //Add a space between lines for all after the first.
+                            }
+                            name += s.getLine(i);
+                        }
                     }
-                    if (s.getLine(2) != null){ // lines 2 and 3 are for the name
-                        name += s.getLine(2);
-                    }
-                    if (s.getLine(3) != null){
-                        name += s.getLine(3);
-                    }
-                    c.setUniqueName(name);
-
+                    c.setName(name);
+                    return;
                 }
             }
         }
     }
     @EventHandler
-    public void onSignChange(SignChangeEvent event){
-        if (event.getLine(0).equalsIgnoreCase(HEADER)){
-            if (Settings.RequireNamePerm && !event.getPlayer().hasPermission("movecraft.name")){
+    public void onSignChange(SignChangeEvent event) {
+        if (event.getLine(0).equalsIgnoreCase(HEADER)) {
+            if (Settings.RequireNamePerm && !event.getPlayer().hasPermission("movecraft.name.place")) {
                 event.getPlayer().sendMessage(ChatUtils.MOVECRAFT_COMMAND_PREFIX + "Insufficient permissions");
                 event.setCancelled(true);
                 return;

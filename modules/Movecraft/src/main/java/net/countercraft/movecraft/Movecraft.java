@@ -148,6 +148,8 @@ public class Movecraft extends JavaPlugin {
 
         Settings.SinkCheckTicks = getConfig().getDouble("SinkCheckTicks", 100.0);
         Settings.TracerRateTicks = getConfig().getDouble("TracerRateTicks", 5.0);
+        Settings.TracerMinDistanceSqrd = getConfig().getLong("TracerMinDistance", 60);
+        Settings.TracerMinDistanceSqrd *= Settings.TracerMinDistanceSqrd;
         Settings.ManOverBoardTimeout = getConfig().getInt("ManOverBoardTimeout", 30);
         Settings.SilhouetteViewDistance = getConfig().getInt("SilhouetteViewDistance", 200);
         Settings.SilhouetteBlockCount = getConfig().getInt("SilhouetteBlockCount", 20);
@@ -157,7 +159,7 @@ public class Movecraft extends JavaPlugin {
         Settings.AllowCrewSigns = getConfig().getBoolean("AllowCrewSigns", true);
         Settings.SetHomeToCrewSign = getConfig().getBoolean("SetHomeToCrewSign", true);
         Settings.RequireCreatePerm = getConfig().getBoolean("RequireCreatePerm", false);
-        Settings.RequireNamePerm = getConfig().getBoolean("RequireNamePerm", false);
+        Settings.RequireNamePerm = getConfig().getBoolean("RequireNamePerm", true);
         Settings.TNTContactExplosives = getConfig().getBoolean("TNTContactExplosives", true);
         Settings.FadeWrecksAfter = getConfig().getInt("FadeWrecksAfter", 0);
         if (getConfig().contains("DurabilityOverride")) {
@@ -166,8 +168,8 @@ public class Movecraft extends JavaPlugin {
             for (String str : temp.keySet()) {
                 Settings.DurabilityOverride.put(Integer.parseInt(str), (Integer) temp.get(str));
             }
-
         }
+
         Settings.AssaultEnable = getConfig().getBoolean("AssaultEnable", false);
         Settings.AssaultDamagesCapPercent = getConfig().getDouble("AssaultDamagesCapPercent", 1.0);
         Settings.AssaultCooldownHours = getConfig().getInt("AssaultCooldownHours", 24);
@@ -175,9 +177,18 @@ public class Movecraft extends JavaPlugin {
         Settings.AssaultDuration = getConfig().getInt("AssaultDuration", 1800);
         Settings.AssaultCostPercent = getConfig().getDouble("AssaultCostPercent", 0.25);
         Settings.AssaultDamagesPerBlock = getConfig().getInt("AssaultDamagesPerBlock", 15);
-        Settings.AssaultRequiredDefendersOnline = getConfig().getInt("AssaultRequiredDefendersOnline", 3);
+        Settings.AssaultRequiredDefendersOnline = getConfig().getInt("AssaultRequiredDefendersOnline", 2);
+        Settings.AssaultRequiredOwnersOnline = getConfig().getInt("AssaultRequiredOwnersOnline", 1);
+        Settings.AssaultMaxBalance = getConfig().getDouble("AssaultMaxBalance", 5000000);
+        Settings.AssaultOwnerWeightPercent = getConfig().getDouble("AssaultOwnerWeightPercent", 1.0);
+        Settings.AssaultMemberWeightPercent = getConfig().getDouble("AssaultMemberWeightPercent", 1.0);
         Settings.AssaultDestroyableBlocks = new HashSet<>(getConfig().getIntegerList("AssaultDestroyableBlocks"));
         Settings.DisableShadowBlocks = new HashSet<>(getConfig().getIntegerList("DisableShadowBlocks"));  //REMOVE FOR PUBLIC VERSION
+        Settings.ForbiddenRemoteSigns = new HashSet<>();
+
+        for(String s : getConfig().getStringList("ForbiddenRemoteSigns")) {
+            Settings.ForbiddenRemoteSigns.add(s.toLowerCase());
+        }
 
         Settings.SiegeEnable = getConfig().getBoolean("SiegeEnable", false);
 

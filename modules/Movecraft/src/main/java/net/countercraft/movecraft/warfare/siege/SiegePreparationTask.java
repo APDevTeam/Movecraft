@@ -26,7 +26,7 @@ public class SiegePreparationTask extends SiegeTask {
     }
 
     private void broadcastSiegePreparation(Player player, String siegeName, int timeLeft){
-        String playerName = "An offline siege leader";
+        String playerName = "";
         if (player != null){
             playerName = player.getDisplayName();
         }
