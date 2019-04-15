@@ -47,7 +47,7 @@ public interface HitBox extends Iterable<MovecraftLocation>{
         if(this.isEmpty()){
             throw new EmptyHitBoxException();
         }
-        return new MovecraftLocation((this.getMinX()+this.getMaxX())/2, (this.getMinY()+this.getMinY())/2,(this.getMinZ()+this.getMaxZ())/2);
+        return new MovecraftLocation((this.getMinX()+this.getMaxX())/2, (this.getMinY()+this.getMaxY())/2,(this.getMinZ()+this.getMaxZ())/2);
     }
 
     @NotNull
