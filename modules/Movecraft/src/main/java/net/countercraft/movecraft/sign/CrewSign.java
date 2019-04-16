@@ -49,7 +49,7 @@ public class CrewSign implements Listener {
             return;
         }
         Location location = event.getBlock().getLocation().subtract(0,1,0);
-        if (Settings.IsLegacy ? !craft.getW().getBlockAt(location).getType().equals(LegacyUtils.BED_BLOCK) : Arrays.binarySearch(beds, craft.getW().getBlockAt(location).getType()) < 0) {
+        if (Settings.IsLegacy ? !craft.getW().getBlockAt(location).getType().equals(LegacyUtils.BED_BLOCK) : Arrays.binarySearch(beds, craft.getW().getBlockAt(location).getType()) >= 0) {
             return;
         }
         craft.getCrewSigns().put(crewPlayer.getUniqueId(), location);
@@ -109,7 +109,7 @@ public class CrewSign implements Listener {
         World world = event.getCraft().getW();
         for(MovecraftLocation location: event.getCraft().getHitBox()){
             Block block = location.toBukkit(world).getBlock();
-            if (block.getType() != Material.WALL_SIGN && block.getType() != (Settings.IsLegacy ? LegacyUtils.SIGN_POST : Material.SIGN)) {
+            if (!(block.getState() instanceof Sign)) {
                 continue;
             }
             Sign sign = (Sign) block.getState();

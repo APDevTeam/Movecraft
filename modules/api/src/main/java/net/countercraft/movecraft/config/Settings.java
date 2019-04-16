@@ -71,6 +71,7 @@ public class Settings {
     public static Map<Material, Integer> DurabilityOverride;
     public static boolean IsPaper = false;
     public static boolean IsLegacy = true; //false if version is 1.13 or higher
+    public static boolean is1_14 = false;
     public static boolean UseFAWE = false;
 
     public static boolean AssaultEnable;

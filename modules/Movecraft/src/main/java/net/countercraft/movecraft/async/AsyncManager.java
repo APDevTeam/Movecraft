@@ -62,6 +62,7 @@ public class AsyncManager extends BukkitRunnable {
     private long lastFadeCheck = 0;
     private long lastContactCheck = 0;
     private HashSet<Material> transparent = null;
+    private boolean climb = false;
 
     public AsyncManager() {
         transparent = new HashSet<>();
@@ -365,6 +366,7 @@ public class AsyncManager extends BukkitRunnable {
                     bankLeft = true;
                 if (pcraft.getNotificationPlayer().getInventory().getHeldItemSlot() == 5)
                     bankRight = true;
+
             }
 
             if (Math.abs(ticksElapsed) < pcraft.getTickCooldown()) {
@@ -398,6 +400,10 @@ public class AsyncManager extends BukkitRunnable {
                 }
                 if (bankLeft) {
                     dz = (1 + pcraft.getType().getCruiseSkipBlocks()) >> 1;
+                }
+                if (climb){
+                    dy = (1 + pcraft.getType().getCruiseSkipBlocks()) >> 1;
+                    climb = false;
                 }
             }
             // ship faces east
@@ -1117,5 +1123,9 @@ public class AsyncManager extends BukkitRunnable {
         }
 
         clearanceSet.clear();
+    }
+
+    public void setClimb(boolean climb){
+        this.climb = climb;
     }
 }

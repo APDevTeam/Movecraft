@@ -19,7 +19,6 @@ import org.bukkit.inventory.ItemStack;
 
 public class WorldEditUpdateCommand extends UpdateCommand {
     private final BaseBlock worldEditBaseBlock;
-    private final com.sk89q.worldedit.world.block.BaseBlock worldEdit7BaseBlock;
     private World world;
     private MovecraftLocation location;
     private Material type;
@@ -27,38 +26,23 @@ public class WorldEditUpdateCommand extends UpdateCommand {
 
     public WorldEditUpdateCommand(BaseBlock worldEditBaseBlock, World world, MovecraftLocation location, Material type, byte data) {
         this.worldEditBaseBlock = worldEditBaseBlock;
-        worldEdit7BaseBlock = null;
         this.world = world;
         this.location = location;
         this.type = type;
         this.data = data;
     }
-    //1.13 constructor
-    public WorldEditUpdateCommand(com.sk89q.worldedit.world.block.BaseBlock worldEditBlockState, World world, MovecraftLocation location, Material type){
-        worldEditBaseBlock = null;
-        this.worldEdit7BaseBlock = worldEditBlockState;
-        this.world = world;
-        this.location = location;
-        this.type = type;
-    }
+
 
     @Override
     public void doUpdate() {
         Block block = world.getBlockAt(location.getX(), location.getY(), location.getZ());
         block.setType(type);
         Material weType;
-        if (Settings.IsLegacy) {
             LegacyUtils.setData(block, data);
             assert worldEditBaseBlock != null;
             weType = LegacyUtils.getMaterial(worldEditBaseBlock.getType());
-        } else {
-            assert worldEdit7BaseBlock != null;
-            BlockData bData = BukkitAdapter.adapt(worldEdit7BaseBlock);
-            block.setBlockData(bData);
-            weType = BukkitAdapter.adapt(worldEdit7BaseBlock.getBlockType());
-        }
             if (type == Material.DISPENSER){
-                Tag t = Settings.IsLegacy ? worldEditBaseBlock.getNbtData().getValue().get("Items") : worldEdit7BaseBlock.getNbtData().getValue().get("Items");
+                Tag t = worldEditBaseBlock.getNbtData().getValue().get("Items");
                 ListTag lt = null;
                 if (t instanceof ListTag) {
                     lt = (ListTag) t;
@@ -115,7 +99,7 @@ public class WorldEditUpdateCommand extends UpdateCommand {
                 BlockState state = block.getState();
                 if (state instanceof Sign) {
                     Sign s = (Sign) state;
-                    CompoundTag nbtData = Settings.IsLegacy ? worldEditBaseBlock.getNbtData() : worldEdit7BaseBlock.getNbtData();
+                    CompoundTag nbtData = worldEditBaseBlock.getNbtData();
                     //first line
                     String firstLine = nbtData.getString("Text1");
                     firstLine = firstLine.substring(2);

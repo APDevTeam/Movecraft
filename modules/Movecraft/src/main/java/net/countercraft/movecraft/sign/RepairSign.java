@@ -11,6 +11,7 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
+import net.countercraft.movecraft.mapUpdater.update.WorldEdit7UpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.WorldEditUpdateCommand;
 import net.countercraft.movecraft.repair.Repair;
 import net.countercraft.movecraft.repair.RepairManager;
@@ -22,6 +23,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -84,8 +86,8 @@ public class RepairSign implements Listener{
     public void onSignClick(PlayerInteractEvent event){
         String firstLine = "";
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.LEFT_CLICK_BLOCK) {
-            Material m = event.getClickedBlock().getType();
-            if (m.equals((Settings.IsLegacy ? LegacyUtils.SIGN_POST : Material.SIGN)) || m.equals(Material.WALL_SIGN)) {
+            BlockState state = event.getClickedBlock().getState();
+            if (state instanceof Sign) {
                 Sign sign = (Sign) event.getClickedBlock().getState();
                 String signText = ChatColor.stripColor(sign.getLine(0));
 
@@ -95,19 +97,16 @@ public class RepairSign implements Listener{
             }
         }
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-            Material m = event.getClickedBlock().getType();
-            if (m.equals((Settings.IsLegacy ? LegacyUtils.SIGN_POST : Material.SIGN)) || m.equals(Material.WALL_SIGN)) {
-
-                    signRightClick(event);
+            BlockState state = event.getClickedBlock().getState();
+            if (state instanceof Sign) {
+                signRightClick(event);
             }
             return;
         }
         if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
-            Material m = event.getClickedBlock().getType();
-            if (m == (Settings.IsLegacy ? LegacyUtils.SIGN_POST : Material.SIGN) || m == Material.WALL_SIGN) {
-
-                    signLeftClick(event);
-
+            BlockState state = event.getClickedBlock().getState();
+            if (state instanceof Sign) {
+                signLeftClick(event);
             }
         }
     }
@@ -128,6 +127,24 @@ public class RepairSign implements Listener{
         Craft pCraft = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
         if (pCraft == null) {
             event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("You must be piloting a craft"));
+            return;
+        }
+        Set<Sign> foundSimilarSigns = new HashSet<>();
+        for (MovecraftLocation moveLoc : pCraft.getHitBox()){
+            Block cBlock = moveLoc.toBukkit(sign.getWorld()).getBlock();
+            if (!(cBlock.getState() instanceof Sign))
+                continue;
+            Sign foundSign = (Sign) cBlock.getState();
+            if (foundSign.getLocation().equals(sign.getLocation()))
+                continue;
+            if (!foundSign.getLine(0).equalsIgnoreCase(HEADER) && !foundSign.getLine(1).equals(sign.getLine(1)))
+                continue;
+            foundSimilarSigns.add(foundSign);
+        }
+        if (foundSimilarSigns.size() > 0){
+            event.getPlayer().sendMessage("Warning: Similar repair signs found at these locations:");
+            for (Sign s : foundSimilarSigns)
+                event.getPlayer().sendMessage("- (" + s.getX() + ", " + s.getY() + ", " + s.getX() + ")");
             return;
         }
         MovecraftRepair movecraftRepair = Movecraft.getInstance().getMovecraftRepair();
@@ -154,6 +171,27 @@ public class RepairSign implements Listener{
             event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Repair functionality is disabled or WorldEdit was not detected"));
             return;
         }
+        //Check for other similar repair signs on the craft
+        Set<Sign> foundSimilarSigns = new HashSet<>();
+        for (MovecraftLocation moveLoc : pCraft.getHitBox()){
+            Block cBlock = moveLoc.toBukkit(sign.getWorld()).getBlock();
+            if (!(cBlock.getState() instanceof Sign))
+                continue;
+            Sign foundSign = (Sign) cBlock.getState();
+            //Do not include clicked repair sign
+            if (foundSign.getLocation().equals(sign.getLocation()))
+                continue;
+            if (!foundSign.getLine(0).equalsIgnoreCase(HEADER) && !foundSign.getLine(1).equals(sign.getLine(1)))
+                continue;
+            foundSimilarSigns.add(foundSign);
+        }
+        //Warn the player if multiple similar repair signs are found
+        if (foundSimilarSigns.size() > 0){
+            event.getPlayer().sendMessage("Warning: Similar repair signs found at these locations:");
+            for (Sign s : foundSimilarSigns)
+                event.getPlayer().sendMessage("- (" + s.getX() + ", " + s.getY() + ", " + s.getX() + ")");
+            return;
+        }
         String repairName = event.getPlayer().getName();
         repairName += "_";
         repairName += sign.getLine(1);
@@ -163,7 +201,6 @@ public class RepairSign implements Listener{
 
         if (clipboard == null){
             p.sendMessage(I18nSupport.getInternationalisedString("REPAIR STATE NOT FOUND"));
-            return;
         } else { //if clipboard is not null
             long numDifferentBlocks = movecraftRepair.getNumDiffBlocks(repairName);
             boolean secondClick = false;
@@ -259,11 +296,11 @@ public class RepairSign implements Listener{
                         } else {
                             com.sk89q.worldedit.world.block.BaseBlock bb = clipboard.getFullBlock(WorldEditUtils.toBlockVector(cLoc));
                             Material type = BukkitAdapter.adapt(bb.getBlockType());
-                            if (Arrays.binarySearch(wallBlocks, type) >= 0){
-                                WorldEditUpdateCommand weUp = new WorldEditUpdateCommand(bb,sign.getWorld(),moveLoc, type);
+                            if (type.name().contains("WALL")){
+                                WorldEdit7UpdateCommand weUp = new WorldEdit7UpdateCommand(bb,sign.getWorld(),moveLoc, type);
                                 updateCommandsFragileBlocks.add(weUp);
                             } else {
-                                WorldEditUpdateCommand weUp = new WorldEditUpdateCommand(bb,sign.getWorld(),moveLoc, type);
+                                WorldEdit7UpdateCommand weUp = new WorldEdit7UpdateCommand(bb,sign.getWorld(),moveLoc, type);
                                 updateCommands.add(weUp);
                             }
                         }

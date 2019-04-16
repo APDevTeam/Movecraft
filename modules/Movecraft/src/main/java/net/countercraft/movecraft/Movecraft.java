@@ -105,9 +105,10 @@ public class Movecraft extends JavaPlugin {
         String packageName = this.getServer().getClass().getPackage().getName();
         String version = packageName.substring(packageName.lastIndexOf('.') + 1);
         String[] parts = version.split("_");
-        Integer versionNumber = Integer.valueOf(parts[1]);
+        int versionNumber = Integer.valueOf(parts[1]);
         //Check if the server is 1.12 and lower or 1.13 and higher
         Settings.IsLegacy = versionNumber <= 12;
+        Settings.is1_14 = versionNumber == 14;
         // Read in config
         if (!Settings.IsLegacy) {
             this.saveDefaultConfig();
@@ -487,7 +488,7 @@ public class Movecraft extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new InteractListener(), this);
             if (worldEditPlugin != null) {
                 //getServer().getPluginManager().registerEvents(new WorldEditInteractListener(), this);
-                repairManager = new RepairManager(this);
+                repairManager = new RepairManager();
                 repairManager.runTaskTimerAsynchronously(this, 0,1);
             }
             this.getCommand("movecraft").setExecutor(new MovecraftCommand());

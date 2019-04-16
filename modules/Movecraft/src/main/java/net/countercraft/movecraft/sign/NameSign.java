@@ -23,7 +23,7 @@ public final class NameSign implements Listener {
         World w = c.getW();
         for (MovecraftLocation location : event.getCraft().getHitBox()){
             Block b = location.toBukkit(w).getBlock();
-            if (b.getType() == (Settings.IsLegacy ? LegacyUtils.SIGN_POST : Material.SIGN) || b.getType() == Material.WALL_SIGN){
+            if (b.getState() instanceof Sign){
                 Sign s = (Sign) b.getState();
                 String name = "";
                 if (s.getLine(0).equalsIgnoreCase(HEADER)){

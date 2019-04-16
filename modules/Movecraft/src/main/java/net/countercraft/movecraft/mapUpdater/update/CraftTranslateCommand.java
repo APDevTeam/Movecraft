@@ -80,7 +80,7 @@ public class CraftTranslateCommand extends UpdateCommand {
             //trigger sign events
             for(MovecraftLocation location : craft.getHitBox()){
                 Block block = location.toBukkit(craft.getW()).getBlock();
-                if(block.getType() == Material.WALL_SIGN || block.getType() == (Settings.IsLegacy ? LegacyUtils.SIGN_POST : Material.SIGN)){
+                if(block.getState() instanceof Sign){
                     Sign sign = (Sign) block.getState();
                     Bukkit.getServer().getPluginManager().callEvent(new SignTranslateEvent(block, craft, sign.getLines()));
                     sign.update();

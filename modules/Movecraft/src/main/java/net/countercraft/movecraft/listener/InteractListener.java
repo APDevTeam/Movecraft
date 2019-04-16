@@ -17,6 +17,7 @@
 
 package net.countercraft.movecraft.listener;
 
+import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.utils.LegacyUtils;
 import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.craft.Craft;
@@ -107,10 +108,13 @@ public final class InteractListener implements Listener {
             if (craft.getPilotLocked()) {
                 // right click moves up or down if using direct
                 // control
+                if (craft.getCruising()){
+                    Movecraft.getInstance().getAsyncManager().setClimb(true);
+                    return;
+                }
                 int DY = 1;
                 if (event.getPlayer().isSneaking())
                     DY = -1;
-
                 craft.translate(0, DY, 0);
                 timeMap.put(event.getPlayer(), System.currentTimeMillis());
                 craft.setLastCruisUpdate(System.currentTimeMillis());

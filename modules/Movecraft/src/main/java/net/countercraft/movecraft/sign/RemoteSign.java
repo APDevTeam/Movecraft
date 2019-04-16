@@ -52,7 +52,7 @@ public final class RemoteSign implements Listener{
             return;
         }
         Block block = event.getClickedBlock();
-        if (block.getType() != (Settings.IsLegacy ? LegacyUtils.SIGN_POST : Material.SIGN) && block.getType() != Material.WALL_SIGN) {
+        if (!(block.getState() instanceof Sign)) {
             return;
         }
         Sign sign = (Sign) event.getClickedBlock().getState();

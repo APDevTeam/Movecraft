@@ -432,26 +432,29 @@ public class IMovecraftRepair extends MovecraftRepair {
                 for (int z = clipboard.getMinimumPoint().getBlockZ(); z <= clipboard.getMaximumPoint().getBlockZ(); z++) {
                     BlockVector3 pos = BlockVector3.at(x,y,z);
                     BaseBlock block = clipboard.getFullBlock(pos);
-                    if (block.getBlockType().getId().equals("minecraft:sign")||block.getBlockType().getId().equals("minecraft:wall_sign")){
+                    if (block.getBlockType().getId().equals("minecraft:sign")||block.getBlockType().getId().equals("minecraft:wall_sign")) {
                         Logger log = Bukkit.getLogger();
                         String firstLine = block.getNbtData().getString("Text1");
                         firstLine = firstLine.substring(2);
-                        if (firstLine.startsWith("extra")){
+                        if (firstLine.startsWith("extra")) {
                             firstLine = firstLine.substring(17);
-                            firstLine = firstLine.replace("\"}],\"text\":\"\"}","");
+                            firstLine = firstLine.replace("\"}],\"text\":\"\"}", "");
                         }
                         String secondLine = block.getNbtData().getString("Text2");
                         secondLine = secondLine.substring(2);
-                        if (secondLine.startsWith("extra")){
+                        if (secondLine.startsWith("extra")) {
                             secondLine = secondLine.substring(17);
-                            secondLine = secondLine.replace("\"}],\"text\":\"\"}","");
+                            secondLine = secondLine.replace("\"}],\"text\":\"\"}", "");
                         }
-                        if (firstLine.equalsIgnoreCase("Repair:") && s.endsWith(secondLine))
-                            returnDistance = new Vector(x - clipboard.getMinimumPoint().getBlockX(),y - clipboard.getMinimumPoint().getBlockY(),z - clipboard.getMinimumPoint().getBlockZ());
+                        if (firstLine.equalsIgnoreCase("Repair:") && s.endsWith(secondLine)) {
+                            returnDistance = new Vector(x - clipboard.getMinimumPoint().getBlockX(), y - clipboard.getMinimumPoint().getBlockY(), z - clipboard.getMinimumPoint().getBlockZ());
+                            break;
+                        }
                     }
-
                 }
+                if (returnDistance != null) break;
             }
+            if (returnDistance != null) break;
         }
         return returnDistance;
     }

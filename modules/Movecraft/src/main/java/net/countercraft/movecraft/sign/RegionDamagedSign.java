@@ -13,6 +13,7 @@ import net.countercraft.movecraft.MovecraftRepair;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
+import net.countercraft.movecraft.mapUpdater.update.WorldEdit7UpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.WorldEditUpdateCommand;
 import net.countercraft.movecraft.repair.RepairUtils;
 import net.countercraft.movecraft.utils.WorldguardUtils;
@@ -36,7 +37,7 @@ public class RegionDamagedSign implements Listener {
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK){
             return;
         }
-        if (!event.getClickedBlock().getType().equals(Material.WALL_SIGN)){
+        if (!event.getClickedBlock().getType().name().endsWith("WALL_SIGN")){
             return;
         }
         Sign sign = (Sign) event.getClickedBlock().getState();
@@ -114,7 +115,7 @@ public class RegionDamagedSign implements Listener {
                         if (!Settings.AssaultDestroyableBlocks.contains(bukkitLoc.getBlock().getType()))
                             continue;
                         Material type = BukkitAdapter.adapt(block.getBlockType());
-                        WorldEditUpdateCommand weUp = new WorldEditUpdateCommand(block, world, location, type);
+                        WorldEdit7UpdateCommand weUp = new WorldEdit7UpdateCommand(block, world, location, type);
                         MapUpdateManager.getInstance().scheduleUpdate(weUp);
                     }
                 }

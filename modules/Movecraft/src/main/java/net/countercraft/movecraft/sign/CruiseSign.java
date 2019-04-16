@@ -27,7 +27,7 @@ public final class CruiseSign implements Listener{
         World world = event.getCraft().getW();
         for(MovecraftLocation location: event.getCraft().getHitBox()){
             Block block = location.toBukkit(world).getBlock();
-            if(block.getType() == Material.WALL_SIGN || block.getType() == (Settings.IsLegacy ? LegacyUtils.SIGN_POST : Material.SIGN)){
+            if(block.getState() instanceof Sign){
                 Sign sign = (Sign) block.getState();
                 if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Cruise: ON")) {
                     sign.setLine(0, "Cruise: OFF");
@@ -43,7 +43,7 @@ public final class CruiseSign implements Listener{
             return;
         }
         Block block = event.getClickedBlock();
-        if (block.getType() != (Settings.IsLegacy ? LegacyUtils.SIGN_POST : Material.SIGN) && block.getType() != Material.WALL_SIGN) {
+        if (!(block.getState() instanceof Sign)) {
             return;
         }
         Sign sign = (Sign) event.getClickedBlock().getState();
@@ -56,6 +56,7 @@ public final class CruiseSign implements Listener{
                 return;
             }
             //c.resetSigns(false, true, true);
+
             sign.setLine(0, "Cruise: ON");
             sign.update(true);
 
