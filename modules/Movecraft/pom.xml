@@ -42,6 +42,12 @@
         </dependency>
         <dependency>
             <groupId>net.countercraft</groupId>
+            <artifactId>movecraft-v1_14_R1</artifactId>
+            <version>v1_14_R1</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>net.countercraft</groupId>
             <artifactId>movecraft-v1_13_R2</artifactId>
             <version>v1_13_R2</version>
             <type>jar</type>
@@ -216,6 +222,8 @@
                     <include>config.yml</include>
                     <include>config_legacy.yml</include>
                     <include>localisation/**</include>
+                    <include>types/1_14/*.craft</include>
+                    <include>types/legacy/*.craft</include>
                     <include>types/*.craft</include>
                 </includes>
             </resource>

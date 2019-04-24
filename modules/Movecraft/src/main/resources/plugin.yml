@@ -1,7 +1,7 @@
 name: Movecraft
 softdepend: [WorldGuard, WorldEdit, FastAsyncWorldEdit, Cannons, Vault ,Essentials, WGCustomFlags, Towny]
 version: ${project.version}
-api-version: 1.13
+api-version: 1.14
 #version: ${env.BUILD_NUMBER}
 description: The original flight and movement plugin for minecraft.
 author: BaccaYarro

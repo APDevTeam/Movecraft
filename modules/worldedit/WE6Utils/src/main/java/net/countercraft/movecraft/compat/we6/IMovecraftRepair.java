@@ -7,6 +7,7 @@ import com.sk89q.worldedit.MaxChangedBlocksException;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.blocks.BaseBlock;
 import com.sk89q.worldedit.bukkit.BukkitWorld;
+import com.sk89q.worldedit.bukkit.adapter.BukkitImplAdapter;
 import com.sk89q.worldedit.extent.Extent;
 import com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
@@ -39,15 +40,13 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.util.Vector;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Set;
+import java.util.*;
 
 public class IMovecraftRepair extends MovecraftRepair {
-    private HashMap<String, LinkedList<Vector>> locMissingBlocksMap = new HashMap<>();
+    private HashMap<String, ArrayDeque<Vector>> locMissingBlocksMap = new HashMap<>();
     private HashMap<String, Long> numDiffBlocksMap = new HashMap<>();
     private HashMap<String, HashMap<Material, Double>> missingBlocksMap = new HashMap<>();
+    private final HashMap<String, Vector> distanceMap = new HashMap<>();
 
     @Override
     public boolean saveCraftRepairState (Craft craft, Sign sign, Plugin plugin, String s) {
@@ -59,6 +58,7 @@ public class IMovecraftRepair extends MovecraftRepair {
         if (!saveDirectory.exists()){
             saveDirectory.mkdirs();
         }
+        com.sk89q.worldedit.Vector origin = new com.sk89q.worldedit.Vector(sign.getX(),sign.getY(),sign.getZ());
         com.sk89q.worldedit.Vector minPos = new com.sk89q.worldedit.Vector(hitBox.getMinX(), hitBox.getMinY(), hitBox.getMinZ());
         com.sk89q.worldedit.Vector maxPos = new com.sk89q.worldedit.Vector(hitBox.getMaxX(), hitBox.getMaxY(), hitBox.getMaxZ());
         CuboidRegion cRegion = new CuboidRegion(minPos, maxPos);
@@ -69,7 +69,7 @@ public class IMovecraftRepair extends MovecraftRepair {
             BlockArrayClipboard clipboard = new BlockArrayClipboard(cRegion);
             Extent source = WorldEdit.getInstance().getEditSessionFactory().getEditSession(weWorld, -1);
             Extent destination = clipboard;
-            ForwardExtentCopy copy = new ForwardExtentCopy(source, cRegion, clipboard.getOrigin(), destination, minPos);
+            ForwardExtentCopy copy = new ForwardExtentCopy(source, cRegion, clipboard.getOrigin(), destination, clipboard.getOrigin());
             BlockMask mask = new BlockMask(source, blockSet);
             copy.setSourceMask(mask);
             Operations.completeLegacy(copy);
@@ -148,12 +148,13 @@ public class IMovecraftRepair extends MovecraftRepair {
     }
 
     @Override
-    public Clipboard loadCraftRepairStateClipboard(Plugin plugin, Sign sign, String repairStateFile, World world) {
+    public Clipboard loadCraftRepairStateClipboard(Plugin plugin,Craft craft, Sign sign, String repairStateFile, World world) {
         File dataDirectory = new File(plugin.getDataFolder(), "CraftRepairStates");
         File file = new File(dataDirectory, repairStateFile + ".schematic"); // The schematic file
         com.sk89q.worldedit.world.World weWorld = new BukkitWorld(world);
         WorldData worldData = weWorld.getWorldData();
         Clipboard clipboard;
+        HashHitBox hitBox = craft.getHitBox();
         try {
             clipboard = ClipboardFormat.SCHEMATIC.getReader(new FileInputStream(file)).read(worldData);
 
@@ -164,11 +165,13 @@ public class IMovecraftRepair extends MovecraftRepair {
         if (clipboard != null){
             long numDiffBlocks = 0;
             HashMap<Material, Double> missingBlocks = new HashMap<>();
-            LinkedList<org.bukkit.util.Vector> locMissingBlocks = new LinkedList<>();
-            org.bukkit.util.Vector bukkitDistMP = getDistanceFromSignToLowestPoint(clipboard, sign.getLine(1));
-            com.sk89q.worldedit.Vector distMP = new com.sk89q.worldedit.Vector(bukkitDistMP.getBlockX(),bukkitDistMP.getBlockY(),bukkitDistMP.getBlockZ());
-            com.sk89q.worldedit.Vector minPos = new com.sk89q.worldedit.Vector(sign.getLocation().getBlockX() - distMP.getBlockX(), sign.getLocation().getBlockY() - distMP.getBlockY(), sign.getLocation().getBlockZ() - distMP.getBlockZ());
-            com.sk89q.worldedit.Vector distance = new com.sk89q.worldedit.Vector(minPos.getBlockX() - clipboard.getMinimumPoint().getBlockX(), minPos.getBlockY() - clipboard.getMinimumPoint().getBlockY(), minPos.getBlockZ() - clipboard.getMinimumPoint().getBlockZ());
+            ArrayDeque<Vector> locMissingBlocks = new ArrayDeque<>();
+            Vector distance = new Vector(sign.getX() - hitBox.getMinX(), sign.getY() - hitBox.getMinY(),sign.getZ() - hitBox.getMinZ());
+            if (distanceMap.containsKey(repairStateFile)) {
+                distanceMap.replace(repairStateFile,distance);
+            } else {
+                distanceMap.put(repairStateFile,distance);
+            }
             for (int x = clipboard.getMinimumPoint().getBlockX(); x <= clipboard.getMaximumPoint().getBlockX(); x++){
                 for (int y = clipboard.getMinimumPoint().getBlockY(); y <= clipboard.getMaximumPoint().getBlockY(); y++){
                     for (int z = clipboard.getMinimumPoint().getBlockZ(); z <= clipboard.getMaximumPoint().getBlockZ(); z++){
@@ -316,7 +319,7 @@ public class IMovecraftRepair extends MovecraftRepair {
                                     num += qtyToConsume;
                                     missingBlocks.put(Material.getMaterial(itemToConsume), num);
                                 }
-                                locMissingBlocks.push(new org.bukkit.util.Vector(x,y,z));
+                                locMissingBlocks.add(new Vector(x,y,z));
                             }
                         }
                         if (bukkitBlock.getType() == Material.DISPENSER && block.getType() == 23){
@@ -431,7 +434,7 @@ public class IMovecraftRepair extends MovecraftRepair {
     }
 
     @Override
-    public LinkedList<org.bukkit.util.Vector> getMissingBlockLocations(String repairName) {
+    public ArrayDeque<Vector> getMissingBlockLocations(String repairName) {
         return locMissingBlocksMap.get(repairName);
     }
 
@@ -441,9 +444,9 @@ public class IMovecraftRepair extends MovecraftRepair {
     }
 
     @Override
-    public org.bukkit.util.Vector getDistanceFromSignToLowestPoint(Clipboard clipboard, String repairName) {
-        org.bukkit.util.Vector returnDistance = null;
-        for (int x = clipboard.getMinimumPoint().getBlockX(); x <= clipboard.getMaximumPoint().getBlockX(); x++) {
+    public Vector getDistanceFromSignToLowestPoint(Clipboard clipboard) {
+        return new Vector(clipboard.getOrigin().getBlockX() - clipboard.getMinimumPoint().getBlockX(),clipboard.getOrigin().getBlockY() - clipboard.getMinimumPoint().getBlockY(),clipboard.getOrigin().getBlockZ() - clipboard.getMinimumPoint().getBlockZ());
+        /*for (int x = clipboard.getMinimumPoint().getBlockX(); x <= clipboard.getMaximumPoint().getBlockX(); x++) {
             for (int y = clipboard.getMinimumPoint().getBlockY(); y <= clipboard.getMaximumPoint().getBlockY(); y++) {
                 for (int z = clipboard.getMinimumPoint().getBlockZ(); z <= clipboard.getMaximumPoint().getBlockZ(); z++) {
                     com.sk89q.worldedit.Vector pos = new com.sk89q.worldedit.Vector(x,y,z);
@@ -469,19 +472,15 @@ public class IMovecraftRepair extends MovecraftRepair {
                     }
                 }
             }
-        }
-        return returnDistance;
+        }*/
     }
 
     @Override
-    public org.bukkit.util.Vector getDistanceFromClipboardToWorldOffset(org.bukkit.util.Vector offset, Clipboard clipboard) {
-        return new org.bukkit.util.Vector(offset.getBlockX() - clipboard.getMinimumPoint().getBlockX(), offset.getBlockY() - clipboard.getMinimumPoint().getBlockY(), offset.getBlockZ() - clipboard.getMinimumPoint().getBlockZ());
+    public Vector getDistance(String repairName) {
+        return distanceMap.get(repairName);
     }
 
-    @Override
-    public void setFawePlugin(Plugin fawePlugin) {
 
-    }
 
     private Set<BaseBlock> baseBlocksFromCraft(Craft craft){
         HashSet<BaseBlock> returnSet = new HashSet<>();

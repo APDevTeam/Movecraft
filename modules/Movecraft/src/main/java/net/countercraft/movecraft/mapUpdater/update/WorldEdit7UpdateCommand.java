@@ -6,6 +6,7 @@ import com.sk89q.jnbt.Tag;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -29,6 +30,7 @@ public class WorldEdit7UpdateCommand extends UpdateCommand {
     @Override
     public void doUpdate() {
         Block block = world.getBlockAt(location.getX(), location.getY(), location.getZ());
+        Bukkit.broadcastMessage(type.name());
         block.setType(type);
         assert worldEdit7BaseBlock != null;
         BlockData bData = BukkitAdapter.adapt(worldEdit7BaseBlock);

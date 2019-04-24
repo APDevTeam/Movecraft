@@ -39,6 +39,7 @@ import static net.countercraft.movecraft.utils.ChatUtils.MOVECRAFT_COMMAND_PREFI
 public class SiegeCommand implements TabExecutor {
     //TODO: Add tab complete
     private final NumberFormat currencyFormat = NumberFormat.getCurrencyInstance();
+    private final Map<UUID,Long> playerTimeMap = new HashMap<>();
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args) {
         if (!command.getName().equalsIgnoreCase("siege")) {
@@ -64,6 +65,8 @@ public class SiegeCommand implements TabExecutor {
             return beginCommand(commandSender);
         }else if(args[0].equalsIgnoreCase("info")){
             return infoCommand(commandSender,args);
+        } else if (args[0].equalsIgnoreCase("abort")){
+            return abortCommand(commandSender);
         }
         commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "Invalid argument specified, valid arguments include begin, info, and list.");
         return true;
@@ -188,15 +191,57 @@ public class SiegeCommand implements TabExecutor {
                 , player.getDisplayName(), siege.getName(), siege.getDelayBeforeStart() / 60));
         for (Player p : Bukkit.getOnlinePlayers()) {
             p.playSound(p.getLocation(), Sound.ENTITY_WITHER_DEATH, 1, 0.25F);
+            p.setScoreboard(siege.getScoreboard());
         }
         Movecraft.getInstance().getLogger().log(Level.INFO, String.format("Siege: %s commenced by %s for a cost of %d", siege.getName(), player.getName(), cost));
         Movecraft.getInstance().getEconomy().withdrawPlayer(player, cost);
-        siege.setProgressBar(Bukkit.createBossBar(siege.getName(), BarColor.BLUE, BarStyle.SOLID, BarFlag.DARKEN_SKY));
-        siege.getProgressBar().setVisible(true);
+
         siege.setPlayerUUID(player.getUniqueId());
         siege.setStartTime((int)System.currentTimeMillis());
         siege.setStage(SiegeStage.PREPERATION);
         return true;
+
+    }
+
+    private boolean abortCommand(CommandSender sender){
+        if (!(sender instanceof Player)){
+            sender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "you need to be a player to abort a siege");
+        }
+        List<Siege> sieges = Movecraft.getInstance().getSiegeManager().getSieges();
+        UUID playerID = ((Player)sender).getUniqueId();
+        Siege activeSiege = null;
+        boolean siegeLeader = false;
+        for (Siege siege : sieges){
+            if (siege.getStage().get() != SiegeStage.INACTIVE){
+                activeSiege = siege;
+                break;
+            }
+
+        }
+        if (activeSiege == null){
+            sender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "No sieges are running");
+            return true;
+        } else if (!activeSiege.getPlayerUUID().equals(playerID)){
+            sender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "you need to be a siege leader to abort a siege");
+            return true;
+        }
+        boolean confirm = playerTimeMap.containsKey(playerID) && playerTimeMap.get(playerID) - System.currentTimeMillis() <= 7000;
+        if (confirm){
+            Bukkit.broadcastMessage(String.format("The siege of %s has been aborted!", activeSiege.getName()));
+            activeSiege.setStage(SiegeStage.INACTIVE);
+            if (activeSiege.getCommandsOnLose() != null)
+                for (String command : activeSiege.getCommandsOnLose()) {
+                    Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command
+                            .replaceAll("%r", activeSiege.getCaptureRegion())
+                            .replaceAll("%c", "" + activeSiege.getCost())
+                            .replaceAll("%l", Bukkit.getPlayer(activeSiege.getPlayerUUID()).getName()));
+                }
+            return true;
+        } else {
+            playerTimeMap.put(playerID,System.currentTimeMillis());
+            sender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "WARNING! You are about to abort an ongoing siege. Aborting a siege count as losing it. Type /siege abort once again to confirm");
+            return true;
+        }
 
     }
 

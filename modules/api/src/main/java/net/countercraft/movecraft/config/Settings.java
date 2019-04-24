@@ -92,4 +92,5 @@ public class Settings {
 
     public static boolean SiegeEnable;
     public static String SiegeTimeZone;
+    public static boolean KOTHSiege = false;
 }

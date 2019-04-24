@@ -20,22 +20,18 @@ public class SiegePreparationTask extends SiegeTask {
             siege.setStage(SiegeStage.IN_PROGRESS);
         }
         double progress = (double) timePassedinSeconds / (double) siege.getDelayBeforeStart();
-        if (progress <= 1.0) {
-            siege.getProgressBar().setProgress(progress);
-        }
+
         //Bukkit.getServer().broadcastMessage(String.valueOf(progress) + ", " + String.valueOf(timePassedinSeconds) + ", " + String.valueOf(siege.getDuration()));
-        for (Player p : Bukkit.getOnlinePlayers()){
-            siege.getProgressBar().addPlayer(p);
-        }
+
         if ((siege.getDelayBeforeStart() - timePassed/1000) % 60 != 0 || timePassed < 3000){
              return;
         }
         int timeLeft = siege.getDelayBeforeStart() - (timePassed/1000);
-        broadcastSiegePreparation(siege.getPlayerUUID(), siege.getName(), (int) timeLeft);
+        broadcastSiegePreparation(siege.getPlayerUUID(), siege.getName(), timeLeft);
     }
 
     private void broadcastSiegePreparation(UUID playerUUID, String siegeName, int timeLeft){
-        String playerName = "An offline siege leader";
+        String playerName;
         Player player = Bukkit.getPlayer(playerUUID);
         if (player != null){
             playerName = player.getDisplayName();

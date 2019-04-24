@@ -1,5 +1,5 @@
-name: Submarine
-maxSize: 100000
+name: elevator
+maxSize: 1000
 minSize: 10
 allowedBlocks:
     #beds
@@ -27,23 +27,6 @@ allowedBlocks:
     - OAK_BUTTON
     - SPRUCE_BUTTON
     - STONE_BUTTON
-    #carpets
-    - WHITE_CARPET
-    - ORANGE_CARPET
-    - MAGENTA_CARPET
-    - LIGHT_BLUE_CARPET
-    - YELLOW_CARPET
-    - LIME_CARPET
-    - PINK_CARPET
-    - GRAY_CARPET
-    - LIGHT_CARPET
-    - CYAN_CARPET
-    - PURPLE_CARPET
-    - BLUE_CARPET
-    - BROWN_CARPET
-    - GREEN_CARPET
-    - RED_CARPET
-    - BLACK_CARPET
     #doors
     - ACACIA_DOOR
     - BIRCH_DOOR
@@ -58,7 +41,6 @@ allowedBlocks:
     - DARK_OAK_FENCE
     - JUNGLE_FENCE
     - OAK_FENCE
-    - NETHER_BRICK_FENCE
     - SPRUCE_FENCE
     #fence gates
     - ACACIA_FENCE_GATE
@@ -103,6 +85,15 @@ allowedBlocks:
     - GREEN_STAINED_GLASS_PANE
     - RED_STAINED_GLASS_PANE
     - BLACK_STAINED_GLASS_PANE
+    #interior
+    - BOOKSHELF
+    - BREWING_STAND
+    - CAULDRON
+    - IRON_BARS
+    - SIGN
+    - TORCH
+    - WALL_SIGN
+    - WALL_TORCH
     #liquids
     - LAVA
     - WATER
@@ -115,20 +106,6 @@ allowedBlocks:
     - STRIPPED_JUNGLE_LOG
     - STRIPPED_OAK_LOG
     - STRIPPED_SPRUCE_LOG
-    #misc
-    - BOOKSHELF
-    - BREWING_STAND
-    - CRAFTING_TABLE
-    - CAULDRON
-    - FURNACE
-    - GLOWSTONE
-    - IRON_BARS
-    - LADDER
-    - NETHER_BRICKS
-    - SIGN
-    - TORCH
-    - WALL_SIGN
-    - WALL_TORCH
     #planks
     - ACACIA_PLANKS
     - BIRCH_PLANKS
@@ -145,10 +122,8 @@ allowedBlocks:
     - LIGHT_WEIGHTED_PRESSURE_PLATE
     - OAK_PRESSURE_PLATE
     - SPRUCE_PRESSURE_PLATE
-    - STONE_PRESSURE_PLATE
     #redstone
     - COMPARATOR
-    - LEVER
     - NOTE_BLOCK
     - PISTON
     - PISTON_HEAD
@@ -180,33 +155,14 @@ allowedBlocks:
     - BIRCH_STAIRS
     - JUNGLE_STAIRS
     - OAK_STAIRS
-    - NETHER_BRICK_STAIRS
     - SMOOTH_STAIRS
     - SPRUCE_STAIRS
-    - STONE_BRICK_STAIRS
     #storage
     - CHEST
     - DISPENSER
     - DROPPER
     - HOPPER
     - TRAPPED_CHEST
-    #terracotta
-    - WHITE_TERRACOTTA
-    - ORANGE_TERRACOTTA
-    - MAGENTA_TERRACOTTA
-    - LIGHT_BLUE_TERRACOTTA
-    - YELLOW_TERRACOTTA
-    - LIME_TERRACOTTA
-    - PINK_TERRACOTTA
-    - GRAY_TERRACOTTA
-    - LIGHT_GRAY_TERRACOTTA
-    - CYAN_TERRACOTTA
-    - PURPLE_TERRACOTTA
-    - BLUE_TERRACOTTA
-    - BROWN_TERRACOTTA
-    - GREEN_TERRACOTTA
-    - RED_TERRACOTTA
-    - BLACK_TERRACOTTA
     #trapdoors
     - ACACIA_TRAPDOOR
     - BIRCH_TRAPDOOR
@@ -245,28 +201,23 @@ allowedBlocks:
     - RED_WOOL
     - BLACK_WOOL
 
-canCruise: true
-cruiseSkipBlocks: 4
-canFly: false
-minHeightLimit: 10
-maxHeightLimit: 67
-sinkPercent: 99.0
-overallSinkPercent: 60.0
-speed: 0.5
-requireWaterContact: true
-allowVerticalMovement: true
-fuelBurnRate: 1.0
+forbiddenBlocks:
+    - PISTON_HEAD
+
+canFly: true
+canCruise: false
+collisionExplosion: 0.0
+allowHorizontalMovement: false
+canStaticMove: true
+maxStaticMove: 2
+allowCannonDirectorSign: false
+detectionMultiplier: 30.0
+underwaterDetectionMultiplier: 3.0
+allowAADirectorSign: false
+speed: 1.0
 tryNudge: false
+sinkPercent: 99.0
 flyblocks:
-    [ACACIA_PLANKS, BIRCH_PLANKS, DARK_OAK_PLANKS, JUNGLE_PLANKS, OAK_PLANKS, SPRUCE_PLANKS]:
-        - 25.0
-        - 100.0
-    ANVIL: # anvils are OP armor, so limit it
+    [WHITE_WOOL, ORANGE_WOOL, MAGENTA_WOOL,LIGHT_BLUE_WOOL,YELLOW_WOOL,LIME_WOOL,PINK_WOOL,GRAY_WOOL,LIGHT_GRAY_WOOL,CYAN_WOOL,PURPLE_WOOL,BLUE_WOOL,BROWN_WOOL, GREEN_WOOL, RED_WOOL, BLACK_WOOL]: #wool represents lift
         - 0.0
-        - 1.0
-    OBSIDIAN: # so is obsidian
-        - 0.0
-        - 1.0
-    IRON_BLOCK:
-        - 15.0
         - 100.0

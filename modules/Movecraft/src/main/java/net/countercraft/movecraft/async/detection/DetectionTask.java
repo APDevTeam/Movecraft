@@ -32,7 +32,6 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
-import org.bukkit.block.data.type.Chest;
 import org.bukkit.entity.Player;
 
 import java.util.*;
@@ -107,7 +106,6 @@ public class DetectionTask extends AsyncTask {
         if (notVisited(workingLocation, visited)) {
 
             Material testType = null;
-            Block testBlock = null;
             int testData = 0;
             try {
                 testData = data.getWorld().getBlockAt(x, y, z).getData();
@@ -120,8 +118,13 @@ public class DetectionTask extends AsyncTask {
             if ((testType == Material.WATER) || (testType == LegacyUtils.STATIONARY_WATER)) {
                 data.setWaterContact(true);
             }
-            if (testType == (Settings.IsLegacy ? LegacyUtils.SIGN_POST : Material.SIGN) || testType == Material.WALL_SIGN) {
-                BlockState state = data.getWorld().getBlockAt(x, y, z).getState();
+            if (testType.name().contains("SIGN")) {
+                BlockState state;
+                try {
+                    state = data.getWorld().getBlockAt(x, y, z).getState();
+                } catch (Exception e){
+                    return;
+                }
                 if (state instanceof Sign) {
                     Sign s = (Sign) state;
                     if (s.getLine(0).equalsIgnoreCase("Pilot:") && data.getPlayer() != null) {

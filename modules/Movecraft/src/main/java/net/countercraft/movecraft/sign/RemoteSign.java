@@ -93,7 +93,7 @@ public final class RemoteSign implements Listener{
         boolean firstError = true;
         for (MovecraftLocation tloc : foundCraft.getHitBox()) {
             Block tb = event.getClickedBlock().getWorld().getBlockAt(tloc.getX(), tloc.getY(), tloc.getZ());
-            if (!tb.getType().equals((Settings.IsLegacy ? LegacyUtils.SIGN_POST : Material.SIGN)) && !tb.getType().equals(Material.WALL_SIGN)) {
+            if (!(tb.getState() instanceof Sign)) {
                 continue;
             }
             Sign ts = (Sign) tb.getState();
@@ -121,6 +121,14 @@ public final class RemoteSign implements Listener{
             Sign foundSign = (Sign) newBlock.getState();
             boolean inverted = false;//set to true if target name has an ! in front of the text
             //check Remote sign if the target strings are inverted
+            for (String line : foundSign.getLines()){
+                if (line == null)
+                    continue;
+                if (!line.equals("!" + targetText))
+                    continue;
+                inverted = true;
+                break;
+            }
             PlayerInteractEvent newEvent = null;
 
             if (inverted) {

@@ -746,6 +746,10 @@ public class AsyncManager extends BukkitRunnable {
         }
     }
 
+    private void processWaterlogging(){
+
+    }
+
     private Craft fastNearestCraftToLoc(Location loc) {
         Craft ret = null;
         long closestDistSquared = 1000000000L;
@@ -1088,6 +1092,9 @@ public class AsyncManager extends BukkitRunnable {
         processTracers();
         processFireballs();
         processTNTContactExplosives();
+        if (!Settings.IsLegacy) {
+            processWaterlogging();
+        }
         //processFadingBlocks();
         processDetection();
         processAlgorithmQueue();

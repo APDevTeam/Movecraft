@@ -66,10 +66,13 @@ public class CraftTranslateCommand extends UpdateCommand {
                 passthroughBlocks.add(Material.SUNFLOWER);
                 passthroughBlocks.add(Material.LILAC);
                 passthroughBlocks.add(Material.PEONY);
+                passthroughBlocks.add(Material.KELP);
                 passthroughBlocks.add(Material.KELP_PLANT);
                 passthroughBlocks.add(Material.TALL_SEAGRASS);
                 passthroughBlocks.add(Material.SEA_PICKLE);
                 passthroughBlocks.add(Material.SEAGRASS);
+
+                passthroughBlocks.add(Material.BUBBLE_COLUMN);
 
             }
 
@@ -163,7 +166,7 @@ public class CraftTranslateCommand extends UpdateCommand {
             //trigger sign events
             for (MovecraftLocation location : craft.getHitBox()) {
                 Block block = location.toBukkit(craft.getW()).getBlock();
-                if (block.getType() == Material.WALL_SIGN || block.getType() == (Settings.IsLegacy ? LegacyUtils.SIGN_POST : Material.SIGN)) {
+                if (block.getState() instanceof Sign) {
                     Sign sign = (Sign) block.getState();
                     Bukkit.getServer().getPluginManager().callEvent(new SignTranslateEvent(block, craft, sign.getLines()));
                     sign.update();
@@ -175,6 +178,8 @@ public class CraftTranslateCommand extends UpdateCommand {
                 if (!craft.getPhaseBlocks().containsKey(location)) {
                     continue;
                 }
+                if(craft.getCollapsedHitBox().contains(location))
+                    continue;
                 handler.setBlockFast(location.toBukkit(craft.getW()), craft.getPhaseBlocks().get(location), (byte) 0);
                 craft.getPhaseBlocks().remove(location);
             }
@@ -194,8 +199,6 @@ public class CraftTranslateCommand extends UpdateCommand {
                 }
             }
         }
-        if (!Settings.IsLegacy)
-            MapUpdateManager.getInstance().scheduleUpdate(new WaterlogUpdateCommand(craft));
         if (!craft.isNotProcessing())
             craft.setProcessing(false);
         time = System.nanoTime() - time;

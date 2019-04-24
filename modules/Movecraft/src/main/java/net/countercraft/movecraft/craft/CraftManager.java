@@ -29,6 +29,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -74,7 +75,27 @@ public class CraftManager implements Iterable<Craft>{
                 Movecraft.getInstance().saveResource("types/legacy/SubAirship.craft", false);
                 Movecraft.getInstance().saveResource("types/legacy/Submarine.craft", false);
                 Movecraft.getInstance().saveResource("types/legacy/Turret.craft", false);
-            } else { //if 1.13 and higher, save 1.13 files
+            } else if (Settings.is1_14){ //if 1.14, save 1.14 files
+                Movecraft.getInstance().getResource("types/1_14/airship.craft");
+                Movecraft.getInstance().saveResource("types/1_14/airship.craft", false);
+                Movecraft.getInstance().saveResource("types/1_14/airskiff.craft", false);
+                Movecraft.getInstance().saveResource("types/1_14/BigAirship.craft", false);
+                Movecraft.getInstance().saveResource("types/1_14/BigSubAirship.craft", false);
+                Movecraft.getInstance().saveResource("types/1_14/elevator.craft", false);
+                Movecraft.getInstance().saveResource("types/1_14/LaunchTorpedo.craft", false);
+                Movecraft.getInstance().saveResource("types/1_14/Ship.craft", false);
+                Movecraft.getInstance().saveResource("types/1_14/SubAirship.craft", false);
+                Movecraft.getInstance().saveResource("types/1_14/Submarine.craft", false);
+                Movecraft.getInstance().saveResource("types/1_14/Turret.craft", false);
+                final File v1_14dir = new File(craftsFile,"/1_14");
+                for (File craftFile : v1_14dir.listFiles()){
+                    final String fileName = craftFile.getName();
+                    if (!craftFile.renameTo(new File(craftFile, fileName))) continue;
+                    craftFile.delete();
+                }
+                if (v1_14dir.listFiles().length == 0)
+                    v1_14dir.delete();
+            } else { //if 1.13, save 1.13 files
                 Movecraft.getInstance().saveResource("types/airship.craft", false);
                 Movecraft.getInstance().saveResource("types/airskiff.craft", false);
                 Movecraft.getInstance().saveResource("types/BigAirship.craft", false);

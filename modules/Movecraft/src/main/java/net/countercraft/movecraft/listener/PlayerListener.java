@@ -17,6 +17,7 @@
 
 package net.countercraft.movecraft.listener;
 
+import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.utils.HitBox;
 import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.MovecraftLocation;
@@ -24,11 +25,14 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.warfare.siege.Siege;
+import net.countercraft.movecraft.warfare.siege.SiegeStage;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
@@ -164,6 +168,16 @@ public class PlayerListener implements Listener {
         CraftManager.getInstance().removeCraftByPlayer(e.getPlayer());
     }
 
+    @EventHandler
+    public void onPlayerLogin(PlayerLoginEvent e){
+        Player p = e.getPlayer();
+        if (!Settings.SiegeEnable)
+            return;
+        for (Siege siege : Movecraft.getInstance().getSiegeManager().getSieges()){
+            if (siege.getStage().get() == SiegeStage.INACTIVE) continue;
+            p.setScoreboard(siege.getScoreboard());
+        }
+    }
 
 
     @EventHandler

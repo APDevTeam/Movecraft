@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.async.translation;
 
+import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.config.Settings;
@@ -33,10 +34,22 @@ import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class TranslationTask extends AsyncTask {
-    private static final Material[] FALL_THROUGH_BLOCKS = Settings.IsLegacy ? new Material[]{Material.AIR, Material.WATER, LegacyUtils.STATIONARY_WATER, Material.LAVA, LegacyUtils.STATIONARY_LAVA, LegacyUtils.LONG_GRASS, LegacyUtils.YELLOW_FLOWER, LegacyUtils.RED_ROSE,
-    Material.BROWN_MUSHROOM, Material.RED_MUSHROOM, Material.TORCH, Material.FIRE, Material.REDSTONE_WIRE, LegacyUtils.CROPS, LegacyUtils.SIGN_POST, Material.LADDER, Material.WALL_SIGN, Material.LEVER, LegacyUtils.STONE_PLATE, LegacyUtils.REDSTONE_TORCH_ON, LegacyUtils.REDSTONE_TORCH_OFF, Material.STONE_BUTTON,
-    Material.SNOW, LegacyUtils.SUGAR_CANE_BLOCK, LegacyUtils.FENCE, LegacyUtils.DIODE_BLOCK_OFF, LegacyUtils.DIODE_BLOCK_ON, LegacyUtils.WATER_LILY, Material.CARROT, Material.POTATO, LegacyUtils.WOOD_BUTTON, LegacyUtils.CARPET}
-    : new Material[]{Material.AIR, Material.WATER};
+    private static final Set<Material> FALL_THROUGH_BLOCKS = new HashSet<>();//Settings.IsLegacy ? new Material[]{}:new Material[]{Material.AIR,
+            /*Material.WATER,
+            Material.LAVA,
+            Material.BROWN_MUSHROOM,
+            Material.RED_MUSHROOM,
+            Material.TORCH,
+            Material.FIRE,
+            Material.REDSTONE_WIRE,
+            Material.LADDER,
+            Material.WALL_SIGN,
+            Material.LEVER,
+            Material.STONE_BUTTON,
+            Material.SNOW,
+            Material.CARROT,
+            Material.POTATO,
+            };*/
     //private static final int[] FALL_THROUGH_BLOCKS = {0, 8, 9, 10, 11, 31, 37, 38, 39, 40, 50, 51, 55, 59, 63, 65, 68, 69, 70, 72, 75, 76, 77, 78, 83, 85, 93, 94, 111, 141, 142, 143, 171};
 
     private int dx, dy, dz;
@@ -53,6 +66,48 @@ public class TranslationTask extends AsyncTask {
         this.dz = dz;
         newHitBox = new HashHitBox();
         oldHitBox = new HashHitBox(c.getHitBox());
+
+        FALL_THROUGH_BLOCKS.add(Material.AIR);
+        FALL_THROUGH_BLOCKS.add(Material.WATER);
+        FALL_THROUGH_BLOCKS.add(Material.LAVA);
+        FALL_THROUGH_BLOCKS.add(Material.BROWN_MUSHROOM);
+        FALL_THROUGH_BLOCKS.add(Material.RED_MUSHROOM);
+        FALL_THROUGH_BLOCKS.add(Material.TORCH);
+        FALL_THROUGH_BLOCKS.add(Material.FIRE);
+        FALL_THROUGH_BLOCKS.add(Material.REDSTONE_WIRE);
+        FALL_THROUGH_BLOCKS.add(Material.LADDER);
+        FALL_THROUGH_BLOCKS.add(Material.WALL_SIGN);
+        FALL_THROUGH_BLOCKS.add(Material.LEVER);
+        FALL_THROUGH_BLOCKS.add(Material.STONE_BUTTON);
+        FALL_THROUGH_BLOCKS.add(Material.SNOW);
+        FALL_THROUGH_BLOCKS.add(Material.CARROT);
+        FALL_THROUGH_BLOCKS.add(Material.POTATO);
+        if (Settings.IsLegacy) {
+            FALL_THROUGH_BLOCKS.add(LegacyUtils.STATIONARY_WATER);
+            FALL_THROUGH_BLOCKS.add(LegacyUtils.STATIONARY_LAVA);
+            FALL_THROUGH_BLOCKS.add(LegacyUtils.LONG_GRASS);
+            FALL_THROUGH_BLOCKS.add(LegacyUtils.YELLOW_FLOWER);
+            FALL_THROUGH_BLOCKS.add(LegacyUtils.RED_ROSE);
+            FALL_THROUGH_BLOCKS.add(LegacyUtils.CROPS);
+            FALL_THROUGH_BLOCKS.add(LegacyUtils.SIGN_POST);
+            FALL_THROUGH_BLOCKS.add(LegacyUtils.STONE_PLATE);
+            FALL_THROUGH_BLOCKS.add(LegacyUtils.REDSTONE_TORCH_ON);
+            FALL_THROUGH_BLOCKS.add(LegacyUtils.REDSTONE_TORCH_OFF);
+            FALL_THROUGH_BLOCKS.add(LegacyUtils.SUGAR_CANE_BLOCK);
+            FALL_THROUGH_BLOCKS.add(LegacyUtils.FENCE);
+            FALL_THROUGH_BLOCKS.add(LegacyUtils.DIODE_BLOCK_OFF);
+            FALL_THROUGH_BLOCKS.add(LegacyUtils.DIODE_BLOCK_ON);
+            FALL_THROUGH_BLOCKS.add(LegacyUtils.WATER_LILY);
+            FALL_THROUGH_BLOCKS.add(LegacyUtils.WOOD_BUTTON);
+            FALL_THROUGH_BLOCKS.add(LegacyUtils.CARPET);
+        } else {
+            FALL_THROUGH_BLOCKS.add(Material.BUBBLE_COLUMN);
+            FALL_THROUGH_BLOCKS.add(Material.KELP);
+            FALL_THROUGH_BLOCKS.add(Material.KELP_PLANT);
+            FALL_THROUGH_BLOCKS.add(Material.SEAGRASS);
+            FALL_THROUGH_BLOCKS.add(Material.TALL_SEAGRASS);
+
+        }
     }
 
     @Override
@@ -124,7 +179,7 @@ public class TranslationTask extends AsyncTask {
 
             boolean blockObstructed;
             if (craft.getSinking()) {
-                blockObstructed = !(Arrays.binarySearch(FALL_THROUGH_BLOCKS, testMaterial) >= 0);
+                blockObstructed = !FALL_THROUGH_BLOCKS.contains(testMaterial);
             } else {
                 if (Settings.IsLegacy) {
                     blockObstructed = !craft.getType().getPassthroughBlocks().contains(testMaterial) && !testMaterial.equals(Material.AIR);
@@ -186,10 +241,11 @@ public class TranslationTask extends AsyncTask {
                     toRemove.add(next);
                     next = next.add(new MovecraftLocation(0,1,0));
                 }while (newHitBox.contains(next));
-
+                craft.getCollapsedHitBox().addAll(toRemove);
                 newHitBox.removeAll(toRemove);
-            }
 
+            }
+            Bukkit.getLogger().info("Collapsed hitbox: "+craft.getCollapsedHitBox().size() + ", New hitbox: " + newHitBox.size());
         }else{
             for(MovecraftLocation location : collisionBox){
                 if (!(craft.getType().getCollisionExplosion() != 0.0F) || System.currentTimeMillis() - craft.getOrigPilotTime() <= 1000) {
@@ -393,6 +449,7 @@ public class TranslationTask extends AsyncTask {
             if (b.getState() instanceof Furnace) {
                     InventoryHolder inventoryHolder = (InventoryHolder) b.getState();
                     for (Material fuelType : Settings.FuelTypes.keySet()){
+                        Movecraft.getInstance().getLogger().info(b.getLocation().toString());
                         if (inventoryHolder.getInventory().contains(fuelType)){
                             fuelHolder = b;
                         }

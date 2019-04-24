@@ -4,14 +4,17 @@ import com.sk89q.worldguard.domains.DefaultDomain;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.countercraft.movecraft.Movecraft;
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.utils.HashHitBox;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.utils.WorldguardUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Sound;
 import org.bukkit.boss.BarColor;
 import org.bukkit.entity.Player;
+import org.bukkit.scoreboard.Objective;
 
 public class SiegeProgressTask extends SiegeTask {
 
@@ -29,11 +32,7 @@ public class SiegeProgressTask extends SiegeTask {
         //Allows the siege leader to not pilot a craft without having an NPE generated
         if (siegeCraft == null){
             siegeLeaderPilotingShip = false;
-        } else if (siege.getCraftsToWin().contains(siegeCraft.getType().getCraftName())){
-            siegeLeaderPilotingShip = true;
-        } else {
-            siegeLeaderPilotingShip = false;
-        }
+        } else siegeLeaderPilotingShip = siege.getCraftsToWin().contains(siegeCraft.getType().getCraftName());
         int midX = 0;
         int midY = 0;
         int midZ = 0;
@@ -46,23 +45,25 @@ public class SiegeProgressTask extends SiegeTask {
             siegeLeaderShipInRegion = manager.getRegion(siege.getAttackRegion()).contains(midX, midY, midZ);
 
         }
+        if (Settings.KOTHSiege){
+
+        }
 
 
-
+        int timeLeft = (siege.getDuration() - (((int)System.currentTimeMillis() - siege.getStartTime())/1000));
         double progress = (double) ((((int)System.currentTimeMillis() - siege.getStartTime())/1000) - siege.getDelayBeforeStart()) / (double) (siege.getDuration() - siege.getDelayBeforeStart());
-        if (progress <= 1.0 && progress >= 0.0) { //Make sure progress is between 0.0 and 1.0 when it is registered to the progressbar
-            siege.getProgressBar().setProgress(progress);
-        }
-        if (siegeLeaderShipInRegion){
-            siege.getProgressBar().setColor(BarColor.GREEN);
-        } else {
-            siege.getProgressBar().setColor(BarColor.RED);
-        }
-        if ((siege.getDuration() - ((System.currentTimeMillis() - siege.getStartTime()) / 1000)) % 60 != 0) {
+        Objective status = siege.getScoreboard().getObjective("shipInRegion");
+        Objective time = siege.getScoreboard().getObjective("timeLeft");
+        String statusText = (siegeLeaderShipInRegion ? ChatColor.GREEN : ChatColor.RED) + "Ship is " + (siegeLeaderShipInRegion ? "" : "not ") + " in siege region!";
+        status.setDisplayName(statusText);
+        int hours = (timeLeft / 1000) / 3600;
+        int minutes = (timeLeft / 1000) / 60 - hours * 60;
+        int seconds = (timeLeft / 1000) - minutes * 60;
+        time.setDisplayName(String.format("Time left: %2d:%2d:%2d",hours,minutes,seconds));
+        if (timeLeft % 60 != 0) {
             return;
         }
-        int timeLeft = (siege.getDuration() - (((int)System.currentTimeMillis() - siege.getStartTime())/1000));
-        Bukkit.getPlayer(siege.getPlayerUUID()).sendMessage(String.valueOf(timeLeft));
+
         if (timeLeft > 10) {
             if (siegeLeaderShipInRegion) {
                 Bukkit.getServer().broadcastMessage(String.format(
@@ -106,7 +107,6 @@ public class SiegeProgressTask extends SiegeTask {
                                 .replaceAll("%l", siegeLeader.toString()));
                     }
             }
-            siege.getProgressBar().setVisible(false);
             siege.setStage(SiegeStage.INACTIVE);
         }
         for (Player p : Bukkit.getOnlinePlayers()){

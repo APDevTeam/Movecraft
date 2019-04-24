@@ -1,33 +1,30 @@
-package net.countercraft.movecraft.compat.v1_12_R1;
+package net.countercraft.movecraft.compat.v1_14_R1;
 
-import net.countercraft.movecraft.config.Settings;
-import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
-import net.countercraft.movecraft.utils.CollectionUtils;
 import net.countercraft.movecraft.WorldHandler;
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
-import net.minecraft.server.v1_12_R1.*;
-import org.bukkit.Bukkit;
+import net.countercraft.movecraft.utils.CollectionUtils;
+import net.countercraft.movecraft.utils.MathUtils;
+
+import net.minecraft.server.v1_14_R1.*;
+
+import org.bukkit.craftbukkit.v1_14_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_14_R1.block.CraftBlockState;
+import org.bukkit.craftbukkit.v1_14_R1.util.CraftMagicNumbers;
+
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_12_R1.block.CraftBlockState;
-import org.bukkit.craftbukkit.v1_12_R1.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_12_R1.util.CraftMagicNumbers;
-import org.bukkit.entity.Player;
-import org.bukkit.event.player.PlayerMoveEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 
-@SuppressWarnings("unused")
 public class IWorldHandler extends WorldHandler {
     private static final EnumBlockRotation ROTATION[];
     static {
@@ -37,7 +34,7 @@ public class IWorldHandler extends WorldHandler {
         ROTATION[Rotation.ANTICLOCKWISE.ordinal()] = EnumBlockRotation.COUNTERCLOCKWISE_90;
     }
     private final NextTickProvider tickProvider = new NextTickProvider();
-    private final HashMap<World,List<TileEntity>> bMap = new HashMap<>();
+    private final HashMap<World, List<TileEntity>> bMap = new HashMap<>();
     private MethodHandle internalTeleportMH;
 
     public IWorldHandler() {
@@ -50,24 +47,6 @@ public class IWorldHandler extends WorldHandler {
 
         } catch (NoSuchMethodException | IllegalAccessException e) {
             e.printStackTrace();
-        }
-    }
-
-    @Override
-    public void addPlayerLocation(Player player, double x, double y, double z, float yaw, float pitch){
-        EntityPlayer ePlayer = ((CraftPlayer) player).getHandle();
-        if(internalTeleportMH == null) {
-            //something went wrong
-            super.addPlayerLocation(player, x, y, z, yaw, pitch);
-            return;
-        }
-        try {
-            final Location oldLoc = player.getLocation().clone();
-            final Location newLoc = player.getLocation().add(x,y,z);
-            internalTeleportMH.invoke(ePlayer.playerConnection, x, y, z, yaw, pitch, EnumSet.allOf(PacketPlayOutPosition.EnumPlayerTeleportFlags.class));
-            Bukkit.getServer().getPluginManager().callEvent(new PlayerMoveEvent(player,oldLoc,newLoc));
-        } catch (Throwable throwable) {
-            throwable.printStackTrace();
         }
     }
 
@@ -124,7 +103,9 @@ public class IWorldHandler extends WorldHandler {
             if(tileHolder.getNextTick()==null)
                 continue;
             final long currentTime = nativeWorld.worldData.getTime();
-            nativeWorld.b(rotatedPositions.get(tileHolder.getNextTick().a), tileHolder.getNextTick().a(), (int) (tileHolder.getNextTick().b - currentTime), tileHolder.getNextTick().c);
+            //nativeWorld.b(rotatedPositions.get(tileHolder.getNextTick().a), tileHolder.getNextTick().a(), (int) (tileHolder.getNextTick().b - currentTime), tileHolder.getNextTick().c);
+            //BlockPosition, Object, int, TickListPriority
+            nativeWorld.b(rotatedPositions.get(tileHolder.getNextTick().a), tileHolder.getTile());
         }
 
         //*******************************************
@@ -140,10 +121,12 @@ public class IWorldHandler extends WorldHandler {
         //*       Step six: Update the blocks       *
         //*******************************************
         for(BlockPosition newPosition : rotatedPositions.values()) {
-            CraftBlockState.getBlockState(nativeWorld,newPosition.getX(), newPosition.getY(), newPosition.getZ()).update(false,false);
+            // CraftBlockState.getBlockState(nativeWorld,newPosition.getX(), newPosition.getY(), newPosition.getZ()).update(false,false);
+            CraftBlockState.getBlockState(nativeWorld, newPosition, 3).update(false, false);
         }
         for(BlockPosition deletedPosition : deletePositions){
-            CraftBlockState.getBlockState(nativeWorld,deletedPosition.getX(), deletedPosition.getY(), deletedPosition.getZ()).update(false,false);
+            // CraftBlockState.getBlockState(nativeWorld,deletedPosition.getX(), deletedPosition.getY(), deletedPosition.getZ()).update(false,false);
+            CraftBlockState.getBlockState(nativeWorld, deletedPosition, 3).update(false, false);
         }
         //*******************************************
         //*       Step seven: Send to players       *
@@ -226,7 +209,8 @@ public class IWorldHandler extends WorldHandler {
             if(tileHolder.getNextTick()==null)
                 continue;
             final long currentTime = nativeWorld.worldData.getTime();
-            nativeWorld.b(tileHolder.getNextTick().a.a(translateVector), tileHolder.getNextTick().a(), (int) (tileHolder.getNextTick().b - currentTime), tileHolder.getNextTick().c);
+            //nativeWorld.b(tileHolder.getNextTick().a.a(translateVector), tileHolder.getNextTick().a(), (int) (tileHolder.getNextTick().b - currentTime), tileHolder.getNextTick().c);
+            nativeWorld.b(tileHolder.getNextTick().a.a(translateVector), tileHolder.getTile());
         }
         //*******************************************
         //*   Step five: Destroy the leftovers      *
@@ -240,10 +224,10 @@ public class IWorldHandler extends WorldHandler {
         //*       Step six: Update the blocks       *
         //*******************************************
         for(BlockPosition newPosition : newPositions) {
-            CraftBlockState.getBlockState(nativeWorld,newPosition.getX(), newPosition.getY(), newPosition.getZ()).update(false,false);
+            CraftBlockState.getBlockState(nativeWorld, newPosition, 3).update(false,false);
         }
         for(BlockPosition deletedPosition : deletePositions){
-            CraftBlockState.getBlockState(nativeWorld,deletedPosition.getX(), deletedPosition.getY(), deletedPosition.getZ()).update(false,false);
+            CraftBlockState.getBlockState(nativeWorld, deletedPosition, 3).update(false,false);
         }
         //*******************************************
         //*       Step seven: Send to players       *
@@ -277,9 +261,9 @@ public class IWorldHandler extends WorldHandler {
         world.tileEntityListTick.remove(tile);
         if(!bMap.containsKey(world)){
             try {
-                Field bField = World.class.getDeclaredField("b");
+                Field bField = World.class.getDeclaredField("c");
                 bField.setAccessible(true);
-                bMap.put(world, (List<TileEntity>) bField.get(world));
+                bMap.put(world, (List<TileEntity>) bField.get(world));//TODO bug fix
             } catch (IllegalAccessException | IllegalArgumentException | NoSuchFieldException | SecurityException e1) {
                 e1.printStackTrace();
             }
@@ -298,8 +282,9 @@ public class IWorldHandler extends WorldHandler {
         ChunkSection chunkSection = chunk.getSections()[position.getY()>>4];
         if (chunkSection == null) {
             // Put a GLASS block to initialize the section. It will be replaced next with the real block.
-            chunk.a(position, Blocks.GLASS.getBlockData());
+            chunk.setType(position, Blocks.GLASS.getBlockData(), true);
             chunkSection = chunk.getSections()[position.getY() >> 4];
+
         }
 
         chunkSection.setType(position.getX()&15, position.getY()&15, position.getZ()&15, data);
@@ -312,7 +297,7 @@ public class IWorldHandler extends WorldHandler {
 
     @Override
     public void setBlockFast(@NotNull Location location, @NotNull Rotation rotation, @NotNull Material material, byte data) {
-        IBlockData blockData =  CraftMagicNumbers.getBlock(material).fromLegacyData(data);
+        IBlockData blockData =  CraftMagicNumbers.getBlock(material).getBlockData();
         blockData = blockData.a(ROTATION[rotation.ordinal()]);
         World world = ((CraftWorld)(location.getWorld())).getHandle();
         BlockPosition blockPosition = locationToPosition(bukkit2MovecraftLoc(location));
@@ -322,15 +307,15 @@ public class IWorldHandler extends WorldHandler {
     @Override
     public void disableShadow(@NotNull Material type) {
         Method method;
-        try {
-            Block tempBlock = CraftMagicNumbers.getBlock(type.getId());
-            method = Block.class.getDeclaredMethod("e", int.class);
-            method.setAccessible(true);
-            method.invoke(tempBlock, 0);
-        } catch (NoSuchMethodException | InvocationTargetException | IllegalArgumentException | IllegalAccessException | SecurityException e1) {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
-        }
+        //try {
+        Block tempBlock = CraftMagicNumbers.getBlock(type);
+        //method = Block.class.getDeclaredMethod("d", int.class);
+        //method.setAccessible(true);
+        //method.invoke(tempBlock, 0);
+        //} catch (NoSuchMethodException | InvocationTargetException | IllegalArgumentException | IllegalAccessException | SecurityException e1) {
+        // TODO Auto-generated catch block
+        //    e1.printStackTrace();
+        //}
     }
 
     private static MovecraftLocation bukkit2MovecraftLoc(Location l) {
@@ -341,7 +326,7 @@ public class IWorldHandler extends WorldHandler {
         Chunk chunk = nativeWorld.getChunkAtWorldCoords(newPosition);
         tile.invalidateBlockCache();
         if(nativeWorld.captureBlockStates) {
-            tile.a(nativeWorld);
+            tile.setWorld(nativeWorld);
             tile.setPosition(newPosition);
             nativeWorld.capturedTileEntities.put(newPosition, tile);
             return;

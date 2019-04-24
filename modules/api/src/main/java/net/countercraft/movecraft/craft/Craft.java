@@ -43,6 +43,7 @@ public abstract class Craft {
     //protected int[][][] hitBox;
     //protected MovecraftLocation[] blockList;
     @NotNull protected HashHitBox hitBox;
+    @NotNull protected final HashHitBox collapsedHitBox;
 
     @NotNull protected World w;
     @NotNull private final AtomicBoolean processing = new AtomicBoolean();
@@ -70,12 +71,13 @@ public abstract class Craft {
     private int numMoves;
     @NotNull private final Map<MovecraftLocation,Material> phaseBlocks = new HashMap<>();
     @NotNull private final HashMap<UUID, Location> crewSigns = new HashMap<>();
-    @NotNull private String uniqueName = "";
+    @NotNull private String name = "";
 
     public Craft(@NotNull CraftType type, @NotNull World world) {
         this.type = type;
         this.w = world;
         this.hitBox = new HashHitBox();
+        this.collapsedHitBox = new HashHitBox();
         if (type.getMaxHeightLimit() > w.getMaxHeight() - 1) {
             this.maxHeightLimit = w.getMaxHeight() - 1;
         } else {
@@ -413,15 +415,19 @@ public abstract class Craft {
     }
 
     @NotNull
+    public final HashHitBox getCollapsedHitBox(){
+        return collapsedHitBox;
+    }
+    @NotNull
     public Map<UUID, Location> getCrewSigns(){
         return crewSigns;
     }
 
     @NotNull
     public String getUniqueName(){
-        return uniqueName;
+        return name;
     }
-    public void setUniqueName(String uniqueName){
-        this.uniqueName = uniqueName;
+    public void setUniqueName(String name){
+        this.name = name;
     }
 }

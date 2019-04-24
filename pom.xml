@@ -9,7 +9,7 @@
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
-            <version>1.13.2-R0.1-SNAPSHOT</version>
+            <version>1.14-pre5-SNAPSHOT</version>
         </dependency>
     </dependencies>
     <name>Movecraft Parent Pom</name>
@@ -24,9 +24,11 @@
         <module>modules/v1_11_R1</module>
         <module>modules/v1_12_R1</module>
         <module>modules/v1_13_R2</module>
+        <module>modules/v1_14_R1</module>
         <module>modules/worldedit/WE6Utils</module>
         <module>modules/worldedit/WE7Utils</module>
         <module>modules/Movecraft</module>
+
 
 
     </modules>

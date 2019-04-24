@@ -2,7 +2,7 @@ name: SubAirship
 maxSize: 5000
 minSize: 1000
 allowedBlocks:
-        #beds
+#beds
         - WHITE_BED
         - ORANGE_BED
         - MAGENTA_BED
@@ -125,9 +125,7 @@ allowedBlocks:
         - IRON_BARS
         - LADDER
         - NETHER_BRICKS
-        - SIGN
         - TORCH
-        - WALL_SIGN
         - WALL_TORCH
         #planks
         - ACACIA_PLANKS
@@ -159,6 +157,19 @@ allowedBlocks:
         - REDSTONE_WALL_TORCH
         - STICKY_PISTON
         - TRIPWIRE_HOOK
+        #signs
+        - ACACIA_SIGN
+        - ACACIA_WALL_SIGN
+        - BIRCH_SIGN
+        - BIRCH_WALL_SIGN
+        - DARK_OAK_SIGN
+        - DARK_OAK_WALL_SIGN
+        - JUNGLE_SIGN
+        - JUNGLE_WALL_SIGN
+        - OAK_SIGN
+        - OAK_WALL_SIGN
+        - SPRUCE_SIGN
+        - SPRUCE_WALL_SIGN
         #slabs
         - ACACIA_SLAB
         - BIRCH_SLAB

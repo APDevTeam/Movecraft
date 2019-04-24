@@ -129,24 +129,7 @@ public class RepairSign implements Listener{
             event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("You must be piloting a craft"));
             return;
         }
-        Set<Sign> foundSimilarSigns = new HashSet<>();
-        for (MovecraftLocation moveLoc : pCraft.getHitBox()){
-            Block cBlock = moveLoc.toBukkit(sign.getWorld()).getBlock();
-            if (!(cBlock.getState() instanceof Sign))
-                continue;
-            Sign foundSign = (Sign) cBlock.getState();
-            if (foundSign.getLocation().equals(sign.getLocation()))
-                continue;
-            if (!foundSign.getLine(0).equalsIgnoreCase(HEADER) && !foundSign.getLine(1).equals(sign.getLine(1)))
-                continue;
-            foundSimilarSigns.add(foundSign);
-        }
-        if (foundSimilarSigns.size() > 0){
-            event.getPlayer().sendMessage("Warning: Similar repair signs found at these locations:");
-            for (Sign s : foundSimilarSigns)
-                event.getPlayer().sendMessage("- (" + s.getX() + ", " + s.getY() + ", " + s.getX() + ")");
-            return;
-        }
+
         MovecraftRepair movecraftRepair = Movecraft.getInstance().getMovecraftRepair();
         if (movecraftRepair.saveCraftRepairState(pCraft, sign, Movecraft.getInstance(), repairName))
             event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("State saved"));
@@ -171,32 +154,11 @@ public class RepairSign implements Listener{
             event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Repair functionality is disabled or WorldEdit was not detected"));
             return;
         }
-        //Check for other similar repair signs on the craft
-        Set<Sign> foundSimilarSigns = new HashSet<>();
-        for (MovecraftLocation moveLoc : pCraft.getHitBox()){
-            Block cBlock = moveLoc.toBukkit(sign.getWorld()).getBlock();
-            if (!(cBlock.getState() instanceof Sign))
-                continue;
-            Sign foundSign = (Sign) cBlock.getState();
-            //Do not include clicked repair sign
-            if (foundSign.getLocation().equals(sign.getLocation()))
-                continue;
-            if (!foundSign.getLine(0).equalsIgnoreCase(HEADER) && !foundSign.getLine(1).equals(sign.getLine(1)))
-                continue;
-            foundSimilarSigns.add(foundSign);
-        }
-        //Warn the player if multiple similar repair signs are found
-        if (foundSimilarSigns.size() > 0){
-            event.getPlayer().sendMessage("Warning: Similar repair signs found at these locations:");
-            for (Sign s : foundSimilarSigns)
-                event.getPlayer().sendMessage("- (" + s.getX() + ", " + s.getY() + ", " + s.getX() + ")");
-            return;
-        }
         String repairName = event.getPlayer().getName();
         repairName += "_";
         repairName += sign.getLine(1);
         MovecraftRepair movecraftRepair = Movecraft.getInstance().getMovecraftRepair();
-        Clipboard clipboard = movecraftRepair.loadCraftRepairStateClipboard(Movecraft.getInstance(), sign, repairName, world);
+        Clipboard clipboard = movecraftRepair.loadCraftRepairStateClipboard(Movecraft.getInstance(),pCraft, sign, repairName, world);
 
 
         if (clipboard == null){
@@ -210,7 +172,7 @@ public class RepairSign implements Listener{
                 }
             }
             HashMap<Material, Double> numMissingItems = movecraftRepair.getMissingBlocks(repairName);
-            LinkedList<Vector> locMissingBlocks = movecraftRepair.getMissingBlockLocations(repairName);
+            ArrayDeque<Vector> locMissingBlocks = movecraftRepair.getMissingBlockLocations(repairName);
             int totalSize = locMissingBlocks.size() + pCraft.getHitBox().size();
 
             if (secondClick){
@@ -273,19 +235,20 @@ public class RepairSign implements Listener{
                     }
 
                     double Cost = numDifferentBlocks * Settings.RepairMoneyPerBlock;
-                    Bukkit.getLogger().info(event.getPlayer().getName() + " has begun a repair with the cost of " + String.valueOf(Cost));
+                    Movecraft.getInstance().getLogger().info(event.getPlayer().getName() + " has begun a repair with the cost of " + Cost);
                     final LinkedList<UpdateCommand> updateCommands = new LinkedList<>();
                     final LinkedList<UpdateCommand> updateCommandsFragileBlocks = new LinkedList<>();
-                    final org.bukkit.util.Vector distToOffset = movecraftRepair.getDistanceFromSignToLowestPoint(clipboard, sign.getLine(1));
+                    final org.bukkit.util.Vector distToOffset = movecraftRepair.getDistanceFromSignToLowestPoint(clipboard);
                     final org.bukkit.util.Vector offsetFromSign = new org.bukkit.util.Vector(sign.getLocation().getBlockX() - distToOffset.getBlockX(), sign.getLocation().getBlockY() - distToOffset.getBlockY(), sign.getLocation().getBlockZ() - distToOffset.getBlockZ());
-                    final org.bukkit.util.Vector distance = movecraftRepair.getDistanceFromClipboardToWorldOffset(offsetFromSign, clipboard);
-
+                    final org.bukkit.util.Vector distance = movecraftRepair.getDistance(repairName);
+                    Bukkit.broadcastMessage(distToOffset.toString());
                     while (!locMissingBlocks.isEmpty()){
-                        Vector cLoc = locMissingBlocks.pop();
-                        MovecraftLocation moveLoc = new MovecraftLocation(cLoc.getBlockX() + distance.getBlockX(), cLoc.getBlockY() + distance.getBlockY(), cLoc.getBlockZ() + distance.getBlockZ());
+                        Vector cLoc = locMissingBlocks.pollFirst();
+                        Vector clipBoardLoc = cLoc.add(movecraftRepair.getDistance(repairName));
+                        MovecraftLocation moveLoc = new MovecraftLocation(cLoc.getBlockX(), cLoc.getBlockY(), cLoc.getBlockZ());
                         //To avoid any issues during the repair, keep certain blocks in different linked lists
                         if (Settings.IsLegacy) {
-                            BaseBlock baseBlock = RepairUtils.getBlock(clipboard, WorldEditUtils.toWeVector(cLoc));
+                            BaseBlock baseBlock = RepairUtils.getBlock(clipboard, WorldEditUtils.toWeVector(clipBoardLoc));
                             if (Arrays.binarySearch(fragileBlocks, LegacyUtils.getMaterial(baseBlock.getType())) >= 0) {
                                 WorldEditUpdateCommand updateCommand = new WorldEditUpdateCommand(baseBlock, sign.getWorld(), moveLoc, LegacyUtils.getMaterial(baseBlock.getType()), (byte) baseBlock.getData());
                                 updateCommandsFragileBlocks.add(updateCommand);
@@ -294,7 +257,7 @@ public class RepairSign implements Listener{
                                 updateCommands.add(updateCommand);
                             }
                         } else {
-                            com.sk89q.worldedit.world.block.BaseBlock bb = clipboard.getFullBlock(WorldEditUtils.toBlockVector(cLoc));
+                            com.sk89q.worldedit.world.block.BaseBlock bb = clipboard.getFullBlock(WorldEditUtils.toBlockVector(clipBoardLoc));
                             Material type = BukkitAdapter.adapt(bb.getBlockType());
                             if (type.name().contains("WALL")){
                                 WorldEdit7UpdateCommand weUp = new WorldEdit7UpdateCommand(bb,sign.getWorld(),moveLoc, type);
