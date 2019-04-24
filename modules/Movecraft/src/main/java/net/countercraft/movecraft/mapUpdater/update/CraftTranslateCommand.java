@@ -155,6 +155,9 @@ public class CraftTranslateCommand extends UpdateCommand {
                 if (!craft.getPhaseBlocks().containsKey(location)) {
                     continue;
                 }
+                //Do not place if it is at a collapsed HitBox location
+                if (craft.getCollapsedHitBox().contains(location))
+                    continue;
                 handler.setBlockFast(location.toBukkit(craft.getW()), craft.getPhaseBlocks().get(location), (byte) 0);
                 craft.getPhaseBlocks().remove(location);
             }

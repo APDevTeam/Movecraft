@@ -173,7 +173,7 @@ public class TranslationTask extends AsyncTask {
                     toRemove.add(next);
                     next = next.add(new MovecraftLocation(0,1,0));
                 }while (newHitBox.contains(next));
-
+                craft.getCollapsedHitBox().addAll(toRemove);
                 newHitBox.removeAll(toRemove);
             }
 
