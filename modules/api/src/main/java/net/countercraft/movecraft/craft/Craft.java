@@ -41,6 +41,7 @@ public abstract class Craft {
     //protected int[][][] hitBox;
     //protected MovecraftLocation[] blockList;
     @NotNull protected HashHitBox hitBox;
+    @NotNull protected final HashHitBox collapsedHitBox;
 
     @NotNull protected World w;
     @NotNull private final AtomicBoolean processing = new AtomicBoolean();
@@ -74,6 +75,7 @@ public abstract class Craft {
         this.type = type;
         this.w = world;
         this.hitBox = new HashHitBox();
+        this.collapsedHitBox = new HashHitBox();
         if (type.getMaxHeightLimit() > w.getMaxHeight() - 1) {
             this.maxHeightLimit = w.getMaxHeight() - 1;
         } else {
@@ -421,5 +423,10 @@ public abstract class Craft {
 
     public void setName(@NotNull String name) {
         this.name = name;
+    }
+
+    @NotNull
+    public HashHitBox getCollapsedHitBox() {
+        return collapsedHitBox;
     }
 }
