@@ -34,6 +34,7 @@ import net.countercraft.movecraft.listener.PlayerListener;
 import net.countercraft.movecraft.listener.WorldEditInteractListener;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
+import net.countercraft.movecraft.repair.RepairManager;
 import net.countercraft.movecraft.sign.*;
 import net.countercraft.movecraft.utils.TownyUtils;
 import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
@@ -82,6 +83,7 @@ public class Movecraft extends JavaPlugin {
     private AsyncManager asyncManager;
     private AssaultManager assaultManager;
     private SiegeManager siegeManager;
+    private RepairManager repairManager;
 
     public static synchronized Movecraft getInstance() {
         return instance;
@@ -379,7 +381,9 @@ public class Movecraft extends JavaPlugin {
 
             getServer().getPluginManager().registerEvents(new InteractListener(), this);
             if (worldEditPlugin != null) {
-                getServer().getPluginManager().registerEvents(new WorldEditInteractListener(), this);
+                repairManager = new RepairManager();
+                repairManager.runTaskTimerAsynchronously(this,0,1);
+                getServer().getPluginManager().registerEvents(new RepairSign(), this);
             }
             this.getCommand("movecraft").setExecutor(new MovecraftCommand());
             this.getCommand("release").setExecutor(new ReleaseCommand());
@@ -474,6 +478,7 @@ public class Movecraft extends JavaPlugin {
     }
 
     public AsyncManager getAsyncManager(){return asyncManager;}
+
 
 }
 

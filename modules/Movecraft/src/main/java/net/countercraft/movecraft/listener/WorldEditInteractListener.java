@@ -60,7 +60,7 @@ import java.util.*;
 
 //import com.sk89q.worldedit.blocks.BaseBlock;
 //import com.sk89q.worldedit.world.DataException;
-
+@Deprecated
 public class WorldEditInteractListener implements Listener {
     private static final Map<Player, Long> timeMap = new HashMap<>();
     private static final Map<Player, Long> repairRightClickTimeMap = new HashMap<>();
