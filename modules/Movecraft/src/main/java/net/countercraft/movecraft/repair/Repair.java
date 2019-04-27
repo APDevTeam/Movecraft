@@ -19,7 +19,8 @@ public final class Repair {
     private final Craft craft;
     private final LinkedList<UpdateCommand> updateCommands, fragileBlockUpdateCommands;
     private final UUID playerUUID;
-    private final long missingBlocks, durationInTicks, ticksSinceStart;
+    private final long missingBlocks, durationInTicks;
+    private long ticksSinceStart;
     private final  BossBar progressBar;
     private final Location signLoc;
     private final AtomicBoolean running = new AtomicBoolean(true);
@@ -61,6 +62,9 @@ public final class Repair {
         return signLoc;
     }
 
+    public void setTicksSinceStart(long ticksSinceStart){
+        this.ticksSinceStart = ticksSinceStart;
+    }
 
     public Craft getCraft() {
         return craft;
