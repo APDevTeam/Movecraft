@@ -11,6 +11,8 @@ import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.WorldEditUpdateCommand;
+import net.countercraft.movecraft.repair.Repair;
+import net.countercraft.movecraft.repair.RepairManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -212,26 +214,14 @@ public class RepairSign implements Listener{
                         Vector clipBoardLoc = cLoc.add(movecraftRepair.getDistance(repairName));
                         MovecraftLocation moveLoc = new MovecraftLocation(cLoc.getBlockX(), cLoc.getBlockY(), cLoc.getBlockZ());
                         //To avoid any issues during the repair, keep certain blocks in different linked lists
-                        if (Settings.IsLegacy) {
                             BaseBlock baseBlock = RepairUtils.getBlock(clipboard, WorldEditUtils.toWeVector(clipBoardLoc));
-                            if (Arrays.binarySearch(fragileBlocks, LegacyUtils.getMaterial(baseBlock.getType())) >= 0) {
+                            if (Arrays.binarySearch(fragileBlocks, Material.getMaterial(baseBlock.getType())) >= 0) {
                                 WorldEditUpdateCommand updateCommand = new WorldEditUpdateCommand(baseBlock, sign.getWorld(), moveLoc, LegacyUtils.getMaterial(baseBlock.getType()), (byte) baseBlock.getData());
                                 updateCommandsFragileBlocks.add(updateCommand);
                             } else {
                                 WorldEditUpdateCommand updateCommand = new WorldEditUpdateCommand(baseBlock, sign.getWorld(), moveLoc, LegacyUtils.getMaterial(baseBlock.getType()), (byte) baseBlock.getData());
                                 updateCommands.add(updateCommand);
                             }
-                        } else {
-                            com.sk89q.worldedit.world.block.BaseBlock bb = clipboard.getFullBlock(WorldEditUtils.toBlockVector(clipBoardLoc));
-                            Material type = BukkitAdapter.adapt(bb.getBlockType());
-                            if (type.name().contains("WALL")){
-                                WorldEdit7UpdateCommand weUp = new WorldEdit7UpdateCommand(bb,sign.getWorld(),moveLoc, type);
-                                updateCommandsFragileBlocks.add(weUp);
-                            } else {
-                                WorldEdit7UpdateCommand weUp = new WorldEdit7UpdateCommand(bb,sign.getWorld(),moveLoc, type);
-                                updateCommands.add(weUp);
-                            }
-                        }
 
                     }
                     if (updateCommands.size() > 0) {
