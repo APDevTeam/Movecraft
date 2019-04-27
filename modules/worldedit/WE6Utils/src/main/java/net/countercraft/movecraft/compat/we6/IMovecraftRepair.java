@@ -60,7 +60,6 @@ public class IMovecraftRepair  extends MovecraftRepair {
         if (!saveDirectory.exists()) {
             saveDirectory.mkdirs();
         }
-        com.sk89q.worldedit.Vector origin = new com.sk89q.worldedit.Vector(sign.getX(), sign.getY(), sign.getZ());
         com.sk89q.worldedit.Vector minPos = new com.sk89q.worldedit.Vector(hitBox.getMinX(), hitBox.getMinY(), hitBox.getMinZ());
         com.sk89q.worldedit.Vector maxPos = new com.sk89q.worldedit.Vector(hitBox.getMaxX(), hitBox.getMaxY(), hitBox.getMaxZ());
         CuboidRegion cRegion = new CuboidRegion(minPos, maxPos);
@@ -164,6 +163,7 @@ public class IMovecraftRepair  extends MovecraftRepair {
             HashMap<Material, Double> missingBlocks = new HashMap<>();
             ArrayDeque<Vector> locMissingBlocks = new ArrayDeque<>();
             Vector distance = new Vector(sign.getX() - hitBox.getMinX(), sign.getY() - hitBox.getMinY(), sign.getZ() - hitBox.getMinZ());
+            Bukkit.broadcastMessage(distance.toString());
             if (distanceMap.containsKey(repairStateFile)) {
                 distanceMap.replace(repairStateFile, distance);
             } else {
@@ -173,7 +173,8 @@ public class IMovecraftRepair  extends MovecraftRepair {
                 for (int y = clipboard.getMinimumPoint().getBlockY(); y <= clipboard.getMaximumPoint().getBlockY(); y++) {
                     for (int z = clipboard.getMinimumPoint().getBlockZ(); z <= clipboard.getMaximumPoint().getBlockZ(); z++) {
                         com.sk89q.worldedit.Vector position = new com.sk89q.worldedit.Vector(x, y, z);
-                        Location bukkitLoc = new Location(sign.getWorld(), x + distance.getBlockX(), y + distance.getBlockY(), z + distance.getBlockZ());
+                        Location bukkitLoc = new Location(sign.getWorld(), x - distance.getBlockX(), y - distance.getBlockY(), z - distance.getBlockZ());
+                        Bukkit.getLogger().info(bukkitLoc.toVector().toString() + " : " + position.toString());
                         BaseBlock block = clipboard.getBlock(position);
                         Block bukkitBlock = sign.getWorld().getBlockAt(bukkitLoc);
                         boolean isImportant = true;
