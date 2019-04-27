@@ -1,5 +1,32 @@
 package net.countercraft.movecraft.compat.we6;
 
+import com.sk89q.jnbt.CompoundTag;
+import com.sk89q.jnbt.ListTag;
+import com.sk89q.jnbt.Tag;
+import com.sk89q.worldedit.MaxChangedBlocksException;
+import com.sk89q.worldedit.WorldEdit;
+import com.sk89q.worldedit.blocks.BaseBlock;
+import com.sk89q.worldedit.bukkit.BukkitWorld;
+import com.sk89q.worldedit.extent.Extent;
+import com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard;
+import com.sk89q.worldedit.extent.clipboard.Clipboard;
+import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormat;
+import com.sk89q.worldedit.extent.clipboard.io.ClipboardWriter;
+import com.sk89q.worldedit.function.mask.BlockMask;
+import com.sk89q.worldedit.function.operation.ForwardExtentCopy;
+import com.sk89q.worldedit.function.operation.Operations;
+import com.sk89q.worldedit.regions.CuboidRegion;
+import com.sk89q.worldedit.regions.Polygonal2DRegion;
+import com.sk89q.worldedit.regions.Region;
+import com.sk89q.worldedit.world.registry.WorldData;
+import com.sk89q.worldguard.protection.regions.ProtectedCuboidRegion;
+import com.sk89q.worldguard.protection.regions.ProtectedPolygonalRegion;
+import com.sk89q.worldguard.protection.regions.ProtectedRegion;
+import net.countercraft.movecraft.MovecraftLocation;
+import net.countercraft.movecraft.MovecraftRepair;
+import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.utils.HashHitBox;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -24,16 +51,16 @@ public class IMovecraftRepair  extends MovecraftRepair {
     private final HashMap<String, Vector> distanceMap = new HashMap<>();
 
     @Override
-    public boolean saveCraftRepairState (Craft craft, Sign sign, Plugin plugin, String s) {
+    public boolean saveCraftRepairState(Craft craft, Sign sign, Plugin plugin, String s) {
         HashHitBox hitBox = craft.getHitBox();
         File saveDirectory = new File(plugin.getDataFolder(), "CraftRepairStates");
         World world = craft.getW();
         com.sk89q.worldedit.world.World weWorld = new BukkitWorld(world);
         WorldData worldData = weWorld.getWorldData();
-        if (!saveDirectory.exists()){
+        if (!saveDirectory.exists()) {
             saveDirectory.mkdirs();
         }
-        com.sk89q.worldedit.Vector origin = new com.sk89q.worldedit.Vector(sign.getX(),sign.getY(),sign.getZ());
+        com.sk89q.worldedit.Vector origin = new com.sk89q.worldedit.Vector(sign.getX(), sign.getY(), sign.getZ());
         com.sk89q.worldedit.Vector minPos = new com.sk89q.worldedit.Vector(hitBox.getMinX(), hitBox.getMinY(), hitBox.getMinZ());
         com.sk89q.worldedit.Vector maxPos = new com.sk89q.worldedit.Vector(hitBox.getMaxX(), hitBox.getMaxY(), hitBox.getMaxZ());
         CuboidRegion cRegion = new CuboidRegion(minPos, maxPos);
@@ -69,29 +96,28 @@ public class IMovecraftRepair  extends MovecraftRepair {
         WorldData worldData = weWorld.getWorldData();
         com.sk89q.worldedit.Vector weMinPos = region.getMinimumPoint();
         com.sk89q.worldedit.Vector weMaxPos = region.getMaximumPoint();
-        if (!saveDirectory.exists()){
+        if (!saveDirectory.exists()) {
             saveDirectory.mkdirs();
         }
         Set<BaseBlock> baseBlockSet = new HashSet<>();
         Region weRegion = null;
-        if (region instanceof ProtectedCuboidRegion){
+        if (region instanceof ProtectedCuboidRegion) {
             weRegion = new CuboidRegion(weMinPos, weMaxPos);
-        } else if (region instanceof ProtectedPolygonalRegion){
+        } else if (region instanceof ProtectedPolygonalRegion) {
             ProtectedPolygonalRegion polyReg = (ProtectedPolygonalRegion) region;
-            weRegion = new Polygonal2DRegion(weWorld,polyReg.getPoints(),polyReg.getMinimumPoint().getBlockY(),polyReg.getMaximumPoint().getBlockY());
+            weRegion = new Polygonal2DRegion(weWorld, polyReg.getPoints(), polyReg.getMinimumPoint().getBlockY(), polyReg.getMaximumPoint().getBlockY());
         }
 
 
-
         File repairStateFile = new File(saveDirectory, region.getId().replaceAll("´\\s+", "_") + ".schematic");
-        for (int x = weMinPos.getBlockX(); x <= weMaxPos.getBlockX(); x++){
-            for (int y = weMinPos.getBlockY(); y <= weMaxPos.getBlockY(); y++){
-                for (int z = weMinPos.getBlockZ(); z <= weMaxPos.getBlockZ(); z++){
-                    Block block = world.getBlockAt(x,y,z);
-                    if (block.getType().equals(Material.AIR)){
+        for (int x = weMinPos.getBlockX(); x <= weMaxPos.getBlockX(); x++) {
+            for (int y = weMinPos.getBlockY(); y <= weMaxPos.getBlockY(); y++) {
+                for (int z = weMinPos.getBlockZ(); z <= weMaxPos.getBlockZ(); z++) {
+                    Block block = world.getBlockAt(x, y, z);
+                    if (block.getType().equals(Material.AIR)) {
                         continue;
                     }
-                    if (Settings.AssaultDestroyableBlocks.contains(block.getType())){
+                    if (Settings.AssaultDestroyableBlocks.contains(block.getType())) {
                         baseBlockSet.add(new BaseBlock(block.getTypeId(), block.getData()));
                     }
                 }
@@ -117,13 +143,9 @@ public class IMovecraftRepair  extends MovecraftRepair {
         }
     }
 
-    @Override
-    public boolean repairRegion(World world, String s) {
-        return false;
-    }
 
     @Override
-    public Clipboard loadCraftRepairStateClipboard(Plugin plugin,Craft craft, Sign sign, String repairStateFile, World world) {
+    public Clipboard loadCraftRepairStateClipboard(Plugin plugin, Craft craft, Sign sign, String repairStateFile, World world) {
         File dataDirectory = new File(plugin.getDataFolder(), "CraftRepairStates");
         File file = new File(dataDirectory, repairStateFile + ".schematic"); // The schematic file
         com.sk89q.worldedit.world.World weWorld = new BukkitWorld(world);
@@ -137,25 +159,25 @@ public class IMovecraftRepair  extends MovecraftRepair {
             e.printStackTrace();
             return null;
         }
-        if (clipboard != null){
+        if (clipboard != null) {
             long numDiffBlocks = 0;
             HashMap<Material, Double> missingBlocks = new HashMap<>();
             ArrayDeque<Vector> locMissingBlocks = new ArrayDeque<>();
-            Vector distance = new Vector(sign.getX() - hitBox.getMinX(), sign.getY() - hitBox.getMinY(),sign.getZ() - hitBox.getMinZ());
+            Vector distance = new Vector(sign.getX() - hitBox.getMinX(), sign.getY() - hitBox.getMinY(), sign.getZ() - hitBox.getMinZ());
             if (distanceMap.containsKey(repairStateFile)) {
-                distanceMap.replace(repairStateFile,distance);
+                distanceMap.replace(repairStateFile, distance);
             } else {
-                distanceMap.put(repairStateFile,distance);
+                distanceMap.put(repairStateFile, distance);
             }
-            for (int x = clipboard.getMinimumPoint().getBlockX(); x <= clipboard.getMaximumPoint().getBlockX(); x++){
-                for (int y = clipboard.getMinimumPoint().getBlockY(); y <= clipboard.getMaximumPoint().getBlockY(); y++){
-                    for (int z = clipboard.getMinimumPoint().getBlockZ(); z <= clipboard.getMaximumPoint().getBlockZ(); z++){
-                        com.sk89q.worldedit.Vector position = new com.sk89q.worldedit.Vector(x,y,z);
+            for (int x = clipboard.getMinimumPoint().getBlockX(); x <= clipboard.getMaximumPoint().getBlockX(); x++) {
+                for (int y = clipboard.getMinimumPoint().getBlockY(); y <= clipboard.getMaximumPoint().getBlockY(); y++) {
+                    for (int z = clipboard.getMinimumPoint().getBlockZ(); z <= clipboard.getMaximumPoint().getBlockZ(); z++) {
+                        com.sk89q.worldedit.Vector position = new com.sk89q.worldedit.Vector(x, y, z);
                         Location bukkitLoc = new Location(sign.getWorld(), x + distance.getBlockX(), y + distance.getBlockY(), z + distance.getBlockZ());
                         BaseBlock block = clipboard.getBlock(position);
                         Block bukkitBlock = sign.getWorld().getBlockAt(bukkitLoc);
                         boolean isImportant = true;
-                        if (block.getType() == 0){
+                        if (block.getType() == 0) {
                             isImportant = false;
                         }
 
@@ -194,23 +216,23 @@ public class IMovecraftRepair  extends MovecraftRepair {
                                 itemToConsume = 324;   //since doors and beds encompass two blocks, require only 0.5 block for each of the two blocks
                                 qtyToConsume = 0.5;
                             }
-                            if (itemToConsume == 71){
+                            if (itemToConsume == 71) {
                                 itemToConsume = 330;
                                 qtyToConsume = 0.5;
                             }
-                            if (itemToConsume == 193){
+                            if (itemToConsume == 193) {
                                 itemToConsume = 427;
                                 qtyToConsume = 0.5;
                             }
-                            if (itemToConsume == 194){
+                            if (itemToConsume == 194) {
                                 itemToConsume = 428;
                                 qtyToConsume = 0.5;
                             }
-                            if (itemToConsume == 195){
+                            if (itemToConsume == 195) {
                                 itemToConsume = 429;
                                 qtyToConsume = 0.5;
                             }
-                            if (itemToConsume == 196){
+                            if (itemToConsume == 196) {
                                 itemToConsume = 430;
                                 qtyToConsume = 0.5;
                             }
@@ -218,10 +240,10 @@ public class IMovecraftRepair  extends MovecraftRepair {
                                 itemToConsume = 431;
                                 qtyToConsume = 0.5;
                             }
-                            if (itemToConsume == 23){
+                            if (itemToConsume == 23) {
                                 Tag t = block.getNbtData().getValue().get("Items");
                                 ListTag lt = null;
-                                if (t instanceof ListTag){
+                                if (t instanceof ListTag) {
                                     lt = (ListTag) t;
                                 }
                                 int numTNT = 0;
@@ -229,15 +251,15 @@ public class IMovecraftRepair  extends MovecraftRepair {
                                 int numWaterBuckets = 0;
                                 if (lt != null) {
                                     for (Tag entryTag : lt.getValue()) {
-                                        if (entryTag instanceof CompoundTag){
+                                        if (entryTag instanceof CompoundTag) {
                                             CompoundTag cTag = (CompoundTag) entryTag;
-                                            if (cTag.toString().contains("minecraft:tnt")){
+                                            if (cTag.toString().contains("minecraft:tnt")) {
                                                 numTNT += cTag.getByte("Count");
                                             }
-                                            if (cTag.toString().contains("minecraft:fire_charge")){
+                                            if (cTag.toString().contains("minecraft:fire_charge")) {
                                                 numFireCharges += cTag.getByte("Count");
                                             }
-                                            if (cTag.toString().contains("minecraft:water_bucket")){
+                                            if (cTag.toString().contains("minecraft:water_bucket")) {
                                                 numWaterBuckets += cTag.getByte("Count");
                                             }
                                         }
@@ -245,8 +267,8 @@ public class IMovecraftRepair  extends MovecraftRepair {
                                 }
 
 
-                                if (numTNT > 0){
-                                    if (!missingBlocks.containsKey(Material.TNT)){
+                                if (numTNT > 0) {
+                                    if (!missingBlocks.containsKey(Material.TNT)) {
                                         missingBlocks.put(Material.TNT, (double) numTNT);
                                     } else {
                                         Double num = missingBlocks.get(Material.TNT);
@@ -254,8 +276,8 @@ public class IMovecraftRepair  extends MovecraftRepair {
                                         missingBlocks.put(Material.TNT, num);
                                     }
                                 }
-                                if (numFireCharges > 0){
-                                    if (!missingBlocks.containsKey(Material.FIREBALL)){
+                                if (numFireCharges > 0) {
+                                    if (!missingBlocks.containsKey(Material.FIREBALL)) {
                                         missingBlocks.put(Material.FIREBALL, (double) numFireCharges);
                                     } else {
                                         Double num = missingBlocks.get(Material.FIREBALL);
@@ -264,8 +286,8 @@ public class IMovecraftRepair  extends MovecraftRepair {
 
                                     }
                                 }
-                                if (numWaterBuckets > 0){
-                                    if (!missingBlocks.containsKey(Material.WATER_BUCKET)){
+                                if (numWaterBuckets > 0) {
+                                    if (!missingBlocks.containsKey(Material.WATER_BUCKET)) {
                                         missingBlocks.put(Material.WATER_BUCKET, (double) numWaterBuckets);
                                     } else {
                                         Double num = missingBlocks.get(Material.WATER_BUCKET);
@@ -286,22 +308,22 @@ public class IMovecraftRepair  extends MovecraftRepair {
                                 itemToConsume = 182;
                                 qtyToConsume = 2;
                             }
-                            if (itemToConsume != 0){
-                                if (!missingBlocks.containsKey(Material.getMaterial(itemToConsume))){
+                            if (itemToConsume != 0) {
+                                if (!missingBlocks.containsKey(Material.getMaterial(itemToConsume))) {
                                     missingBlocks.put(Material.getMaterial(itemToConsume), qtyToConsume);
                                 } else {
                                     Double num = missingBlocks.get(Material.getMaterial(itemToConsume));
                                     num += qtyToConsume;
                                     missingBlocks.put(Material.getMaterial(itemToConsume), num);
                                 }
-                                locMissingBlocks.add(new Vector(x,y,z));
+                                locMissingBlocks.add(new Vector(x, y, z));
                             }
                         }
-                        if (bukkitBlock.getType() == Material.DISPENSER && block.getType() == 23){
+                        if (bukkitBlock.getType() == Material.DISPENSER && block.getType() == 23) {
                             boolean needReplace = false;
                             Tag t = block.getNbtData().getValue().get("Items");
                             ListTag lt = null;
-                            if (t instanceof ListTag){
+                            if (t instanceof ListTag) {
                                 lt = (ListTag) t;
                             }
                             int numTNT = 0;
@@ -309,15 +331,15 @@ public class IMovecraftRepair  extends MovecraftRepair {
                             int numWaterBuckets = 0;
                             if (lt != null) {
                                 for (Tag entryTag : lt.getValue()) {
-                                    if (entryTag instanceof CompoundTag){
+                                    if (entryTag instanceof CompoundTag) {
                                         CompoundTag cTag = (CompoundTag) entryTag;
-                                        if (cTag.toString().contains("minecraft:tnt")){
+                                        if (cTag.toString().contains("minecraft:tnt")) {
                                             numTNT += cTag.getByte("Count");
                                         }
-                                        if (cTag.toString().contains("minecraft:fire_charge")){
+                                        if (cTag.toString().contains("minecraft:fire_charge")) {
                                             numFireCharges += cTag.getByte("Count");
                                         }
-                                        if (cTag.toString().contains("minecraft:water_bucket")){
+                                        if (cTag.toString().contains("minecraft:water_bucket")) {
                                             numWaterBuckets += cTag.getByte("Count");
                                         }
                                     }
@@ -325,7 +347,7 @@ public class IMovecraftRepair  extends MovecraftRepair {
                             }
                             Dispenser bukkitDispenser = (Dispenser) bukkitBlock.getState();
                             //Bukkit.getLogger().info(String.format("TNT: %d, Fireballs: %d, Water buckets: %d", numTNT, numFireCharges, numWaterBuckets));
-                            for (ItemStack iStack : bukkitDispenser.getInventory().getContents()){
+                            for (ItemStack iStack : bukkitDispenser.getInventory().getContents()) {
                                 if (iStack != null) {
                                     if (iStack.getType() == Material.TNT) {
                                         numTNT -= iStack.getAmount();
@@ -339,8 +361,8 @@ public class IMovecraftRepair  extends MovecraftRepair {
                                 }
                             }
                             //Bukkit.getLogger().info(String.format("TNT: %d, Fireballs: %d, Water buckets: %d", numTNT, numFireCharges, numWaterBuckets));
-                            if (numTNT > 0){
-                                if (!missingBlocks.containsKey(Material.TNT)){
+                            if (numTNT > 0) {
+                                if (!missingBlocks.containsKey(Material.TNT)) {
                                     missingBlocks.put(Material.TNT, (double) numTNT);
                                 } else {
                                     Double num = missingBlocks.get(Material.TNT);
@@ -349,8 +371,8 @@ public class IMovecraftRepair  extends MovecraftRepair {
                                 }
                                 needReplace = true;
                             }
-                            if (numFireCharges > 0){
-                                if (!missingBlocks.containsKey(Material.FIREBALL)){
+                            if (numFireCharges > 0) {
+                                if (!missingBlocks.containsKey(Material.FIREBALL)) {
                                     missingBlocks.put(Material.FIREBALL, (double) numFireCharges);
                                 } else {
                                     Double num = missingBlocks.get(Material.FIREBALL);
@@ -360,8 +382,8 @@ public class IMovecraftRepair  extends MovecraftRepair {
                                 }
                                 needReplace = true;
                             }
-                            if (numWaterBuckets > 0){
-                                if (!missingBlocks.containsKey(Material.WATER_BUCKET)){
+                            if (numWaterBuckets > 0) {
+                                if (!missingBlocks.containsKey(Material.WATER_BUCKET)) {
                                     missingBlocks.put(Material.WATER_BUCKET, (double) numWaterBuckets);
                                 } else {
                                     Double num = missingBlocks.get(Material.WATER_BUCKET);
@@ -370,9 +392,9 @@ public class IMovecraftRepair  extends MovecraftRepair {
                                 }
                                 needReplace = true;
                             }
-                            if (needReplace){
+                            if (needReplace) {
                                 numDiffBlocks++;
-                                locMissingBlocks.push(new org.bukkit.util.Vector(x,y,z));
+                                locMissingBlocks.push(new org.bukkit.util.Vector(x, y, z));
                             }
                         }
                     }
@@ -420,7 +442,7 @@ public class IMovecraftRepair  extends MovecraftRepair {
 
     @Override
     public Vector getDistanceFromSignToLowestPoint(Clipboard clipboard) {
-        return new Vector(clipboard.getOrigin().getBlockX() - clipboard.getMinimumPoint().getBlockX(),clipboard.getOrigin().getBlockY() - clipboard.getMinimumPoint().getBlockY(),clipboard.getOrigin().getBlockZ() - clipboard.getMinimumPoint().getBlockZ());
+        return new Vector(clipboard.getOrigin().getBlockX() - clipboard.getMinimumPoint().getBlockX(), clipboard.getOrigin().getBlockY() - clipboard.getMinimumPoint().getBlockY(), clipboard.getOrigin().getBlockZ() - clipboard.getMinimumPoint().getBlockZ());
         /*for (int x = clipboard.getMinimumPoint().getBlockX(); x <= clipboard.getMaximumPoint().getBlockX(); x++) {
             for (int y = clipboard.getMinimumPoint().getBlockY(); y <= clipboard.getMaximumPoint().getBlockY(); y++) {
                 for (int z = clipboard.getMinimumPoint().getBlockZ(); z <= clipboard.getMaximumPoint().getBlockZ(); z++) {
@@ -456,12 +478,11 @@ public class IMovecraftRepair  extends MovecraftRepair {
     }
 
 
-
-    private Set<BaseBlock> baseBlocksFromCraft(Craft craft){
+    private Set<BaseBlock> baseBlocksFromCraft(Craft craft) {
         HashSet<BaseBlock> returnSet = new HashSet<>();
         HashHitBox hitBox = craft.getHitBox();
         World w = craft.getW();
-        for (MovecraftLocation location : hitBox){
+        for (MovecraftLocation location : hitBox) {
             Integer id = w.getBlockTypeIdAt(location.getX(), location.getY(), location.getZ());
             Byte data = w.getBlockAt(location.getX(), location.getY(), location.getZ()).getData();
             returnSet.add(new BaseBlock(id, data));
@@ -470,15 +491,15 @@ public class IMovecraftRepair  extends MovecraftRepair {
         return returnSet;
     }
 
-    private Set<BaseBlock> baseBlocksFromAssaultRegion(com.sk89q.worldedit.Vector minPos, com.sk89q.worldedit.Vector maxPos, World world){
+    private Set<BaseBlock> baseBlocksFromAssaultRegion(com.sk89q.worldedit.Vector minPos, com.sk89q.worldedit.Vector maxPos, World world) {
         HashSet<BaseBlock> returnSet = new HashSet<>();
-        for (int x = minPos.getBlockX(); x <= maxPos.getBlockX(); x++){
-            for (int y = minPos.getBlockY(); y <= maxPos.getBlockY(); y++){
-                for (int z = minPos.getBlockZ(); z <= maxPos.getBlockZ(); z++){
-                    int id = world.getBlockTypeIdAt(x,y,z);
-                    byte data = world.getBlockAt(x,y,z).getData();
+        for (int x = minPos.getBlockX(); x <= maxPos.getBlockX(); x++) {
+            for (int y = minPos.getBlockY(); y <= maxPos.getBlockY(); y++) {
+                for (int z = minPos.getBlockZ(); z <= maxPos.getBlockZ(); z++) {
+                    int id = world.getBlockTypeIdAt(x, y, z);
+                    byte data = world.getBlockAt(x, y, z).getData();
                     //exclude air and blocks that are not destroyable during an assault
-                    if (!Settings.AssaultDestroyableBlocks.contains(id) || id == 0){
+                    if (!Settings.AssaultDestroyableBlocks.contains(id) || id == 0) {
                         continue;
                     }
                     returnSet.add(new BaseBlock(id, data));
@@ -487,5 +508,5 @@ public class IMovecraftRepair  extends MovecraftRepair {
         }
 
         return returnSet;
-    } {
+    }
 }
