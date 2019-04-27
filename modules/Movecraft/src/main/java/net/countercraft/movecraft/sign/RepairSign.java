@@ -1,10 +1,10 @@
 package net.countercraft.movecraft.sign;
 
 import com.sk89q.worldedit.blocks.BaseBlock;
-import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
+import net.countercraft.movecraft.MovecraftRepair;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
@@ -35,7 +35,7 @@ import java.util.*;
 public class RepairSign implements Listener{
     private String HEADER = "Repair:";
     private HashMap<UUID, Long> playerInteractTimeMap = new HashMap<>();//Players must be assigned by the UUID, or NullPointerExceptions are thrown
-    private final Material[] fragileBlocks = new Material[]{ Material.TORCH, Material.LADDER, Material.WALL_SIGN, Material.LEVER, Material.STONE_BUTTON, LegacyUtils.TRAP_DOOR, Material.TRIPWIRE_HOOK,  LegacyUtils.WOOD_BUTTON, Material.IRON_TRAPDOOR, };
+    private final Material[] fragileBlocks = new Material[]{ Material.TORCH, Material.LADDER, Material.WALL_SIGN, Material.LEVER, Material.STONE_BUTTON, Material.TRAP_DOOR, Material.TRIPWIRE_HOOK, Material.WOOD_BUTTON, Material.IRON_TRAPDOOR, };
 
     @EventHandler
     public void onSignChange(SignChangeEvent event){
@@ -205,21 +205,18 @@ public class RepairSign implements Listener{
                     Movecraft.getInstance().getLogger().info(event.getPlayer().getName() + " has begun a repair with the cost of " + Cost);
                     final LinkedList<UpdateCommand> updateCommands = new LinkedList<>();
                     final LinkedList<UpdateCommand> updateCommandsFragileBlocks = new LinkedList<>();
-                    final org.bukkit.util.Vector distToOffset = movecraftRepair.getDistanceFromSignToLowestPoint(clipboard);
-                    final org.bukkit.util.Vector offsetFromSign = new org.bukkit.util.Vector(sign.getLocation().getBlockX() - distToOffset.getBlockX(), sign.getLocation().getBlockY() - distToOffset.getBlockY(), sign.getLocation().getBlockZ() - distToOffset.getBlockZ());
-                    final org.bukkit.util.Vector distance = movecraftRepair.getDistance(repairName);
-                    Bukkit.broadcastMessage(distToOffset.toString());
+                    final org.bukkit.util.Vector offsetFromSign = new org.bukkit.util.Vector(sign.getX() - pCraft.getHitBox().getMinX(), sign.getY() - pCraft.getHitBox().getMinY(), sign.getZ() - pCraft.getHitBox().getMinZ());
                     while (!locMissingBlocks.isEmpty()){
                         Vector cLoc = locMissingBlocks.pollFirst();
-                        Vector clipBoardLoc = cLoc.add(movecraftRepair.getDistance(repairName));
+                        Vector clipBoardLoc = cLoc.add(offsetFromSign);
                         MovecraftLocation moveLoc = new MovecraftLocation(cLoc.getBlockX(), cLoc.getBlockY(), cLoc.getBlockZ());
                         //To avoid any issues during the repair, keep certain blocks in different linked lists
-                            BaseBlock baseBlock = RepairUtils.getBlock(clipboard, WorldEditUtils.toWeVector(clipBoardLoc));
+                            BaseBlock baseBlock = clipboard.getBlock(new com.sk89q.worldedit.Vector(clipBoardLoc.getBlockX(),clipBoardLoc.getBlockY(),clipBoardLoc.getBlockZ()));
                             if (Arrays.binarySearch(fragileBlocks, Material.getMaterial(baseBlock.getType())) >= 0) {
-                                WorldEditUpdateCommand updateCommand = new WorldEditUpdateCommand(baseBlock, sign.getWorld(), moveLoc, LegacyUtils.getMaterial(baseBlock.getType()), (byte) baseBlock.getData());
+                                WorldEditUpdateCommand updateCommand = new WorldEditUpdateCommand(baseBlock, sign.getWorld(), moveLoc, Material.getMaterial(baseBlock.getType()), (byte) baseBlock.getData());
                                 updateCommandsFragileBlocks.add(updateCommand);
                             } else {
-                                WorldEditUpdateCommand updateCommand = new WorldEditUpdateCommand(baseBlock, sign.getWorld(), moveLoc, LegacyUtils.getMaterial(baseBlock.getType()), (byte) baseBlock.getData());
+                                WorldEditUpdateCommand updateCommand = new WorldEditUpdateCommand(baseBlock, sign.getWorld(), moveLoc, Material.getMaterial(baseBlock.getType()), (byte) baseBlock.getData());
                                 updateCommands.add(updateCommand);
                             }
 

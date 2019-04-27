@@ -54,6 +54,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -84,6 +85,7 @@ public class Movecraft extends JavaPlugin {
     private AssaultManager assaultManager;
     private SiegeManager siegeManager;
     private RepairManager repairManager;
+    private MovecraftRepair movecraftRepair;
 
     public static synchronized Movecraft getInstance() {
         return instance;
@@ -381,9 +383,20 @@ public class Movecraft extends JavaPlugin {
 
             getServer().getPluginManager().registerEvents(new InteractListener(), this);
             if (worldEditPlugin != null) {
-                repairManager = new RepairManager();
-                repairManager.runTaskTimerAsynchronously(this,0,1);
-                getServer().getPluginManager().registerEvents(new RepairSign(), this);
+                final Class clazz;
+                try {
+                    clazz = Class.forName("net.countercraft.movecraft.compat.we6.IMovecraftRepair");
+                    if (MovecraftRepair.class.isAssignableFrom(clazz)){
+                        movecraftRepair = (MovecraftRepair) clazz.getConstructor().newInstance();
+                    }
+                } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException | IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+                if (movecraftRepair != null){
+                    repairManager = new RepairManager();
+                    repairManager.runTaskTimerAsynchronously(this,0,1);
+                    getServer().getPluginManager().registerEvents(new RepairSign(), this);
+                }
             }
             this.getCommand("movecraft").setExecutor(new MovecraftCommand());
             this.getCommand("release").setExecutor(new ReleaseCommand());
@@ -479,6 +492,12 @@ public class Movecraft extends JavaPlugin {
 
     public AsyncManager getAsyncManager(){return asyncManager;}
 
+    public RepairManager getRepairManager() {
+        return repairManager;
+    }
 
+    public MovecraftRepair getMovecraftRepair() {
+        return movecraftRepair;
+    }
 }
 
