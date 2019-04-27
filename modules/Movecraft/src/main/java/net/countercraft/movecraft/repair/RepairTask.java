@@ -15,7 +15,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class RepairTask extends BukkitRunnable {
-    private Repair repair;
+    private final Repair repair;
 
     public RepairTask(Repair repair){
         this.repair = repair;
@@ -61,5 +61,8 @@ public class RepairTask extends BukkitRunnable {
             repair.getProgressBar().setVisible(false);
             repair.setRunning(new AtomicBoolean(false));
         }
+    }
+    public Repair getRepair(){
+        return repair;
     }
 }
