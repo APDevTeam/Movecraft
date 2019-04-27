@@ -24,6 +24,7 @@
         <module>modules/v1_11_R1</module>
         <module>modules/v1_12_R1</module>
         <module>modules/Movecraft</module>
+        <module>modules/WE6Utils</module>
     </modules>
 
     <repositories>
