@@ -174,8 +174,8 @@ public class IMovecraftRepair  extends MovecraftRepair {
                 distanceMap.put(repairStateFile, distance);
             }
             for (int x = clipboard.getMinimumPoint().getBlockX(); x <= clipboard.getMaximumPoint().getBlockX(); x++) {
-                for (int y = clipboard.getMinimumPoint().getBlockY(); y <= clipboard.getMaximumPoint().getBlockY(); y++) {
-                    for (int z = clipboard.getMinimumPoint().getBlockZ(); z <= clipboard.getMaximumPoint().getBlockZ(); z++) {
+                for (int z = clipboard.getMinimumPoint().getBlockZ(); z <= clipboard.getMaximumPoint().getBlockZ(); z++) {
+                    for (int y = clipboard.getMinimumPoint().getBlockY(); y <= clipboard.getMaximumPoint().getBlockY(); y++) {
                         com.sk89q.worldedit.Vector position = new com.sk89q.worldedit.Vector(x, y, z);
                         Location bukkitLoc = new Location(sign.getWorld(), x - dx, y - dy, z - dz);
                         //
