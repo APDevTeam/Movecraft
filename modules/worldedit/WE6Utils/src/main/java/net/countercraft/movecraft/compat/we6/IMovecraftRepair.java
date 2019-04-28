@@ -177,7 +177,7 @@ public class IMovecraftRepair  extends MovecraftRepair {
                 for (int y = clipboard.getMinimumPoint().getBlockY(); y <= clipboard.getMaximumPoint().getBlockY(); y++) {
                     for (int z = clipboard.getMinimumPoint().getBlockZ(); z <= clipboard.getMaximumPoint().getBlockZ(); z++) {
                         com.sk89q.worldedit.Vector position = new com.sk89q.worldedit.Vector(x, y, z);
-                        Location bukkitLoc = new Location(sign.getWorld(), x + dx, y + dy, z + dz);
+                        Location bukkitLoc = new Location(sign.getWorld(), x - dx, y - dy, z - dz);
                         //
                         BaseBlock block = clipboard.getBlock(position);
                         Block bukkitBlock = sign.getWorld().getBlockAt(bukkitLoc);
@@ -322,7 +322,7 @@ public class IMovecraftRepair  extends MovecraftRepair {
                                     num += qtyToConsume;
                                     missingBlocks.put(Material.getMaterial(itemToConsume), num);
                                 }
-                                locMissingBlocks.add(new Vector(x + dx, y + dy, z + dz));
+                                locMissingBlocks.add(new Vector(x - dx, y - dy, z - dz));
                             }
                         }
                         if (bukkitBlock.getType() == Material.DISPENSER && block.getType() == 23) {
@@ -400,7 +400,7 @@ public class IMovecraftRepair  extends MovecraftRepair {
                             }
                             if (needReplace) {
                                 numDiffBlocks++;
-                                locMissingBlocks.push(new org.bukkit.util.Vector(x + dx, y + dy, z + dz));
+                                locMissingBlocks.push(new org.bukkit.util.Vector(x - dx, y - dy, z - dz));
                             }
                         }
                     }

@@ -205,11 +205,12 @@ public class RepairSign implements Listener{
                     Movecraft.getInstance().getLogger().info(event.getPlayer().getName() + " has begun a repair with the cost of " + Cost);
                     final LinkedList<UpdateCommand> updateCommands = new LinkedList<>();
                     final LinkedList<UpdateCommand> updateCommandsFragileBlocks = new LinkedList<>();
+                    final Vector distance = movecraftRepair.getDistance(repairName);
                     while (!locMissingBlocks.isEmpty()){
                         Vector cLoc = locMissingBlocks.pollFirst();
                         MovecraftLocation moveLoc = new MovecraftLocation(cLoc.getBlockX(), cLoc.getBlockY(), cLoc.getBlockZ());
                         //To avoid any issues during the repair, keep certain blocks in different linked lists
-                            BaseBlock baseBlock = clipboard.getBlock(new com.sk89q.worldedit.Vector(cLoc.getBlockX(),cLoc.getBlockY(),cLoc.getBlockZ()));
+                            BaseBlock baseBlock = clipboard.getBlock(new com.sk89q.worldedit.Vector(cLoc.getBlockX() + distance.getBlockX(),cLoc.getBlockY() + distance.getBlockY(),cLoc.getBlockZ()+distance.getBlockZ()));
                             if (Arrays.binarySearch(fragileBlocks, Material.getMaterial(baseBlock.getType())) >= 0) {
                                 WorldEditUpdateCommand updateCommand = new WorldEditUpdateCommand(baseBlock, sign.getWorld(), moveLoc, Material.getMaterial(baseBlock.getType()), (byte) baseBlock.getData());
                                 updateCommandsFragileBlocks.add(updateCommand);
