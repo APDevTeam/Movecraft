@@ -187,7 +187,6 @@ public class IMovecraftRepair  extends MovecraftRepair {
                         }
 
                         if (isImportant && bukkitBlock.getTypeId() != block.getType()) {
-                            Bukkit.getLogger().info(bukkitLoc.toVector().toString() + " : " + position.toString());
                             int itemToConsume = block.getType();
                             double qtyToConsume = 1.0;
                             numDiffBlocks++;
