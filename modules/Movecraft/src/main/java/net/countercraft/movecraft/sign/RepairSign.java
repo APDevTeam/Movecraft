@@ -205,13 +205,11 @@ public class RepairSign implements Listener{
                     Movecraft.getInstance().getLogger().info(event.getPlayer().getName() + " has begun a repair with the cost of " + Cost);
                     final LinkedList<UpdateCommand> updateCommands = new LinkedList<>();
                     final LinkedList<UpdateCommand> updateCommandsFragileBlocks = new LinkedList<>();
-                    final org.bukkit.util.Vector offsetFromSign = new org.bukkit.util.Vector(sign.getX() - pCraft.getHitBox().getMinX(), sign.getY() - pCraft.getHitBox().getMinY(), sign.getZ() - pCraft.getHitBox().getMinZ());
                     while (!locMissingBlocks.isEmpty()){
                         Vector cLoc = locMissingBlocks.pollFirst();
-                        Vector clipBoardLoc = cLoc.add(offsetFromSign);
                         MovecraftLocation moveLoc = new MovecraftLocation(cLoc.getBlockX(), cLoc.getBlockY(), cLoc.getBlockZ());
                         //To avoid any issues during the repair, keep certain blocks in different linked lists
-                            BaseBlock baseBlock = clipboard.getBlock(new com.sk89q.worldedit.Vector(clipBoardLoc.getBlockX(),clipBoardLoc.getBlockY(),clipBoardLoc.getBlockZ()));
+                            BaseBlock baseBlock = clipboard.getBlock(new com.sk89q.worldedit.Vector(cLoc.getBlockX(),cLoc.getBlockY(),cLoc.getBlockZ()));
                             if (Arrays.binarySearch(fragileBlocks, Material.getMaterial(baseBlock.getType())) >= 0) {
                                 WorldEditUpdateCommand updateCommand = new WorldEditUpdateCommand(baseBlock, sign.getWorld(), moveLoc, Material.getMaterial(baseBlock.getType()), (byte) baseBlock.getData());
                                 updateCommandsFragileBlocks.add(updateCommand);

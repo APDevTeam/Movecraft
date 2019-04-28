@@ -5,6 +5,7 @@ import com.sk89q.worldedit.blocks.BaseItemStack;
 import com.sk89q.worldedit.blocks.DispenserBlock;
 import com.sk89q.worldedit.blocks.SignBlock;
 import net.countercraft.movecraft.MovecraftLocation;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.BlockState;
@@ -29,6 +30,7 @@ public class WorldEditUpdateCommand extends UpdateCommand {
 
     @Override
     public void doUpdate() {
+        Bukkit.getLogger().info(location.toString() + " " + type.name().toLowerCase());
         world.getBlockAt(location.getX(), location.getY(), location.getZ()).setType(type);
         world.getBlockAt(location.getX(), location.getY(), location.getZ()).setData(data);
         // put inventory into dispensers if its a repair
