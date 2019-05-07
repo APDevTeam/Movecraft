@@ -1,0 +1,5 @@
+name: Movecraft
+version: ${project.version}
+main: dev.cccm5.movecraft.Movecraft
+api-version: 1.13
+authors: [cccm5]
