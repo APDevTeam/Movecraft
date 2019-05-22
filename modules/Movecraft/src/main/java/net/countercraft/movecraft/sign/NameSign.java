@@ -29,8 +29,9 @@ public final class NameSign implements Listener {
             return;
         }
 
+        World craftWorld = craft.getW();
         for (MovecraftLocation location : craft.getHitBox()) { //Iterate through every craft block to search for name sign
-            Block b = location.toBukkit(craft.getW()).getBlock();
+            Block b = location.toBukkit(craftWorld).getBlock();
             if (b.getType() == Material.SIGN_POST || b.getType() == Material.WALL_SIGN) { //If block is a sign
                 Sign sign = (Sign) b.getState();
                 String craftNameFromSign = "";
