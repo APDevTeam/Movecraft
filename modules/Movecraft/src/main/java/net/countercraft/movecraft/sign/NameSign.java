@@ -6,7 +6,6 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.utils.ChatUtils;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.event.EventHandler;
@@ -15,49 +14,49 @@ import org.bukkit.event.block.SignChangeEvent;
 import org.jetbrains.annotations.NotNull;
 
 public final class NameSign implements Listener {
-    private static final String HEADER = "Name:";
+
+    private static final String NAME_SIGN_IDENTIFIER = "Name:"; //String on first line which will identify the block as a name sign
+
+    /**
+     * When a craft is piloted, check the craft for a name sign
+     */
     @EventHandler
     public void onCraftDetect(@NotNull CraftDetectEvent event) {
-        Craft c = event.getCraft();
+        Craft craft = event.getCraft();
 
-        if(c.getNotificationPlayer() == null || (Settings.RequireNamePerm && !c.getNotificationPlayer().hasPermission("movecraft.name.use"))) {
-            //Player is null or does not have permission (when required)
+        //Ensure nonnull player and sufficient permissions
+        if (craft.getNotificationPlayer() == null || (Settings.RequireNamePerm && !craft.getNotificationPlayer().hasPermission("movecraft.name.use"))) {
             return;
         }
 
-        World w = c.getW();
+        for (MovecraftLocation location : craft.getHitBox()) { //Iterate through every craft block to search for name sign
+            Block b = location.toBukkit(craft.getW()).getBlock();
+            if (b.getType() == Material.SIGN_POST || b.getType() == Material.WALL_SIGN) { //If block is a sign
+                Sign sign = (Sign) b.getState();
+                String craftNameFromSign = "";
 
-        for (MovecraftLocation location : c.getHitBox()) {
-            Block b = location.toBukkit(w).getBlock();
-            if (b.getType() == Material.SIGN_POST || b.getType() == Material.WALL_SIGN) {
-                Sign s = (Sign) b.getState();
-                String name = "";
-                if (s.getLine(0).equalsIgnoreCase(HEADER)) {
-                    boolean firstName = true;
-                    for (int i = 1; i <= 3; i++) {
-                        if (s.getLine(i) != "") {
-                            if (firstName) {
-                                firstName = true;
-                            } else {
-                                name += " ";
-                                //Add a space between lines for all after the first.
-                            }
-                            name += s.getLine(i);
+                if (sign.getLine(0).equalsIgnoreCase(NAME_SIGN_IDENTIFIER)) { //If name sign is found
+                    for (int i = 1; i <= 3; i++) { //Go through each line below the NAME_SIGN_IDENTIFIER string
+                        if (!sign.getLine(i).isEmpty()) { //If the line is not empty
+                            craftNameFromSign += sign.getLine(i) + " "; //Add the line to the name, with a space at the end
                         }
                     }
-                    c.setName(name);
+                    craft.setName(craftNameFromSign.isEmpty() ? "" : craftNameFromSign.substring(0, craftNameFromSign.length() - 1)); //Set craft name if the sign wasn't blank, while removing the last space
                     return;
                 }
             }
         }
     }
+
+    /**
+     * When player is creating a new Name Sign
+     */
     @EventHandler
     public void onSignChange(SignChangeEvent event) {
-        if (event.getLine(0).equalsIgnoreCase(HEADER)) {
-            if (Settings.RequireNamePerm && !event.getPlayer().hasPermission("movecraft.name.place")) {
-                event.getPlayer().sendMessage(ChatUtils.MOVECRAFT_COMMAND_PREFIX + "Insufficient permissions");
-                event.setCancelled(true);
-                return;
+        if (event.getLine(0).equalsIgnoreCase(NAME_SIGN_IDENTIFIER)) { //If player is placing a Name Sign
+            if (Settings.RequireNamePerm && !event.getPlayer().hasPermission("movecraft.name.place")) { //If they don't have permission
+                event.getPlayer().sendMessage(ChatUtils.MOVECRAFT_COMMAND_PREFIX + "Insufficient permissions"); //Send error message
+                event.setCancelled(true); //Disallow placing of sign
             }
         }
     }
