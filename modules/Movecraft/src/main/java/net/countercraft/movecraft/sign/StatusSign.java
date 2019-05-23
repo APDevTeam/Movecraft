@@ -52,33 +52,25 @@ public final class StatusSign implements Listener{
             Material blockType = craft.getW().getBlockAt(ml.getX(), ml.getY(), ml.getZ()).getType();
 
             if (foundBlocks.containsKey(blockType)) {
-                Integer count = foundBlocks.get(blockType);
-                if (count == null) {
-                    foundBlocks.put(blockType, 1);
-                } else {
-                    foundBlocks.put(blockType, count + 1);
-                }
+                foundBlocks.merge(blockType, 1, (a, b) -> a + b);
             } else {
                 foundBlocks.put(blockType, 1);
             }
 
             if (blockType == Material.FURNACE) {
                 InventoryHolder inventoryHolder = (InventoryHolder) craft.getW().getBlockAt(ml.getX(), ml.getY(), ml.getZ()).getState();
-                if (inventoryHolder.getInventory().contains(Material.COAL)
-                        || inventoryHolder.getInventory().contains(Material.COAL_BLOCK)
-                        || inventoryHolder.getInventory().contains(Material.CHARCOAL)) {
-                    ItemStack[] istack=inventoryHolder.getInventory().getContents();
-                    for(ItemStack i : istack) {
-                        if(i!=null) {
-                            if(i.getType()== Material.COAL || i.getType() == Material.CHARCOAL) {
-                                fuel+=i.getAmount()*8;
-                            }
-                            if(i.getType()==Material.COAL_BLOCK) {
-                                fuel+=i.getAmount()*80;
-                            }
-                        }
+                for (Material fuelType : Settings.FuelTypes.keySet()){
+                    if (!inventoryHolder.getInventory().contains(fuelType)){
+                        continue;
+                    }
+                    ItemStack[] content = inventoryHolder.getInventory().getContents();
+                    for (ItemStack item : content){
+                        if (item == null)
+                            continue;
+                        fuel += item.getAmount() * Settings.FuelTypes.get(fuelType);
                     }
                 }
+
             }
             if (blockType != Material.AIR || blockType != Material.CAVE_AIR || blockType != Material.VOID_AIR) {
                 totalBlocks++;

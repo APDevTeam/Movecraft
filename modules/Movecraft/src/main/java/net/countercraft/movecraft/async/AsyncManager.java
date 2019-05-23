@@ -37,6 +37,7 @@ import net.countercraft.movecraft.utils.HashHitBox;
 import net.countercraft.movecraft.utils.LegacyUtils;
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TNTPrimed;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -377,11 +378,11 @@ public class AsyncManager extends BukkitRunnable {
             int dy = 0;
 
             // ascend
-            if (pcraft.getCruiseDirection() == 0x42) {
+            if (pcraft.getCruiseDirection() == BlockFace.UP) {
                 dy = 1 + pcraft.getType().getVertCruiseSkipBlocks();
             }
             // descend
-            if (pcraft.getCruiseDirection() == 0x43) {
+            if (pcraft.getCruiseDirection() == BlockFace.DOWN) {
                 dy = 0 - 1 - pcraft.getType().getVertCruiseSkipBlocks();
                 if (pcraft.getHitBox().getMinY() <= w.getSeaLevel()) {
                     dy = -1;
@@ -393,7 +394,7 @@ public class AsyncManager extends BukkitRunnable {
                 }
             }
             // ship faces west
-            if (pcraft.getCruiseDirection() == 0x5) {
+            if (pcraft.getCruiseDirection() == BlockFace.WEST) {
                 dx = 0 - 1 - pcraft.getType().getCruiseSkipBlocks();
                 if (bankRight) {
                     dz = (0 - 1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
@@ -407,7 +408,7 @@ public class AsyncManager extends BukkitRunnable {
                 }
             }
             // ship faces east
-            if (pcraft.getCruiseDirection() == 0x4) {
+            if (pcraft.getCruiseDirection() == BlockFace.EAST) {
                 dx = 1 + pcraft.getType().getCruiseSkipBlocks();
                 if (bankLeft) {
                     dz = (0 - 1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
@@ -417,7 +418,7 @@ public class AsyncManager extends BukkitRunnable {
                 }
             }
             // ship faces north
-            if (pcraft.getCruiseDirection() == 0x2) {
+            if (pcraft.getCruiseDirection() == BlockFace.NORTH) {
                 dz = 1 + pcraft.getType().getCruiseSkipBlocks();
                 if (bankRight) {
                     dx = (0 - 1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
@@ -427,7 +428,7 @@ public class AsyncManager extends BukkitRunnable {
                 }
             }
             // ship faces south
-            if (pcraft.getCruiseDirection() == 0x3) {
+            if (pcraft.getCruiseDirection() == BlockFace.SOUTH) {
                 dz = 0 - 1 - pcraft.getType().getCruiseSkipBlocks();
                 if (bankLeft) {
                     dx = (0 - 1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
@@ -439,6 +440,7 @@ public class AsyncManager extends BukkitRunnable {
             if (pcraft.getType().getCruiseOnPilot()) {
                 dy = pcraft.getType().getCruiseOnPilotVertMove();
             }
+            Movecraft.getInstance().getLogger().info(String.format("(%d,%d,%d)",dx,dy,dz) + " Cruise direction: " + pcraft.getCruiseDirection());
             pcraft.translate(dx, dy, dz);
             pcraft.setLastDX(dx);
             pcraft.setLastDZ(dz);
@@ -989,12 +991,12 @@ public class AsyncManager extends BukkitRunnable {
                                             - recentContactTracking.get(ccraft).get(tcraft) > 60000) {
                                         String notification = "New contact: ";
 
-                                        if (tcraft.getUniqueName() != null && tcraft.getUniqueName().length() >= 1){
-                                            notification += tcraft.getUniqueName();
+                                        if (tcraft.getName() != null && tcraft.getName().length() >= 1){
+                                            notification += tcraft.getName();
                                             notification += " (";
                                         }
                                         notification += tcraft.getType().getCraftName();
-                                        if (tcraft.getUniqueName() != null && tcraft.getUniqueName().length() >= 1){
+                                        if (tcraft.getName() != null && tcraft.getName().length() >= 1){
                                             notification += ")";
                                         }
                                         notification += " commanded by ";

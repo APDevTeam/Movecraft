@@ -261,7 +261,7 @@ public class IWorldHandler extends WorldHandler {
         world.tileEntityListTick.remove(tile);
         if(!bMap.containsKey(world)){
             try {
-                Field bField = World.class.getDeclaredField("c");
+                Field bField = World.class.getDeclaredField("tileEntityListPending");
                 bField.setAccessible(true);
                 bMap.put(world, (List<TileEntity>) bField.get(world));//TODO bug fix
             } catch (IllegalAccessException | IllegalArgumentException | NoSuchFieldException | SecurityException e1) {

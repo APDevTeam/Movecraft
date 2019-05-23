@@ -3,6 +3,7 @@ package net.countercraft.movecraft.repair;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
+import net.countercraft.movecraft.utils.HitBox;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.boss.BarColor;
@@ -16,16 +17,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Repair {
     private String name;
-    private Craft craft;
+    private HitBox hitBox;
     private LinkedList<UpdateCommand> updateCommands, fragileBlockUpdateCommands;
     private UUID playerUUID;
     private long missingBlocks, durationInTicks, ticksSinceStart;
     private BossBar progressBar;
     private Location signLoc;
     private AtomicBoolean running = new AtomicBoolean(true);
-    public Repair(String name, Craft craft, LinkedList<UpdateCommand> updateCommands, LinkedList<UpdateCommand> fragileBlockUpdateCommands,  UUID playerUUID, long missingBlocks, Location signLoc){
+    public Repair(String name, HitBox hitBox, LinkedList<UpdateCommand> updateCommands, LinkedList<UpdateCommand> fragileBlockUpdateCommands,  UUID playerUUID, long missingBlocks, Location signLoc){
         this.name = name;
-        this.craft = craft;
+        this.hitBox = hitBox;
         this.updateCommands = updateCommands;
         this.fragileBlockUpdateCommands = fragileBlockUpdateCommands;
         this.durationInTicks = missingBlocks * Settings.RepairTicksPerBlock;
@@ -85,8 +86,8 @@ public class Repair {
         this.signLoc = signLoc;
     }
 
-    public Craft getCraft() {
-        return craft;
+    public HitBox getHitBox() {
+        return hitBox;
     }
 
     public BossBar getProgressBar() {

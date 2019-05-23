@@ -40,7 +40,7 @@ public final class NameSign implements Listener {
                     if (s.getLine(3) != null){
                         name += s.getLine(3);
                     }
-                    c.setUniqueName(name);
+                    c.setName(name);
 
                 }
             }

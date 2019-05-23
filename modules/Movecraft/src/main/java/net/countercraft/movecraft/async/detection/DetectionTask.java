@@ -21,6 +21,7 @@ package net.countercraft.movecraft.async.detection;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.async.AsyncTask;
+import net.countercraft.movecraft.sign.PilotSign;
 import net.countercraft.movecraft.utils.HashHitBox;
 import net.countercraft.movecraft.utils.LegacyUtils;
 import net.countercraft.movecraft.config.Settings;
@@ -33,6 +34,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.*;
 
@@ -119,33 +121,44 @@ public class DetectionTask extends AsyncTask {
                 data.setWaterContact(true);
             }
             if (testType.name().contains("SIGN")) {
-                BlockState state;
-                try {
-                    state = data.getWorld().getBlockAt(x, y, z).getState();
-                } catch (Exception e){
-                    return;
-                }
-                if (state instanceof Sign) {
-                    Sign s = (Sign) state;
-                    if (s.getLine(0).equalsIgnoreCase("Pilot:") && data.getPlayer() != null) {
-                        String playerName = data.getPlayer().getName();
-                        boolean foundPilot = false;
-                        if (s.getLine(1).equalsIgnoreCase(playerName) || s.getLine(2).equalsIgnoreCase(playerName)
-                                || s.getLine(3).equalsIgnoreCase(playerName)) {
-                            foundPilot = true;
-                        }
-                        if (!foundPilot && (!data.getPlayer().hasPermission("movecraft.bypasslock"))) {
-                            fail(I18nSupport.getInternationalisedString(
-                                    "Not one of the registered pilots on this craft"));
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        Block block = data.getWorld().getBlockAt(x, y, z);
+                        if (data.getPlayer() != null) {
+                            if (!PilotSign.containsPilot(data.getPlayer().getName(), block) && (!data.getPlayer().hasPermission("movecraft.bypasslock"))) {
+                                fail(I18nSupport.getInternationalisedString(
+                                        "Not one of the registered pilots on this craft"));
+                            }
+                            if (containsForbiddenSignString(block)){
+                                fail(I18nSupport.getInternationalisedString(
+                                        "Detection - Forbidden sign string found"));
+                            }
+                            data.getPlayer().sendMessage("test");
                         }
                     }
-                    for (int i = 0; i < 4; i++) {
-                        if (isForbiddenSignString(s.getLine(i))) {
-                            fail(I18nSupport.getInternationalisedString(
-                                    "Detection - Forbidden sign string found"));
+                }.runTask(Movecraft.getInstance());
+
+                    /*BlockState state = block.getState();
+                    if (state instanceof Sign) {
+                        Sign s = (Sign) state;
+                        if (s.getLine(0).equalsIgnoreCase("Pilot:") && data.getPlayer() != null) {
+                            String playerName = data.getPlayer().getName();
+                            boolean foundPilot = false;
+                            if (s.getLine(1).equalsIgnoreCase(playerName) || s.getLine(2).equalsIgnoreCase(playerName)
+                                    || s.getLine(3).equalsIgnoreCase(playerName)) {
+                                foundPilot = true;
+                            }
+                            if (!foundPilot && (!data.getPlayer().hasPermission("movecraft.bypasslock"))) {
+
+                            }
                         }
-                    }
-                }
+                        for (int i = 0; i < 4; i++) {
+                            if (isForbiddenSignString(s.getLine(i))) {
+
+                            }
+                        }
+                    }*/
             }
             if (isForbiddenBlock(testType, testData)) {
                 fail(I18nSupport.getInternationalisedString("Detection - Forbidden block found"));
@@ -315,11 +328,16 @@ public class DetectionTask extends AsyncTask {
         return false;
     }
 
-    private boolean isForbiddenSignString(String testString) {
+    private synchronized boolean containsForbiddenSignString(Block testBlock) {
+        Sign s = (Sign) testBlock.getState();
 
-        for (String s : data.getForbiddenSignStrings()) {
-            if (testString.equals(s)) {
-                return true;
+        for (String str : s.getLines()) {
+            for (String forbidden : data.getForbiddenSignStrings()) {
+                if (forbidden == null)
+                    continue;
+                if (forbidden.equalsIgnoreCase(str)){
+                    return true;
+                }
             }
         }
 

@@ -2,16 +2,20 @@ package net.countercraft.movecraft.repair;
 
 import com.sk89q.worldedit.Vector;
 import net.countercraft.movecraft.Movecraft;
+import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.MovecraftRepair;
 import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
+import net.countercraft.movecraft.utils.HashHitBox;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class RepairTask extends BukkitRunnable {
@@ -22,6 +26,19 @@ public class RepairTask extends BukkitRunnable {
     }
     @Override
     public void run() {
+        Craft repairCraft = null;
+        for (Craft craft : CraftManager.getInstance()){
+            if (craft == null)
+                continue;
+            for (MovecraftLocation location : repair.getHitBox()){
+                if (craft.getHitBox().contains(location)) {
+                    repairCraft = craft;
+                    break;
+                }
+            }
+        }
+        if (repairCraft != null)
+            repairCraft.setRepairing(true);
         long ticksFromStart = repair.getTicksSinceStart();
         Player p = Bukkit.getPlayer(repair.getPlayerUUID());
         if (p != null) {
@@ -56,10 +73,11 @@ public class RepairTask extends BukkitRunnable {
         if ((ticksFromStart >= repair.getDurationInTicks()) && repair.getUpdateCommands().isEmpty() && repair.getFragileBlockUpdateCommands().isEmpty()){
             if (p != null && repair.getRunning().get()) {
                 p.sendMessage(I18nSupport.getInternationalisedString("Repairs complete. You may now pilot the craft"));
-                CraftManager.getInstance().removeCraft(repair.getCraft());
             }
             repair.getProgressBar().setVisible(false);
             repair.setRunning(new AtomicBoolean(false));
+            if (repairCraft != null)
+                repairCraft.setRepairing(false);
         }
     }
     public Repair getRepair(){

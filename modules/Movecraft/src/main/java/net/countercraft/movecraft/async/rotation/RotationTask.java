@@ -40,6 +40,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.Furnace;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -249,39 +250,39 @@ public class RotationTask extends AsyncTask {
             if (rotation == Rotation.ANTICLOCKWISE) {
                 // ship faces west
                 switch (getCraft().getCruiseDirection()) {
-                    case 0x5:
-                        getCraft().setCruiseDirection((byte) 0x2);
+                    case WEST:
+                        getCraft().setCruiseDirection(BlockFace.SOUTH);
                         break;
                     // ship faces east
-                    case 0x4:
-                        getCraft().setCruiseDirection((byte) 0x3);
+                    case EAST:
+                        getCraft().setCruiseDirection(BlockFace.NORTH);
                         break;
                     // ship faces north
-                    case 0x2:
-                        getCraft().setCruiseDirection((byte) 0x4);
+                    case NORTH:
+                        getCraft().setCruiseDirection(BlockFace.WEST);
                         break;
                     // ship faces south
-                    case 0x3:
-                        getCraft().setCruiseDirection((byte) 0x5);
+                    case SOUTH:
+                        getCraft().setCruiseDirection(BlockFace.EAST);
                         break;
                 }
             } else if (rotation == Rotation.CLOCKWISE) {
                 // ship faces west
                 switch (getCraft().getCruiseDirection()) {
-                    case 0x5:
-                        getCraft().setCruiseDirection((byte) 0x3);
+                    case WEST:
+                        getCraft().setCruiseDirection(BlockFace.SOUTH);
                         break;
                     // ship faces east
-                    case 0x4:
-                        getCraft().setCruiseDirection((byte) 0x2);
+                    case EAST:
+                        getCraft().setCruiseDirection(BlockFace.NORTH);
                         break;
                     // ship faces north
-                    case 0x2:
-                        getCraft().setCruiseDirection((byte) 0x5);
+                    case NORTH:
+                        getCraft().setCruiseDirection(BlockFace.WEST);
                         break;
                     // ship faces south
-                    case 0x3:
-                        getCraft().setCruiseDirection((byte) 0x4);
+                    case SOUTH:
+                        getCraft().setCruiseDirection(BlockFace.EAST);
                         break;
                 }
             }

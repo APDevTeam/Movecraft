@@ -10,6 +10,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -56,7 +57,7 @@ public class AscendSign implements Listener {
             sign.setLine(0, "Ascend: ON");
             sign.update(true);
 
-            CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCruiseDirection((byte) 0x42);
+            CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCruiseDirection(BlockFace.UP);
             CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setLastCruisUpdate(System.currentTimeMillis());
             CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCruising(true);
 

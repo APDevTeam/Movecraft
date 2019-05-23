@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.sign;
 
+import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
@@ -11,7 +12,9 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
+import org.bukkit.block.data.type.WallSign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -47,11 +50,12 @@ public final class CruiseSign implements Listener{
             return;
         }
         Sign sign = (Sign) event.getClickedBlock().getState();
+        Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
         if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Cruise: OFF")) {
             if (CraftManager.getInstance().getCraftByPlayer(event.getPlayer()) == null) {
                 return;
             }
-            Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
+
             if (!c.getType().getCanCruise()) {
                 return;
             }
@@ -59,8 +63,30 @@ public final class CruiseSign implements Listener{
 
             sign.setLine(0, "Cruise: ON");
             sign.update(true);
-
-            c.setCruiseDirection(sign.getRawData());
+            final BlockFace direction;
+            if (Settings.IsLegacy){
+                if (sign.getData() instanceof org.bukkit.material.Sign){
+                    org.bukkit.material.Sign signData = (org.bukkit.material.Sign) sign.getData();
+                    if (signData.isWallSign()) {
+                        direction = signData.getAttachedFace();
+                    } else {
+                        direction = signData.getFacing().getOppositeFace();
+                    }
+                }else {
+                    direction = null;
+                }
+            } else {
+                if (sign.getBlockData() instanceof org.bukkit.block.data.type.Sign){
+                    org.bukkit.block.data.type.Sign signData = (org.bukkit.block.data.type.Sign)sign.getBlockData();
+                    direction = signData.getRotation().getOppositeFace();
+                }else if (sign.getBlockData() instanceof org.bukkit.block.data.type.WallSign){
+                    WallSign signData = (WallSign)sign.getBlockData();
+                    direction = signData.getFacing().getOppositeFace();
+                } else {
+                    direction = null;
+                }
+            }
+            c.setCruiseDirection(direction);
             c.setLastCruisUpdate(System.currentTimeMillis());
             c.setCruising(true);
             if (!c.getType().getMoveEntities()) {
@@ -69,12 +95,15 @@ public final class CruiseSign implements Listener{
             return;
         }
         if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Cruise: ON")
-                && CraftManager.getInstance().getCraftByPlayer(event.getPlayer()) != null
-                && CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getCanCruise()) {
+                && c != null
+                && c.getType().getCanCruise()) {
             sign.setLine(0, "Cruise: OFF");
             sign.update(true);
             CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCruising(false);
         }
+        if (c == null)
+            return;
+        Movecraft.getInstance().getLogger().info("Cruising: " + c.getCruising());
     }
 
     @EventHandler(priority = EventPriority.NORMAL)

@@ -13,7 +13,9 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
+import org.bukkit.block.data.type.WallSign;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
@@ -64,7 +66,30 @@ public final class CraftSign implements Listener{
 
         if (c.getType().getCruiseOnPilot()) {
             c.detect(null, event.getPlayer(), startPoint);
-            c.setCruiseDirection(sign.getRawData());
+            final BlockFace direction;
+            if (Settings.IsLegacy){
+                if (sign.getData() instanceof org.bukkit.material.Sign){
+                    org.bukkit.material.Sign signData = (org.bukkit.material.Sign) sign.getData();
+                    if (signData.isWallSign()) {
+                        direction = signData.getAttachedFace();
+                    } else {
+                        direction = signData.getFacing().getOppositeFace();
+                    }
+                }else {
+                    direction = null;
+                }
+            } else {
+                if (sign.getBlockData() instanceof org.bukkit.block.data.type.Sign){
+                    org.bukkit.block.data.type.Sign signData = (org.bukkit.block.data.type.Sign)sign.getBlockData();
+                    direction = signData.getRotation().getOppositeFace();
+                }else if (sign.getBlockData() instanceof org.bukkit.block.data.type.WallSign){
+                    WallSign signData = (WallSign)sign.getBlockData();
+                    direction = signData.getFacing().getOppositeFace();
+                } else {
+                    direction = null;
+                }
+            }
+            c.setCruiseDirection(direction);
             c.setLastCruisUpdate(System.currentTimeMillis());
             c.setCruising(true);
             new BukkitRunnable() {

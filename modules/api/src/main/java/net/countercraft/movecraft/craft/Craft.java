@@ -28,6 +28,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -51,7 +52,8 @@ public abstract class Craft {
     private boolean cruising;
     private boolean sinking;
     private boolean disabled;
-    private byte cruiseDirection;
+    private boolean repairing;
+    private BlockFace cruiseDirection;
     private long lastCruiseUpdate;
     private long lastBlockCheck;
     private long lastRotateTime=0;
@@ -170,11 +172,11 @@ public abstract class Craft {
         this.disabled = disabled;
     }
 
-    public byte getCruiseDirection() {
+    public BlockFace getCruiseDirection() {
         return cruiseDirection;
     }
 
-    public void setCruiseDirection(byte cruiseDirection) {
+    public void setCruiseDirection(BlockFace cruiseDirection) {
         this.cruiseDirection = cruiseDirection;
     }
 
@@ -424,10 +426,18 @@ public abstract class Craft {
     }
 
     @NotNull
-    public String getUniqueName(){
+    public String getName(){
         return name;
     }
-    public void setUniqueName(String name){
+    public void setName(@NotNull String name){
         this.name = name;
+    }
+
+    public boolean isRepairing() {
+        return repairing;
+    }
+
+    public void setRepairing(boolean repairing) {
+        this.repairing = repairing;
     }
 }

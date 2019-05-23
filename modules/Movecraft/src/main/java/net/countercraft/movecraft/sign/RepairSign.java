@@ -270,10 +270,9 @@ public class RepairSign implements Listener{
 
                     }
                     if (updateCommands.size() > 0) {
-                        final Craft releaseCraft = pCraft;
                         CraftManager.getInstance().removePlayerFromCraft(pCraft);
                         RepairManager repairManager = Movecraft.getInstance().getRepairManager();
-                        repairManager.getRepairs().add(new Repair(sign.getLine(1), releaseCraft, updateCommands, updateCommandsFragileBlocks,  p.getUniqueId(), numDifferentBlocks, sign.getLocation()));
+                        repairManager.getRepairs().add(new Repair(sign.getLine(1), pCraft.getHitBox(), updateCommands, updateCommandsFragileBlocks,  p.getUniqueId(), numDifferentBlocks, sign.getLocation()));
                     }
 
                 }

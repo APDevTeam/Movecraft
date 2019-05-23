@@ -175,25 +175,24 @@ public class IMovecraftRepair extends MovecraftRepair {
             long numDiffBlocks = 0;
             HashMap<Material, Double> missingBlocks = new HashMap<>();
             ArrayDeque<Vector> locMissingBlocks = new ArrayDeque<>();
-            Vector distance = new Vector(sign.getX() - hitBox.getMinX(), sign.getY() - hitBox.getMinY(),sign.getZ() - hitBox.getMinZ());
+            BlockVector3 length = clipboard.getMaximumPoint().subtract(clipboard.getMinimumPoint());
+            BlockVector3 distance = clipboard.getOrigin().subtract(clipboard.getMinimumPoint());
+            Vector offset = new Vector(sign.getX()-distance.getBlockX(),sign.getY()-distance.getBlockY(),sign.getZ()-distance.getBlockZ());
             if (distanceMap.containsKey(s)) {
-                distanceMap.replace(s,distance);
+                distanceMap.replace(s,offset);
             } else {
-                distanceMap.put(s,distance);
+                distanceMap.put(s,offset);
             }
-            Bukkit.broadcastMessage(distance.toString());
-
-
-            for (int y = clipboard.getMinimumPoint().getBlockY(); y <= clipboard.getMaximumPoint().getBlockY(); y++) {
-                for (int z = clipboard.getMinimumPoint().getBlockZ(); z <= clipboard.getMaximumPoint().getBlockZ(); z++) {
-                    for (int x = clipboard.getMinimumPoint().getBlockX(); x <= clipboard.getMaximumPoint().getBlockX(); x++) {
-                        BlockVector3 position = BlockVector3.at(x,y,z);
+            for (int y = 0; y <= length.getBlockY(); y++) {
+                for (int z = 0; z <= length.getBlockZ(); z++) {
+                    for (int x = 0; x <= length.getBlockX(); x++) {
+                        BlockVector3 position = BlockVector3.at(x+clipboard.getMinimumPoint().getBlockX(),y+clipboard.getMinimumPoint().getBlockY(),z+clipboard.getMinimumPoint().getBlockZ());
                         int cx = x - distance.getBlockX();
                         int cy = y - distance.getBlockY();
                         int cz = z - distance.getBlockZ();
                         BaseBlock block = clipboard.getFullBlock(position);
                         Material type = BukkitAdapter.adapt(block.getBlockType());
-                        Location loc = new Location(sign.getWorld(),x,y,z);
+                        Location loc = new Location(sign.getWorld(),offset.getBlockX()+x,offset.getBlockY()+y,offset.getBlockZ()+z);
                         Block bukkitBlock = sign.getWorld().getBlockAt(loc);
                         boolean isImportant = true;
 

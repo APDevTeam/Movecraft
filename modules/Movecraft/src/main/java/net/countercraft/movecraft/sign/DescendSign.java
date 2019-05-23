@@ -10,6 +10,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -55,7 +56,7 @@ public final class DescendSign implements Listener{
             sign.setLine(0, "Descend: ON");
             sign.update(true);
 
-            c.setCruiseDirection((byte) 0x43);
+            c.setCruiseDirection(BlockFace.DOWN);
             c.setLastCruisUpdate(System.currentTimeMillis());
             c.setCruising(true);
 
