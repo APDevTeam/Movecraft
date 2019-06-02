@@ -1,12 +1,12 @@
 package net.countercraft.movecraft.compatmanager;
 
-import me.ryanhamshire.GriefPrevention.DataStore;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import me.ryanhamshire.GriefPrevention.Messages;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.events.CraftRotateEvent;
+import net.countercraft.movecraft.events.CraftSinkEvent;
 import net.countercraft.movecraft.events.CraftTranslateEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.Location;
@@ -52,5 +52,9 @@ public class GriefPreventionCompatManager implements Listener {
                 event.setCancelled(true);
             }
         }
+    }
+    @EventHandler
+    public void onCraftSink(CraftSinkEvent event){
+
     }
 }

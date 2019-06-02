@@ -63,7 +63,6 @@ public class AsyncManager extends BukkitRunnable {
     private long lastFadeCheck = 0;
     private long lastContactCheck = 0;
     private HashSet<Material> transparent = null;
-    private boolean climb = false;
 
     public AsyncManager() {
         transparent = new HashSet<>();
@@ -360,6 +359,7 @@ public class AsyncManager extends BukkitRunnable {
             boolean bankLeft = false;
             boolean bankRight = false;
             boolean dive = false;
+            boolean climb = pcraft.isClimbing();
             if (pcraft.getPilotLocked()) {
                 if (pcraft.getNotificationPlayer().isSneaking())
                     dive = true;
@@ -380,6 +380,9 @@ public class AsyncManager extends BukkitRunnable {
             // ascend
             if (pcraft.getCruiseDirection() == BlockFace.UP) {
                 dy = 1 + pcraft.getType().getVertCruiseSkipBlocks();
+            }
+            else if (climb){
+                dy = (1 + pcraft.getType().getCruiseSkipBlocks()) >> 1;
             }
             // descend
             if (pcraft.getCruiseDirection() == BlockFace.DOWN) {
@@ -402,10 +405,7 @@ public class AsyncManager extends BukkitRunnable {
                 if (bankLeft) {
                     dz = (1 + pcraft.getType().getCruiseSkipBlocks()) >> 1;
                 }
-                if (climb){
-                    dy = (1 + pcraft.getType().getCruiseSkipBlocks()) >> 1;
-                    climb = false;
-                }
+
             }
             // ship faces east
             if (pcraft.getCruiseDirection() == BlockFace.EAST) {
@@ -419,7 +419,7 @@ public class AsyncManager extends BukkitRunnable {
             }
             // ship faces north
             if (pcraft.getCruiseDirection() == BlockFace.NORTH) {
-                dz = 1 + pcraft.getType().getCruiseSkipBlocks();
+                dz = 0 - 1 - pcraft.getType().getCruiseSkipBlocks();
                 if (bankRight) {
                     dx = (0 - 1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
                 }
@@ -429,7 +429,7 @@ public class AsyncManager extends BukkitRunnable {
             }
             // ship faces south
             if (pcraft.getCruiseDirection() == BlockFace.SOUTH) {
-                dz = 0 - 1 - pcraft.getType().getCruiseSkipBlocks();
+                dz = 1 + pcraft.getType().getCruiseSkipBlocks();
                 if (bankLeft) {
                     dx = (0 - 1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
                 }
@@ -440,7 +440,6 @@ public class AsyncManager extends BukkitRunnable {
             if (pcraft.getType().getCruiseOnPilot()) {
                 dy = pcraft.getType().getCruiseOnPilotVertMove();
             }
-            Movecraft.getInstance().getLogger().info(String.format("(%d,%d,%d)",dx,dy,dz) + " Cruise direction: " + pcraft.getCruiseDirection());
             pcraft.translate(dx, dy, dz);
             pcraft.setLastDX(dx);
             pcraft.setLastDZ(dz);
@@ -555,9 +554,6 @@ public class AsyncManager extends BukkitRunnable {
             // update the time for the next check
             if (isSinking && pcraft.isNotProcessing()) {
                 Player notifyP = pcraft.getNotificationPlayer();
-                if (notifyP != null) {
-                    notifyP.sendMessage(I18nSupport.getInternationalisedString("Player- Craft is sinking"));
-                }
                 pcraft.setCruising(false);
                 pcraft.sink();
                 CraftManager.getInstance().removePlayerFromCraft(pcraft);
@@ -749,7 +745,9 @@ public class AsyncManager extends BukkitRunnable {
     }
 
     private void processWaterlogging(){
+        for (Craft c : CraftManager.getInstance()){
 
+        }
     }
 
     private Craft fastNearestCraftToLoc(Location loc) {
@@ -1094,6 +1092,7 @@ public class AsyncManager extends BukkitRunnable {
         processTracers();
         processFireballs();
         processTNTContactExplosives();
+        processWaterlogging();
         if (!Settings.IsLegacy) {
             processWaterlogging();
         }
@@ -1134,7 +1133,4 @@ public class AsyncManager extends BukkitRunnable {
         clearanceSet.clear();
     }
 
-    public void setClimb(boolean climb){
-        this.climb = climb;
-    }
 }

@@ -18,7 +18,9 @@
 package net.countercraft.movecraft;
 
 import at.pavlov.cannons.Cannons;
+import br.net.fabiozumbi12.RedProtect.Bukkit.RedProtect;
 import com.daemitus.deadbolt.DeadboltPlugin;
+import com.dre.brewery.P;
 import com.earth2me.essentials.Essentials;
 import com.massivecraft.factions.Factions;
 import com.mewin.WGCustomFlags.WGCustomFlagsPlugin;
@@ -26,10 +28,11 @@ import com.palmergames.bukkit.towny.Towny;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.flags.StateFlag;
+import com.songoda.kingdoms.main.Kingdoms;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import net.countercraft.movecraft.async.AsyncManager;
 import net.countercraft.movecraft.commands.*;
-import net.countercraft.movecraft.compatmanager.GriefPreventionCompatManager;
+import net.countercraft.movecraft.compatmanager.*;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.listener.BlockListener;
@@ -44,7 +47,6 @@ import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
 import net.countercraft.movecraft.warfare.assault.AssaultManager;
 import net.countercraft.movecraft.warfare.siege.Siege;
 import net.countercraft.movecraft.warfare.siege.SiegeManager;
-import net.countercraft.movecraft.compatmanager.WorldGuardCompatManager;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -76,6 +78,9 @@ public class Movecraft extends JavaPlugin {
     private static Factions factionsPlugin;
     private static DeadboltPlugin deadboltPlugin;
     private static GriefPrevention griefPreventionPlugin;
+    private static Kingdoms kingdomsPlugin;
+    private static RedProtect redProtectPlugin;
+    private static P breweryPlugin;
     /*public HashMap<MovecraftLocation, Long> blockFadeTimeMap = new HashMap<>();
     public HashMap<MovecraftLocation, Integer> blockFadeTypeMap = new HashMap<>();
     public HashMap<MovecraftLocation, Boolean> blockFadeWaterMap = new HashMap<>();
@@ -219,7 +224,9 @@ public class Movecraft extends JavaPlugin {
         Settings.ForbiddenRemoteSigns = new HashSet<>(getConfig().getStringList("ForbiddenRemoteSigns"));
         Settings.SiegeEnable = getConfig().getBoolean("SiegeEnable", false);
         Settings.SiegeTimeZone = getConfig().getString("SiegeTimeZone", "UTC");
-
+        Settings.FactionsBlockMoveInSafezone = getConfig().getBoolean("FactionsBlockMoveInSafezone",false);
+        Settings.FactionsBlockSinkInSafezone = getConfig().getBoolean("FactionsBlockSinkInSafezone",false);
+        Settings.FactionsBlockMoveInWarzone = getConfig().getBoolean("FactionsBlockMoveInWarzone",false);
 
 
 
@@ -368,11 +375,23 @@ public class Movecraft extends JavaPlugin {
         if (tempFactionsPlugin != null){
             if (tempFactionsPlugin instanceof Factions){
                 factionsPlugin = (Factions) tempFactionsPlugin;
+                getServer().getPluginManager().registerEvents(new FactionsCompatManager(),this);
                 logger.info("Movecraft found a compatible version of Factions. Enabling Factions integration.");
             }
         }
         if (factionsPlugin == null){
             logger.info("Movecraft did not find a compatible version of Factions. Disabling Factions integration");
+        }
+        //Kingdoms
+        Plugin tempKingdomsPlugin = getServer().getPluginManager().getPlugin("Kingdoms");
+        if (tempKingdomsPlugin != null){
+            if (tempKingdomsPlugin instanceof Kingdoms){
+                getServer().getPluginManager().registerEvents(new KingdomsCompatManager(),this);
+                kingdomsPlugin = (Kingdoms) tempKingdomsPlugin;
+            }
+        }
+        if (kingdomsPlugin == null){
+            logger.info("Movecraft did not find a compatible version of Kingdoms. Disabling Kingdoms integration");
         }
         //GriefPrevention
         Plugin gpPlugin = getServer().getPluginManager().getPlugin("GriefPrevention");
@@ -382,6 +401,21 @@ public class Movecraft extends JavaPlugin {
                 getServer().getPluginManager().registerEvents(new GriefPreventionCompatManager(),this);
                 griefPreventionPlugin = (GriefPrevention) gpPlugin;
             }
+        }
+        if (griefPreventionPlugin == null){
+            logger.info("Movecraft did not find a compatible version of GriefPrevention. Disabling GriefPrevention integration");
+        }
+        //RedProtect
+        Plugin rpPlugin = getServer().getPluginManager().getPlugin("RedProtect");
+        if (rpPlugin != null){
+            if (rpPlugin instanceof RedProtect){
+                logger.info("Found a compatible version of RedProtect. Enabling RedProtect integration");
+                getServer().getPluginManager().registerEvents(new RedProtectCompatManager(),this);
+                redProtectPlugin = (RedProtect) rpPlugin;
+            }
+        }
+        if (redProtectPlugin == null){
+            logger.info("Movecraft did not find a compatible version of RedProtect. Disabling RedProtect integration");
         }
         // Deadbolt
         Plugin tempDeadboltPlugin = getServer().getPluginManager().getPlugin("Deadbolt");
@@ -393,6 +427,14 @@ public class Movecraft extends JavaPlugin {
         }
         if (deadboltPlugin == null){
             logger.info("Movecraft did not find a compatible version of Deadbolt. Disabling Deadbolt integration");
+        }
+        //Brewery
+        Plugin brewery = getServer().getPluginManager().getPlugin("Brewery");
+        if (brewery != null){
+            if (brewery instanceof P){
+                breweryPlugin = (P) brewery;
+                logger.info("Movecraft found a compatible version of Brewery. Enabling Brewery integration");
+            }
         }
         // and now Vault
         if (getServer().getPluginManager().getPlugin("Vault") != null) {
@@ -420,7 +462,7 @@ public class Movecraft extends JavaPlugin {
             }
         }
 
-        I18nSupport.init();
+        I18nSupport.init(this);
         if (shuttingDown && Settings.IGNORE_RESET) {
             logger.log(
                     Level.SEVERE,
@@ -615,6 +657,14 @@ public class Movecraft extends JavaPlugin {
 
     public DeadboltPlugin getDeadboltPlugin(){
         return deadboltPlugin;
+    }
+
+    public Kingdoms getKingdomsPlugin() {
+        return kingdomsPlugin;
+    }
+
+    public RedProtect getRedProtectPlugin() {
+        return redProtectPlugin;
     }
 }
 

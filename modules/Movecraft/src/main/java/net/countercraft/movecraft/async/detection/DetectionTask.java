@@ -21,17 +21,14 @@ package net.countercraft.movecraft.async.detection;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.async.AsyncTask;
-import net.countercraft.movecraft.sign.PilotSign;
-import net.countercraft.movecraft.utils.HashHitBox;
-import net.countercraft.movecraft.utils.LegacyUtils;
-import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.utils.HashHitBox;
+import net.countercraft.movecraft.utils.LegacyUtils;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -125,16 +122,26 @@ public class DetectionTask extends AsyncTask {
                     @Override
                     public void run() {
                         Block block = data.getWorld().getBlockAt(x, y, z);
+                        Sign sign = (Sign) block.getState();
                         if (data.getPlayer() != null) {
-                            if (!PilotSign.containsPilot(data.getPlayer().getName(), block) && (!data.getPlayer().hasPermission("movecraft.bypasslock"))) {
-                                fail(I18nSupport.getInternationalisedString(
-                                        "Not one of the registered pilots on this craft"));
+                            if (sign.getLine(0).equalsIgnoreCase("Pilot:")) {
+                                boolean foundPilot = false;
+                                for (String line : sign.getLines()){
+                                    if (line.equals(data.getPlayer().getName())){
+                                        foundPilot = true;
+                                        break;
+                                    }
+                                }
+
+                                if (!foundPilot &&(!data.getPlayer().hasPermission("movecraft.bypasslock"))){
+                                    fail(I18nSupport.getInternationalisedString(
+                                            "Not one of the registered pilots on this craft"));
+                                }
                             }
                             if (containsForbiddenSignString(block)){
                                 fail(I18nSupport.getInternationalisedString(
                                         "Detection - Forbidden sign string found"));
                             }
-                            data.getPlayer().sendMessage("test");
                         }
                     }
                 }.runTask(Movecraft.getInstance());

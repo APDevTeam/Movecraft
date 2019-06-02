@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 public class CraftSinkEvent extends CraftEvent implements Cancellable {
     private static final HandlerList HANDLERS = new HandlerList();
     private boolean cancelled = false;
+    @NotNull private String failMessage = "";
 
     public CraftSinkEvent(@NotNull Craft craft) {
         super(craft);
@@ -31,5 +32,14 @@ public class CraftSinkEvent extends CraftEvent implements Cancellable {
     @Override
     public void setCancelled(boolean cancel) {
         this.cancelled = cancel;
+    }
+
+    @NotNull
+    public String getFailMessage(){
+        return failMessage;
+    }
+
+    public void setFailMessage(@NotNull String failMessage) {
+        this.failMessage = failMessage;
     }
 }

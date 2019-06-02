@@ -1,6 +1,5 @@
 package net.countercraft.movecraft.async.translation;
 
-import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.config.Settings;
@@ -17,11 +16,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
-import org.bukkit.block.*;
-import org.bukkit.block.data.Bisected;
-import org.bukkit.block.data.BlockData;
-import org.bukkit.block.data.Waterlogged;
-import org.bukkit.block.data.type.TrapDoor;
+import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -29,8 +25,6 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -138,12 +132,17 @@ public class TranslationTask extends AsyncTask {
         }else if(craft.getType().getMaxHeightAboveGround() > 0){
             final MovecraftLocation middle = oldHitBox.getMidPoint();
             int testY = minY;
-            while (testY > 0){
-                testY -= 1;
-                if (craft.getW().getBlockAt(middle.getX(),testY,middle.getZ()).getType() != Material.AIR || !Settings.IsLegacy &&(craft.getW().getBlockAt(middle.getX(),testY,middle.getZ()).getType() != Material.CAVE_AIR || craft.getW().getBlockAt(middle.getX(),testY,middle.getZ()).getType() != Material.VOID_AIR))
-                    break;
+            for (int y = minY;y > 0;y--) {
+                if (y == minY)
+                    continue;
+                if (craft.getW().getBlockAt(middle.getX(), y, middle.getZ()).getType() == Material.AIR || !Settings.IsLegacy && (craft.getW().getBlockAt(middle.getX(), y, middle.getZ()).getType() == Material.CAVE_AIR || craft.getW().getBlockAt(middle.getX(), y, middle.getZ()).getType() == Material.VOID_AIR)){
+                    continue;
+                }
+                testY = y;
+                break;
             }
             if (minY - testY > craft.getType().getMaxHeightAboveGround()) {
+                dy = 0;
                 dy -= 1;
             }
         }
@@ -438,31 +437,6 @@ public class TranslationTask extends AsyncTask {
 
 
 
-    private void processWaterlogging(){
-        HitBox hitBox = craft.getHitBox();
-        for (MovecraftLocation moveLoc : hitBox){
-            Block b = moveLoc.toBukkit(craft.getW()).getBlock();
-            BlockData data = b.getBlockData();
-            if (!(data instanceof Waterlogged)){
-                continue;
-            }
-            if (b.getLocation().getY() > craft.getWaterLine()){
-                Waterlogged wLog = (Waterlogged) data;
-                wLog.setWaterlogged(false);
-                continue;
-            }
-            if (data instanceof TrapDoor){
-                TrapDoor tDoor = (TrapDoor) data;
-                if (tDoor.getHalf() == Bisected.Half.TOP && b.getRelative(BlockFace.DOWN).getType() == Material.WATER){
-                    tDoor.setWaterlogged(true);
-                } else if (tDoor.getHalf() == Bisected.Half.BOTTOM && b.getRelative(BlockFace.UP).getType() == Material.WATER){
-                    tDoor.setWaterlogged(true);
-                } else if (b.getRelative(tDoor.getFacing().getOppositeFace()).getType() == Material.WATER){
-                    tDoor.setWaterlogged(true);
-                }
-            }
-        }
-    }
 
     public boolean failed(){
         return failed;

@@ -1,11 +1,8 @@
 package net.countercraft.movecraft.repair;
 
 import net.countercraft.movecraft.Movecraft;
-import org.bukkit.Bukkit;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 

@@ -62,11 +62,19 @@ public class Settings {
     public static boolean TownyBlockMoveOnSwitchPerm = false;
     public static boolean TownyBlockSinkOnNoPVP = false;
     public static boolean FactionsBlockMoveInSafezone = false;
+    public static boolean FactionsBlockSinkInSafezone = false;
     public static boolean FactionsBlockMoveInWarzone = false;
     public static boolean FactionsBlockMoveInAllyTerritory = false;
     public static boolean FactionsBlockMoveInTruceTerritory = false;
     public static boolean FactionsBlockMoveInEnemyTerritory = false;
     public static boolean FactionsBlockSinkOnNoPVP = false;
+    public static boolean GriefPreventionSinkOnNoPvP = false;
+
+    //RedProtect Settings
+    public static boolean RedProtectBlockMoveOnNoEntry = false;
+    public static boolean RedProtectBlockMoveOnNoBuild = false;
+    public static boolean RedProtectBlockMoveOnNoExit = false;
+    public static boolean RedProtectBlockSinkOnNoPvP = false;
     public static Map<String, TownyWorldHeightLimits> TownProtectionHeightLimits;
     public static Map<Material, Integer> DurabilityOverride;
     public static boolean IsPaper = false;

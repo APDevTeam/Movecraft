@@ -1,13 +1,10 @@
 package net.countercraft.movecraft.sign;
 
 import net.countercraft.movecraft.MovecraftLocation;
-import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.CraftDetectEvent;
-import net.countercraft.movecraft.utils.LegacyUtils;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -40,7 +37,7 @@ public final class DescendSign implements Listener{
             return;
         }
         Block block = event.getClickedBlock();
-        if (block.getType() != (Settings.IsLegacy ? LegacyUtils.SIGN_POST : Material.SIGN) && block.getType() != Material.WALL_SIGN) {
+        if (!(event.getClickedBlock().getState() instanceof Sign)){
             return;
         }
         Sign sign = (Sign) event.getClickedBlock().getState();

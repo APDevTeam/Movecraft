@@ -1,21 +1,14 @@
 package net.countercraft.movecraft.repair;
 
-import com.sk89q.worldedit.Vector;
-import net.countercraft.movecraft.Movecraft;
-import net.countercraft.movecraft.MovecraftLocation;
-import net.countercraft.movecraft.MovecraftRepair;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
-import net.countercraft.movecraft.utils.HashHitBox;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class RepairTask extends BukkitRunnable {
@@ -30,11 +23,9 @@ public class RepairTask extends BukkitRunnable {
         for (Craft craft : CraftManager.getInstance()){
             if (craft == null)
                 continue;
-            for (MovecraftLocation location : repair.getHitBox()){
-                if (craft.getHitBox().contains(location)) {
-                    repairCraft = craft;
-                    break;
-                }
+            if (craft.getHitBox().containsAll(repair.getHitBox().asSet())) {
+                repairCraft = craft;
+                break;
             }
         }
         if (repairCraft != null)

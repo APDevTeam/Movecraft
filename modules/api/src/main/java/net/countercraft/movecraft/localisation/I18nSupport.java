@@ -17,22 +17,22 @@
 
 package net.countercraft.movecraft.localisation;
 
-import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
+import org.bukkit.plugin.Plugin;
 
 import java.io.*;
 import java.util.Arrays;
 import java.util.Properties;
 import java.util.logging.Level;
 
-public class I18nSupport {
+public final class I18nSupport {
     private static Properties languageFile;
     private static boolean hasOtherScript = false;
     private static final String[] otherScriptLangs = {"el", "ar", "ur", "he", "zh", "jp"};
-    public static void init() {
+    public static void init(Plugin plugin) {
         languageFile = new Properties();
 
-        File localisationDirectory = new File(Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/localisation");
+        File localisationDirectory = new File(plugin.getDataFolder().getAbsolutePath() + "/localisation");
 
         if (!localisationDirectory.exists()) {
             localisationDirectory.mkdirs();
@@ -47,8 +47,8 @@ public class I18nSupport {
 
 
         if (is == null) {
-            Movecraft.getInstance().getLogger().log(Level.SEVERE, "Critical Error in Localisation System");
-            Movecraft.getInstance().getServer().shutdown();
+            plugin.getLogger().log(Level.SEVERE, "Critical Error in Localisation System");
+            plugin.getServer().shutdown();
             return;
         }
 
@@ -62,8 +62,7 @@ public class I18nSupport {
 
     }
     public static boolean writtenFromRightToLeft(){
-        boolean ret = (boolean) languageFile.getOrDefault("writtenFromRightToLeft", false);
-        return ret;
+        return (boolean) languageFile.getOrDefault("writtenFromRightToLeft", false);
     }
     public static String getInternationalisedString(String key) {
         String ret;

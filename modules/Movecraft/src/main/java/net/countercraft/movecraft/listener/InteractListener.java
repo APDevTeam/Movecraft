@@ -17,13 +17,12 @@
 
 package net.countercraft.movecraft.listener;
 
-import net.countercraft.movecraft.Movecraft;
-import net.countercraft.movecraft.utils.LegacyUtils;
-import net.countercraft.movecraft.utils.MathUtils;
-import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.utils.LegacyUtils;
+import net.countercraft.movecraft.utils.MathUtils;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -109,7 +108,7 @@ public final class InteractListener implements Listener {
                 // right click moves up or down if using direct
                 // control
                 if (craft.getCruising()){
-                    Movecraft.getInstance().getAsyncManager().setClimb(true);
+                    craft.setClimbing(true);
                     return;
                 }
                 int DY = 1;

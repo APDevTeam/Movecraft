@@ -10,18 +10,14 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.mapUpdater.update.FuelBurnUpdateCommand;
-import org.bukkit.*;
+import org.bukkit.Material;
+import org.bukkit.Sound;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryHolder;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 import java.util.UUID;
 
 public class ICraft extends Craft {
@@ -91,10 +87,14 @@ public class ICraft extends Craft {
                 }
             }
         }*/
+
         if (!checkFuel(dx,dy,dz)){
             getNotificationPlayer().playSound(getNotificationPlayer().getLocation(),Sound.BLOCK_ANVIL_LAND,1,0);
             getNotificationPlayer().sendMessage(I18nSupport.getInternationalisedString("Translation - Failed Craft out of fuel"));
             return;
+        }
+        if (isClimbing()){
+            setClimbing(false);
         }
         Movecraft.getInstance().getAsyncManager().submitTask(new TranslationTask(this, dx, dy, dz), this);
     }
@@ -176,7 +176,8 @@ public class ICraft extends Craft {
         // going down doesn't require fuel
         if (dy == -1 && dx == 0 && dz == 0)
             fuelBurnRate = 0.0;
-
+        if (dy > 0)
+            fuelBurnRate *= 2;
         if (fuelBurnRate == 0.0 || getSinking()) {
             return true;
         }
@@ -184,7 +185,6 @@ public class ICraft extends Craft {
             setBurningFuel(getBurningFuel() - fuelBurnRate);
             return true;
         }
-        final List<Block> fuelHolders = new ArrayList<>();
         Block fuelHolder = null;
         for (MovecraftLocation bTest : getHitBox()) {
             Block b = getW().getBlockAt(bTest.getX(), bTest.getY(), bTest.getZ());

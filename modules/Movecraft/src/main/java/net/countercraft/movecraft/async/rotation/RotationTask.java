@@ -25,28 +25,24 @@ import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
-import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.events.CraftRotateEvent;
-import net.countercraft.movecraft.utils.*;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.events.CraftRotateEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.update.CraftRotateCommand;
 import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
+import net.countercraft.movecraft.utils.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.Furnace;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.InventoryHolder;
-import org.bukkit.inventory.ItemStack;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -97,76 +93,7 @@ public class RotationTask extends AsyncTask {
             failMessage = I18nSupport.getInternationalisedString("Craft is disabled!");
         }
 
-        // check for fuel, burn some from a furnace if needed. Blocks of coal are supported, in addition to coal and charcoal
-        double fuelBurnRate = getCraft().getType().getFuelBurnRate();
-        if (fuelBurnRate != 0.0 && !getCraft().getSinking()) {
-            if (getCraft().getBurningFuel() < fuelBurnRate) {
-                Block fuelHolder = null;
-                for (MovecraftLocation bTest : oldHitBox) {
-                    Block b = getCraft().getW().getBlockAt(bTest.getX(), bTest.getY(), bTest.getZ());
-                    if (b.getState() instanceof Furnace) {
-                        InventoryHolder inventoryHolder = (InventoryHolder) b.getState();
-                        for (Material fuelType : Settings.FuelTypes.keySet()){
-                            if (inventoryHolder.getInventory().contains(fuelType)){
-                                fuelHolder = b;
-                            }
-                        }
-                        /*if ((!Settings.IsLegacy ? (inventoryHolder.getInventory().contains(Material.COAL) || inventoryHolder.getInventory().contains(Material.CHARCOAL)) || inventoryHolder.getInventory().contains(Material.COAL_BLOCK): (inventoryHolder.getInventory().contains(Material.COAL)) || inventoryHolder.getInventory().contains(Material.COAL_BLOCK))) {
-                            fuelHolder = b;
-                        }*/
-                    }
-                }
-                if (fuelHolder == null) {
-                    failed = true;
-                    failMessage = I18nSupport.getInternationalisedString("Translation - Failed Craft out of fuel");
-                } else {
-                    InventoryHolder inventoryHolder = (InventoryHolder) fuelHolder.getState();
-                    for (Material fuel : Settings.FuelTypes.keySet()){
-                        if (inventoryHolder.getInventory().contains(fuel)){
-                            ItemStack iStack = inventoryHolder.getInventory().getItem(inventoryHolder.getInventory().first(fuel));
-                            int amount = iStack.getAmount();
-                            if (amount == 1) {
-                                inventoryHolder.getInventory().remove(iStack);
-                            } else {
-                                iStack.setAmount(amount - 1);
-                            }
-                            craft.setBurningFuel(craft.getBurningFuel() + Settings.FuelTypes.get(fuel));
-                        }
-                    }
-                    /*if (inventoryHolder.getInventory().contains(Material.COAL)) {
-                        ItemStack iStack = inventoryHolder.getInventory().getItem(inventoryHolder.getInventory().first(Material.COAL));
-                        int amount = iStack.getAmount();
-                        if (amount == 1) {
-                            inventoryHolder.getInventory().remove(iStack);
-                        } else {
-                            iStack.setAmount(amount - 1);
-                        }
-                        getCraft().setBurningFuel(getCraft().getBurningFuel() + 7.0);
-                    } else if (inventoryHolder.getInventory().contains(Material.COAL_BLOCK)){
-                        ItemStack iStack = inventoryHolder.getInventory().getItem(inventoryHolder.getInventory().first(Material.COAL_BLOCK));
-                        int amount = iStack.getAmount();
-                        if (amount == 1) {
-                            inventoryHolder.getInventory().remove(iStack);
-                        } else {
-                            iStack.setAmount(amount - 1);
-                        }
-                        getCraft().setBurningFuel(getCraft().getBurningFuel() + 79.0);
 
-                    } else {
-                        ItemStack iStack = inventoryHolder.getInventory().getItem(inventoryHolder.getInventory().first(Material.CHARCOAL));
-                        int amount = iStack.getAmount();
-                        if (amount == 1) {
-                            inventoryHolder.getInventory().remove(iStack);
-                        } else {
-                            iStack.setAmount(amount - 1);
-                        }
-                        getCraft().setBurningFuel(getCraft().getBurningFuel() + 7.0);
-                    }*/
-                }
-            } else {
-                getCraft().setBurningFuel(getCraft().getBurningFuel() - fuelBurnRate);
-            }
-        }
         // if a subcraft, find the parent craft. If not a subcraft, it is it's own parent
         Set<Craft> craftsInWorld = CraftManager.getInstance().getCraftsInWorld(getCraft().getW());
         Craft parentCraft = getCraft();

@@ -209,6 +209,13 @@
             <systemPath>${project.basedir}/../../libs/RedProtect-7.5.5-b129-Universal.jar</systemPath>
         </dependency>
         <dependency>
+            <groupId>com.dre</groupId>
+            <artifactId>Brewery</artifactId>
+            <version>1.7.1</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/../../libs/Brewery-1.7.1.jar</systemPath>
+        </dependency>
+        <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations-java5</artifactId>
             <version>RELEASE</version>
