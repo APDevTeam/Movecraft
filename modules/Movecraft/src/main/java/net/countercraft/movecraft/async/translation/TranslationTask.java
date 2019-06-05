@@ -75,7 +75,23 @@ public class TranslationTask extends AsyncTask {
         FALL_THROUGH_BLOCKS.add(Material.FIRE);
         FALL_THROUGH_BLOCKS.add(Material.REDSTONE_WIRE);
         FALL_THROUGH_BLOCKS.add(Material.LADDER);
-        FALL_THROUGH_BLOCKS.add(Material.WALL_SIGN);
+        if (Settings.is1_14){
+            FALL_THROUGH_BLOCKS.add(Material.BIRCH_SIGN);
+            FALL_THROUGH_BLOCKS.add(Material.OAK_SIGN);
+            FALL_THROUGH_BLOCKS.add(Material.DARK_OAK_SIGN);
+            FALL_THROUGH_BLOCKS.add(Material.JUNGLE_SIGN);
+            FALL_THROUGH_BLOCKS.add(Material.SPRUCE_SIGN);
+            FALL_THROUGH_BLOCKS.add(Material.ACACIA_SIGN);
+            FALL_THROUGH_BLOCKS.add(Material.BIRCH_WALL_SIGN);
+            FALL_THROUGH_BLOCKS.add(Material.OAK_WALL_SIGN);
+            FALL_THROUGH_BLOCKS.add(Material.DARK_OAK_WALL_SIGN);
+            FALL_THROUGH_BLOCKS.add(Material.JUNGLE_WALL_SIGN);
+            FALL_THROUGH_BLOCKS.add(Material.SPRUCE_WALL_SIGN);
+            FALL_THROUGH_BLOCKS.add(Material.ACACIA_WALL_SIGN);
+        } else {
+            FALL_THROUGH_BLOCKS.add(Material.getMaterial("SIGN"));
+            FALL_THROUGH_BLOCKS.add(Material.getMaterial("WALL_SIGN"));
+        }
         FALL_THROUGH_BLOCKS.add(Material.LEVER);
         FALL_THROUGH_BLOCKS.add(Material.STONE_BUTTON);
         FALL_THROUGH_BLOCKS.add(Material.SNOW);

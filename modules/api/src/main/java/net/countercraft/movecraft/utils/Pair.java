@@ -1,12 +1,10 @@
 package net.countercraft.movecraft.utils;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.io.Serializable;
 import java.util.Map;
 import java.util.UUID;
 
-public final class Pair<L,R> implements Serializable, Map.Entry<L,R> {
+public final class Pair<L,R> implements Serializable, Map.Entry<L,R>{
     private final UUID id = UUID.randomUUID();
     private final L left;
     private final R right;
@@ -46,13 +44,11 @@ public final class Pair<L,R> implements Serializable, Map.Entry<L,R> {
             return false;
         }
         Pair pair = (Pair) obj;
-        return getLeft().equals(pair.getLeft())&&getRight().equals(pair.getRight());
+        return getLeft().equals(pair.getLeft()) && getRight().equals(pair.getRight());
     }
 
     @Override
     public int hashCode() {
         return id.hashCode();
     }
-
-
 }

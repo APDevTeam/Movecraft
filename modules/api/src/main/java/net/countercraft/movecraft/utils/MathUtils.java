@@ -106,6 +106,8 @@ public class MathUtils {
         return new MovecraftLocation(bukkitLocation.getBlockX(), bukkitLocation.getBlockY(), bukkitLocation.getBlockZ());
     }
 
+
+
     /**
      * Rotates a MovecraftLocation towards a supplied <code>Rotation</code>.
      * The resulting MovecraftRotation is based on a center of (0,0,0).

@@ -30,11 +30,13 @@ public class WorldEdit7UpdateCommand extends UpdateCommand {
     @Override
     public void doUpdate() {
         Block block = world.getBlockAt(location.getX(), location.getY(), location.getZ());
-        Bukkit.broadcastMessage(type.name());
         block.setType(type);
         assert worldEdit7BaseBlock != null;
         BlockData bData = BukkitAdapter.adapt(worldEdit7BaseBlock);
         block.setBlockData(bData);
+        if (Settings.Debug){
+            Bukkit.broadcastMessage(String.format("Material: %s, Location: %s",type.name().toLowerCase().replace("_", " "),location.toString()));
+        }
         Material weType = BukkitAdapter.adapt(worldEdit7BaseBlock.getBlockType());
         if (type == Material.DISPENSER){
             Tag t = worldEdit7BaseBlock.getNbtData().getValue().get("Items");

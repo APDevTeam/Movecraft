@@ -4,9 +4,7 @@ import com.sk89q.jnbt.CompoundTag;
 import com.sk89q.jnbt.ListTag;
 import com.sk89q.jnbt.Tag;
 import com.sk89q.worldedit.blocks.BaseBlock;
-import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import net.countercraft.movecraft.MovecraftLocation;
-import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.utils.LegacyUtils;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -14,7 +12,6 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Dispenser;
 import org.bukkit.block.Sign;
-import org.bukkit.block.data.BlockData;
 import org.bukkit.inventory.ItemStack;
 
 public class WorldEditUpdateCommand extends UpdateCommand {
@@ -160,7 +157,6 @@ public class WorldEditUpdateCommand extends UpdateCommand {
     }
 
     private boolean isSign(Material type){
-        if (Settings.IsLegacy) return type.equals(LegacyUtils.SIGN_POST) || type.equals(Material.WALL_SIGN);
-        else return type.equals(Material.SIGN) || type.equals(Material.WALL_SIGN);
+        return type.name().endsWith("SIGN");
     }
 }

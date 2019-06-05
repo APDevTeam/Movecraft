@@ -19,6 +19,7 @@ package net.countercraft.movecraft;
 
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.util.Vector;
 
 /**
  * Represents a Block aligned coordinate triplet.
@@ -86,6 +87,9 @@ final public class MovecraftLocation {
 
     public static Location toBukkit(World world, MovecraftLocation location){
         return new Location(world, location.x, location.y, location.z);
+    }
+    public static MovecraftLocation fromVector(Vector vector){
+        return new MovecraftLocation(vector.getBlockX(),vector.getBlockY(),vector.getBlockZ());
     }
 
     @Override

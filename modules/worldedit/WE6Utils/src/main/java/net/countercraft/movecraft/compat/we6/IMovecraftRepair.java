@@ -7,7 +7,6 @@ import com.sk89q.worldedit.MaxChangedBlocksException;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.blocks.BaseBlock;
 import com.sk89q.worldedit.bukkit.BukkitWorld;
-import com.sk89q.worldedit.bukkit.adapter.BukkitImplAdapter;
 import com.sk89q.worldedit.extent.Extent;
 import com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
@@ -28,6 +27,7 @@ import net.countercraft.movecraft.MovecraftRepair;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.utils.HashHitBox;
+import net.countercraft.movecraft.utils.Pair;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -40,10 +40,13 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.util.Vector;
 
 import java.io.*;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 public class IMovecraftRepair extends MovecraftRepair {
-    private HashMap<String, ArrayDeque<Vector>> locMissingBlocksMap = new HashMap<>();
+    private HashMap<String, ArrayDeque<Pair<Vector, Vector>>> locMissingBlocksMap = new HashMap<>();
     private HashMap<String, Long> numDiffBlocksMap = new HashMap<>();
     private HashMap<String, HashMap<Material, Double>> missingBlocksMap = new HashMap<>();
     private final HashMap<String, Vector> distanceMap = new HashMap<>();
@@ -142,10 +145,7 @@ public class IMovecraftRepair extends MovecraftRepair {
         }
     }
 
-    @Override
-    public boolean repairRegion(World world, String s) {
-        return false;
-    }
+
 
     @Override
     public Clipboard loadCraftRepairStateClipboard(Plugin plugin,Craft craft, Sign sign, String repairStateFile, World world) {
@@ -165,7 +165,7 @@ public class IMovecraftRepair extends MovecraftRepair {
         if (clipboard != null){
             long numDiffBlocks = 0;
             HashMap<Material, Double> missingBlocks = new HashMap<>();
-            ArrayDeque<Vector> locMissingBlocks = new ArrayDeque<>();
+            ArrayDeque<Pair<Vector, Vector>> locMissingBlocks = new ArrayDeque<>();
             Vector distance = new Vector(sign.getX() - hitBox.getMinX(), sign.getY() - hitBox.getMinY(),sign.getZ() - hitBox.getMinZ());
             if (distanceMap.containsKey(repairStateFile)) {
                 distanceMap.replace(repairStateFile,distance);
@@ -319,7 +319,7 @@ public class IMovecraftRepair extends MovecraftRepair {
                                     num += qtyToConsume;
                                     missingBlocks.put(Material.getMaterial(itemToConsume), num);
                                 }
-                                locMissingBlocks.add(new Vector(x,y,z));
+                                locMissingBlocks.add(new Pair<>(new org.bukkit.util.Vector(x,y,z),null));
                             }
                         }
                         if (bukkitBlock.getType() == Material.DISPENSER && block.getType() == 23){
@@ -397,7 +397,7 @@ public class IMovecraftRepair extends MovecraftRepair {
                             }
                             if (needReplace){
                                 numDiffBlocks++;
-                                locMissingBlocks.push(new org.bukkit.util.Vector(x,y,z));
+                                locMissingBlocks.addLast(new Pair<>(new org.bukkit.util.Vector(x,y,z),null));
                             }
                         }
                     }
@@ -434,7 +434,7 @@ public class IMovecraftRepair extends MovecraftRepair {
     }
 
     @Override
-    public ArrayDeque<Vector> getMissingBlockLocations(String repairName) {
+    public ArrayDeque<Pair<Vector, Vector>> getMissingBlockLocations(String repairName) {
         return locMissingBlocksMap.get(repairName);
     }
 
@@ -443,43 +443,16 @@ public class IMovecraftRepair extends MovecraftRepair {
         return numDiffBlocksMap.get(s);
     }
 
-    @Override
-    public Vector getDistanceFromSignToLowestPoint(Clipboard clipboard) {
-        return new Vector(clipboard.getOrigin().getBlockX() - clipboard.getMinimumPoint().getBlockX(),clipboard.getOrigin().getBlockY() - clipboard.getMinimumPoint().getBlockY(),clipboard.getOrigin().getBlockZ() - clipboard.getMinimumPoint().getBlockZ());
-        /*for (int x = clipboard.getMinimumPoint().getBlockX(); x <= clipboard.getMaximumPoint().getBlockX(); x++) {
-            for (int y = clipboard.getMinimumPoint().getBlockY(); y <= clipboard.getMaximumPoint().getBlockY(); y++) {
-                for (int z = clipboard.getMinimumPoint().getBlockZ(); z <= clipboard.getMaximumPoint().getBlockZ(); z++) {
-                    com.sk89q.worldedit.Vector pos = new com.sk89q.worldedit.Vector(x,y,z);
-                    BaseBlock block = clipboard.getBlock(pos);
-                    if (block.getType() == 68 || block.getType() == 63) {
-                        String firstLine = block.getNbtData().getString("Text1");
-                        firstLine = firstLine.substring(2);
-                        if (firstLine.substring(0, 5).equalsIgnoreCase("extra")){
-                            firstLine = firstLine.substring(17);
-                            String[] parts = firstLine.split("\"");
-                            firstLine = parts[0];
-                        }
-                        String secondLine = block.getNbtData().getString("Text2");
-                        secondLine = secondLine.substring(2);
-                        if (secondLine.substring(0, 5).equalsIgnoreCase("extra")){
-                            secondLine = secondLine.substring(17);
-                            String[] parts = secondLine.split("\"");
-                            secondLine = parts[0];
-                        }
-                        if (firstLine.equalsIgnoreCase("Repair:")&& secondLine.contains(repairName)){
-                            returnDistance = new org.bukkit.util.Vector(x - clipboard.getMinimumPoint().getBlockX(), y - clipboard.getMinimumPoint().getBlockY(), z - clipboard.getMinimumPoint().getBlockZ());
-                        }
-                    }
-                }
-            }
-        }*/
-    }
 
     @Override
     public Vector getDistance(String repairName) {
         return distanceMap.get(repairName);
     }
 
+    @Override
+    public Vector getOffset(String repairName) {
+        return null;
+    }
 
 
     private Set<BaseBlock> baseBlocksFromCraft(Craft craft){

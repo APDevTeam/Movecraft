@@ -8,7 +8,6 @@ import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
-import net.countercraft.movecraft.repair.RepairUtils;
 import net.countercraft.movecraft.sign.RegionDamagedSign;
 import net.countercraft.movecraft.utils.WorldguardUtils;
 import org.bukkit.*;
@@ -148,7 +147,7 @@ public class AssaultTask extends BukkitRunnable {
                 w.getBlockAt(beaconX + 2, beaconY + 2, beaconZ + 2).setType(Material.BEACON);
                 w.getBlockAt(beaconX + 2, beaconY + 3, beaconZ + 2).setType(Material.BEDROCK);
                 // finally the sign on the beacon
-                w.getBlockAt(beaconX + 2, beaconY + 3, beaconZ + 1).setType(Material.WALL_SIGN);
+                w.getBlockAt(beaconX + 2, beaconY + 3, beaconZ + 1).setType(Settings.is1_14 ? Material.OAK_WALL_SIGN : Material.getMaterial("WALL_SIGN"));
                 Sign s = (Sign) w.getBlockAt(beaconX + 2, beaconY + 3, beaconZ + 1).getState();
                 s.setLine(0, ChatColor.RED + "REGION DAMAGED!");
                 s.setLine(1, "Region:" + assault.getRegionName());

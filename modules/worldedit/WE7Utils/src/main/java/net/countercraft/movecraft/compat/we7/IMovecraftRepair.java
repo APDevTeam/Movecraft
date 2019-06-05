@@ -12,7 +12,6 @@ import com.sk89q.worldedit.extent.Extent;
 import com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
 import com.sk89q.worldedit.extent.clipboard.io.*;
-import com.sk89q.worldedit.function.mask.BlockMask;
 import com.sk89q.worldedit.function.mask.BlockTypeMask;
 import com.sk89q.worldedit.function.mask.ExistingBlockMask;
 import com.sk89q.worldedit.function.operation.ForwardExtentCopy;
@@ -25,7 +24,6 @@ import com.sk89q.worldedit.registry.state.EnumProperty;
 import com.sk89q.worldedit.registry.state.Property;
 import com.sk89q.worldedit.world.block.BaseBlock;
 import com.sk89q.worldedit.world.block.BlockType;
-import com.sk89q.worldedit.world.registry.WorldData;
 import com.sk89q.worldguard.protection.regions.ProtectedCuboidRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedPolygonalRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
@@ -33,24 +31,27 @@ import net.countercraft.movecraft.MovecraftRepair;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.utils.HashHitBox;
-import org.bukkit.Bukkit;
+import net.countercraft.movecraft.utils.Pair;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.block.Sign;
 import org.bukkit.block.Dispenser;
+import org.bukkit.block.Sign;
 import org.bukkit.block.data.type.Slab;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.util.Vector;
 
 import java.io.*;
-import java.util.*;
-import java.util.logging.Logger;
+import java.util.ArrayDeque;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 public class IMovecraftRepair extends MovecraftRepair {
-    private final HashMap<String, ArrayDeque<Vector>> locMissingBlocksMap = new HashMap<>();
+    private final HashMap<String, ArrayDeque<Pair<Vector,Vector>>> locMissingBlocksMap = new HashMap<>();
+    private final HashMap<String, Vector> offsetMap = new HashMap<>();
     private final HashMap<String, Long> numDiffBlocksMap = new HashMap<>();
     private final HashMap<String, HashMap<Material, Double>> missingBlocksMap = new HashMap<>();
     private final HashMap<String, Vector> distanceMap = new HashMap<>();
@@ -148,19 +149,12 @@ public class IMovecraftRepair extends MovecraftRepair {
         }
     }
 
-
-    @Override
-    public boolean repairRegion(World world, String s) {
-        return false;
-    }
-
     @Override
     public Clipboard loadCraftRepairStateClipboard(Plugin plugin,Craft craft, Sign sign, String s, World world) {
         File dataDirectory = new File(plugin.getDataFolder(), "CraftRepairStates");
         File file = new File(dataDirectory, s + ".schematic"); // The schematic file
         Clipboard clipboard = null;
         ClipboardFormat format = ClipboardFormats.findByFile(file);
-        HashHitBox hitBox = craft.getHitBox();
         try {
             InputStream input = new FileInputStream(file);
             ClipboardReader reader = format.getReader(input);
@@ -174,25 +168,34 @@ public class IMovecraftRepair extends MovecraftRepair {
         if (clipboard != null){
             long numDiffBlocks = 0;
             HashMap<Material, Double> missingBlocks = new HashMap<>();
-            ArrayDeque<Vector> locMissingBlocks = new ArrayDeque<>();
-            BlockVector3 length = clipboard.getMaximumPoint().subtract(clipboard.getMinimumPoint());
+            ArrayDeque<Pair<Vector,Vector>> locMissingBlocks = new ArrayDeque<>();
+            HashMap<Vector,Material> materials = new HashMap<>();
+            BlockVector3 minPoint = clipboard.getMinimumPoint();
+            BlockVector3 length = clipboard.getDimensions();
             BlockVector3 distance = clipboard.getOrigin().subtract(clipboard.getMinimumPoint());
+
             Vector offset = new Vector(sign.getX()-distance.getBlockX(),sign.getY()-distance.getBlockY(),sign.getZ()-distance.getBlockZ());
-            if (distanceMap.containsKey(s)) {
-                distanceMap.replace(s,offset);
+            Vector difference = new Vector(minPoint.getBlockX() - offset.getBlockX(),minPoint.getBlockY() - offset.getBlockY(), minPoint.getBlockZ() - offset.getBlockZ());
+            if (offsetMap.containsKey(s)){
+                offsetMap.replace(s,offset);
             } else {
-                distanceMap.put(s,offset);
+                offsetMap.put(s,offset);
+            }
+            if (distanceMap.containsKey(s)) {
+                distanceMap.replace(s,difference);
+            } else {
+                distanceMap.put(s,difference);
             }
             for (int y = 0; y <= length.getBlockY(); y++) {
                 for (int z = 0; z <= length.getBlockZ(); z++) {
                     for (int x = 0; x <= length.getBlockX(); x++) {
                         BlockVector3 position = BlockVector3.at(x+clipboard.getMinimumPoint().getBlockX(),y+clipboard.getMinimumPoint().getBlockY(),z+clipboard.getMinimumPoint().getBlockZ());
-                        int cx = x - distance.getBlockX();
-                        int cy = y - distance.getBlockY();
-                        int cz = z - distance.getBlockZ();
+                        int cx = offset.getBlockX() + x;
+                        int cy = offset.getBlockY() + y;
+                        int cz = offset.getBlockZ() + z;
                         BaseBlock block = clipboard.getFullBlock(position);
                         Material type = BukkitAdapter.adapt(block.getBlockType());
-                        Location loc = new Location(sign.getWorld(),offset.getBlockX()+x,offset.getBlockY()+y,offset.getBlockZ()+z);
+                        Location loc = new Location(sign.getWorld(),cx,cy,cz);
                         Block bukkitBlock = sign.getWorld().getBlockAt(loc);
                         boolean isImportant = true;
 
@@ -202,7 +205,6 @@ public class IMovecraftRepair extends MovecraftRepair {
                         boolean blockMissing = isImportant && type != bukkitBlock.getType();
                         //Check if single slabs are at locations where double slabs should be located and vice versa
                         if (type.name().endsWith("_SLAB")){
-                            plugin.getLogger().info(type.name());
                             for (Property property : block.getStates().keySet()){
                                 if (!(property instanceof EnumProperty)){
                                     continue;
@@ -298,7 +300,7 @@ public class IMovecraftRepair extends MovecraftRepair {
                                     }
                                 }
                             }
-                            locMissingBlocks.addLast(new Vector(cx,cy,cz));
+                            locMissingBlocks.addLast(new Pair<>(new Vector(cx,cy,cz),new Vector(position.getBlockX(),position.getBlockY(),position.getBlockZ())));
                             numDiffBlocks++;
                             if (missingBlocks.containsKey(typeToConsume)){
                                 double count = missingBlocks.get(typeToConsume);
@@ -381,8 +383,9 @@ public class IMovecraftRepair extends MovecraftRepair {
                                 needsReplace = true;
                             }
                             if (needsReplace){
-                                locMissingBlocks.addLast(new Vector(cx,cy,cz));
+                                locMissingBlocks.addLast(new Pair<>(new Vector(cx,cy,cz),new Vector(position.getBlockX(),position.getBlockY(),position.getBlockZ())));
                                 numDiffBlocks++;
+
                             }
                         }
 
@@ -391,6 +394,7 @@ public class IMovecraftRepair extends MovecraftRepair {
             }
             locMissingBlocksMap.put(s, locMissingBlocks);
             missingBlocksMap.put(s, missingBlocks);
+
             numDiffBlocksMap.put(s, numDiffBlocks);
         }
         return clipboard;
@@ -421,7 +425,7 @@ public class IMovecraftRepair extends MovecraftRepair {
     }
 
     @Override
-    public ArrayDeque<Vector> getMissingBlockLocations(String s) {
+    public ArrayDeque<Pair<Vector, Vector>> getMissingBlockLocations(String s) {
 
         return locMissingBlocksMap.get(s);
     }
@@ -431,44 +435,14 @@ public class IMovecraftRepair extends MovecraftRepair {
         return numDiffBlocksMap.get(s);
     }
 
-    @Override
-    public Vector getDistanceFromSignToLowestPoint(Clipboard clipboard) {
-        return new Vector(clipboard.getOrigin().getBlockX() - clipboard.getMinimumPoint().getBlockX(),clipboard.getOrigin().getBlockY() - clipboard.getMinimumPoint().getBlockY(),clipboard.getOrigin().getBlockZ() - clipboard.getMinimumPoint().getBlockZ());
-        /*for (int x = clipboard.getMinimumPoint().getBlockX(); x <= clipboard.getMaximumPoint().getBlockX(); x++) {
-            for (int y = clipboard.getMinimumPoint().getBlockY(); y <= clipboard.getMaximumPoint().getBlockY(); y++) {
-                for (int z = clipboard.getMinimumPoint().getBlockZ(); z <= clipboard.getMaximumPoint().getBlockZ(); z++) {
-                    BlockVector3 pos = BlockVector3.at(x,y,z);
-                    BaseBlock block = clipboard.getFullBlock(pos);
-                    if (block.getBlockType().getId().equals("minecraft:sign")||block.getBlockType().getId().equals("minecraft:wall_sign")) {
-                        Logger log = Bukkit.getLogger();
-                        String firstLine = block.getNbtData().getString("Text1");
-                        firstLine = firstLine.substring(2);
-                        if (firstLine.startsWith("extra")) {
-                            firstLine = firstLine.substring(17);
-                            firstLine = firstLine.replace("\"}],\"text\":\"\"}", "");
-                        }
-                        String secondLine = block.getNbtData().getString("Text2");
-                        secondLine = secondLine.substring(2);
-                        if (secondLine.startsWith("extra")) {
-                            secondLine = secondLine.substring(17);
-                            secondLine = secondLine.replace("\"}],\"text\":\"\"}", "");
-                        }
-                        if (firstLine.equalsIgnoreCase("Repair:") && s.endsWith(secondLine)) {
-                            returnDistance = new Vector(x - clipboard.getMinimumPoint().getBlockX(), y - clipboard.getMinimumPoint().getBlockY(), z - clipboard.getMinimumPoint().getBlockZ());
-                            break;
-                        }
-                    }
-                }
-                if (returnDistance != null) break;
-            }
-            if (returnDistance != null) break;
-        }
-        return returnDistance;*/
-    }
-
 
     @Override
     public Vector getDistance(String repairName) {
         return distanceMap.get(repairName);
+    }
+
+    @Override
+    public Vector getOffset(String repairName) {
+        return offsetMap.get(repairName);
     }
 }

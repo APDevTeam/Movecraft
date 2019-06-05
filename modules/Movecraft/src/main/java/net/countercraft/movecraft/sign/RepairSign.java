@@ -17,8 +17,8 @@ import net.countercraft.movecraft.repair.Repair;
 import net.countercraft.movecraft.repair.RepairManager;
 import net.countercraft.movecraft.repair.RepairUtils;
 import net.countercraft.movecraft.utils.LegacyUtils;
+import net.countercraft.movecraft.utils.Pair;
 import net.countercraft.movecraft.utils.WorldEditUtils;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -40,36 +40,8 @@ import java.util.*;
 public class RepairSign implements Listener{
     private String HEADER = "Repair:";
     private HashMap<UUID, Long> playerInteractTimeMap = new HashMap<>();//Players must be assigned by the UUID, or NullPointerExceptions are thrown
-    private final Material[] fragileBlocks = new Material[]{ Material.TORCH, Material.LADDER, Material.WALL_SIGN, Material.LEVER, Material.STONE_BUTTON, LegacyUtils.TRAP_DOOR, Material.TRIPWIRE_HOOK,  LegacyUtils.WOOD_BUTTON, Material.IRON_TRAPDOOR, };
-    private static final Material[] wallBlocks;
-    static {
-        Set<Material> types = new HashSet<>();
-        for (Material type : Material.values()){
-            int index = 0;
-            boolean add = false;
-            if (type.name().startsWith("WALL_")) {
-                types.add(type);
-            }
-            if (type.name().contains("_WALL_")){
-                types.add(type);
-            }
-            if (type.name().endsWith("_BUTTON")){
-                types.add(type);
-            }
-            if (type.name().endsWith("_TRAPDOOR")){
-                types.add(type);
-            }
+    private final Material[] fragileBlocks = new Material[]{ Material.TORCH, Material.LADDER, Material.getMaterial("WALL_SIGN"), Material.LEVER, Material.STONE_BUTTON, LegacyUtils.TRAP_DOOR, Material.TRIPWIRE_HOOK,  LegacyUtils.WOOD_BUTTON, Material.IRON_TRAPDOOR, };
 
-        }
-        Material[] typeArr = new Material[types.size()];
-        int index = 0;
-        for (Material type : types){
-            typeArr[index] = type;
-            index++;
-        }
-
-        wallBlocks = typeArr;
-    }
     @EventHandler
     public void onSignChange(SignChangeEvent event){
         if (!event.getLine(0).equalsIgnoreCase(HEADER)){
@@ -172,7 +144,7 @@ public class RepairSign implements Listener{
                 }
             }
             HashMap<Material, Double> numMissingItems = movecraftRepair.getMissingBlocks(repairName);
-            ArrayDeque<Vector> locMissingBlocks = movecraftRepair.getMissingBlockLocations(repairName);
+            ArrayDeque<Pair<Vector, Vector>> locMissingBlocks = movecraftRepair.getMissingBlockLocations(repairName);
             int totalSize = locMissingBlocks.size() + pCraft.getHitBox().size();
 
             if (secondClick){
@@ -185,7 +157,7 @@ public class RepairSign implements Listener{
                     ArrayList<InventoryHolder> chests = new ArrayList<>();
                     for (MovecraftLocation loc : pCraft.getHitBox()) {
                         Block b = pCraft.getW().getBlockAt(loc.getX(), loc.getY(), loc.getZ());
-                        if ((b.getType() == Material.CHEST) || (b.getType() == Material.TRAPPED_CHEST)) {
+                        if ((b.getType() == Material.CHEST) || (b.getType() == Material.TRAPPED_CHEST) || (b.getType() == Material.BARREL)) {
                             InventoryHolder inventoryHolder = (InventoryHolder) b.getState();
                             if (inventoryHolder.getInventory().contains(type) && remainingQty > 0) {
                                 HashMap<Integer, ? extends ItemStack> foundItems = inventoryHolder.getInventory().all(type);
@@ -238,14 +210,12 @@ public class RepairSign implements Listener{
                     Movecraft.getInstance().getLogger().info(event.getPlayer().getName() + " has begun a repair with the cost of " + Cost);
                     final LinkedList<UpdateCommand> updateCommands = new LinkedList<>();
                     final LinkedList<UpdateCommand> updateCommandsFragileBlocks = new LinkedList<>();
-                    final org.bukkit.util.Vector distToOffset = movecraftRepair.getDistanceFromSignToLowestPoint(clipboard);
-                    final org.bukkit.util.Vector offsetFromSign = new org.bukkit.util.Vector(sign.getLocation().getBlockX() - distToOffset.getBlockX(), sign.getLocation().getBlockY() - distToOffset.getBlockY(), sign.getLocation().getBlockZ() - distToOffset.getBlockZ());
-                    final org.bukkit.util.Vector distance = movecraftRepair.getDistance(repairName);
-                    Bukkit.broadcastMessage(distToOffset.toString());
                     while (!locMissingBlocks.isEmpty()){
-                        Vector cLoc = locMissingBlocks.pollFirst();
-                        Vector clipBoardLoc = cLoc.add(movecraftRepair.getDistance(repairName));
-                        MovecraftLocation moveLoc = new MovecraftLocation(cLoc.getBlockX(), cLoc.getBlockY(), cLoc.getBlockZ());
+                        Pair<Vector,Vector> cLocs = locMissingBlocks.pollFirst();
+                        assert cLocs != null;
+                        Vector cLoc = cLocs.getLeft();
+                        Vector clipBoardLoc = cLocs.getRight();
+                        MovecraftLocation moveLoc = MovecraftLocation.fromVector(cLoc);
                         //To avoid any issues during the repair, keep certain blocks in different linked lists
                         if (Settings.IsLegacy) {
                             BaseBlock baseBlock = RepairUtils.getBlock(clipboard, WorldEditUtils.toWeVector(clipBoardLoc));

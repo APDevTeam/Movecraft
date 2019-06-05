@@ -74,8 +74,7 @@ public class AsyncManager extends BukkitRunnable {
         transparent.add(Material.NETHER_BRICK_STAIRS);
         transparent.add(Material.LEVER);
         transparent.add(Material.STONE_BUTTON);
-        transparent.add(Material.SIGN);
-        transparent.add(Material.WALL_SIGN);
+
         if (Settings.IsLegacy){
             transparent.add(LegacyUtils.THIN_GLASS);
             transparent.add(LegacyUtils.STAINED_GLASS);
@@ -87,6 +86,23 @@ public class AsyncManager extends BukkitRunnable {
             transparent.add(LegacyUtils.SMOOTH_STAIRS);
             transparent.add(LegacyUtils.SIGN_POST);
         } else {
+            if (Settings.is1_14){
+                transparent.add(Material.BIRCH_SIGN);
+                transparent.add(Material.OAK_SIGN);
+                transparent.add(Material.DARK_OAK_SIGN);
+                transparent.add(Material.JUNGLE_SIGN);
+                transparent.add(Material.SPRUCE_SIGN);
+                transparent.add(Material.ACACIA_SIGN);
+                transparent.add(Material.BIRCH_WALL_SIGN);
+                transparent.add(Material.OAK_WALL_SIGN);
+                transparent.add(Material.DARK_OAK_WALL_SIGN);
+                transparent.add(Material.JUNGLE_WALL_SIGN);
+                transparent.add(Material.SPRUCE_WALL_SIGN);
+                transparent.add(Material.ACACIA_WALL_SIGN);
+            } else {
+                transparent.add(Material.getMaterial("SIGN"));
+                transparent.add(Material.getMaterial("WALL_SIGN"));
+            }
             transparent.add(Material.GLASS_PANE);
             transparent.add(Material.BLACK_STAINED_GLASS_PANE);
             transparent.add(Material.WHITE_STAINED_GLASS_PANE);
