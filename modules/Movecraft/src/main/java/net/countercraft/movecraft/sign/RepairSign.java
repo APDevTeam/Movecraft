@@ -13,7 +13,7 @@ import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.WorldEditUpdateCommand;
 import net.countercraft.movecraft.repair.Repair;
 import net.countercraft.movecraft.repair.RepairManager;
-import org.bukkit.Bukkit;
+import net.countercraft.movecraft.utils.Pair;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -139,7 +139,7 @@ public class RepairSign implements Listener{
                 }
             }
             HashMap<Material, Double> numMissingItems = movecraftRepair.getMissingBlocks(repairName);
-            ArrayDeque<Vector> locMissingBlocks = movecraftRepair.getMissingBlockLocations(repairName);
+            ArrayDeque<Pair<Vector, Vector>> locMissingBlocks = movecraftRepair.getMissingBlockLocations(repairName);
             int totalSize = locMissingBlocks.size() + pCraft.getHitBox().size();
 
             if (secondClick){
@@ -207,8 +207,10 @@ public class RepairSign implements Listener{
                     final LinkedList<UpdateCommand> updateCommandsFragileBlocks = new LinkedList<>();
                     final Vector distance = movecraftRepair.getDistance(repairName);
                     while (!locMissingBlocks.isEmpty()){
-                        Vector cLoc = locMissingBlocks.pollFirst();
-                        MovecraftLocation moveLoc = new MovecraftLocation(cLoc.getBlockX(), cLoc.getBlockY(), cLoc.getBlockZ());
+                        Pair<Vector,Vector> locs = locMissingBlocks.pollFirst();
+                        assert locs != null;
+                        Vector cLoc = locs.getRight();
+                        MovecraftLocation moveLoc = new MovecraftLocation(locs.getLeft().getBlockX(), locs.getLeft().getBlockY(), locs.getLeft().getBlockZ());
                         //To avoid any issues during the repair, keep certain blocks in different linked lists
                             BaseBlock baseBlock = clipboard.getBlock(new com.sk89q.worldedit.Vector(cLoc.getBlockX() + distance.getBlockX(),cLoc.getBlockY() + distance.getBlockY(),cLoc.getBlockZ()+distance.getBlockZ()));
                             if (Arrays.binarySearch(fragileBlocks, Material.getMaterial(baseBlock.getType())) >= 0) {

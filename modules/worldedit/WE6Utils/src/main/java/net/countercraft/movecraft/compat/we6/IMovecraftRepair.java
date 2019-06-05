@@ -27,6 +27,7 @@ import net.countercraft.movecraft.MovecraftRepair;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.utils.HashHitBox;
+import net.countercraft.movecraft.utils.Pair;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -38,14 +39,17 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.util.Vector;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
 public class IMovecraftRepair  extends MovecraftRepair {
-    private HashMap<String, ArrayDeque<Vector>> locMissingBlocksMap = new HashMap<>();
+    private HashMap<String, ArrayDeque<Pair<Vector,Vector>>> locMissingBlocksMap = new HashMap<>();
     private HashMap<String, Long> numDiffBlocksMap = new HashMap<>();
     private HashMap<String, HashMap<Material, Double>> missingBlocksMap = new HashMap<>();
     private final HashMap<String, Vector> distanceMap = new HashMap<>();
@@ -163,7 +167,7 @@ public class IMovecraftRepair  extends MovecraftRepair {
         if (clipboard != null) {
             long numDiffBlocks = 0;
             HashMap<Material, Double> missingBlocks = new HashMap<>();
-            ArrayDeque<Vector> locMissingBlocks = new ArrayDeque<>();
+            ArrayDeque<Pair<Vector,Vector>> locMissingBlocks = new ArrayDeque<>();
             com.sk89q.worldedit.Vector minPos = clipboard.getMinimumPoint();
             com.sk89q.worldedit.Vector distance = clipboard.getOrigin().subtract(clipboard.getMinimumPoint());
             com.sk89q.worldedit.Vector size = clipboard.getDimensions();
@@ -322,7 +326,7 @@ public class IMovecraftRepair  extends MovecraftRepair {
                                     num += qtyToConsume;
                                     missingBlocks.put(Material.getMaterial(itemToConsume), num);
                                 }
-                                locMissingBlocks.add(new Vector(offset.getBlockX() + x, offset.getBlockY() + y, offset.getBlockZ() + z));
+                                locMissingBlocks.addLast(new Pair<>(new org.bukkit.util.Vector(offset.getBlockX() + x, offset.getBlockY() + y, offset.getBlockZ() + z),new Vector(position.getBlockX(),position.getBlockY(),position.getBlockZ())));
                             }
                         }
                         if (bukkitBlock.getType() == Material.DISPENSER && block.getType() == 23) {
@@ -400,7 +404,7 @@ public class IMovecraftRepair  extends MovecraftRepair {
                             }
                             if (needReplace) {
                                 numDiffBlocks++;
-                                locMissingBlocks.push(new org.bukkit.util.Vector(offset.getBlockX() + x, offset.getBlockY() + y, offset.getBlockZ() + z));
+                                locMissingBlocks.addLast(new Pair<>(new org.bukkit.util.Vector(offset.getBlockX() + x, offset.getBlockY() + y, offset.getBlockZ() + z),new Vector(position.getBlockX(),position.getBlockY(),position.getBlockZ())));
                             }
                         }
                     }
@@ -434,7 +438,7 @@ public class IMovecraftRepair  extends MovecraftRepair {
     }
 
     @Override
-    public ArrayDeque<Vector> getMissingBlockLocations(String repairName) {
+    public ArrayDeque<Pair<Vector, Vector>> getMissingBlockLocations(String repairName) {
         return locMissingBlocksMap.get(repairName);
     }
 
