@@ -2,8 +2,14 @@ package net.countercraft.movecraft.utils;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
+/**
+ * Represents a single immutable pair of objects
+ * @param <L> The left object
+ * @param <R> The right object
+ */
 public final class Pair<L,R> implements Serializable, Map.Entry<L,R>{
     private final UUID id = UUID.randomUUID();
     private final L left;
@@ -14,6 +20,10 @@ public final class Pair<L,R> implements Serializable, Map.Entry<L,R>{
         this.right = right;
     }
 
+    /**
+     *
+     * @return
+     */
     public L getLeft() {
         return left;
     }
@@ -49,6 +59,22 @@ public final class Pair<L,R> implements Serializable, Map.Entry<L,R>{
 
     @Override
     public int hashCode() {
-        return id.hashCode();
+        return Objects.hash(left,right);
+    }
+
+    @Override
+    public String toString() {
+        return "Pair{Left: " + getLeft().toString() + ", Right: " + getRight().toString() + "}";
+    }
+
+    @Override
+    public Pair clone(){
+        Object clone = null;
+        try {
+            clone = super.clone();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+        return (Pair) clone;
     }
 }

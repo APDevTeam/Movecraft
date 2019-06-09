@@ -4,6 +4,7 @@ import com.sk89q.jnbt.CompoundTag;
 import com.sk89q.jnbt.ListTag;
 import com.sk89q.jnbt.Tag;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldedit.world.block.BaseBlock;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
 import org.bukkit.Bukkit;
@@ -16,13 +17,15 @@ import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.Objects;
+
 public class WorldEdit7UpdateCommand extends UpdateCommand {
-    private final com.sk89q.worldedit.world.block.BaseBlock worldEdit7BaseBlock;
+    private final BaseBlock baseBlock;
     private World world;
     private MovecraftLocation location;
     private Material type;
-    public WorldEdit7UpdateCommand(com.sk89q.worldedit.world.block.BaseBlock worldEditBlockState, World world, MovecraftLocation location, Material type){
-        this.worldEdit7BaseBlock = worldEditBlockState;
+    public WorldEdit7UpdateCommand(BaseBlock baseBlock, World world, MovecraftLocation location, Material type){
+        this.baseBlock = baseBlock;
         this.world = world;
         this.location = location;
         this.type = type;
@@ -31,15 +34,15 @@ public class WorldEdit7UpdateCommand extends UpdateCommand {
     public void doUpdate() {
         Block block = world.getBlockAt(location.getX(), location.getY(), location.getZ());
         block.setType(type);
-        assert worldEdit7BaseBlock != null;
-        BlockData bData = BukkitAdapter.adapt(worldEdit7BaseBlock);
+        assert baseBlock != null;
+        BlockData bData = BukkitAdapter.adapt(baseBlock);
         block.setBlockData(bData);
         if (Settings.Debug){
             Bukkit.broadcastMessage(String.format("Material: %s, Location: %s",type.name().toLowerCase().replace("_", " "),location.toString()));
         }
-        Material weType = BukkitAdapter.adapt(worldEdit7BaseBlock.getBlockType());
+        Material weType = BukkitAdapter.adapt(baseBlock.getBlockType());
         if (type == Material.DISPENSER){
-            Tag t = worldEdit7BaseBlock.getNbtData().getValue().get("Items");
+            Tag t = baseBlock.getNbtData().getValue().get("Items");
             ListTag lt = null;
             if (t instanceof ListTag) {
                 lt = (ListTag) t;
@@ -96,7 +99,7 @@ public class WorldEdit7UpdateCommand extends UpdateCommand {
             BlockState state = block.getState();
             if (state instanceof Sign) {
                 Sign s = (Sign) state;
-                CompoundTag nbtData = worldEdit7BaseBlock.getNbtData();
+                CompoundTag nbtData = baseBlock.getNbtData();
                 //first line
                 String firstLine = nbtData.getString("Text1");
                 firstLine = firstLine.substring(2);
@@ -153,5 +156,36 @@ public class WorldEdit7UpdateCommand extends UpdateCommand {
                 s.update(false, false);
             }
         }
+    }
+
+    public BaseBlock getBaseBlock() {
+        return baseBlock;
+    }
+
+    public MovecraftLocation getLocation() {
+        return location;
+    }
+
+    public World getWorld() {
+        return world;
+    }
+
+    public Material getType() {
+        return type;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof WorldEdit7UpdateCommand)){
+            return false;
+        }
+        WorldEdit7UpdateCommand weUp = (WorldEdit7UpdateCommand) obj;
+
+        return weUp.getBaseBlock() == getBaseBlock() && weUp.getLocation() == getLocation() && weUp.getWorld() == getWorld() && weUp.getType() == getType();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(baseBlock, location, world, type);
     }
 }
