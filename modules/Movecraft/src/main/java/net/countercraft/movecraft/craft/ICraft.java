@@ -6,16 +6,8 @@ import net.countercraft.movecraft.Rotation;
 import net.countercraft.movecraft.async.detection.DetectionTask;
 import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
-import net.countercraft.movecraft.config.Settings;
-import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
-import net.countercraft.movecraft.mapUpdater.update.FuelBurnUpdateCommand;
-import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.World;
-import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.InventoryHolder;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;

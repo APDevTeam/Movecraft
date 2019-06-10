@@ -1,7 +1,6 @@
 package net.countercraft.movecraft.sign;
 
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
-import com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.world.block.BaseBlock;
@@ -14,7 +13,6 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.mapUpdater.update.WorldEdit7UpdateCommand;
-import net.countercraft.movecraft.mapUpdater.update.WorldEditUpdateCommand;
 import net.countercraft.movecraft.repair.RepairUtils;
 import net.countercraft.movecraft.utils.WorldguardUtils;
 import org.bukkit.*;
