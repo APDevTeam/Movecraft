@@ -69,7 +69,9 @@ public final class CraftSign implements Listener{
             new BukkitRunnable() {
                 @Override
                 public void run() {
-                    CraftManager.getInstance().removeCraft(c);
+                    c.setCruising(false);
+                    c.sink();
+                    CraftManager.getInstance().removePlayerFromCraft(c);
                 }
             }.runTaskLater(Movecraft.getInstance(), (20 * 15));
         } else {
