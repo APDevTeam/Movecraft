@@ -64,7 +64,7 @@ public final class CraftSign implements Listener{
         if (c.getType().getCruiseOnPilot()) {
             c.detect(null, event.getPlayer(), startPoint);
             c.setCruiseDirection(sign.getRawData());
-            c.setLastCruisUpdate(System.currentTimeMillis());
+            c.setLastCruiseUpdate(System.currentTimeMillis());
             c.setCruising(true);
             new BukkitRunnable() {
                 @Override

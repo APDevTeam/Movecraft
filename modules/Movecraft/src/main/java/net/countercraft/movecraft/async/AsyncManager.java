@@ -18,7 +18,6 @@
 package net.countercraft.movecraft.async;
 
 import at.pavlov.cannons.cannon.Cannon;
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
@@ -33,7 +32,6 @@ import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
-import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import net.countercraft.movecraft.utils.CollectionUtils;
 import net.countercraft.movecraft.utils.HashHitBox;
 import org.bukkit.*;
@@ -428,9 +426,9 @@ public class AsyncManager extends BukkitRunnable {
             pcraft.setLastDX(dx);
             pcraft.setLastDZ(dz);
             if (pcraft.getLastCruiseUpdate() != -1) {
-                pcraft.setLastCruisUpdate(System.currentTimeMillis());
+                pcraft.setLastCruiseUpdate(System.currentTimeMillis());
             } else {
-                pcraft.setLastCruisUpdate(System.currentTimeMillis() - 30000);
+                pcraft.setLastCruiseUpdate(System.currentTimeMillis() - 30000);
             }
         }
     }
@@ -574,7 +572,7 @@ public class AsyncManager extends BukkitRunnable {
                 dz = craft.getLastDZ();
             }
             craft.translate(dx, -1, dz);
-            craft.setLastCruisUpdate(System.currentTimeMillis() - (craft.getLastCruiseUpdate() != -1 ? 0 : 30000));
+            craft.setLastCruiseUpdate(System.currentTimeMillis() - (craft.getLastCruiseUpdate() != -1 ? 0 : 30000));
         }
     }
 

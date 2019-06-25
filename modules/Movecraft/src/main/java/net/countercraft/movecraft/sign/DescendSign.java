@@ -54,7 +54,7 @@ public final class DescendSign implements Listener{
             sign.update(true);
 
             c.setCruiseDirection((byte) 0x43);
-            c.setLastCruisUpdate(System.currentTimeMillis());
+            c.setLastCruiseUpdate(System.currentTimeMillis());
             c.setCruising(true);
 
             if (!c.getType().getMoveEntities()) {
