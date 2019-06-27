@@ -172,7 +172,6 @@ public class IMovecraftRepair  extends MovecraftRepair {
             com.sk89q.worldedit.Vector distance = clipboard.getOrigin().subtract(clipboard.getMinimumPoint());
             com.sk89q.worldedit.Vector size = clipboard.getDimensions();
             Vector offset = new Vector(sign.getX() - distance.getBlockX(), sign.getY() - distance.getBlockY(), sign.getZ() - distance.getBlockZ());
-            Bukkit.broadcastMessage(distance.toString());
             if (distanceMap.containsKey(repairStateFile)) {
                 distanceMap.replace(repairStateFile, offset);
             } else {

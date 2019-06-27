@@ -212,7 +212,7 @@ public class RepairSign implements Listener{
                         Vector cLoc = locs.getRight();
                         MovecraftLocation moveLoc = new MovecraftLocation(locs.getLeft().getBlockX(), locs.getLeft().getBlockY(), locs.getLeft().getBlockZ());
                         //To avoid any issues during the repair, keep certain blocks in different linked lists
-                            BaseBlock baseBlock = clipboard.getBlock(new com.sk89q.worldedit.Vector(cLoc.getBlockX() + distance.getBlockX(),cLoc.getBlockY() + distance.getBlockY(),cLoc.getBlockZ()+distance.getBlockZ()));
+                            BaseBlock baseBlock = clipboard.getBlock(new com.sk89q.worldedit.Vector(cLoc.getBlockX(),cLoc.getBlockY(),cLoc.getBlockZ()));
                             if (Arrays.binarySearch(fragileBlocks, Material.getMaterial(baseBlock.getType())) >= 0) {
                                 WorldEditUpdateCommand updateCommand = new WorldEditUpdateCommand(baseBlock, sign.getWorld(), moveLoc, Material.getMaterial(baseBlock.getType()), (byte) baseBlock.getData());
                                 updateCommandsFragileBlocks.add(updateCommand);

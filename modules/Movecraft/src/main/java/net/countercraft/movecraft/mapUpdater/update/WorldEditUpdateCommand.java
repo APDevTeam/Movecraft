@@ -4,11 +4,7 @@ import com.sk89q.jnbt.CompoundTag;
 import com.sk89q.jnbt.ListTag;
 import com.sk89q.jnbt.Tag;
 import com.sk89q.worldedit.blocks.BaseBlock;
-import com.sk89q.worldedit.blocks.BaseItemStack;
-import com.sk89q.worldedit.blocks.DispenserBlock;
-import com.sk89q.worldedit.blocks.SignBlock;
 import net.countercraft.movecraft.MovecraftLocation;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -34,7 +30,6 @@ public class WorldEditUpdateCommand extends UpdateCommand {
 
     @Override
     public void doUpdate() {
-        Bukkit.getLogger().info(location.toString() + " " + type.name().toLowerCase());
         world.getBlockAt(location.getX(), location.getY(), location.getZ()).setType(type);
         world.getBlockAt(location.getX(), location.getY(), location.getZ()).setData(data);
         Block block = location.toBukkit(world).getBlock();
