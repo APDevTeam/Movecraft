@@ -21,9 +21,10 @@ java -jar BuildTools.jar --rev 1.10.2
 java -jar BuildTools.jar --rev 1.11.2
 java -jar BuildTools.jar --rev 1.12.1
 ```
+
 Then, run the following to build Movecraft through `maven`.
 ```
-mvn clean instal
+mvn clean install
 ```
 Jars are located in `/target`.
 

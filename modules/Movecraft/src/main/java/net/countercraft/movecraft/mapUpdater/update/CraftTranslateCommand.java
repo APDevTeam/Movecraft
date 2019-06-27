@@ -19,12 +19,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Logger;
 
 public class CraftTranslateCommand extends UpdateCommand {
@@ -88,24 +83,27 @@ public class CraftTranslateCommand extends UpdateCommand {
             final MutableHitBox failed = new HashHitBox();
 
             //place phased blocks
+            final Set<MovecraftLocation> overlap = new HashSet<>(craft.getPhaseBlocks().keySet());
+            overlap.retainAll(craft.getHitBox().asSet());
             final int minX = craft.getHitBox().getMinX();
             final int maxX = craft.getHitBox().getMaxX();
             final int minY = craft.getHitBox().getMinY();
-            final int maxY = craft.getHitBox().getMaxY();
+            final int maxY = overlap.isEmpty() ? craft.getHitBox().getMaxY() : Collections.max(overlap, Comparator.comparingInt(MovecraftLocation::getY)).getY();
             final int minZ = craft.getHitBox().getMinZ();
             final int maxZ = craft.getHitBox().getMaxZ();
             final HitBox[] surfaces = {
                     new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(minX, maxY, maxZ)),
                     new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(maxX, minY, maxZ)),
-                    new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(maxX, maxY, minZ)),
-                    new SolidHitBox(new MovecraftLocation(maxX, maxY, maxZ), new MovecraftLocation(minX, maxY, maxZ)),
-                    new SolidHitBox(new MovecraftLocation(maxX, maxY, maxZ), new MovecraftLocation(maxX, minY, maxZ)),
-                    new SolidHitBox(new MovecraftLocation(maxX, maxY, maxZ), new MovecraftLocation(maxX, maxY, minZ))};
+                    new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(maxX, maxY, minZ))};
+//                    new SolidHitBox(new MovecraftLocation(maxX, maxY, maxZ), new MovecraftLocation(minX, maxY, maxZ)),
+//                    new SolidHitBox(new MovecraftLocation(maxX, maxY, maxZ), new MovecraftLocation(maxX, minY, maxZ)),
+//                    new SolidHitBox(new MovecraftLocation(maxX, maxY, maxZ), new MovecraftLocation(maxX, maxY, minZ))};
             //Valid exterior starts as the 6 surface planes of the HitBox with the locations that lie in the HitBox removed
             final Set<MovecraftLocation> validExterior = new HashSet<>();
             for (HitBox hitBox : surfaces) {
                 validExterior.addAll(CollectionUtils.filter(hitBox, craft.getHitBox()).asSet());
             }
+
             //Check to see which locations in the from set are actually outside of the craft
             for (MovecraftLocation location :validExterior ) {
                 if (craft.getHitBox().contains(location) || confirmed.contains(location)) {
@@ -155,6 +153,9 @@ public class CraftTranslateCommand extends UpdateCommand {
                 if (!craft.getPhaseBlocks().containsKey(location)) {
                     continue;
                 }
+                //Do not place if it is at a collapsed HitBox location
+                if (craft.getCollapsedHitBox().contains(location))
+                    continue;
                 handler.setBlockFast(location.toBukkit(craft.getW()), craft.getPhaseBlocks().get(location), (byte) 0);
                 craft.getPhaseBlocks().remove(location);
             }

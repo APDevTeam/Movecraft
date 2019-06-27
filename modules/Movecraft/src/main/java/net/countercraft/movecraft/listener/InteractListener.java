@@ -108,7 +108,7 @@ public final class InteractListener implements Listener {
 
                 craft.translate(0, DY, 0);
                 timeMap.put(event.getPlayer(), System.currentTimeMillis());
-                craft.setLastCruisUpdate(System.currentTimeMillis());
+                craft.setLastCruiseUpdate(System.currentTimeMillis());
                 return;
             }
             // Player is onboard craft and right clicking
@@ -132,7 +132,7 @@ public final class InteractListener implements Listener {
 
             craft.translate(dx, dy, dz);
             timeMap.put(event.getPlayer(), System.currentTimeMillis());
-            craft.setLastCruisUpdate(System.currentTimeMillis());
+            craft.setLastCruiseUpdate(System.currentTimeMillis());
             return;
         }
         if (event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.LEFT_CLICK_BLOCK) {
