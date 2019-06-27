@@ -122,6 +122,7 @@ public class CraftManager implements Iterable<Craft>{
         }else{
             Movecraft.getInstance().getLogger().warning("Releasing empty craft!");
         }
+        Movecraft.getInstance().getAsyncManager().addWreck(c);
     }
 
     public void forceRemoveCraft(@NotNull Craft c) {

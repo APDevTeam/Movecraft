@@ -42,7 +42,7 @@ public class IWorldHandler extends WorldHandler {
         MethodHandles.Lookup lookup = MethodHandles.lookup();
         Method teleport = null;
         try {
-            teleport = PlayerConnection.class.getDeclaredMethod("internalTeleport", double.class, double.class, double.class, float.class, float.class, Set.class);
+            teleport = PlayerConnection.class.getDeclaredMethod("a", double.class, double.class, double.class, float.class, float.class, Set.class);
             teleport.setAccessible(true);
             internalTeleportMH = lookup.unreflect(teleport);
 
