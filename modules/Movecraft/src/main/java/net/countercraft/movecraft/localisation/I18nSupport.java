@@ -17,8 +17,8 @@
 
 package net.countercraft.movecraft.localisation;
 
+import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
-import org.bukkit.plugin.Plugin;
 
 import java.io.*;
 import java.util.Arrays;
@@ -29,10 +29,11 @@ public final class I18nSupport {
     private static Properties languageFile;
     private static boolean hasOtherScript = false;
     private static final String[] otherScriptLangs = {"el", "ar", "ur", "he", "zh", "jp"};
-    public static void init(Plugin plugin) {
+    private static Movecraft movecraft = Movecraft.getInstance();
+    public static void init() {
         languageFile = new Properties();
 
-        File localisationDirectory = new File(plugin.getDataFolder().getAbsolutePath() + "/localisation");
+        File localisationDirectory = new File(movecraft.getDataFolder().getAbsolutePath() + "/localisation");
 
         if (!localisationDirectory.exists()) {
             localisationDirectory.mkdirs();
@@ -47,8 +48,8 @@ public final class I18nSupport {
 
 
         if (is == null) {
-            plugin.getLogger().log(Level.SEVERE, "Critical Error in Localisation System");
-            plugin.getServer().shutdown();
+            movecraft.getLogger().log(Level.SEVERE, "Critical Error in Localisation System");
+            movecraft.getServer().shutdown();
             return;
         }
 

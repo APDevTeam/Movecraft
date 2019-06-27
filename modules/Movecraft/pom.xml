@@ -119,7 +119,7 @@
             <artifactId>commons-lang3</artifactId>
             <version>LATEST</version>
         </dependency>
-
+        <!--Cannons-->
         <dependency>
             <groupId>at.pavlov</groupId>
             <artifactId>Cannons</artifactId>
@@ -135,17 +135,20 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <!--SnakeYAML-->
         <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
             <version>1.10</version>
         </dependency>
+        <!--Vault-->
         <dependency>
             <groupId>net.milkbowl.vault</groupId>
             <artifactId>VaultAPI</artifactId>
             <version>1.7</version>
             <scope>provided</scope>
         </dependency>
+        <!--Essentials-->
         <dependency>
             <groupId>net.ess3</groupId>
             <artifactId>Essentials</artifactId>
@@ -188,8 +191,8 @@
             <systemPath>${project.basedir}/../../libs/Deadbolt-1.0-SNAPSHOT.jar</systemPath>
         </dependency>
         <dependency>
-            <groupId>sun.jdk</groupId>
-            <artifactId>gp</artifactId>
+            <groupId>me.ryanhamshire</groupId>
+            <artifactId>GriefPrevention</artifactId>
             <version>1.5.0</version>
             <scope>system</scope>
             <systemPath>${project.basedir}/../../libs/GriefPrevention.jar</systemPath>

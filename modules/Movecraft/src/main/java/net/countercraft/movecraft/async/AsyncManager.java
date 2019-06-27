@@ -19,6 +19,12 @@ package net.countercraft.movecraft.async;
 
 import at.pavlov.cannons.cannon.Cannon;
 import com.google.common.collect.Lists;
+import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
+import com.sk89q.worldguard.protection.ApplicableRegionSet;
+import com.sk89q.worldguard.protection.flags.Flags;
+import com.sk89q.worldguard.protection.flags.StateFlag;
+import com.sk89q.worldguard.protection.managers.RegionManager;
+import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
@@ -568,8 +574,33 @@ public class AsyncManager extends BukkitRunnable {
             // if the craft is sinking, let the player
             // know and release the craft. Otherwise
             // update the time for the next check
+            Player notifyP = pcraft.getNotificationPlayer();
+            if (Movecraft.getInstance().getWorldGuardPlugin() != null){
+                WorldGuardPlugin wgPlugin = Movecraft.getInstance().getWorldGuardPlugin();
+                ProtectedRegion region = null;
+                RegionManager regionManager = wgPlugin.getRegionManager(pcraft.getW());
+                for (MovecraftLocation location : pcraft.getHitBox()){
+                    ApplicableRegionSet regions = regionManager.getApplicableRegions(location.toBukkit(pcraft.getW()));
+                    for (ProtectedRegion pr : regions.getRegions()){
+                        if (pr.getFlag(Flags.PVP).equals(StateFlag.State.DENY)){
+                            region = pr;
+                            break;
+                        }
+                    }
+                    if (region != null){
+                        break;
+                    }
+                }
+                if (region != null && Settings.WorldGuardBlockSinkOnPVPPerm){
+                    notifyP.sendMessage(I18nSupport.getInternationalisedString("Player- Craft should sink but PVP is not allowed in this WorldGuard region"));
+                    isSinking = false;
+                }
+            }
             if (isSinking && pcraft.isNotProcessing()) {
-                Player notifyP = pcraft.getNotificationPlayer();
+
+                if (notifyP != null) {
+                    notifyP.sendMessage(I18nSupport.getInternationalisedString("Player- Craft is sinking"));
+                }
                 pcraft.setCruising(false);
                 pcraft.sink();
                 CraftManager.getInstance().removePlayerFromCraft(pcraft);

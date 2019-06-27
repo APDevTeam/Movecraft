@@ -20,6 +20,7 @@ package net.countercraft.movecraft.craft;
 import net.countercraft.movecraft.config.Settings;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.entity.EntityType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
@@ -99,6 +100,8 @@ final public class CraftType {
     @NotNull private final int effectRange;
     @NotNull private final Map<PotionEffect,Integer> potionEffectsToApply;
     @NotNull private final Map<PotionEffect, Integer> potionEffectDelays = Collections.emptyMap();
+    @NotNull private final Set<EntityType> entitiesToSpawn;
+    @NotNull private final int maxEntitiesToBeSpawned;
 
     public CraftType(File f) {
         final Map data;
@@ -445,6 +448,18 @@ final public class CraftType {
         chestPenalty = data.containsKey("chestPenalty") ? doubleFromObject(data.get("chestPenalty")) : 0d;
         effectRange = data.containsKey("effectRange") ? integerFromObject(data.get("effectRange")) : 0;
         potionEffectsToApply = data.containsKey("potionEffectsToApply") ? effectListFromObject(data.get("potionEffectsToApply")) : Collections.emptyMap();
+        if (data.containsKey("entitiesToSpawn")){
+            entitiesToSpawn = new HashSet<>();
+            ArrayList entries = (ArrayList) data.get("entitiesToSpawn");
+            for (Object o : entries){
+                if (o instanceof String){
+                    entitiesToSpawn.add(EntityType.valueOf(((String) o).toUpperCase()));
+                }
+            }
+        } else {
+            entitiesToSpawn = Collections.emptySet();
+        }
+        maxEntitiesToBeSpawned = data.containsKey("maxEntitiesToBeSpawned") ? (int) data.get("maxEntitiesToBeSpawned") : 0;
     }
 
     private Integer integerFromObject(Object obj) {
@@ -1078,6 +1093,15 @@ final public class CraftType {
     @NotNull
     public Map<PotionEffect, Integer> getPotionEffectDelays() {
         return potionEffectDelays;
+    }
+
+    @NotNull
+    public Set<EntityType> getEntitiesToSpawn() {
+        return entitiesToSpawn;
+    }
+
+    public int getMaxEntitiesToBeSpawned() {
+        return maxEntitiesToBeSpawned;
     }
 
     private class TypeNotFoundException extends RuntimeException {

@@ -56,7 +56,6 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.yaml.snakeyaml.Yaml;
 
-
 import java.io.*;
 import java.util.*;
 import java.util.logging.Level;
@@ -462,7 +461,7 @@ public class Movecraft extends JavaPlugin {
             }
         }
 
-        I18nSupport.init(this);
+        I18nSupport.init();
         if (shuttingDown && Settings.IGNORE_RESET) {
             logger.log(
                     Level.SEVERE,
@@ -666,5 +665,11 @@ public class Movecraft extends JavaPlugin {
     public RedProtect getRedProtectPlugin() {
         return redProtectPlugin;
     }
+
+
+    public P getBreweryPlugin() {
+        return breweryPlugin;
+    }
+
 }
 

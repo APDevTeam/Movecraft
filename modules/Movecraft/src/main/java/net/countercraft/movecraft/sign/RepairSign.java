@@ -37,7 +37,7 @@ import org.bukkit.util.Vector;
 
 import java.util.*;
 
-public class RepairSign implements Listener{
+public final class RepairSign implements Listener{
     private String HEADER = "Repair:";
     private HashMap<UUID, Long> playerInteractTimeMap = new HashMap<>();//Players must be assigned by the UUID, or NullPointerExceptions are thrown
     private final Material[] fragileBlocks = new Material[]{ Material.TORCH, Material.LADDER, Material.getMaterial("WALL_SIGN"), Material.LEVER, Material.STONE_BUTTON, LegacyUtils.TRAP_DOOR, Material.TRIPWIRE_HOOK,  LegacyUtils.WOOD_BUTTON, Material.IRON_TRAPDOOR, };

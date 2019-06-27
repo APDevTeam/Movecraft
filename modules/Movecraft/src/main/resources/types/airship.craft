@@ -264,7 +264,7 @@ tryNudge: false
 canStaticMove: true
 maxStaticMove: 2
 moveblocks:
-    152: # redstone represents engines
+    REDSTONE_BLOCK: # redstone represents engines
         - 1.0
         - 100.0
 flyblocks:

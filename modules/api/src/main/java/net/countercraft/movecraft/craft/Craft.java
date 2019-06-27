@@ -21,7 +21,6 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.events.CraftSinkEvent;
-import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.HashHitBox;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -165,10 +164,9 @@ public abstract class Craft {
             notificationPlayer.sendMessage(event.getFailMessage());
             return;
         }
-        if (notificationPlayer != null) {
-            notificationPlayer.sendMessage(I18nSupport.getInternationalisedString("Player- Craft is sinking"));
-        }
-        this.sinking = true;
+
+
+        sinking = true;
 
     }
 
@@ -455,5 +453,9 @@ public abstract class Craft {
 
     public void setClimbing(boolean climbing) {
         this.climbing = climbing;
+    }
+
+    public enum SinkReason{
+        NONE, DAMAGE, RANGE
     }
 }

@@ -24,6 +24,9 @@ import org.bukkit.Location;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.Random;
+
 public class MathUtils {
 
 
@@ -169,5 +172,23 @@ public class MathUtils {
             mod += divisor;
         }
         return mod;
+    }
+
+    /**
+     * Returns a random integer between two integers
+     * @param min the lowest permitted number
+     * @param max the highest permitted number
+     * @return a random number between min and max
+     */
+    public static int randomInteger(int min, int max){
+        ArrayList<Integer> integers = new ArrayList<>();
+        for (int i = min ; i <= max ; i++){
+            integers.add(i);
+        }
+        int bound = max - min;
+        Random random = new Random();
+        int r = random.nextInt(bound);
+
+        return integers.get(r);
     }
 }

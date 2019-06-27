@@ -18,7 +18,6 @@
 package net.countercraft.movecraft.mapUpdater.update;
 
 import net.countercraft.movecraft.Movecraft;
-import net.countercraft.movecraft.config.Settings;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -28,7 +27,7 @@ import java.util.Objects;
 /**
  * Class that stores the data about a single blocks changes to the map in an unspecified world. The world is retrieved contextually from the submitting craft.
  */
-public class EntityUpdateCommand extends UpdateCommand {
+public class EntityMoveUpdateCommand extends UpdateCommand {
     private final Entity entity;
     private final double x;
     private final double y;
@@ -36,7 +35,7 @@ public class EntityUpdateCommand extends UpdateCommand {
     private final float yaw;
     private final float pitch;
 
-    public EntityUpdateCommand(Entity entity, double x, double y, double z, float yaw, float pitch) {
+    public EntityMoveUpdateCommand(Entity entity, double x, double y, double z, float yaw, float pitch) {
         this.entity = entity;
         this.x = x;
         this.y = y;
@@ -67,10 +66,10 @@ public class EntityUpdateCommand extends UpdateCommand {
 
     @Override
     public boolean equals(Object obj) {
-        if(!(obj instanceof EntityUpdateCommand)){
+        if(!(obj instanceof EntityMoveUpdateCommand)){
             return false;
         }
-        EntityUpdateCommand other = (EntityUpdateCommand) obj;
+        EntityMoveUpdateCommand other = (EntityMoveUpdateCommand) obj;
         return this.x == other.x &&
                 this.y == other.y &&
                 this.z == other.z &&

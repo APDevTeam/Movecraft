@@ -343,11 +343,16 @@ public class TranslationTask extends AsyncTask {
                 Location loc = location.toBukkit(craft.getW());
                 int potEffRange = craft.getType().getEffectRange();
                 Map<PotionEffect,Integer> potionEffects = craft.getType().getPotionEffectsToApply();
+                Set<EntityType> entityTypes = craft.getType().getEntitiesToSpawn();
+                int maxEntitiesToBeSpawned = craft.getType().getMaxEntitiesToBeSpawned();
                 if (!loc.getBlock().getType().equals(Material.AIR)) {
                     updates.add(new ExplosionUpdateCommand(loc, explosionKey));
                     collisionExplosion = true;
                     if (potEffRange != 0 && !potionEffects.isEmpty())
                         updates.add(new PotionEffectsUpdateCommand(loc,potEffRange,potionEffects));
+                    if (potEffRange != 0 && !entityTypes.isEmpty()){
+                        updates.add(new EntitySpawnUpdateCommand(potEffRange,maxEntitiesToBeSpawned,loc,entityTypes));
+                    }
                 }
                 if (craft.getType().getFocusedExplosion()) { // don't handle any further collisions if it is set to focusedexplosion
                     break;
@@ -371,10 +376,10 @@ public class TranslationTask extends AsyncTask {
                 if (entity.getType() == EntityType.PLAYER && !craft.getSinking()) {
                     Player player = (Player) entity;
                     craft.getMovedPlayers().put(player, System.currentTimeMillis());
-                    EntityUpdateCommand eUp = new EntityUpdateCommand(entity, dx, dy, dz, 0, 0);
+                    EntityMoveUpdateCommand eUp = new EntityMoveUpdateCommand(entity, dx, dy, dz, 0, 0);
                     updates.add(eUp);
                 } else if (!craft.getType().getOnlyMovePlayers() || entity.getType() == EntityType.PRIMED_TNT) {
-                    EntityUpdateCommand eUp = new EntityUpdateCommand(entity, dx, dy, dz, 0, 0);
+                    EntityMoveUpdateCommand eUp = new EntityMoveUpdateCommand(entity, dx, dy, dz, 0, 0);
                     updates.add(eUp);
                 }
             }
