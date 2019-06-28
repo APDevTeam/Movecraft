@@ -21,8 +21,6 @@ import at.pavlov.cannons.cannon.Cannon;
 import com.google.common.collect.Lists;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
-import com.sk89q.worldguard.protection.flags.Flags;
-import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.countercraft.movecraft.Movecraft;
@@ -41,6 +39,7 @@ import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.utils.CollectionUtils;
 import net.countercraft.movecraft.utils.HashHitBox;
 import net.countercraft.movecraft.utils.LegacyUtils;
+import net.countercraft.movecraft.utils.WorldguardUtils;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -582,7 +581,7 @@ public class AsyncManager extends BukkitRunnable {
                 for (MovecraftLocation location : pcraft.getHitBox()){
                     ApplicableRegionSet regions = regionManager.getApplicableRegions(location.toBukkit(pcraft.getW()));
                     for (ProtectedRegion pr : regions.getRegions()){
-                        if (pr.getFlag(Flags.PVP).equals(StateFlag.State.DENY)){
+                        if (!WorldguardUtils.pvpAllowed(pr)){
                             region = pr;
                             break;
                         }

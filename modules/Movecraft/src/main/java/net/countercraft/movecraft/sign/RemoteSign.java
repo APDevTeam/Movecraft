@@ -1,11 +1,12 @@
 package net.countercraft.movecraft.sign;
 
-import net.countercraft.movecraft.config.Settings;
-import net.countercraft.movecraft.utils.MathUtils;
+import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.utils.MathUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
@@ -15,8 +16,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 
 public final class RemoteSign implements Listener{
@@ -87,7 +88,6 @@ public final class RemoteSign implements Listener{
             return;
         }
         LinkedList<MovecraftLocation> foundLocations = new LinkedList<MovecraftLocation>();
-        LinkedHashMap<MovecraftLocation, Action> foundLocs = new LinkedHashMap<>();
         boolean firstError = true;
         for (MovecraftLocation tloc : foundCraft.getHitBox()) {
             Block tb = event.getClickedBlock().getWorld().getBlockAt(tloc.getX(), tloc.getY(), tloc.getZ());
@@ -113,49 +113,66 @@ public final class RemoteSign implements Listener{
             event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("ERROR: Could not find target sign!"));
             return;
         }
+        new BukkitRunnable()
+        {
+            @Override
+            public void run() {
 
-        for (MovecraftLocation foundLoc : foundLocations) {
-            Block newBlock = event.getClickedBlock().getWorld().getBlockAt(foundLoc.getX(), foundLoc.getY(), foundLoc.getZ());
-            Sign foundSign = (Sign) newBlock.getState();
-            boolean inverted = false;//set to true if target name has an ! in front of the text
-            //check Remote sign if the target strings are inverted
-            for (String line : foundSign.getLines()){
-                if (line == null)
-                    continue;
-                if (!line.equals("!" + targetText))
-                    continue;
-                inverted = true;
-                break;
-            }
-            PlayerInteractEvent newEvent = null;
+                MovecraftLocation foundLoc = foundLocations.poll();
+                Block newBlock = event.getClickedBlock().getWorld().getBlockAt(foundLoc.getX(), foundLoc.getY(), foundLoc.getZ());
+                Sign foundSign = (Sign) newBlock.getState();
+                boolean inverted = false;//set to true if target name has an ! in front of the text
+                //check Remote sign if the target strings are inverted
+                for (String line : foundSign.getLines()){
+                    if (line == null)
+                        continue;
+                    //if target line is prefixed with an exclamation point, it will invert the action of the Remote sign
+                    if (!line.equals("!" + targetText))
+                        continue;
+                    inverted = true;
+                    break;
+                }
+                PlayerInteractEvent newEvent = null;
 
-            if (inverted) {
-                Action action = null;
-                if (event.getAction() == Action.RIGHT_CLICK_BLOCK){
-                    action = Action.LEFT_CLICK_BLOCK;
-                } else if (event.getAction() == Action.LEFT_CLICK_BLOCK){
-                    action = Action.RIGHT_CLICK_BLOCK;
+                //Now invert the action to the opposite one if set to invert
+                if (inverted) {
+                    Action action = null;
+                    if (event.getAction() == Action.RIGHT_CLICK_BLOCK){
+                        action = Action.LEFT_CLICK_BLOCK;
+                    } else if (event.getAction() == Action.LEFT_CLICK_BLOCK){
+                        action = Action.RIGHT_CLICK_BLOCK;
+                    }
+                    if (action != null){
+                        newEvent = new PlayerInteractEvent(event.getPlayer(), action, event.getItem(), newBlock, event.getBlockFace());
+                    }
                 }
-                if (action != null){
-                    newEvent = new PlayerInteractEvent(event.getPlayer(), action, event.getItem(), newBlock, event.getBlockFace());
+                //Otherwise use the same action as on the clicked remote sign
+                else {
+                    newEvent = new PlayerInteractEvent(event.getPlayer(), event.getAction(), event.getItem(), newBlock, event.getBlockFace());
                 }
-            } else {
-                 newEvent = new PlayerInteractEvent(event.getPlayer(), event.getAction(), event.getItem(), newBlock, event.getBlockFace());
+                //TODO: DON'T DO THIS
+                Bukkit.getServer().getPluginManager().callEvent(newEvent);
+                if (foundLocations.isEmpty()){
+                    cancel();
+                }
             }
-            //TODO: DON'T DO THIS
-            Bukkit.getServer().getPluginManager().callEvent(newEvent);
-        }
+
+
+        }.runTaskTimer(Movecraft.getInstance(),0,11);
         
         event.setCancelled(true);
     }
     private boolean isEqualSign(Sign test, String target) {
-        if (target.charAt(0) == '!'){
-            target = target.substring(1);
-        }
-        return !ChatColor.stripColor(test.getLine(0)).equalsIgnoreCase(HEADER) && ( ChatColor.stripColor(test.getLine(0)).equalsIgnoreCase(target)
+
+        return !ChatColor.stripColor(test.getLine(0)).equalsIgnoreCase(HEADER) && (
+                ChatColor.stripColor(test.getLine(0)).equalsIgnoreCase(target)
                 || ChatColor.stripColor(test.getLine(1)).equalsIgnoreCase(target)
                 || ChatColor.stripColor(test.getLine(2)).equalsIgnoreCase(target)
-                || ChatColor.stripColor(test.getLine(3)).equalsIgnoreCase(target));
+                || ChatColor.stripColor(test.getLine(3)).equalsIgnoreCase(target)
+                ||ChatColor.stripColor(test.getLine(0)).equalsIgnoreCase("!"+target)
+                || ChatColor.stripColor(test.getLine(1)).equalsIgnoreCase("!"+target)
+                || ChatColor.stripColor(test.getLine(2)).equalsIgnoreCase("!"+target)
+                || ChatColor.stripColor(test.getLine(3)).equalsIgnoreCase("!"+target));
     }
     private boolean isForbidden(Sign test) {
         for (int i = 0; i < 4; i++) {

@@ -323,7 +323,9 @@ public class BlockListener implements Listener {
                     (new Random(b.getX() + b.getY() + b.getZ() + (System.currentTimeMillis() >> 12)))
                             .nextInt(100) < Settings.DurabilityOverride.get(b.getType()));
         }
-        AssaultUtils.processAssault(e);
+        if (Settings.AssaultEnable) {
+            AssaultUtils.processAssault(e);
+        }
         if (e.getEntity() == null)
             return;
         for (Player p : e.getEntity().getWorld().getPlayers()) {

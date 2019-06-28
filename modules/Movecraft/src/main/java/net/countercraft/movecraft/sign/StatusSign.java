@@ -49,9 +49,9 @@ public final class StatusSign implements Listener{
         Map<Material, Integer> foundBlocks = new HashMap<>();
         for (MovecraftLocation ml : craft.getHitBox()) {
             Material blockType = craft.getW().getBlockAt(ml.getX(), ml.getY(), ml.getZ()).getType();
-
+            Integer count = foundBlocks.get(blockType);
             if (foundBlocks.containsKey(blockType)) {
-                foundBlocks.merge(blockType, 1, (a, b) -> a + b);
+                foundBlocks.put(blockType, count + 1);
             } else {
                 foundBlocks.put(blockType, 1);
             }
@@ -78,7 +78,7 @@ public final class StatusSign implements Listener{
         int signLine=1;
         int signColumn=0;
         for(Map<Material, List<Integer>> alFlyBlock : craft.getType().getFlyBlocks().keySet()) {
-            Material flyBlock = alFlyBlock.keySet().iterator().next();
+            Material flyBlock = (Material) alFlyBlock.keySet().toArray()[0];
             Double minimum=craft.getType().getFlyBlocks().get(alFlyBlock).get(0);
             if(foundBlocks.containsKey(flyBlock) && minimum>0) { // if it has a minimum, it should be considered for sinking consideration
                 int amount=foundBlocks.get(flyBlock);

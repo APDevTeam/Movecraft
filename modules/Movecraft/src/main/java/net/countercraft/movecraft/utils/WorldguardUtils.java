@@ -51,7 +51,12 @@ public class WorldguardUtils {
         }
         return output.toString();
     }
-
+    public static boolean pvpAllowed(ProtectedRegion region){
+        if (Settings.IsLegacy) {
+            return region.getFlag(DefaultFlag.PVP).equals(StateFlag.State.ALLOW);
+        }
+        return region.getFlag(Flags.PVP).equals(StateFlag.State.ALLOW);
+    }
     public static boolean canBuild(World world, MovecraftLocation location, Player player){
         return Movecraft.getInstance().getWorldGuardPlugin().canBuild(player, location.toBukkit(world));
     }

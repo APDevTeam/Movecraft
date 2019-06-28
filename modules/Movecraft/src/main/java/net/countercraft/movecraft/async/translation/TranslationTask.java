@@ -13,10 +13,7 @@ import net.countercraft.movecraft.utils.HashHitBox;
 import net.countercraft.movecraft.utils.HitBox;
 import net.countercraft.movecraft.utils.LegacyUtils;
 import net.countercraft.movecraft.utils.MutableHitBox;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Sound;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Furnace;
@@ -218,6 +215,59 @@ public class TranslationTask extends AsyncTask {
                 dy = 0;
                 dy -= 1;
             }
+        } if (craft.getType().getUseGravity()){
+            boolean supported = false;
+            boolean inclined = false;
+            World w = craft.getW();
+            for (MovecraftLocation ml : oldHitBox){
+                if (ml.getY() > minY){
+                    continue;
+                }
+                Location loc = ml.toBukkit(craft.getW());
+                if (!w.getBlockAt(loc).getRelative(0,-1,0).getType().name().endsWith("AIR") && !craft.getType().getPassthroughBlocks().contains(w.getBlockAt(loc).getRelative(0,-1,0).getType())){
+                    supported = true;
+                    break;
+                }
+            }
+            int minX = oldHitBox.getMinX();
+            int maxX = oldHitBox.getMaxX();
+            int minZ = oldHitBox.getMinZ();
+            int maxZ = oldHitBox.getMaxZ();
+            Block collisionBlock = null;
+            if (dx > 0){
+                for (int z = minZ; z <= maxZ ; z++){
+                    collisionBlock = w.getBlockAt(maxX + dx,minY,z);
+                }
+            }
+            if (dx < 0){
+                for (int z = minZ; z <= maxZ ; z++){
+                    collisionBlock = w.getBlockAt(minX + dx,minY,z);
+                }
+            }
+            if (dz > 0){
+                for (int x = minX; x <= maxX ; x++){
+                    collisionBlock = w.getBlockAt(x,minY,maxZ+dz);
+                }
+            }
+            if (dz < 0){
+                for (int x = minX; x <= maxX ; x++){
+                    collisionBlock = w.getBlockAt(x,minY,minZ+dz);
+                }
+            }
+            if (collisionBlock != null){
+                if (!collisionBlock.getType().name().endsWith("AIR") && !craft.getType().getPassthroughBlocks().contains(collisionBlock.getType())){
+                    inclined = true;
+                }
+
+            }
+            Movecraft.getInstance().getLogger().info("supported: " + supported);
+            if (!supported){
+                dy = -1;
+            }
+            if (inclined){
+                dy = 1;
+            }
+
         }
 
         //Fail the movement if the craft is too high
