@@ -5,12 +5,7 @@ import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
-import net.countercraft.movecraft.listener.WorldEditInteractListener;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Sign;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -90,7 +85,7 @@ public class AssaultTask extends BukkitRunnable {
                 w.getBlockAt(beaconX + 2, beaconY + 2, beaconZ + 2).setType(Material.BEACON);
                 w.getBlockAt(beaconX + 2, beaconY + 3, beaconZ + 2).setType(Material.BEDROCK);
                 // finally the sign on the beacon
-                w.getBlockAt(beaconX + 2, beaconY + 3, beaconZ + 1).setType(Material.WALL_SIGN);
+                w.getBlockAt(beaconX + 2, beaconY + 3, beaconZ + 1).setType(Material.OAK_WALL_SIGN);
                 Sign s = (Sign) w.getBlockAt(beaconX + 2, beaconY + 3, beaconZ + 1).getState();
                 s.setLine(0, ChatColor.RED + "REGION DAMAGED!");
                 s.setLine(1, "Region:" + assault.getRegionName());
@@ -109,7 +104,7 @@ public class AssaultTask extends BukkitRunnable {
                 assert tRegion != null;
                 tRegion.setFlag(DefaultFlag.TNT, StateFlag.State.DENY);
                 // repair the damages that have occurred so far
-                if (!new WorldEditInteractListener().repairRegion(assault.getWorld(), assault.getRegionName())) {
+                if (!AssaultUtils.repairRegion(assault.getWorld(), assault.getRegionName())) {
                     Bukkit.getServer().broadcastMessage(String.format("REPAIR OF %s FAILED, CONTACT AN ADMIN", assault.getRegionName().toUpperCase()));
                 }
             }

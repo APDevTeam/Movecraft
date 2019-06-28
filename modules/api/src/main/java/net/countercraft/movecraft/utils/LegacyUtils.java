@@ -120,5 +120,4 @@ public class LegacyUtils {
         }
         return color;
     }
-
 }
