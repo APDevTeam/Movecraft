@@ -55,6 +55,7 @@ public class Settings {
     public static boolean FireballPenetration = true;
     public static boolean AllowCrewSigns = true;
     public static boolean SetHomeToCrewSign = true;
+    public static int MaxRemoteSigns = -1;
     public static boolean WGCustomFlagsUsePilotFlag = false;
     public static boolean WGCustomFlagsUseMoveFlag = false;
     public static boolean WGCustomFlagsUseRotateFlag = false;
