@@ -31,7 +31,6 @@ import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.listener.BlockListener;
 import net.countercraft.movecraft.listener.InteractListener;
 import net.countercraft.movecraft.listener.PlayerListener;
-import net.countercraft.movecraft.listener.WorldEditInteractListener;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.repair.RepairManager;
@@ -44,7 +43,6 @@ import net.countercraft.movecraft.warfare.siege.SiegeManager;
 import net.countercraft.movecraft.worldguard.WorldGuardCompatManager;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -387,7 +385,7 @@ public class Movecraft extends JavaPlugin {
                 try {
                     clazz = Class.forName("net.countercraft.movecraft.compat.we6.IMovecraftRepair");
                     if (MovecraftRepair.class.isAssignableFrom(clazz)){
-                        movecraftRepair = (MovecraftRepair) clazz.getConstructor().newInstance();
+                        movecraftRepair = (MovecraftRepair) clazz.getConstructor(Plugin.class).newInstance(this);
                     }
                 } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException | IllegalAccessException e) {
                     e.printStackTrace();
@@ -395,7 +393,7 @@ public class Movecraft extends JavaPlugin {
                 if (movecraftRepair != null){
                     repairManager = new RepairManager();
                     repairManager.runTaskTimerAsynchronously(this,0,1);
-                    getServer().getPluginManager().registerEvents(new RepairSign(), this);
+
                 }
             }
             this.getCommand("movecraft").setExecutor(new MovecraftCommand());
@@ -431,7 +429,7 @@ public class Movecraft extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new RelativeMoveSign(), this);
             getServer().getPluginManager().registerEvents(new ReleaseSign(), this);
             getServer().getPluginManager().registerEvents(new RemoteSign(), this);
-            //getServer().getPluginManager().registerEvents(new RepairSign(), this);
+            getServer().getPluginManager().registerEvents(new RepairSign(), this);
             getServer().getPluginManager().registerEvents(new SpeedSign(), this);
             getServer().getPluginManager().registerEvents(new StatusSign(), this);
             getServer().getPluginManager().registerEvents(new SubcraftRotateSign(), this);
