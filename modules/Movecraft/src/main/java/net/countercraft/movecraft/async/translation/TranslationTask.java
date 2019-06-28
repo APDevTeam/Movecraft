@@ -18,6 +18,7 @@ import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
+import org.bukkit.block.Furnace;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -50,7 +51,6 @@ public class TranslationTask extends AsyncTask {
 
     @Override
     protected void execute() {
-
         //Check if theres anything to move
         if(oldHitBox.isEmpty()){
             return;
@@ -59,6 +59,7 @@ public class TranslationTask extends AsyncTask {
             fail(I18nSupport.getInternationalisedString("Craft is disabled!"));
             return;
         }
+
         final int minY = oldHitBox.getMinY();
         final int maxY = oldHitBox.getMaxY();
 
@@ -88,9 +89,59 @@ public class TranslationTask extends AsyncTask {
         }
 
         //TODO: Check fuel
-        if (!checkFuel()) {
-            fail(I18nSupport.getInternationalisedString("Translation - Failed Craft out of fuel"));
-            return;
+        if (craft.getType().getFuelBurnRate() > 0.0) {
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    // check for fuel, burn some from a furnace if needed. Blocks of coal are supported, in addition to coal and charcoal
+                    double fuelBurnRate = craft.getType().getFuelBurnRate();
+                    // going down doesn't require fuel
+                    if (dy == -1 && dx == 0 && dz == 0)
+                        fuelBurnRate = 0.0;
+                    if (dy > 0)
+                        fuelBurnRate *= 2;
+                    if (fuelBurnRate == 0.0 || craft.getSinking()) {
+                        return;
+                    }
+                    if (craft.getBurningFuel() >= fuelBurnRate) {
+                        craft.setBurningFuel(craft.getBurningFuel() - fuelBurnRate);
+                        return;
+                    }
+                    Block fuelHolder = null;
+                    for (MovecraftLocation bTest : craft.getHitBox()) {
+                        Block b = craft.getW().getBlockAt(bTest.getX(), bTest.getY(), bTest.getZ());
+                        //Get all fuel holders
+                        if (b.getType() == Material.FURNACE) {
+                            InventoryHolder holder = (InventoryHolder) b.getState();
+                            for (Material fuel : Settings.FuelTypes.keySet()) {
+                                if (holder.getInventory().contains(fuel)) {
+                                    fuelHolder = b;
+                                    break;
+                                }
+                            }
+                        }
+                        if (fuelHolder != null) break;
+
+                    }
+                    if (fuelHolder == null) {
+                        fail(I18nSupport.getInternationalisedString("Translation - Failed Craft out of fuel"));
+                        return;
+                    }
+                    Furnace furnace = (Furnace) fuelHolder.getState();
+                    for (Material fuel : Settings.FuelTypes.keySet()) {
+                        if (furnace.getInventory().contains(fuel)) {
+                            ItemStack item = furnace.getInventory().getItem(furnace.getInventory().first(fuel));
+                            int amount = item.getAmount();
+                            if (amount == 1) {
+                                furnace.getInventory().remove(item);
+                            } else {
+                                item.setAmount(amount - 1);
+                            }
+                            craft.setBurningFuel(craft.getBurningFuel() + Settings.FuelTypes.get(item.getType()));
+                        }
+                    }
+                }
+            }.runTask(Movecraft.getInstance());
         }
 
         //TODO: Add and handle event for towny and factions
@@ -352,62 +403,6 @@ public class TranslationTask extends AsyncTask {
 
         }
         return stack;
-    }
-
-    private boolean checkFuel(){
-        // check for fuel, burn some from a furnace if needed. Blocks of coal are supported, in addition to coal and charcoal
-        double fuelBurnRate = craft.getType().getFuelBurnRate();
-        // going down doesn't require fuel
-        if (dy == -1 && dx == 0 && dz == 0)
-            fuelBurnRate = 0.0;
-
-        if (fuelBurnRate == 0.0 || craft.getSinking()) {
-            return true;
-        }
-        if (craft.getBurningFuel() >= fuelBurnRate) {
-            craft.setBurningFuel(craft.getBurningFuel() - fuelBurnRate);
-            return true;
-        }
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                Block fuelHolder = null;
-                for (MovecraftLocation bTest : oldHitBox) {
-                    Block b = craft.getW().getBlockAt(bTest.getX(), bTest.getY(), bTest.getZ());
-                    if (b.getType() == Material.FURNACE) {
-                        InventoryHolder inventoryHolder = (InventoryHolder) b.getState();
-                        for (Material fuel : Settings.FuelTypes.keySet()){
-                            if (inventoryHolder.getInventory().contains(fuel)) {
-                                fuelHolder = b;
-                            }
-                        }
-
-                    }
-                }
-                if (fuelHolder == null) {
-                    fail(I18nSupport.getInternationalisedString("Translation - Failed Craft out of fuel"));
-                    return;
-                }
-                InventoryHolder inventoryHolder = (InventoryHolder) fuelHolder.getState();
-                for (Material fuel : Settings.FuelTypes.keySet()){
-                    if (inventoryHolder.getInventory().contains(fuel)) {
-                        ItemStack iStack = inventoryHolder.getInventory().getItem(inventoryHolder.getInventory().first(fuel));
-                        int amount = iStack.getAmount();
-                        if (amount == 1) {
-                            inventoryHolder.getInventory().remove(iStack);
-                        } else {
-                            iStack.setAmount(amount - 1);
-                        }
-                        craft.setBurningFuel(craft.getBurningFuel() + Settings.FuelTypes.get(fuel));
-                    }
-                }
-            }
-
-        }.runTask(Movecraft.getInstance());
-        if (failed){
-            return false;
-        }
-        return true;
     }
 
     public boolean failed(){
