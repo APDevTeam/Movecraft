@@ -3,6 +3,7 @@ package net.countercraft.movecraft.async.translation;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.async.AsyncTask;
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.CraftTranslateEvent;
@@ -69,7 +70,7 @@ public class TranslationTask extends AsyncTask {
             int testY = minY;
             while (testY > 0){
                 testY -= 1;
-                if (craft.getW().getBlockTypeIdAt(middle.getX(),testY,middle.getZ()) != 0)
+                if (!craft.getW().getBlockAt(middle.getX(),testY,middle.getZ()).getType().name().endsWith("AIR"))
                     break;
             }
             if (minY - testY > craft.getType().getMaxHeightAboveGround()) {
@@ -227,10 +228,10 @@ public class TranslationTask extends AsyncTask {
                     }
                     Player player = (Player) entity;
                     craft.getMovedPlayers().put(player, System.currentTimeMillis());
-                    EntityUpdateCommand eUp = new EntityUpdateCommand(entity, dx, dy, dz, 0, 0);
+                    EntityMoveUpdateCommand eUp = new EntityMoveUpdateCommand(entity, dx, dy, dz, 0, 0);
                     updates.add(eUp);
                 } else if (!craft.getType().getOnlyMovePlayers() || entity.getType() == EntityType.PRIMED_TNT) {
-                    EntityUpdateCommand eUp = new EntityUpdateCommand(entity, dx, dy, dz, 0, 0);
+                    EntityMoveUpdateCommand eUp = new EntityMoveUpdateCommand(entity, dx, dy, dz, 0, 0);
                     updates.add(eUp);
                 }
             }
@@ -261,7 +262,7 @@ public class TranslationTask extends AsyncTask {
                 craft.getW().playSound(location, Sound.BLOCK_ANVIL_LAND, 1.0f, 0.25f);
                 //craft.setCurTickCooldown(craft.getType().getCruiseTickCooldown());
             } else {
-                craft.getW().playSound(location, Sound.ENTITY_IRONGOLEM_DEATH, 5.0f, 5.0f);
+                craft.getW().playSound(location, Settings.IsLegacy ? Sound.valueOf("ENTITY_IRONGOLEM_DEATH") :Sound.ENTITY_IRON_GOLEM_DEATH, 5.0f, 5.0f);
                 //craft.setCurTickCooldown(craft.getType().getCruiseTickCooldown());
             }
         }
@@ -300,11 +301,11 @@ public class TranslationTask extends AsyncTask {
             Block block = craft.getW().getBlockAt(harvestedBlock.getX(), harvestedBlock.getY(), harvestedBlock.getZ());
             List<ItemStack> drops = new ArrayList<>(block.getDrops());
             //generate seed drops
-            if (block.getType() == Material.CROPS) {
+            if (block.getType() == Material.WHEAT) {
                 Random rand = new Random();
                 int amount = rand.nextInt(4);
                 if (amount > 0) {
-                    ItemStack seeds = new ItemStack(Material.SEEDS, amount);
+                    ItemStack seeds = new ItemStack(Material.WHEAT_SEEDS, amount);
                     drops.add(seeds);
                 }
             }
@@ -367,40 +368,44 @@ public class TranslationTask extends AsyncTask {
             craft.setBurningFuel(craft.getBurningFuel() - fuelBurnRate);
             return true;
         }
-        Block fuelHolder = null;
-        for (MovecraftLocation bTest : oldHitBox) {
-            Block b = craft.getW().getBlockAt(bTest.getX(), bTest.getY(), bTest.getZ());
-            if (b.getTypeId() == 61) {
-                InventoryHolder inventoryHolder = (InventoryHolder) b.getState();
-                if (inventoryHolder.getInventory().contains(263) || inventoryHolder.getInventory().contains(173)) {
-                    fuelHolder = b;
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                Block fuelHolder = null;
+                for (MovecraftLocation bTest : oldHitBox) {
+                    Block b = craft.getW().getBlockAt(bTest.getX(), bTest.getY(), bTest.getZ());
+                    if (b.getType() == Material.FURNACE) {
+                        InventoryHolder inventoryHolder = (InventoryHolder) b.getState();
+                        for (Material fuel : Settings.FuelTypes.keySet()){
+                            if (inventoryHolder.getInventory().contains(fuel)) {
+                                fuelHolder = b;
+                            }
+                        }
+
+                    }
+                }
+                if (fuelHolder == null) {
+                    fail(I18nSupport.getInternationalisedString("Translation - Failed Craft out of fuel"));
+                    return;
+                }
+                InventoryHolder inventoryHolder = (InventoryHolder) fuelHolder.getState();
+                for (Material fuel : Settings.FuelTypes.keySet()){
+                    if (inventoryHolder.getInventory().contains(fuel)) {
+                        ItemStack iStack = inventoryHolder.getInventory().getItem(inventoryHolder.getInventory().first(fuel));
+                        int amount = iStack.getAmount();
+                        if (amount == 1) {
+                            inventoryHolder.getInventory().remove(iStack);
+                        } else {
+                            iStack.setAmount(amount - 1);
+                        }
+                        craft.setBurningFuel(craft.getBurningFuel() + Settings.FuelTypes.get(fuel));
+                    }
                 }
             }
-        }
-        if (fuelHolder == null) {
-            fail(I18nSupport.getInternationalisedString("Translation - Failed Craft out of fuel"));
-            return false;
-        }
-        InventoryHolder inventoryHolder = (InventoryHolder) fuelHolder.getState();
-        if (inventoryHolder.getInventory().contains(263)) {
-            ItemStack iStack = inventoryHolder.getInventory().getItem(inventoryHolder.getInventory().first(263));
-            int amount = iStack.getAmount();
-            if (amount == 1) {
-                inventoryHolder.getInventory().remove(iStack);
-            } else {
-                iStack.setAmount(amount - 1);
-            }
-            craft.setBurningFuel(craft.getBurningFuel() + 7.0);
-        } else {
-            ItemStack iStack = inventoryHolder.getInventory().getItem(inventoryHolder.getInventory().first(173));
-            int amount = iStack.getAmount();
-            if (amount == 1) {
-                inventoryHolder.getInventory().remove(iStack);
-            } else {
-                iStack.setAmount(amount - 1);
-            }
-            craft.setBurningFuel(craft.getBurningFuel() + 79.0);
 
+        }.runTask(Movecraft.getInstance());
+        if (failed){
+            return false;
         }
         return true;
     }
