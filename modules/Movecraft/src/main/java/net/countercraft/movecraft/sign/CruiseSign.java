@@ -85,7 +85,7 @@ public final class CruiseSign implements Listener{
                 }
             }
             c.setCruiseDirection(direction);
-            c.setLastCruisUpdate(System.currentTimeMillis());
+            c.setLastCruiseUpdate(System.currentTimeMillis());
             c.setCruising(true);
             if (!c.getType().getMoveEntities()) {
                 CraftManager.getInstance().addReleaseTask(c);

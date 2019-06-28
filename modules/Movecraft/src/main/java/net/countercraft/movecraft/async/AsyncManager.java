@@ -28,6 +28,7 @@ import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
+import net.countercraft.movecraft.WorldHandler;
 import net.countercraft.movecraft.async.detection.DetectionTask;
 import net.countercraft.movecraft.async.detection.DetectionTaskData;
 import net.countercraft.movecraft.async.rotation.RotationTask;
@@ -40,11 +41,13 @@ import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.utils.CollectionUtils;
 import net.countercraft.movecraft.utils.HashHitBox;
+import net.countercraft.movecraft.utils.HitBox;
 import net.countercraft.movecraft.utils.LegacyUtils;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.SmallFireball;
 import org.bukkit.entity.TNTPrimed;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
@@ -62,7 +65,10 @@ public class AsyncManager extends BukkitRunnable {
     private final HashMap<Craft, HashMap<Craft, Long>> recentContactTracking = new HashMap<>();
     private final BlockingQueue<AsyncTask> finishedAlgorithms = new LinkedBlockingQueue<>();
     private final HashSet<Craft> clearanceSet = new HashSet<>();
-    private HashMap<org.bukkit.entity.SmallFireball, Long> FireballTracking = new HashMap<>();
+    private HashMap<SmallFireball, Long> FireballTracking = new HashMap<>();
+    private HashMap<HitBox, Long> wrecks = new HashMap<>();
+    private HashMap<HitBox, World> wreckWorlds = new HashMap<>();
+    private HashMap<HitBox, Map<MovecraftLocation,Material>> wreckPhases = new HashMap<>();
     private long lastTracerUpdate = 0;
     private long lastFireballCheck = 0;
     private long lastTNTContactCheck = 0;
@@ -115,6 +121,14 @@ public class AsyncManager extends BukkitRunnable {
             transparent.add(Material.GRAY_STAINED_GLASS_PANE);
             transparent.add(Material.GREEN_STAINED_GLASS_PANE);
         }
+    }
+    public void addWreck(Craft craft){
+        if(craft.getCollapsedHitBox().isEmpty() || Settings.FadeWrecksAfter == 0){
+            return;
+        }
+        wrecks.put(craft.getCollapsedHitBox(), System.currentTimeMillis());
+        wreckWorlds.put(craft.getCollapsedHitBox(), craft.getW());
+        wreckPhases.put(craft.getCollapsedHitBox(), craft.getPhaseBlocks());
     }
 
    /* public static AsyncManager getInstance() {
@@ -897,96 +911,36 @@ public class AsyncManager extends BukkitRunnable {
             lastTNTContactCheck = System.currentTimeMillis();
         }
     }
-
-    /*private void processFadingBlocks() {
+    private void processFadingBlocks() {
         if (Settings.FadeWrecksAfter == 0)
             return;
         long ticksElapsed = (System.currentTimeMillis() - lastFadeCheck) / 50;
-        if (ticksElapsed > 20) {
-            for (World w : Bukkit.getWorlds()) {
-                if (w != null) {
-                    ArrayList<UpdateCommand> updateCommands = new ArrayList<>();
-                    CopyOnWriteArrayList<MovecraftLocation> locations = null;
-
-                    // I know this is horrible, but I honestly don't see another
-                    // way to do this...
-                    int numTries = 0;
-                    while ((locations == null) && (numTries < 100)) {
-                        try {
-                            locations = new CopyOnWriteArrayList<>(
-                                    Movecraft.getInstance().blockFadeTimeMap.keySet());
-                        } catch (java.util.ConcurrentModificationException e) {
-                            numTries++;
-                        } catch (java.lang.NegativeArraySizeException e) {
-                            Movecraft.getInstance().blockFadeTimeMap = new HashMap<>();
-                            Movecraft.getInstance().blockFadeTypeMap = new HashMap<>();
-                            Movecraft.getInstance().blockFadeWaterMap = new HashMap<>();
-                            Movecraft.getInstance().blockFadeWorldMap = new HashMap<>();
-                            locations = new CopyOnWriteArrayList<>(
-                                    Movecraft.getInstance().blockFadeTimeMap.keySet());
-                        }
-                    }
-
-                    for (MovecraftLocation loc : locations) {
-                        if (Movecraft.getInstance().blockFadeWorldMap.get(loc) == w) {
-                            Long time = Movecraft.getInstance().blockFadeTimeMap.get(loc);
-                            Integer type = Movecraft.getInstance().blockFadeTypeMap.get(loc);
-                            Boolean water = Movecraft.getInstance().blockFadeWaterMap.get(loc);
-                            if (time != null && type != null && water != null) {
-                                long secsElapsed = (System.currentTimeMillis()
-                                        - Movecraft.getInstance().blockFadeTimeMap.get(loc)) / 1000;
-                                // has enough time passed to fade the block?
-                                boolean timeElapsed;
-                                // make containers take longer to fade so their loot can be recovered
-                                if (w.getBlockTypeIdAt(loc.getX(), loc.getY(), loc.getZ()) == 54) {
-                                    timeElapsed = secsElapsed > Settings.FadeWrecksAfter * 5;
-                                } else if (w.getBlockTypeIdAt(loc.getX(), loc.getY(), loc.getZ()) == 146) {
-                                    timeElapsed = secsElapsed > Settings.FadeWrecksAfter * 5;
-                                } else if (w.getBlockTypeIdAt(loc.getX(), loc.getY(), loc.getZ()) == 158) {
-                                    timeElapsed = secsElapsed > Settings.FadeWrecksAfter * 5;
-                                } else if (w.getBlockTypeIdAt(loc.getX(), loc.getY(), loc.getZ()) == 23) {
-                                    timeElapsed = secsElapsed > Settings.FadeWrecksAfter * 5;
-                                } else {
-                                    timeElapsed = secsElapsed > Settings.FadeWrecksAfter;
-                                }
-                                if (timeElapsed) {
-                                    // load the chunk if it hasn't been already
-                                    int cx = loc.getX() >> 4;
-                                    int cz = loc.getZ() >> 4;
-                                    if (!w.isChunkLoaded(cx, cz)) {
-                                        w.loadChunk(cx, cz);
-                                    }
-                                    // check to see if the block type has
-                                    // changed, if so don't fade it
-                                    if (w.getBlockTypeIdAt(loc.getX(), loc.getY(),
-                                            loc.getZ()) == Movecraft.getInstance().blockFadeTypeMap.get(loc)) {
-                                        // should it become water? if not, then
-                                        // air
-                                        if (Movecraft.getInstance().blockFadeWaterMap.get(loc)) {
-                                            BlockCreateCommand updateCom = new BlockCreateCommand(w, loc, Material.STATIONARY_WATER, (byte) 0);
-                                            updateCommands.add(updateCom);
-                                        } else {
-                                            BlockCreateCommand updateCom = new BlockCreateCommand(w, loc, Material.AIR, (byte) 0);
-                                            updateCommands.add(updateCom);
-                                        }
-                                    }
-                                    Movecraft.getInstance().blockFadeTimeMap.remove(loc);
-                                    Movecraft.getInstance().blockFadeTypeMap.remove(loc);
-                                    Movecraft.getInstance().blockFadeWorldMap.remove(loc);
-                                    Movecraft.getInstance().blockFadeWaterMap.remove(loc);
-                                }
-                            }
-                        }
-                    }
-                    if (updateCommands.size() > 0) {
-                        MapUpdateManager.getInstance().scheduleUpdates(updateCommands);
-                    }
-                }
-            }
-
-            lastFadeCheck = System.currentTimeMillis();
+        if (ticksElapsed <= 20) {
+            return;
         }
-    }*/
+        List<HitBox> processed = new ArrayList<>();
+        final WorldHandler handler = Movecraft.getInstance().getWorldHandler();
+        for(Map.Entry<HitBox, Long> entry : wrecks.entrySet()){
+            if (entry.getValue() + Settings.FadeWrecksAfter <= System.currentTimeMillis()) {
+                continue;
+            }
+            final HitBox hitBox = entry.getKey();
+            final Map<MovecraftLocation, Material> phaseBlocks = wreckPhases.get(hitBox);
+            final World world = wreckWorlds.get(hitBox);
+            for (MovecraftLocation location : hitBox){
+                handler.setBlockFast(location.toBukkit(world), phaseBlocks.getOrDefault(location, Material.AIR),(byte) 0);
+            }
+            processed.add(hitBox);
+        }
+        for(HitBox hitBox : processed){
+            wrecks.remove(hitBox);
+            wreckPhases.remove(hitBox);
+            wreckWorlds.remove(hitBox);
+        }
+        lastFadeCheck = System.currentTimeMillis();
+
+    }
+
 
     private void processDetection() {
         long ticksElapsed = (System.currentTimeMillis() - lastContactCheck) / 50;
@@ -1139,11 +1093,10 @@ public class AsyncManager extends BukkitRunnable {
         processTracers();
         processFireballs();
         processTNTContactExplosives();
-        processWaterlogging();
         if (!Settings.IsLegacy) {
             processWaterlogging();
         }
-        //processFadingBlocks();
+        processFadingBlocks();
         processDetection();
         processAlgorithmQueue();
         //processScheduledBlockChanges();

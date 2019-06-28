@@ -55,7 +55,7 @@ public class AscendSign implements Listener {
             sign.update(true);
 
             CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCruiseDirection(BlockFace.UP);
-            CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setLastCruisUpdate(System.currentTimeMillis());
+            CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setLastCruiseUpdate(System.currentTimeMillis());
             CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCruising(true);
 
             if (!c.getType().getMoveEntities()) {
