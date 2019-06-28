@@ -186,7 +186,7 @@ public abstract class Craft {
         this.cruiseDirection = cruiseDirection;
     }
 
-    public void setLastCruisUpdate(long update) {
+    public void setLastCruiseUpdate(long update) {
         this.lastCruiseUpdate = update;
     }
 

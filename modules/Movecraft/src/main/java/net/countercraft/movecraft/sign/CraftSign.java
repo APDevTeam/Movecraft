@@ -88,7 +88,7 @@ public final class CraftSign implements Listener{
                 }
             }
             c.setCruiseDirection(direction);
-            c.setLastCruisUpdate(System.currentTimeMillis());
+            c.setLastCruiseUpdate(System.currentTimeMillis());
             c.setCruising(true);
             new BukkitRunnable() {
                 @Override

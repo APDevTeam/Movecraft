@@ -14,23 +14,23 @@ Development builds can be found on [Travis](https://travis-ci.org/APDevTeam/Move
 Older builds (1.10 and below) are located on the [Spigot forums](https://www.spigotmc.org/resources/movecraft.31321/)
 
 ## Building
-Movecraft uses multiple versions of the Spigot server software for legacy support. As such, you need to run [BuildTools](https://www.spigotmc.org/wiki/buildtools/) for several versions before building the plugin.
+Movecraft uses multiple versions of the Spigot server software for legacy support. As such, you need to run [BuildTools](https://www.spigotmc.org/wiki/buildtools/) for several versions before building the plugin. It doesn't matter where you do this, but inside the Movecraft directory is probably a bad place.
 
 ```
-java -jar BuildTools.jar --rev 1.10
-java -jar BuildTools.jar --rev 1.11
-java -jar BuildTools.jar --rev 1.12 
+java -jar BuildTools.jar --rev 1.10.2
+java -jar BuildTools.jar --rev 1.11.2
+java -jar BuildTools.jar --rev 1.12.1
 ```
-Download this repository as a zip file, then unzip the "movecraft-master".
-In the "movecraft-master"-directory, locate the "libs" folder and add CraftBukkit 1.10 to 1.12 to it. Otherwise, Maven will be unable to be built.
-Be sure to have Git Bash and Maven installed. Right-click in the "movecraft-master" directory, choose Git Bash here to open Git bash.
+
 Then, run the following to build Movecraft through `maven`.
 ```
-mvn clean instal
+mvn clean install
 ```
 Jars are located in `/target`.
 
 ## Support
-[Github issues](https://github.com/apdevteam/movecraft/issues)
+[Github Issues](https://github.com/apdevteam/movecraft/issues)
+
+[Discord](http://bit.ly/JoinAP-Dev)
 
 The plugin is released here under the GNU General Public License V3. 

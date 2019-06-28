@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.mapUpdater.update;
 
+import com.google.common.collect.Sets;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.WorldHandler;
@@ -7,7 +8,11 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.SignTranslateEvent;
-import net.countercraft.movecraft.utils.*;
+import net.countercraft.movecraft.utils.CollectionUtils;
+import net.countercraft.movecraft.utils.HashHitBox;
+import net.countercraft.movecraft.utils.HitBox;
+import net.countercraft.movecraft.utils.MutableHitBox;
+import net.countercraft.movecraft.utils.SolidHitBox;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -37,49 +42,20 @@ public class CraftTranslateCommand extends UpdateCommand {
         long time = System.nanoTime();
         final Set<Material> passthroughBlocks = new HashSet<>(craft.getType().getPassthroughBlocks());
         if(craft.getSinking()){
-
-
-            passthroughBlocks.add(Material.WATER);//Same in the 1.13 API, but other values are different
-            if (Settings.IsLegacy){ //use pre-1.13 values if running on 1.12.2 or lower
-                passthroughBlocks.add(LegacyUtils.STATIONARY_WATER);
-                passthroughBlocks.add(LegacyUtils.LEAVES);
-                passthroughBlocks.add(LegacyUtils.LEAVES_2);
-                passthroughBlocks.add(LegacyUtils.LONG_GRASS);
-                passthroughBlocks.add(LegacyUtils.DOUBLE_PLANT);
-            } else {//otherwise, use 1.13+ types
-                //Leaves
-                passthroughBlocks.add(Material.ACACIA_LEAVES);
-                passthroughBlocks.add(Material.BIRCH_LEAVES);
-                passthroughBlocks.add(Material.DARK_OAK_LEAVES);
-                passthroughBlocks.add(Material.JUNGLE_LEAVES);
-                passthroughBlocks.add(Material.OAK_LEAVES);
-                passthroughBlocks.add(Material.SPRUCE_LEAVES);
-                //Grass
-                passthroughBlocks.add(Material.GRASS);
-                //Double plants
-                passthroughBlocks.add(Material.ROSE_BUSH);
-                passthroughBlocks.add(Material.SUNFLOWER);
-                passthroughBlocks.add(Material.LILAC);
-                passthroughBlocks.add(Material.PEONY);
-                passthroughBlocks.add(Material.KELP);
-                passthroughBlocks.add(Material.KELP_PLANT);
-                passthroughBlocks.add(Material.TALL_SEAGRASS);
-                passthroughBlocks.add(Material.SEA_PICKLE);
-                passthroughBlocks.add(Material.SEAGRASS);
-
-                passthroughBlocks.add(Material.BUBBLE_COLUMN);
-
-            }
-
+            passthroughBlocks.add(Material.STATIONARY_WATER);
+            passthroughBlocks.add(Material.WATER);
+            passthroughBlocks.add(Material.LEAVES);
+            passthroughBlocks.add(Material.LEAVES_2);
+            passthroughBlocks.add(Material.LONG_GRASS);
+            passthroughBlocks.add(Material.DOUBLE_PLANT);
         }
-
         if(passthroughBlocks.isEmpty()){
             //translate the craft
             Movecraft.getInstance().getWorldHandler().translateCraft(craft,displacement);
             //trigger sign events
             for(MovecraftLocation location : craft.getHitBox()){
                 Block block = location.toBukkit(craft.getW()).getBlock();
-                if(block.getState() instanceof Sign){
+                if(block.getType() == Material.WALL_SIGN || block.getType() == Material.SIGN_POST){
                     Sign sign = (Sign) block.getState();
                     Bukkit.getServer().getPluginManager().callEvent(new SignTranslateEvent(block, craft, sign.getLines()));
                     sign.update();
@@ -107,24 +83,27 @@ public class CraftTranslateCommand extends UpdateCommand {
             final MutableHitBox failed = new HashHitBox();
 
             //place phased blocks
+            final Set<MovecraftLocation> overlap = new HashSet<>(craft.getPhaseBlocks().keySet());
+            overlap.retainAll(craft.getHitBox().asSet());
             final int minX = craft.getHitBox().getMinX();
             final int maxX = craft.getHitBox().getMaxX();
             final int minY = craft.getHitBox().getMinY();
-            final int maxY = craft.getHitBox().getMaxY();
+            final int maxY = overlap.isEmpty() ? craft.getHitBox().getMaxY() : Collections.max(overlap, Comparator.comparingInt(MovecraftLocation::getY)).getY();
             final int minZ = craft.getHitBox().getMinZ();
             final int maxZ = craft.getHitBox().getMaxZ();
             final HitBox[] surfaces = {
                     new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(minX, maxY, maxZ)),
                     new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(maxX, minY, maxZ)),
-                    new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(maxX, maxY, minZ)),
-                    new SolidHitBox(new MovecraftLocation(maxX, maxY, maxZ), new MovecraftLocation(minX, maxY, maxZ)),
-                    new SolidHitBox(new MovecraftLocation(maxX, maxY, maxZ), new MovecraftLocation(maxX, minY, maxZ)),
-                    new SolidHitBox(new MovecraftLocation(maxX, maxY, maxZ), new MovecraftLocation(maxX, maxY, minZ))};
+                    new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(maxX, maxY, minZ))};
+//                    new SolidHitBox(new MovecraftLocation(maxX, maxY, maxZ), new MovecraftLocation(minX, maxY, maxZ)),
+//                    new SolidHitBox(new MovecraftLocation(maxX, maxY, maxZ), new MovecraftLocation(maxX, minY, maxZ)),
+//                    new SolidHitBox(new MovecraftLocation(maxX, maxY, maxZ), new MovecraftLocation(maxX, maxY, minZ))};
             //Valid exterior starts as the 6 surface planes of the HitBox with the locations that lie in the HitBox removed
             final Set<MovecraftLocation> validExterior = new HashSet<>();
             for (HitBox hitBox : surfaces) {
                 validExterior.addAll(CollectionUtils.filter(hitBox, craft.getHitBox()).asSet());
             }
+
             //Check to see which locations in the from set are actually outside of the craft
             for (MovecraftLocation location :validExterior ) {
                 if (craft.getHitBox().contains(location) || confirmed.contains(location)) {
@@ -162,7 +141,7 @@ public class CraftTranslateCommand extends UpdateCommand {
             //trigger sign events
             for (MovecraftLocation location : craft.getHitBox()) {
                 Block block = location.toBukkit(craft.getW()).getBlock();
-                if (block.getState() instanceof Sign) {
+                if (block.getType() == Material.WALL_SIGN || block.getType() == Material.SIGN_POST) {
                     Sign sign = (Sign) block.getState();
                     Bukkit.getServer().getPluginManager().callEvent(new SignTranslateEvent(block, craft, sign.getLines()));
                     sign.update();
@@ -174,7 +153,8 @@ public class CraftTranslateCommand extends UpdateCommand {
                 if (!craft.getPhaseBlocks().containsKey(location)) {
                     continue;
                 }
-                if(craft.getCollapsedHitBox().contains(location))
+                //Do not place if it is at a collapsed HitBox location
+                if (craft.getCollapsedHitBox().contains(location))
                     continue;
                 handler.setBlockFast(location.toBukkit(craft.getW()), craft.getPhaseBlocks().get(location), (byte) 0);
                 craft.getPhaseBlocks().remove(location);
@@ -203,8 +183,6 @@ public class CraftTranslateCommand extends UpdateCommand {
         craft.addMoveTime(time/1e9f);
     }
 
-
-
     @NotNull
     public Craft getCraft(){
         return craft;
@@ -224,6 +202,4 @@ public class CraftTranslateCommand extends UpdateCommand {
     public int hashCode() {
         return Objects.hash(craft, displacement);
     }
-
-
 }

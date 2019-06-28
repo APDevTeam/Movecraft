@@ -4,9 +4,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 
-import java.util.UUID;
-
 public class SiegePreparationTask extends SiegeTask {
+
 
     public SiegePreparationTask(Siege siege) {
         super(siege);
@@ -19,24 +18,17 @@ public class SiegePreparationTask extends SiegeTask {
         if (timePassedinSeconds >= siege.getDelayBeforeStart()){
             siege.setStage(SiegeStage.IN_PROGRESS);
         }
-        double progress = (double) timePassedinSeconds / (double) siege.getDelayBeforeStart();
-
-        //Bukkit.getServer().broadcastMessage(String.valueOf(progress) + ", " + String.valueOf(timePassedinSeconds) + ", " + String.valueOf(siege.getDuration()));
-
         if ((siege.getDelayBeforeStart() - timePassed/1000) % 60 != 0 || timePassed < 3000){
              return;
         }
         int timeLeft = siege.getDelayBeforeStart() - (timePassed/1000);
-        broadcastSiegePreparation(siege.getPlayerUUID(), siege.getName(), timeLeft);
+        broadcastSiegePreparation(Bukkit.getPlayer(siege.getPlayerUUID()), siege.getName(), (int) timeLeft);
     }
 
-    private void broadcastSiegePreparation(UUID playerUUID, String siegeName, int timeLeft){
-        String playerName;
-        Player player = Bukkit.getPlayer(playerUUID);
+    private void broadcastSiegePreparation(Player player, String siegeName, int timeLeft){
+        String playerName = "";
         if (player != null){
             playerName = player.getDisplayName();
-        } else {
-            playerName = Bukkit.getOfflinePlayer(playerUUID).getName();
         }
         Bukkit.getServer().broadcastMessage(String.format("%s is preparing to siege %s! All players wishing to participate in the defense should head there immediately! Siege will begin in %d minutes", playerName, siegeName, timeLeft / 60));
         for (Player p : Bukkit.getOnlinePlayers()) {

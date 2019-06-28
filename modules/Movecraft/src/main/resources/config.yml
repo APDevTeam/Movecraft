@@ -1,9 +1,10 @@
-Locale: en 
+Locale: en
 CompatibilityMode: false
 SinkRateTicks: 20
 SinkCheckTicks: 100
 TracerRateTicks: 5
-PilotTool: STICK
+TracerMinDistance: 60 # Minimum distance for tracers to appear
+PilotTool: 280
 WorldGuardBlockMoveOnBuildPerm: true
 WorldGuardBlockSinkOnPVPPerm: true
 ManOverBoardTimeout: 30
@@ -12,98 +13,96 @@ FireballPenetration: true
 ProtectPilotedCrafts: true
 DisableSpillProtection: false
 RequireCreatePerm: false # require users to have the movecract.<CraftTypeName>.create permission in order to place command signs
-RequireNamePerm: false
 TNTContactExplosives: true
 DisableCrates: true
 FadeWrecksAfter: 600
 BlockQueueChunkSize: 200000
 RepairTicksPerBlock: 10
 RepairMoneyPerBlock: 10
-RepairMaxPercent: 60.0
 AllowCrewSigns: true
 SetHomeToCrewSign: false
-AssaultEnable: true # system to damage a region, incurring money damages. If enough damage is inflicted, ownership is lost. Ownership can be restored, and the region repaired, by paying damages
+AssaultEnable: false # system to damage a region, incurring money damages. If enough damage is inflicted, ownership is lost. Ownership can be restored, and the region repaired, by paying damages
 AssaultDamagesCapPercent: 1.0 # percentage of the total wealth of all members of the region which is the maximum damages that can be inflicted
 AssaultCooldownHours: 24 # time before a region owner can have one of their regions assaulted again
-AssaultDelay: 120 # time (in seconds) between when an assault is announced, and when it happens
+AssaultDelay: 1800 # time (in seconds) between when an assault is announced, and when it happens
 AssaultDuration: 1800 # time (in seconds) for the assault
 AssaultCostPercent: 0.25 # percentage of the total wealth of all members of the region which is the cost to assault it
 AssaultDamagesPerBlock: 15 # the damages incurred for every block that would have been destroyed in an assault
 AssaultMaxBalance: 5000000 # Maximum balance of each player that will be contributed to the cost & damages (previously hard coded at 5 million)
 AssaultRequiredDefendersOnline: 2 # At least this many members or owners must be online for the region to be assaulted
 AssaultRequiredOwnersOnline: 1 # At least this many owners must be online for the region to be assaulted, set to 0 to ignore
-AssaultOwnerWeightPercent: 100 # Percentage of each Owner's balance (under the maximum) to include in the total cost & damages (Can be greater than 100)
-AssaultMemberWeightPercent: 100 # Percentage of each Member's balance (under the maximum) to include in the total cost & damages (Can be greater than 100)
+AssaultOwnerWeightPercent: 1.0 # Percentage of each Owner's balance (under the maximum) to include in the total cost & damages (Can be greater than 100)
+AssaultMemberWeightPercent: 1.0 # Percentage of each Member's balance (under the maximum) to include in the total cost & damages (Can be greater than 100)
 AssaultDestroyableBlocks: # these blocks will be removed if destroyed in assault. Other blocks will not be removed, but still count for damages. Don't include craft flyblocks, or blocks with metadata, or you can have issues.
-  - STONE
-  - GRASS
-  - DIRT
-  - COBBLESTONE
-  - SAND
-  - GRAVEL
-  - IRON_ORE
-  - COAL_ORE
-  - LEAVES
-  - SPONGE
-  - SANDSTONE
-  - LONG_GRASS
-  - YELLOW_FLOWER
-  - RED_ROSE
-  - BROWN_MUSHROOM
-  - RED_MUSHROOM
-  - TNT
-  - MOSSY_COBBLESTONE
-  - SOIL
-  - COBBLESTONE_STAIRS
-  - REDSTONE_ORE
-  - GLOWING_REDSTONE_ORE
-  - SNOW
-  - ICE
-  - SNOW_BLOCK
-  - CACTUS
-  - CLAY
-  - BRICK_STAIRS
-  - SANDSTONE_STAIRS
-  - EMERALD_ORE
-  - LEAVES_2
-  - LOG_2
-  - ACACIA_STAIRS
-  - PRISMARINE
-  - SEA_LANTERN
-  - PACKED_ICE
-  - DOUBLE_PLANT
-  - RED_SANDSTONE
-  - RED_SANDSTONE_STAIRS
-  - DOUBLE_STONE_SLAB2
-  - STONE_SLAB2
-  - FROSTED_ICE
+  - 1
+  - 2
+  - 3
+  - 4
+  - 12
+  - 13
+  - 15
+  - 16
+  - 18
+  - 19
+  - 24
+  - 31
+  - 37
+  - 38
+  - 39
+  - 40
+  - 46
+  - 48
+  - 60
+  - 67
+  - 73
+  - 74
+  - 78
+  - 79
+  - 80
+  - 81
+  - 98
+  - 108
+  - 128
+  - 129
+  - 161
+  - 162
+  - 163
+  - 168
+  - 169
+  - 174
+  - 175
+  - 179
+  - 180
+  - 181
+  - 182
+  - 212
 SiegeEnable: true
 DisableShadowBlocks: # These blocks will not cast shadows. This improves the speed of moving ships of these blocks immensely.
-  - BED_BLOCK
-  - WOOL
-  - IRON_BLOCK
-  - DOUBLE_STEP
-  - STEP
-  - REDSTONE_WIRE
-  - SMOOTH_STAIRS
-  - NETHER_BRICK
-  - NETHER_BRICK_STAIRS
-  - ENDER_STONE
-  - TRAPPED_CHEST
-  - REDSTONE_BLOCK
-  - QUARTZ_BLOCK
-  - QUARTZ_STAIRS
-  - STAINED_CLAY
-  - SLIME_BLOCK
-  - COAL_BLOCK
-  - END_BRICKS
+  - 26
+  - 35
+  - 42
+  - 43
+  - 44
+  - 55
+  - 109
+  - 112
+  - 114
+  - 121
+  - 146
+  - 152
+  - 155
+  - 156
+  - 159
+  - 165
+  - 173
+  - 206
 WGCustomFlagsUsePilotFlag: false
 WGCustomFlagsUseMoveFlag: false
 WGCustomFlagsUseRotateFlag: false
 WGCustomFlagsUseSinkFlag: false
 DurabilityOverride:
-  ENDER_STONE: 80
-  END_BRICKS: 80
+  121: 80
+  206: 80
 TownyBlockMoveOnSwitchPerm: false
 TownyBlockSinkOnNoPVP: false
 TownyWorldHeightLimits:
@@ -112,3 +111,8 @@ TownyWorldHeightLimits:
     worldMax: -1
     aboveTownSpawn: 96
     underTownSpawn: 255
+ForbiddenRemoteSigns: # These strings will be ignored when searching for signs to trigger from a remote sign
+  - "Mounted"
+  - "Denied"
+  - "[private]"
+RequireNamePerm: true # Require movecraft.name.place to place Name: signs and movecraft.name.use to use Name: signs

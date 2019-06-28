@@ -92,19 +92,21 @@ public class CraftRotateCommand extends UpdateCommand {
             final MutableHitBox interior = new HashHitBox();
 
             //place phased blocks
+            final Set<MovecraftLocation> overlap = new HashSet<>(craft.getPhaseBlocks().keySet());
+            overlap.retainAll(craft.getHitBox().asSet());
             final int minX = craft.getHitBox().getMinX();
             final int maxX = craft.getHitBox().getMaxX();
             final int minY = craft.getHitBox().getMinY();
-            final int maxY = craft.getHitBox().getMaxY();
+            final int maxY = overlap.isEmpty() ? craft.getHitBox().getMaxY() : Collections.max(overlap, Comparator.comparingInt(MovecraftLocation::getY)).getY();
             final int minZ = craft.getHitBox().getMinZ();
             final int maxZ = craft.getHitBox().getMaxZ();
             final HitBox[] surfaces = {
                     new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(minX, maxY, maxZ)),
                     new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(maxX, minY, maxZ)),
-                    new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(maxX, maxY, minZ)),
-                    new SolidHitBox(new MovecraftLocation(maxX, maxY, maxZ), new MovecraftLocation(minX, maxY, maxZ)),
-                    new SolidHitBox(new MovecraftLocation(maxX, maxY, maxZ), new MovecraftLocation(maxX, minY, maxZ)),
-                    new SolidHitBox(new MovecraftLocation(maxX, maxY, maxZ), new MovecraftLocation(maxX, maxY, minZ))};
+                    new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(maxX, maxY, minZ))};
+//                    new SolidHitBox(new MovecraftLocation(maxX, maxY, maxZ), new MovecraftLocation(minX, maxY, maxZ)),
+//                    new SolidHitBox(new MovecraftLocation(maxX, maxY, maxZ), new MovecraftLocation(maxX, minY, maxZ)),
+//                    new SolidHitBox(new MovecraftLocation(maxX, maxY, maxZ), new MovecraftLocation(maxX, maxY, minZ))};
             //Valid exterior starts as the 6 surface planes of the HitBox with the locations that lie in the HitBox removed
             final Set<MovecraftLocation> validExterior = new HashSet<>();
             for (HitBox hitBox : surfaces) {
@@ -164,8 +166,9 @@ public class CraftRotateCommand extends UpdateCommand {
                 handler.setBlockFast(location.toBukkit(craft.getW()), craft.getPhaseBlocks().get(location), (byte) 0);
                 craft.getPhaseBlocks().remove(location);
             }
+
             for(MovecraftLocation location : originalLocations.boundingHitBox()){
-                if(!to.inBounds(location) && craft.getPhaseBlocks().containsKey(location)){
+                if(!craft.getHitBox().inBounds(location) && craft.getPhaseBlocks().containsKey(location)){
                     handler.setBlockFast(location.toBukkit(craft.getW()), craft.getPhaseBlocks().remove(location), (byte) 0);
                 }
             }
