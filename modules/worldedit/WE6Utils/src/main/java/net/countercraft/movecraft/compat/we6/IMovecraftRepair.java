@@ -49,13 +49,18 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class IMovecraftRepair  extends MovecraftRepair {
+    private final Plugin plugin;
     private HashMap<String, ArrayDeque<Pair<Vector,Vector>>> locMissingBlocksMap = new HashMap<>();
     private HashMap<String, Long> numDiffBlocksMap = new HashMap<>();
     private HashMap<String, HashMap<Material, Double>> missingBlocksMap = new HashMap<>();
     private final HashMap<String, Vector> distanceMap = new HashMap<>();
 
+    public IMovecraftRepair(Plugin plugin) {
+        this.plugin = plugin;
+    }
+
     @Override
-    public boolean saveCraftRepairState(Craft craft, Sign sign, Plugin plugin, String s) {
+    public boolean saveCraftRepairState(Craft craft, Sign sign, String s) {
         HashHitBox hitBox = craft.getHitBox();
         File saveDirectory = new File(plugin.getDataFolder(), "CraftRepairStates");
         World world = craft.getW();
@@ -94,7 +99,7 @@ public class IMovecraftRepair  extends MovecraftRepair {
     }
 
     @Override
-    public boolean saveRegionRepairState(Plugin plugin, World world, ProtectedRegion region) {
+    public boolean saveRegionRepairState(World world, ProtectedRegion region) {
 
         File saveDirectory = new File(plugin.getDataFolder(), "RegionRepairStates");
         com.sk89q.worldedit.world.World weWorld = new BukkitWorld(world);
@@ -150,7 +155,7 @@ public class IMovecraftRepair  extends MovecraftRepair {
 
 
     @Override
-    public Clipboard loadCraftRepairStateClipboard(Plugin plugin, Craft craft, Sign sign, String repairStateFile, World world) {
+    public Clipboard loadCraftRepairStateClipboard(Craft craft, Sign sign, String repairStateFile, World world) {
         File dataDirectory = new File(plugin.getDataFolder(), "CraftRepairStates");
         File file = new File(dataDirectory, repairStateFile + ".schematic"); // The schematic file
         com.sk89q.worldedit.world.World weWorld = new BukkitWorld(world);
@@ -417,7 +422,7 @@ public class IMovecraftRepair  extends MovecraftRepair {
     }
 
     @Override
-    public Clipboard loadRegionRepairStateClipboard(Plugin plugin, String s, World world) {
+    public Clipboard loadRegionRepairStateClipboard(String s, World world) {
         File dataDirectory = new File(plugin.getDataFolder(), "RegionRepairStates");
         File file = new File(dataDirectory, s + ".schematic"); // The schematic file
         com.sk89q.worldedit.world.World weWorld = new BukkitWorld(world);

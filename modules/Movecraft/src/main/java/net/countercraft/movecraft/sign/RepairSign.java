@@ -98,7 +98,7 @@ public class RepairSign implements Listener{
         }
 
         MovecraftRepair movecraftRepair = Movecraft.getInstance().getMovecraftRepair();
-        if (movecraftRepair.saveCraftRepairState(pCraft, sign, Movecraft.getInstance(), repairName))
+        if (movecraftRepair.saveCraftRepairState(pCraft, sign, repairName))
             event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("State saved"));
         else
             event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Could not save file"));
@@ -125,7 +125,7 @@ public class RepairSign implements Listener{
         repairName += "_";
         repairName += sign.getLine(1);
         MovecraftRepair movecraftRepair = Movecraft.getInstance().getMovecraftRepair();
-        Clipboard clipboard = movecraftRepair.loadCraftRepairStateClipboard(Movecraft.getInstance(),pCraft, sign, repairName, world);
+        Clipboard clipboard = movecraftRepair.loadCraftRepairStateClipboard(pCraft, sign, repairName, world);
 
 
         if (clipboard == null){
