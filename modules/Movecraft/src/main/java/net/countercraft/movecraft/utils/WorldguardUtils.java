@@ -120,4 +120,5 @@ public class WorldguardUtils {
             return region.getFlag(Flags.PVP).equals(StateFlag.State.ALLOW);
         }
     }
+
 }
