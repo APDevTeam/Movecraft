@@ -269,7 +269,7 @@ public class Movecraft extends JavaPlugin {
                     logger.log(Level.INFO, "Settings: WGCustomFlagsUseRotateFlag - {0}", Settings.WGCustomFlagsUseRotateFlag);
                     logger.log(Level.INFO, "Settings: WGCustomFlagsUseSinkFlag - {0}", Settings.WGCustomFlagsUseSinkFlag);
                 } else {
-                    logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - WGCF Found"));
+                    logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - WGCF Not Found"));
                 }
             }
         }
