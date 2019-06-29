@@ -35,7 +35,7 @@ import java.util.*;
 public class RepairSign implements Listener{
     private String HEADER = "Repair:";
     private HashMap<UUID, Long> playerInteractTimeMap = new HashMap<>();//Players must be assigned by the UUID, or NullPointerExceptions are thrown
-    private final Material[] fragileBlocks = new Material[]{ Material.TORCH, Material.LADDER, Material.WALL_SIGN, Material.LEVER, Material.STONE_BUTTON, Material.TRAP_DOOR, Material.TRIPWIRE_HOOK, Material.WOOD_BUTTON, Material.IRON_TRAPDOOR, };
+    private final Material[] fragileBlocks = new Material[]{ Material.TORCH, Material.LADDER, Material.WALL_SIGN, Material.LEVER, Material.STONE_BUTTON, Material.TRAP_DOOR, Material.TRIPWIRE_HOOK, Material.WOOD_BUTTON, Material.IRON_TRAPDOOR, Material.DIODE_BLOCK_ON, Material.DIODE_BLOCK_OFF, Material.REDSTONE_COMPARATOR_ON, Material.REDSTONE_COMPARATOR_OFF, Material.REDSTONE_WIRE, Material.BED_BLOCK};
 
     @EventHandler
     public void onSignChange(SignChangeEvent event){
@@ -213,11 +213,12 @@ public class RepairSign implements Listener{
                         MovecraftLocation moveLoc = new MovecraftLocation(locs.getLeft().getBlockX(), locs.getLeft().getBlockY(), locs.getLeft().getBlockZ());
                         //To avoid any issues during the repair, keep certain blocks in different linked lists
                             BaseBlock baseBlock = clipboard.getBlock(new com.sk89q.worldedit.Vector(cLoc.getBlockX(),cLoc.getBlockY(),cLoc.getBlockZ()));
-                            if (Arrays.binarySearch(fragileBlocks, Material.getMaterial(baseBlock.getType())) >= 0) {
-                                WorldEditUpdateCommand updateCommand = new WorldEditUpdateCommand(baseBlock, sign.getWorld(), moveLoc, Material.getMaterial(baseBlock.getType()), (byte) baseBlock.getData());
+                            Material type =  Material.getMaterial(baseBlock.getType());
+                            if (fragileBlock(type)) {
+                                WorldEditUpdateCommand updateCommand = new WorldEditUpdateCommand(baseBlock, sign.getWorld(), moveLoc,type, (byte) baseBlock.getData());
                                 updateCommandsFragileBlocks.add(updateCommand);
                             } else {
-                                WorldEditUpdateCommand updateCommand = new WorldEditUpdateCommand(baseBlock, sign.getWorld(), moveLoc, Material.getMaterial(baseBlock.getType()), (byte) baseBlock.getData());
+                                WorldEditUpdateCommand updateCommand = new WorldEditUpdateCommand(baseBlock, sign.getWorld(), moveLoc, type, (byte) baseBlock.getData());
                                 updateCommands.add(updateCommand);
                             }
 
@@ -252,5 +253,9 @@ public class RepairSign implements Listener{
                 }
             }
         }
+    }
+
+    private boolean fragileBlock(Material type){
+        return type.name().endsWith("BUTTON") ||type.name().endsWith("DOOR") || Arrays.binarySearch(fragileBlocks,type) >= 0;
     }
 }
