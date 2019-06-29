@@ -1041,6 +1041,37 @@ public class AsyncManager extends BukkitRunnable {
         }
     }
 
+    private void processGravity(){
+        boolean onGround = false;
+        for (Craft pCraft : CraftManager.getInstance()){
+            if (!pCraft.getType().getUseGravity()){
+                continue;
+            }
+            int minX = pCraft.getHitBox().getMinX() - 1;
+            int maxX = pCraft.getHitBox().getMaxX() + 1;
+            int minY = pCraft.getHitBox().getMinY() - 1;
+            int minZ = pCraft.getHitBox().getMinX() - 1;
+            int maxZ = pCraft.getHitBox().getMaxX() + 1;
+
+            //Check if there are any solid blocks below the craft
+            for (int x = minX ; x <= maxX ; x++){
+                for (int z = minZ ; z <= maxZ ; z++){
+                    if (pCraft.getW().getBlockAt(x,minY,z).getType().isSolid()){
+                        onGround = true;
+                        break;
+                    }
+                }
+                if (onGround)
+                    break;
+            }
+            if (onGround){
+                return;
+            }
+            pCraft.translate(0,-1,0);
+
+        }
+    }
+
     //Removed for refactor
     /*private void processScheduledBlockChanges() {
         for (World w : Bukkit.getWorlds()) {
