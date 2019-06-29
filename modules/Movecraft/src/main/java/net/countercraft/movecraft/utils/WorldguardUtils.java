@@ -112,4 +112,12 @@ public class WorldguardUtils {
     public Flag flag(String string){
         return null;
     }
+
+    public static boolean pvpAllowed(ProtectedRegion region){
+        if (Settings.IsLegacy){
+            return region.getFlag(DefaultFlag.PVP).equals(StateFlag.State.ALLOW);
+        } else {
+            return region.getFlag(Flags.PVP).equals(StateFlag.State.ALLOW);
+        }
+    }
 }
