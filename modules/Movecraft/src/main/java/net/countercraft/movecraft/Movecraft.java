@@ -52,7 +52,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -83,7 +82,6 @@ public class Movecraft extends JavaPlugin {
     private AssaultManager assaultManager;
     private SiegeManager siegeManager;
     private RepairManager repairManager;
-    private MovecraftRepair movecraftRepair;
 
     public static synchronized Movecraft getInstance() {
         return instance;
@@ -226,6 +224,7 @@ public class Movecraft extends JavaPlugin {
         } else {
             logger.log(Level.INFO, "Found a compatible version of WorldEdit. Enabling WorldEdit integration");
             Settings.RepairTicksPerBlock = getConfig().getInt("RepairTicksPerBlock", 0);
+            Settings.RepairMaxPercent = getConfig().getDouble("RepairMaxPercent",50);
         }
         worldEditPlugin = (WorldEditPlugin) wEPlugin;
 
@@ -382,15 +381,8 @@ public class Movecraft extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new InteractListener(), this);
             if (worldEditPlugin != null) {
                 final Class clazz;
-                try {
-                    clazz = Class.forName("net.countercraft.movecraft.compat.we6.IMovecraftRepair");
-                    if (MovecraftRepair.class.isAssignableFrom(clazz)){
-                        movecraftRepair = (MovecraftRepair) clazz.getConstructor(Plugin.class).newInstance(this);
-                    }
-                } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException | IllegalAccessException e) {
-                    e.printStackTrace();
-                }
-                if (movecraftRepair != null){
+                MovecraftRepair.initialize(this);
+                if (MovecraftRepair.getInstance() != null){
                     repairManager = new RepairManager();
                     repairManager.runTaskTimerAsynchronously(this,0,1);
                 }
@@ -491,10 +483,6 @@ public class Movecraft extends JavaPlugin {
 
     public RepairManager getRepairManager() {
         return repairManager;
-    }
-
-    public MovecraftRepair getMovecraftRepair() {
-        return movecraftRepair;
     }
 }
 

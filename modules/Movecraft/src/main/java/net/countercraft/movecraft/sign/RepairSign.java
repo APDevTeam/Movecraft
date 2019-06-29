@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.sign;
 
+import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.blocks.BaseBlock;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
 import net.countercraft.movecraft.Movecraft;
@@ -13,7 +14,7 @@ import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.WorldEditUpdateCommand;
 import net.countercraft.movecraft.repair.Repair;
 import net.countercraft.movecraft.repair.RepairManager;
-import net.countercraft.movecraft.utils.Pair;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -28,7 +29,6 @@ import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.util.Vector;
 
 import java.util.*;
 
@@ -97,7 +97,7 @@ public class RepairSign implements Listener{
             return;
         }
 
-        MovecraftRepair movecraftRepair = Movecraft.getInstance().getMovecraftRepair();
+        MovecraftRepair movecraftRepair = MovecraftRepair.getInstance();
         if (movecraftRepair.saveCraftRepairState(pCraft, sign, repairName))
             event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("State saved"));
         else
@@ -124,7 +124,7 @@ public class RepairSign implements Listener{
         String repairName = event.getPlayer().getName();
         repairName += "_";
         repairName += sign.getLine(1);
-        MovecraftRepair movecraftRepair = Movecraft.getInstance().getMovecraftRepair();
+        MovecraftRepair movecraftRepair = MovecraftRepair.getInstance();
         Clipboard clipboard = movecraftRepair.loadCraftRepairStateClipboard(pCraft, sign, repairName, world);
 
 
@@ -139,7 +139,7 @@ public class RepairSign implements Listener{
                 }
             }
             HashMap<Material, Double> numMissingItems = movecraftRepair.getMissingBlocks(repairName);
-            ArrayDeque<Pair<Vector, Vector>> locMissingBlocks = movecraftRepair.getMissingBlockLocations(repairName);
+            ArrayDeque<ImmutablePair<Vector, Vector>> locMissingBlocks = movecraftRepair.getMissingBlockLocations(repairName);
             int totalSize = locMissingBlocks.size() + pCraft.getHitBox().size();
 
             if (secondClick){
@@ -207,7 +207,7 @@ public class RepairSign implements Listener{
                     final LinkedList<UpdateCommand> updateCommandsFragileBlocks = new LinkedList<>();
                     final Vector distance = movecraftRepair.getDistance(repairName);
                     while (!locMissingBlocks.isEmpty()){
-                        Pair<Vector,Vector> locs = locMissingBlocks.pollFirst();
+                        ImmutablePair<Vector,Vector> locs = locMissingBlocks.pollFirst();
                         assert locs != null;
                         Vector cLoc = locs.getRight();
                         MovecraftLocation moveLoc = new MovecraftLocation(locs.getLeft().getBlockX(), locs.getLeft().getBlockY(), locs.getLeft().getBlockZ());
