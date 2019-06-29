@@ -83,11 +83,7 @@ public final class StatusSign implements Listener{
             if(foundBlocks.containsKey(flyBlock) && minimum>0) { // if it has a minimum, it should be considered for sinking consideration
                 int amount=foundBlocks.get(flyBlock);
                 Double percentPresent=(double) (amount*100/totalBlocks);
-                /*
-                int deshiftedID=flyBlockID;
-                if(deshiftedID>10000) {
-                    deshiftedID=(deshiftedID-10000)>>4;
-                }*/
+
                 String signText="";
                 if(percentPresent>minimum*1.04) {
                     signText+= ChatColor.GREEN;

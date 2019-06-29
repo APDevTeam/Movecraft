@@ -23,6 +23,7 @@ import java.util.LinkedList;
 public final class RemoteSign implements Listener{
     private static final String HEADER = "Remote Sign";
 
+
     @EventHandler
     public final void onSignChange(SignChangeEvent event) {
         if (!event.getLine(0).equalsIgnoreCase(HEADER)) {
