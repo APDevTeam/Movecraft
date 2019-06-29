@@ -1,7 +1,6 @@
 package net.countercraft.movecraft.sign;
 
 import net.countercraft.movecraft.MovecraftLocation;
-import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
@@ -26,7 +25,7 @@ public final class StatusSign implements Listener{
         World world = event.getCraft().getW();
         for(MovecraftLocation location: event.getCraft().getHitBox()){
             Block block = location.toBukkit(world).getBlock();
-            if(block.getState() instanceof Sign){
+            if(block.getType() == Material.WALL_SIGN || block.getType() == Material.SIGN_POST){
                 Sign sign = (Sign) block.getState();
                 if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Status:")) {
                     sign.setLine(1, "");
@@ -46,7 +45,7 @@ public final class StatusSign implements Listener{
         }
         int fuel=0;
         int totalBlocks=0;
-        Map<Material, Integer> foundBlocks = new HashMap<>();
+        Map<Integer, Integer> foundBlocks = new HashMap<>();
         for (MovecraftLocation ml : craft.getHitBox()) {
             Integer blockID = craft.getW().getBlockAt(ml.getX(), ml.getY(), ml.getZ()).getTypeId();
 
@@ -61,22 +60,24 @@ public final class StatusSign implements Listener{
                 foundBlocks.put(blockID, 1);
             }
 
-            if (blockType == Material.FURNACE) {
+            if (blockID == 61) {
                 InventoryHolder inventoryHolder = (InventoryHolder) craft.getW().getBlockAt(ml.getX(), ml.getY(), ml.getZ()).getState();
-                for (Material fuelType : Settings.FuelTypes.keySet()){
-                    if (!inventoryHolder.getInventory().contains(fuelType)){
-                        continue;
-                    }
-                    ItemStack[] content = inventoryHolder.getInventory().getContents();
-                    for (ItemStack item : content){
-                        if (item == null)
-                            continue;
-                        fuel += item.getAmount() * Settings.FuelTypes.get(fuelType);
+                if (inventoryHolder.getInventory().contains(263)
+                        || inventoryHolder.getInventory().contains(173)) {
+                    ItemStack[] istack=inventoryHolder.getInventory().getContents();
+                    for(ItemStack i : istack) {
+                        if(i!=null) {
+                            if(i.getTypeId()==263) {
+                                fuel+=i.getAmount()*8;
+                            }
+                            if(i.getTypeId()==173) {
+                                fuel+=i.getAmount()*80;
+                            }
+                        }
                     }
                 }
-
             }
-            if (blockType != Material.AIR) {
+            if (blockID != 0) {
                 totalBlocks++;
             }
         }
@@ -88,7 +89,10 @@ public final class StatusSign implements Listener{
             if(foundBlocks.containsKey(flyBlockID) && minimum>0) { // if it has a minimum, it should be considered for sinking consideration
                 int amount=foundBlocks.get(flyBlockID);
                 Double percentPresent=(double) (amount*100/totalBlocks);
-
+                int deshiftedID=flyBlockID;
+                if(deshiftedID>10000) {
+                    deshiftedID=(deshiftedID-10000)>>4;
+                }
                 String signText="";
                 if(percentPresent>minimum*1.04) {
                     signText+= ChatColor.GREEN;
@@ -97,12 +101,12 @@ public final class StatusSign implements Listener{
                 } else {
                     signText+=ChatColor.RED;
                 }
-                if(flyBlock == Material.REDSTONE_BLOCK) {
+                if(deshiftedID==152) {
                     signText+="R";
-                } else if(flyBlock == Material.IRON_BLOCK) {
+                } else if(deshiftedID==42) {
                     signText+="I";
                 } else {
-                    signText+= flyBlock.toString().charAt(0);
+                    signText+= Material.getMaterial(deshiftedID).toString().charAt(0);
                 }
 
                 signText+=" ";
@@ -113,7 +117,7 @@ public final class StatusSign implements Listener{
                 if(signColumn==0) {
                     event.setLine(signLine,signText);
                     signColumn++;
-                } else if(signLine < 3) {
+                } else if(signLine<3) {
                     String existingLine=event.getLine(signLine);
                     existingLine+=signText;
                     event.setLine(signLine, existingLine);
