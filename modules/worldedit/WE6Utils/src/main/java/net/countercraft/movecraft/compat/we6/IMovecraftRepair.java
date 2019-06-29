@@ -49,38 +49,29 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class IMovecraftRepair  extends MovecraftRepair {
-    private final Plugin plugin;
     private HashMap<String, ArrayDeque<Pair<Vector,Vector>>> locMissingBlocksMap = new HashMap<>();
     private HashMap<String, Long> numDiffBlocksMap = new HashMap<>();
     private HashMap<String, HashMap<Material, Double>> missingBlocksMap = new HashMap<>();
     private final HashMap<String, Vector> distanceMap = new HashMap<>();
 
-    public IMovecraftRepair(Plugin plugin){
-        this.plugin = plugin;
-    }
-
     @Override
-    public boolean saveCraftRepairState(Craft craft, Sign sign, String s) {
+    public boolean saveCraftRepairState(Craft craft, Sign sign, Plugin plugin, String s) {
         HashHitBox hitBox = craft.getHitBox();
         File saveDirectory = new File(plugin.getDataFolder(), "CraftRepairStates");
         World world = craft.getW();
         com.sk89q.worldedit.world.World weWorld = new BukkitWorld(world);
         WorldData worldData = weWorld.getWorldData();
-        //Use repair sign location as origin
         com.sk89q.worldedit.Vector origin = new com.sk89q.worldedit.Vector(sign.getX(),sign.getY(),sign.getZ());
-        //Create a save directory if it doesn't exist
         if (!saveDirectory.exists()) {
             saveDirectory.mkdirs();
         }
-        //Now create a region that encompasses the craft
         com.sk89q.worldedit.Vector minPos = new com.sk89q.worldedit.Vector(hitBox.getMinX(), hitBox.getMinY(), hitBox.getMinZ());
         com.sk89q.worldedit.Vector maxPos = new com.sk89q.worldedit.Vector(hitBox.getMaxX(), hitBox.getMaxY(), hitBox.getMaxZ());
         CuboidRegion cRegion = new CuboidRegion(minPos, maxPos);
         File repairStateFile = new File(saveDirectory, s + ".schematic");
-        //To ensure that only blocks that are part of the craft are copied, set a source mask containing the blocks making up the craft
         Set<BaseBlock> blockSet = baseBlocksFromCraft(craft);
         try {
-            //Now set origin, source mask, copy the craft and save it
+
             BlockArrayClipboard clipboard = new BlockArrayClipboard(cRegion);
             clipboard.setOrigin(origin);
             Extent source = WorldEdit.getInstance().getEditSessionFactory().getEditSession(weWorld, -1);
@@ -103,7 +94,7 @@ public class IMovecraftRepair  extends MovecraftRepair {
     }
 
     @Override
-    public boolean saveRegionRepairState(World world, ProtectedRegion region) {
+    public boolean saveRegionRepairState(Plugin plugin, World world, ProtectedRegion region) {
 
         File saveDirectory = new File(plugin.getDataFolder(), "RegionRepairStates");
         com.sk89q.worldedit.world.World weWorld = new BukkitWorld(world);
@@ -159,28 +150,26 @@ public class IMovecraftRepair  extends MovecraftRepair {
 
 
     @Override
-    public Clipboard loadCraftRepairStateClipboard(Craft craft, Sign sign, String repairStateFile, World world) {
-        //Load up the repair state
+    public Clipboard loadCraftRepairStateClipboard(Plugin plugin, Craft craft, Sign sign, String repairStateFile, World world) {
         File dataDirectory = new File(plugin.getDataFolder(), "CraftRepairStates");
         File file = new File(dataDirectory, repairStateFile + ".schematic"); // The schematic file
         com.sk89q.worldedit.world.World weWorld = new BukkitWorld(world);
         WorldData worldData = weWorld.getWorldData();
         Clipboard clipboard;
+        HashHitBox hitBox = craft.getHitBox();
         try {
-            //Read the repair state
             clipboard = ClipboardFormat.SCHEMATIC.getReader(new FileInputStream(file)).read(worldData);
 
         } catch (IOException e) {
             e.printStackTrace();
             return null;
         }
-        //If a repair state is present, count blocks that are missing on the craft
         if (clipboard != null) {
             long numDiffBlocks = 0;
             HashMap<Material, Double> missingBlocks = new HashMap<>();
             ArrayDeque<Pair<Vector,Vector>> locMissingBlocks = new ArrayDeque<>();
             com.sk89q.worldedit.Vector minPos = clipboard.getMinimumPoint();
-            com.sk89q.worldedit.Vector distance = clipboard.getOrigin().subtract(clipboard.getMinimumPoint());//Distance from origin to offset
+            com.sk89q.worldedit.Vector distance = clipboard.getOrigin().subtract(clipboard.getMinimumPoint());
             com.sk89q.worldedit.Vector size = clipboard.getDimensions();
             Vector offset = new Vector(sign.getX() - distance.getBlockX(), sign.getY() - distance.getBlockY(), sign.getZ() - distance.getBlockZ());
             if (distanceMap.containsKey(repairStateFile)) {
@@ -191,20 +180,16 @@ public class IMovecraftRepair  extends MovecraftRepair {
             for (int x = 0; x <= size.getBlockX(); x++) {
                 for (int y = 0; y <= size.getBlockY(); y++) {
                     for (int z = 0; z <= size.getBlockZ(); z++) {
-                        //Location on clipboard
                         com.sk89q.worldedit.Vector position = new com.sk89q.worldedit.Vector(minPos.getBlockX() + x, minPos.getBlockY() + y, minPos.getBlockZ() + z);
-                        //Location on craft
                         Location bukkitLoc = new Location(sign.getWorld(), offset.getBlockX() + x, offset.getBlockY() + y, offset.getBlockZ() + z);
-                        //Get the block on this position on the clipboard
+                        //
                         BaseBlock block = clipboard.getBlock(position);
-                        //Get the block on this position on the craft
                         Block bukkitBlock = sign.getWorld().getBlockAt(bukkitLoc);
                         boolean isImportant = true;
-                        //Ignore air blocks
                         if (block.getType() == 0) {
                             isImportant = false;
                         }
-                        //If block found on repair state mismatches the block found on the craft, then count the block
+
                         if (isImportant && bukkitBlock.getTypeId() != block.getType()) {
                             int itemToConsume = block.getType();
                             double qtyToConsume = 1.0;
@@ -264,7 +249,6 @@ public class IMovecraftRepair  extends MovecraftRepair {
                                 itemToConsume = 431;
                                 qtyToConsume = 0.5;
                             }
-                            //Check dispensers for TNT, fire charges and water buckets
                             if (itemToConsume == 23) {
                                 Tag t = block.getNbtData().getValue().get("Items");
                                 ListTag lt = null;
@@ -333,9 +317,6 @@ public class IMovecraftRepair  extends MovecraftRepair {
                                 itemToConsume = 182;
                                 qtyToConsume = 2;
                             }
-                            if (itemToConsume == 62){ //for lit furnaces, require an unlit furnace
-                                itemToConsume = 61;
-                            }
                             if (itemToConsume != 0) {
                                 if (!missingBlocks.containsKey(Material.getMaterial(itemToConsume))) {
                                     missingBlocks.put(Material.getMaterial(itemToConsume), qtyToConsume);
@@ -347,7 +328,6 @@ public class IMovecraftRepair  extends MovecraftRepair {
                                 locMissingBlocks.addLast(new Pair<>(new org.bukkit.util.Vector(offset.getBlockX() + x, offset.getBlockY() + y, offset.getBlockZ() + z),new Vector(position.getBlockX(),position.getBlockY(),position.getBlockZ())));
                             }
                         }
-                        //For dispensers, count TNT, fire charges and water buckets
                         if (bukkitBlock.getType() == Material.DISPENSER && block.getType() == 23) {
                             boolean needReplace = false;
                             Tag t = block.getNbtData().getValue().get("Items");
@@ -375,6 +355,7 @@ public class IMovecraftRepair  extends MovecraftRepair {
                                 }
                             }
                             Dispenser bukkitDispenser = (Dispenser) bukkitBlock.getState();
+                            //Bukkit.getLogger().info(String.format("TNT: %d, Fireballs: %d, Water buckets: %d", numTNT, numFireCharges, numWaterBuckets));
                             for (ItemStack iStack : bukkitDispenser.getInventory().getContents()) {
                                 if (iStack != null) {
                                     if (iStack.getType() == Material.TNT) {
@@ -388,6 +369,7 @@ public class IMovecraftRepair  extends MovecraftRepair {
                                     }
                                 }
                             }
+                            //Bukkit.getLogger().info(String.format("TNT: %d, Fireballs: %d, Water buckets: %d", numTNT, numFireCharges, numWaterBuckets));
                             if (numTNT > 0) {
                                 if (!missingBlocks.containsKey(Material.TNT)) {
                                     missingBlocks.put(Material.TNT, (double) numTNT);
@@ -419,7 +401,6 @@ public class IMovecraftRepair  extends MovecraftRepair {
                                 }
                                 needReplace = true;
                             }
-                            //If content is less than the repair state, replace it
                             if (needReplace) {
                                 numDiffBlocks++;
                                 locMissingBlocks.addLast(new Pair<>(new org.bukkit.util.Vector(offset.getBlockX() + x, offset.getBlockY() + y, offset.getBlockZ() + z),new Vector(position.getBlockX(),position.getBlockY(),position.getBlockZ())));
@@ -436,7 +417,7 @@ public class IMovecraftRepair  extends MovecraftRepair {
     }
 
     @Override
-    public Clipboard loadRegionRepairStateClipboard( String s, World world) {
+    public Clipboard loadRegionRepairStateClipboard(Plugin plugin, String s, World world) {
         File dataDirectory = new File(plugin.getDataFolder(), "RegionRepairStates");
         File file = new File(dataDirectory, s + ".schematic"); // The schematic file
         com.sk89q.worldedit.world.World weWorld = new BukkitWorld(world);
@@ -466,6 +447,38 @@ public class IMovecraftRepair  extends MovecraftRepair {
     }
 
     @Override
+    public Vector getDistanceFromSignToLowestPoint(Clipboard clipboard) {
+        return new Vector(clipboard.getOrigin().getBlockX() - clipboard.getMinimumPoint().getBlockX(), clipboard.getOrigin().getBlockY() - clipboard.getMinimumPoint().getBlockY(), clipboard.getOrigin().getBlockZ() - clipboard.getMinimumPoint().getBlockZ());
+        /*for (int x = clipboard.getMinimumPoint().getBlockX(); x <= clipboard.getMaximumPoint().getBlockX(); x++) {
+            for (int y = clipboard.getMinimumPoint().getBlockY(); y <= clipboard.getMaximumPoint().getBlockY(); y++) {
+                for (int z = clipboard.getMinimumPoint().getBlockZ(); z <= clipboard.getMaximumPoint().getBlockZ(); z++) {
+                    com.sk89q.worldedit.Vector pos = new com.sk89q.worldedit.Vector(x,y,z);
+                    BaseBlock block = clipboard.getBlock(pos);
+                    if (block.getType() == 68 || block.getType() == 63) {
+                        String firstLine = block.getNbtData().getString("Text1");
+                        firstLine = firstLine.substring(2);
+                        if (firstLine.substring(0, 5).equalsIgnoreCase("extra")){
+                            firstLine = firstLine.substring(17);
+                            String[] parts = firstLine.split("\"");
+                            firstLine = parts[0];
+                        }
+                        String secondLine = block.getNbtData().getString("Text2");
+                        secondLine = secondLine.substring(2);
+                        if (secondLine.substring(0, 5).equalsIgnoreCase("extra")){
+                            secondLine = secondLine.substring(17);
+                            String[] parts = secondLine.split("\"");
+                            secondLine = parts[0];
+                        }
+                        if (firstLine.equalsIgnoreCase("Repair:")&& secondLine.contains(repairName)){
+                            returnDistance = new org.bukkit.util.Vector(x - clipboard.getMinimumPoint().getBlockX(), y - clipboard.getMinimumPoint().getBlockY(), z - clipboard.getMinimumPoint().getBlockZ());
+                        }
+                    }
+                }
+            }
+        }*/
+    }
+
+    @Override
     public Vector getDistance(String repairName) {
         return distanceMap.get(repairName);
     }
@@ -476,8 +489,8 @@ public class IMovecraftRepair  extends MovecraftRepair {
         HashHitBox hitBox = craft.getHitBox();
         World w = craft.getW();
         for (MovecraftLocation location : hitBox) {
-            int id = w.getBlockTypeIdAt(location.getX(), location.getY(), location.getZ());
-            byte data = w.getBlockAt(location.getX(), location.getY(), location.getZ()).getData();
+            Integer id = w.getBlockTypeIdAt(location.getX(), location.getY(), location.getZ());
+            Byte data = w.getBlockAt(location.getX(), location.getY(), location.getZ()).getData();
             returnSet.add(new BaseBlock(id, data));
         }
         Bukkit.getLogger().info(returnSet.toString());

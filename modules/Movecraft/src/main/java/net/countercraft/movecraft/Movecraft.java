@@ -385,7 +385,7 @@ public class Movecraft extends JavaPlugin {
                 try {
                     clazz = Class.forName("net.countercraft.movecraft.compat.we6.IMovecraftRepair");
                     if (MovecraftRepair.class.isAssignableFrom(clazz)){
-                        movecraftRepair = (MovecraftRepair) clazz.getConstructor(Plugin.class).newInstance(this);
+                        movecraftRepair = (MovecraftRepair) clazz.getConstructor().newInstance();
                     }
                 } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException | IllegalAccessException e) {
                     e.printStackTrace();
@@ -393,7 +393,7 @@ public class Movecraft extends JavaPlugin {
                 if (movecraftRepair != null){
                     repairManager = new RepairManager();
                     repairManager.runTaskTimerAsynchronously(this,0,1);
-
+                    getServer().getPluginManager().registerEvents(new RepairSign(), this);
                 }
             }
             this.getCommand("movecraft").setExecutor(new MovecraftCommand());
@@ -429,7 +429,7 @@ public class Movecraft extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new RelativeMoveSign(), this);
             getServer().getPluginManager().registerEvents(new ReleaseSign(), this);
             getServer().getPluginManager().registerEvents(new RemoteSign(), this);
-            getServer().getPluginManager().registerEvents(new RepairSign(), this);
+            //getServer().getPluginManager().registerEvents(new RepairSign(), this);
             getServer().getPluginManager().registerEvents(new SpeedSign(), this);
             getServer().getPluginManager().registerEvents(new StatusSign(), this);
             getServer().getPluginManager().registerEvents(new SubcraftRotateSign(), this);
