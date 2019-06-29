@@ -35,7 +35,6 @@ import java.util.*;
 public class RepairSign implements Listener{
     private String HEADER = "Repair:";
     private HashMap<UUID, Long> playerInteractTimeMap = new HashMap<>();//Players must be assigned by the UUID, or NullPointerExceptions are thrown
-    private final Material[] fragileBlocks = new Material[]{ Material.TORCH, Material.LADDER, Material.WALL_SIGN, Material.LEVER, Material.STONE_BUTTON, Material.TRAP_DOOR, Material.TRIPWIRE_HOOK, Material.WOOD_BUTTON, Material.IRON_TRAPDOOR, Material.DIODE_BLOCK_ON, Material.DIODE_BLOCK_OFF, Material.REDSTONE_COMPARATOR_ON, Material.REDSTONE_COMPARATOR_OFF, Material.REDSTONE_WIRE, Material.BED_BLOCK};
 
     @EventHandler
     public void onSignChange(SignChangeEvent event){
@@ -256,6 +255,16 @@ public class RepairSign implements Listener{
     }
 
     private boolean fragileBlock(Material type){
-        return type.name().endsWith("BUTTON") ||type.name().endsWith("DOOR") || Arrays.binarySearch(fragileBlocks,type) >= 0;
+        return type.name().endsWith("BUTTON")
+                || type.name().endsWith("DOOR_BLOCK")
+                || type.name().startsWith("DIODE")
+                || type.name().startsWith("REDSTONE_COMPARATOR")
+                || type.equals(Material.LEVER)
+                || type.equals(Material.WALL_SIGN)
+                || type.equals(Material.WALL_BANNER)
+                || type.equals(Material.REDSTONE_WIRE)
+                || type.equals(Material.LADDER)
+                || type.equals(Material.BED_BLOCK)
+                || type.equals(Material.TRIPWIRE_HOOK);
     }
 }
