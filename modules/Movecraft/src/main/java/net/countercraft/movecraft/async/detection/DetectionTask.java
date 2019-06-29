@@ -124,7 +124,7 @@ public class DetectionTask extends AsyncTask {
                         }
                         if (!foundPilot && (!data.getPlayer().hasPermission("movecraft.bypasslock"))) {
                             fail(I18nSupport.getInternationalisedString(
-                                    "Not one of the registered pilots on this craft"));
+                                    "Detection - Not Registered Pilot"));
                         }
                     }
                     for (int i = 0; i < 4; i++) {
@@ -134,7 +134,7 @@ public class DetectionTask extends AsyncTask {
                         }
                     }
                     if (s.getLine(0).equalsIgnoreCase("Name:") && !craft.getType().getCanBeNamed()){
-                        fail("This craft type cannot be named");
+                        fail(I18nSupport.getInternationalisedString("Detection - Craft Type Cannot Be Named"));
                     }
                 }
             }

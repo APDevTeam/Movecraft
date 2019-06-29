@@ -6,6 +6,7 @@ import net.countercraft.movecraft.Rotation;
 import net.countercraft.movecraft.async.detection.DetectionTask;
 import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
+import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -87,7 +88,7 @@ public class ICraft extends Craft {
     public void rotate(Rotation rotation, MovecraftLocation originPoint) {
         if(getLastRotateTime()+1e9>System.nanoTime()){
             if(getNotificationPlayer()!=null)
-                getNotificationPlayer().sendMessage("You're turning too quickly!");
+                getNotificationPlayer().sendMessage(I18nSupport.getInternationalisedString("Rotation - Turning Too Quickly"));
             return;
         }
         setLastRotateTime(System.nanoTime());

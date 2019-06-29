@@ -101,7 +101,7 @@ public class BlockListener implements Listener {
         }
         if (e.getBlock().getType() == Material.WALL_SIGN) {
             Sign s = (Sign) e.getBlock().getState();
-            if (s.getLine(0).equalsIgnoreCase(ChatColor.RED + "REGION DAMAGED!")) {
+            if (s.getLine(0).equalsIgnoreCase(ChatColor.RED + I18nSupport.getInternationalisedString("Region Damaged"))) {
                 e.setCancelled(true);
                 return;
             }
@@ -402,7 +402,7 @@ public class BlockListener implements Listener {
                         for (Player p : fworld.getPlayers()) {
                             if (Math.round(p.getLocation().getBlockX() / 1000.0) == Math.round(floc.getBlockX() / 1000.0) &&
                                     Math.round(p.getLocation().getBlockZ() / 1000.0) == Math.round(floc.getBlockZ() / 1000.0)) {
-                                p.sendMessage("Damages: " + fdamages);
+                                p.sendMessage(I18nSupport.getInternationalisedString("Damage")+": " + fdamages);
                             }
                         }
                     }
