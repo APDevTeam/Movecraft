@@ -84,10 +84,9 @@ public class SiegeCommand implements CommandExecutor {
         commandSender.sendMessage("Cost to siege: " + ChatColor.RED + currencyFormat.format(siege.getCost()));
         commandSender.sendMessage("Daily income: " + ChatColor.RED + currencyFormat.format(siege.getDailyIncome()));
         commandSender.sendMessage("Day of week: " + ChatColor.RED + dayToString(siege.getDayOfWeek()));
-        commandSender.sendMessage("Start time: " + ChatColor.RED + String.format("%02d", siege.getStartTime()/100) + ":" + String.format("%02d", siege.getStartTime()%100) + " UTC");
-        commandSender.sendMessage("End time: " + ChatColor.RED + String.format("%02d", siege.getScheduleEnd()/100) + ":" + String.format("%02d",siege.getScheduleEnd()%100) + " UTC");
-        commandSender.sendMessage("Start delay: " + ChatColor.RED + String.format("%02d", siege.getDelayBeforeStart()/60) + ":" + String.format("%02d", siege.getDelayBeforeStart()%60));
-        commandSender.sendMessage("Duration: " + ChatColor.RED + String.format("%02d", siege.getDuration()/60) + ":" + String.format("%02d", siege.getDuration()%60));
+        commandSender.sendMessage("Start time: " + ChatColor.RED + militaryTimeIntToString(siege.getScheduleStart()) + " UTC");
+        commandSender.sendMessage("End time: " + ChatColor.RED + militaryTimeIntToString(siege.getScheduleEnd()) + " UTC");
+        commandSender.sendMessage("Duration: " + ChatColor.RED + secondsIntToString(siege.getDuration()%60));
         return true;
 
     }
@@ -185,6 +184,15 @@ public class SiegeCommand implements CommandExecutor {
         siege.setStage(SiegeStage.PREPERATION);
         return true;
 
+    }
+
+    private String militaryTimeIntToString(int militaryTime) {
+        return String.format("%02d",militaryTime / 100) + ":" + String.format("%02d",militaryTime % 100);
+
+    }
+
+    private String secondsIntToString(int seconds) {
+        return String.format("%02d",seconds / 60) + ":" + String.format("%02d",seconds % 60);
     }
 
     private String dayToString(int day){
