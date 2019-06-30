@@ -31,6 +31,7 @@ import static net.countercraft.movecraft.utils.ChatUtils.MOVECRAFT_COMMAND_PREFI
 public class SiegeCommand implements CommandExecutor {
     //TODO: Add tab complete
     private final NumberFormat currencyFormat = NumberFormat.getCurrencyInstance();
+
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args) {
         if (!command.getName().equalsIgnoreCase("siege")) {
@@ -85,7 +86,8 @@ public class SiegeCommand implements CommandExecutor {
         commandSender.sendMessage("Day of week: " + ChatColor.RED + dayToString(siege.getDayOfWeek()));
         commandSender.sendMessage("Start time: " + ChatColor.RED + String.format("%02d", siege.getStartTime()/100) + ":" + String.format("%02d", siege.getStartTime()%100) + " UTC");
         commandSender.sendMessage("End time: " + ChatColor.RED + String.format("%02d", siege.getScheduleEnd()/100) + ":" + String.format("%02d",siege.getScheduleEnd()%100) + " UTC");
-        commandSender.sendMessage("Duration: " + ChatColor.RED + String.format("%02d", siege.getDuration()/100) + ":" + String.format("%02d", siege.getDuration()%100));
+        commandSender.sendMessage("Start delay: " + ChatColor.RED + String.format("%02d", siege.getDelayBeforeStart()/60) + ":" + String.format("%02d", siege.getDelayBeforeStart()%60));
+        commandSender.sendMessage("Duration: " + ChatColor.RED + String.format("%02d", siege.getDuration()/60) + ":" + String.format("%02d", siege.getDuration()%60));
         return true;
 
     }
@@ -147,9 +149,9 @@ public class SiegeCommand implements CommandExecutor {
         }
         long cost = siege.getCost();
         for (Siege tempSiege : siegeManager.getSieges()) {
-            ProtectedRegion tregion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(player.getWorld()).getRegion(tempSiege.getCaptureRegion());
-            assert tregion != null;
-            if (tempSiege.isDoubleCostPerOwnedSiegeRegion() && tregion.getOwners().contains(player.getUniqueId()))
+            ProtectedRegion tRegion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(player.getWorld()).getRegion(tempSiege.getCaptureRegion());
+            assert tRegion != null;
+            if (tempSiege.isDoubleCostPerOwnedSiegeRegion() && tRegion.getOwners().contains(player.getUniqueId()))
                 cost *= 2;
         }
 
@@ -157,6 +159,7 @@ public class SiegeCommand implements CommandExecutor {
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + String.format("You do not have enough money. You need %d", cost));
             return true;
         }
+
         Calendar rightNow = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
         int hour = rightNow.get(Calendar.HOUR_OF_DAY);
         int minute = rightNow.get(Calendar.MINUTE);
@@ -164,8 +167,12 @@ public class SiegeCommand implements CommandExecutor {
         int dayOfWeek = rightNow.get(Calendar.DAY_OF_WEEK);
         if (currMilitaryTime <= siege.getScheduleStart() || currMilitaryTime >= siege.getScheduleEnd() || dayOfWeek != siege.getDayOfWeek()) {
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("The time is not during the Siege schedule"));
+            player.sendMessage(dayToString(dayOfWeek));
+            player.sendMessage(Integer.toString(hour));
+            player.sendMessage(Integer.toString(minute));
             return true;
         }
+
         for (String startCommand : siege.getCommandsOnStart()) {
             Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), startCommand.replaceAll("%r", siege.getAttackRegion()).replaceAll("%c", "" + siege.getCost()));
         }
@@ -186,19 +193,26 @@ public class SiegeCommand implements CommandExecutor {
     private String dayToString(int day){
         String output = "Error";
         switch (day){
-            case 1: output = "Monday";
+            case 1:
+                output = "Monday";
                 break;
-            case 2: output = "Tuesday";
+            case 2:
+                output = "Tuesday";
                 break;
-            case 3: output = "Wednesday";
+            case 3:
+                output = "Wednesday";
                 break;
-            case 4: output = "Thursday";
+            case 4:
+                output = "Thursday";
                 break;
-            case 5: output = "Friday";
+            case 5:
+                output = "Friday";
                 break;
-            case 6: output = "Saturday";
+            case 6:
+                output = "Saturday";
                 break;
-            case 7: output = "Sunday";
+            case 7:
+                output = "Sunday";
                 break;
 
         }
