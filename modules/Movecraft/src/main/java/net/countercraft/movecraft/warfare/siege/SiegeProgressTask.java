@@ -6,6 +6,7 @@ import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.utils.HashHitBox;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.config.Settings;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
@@ -18,11 +19,12 @@ public class SiegeProgressTask extends SiegeTask {
         super(siege);
     }
 
-    //every 180 seconds = 3600 ticks
+    //every 20 ticks = 1 second
     public void run() {
-        if ((siege.getDuration() - ((System.currentTimeMillis() - siege.getStartTime()) / 1000)) % 60 != 0) {
+        if ((siege.getDuration() - ((System.currentTimeMillis() - siege.getStartTime()) / 1000)) % Settings.SiegeTaskSeconds != 0) {
             return;
         }
+
         Player siegeLeader = Movecraft.getInstance().getServer().getPlayer(siege.getPlayerUUID());
         Craft siegeCraft = CraftManager.getInstance().getCraftByPlayer(siegeLeader);
         boolean siegeLeaderShipInRegion = false, siegeLeaderPilotingShip;
@@ -50,15 +52,17 @@ public class SiegeProgressTask extends SiegeTask {
         if (timeLeft > 10) {
             if (siegeLeaderShipInRegion) {
                 Bukkit.getServer().broadcastMessage(String.format(
-                        "The Siege of %s is under way. The Siege Flagship is a %s of size %d under the command of %s at %d, %d, %d. Siege will end in %d minutes",
+                        "The Siege of %s is under way. The Siege Flagship is a %s of size %d under the command of %s at [x:%d, y:%d, z:%d]. Siege will end ",
                         siege.getName(),
                         siegeCraft.getType().getCraftName(),
                         siegeCraft.getOrigBlockCount(),
-                        siegeLeader.getDisplayName(), midX, midY, midZ, timeLeft / 60));
+                        siegeLeader.getDisplayName(), midX, midY, midZ)
+                        + formatMinutes(timeLeft));
             } else {
                 Bukkit.getServer().broadcastMessage(String.format(
-                        "The Siege of %s is under way. The Siege Leader, %s, is not in command of a Flagship within the Siege Region! If they are still not when the duration expires, the siege will fail! Siege will end in %d minutes",
-                        siege.getName(), siegeLeader.getDisplayName(), timeLeft / 60));
+                        "The Siege of %s is under way. The Siege Leader, %s, is not in command of a Flagship within the Siege Region! If they are still not when the duration expires, the siege will fail! Siege will end ",
+                        siege.getName(), siegeLeader.getDisplayName() )
+                        + formatMinutes(timeLeft));
             }
         } else {
             if (siegeLeaderShipInRegion) {
@@ -93,6 +97,20 @@ public class SiegeProgressTask extends SiegeTask {
         }
         for (Player p : Bukkit.getOnlinePlayers()){
             p.playSound(p.getLocation(), Sound.ENTITY_WITHER_DEATH, 1,0);
+        }
+    }
+
+    private String formatMinutes(int seconds) {
+        if (seconds < 60) {
+            return "soon";
+        }
+
+        int minutes = seconds / 60;
+        if (minutes == 1) {
+            return "in 1 minute";
+        }
+        else {
+            return String.format("in %d minutes", minutes);
         }
     }
 }

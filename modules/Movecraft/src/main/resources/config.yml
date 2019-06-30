@@ -19,6 +19,7 @@ FadeWrecksAfter: 600
 BlockQueueChunkSize: 200000
 RepairTicksPerBlock: 10
 RepairMoneyPerBlock: 10
+SiegeTaskSeconds: 600 # Seconds per siege message, defaults to 600 (10 minutes)
 AllowCrewSigns: true
 MaxRemoteSigns: -1 # Maximum number of remote signs that can be triggered at once.  Setting to -1 allows unlimited.
 SetHomeToCrewSign: false
