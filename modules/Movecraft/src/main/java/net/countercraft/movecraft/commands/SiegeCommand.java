@@ -167,18 +167,6 @@ public class SiegeCommand implements CommandExecutor {
         int dayOfWeek = rightNow.get(Calendar.DAY_OF_WEEK);
         if (currMilitaryTime <= siege.getScheduleStart() || currMilitaryTime >= siege.getScheduleEnd() || dayOfWeek != siege.getDayOfWeek()) {
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("The time is not during the Siege schedule"));
-
-            player.sendMessage("Current time:");
-            player.sendMessage(dayToString(dayOfWeek) + ": " + Integer.toString(dayOfWeek));
-            player.sendMessage("Hour: " + Integer.toString(hour));
-            player.sendMessage( "Minute: " + Integer.toString(minute));
-            player.sendMessage("Military time: " + Integer.toString(currMilitaryTime));
-
-            player.sendMessage("Expected time: ");
-            player.sendMessage(dayToString(siege.getDayOfWeek()) + ": " + Integer.toString(siege.getDayOfWeek()));
-            player.sendMessage("Start: " + Integer.toString(siege.getScheduleStart()));
-            player.sendMessage( "End: " + Integer.toString(siege.getScheduleEnd()));
-
             return true;
         }
 
