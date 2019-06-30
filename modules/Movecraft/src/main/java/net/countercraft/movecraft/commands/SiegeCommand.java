@@ -167,9 +167,18 @@ public class SiegeCommand implements CommandExecutor {
         int dayOfWeek = rightNow.get(Calendar.DAY_OF_WEEK);
         if (currMilitaryTime <= siege.getScheduleStart() || currMilitaryTime >= siege.getScheduleEnd() || dayOfWeek != siege.getDayOfWeek()) {
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("The time is not during the Siege schedule"));
-            player.sendMessage(dayToString(dayOfWeek));
-            player.sendMessage(Integer.toString(hour));
-            player.sendMessage(Integer.toString(minute));
+
+            player.sendMessage("Current time:");
+            player.sendMessage(dayToString(dayOfWeek) + ": " + Integer.toString(dayOfWeek));
+            player.sendMessage("Hour: " + Integer.toString(hour));
+            player.sendMessage( "Minute: " + Integer.toString(minute));
+            player.sendMessage("Military time: " + Integer.toString(currMilitaryTime));
+
+            player.sendMessage("Expected time: ");
+            player.sendMessage(dayToString(siege.getDayOfWeek()) + ": " + Integer.toString(siege.getDayOfWeek()));
+            player.sendMessage("Start: " + Integer.toString(siege.getScheduleStart()));
+            player.sendMessage( "End: " + Integer.toString(siege.getScheduleEnd()));
+
             return true;
         }
 
@@ -194,27 +203,26 @@ public class SiegeCommand implements CommandExecutor {
         String output = "Error";
         switch (day){
             case 1:
-                output = "Monday";
-                break;
-            case 2:
-                output = "Tuesday";
-                break;
-            case 3:
-                output = "Wednesday";
-                break;
-            case 4:
-                output = "Thursday";
-                break;
-            case 5:
-                output = "Friday";
-                break;
-            case 6:
-                output = "Saturday";
-                break;
-            case 7:
                 output = "Sunday";
                 break;
-
+            case 2:
+                output = "Monday";
+                break;
+            case 3:
+                output = "Tuesday";
+                break;
+            case 4:
+                output = "Wednesday";
+                break;
+            case 5:
+                output = "Thursday";
+                break;
+            case 6:
+                output = "Friday";
+                break;
+            case 7:
+                output = "Saturday";
+                break;
         }
         return output;
     }
