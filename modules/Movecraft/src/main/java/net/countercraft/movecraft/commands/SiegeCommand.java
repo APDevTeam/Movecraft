@@ -169,6 +169,29 @@ public class SiegeCommand implements CommandExecutor {
             return true;
         }
 
+        //check if piloting craft in siege region
+        Craft siegeCraft = CraftManager.getInstance().getCraftByPlayer(player);
+        if(siegeCraft == null) {
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("You must be piloting a craft!"));
+            return true;
+        }
+        else {
+            if(!siege.getCraftsToWin().contains(siegeCraft.getType().getCraftName())) {
+                player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("You must be piloting a craft that can siege!"));
+                return true;
+            }
+
+            HashHitBox hitBox = siegeCraft.getHitBox();
+            int midX = (hitBox.getMaxX() + hitBox.getMinX()) / 2;
+            int midY = (hitBox.getMaxY() + hitBox.getMinY()) / 2;
+            int midZ = (hitBox.getMaxZ() + hitBox.getMinZ()) / 2;
+            if(!Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(player.getWorld()).getRegion(siege.getAttackRegion()).contains(midX, midY, midZ)) {
+                player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("You must be piloting a craft in the siege region!"));
+                return true;
+            }
+        }
+
+
         for (String startCommand : siege.getCommandsOnStart()) {
             Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), startCommand.replaceAll("%r", siege.getAttackRegion()).replaceAll("%c", "" + siege.getCost()));
         }
