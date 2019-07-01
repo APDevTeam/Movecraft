@@ -3,10 +3,10 @@ package net.countercraft.movecraft.commands;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.countercraft.movecraft.Movecraft;
+import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.utils.HashHitBox;
 import net.countercraft.movecraft.utils.TopicPaginator;
 import net.countercraft.movecraft.warfare.siege.Siege;
 import net.countercraft.movecraft.warfare.siege.SiegeManager;
@@ -86,7 +86,7 @@ public class SiegeCommand implements CommandExecutor {
         commandSender.sendMessage("Day of week: " + ChatColor.RED + dayToString(siege.getDayOfWeek()));
         commandSender.sendMessage("Start time: " + ChatColor.RED + militaryTimeIntToString(siege.getScheduleStart()) + " UTC");
         commandSender.sendMessage("End time: " + ChatColor.RED + militaryTimeIntToString(siege.getScheduleEnd()) + " UTC");
-        commandSender.sendMessage("Duration: " + ChatColor.RED + secondsIntToString(siege.getDuration()%60));
+        commandSender.sendMessage("Duration: " + ChatColor.RED + secondsIntToString(siege.getDuration()));
         return true;
 
     }
@@ -175,20 +175,14 @@ public class SiegeCommand implements CommandExecutor {
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("You must be piloting a craft!"));
             return true;
         }
-        else {
-            if(!siege.getCraftsToWin().contains(siegeCraft.getType().getCraftName())) {
-                player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("You must be piloting a craft that can siege!"));
-                return true;
-            }
-
-            HashHitBox hitBox = siegeCraft.getHitBox();
-            int midX = (hitBox.getMaxX() + hitBox.getMinX()) / 2;
-            int midY = (hitBox.getMaxY() + hitBox.getMinY()) / 2;
-            int midZ = (hitBox.getMaxZ() + hitBox.getMinZ()) / 2;
-            if(!Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(player.getWorld()).getRegion(siege.getAttackRegion()).contains(midX, midY, midZ)) {
-                player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("You must be piloting a craft in the siege region!"));
-                return true;
-            }
+        if(!siege.getCraftsToWin().contains(siegeCraft.getType().getCraftName())) {
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("You must be piloting a craft that can siege!"));
+            return true;
+        }
+        MovecraftLocation mid = siegeCraft.getHitBox().getMidPoint();
+        if(!Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(player.getWorld()).getRegion(siege.getAttackRegion()).contains(mid.getX(), mid.getY(), mid.getZ())) {
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("You must be piloting a craft in the siege region!"));
+            return true;
         }
 
 
