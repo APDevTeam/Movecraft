@@ -146,7 +146,7 @@ public class AsyncManager extends BukkitRunnable {
                             notifyP.sendMessage(data.getFailMessage());
                         else
                             Movecraft.getInstance().getLogger().log(Level.INFO,
-                                    "NULL Player Craft Detection failed:" + data.getFailMessage());
+                            		I18nSupport.getInternationalisedString("Detection - NULL Player Detection Failed") + ": " + data.getFailMessage());
 
                     } else {
                         Set<Craft> craftsInWorld = CraftManager.getInstance().getCraftsInWorld(c.getW());
@@ -296,7 +296,7 @@ public class AsyncManager extends BukkitRunnable {
                             notifyP.sendMessage(task.getFailMessage());
                         else
                             Movecraft.getInstance().getLogger().log(Level.INFO,
-                                    "NULL Player Rotation Failed: " + task.getFailMessage());
+                            		I18nSupport.getInternationalisedString("Rotation - NULL Player Rotation Failed")+ ": " + task.getFailMessage());
                     } else {
                         // get list of cannons before sending map updates, to
                         // avoid conflicts
@@ -864,7 +864,7 @@ public class AsyncManager extends BukkitRunnable {
             final Map<MovecraftLocation, Material> phaseBlocks = wreckPhases.get(hitBox);
             final World world = wreckWorlds.get(hitBox);
             for (MovecraftLocation location : hitBox){
-                handler.setBlockFast(location.toBukkit(world), phaseBlocks.getOrDefault(location, Material.AIR),(byte) 0);
+                handler.setBlockFast(location.toBukkit(world), phaseBlocks.get(location),(byte) 0);
             }
             processed.add(hitBox);
         }
@@ -923,7 +923,7 @@ public class AsyncManager extends BukkitRunnable {
                                     if (recentContactTracking.get(ccraft).get(tcraft) == null
                                             || System.currentTimeMillis()
                                             - recentContactTracking.get(ccraft).get(tcraft) > 60000) {
-                                        String notification = "New contact: ";
+                                        String notification = I18nSupport.getInternationalisedString("New Contact") + ": ";
 
                                         if (tcraft.getName().length() >= 1){
                                             notification += tcraft.getName();
@@ -933,27 +933,28 @@ public class AsyncManager extends BukkitRunnable {
                                         if (tcraft.getName().length() >= 1){
                                             notification += ")";
                                         }
-                                        notification += " commanded by ";
+                                        notification += " " + I18nSupport.getInternationalisedString("Commanded By")+" ";
                                         if (tcraft.getNotificationPlayer() != null) {
                                             notification += tcraft.getNotificationPlayer().getDisplayName();
                                         } else {
                                             notification += "NULL";
                                         }
-                                        notification += ", size: ";
+                                        notification += ", " + I18nSupport.getInternationalisedString("Size") + ": ";
                                         notification += tcraft.getOrigBlockCount();
-                                        notification += ", range: ";
+                                        notification += ", " + I18nSupport.getInternationalisedString("Range") + ": ";
                                         notification += (int) Math.sqrt(distsquared);
-                                        notification += " to the";
+                                        notification += " " + I18nSupport.getInternationalisedString("To The") + " ";
                                         if (Math.abs(diffx) > Math.abs(diffz))
                                             if (diffx < 0)
-                                                notification += " east.";
+                                                notification += I18nSupport.getInternationalisedString("east");
                                             else
-                                                notification += " west.";
+                                                notification += I18nSupport.getInternationalisedString("west");
                                         else if (diffz < 0)
-                                            notification += " south.";
+                                            notification += I18nSupport.getInternationalisedString("south");
                                         else
-                                            notification += " north.";
-
+                                            notification += I18nSupport.getInternationalisedString("north");
+                                        
+                                        notification += ".";
                                         ccraft.getNotificationPlayer().sendMessage(notification);
                                         w.playSound(ccraft.getNotificationPlayer().getLocation(),
                                                 Sound.BLOCK_ANVIL_LAND, 1.0f, 2.0f);

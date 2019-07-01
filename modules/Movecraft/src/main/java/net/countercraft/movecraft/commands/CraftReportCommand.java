@@ -29,27 +29,27 @@ public class CraftReportCommand implements CommandExecutor{
             else
                 page = Integer.parseInt(args[0]);
         }catch(NumberFormatException e){
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + " Invalid page \"" + args[0] + "\"");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Invalid page") + "\"" + args[0] + "\"");
             return true;
         }
         if (CraftManager.getInstance().isEmpty()){
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "No crafts found");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Craft Report - None Found"));
             return true;
         }
-        TopicPaginator paginator = new TopicPaginator("Craft Report");
+        TopicPaginator paginator = new TopicPaginator(I18nSupport.getInternationalisedString("Craft Report"));
         for (Craft craft : CraftManager.getInstance()) {
             HashHitBox hitBox = craft.getHitBox();
             paginator.addLine((craft.getSinking() ? ChatColor.RED : craft.getDisabled() ? ChatColor.BLUE : "") +
                     craft.getType().getCraftName() + " " +
                     ChatColor.RESET +
-                    (craft.getNotificationPlayer() != null ? craft.getNotificationPlayer().getName() + " " : "None ") +
+                    (craft.getNotificationPlayer() != null ? craft.getNotificationPlayer().getName() + " " : I18nSupport.getInternationalisedString("None") +" ")+
                     hitBox.size() + " @ " +
                     hitBox.getMinX() + "," +
                     hitBox.getMinY() + "," +
                     hitBox.getMinZ());
         }
         if(!paginator.isInBounds(page)){
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + " Invalid page \"" + args[1] + "\"");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Invalid page") + "\"" + args[1] + "\"");
             return true;
         }
         for(String line : paginator.getPage(page))

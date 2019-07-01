@@ -20,7 +20,7 @@ public class ManOverboardCommand implements CommandExecutor{
             return false;
         }
         if(!(commandSender instanceof Player)){
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "you need to be a player to get man-overboard");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("ManOverboard - Must Be Player"));
             return true;
         }
         Player player = (Player) commandSender;
@@ -34,26 +34,26 @@ public class ManOverboardCommand implements CommandExecutor{
             }
         }
         if(craft == null){
-            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + "No craft found");
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("ManOverboard - No Craft Found"));
             return true;
         }
         Location telPoint = craft.getCrewSigns().containsKey(player.getUniqueId()) ? craft.getCrewSigns().get(player.getUniqueId()) : getCraftTeleportPoint(craft);
         if (craft.getW() != player.getWorld()) {
-            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Distance to craft is too far"));
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("ManOverboard - Distance Too Far"));
             return true;
         }
         if (craft.getMovedPlayers().containsKey(player) && (System.currentTimeMillis() - craft.getMovedPlayers().get(player)) / 1_000 > Settings.ManOverBoardTimeout) {
-            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("You waited to long"));
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("ManOverboard - Timed Out"));
             return true;
 
         }
         if (telPoint.distanceSquared(player.getLocation()) > 1_000_000) {
-            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Distance to craft is too far"));
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("ManOverboard - Distance Too Far"));
             return true;
         }
 
         if (craft.getDisabled() || craft.getSinking()) {
-            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + "Can't teleport to a disabled craft");
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("ManOverboard - Disabled"));
         }
         player.teleport(telPoint);
         return true;

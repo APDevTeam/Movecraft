@@ -35,11 +35,11 @@ public class AssaultCommand implements CommandExecutor{
             return false;
         }
         if (!Settings.AssaultEnable) {
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Assault is not enabled, you shouldn't even see this"));
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Assault - Disabled"));
             return true;
         }
         if(!(commandSender instanceof Player)){
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "you need to be a player to get assault info");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("AssaultInfo - Must Be Player"));
             return true;
         }
         Player player = (Player) commandSender;
@@ -49,12 +49,12 @@ public class AssaultCommand implements CommandExecutor{
             return true;
         }
         if (args.length == 0) {
-            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("No region specified"));
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Assault - No Region Specified"));
             return true;
         }
         ProtectedRegion aRegion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(player.getWorld()).getRegion(args[0]);
         if (aRegion == null) {
-            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Region not found"));
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Assault - Region Not Found"));
             return true;
         }
         LocalPlayer lp = Movecraft.getInstance().getWorldGuardPlugin().wrapPlayer(player);
@@ -67,7 +67,7 @@ public class AssaultCommand implements CommandExecutor{
             }
         }
         if (!foundOwnedRegion) {
-            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("You are not the owner of any assaultable region and can not assault others"));
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Assault - No Region Owned"));
             return true;
         }
         boolean canBeAssaulted = true;
@@ -106,12 +106,12 @@ public class AssaultCommand implements CommandExecutor{
             canBeAssaulted = false;
         }
         if (!canBeAssaulted) {
-            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("You can not assault this region, check AssaultInfo"));
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Assault - Cannot Assault"));
             return true;
         }
         OfflinePlayer offP = Bukkit.getOfflinePlayer(player.getUniqueId());
         if (Movecraft.getInstance().getEconomy().getBalance(offP) < getCostToAssault(aRegion)) {
-            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("You can not afford to assault this region"));
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Assault - Insufficient Funds"));
             return true;
         }
 //			if(aRegion.getType() instanceof ProtectedCuboidRegion) { // Originally I wasn't going to do non-cubes, but we'll try it and see how it goes. In theory it may repair more than it should but... meh...
@@ -176,7 +176,7 @@ public class AssaultCommand implements CommandExecutor{
 //				return true;
 //			}
         Movecraft.getInstance().getEconomy().withdrawPlayer(offP, getCostToAssault(aRegion));
-        Bukkit.getServer().broadcastMessage(String.format("%s is preparing to assault %s! All players wishing to participate in the defense should head there immediately! Assault will begin in %d minutes"
+        Bukkit.getServer().broadcastMessage(String.format(I18nSupport.getInternationalisedString("Assault - Starting Soon")
                 , player.getDisplayName(), args[0], Settings.AssaultDelay / 60));
         for (Player p : Bukkit.getOnlinePlayers()) {
             p.playSound(p.getLocation(), Sound.ENTITY_WITHER_DEATH, 1, (float) 0.25);
@@ -191,7 +191,7 @@ public class AssaultCommand implements CommandExecutor{
         new BukkitRunnable() {
             @Override
             public void run() {
-                Bukkit.getServer().broadcastMessage(String.format("The Assault of %s has commenced! The assault leader is %s. Destroy the enemy region!"
+                Bukkit.getServer().broadcastMessage(String.format(I18nSupport.getInternationalisedString("Assault - Assault Begun")
                         , taskAssaultName, taskPlayer.getDisplayName()));
                 for (Player p : Bukkit.getOnlinePlayers()) {
                     p.playSound(p.getLocation(), Sound.ENTITY_WITHER_DEATH, 1, 0.25F);

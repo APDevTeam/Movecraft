@@ -6,6 +6,7 @@ import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.utils.HashHitBox;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
@@ -50,19 +51,19 @@ public class SiegeProgressTask extends SiegeTask {
         if (timeLeft > 10) {
             if (siegeLeaderShipInRegion) {
                 Bukkit.getServer().broadcastMessage(String.format(
-                        "The Siege of %s is under way. The Siege Flagship is a %s of size %d under the command of %s at %d, %d, %d. Siege will end in %d minutes",
+                        I18nSupport.getInternationalisedString("Siege - Flagship In Box"),
                         siege.getName(),
                         siegeCraft.getType().getCraftName(),
                         siegeCraft.getOrigBlockCount(),
                         siegeLeader.getDisplayName(), midX, midY, midZ, timeLeft / 60));
             } else {
                 Bukkit.getServer().broadcastMessage(String.format(
-                        "The Siege of %s is under way. The Siege Leader, %s, is not in command of a Flagship within the Siege Region! If they are still not when the duration expires, the siege will fail! Siege will end in %d minutes",
+                		I18nSupport.getInternationalisedString("Siege - Flagship Not In Box"),
                         siege.getName(), siegeLeader.getDisplayName(), timeLeft / 60));
             }
         } else {
             if (siegeLeaderShipInRegion) {
-                Bukkit.getServer().broadcastMessage(String.format("The Siege of %s has succeeded! The forces of %s have been victorious!",
+                Bukkit.getServer().broadcastMessage(String.format(I18nSupport.getInternationalisedString("Siege - Siege Success"),
                         siege.getName(), siegeLeader.getDisplayName()));
                 ProtectedRegion controlRegion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(siegeLeader.getWorld()).getRegion(siege.getCaptureRegion());
                 DefaultDomain newOwner = new DefaultDomain();
@@ -79,7 +80,7 @@ public class SiegeProgressTask extends SiegeTask {
                                 .replaceAll("%w", siegeLeader.toString()));
                     }
             } else {
-                Bukkit.getServer().broadcastMessage(String.format("The Siege of %s has failed! The forces of %s have been crushed!",
+                Bukkit.getServer().broadcastMessage(String.format(I18nSupport.getInternationalisedString("Siege - Siege Failure"),
                         siege.getName(), siegeLeader.getDisplayName()));
                 if (siege.getCommandsOnLose() != null)
                     for (String command : siege.getCommandsOnLose()) {
