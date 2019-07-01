@@ -1,6 +1,7 @@
 package net.countercraft.movecraft.warfare.siege;
 
 import org.bukkit.scheduler.BukkitRunnable;
+import net.countercraft.movecraft.localisation.I18nSupport;
 
 public abstract class SiegeTask extends BukkitRunnable {
     protected final Siege siege;
@@ -14,15 +15,15 @@ public abstract class SiegeTask extends BukkitRunnable {
 
     public String formatMinutes(int seconds) {
         if (seconds < 60) {
-            return "soon";
+            return I18nSupport.getInternationalisedString("Siege - Ending Soon");
         }
 
         int minutes = seconds / 60;
         if (minutes == 1) {
-            return "in 1 minute";
+            return I18nSupport.getInternationalisedString("Siege - Ending In 1 Minute");
         }
         else {
-            return String.format("in %d minutes", minutes);
+            return String.format(I18nSupport.getInternationalisedString("Siege - Ending In X Minutes"), minutes);
         }
     }
 }

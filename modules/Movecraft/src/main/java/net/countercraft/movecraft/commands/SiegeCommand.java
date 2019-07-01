@@ -81,12 +81,12 @@ public class SiegeCommand implements CommandExecutor {
             return true;
         }
         commandSender.sendMessage("" + ChatColor.YELLOW + ChatColor.BOLD  + "----- " + ChatColor.RESET + ChatColor.GOLD + siege.getName() + ChatColor.YELLOW + ChatColor.BOLD +" -----");
-        commandSender.sendMessage("Cost to siege: " + ChatColor.RED + currencyFormat.format(siege.getCost()));
-        commandSender.sendMessage("Daily income: " + ChatColor.RED + currencyFormat.format(siege.getDailyIncome()));
-        commandSender.sendMessage("Day of week: " + ChatColor.RED + dayToString(siege.getDayOfWeek()));
-        commandSender.sendMessage("Start time: " + ChatColor.RED + militaryTimeIntToString(siege.getScheduleStart()) + " UTC");
-        commandSender.sendMessage("End time: " + ChatColor.RED + militaryTimeIntToString(siege.getScheduleEnd()) + " UTC");
-        commandSender.sendMessage("Duration: " + ChatColor.RED + secondsIntToString(siege.getDuration()));
+        commandSender.sendMessage(I18nSupport.getInternationalisedString("Siege - Siege Cost") + ChatColor.RED + currencyFormat.format(siege.getCost()));
+        commandSender.sendMessage(I18nSupport.getInternationalisedString("Siege - Daily Income") + ChatColor.RED + currencyFormat.format(siege.getDailyIncome()));
+        commandSender.sendMessage(I18nSupport.getInternationalisedString("Siege - Day of Week") + ChatColor.RED + dayToString(siege.getDayOfWeek()));
+        commandSender.sendMessage(I18nSupport.getInternationalisedString("Siege - Start Time") + ChatColor.RED + militaryTimeIntToString(siege.getScheduleStart()) + " UTC");
+        commandSender.sendMessage(I18nSupport.getInternationalisedString("Siege - End Time") + ChatColor.RED + militaryTimeIntToString(siege.getScheduleEnd()) + " UTC");
+        commandSender.sendMessage(I18nSupport.getInternationalisedString("Siege - Duration") + ChatColor.RED + secondsIntToString(siege.getDuration()));
         return true;
 
     }
@@ -204,12 +204,12 @@ public class SiegeCommand implements CommandExecutor {
     }
 
     private String militaryTimeIntToString(int militaryTime) {
-        return String.format("%02d",militaryTime / 100) + ":" + String.format("%02d",militaryTime % 100);
+        return String.format("%02d", militaryTime / 100) + ":" + String.format("%02d",militaryTime % 100);
 
     }
 
     private String secondsIntToString(int seconds) {
-        return String.format("%02d",seconds / 60) + ":" + String.format("%02d",seconds % 60);
+        return String.format("%02d", seconds / 60) + ":" + String.format("%02d",seconds % 60);
     }
 
     private String dayToString(int day){
