@@ -36,18 +36,4 @@ public class SiegePreparationTask extends SiegeTask {
             p.playSound(p.getLocation(), Sound.ENTITY_WITHER_DEATH, 1, 0);
         }
     }
-
-    private String formatMinutes(int seconds) {
-        if (seconds < 60) {
-            return "soon";
-        }
-
-        int minutes = seconds / 60;
-        if (minutes == 1) {
-            return "in 1 minute";
-        }
-        else {
-            return String.format("in %d minutes", minutes);
-        }
-    }
 }

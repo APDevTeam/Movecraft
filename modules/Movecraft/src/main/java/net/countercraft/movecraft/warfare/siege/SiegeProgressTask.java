@@ -1,6 +1,7 @@
 package net.countercraft.movecraft.warfare.siege;
 
 import com.avaje.ebean.validation.NotNull;
+import java.util.List;
 import com.sk89q.worldguard.domains.DefaultDomain;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.countercraft.movecraft.Movecraft;
@@ -31,53 +32,27 @@ public class SiegeProgressTask extends SiegeTask {
         int timeLeft = (siege.getDuration() - (((int)System.currentTimeMillis() - siege.getStartTime())/1000));
 
         if (timeLeft > 10) {
-            if (leaderPilotingShip(siegeCraft)) {
-                if (leaderShipInRegion(siegeCraft, siegeLeader)) {
-                    MovecraftLocation mid = siegeCraft.getHitBox().getMidPoint();
-                    Bukkit.getServer().broadcastMessage(String.format(
-                            "The Siege of %s is under way. The Siege Flagship is a %s of size %d under the command of %s at [x:%d, y:%d, z:%d]. Siege will end ",
-                            siege.getName(),
-                            siegeCraft.getType().getCraftName(),
-                            siegeCraft.getOrigBlockCount(),
-                            siegeLeader.getDisplayName(), mid.getX(), mid.getY(), mid.getZ())
-                            + formatMinutes(timeLeft));
-                } else {
-                    Bukkit.getServer().broadcastMessage(String.format(
-                            "The Siege of %s is under way. The Siege Leader, %s, is not in command of a Flagship within the Siege Region! If they are still not when the duration expires, the siege will fail! Siege will end ",
-                            siege.getName(), siegeLeader.getDisplayName())
-                            + formatMinutes(timeLeft));
-                }
-            }
-            else {
+            if (!leaderPilotingShip(siegeCraft)) {
                 return;
             }
+            
+            if (leaderShipInRegion(siegeCraft, siegeLeader)) {
+                MovecraftLocation mid = siegeCraft.getHitBox().getMidPoint();
+                Bukkit.getServer().broadcastMessage(String.format(
+                        "The Siege of %s is under way. The Siege Flagship is a %s of size %d under the command of %s at [x:%d, y:%d, z:%d]. Siege will end ",
+                        siege.getName(),
+                        siegeCraft.getType().getCraftName(),
+                        siegeCraft.getOrigBlockCount(),
+                        siegeLeader.getDisplayName(), mid.getX(), mid.getY(), mid.getZ())
+                        + formatMinutes(timeLeft));
+            } else {
+                Bukkit.getServer().broadcastMessage(String.format(
+                        "The Siege of %s is under way. The Siege Leader, %s, is not in command of a Flagship within the Siege Region! If they are still not when the duration expires, the siege will fail! Siege will end ",
+                        siege.getName(), siegeLeader.getDisplayName())
+                        + formatMinutes(timeLeft));
+            }
         } else {
-            if (leaderPilotingShip(siegeCraft)) {
-                if (leaderShipInRegion(siegeCraft, siegeLeader)) {
-                    Bukkit.getServer().broadcastMessage(String.format("The Siege of %s has succeeded! The forces of %s have been victorious!",
-                            siege.getName(), siegeLeader.getDisplayName()));
-                    ProtectedRegion controlRegion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(siegeLeader.getWorld()).getRegion(siege.getCaptureRegion());
-                    DefaultDomain newOwner = new DefaultDomain();
-                    newOwner.addPlayer(siege.getPlayerUUID());
-                    controlRegion.setOwners(newOwner);
-                    DefaultDomain newMember = new DefaultDomain();
-                    newOwner.addPlayer(siege.getPlayerUUID()); //Is this supposed to be newMember?
-                    controlRegion.setMembers(newMember);
-                    if (siege.getCommandsOnWin() != null)
-                        for (String command : siege.getCommandsOnWin()) {
-                            Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command
-                                    .replaceAll("%r", siege.getCaptureRegion())
-                                    .replaceAll("%c", "" + siege.getCost())
-                                    .replaceAll("%w", siegeLeader.toString()));
-                        }
-                }
-                else {
-                    failSiege(siegeLeader);
-                }
-            }
-            else {
-                failSiege(siegeLeader);
-            }
+            endSiege(siegeCraft, siegeLeader);
         }
 
         siege.setStage(SiegeStage.INACTIVE);
@@ -87,16 +62,50 @@ public class SiegeProgressTask extends SiegeTask {
         }
     }
 
+    private void endSiege(Craft siegeCraft, Player siegeLeader) {
+        if (leaderPilotingShip(siegeCraft)) {
+            if (leaderShipInRegion(siegeCraft, siegeLeader)) {
+                Bukkit.getServer().broadcastMessage(String.format("The Siege of %s has succeeded! The forces of %s have been victorious!",
+                        siege.getName(), siegeLeader.getDisplayName()));
+                ProtectedRegion controlRegion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(siegeLeader.getWorld()).getRegion(siege.getCaptureRegion());
+                DefaultDomain newOwner = new DefaultDomain();
+                newOwner.addPlayer(siege.getPlayerUUID());
+                controlRegion.setOwners(newOwner);
+                DefaultDomain newMember = new DefaultDomain();
+                newOwner.addPlayer(siege.getPlayerUUID()); //Is this supposed to be newMember?
+                controlRegion.setMembers(newMember);
+                processCommands(siegeLeader, true);
+            }
+            else {
+                failSiege(siegeLeader);
+            }
+        }
+        else {
+            failSiege(siegeLeader);
+        }
+    }
+
     private void failSiege(Player siegeLeader) {
         Bukkit.getServer().broadcastMessage(String.format("The Siege of %s has failed! The forces of %s have been crushed!",
                 siege.getName(), siegeLeader.getDisplayName()));
-        if (siege.getCommandsOnLose() != null) {
-            for (String command : siege.getCommandsOnLose()) {
-                Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command
-                        .replaceAll("%r", siege.getCaptureRegion())
-                        .replaceAll("%c", "" + siege.getCost())
-                        .replaceAll("%l", siegeLeader.toString()));
-            }
+
+        processCommands(siegeLeader, false);
+    }
+
+    private void processCommands(Player siegeLeader, boolean win) {
+        if(win && siege.getCommandsOnWin() == null) {
+            return;
+        }
+        else if(siege.getCommandsOnLose() == null) {
+            return;
+        }
+
+        List<String> commands = win ? siege.getCommandsOnWin() : siege.getCommandsOnLose();
+        for (String command : commands) {
+            Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command
+                    .replaceAll("%r", siege.getCaptureRegion())
+                    .replaceAll("%c", "" + siege.getCost())
+                    .replaceAll("%l", siegeLeader.toString()));
         }
     }
 
@@ -112,20 +121,7 @@ public class SiegeProgressTask extends SiegeTask {
 
     private boolean leaderShipInRegion(Craft siegeCraft, Player siegeLeader) {
         MovecraftLocation mid = siegeCraft.getHitBox().getMidPoint();
-        return Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(siegeLeader.getWorld()).getRegion(siege.getAttackRegion()).contains(mid.getX(), mid.getY(), mid.getZ());
-    }
-
-    private String formatMinutes(int seconds) {
-        if (seconds < 60) {
-            return "soon";
-        }
-
-        int minutes = seconds / 60;
-        if (minutes == 1) {
-            return "in 1 minute";
-        }
-        else {
-            return String.format("in %d minutes", minutes);
-        }
+        ProtectedRegion r = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(siegeLeader.getWorld()).getRegion(siege.getAttackRegion());
+        return r.contains(mid.getX(), mid.getY(), mid.getZ());
     }
 }
