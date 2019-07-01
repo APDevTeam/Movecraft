@@ -19,6 +19,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import javax.annotation.Nullable;
 import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -131,39 +132,21 @@ public class SiegeCommand implements CommandExecutor {
                 return true;
             }
         }
-        Siege siege = null;
-        ApplicableRegionSet regions = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(player.getWorld()).getApplicableRegions(player.getLocation());
-        search:
-        for (ProtectedRegion tRegion : regions.getRegions()) {
-            for (Siege tempSiege : siegeManager.getSieges()) {
-                if (tRegion.getId().equalsIgnoreCase(tempSiege.getAttackRegion())) {
-                    siege = tempSiege;
-                    break search;
-                }
-            }
-        }
+        Siege siege = getSiege(player, siegeManager);
+
         if (siege == null) {
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Siege - No Configuration Found"));
             return true;
         }
-        long cost = siege.getCost();
-        for (Siege tempSiege : siegeManager.getSieges()) {
-            ProtectedRegion tRegion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(player.getWorld()).getRegion(tempSiege.getCaptureRegion());
-            assert tRegion != null;
-            if (tempSiege.isDoubleCostPerOwnedSiegeRegion() && tRegion.getOwners().contains(player.getUniqueId()))
-                cost *= 2;
-        }
+        long cost = calcSiegeCost(siege, siegeManager, player);
 
         if (!Movecraft.getInstance().getEconomy().has(player, cost)) {
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + String.format(I18nSupport.getInternationalisedString("Siege - Insufficient Funds"),cost));
             return true;
         }
 
-        Calendar rightNow = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-        int hour = rightNow.get(Calendar.HOUR_OF_DAY);
-        int minute = rightNow.get(Calendar.MINUTE);
-        int currMilitaryTime = hour * 100 + minute;
-        int dayOfWeek = rightNow.get(Calendar.DAY_OF_WEEK);
+        int currMilitaryTime = getMilitaryTime();
+        int dayOfWeek = getDayOfWeek();
         if (currMilitaryTime <= siege.getScheduleStart() || currMilitaryTime >= siege.getScheduleEnd() || dayOfWeek != siege.getDayOfWeek()) {
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Siege - Time Not During Schedule"));
             return true;
@@ -186,6 +169,11 @@ public class SiegeCommand implements CommandExecutor {
         }
 
 
+        startSiege(siege, player, cost);
+        return true;
+    }
+
+    private void startSiege(Siege siege, Player player, long cost) {
         for (String startCommand : siege.getCommandsOnStart()) {
             Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), startCommand.replaceAll("%r", siege.getAttackRegion()).replaceAll("%c", "" + siege.getCost()));
         }
@@ -199,8 +187,42 @@ public class SiegeCommand implements CommandExecutor {
         siege.setPlayerUUID(player.getUniqueId());
         siege.setStartTime((int)System.currentTimeMillis());
         siege.setStage(SiegeStage.PREPERATION);
-        return true;
+    }
 
+    private int getMilitaryTime() {
+        Calendar rightNow = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        int hour = rightNow.get(Calendar.HOUR_OF_DAY);
+        int minute = rightNow.get(Calendar.MINUTE);
+        return hour * 100 + minute;
+    }
+
+    private int getDayOfWeek() {
+        Calendar rightNow = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        return rightNow.get(Calendar.DAY_OF_WEEK);
+    }
+
+    @Nullable
+    private Siege getSiege(Player player, SiegeManager siegeManager) {
+        ApplicableRegionSet regions = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(player.getWorld()).getApplicableRegions(player.getLocation());
+        for (ProtectedRegion tRegion : regions.getRegions()) {
+            for (Siege tempSiege : siegeManager.getSieges()) {
+                if (tRegion.getId().equalsIgnoreCase(tempSiege.getAttackRegion())) {
+                    return tempSiege;
+                }
+            }
+        }
+        return null;
+    }
+
+    private long calcSiegeCost(Siege siege, SiegeManager siegeManager, Player player) {
+        long cost = siege.getCost();
+        for (Siege tempSiege : siegeManager.getSieges()) {
+            ProtectedRegion tRegion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(player.getWorld()).getRegion(tempSiege.getCaptureRegion());
+            assert tRegion != null;
+            if (tempSiege.isDoubleCostPerOwnedSiegeRegion() && tRegion.getOwners().contains(player.getUniqueId()))
+                cost *= 2;
+        }
+        return cost;
     }
 
     private String militaryTimeIntToString(int militaryTime) {
