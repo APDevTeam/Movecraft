@@ -68,14 +68,7 @@ public class SiegeProgressTask extends SiegeTask {
             if (leaderShipInRegion(siegeCraft, siegeLeader)) {
                 Bukkit.getServer().broadcastMessage(String.format(I18nSupport.getInternationalisedString("Siege - Siege Success"),
                         siege.getName(), siegeLeader.getDisplayName()));
-                ProtectedRegion controlRegion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(siegeLeader.getWorld()).getRegion(siege.getCaptureRegion());
-                DefaultDomain newOwner = new DefaultDomain();
-                newOwner.addPlayer(siege.getPlayerUUID());
-                controlRegion.setOwners(newOwner);
-                DefaultDomain newMember = new DefaultDomain();
-                newOwner.addPlayer(siege.getPlayerUUID()); //Is this supposed to be newMember?
-                controlRegion.setMembers(newMember);
-                processCommands(siegeLeader, true);
+                winSiege(siegeLeader);
             }
             else {
                 failSiege(siegeLeader);
@@ -84,6 +77,17 @@ public class SiegeProgressTask extends SiegeTask {
         else {
             failSiege(siegeLeader);
         }
+    }
+
+    private void winSiege(Player siegeLeader) {
+        ProtectedRegion controlRegion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(siegeLeader.getWorld()).getRegion(siege.getCaptureRegion());
+        DefaultDomain newOwner = new DefaultDomain();
+        newOwner.addPlayer(siege.getPlayerUUID());
+        controlRegion.setOwners(newOwner);
+        DefaultDomain newMember = new DefaultDomain();
+        newOwner.addPlayer(siege.getPlayerUUID()); //Is this supposed to be newMember?
+        controlRegion.setMembers(newMember);
+        processCommands(siegeLeader, true);
     }
 
     private void failSiege(Player siegeLeader) {
