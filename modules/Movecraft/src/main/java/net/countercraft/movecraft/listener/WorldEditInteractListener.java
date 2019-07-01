@@ -252,8 +252,8 @@ public class WorldEditInteractListener implements Listener {
             try{
                 cuboidClipboard.setBlock(offsetLocation, baseBlock);
             }catch (Exception e){
-                Movecraft.getInstance().getLogger().warning("Factory save failed, this is typically caused by FAWE");
-                event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Could not save file"));
+                Movecraft.getInstance().getLogger().warning(I18nSupport.getInternationalisedString("Could not save file"));
+                event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Repair - Save Failed Console"));
                 e.printStackTrace();
                 return;
             }
@@ -283,7 +283,7 @@ public class WorldEditInteractListener implements Listener {
             if (c != null)
                 return;
         }
-        if (sign.getLine(0).equalsIgnoreCase(ChatColor.RED + "REGION DAMAGED!")) {
+        if (sign.getLine(0).equalsIgnoreCase(ChatColor.RED + I18nSupport.getInternationalisedString("Region Damaged"))) {
             String regionName = sign.getLine(1).substring(7);
             Long damages = Long.parseLong(sign.getLine(2).substring(7));
             String[] owners = sign.getLine(3).substring(6).split(",");
@@ -295,7 +295,7 @@ public class WorldEditInteractListener implements Listener {
             }
             event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Repairing region"));
             if (!repairRegion(event.getClickedBlock().getWorld(), regionName)) {
-                Bukkit.getServer().broadcastMessage(String.format("REPAIR OF %s FAILED, CONTACT AN ADMIN", regionName));
+                Bukkit.getServer().broadcastMessage(String.format(I18nSupport.getInternationalisedString("Assault - Repair Failed"), regionName));
             }
             ProtectedRegion aRegion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(event.getClickedBlock().getWorld()).getRegion(regionName);
             for (String ownerName : owners) {
@@ -626,7 +626,7 @@ public class WorldEditInteractListener implements Listener {
                     }
                 }
                 double Cost = numdiffblocks * Settings.RepairMoneyPerBlock;
-                Bukkit.getLogger().info(event.getPlayer().toString() + " has begun a repair with the cost of " + String.valueOf(Cost));
+                Bukkit.getLogger().info(String.format(I18nSupport.getInternationalisedString("Repair - Repair Has Begun"), event.getPlayer().toString(), String.valueOf(Cost)));
                 final LinkedList<UpdateCommand> updateCommands = new LinkedList<>();
                 for (Vector ccloc : locMissingBlocks) {
                     BaseBlock bb = cc.getBlock(ccloc);
@@ -689,7 +689,7 @@ public class WorldEditInteractListener implements Listener {
                         @Override
                         public void run() {
                             if (updateCommands.isEmpty()) {
-                                Movecraft.getInstance().getLogger().info("Repair complete");
+                                Movecraft.getInstance().getLogger().info(I18nSupport.getInternationalisedString("Repair Complete Console"));
                                 this.cancel();
                                 return;
                             }
