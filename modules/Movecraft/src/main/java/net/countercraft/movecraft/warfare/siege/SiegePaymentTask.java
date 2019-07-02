@@ -43,10 +43,6 @@ public class SiegePaymentTask extends SiegeTask {
                     }
                 }
             }
-            else {
-                Movecraft.getInstance().getLogger().log(Level.INFO, "[SIEGE DEBUG] Not 1:01 AM");
-                Movecraft.getInstance().getLogger().log(Level.INFO, "[SIEGE DEBUG] Time: " + Integer.toString(hour) + ":" + Integer.toString(minute));
-            }
         }
         else {
             Movecraft.getInstance().getLogger().log(Level.INFO,"[SIEGE DEBUG] Siege payment within 23 hours");
