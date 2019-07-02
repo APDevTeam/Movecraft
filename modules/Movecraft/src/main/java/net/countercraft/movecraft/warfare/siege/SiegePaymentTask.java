@@ -19,6 +19,7 @@ public class SiegePaymentTask extends SiegeTask {
         // and now process payments every morning at 1:01 AM, as long as it has
         // been 23 hours after the last payout
         long secsElapsed = (System.currentTimeMillis() - siege.getLastPayout()) / 1000;
+
         if (secsElapsed > 23 * 60 * 60) {
             Calendar rightNow = Calendar.getInstance();
             int hour = rightNow.get(Calendar.HOUR_OF_DAY);
@@ -35,8 +36,21 @@ public class SiegePaymentTask extends SiegeTask {
                             Movecraft.getInstance().getLogger().log(Level.INFO, String.format(I18nSupport.getInternationalisedString("Siege - Ownership Payout Console"), tPlayerName, share, siege.getName()));
                         }
                     }
+                    else {
+                        Movecraft.getInstance().getLogger().log(Level.INFO, "[SIEGE DEBUG] Siege region null in world");
+                        Movecraft.getInstance().getLogger().log(Level.INFO, "[SIEGE DEBUG] World: " + tW.toString());
+
+                    }
                 }
             }
+            else {
+                Movecraft.getInstance().getLogger().log(Level.INFO, "[SIEGE DEBUG] Not 1:01 AM");
+                Movecraft.getInstance().getLogger().log(Level.INFO, "[SIEGE DEBUG] Time: " + Integer.toString(hour) + ":" + Integer.toString(minute));
+            }
+        }
+        else {
+            Movecraft.getInstance().getLogger().log(Level.INFO,"[SIEGE DEBUG] Siege payment within 23 hours");
+            Movecraft.getInstance().getLogger().log(Level.INFO,"[SIEGE DEBUG] Seconds Elapsed: " + Long.toString(secsElapsed));
         }
     }
 }
