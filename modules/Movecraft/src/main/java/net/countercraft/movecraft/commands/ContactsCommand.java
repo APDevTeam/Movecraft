@@ -21,7 +21,7 @@ public class ContactsCommand implements CommandExecutor {
             return false;
         }
         if(!(commandSender instanceof Player)){
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "you need to be a player to get contacts");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Contacts - Must Be Player"));
             return true;
         }
         Player player = (Player) commandSender;
@@ -42,7 +42,7 @@ public class ContactsCommand implements CommandExecutor {
             return true;
         }
 
-        TopicPaginator pageinator = new TopicPaginator("Contacts");
+        TopicPaginator pageinator = new TopicPaginator(I18nSupport.getInternationalisedString("Contacts"));
         Craft ccraft = CraftManager.getInstance().getCraftByPlayer(player);
         HashHitBox hitBox = ccraft.getHitBox();
         long cposx = hitBox.getMaxX() + hitBox.getMinX();
@@ -71,33 +71,33 @@ public class ContactsCommand implements CommandExecutor {
                 notification += tcraft.getSinking() ? ChatColor.RED : tcraft.getDisabled() ? ChatColor.BLUE : "";
                 notification += tcraft.getName().length() >= 1 ? tcraft.getName() + " (" : "";
                 notification += tcraft.getType().getCraftName();
-                notification += tcraft.getName().length() >= 1 ? ")" : "";
+                notification += tcraft.getName().length() >= 1 ? ") " : " ";
                 notification += ChatColor.RESET;
-                notification += " commanded by ";
+                notification += I18nSupport.getInternationalisedString("Contacts - Commanded By") + ", ";
                 notification += tcraft.getNotificationPlayer() != null ? tcraft.getNotificationPlayer().getDisplayName() : "null";
-                notification += ", size: ";
+                notification += I18nSupport.getInternationalisedString("Contacts - Size")+ " ";
                 notification += tcraft.getOrigBlockCount();
-                notification += ", range: ";
+                notification += ", "+I18nSupport.getInternationalisedString("Contacts - Range")+" ";
                 notification += (int) Math.sqrt(distsquared);
-                notification += " to the";
+                notification += " "+I18nSupport.getInternationalisedString("Contacts - To The");
                 if (Math.abs(diffx) > Math.abs(diffz))
                     if (diffx < 0)
-                        notification += " east.";
+                        notification += " "+I18nSupport.getInternationalisedString("east") + ".";
                     else
-                        notification += " west.";
+                        notification += " "+I18nSupport.getInternationalisedString("west") + ".";
                 else if (diffz < 0)
-                    notification += " south.";
+                    notification += " "+I18nSupport.getInternationalisedString("south") + ".";
                 else
-                    notification += " north.";
+                    notification += " "+I18nSupport.getInternationalisedString("east") + ".";
                 pageinator.addLine(notification);
             }
         }
         if (pageinator.isEmpty()) {
-            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("No contacts within range"));
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Contacts - None Found"));
             return true;
         }
         if(!pageinator.isInBounds(page)){
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + " Invalid page \"" + args[1] + "\"");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Invalid page") + "\"" + args[1] + "\"");
             return true;
         }
         for(String line :pageinator.getPage(page))

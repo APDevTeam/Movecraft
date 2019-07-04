@@ -21,7 +21,7 @@ public class CruiseCommand implements TabExecutor {
             return false;
         }
         if(!(commandSender instanceof Player)){
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "you need to be a player to cruise");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Cruise - Must Be Player"));
             return true;
         }
         Player player = (Player) commandSender;
@@ -83,7 +83,7 @@ public class CruiseCommand implements TabExecutor {
             return true;
         }
         if (!craft.getType().getCanCruise()) {
-            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + "this craft cannot cruise");
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Cruise - Craft Cannot Cruise"));
             return true;
         }
 

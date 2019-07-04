@@ -20,6 +20,7 @@ BlockQueueChunkSize: 200000
 RepairTicksPerBlock: 10
 RepairMoneyPerBlock: 10
 AllowCrewSigns: true
+MaxRemoteSigns: -1 # Maximum number of remote signs that can be triggered at once.  Setting to -1 allows unlimited.
 SetHomeToCrewSign: false
 AssaultEnable: false # system to damage a region, incurring money damages. If enough damage is inflicted, ownership is lost. Ownership can be restored, and the region repaired, by paying damages
 AssaultDamagesCapPercent: 1.0 # percentage of the total wealth of all members of the region which is the maximum damages that can be inflicted

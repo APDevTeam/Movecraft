@@ -24,7 +24,7 @@ public class PilotCommand implements TabExecutor {
         if (!command.getName().equalsIgnoreCase("pilot"))
             return false;
         if(!(commandSender instanceof Player)){
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "you need to be a player to pilot a craft");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Pilot - Must Be Player"));
             return true;
         }
         Player player = (Player) commandSender;
@@ -33,7 +33,7 @@ public class PilotCommand implements TabExecutor {
             return true;
         }
         if (args.length < 1) {
-            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + "You need to supply a craft type");
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Pilot - No Craft Type"));
             return true;
         }
         if (!player.hasPermission("movecraft." + args[0] + ".pilot")) {
@@ -50,7 +50,7 @@ public class PilotCommand implements TabExecutor {
             MovecraftLocation startPoint = MathUtils.bukkit2MovecraftLoc(player.getLocation());
             newCraft.detect(player, player, startPoint);
         } else {
-            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Unknown craft type"));
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Pilot - Invalid Craft Type"));
         }
         return true;
     }

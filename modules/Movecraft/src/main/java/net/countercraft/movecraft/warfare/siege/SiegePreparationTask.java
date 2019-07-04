@@ -3,6 +3,7 @@ package net.countercraft.movecraft.warfare.siege;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
+import net.countercraft.movecraft.localisation.I18nSupport;
 
 public class SiegePreparationTask extends SiegeTask {
 
@@ -30,7 +31,7 @@ public class SiegePreparationTask extends SiegeTask {
         if (player != null){
             playerName = player.getDisplayName();
         }
-        Bukkit.getServer().broadcastMessage(String.format("%s is preparing to siege %s! All players wishing to participate in the defense should head there immediately! Siege will begin in %d minutes", playerName, siegeName, timeLeft / 60));
+        Bukkit.getServer().broadcastMessage(String.format(I18nSupport.getInternationalisedString("Siege - Siege About To Begin"), playerName, siegeName, timeLeft / 60));
         for (Player p : Bukkit.getOnlinePlayers()) {
             p.playSound(p.getLocation(), Sound.ENTITY_WITHER_DEATH, 1, 0);
         }

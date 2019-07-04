@@ -55,7 +55,7 @@ public class TranslationTask extends AsyncTask {
             return;
         }
         if (getCraft().getDisabled() && (!getCraft().getSinking())) {
-            fail(I18nSupport.getInternationalisedString("Craft is disabled!"));
+            fail(I18nSupport.getInternationalisedString("Translation - Failed Craft Is Disabled"));
             return;
         }
         final int minY = oldHitBox.getMinY();

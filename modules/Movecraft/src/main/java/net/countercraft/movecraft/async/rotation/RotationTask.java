@@ -96,7 +96,7 @@ public class RotationTask extends AsyncTask {
 
         if (getCraft().getDisabled() && (!getCraft().getSinking())) {
             failed = true;
-            failMessage = I18nSupport.getInternationalisedString("Craft is disabled!");
+            failMessage = I18nSupport.getInternationalisedString("Translation - Failed Craft Is Disabled");
         }
 
         // check for fuel, burn some from a furnace if needed. Blocks of coal are supported, in addition to coal and charcoal
