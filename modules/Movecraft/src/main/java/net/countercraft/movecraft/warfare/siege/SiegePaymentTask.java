@@ -24,29 +24,35 @@ public class SiegePaymentTask extends SiegeTask {
             Calendar rightNow = Calendar.getInstance();
             int hour = rightNow.get(Calendar.HOUR_OF_DAY);
             int minute = rightNow.get(Calendar.MINUTE);
-            if ((hour == 1) && (minute == 1)) {
+            //if ((hour == 1) && (minute == 1)) {
+            if( rightNow.get(Calendar.SECOND) == 0) {
+                output("Running siege: " + siege);
                 siege.setLastPayout(System.currentTimeMillis());
-                //for (String tSiegeName : Settings.SiegeName) {
                 for (World tW : Movecraft.getInstance().getServer().getWorlds()) {
+                    output("Processing world: " + tW);
                     ProtectedRegion tRegion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(tW).getRegion(siege.getCaptureRegion());
                     if (tRegion != null) {
+                        output("Region " + siege.getCaptureRegion() + " found in world: " + tW);
                         for (String tPlayerName : tRegion.getOwners().getPlayers()) {
+                            output("Processing owner: " + tPlayerName);
                             int share = siege.getDailyIncome() / tRegion.getOwners().getPlayers().size();
                             Movecraft.getInstance().getEconomy().depositPlayer(tPlayerName, share);
                             Movecraft.getInstance().getLogger().log(Level.INFO, String.format(I18nSupport.getInternationalisedString("Siege - Ownership Payout Console"), tPlayerName, share, siege.getName()));
                         }
                     }
                     else {
-                        Movecraft.getInstance().getLogger().log(Level.INFO, "[SIEGE DEBUG] Siege region null in world");
-                        Movecraft.getInstance().getLogger().log(Level.INFO, "[SIEGE DEBUG] World: " + tW.toString());
-
+                        output("Region " + siege.getCaptureRegion() + " null in world: " + tW);
                     }
                 }
             }
         }
         else {
-            Movecraft.getInstance().getLogger().log(Level.INFO,"[SIEGE DEBUG] Siege payment within 23 hours");
-            Movecraft.getInstance().getLogger().log(Level.INFO,"[SIEGE DEBUG] Seconds Elapsed: " + Long.toString(secsElapsed));
+            output("Siege payment within 23 hours, " + Long.toString(secsElapsed));
         }
+    }
+
+    //TODO: temp function, remove after usage
+    private void output(String s) {
+        Movecraft.getInstance().getLogger().log(Level.INFO,"[SIEGE DEBUG] " + s);
     }
 }
