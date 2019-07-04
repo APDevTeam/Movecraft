@@ -3,10 +3,13 @@ package net.countercraft.movecraft.warfare.siege;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 
 import java.util.Calendar;
 import java.util.logging.Level;
+
+import java.util.*;
 
 public class SiegePaymentTask extends SiegeTask {
 
@@ -24,35 +27,35 @@ public class SiegePaymentTask extends SiegeTask {
             Calendar rightNow = Calendar.getInstance();
             int hour = rightNow.get(Calendar.HOUR_OF_DAY);
             int minute = rightNow.get(Calendar.MINUTE);
-            //if ((hour == 1) && (minute == 1)) {
-            if( rightNow.get(Calendar.SECOND) == 0) {
-                output("Running siege: " + siege);
-                siege.setLastPayout(System.currentTimeMillis());
+            if ((hour == 1) && (minute == 1)) {
                 for (World tW : Movecraft.getInstance().getServer().getWorlds()) {
-                    output("Processing world: " + tW);
                     ProtectedRegion tRegion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(tW).getRegion(siege.getCaptureRegion());
+
                     if (tRegion != null) {
-                        output("Region " + siege.getCaptureRegion() + " found in world: " + tW);
-                        for (String tPlayerName : tRegion.getOwners().getPlayers()) {
-                            output("Processing owner: " + tPlayerName);
-                            int share = siege.getDailyIncome() / tRegion.getOwners().getPlayers().size();
-                            Movecraft.getInstance().getEconomy().depositPlayer(tPlayerName, share);
-                            Movecraft.getInstance().getLogger().log(Level.INFO, String.format(I18nSupport.getInternationalisedString("Siege - Ownership Payout Console"), tPlayerName, share, siege.getName()));
-                        }
-                    }
-                    else {
-                        output("Region " + siege.getCaptureRegion() + " null in world: " + tW);
+                        payRegion(tRegion);
+                        return;
                     }
                 }
             }
         }
-        else {
-            output("Siege payment within 23 hours, " + Long.toString(secsElapsed));
-        }
     }
 
-    //TODO: temp function, remove after usage
-    private void output(String s) {
-        Movecraft.getInstance().getLogger().log(Level.INFO,"[SIEGE DEBUG] " + s);
+    private void payRegion(ProtectedRegion region) {
+        ArrayList<OfflinePlayer> owners = new ArrayList<>();
+
+        for(String name : region.getOwners().getPlayers()) {
+            owners.add(Movecraft.getInstance().getServer().getOfflinePlayer(name));
+        }
+        for(UUID uuid : region.getOwners().getUniqueIds()) {
+            owners.add(Movecraft.getInstance().getServer().getOfflinePlayer(uuid));
+        }
+
+        int share = siege.getDailyIncome() / owners.size();
+
+        for (OfflinePlayer player : owners) {
+            Movecraft.getInstance().getEconomy().depositPlayer(player, share);
+            Movecraft.getInstance().getLogger().log(Level.INFO, String.format(I18nSupport.getInternationalisedString("Siege - Ownership Payout Console"), player.getName(), share, siege.getName()));
+        }
+        siege.setLastPayout(System.currentTimeMillis());
     }
 }
