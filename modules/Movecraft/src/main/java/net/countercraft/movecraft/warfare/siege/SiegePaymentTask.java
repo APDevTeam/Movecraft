@@ -6,9 +6,7 @@ import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 
-import java.util.Calendar;
 import java.util.logging.Level;
-
 import java.util.*;
 
 public class SiegePaymentTask extends SiegeTask {
