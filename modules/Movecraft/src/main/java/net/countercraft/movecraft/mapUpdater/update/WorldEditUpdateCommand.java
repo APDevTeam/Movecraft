@@ -88,63 +88,29 @@ public class WorldEditUpdateCommand extends UpdateCommand {
                 disp.getInventory().addItem(WaterItems);
             }
         }
-        if (worldEditBaseBlock.getType() == 66 ||worldEditBaseBlock.getType() == 68 ){
+        if (worldEditBaseBlock.getType() == 63 ||worldEditBaseBlock.getType() == 68 ){
             BlockState state = block.getState();
             if (state instanceof Sign) {
                 Sign s = (Sign) state;
                 CompoundTag nbtData = worldEditBaseBlock.getNbtData();
-                //first line
-                String firstLine = nbtData.getString("Text1");
-                firstLine = firstLine.substring(2);
-                if (firstLine.substring(0, 5).equalsIgnoreCase("extra")){
-                    firstLine = firstLine.substring(17);
-                    String[] parts = firstLine.split("\"");
-                    firstLine = parts[0];
-                } else {
-                    firstLine = "";
-                }
-                //second line
-                String secondLine = nbtData.getString("Text2");
-                secondLine = secondLine.substring(2);
-                if (secondLine.substring(0, 5).equalsIgnoreCase("extra")){
-                    secondLine = secondLine.substring(17);
-                    String[] parts = secondLine.split("\"");
-                    secondLine = parts[0];
-                } else {
-                    secondLine = "";
-                }
-                //third line
-                String thirdLine = nbtData.getString("Text3");
-                thirdLine = thirdLine.substring(2);
-                if (thirdLine.substring(0, 5).equalsIgnoreCase("extra")){
-                    thirdLine = thirdLine.substring(17);
-                    String[] parts = thirdLine.split("\"");
-                    thirdLine = parts[0];
-                } else {
-                    thirdLine = "";
-                }
-                //fourth line
-                String fourthLine = nbtData.getString("Text4");
-                fourthLine = fourthLine.substring(2);
-                if (fourthLine.substring(0, 5).equalsIgnoreCase("extra")){
-                    fourthLine = fourthLine.substring(17);
-                    String[] parts = fourthLine.split("\"");
-                    fourthLine = parts[0];
-                } else {
-                    fourthLine = "";
-                }
-                String[] lines = new String[4];
-                if (firstLine.equalsIgnoreCase("\\\\  ||  /")){
-                    firstLine = "\\  ||  /";
-                    secondLine = "==      ==";
-                    thirdLine = "/  ||  \\";
-                }
-                lines[0] = firstLine;
-                lines[1] = secondLine;
-                lines[2] = thirdLine;
-                lines[3] = fourthLine;
-                for (int line = 0; line < lines.length; line++) {
-                    s.setLine(line, lines[line]);
+                //Text NBT tags for first to fourth line are called Text1 - Text4
+                for (int i = 1 ; i <= 4 ; i++){
+                    String line = nbtData.getString("Text" + i);
+                    line = line.substring(2);
+                    if (line.substring(0, 5).equalsIgnoreCase("extra")){
+                        line = line.substring(17);
+                        String[] parts = line.split("\"");
+                        line = parts[0];
+                    } else {
+                        line = "";
+                    }
+                    if (i == 1 && line.equalsIgnoreCase("\\\\  ||  /")){
+                        s.setLine(0,"\\  ||  /");
+                        s.setLine(1,"==      ==");
+                        s.setLine(2,"/  ||  \\");
+                        break;
+                    }
+                    s.setLine(i - 1, line);
                 }
                 s.update(false, false);
             }

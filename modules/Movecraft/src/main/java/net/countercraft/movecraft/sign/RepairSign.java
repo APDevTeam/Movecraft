@@ -129,127 +129,122 @@ public class RepairSign implements Listener{
 
         if (clipboard == null){
             p.sendMessage(I18nSupport.getInternationalisedString("REPAIR STATE NOT FOUND"));
-        } else { //if clipboard is not null
-            long numDifferentBlocks = movecraftRepair.getNumDiffBlocks(repairName);
-            boolean secondClick = false;
-            if (!playerInteractTimeMap.isEmpty()) {
-                if (System.currentTimeMillis() - playerInteractTimeMap.get(p.getUniqueId()) < 5000) {
+            return;
+        } //if clipboard is not null
+        long numDifferentBlocks = movecraftRepair.getNumDiffBlocks(repairName);
+        boolean secondClick = false;
+        if (!playerInteractTimeMap.isEmpty()) {
+            if (System.currentTimeMillis() - playerInteractTimeMap.get(p.getUniqueId()) < 5000) {
                     secondClick = true;
+            }
+        }
+        HashMap<Material, Double> numMissingItems = movecraftRepair.getMissingBlocks(repairName);
+        ArrayDeque<ImmutablePair<Vector, Vector>> locMissingBlocks = movecraftRepair.getMissingBlockLocations(repairName);
+        int totalSize = locMissingBlocks.size() + pCraft.getHitBox().size();
+        if (secondClick){
+            // check all the chests for materials for the repair
+            HashMap<Material, ArrayList<InventoryHolder>> chestsToTakeFrom = new HashMap<>(); // typeid, list of chest inventories
+            boolean enoughMaterial = true;
+            for (Material type : numMissingItems.keySet()) {
+                long longRemQty = Math.round(numMissingItems.get(type));
+                int remainingQty = (int) longRemQty;
+                ArrayList<InventoryHolder> chests = new ArrayList<>();
+                for (MovecraftLocation loc : pCraft.getHitBox()) {
+                    Block b = pCraft.getW().getBlockAt(loc.getX(), loc.getY(), loc.getZ());
+                    if ((b.getType() == Material.CHEST) || (b.getType() == Material.TRAPPED_CHEST)) {
+                        InventoryHolder inventoryHolder = (InventoryHolder) b.getState();
+                        if (inventoryHolder.getInventory().contains(type) && remainingQty > 0) {
+                            HashMap<Integer, ? extends ItemStack> foundItems = inventoryHolder.getInventory().all(type);
+                            // count how many were in the chest
+                            int numfound = 0;
+                            for (ItemStack istack : foundItems.values()) {
+                                numfound += istack.getAmount();
+                            }
+                            remainingQty -= numfound;
+                            chests.add(inventoryHolder);
+                        }
+                    }
+                }
+                if (remainingQty > 0) {
+                    event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("Need more of material") + ": %s - %d", type.name().toLowerCase().replace("_", " "), remainingQty));
+                    enoughMaterial = false;
+                } else {
+                    chestsToTakeFrom.put(type, chests);
                 }
             }
-            HashMap<Material, Double> numMissingItems = movecraftRepair.getMissingBlocks(repairName);
-            ArrayDeque<ImmutablePair<Vector, Vector>> locMissingBlocks = movecraftRepair.getMissingBlockLocations(repairName);
-            int totalSize = locMissingBlocks.size() + pCraft.getHitBox().size();
-
-            if (secondClick){
-                // check all the chests for materials for the repair
-                HashMap<Material, ArrayList<InventoryHolder>> chestsToTakeFrom = new HashMap<>(); // typeid, list of chest inventories
-                boolean enoughMaterial = true;
+            if (Movecraft.getInstance().getEconomy() != null && enoughMaterial) {
+                double moneyCost = numDifferentBlocks * Settings.RepairMoneyPerBlock;
+                if (Movecraft.getInstance().getEconomy().has(event.getPlayer(), moneyCost)) {
+                    Movecraft.getInstance().getEconomy().withdrawPlayer(event.getPlayer(), moneyCost);
+                } else {
+                    event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("You do not have enough money"));
+                    enoughMaterial = false;
+                }
+            }
+            if (enoughMaterial) {
+                // we know we have enough materials to make the repairs, so remove the materials from the chests
                 for (Material type : numMissingItems.keySet()) {
-                    long longRemQty = Math.round(numMissingItems.get(type));
-                    int remainingQty = (int) longRemQty;
-                    ArrayList<InventoryHolder> chests = new ArrayList<>();
-                    for (MovecraftLocation loc : pCraft.getHitBox()) {
-                        Block b = pCraft.getW().getBlockAt(loc.getX(), loc.getY(), loc.getZ());
-                        if ((b.getType() == Material.CHEST) || (b.getType() == Material.TRAPPED_CHEST)) {
-                            InventoryHolder inventoryHolder = (InventoryHolder) b.getState();
-                            if (inventoryHolder.getInventory().contains(type) && remainingQty > 0) {
-                                HashMap<Integer, ? extends ItemStack> foundItems = inventoryHolder.getInventory().all(type);
-                                // count how many were in the chest
-                                int numfound = 0;
-                                for (ItemStack istack : foundItems.values()) {
-                                    numfound += istack.getAmount();
-                                }
-                                remainingQty -= numfound;
-                                chests.add(inventoryHolder);
-                            }
-                        }
-                    }
-                    if (remainingQty > 0) {
-                        event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("Need more of material") + ": %s - %d", type.name().toLowerCase().replace("_", " "), remainingQty));
-                        enoughMaterial = false;
-                    } else {
-                        chestsToTakeFrom.put(type, chests);
-                    }
-                }
-                if (Movecraft.getInstance().getEconomy() != null && enoughMaterial) {
-                    double moneyCost = numDifferentBlocks * Settings.RepairMoneyPerBlock;
-                    if (Movecraft.getInstance().getEconomy().has(event.getPlayer(), moneyCost)) {
-                        Movecraft.getInstance().getEconomy().withdrawPlayer(event.getPlayer(), moneyCost);
-                    } else {
-                        event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("You do not have enough money"));
-                        enoughMaterial = false;
-                    }
-                }
-                if (enoughMaterial) {
-                    // we know we have enough materials to make the repairs, so remove the materials from the chests
-                    for (Material type : numMissingItems.keySet()) {
-                        int remainingQty = (int) Math.round(numMissingItems.get(type));
-                        for (InventoryHolder inventoryHolder : chestsToTakeFrom.get(type)) {
-                            HashMap<Integer, ? extends ItemStack> foundItems = inventoryHolder.getInventory().all(type);
-                            for (ItemStack istack : foundItems.values()) {
-                                if (istack.getAmount() <= remainingQty) {
-                                    remainingQty -= istack.getAmount();
-                                    inventoryHolder.getInventory().removeItem(istack);
-                                } else {
-                                    istack.setAmount(istack.getAmount() - remainingQty);
-                                    remainingQty = 0;
-                                }
-                            }
-
-                        }
-                    }
-
-                    double Cost = numDifferentBlocks * Settings.RepairMoneyPerBlock;
-                    Movecraft.getInstance().getLogger().info(event.getPlayer().getName() + " has begun a repair with the cost of " + Cost);
-                    final LinkedList<UpdateCommand> updateCommands = new LinkedList<>();
-                    final LinkedList<UpdateCommand> updateCommandsFragileBlocks = new LinkedList<>();
-                    final Vector distance = movecraftRepair.getDistance(repairName);
-                    while (!locMissingBlocks.isEmpty()){
-                        ImmutablePair<Vector,Vector> locs = locMissingBlocks.pollFirst();
-                        assert locs != null;
-                        Vector cLoc = locs.getRight();
-                        MovecraftLocation moveLoc = new MovecraftLocation(locs.getLeft().getBlockX(), locs.getLeft().getBlockY(), locs.getLeft().getBlockZ());
-                        //To avoid any issues during the repair, keep certain blocks in different linked lists
-                            BaseBlock baseBlock = clipboard.getBlock(new com.sk89q.worldedit.Vector(cLoc.getBlockX(),cLoc.getBlockY(),cLoc.getBlockZ()));
-                            Material type =  Material.getMaterial(baseBlock.getType());
-                            if (fragileBlock(type)) {
-                                WorldEditUpdateCommand updateCommand = new WorldEditUpdateCommand(baseBlock, sign.getWorld(), moveLoc,type, (byte) baseBlock.getData());
-                                updateCommandsFragileBlocks.add(updateCommand);
+                    int remainingQty = (int) Math.round(numMissingItems.get(type));
+                    for (InventoryHolder inventoryHolder : chestsToTakeFrom.get(type)) {
+                        HashMap<Integer, ? extends ItemStack> foundItems = inventoryHolder.getInventory().all(type);
+                        for (ItemStack istack : foundItems.values()) {
+                            if (istack.getAmount() <= remainingQty) {
+                                remainingQty -= istack.getAmount();
+                                inventoryHolder.getInventory().removeItem(istack);
                             } else {
-                                WorldEditUpdateCommand updateCommand = new WorldEditUpdateCommand(baseBlock, sign.getWorld(), moveLoc, type, (byte) baseBlock.getData());
-                                updateCommands.add(updateCommand);
+                                istack.setAmount(istack.getAmount() - remainingQty);
+                                remainingQty = 0;
                             }
-
+                        }
                     }
-                    if (updateCommands.size() > 0) {
-                        final Craft releaseCraft = pCraft;
-                        CraftManager.getInstance().removePlayerFromCraft(pCraft);
-                        RepairManager repairManager = Movecraft.getInstance().getRepairManager();
-                        repairManager.getRepairs().add(new Repair(sign.getLine(1), releaseCraft, updateCommands, updateCommandsFragileBlocks,  p.getUniqueId(), numDifferentBlocks, sign.getLocation()));
-                    }
-
                 }
 
-            } else {
-                float percent = ((float) numDifferentBlocks / (float) totalSize) * 100;
-                p.sendMessage(I18nSupport.getInternationalisedString("Total damaged blocks") + ": " + numDifferentBlocks);
-                p.sendMessage(I18nSupport.getInternationalisedString("Percentage of craft") + ": " + percent);
-                if (percent > Settings.RepairMaxPercent){
-                    p.sendMessage(I18nSupport.getInternationalisedString("This craft is too damaged and can not be repaired"));
-                    return;
-                }
-                if (numDifferentBlocks != 0) {
-                    event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("SUPPLIES NEEDED"));
-                    for (Material blockType : numMissingItems.keySet()) {
-                        event.getPlayer().sendMessage(String.format("%s : %d", blockType.name().toLowerCase().replace("_", " "), Math.round(numMissingItems.get(blockType))));
+                double Cost = numDifferentBlocks * Settings.RepairMoneyPerBlock;
+                Movecraft.getInstance().getLogger().info(event.getPlayer().getName() + " has begun a repair with the cost of " + Cost);
+                final LinkedList<UpdateCommand> updateCommands = new LinkedList<>();
+                final LinkedList<UpdateCommand> updateCommandsFragileBlocks = new LinkedList<>();
+
+                while (!locMissingBlocks.isEmpty()){
+                    ImmutablePair<Vector,Vector> locs = locMissingBlocks.pollFirst();
+                    assert locs != null;
+                    Vector cLoc = locs.getRight();
+                    MovecraftLocation moveLoc = new MovecraftLocation(locs.getLeft().getBlockX(), locs.getLeft().getBlockY(), locs.getLeft().getBlockZ());
+                    //To avoid any issues during the repair, keep certain blocks in different linked lists
+                    BaseBlock baseBlock = clipboard.getBlock(new com.sk89q.worldedit.Vector(cLoc.getBlockX(),cLoc.getBlockY(),cLoc.getBlockZ()));
+                    Material type =  Material.getMaterial(baseBlock.getType());
+                    if (fragileBlock(type)) {
+                        WorldEditUpdateCommand updateCommand = new WorldEditUpdateCommand(baseBlock, sign.getWorld(), moveLoc,type, (byte) baseBlock.getData());
+                        updateCommandsFragileBlocks.add(updateCommand);
+                    } else {
+                        WorldEditUpdateCommand updateCommand = new WorldEditUpdateCommand(baseBlock, sign.getWorld(), moveLoc, type, (byte) baseBlock.getData());
+                        updateCommands.add(updateCommand);
                     }
-                    long durationInSeconds = numDifferentBlocks * Settings.RepairTicksPerBlock / 20;
-                    event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("Seconds to complete repair") + ": %d", durationInSeconds));
-                    int moneyCost = (int) (numDifferentBlocks * Settings.RepairMoneyPerBlock);
-                    event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("Money to complete repair") + ": %d", moneyCost));
-                    playerInteractTimeMap.put(event.getPlayer().getUniqueId(), System.currentTimeMillis());
                 }
+                if (!updateCommands.isEmpty() || !updateCommandsFragileBlocks.isEmpty()) {
+                    final Craft releaseCraft = pCraft;
+                    CraftManager.getInstance().removePlayerFromCraft(pCraft);
+                    RepairManager repairManager = Movecraft.getInstance().getRepairManager();
+                    repairManager.getRepairs().add(new Repair(sign.getLine(1), releaseCraft, updateCommands, updateCommandsFragileBlocks,  p.getUniqueId(), numDifferentBlocks, sign.getLocation()));
+                }
+            }
+        } else {
+            float percent = ((float) numDifferentBlocks / (float) totalSize) * 100;
+            p.sendMessage(I18nSupport.getInternationalisedString("Total damaged blocks") + ": " + numDifferentBlocks);
+            p.sendMessage(I18nSupport.getInternationalisedString("Percentage of craft") + ": " + percent);
+            if (percent > Settings.RepairMaxPercent){
+                p.sendMessage(I18nSupport.getInternationalisedString("This craft is too damaged and can not be repaired"));
+                return;
+            }
+            if (numDifferentBlocks != 0) {
+                event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("SUPPLIES NEEDED"));
+                for (Material blockType : numMissingItems.keySet()) {
+                    event.getPlayer().sendMessage(String.format("%s : %d", blockType.name().toLowerCase().replace("_", " "), Math.round(numMissingItems.get(blockType))));
+                }
+                long durationInSeconds = numDifferentBlocks * Settings.RepairTicksPerBlock / 20;
+                event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("Seconds to complete repair") + ": %d", durationInSeconds));
+                int moneyCost = (int) (numDifferentBlocks * Settings.RepairMoneyPerBlock);
+                event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("Money to complete repair") + ": %d", moneyCost));
+                playerInteractTimeMap.put(event.getPlayer().getUniqueId(), System.currentTimeMillis());
             }
         }
     }

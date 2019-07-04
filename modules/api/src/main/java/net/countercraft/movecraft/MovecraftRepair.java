@@ -158,7 +158,6 @@ public class MovecraftRepair {
         com.sk89q.worldedit.world.World weWorld = new BukkitWorld(world);
         WorldData worldData = weWorld.getWorldData();
         Clipboard clipboard;
-        HashHitBox hitBox = craft.getHitBox();
         try {
             clipboard = ClipboardFormat.SCHEMATIC.getReader(new FileInputStream(file)).read(worldData);
 
@@ -166,7 +165,9 @@ public class MovecraftRepair {
             e.printStackTrace();
             return null;
         }
-        if (clipboard != null) {
+        if (clipboard == null) {
+            return null;
+        }
             long numDiffBlocks = 0;
             HashMap<Material, Double> missingBlocks = new HashMap<>();
             ArrayDeque<ImmutablePair<Vector,Vector>> locMissingBlocks = new ArrayDeque<>();
@@ -174,150 +175,170 @@ public class MovecraftRepair {
             Vector distance = clipboard.getOrigin().subtract(clipboard.getMinimumPoint());
             Vector size = clipboard.getDimensions();
             Vector offset = new Vector(sign.getX() - distance.getBlockX(), sign.getY() - distance.getBlockY(), sign.getZ() - distance.getBlockZ());
-            if (distanceMap.containsKey(repairStateFile)) {
-                distanceMap.replace(repairStateFile, offset);
-            } else {
-                distanceMap.put(repairStateFile, offset);
-            }
             for (int x = 0; x <= size.getBlockX(); x++) {
                 for (int y = 0; y <= size.getBlockY(); y++) {
                     for (int z = 0; z <= size.getBlockZ(); z++) {
                         Vector position = new Vector(minPos.getBlockX() + x, minPos.getBlockY() + y, minPos.getBlockZ() + z);
                         Location bukkitLoc = new Location(sign.getWorld(), offset.getBlockX() + x, offset.getBlockY() + y, offset.getBlockZ() + z);
-                        //
                         BaseBlock block = clipboard.getBlock(position);
                         Block bukkitBlock = sign.getWorld().getBlockAt(bukkitLoc);
-                        boolean isImportant = true;
-                        if (block.getType() == 0) {
-                            isImportant = false;
-                        }
 
-                        if (isImportant && bukkitBlock.getTypeId() != block.getType()) {
+                        if (block.getType() != 0 && bukkitBlock.getTypeId() != block.getType()) {
                             int itemToConsume = block.getType();
                             double qtyToConsume = 1.0;
                             numDiffBlocks++;
                             //some blocks aren't represented by items with the same number as the block
-                            if (itemToConsume == 63 || itemToConsume == 68) // signs
-                                itemToConsume = 323;
-                            if (itemToConsume == 93 || itemToConsume == 94) // repeaters
-                                itemToConsume = 356;
-                            if (itemToConsume == 149 || itemToConsume == 150) // comparators
-                                itemToConsume = 404;
-                            if (itemToConsume == 55) // redstone
-                                itemToConsume = 331;
-                            if (itemToConsume == 118) // cauldron
-                                itemToConsume = 380;
-                            if (itemToConsume == 124) // lit redstone lamp
-                                itemToConsume = 123;
-                            if (itemToConsume == 75) // lit redstone torch
-                                itemToConsume = 76;
-                            if (itemToConsume == 8 || itemToConsume == 9) { // don't require water to be in the chest
-                                itemToConsume = 0;
-                                qtyToConsume = 0.0;
-                            }
-                            if (itemToConsume == 10 || itemToConsume == 11) { // don't require lava either, yeah you could exploit this for free lava, so make sure you set a price per block
-                                itemToConsume = 0;
-                                qtyToConsume = 0.0;
-                            }
-                            if (itemToConsume == 26) { //beds
-                                itemToConsume = 355;
-                                qtyToConsume = 0.5;
-                            }
-                            if (itemToConsume == 64) { //doors
-                                itemToConsume = 324;   //since doors and beds encompass two blocks, require only 0.5 block for each of the two blocks
-                                qtyToConsume = 0.5;
-                            }
-                            if (itemToConsume == 71) {
-                                itemToConsume = 330;
-                                qtyToConsume = 0.5;
-                            }
-                            if (itemToConsume == 193) {
-                                itemToConsume = 427;
-                                qtyToConsume = 0.5;
-                            }
-                            if (itemToConsume == 194) {
-                                itemToConsume = 428;
-                                qtyToConsume = 0.5;
-                            }
-                            if (itemToConsume == 195) {
-                                itemToConsume = 429;
-                                qtyToConsume = 0.5;
-                            }
-                            if (itemToConsume == 196) {
-                                itemToConsume = 430;
-                                qtyToConsume = 0.5;
-                            }
-                            if (itemToConsume == 197) {
-                                itemToConsume = 431;
-                                qtyToConsume = 0.5;
-                            }
-                            if (itemToConsume == 23) {
-                                Tag t = block.getNbtData().getValue().get("Items");
-                                ListTag lt = null;
-                                if (t instanceof ListTag) {
-                                    lt = (ListTag) t;
-                                }
-                                int numTNT = 0;
-                                int numFireCharges = 0;
-                                int numWaterBuckets = 0;
-                                if (lt != null) {
-                                    for (Tag entryTag : lt.getValue()) {
-                                        if (entryTag instanceof CompoundTag) {
-                                            CompoundTag cTag = (CompoundTag) entryTag;
-                                            if (cTag.toString().contains("minecraft:tnt")) {
-                                                numTNT += cTag.getByte("Count");
-                                            }
-                                            if (cTag.toString().contains("minecraft:fire_charge")) {
-                                                numFireCharges += cTag.getByte("Count");
-                                            }
-                                            if (cTag.toString().contains("minecraft:water_bucket")) {
-                                                numWaterBuckets += cTag.getByte("Count");
+                            switch (itemToConsume) {
+                                case 63:// signs
+                                    itemToConsume = 323;
+                                    break;
+                                case 68:
+                                    itemToConsume = 323;
+                                    break;
+                                case 93:// repeaters
+                                    itemToConsume = 356;
+                                    break;
+                                case 94:
+                                    itemToConsume = 356;
+                                    break;
+                                case 149:// comparators
+                                    itemToConsume = 404;
+                                    break;
+                                case 150:
+                                    itemToConsume = 404;
+                                    break;
+                                case 55:// redstone
+                                    itemToConsume = 331;
+                                    break;
+                                case 118:// cauldron
+                                    itemToConsume = 380;
+                                    break;
+                                case 124: // lit redstone lamp
+                                    itemToConsume = 123;
+                                    break;
+                                case 75: // lit redstone torch
+                                    itemToConsume = 76;
+                                    break;
+                                case 8:
+                                    itemToConsume = 0;
+                                    qtyToConsume = 0.0;
+                                    break;
+                                case 9:  // don't require water to be in the chest
+                                    itemToConsume = 0;
+                                    qtyToConsume = 0.0;
+                                    break;
+                                case 10:
+                                    itemToConsume = 0;
+                                    qtyToConsume = 0.0;
+                                    break;
+                                case 11: // don't require lava either, yeah you could exploit this for free lava, so make sure you set a price per block
+                                    itemToConsume = 0;
+                                    qtyToConsume = 0.0;
+                                    break;
+                                case 26:  //beds
+                                    itemToConsume = 355;
+                                    qtyToConsume = 0.5;
+                                    break;
+                                case 64:  //doors
+                                    itemToConsume = 324;   //since doors and beds encompass two blocks, require only 0.5 block for each of the two blocks
+                                    qtyToConsume = 0.5;
+                                    break;
+                                case 71:
+                                    itemToConsume = 330;
+                                    qtyToConsume = 0.5;
+                                    break;
+
+                                case 193:
+                                    itemToConsume = 427;
+                                    qtyToConsume = 0.5;
+                                    break;
+                                case 194:
+                                    itemToConsume = 428;
+                                    qtyToConsume = 0.5;
+                                    break;
+                                case 195:
+                                    itemToConsume = 429;
+                                    qtyToConsume = 0.5;
+                                    break;
+                                case 196:
+                                    itemToConsume = 430;
+                                    qtyToConsume = 0.5;
+                                    break;
+                                case 197:
+                                    itemToConsume = 431;
+                                    qtyToConsume = 0.5;
+                                    break;
+                                case 23: {
+                                    Tag t = block.getNbtData().getValue().get("Items");
+                                    ListTag lt = null;
+                                    if (t instanceof ListTag) {
+                                        lt = (ListTag) t;
+                                    }
+                                    int numTNT = 0;
+                                    int numFireCharges = 0;
+                                    int numWaterBuckets = 0;
+                                    if (lt != null) {
+                                        for (Tag entryTag : lt.getValue()) {
+                                            if (entryTag instanceof CompoundTag) {
+                                                CompoundTag cTag = (CompoundTag) entryTag;
+                                                if (cTag.toString().contains("minecraft:tnt")) {
+                                                    numTNT += cTag.getByte("Count");
+                                                }
+                                                if (cTag.toString().contains("minecraft:fire_charge")) {
+                                                    numFireCharges += cTag.getByte("Count");
+                                                }
+                                                if (cTag.toString().contains("minecraft:water_bucket")) {
+                                                    numWaterBuckets += cTag.getByte("Count");
+                                                }
                                             }
                                         }
                                     }
-                                }
 
 
-                                if (numTNT > 0) {
-                                    if (!missingBlocks.containsKey(Material.TNT)) {
-                                        missingBlocks.put(Material.TNT, (double) numTNT);
-                                    } else {
-                                        Double num = missingBlocks.get(Material.TNT);
-                                        num += numTNT;
-                                        missingBlocks.put(Material.TNT, num);
+                                    if (numTNT > 0) {
+                                        if (!missingBlocks.containsKey(Material.TNT)) {
+                                            missingBlocks.put(Material.TNT, (double) numTNT);
+                                        } else {
+                                            Double num = missingBlocks.get(Material.TNT);
+                                            num += numTNT;
+                                            missingBlocks.put(Material.TNT, num);
+                                        }
                                     }
-                                }
-                                if (numFireCharges > 0) {
-                                    if (!missingBlocks.containsKey(Material.FIREBALL)) {
-                                        missingBlocks.put(Material.FIREBALL, (double) numFireCharges);
-                                    } else {
-                                        Double num = missingBlocks.get(Material.FIREBALL);
-                                        num += numFireCharges;
-                                        missingBlocks.put(Material.FIREBALL, num);
+                                    if (numFireCharges > 0) {
+                                        if (!missingBlocks.containsKey(Material.FIREBALL)) {
+                                            missingBlocks.put(Material.FIREBALL, (double) numFireCharges);
+                                        } else {
+                                            Double num = missingBlocks.get(Material.FIREBALL);
+                                            num += numFireCharges;
+                                            missingBlocks.put(Material.FIREBALL, num);
 
+                                        }
+                                    }
+                                    if (numWaterBuckets > 0) {
+                                        if (!missingBlocks.containsKey(Material.WATER_BUCKET)) {
+                                            missingBlocks.put(Material.WATER_BUCKET, (double) numWaterBuckets);
+                                        } else {
+                                            Double num = missingBlocks.get(Material.WATER_BUCKET);
+                                            num += numWaterBuckets;
+                                            missingBlocks.put(Material.WATER_BUCKET, num);
+                                        }
                                     }
                                 }
-                                if (numWaterBuckets > 0) {
-                                    if (!missingBlocks.containsKey(Material.WATER_BUCKET)) {
-                                        missingBlocks.put(Material.WATER_BUCKET, (double) numWaterBuckets);
-                                    } else {
-                                        Double num = missingBlocks.get(Material.WATER_BUCKET);
-                                        num += numWaterBuckets;
-                                        missingBlocks.put(Material.WATER_BUCKET, num);
-                                    }
+                                case 43: { // for double slabs, require 2 slabs
+                                    itemToConsume = 44;
+                                    qtyToConsume = 2;
+                                    break;
                                 }
-                            }
-                            if (itemToConsume == 43) { // for double slabs, require 2 slabs
-                                itemToConsume = 44;
-                                qtyToConsume = 2;
-                            }
-                            if (itemToConsume == 125) { // for double wood slabs, require 2 wood slabs
-                                itemToConsume = 126;
-                                qtyToConsume = 2;
-                            }
-                            if (itemToConsume == 181) { // for double red sandstone slabs, require 2 red sandstone slabs
-                                itemToConsume = 182;
-                                qtyToConsume = 2;
+                                case 125: { // for double wood slabs, require 2 wood slabs
+                                    itemToConsume = 126;
+                                    qtyToConsume = 2;
+                                    break;
+                                }
+                                case 181: { // for double red sandstone slabs, require 2 red sandstone slabs
+                                    itemToConsume = 182;
+                                    qtyToConsume = 2;
+                                    break;
+                                }
                             }
                             if (itemToConsume != 0) {
                                 if (!missingBlocks.containsKey(Material.getMaterial(itemToConsume))) {
@@ -414,7 +435,6 @@ public class MovecraftRepair {
             locMissingBlocksMap.put(repairStateFile, locMissingBlocks);
             missingBlocksMap.put(repairStateFile, missingBlocks);
             numDiffBlocksMap.put(repairStateFile, numDiffBlocks);
-        }
         return clipboard;
     }
 
@@ -442,10 +462,6 @@ public class MovecraftRepair {
 
     public long getNumDiffBlocks(String s) {
         return numDiffBlocksMap.get(s);
-    }
-
-    public Vector getDistance(String repairName) {
-        return distanceMap.get(repairName);
     }
 
 
