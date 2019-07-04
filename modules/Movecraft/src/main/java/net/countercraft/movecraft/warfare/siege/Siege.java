@@ -145,4 +145,8 @@ public class Siege {
     public boolean isDoubleCostPerOwnedSiegeRegion() {
         return doubleCostPerOwnedSiegeRegion;
     }
+
+    public String toString() {
+        return name;
+    }
 }
