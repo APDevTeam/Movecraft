@@ -2,6 +2,7 @@ package net.countercraft.movecraft.commands;
 
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -20,7 +21,7 @@ public class MovecraftCommand implements TabExecutor {
             return false;
         }
         if(!commandSender.hasPermission("movecraft.commands.movecraft")){
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "Error, invalid permissions");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Insufficient Permissions"));
             return true;
         }
 
@@ -32,10 +33,10 @@ public class MovecraftCommand implements TabExecutor {
 
         if(args.length==1 && args[0].equalsIgnoreCase("reloadtypes") && commandSender.hasPermission("movecraft.commands.movecraft.reloadtypes")){
             CraftManager.getInstance().initCraftTypes();
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "Reloaded types");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Movecraft - Reloaded Types"));
             return true;
         }
-        commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "Error, invalid syntax");
+        commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Movecraft - Invalid Argument"));
         return true;
 
     }

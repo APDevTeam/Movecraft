@@ -15,6 +15,7 @@ import com.palmergames.bukkit.towny.utils.PlayerCacheUtil;
 import com.palmergames.bukkit.towny.war.flagwar.TownyWarConfig;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -84,7 +85,7 @@ public class TownyUtils {
             try {
                 return t.getSpawn();
             } catch (TownyException ex) {
-                Movecraft.getInstance().getLogger().log(Level.SEVERE, "Town Spawn of " + t.getName() + " wasn't found!", ex);
+                Movecraft.getInstance().getLogger().log(Level.SEVERE, String.format(I18nSupport.getInternationalisedString("Towny - Spawn Not Found"),t.getName()), ex);
                 //town hasn't spawn
             }
         }
@@ -172,7 +173,7 @@ public class TownyUtils {
                 if (tw.isUsingTowny()) {
                     worldsMap.put(wName, new TownyWorldHeightLimits());
                     Settings.TownProtectionHeightLimits = worldsMap;
-                    Movecraft.getInstance().getLogger().log(Level.INFO, "Added default Towny settings for world {0} to the config file.", w.getName());
+                    Movecraft.getInstance().getLogger().log(Level.INFO, I18nSupport.getInternationalisedString("Towny - Added Config Defaults"), w.getName());
                     oNew = true;
                 } else {
                     return null;
@@ -211,7 +212,7 @@ public class TownyUtils {
             }
         }
         Movecraft.getInstance().saveConfig();
-        Movecraft.getInstance().getLogger().log(Level.INFO, "Saved settings for Towny worlds to the config file.");
+        Movecraft.getInstance().getLogger().log(Level.INFO, I18nSupport.getInternationalisedString("Towny - Saved Settings"));
     }
 
     private static void loadTownyConfig() {
@@ -228,7 +229,7 @@ public class TownyUtils {
                 twhl.above_town = fc.getInt(TOWN_HEIGHT_LIMITS + "." + worldName + "." + TOWN_ABOVE, TownyWorldHeightLimits.DEFAULT_TOWN_ABOVE);
                 twhl.under_town = fc.getInt(TOWN_HEIGHT_LIMITS + "." + worldName + "." + TOWN_UNDER, TownyWorldHeightLimits.DEFAULT_TOWN_UNDER);
                 townyWorldHeightLimits.put(worldName, twhl);
-                Movecraft.getInstance().getLogger().log(Level.INFO, "Loaded Towny settings for world {0}", worldName);
+                Movecraft.getInstance().getLogger().log(Level.INFO, I18nSupport.getInternationalisedString("Towny - Loaded Settings"), worldName);
             }
         }
         if (!townyWorldHeightLimits.equals(Settings.TownProtectionHeightLimits)) {

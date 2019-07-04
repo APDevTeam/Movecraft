@@ -108,13 +108,26 @@ public class Movecraft extends JavaPlugin {
         Settings.RestrictSiBsToRegions = getConfig().getBoolean("RestrictSiBsToRegions", false);
         Settings.Debug = getConfig().getBoolean("Debug", false);
         Settings.DisableSpillProtection = getConfig().getBoolean("DisableSpillProtection", false);
+        
+        // moved localisation initialisation to the start so that startup messages can be localised
+        String[] localisations = {"en", "cz", "nl"};
+        for (String s : localisations) {
+            if (!new File(getDataFolder()
+                    + "/localisation/movecraftlang_" + s + ".properties").exists()) {
+                this.saveResource("localisation/movecraftlang_" + s + ".properties", false);
+            }
+        }
+
+        I18nSupport.init();
+        
+        
         // if the PilotTool is specified in the config.yml file, use it
         if (getConfig().getInt("PilotTool") != 0) {
-            logger.log(Level.INFO, "Recognized PilotTool setting of: "
+            logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Recognized Pilot Tool")
                     + getConfig().getInt("PilotTool"));
             Settings.PilotTool = getConfig().getInt("PilotTool");
         } else {
-            logger.log(Level.INFO, "No PilotTool setting, using default of 280");
+            logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - No Pilot Tool"));
         }
         // if the CompatibilityMode is specified in the config.yml file, use it.
         // Otherwise set to false.
@@ -139,11 +152,11 @@ public class Movecraft extends JavaPlugin {
             }
         } catch (final Exception e) {
             e.printStackTrace();
-            this.getLogger().severe("Could not find support for this version.");
+            this.getLogger().severe(I18nSupport.getInternationalisedString("Startup - Version Not Supported"));
             this.setEnabled(false);
             return;
         }
-        this.getLogger().info("Loading support for " + version);
+        this.getLogger().info(I18nSupport.getInternationalisedString("Startup - Loading Support") + " " + version);
 
 
         Settings.SinkCheckTicks = getConfig().getDouble("SinkCheckTicks", 100.0);
@@ -158,6 +171,7 @@ public class Movecraft extends JavaPlugin {
         Settings.ProtectPilotedCrafts = getConfig().getBoolean("ProtectPilotedCrafts", false);
         Settings.AllowCrewSigns = getConfig().getBoolean("AllowCrewSigns", true);
         Settings.SetHomeToCrewSign = getConfig().getBoolean("SetHomeToCrewSign", true);
+        Settings.MaxRemoteSigns = getConfig().getInt("MaxRemoteSigns", -1);
         Settings.RequireCreatePerm = getConfig().getBoolean("RequireCreatePerm", false);
         Settings.RequireNamePerm = getConfig().getBoolean("RequireNamePerm", true);
         Settings.TNTContactExplosives = getConfig().getBoolean("TNTContactExplosives", true);
@@ -203,12 +217,12 @@ public class Movecraft extends JavaPlugin {
         //load up WorldGuard if it's present
         Plugin wGPlugin = getServer().getPluginManager().getPlugin("WorldGuard");
         if (wGPlugin == null || !(wGPlugin instanceof WorldGuardPlugin)) {
-            logger.log(Level.INFO, "Movecraft did not find a compatible version of WorldGuard. Disabling WorldGuard integration");
+            logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - WG Not Found"));
             Settings.SiegeEnable = false;
             Settings.AssaultEnable = false;
             Settings.RestrictSiBsToRegions = false;
         } else {
-            logger.log(Level.INFO, "Found a compatible version of WorldGuard. Enabling WorldGuard integration");
+            logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - WG Found"));
             Settings.WorldGuardBlockMoveOnBuildPerm = getConfig().getBoolean("WorldGuardBlockMoveOnBuildPerm", false);
             Settings.WorldGuardBlockSinkOnPVPPerm = getConfig().getBoolean("WorldGuardBlockSinkOnPVPPerm", false);
             logger.log(Level.INFO, "Settings: WorldGuardBlockMoveOnBuildPerm - {0}, WorldGuardBlockSinkOnPVPPerm - {1}", new Object[]{Settings.WorldGuardBlockMoveOnBuildPerm, Settings.WorldGuardBlockSinkOnPVPPerm});
@@ -219,10 +233,10 @@ public class Movecraft extends JavaPlugin {
         //load up WorldEdit if it's present
         Plugin wEPlugin = getServer().getPluginManager().getPlugin("WorldEdit");
         if (wEPlugin == null || !(wEPlugin instanceof WorldEditPlugin)) {
-            logger.log(Level.INFO, "Movecraft did not find a compatible version of WorldEdit. Disabling WorldEdit integration");
+            logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - WE Not Found"));
             Settings.AssaultEnable = false;
         } else {
-            logger.log(Level.INFO, "Found a compatible version of WorldEdit. Enabling WorldEdit integration");
+            logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - WE Found"));
             Settings.RepairTicksPerBlock = getConfig().getInt("RepairTicksPerBlock", 0);
             Settings.RepairMaxPercent = getConfig().getDouble("RepairMaxPercent",50);
         }
@@ -232,13 +246,15 @@ public class Movecraft extends JavaPlugin {
         Plugin plug = getServer().getPluginManager().getPlugin("Cannons");
         if (plug != null && plug instanceof Cannons) {
             cannonsPlugin = (Cannons) plug;
-            logger.log(Level.INFO, "Found a compatible version of Cannons. Enabling Cannons integration");
+            logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Cannons Found"));
+        } else {
+        	logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Cannons Not Found"));
         }
         if (worldGuardPlugin != null && worldGuardPlugin instanceof WorldGuardPlugin) {
             if (worldGuardPlugin.isEnabled()) {
                 Plugin tempWGCustomFlagsPlugin = getServer().getPluginManager().getPlugin("WGCustomFlags");
                 if (tempWGCustomFlagsPlugin != null && tempWGCustomFlagsPlugin instanceof WGCustomFlagsPlugin) {
-                    logger.log(Level.INFO, "Found a compatible version of WGCustomFlags. Enabling WGCustomFlags integration.");
+                    logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - WGCF Found"));
                     wgCustomFlagsPlugin = (WGCustomFlagsPlugin) tempWGCustomFlagsPlugin;
                     WGCustomFlagsUtils WGCFU = new WGCustomFlagsUtils();
                     FLAG_PILOT = WGCFU.getNewStateFlag("movecraft-pilot", true);
@@ -255,13 +271,13 @@ public class Movecraft extends JavaPlugin {
                     logger.log(Level.INFO, "Settings: WGCustomFlagsUseRotateFlag - {0}", Settings.WGCustomFlagsUseRotateFlag);
                     logger.log(Level.INFO, "Settings: WGCustomFlagsUseSinkFlag - {0}", Settings.WGCustomFlagsUseSinkFlag);
                 } else {
-                    logger.log(Level.INFO, "Movecraft did not find a compatible version of WGCustomFlags. Disabling WGCustomFlags integration.");
+                    logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - WGCF Not Found"));
                 }
             }
         }
         Plugin tempTownyPlugin = getServer().getPluginManager().getPlugin("Towny");
         if (tempTownyPlugin != null && tempTownyPlugin instanceof Towny) {
-            logger.log(Level.INFO, "Found a compatible version of Towny. Enabling Towny integration.");
+            logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Towny Found"));
             townyPlugin = (Towny) tempTownyPlugin;
             TownyUtils.initTownyConfig();
             Settings.TownyBlockMoveOnSwitchPerm = getConfig().getBoolean("TownyBlockMoveOnSwitchPerm", false);
@@ -270,7 +286,7 @@ public class Movecraft extends JavaPlugin {
             logger.log(Level.INFO, "Settings: TownyBlockSinkOnNoPVP - {0}", Settings.TownyBlockSinkOnNoPVP);
 
         } else {
-            logger.log(Level.INFO, "Movecraft did not find a compatible version of Towny. Disabling Towny integration.");
+            logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Towny Not Found"));
         }
 
         Plugin tempEssentialsPlugin = getServer().getPluginManager().getPlugin("Essentials");
@@ -279,13 +295,13 @@ public class Movecraft extends JavaPlugin {
                 if (tempEssentialsPlugin.getClass().getName().equals("com.earth2me.essentials.Essentials")) {
                     if (tempEssentialsPlugin instanceof Essentials) {
                         essentialsPlugin = (Essentials) tempEssentialsPlugin;
-                        logger.log(Level.INFO, "Found a compatible version of Essentials. Enabling Essentials integration.");
+                        logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Essentials Found"));
                     }
                 }
             }
         }
         if (essentialsPlugin == null) {
-            logger.log(Level.INFO, "Movecraft did not find a compatible version of Essentials. Disabling Essentials integration.");
+            logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Essentials Not Found"));
         }
 
         // and now Vault
@@ -294,27 +310,19 @@ public class Movecraft extends JavaPlugin {
             if (rsp != null) {
                 economy = rsp.getProvider();
                 Settings.RepairMoneyPerBlock = getConfig().getDouble("RepairMoneyPerBlock", 0.0);
-                logger.log(Level.INFO, "Found a compatible Vault plugin.");
+                logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Vault Found"));
             } else {
-                logger.log(Level.INFO, "Could not find compatible Vault plugin. Disabling Vault integration.");
+                logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Vault Not Found"));
                 economy = null;
                 Settings.SiegeEnable = false;
                 Settings.AssaultEnable = false;
             }
         } else {
-            logger.log(Level.INFO, "Could not find compatible Vault plugin. Disabling Vault integration.");
+            logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Vault Not Found"));
             economy = null;
             Settings.SiegeEnable = false;
         }
-        String[] localisations = {"en", "cz", "nl"};
-        for (String s : localisations) {
-            if (!new File(getDataFolder()
-                    + "/localisation/movecraftlang_" + s + ".properties").exists()) {
-                this.saveResource("localisation/movecraftlang_" + s + ".properties", false);
-            }
-        }
-
-        I18nSupport.init();
+        
         if (shuttingDown && Settings.IGNORE_RESET) {
             logger.log(
                     Level.SEVERE,
