@@ -189,20 +189,14 @@ public class MovecraftRepair {
                         //some blocks aren't represented by items with the same number as the block
                         switch (itemToConsume) {
                             case 63:// signs
-                                itemToConsume = 323;
-                                break;
                             case 68:
                                 itemToConsume = 323;
                                 break;
                             case 93:// repeaters
-                                itemToConsume = 356;
-                                break;
                             case 94:
                                 itemToConsume = 356;
                                 break;
                             case 149:// comparators
-                                itemToConsume = 404;
-                                break;
                             case 150:
                                 itemToConsume = 404;
                                 break;
