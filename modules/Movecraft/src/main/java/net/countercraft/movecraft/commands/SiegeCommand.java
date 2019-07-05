@@ -11,6 +11,7 @@ import net.countercraft.movecraft.utils.TopicPaginator;
 import net.countercraft.movecraft.warfare.siege.Siege;
 import net.countercraft.movecraft.warfare.siege.SiegeManager;
 import net.countercraft.movecraft.warfare.siege.SiegeStage;
+import net.milkbowl.vault.chat.Chat;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Sound;
@@ -82,13 +83,7 @@ public class SiegeCommand implements CommandExecutor {
             commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Siege - Siege Region Not Found"));
             return true;
         }
-        commandSender.sendMessage("" + ChatColor.YELLOW + ChatColor.BOLD  + "----- " + ChatColor.RESET + ChatColor.GOLD + siege.getName() + ChatColor.YELLOW + ChatColor.BOLD +" -----");
-        commandSender.sendMessage(I18nSupport.getInternationalisedString("Siege - Siege Cost") + ChatColor.RED + currencyFormat.format(siege.getCost()));
-        commandSender.sendMessage(I18nSupport.getInternationalisedString("Siege - Daily Income") + ChatColor.RED + currencyFormat.format(siege.getDailyIncome()));
-        commandSender.sendMessage(I18nSupport.getInternationalisedString("Siege - Day of Week") + ChatColor.RED + daysOfWeekString(siege.getDaysOfWeek()));
-        commandSender.sendMessage(I18nSupport.getInternationalisedString("Siege - Start Time") + ChatColor.RED + militaryTimeIntToString(siege.getScheduleStart()) + " UTC");
-        commandSender.sendMessage(I18nSupport.getInternationalisedString("Siege - End Time") + ChatColor.RED + militaryTimeIntToString(siege.getScheduleEnd()) + " UTC");
-        commandSender.sendMessage(I18nSupport.getInternationalisedString("Siege - Duration") + ChatColor.RED + secondsIntToString(siege.getDuration()));
+        displayInfo(commandSender, siege);
         return true;
 
     }
@@ -267,12 +262,58 @@ public class SiegeCommand implements CommandExecutor {
     private String daysOfWeekString(List<Integer> days) {
         String str = new String();
         for(int i = 0; i < days.size(); i++) {
+            if(days.get(i) == getDayOfWeek()) {
+                str += ChatColor.GREEN;
+            }
+            else {
+                str += ChatColor.RED;
+            }
             str += dayToString(days.get(i));
 
             if(i != days.size()-1) {
-                str += ", ";
+                str += ChatColor.WHITE + ", ";
             }
         }
         return str;
+    }
+
+    private void displayInfo(CommandSender sender, Siege siege) {
+        sender.sendMessage("" + ChatColor.YELLOW + ChatColor.BOLD  + "----- " + ChatColor.RESET + ChatColor.GOLD + siege.getName() + ChatColor.YELLOW + ChatColor.BOLD +" -----");
+
+        if(sender instanceof Player) {
+            Player player = (Player) sender;
+            ChatColor cost, start, end;
+            if(Movecraft.getInstance().getEconomy().has(player, siege.getCost())) {
+                cost = ChatColor.GREEN;
+            }
+            else {
+                cost = ChatColor.RED;
+            }
+            if(siege.getScheduleStart() < getMilitaryTime()) {
+                start = ChatColor.GREEN;
+            }
+            else {
+                start = ChatColor.RED;
+            }
+            if(siege.getScheduleEnd() > getMilitaryTime()) {
+                end = ChatColor.GREEN;
+            }
+            else {
+                end = ChatColor.RED;
+            }
+            displayColors(sender, siege, cost, start, end);
+        }
+        else {
+            displayColors(sender, siege, ChatColor.DARK_RED, ChatColor.DARK_RED, ChatColor.DARK_RED);
+        }
+    }
+
+    private void displayColors(CommandSender sender, Siege siege, ChatColor cost, ChatColor start, ChatColor end) {
+        sender.sendMessage(I18nSupport.getInternationalisedString("Siege - Siege Cost") + cost + currencyFormat.format(siege.getCost()));
+        sender.sendMessage(I18nSupport.getInternationalisedString("Siege - Daily Income") + ChatColor.WHITE + currencyFormat.format(siege.getDailyIncome()));
+        sender.sendMessage(I18nSupport.getInternationalisedString("Siege - Day of Week") + daysOfWeekString(siege.getDaysOfWeek()));
+        sender.sendMessage(I18nSupport.getInternationalisedString("Siege - Start Time") + start + militaryTimeIntToString(siege.getScheduleStart()) + " UTC");
+        sender.sendMessage(I18nSupport.getInternationalisedString("Siege - End Time") + end + militaryTimeIntToString(siege.getScheduleEnd()) + " UTC");
+        sender.sendMessage(I18nSupport.getInternationalisedString("Siege - Duration") + ChatColor.WHITE + secondsIntToString(siege.getDuration()));
     }
 }
