@@ -33,8 +33,10 @@ public class TranslationTask extends AsyncTask {
 
     private int dx, dy, dz;
     private HashHitBox newHitBox, oldHitBox;
+    private boolean suppressMessages;
     private boolean failed;
     private boolean collisionExplosion = false;
+    private boolean checkUseGravity = true;
     private String failMessage;
     private Collection<UpdateCommand> updates = new HashSet<>();
 
@@ -48,9 +50,27 @@ public class TranslationTask extends AsyncTask {
     }
 
     @Override
-    protected void execute() {
-
-        //Check if theres anything to move
+    protected void execute() {    	
+    	//useGravity handling
+    	if(getCraft().getType().getUseGravity() && checkUseGravity){
+    		failed = true;
+    		suppressMessages = true;
+    		int j = Math.round((oldHitBox.getMaxY()-oldHitBox.getMinY()) / 2.0f);
+    		int i = -j;
+    		while(failed && i <= j) { //find a level to "step up" to, or give up if beyond step limit
+    			this.failed = false;
+    			dy = i;
+    			if (i == j) { 
+    				suppressMessages = false;
+    			}
+    			this.checkUseGravity = false;
+    			this.execute();
+    			newHitBox = new HashHitBox();
+    			i++;
+    		}
+    	}
+    	
+    	//Check if theres anything to move
         if(oldHitBox.isEmpty()){
             return;
         }
@@ -255,7 +275,7 @@ public class TranslationTask extends AsyncTask {
         failed=true;
         failMessage=message;
         Player craftPilot = CraftManager.getInstance().getPlayerFromCraft(craft);
-        if (craftPilot != null) {
+        if (craftPilot != null && !suppressMessages) {
             Location location = craftPilot.getLocation();
             if (!craft.getDisabled()) {
                 craft.getW().playSound(location, Sound.BLOCK_ANVIL_LAND, 1.0f, 0.25f);
