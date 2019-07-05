@@ -279,36 +279,35 @@ public class SiegeCommand implements CommandExecutor {
 
     private void displayInfo(CommandSender sender, Siege siege) {
         sender.sendMessage("" + ChatColor.YELLOW + ChatColor.BOLD  + "----- " + ChatColor.RESET + ChatColor.GOLD + siege.getName() + ChatColor.YELLOW + ChatColor.BOLD +" -----");
+        ChatColor cost, start, end;
 
         if(sender instanceof Player) {
             Player player = (Player) sender;
-            ChatColor cost, start, end;
             if(Movecraft.getInstance().getEconomy().has(player, siege.getCost())) {
                 cost = ChatColor.GREEN;
             }
             else {
                 cost = ChatColor.RED;
             }
-            if(siege.getScheduleStart() < getMilitaryTime()) {
-                start = ChatColor.GREEN;
-            }
-            else {
-                start = ChatColor.RED;
-            }
-            if(siege.getScheduleEnd() > getMilitaryTime()) {
-                end = ChatColor.GREEN;
-            }
-            else {
-                end = ChatColor.RED;
-            }
-            displayColors(sender, siege, cost, start, end);
         }
         else {
-            displayColors(sender, siege, ChatColor.DARK_RED, ChatColor.DARK_RED, ChatColor.DARK_RED);
+            cost = ChatColor.DARK_RED;
         }
-    }
 
-    private void displayColors(CommandSender sender, Siege siege, ChatColor cost, ChatColor start, ChatColor end) {
+        if(siege.getScheduleStart() < getMilitaryTime()) {
+            start = ChatColor.GREEN;
+        }
+        else {
+            start = ChatColor.RED;
+        }
+
+        if(siege.getScheduleEnd() > getMilitaryTime()) {
+            end = ChatColor.GREEN;
+        }
+        else {
+            end = ChatColor.RED;
+        }
+
         sender.sendMessage(I18nSupport.getInternationalisedString("Siege - Siege Cost") + cost + currencyFormat.format(siege.getCost()));
         sender.sendMessage(I18nSupport.getInternationalisedString("Siege - Daily Income") + ChatColor.WHITE + currencyFormat.format(siege.getDailyIncome()));
         sender.sendMessage(I18nSupport.getInternationalisedString("Siege - Day of Week") + daysOfWeekString(siege.getDaysOfWeek()));
