@@ -39,7 +39,7 @@ public class SiegePaymentTask extends SiegeTask {
     }
 
     private void payRegion(ProtectedRegion region) {
-        ArrayList<OfflinePlayer> owners = new ArrayList<>();
+        HashSet<OfflinePlayer> owners = new HashSet<>();
 
         for(String name : region.getOwners().getPlayers()) {
             owners.add(Movecraft.getInstance().getServer().getOfflinePlayer(name));

@@ -7,8 +7,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class Siege {
-    @NotNull
-    private final List<Integer> daysOfWeek;
+    @NotNull private final List<Integer> daysOfWeek;
     private final List<String> craftsToWin, commandsOnStart, commandsOnLose, commandsOnWin;
     private final int scheduleStart, scheduleEnd, delayBeforeStart, duration, dailyIncome, cost;
     @NotNull private final String attackRegion, captureRegion, name;

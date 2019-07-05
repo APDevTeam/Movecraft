@@ -11,7 +11,6 @@ import net.countercraft.movecraft.utils.TopicPaginator;
 import net.countercraft.movecraft.warfare.siege.Siege;
 import net.countercraft.movecraft.warfare.siege.SiegeManager;
 import net.countercraft.movecraft.warfare.siege.SiegeStage;
-import net.milkbowl.vault.chat.Chat;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Sound;
@@ -27,6 +26,7 @@ import java.util.Calendar;
 import java.util.TimeZone;
 import java.util.logging.Level;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import static net.countercraft.movecraft.utils.ChatUtils.MOVECRAFT_COMMAND_PREFIX;
@@ -58,7 +58,7 @@ public class SiegeCommand implements CommandExecutor {
             return listCommand(commandSender, args);
         } else if (args[0].equalsIgnoreCase("begin")) {
             return beginCommand(commandSender);
-        }else if(args[0].equalsIgnoreCase("info")){
+        } else if(args[0].equalsIgnoreCase("info")){
             return infoCommand(commandSender,args);
         }
         commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Siege - Invalid Argument"));
@@ -259,7 +259,7 @@ public class SiegeCommand implements CommandExecutor {
         return output;
     }
 
-    private String daysOfWeekString(List<Integer> days) {
+    private String daysOfWeekString(@NotNull List<Integer> days) {
         String str = new String();
         for(int i = 0; i < days.size(); i++) {
             if(days.get(i) == getDayOfWeek()) {
@@ -277,36 +277,19 @@ public class SiegeCommand implements CommandExecutor {
         return str;
     }
 
-    private void displayInfo(CommandSender sender, Siege siege) {
+    private void displayInfo(@NotNull CommandSender sender, @NotNull Siege siege) {
         sender.sendMessage("" + ChatColor.YELLOW + ChatColor.BOLD  + "----- " + ChatColor.RESET + ChatColor.GOLD + siege.getName() + ChatColor.YELLOW + ChatColor.BOLD +" -----");
         ChatColor cost, start, end;
 
         if(sender instanceof Player) {
-            Player player = (Player) sender;
-            if(Movecraft.getInstance().getEconomy().has(player, siege.getCost())) {
-                cost = ChatColor.GREEN;
-            }
-            else {
-                cost = ChatColor.RED;
-            }
+            cost = Movecraft.getInstance().getEconomy().has((Player) sender, siege.getCost()) ? ChatColor.GREEN : ChatColor.RED;
         }
         else {
             cost = ChatColor.DARK_RED;
         }
 
-        if(siege.getScheduleStart() < getMilitaryTime()) {
-            start = ChatColor.GREEN;
-        }
-        else {
-            start = ChatColor.RED;
-        }
-
-        if(siege.getScheduleEnd() > getMilitaryTime()) {
-            end = ChatColor.GREEN;
-        }
-        else {
-            end = ChatColor.RED;
-        }
+        start = siege.getScheduleStart() < getMilitaryTime() ? ChatColor.GREEN : ChatColor.RED;
+        end = siege.getScheduleEnd() > getMilitaryTime() ? ChatColor.GREEN : ChatColor.RED;
 
         sender.sendMessage(I18nSupport.getInternationalisedString("Siege - Siege Cost") + cost + currencyFormat.format(siege.getCost()));
         sender.sendMessage(I18nSupport.getInternationalisedString("Siege - Daily Income") + ChatColor.WHITE + currencyFormat.format(siege.getDailyIncome()));
