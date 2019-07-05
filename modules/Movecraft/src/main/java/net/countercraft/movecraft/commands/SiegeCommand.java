@@ -21,6 +21,7 @@ import org.bukkit.entity.Player;
 
 import java.text.NumberFormat;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Calendar;
 import java.util.TimeZone;
 import java.util.logging.Level;
@@ -84,7 +85,7 @@ public class SiegeCommand implements CommandExecutor {
         commandSender.sendMessage("" + ChatColor.YELLOW + ChatColor.BOLD  + "----- " + ChatColor.RESET + ChatColor.GOLD + siege.getName() + ChatColor.YELLOW + ChatColor.BOLD +" -----");
         commandSender.sendMessage(I18nSupport.getInternationalisedString("Siege - Siege Cost") + ChatColor.RED + currencyFormat.format(siege.getCost()));
         commandSender.sendMessage(I18nSupport.getInternationalisedString("Siege - Daily Income") + ChatColor.RED + currencyFormat.format(siege.getDailyIncome()));
-        commandSender.sendMessage(I18nSupport.getInternationalisedString("Siege - Day of Week") + ChatColor.RED + dayToString(siege.getDayOfWeek()));
+        commandSender.sendMessage(I18nSupport.getInternationalisedString("Siege - Day of Week") + ChatColor.RED + daysOfWeekString(siege.getDaysOfWeek()));
         commandSender.sendMessage(I18nSupport.getInternationalisedString("Siege - Start Time") + ChatColor.RED + militaryTimeIntToString(siege.getScheduleStart()) + " UTC");
         commandSender.sendMessage(I18nSupport.getInternationalisedString("Siege - End Time") + ChatColor.RED + militaryTimeIntToString(siege.getScheduleEnd()) + " UTC");
         commandSender.sendMessage(I18nSupport.getInternationalisedString("Siege - Duration") + ChatColor.RED + secondsIntToString(siege.getDuration()));
@@ -147,7 +148,7 @@ public class SiegeCommand implements CommandExecutor {
 
         int currMilitaryTime = getMilitaryTime();
         int dayOfWeek = getDayOfWeek();
-        if (currMilitaryTime <= siege.getScheduleStart() || currMilitaryTime >= siege.getScheduleEnd() || dayOfWeek != siege.getDayOfWeek()) {
+        if (currMilitaryTime <= siege.getScheduleStart() || currMilitaryTime >= siege.getScheduleEnd() || !siege.getDaysOfWeek().contains(dayOfWeek)) {
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Siege - Time Not During Schedule"));
             return true;
         }
@@ -261,5 +262,17 @@ public class SiegeCommand implements CommandExecutor {
         }
         output = I18nSupport.getInternationalisedString(output);
         return output;
+    }
+
+    private String daysOfWeekString(List<Integer> days) {
+        String str = new String();
+        for(int i = 0; i < days.size(); i++) {
+            str += dayToString(days.get(i));
+
+            if(i != days.size()-1) {
+                str += ", ";
+            }
+        }
+        return str;
     }
 }
