@@ -31,8 +31,9 @@ import java.util.concurrent.ThreadLocalRandom;
 public class TranslationTask extends AsyncTask {
     private static final int[] FALL_THROUGH_BLOCKS = {0, 8, 9, 10, 11, 31, 37, 38, 39, 40, 50, 51, 55, 59, 63, 65, 68, 69, 70, 72, 75, 76, 77, 78, 83, 85, 93, 94, 111, 141, 142, 143, 171};
 
-    private int dx, dy, dz;
+    private int dx, dy, dz, prevdy;
     private HashHitBox newHitBox, oldHitBox;
+    private boolean suppressMessages;
     private boolean failed;
     private boolean collisionExplosion = false;
     private String failMessage;
@@ -48,9 +49,25 @@ public class TranslationTask extends AsyncTask {
     }
 
     @Override
-    protected void execute() {
-
-        //Check if theres anything to move
+    protected void execute() {    	
+    	
+    	if(getCraft().getType().getUseGravity() && dy > 0){
+    		prevdy = dy;
+    		dy = -1;
+    		suppressMessages=true;
+    		this.execute();
+    		suppressMessages=false;
+    		if (failed) {
+    			failed = false;
+    			dy = prevdy;
+    		} else {
+    			return;
+    		}
+    	}
+    	
+    	
+    	
+    	//Check if theres anything to move
         if(oldHitBox.isEmpty()){
             return;
         }
@@ -255,7 +272,7 @@ public class TranslationTask extends AsyncTask {
         failed=true;
         failMessage=message;
         Player craftPilot = CraftManager.getInstance().getPlayerFromCraft(craft);
-        if (craftPilot != null) {
+        if (craftPilot != null && !suppressMessages) {
             Location location = craftPilot.getLocation();
             if (!craft.getDisabled()) {
                 craft.getW().playSound(location, Sound.BLOCK_ANVIL_LAND, 1.0f, 0.25f);
