@@ -7,9 +7,9 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class Siege {
-    @NotNull
-    private final List<String> craftsToWin, commandsOnStart, commandsOnLose, commandsOnWin;
-    private final int scheduleStart, scheduleEnd, delayBeforeStart, duration, dayOfWeek, dailyIncome, cost;
+    @NotNull private final List<Integer> daysOfWeek;
+    @NotNull private final List<String> craftsToWin, commandsOnStart, commandsOnLose, commandsOnWin;
+    private final int scheduleStart, scheduleEnd, delayBeforeStart, duration, dailyIncome, cost;
     @NotNull private final String attackRegion, captureRegion, name;
     @NotNull private final AtomicReference<SiegeStage> stage;
     private int startTime, lastUpdate;
@@ -17,7 +17,13 @@ public class Siege {
     private final boolean doubleCostPerOwnedSiegeRegion;
     private UUID playerUUID;
 
-    public Siege(@NotNull String name, @NotNull String captureRegion, @NotNull String attackRegion, int scheduleStart, int scheduleEnd, int delayBeforeStart, int duration, int dayOfWeek, int dailyIncome, int cost, boolean doubleCostPerOwnedSiegeRegion, @NotNull List<String> craftsToWin, @NotNull List<String> commandsOnStart, @NotNull List<String> commandsOnWin, @NotNull List<String> commandsOnLose) {
+    public Siege(
+            @NotNull String name, @NotNull String captureRegion, @NotNull String attackRegion,
+            int scheduleStart, int scheduleEnd, int delayBeforeStart, int duration, int dailyIncome, int cost,
+            boolean doubleCostPerOwnedSiegeRegion,
+            @NotNull List<Integer> daysOfWeek,
+            @NotNull List<String> craftsToWin, @NotNull List<String> commandsOnStart, @NotNull List<String> commandsOnWin, @NotNull List<String> commandsOnLose
+    ) {
         this.commandsOnWin = commandsOnWin;
         this.commandsOnLose = commandsOnLose;
         this.craftsToWin = craftsToWin;
@@ -25,7 +31,7 @@ public class Siege {
         this.scheduleEnd = scheduleEnd;
         this.delayBeforeStart = delayBeforeStart;
         this.duration = duration;
-        this.dayOfWeek = dayOfWeek;
+        this.daysOfWeek = daysOfWeek;
         this.dailyIncome = dailyIncome;
         this.cost = cost;
         this.doubleCostPerOwnedSiegeRegion = doubleCostPerOwnedSiegeRegion;
@@ -126,8 +132,8 @@ public class Siege {
         return scheduleStart;
     }
 
-    public int getDayOfWeek() {
-        return dayOfWeek;
+    public List<Integer> getDaysOfWeek() {
+        return daysOfWeek;
     }
 
     public int getDelayBeforeStart() {
@@ -144,5 +150,9 @@ public class Siege {
 
     public boolean isDoubleCostPerOwnedSiegeRegion() {
         return doubleCostPerOwnedSiegeRegion;
+    }
+
+    public String toString() {
+        return name;
     }
 }

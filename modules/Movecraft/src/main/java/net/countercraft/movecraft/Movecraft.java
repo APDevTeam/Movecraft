@@ -167,6 +167,7 @@ public class Movecraft extends JavaPlugin {
         Settings.SilhouetteViewDistance = getConfig().getInt("SilhouetteViewDistance", 200);
         Settings.SilhouetteBlockCount = getConfig().getInt("SilhouetteBlockCount", 20);
         Settings.FireballLifespan = getConfig().getInt("FireballLifespan", 6);
+        Settings.SiegeTaskSeconds = getConfig().getInt("SiegeTaskSeconds", 600);
         Settings.FireballPenetration = getConfig().getBoolean("FireballPenetration", true);
         Settings.ProtectPilotedCrafts = getConfig().getBoolean("ProtectPilotedCrafts", false);
         Settings.AllowCrewSigns = getConfig().getBoolean("AllowCrewSigns", true);
@@ -369,10 +370,10 @@ public class Movecraft extends JavaPlugin {
                                 (Integer) siegeMap.get("ScheduleEnd"),
                                 (Integer) siegeMap.getOrDefault("DelayBeforeStart", 0),
                                 (Integer) siegeMap.get("SiegeDuration"),
-                                (Integer) siegeMap.getOrDefault("DayOfTheWeek", 1),
                                 (Integer) siegeMap.getOrDefault("DailyIncome", 0),
                                 (Integer) siegeMap.getOrDefault("CostToSiege", 0),
                                 (Boolean) siegeMap.getOrDefault("DoubleCostPerOwnedSiegeRegion", true),
+                                (List<Integer>) siegeMap.get("DaysOfTheWeek"),
                                 (List<String>) siegeMap.getOrDefault("CraftsToWin", Collections.emptyList()),
                                 (List<String>) siegeMap.getOrDefault("SiegeCommandsOnStart", Collections.emptyList()),
                                 (List<String>) siegeMap.getOrDefault("SiegeCommandsOnWin", Collections.emptyList()),

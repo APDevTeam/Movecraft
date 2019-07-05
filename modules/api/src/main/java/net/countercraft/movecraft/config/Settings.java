@@ -51,6 +51,7 @@ public class Settings {
     public static int FireballLifespan = 6;
     public static int RepairTicksPerBlock = 0;
     public static int BlockQueueChunkSize = 1000;
+    public static int SiegeTaskSeconds = 600;
     public static double RepairMoneyPerBlock = 0.0;
     public static boolean FireballPenetration = true;
     public static boolean AllowCrewSigns = true;
