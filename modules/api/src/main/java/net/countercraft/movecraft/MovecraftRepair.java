@@ -188,6 +188,9 @@ public class MovecraftRepair {
                         numDiffBlocks++;
                         //some blocks aren't represented by items with the same number as the block
                         switch (itemToConsume) {
+                            case 62://burning furnace
+                                itemToConsume = 61;
+                                break;
                             case 63:// signs
                             case 68:
                                 itemToConsume = 323;
@@ -213,17 +216,11 @@ public class MovecraftRepair {
                                 itemToConsume = 76;
                                 break;
                             case 8:
-                                itemToConsume = 0;
-                                qtyToConsume = 0.0;
-                                break;
                             case 9:  // don't require water to be in the chest
                                 itemToConsume = 0;
                                 qtyToConsume = 0.0;
                                 break;
                             case 10:
-                                itemToConsume = 0;
-                                qtyToConsume = 0.0;
-                                break;
                             case 11: // don't require lava either, yeah you could exploit this for free lava, so make sure you set a price per block
                                 itemToConsume = 0;
                                 qtyToConsume = 0.0;
