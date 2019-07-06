@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.repair;
 
+import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
@@ -7,8 +8,6 @@ import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
-
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class RepairTask extends BukkitRunnable {
     private final Repair repair;
@@ -51,14 +50,25 @@ public class RepairTask extends BukkitRunnable {
         //When the time is up and there are no more blocks to place, finish the repair.
         if ((ticksFromStart >= repair.getDurationInTicks()) && repair.getUpdateCommands().isEmpty() && repair.getFragileBlockUpdateCommands().isEmpty()){
             if (p != null && repair.getRunning().get()) {
+
                 p.sendMessage(I18nSupport.getInternationalisedString("Repairs complete. You may now pilot the craft"));
                 CraftManager.getInstance().removeCraft(repair.getCraft());
             }
+            Movecraft.getInstance().getLogger().info(I18nSupport.getInternationalisedString("Repair Complete Console"));
             repair.getProgressBar().setVisible(false);
             repair.getRunning().set(false);
         }
     }
     public Repair getRepair(){
         return repair;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof RepairTask){
+            RepairTask task = (RepairTask) obj;
+            return this.getRepair() == task.getRepair();
+        }
+        return false;
     }
 }

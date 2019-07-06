@@ -197,8 +197,8 @@ public class RepairSign implements Listener{
                     }
                 }
 
-                double Cost = numDifferentBlocks * Settings.RepairMoneyPerBlock;
-                Movecraft.getInstance().getLogger().info(event.getPlayer().getName() + " has begun a repair with the cost of " + Cost);
+                double cost = numDifferentBlocks * Settings.RepairMoneyPerBlock;
+                Movecraft.getInstance().getLogger().info(String.format(I18nSupport.getInternationalisedString("Repair - Repair Has Begun"),event.getPlayer().getName(),cost));
                 final LinkedList<UpdateCommand> updateCommands = new LinkedList<>();
                 final LinkedList<UpdateCommand> updateCommandsFragileBlocks = new LinkedList<>();
 
@@ -230,7 +230,7 @@ public class RepairSign implements Listener{
             p.sendMessage(I18nSupport.getInternationalisedString("Total damaged blocks") + ": " + numDifferentBlocks);
             p.sendMessage(I18nSupport.getInternationalisedString("Percentage of craft") + ": " + percent);
             if (percent > Settings.RepairMaxPercent){
-                p.sendMessage(I18nSupport.getInternationalisedString("This craft is too damaged and can not be repaired"));
+                p.sendMessage(I18nSupport.getInternationalisedString("Repair - Failed Craft Too Damaged"));
                 return;
             }
             if (numDifferentBlocks != 0) {
