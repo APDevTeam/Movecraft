@@ -57,46 +57,36 @@ public class RepairSign implements Listener{
             event.setCancelled(true);
             return;
         }
-        //look for characters that are illegal in filenames
-        String fl = ChatColor.stripColor(event.getLine(1));
-        for (int i = 0 ; i < fl.length(); i++){
-            char ch = fl.charAt(i);
-            //If none of the illegal characters are found on the second line, contune to the next char, or until the loop ends.
-            if (!ILLEGAL_CHARACTERS.contains(ch)){
-                continue;
-            }
-            //Clear the sign if an illegal character is found on second line, and notify the player placing the sign
-            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Repair - Illegal character found") + " " + ch);
-            event.setCancelled(true);
-            break;
-        }
     }
 
     @EventHandler
     public void onSignClick(PlayerInteractEvent event){
-        if (event.getAction() != Action.RIGHT_CLICK_BLOCK || event.getAction() != Action.LEFT_CLICK_BLOCK) {
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK && event.getAction() != Action.LEFT_CLICK_BLOCK) {
             return;
         }
         BlockState state = event.getClickedBlock().getState();
-        if (state instanceof Sign) {
-            Sign sign = (Sign) event.getClickedBlock().getState();
-            String signText = ChatColor.stripColor(sign.getLine(0));
-
-            if (signText == null) {
-                return;
-            }
+        if (!(state instanceof Sign)) {
+            return;
         }
+        Sign sign = (Sign) event.getClickedBlock().getState();
+        String signText = ChatColor.stripColor(sign.getLine(0));
+        if (signText == null) {
+            return;
+        }
+
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
             signRightClick(event);
         }
+
         if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
             signLeftClick(event);
         }
+
     }
     //
     private void signLeftClick(PlayerInteractEvent event){
         Sign sign = (Sign) event.getClickedBlock().getState();
-        if (!sign.getLine(0).equalsIgnoreCase(HEADER) || sign.getLine(0) == null){
+        if (!ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase(HEADER) || sign.getLine(0) == null){
             return;
         }
         if (Settings.RepairTicksPerBlock == 0) {
