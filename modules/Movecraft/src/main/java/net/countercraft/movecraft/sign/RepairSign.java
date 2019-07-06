@@ -32,27 +32,41 @@ import org.bukkit.inventory.ItemStack;
 import java.util.*;
 
 public class RepairSign implements Listener{
-    private String HEADER = "Repair:";
-    private char[] ILLEGAL_CHARACTERS = {'/', '\\', ':', '*', '?', '\"', '<', '>', '|'};
-    private HashMap<UUID, Long> playerInteractTimeMap = new HashMap<>();//Players must be assigned by the UUID, or NullPointerExceptions are thrown
-
+    private final String HEADER = "Repair:";
+    private static final ArrayList<Character> ILLEGAL_CHARACTERS = new ArrayList<>();//{};
+    private final HashMap<UUID, Long> playerInteractTimeMap = new HashMap<>();//Players must be assigned by the UUID, or NullPointerExceptions are thrown
+    static {
+        ILLEGAL_CHARACTERS.add('/');
+        ILLEGAL_CHARACTERS.add('\\');
+        ILLEGAL_CHARACTERS.add(':');
+        ILLEGAL_CHARACTERS.add('*');
+        ILLEGAL_CHARACTERS.add('?');
+        ILLEGAL_CHARACTERS.add('\"');
+        ILLEGAL_CHARACTERS.add('<');
+        ILLEGAL_CHARACTERS.add('>');
+        ILLEGAL_CHARACTERS.add('|');
+    }
     @EventHandler
     public void onSignChange(SignChangeEvent event){
         if (!ChatColor.stripColor(event.getLine(0)).equalsIgnoreCase(HEADER)){
             return;
         }
+        //Clear the repair sign if second line is empty
         if (event.getLine(1).isEmpty()){
             event.getPlayer().sendMessage("You must specify a repair state name on second line");
             event.setCancelled(true);
             return;
         }
         //look for characters that are illegal in filenames
-        for (char ch : ChatColor.stripColor(event.getLine(1)).toCharArray()){
-            if (Arrays.binarySearch(ILLEGAL_CHARACTERS,ch) < 0){
+        String fl = ChatColor.stripColor(event.getLine(1));
+        for (int i = 0 ; i < fl.length(); i++){
+            char ch = fl.charAt(i);
+            //If none of the illegal characters are found on the second line, contune to the next char, or until the loop ends.
+            if (!ILLEGAL_CHARACTERS.contains(ch)){
                 continue;
             }
             //Clear the sign if an illegal character is found on second line, and notify the player placing the sign
-            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Repair - Illegal character found") + " " +ch);
+            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Repair - Illegal character found") + " " + ch);
             event.setCancelled(true);
             break;
         }
