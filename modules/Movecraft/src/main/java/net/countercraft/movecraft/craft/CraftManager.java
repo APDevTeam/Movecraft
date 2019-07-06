@@ -20,7 +20,6 @@ package net.countercraft.movecraft.craft;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -29,7 +28,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -75,8 +73,15 @@ public class CraftManager implements Iterable<Craft>{
                 Movecraft.getInstance().saveResource("types/legacy/SubAirship.craft", false);
                 Movecraft.getInstance().saveResource("types/legacy/Submarine.craft", false);
                 Movecraft.getInstance().saveResource("types/legacy/Turret.craft", false);
+                final File legacydir = new File(craftsFile,"legacy");
+                for (File craftFile : legacydir.listFiles()){
+                    final String fileName = craftFile.getName();
+                    if (!craftFile.renameTo(new File(craftFile, fileName))) continue;
+                    craftFile.delete();
+                }
+                if (legacydir.listFiles().length == 0)
+                    legacydir.delete();
             } else if (Settings.is1_14){ //if 1.14, save 1.14 files
-                Movecraft.getInstance().getResource("types/1_14/airship.craft");
                 Movecraft.getInstance().saveResource("types/1_14/airship.craft", false);
                 Movecraft.getInstance().saveResource("types/1_14/airskiff.craft", false);
                 Movecraft.getInstance().saveResource("types/1_14/BigAirship.craft", false);
