@@ -28,10 +28,7 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.utils.HashHitBox;
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Dispenser;
 import org.bukkit.block.Sign;
@@ -60,7 +57,7 @@ public class MovecraftRepair {
         this.plugin = plugin;
     }
 
-    public boolean saveCraftRepairState(Craft craft, Sign sign, String s) {
+    public boolean saveCraftRepairState(Craft craft, Sign sign) {
         HashHitBox hitBox = craft.getHitBox();
         File saveDirectory = new File(plugin.getDataFolder(), "CraftRepairStates");
         World world = craft.getW();
@@ -73,7 +70,11 @@ public class MovecraftRepair {
         Vector minPos = new Vector(hitBox.getMinX(), hitBox.getMinY(), hitBox.getMinZ());
         Vector maxPos = new Vector(hitBox.getMaxX(), hitBox.getMaxY(), hitBox.getMaxZ());
         CuboidRegion cRegion = new CuboidRegion(minPos, maxPos);
-        File repairStateFile = new File(saveDirectory, s + ".schematic");
+        String repairName = craft.getNotificationPlayer().getName();
+        repairName += "_";
+        repairName += ChatColor.stripColor(sign.getLine(1));
+        repairName += ".schematic";
+        File repairStateFile = new File(saveDirectory, repairName);
         Set<BaseBlock> blockSet = baseBlocksFromCraft(craft);
         try {
 
@@ -152,10 +153,14 @@ public class MovecraftRepair {
         }
     }
 
-    public Clipboard loadCraftRepairStateClipboard(Craft craft, Sign sign, String repairStateFile, World world) {
+    public Clipboard loadCraftRepairStateClipboard(Craft craft, Sign sign) {
         File dataDirectory = new File(plugin.getDataFolder(), "CraftRepairStates");
-        File file = new File(dataDirectory, repairStateFile + ".schematic"); // The schematic file
-        com.sk89q.worldedit.world.World weWorld = new BukkitWorld(world);
+        String repairName = craft.getNotificationPlayer().getName();
+        repairName += "_";
+        repairName += ChatColor.stripColor(sign.getLine(1));
+        repairName += ".schematic";
+        File file = new File(dataDirectory, repairName); // The schematic file
+        com.sk89q.worldedit.world.World weWorld = new BukkitWorld(sign.getWorld());
         WorldData worldData = weWorld.getWorldData();
         Clipboard clipboard;
         try {
@@ -417,9 +422,10 @@ public class MovecraftRepair {
                 }
             }
         }
-        locMissingBlocksMap.put(repairStateFile, locMissingBlocks);
-        missingBlocksMap.put(repairStateFile, missingBlocks);
-        numDiffBlocksMap.put(repairStateFile, numDiffBlocks);
+        String repairStateName = repairName.replace(".schematic","");
+        locMissingBlocksMap.put(repairStateName, locMissingBlocks);
+        missingBlocksMap.put(repairStateName, missingBlocks);
+        numDiffBlocksMap.put(repairStateName, numDiffBlocks);
         return clipboard;
     }
 

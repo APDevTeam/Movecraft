@@ -238,7 +238,7 @@ public class Movecraft extends JavaPlugin {
         } else {
             logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - WE Found"));
             Settings.RepairTicksPerBlock = getConfig().getInt("RepairTicksPerBlock", 0);
-            Settings.RepairMaxPercent = getConfig().getDouble("RepairMaxPercent",50);
+            Settings.RepairMaxPercent = getConfig().getDouble("RepairMaxPercent", 50);
         }
         worldEditPlugin = (WorldEditPlugin) wEPlugin;
 
@@ -392,7 +392,7 @@ public class Movecraft extends JavaPlugin {
                 MovecraftRepair.initialize(this);
                 if (MovecraftRepair.getInstance() != null){
                     repairManager = new RepairManager();
-                    repairManager.runTaskTimerAsynchronously(this,0,1);
+                    repairManager.runTaskTimerAsynchronously(this, 0, 1);
                 }
             }
             this.getCommand("movecraft").setExecutor(new MovecraftCommand());

@@ -17,7 +17,6 @@ import net.countercraft.movecraft.repair.RepairManager;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
@@ -34,11 +33,12 @@ import java.util.*;
 
 public class RepairSign implements Listener{
     private String HEADER = "Repair:";
+    private char[] ILLEGAL_CHARACTERS = {'/', '\\', ':', '*', '?', '\"', '<', '>', '|'};
     private HashMap<UUID, Long> playerInteractTimeMap = new HashMap<>();//Players must be assigned by the UUID, or NullPointerExceptions are thrown
 
     @EventHandler
     public void onSignChange(SignChangeEvent event){
-        if (!event.getLine(0).equalsIgnoreCase(HEADER)){
+        if (!ChatColor.stripColor(event.getLine(0)).equalsIgnoreCase(HEADER)){
             return;
         }
         if (event.getLine(1).isEmpty()){
@@ -46,46 +46,45 @@ public class RepairSign implements Listener{
             event.setCancelled(true);
             return;
         }
+        //look for characters that are illegal in filenames
+        for (char ch : ChatColor.stripColor(event.getLine(1)).toCharArray()){
+            if (Arrays.binarySearch(ILLEGAL_CHARACTERS,ch) < 0){
+                continue;
+            }
+            //Clear the sign if an illegal character is found on second line, and notify the player placing the sign
+            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Repair - Illegal character found") + " " +ch);
+            event.setCancelled(true);
+            break;
+        }
     }
 
     @EventHandler
     public void onSignClick(PlayerInteractEvent event){
-        String firstLine = "";
-        if (event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.LEFT_CLICK_BLOCK) {
-            BlockState state = event.getClickedBlock().getState();
-            if (state instanceof Sign) {
-                Sign sign = (Sign) event.getClickedBlock().getState();
-                String signText = ChatColor.stripColor(sign.getLine(0));
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK || event.getAction() != Action.LEFT_CLICK_BLOCK) {
+            return;
+        }
+        BlockState state = event.getClickedBlock().getState();
+        if (state instanceof Sign) {
+            Sign sign = (Sign) event.getClickedBlock().getState();
+            String signText = ChatColor.stripColor(sign.getLine(0));
 
-                if (signText == null) {
-                    return;
-                }
+            if (signText == null) {
+                return;
             }
         }
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-            BlockState state = event.getClickedBlock().getState();
-            if (state instanceof Sign) {
-                signRightClick(event);
-            }
-            return;
+            signRightClick(event);
         }
         if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
-            BlockState state = event.getClickedBlock().getState();
-            if (state instanceof Sign) {
-                signLeftClick(event);
-            }
+            signLeftClick(event);
         }
     }
     //
     private void signLeftClick(PlayerInteractEvent event){
-
         Sign sign = (Sign) event.getClickedBlock().getState();
         if (!sign.getLine(0).equalsIgnoreCase(HEADER) || sign.getLine(0) == null){
             return;
         }
-        String repairName = event.getPlayer().getName();
-        repairName += "_";
-        repairName += sign.getLine(1);
         if (Settings.RepairTicksPerBlock == 0) {
             event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Repair functionality is disabled or WorldEdit was not detected"));
             return;
@@ -97,16 +96,15 @@ public class RepairSign implements Listener{
         }
 
         MovecraftRepair movecraftRepair = MovecraftRepair.getInstance();
-        if (movecraftRepair.saveCraftRepairState(pCraft, sign, repairName))
-            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("State saved"));
-        else
-            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Could not save file"));
         event.setCancelled(true);
-
+        if (movecraftRepair.saveCraftRepairState(pCraft, sign)) {
+            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("State saved"));
+            return;
+        }
+        event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Could not save file"));
     }
     private void signRightClick(PlayerInteractEvent event){
         Sign sign = (Sign) event.getClickedBlock().getState();
-        World world = sign.getWorld();
         Player p = event.getPlayer();
         Craft pCraft = CraftManager.getInstance().getCraftByPlayer(p);
         if (!sign.getLine(0).equalsIgnoreCase(HEADER)){
@@ -122,9 +120,9 @@ public class RepairSign implements Listener{
         }
         String repairName = event.getPlayer().getName();
         repairName += "_";
-        repairName += sign.getLine(1);
+        repairName += ChatColor.stripColor(sign.getLine(1));
         MovecraftRepair movecraftRepair = MovecraftRepair.getInstance();
-        Clipboard clipboard = movecraftRepair.loadCraftRepairStateClipboard(pCraft, sign, repairName, world);
+        Clipboard clipboard = movecraftRepair.loadCraftRepairStateClipboard(pCraft, sign);
 
 
         if (clipboard == null){
