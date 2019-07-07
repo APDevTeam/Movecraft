@@ -34,9 +34,9 @@ public final class Repair {
         this.missingBlocks = missingBlocks;
         this.playerUUID = playerUUID;
         this.signLoc = signLoc;
-        progressBar = Bukkit.createBossBar(this.name, BarColor.WHITE, BarStyle.SOLID, BarFlag.DARKEN_SKY);
-        progressBar.setVisible(true);
-        progressBar.setProgress(0.0);
+        this.progressBar = Bukkit.createBossBar(this.name, BarColor.WHITE, BarStyle.SOLID, BarFlag.DARKEN_SKY);
+        this.progressBar.setVisible(true);
+        this.progressBar.setProgress(0.0);
     }
     public String getName(){
         return name;

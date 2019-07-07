@@ -4,8 +4,6 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.CraftDetectEvent;
-import net.countercraft.movecraft.events.CraftPilotEvent;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -57,7 +55,7 @@ public class AscendSign implements Listener {
             sign.update(true);
 
             CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCruiseDirection((byte) 0x42);
-            CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setLastCruisUpdate(System.currentTimeMillis());
+            CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setLastCruiseUpdate(System.currentTimeMillis());
             CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCruising(true);
 
             if (!c.getType().getMoveEntities()) {

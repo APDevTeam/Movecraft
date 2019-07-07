@@ -2,6 +2,7 @@ package net.countercraft.movecraft.commands;
 
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -25,29 +26,29 @@ public class ScuttleCommand implements CommandExecutor {
         if (commandSender.hasPermission("movecraft.commands.scuttle.others") && strings.length >= 1) {
             Player player = Bukkit.getPlayer(strings[0]);
             if (player == null) {
-                commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "Player supplied must be online");
+                commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Scuttle - Must Be Online"));
                 return true;
             }
             craft = CraftManager.getInstance().getCraftByPlayer(player);
         } else if (commandSender.hasPermission("movecraft.commands.scuttle.self") && strings.length == 0) {
             if (!(commandSender instanceof Player)) {
-                commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "You must be a player to scuttle a craft");
+                commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Scuttle - Must Be Player"));
                 return true;
             }
             craft = CraftManager.getInstance().getCraftByPlayer(Bukkit.getPlayer(commandSender.getName()));
         }
         if (craft == null) {
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "no craft found to sink!");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX +  I18nSupport.getInternationalisedString("You must be piloting a craft"));
             return true;
         }
         if(craft.getSinking()){
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "the craft is already sinking!");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "Scuttle - Craft Already Sinking");
             return true;
         }
         craft.setCruising(false);
         craft.sink();
         CraftManager.getInstance().removePlayerFromCraft(craft);
-        commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "Scuttle was activated. Abandon ship!");
+        commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "Scuttle - Scuttle Activated");
         return true;
 
     }

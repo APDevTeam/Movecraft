@@ -52,7 +52,7 @@ public class CollectionUtils {
 
     private final static MovecraftLocation[] SHIFTS = {
             new MovecraftLocation(0, 0, 1),
-            new MovecraftLocation(0, 1, 0),
+//            new MovecraftLocation(0, 1, 0),
             new MovecraftLocation(1, 0 ,0),
             new MovecraftLocation(0, 0, -1),
             new MovecraftLocation(0, -1, 0),
