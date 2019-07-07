@@ -27,16 +27,16 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class TranslationTask extends AsyncTask {
     private static final int[] FALL_THROUGH_BLOCKS = {0, 8, 9, 10, 11, 31, 37, 38, 39, 40, 50, 51, 55, 59, 63, 65, 68, 69, 70, 72, 75, 76, 77, 78, 83, 85, 93, 94, 111, 141, 142, 143, 171};
 
     private int dx, dy, dz;
     private HashHitBox newHitBox, oldHitBox;
-    private boolean suppressMessages;
     private boolean failed;
     private boolean collisionExplosion = false;
-    private boolean checkUseGravity = true;
     private String failMessage;
     private Collection<UpdateCommand> updates = new HashSet<>();
 
@@ -50,27 +50,9 @@ public class TranslationTask extends AsyncTask {
     }
 
     @Override
-    protected void execute() {    	
-    	//useGravity handling
-    	if(getCraft().getType().getUseGravity() && checkUseGravity){
-    		failed = true;
-    		suppressMessages = true;
-    		int j = Math.round((oldHitBox.getMaxY()-oldHitBox.getMinY()) / 2.0f);
-    		int i = -j;
-    		while(failed && i <= j) { //find a level to "step up" to, or give up if beyond step limit
-    			this.failed = false;
-    			dy = i;
-    			if (i == j) { 
-    				suppressMessages = false;
-    			}
-    			this.checkUseGravity = false;
-    			this.execute();
-    			newHitBox = new HashHitBox();
-    			i++;
-    		}
-    	}
-    	
-    	//Check if theres anything to move
+    protected void execute() {
+
+        //Check if theres anything to move
         if(oldHitBox.isEmpty()){
             return;
         }
@@ -80,7 +62,45 @@ public class TranslationTask extends AsyncTask {
         }
         final int minY = oldHitBox.getMinY();
         final int maxY = oldHitBox.getMaxY();
-
+        
+        if (craft.getType().getUseGravity() && !craft.getSinking()) {
+        	dy = 0;
+        	do {
+        		boolean cont = false;
+        		for (MovecraftLocation location : oldHitBox){
+        			MovecraftLocation location2 = location.translate(dx,dy,dz);
+        			if(!(oldHitBox.contains(location2) || craft.getW().getBlockTypeIdAt(location2.getX(),location2.getY(),location2.getZ()) == 0)){
+        				cont = true;
+        				break;
+        			}
+        		}
+        		if(!cont){
+        			break;
+        		}
+        		dy++;
+        	} while (dy <= ((int) Math.round(oldHitBox.getYLength() / 2)) + 1);
+        	if (dy > ((int) Math.round(oldHitBox.getYLength() / 2)) + 1){
+        		fail (I18nSupport.getInternationalisedString("Translation - Failed Craft Cannot Step Up"));
+        		return;
+        	}
+        	if (dy == 0) {
+        		boolean cont = true;
+        		do {
+        			for (MovecraftLocation location: oldHitBox){
+        				MovecraftLocation location2 = location.translate(dx,dy-1,dz);
+        				if(!(oldHitBox.contains(location2) || craft.getW().getBlockTypeIdAt(location2.getX(),location2.getY(),location2.getZ()) == 0)){
+        					cont = false;
+        					break;
+        				}
+        			}
+        			if(cont) {
+        				dy--;
+        			}
+        		} while (cont);
+        	}
+        }
+        
+        
         //Check if the craft is too high
         if(craft.getType().getMaxHeightLimit() < craft.getHitBox().getMinY()){
             dy = -Math.abs(dy);
@@ -275,7 +295,7 @@ public class TranslationTask extends AsyncTask {
         failed=true;
         failMessage=message;
         Player craftPilot = CraftManager.getInstance().getPlayerFromCraft(craft);
-        if (craftPilot != null && !suppressMessages) {
+        if (craftPilot != null) {
             Location location = craftPilot.getLocation();
             if (!craft.getDisabled()) {
                 craft.getW().playSound(location, Sound.BLOCK_ANVIL_LAND, 1.0f, 0.25f);
