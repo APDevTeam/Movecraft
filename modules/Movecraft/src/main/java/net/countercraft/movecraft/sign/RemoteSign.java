@@ -113,7 +113,7 @@ public final class RemoteSign implements Listener{
             return;
         }
 
-        if (Settings.MaxRemoteSigns <= -1) {
+        if (Settings.MaxRemoteSigns > -1) {
             int foundLocCount = foundLocations.size();
             if(foundLocCount > Settings.MaxRemoteSigns) {
                 event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("ERROR: ") + foundLocCount + I18nSupport.getInternationalisedString(" remote signs found.  Maximum allowed is: ") + Settings.MaxRemoteSigns);
