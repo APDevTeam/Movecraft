@@ -48,7 +48,7 @@ public final class SubcraftRotateSign implements Listener {
             return;
         }
         if(rotatingPlayers.contains(event.getPlayer().getUniqueId())){
-            event.getPlayer().sendMessage("you are already rotating");
+            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Already Rotating"));
             event.setCancelled(true);
             return;
         }

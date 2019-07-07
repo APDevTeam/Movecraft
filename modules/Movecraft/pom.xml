@@ -9,7 +9,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-    <version>7.0.0_Pre-Release-7</version>
+    <version>7.0.0_Pre-Release-8</version>
 
     <repositories>
         <repository>
@@ -57,12 +57,6 @@
             <groupId>net.countercraft</groupId>
             <artifactId>movecraft-api</artifactId>
             <version>API</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>net.countercraft</groupId>
-            <artifactId>movecraft-WE6Utils</artifactId>
-            <version>WE6Utils</version>
             <type>jar</type>
         </dependency>
         <dependency>

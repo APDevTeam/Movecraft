@@ -55,7 +55,7 @@ public class TranslationTask extends AsyncTask {
             return;
         }
         if (getCraft().getDisabled() && (!getCraft().getSinking())) {
-            fail(I18nSupport.getInternationalisedString("Craft is disabled!"));
+            fail(I18nSupport.getInternationalisedString("Translation - Failed Craft Is Disabled"));
             return;
         }
         final int minY = oldHitBox.getMinY();
@@ -63,7 +63,7 @@ public class TranslationTask extends AsyncTask {
 
         //Check if the craft is too high
         if(craft.getType().getMaxHeightLimit() < craft.getHitBox().getMinY()){
-            dy-=1;
+            dy = -Math.abs(dy);
         }else if(craft.getType().getMaxHeightAboveGround() > 0){
             final MovecraftLocation middle = oldHitBox.getMidPoint();
             int testY = minY;
@@ -73,7 +73,7 @@ public class TranslationTask extends AsyncTask {
                     break;
             }
             if (minY - testY > craft.getType().getMaxHeightAboveGround()) {
-                dy -= 1;
+                dy = -Math.abs(dy);
             }
         }
 

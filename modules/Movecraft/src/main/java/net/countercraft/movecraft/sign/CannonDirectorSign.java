@@ -13,6 +13,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 
+import static net.countercraft.movecraft.utils.ChatUtils.ERROR_PREFIX;
+
 public final class CannonDirectorSign implements Listener {
     private static final String HEADER = "Cannon Director";
 
@@ -40,23 +42,23 @@ public final class CannonDirectorSign implements Listener {
         }
 
         if (foundCraft == null) {
-            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("ERROR: Sign must be a part of a piloted craft!"));
+            event.getPlayer().sendMessage(ERROR_PREFIX + I18nSupport.getInternationalisedString("CannonDirector - Must Be Part Of Craft"));
             return;
         }
 
         if (!foundCraft.getType().allowCannonDirectorSign()) {
-            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("ERROR: Cannon Director Signs not allowed on this craft!"));
+            event.getPlayer().sendMessage(ERROR_PREFIX + I18nSupport.getInternationalisedString("CannonDirector - Not Allowed on Craft"));
             return;
         }
         if(event.getAction()==Action.LEFT_CLICK_BLOCK && event.getPlayer()==foundCraft.getCannonDirector()){
             foundCraft.setCannonDirector(null);
-            event.getPlayer().sendMessage("You are no longer directing the cannons of this craft");
+            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("CannonDirector - No Longer Directing"));
             return;
         }
 
 
         foundCraft.setCannonDirector(event.getPlayer());
-        event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("You are now directing the cannons of this craft"));
+        event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("CannonDirector - Directing"));
         if (foundCraft.getAADirector() == event.getPlayer())
             foundCraft.setAADirector(null);
 

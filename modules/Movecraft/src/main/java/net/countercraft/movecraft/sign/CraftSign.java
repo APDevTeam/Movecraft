@@ -64,12 +64,14 @@ public final class CraftSign implements Listener{
         if (c.getType().getCruiseOnPilot()) {
             c.detect(null, event.getPlayer(), startPoint);
             c.setCruiseDirection(sign.getRawData());
-            c.setLastCruisUpdate(System.currentTimeMillis());
+            c.setLastCruiseUpdate(System.currentTimeMillis());
             c.setCruising(true);
             new BukkitRunnable() {
                 @Override
                 public void run() {
-                    CraftManager.getInstance().removeCraft(c);
+                    c.setCruising(false);
+                    c.sink();
+                    CraftManager.getInstance().removePlayerFromCraft(c);
                 }
             }.runTaskLater(Movecraft.getInstance(), (20 * 15));
         } else {

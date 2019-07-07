@@ -17,13 +17,13 @@
 
 package net.countercraft.movecraft.listener;
 
-import net.countercraft.movecraft.utils.HitBox;
-import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.MovecraftLocation;
-import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.utils.HitBox;
+import net.countercraft.movecraft.utils.MathUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -31,7 +31,9 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 public class PlayerListener implements Listener {
     private final Map<Craft, Long> timeToReleaseAfter = new WeakHashMap<>();

@@ -18,11 +18,11 @@
 package net.countercraft.movecraft.async;
 
 import at.pavlov.cannons.cannon.Cannon;
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
+import net.countercraft.movecraft.WorldHandler;
 import net.countercraft.movecraft.async.detection.DetectionTask;
 import net.countercraft.movecraft.async.detection.DetectionTaskData;
 import net.countercraft.movecraft.async.rotation.RotationTask;
@@ -33,12 +33,13 @@ import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
-import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import net.countercraft.movecraft.utils.CollectionUtils;
 import net.countercraft.movecraft.utils.HashHitBox;
+import net.countercraft.movecraft.utils.HitBox;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.SmallFireball;
 import org.bukkit.entity.TNTPrimed;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
@@ -56,7 +57,11 @@ public class AsyncManager extends BukkitRunnable {
     private final HashMap<Craft, HashMap<Craft, Long>> recentContactTracking = new HashMap<>();
     private final BlockingQueue<AsyncTask> finishedAlgorithms = new LinkedBlockingQueue<>();
     private final HashSet<Craft> clearanceSet = new HashSet<>();
-    private HashMap<org.bukkit.entity.SmallFireball, Long> FireballTracking = new HashMap<>();
+    private HashMap<SmallFireball, Long> FireballTracking = new HashMap<>();
+    private HashMap<HitBox, Long> wrecks = new HashMap<>();
+    private HashMap<HitBox, World> wreckWorlds = new HashMap<>();
+    private HashMap<HitBox, Map<MovecraftLocation,Material>> wreckPhases = new HashMap<>();
+
     private long lastTracerUpdate = 0;
     private long lastFireballCheck = 0;
     private long lastTNTContactCheck = 0;
@@ -102,6 +107,15 @@ public class AsyncManager extends BukkitRunnable {
         finishedAlgorithms.add(task);
     }
 
+    public void addWreck(Craft craft){
+        if(craft.getCollapsedHitBox().isEmpty() || Settings.FadeWrecksAfter == 0){
+            return;
+        }
+        wrecks.put(craft.getCollapsedHitBox(), System.currentTimeMillis());
+        wreckWorlds.put(craft.getCollapsedHitBox(), craft.getW());
+        wreckPhases.put(craft.getCollapsedHitBox(), craft.getPhaseBlocks());
+    }
+
     private void processAlgorithmQueue() {
         int runLength = 10;
         int queueLength = finishedAlgorithms.size();
@@ -132,7 +146,7 @@ public class AsyncManager extends BukkitRunnable {
                             notifyP.sendMessage(data.getFailMessage());
                         else
                             Movecraft.getInstance().getLogger().log(Level.INFO,
-                                    "NULL Player Craft Detection failed:" + data.getFailMessage());
+                            		I18nSupport.getInternationalisedString("Detection - NULL Player Detection Failed") + ": " + data.getFailMessage());
 
                     } else {
                         Set<Craft> craftsInWorld = CraftManager.getInstance().getCraftsInWorld(c.getW());
@@ -282,7 +296,7 @@ public class AsyncManager extends BukkitRunnable {
                             notifyP.sendMessage(task.getFailMessage());
                         else
                             Movecraft.getInstance().getLogger().log(Level.INFO,
-                                    "NULL Player Rotation Failed: " + task.getFailMessage());
+                            		I18nSupport.getInternationalisedString("Rotation - NULL Player Rotation Failed")+ ": " + task.getFailMessage());
                     } else {
                         // get list of cannons before sending map updates, to
                         // avoid conflicts
@@ -428,9 +442,9 @@ public class AsyncManager extends BukkitRunnable {
             pcraft.setLastDX(dx);
             pcraft.setLastDZ(dz);
             if (pcraft.getLastCruiseUpdate() != -1) {
-                pcraft.setLastCruisUpdate(System.currentTimeMillis());
+                pcraft.setLastCruiseUpdate(System.currentTimeMillis());
             } else {
-                pcraft.setLastCruisUpdate(System.currentTimeMillis() - 30000);
+                pcraft.setLastCruiseUpdate(System.currentTimeMillis() - 30000);
             }
         }
     }
@@ -574,7 +588,7 @@ public class AsyncManager extends BukkitRunnable {
                 dz = craft.getLastDZ();
             }
             craft.translate(dx, -1, dz);
-            craft.setLastCruisUpdate(System.currentTimeMillis() - (craft.getLastCruiseUpdate() != -1 ? 0 : 30000));
+            craft.setLastCruiseUpdate(System.currentTimeMillis() - (craft.getLastCruiseUpdate() != -1 ? 0 : 30000));
         }
     }
 
@@ -637,8 +651,8 @@ public class AsyncManager extends BukkitRunnable {
         if (ticksElapsed > 3) {
             for (World w : Bukkit.getWorlds()) {
                 if (w != null) {
-                    for (org.bukkit.entity.SmallFireball fireball : w
-                            .getEntitiesByClass(org.bukkit.entity.SmallFireball.class)) {
+                    for (SmallFireball fireball : w
+                            .getEntitiesByClass(SmallFireball.class)) {
                         if (!(fireball.getShooter() instanceof org.bukkit.entity.LivingEntity)) { // means
                             // it
                             // was
@@ -718,9 +732,9 @@ public class AsyncManager extends BukkitRunnable {
 
             int timelimit = 20 * Settings.FireballLifespan * 50;
             // then, removed any exploded TNT from tracking
-            Iterator<org.bukkit.entity.SmallFireball> fireballI = FireballTracking.keySet().iterator();
+            Iterator<SmallFireball> fireballI = FireballTracking.keySet().iterator();
             while (fireballI.hasNext()) {
-                org.bukkit.entity.SmallFireball fireball = fireballI.next();
+                SmallFireball fireball = fireballI.next();
                 if (fireball != null)
                     if (System.currentTimeMillis() - FireballTracking.get(fireball) > timelimit) {
                         fireball.remove();
@@ -833,95 +847,35 @@ public class AsyncManager extends BukkitRunnable {
         }
     }
 
-    /*private void processFadingBlocks() {
+    private void processFadingBlocks() {
         if (Settings.FadeWrecksAfter == 0)
             return;
         long ticksElapsed = (System.currentTimeMillis() - lastFadeCheck) / 50;
-        if (ticksElapsed > 20) {
-            for (World w : Bukkit.getWorlds()) {
-                if (w != null) {
-                    ArrayList<UpdateCommand> updateCommands = new ArrayList<>();
-                    CopyOnWriteArrayList<MovecraftLocation> locations = null;
-
-                    // I know this is horrible, but I honestly don't see another
-                    // way to do this...
-                    int numTries = 0;
-                    while ((locations == null) && (numTries < 100)) {
-                        try {
-                            locations = new CopyOnWriteArrayList<>(
-                                    Movecraft.getInstance().blockFadeTimeMap.keySet());
-                        } catch (java.util.ConcurrentModificationException e) {
-                            numTries++;
-                        } catch (java.lang.NegativeArraySizeException e) {
-                            Movecraft.getInstance().blockFadeTimeMap = new HashMap<>();
-                            Movecraft.getInstance().blockFadeTypeMap = new HashMap<>();
-                            Movecraft.getInstance().blockFadeWaterMap = new HashMap<>();
-                            Movecraft.getInstance().blockFadeWorldMap = new HashMap<>();
-                            locations = new CopyOnWriteArrayList<>(
-                                    Movecraft.getInstance().blockFadeTimeMap.keySet());
-                        }
-                    }
-
-                    for (MovecraftLocation loc : locations) {
-                        if (Movecraft.getInstance().blockFadeWorldMap.get(loc) == w) {
-                            Long time = Movecraft.getInstance().blockFadeTimeMap.get(loc);
-                            Integer type = Movecraft.getInstance().blockFadeTypeMap.get(loc);
-                            Boolean water = Movecraft.getInstance().blockFadeWaterMap.get(loc);
-                            if (time != null && type != null && water != null) {
-                                long secsElapsed = (System.currentTimeMillis()
-                                        - Movecraft.getInstance().blockFadeTimeMap.get(loc)) / 1000;
-                                // has enough time passed to fade the block?
-                                boolean timeElapsed;
-                                // make containers take longer to fade so their loot can be recovered
-                                if (w.getBlockTypeIdAt(loc.getX(), loc.getY(), loc.getZ()) == 54) {
-                                    timeElapsed = secsElapsed > Settings.FadeWrecksAfter * 5;
-                                } else if (w.getBlockTypeIdAt(loc.getX(), loc.getY(), loc.getZ()) == 146) {
-                                    timeElapsed = secsElapsed > Settings.FadeWrecksAfter * 5;
-                                } else if (w.getBlockTypeIdAt(loc.getX(), loc.getY(), loc.getZ()) == 158) {
-                                    timeElapsed = secsElapsed > Settings.FadeWrecksAfter * 5;
-                                } else if (w.getBlockTypeIdAt(loc.getX(), loc.getY(), loc.getZ()) == 23) {
-                                    timeElapsed = secsElapsed > Settings.FadeWrecksAfter * 5;
-                                } else {
-                                    timeElapsed = secsElapsed > Settings.FadeWrecksAfter;
-                                }
-                                if (timeElapsed) {
-                                    // load the chunk if it hasn't been already
-                                    int cx = loc.getX() >> 4;
-                                    int cz = loc.getZ() >> 4;
-                                    if (!w.isChunkLoaded(cx, cz)) {
-                                        w.loadChunk(cx, cz);
-                                    }
-                                    // check to see if the block type has
-                                    // changed, if so don't fade it
-                                    if (w.getBlockTypeIdAt(loc.getX(), loc.getY(),
-                                            loc.getZ()) == Movecraft.getInstance().blockFadeTypeMap.get(loc)) {
-                                        // should it become water? if not, then
-                                        // air
-                                        if (Movecraft.getInstance().blockFadeWaterMap.get(loc)) {
-                                            BlockCreateCommand updateCom = new BlockCreateCommand(w, loc, Material.STATIONARY_WATER, (byte) 0);
-                                            updateCommands.add(updateCom);
-                                        } else {
-                                            BlockCreateCommand updateCom = new BlockCreateCommand(w, loc, Material.AIR, (byte) 0);
-                                            updateCommands.add(updateCom);
-                                        }
-                                    }
-                                    Movecraft.getInstance().blockFadeTimeMap.remove(loc);
-                                    Movecraft.getInstance().blockFadeTypeMap.remove(loc);
-                                    Movecraft.getInstance().blockFadeWorldMap.remove(loc);
-                                    Movecraft.getInstance().blockFadeWaterMap.remove(loc);
-                                }
-                            }
-                        }
-                    }
-                    if (updateCommands.size() > 0) {
-                        MapUpdateManager.getInstance().scheduleUpdates(updateCommands);
-                    }
-                }
-            }
-
-            lastFadeCheck = System.currentTimeMillis();
+        if (ticksElapsed <= 20) {
+            return;
         }
-    }*/
+        List<HitBox> processed = new ArrayList<>();
+        final WorldHandler handler = Movecraft.getInstance().getWorldHandler();
+        for(Map.Entry<HitBox, Long> entry : wrecks.entrySet()){
+            if (entry.getValue() + Settings.FadeWrecksAfter <= System.currentTimeMillis()) {
+                continue;
+            }
+            final HitBox hitBox = entry.getKey();
+            final Map<MovecraftLocation, Material> phaseBlocks = wreckPhases.get(hitBox);
+            final World world = wreckWorlds.get(hitBox);
+            for (MovecraftLocation location : hitBox){
+                handler.setBlockFast(location.toBukkit(world), phaseBlocks.get(location),(byte) 0);
+            }
+            processed.add(hitBox);
+        }
+        for(HitBox hitBox : processed){
+            wrecks.remove(hitBox);
+            wreckPhases.remove(hitBox);
+            wreckWorlds.remove(hitBox);
+        }
+
+        lastFadeCheck = System.currentTimeMillis();
+    }
 
     private void processDetection() {
         long ticksElapsed = (System.currentTimeMillis() - lastContactCheck) / 50;
@@ -969,7 +923,7 @@ public class AsyncManager extends BukkitRunnable {
                                     if (recentContactTracking.get(ccraft).get(tcraft) == null
                                             || System.currentTimeMillis()
                                             - recentContactTracking.get(ccraft).get(tcraft) > 60000) {
-                                        String notification = "New contact: ";
+                                        String notification = I18nSupport.getInternationalisedString("New Contact") + ": ";
 
                                         if (tcraft.getName().length() >= 1){
                                             notification += tcraft.getName();
@@ -979,27 +933,28 @@ public class AsyncManager extends BukkitRunnable {
                                         if (tcraft.getName().length() >= 1){
                                             notification += ")";
                                         }
-                                        notification += " commanded by ";
+                                        notification += " " + I18nSupport.getInternationalisedString("Commanded By")+" ";
                                         if (tcraft.getNotificationPlayer() != null) {
                                             notification += tcraft.getNotificationPlayer().getDisplayName();
                                         } else {
                                             notification += "NULL";
                                         }
-                                        notification += ", size: ";
+                                        notification += ", " + I18nSupport.getInternationalisedString("Size") + ": ";
                                         notification += tcraft.getOrigBlockCount();
-                                        notification += ", range: ";
+                                        notification += ", " + I18nSupport.getInternationalisedString("Range") + ": ";
                                         notification += (int) Math.sqrt(distsquared);
-                                        notification += " to the";
+                                        notification += " " + I18nSupport.getInternationalisedString("To The") + " ";
                                         if (Math.abs(diffx) > Math.abs(diffz))
                                             if (diffx < 0)
-                                                notification += " east.";
+                                                notification += I18nSupport.getInternationalisedString("east");
                                             else
-                                                notification += " west.";
+                                                notification += I18nSupport.getInternationalisedString("west");
                                         else if (diffz < 0)
-                                            notification += " south.";
+                                            notification += I18nSupport.getInternationalisedString("south");
                                         else
-                                            notification += " north.";
-
+                                            notification += I18nSupport.getInternationalisedString("north");
+                                        
+                                        notification += ".";
                                         ccraft.getNotificationPlayer().sendMessage(notification);
                                         w.playSound(ccraft.getNotificationPlayer().getLocation(),
                                                 Sound.BLOCK_ANVIL_LAND, 1.0f, 2.0f);
@@ -1074,7 +1029,7 @@ public class AsyncManager extends BukkitRunnable {
         processTracers();
         processFireballs();
         processTNTContactExplosives();
-        //processFadingBlocks();
+        processFadingBlocks();
         processDetection();
         processAlgorithmQueue();
         //processScheduledBlockChanges();
