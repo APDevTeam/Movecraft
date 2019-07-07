@@ -27,8 +27,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class TranslationTask extends AsyncTask {
     private static final int[] FALL_THROUGH_BLOCKS = {0, 8, 9, 10, 11, 31, 37, 38, 39, 40, 50, 51, 55, 59, 63, 65, 68, 69, 70, 72, 75, 76, 77, 78, 83, 85, 93, 94, 111, 141, 142, 143, 171};
@@ -62,45 +60,7 @@ public class TranslationTask extends AsyncTask {
         }
         final int minY = oldHitBox.getMinY();
         final int maxY = oldHitBox.getMaxY();
-        
-        if (craft.getType().getUseGravity() && !craft.getSinking()) {
-        	dy = 0;
-        	do {
-        		boolean cont = false;
-        		for (MovecraftLocation location : oldHitBox){
-        			MovecraftLocation location2 = location.translate(dx,dy,dz);
-        			if(!(oldHitBox.contains(location2) || craft.getW().getBlockTypeIdAt(location2.getX(),location2.getY(),location2.getZ()) == 0)){
-        				cont = true;
-        				break;
-        			}
-        		}
-        		if(!cont){
-        			break;
-        		}
-        		dy++;
-        	} while (dy <= ((int) Math.round(oldHitBox.getYLength() / 2)) + 1);
-        	if (dy > ((int) Math.round(oldHitBox.getYLength() / 2)) + 1){
-        		fail (I18nSupport.getInternationalisedString("Translation - Failed Craft Cannot Step Up"));
-        		return;
-        	}
-        	if (dy == 0) {
-        		boolean cont = true;
-        		do {
-        			for (MovecraftLocation location: oldHitBox){
-        				MovecraftLocation location2 = location.translate(dx,dy-1,dz);
-        				if(!(oldHitBox.contains(location2) || craft.getW().getBlockTypeIdAt(location2.getX(),location2.getY(),location2.getZ()) == 0)){
-        					cont = false;
-        					break;
-        				}
-        			}
-        			if(cont) {
-        				dy--;
-        			}
-        		} while (cont);
-        	}
-        }
-        
-        
+
         //Check if the craft is too high
         if(craft.getType().getMaxHeightLimit() < craft.getHitBox().getMinY()){
             dy = -Math.abs(dy);
