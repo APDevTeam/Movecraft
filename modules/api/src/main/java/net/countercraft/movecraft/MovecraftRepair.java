@@ -70,11 +70,13 @@ public class MovecraftRepair {
         Vector minPos = new Vector(hitBox.getMinX(), hitBox.getMinY(), hitBox.getMinZ());
         Vector maxPos = new Vector(hitBox.getMaxX(), hitBox.getMaxY(), hitBox.getMaxZ());
         CuboidRegion cRegion = new CuboidRegion(minPos, maxPos);
-        String repairName = craft.getNotificationPlayer().getName();
-        repairName += "_";
-        repairName += ChatColor.stripColor(sign.getLine(1));
+        File playerDirectory = new File(saveDirectory,craft.getNotificationPlayer().getUniqueId().toString());
+        if (!playerDirectory.exists()){
+            playerDirectory.mkdirs();
+        }
+        String repairName = ChatColor.stripColor(sign.getLine(1));
         repairName += ".schematic";
-        File repairStateFile = new File(saveDirectory, repairName);
+        File repairStateFile = new File(playerDirectory, repairName);
         Set<BaseBlock> blockSet = baseBlocksFromCraft(craft);
         try {
 
@@ -155,11 +157,13 @@ public class MovecraftRepair {
 
     public Clipboard loadCraftRepairStateClipboard(Craft craft, Sign sign) {
         File dataDirectory = new File(plugin.getDataFolder(), "CraftRepairStates");
-        String repairName = craft.getNotificationPlayer().getName();
-        repairName += "_";
-        repairName += ChatColor.stripColor(sign.getLine(1));
+        File playerDirectory = new File(dataDirectory,craft.getNotificationPlayer().getUniqueId().toString());
+        if (!playerDirectory.exists()){
+            return null;
+        }
+        String repairName = ChatColor.stripColor(sign.getLine(1));
         repairName += ".schematic";
-        File file = new File(dataDirectory, repairName); // The schematic file
+        File file = new File(playerDirectory, repairName); // The schematic file
         com.sk89q.worldedit.world.World weWorld = new BukkitWorld(sign.getWorld());
         WorldData worldData = weWorld.getWorldData();
         Clipboard clipboard;
@@ -422,7 +426,9 @@ public class MovecraftRepair {
                 }
             }
         }
-        String repairStateName = repairName.replace(".schematic","");
+        String repairStateName = craft.getNotificationPlayer().getUniqueId().toString();
+        repairStateName += "_";
+        repairStateName += repairName.replace(".schematic","");
         locMissingBlocksMap.put(repairStateName, locMissingBlocks);
         missingBlocksMap.put(repairStateName, missingBlocks);
         numDiffBlocksMap.put(repairStateName, numDiffBlocks);
@@ -465,7 +471,9 @@ public class MovecraftRepair {
             Byte data = w.getBlockAt(location.getX(), location.getY(), location.getZ()).getData();
             returnSet.add(new BaseBlock(id, data));
         }
-        Bukkit.getLogger().info(returnSet.toString());
+        if (Settings.Debug) {
+            Bukkit.getLogger().info(returnSet.toString());
+        }
         return returnSet;
     }
 
