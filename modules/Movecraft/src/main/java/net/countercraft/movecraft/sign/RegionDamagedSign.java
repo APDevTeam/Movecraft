@@ -79,8 +79,10 @@ public class RegionDamagedSign implements Listener {
         if (!file.exists()) {
             return false;
         }*/
-        MovecraftRepair mRep = MovecraftRepair.getInstance();
-        Clipboard clipboard = mRep.loadRegionRepairStateClipboard(regionName, w);
+        Clipboard clipboard = MovecraftRepair.getInstance().loadRegionRepairStateClipboard(regionName, w);
+        if (clipboard == null){
+            return false;
+        }
         int minx = clipboard.getMinimumPoint().getBlockX();
         int miny = clipboard.getMinimumPoint().getBlockY();
         int minz = clipboard.getMinimumPoint().getBlockZ();
