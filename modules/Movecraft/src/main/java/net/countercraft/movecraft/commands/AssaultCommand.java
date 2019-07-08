@@ -1,28 +1,27 @@
 package net.countercraft.movecraft.commands;
 
-import com.sk89q.worldedit.CuboidClipboard;
 import com.sk89q.worldedit.Vector;
-import com.sk89q.worldedit.blocks.BaseBlock;
-import com.sk89q.worldedit.bukkit.selections.CuboidSelection;
 import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.protection.flags.DefaultFlag;
 import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.countercraft.movecraft.Movecraft;
+import net.countercraft.movecraft.MovecraftRepair;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.warfare.assault.Assault;
 import net.countercraft.movecraft.warfare.assault.AssaultUtils;
 import net.countercraft.movecraft.warfare.siege.Siege;
-import org.bukkit.*;
-import org.bukkit.block.Block;
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.Sound;
+import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.io.File;
 import java.util.Map;
 
 import static net.countercraft.movecraft.utils.ChatUtils.MOVECRAFT_COMMAND_PREFIX;
@@ -115,7 +114,11 @@ public class AssaultCommand implements CommandExecutor{
             return true;
         }
 //			if(aRegion.getType() instanceof ProtectedCuboidRegion) { // Originally I wasn't going to do non-cubes, but we'll try it and see how it goes. In theory it may repair more than it should but... meh...
-        String repairStateName = Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/RegionRepairStates";
+        if (!MovecraftRepair.getInstance().saveRegionRepairState(player.getWorld(), aRegion)){
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Could not save file"));
+            return true;
+        }
+        /*String repairStateName = Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/RegionRepairStates";
         File file = new File(repairStateName);
         if (!file.exists()) {
             file.mkdirs();
@@ -123,7 +126,7 @@ public class AssaultCommand implements CommandExecutor{
         repairStateName += "/";
         repairStateName += aRegion.getId().replaceAll("\\s+", "_");
         repairStateName += ".schematic";
-        file = new File(repairStateName);
+        file = new File(repairStateName);*/
 
         Vector min = new Vector(aRegion.getMinimumPoint().getBlockX(), aRegion.getMinimumPoint().getBlockY(), aRegion.getMinimumPoint().getBlockZ());
         Vector max = new Vector(aRegion.getMaximumPoint().getBlockX(), aRegion.getMaximumPoint().getBlockY(), aRegion.getMaximumPoint().getBlockZ());
@@ -144,7 +147,7 @@ public class AssaultCommand implements CommandExecutor{
                 max = max.setZ(player.getLocation().getBlockZ() + 128);
             }
         }
-
+/*
         CuboidClipboard clipboard = new CuboidClipboard(max.subtract(min).add(Vector.ONE), min);
         CuboidSelection selection = new CuboidSelection(player.getWorld(), min, max);
 
@@ -170,7 +173,7 @@ public class AssaultCommand implements CommandExecutor{
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Could not save file"));
             e.printStackTrace();
             return true;
-        }
+        }*/
 //			} else {
 //				player.sendMessage( String.format( I18nSupport.getInternationalisedString( "This region is not a cuboid - see an admin" ) ) );
 //				return true;
