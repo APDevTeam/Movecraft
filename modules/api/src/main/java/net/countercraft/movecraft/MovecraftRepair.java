@@ -32,6 +32,7 @@ import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Dispenser;
 import org.bukkit.block.Sign;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 
@@ -484,5 +485,128 @@ public class MovecraftRepair {
 
     public static MovecraftRepair getInstance() {
         return instance;
+    }
+
+    public int convertOldCraftRepairStates(){
+        //Check in the old RepairStates folder
+        File repairStateDir = new File(plugin.getDataFolder(),"RepairStates");
+        File craftRepairStateDir = new File(plugin.getDataFolder(), "CraftRepairStates");
+        if (!repairStateDir.exists() && !craftRepairStateDir.exists()){
+            return 0;
+        }
+        int convertedRepairStates = 0;
+        File[] repairStates = repairStateDir.listFiles();
+        if (repairStateDir.exists() && (repairStates != null || repairStates.length > 0)){
+            if (!craftRepairStateDir.exists()){
+                craftRepairStateDir.mkdirs();
+            }
+            for (File rs : repairStates){
+                if (!rs.getName().contains(".schematic")){
+                    continue;
+                }
+                String fileName = rs.getName();
+                fileName = fileName.replace(".schematic", "");
+                OfflinePlayer owner = null;
+                if (fileName.contains("_")) {
+                    String[] parts = fileName.split("_");
+                    owner = Bukkit.getPlayer(parts[0]) == null ? Bukkit.getOfflinePlayer(parts[0]) : Bukkit.getPlayer(parts[0]);
+                    fileName = "";
+                    if (parts.length > 2){
+                        for (int i = 1 ; i <= parts.length - 1 ; i++){
+                            fileName += parts[i];
+                            if (i < parts.length - 1){
+                                fileName += "_";
+                            }
+                        }
+                    } else {
+                        fileName = parts[1];
+                    }
+                }
+
+                for (Player p : Bukkit.getOnlinePlayers()){
+                    if (fileName.startsWith(p.getName())){
+                        owner = p;
+                        fileName = fileName.replace(p.getName(),"");
+                        break;
+                    }
+                }
+                if (owner == null){
+                    for (OfflinePlayer op : Bukkit.getOfflinePlayers()){
+                        if (fileName.startsWith(op.getName())){
+                            owner = op;
+                            fileName = fileName.replace(op.getName(),"");
+                        }
+                    }
+                }
+                if (owner == null){
+                    continue;
+                }
+                File playerDir = new File(craftRepairStateDir, owner.getUniqueId().toString());
+                if (!playerDir.exists()) {
+                    playerDir.mkdirs();
+                }
+                File dest = new File(playerDir, fileName + ".schematic");
+                if (rs.renameTo(dest)){
+                    convertedRepairStates++;
+                }
+
+            }
+        }
+        //Now check the CraftRepairStates folder
+        File[] craftRepairStates = craftRepairStateDir.listFiles();
+        if (craftRepairStates != null) {
+            for (File rs : craftRepairStates) {
+                if (!rs.getName().contains(".schematic")) {
+                    continue;
+                }
+                String fileName = rs.getName();
+                fileName = fileName.replace(".schematic", "");
+                OfflinePlayer owner = null;
+                if (fileName.contains("_")) {
+                    String[] parts = fileName.split("_");
+                    owner = Bukkit.getPlayer(parts[0]) == null ? Bukkit.getOfflinePlayer(parts[0]) : Bukkit.getPlayer(parts[0]);
+                    fileName = "";
+                    if (parts.length > 2) {
+                        for (int i = 1; i <= parts.length - 1; i++) {
+                            fileName += parts[i];
+                            if (i < parts.length - 1) {
+                                fileName += "_";
+                            }
+                        }
+                    } else {
+                        fileName = parts[1];
+                    }
+                } else {
+                    for (Player p : Bukkit.getOnlinePlayers()) {
+                        if (fileName.startsWith(p.getName())) {
+                            owner = p;
+                            fileName = fileName.replace(p.getName(), "");
+                            break;
+                        }
+                    }
+                    if (owner == null) {
+                        for (OfflinePlayer op : Bukkit.getOfflinePlayers()) {
+                            if (fileName.startsWith(op.getName())) {
+                                owner = op;
+                                fileName = fileName.replace(op.getName(), "");
+                            }
+                        }
+                    }
+                }
+                if (owner == null) {
+                    continue;
+                }
+                File playerDir = new File(craftRepairStateDir, owner.getUniqueId().toString());
+                if (!playerDir.exists()) {
+                    playerDir.mkdirs();
+                }
+                File dest = new File(playerDir, fileName + ".schematic");
+                if (rs.renameTo(dest)) {
+                    convertedRepairStates++;
+                }
+
+            }
+        }
+        return convertedRepairStates;
     }
 }
