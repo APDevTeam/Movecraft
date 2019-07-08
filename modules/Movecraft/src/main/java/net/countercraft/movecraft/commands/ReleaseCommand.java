@@ -43,7 +43,7 @@ public class ReleaseCommand implements TabExecutor {
             return true;
         }
         if (!commandSender.hasPermission("movecraft.commands.release.others")) {
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "You do not have permission to make others release");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Release - No Force Release"));
             return true;
         }
         if (args[0].equalsIgnoreCase("-p")) {
@@ -55,7 +55,7 @@ public class ReleaseCommand implements TabExecutor {
 
                 }
             }
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "You forcibly released all player controlled crafts");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Release - Released Player Crafts"));
             return true;
         }
 
@@ -64,7 +64,7 @@ public class ReleaseCommand implements TabExecutor {
             for (Craft craft : craftsToRelease) {
                 CraftManager.getInstance().removeCraft(craft);
             }
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "You forcibly released all crafts");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Release - Released All Crafts"));
             return true;
         }
 
@@ -75,22 +75,22 @@ public class ReleaseCommand implements TabExecutor {
                     CraftManager.getInstance().removeCraft(craft);
                 }
             }
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "You forcibly released all null piloted crafts");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Release - Released Null Crafts"));
             return true;
         }
 
         Player target = Bukkit.getPlayer(args[0]);
         if (target == null) {
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "That player could not be found");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Player Not Found"));
             return true;
         }
         final Craft pCraft = CraftManager.getInstance().getCraftByPlayerName(args[0]);
         if (pCraft != null) {
             CraftManager.getInstance().removeCraft(pCraft);
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "You have successfully force released a ship");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Release - Successful Force Release"));
             return true;
         }
-        commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "That player is not piloting a craft");
+        commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Player Not Piloting"));
         return true;
     }
 

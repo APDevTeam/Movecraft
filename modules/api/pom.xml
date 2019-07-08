@@ -22,11 +22,27 @@
         <relativePath>../../</relativePath>
     </parent>
 
+    <repositories>
+        <repository>
+            <id>sk89q-repo</id>
+            <url>http://maven.sk89q.com/repo/</url>
+        </repository>
+    </repositories>
     <dependencies>
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot</artifactId>
             <version>1.11.2-R0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sk89q</groupId>
+            <artifactId>worldguard</artifactId>
+            <version>LATEST</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sk89q</groupId>
+            <artifactId>worldedit</artifactId>
+            <version>LATEST</version>
         </dependency>
         <dependency>
             <groupId>org.jetbrains</groupId>

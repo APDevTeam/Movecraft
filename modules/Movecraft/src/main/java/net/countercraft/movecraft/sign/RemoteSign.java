@@ -18,6 +18,8 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import java.util.LinkedList;
 
+import static net.countercraft.movecraft.utils.ChatUtils.ERROR_PREFIX;
+
 public final class RemoteSign implements Listener{
     private static final String HEADER = "Remote Sign";
 
@@ -27,7 +29,7 @@ public final class RemoteSign implements Listener{
             return;
         }
         else if(event.getLine(1).equals("")) {
-            event.getPlayer().sendMessage("ERROR: Remote Signs can't be blank!");
+            event.getPlayer().sendMessage(ERROR_PREFIX + I18nSupport.getInternationalisedString("Remote Signs can't be blank!"));
             event.setLine(0,"");
             event.setLine(2,"");
             event.setLine(3,"");
@@ -62,18 +64,18 @@ public final class RemoteSign implements Listener{
         }
 
         if (foundCraft == null) {
-            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("ERROR: Remote Sign must be a part of a piloted craft!"));
+            event.getPlayer().sendMessage(ERROR_PREFIX+I18nSupport.getInternationalisedString("Remote Sign must be a part of a piloted craft!"));
             return;
         }
 
         if (!foundCraft.getType().allowRemoteSign()) {
-            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("ERROR: Remote Signs not allowed on this craft!"));
+            event.getPlayer().sendMessage(ERROR_PREFIX + I18nSupport.getInternationalisedString("Remote Signs not allowed on this craft!"));
             return;
         }
 
         String targetText = ChatColor.stripColor(sign.getLine(1));
         if(targetText.equalsIgnoreCase(HEADER)) {
-            event.getPlayer().sendMessage("ERROR: Remote Sign can't remote another Remote Sign!");
+            event.getPlayer().sendMessage(ERROR_PREFIX+I18nSupport.getInternationalisedString("Remote Sign cannot remote another Remote Sign!"));
             return;
         }
 
@@ -111,7 +113,7 @@ public final class RemoteSign implements Listener{
             return;
         }
 
-        if (Settings.MaxRemoteSigns <= -1) {
+        if (Settings.MaxRemoteSigns > -1) {
             int foundLocCount = foundLocations.size();
             if(foundLocCount > Settings.MaxRemoteSigns) {
                 event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("ERROR: ") + foundLocCount + I18nSupport.getInternationalisedString(" remote signs found.  Maximum allowed is: ") + Settings.MaxRemoteSigns);

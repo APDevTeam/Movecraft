@@ -1,12 +1,13 @@
 package net.countercraft.movecraft.mapUpdater.update;
 
+import com.sk89q.jnbt.CompoundTag;
+import com.sk89q.jnbt.ListTag;
+import com.sk89q.jnbt.Tag;
 import com.sk89q.worldedit.blocks.BaseBlock;
-import com.sk89q.worldedit.blocks.BaseItemStack;
-import com.sk89q.worldedit.blocks.DispenserBlock;
-import com.sk89q.worldedit.blocks.SignBlock;
 import net.countercraft.movecraft.MovecraftLocation;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Dispenser;
 import org.bukkit.block.Sign;
@@ -31,24 +32,49 @@ public class WorldEditUpdateCommand extends UpdateCommand {
     public void doUpdate() {
         world.getBlockAt(location.getX(), location.getY(), location.getZ()).setType(type);
         world.getBlockAt(location.getX(), location.getY(), location.getZ()).setData(data);
+        Block block = location.toBukkit(world).getBlock();
         // put inventory into dispensers if its a repair
-        if (type == Material.DISPENSER) {
-            DispenserBlock dispBlock = new DispenserBlock(worldEditBaseBlock.getData());
-            dispBlock.setNbtData(worldEditBaseBlock.getNbtData());
+        if (type == Material.DISPENSER){
+            Tag t = worldEditBaseBlock.getNbtData().getValue().get("Items");
+            ListTag lt = null;
+            if (t instanceof ListTag) {
+                lt = (ListTag) t;
+            }
             int numFireCharges = 0;
             int numTNT = 0;
             int numWater = 0;
-            for (BaseItemStack bi : dispBlock.getItems()) {
-                if (bi != null) {
-                    if (bi.getType() == 46)
-                        numTNT += bi.getAmount();
-                    if (bi.getType() == 385)
-                        numFireCharges += bi.getAmount();
-                    if (bi.getType() == 326)
-                        numWater += bi.getAmount();
+            if (lt != null) {
+                for (Tag entryTag : lt.getValue()) {
+                    if (entryTag instanceof CompoundTag) {
+                        CompoundTag cTag = (CompoundTag) entryTag;
+                        if (cTag.toString().contains("minecraft:tnt")) {
+                            numTNT += cTag.getByte("Count");
+                        }
+                        if (cTag.toString().contains("minecraft:fire_charge")) {
+                            numFireCharges += cTag.getByte("Count");
+                        }
+                        if (cTag.toString().contains("minecraft:water_bucket")) {
+                            numWater += cTag.getByte("Count");
+                        }
+                    }
                 }
             }
-            Dispenser disp = (Dispenser) world.getBlockAt(location.getX(), location.getY(), location.getZ()).getState();
+            Dispenser disp = (Dispenser) block.getState();
+            ItemStack[] contents = disp.getInventory().getContents();
+            for (ItemStack iStack : contents){
+                if (iStack == null){
+                    continue;
+                }
+                if (iStack.getType().equals(Material.TNT)){
+                    numTNT -= iStack.getAmount();
+                }
+                if (iStack.getType().equals(Material.WATER_BUCKET)){
+                    numWater -= iStack.getAmount();
+                }
+                if (iStack.getType().equals(Material.FIREBALL)){
+                    numFireCharges -= iStack.getAmount();
+                }
+            }
             if (numFireCharges > 0) {
                 ItemStack fireItems = new ItemStack(Material.FIREBALL, numFireCharges);
                 disp.getInventory().addItem(fireItems);
@@ -62,17 +88,32 @@ public class WorldEditUpdateCommand extends UpdateCommand {
                 disp.getInventory().addItem(WaterItems);
             }
         }
-        if (worldEditBaseBlock instanceof SignBlock) {
-            BlockState state = world.getBlockAt(location.getX(), location.getY(), location.getZ()).getState();
+        if (worldEditBaseBlock.getType() == 63 ||worldEditBaseBlock.getType() == 68 ){
+            BlockState state = block.getState();
             if (state instanceof Sign) {
                 Sign s = (Sign) state;
-                SignBlock signBlock = (SignBlock) worldEditBaseBlock;
-                for (int line = 0; line < signBlock.getText().length; line++) {
-                    s.setLine(line, signBlock.getText()[line]);
+                CompoundTag nbtData = worldEditBaseBlock.getNbtData();
+                //Text NBT tags for first to fourth line are called Text1 - Text4
+                for (int i = 1 ; i <= 4 ; i++){
+                    String line = nbtData.getString("Text" + i);
+                    line = line.substring(2);
+                    if (line.substring(0, 5).equalsIgnoreCase("extra")){
+                        line = line.substring(17);
+                        String[] parts = line.split("\"");
+                        line = parts[0];
+                    } else {
+                        line = "";
+                    }
+                    if (i == 1 && line.equalsIgnoreCase("\\\\  ||  /")){
+                        s.setLine(0,"\\  ||  /");
+                        s.setLine(1,"==      ==");
+                        s.setLine(2,"/  ||  \\");
+                        break;
+                    }
+                    s.setLine(i - 1, line);
                 }
                 s.update(false, false);
             }
         }
-        //might have issues due to repair order
     }
 }

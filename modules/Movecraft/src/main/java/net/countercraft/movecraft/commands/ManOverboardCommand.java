@@ -20,7 +20,7 @@ public class ManOverboardCommand implements CommandExecutor{
             return false;
         }
         if(!(commandSender instanceof Player)){
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("you need to be a player to get man-overboard"));
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("ManOverboard - Must Be Player"));
             return true;
         }
 
@@ -34,8 +34,7 @@ public class ManOverboardCommand implements CommandExecutor{
                 }
             }
         }
-        if (craft == null) {
-            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("No craft found"));
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("ManOverboard - No Craft Found"));
             return true;
         }
 
@@ -47,7 +46,7 @@ public class ManOverboardCommand implements CommandExecutor{
         }
 
         if (craft.getMovedPlayers().containsKey(player) && (System.currentTimeMillis() - craft.getMovedPlayers().get(player)) / 1_000 > Settings.ManOverBoardTimeout) {
-            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("You waited to long"));
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("ManOverboard - Timed Out"));
             return true;
         }
 
@@ -57,7 +56,8 @@ public class ManOverboardCommand implements CommandExecutor{
         }
 
         if (craft.getDisabled() || craft.getSinking()) {
-            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Can't teleport to a disabled or sinking craft"));
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("ManOverboard - Disabled"));
+            return true;
         }
 
         player.teleport(telPoint);

@@ -9,7 +9,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-    <version>7.0.0_Pre-Release-8</version>
+    <version>7.0.0_Pre-Release-9</version>
 
     <repositories>
         <repository>
@@ -30,7 +30,7 @@
         </repository>
         <repository>
             <id>ess-repo</id>
-            <url>http://repo.ess3.net/content/groups/essentials</url>
+            <url>https://ci.ender.zone/plugin/repository/everything/</url>
         </repository>
     </repositories>
 
@@ -97,8 +97,9 @@
         </dependency>
         <dependency>
             <groupId>net.ess3</groupId>
-            <artifactId>Essentials</artifactId>
-            <version>2.13.1</version>
+            <artifactId>EssentialsX</artifactId>
+            <version>2.16.1</version>
+            <scope>provided</scope>
         </dependency>
         <!-- This doesn't have a maven repo but its own -->
         <dependency>
