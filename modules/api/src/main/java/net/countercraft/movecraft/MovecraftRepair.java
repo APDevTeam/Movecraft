@@ -60,7 +60,7 @@ public class MovecraftRepair {
 
     public boolean saveCraftRepairState(Craft craft, Sign sign) {
         HashHitBox hitBox = craft.getHitBox();
-        File saveDirectory = new File(plugin.getDataFolder(), "CraftRepairStates");
+        File saveDirectory = new File(plugin.getDataFolder(), "RepairStates");
         World world = craft.getW();
         com.sk89q.worldedit.world.World weWorld = new BukkitWorld(world);
         WorldData worldData = weWorld.getWorldData();
@@ -157,7 +157,7 @@ public class MovecraftRepair {
     }
 
     public Clipboard loadCraftRepairStateClipboard(Craft craft, Sign sign) {
-        File dataDirectory = new File(plugin.getDataFolder(), "CraftRepairStates");
+        File dataDirectory = new File(plugin.getDataFolder(), "RepairStates");
         File playerDirectory = new File(dataDirectory,craft.getNotificationPlayer().getUniqueId().toString());
         if (!playerDirectory.exists()){
             return null;
@@ -490,16 +490,12 @@ public class MovecraftRepair {
     public int convertOldCraftRepairStates(){
         //Check in the old RepairStates folder
         File repairStateDir = new File(plugin.getDataFolder(),"RepairStates");
-        File craftRepairStateDir = new File(plugin.getDataFolder(), "CraftRepairStates");
-        if (!repairStateDir.exists() && !craftRepairStateDir.exists()){
+        if (!repairStateDir.exists()){
             return 0;
         }
         int convertedRepairStates = 0;
         File[] repairStates = repairStateDir.listFiles();
         if (repairStateDir.exists() && (repairStates != null || repairStates.length > 0)){
-            if (!craftRepairStateDir.exists()){
-                craftRepairStateDir.mkdirs();
-            }
             for (File rs : repairStates){
                 if (!rs.getName().contains(".schematic")){
                     continue;
@@ -541,7 +537,7 @@ public class MovecraftRepair {
                 if (owner == null){
                     continue;
                 }
-                File playerDir = new File(craftRepairStateDir, owner.getUniqueId().toString());
+                File playerDir = new File(repairStateDir, owner.getUniqueId().toString());
                 if (!playerDir.exists()) {
                     playerDir.mkdirs();
                 }
@@ -550,47 +546,6 @@ public class MovecraftRepair {
                     convertedRepairStates++;
                 }
 
-            }
-        }
-        //Now check the CraftRepairStates folder
-        File[] craftRepairStates = craftRepairStateDir.listFiles();
-        if (craftRepairStates != null) {
-            for (File rs : craftRepairStates) {
-                if (!rs.getName().contains(".schematic")) {
-                    continue;
-                }
-                String fileName = rs.getName();
-                fileName = fileName.replace(".schematic", "");
-                OfflinePlayer owner = null;
-                for (Player p : Bukkit.getOnlinePlayers()) {
-                    if (fileName.startsWith(p.getName())) {
-                        owner = p;
-                        fileName = fileName.replace(p.getName(), "");
-                        break;
-                    }
-                }
-                if (owner == null) {
-                    for (OfflinePlayer op : Bukkit.getOfflinePlayers()) {
-                        if (fileName.startsWith(op.getName())) {
-                            owner = op;
-                            fileName = fileName.replace(op.getName(), "");
-                        }
-                    }
-                }
-                if (owner == null) {
-                    continue;
-                }
-                if (fileName.startsWith("_")){
-                    fileName = fileName.substring(1);
-                }
-                File playerDir = new File(craftRepairStateDir, owner.getUniqueId().toString());
-                if (!playerDir.exists()) {
-                    playerDir.mkdirs();
-                }
-                File dest = new File(playerDir, fileName + ".schematic");
-                if (rs.renameTo(dest)) {
-                    convertedRepairStates++;
-                }
             }
         }
         return convertedRepairStates;
