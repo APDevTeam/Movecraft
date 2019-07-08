@@ -562,39 +562,26 @@ public class MovecraftRepair {
                 String fileName = rs.getName();
                 fileName = fileName.replace(".schematic", "");
                 OfflinePlayer owner = null;
-                if (fileName.contains("_")) {
-                    String[] parts = fileName.split("_");
-                    owner = Bukkit.getPlayer(parts[0]) == null ? Bukkit.getOfflinePlayer(parts[0]) : Bukkit.getPlayer(parts[0]);
-                    fileName = "";
-                    if (parts.length > 2) {
-                        for (int i = 1; i <= parts.length - 1; i++) {
-                            fileName += parts[i];
-                            if (i < parts.length - 1) {
-                                fileName += "_";
-                            }
-                        }
-                    } else {
-                        fileName = parts[1];
+                for (Player p : Bukkit.getOnlinePlayers()) {
+                    if (fileName.startsWith(p.getName())) {
+                        owner = p;
+                        fileName = fileName.replace(p.getName(), "");
+                        break;
                     }
-                } else {
-                    for (Player p : Bukkit.getOnlinePlayers()) {
-                        if (fileName.startsWith(p.getName())) {
-                            owner = p;
-                            fileName = fileName.replace(p.getName(), "");
-                            break;
-                        }
-                    }
-                    if (owner == null) {
-                        for (OfflinePlayer op : Bukkit.getOfflinePlayers()) {
-                            if (fileName.startsWith(op.getName())) {
-                                owner = op;
-                                fileName = fileName.replace(op.getName(), "");
-                            }
+                }
+                if (owner == null) {
+                    for (OfflinePlayer op : Bukkit.getOfflinePlayers()) {
+                        if (fileName.startsWith(op.getName())) {
+                            owner = op;
+                            fileName = fileName.replace(op.getName(), "");
                         }
                     }
                 }
                 if (owner == null) {
                     continue;
+                }
+                if (fileName.startsWith("_")){
+                    fileName = fileName.substring(1);
                 }
                 File playerDir = new File(craftRepairStateDir, owner.getUniqueId().toString());
                 if (!playerDir.exists()) {
@@ -604,7 +591,6 @@ public class MovecraftRepair {
                 if (rs.renameTo(dest)) {
                     convertedRepairStates++;
                 }
-
             }
         }
         return convertedRepairStates;
