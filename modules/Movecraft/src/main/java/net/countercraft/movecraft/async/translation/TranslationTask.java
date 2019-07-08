@@ -63,7 +63,7 @@ public class TranslationTask extends AsyncTask {
 
         //Check if the craft is too high
         if(craft.getType().getMaxHeightLimit() < craft.getHitBox().getMinY()){
-            dy = -Math.abs(dy);
+            dy = Math.min(dy,-1);
         }else if(craft.getType().getMaxHeightAboveGround() > 0){
             final MovecraftLocation middle = oldHitBox.getMidPoint();
             int testY = minY;
@@ -73,7 +73,7 @@ public class TranslationTask extends AsyncTask {
                     break;
             }
             if (minY - testY > craft.getType().getMaxHeightAboveGround()) {
-                dy = -Math.abs(dy);
+                dy = Math.min(dy,-1);
             }
         }
 
