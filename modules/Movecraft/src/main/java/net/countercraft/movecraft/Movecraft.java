@@ -31,9 +31,9 @@ import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.listener.BlockListener;
 import net.countercraft.movecraft.listener.InteractListener;
 import net.countercraft.movecraft.listener.PlayerListener;
-import net.countercraft.movecraft.listener.WorldEditInteractListener;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
+import net.countercraft.movecraft.repair.RepairManager;
 import net.countercraft.movecraft.sign.*;
 import net.countercraft.movecraft.utils.TownyUtils;
 import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
@@ -43,7 +43,6 @@ import net.countercraft.movecraft.warfare.siege.SiegeManager;
 import net.countercraft.movecraft.worldguard.WorldGuardCompatManager;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -82,6 +81,7 @@ public class Movecraft extends JavaPlugin {
     private AsyncManager asyncManager;
     private AssaultManager assaultManager;
     private SiegeManager siegeManager;
+    private RepairManager repairManager;
 
     public static synchronized Movecraft getInstance() {
         return instance;
@@ -239,6 +239,7 @@ public class Movecraft extends JavaPlugin {
         } else {
             logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - WE Found"));
             Settings.RepairTicksPerBlock = getConfig().getInt("RepairTicksPerBlock", 0);
+            Settings.RepairMaxPercent = getConfig().getDouble("RepairMaxPercent", 50);
         }
         worldEditPlugin = (WorldEditPlugin) wEPlugin;
 
@@ -388,7 +389,12 @@ public class Movecraft extends JavaPlugin {
 
             getServer().getPluginManager().registerEvents(new InteractListener(), this);
             if (worldEditPlugin != null) {
-                getServer().getPluginManager().registerEvents(new WorldEditInteractListener(), this);
+                final Class clazz;
+                MovecraftRepair.initialize(this);
+                if (MovecraftRepair.getInstance() != null){
+                    repairManager = new RepairManager();
+                    repairManager.runTaskTimerAsynchronously(this, 0, 1);
+                }
             }
             this.getCommand("movecraft").setExecutor(new MovecraftCommand());
             this.getCommand("release").setExecutor(new ReleaseCommand());
@@ -423,7 +429,7 @@ public class Movecraft extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new RelativeMoveSign(), this);
             getServer().getPluginManager().registerEvents(new ReleaseSign(), this);
             getServer().getPluginManager().registerEvents(new RemoteSign(), this);
-            //getServer().getPluginManager().registerEvents(new RepairSign(), this);
+            getServer().getPluginManager().registerEvents(new RepairSign(), this);
             getServer().getPluginManager().registerEvents(new SpeedSign(), this);
             getServer().getPluginManager().registerEvents(new StatusSign(), this);
             getServer().getPluginManager().registerEvents(new SubcraftRotateSign(), this);
@@ -484,5 +490,8 @@ public class Movecraft extends JavaPlugin {
 
     public AsyncManager getAsyncManager(){return asyncManager;}
 
+    public RepairManager getRepairManager() {
+        return repairManager;
+    }
 }
 
