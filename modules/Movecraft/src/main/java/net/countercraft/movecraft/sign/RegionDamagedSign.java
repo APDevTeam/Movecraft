@@ -15,6 +15,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -38,16 +39,16 @@ public class RegionDamagedSign implements Listener {
         if (!sign.getLine(0).equals(HEADER)){
             return;
         }
-        String regionName = sign.getLine(1).substring(7);
-        long damages = Long.parseLong(sign.getLine(2).substring(7));
+        String regionName = sign.getLine(1).substring(12);
+        long damages = Long.parseLong(sign.getLine(2).substring(8));
         String[] owners = sign.getLine(3).substring(6).split(",");
         if (Movecraft.getInstance().getEconomy().has(event.getPlayer(), damages)) {
             Movecraft.getInstance().getEconomy().withdrawPlayer(event.getPlayer(), damages);
         } else {
-            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("You do not have enough money"));
+            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Economy - Not Enough Money"));
             return;
         }
-        event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Repairing region"));
+        event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Assault - Repairing Region"));
         if (!repairRegion(event.getClickedBlock().getWorld(), regionName)) {
             Bukkit.getServer().broadcastMessage(String.format(I18nSupport.getInternationalisedString("Assault - Repair Failed"), regionName));
             return;
@@ -63,6 +64,23 @@ public class RegionDamagedSign implements Listener {
                     aRegion.getOwners().addPlayer(Bukkit.getPlayer(ownerName).getUniqueId());
                 } else {
                     aRegion.getOwners().addPlayer(Bukkit.getOfflinePlayer(ownerName).getUniqueId());
+                }
+            }
+        }
+        //Clear the beacon
+        int minX = sign.getX() - 2;
+        int minY = sign.getY() - 3;
+        int minZ = sign.getZ() - 1;
+        int maxX = sign.getX() + 2;
+        int maxY = sign.getY();
+        int maxZ = sign.getZ() + 3;
+        for (int x = minX ; x <= maxX ; x++){
+            for (int y = minY ; y <= maxY ; y++){
+                for (int z = minZ; z <= maxZ ; z++){
+                    Block b = sign.getWorld().getBlockAt(x,y,z);
+                    if (b.getType() == Material.BEDROCK || b.getType() == Material.BEACON || b.getType() == Material.IRON_BLOCK ){
+                        b.setType(Material.AIR);
+                    }
                 }
             }
         }

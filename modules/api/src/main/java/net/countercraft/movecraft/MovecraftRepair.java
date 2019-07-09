@@ -127,7 +127,7 @@ public class MovecraftRepair {
                     if (block.getType().equals(Material.AIR)) {
                         continue;
                     }
-                    if (Settings.AssaultDestroyableBlocks.contains(block.getType())) {
+                    if (Settings.AssaultDestroyableBlocks.contains(block.getTypeId())) {
                         baseBlockSet.add(new BaseBlock(block.getTypeId(), block.getData()));
                     }
                 }
