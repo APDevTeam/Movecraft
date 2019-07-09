@@ -164,7 +164,7 @@ public class Movecraft extends JavaPlugin {
         Settings.TracerMinDistanceSqrd = getConfig().getLong("TracerMinDistance", 60);
         Settings.TracerMinDistanceSqrd *= Settings.TracerMinDistanceSqrd;
         Settings.ManOverboardTimeout = getConfig().getInt("ManOverboardTimeout", 30);
-        Settings.ManOverboardDistSquared = getConfig().getDouble("ManOverboardDistance", 1000);
+        Settings.ManOverboardDistSquared = Math.pow(getConfig().getDouble("ManOverboardDistance", 1000), 2);
         Settings.SilhouetteViewDistance = getConfig().getInt("SilhouetteViewDistance", 200);
         Settings.SilhouetteBlockCount = getConfig().getInt("SilhouetteBlockCount", 20);
         Settings.FireballLifespan = getConfig().getInt("FireballLifespan", 6);
