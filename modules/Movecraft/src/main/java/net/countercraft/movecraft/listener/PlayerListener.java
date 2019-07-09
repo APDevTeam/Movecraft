@@ -175,12 +175,24 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent event) {
-        final Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
-        if (c == null) {
-            return;
+        Player p = event.getPlayer();
+        Craft c = CraftManager.getInstance().getCraftByPlayer(p);
+        final boolean isPilot = c != null;
+
+        if (!isPilot) {
+            //Player may be leaving a craft they were not piloting
+            for(Craft craft : CraftManager.getInstance().getCraftsInWorld(event.getFrom().getWorld())) {
+                if (craft.getHitBox().contains(MathUtils.bukkit2MovecraftLoc(event.getFrom()))) {
+                    c = craft;
+                    break;
+                }
+            }
+            if (c == null) {
+                return;
+            }
         }
 
-        if(MathUtils.locationNearHitBox(c.getHitBox(), event.getPlayer().getLocation(), 2)){
+        if(MathUtils.locationNearHitBox(c.getHitBox(), p.getLocation(), 2)){
             timeToReleaseAfter.remove(c);
             return;
         }
@@ -192,15 +204,18 @@ public class PlayerListener implements Listener {
         }
 
         if (c.isNotProcessing() && c.getType().getMoveEntities() && !timeToReleaseAfter.containsKey(c)) {
-            if (Settings.ManOverBoardTimeout != 0) {
-                event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("You have left your craft. You may return to your craft by typing /manoverboard any time before the timeout expires"));
+            if (Settings.ManOverboardTimeout != 0) {
+                p.sendMessage(I18nSupport.getInternationalisedString("You have left your craft. You may return to your craft by typing /manoverboard any time before the timeout expires"));
+                CraftManager.getInstance().addOverboard(p, c);
             } else {
-                event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Release - Player has left craft"));
+                p.sendMessage(I18nSupport.getInternationalisedString("Release - Player has left craft"));
             }
             if (c.getHitBox().size() > 11000) {
-                event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Craft is too big to check its borders. Make sure this area is safe to release your craft in."));
+                p.sendMessage(I18nSupport.getInternationalisedString("Craft is too big to check its borders. Make sure this area is safe to release your craft in."));
             }
-            timeToReleaseAfter.put(c, System.currentTimeMillis() + 30000); //30 seconds to release
+            if(isPilot) {
+                timeToReleaseAfter.put(c, System.currentTimeMillis() + 30000); //30 seconds to release TODO: config
+            }
         }
     }
 }

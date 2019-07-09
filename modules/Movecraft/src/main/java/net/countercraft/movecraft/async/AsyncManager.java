@@ -373,7 +373,7 @@ public class AsyncManager extends BukkitRunnable {
             }
 
             if (Math.abs(ticksElapsed) < pcraft.getTickCooldown()) {
-                return;
+                continue;
             }
             int dx = 0;
             int dz = 0;
