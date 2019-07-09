@@ -46,13 +46,13 @@ public class ManOverboardCommand implements CommandExecutor{
             return true;
         }
 
-        if (craft.getMovedPlayers().containsKey(player) && (System.currentTimeMillis() - craft.getMovedPlayers().get(player)) / 1_000 > Settings.ManOverBoardTimeout) {
+        if (craft.getMovedPlayers().containsKey(player) && (System.currentTimeMillis() - craft.getMovedPlayers().get(player)) / 1_000 > Settings.ManOverboardTimeout) {
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("ManOverboard - Timed Out"));
             return true;
 
         }
 
-        if (telPoint.distanceSquared(player.getLocation()) > 1_000_000) {
+        if (telPoint.distanceSquared(player.getLocation()) > Settings.ManOverboardDistSquared) {
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("ManOverboard - Distance Too Far"));
             return true;
         }
