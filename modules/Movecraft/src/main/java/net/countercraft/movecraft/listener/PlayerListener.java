@@ -176,9 +176,19 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent event) {
         Player p = event.getPlayer();
-        final Craft c = CraftManager.getInstance().getCraftByPlayer(p);
+        Craft c = CraftManager.getInstance().getCraftByPlayer(p);
+
         if (c == null) {
-            return;
+            //Player may be leaving a craft they were not piloting
+            for(Craft craft : CraftManager.getInstance().getCraftsInWorld(event.getFrom().getWorld())) {
+                if (craft.getHitBox().contains(MathUtils.bukkit2MovecraftLoc(event.getFrom()))) {
+                    c = craft;
+                    break;
+                }
+            }
+            if (c == null) {
+                return;
+            }
         }
 
         if(MathUtils.locationNearHitBox(c.getHitBox(), p.getLocation(), 2)){
@@ -193,7 +203,7 @@ public class PlayerListener implements Listener {
         }
 
         if (c.isNotProcessing() && c.getType().getMoveEntities() && !timeToReleaseAfter.containsKey(c)) {
-            if (Settings.ManOverboardTimeout != 0) {
+            if (Settings.ManOverboardTimeout != 0 || CraftManager.getInstance().getPlayerFromCraft(c) != p) {
                 p.sendMessage(I18nSupport.getInternationalisedString("You have left your craft. You may return to your craft by typing /manoverboard any time before the timeout expires"));
                 CraftManager.getInstance().addOverboard(p, c);
             } else {
