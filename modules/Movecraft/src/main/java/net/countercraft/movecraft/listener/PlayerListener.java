@@ -175,12 +175,13 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent event) {
-        final Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
+        Player p = event.getPlayer();
+        final Craft c = CraftManager.getInstance().getCraftByPlayer(p);
         if (c == null) {
             return;
         }
 
-        if(MathUtils.locationNearHitBox(c.getHitBox(), event.getPlayer().getLocation(), 2)){
+        if(MathUtils.locationNearHitBox(c.getHitBox(), p.getLocation(), 2)){
             timeToReleaseAfter.remove(c);
             return;
         }
@@ -193,14 +194,15 @@ public class PlayerListener implements Listener {
 
         if (c.isNotProcessing() && c.getType().getMoveEntities() && !timeToReleaseAfter.containsKey(c)) {
             if (Settings.ManOverboardTimeout != 0) {
-                event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("You have left your craft. You may return to your craft by typing /manoverboard any time before the timeout expires"));
+                p.sendMessage(I18nSupport.getInternationalisedString("You have left your craft. You may return to your craft by typing /manoverboard any time before the timeout expires"));
+                CraftManager.getInstance().addOverboard(p, c);
             } else {
-                event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Release - Player has left craft"));
+                p.sendMessage(I18nSupport.getInternationalisedString("Release - Player has left craft"));
             }
             if (c.getHitBox().size() > 11000) {
-                event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Craft is too big to check its borders. Make sure this area is safe to release your craft in."));
+                p.sendMessage(I18nSupport.getInternationalisedString("Craft is too big to check its borders. Make sure this area is safe to release your craft in."));
             }
-            timeToReleaseAfter.put(c, System.currentTimeMillis() + 30000); //30 seconds to release
+            timeToReleaseAfter.put(c, System.currentTimeMillis() + 30000); //30 seconds to release TODO: config
         }
     }
 }

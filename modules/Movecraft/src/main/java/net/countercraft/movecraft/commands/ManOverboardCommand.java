@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.commands;
 
+import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
@@ -27,12 +28,7 @@ public class ManOverboardCommand implements CommandExecutor{
         Craft craft = CraftManager.getInstance().getCraftByPlayerName(player.getName());
 
         if (craft == null) { //player is in craft but not piloting
-            for(Craft playerCraft : CraftManager.getInstance()) {
-                if (playerCraft.getMovedPlayers().containsKey(player)) {
-                    craft = playerCraft;
-                    break;
-                }
-            }
+            craft = CraftManager.getInstance().getCraftFromOverboard(player);
         }
 
         if(craft == null){
@@ -46,7 +42,7 @@ public class ManOverboardCommand implements CommandExecutor{
             return true;
         }
 
-        if (craft.getMovedPlayers().containsKey(player) && (System.currentTimeMillis() - craft.getMovedPlayers().get(player)) / 1_000 > Settings.ManOverboardTimeout) {
+        if ((System.currentTimeMillis() - CraftManager.getInstance().getTimeFromOverboard(player)) / 1_000 > Settings.ManOverboardTimeout) {
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("ManOverboard - Timed Out"));
             return true;
 
