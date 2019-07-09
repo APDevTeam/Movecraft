@@ -42,7 +42,7 @@ public class CraftManager implements Iterable<Craft>{
     @NotNull private final ConcurrentMap<Player, Craft> craftPlayerIndex = new ConcurrentHashMap<>();
     @NotNull private final ConcurrentMap<Craft, BukkitTask> releaseEvents = new ConcurrentHashMap<>();
     @NotNull private Set<CraftType> craftTypes;
-    @NotNull private WeakHashMap<Player, ImmutablePair<Craft, Long>> overboards = new WeakHashMap<>();
+    @NotNull private final WeakHashMap<Player, ImmutablePair<Craft, Long>> overboards = new WeakHashMap<>();
 
     public static void initialize(){
         ourInstance = new CraftManager();
