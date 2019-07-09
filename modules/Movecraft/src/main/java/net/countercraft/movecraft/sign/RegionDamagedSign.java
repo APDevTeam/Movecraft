@@ -39,9 +39,9 @@ public class RegionDamagedSign implements Listener {
         if (!sign.getLine(0).equals(HEADER)){
             return;
         }
-        String regionName = sign.getLine(1).substring(12);
-        long damages = Long.parseLong(sign.getLine(2).substring(8));
-        String[] owners = sign.getLine(3).substring(6).split(",");
+        String regionName = sign.getLine(1).substring(sign.getLine(1).indexOf(":") + 1);
+        long damages = Long.parseLong(sign.getLine(2).substring(sign.getLine(2).indexOf(":") + 1));
+        String[] owners = sign.getLine(3).substring(sign.getLine(3).indexOf(":") + 1).split(",");
         if (Movecraft.getInstance().getEconomy().has(event.getPlayer(), damages)) {
             Movecraft.getInstance().getEconomy().withdrawPlayer(event.getPlayer(), damages);
         } else {
