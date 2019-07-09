@@ -179,7 +179,7 @@ public class RepairSign implements Listener{
                 if (Movecraft.getInstance().getEconomy().has(event.getPlayer(), moneyCost)) {
                     Movecraft.getInstance().getEconomy().withdrawPlayer(event.getPlayer(), moneyCost);
                 } else {
-                    event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("You do not have enough money"));
+                    event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Economy - Not Enough Money"));
                     enoughMaterial = false;
                 }
             }

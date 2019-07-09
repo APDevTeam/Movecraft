@@ -89,14 +89,6 @@ public class RegionDamagedSign implements Listener {
     public boolean repairRegion(World w, String regionName) {
         if (w == null || regionName == null)
             return false;
-        /*String repairStateName = Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/RegionRepairStates";
-        repairStateName += "/";
-        repairStateName += regionName.replaceAll("\\s+", "_");
-        repairStateName += ".schematic";
-        File file = new File(repairStateName);
-        if (!file.exists()) {
-            return false;
-        }*/
         Clipboard clipboard = MovecraftRepair.getInstance().loadRegionRepairStateClipboard(regionName, w);
         if (clipboard == null){
             return false;
