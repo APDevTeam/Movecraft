@@ -26,7 +26,7 @@ public class RepairManager extends BukkitRunnable {
     }
 
     public void convertOldCraftRepairStates(){
-        Map<UUID, File> confirmedRepairStates = new HashMap<>();
+        Map<UUID, ArrayList<File>> confirmedRepairStates = new HashMap<>();
         LinkedList<List<String>> confirmedSimilarPlayerNames = new LinkedList<>();
         //Check in the old RepairStates folder
         File repairStateDir = new File(Movecraft.getInstance().getDataFolder(),"RepairStates");
@@ -71,7 +71,12 @@ public class RepairManager extends BukkitRunnable {
                     Movecraft.getInstance().getLogger().warning(String.format(I18nSupport.getInternationalisedString("Repair - Invalid Player Name"), fileName));
                     continue;
                 }
-                confirmedRepairStates.put(owner.getUniqueId(), rs);
+                if (confirmedRepairStates.containsKey(owner.getUniqueId())) {
+                    confirmedRepairStates.get(owner.getUniqueId()).add(rs);
+                } else {
+                    confirmedRepairStates.put(owner.getUniqueId(), new ArrayList<>());
+                    confirmedRepairStates.get(owner.getUniqueId()).add(rs);
+                }
 
 
             }
@@ -79,24 +84,25 @@ public class RepairManager extends BukkitRunnable {
         //Move the repair states with confirmed owners to UUID dirs
         for (UUID id : confirmedRepairStates.keySet()){
             String pName = Bukkit.getOfflinePlayer(id).getName();
-            File file = confirmedRepairStates.get(id);
-            File playerDir = new File(repairStateDir, id.toString());
-            if (!playerDir.exists()) {
-                playerDir.mkdirs();
+            for (File file : confirmedRepairStates.get(id)) {
+                File playerDir = new File(repairStateDir, id.toString());
+                if (!playerDir.exists()) {
+                    playerDir.mkdirs();
+                }
+                String fileName = file.getName();
+                //Remove player name from the file
+                fileName = fileName.substring(pName.length());
+                //if it begins with an underscore, remove that too
+                if (fileName.startsWith("_")) {
+                    fileName = fileName.substring(1);
+                }
+                File dest = new File(playerDir, fileName);
+                if (file.renameTo(dest)) {
+                    convertedRepairStates++;
+                    continue;
+                }
+                failedConversions++;
             }
-            String fileName = file.getName();
-            //Remove player name from the file
-            fileName = fileName.substring(pName.length() - 1);
-            //if it begins with an underscore, remove that too
-            if (fileName.startsWith("_")){
-                fileName = fileName.substring(1);
-            }
-            File dest = new File(playerDir, fileName);
-            if (file.renameTo(dest)){
-                convertedRepairStates++;
-                continue;
-            }
-            failedConversions++;
         }
         //Then check the similar names
         while (!confirmedSimilarPlayerNames.isEmpty()){
@@ -127,7 +133,7 @@ public class RepairManager extends BukkitRunnable {
                         continue;
                     }
                     //Remove player name from the file
-                    fileName = fileName.substring(pName.length() - 1);
+                    fileName = fileName.substring(pName.length());
                     //if it begins with an underscore, remove that too
                     if (fileName.startsWith("_")){
                         fileName = fileName.substring(1);
