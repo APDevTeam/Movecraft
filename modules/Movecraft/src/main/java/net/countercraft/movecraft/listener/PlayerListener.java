@@ -177,8 +177,9 @@ public class PlayerListener implements Listener {
     public void onPlayerMove(PlayerMoveEvent event) {
         Player p = event.getPlayer();
         Craft c = CraftManager.getInstance().getCraftByPlayer(p);
+        final boolean isPilot = c != null;
 
-        if (c == null) {
+        if (!isPilot) {
             //Player may be leaving a craft they were not piloting
             for(Craft craft : CraftManager.getInstance().getCraftsInWorld(event.getFrom().getWorld())) {
                 if (craft.getHitBox().contains(MathUtils.bukkit2MovecraftLoc(event.getFrom()))) {
@@ -203,7 +204,7 @@ public class PlayerListener implements Listener {
         }
 
         if (c.isNotProcessing() && c.getType().getMoveEntities() && !timeToReleaseAfter.containsKey(c)) {
-            if (Settings.ManOverboardTimeout != 0 || CraftManager.getInstance().getPlayerFromCraft(c) != p) {
+            if (Settings.ManOverboardTimeout != 0) {
                 p.sendMessage(I18nSupport.getInternationalisedString("You have left your craft. You may return to your craft by typing /manoverboard any time before the timeout expires"));
                 CraftManager.getInstance().addOverboard(p, c);
             } else {
@@ -212,7 +213,9 @@ public class PlayerListener implements Listener {
             if (c.getHitBox().size() > 11000) {
                 p.sendMessage(I18nSupport.getInternationalisedString("Craft is too big to check its borders. Make sure this area is safe to release your craft in."));
             }
-            timeToReleaseAfter.put(c, System.currentTimeMillis() + 30000); //30 seconds to release TODO: config
+            if(isPilot) {
+                timeToReleaseAfter.put(c, System.currentTimeMillis() + 30000); //30 seconds to release TODO: config
+            }
         }
     }
 }
