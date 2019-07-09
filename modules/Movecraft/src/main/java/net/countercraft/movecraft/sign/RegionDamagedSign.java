@@ -42,17 +42,17 @@ public class RegionDamagedSign implements Listener {
         String regionName = sign.getLine(1).substring(sign.getLine(1).indexOf(":") + 1);
         long damages = Long.parseLong(sign.getLine(2).substring(sign.getLine(2).indexOf(":") + 1));
         String[] owners = sign.getLine(3).substring(sign.getLine(3).indexOf(":") + 1).split(",");
-        if (Movecraft.getInstance().getEconomy().has(event.getPlayer(), damages)) {
-            Movecraft.getInstance().getEconomy().withdrawPlayer(event.getPlayer(), damages);
-        } else {
+        if (!Movecraft.getInstance().getEconomy().has(event.getPlayer(), damages)) {
             event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Economy - Not Enough Money"));
             return;
         }
-        event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Assault - Repairing Region"));
+
         if (!repairRegion(event.getClickedBlock().getWorld(), regionName)) {
             Bukkit.getServer().broadcastMessage(String.format(I18nSupport.getInternationalisedString("Assault - Repair Failed"), regionName));
             return;
         }
+        event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Assault - Repairing Region"));
+        Movecraft.getInstance().getEconomy().withdrawPlayer(event.getPlayer(), damages);
         World world = event.getClickedBlock().getWorld();
         ProtectedRegion aRegion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(world).getRegion(regionName);
         for (String ownerName : owners) {
