@@ -395,7 +395,7 @@ public class Movecraft extends JavaPlugin {
                     repairManager.runTaskTimerAsynchronously(this, 0, 1);
                 }
             }
-            int convertedRepairStates = MovecraftRepair.getInstance().convertOldCraftRepairStates();
+            int convertedRepairStates = repairManager.convertOldCraftRepairStates();
             if (convertedRepairStates > 0){
                 logger.info(String.format(I18nSupport.getInternationalisedString("Startup - Converted Repair States"), convertedRepairStates));
             }
