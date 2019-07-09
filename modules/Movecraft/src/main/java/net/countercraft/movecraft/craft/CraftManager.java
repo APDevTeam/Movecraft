@@ -20,6 +20,7 @@ package net.countercraft.movecraft.craft;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.ChatUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -41,6 +42,7 @@ public class CraftManager implements Iterable<Craft>{
     @NotNull private final ConcurrentMap<Player, Craft> craftPlayerIndex = new ConcurrentHashMap<>();
     @NotNull private final ConcurrentMap<Craft, BukkitTask> releaseEvents = new ConcurrentHashMap<>();
     @NotNull private Set<CraftType> craftTypes;
+    @NotNull private final WeakHashMap<Player, ImmutablePair<Craft, Long>> overboards = new WeakHashMap<>();
 
     public static void initialize(){
         ourInstance = new CraftManager();
@@ -252,5 +254,20 @@ public class CraftManager implements Iterable<Craft>{
     @Override
     public Iterator<Craft> iterator() {
         return Collections.unmodifiableSet(this.craftList).iterator();
+    }
+
+    public void addOverboard(Player player, Craft c) {
+        ImmutablePair<Craft, Long> pair = new ImmutablePair<>(c, System.currentTimeMillis());
+        overboards.put(player, pair);
+    }
+
+    @Nullable
+    public Craft getCraftFromOverboard(Player player) {
+        return overboards.get(player).getLeft();
+    }
+
+    @Nullable
+    public long getTimeFromOverboard(Player player) {
+        return overboards.get(player).getRight();
     }
 }

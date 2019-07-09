@@ -103,7 +103,7 @@ public class MovecraftRepair {
 
     public boolean saveRegionRepairState(World world, ProtectedRegion region) {
 
-        File saveDirectory = new File(plugin.getDataFolder(), "RegionRepairStates");
+        File saveDirectory = new File(plugin.getDataFolder(), "AssaultSnapshots");
         com.sk89q.worldedit.world.World weWorld = new BukkitWorld(world);
         WorldData worldData = weWorld.getWorldData();
         Vector weMinPos = region.getMinimumPoint();
@@ -129,7 +129,7 @@ public class MovecraftRepair {
                     if (block.getType().equals(Material.AIR)) {
                         continue;
                     }
-                    if (Settings.AssaultDestroyableBlocks.contains(block.getType())) {
+                    if (Settings.AssaultDestroyableBlocks.contains(block.getTypeId())) {
                         baseBlockSet.add(new BaseBlock(block.getTypeId(), block.getData()));
                     }
                 }
@@ -436,7 +436,7 @@ public class MovecraftRepair {
     }
 
     public Clipboard loadRegionRepairStateClipboard(String s, World world) {
-        File dataDirectory = new File(plugin.getDataFolder(), "RegionRepairStates");
+        File dataDirectory = new File(plugin.getDataFolder(), "AssaultSnapshots");
         File file = new File(dataDirectory, s + ".schematic"); // The schematic file
         com.sk89q.worldedit.world.World weWorld = new BukkitWorld(world);
         WorldData worldData = weWorld.getWorldData();
