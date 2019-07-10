@@ -266,8 +266,8 @@ public class CraftManager implements Iterable<Craft>{
         return overboards.get(player).getLeft();
     }
 
-    @Nullable
+    @NotNull
     public long getTimeFromOverboard(Player player) {
-        return overboards.get(player).getRight();
+        return overboards.getOrDefault(player, new ImmutablePair<Craft, Long>((Craft) null, 0L)).getRight();
     }
 }
