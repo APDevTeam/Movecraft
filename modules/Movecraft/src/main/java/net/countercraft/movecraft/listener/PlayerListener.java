@@ -177,7 +177,7 @@ public class PlayerListener implements Listener {
     public void onPlayerMove(PlayerMoveEvent event) {
         Player p = event.getPlayer();
         final Craft c = CraftManager.getInstance().getCraftByPlayer(p);
-        
+
         if (c == null) {
             return;
         }
@@ -203,9 +203,7 @@ public class PlayerListener implements Listener {
             if (c.getHitBox().size() > 11000) {
                 p.sendMessage(I18nSupport.getInternationalisedString("Craft is too big to check its borders. Make sure this area is safe to release your craft in."));
             }
-            if(isPilot) {
-                timeToReleaseAfter.put(c, System.currentTimeMillis() + 30000); //30 seconds to release TODO: config
-            }
+            timeToReleaseAfter.put(c, System.currentTimeMillis() + 30000); //30 seconds to release TODO: config
         }
     }
 }
