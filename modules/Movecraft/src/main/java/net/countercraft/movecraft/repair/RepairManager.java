@@ -101,6 +101,7 @@ public class RepairManager extends BukkitRunnable {
                     convertedRepairStates++;
                     continue;
                 }
+                Movecraft.getInstance().getLogger().severe(String.format(I18nSupport.getInternationalisedString("RepairStateConversion - Conversion Failed"), fileName));
                 failedConversions++;
             }
         }
@@ -144,6 +145,7 @@ public class RepairManager extends BukkitRunnable {
                         convertedRepairStates++;
                         continue;
                     } //Add failed attempts to move to count as well
+                    Movecraft.getInstance().getLogger().severe(String.format(I18nSupport.getInternationalisedString("RepairStateConversion - Conversion Failed"), fileName));
                     failedConversions++;
                 }
             }
