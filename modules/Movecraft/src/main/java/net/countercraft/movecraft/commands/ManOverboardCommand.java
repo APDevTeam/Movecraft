@@ -28,10 +28,6 @@ public class ManOverboardCommand implements CommandExecutor{
         Player player = (Player) commandSender;
         Craft craft = CraftManager.getInstance().getCraftByPlayerName(player.getName());
 
-        if (craft == null) { //player is in craft but not piloting
-            craft = CraftManager.getInstance().getCraftFromOverboard(player);
-        }
-
         if(craft == null){
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("ManOverboard - No Craft Found"));
             return true;
@@ -56,7 +52,7 @@ public class ManOverboardCommand implements CommandExecutor{
             return true;
         }
 
-        if (craft.getDisabled() || craft.getSinking()) {
+        if (craft.getDisabled() || craft.getSinking() || CraftManager.getInstance().getPlayerFromCraft(craft) == null) {
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("ManOverboard - Disabled"));
             return true;
         }

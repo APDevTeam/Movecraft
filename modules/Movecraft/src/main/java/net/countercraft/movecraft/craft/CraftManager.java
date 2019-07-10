@@ -42,7 +42,7 @@ public class CraftManager implements Iterable<Craft>{
     @NotNull private final ConcurrentMap<Player, Craft> craftPlayerIndex = new ConcurrentHashMap<>();
     @NotNull private final ConcurrentMap<Craft, BukkitTask> releaseEvents = new ConcurrentHashMap<>();
     @NotNull private Set<CraftType> craftTypes;
-    @NotNull private final WeakHashMap<Player, ImmutablePair<Craft, Long>> overboards = new WeakHashMap<>();
+    @NotNull private final WeakHashMap<Player, Long> overboards = new WeakHashMap<>();
 
     public static void initialize(){
         ourInstance = new CraftManager();
@@ -256,18 +256,12 @@ public class CraftManager implements Iterable<Craft>{
         return Collections.unmodifiableSet(this.craftList).iterator();
     }
 
-    public void addOverboard(Player player, Craft c) {
-        ImmutablePair<Craft, Long> pair = new ImmutablePair<>(c, System.currentTimeMillis());
-        overboards.put(player, pair);
-    }
-
-    @Nullable
-    public Craft getCraftFromOverboard(Player player) {
-        return overboards.get(player).getLeft();
+    public void addOverboard(Player player) {
+        overboards.put(player, System.currentTimeMillis());
     }
 
     @NotNull
     public long getTimeFromOverboard(Player player) {
-        return overboards.getOrDefault(player, new ImmutablePair<Craft, Long>((Craft) null, 0L)).getRight();
+        return overboards.getOrDefault(player, 0L);
     }
 }
