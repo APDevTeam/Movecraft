@@ -35,6 +35,7 @@ import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.repair.RepairManager;
 import net.countercraft.movecraft.sign.*;
+import net.countercraft.movecraft.ui.MovecraftUIManager;
 import net.countercraft.movecraft.utils.TownyUtils;
 import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
 import net.countercraft.movecraft.warfare.assault.AssaultManager;
@@ -173,6 +174,7 @@ public class Movecraft extends JavaPlugin {
         Settings.ProtectPilotedCrafts = getConfig().getBoolean("ProtectPilotedCrafts", false);
         Settings.AllowCrewSigns = getConfig().getBoolean("AllowCrewSigns", true);
         Settings.SetHomeToCrewSign = getConfig().getBoolean("SetHomeToCrewSign", true);
+        Settings.EnableUI = getConfig().getBoolean("EnableUI", true);
         Settings.MaxRemoteSigns = getConfig().getInt("MaxRemoteSigns", -1);
         Settings.RequireCreatePerm = getConfig().getBoolean("RequireCreatePerm", false);
         Settings.RequireNamePerm = getConfig().getBoolean("RequireNamePerm", true);
@@ -201,6 +203,7 @@ public class Movecraft extends JavaPlugin {
         Settings.AssaultDestroyableBlocks = new HashSet<>(getConfig().getIntegerList("AssaultDestroyableBlocks"));
         Settings.DisableShadowBlocks = new HashSet<>(getConfig().getIntegerList("DisableShadowBlocks"));  //REMOVE FOR PUBLIC VERSION
         Settings.ForbiddenRemoteSigns = new HashSet<>();
+        
 
         for(String s : getConfig().getStringList("ForbiddenRemoteSigns")) {
             Settings.ForbiddenRemoteSigns.add(s.toLowerCase());
@@ -208,14 +211,18 @@ public class Movecraft extends JavaPlugin {
 
         Settings.SiegeEnable = getConfig().getBoolean("SiegeEnable", false);
 
-
-
-
         if (!Settings.CompatibilityMode) {
             for (int typ : Settings.DisableShadowBlocks) {
                 worldHandler.disableShadow(Material.getMaterial(typ));
             }
         }
+        
+        if(Settings.EnableUI){
+        	logger.log(Level.INFO, "Enabled UI");
+        	MovecraftUIManager.initialize();
+        }
+        
+        
         //load up WorldGuard if it's present
         Plugin wGPlugin = getServer().getPluginManager().getPlugin("WorldGuard");
         if (wGPlugin == null || !(wGPlugin instanceof WorldGuardPlugin)) {

@@ -22,12 +22,14 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.ui.MovecraftUIManager;
 import net.countercraft.movecraft.utils.HitBox;
 import net.countercraft.movecraft.utils.MathUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
@@ -164,6 +166,11 @@ public class PlayerListener implements Listener {
     public void onPLayerLogout(PlayerQuitEvent e) {
         CraftManager.getInstance().removeCraftByPlayer(e.getPlayer());
     }
+    
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent e) {
+    	MovecraftUIManager.getInstance().setupUI(e.getPlayer());
+    }
 
     @EventHandler
     public void onPlayerDeath(EntityDamageByEntityEvent e) {  // changed to death so when you shoot up an airship and hit the pilot, it still sinks
@@ -194,6 +201,7 @@ public class PlayerListener implements Listener {
 
         if(MathUtils.locationNearHitBox(c.getHitBox(), p.getLocation(), 2)){
             timeToReleaseAfter.remove(c);
+            MovecraftUIManager.getInstance().removeScoreboardValue("Release Timer", p);
             return;
         }
 
@@ -215,6 +223,9 @@ public class PlayerListener implements Listener {
             }
             if(isPilot) {
                 timeToReleaseAfter.put(c, System.currentTimeMillis() + 30000); //30 seconds to release TODO: config
+            }
+            if(Settings.EnableUI){
+            	MovecraftUIManager.getInstance().setScoreboardValue("Release Timer", p, 30);
             }
         }
     }
