@@ -50,7 +50,7 @@ public class MovecraftRepair {
     private final Plugin plugin;
     private HashMap<String, ArrayDeque<ImmutablePair<Vector,Vector>>> locMissingBlocksMap = new HashMap<>();
     private HashMap<String, Long> numDiffBlocksMap = new HashMap<>();
-    private HashMap<String, HashMap<Material, Double>> missingBlocksMap = new HashMap<>();
+    private HashMap<String, HashMap<ImmutablePair<Material, Integer>, Double>> missingBlocksMap = new HashMap<>();
     private final HashMap<String, Vector> distanceMap = new HashMap<>();
 
     public MovecraftRepair(Plugin plugin) {
@@ -174,7 +174,7 @@ public class MovecraftRepair {
             return null;
         }
         long numDiffBlocks = 0;
-        HashMap<Material, Double> missingBlocks = new HashMap<>();
+        HashMap<ImmutablePair<Material, Integer>, Double> missingBlocks = new HashMap<>();
         ArrayDeque<ImmutablePair<Vector,Vector>> locMissingBlocks = new ArrayDeque<>();
         Vector minPos = clipboard.getMinimumPoint();
         Vector distance = clipboard.getOrigin().subtract(clipboard.getMinimumPoint());
@@ -191,6 +191,7 @@ public class MovecraftRepair {
                         int itemToConsume = block.getType();
                         double qtyToConsume = 1.0;
                         numDiffBlocks++;
+                        ImmutablePair<Material, Integer> missingBlock;
                         //some blocks aren't represented by items with the same number as the block
                         switch (itemToConsume) {
                             case 62://burning furnace
@@ -287,31 +288,35 @@ public class MovecraftRepair {
                                         }
                                     }
                                 }
+
                                 if (numTNT > 0) {
-                                    if (!missingBlocks.containsKey(Material.TNT)) {
-                                        missingBlocks.put(Material.TNT, (double) numTNT);
+                                    missingBlock = new ImmutablePair<>(Material.TNT, 0);
+                                    if (!missingBlocks.containsKey(missingBlock)) {
+                                        missingBlocks.put(missingBlock, (double) numTNT);
                                     } else {
-                                        Double num = missingBlocks.get(Material.TNT);
+                                        Double num = missingBlocks.get(missingBlock);
                                         num += numTNT;
-                                        missingBlocks.put(Material.TNT, num);
+                                        missingBlocks.put(missingBlock, num);
                                     }
                                 }
                                 if (numFireCharges > 0) {
-                                    if (!missingBlocks.containsKey(Material.FIREBALL)) {
-                                        missingBlocks.put(Material.FIREBALL, (double) numFireCharges);
+                                    missingBlock = new ImmutablePair<>(Material.FIREBALL, 0);
+                                    if (!missingBlocks.containsKey(missingBlock)) {
+                                        missingBlocks.put(missingBlock, (double) numFireCharges);
                                     } else {
-                                        Double num = missingBlocks.get(Material.FIREBALL);
+                                        Double num = missingBlocks.get(missingBlock);
                                         num += numFireCharges;
-                                        missingBlocks.put(Material.FIREBALL, num);
+                                        missingBlocks.put(missingBlock, num);
                                     }
                                 }
                                 if (numWaterBuckets > 0) {
-                                    if (!missingBlocks.containsKey(Material.WATER_BUCKET)) {
-                                        missingBlocks.put(Material.WATER_BUCKET, (double) numWaterBuckets);
+                                    missingBlock = new ImmutablePair<>(Material.WATER_BUCKET, 0);
+                                    if (!missingBlocks.containsKey(missingBlock)) {
+                                        missingBlocks.put(missingBlock, (double) numWaterBuckets);
                                     } else {
-                                        Double num = missingBlocks.get(Material.WATER_BUCKET);
+                                        Double num = missingBlocks.get(missingBlock);
                                         num += numWaterBuckets;
-                                        missingBlocks.put(Material.WATER_BUCKET, num);
+                                        missingBlocks.put(missingBlock, num);
                                     }
                                 }
                             }
@@ -332,17 +337,19 @@ public class MovecraftRepair {
                             }
                         }
                         if (itemToConsume != 0) {
-                            if (!missingBlocks.containsKey(Material.getMaterial(itemToConsume))) {
-                                missingBlocks.put(Material.getMaterial(itemToConsume), qtyToConsume);
+                            missingBlock = new ImmutablePair<>(Material.getMaterial(itemToConsume), 0);
+                            if (!missingBlocks.containsKey(missingBlock)) {
+                                missingBlocks.put(missingBlock, qtyToConsume);
                             } else {
-                                Double num = missingBlocks.get(Material.getMaterial(itemToConsume));
+                                Double num = missingBlocks.get(missingBlock);
                                 num += qtyToConsume;
-                                missingBlocks.put(Material.getMaterial(itemToConsume), num);
+                                missingBlocks.put(missingBlock, num);
                             }
                             locMissingBlocks.addLast(new ImmutablePair<>(new Vector(offset.getBlockX() + x, offset.getBlockY() + y, offset.getBlockZ() + z),new Vector(position.getBlockX(),position.getBlockY(),position.getBlockZ())));
                         }
                     }
                     if (bukkitBlock.getType() == Material.DISPENSER && block.getType() == 23) {
+                        ImmutablePair<Material, Integer> missingBlock;
                         boolean needReplace = false;
                         Tag t = block.getNbtData().getValue().get("Items");
                         ListTag lt = null;
@@ -385,32 +392,35 @@ public class MovecraftRepair {
                         }
                         //Bukkit.getLogger().info(String.format("TNT: %d, Fireballs: %d, Water buckets: %d", numTNT, numFireCharges, numWaterBuckets));
                         if (numTNT > 0) {
-                            if (!missingBlocks.containsKey(Material.TNT)) {
-                                missingBlocks.put(Material.TNT, (double) numTNT);
+                            missingBlock = new ImmutablePair<>(Material.TNT, 0);
+                            if (!missingBlocks.containsKey(missingBlock)) {
+                                missingBlocks.put(missingBlock, (double) numTNT);
                             } else {
-                                Double num = missingBlocks.get(Material.TNT);
+                                Double num = missingBlocks.get(missingBlock);
                                 num += numTNT;
-                                missingBlocks.put(Material.TNT, num);
+                                missingBlocks.put(missingBlock, num);
                             }
                             needReplace = true;
                         }
                         if (numFireCharges > 0) {
-                            if (!missingBlocks.containsKey(Material.FIREBALL)) {
-                                missingBlocks.put(Material.FIREBALL, (double) numFireCharges);
+                            missingBlock = new ImmutablePair<>(Material.FIREBALL, 0);
+                            if (!missingBlocks.containsKey(missingBlock)) {
+                                missingBlocks.put(missingBlock, (double) numFireCharges);
                             } else {
-                                Double num = missingBlocks.get(Material.FIREBALL);
+                                Double num = missingBlocks.get(missingBlock);
                                 num += numFireCharges;
-                                missingBlocks.put(Material.FIREBALL, num);
+                                missingBlocks.put(missingBlock, num);
                             }
                             needReplace = true;
                         }
                         if (numWaterBuckets > 0) {
-                            if (!missingBlocks.containsKey(Material.WATER_BUCKET)) {
-                                missingBlocks.put(Material.WATER_BUCKET, (double) numWaterBuckets);
+                            missingBlock = new ImmutablePair<>(Material.WATER_BUCKET, 0);
+                            if (!missingBlocks.containsKey(missingBlock)) {
+                                missingBlocks.put(missingBlock, (double) numWaterBuckets);
                             } else {
-                                Double num = missingBlocks.get(Material.WATER_BUCKET);
+                                Double num = missingBlocks.get(missingBlock);
                                 num += numWaterBuckets;
-                                missingBlocks.put(Material.WATER_BUCKET, num);
+                                missingBlocks.put(missingBlock, num);
                             }
                             needReplace = true;
                         }
@@ -443,7 +453,7 @@ public class MovecraftRepair {
         }
     }
 
-    public HashMap<Material, Double> getMissingBlocks(String repairName) {
+    public HashMap<ImmutablePair<Material, Integer>, Double> getMissingBlocks(String repairName) {
         return missingBlocksMap.get(repairName);
     }
 

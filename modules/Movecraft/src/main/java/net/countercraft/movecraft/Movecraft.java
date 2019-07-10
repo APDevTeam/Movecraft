@@ -241,6 +241,28 @@ public class Movecraft extends JavaPlugin {
             logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - WE Found"));
             Settings.RepairTicksPerBlock = getConfig().getInt("RepairTicksPerBlock", 0);
             Settings.RepairMaxPercent = getConfig().getDouble("RepairMaxPercent", 50);
+            if (getConfig().contains("RepairRequireSpecificMaterials")){
+                Map<String, Object> stringObjectMap = getConfig().getConfigurationSection("RepairRequireSpecificMaterials").getValues(false);
+                for (String str : stringObjectMap.keySet()){
+                    Material type;
+                    Object obj;
+                    try {
+                        int id = Integer.parseInt(str);
+                        type = Material.getMaterial(id);
+                    } catch (NumberFormatException e){
+                        type = Material.getMaterial(str.toUpperCase());
+                    }
+                    obj = stringObjectMap.get(str);
+                    ArrayList<Integer> dataList = new ArrayList<>();
+                    if (obj instanceof Integer){
+                        dataList.add((Integer) obj);
+                        Settings.RepairRequireSpecificMaterials.put(type, dataList);
+                    } else if (obj instanceof ArrayList){
+                        dataList = (ArrayList<Integer>) obj;
+                        Settings.RepairRequireSpecificMaterials.put(type, dataList);
+                    }
+                }
+            }
         }
         worldEditPlugin = (WorldEditPlugin) wEPlugin;
 

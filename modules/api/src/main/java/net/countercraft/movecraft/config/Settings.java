@@ -18,7 +18,9 @@
 package net.countercraft.movecraft.config;
 
 import net.countercraft.movecraft.utils.TownyWorldHeightLimits;
+import org.bukkit.Material;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +54,7 @@ public class Settings {
     public static int FireballLifespan = 6;
     public static int RepairTicksPerBlock = 0;
     public static double RepairMaxPercent = 50;
+    public static HashMap<Material, List<Integer>> RepairRequireSpecificMaterials = new HashMap<>();
     public static int BlockQueueChunkSize = 1000;
     public static int SiegeTaskSeconds = 600;
     public static double RepairMoneyPerBlock = 0.0;
