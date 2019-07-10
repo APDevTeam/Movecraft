@@ -225,8 +225,6 @@ public class TranslationTask extends AsyncTask {
                     if(craft.getSinking()){
                         continue;
                     }
-                    Player player = (Player) entity;
-                    craft.getMovedPlayers().put(player, System.currentTimeMillis());
                     EntityUpdateCommand eUp = new EntityUpdateCommand(entity, dx, dy, dz, 0, 0);
                     updates.add(eUp);
                 } else if (!craft.getType().getOnlyMovePlayers() || entity.getType() == EntityType.PRIMED_TNT) {

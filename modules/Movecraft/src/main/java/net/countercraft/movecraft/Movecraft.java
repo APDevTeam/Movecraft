@@ -163,7 +163,8 @@ public class Movecraft extends JavaPlugin {
         Settings.TracerRateTicks = getConfig().getDouble("TracerRateTicks", 5.0);
         Settings.TracerMinDistanceSqrd = getConfig().getLong("TracerMinDistance", 60);
         Settings.TracerMinDistanceSqrd *= Settings.TracerMinDistanceSqrd;
-        Settings.ManOverBoardTimeout = getConfig().getInt("ManOverBoardTimeout", 30);
+        Settings.ManOverboardTimeout = getConfig().getInt("ManOverboardTimeout", 30);
+        Settings.ManOverboardDistSquared = Math.pow(getConfig().getDouble("ManOverboardDistance", 1000), 2);
         Settings.SilhouetteViewDistance = getConfig().getInt("SilhouetteViewDistance", 200);
         Settings.SilhouetteBlockCount = getConfig().getInt("SilhouetteBlockCount", 20);
         Settings.FireballLifespan = getConfig().getInt("FireballLifespan", 6);
@@ -426,6 +427,7 @@ public class Movecraft extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new MoveSign(), this);
             getServer().getPluginManager().registerEvents(new NameSign(), this);
             getServer().getPluginManager().registerEvents(new PilotSign(), this);
+            getServer().getPluginManager().registerEvents(new RegionDamagedSign(), this);
             getServer().getPluginManager().registerEvents(new RelativeMoveSign(), this);
             getServer().getPluginManager().registerEvents(new ReleaseSign(), this);
             getServer().getPluginManager().registerEvents(new RemoteSign(), this);

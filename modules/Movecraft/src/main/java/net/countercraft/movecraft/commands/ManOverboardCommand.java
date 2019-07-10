@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.commands;
 
+import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
@@ -25,29 +26,29 @@ public class ManOverboardCommand implements CommandExecutor{
         }
         Player player = (Player) commandSender;
         Craft craft = CraftManager.getInstance().getCraftByPlayerName(player.getName());
-        if ( craft == null) { //player is in craft
-            for(Craft playerCraft : CraftManager.getInstance()) {
-                if (playerCraft.getMovedPlayers().containsKey(player)) {
-                    craft = playerCraft;
-                    break;
-                }
-            }
+
+        if (craft == null) { //player is in craft but not piloting
+            craft = CraftManager.getInstance().getCraftFromOverboard(player);
         }
+
         if(craft == null){
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("ManOverboard - No Craft Found"));
             return true;
         }
+
         Location telPoint = craft.getCrewSigns().containsKey(player.getUniqueId()) ? craft.getCrewSigns().get(player.getUniqueId()) : getCraftTeleportPoint(craft);
         if (craft.getW() != player.getWorld()) {
-            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("ManOverboard - Distance Too Far"));
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("ManOverboard - Other World"));
             return true;
         }
-        if (craft.getMovedPlayers().containsKey(player) && (System.currentTimeMillis() - craft.getMovedPlayers().get(player)) / 1_000 > Settings.ManOverBoardTimeout) {
+
+        if ((System.currentTimeMillis() - CraftManager.getInstance().getTimeFromOverboard(player)) / 1_000 > Settings.ManOverboardTimeout) {
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("ManOverboard - Timed Out"));
             return true;
 
         }
-        if (telPoint.distanceSquared(player.getLocation()) > 1_000_000) {
+
+        if (telPoint.distanceSquared(player.getLocation()) > Settings.ManOverboardDistSquared) {
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("ManOverboard - Distance Too Far"));
             return true;
         }
@@ -56,6 +57,7 @@ public class ManOverboardCommand implements CommandExecutor{
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("ManOverboard - Disabled"));
             return true;
         }
+
         player.teleport(telPoint);
         return true;
     }
