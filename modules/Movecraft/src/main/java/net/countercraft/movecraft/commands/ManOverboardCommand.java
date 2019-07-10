@@ -5,6 +5,7 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.utils.MathUtils;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -43,9 +44,11 @@ public class ManOverboardCommand implements CommandExecutor{
         }
 
         if ((System.currentTimeMillis() - CraftManager.getInstance().getTimeFromOverboard(player)) / 1_000 > Settings.ManOverboardTimeout) {
-            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("ManOverboard - Timed Out"));
-            return true;
-
+            if(!craft.getHitBox().contains(MathUtils.bukkit2MovecraftLoc(player.getLocation())))
+            {
+                player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("ManOverboard - Timed Out"));
+                return true;
+            }
         }
 
         if (telPoint.distanceSquared(player.getLocation()) > Settings.ManOverboardDistSquared) {
