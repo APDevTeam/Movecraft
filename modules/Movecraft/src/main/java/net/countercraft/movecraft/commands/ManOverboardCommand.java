@@ -39,12 +39,10 @@ public class ManOverboardCommand implements CommandExecutor{
             return true;
         }
 
-        if ((System.currentTimeMillis() - CraftManager.getInstance().getTimeFromOverboard(player)) / 1_000 > Settings.ManOverboardTimeout) {
-            if(!MathUtils.locationNearHitBox(craft.getHitBox(), player.getLocation(), 1))
-            {
-                player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("ManOverboard - Timed Out"));
-                return true;
-            }
+        if ((System.currentTimeMillis() - CraftManager.getInstance().getTimeFromOverboard(player)) / 1_000 > Settings.ManOverboardTimeout
+                && !MathUtils.locIsNearCraftFast(craft, MathUtils.bukkit2MovecraftLoc(player.getLocation()))) {
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("ManOverboard - Timed Out"));
+            return true;
         }
 
         if (telPoint.distanceSquared(player.getLocation()) > Settings.ManOverboardDistSquared) {
