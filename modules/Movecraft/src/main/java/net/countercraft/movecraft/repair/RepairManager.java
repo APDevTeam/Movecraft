@@ -54,12 +54,7 @@ public class RepairManager extends BukkitRunnable {
                 }
 
                 if (similarPlayerNames.size() > 1) {
-                    String warning = "";
-                    boolean first = true;
-                    for (String name : similarPlayerNames){
-                        String.join(warning, first ? ", " : "", name);
-                        first = false;
-                    }
+                    String warning = String.join(", ", similarPlayerNames);
                     Movecraft.getInstance().getLogger().warning(I18nSupport.getInternationalisedString("RepairStateConversion - Similar players found") + warning);
                     confirmedSimilarPlayerNames.push(similarPlayerNames);
                     continue;
