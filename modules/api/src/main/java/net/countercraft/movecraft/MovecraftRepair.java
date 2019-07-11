@@ -501,7 +501,7 @@ public class MovecraftRepair {
                                             break;
                                         case 1:
                                             if (fInv.getFuel() != null && fInv.getFuel().getType().equals(content.getLeft())) {
-                                                boolean requireSpecific = Settings.RepairRequireSpecificMaterials.containsKey(fInv.getFuel().getType()) && Settings.RepairRequireSpecificMaterials.get(fInv.getFuel().getType()).contains((int) fInv.getSmelting().getData().getData());
+                                                boolean requireSpecific = Settings.RepairRequireSpecificMaterials.containsKey(fInv.getFuel().getType()) && Settings.RepairRequireSpecificMaterials.get(fInv.getFuel().getType()).contains((int) fInv.getFuel().getData().getData());
                                                 if (requireSpecific && fInv.getFuel().getData().getData() != content.getRight()){
                                                     break;
                                                 }
