@@ -162,7 +162,7 @@ public class RepairSign implements Listener{
                             int numfound = 0;
 
                             for (ItemStack istack : foundItems.values()) {
-                                if (requireSpecific && !Settings.RepairRequireSpecificMaterials.get(istack.getType()).contains((int) istack.getData().getData())){
+                                if (requireSpecific && istack.getData().getData() != type.getRight()){
                                     continue;
                                 }
                                 numfound += istack.getAmount();
@@ -196,7 +196,7 @@ public class RepairSign implements Listener{
                         HashMap<Integer, ? extends ItemStack> foundItems = inventoryHolder.getInventory().all(type.getLeft());
                         boolean requireSpecific = Settings.RepairRequireSpecificMaterials.containsKey(type.getLeft()) && Settings.RepairRequireSpecificMaterials.get(type.getLeft()).contains(type.getRight());
                         for (ItemStack istack : foundItems.values()) {
-                            if (requireSpecific && !Settings.RepairRequireSpecificMaterials.get(istack.getType()).contains(istack.getData().getData())){
+                            if (requireSpecific && !Settings.RepairRequireSpecificMaterials.get(istack.getType()).contains((int) istack.getData().getData())){
                                 continue;
                             }
                             if (istack.getAmount() <= remainingQty) {
