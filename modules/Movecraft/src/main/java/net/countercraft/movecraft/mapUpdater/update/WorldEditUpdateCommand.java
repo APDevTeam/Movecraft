@@ -7,10 +7,8 @@ import com.sk89q.worldedit.blocks.BaseBlock;
 import net.countercraft.movecraft.MovecraftLocation;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockState;
-import org.bukkit.block.Dispenser;
-import org.bukkit.block.Sign;
+import org.bukkit.block.*;
+import org.bukkit.inventory.FurnaceInventory;
 import org.bukkit.inventory.ItemStack;
 
 public class WorldEditUpdateCommand extends UpdateCommand {
@@ -86,6 +84,70 @@ public class WorldEditUpdateCommand extends UpdateCommand {
             if (numWater > 0) {
                 ItemStack WaterItems = new ItemStack(Material.WATER_BUCKET, numWater);
                 disp.getInventory().addItem(WaterItems);
+            }
+        }
+        if (type == Material.FURNACE){
+            Furnace furnace = (Furnace) block.getState();
+            FurnaceInventory fInv = furnace.getInventory();
+            CompoundTag nbtData = worldEditBaseBlock.getNbtData();
+            ListTag lt = nbtData.getListTag("Items");
+            if (lt != null){
+                for (Tag t : lt.getValue()){
+                    if (!(t instanceof CompoundTag)){
+                        continue;
+                    }
+                    CompoundTag ct = (CompoundTag) t;
+                    if (ct.getString("id").equals("minecraft:coal")){
+                        double count = (double) ct.getByte("Count");
+                        switch (ct.getByte("Slot")) {
+                            case 0:
+                                if (fInv.getSmelting() != null && fInv.getSmelting().getType().equals(Material.COAL)) {
+                                    if (fInv.getSmelting().getData().getData() != ct.getShort("Damage")){
+                                        ItemStack istack = new ItemStack(Material.COAL, (int) count, (short) 0, (byte) ct.getShort("Damage"));
+                                        fInv.setFuel(istack);
+                                        break;
+                                    }
+                                    fInv.getSmelting().setAmount((int) count);
+                                } else {
+                                    ItemStack istack = new ItemStack(Material.COAL, (int) count, (short) 0, (byte) ct.getShort("Damage"));
+                                    fInv.setSmelting(istack);
+                                }
+                                break;
+                            case 1:
+                                if (fInv.getFuel() != null && fInv.getFuel().getType().equals(Material.COAL)) {
+                                    if (fInv.getFuel().getData().getData() != ct.getShort("Damage")){
+                                        ItemStack istack = new ItemStack(Material.COAL, (int) count, (short) 0, (byte) ct.getShort("Damage"));
+                                        fInv.setFuel(istack);
+                                        break;
+                                    }
+                                    fInv.getFuel().setAmount((int) count);
+                                } else {
+                                    ItemStack istack = new ItemStack(Material.COAL, (int) count, (short) 0, (byte) ct.getShort("Damage"));
+                                    fInv.setFuel(istack);
+                                }
+                                break;
+                        }
+                    }
+                    if (ct.getString("id").equals("minecraft:coal_block")){
+                        double count = (double) ct.getByte("Count");
+                        switch (ct.getByte("Slot")){
+                            case 0:
+                                if (fInv.getSmelting() != null && fInv.getSmelting().getType().equals(Material.COAL_BLOCK)) {
+                                    fInv.getSmelting().setAmount((int) count);
+                                } else {
+                                    fInv.setSmelting(new ItemStack(Material.COAL_BLOCK, (int) count));
+                                }
+                                break;
+                            case 1:
+                                if (fInv.getFuel() != null && fInv.getFuel().getType().equals(Material.COAL_BLOCK)) {
+                                    fInv.getFuel().setAmount((int) count);
+                                } else {
+                                    fInv.setFuel(new ItemStack(Material.COAL_BLOCK, (int) count));
+                                }
+                                break;
+                        }
+                    }
+                }
             }
         }
         if (worldEditBaseBlock.getType() == 63 ||worldEditBaseBlock.getType() == 68 ){

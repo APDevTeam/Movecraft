@@ -155,17 +155,15 @@ public class RepairSign implements Listener{
                     Block b = pCraft.getW().getBlockAt(loc.getX(), loc.getY(), loc.getZ());
                     if ((b.getType() == Material.CHEST) || (b.getType() == Material.TRAPPED_CHEST)) {
                         InventoryHolder inventoryHolder = (InventoryHolder) b.getState();
+                        boolean requireSpecific = Settings.RepairRequireSpecificMaterials.containsKey(type.getLeft()) && Settings.RepairRequireSpecificMaterials.get(type.getLeft()).contains(type.getRight());
                         if (inventoryHolder.getInventory().contains(type.getLeft()) && remainingQty > 0) {
                             HashMap<Integer, ? extends ItemStack> foundItems = inventoryHolder.getInventory().all(type.getLeft());
                             // count how many were in the chest
                             int numfound = 0;
 
                             for (ItemStack istack : foundItems.values()) {
-                                if (Settings.RepairRequireSpecificMaterials.containsKey(type.getLeft())){
-                                    List<Integer> rawData = Settings.RepairRequireSpecificMaterials.get(type.getLeft());
-                                    if (!rawData.contains((int) istack.getData().getData())){
-                                        continue;
-                                    }
+                                if (requireSpecific && !Settings.RepairRequireSpecificMaterials.get(istack.getType()).contains((int) istack.getData().getData())){
+                                    continue;
                                 }
                                 numfound += istack.getAmount();
                             }
@@ -196,12 +194,10 @@ public class RepairSign implements Listener{
                     int remainingQty = (int) Math.round(numMissingItems.get(type));
                     for (InventoryHolder inventoryHolder : chestsToTakeFrom.get(type)) {
                         HashMap<Integer, ? extends ItemStack> foundItems = inventoryHolder.getInventory().all(type.getLeft());
+                        boolean requireSpecific = Settings.RepairRequireSpecificMaterials.containsKey(type.getLeft()) && Settings.RepairRequireSpecificMaterials.get(type.getLeft()).contains(type.getRight());
                         for (ItemStack istack : foundItems.values()) {
-                            if (Settings.RepairRequireSpecificMaterials.containsKey(istack.getType())){
-                                List<Integer> rawData = Settings.RepairRequireSpecificMaterials.get(type.getLeft());
-                                if (!rawData.contains((int) istack.getData().getData())){
-                                    continue;
-                                }
+                            if (requireSpecific && !Settings.RepairRequireSpecificMaterials.get(istack.getType()).contains(istack.getData().getData())){
+                                continue;
                             }
                             if (istack.getAmount() <= remainingQty) {
                                 remainingQty -= istack.getAmount();
@@ -253,7 +249,7 @@ public class RepairSign implements Listener{
             if (numDifferentBlocks != 0) {
                 event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("SUPPLIES NEEDED"));
                 for (ImmutablePair<Material, Integer> blockType : numMissingItems.keySet()) {
-                    String blockName = Settings.RepairRequireSpecificMaterials.containsKey(blockType.getLeft()) ? String.format("%s : %d", blockType.getLeft().name().toLowerCase().replace("_", " "), Math.round(numMissingItems.get(blockType))) :
+                    String blockName = !Settings.RepairRequireSpecificMaterials.containsKey(blockType.getLeft()) ? String.format("%s : %d", blockType.getLeft().name().toLowerCase().replace("_", " "), Math.round(numMissingItems.get(blockType))) :
                             String.format("%s:%d : %d", blockType.getLeft().name().toLowerCase().replace("_", " ") ,blockType.getRight() ,Math.round(numMissingItems.get(blockType)));
                     event.getPlayer().sendMessage(blockName);
                 }

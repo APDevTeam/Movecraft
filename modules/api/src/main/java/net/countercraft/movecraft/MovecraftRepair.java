@@ -31,7 +31,9 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Dispenser;
+import org.bukkit.block.Furnace;
 import org.bukkit.block.Sign;
+import org.bukkit.inventory.FurnaceInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 
@@ -39,10 +41,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayDeque;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 
 public class MovecraftRepair {
@@ -189,11 +188,48 @@ public class MovecraftRepair {
                     Block bukkitBlock = sign.getWorld().getBlockAt(bukkitLoc);
                     if (block.getType() != 0 && bukkitBlock.getTypeId() != block.getType()) {
                         int itemToConsume = block.getType();
+                        int dataToConsume = block.getData();
                         double qtyToConsume = 1.0;
                         numDiffBlocks++;
                         ImmutablePair<Material, Integer> missingBlock;
                         //some blocks aren't represented by items with the same number as the block
                         switch (itemToConsume) {
+                            case 61:{//Count fuel in furnaces
+                                CompoundTag nbtData = block.getNbtData();
+                                ListTag lt = nbtData.getListTag("Items");
+                                if (lt != null){
+                                    for (Tag t : lt.getValue()){
+                                        if (!(t instanceof CompoundTag)){
+                                            continue;
+                                        }
+                                        CompoundTag ct = (CompoundTag) t;
+                                        ImmutablePair<Material, Integer> content;
+                                        if (ct.getString("id").equals("minecraft:coal")){
+                                            content = new ImmutablePair<>(Material.COAL, (int) ct.getShort("Damage"));
+                                            double count = (double) ct.getByte("Count");
+                                            if (missingBlocks.containsKey(content)){
+                                                double amount = missingBlocks.get(content);
+                                                amount += count;
+                                                missingBlocks.put(content, amount);
+                                            } else {
+                                                missingBlocks.put(content, count);
+
+                                            }
+                                        }
+                                        if (ct.getString("id").equals("minecraft:coal_block")){
+                                            content = new ImmutablePair<>(Material.COAL_BLOCK, 0);
+                                            double count = (double) ct.getByte("Count");
+                                            if (missingBlocks.containsKey(content)){
+                                                double amount = missingBlocks.get(content);
+                                                amount += count;
+                                                missingBlocks.put(content, amount);
+                                            } else {
+                                                missingBlocks.put(content, count);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                             case 62://burning furnace
                                 itemToConsume = 61;
                                 break;
@@ -320,11 +356,18 @@ public class MovecraftRepair {
                                     }
                                 }
                             }
+                            case 44:{
+                                if (dataToConsume >= 8){
+                                    dataToConsume -= 8;
+                                }
+                                break;
+                            }
                             case 43: { // for double slabs, require 2 slabs
                                 itemToConsume = 44;
                                 qtyToConsume = 2;
                                 break;
                             }
+
                             case 125: { // for double wood slabs, require 2 wood slabs
                                 itemToConsume = 126;
                                 qtyToConsume = 2;
@@ -335,9 +378,10 @@ public class MovecraftRepair {
                                 qtyToConsume = 2;
                                 break;
                             }
+
                         }
                         if (itemToConsume != 0) {
-                            missingBlock = new ImmutablePair<>(Material.getMaterial(itemToConsume), 0);
+                            missingBlock = new ImmutablePair<>(Material.getMaterial(itemToConsume), dataToConsume);
                             if (!missingBlocks.containsKey(missingBlock)) {
                                 missingBlocks.put(missingBlock, qtyToConsume);
                             } else {
@@ -425,6 +469,82 @@ public class MovecraftRepair {
                             needReplace = true;
                         }
                         if (needReplace) {
+                            numDiffBlocks++;
+                            locMissingBlocks.addLast(new ImmutablePair<>(new Vector(offset.getBlockX() + x, offset.getBlockY() + y, offset.getBlockZ() + z),new Vector(position.getBlockX(),position.getBlockY(),position.getBlockZ())));
+                        }
+                    }
+                    if (bukkitBlock.getType() == Material.FURNACE && block.getType() == 61){
+                        Furnace furnace = (Furnace) bukkitBlock.getState();
+                        FurnaceInventory fInv = furnace.getInventory();
+                        CompoundTag nbtData = block.getNbtData();
+                        ListTag lt = nbtData.getListTag("Items");
+                        int emptySlots = 0;
+                        if (lt != null){
+                            for (Tag t : lt.getValue()){
+                                if (!(t instanceof CompoundTag)){
+                                    continue;
+                                }
+                                CompoundTag ct = (CompoundTag) t;
+                                ImmutablePair<Material, Integer> content;
+                                if (ct.getString("id").equals("minecraft:coal")){
+                                    content = new ImmutablePair<>(Material.COAL, (int) ct.getShort("Damage"));
+                                    double count = (double) ct.getByte("Count");
+                                    switch (ct.getByte("Slot")){
+                                        case 0:
+                                            if (fInv.getSmelting() != null && fInv.getSmelting().getType().equals(content.getLeft())){
+                                                boolean requireSpecific = Settings.RepairRequireSpecificMaterials.containsKey(fInv.getSmelting().getType()) && Settings.RepairRequireSpecificMaterials.get(fInv.getSmelting().getType()).contains((int) fInv.getSmelting().getData().getData());
+                                                if (requireSpecific && fInv.getSmelting().getData().getData() != content.getRight()){
+                                                    break;
+                                                }
+                                                count -= fInv.getSmelting().getAmount();
+                                            }
+                                            break;
+                                        case 1:
+                                            if (fInv.getFuel() != null && fInv.getFuel().getType().equals(content.getLeft())) {
+                                                boolean requireSpecific = Settings.RepairRequireSpecificMaterials.containsKey(fInv.getFuel().getType()) && Settings.RepairRequireSpecificMaterials.get(fInv.getFuel().getType()).contains((int) fInv.getSmelting().getData().getData());
+                                                if (requireSpecific && fInv.getFuel().getData().getData() != content.getRight()){
+                                                    break;
+                                                }
+                                                count -= fInv.getFuel().getAmount();
+                                            }
+                                            break;
+                                    }
+                                    if (count > 0){
+                                        if (missingBlocks.containsKey(content)){
+                                            double amount = missingBlocks.get(content);
+                                            amount += count;
+                                            missingBlocks.put(content, amount);
+                                        } else {
+                                            missingBlocks.put(content, count);
+                                        }
+                                        emptySlots++;
+                                    }
+                                }
+                                if (ct.getString("id").equals("minecraft:coal_block")){
+                                    content = new ImmutablePair<>(Material.COAL_BLOCK, 0);
+                                    double count = (double) ct.getByte("Count");
+                                    switch (ct.getByte("Slot")){
+                                        case 0:
+                                            count -= fInv.getSmelting() != null ? fInv.getSmelting().getAmount() : 0;
+                                            break;
+                                        case 1:
+                                            count -= fInv.getFuel() != null ? fInv.getFuel().getAmount() : 0;
+                                            break;
+                                    }
+                                    if (count > 0){
+                                        if (missingBlocks.containsKey(content)){
+                                            double amount = missingBlocks.get(content);
+                                            amount += count;
+                                            missingBlocks.put(content, amount);
+                                        } else {
+                                            missingBlocks.put(content, count);
+                                        }
+                                        emptySlots++;
+                                    }
+                                }
+                            }
+                        }
+                        if (emptySlots > 0){
                             numDiffBlocks++;
                             locMissingBlocks.addLast(new ImmutablePair<>(new Vector(offset.getBlockX() + x, offset.getBlockY() + y, offset.getBlockZ() + z),new Vector(position.getBlockX(),position.getBlockY(),position.getBlockZ())));
                         }
