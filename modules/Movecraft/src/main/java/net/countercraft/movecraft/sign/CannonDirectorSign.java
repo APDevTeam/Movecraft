@@ -34,7 +34,7 @@ public final class CannonDirectorSign implements Listener {
         Craft foundCraft = null;
         CraftManager.getInstance().getCraftsInWorld(block.getWorld());
         for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(block.getWorld())) {
-            if (MathUtils.locationInHitbox(tcraft.getHitBox(), event.getClickedBlock().getLocation()) &&
+            if (MathUtils.locationInHitBox(tcraft.getHitBox(), event.getClickedBlock().getLocation()) &&
                     CraftManager.getInstance().getPlayerFromCraft(tcraft) != null) {
                 foundCraft = tcraft;
                 break;

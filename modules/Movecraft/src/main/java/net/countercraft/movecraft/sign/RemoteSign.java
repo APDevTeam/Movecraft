@@ -53,7 +53,7 @@ public final class RemoteSign implements Listener{
         Craft foundCraft = null;
         CraftManager.getInstance().getCraftsInWorld(event.getClickedBlock().getWorld());
         for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(event.getClickedBlock().getWorld())) {
-            if (MathUtils.locationInHitbox(tcraft.getHitBox(), event.getClickedBlock().getLocation())) {
+            if (MathUtils.locationInHitBox(tcraft.getHitBox(), event.getClickedBlock().getLocation())) {
                 // don't use a craft with a null player. This is
                 // mostly to avoid trying to use subcrafts
                 if (CraftManager.getInstance().getPlayerFromCraft(tcraft) != null) {

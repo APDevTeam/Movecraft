@@ -40,7 +40,7 @@ public class ManOverboardCommand implements CommandExecutor{
         }
 
         if ((System.currentTimeMillis() - CraftManager.getInstance().getTimeFromOverboard(player)) / 1_000 > Settings.ManOverboardTimeout) {
-            if(!MathUtils.locationInHitbox(craft.getHitBox(), player.getLocation()))
+            if(!MathUtils.locationNearHitBox(craft.getHitBox(), player.getLocation(), 1))
             {
                 player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("ManOverboard - Timed Out"));
                 return true;
