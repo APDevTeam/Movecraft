@@ -14,6 +14,7 @@ import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.WorldEditUpdateCommand;
 import net.countercraft.movecraft.repair.Repair;
 import net.countercraft.movecraft.repair.RepairManager;
+import net.countercraft.movecraft.repair.RepairUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -151,11 +152,12 @@ public class RepairSign implements Listener{
                 long longRemQty = Math.round(numMissingItems.get(type));
                 int remainingQty = (int) longRemQty;
                 ArrayList<InventoryHolder> chests = new ArrayList<>();
+                boolean requireSpecific = Settings.RepairRequireSpecificMaterials.containsKey(type.getLeft()) && Settings.RepairRequireSpecificMaterials.get(type.getLeft()).contains(type.getRight());
                 for (MovecraftLocation loc : pCraft.getHitBox()) {
                     Block b = pCraft.getW().getBlockAt(loc.getX(), loc.getY(), loc.getZ());
                     if ((b.getType() == Material.CHEST) || (b.getType() == Material.TRAPPED_CHEST)) {
                         InventoryHolder inventoryHolder = (InventoryHolder) b.getState();
-                        boolean requireSpecific = Settings.RepairRequireSpecificMaterials.containsKey(type.getLeft()) && Settings.RepairRequireSpecificMaterials.get(type.getLeft()).contains(type.getRight());
+
                         if (inventoryHolder.getInventory().contains(type.getLeft()) && remainingQty > 0) {
                             HashMap<Integer, ? extends ItemStack> foundItems = inventoryHolder.getInventory().all(type.getLeft());
                             // count how many were in the chest
@@ -173,7 +175,7 @@ public class RepairSign implements Listener{
                     }
                 }
                 if (remainingQty > 0) {
-                    event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("Need more of material") + ": %s - %d", Settings.RepairRequireSpecificMaterials.containsKey(type.getLeft()) ? type.getLeft().name().toLowerCase().replace("_", "") + ":" + type.getRight() : type.getLeft().name().toLowerCase().replace("_", " "), remainingQty));
+                    event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("Need more of material") + ": %s - %d", requireSpecific ? RepairUtils.specificName(type.getLeft(), type.getRight()) : type.getLeft().name().toLowerCase().replace("_", " "), remainingQty));
                     enoughMaterial = false;
                 } else {
                     chestsToTakeFrom.put(type, chests);
@@ -191,10 +193,11 @@ public class RepairSign implements Listener{
             if (enoughMaterial) {
                 // we know we have enough materials to make the repairs, so remove the materials from the chests
                 for (ImmutablePair<Material, Integer> type : numMissingItems.keySet()) {
+                    boolean requireSpecific = Settings.RepairRequireSpecificMaterials.containsKey(type.getLeft()) && Settings.RepairRequireSpecificMaterials.get(type.getLeft()).contains(type.getRight());
                     int remainingQty = (int) Math.round(numMissingItems.get(type));
                     for (InventoryHolder inventoryHolder : chestsToTakeFrom.get(type)) {
                         HashMap<Integer, ? extends ItemStack> foundItems = inventoryHolder.getInventory().all(type.getLeft());
-                        boolean requireSpecific = Settings.RepairRequireSpecificMaterials.containsKey(type.getLeft()) && Settings.RepairRequireSpecificMaterials.get(type.getLeft()).contains(type.getRight());
+
                         for (ItemStack istack : foundItems.values()) {
                             if (requireSpecific && !Settings.RepairRequireSpecificMaterials.get(istack.getType()).contains((int) istack.getData().getData())){
                                 continue;
@@ -249,9 +252,8 @@ public class RepairSign implements Listener{
             if (numDifferentBlocks != 0) {
                 event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("SUPPLIES NEEDED"));
                 for (ImmutablePair<Material, Integer> blockType : numMissingItems.keySet()) {
-                    String blockName = !Settings.RepairRequireSpecificMaterials.containsKey(blockType.getLeft()) ? String.format("%s : %d", blockType.getLeft().name().toLowerCase().replace("_", " "), Math.round(numMissingItems.get(blockType))) :
-                            String.format("%s:%d : %d", blockType.getLeft().name().toLowerCase().replace("_", " ") ,blockType.getRight() ,Math.round(numMissingItems.get(blockType)));
-                    event.getPlayer().sendMessage(blockName);
+                    boolean requireSpecific = Settings.RepairRequireSpecificMaterials.containsKey(blockType.getLeft()) && Settings.RepairRequireSpecificMaterials.get(blockType.getLeft()).contains(blockType.getRight());
+                    event.getPlayer().sendMessage(String.format("%s : %d",requireSpecific ? RepairUtils.specificName(blockType.getLeft(), blockType.getRight()) : blockType.getLeft().name().replace("_", " ").toLowerCase(), Math.round(numMissingItems.get(blockType))));
                 }
                 long durationInSeconds = numDifferentBlocks * Settings.RepairTicksPerBlock / 20;
                 event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("Seconds to complete repair") + ": %d", durationInSeconds));
