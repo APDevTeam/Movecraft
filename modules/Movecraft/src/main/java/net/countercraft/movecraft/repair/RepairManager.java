@@ -54,16 +54,13 @@ public class RepairManager extends BukkitRunnable {
                 }
 
                 if (similarPlayerNames.size() > 1) {
-                    StringBuilder output = new StringBuilder();
+                    String warning = "";
                     boolean first = true;
                     for (String name : similarPlayerNames){
-                        if (!first){
-                            output.append(", ");
-                        }
-                        output.append(name);
+                        String.join(warning, first ? ", " : "", name);
                         first = false;
                     }
-                    Movecraft.getInstance().getLogger().warning(I18nSupport.getInternationalisedString("RepairStateConversion - Similar players found") + output.toString());
+                    Movecraft.getInstance().getLogger().warning(I18nSupport.getInternationalisedString("RepairStateConversion - Similar players found") + warning);
                     confirmedSimilarPlayerNames.push(similarPlayerNames);
                     continue;
                 } else if (similarPlayerNames.isEmpty() || owner == null){
@@ -108,11 +105,10 @@ public class RepairManager extends BukkitRunnable {
         //Then check the similar names
         while (!confirmedSimilarPlayerNames.isEmpty()){
             List<String> similarPlayerNames = confirmedSimilarPlayerNames.poll();
-            String[] names = similarPlayerNames.toArray(new String[1]);
-            Arrays.sort(names, new StringLengthComparator());
+            similarPlayerNames.sort(Comparator.comparing(String::length));
             //Iterate over the name array in descending order as the last object is the longest one
-            for (int i = names.length - 1 ; i >= 0  ; i--){
-                String pName = names[i];
+            for (int i = similarPlayerNames.size() - 1 ; i >= 0  ; i--){
+                String pName = similarPlayerNames.get(i);
                 for (File rs : repairStateDir.listFiles()){
                     String fileName = rs.getName();
                     //Continue if the file doen't start with the player name
@@ -151,6 +147,9 @@ public class RepairManager extends BukkitRunnable {
             }
         }
         //Finally, put statistics out in the log
+        if (convertedRepairStates == 0 && repairStatesWithUnknownOwner == 0 && failedConversions == 0){
+            return;
+        }
         Logger log = Movecraft.getInstance().getLogger();
         log.info(String.format(I18nSupport.getInternationalisedString("RepairStateConversion - Successful conversions"), convertedRepairStates));
         log.info(String.format(I18nSupport.getInternationalisedString("RepairStateConversion - Repair States With Unknown Owner"), repairStatesWithUnknownOwner));
@@ -159,19 +158,5 @@ public class RepairManager extends BukkitRunnable {
 
     public List<Repair> getRepairs() {
         return repairs;
-    }
-
-    private class StringLengthComparator implements Comparator<String>{
-
-        @Override
-        public int compare(String o1, String o2) {
-            if (o1.length() > o2.length()){
-                return 1;
-            } else if (o1.length() < o2.length()){
-                return -1;
-            } else {
-                return 0;
-            }
-        }
     }
 }
