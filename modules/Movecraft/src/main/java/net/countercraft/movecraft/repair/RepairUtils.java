@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.repair;
 
+import net.countercraft.movecraft.Movecraft;
 import org.bukkit.Material;
 
 import java.util.HashSet;
@@ -14,8 +15,10 @@ public class RepairUtils {
         COLORED_BLOCKS.add(Material.STAINED_GLASS);
         COLORED_BLOCKS.add(Material.STAINED_CLAY);
         COLORED_BLOCKS.add(Material.CARPET);
-        COLORED_BLOCKS.add(Material.getMaterial("CONCRETE"));
-        COLORED_BLOCKS.add(Material.getMaterial("CONCRETE_POWDER"));
+        if (Movecraft.getInstance().getServer().getVersion().split(".")[1].equals("12")) {
+            COLORED_BLOCKS.add(Material.getMaterial("CONCRETE"));
+            COLORED_BLOCKS.add(Material.getMaterial("CONCRETE_POWDER"));
+        }
         COLORED_BLOCKS.add(Material.BED_BLOCK);
     }
 
@@ -150,9 +153,29 @@ public class RepairUtils {
             }
         }
         else if (type.equals(Material.COAL)){
+            if (data == 1) {
+                ret += "char";
+            }
+        }
+        else if (type.equals(Material.WOOD_STEP)){
             switch (data){
+                case 0:
+                    ret += "oak ";
+                    break;
                 case 1:
-                    ret += "char";
+                    ret += "spruce ";
+                    break;
+                case 2:
+                    ret += "birch ";
+                    break;
+                case 3:
+                    ret += "jungle ";
+                    break;
+                case 4:
+                    ret += "acacia ";
+                    break;
+                case 5:
+                    ret += "dark oak ";
                     break;
             }
         }

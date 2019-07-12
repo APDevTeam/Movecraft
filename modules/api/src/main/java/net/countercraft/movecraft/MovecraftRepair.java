@@ -367,7 +367,11 @@ public class MovecraftRepair {
                                 qtyToConsume = 2;
                                 break;
                             }
-
+                            case 126:
+                                if (dataToConsume >= 8){
+                                    dataToConsume -= 8;
+                                }
+                                break;
                             case 125: { // for double wood slabs, require 2 wood slabs
                                 itemToConsume = 126;
                                 qtyToConsume = 2;
