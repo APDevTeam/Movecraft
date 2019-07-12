@@ -199,7 +199,7 @@ public class RepairSign implements Listener{
                         HashMap<Integer, ? extends ItemStack> foundItems = inventoryHolder.getInventory().all(type.getLeft());
 
                         for (ItemStack istack : foundItems.values()) {
-                            if (requireSpecific && !Settings.RepairRequireSpecificMaterials.get(istack.getType()).contains((int) istack.getData().getData())){
+                            if (requireSpecific && istack.getData().getData() != type.getRight()){
                                 continue;
                             }
                             if (istack.getAmount() <= remainingQty) {
