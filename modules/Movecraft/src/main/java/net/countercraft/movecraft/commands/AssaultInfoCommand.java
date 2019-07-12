@@ -80,14 +80,14 @@ public class AssaultInfoCommand implements CommandExecutor {
         }
 
         boolean canBeAssaulted = true;
-        String output = I18nSupport.getInternationalisedString("AssaultInfo - Name") + " ";
+        String output = I18nSupport.getInternationalisedString("Region Name") + ": ";
         output += assaultRegion.getId();
-        output += ", "+I18nSupport.getInternationalisedString("AssaultInfo - Owner")+" " ;
+        output += ", "+I18nSupport.getInternationalisedString("Region Owner")+": " ;
         output += WorldguardUtils.getRegionOwnerList(assaultRegion);
-        output += ", "+I18nSupport.getInternationalisedString("AssaultInfo - Cap")+" ";
+        output += ", "+I18nSupport.getInternationalisedString("Max Damages")+": ";
         double maxDamage = AssaultUtils.getMaxDamages(assaultRegion);
         output += String.format("%.2f", maxDamage);
-        output += ", "+I18nSupport.getInternationalisedString("AssaultInfo - Cost")+" ";
+        output += ", "+I18nSupport.getInternationalisedString("Assault Cost")+": ";
         double cost = AssaultUtils.getCostToAssault(assaultRegion);
         output += String.format("%.2f", cost);
         for (Assault assault : Movecraft.getInstance().getAssaultManager().getAssaults()) {

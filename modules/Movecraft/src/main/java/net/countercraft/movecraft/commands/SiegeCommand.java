@@ -291,11 +291,11 @@ public class SiegeCommand implements CommandExecutor {
         start = siege.getScheduleStart() < getMilitaryTime() ? ChatColor.GREEN : ChatColor.RED;
         end = siege.getScheduleEnd() > getMilitaryTime() ? ChatColor.GREEN : ChatColor.RED;
 
-        sender.sendMessage(I18nSupport.getInternationalisedString("Siege - Siege Cost") + cost + currencyFormat.format(siege.getCost()));
-        sender.sendMessage(I18nSupport.getInternationalisedString("Siege - Daily Income") + ChatColor.WHITE + currencyFormat.format(siege.getDailyIncome()));
-        sender.sendMessage(I18nSupport.getInternationalisedString("Siege - Day of Week") + daysOfWeekString(siege.getDaysOfWeek()));
-        sender.sendMessage(I18nSupport.getInternationalisedString("Siege - Start Time") + start + militaryTimeIntToString(siege.getScheduleStart()) + " UTC");
-        sender.sendMessage(I18nSupport.getInternationalisedString("Siege - End Time") + end + militaryTimeIntToString(siege.getScheduleEnd()) + " UTC");
-        sender.sendMessage(I18nSupport.getInternationalisedString("Siege - Duration") + ChatColor.WHITE + secondsIntToString(siege.getDuration()));
+        sender.sendMessage(I18nSupport.getInternationalisedString("Siege Cost") +": " + cost + currencyFormat.format(siege.getCost()));
+        sender.sendMessage(I18nSupport.getInternationalisedString("Daily Income") + ": " + ChatColor.WHITE + currencyFormat.format(siege.getDailyIncome()));
+        sender.sendMessage(I18nSupport.getInternationalisedString("Day Of Week") + ": " + daysOfWeekString(siege.getDaysOfWeek()));
+        sender.sendMessage(I18nSupport.getInternationalisedString("Start Time") + ": " + start + militaryTimeIntToString(siege.getScheduleStart()) + " UTC");
+        sender.sendMessage(I18nSupport.getInternationalisedString("End Time") + ": " + end + militaryTimeIntToString(siege.getScheduleEnd()) + " UTC");
+        sender.sendMessage(I18nSupport.getInternationalisedString("Duration") + ": " + ChatColor.WHITE + secondsIntToString(siege.getDuration()));
     }
 }
