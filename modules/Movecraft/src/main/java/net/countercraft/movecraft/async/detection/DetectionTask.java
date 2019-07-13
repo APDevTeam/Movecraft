@@ -18,12 +18,11 @@
 package net.countercraft.movecraft.async.detection;
 
 
-import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.utils.*;
+import net.countercraft.movecraft.utils.HashHitBox;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;

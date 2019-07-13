@@ -122,7 +122,7 @@ public class RepairSign implements Listener{
             event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Repair functionality is disabled or WorldEdit was not detected"));
             return;
         }
-        String repairName = event.getPlayer().getName();
+        String repairName = event.getPlayer().getUniqueId().toString();
         repairName += "_";
         repairName += ChatColor.stripColor(sign.getLine(1));
         MovecraftRepair movecraftRepair = MovecraftRepair.getInstance();
