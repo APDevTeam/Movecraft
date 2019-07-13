@@ -862,7 +862,7 @@ public class AsyncManager extends BukkitRunnable {
             final Map<MovecraftLocation, Material> phaseBlocks = wreckPhases.get(hitBox);
             final World world = wreckWorlds.get(hitBox);
             for (MovecraftLocation location : hitBox){
-                handler.setBlockFast(location.toBukkit(world), phaseBlocks.get(location),(byte) 0);
+                handler.setBlockFast(location.toBukkit(world), phaseBlocks.getOrDefault(location, Material.AIR),(byte) 0);
             }
             processed.add(hitBox);
         }
