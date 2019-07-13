@@ -156,6 +156,13 @@ public class TranslationTask extends AsyncTask {
         }
 
         if(craft.getSinking()){
+            List<MovecraftLocation> air = new ArrayList<>();
+            for(MovecraftLocation location: newHitBox){
+                if(location.toBukkit(craft.getW()).getBlock().getType() == Material.AIR){
+                    air.add(location);
+                }
+            }
+            newHitBox.removeAll(air);
             for(MovecraftLocation location : collisionBox){
                 if (craft.getType().getExplodeOnCrash() > 0.0F) {
                     if (System.currentTimeMillis() - craft.getOrigPilotTime() <= 1000) {
