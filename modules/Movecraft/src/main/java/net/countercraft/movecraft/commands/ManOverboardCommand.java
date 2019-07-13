@@ -5,6 +5,7 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.utils.MathUtils;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -27,10 +28,6 @@ public class ManOverboardCommand implements CommandExecutor{
         Player player = (Player) commandSender;
         Craft craft = CraftManager.getInstance().getCraftByPlayerName(player.getName());
 
-        if (craft == null) { //player is in craft but not piloting
-            craft = CraftManager.getInstance().getCraftFromOverboard(player);
-        }
-
         if(craft == null){
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("ManOverboard - No Craft Found"));
             return true;
@@ -42,10 +39,10 @@ public class ManOverboardCommand implements CommandExecutor{
             return true;
         }
 
-        if ((System.currentTimeMillis() - CraftManager.getInstance().getTimeFromOverboard(player)) / 1_000 > Settings.ManOverboardTimeout) {
+        if ((System.currentTimeMillis() - CraftManager.getInstance().getTimeFromOverboard(player)) / 1_000 > Settings.ManOverboardTimeout
+                && !MathUtils.locIsNearCraftFast(craft, MathUtils.bukkit2MovecraftLoc(player.getLocation()))) {
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("ManOverboard - Timed Out"));
             return true;
-
         }
 
         if (telPoint.distanceSquared(player.getLocation()) > Settings.ManOverboardDistSquared) {
@@ -53,7 +50,7 @@ public class ManOverboardCommand implements CommandExecutor{
             return true;
         }
 
-        if (craft.getDisabled() || craft.getSinking()) {
+        if (craft.getDisabled() || craft.getSinking() || CraftManager.getInstance().getPlayerFromCraft(craft) == null) {
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("ManOverboard - Disabled"));
             return true;
         }

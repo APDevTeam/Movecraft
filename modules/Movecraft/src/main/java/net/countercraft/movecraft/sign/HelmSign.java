@@ -71,7 +71,7 @@ public final class HelmSign implements Listener {
             }
         }*/
 
-        if (!MathUtils.locationInHitbox(craft.getHitBox(), event.getPlayer().getLocation())) {
+        if (!MathUtils.locationInHitBox(craft.getHitBox(), event.getPlayer().getLocation())) {
             return;
         }
 
