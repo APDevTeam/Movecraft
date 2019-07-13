@@ -157,9 +157,9 @@ public class TranslationTask extends AsyncTask {
 
         if(craft.getSinking()){
             List<MovecraftLocation> air = new ArrayList<>();
-            for(MovecraftLocation location: newHitBox){
+            for(MovecraftLocation location: oldHitBox){
                 if(location.toBukkit(craft.getW()).getBlock().getType() == Material.AIR){
-                    air.add(location);
+                    air.add(location.translate(dx,dy,dz));
                 }
             }
             newHitBox.removeAll(air);
