@@ -63,7 +63,7 @@ public class ContactsCommand implements CommandExecutor {
             long diffy = cposy - tposy;
             long diffz = cposz - tposz;
             long distsquared = diffx * diffx + diffy * diffy + diffz * diffz;
-            long detectionRangeSquared = tposy > tcraft.getW().getSeaLevel() ?
+            long detectionRangeSquared = tposy > tcraft.getType().getStaticWaterLevel() ?
                     (long) (tcraft.getOrigBlockCount() * tcraft.getType().getDetectionMultiplier()) :
                     (long) (tcraft.getOrigBlockCount() * tcraft.getType().getUnderwaterDetectionMultiplier());
             if (distsquared < detectionRangeSquared && tcraft.getNotificationPlayer() != ccraft.getNotificationPlayer()) {
