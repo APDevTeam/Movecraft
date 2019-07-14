@@ -25,7 +25,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import java.util.UUID;
 
 public class RegionDamagedSign implements Listener {
-    private final String HEADER = ChatColor.RED + I18nSupport.getInternationalisedString("Region Damaged");
+    private final String HEADER = ChatColor.RED + "REGION DAMAGED!";
 
     @EventHandler
     public void onSignRightClick(PlayerInteractEvent event){
