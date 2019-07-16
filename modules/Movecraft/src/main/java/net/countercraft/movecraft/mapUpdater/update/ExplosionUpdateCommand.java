@@ -3,6 +3,8 @@ package net.countercraft.movecraft.mapUpdater.update;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.flags.DefaultFlag;
 import net.countercraft.movecraft.Movecraft;
+import net.countercraft.movecraft.config.Settings;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
 import java.util.Objects;
@@ -31,6 +33,9 @@ public class ExplosionUpdateCommand extends UpdateCommand {
     public void doUpdate() {
         //if (explosionStrength > 0) { // don't bother with tiny explosions
         //Location loc = new Lo cation(explosionLocation.getWorld(), explosionLocation.getX() + 0.5, explosionLocation.getY() + 0.5, explosionLocation.getZ());
+        if (Settings.Debug){
+            Bukkit.broadcastMessage("Explosion strength: " + explosionStrength + " at " + explosionLocation.toVector().toString());
+        }
         this.createExplosion(explosionLocation.add(.5,.5,.5), explosionStrength);
         //}
 

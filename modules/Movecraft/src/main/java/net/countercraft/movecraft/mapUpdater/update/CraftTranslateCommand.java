@@ -1,6 +1,5 @@
 package net.countercraft.movecraft.mapUpdater.update;
 
-import com.google.common.collect.Sets;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.WorldHandler;
@@ -8,11 +7,7 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.SignTranslateEvent;
-import net.countercraft.movecraft.utils.CollectionUtils;
-import net.countercraft.movecraft.utils.HashHitBox;
-import net.countercraft.movecraft.utils.HitBox;
-import net.countercraft.movecraft.utils.MutableHitBox;
-import net.countercraft.movecraft.utils.SolidHitBox;
+import net.countercraft.movecraft.utils.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -173,6 +168,7 @@ public class CraftTranslateCommand extends UpdateCommand {
                 }
             }
         }
+
         if (!craft.isNotProcessing())
             craft.setProcessing(false);
         time = System.nanoTime() - time;
