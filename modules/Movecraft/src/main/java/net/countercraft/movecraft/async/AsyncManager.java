@@ -315,11 +315,6 @@ public class AsyncManager extends BukkitRunnable {
 
 
                         sentMapUpdate = true;
-
-                        /*c.setBlockList(task.getBlockList());
-                        c.setMinX(task.getMinX());
-                        c.setMinZ(task.getMinZ());
-                        c.setHitBox(task.getHitbox());*/
                         c.setHitBox(task.getNewHitBox());
 
                         // rotate any cannons that were present
