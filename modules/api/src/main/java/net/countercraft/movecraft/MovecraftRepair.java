@@ -586,8 +586,8 @@ public class MovecraftRepair {
         HashHitBox hitBox = craft.getHitBox();
         World w = craft.getW();
         for (MovecraftLocation location : hitBox) {
-            Integer id = w.getBlockTypeIdAt(location.getX(), location.getY(), location.getZ());
-            Byte data = w.getBlockAt(location.getX(), location.getY(), location.getZ()).getData();
+            int id = w.getBlockTypeIdAt(location.toBukkit(w));
+            byte data = w.getBlockAt(location.getX(), location.getY(), location.getZ()).getData();
             returnSet.add(new BaseBlock(id, data));
         }
         if (Settings.Debug) {

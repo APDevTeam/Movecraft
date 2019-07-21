@@ -190,6 +190,7 @@ public class RotationTask extends AsyncTask {
                 break;
             }
         }
+
         if (failed) {
             if (this.isSubCraft && parentCraft != getCraft()) {
                 parentCraft.setProcessing(false);
@@ -308,12 +309,20 @@ public class RotationTask extends AsyncTask {
                 if (newHitBox.intersects(craft.getHitBox()) && craft != getCraft()) {
                     //newHitBox.addAll(CollectionUtils.filter(craft.getHitBox(),newHitBox));
                     //craft.setHitBox(newHitBox);
+                    if (Settings.Debug) {
+                        Bukkit.broadcastMessage(String.format("Size of %s hitbox: %d, Size of %s hitbox: %d", this.craft.getType().getCraftName(), newHitBox.size(), craft.getType().getCraftName(), craft.getHitBox().size()));
+                    }
                     craft.getHitBox().removeAll(oldHitBox);
                     craft.getHitBox().addAll(newHitBox);
+                    if (Settings.Debug){
+                        Bukkit.broadcastMessage(String.format("Hitbox of craft %s intersects hitbox of craft %s", this.craft.getType().getCraftName(), craft.getType().getCraftName()));
+                        Bukkit.broadcastMessage(String.format("Size of %s hitbox: %d, Size of %s hitbox: %d", this.craft.getType().getCraftName(), newHitBox.size(), craft.getType().getCraftName(), craft.getHitBox().size()));
+                    }
                     break;
                 }
             }
         }
+
 
     }
 
