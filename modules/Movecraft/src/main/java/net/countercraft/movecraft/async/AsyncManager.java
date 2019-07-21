@@ -61,6 +61,7 @@ public class AsyncManager extends BukkitRunnable {
     private HashMap<HitBox, Long> wrecks = new HashMap<>();
     private HashMap<HitBox, World> wreckWorlds = new HashMap<>();
     private HashMap<HitBox, Map<MovecraftLocation,Material>> wreckPhases = new HashMap<>();
+    private HashMap<Craft, Vector> fallDistance = new HashMap<>();
 
     private long lastTracerUpdate = 0;
     private long lastFireballCheck = 0;

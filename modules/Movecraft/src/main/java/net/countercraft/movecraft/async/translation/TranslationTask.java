@@ -1,6 +1,5 @@
 package net.countercraft.movecraft.async.translation;
 
-import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.craft.Craft;
@@ -23,7 +22,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -91,6 +89,37 @@ public class TranslationTask extends AsyncTask {
             fail(I18nSupport.getInternationalisedString("Translation - Failed Craft out of fuel"));
             return;
         }
+        if (craft.getType().getUseGravity() && !craft.getSinking()){
+            boolean onGround = false;
+            boolean inclined = false;
+            for (MovecraftLocation loc : oldHitBox){
+                if (loc.getY() > oldHitBox.getMinY()){
+                    continue;
+                }
+                MovecraftLocation newLoc = loc.translate(dx, dy, dz);
+                Location bukkitLoc = newLoc.toBukkit(craft.getW());
+                Material testSurface = bukkitLoc.getBlock().getRelative(0,-1, 0).getType();
+                if (!testSurface.equals(Material.AIR) && !craft.getType().getPassthroughBlocks().contains(testSurface) || newLoc.getY() <= craft.getType().getMinHeightLimit()){
+                    if (craft.getType().getHarvestBlocks().contains(testSurface) && craft.getType().getHarvesterBladeBlocks().contains(loc.toBukkit(craft.getW()).getBlock().getType())){
+                        continue;
+                    }
+                    onGround = true;
+                }
+                if (oldHitBox.contains(newLoc)){
+                    continue;
+                }
+
+                if (!bukkitLoc.getBlock().getType().equals(Material.AIR) && !craft.getType().getPassthroughBlocks().contains(bukkitLoc.getBlock().getType()) && !craft.getType().getHarvestBlocks().contains(bukkitLoc.getBlock().getType())){
+                    inclined = true;
+                }
+            }
+            if (inclined){
+                dy = 1;
+            }
+            else if (!onGround){
+                dy = -1;
+            }
+        }
 
         //TODO: Add and handle event for towny and factions
         final List<Material> harvestBlocks = craft.getType().getHarvestBlocks();
@@ -134,6 +163,8 @@ public class TranslationTask extends AsyncTask {
                 }
             }
 
+
+
             if (blockObstructed) {
                 if (!craft.getSinking() && craft.getType().getCollisionExplosion() == 0.0F) {
                     fail(String.format(I18nSupport.getInternationalisedString("Translation - Failed Craft is obstructed") + " @ %d,%d,%d,%s", newLocation.getX(), newLocation.getY(), newLocation.getZ(), testMaterial.toString()));
@@ -147,6 +178,22 @@ public class TranslationTask extends AsyncTask {
             } //END OF: if (blockObstructed)
         }
 
+        if (!craft.getType().getCanHoverOverWater()){
+            boolean overWater = false;
+            MovecraftLocation test = new MovecraftLocation(oldHitBox.getMidPoint().getX(), oldHitBox.getMinY(), oldHitBox.getMidPoint().getZ());
+            Block testBlock = test.toBukkit(craft.getW()).getBlock();
+            while (testBlock.getType().equals(Material.AIR) || craft.getType().getPassthroughBlocks().contains(testBlock.getType())){
+                test = test.translate(0, -1, 0);
+                testBlock = test.toBukkit(craft.getW()).getBlock();
+                if (testBlock.getType() != Material.STATIONARY_WATER || testBlock.getType() != Material.WATER ){
+                    overWater = true;
+                    break;
+                }
+            }
+            if (overWater){
+                fail(I18nSupport.getInternationalisedString("Translation - Failed Craft over water"));
+            }
+        }
         //call event
         CraftTranslateEvent event = new CraftTranslateEvent(craft, oldHitBox, newHitBox);
         Bukkit.getServer().getPluginManager().callEvent(event);

@@ -25,18 +25,16 @@ import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
-import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.events.CraftRotateEvent;
-import net.countercraft.movecraft.events.CraftTranslateEvent;
-import net.countercraft.movecraft.utils.*;
-import net.countercraft.movecraft.utils.HashHitBox;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.events.CraftRotateEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.update.CraftRotateCommand;
 import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
+import net.countercraft.movecraft.utils.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -47,10 +45,8 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 public class RotationTask extends AsyncTask {
@@ -72,6 +68,7 @@ public class RotationTask extends AsyncTask {
 
     private final HashHitBox oldHitBox;
     private final HashHitBox newHitBox;
+    private int dy = 0;
 
     public RotationTask(Craft c, MovecraftLocation originPoint, Rotation rotation, World w, boolean isSubCraft) {
         super(c);
@@ -143,6 +140,7 @@ public class RotationTask extends AsyncTask {
                 getCraft().setBurningFuel(getCraft().getBurningFuel() - fuelBurnRate);
             }
         }
+
         // if a subcraft, find the parent craft. If not a subcraft, it is it's own parent
         Set<Craft> craftsInWorld = CraftManager.getInstance().getCraftsInWorld(getCraft().getW());
         Craft parentCraft = getCraft();
