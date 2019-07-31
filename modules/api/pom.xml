@@ -28,7 +28,6 @@
         <version>parent</version>
         <relativePath>../../</relativePath>
     </parent>
-
     <dependencies>
 
         <dependency>

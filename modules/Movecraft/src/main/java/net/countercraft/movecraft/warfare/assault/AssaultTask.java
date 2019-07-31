@@ -5,11 +5,15 @@ import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.sign.RegionDamagedSign;
 import org.bukkit.*;
 import org.bukkit.block.Sign;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.UUID;
+
+import static net.countercraft.movecraft.utils.ChatUtils.ERROR_PREFIX;
 
 public class AssaultTask extends BukkitRunnable {
     private final Assault assault;
@@ -28,7 +32,7 @@ public class AssaultTask extends BukkitRunnable {
             // assault was successful
             assault.getRunning().set(false);
             World w = assault.getWorld();
-            Bukkit.getServer().broadcastMessage(String.format("The assault of %s was successful!", assault.getRegionName()));
+            Bukkit.getServer().broadcastMessage(String.format(I18nSupport.getInternationalisedString("Assault - Assault Successful"), assault.getRegionName()));
             ProtectedRegion tRegion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(w).getRegion(assault.getRegionName());
             assert tRegion != null;
             tRegion.setFlag(DefaultFlag.TNT, StateFlag.State.DENY);
@@ -38,13 +42,13 @@ public class AssaultTask extends BukkitRunnable {
             int beaconZ = assault.getMinPos().getBlockZ();
             int beaconY;
             for(beaconY = 255; beaconY > 0; beaconY--) {
-                if(w.getBlockAt(beaconX, beaconY, beaconZ).getType() != Material.AIR) {
+                if(w.getBlockAt(beaconX, beaconY, beaconZ).getType().isOccluding()) {
                     beaconY++;
                     break;
                 }
             }
             if(beaconY > 250) {
-                Bukkit.getServer().broadcastMessage(String.format("BEACON PLACEMENT FOR %s FAILED, CONTACT AN ADMIN!", assault));
+                Bukkit.getServer().broadcastMessage(ERROR_PREFIX + String.format(I18nSupport.getInternationalisedString("Assault - Beacon Placement Failed"), assault));
             }
             else {
                 int x, y, z;
@@ -87,10 +91,10 @@ public class AssaultTask extends BukkitRunnable {
                 // finally the sign on the beacon
                 w.getBlockAt(beaconX + 2, beaconY + 3, beaconZ + 1).setType(Material.OAK_WALL_SIGN);
                 Sign s = (Sign) w.getBlockAt(beaconX + 2, beaconY + 3, beaconZ + 1).getState();
-                s.setLine(0, ChatColor.RED + "REGION DAMAGED!");
-                s.setLine(1, "Region:" + assault.getRegionName());
-                s.setLine(2, "Damage:" + assault.getMaxDamages());
-                s.setLine(3, "Owner:" + getRegionOwnerList(tRegion));
+                s.setLine(0, ChatColor.RED + I18nSupport.getInternationalisedString("Region Damaged"));
+                s.setLine(1, I18nSupport.getInternationalisedString("Region Name")+":" + assault.getRegionName());
+                s.setLine(2, I18nSupport.getInternationalisedString("Damages")+":" + assault.getMaxDamages());
+                s.setLine(3, I18nSupport.getInternationalisedString("Region Owner")+":" + getRegionOwnerList(tRegion));
                 s.update();
                 tRegion.getOwners().clear();
             }
@@ -99,13 +103,13 @@ public class AssaultTask extends BukkitRunnable {
             if (System.currentTimeMillis() - assault.getStartTime() > Settings.AssaultDuration * 1000) {
                 // assault has failed to reach damage cap within required time
                 assault.getRunning().set(false);
-                Bukkit.getServer().broadcastMessage(String.format("The assault of %s has failed!", assault.getRegionName()));
+                Bukkit.getServer().broadcastMessage(String.format(I18nSupport.getInternationalisedString("Assault - Assault Failed"), assault.getRegionName()));
                 ProtectedRegion tRegion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(assault.getWorld()).getRegion(assault.getRegionName());
                 assert tRegion != null;
                 tRegion.setFlag(DefaultFlag.TNT, StateFlag.State.DENY);
                 // repair the damages that have occurred so far
-                if (!AssaultUtils.repairRegion(assault.getWorld(), assault.getRegionName())) {
-                    Bukkit.getServer().broadcastMessage(String.format("REPAIR OF %s FAILED, CONTACT AN ADMIN", assault.getRegionName().toUpperCase()));
+                if (!new RegionDamagedSign().repairRegion(assault.getWorld(), assault.getRegionName())) {
+                    Bukkit.getServer().broadcastMessage(ERROR_PREFIX+String.format(I18nSupport.getInternationalisedString("Assault - Repair Failed"), assault.getRegionName().toUpperCase()));
                 }
             }
         }

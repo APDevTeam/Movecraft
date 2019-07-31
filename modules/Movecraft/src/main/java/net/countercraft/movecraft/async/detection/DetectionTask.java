@@ -29,6 +29,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -117,55 +118,48 @@ public class DetectionTask extends AsyncTask {
             if ((testType == Material.WATER) || (testType == LegacyUtils.STATIONARY_WATER)) {
                 data.setWaterContact(true);
             }
-            if (testType.name().contains("SIGN")) {
+            if (testType.name().endsWith("SIGN")) {
                 new BukkitRunnable() {
-                    @Override
                     public void run() {
-                        Block block = data.getWorld().getBlockAt(x, y, z);
-                        Sign sign = (Sign) block.getState();
-                        if (data.getPlayer() != null) {
-                            if (sign.getLine(0).equalsIgnoreCase("Pilot:")) {
-                                boolean foundPilot = false;
-                                for (String line : sign.getLines()){
-                                    if (line.equals(data.getPlayer().getName())){
-                                        foundPilot = true;
-                                        break;
-                                    }
-                                }
 
-                                if (!foundPilot &&(!data.getPlayer().hasPermission("movecraft.bypasslock"))){
+                        BlockState state = data.getWorld().getBlockAt(x, y, z).getState();
+                        if (state instanceof Sign) {
+                            Sign s = (Sign) state;
+                            if (s.getLine(0).equalsIgnoreCase("Pilot:") && data.getPlayer() != null) {
+                                String playerName = data.getPlayer().getName();
+                                boolean foundPilot = false;
+                                if (s.getLine(1).equalsIgnoreCase(playerName) || s.getLine(2).equalsIgnoreCase(playerName)
+                                        || s.getLine(3).equalsIgnoreCase(playerName)) {
+                                    foundPilot = true;
+                                }
+                                if (!foundPilot && (!data.getPlayer().hasPermission("movecraft.bypasslock"))) {
                                     fail(I18nSupport.getInternationalisedString(
-                                            "Not one of the registered pilots on this craft"));
+                                            "Detection - Not Registered Pilot"));
                                 }
                             }
-                            if (containsForbiddenSignString(block)){
-                                fail(I18nSupport.getInternationalisedString(
-                                        "Detection - Forbidden sign string found"));
+
+
+                            if (s.getLine(0).equalsIgnoreCase("Name:") && !craft.getType().getCanBeNamed()) {
+                                fail(I18nSupport.getInternationalisedString("Detection - Craft Type Cannot Be Named"));
+                            }
+                            for (String line : s.getLines()){
+                                boolean allowedString = true;
+                                if (craft.getType().getForbiddenSignStrings().length > 0){
+                                    for (String forbidden : craft.getType().getForbiddenSignStrings()){
+                                        if (!line.equalsIgnoreCase(forbidden)){
+                                            continue;
+                                        }
+                                        allowedString = false;
+                                    }
+                                }
+                                if (allowedString){
+                                    continue;
+                                }
+                                fail("Detection - Forbidden Sign String Found");
                             }
                         }
                     }
                 }.runTask(Movecraft.getInstance());
-
-                    /*BlockState state = block.getState();
-                    if (state instanceof Sign) {
-                        Sign s = (Sign) state;
-                        if (s.getLine(0).equalsIgnoreCase("Pilot:") && data.getPlayer() != null) {
-                            String playerName = data.getPlayer().getName();
-                            boolean foundPilot = false;
-                            if (s.getLine(1).equalsIgnoreCase(playerName) || s.getLine(2).equalsIgnoreCase(playerName)
-                                    || s.getLine(3).equalsIgnoreCase(playerName)) {
-                                foundPilot = true;
-                            }
-                            if (!foundPilot && (!data.getPlayer().hasPermission("movecraft.bypasslock"))) {
-
-                            }
-                        }
-                        for (int i = 0; i < 4; i++) {
-                            if (isForbiddenSignString(s.getLine(i))) {
-
-                            }
-                        }
-                    }*/
             }
             if (isForbiddenBlock(testType, testData)) {
                 fail(I18nSupport.getInternationalisedString("Detection - Forbidden block found"));

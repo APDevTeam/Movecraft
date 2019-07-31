@@ -132,7 +132,7 @@ public class AssaultUtils {
     }
 
     public static boolean repairRegion(World world, String regionName) {
-        Clipboard clipboard = Movecraft.getInstance().getMovecraftRepair().loadRegionRepairStateClipboard(Movecraft.getInstance(),regionName,world);
+        Clipboard clipboard = Movecraft.getInstance().getMovecraftRepair().loadRegionRepairStateClipboard(regionName,world);
         if (clipboard == null){
             return false;
         }

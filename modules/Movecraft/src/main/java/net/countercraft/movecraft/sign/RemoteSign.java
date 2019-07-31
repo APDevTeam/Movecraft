@@ -20,6 +20,8 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.LinkedList;
 
+import static net.countercraft.movecraft.utils.ChatUtils.ERROR_PREFIX;
+
 public final class RemoteSign implements Listener{
     private static final String HEADER = "Remote Sign";
 
@@ -31,7 +33,7 @@ public final class RemoteSign implements Listener{
             return;
         }
         else if(event.getLine(1).equals("")) {
-            event.getPlayer().sendMessage("ERROR: Remote Signs can't be blank!");
+            event.getPlayer().sendMessage(ERROR_PREFIX + I18nSupport.getInternationalisedString("Remote Signs can't be blank!"));
             event.setLine(0,"");
             event.setLine(2,"");
             event.setLine(3,"");
@@ -63,7 +65,7 @@ public final class RemoteSign implements Listener{
         Craft foundCraft = null;
         CraftManager.getInstance().getCraftsInWorld(event.getClickedBlock().getWorld());
         for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(event.getClickedBlock().getWorld())) {
-            if (MathUtils.locationInHitbox(tcraft.getHitBox(), event.getClickedBlock().getLocation())) {
+            if (MathUtils.locationInHitBox(tcraft.getHitBox(), event.getClickedBlock().getLocation())) {
                 // don't use a craft with a null player. This is
                 // mostly to avoid trying to use subcrafts
                 if (CraftManager.getInstance().getPlayerFromCraft(tcraft) != null) {
@@ -74,19 +76,19 @@ public final class RemoteSign implements Listener{
         }
 
         if (foundCraft == null) {
-            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("ERROR: Remote Sign must be a part of a piloted craft!"));
+            event.getPlayer().sendMessage(ERROR_PREFIX+I18nSupport.getInternationalisedString("Remote Sign must be a part of a piloted craft!"));
             return;
         }
 
         if (!foundCraft.getType().allowRemoteSign()) {
-            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("ERROR: Remote Signs not allowed on this craft!"));
+            event.getPlayer().sendMessage(ERROR_PREFIX + I18nSupport.getInternationalisedString("Remote Signs not allowed on this craft!"));
             return;
         }
 
         String targetText = ChatColor.stripColor(sign.getLine(1));
 
         if(targetText.equalsIgnoreCase(HEADER)) {
-            event.getPlayer().sendMessage("ERROR: Remote Sign can't remote another Remote Sign!");
+            event.getPlayer().sendMessage(ERROR_PREFIX+I18nSupport.getInternationalisedString("Remote Sign cannot remote another Remote Sign!"));
             return;
         }
         LinkedList<MovecraftLocation> foundLocations = new LinkedList<MovecraftLocation>();
@@ -119,7 +121,6 @@ public final class RemoteSign implements Listener{
         {
             @Override
             public void run() {
-
                 MovecraftLocation foundLoc = foundLocations.poll();
                 Block newBlock = event.getClickedBlock().getWorld().getBlockAt(foundLoc.getX(), foundLoc.getY(), foundLoc.getZ());
                 Sign foundSign = (Sign) newBlock.getState();
@@ -135,6 +136,13 @@ public final class RemoteSign implements Listener{
                     break;
                 }
                 PlayerInteractEvent newEvent = null;
+        if (Settings.MaxRemoteSigns > -1) {
+            int foundLocCount = foundLocations.size();
+            if(foundLocCount > Settings.MaxRemoteSigns) {
+                event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("ERROR: ") + foundLocCount + I18nSupport.getInternationalisedString(" remote signs found.  Maximum allowed is: ") + Settings.MaxRemoteSigns);
+                return;
+            }
+        }
 
                 //Now invert the action to the opposite one if set to invert
                 if (inverted) {

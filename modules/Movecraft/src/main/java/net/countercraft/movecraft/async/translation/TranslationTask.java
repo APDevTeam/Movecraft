@@ -6,6 +6,7 @@ import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.events.CraftCollisionEvent;
 import net.countercraft.movecraft.events.CraftTranslateEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.update.*;
@@ -188,7 +189,7 @@ public class TranslationTask extends AsyncTask {
         }
         //Prevent disabled crafts from moving
         if (getCraft().getDisabled() && (!getCraft().getSinking())) {
-            fail(I18nSupport.getInternationalisedString("Craft is disabled!"));
+            fail(I18nSupport.getInternationalisedString("Translation - Failed Craft Is Disabled"));
             return;
         }
 
@@ -201,7 +202,7 @@ public class TranslationTask extends AsyncTask {
 
         //Check if the craft is too high
         if(craft.getType().getMaxHeightLimit() < craft.getHitBox().getMinY()){
-            dy-=1;
+            dy = Math.min(dy,-1);
         }else if(craft.getType().getMaxHeightAboveGround() > 0){
             final MovecraftLocation middle = oldHitBox.getMidPoint();
             int testY = minY;
@@ -215,8 +216,7 @@ public class TranslationTask extends AsyncTask {
                 break;
             }
             if (minY - testY > craft.getType().getMaxHeightAboveGround()) {
-                dy = 0;
-                dy -= 1;
+                dy = Math.min(dy,-1);
             }
         }
 
@@ -303,6 +303,13 @@ public class TranslationTask extends AsyncTask {
         }
 
         if(craft.getSinking()){
+            List<MovecraftLocation> air = new ArrayList<>();
+            for(MovecraftLocation location: oldHitBox){
+                if(location.toBukkit(craft.getW()).getBlock().getType() == Material.AIR){
+                    air.add(location.translate(dx,dy,dz));
+                }
+            }
+            newHitBox.removeAll(air);
             for(MovecraftLocation location : collisionBox){
                 if (craft.getType().getExplodeOnCrash() > 0.0F) {
                     if (System.currentTimeMillis() - craft.getOrigPilotTime() <= 1000) {
@@ -333,7 +340,7 @@ public class TranslationTask extends AsyncTask {
                 float explosionKey;
                 float explosionForce = craft.getType().getCollisionExplosion();
                 if (craft.getType().getFocusedExplosion()) {
-                    explosionForce *= oldHitBox.size();
+                    explosionForce *= Math.min(oldHitBox.size(), craft.getType().getMaxSize());
                 }
                 //TODO: Account for underwater explosions
                 /*if (location.getY() < waterLine) { // underwater explosions require more force to do anything
@@ -368,14 +375,24 @@ public class TranslationTask extends AsyncTask {
             newHitBox = new HashHitBox();
         }
 
+        if(!collisionBox.isEmpty()){
+            Bukkit.getServer().getPluginManager().callEvent(new CraftCollisionEvent(craft, collisionBox));
+        }
+
         updates.add(new CraftTranslateCommand(craft, new MovecraftLocation(dx, dy, dz)));
 
         //prevents torpedo and rocket pilots
         if (craft.getType().getMoveEntities() && !(craft.getSinking() && craft.getType().getOnlyMovePlayers())) {
-            for (Entity entity : craft.getW().getNearbyEntities(craft.getHitBox().getMidPoint().toBukkit(craft.getW()), craft.getHitBox().getXLength() / 2.0 + 1, craft.getHitBox().getYLength() / 2.0 + 1, craft.getHitBox().getZLength() / 2.0 + 1)) {
-                if (entity.getType() == EntityType.PLAYER && !craft.getSinking()) {
-                    Player player = (Player) entity;
-                    craft.getMovedPlayers().put(player, System.currentTimeMillis());
+            Location midpoint = new Location(
+                    craft.getW(),
+                    (oldHitBox.getMaxX() + oldHitBox.getMinX())/2.0,
+                    (oldHitBox.getMaxY() + oldHitBox.getMinY())/2.0,
+                    (oldHitBox.getMaxZ() + oldHitBox.getMinZ())/2.0);
+            for (Entity entity : craft.getW().getNearbyEntities(midpoint, oldHitBox.getXLength() / 2.0 + 1, oldHitBox.getYLength() / 2.0 + 2, oldHitBox.getZLength() / 2.0 + 1)) {
+                if (entity.getType() == EntityType.PLAYER) {
+                    if(craft.getSinking()){
+                        continue;
+                    }
                     EntityMoveUpdateCommand eUp = new EntityMoveUpdateCommand(entity, dx, dy, dz, 0, 0);
                     updates.add(eUp);
                 } else if (!craft.getType().getOnlyMovePlayers() || entity.getType() == EntityType.PRIMED_TNT) {
@@ -389,7 +406,6 @@ public class TranslationTask extends AsyncTask {
                 CraftManager.getInstance().addReleaseTask(craft);
         }
         captureYield(harvestedBlocks);
-
     }
 
     private static HitBox translateHitBox(HitBox hitBox, MovecraftLocation shift){

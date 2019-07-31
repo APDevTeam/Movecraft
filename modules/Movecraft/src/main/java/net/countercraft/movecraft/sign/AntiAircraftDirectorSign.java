@@ -15,6 +15,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 
+import static net.countercraft.movecraft.utils.ChatUtils.ERROR_PREFIX;
+
 public class AntiAircraftDirectorSign implements Listener {
     private static final String HEADER = "AA Director";
 
@@ -34,7 +36,7 @@ public class AntiAircraftDirectorSign implements Listener {
         Craft foundCraft = null;
         CraftManager.getInstance().getCraftsInWorld(block.getWorld());
         for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(block.getWorld())) {
-            if (MathUtils.locationInHitbox(tcraft.getHitBox(), event.getClickedBlock().getLocation()) &&
+            if (MathUtils.locationInHitBox(tcraft.getHitBox(), event.getClickedBlock().getLocation()) &&
                     CraftManager.getInstance().getPlayerFromCraft(tcraft) != null) {
                 foundCraft = tcraft;
                 break;
@@ -42,23 +44,23 @@ public class AntiAircraftDirectorSign implements Listener {
         }
 
         if (foundCraft == null) {
-            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("ERROR: Sign must be a part of a piloted craft!"));
+            event.getPlayer().sendMessage(ERROR_PREFIX+I18nSupport.getInternationalisedString("AADirector - Must Be Part Of Craft"));
             return;
         }
 
         if (!foundCraft.getType().allowCannonDirectorSign()) {
-            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("ERROR: AA Director Signs not allowed on this craft!"));
+            event.getPlayer().sendMessage(ERROR_PREFIX+I18nSupport.getInternationalisedString("AADirector - Not Allowed On Craft"));
             return;
         }
         if(event.getAction()==Action.LEFT_CLICK_BLOCK && event.getPlayer()==foundCraft.getCannonDirector()){
             foundCraft.setCannonDirector(null);
-            event.getPlayer().sendMessage("You are no longer directing the AA of this craft");
+            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("AADirector - No Longer Directing"));
             return;
         }
 
 
         foundCraft.setAADirector(event.getPlayer());
-        event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("You are now directing the AA of this craft"));
+        event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("AADirector - Directing"));
         if (foundCraft.getCannonDirector() == event.getPlayer()) {
             foundCraft.setCannonDirector(null);
         }

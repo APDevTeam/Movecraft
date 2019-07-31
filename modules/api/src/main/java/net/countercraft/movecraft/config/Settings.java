@@ -46,29 +46,24 @@ public class Settings {
     public static boolean TNTContactExplosives = true;
     public static HashSet<String> ForbiddenRemoteSigns;
     public static int FadeWrecksAfter = 0;
-    public static int ManOverBoardTimeout = 60;
+    public static int ManOverboardTimeout = 60;
+    public static double ManOverboardDistSquared = 1000000;
     public static int FireballLifespan = 6;
     public static int RepairTicksPerBlock = 0;
+    public static double RepairMaxPercent = 50;
     public static int BlockQueueChunkSize = 1000;
-    public static double RepairMaxPercent = 50.0;
+    public static int SiegeTaskSeconds = 600;
     public static double RepairMoneyPerBlock = 0.0;
     public static boolean FireballPenetration = true;
     public static boolean AllowCrewSigns = true;
     public static boolean SetHomeToCrewSign = true;
+    public static int MaxRemoteSigns = -1;
     public static boolean WGCustomFlagsUsePilotFlag = false;
     public static boolean WGCustomFlagsUseMoveFlag = false;
     public static boolean WGCustomFlagsUseRotateFlag = false;
     public static boolean WGCustomFlagsUseSinkFlag = false;
     public static boolean TownyBlockMoveOnSwitchPerm = false;
     public static boolean TownyBlockSinkOnNoPVP = false;
-    public static boolean FactionsBlockMoveInSafezone = false;
-    public static boolean FactionsBlockSinkInSafezone = false;
-    public static boolean FactionsBlockMoveInWarzone = false;
-    public static boolean FactionsBlockMoveInAllyTerritory = false;
-    public static boolean FactionsBlockMoveInTruceTerritory = false;
-    public static boolean FactionsBlockMoveInEnemyTerritory = false;
-    public static boolean FactionsBlockSinkOnNoPVP = false;
-    public static boolean GriefPreventionSinkOnNoPvP = false;
 
     //RedProtect Settings
     public static boolean RedProtectBlockMoveOnNoEntry = false;
@@ -101,4 +96,5 @@ public class Settings {
     public static boolean SiegeEnable;
     public static String SiegeTimeZone;
     public static boolean KOTHSiege = false;
+    public static long TracerMinDistanceSqrd;
 }

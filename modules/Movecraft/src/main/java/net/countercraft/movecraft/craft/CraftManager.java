@@ -19,7 +19,11 @@ package net.countercraft.movecraft.craft;
 
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.utils.ChatUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -33,12 +37,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 
+import static net.countercraft.movecraft.utils.ChatUtils.ERROR_PREFIX;
+
 public class CraftManager implements Iterable<Craft>{
     private static CraftManager ourInstance;
     @NotNull private final Set<Craft> craftList = ConcurrentHashMap.newKeySet();
     @NotNull private final ConcurrentMap<Player, Craft> craftPlayerIndex = new ConcurrentHashMap<>();
     @NotNull private final ConcurrentMap<Craft, BukkitTask> releaseEvents = new ConcurrentHashMap<>();
     @NotNull private Set<CraftType> craftTypes;
+    @NotNull private final WeakHashMap<Player, Long> overboards = new WeakHashMap<>();
 
     public static void initialize(){
         ourInstance = new CraftManager();
@@ -130,7 +137,7 @@ public class CraftManager implements Iterable<Craft>{
             }
         }
         if (craftTypes.isEmpty()) {
-            Movecraft.getInstance().getLogger().log(Level.SEVERE, "ERROR: NO CRAFTS FOUND!");
+            Movecraft.getInstance().getLogger().log(Level.SEVERE, ERROR_PREFIX + I18nSupport.getInternationalisedString("Startup - No Crafts Found"));
         }
         Movecraft.getInstance().getLogger().log(Level.INFO, String.format(I18nSupport.getInternationalisedString("Startup - Number of craft files loaded"), craftTypes.size()));
         return craftTypes;
@@ -147,6 +154,8 @@ public class CraftManager implements Iterable<Craft>{
     }
 
     public void removeCraft(@NotNull Craft c) {
+        //TODO move this to callers
+        Bukkit.getServer().getPluginManager().callEvent(new CraftReleaseEvent(c, CraftReleaseEvent.Reason.PLAYER));
         removeReleaseTask(c);
         Player player = getPlayerFromCraft(c);
         if (player!=null)
@@ -158,10 +167,10 @@ public class CraftManager implements Iterable<Craft>{
                 player.sendMessage(I18nSupport.getInternationalisedString("Release - Craft has been released message"));
                 Movecraft.getInstance().getLogger().log(Level.INFO, String.format(I18nSupport.getInternationalisedString("Release - Player has released a craft console"), c.getNotificationPlayer().getName(), c.getType().getCraftName(), c.getHitBox().size(), c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
             } else {
-                Movecraft.getInstance().getLogger().log(Level.INFO, String.format(I18nSupport.getInternationalisedString("NULL Player has released a craft of type %s with size %d at coordinates : %d x , %d z"), c.getType().getCraftName(), c.getHitBox().size(), c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
+                Movecraft.getInstance().getLogger().log(Level.INFO, String.format(I18nSupport.getInternationalisedString("Release - Null Craft Release Console"), c.getType().getCraftName(), c.getHitBox().size(), c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
             }
         }else{
-            Movecraft.getInstance().getLogger().warning("Releasing empty craft!");
+            Movecraft.getInstance().getLogger().warning(I18nSupport.getInternationalisedString("Release - Empty Craft Release Console"));
         }
         Movecraft.getInstance().getAsyncManager().addWreck(c);
     }
@@ -170,6 +179,7 @@ public class CraftManager implements Iterable<Craft>{
         this.craftList.remove(c);
         if (getPlayerFromCraft(c) != null)
             this.craftPlayerIndex.remove(getPlayerFromCraft(c));
+        Bukkit.getServer().getPluginManager().callEvent(new CraftReleaseEvent(c, CraftReleaseEvent.Reason.FORCE));
     }
 
     @NotNull
@@ -209,6 +219,9 @@ public class CraftManager implements Iterable<Craft>{
         }
         craftPlayerIndex.remove(player);
         craftList.removeAll(crafts);
+        for(Craft c : crafts){
+            Bukkit.getServer().getPluginManager().callEvent(new CraftReleaseEvent(c, CraftReleaseEvent.Reason.DISCONNECT));
+        }
     }
 
     @Nullable
@@ -290,5 +303,14 @@ public class CraftManager implements Iterable<Craft>{
     @Override
     public Iterator<Craft> iterator() {
         return Collections.unmodifiableSet(this.craftList).iterator();
+    }
+
+    public void addOverboard(Player player) {
+        overboards.put(player, System.currentTimeMillis());
+    }
+
+    @NotNull
+    public long getTimeFromOverboard(Player player) {
+        return overboards.getOrDefault(player, 0L);
     }
 }

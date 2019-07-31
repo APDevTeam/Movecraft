@@ -134,11 +134,11 @@ public class Movecraft extends JavaPlugin {
         Settings.DisableSpillProtection = getConfig().getBoolean("DisableSpillProtection", false);
         // if the PilotTool is specified in the config_legacy.yml file, use it
         if (getConfig().getString("PilotTool") != null || getConfig().getString("PilotTool") != "") {
-            logger.log(Level.INFO, "Recognized PilotTool setting of: "
+            logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Recognized Pilot Tool")
                     + getConfig().getString("PilotTool"));
             Settings.PilotTool = Material.getMaterial(getConfig().getString("PilotTool"));
         } else {
-            logger.log(Level.INFO, "No PilotTool setting, using default of stick");
+            logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - No Pilot Tool"));
         }
         //Switch to interfaces
 
@@ -150,24 +150,28 @@ public class Movecraft extends JavaPlugin {
             }
         } catch (final Exception e) {
             e.printStackTrace();
-            this.getLogger().severe("Could not find support for this version.");
+            this.getLogger().severe(I18nSupport.getInternationalisedString("Startup - Version Not Supported"));
             this.setEnabled(false);
             return;
         }
-
-        this.getLogger().info("Loading support for " + version);
+        this.getLogger().info(I18nSupport.getInternationalisedString("Startup - Loading Support") + " " + version);
 
 
         Settings.SinkCheckTicks = getConfig().getDouble("SinkCheckTicks", 100.0);
         Settings.TracerRateTicks = getConfig().getDouble("TracerRateTicks", 5.0);
-        Settings.ManOverBoardTimeout = getConfig().getInt("ManOverBoardTimeout", 30);
+        Settings.TracerMinDistanceSqrd = getConfig().getLong("TracerMinDistance", 60);
+        Settings.TracerMinDistanceSqrd *= Settings.TracerMinDistanceSqrd;
+        Settings.ManOverboardTimeout = getConfig().getInt("ManOverboardTimeout", 30);
+        Settings.ManOverboardDistSquared = Math.pow(getConfig().getDouble("ManOverboardDistance", 1000), 2);
         Settings.SilhouetteViewDistance = getConfig().getInt("SilhouetteViewDistance", 200);
         Settings.SilhouetteBlockCount = getConfig().getInt("SilhouetteBlockCount", 20);
         Settings.FireballLifespan = getConfig().getInt("FireballLifespan", 6);
+        Settings.SiegeTaskSeconds = getConfig().getInt("SiegeTaskSeconds", 600);
         Settings.FireballPenetration = getConfig().getBoolean("FireballPenetration", true);
         Settings.ProtectPilotedCrafts = getConfig().getBoolean("ProtectPilotedCrafts", false);
         Settings.AllowCrewSigns = getConfig().getBoolean("AllowCrewSigns", true);
         Settings.SetHomeToCrewSign = getConfig().getBoolean("SetHomeToCrewSign", true);
+        Settings.MaxRemoteSigns = getConfig().getInt("MaxRemoteSigns", -1);
         Settings.RequireCreatePerm = getConfig().getBoolean("RequireCreatePerm", false);
         Settings.RequireNamePerm = getConfig().getBoolean("RequireNamePerm", false);
         Settings.TNTContactExplosives = getConfig().getBoolean("TNTContactExplosives", true);
@@ -223,10 +227,6 @@ public class Movecraft extends JavaPlugin {
         Settings.ForbiddenRemoteSigns = new HashSet<>(getConfig().getStringList("ForbiddenRemoteSigns"));
         Settings.SiegeEnable = getConfig().getBoolean("SiegeEnable", false);
         Settings.SiegeTimeZone = getConfig().getString("SiegeTimeZone", "UTC");
-        Settings.FactionsBlockMoveInSafezone = getConfig().getBoolean("FactionsBlockMoveInSafezone",false);
-        Settings.FactionsBlockSinkInSafezone = getConfig().getBoolean("FactionsBlockSinkInSafezone",false);
-        Settings.FactionsBlockMoveInWarzone = getConfig().getBoolean("FactionsBlockMoveInWarzone",false);
-
 
 
         if (!Settings.CompatibilityMode) {
@@ -237,13 +237,13 @@ public class Movecraft extends JavaPlugin {
         //load up WorldGuard if it's present
         Plugin wGPlugin = getServer().getPluginManager().getPlugin("WorldGuard");
         if (wGPlugin == null || !(wGPlugin instanceof WorldGuardPlugin)) {
-            logger.log(Level.INFO, "Movecraft did not find a compatible version of WorldGuard. Disabling WorldGuard integration");
+            logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - WG Not Found"));
             Settings.SiegeEnable = false;
             Settings.AssaultEnable = false;
             Settings.RestrictSiBsToRegions = false;
             worldGuardPlugin = null;
         } else {
-            logger.log(Level.INFO, "Found a compatible version of WorldGuard. Enabling WorldGuard integration");
+            logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - WG Found"));
             Settings.WorldGuardBlockMoveOnBuildPerm = getConfig().getBoolean("WorldGuardBlockMoveOnBuildPerm", false);
             Settings.WorldGuardBlockSinkOnPVPPerm = getConfig().getBoolean("WorldGuardBlockSinkOnPVPPerm", false);
             logger.log(Level.INFO, "Settings: WorldGuardBlockMoveOnBuildPerm - {0}, WorldGuardBlockSinkOnPVPPerm - {1}", new Object[]{Settings.WorldGuardBlockMoveOnBuildPerm, Settings.WorldGuardBlockSinkOnPVPPerm});
@@ -263,29 +263,16 @@ public class Movecraft extends JavaPlugin {
             }
         }
         if (wEPlugin == null || !(wEPlugin instanceof WorldEditPlugin)) {
-            logger.log(Level.INFO, "Movecraft did not find a compatible version of WorldEdit. Disabling WorldEdit integration");
+            logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - WE Not Found"));
             Settings.AssaultEnable = false;
         } else {
-            logger.log(Level.INFO, "Found a compatible version of WorldEdit. Enabling WorldEdit integration");
+            logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - WE Found"));
             Settings.RepairTicksPerBlock = getConfig().getInt("RepairTicksPerBlock", 0);
-
-            if (!Settings.IsLegacy) {
-                //Check if FAWE us used
-                try {
-                    Class.forName("com.boydti.fawe.bukkit.FaweBukkit");
-                    Settings.UseFAWE = true;
-                } catch (ClassNotFoundException e) {
-                    Settings.UseFAWE = false;
-                }
-            }
             String weVersion;
             //Now decide which WE compat should be used
             if (!Settings.IsLegacy){
-                if (Settings.UseFAWE) {
-                    weVersion = "fawe";
-                } else {
                     weVersion = "we7";
-                }
+
             } else {
                 weVersion = "we6";
             }
@@ -294,7 +281,7 @@ public class Movecraft extends JavaPlugin {
                 final Class<?> clazz = Class.forName("net.countercraft.movecraft.compat." + weVersion + ".IMovecraftRepair");
                 //Check if we have a Repair class at that location
                 if (MovecraftRepair.class.isAssignableFrom(clazz)){
-                    this.movecraftRepair = (MovecraftRepair) clazz.getConstructor().newInstance();
+                    this.movecraftRepair = (MovecraftRepair) clazz.getConstructor(Plugin.class).newInstance(this);
                 }
             } catch (final Exception e){
                 e.printStackTrace();
@@ -302,6 +289,7 @@ public class Movecraft extends JavaPlugin {
                 Settings.RepairTicksPerBlock = 0;
                 Settings.AssaultEnable = false;
             }
+            Settings.RepairMaxPercent = getConfig().getDouble("RepairMaxPercent", 50);
         }
         worldEditPlugin = (WorldEditPlugin) wEPlugin;
 
@@ -313,13 +301,15 @@ public class Movecraft extends JavaPlugin {
         Plugin plug = getServer().getPluginManager().getPlugin("Cannons");
         if (plug != null && plug instanceof Cannons) {
             cannonsPlugin = (Cannons) plug;
-            logger.log(Level.INFO, "Found a compatible version of Cannons. Enabling Cannons integration");
+            logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Cannons Found"));
+        } else {
+        	logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Cannons Not Found"));
         }
         if (worldGuardPlugin != null && worldGuardPlugin instanceof WorldGuardPlugin) {
             if (worldGuardPlugin.isEnabled()) {
                 Plugin tempWGCustomFlagsPlugin = getServer().getPluginManager().getPlugin("WGCustomFlags");
                 if (tempWGCustomFlagsPlugin != null && tempWGCustomFlagsPlugin instanceof WGCustomFlagsPlugin) {
-                    logger.log(Level.INFO, "Found a compatible version of WGCustomFlags. Enabling WGCustomFlags integration.");
+                    logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - WGCF Found"));
                     wgCustomFlagsPlugin = (WGCustomFlagsPlugin) tempWGCustomFlagsPlugin;
                     WGCustomFlagsUtils WGCFU = new WGCustomFlagsUtils();
                     FLAG_PILOT = WGCFU.getNewStateFlag("movecraft-pilot", true);
@@ -336,14 +326,14 @@ public class Movecraft extends JavaPlugin {
                     logger.log(Level.INFO, "Settings: WGCustomFlagsUseRotateFlag - {0}", Settings.WGCustomFlagsUseRotateFlag);
                     logger.log(Level.INFO, "Settings: WGCustomFlagsUseSinkFlag - {0}", Settings.WGCustomFlagsUseSinkFlag);
                 } else {
-                    logger.log(Level.INFO, "Movecraft did not find a compatible version of WGCustomFlags. Disabling WGCustomFlags integration.");
+                    logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - WGCF Not Found"));
                 }
             }
         }
         //Towny
         Plugin tempTownyPlugin = getServer().getPluginManager().getPlugin("Towny");
         if (tempTownyPlugin != null && tempTownyPlugin instanceof Towny) {
-            logger.log(Level.INFO, "Found a compatible version of Towny. Enabling Towny integration.");
+            logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Towny Found"));
             townyPlugin = (Towny) tempTownyPlugin;
             TownyUtils.initTownyConfig();
             Settings.TownyBlockMoveOnSwitchPerm = getConfig().getBoolean("TownyBlockMoveOnSwitchPerm", false);
@@ -352,7 +342,7 @@ public class Movecraft extends JavaPlugin {
             logger.log(Level.INFO, "Settings: TownyBlockSinkOnNoPVP - {0}", Settings.TownyBlockSinkOnNoPVP);
 
         } else {
-            logger.log(Level.INFO, "Movecraft did not find a compatible version of Towny. Disabling Towny integration.");
+            logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Towny Not Found"));
         }
         //Essentials
         Plugin tempEssentialsPlugin = getServer().getPluginManager().getPlugin("Essentials");
@@ -361,79 +351,13 @@ public class Movecraft extends JavaPlugin {
                 if (tempEssentialsPlugin.getClass().getName().equals("com.earth2me.essentials.Essentials")) {
                     if (tempEssentialsPlugin instanceof Essentials) {
                         essentialsPlugin = (Essentials) tempEssentialsPlugin;
-                        logger.log(Level.INFO, "Found a compatible version of Essentials. Enabling Essentials integration.");
+                        logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Essentials Found"));
                     }
                 }
             }
         }
         if (essentialsPlugin == null) {
-            logger.log(Level.INFO, "Movecraft did not find a compatible version of Essentials. Disabling Essentials integration.");
-        }
-        //Factions
-        Plugin tempFactionsPlugin = getServer().getPluginManager().getPlugin("Factions");
-        if (tempFactionsPlugin != null){
-            if (tempFactionsPlugin instanceof Factions){
-                factionsPlugin = (Factions) tempFactionsPlugin;
-                getServer().getPluginManager().registerEvents(new FactionsCompatManager(),this);
-                logger.info("Movecraft found a compatible version of Factions. Enabling Factions integration.");
-            }
-        }
-        if (factionsPlugin == null){
-            logger.info("Movecraft did not find a compatible version of Factions. Disabling Factions integration");
-        }
-        //Kingdoms
-        Plugin tempKingdomsPlugin = getServer().getPluginManager().getPlugin("Kingdoms");
-        if (tempKingdomsPlugin != null){
-            if (tempKingdomsPlugin instanceof Kingdoms){
-                getServer().getPluginManager().registerEvents(new KingdomsCompatManager(),this);
-                kingdomsPlugin = (Kingdoms) tempKingdomsPlugin;
-            }
-        }
-        if (kingdomsPlugin == null){
-            logger.info("Movecraft did not find a compatible version of Kingdoms. Disabling Kingdoms integration");
-        }
-        //GriefPrevention
-        Plugin gpPlugin = getServer().getPluginManager().getPlugin("GriefPrevention");
-        if (gpPlugin != null){
-            if (gpPlugin instanceof GriefPrevention){
-                logger.info("Found a compatible version of GriefPrevention. Enabling GriefPrevention integration");
-                getServer().getPluginManager().registerEvents(new GriefPreventionCompatManager(),this);
-                griefPreventionPlugin = (GriefPrevention) gpPlugin;
-            }
-        }
-        if (griefPreventionPlugin == null){
-            logger.info("Movecraft did not find a compatible version of GriefPrevention. Disabling GriefPrevention integration");
-        }
-        //RedProtect
-        Plugin rpPlugin = getServer().getPluginManager().getPlugin("RedProtect");
-        if (rpPlugin != null){
-            if (rpPlugin instanceof RedProtect){
-                logger.info("Found a compatible version of RedProtect. Enabling RedProtect integration");
-                getServer().getPluginManager().registerEvents(new RedProtectCompatManager(),this);
-                redProtectPlugin = (RedProtect) rpPlugin;
-            }
-        }
-        if (redProtectPlugin == null){
-            logger.info("Movecraft did not find a compatible version of RedProtect. Disabling RedProtect integration");
-        }
-        // Deadbolt
-        Plugin tempDeadboltPlugin = getServer().getPluginManager().getPlugin("Deadbolt");
-        if (tempDeadboltPlugin != null){
-            if (tempDeadboltPlugin instanceof DeadboltPlugin){
-                deadboltPlugin = (DeadboltPlugin) tempDeadboltPlugin;
-                logger.info("Movecraft found a compatible version of Deadbolt. Enabling Deadbolt integration");
-            }
-        }
-        if (deadboltPlugin == null){
-            logger.info("Movecraft did not find a compatible version of Deadbolt. Disabling Deadbolt integration");
-        }
-        //Brewery
-        Plugin brewery = getServer().getPluginManager().getPlugin("Brewery");
-        if (brewery != null){
-            if (brewery instanceof P){
-                breweryPlugin = (P) brewery;
-                logger.info("Movecraft found a compatible version of Brewery. Enabling Brewery integration");
-            }
+            logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Essentials Not Found"));
         }
         // and now Vault
         if (getServer().getPluginManager().getPlugin("Vault") != null) {
@@ -441,27 +365,19 @@ public class Movecraft extends JavaPlugin {
             if (rsp != null) {
                 economy = rsp.getProvider();
                 Settings.RepairMoneyPerBlock = getConfig().getDouble("RepairMoneyPerBlock", 0.0);
-                logger.log(Level.INFO, "Found a compatible Vault plugin.");
+                logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Vault Found"));
             } else {
-                logger.log(Level.INFO, "Could not find compatible Vault plugin. Disabling Vault integration.");
+                logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Vault Not Found"));
                 economy = null;
                 Settings.SiegeEnable = false;
                 Settings.AssaultEnable = false;
             }
         } else {
-            logger.log(Level.INFO, "Could not find compatible Vault plugin. Disabling Vault integration.");
+            logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Vault Not Found"));
             economy = null;
             Settings.SiegeEnable = false;
         }
-        String[] localisations = {"en", "cz", "nl"};
-        for (String s : localisations) {
-            if (!new File(getDataFolder()
-                    + "/localisation/movecraftlang_" + s + ".properties").exists()) {
-                this.saveResource("localisation/movecraftlang_" + s + ".properties", false);
-            }
-        }
-
-        I18nSupport.init();
+        
         if (shuttingDown && Settings.IGNORE_RESET) {
             logger.log(
                     Level.SEVERE,
@@ -509,10 +425,10 @@ public class Movecraft extends JavaPlugin {
                                 (Integer) siegeMap.get("ScheduleEnd"),
                                 (Integer) siegeMap.getOrDefault("DelayBeforeStart", 0),
                                 (Integer) siegeMap.get("SiegeDuration"),
-                                (Integer) siegeMap.getOrDefault("DayOfTheWeek", 1),
                                 (Integer) siegeMap.getOrDefault("DailyIncome", 0),
                                 (Integer) siegeMap.getOrDefault("CostToSiege", 0),
                                 (Boolean) siegeMap.getOrDefault("DoubleCostPerOwnedSiegeRegion", true),
+                                (List<Integer>) siegeMap.get("DaysOfTheWeek"),
                                 (List<String>) siegeMap.getOrDefault("CraftsToWin", Collections.emptyList()),
                                 (List<String>) siegeMap.getOrDefault("SiegeCommandsOnStart", Collections.emptyList()),
                                 (List<String>) siegeMap.getOrDefault("SiegeCommandsOnWin", Collections.emptyList()),
@@ -528,9 +444,12 @@ public class Movecraft extends JavaPlugin {
 
             getServer().getPluginManager().registerEvents(new InteractListener(), this);
             if (worldEditPlugin != null) {
-                //getServer().getPluginManager().registerEvents(new WorldEditInteractListener(), this);
-                repairManager = new RepairManager();
-                repairManager.runTaskTimerAsynchronously(this, 0,1);
+                final Class clazz;
+                if (movecraftRepair != null){
+                    repairManager = new RepairManager();
+                    repairManager.runTaskTimerAsynchronously(this, 0, 1);
+                    repairManager.convertOldCraftRepairStates();
+                }
             }
             this.getCommand("movecraft").setExecutor(new MovecraftCommand());
             this.getCommand("release").setExecutor(new ReleaseCommand());
@@ -641,35 +560,11 @@ public class Movecraft extends JavaPlugin {
 
     public AsyncManager getAsyncManager(){return asyncManager;}
 
+
     public MovecraftRepair getMovecraftRepair() {return movecraftRepair;}
 
     public RepairManager getRepairManager() {
         return repairManager;
     }
-    public Factions getFactionsPlugin(){
-        return factionsPlugin;
-    }
-
-    public GriefPrevention getGriefPreventionPlugin() {
-        return griefPreventionPlugin;
-    }
-
-    public DeadboltPlugin getDeadboltPlugin(){
-        return deadboltPlugin;
-    }
-
-    public Kingdoms getKingdomsPlugin() {
-        return kingdomsPlugin;
-    }
-
-    public RedProtect getRedProtectPlugin() {
-        return redProtectPlugin;
-    }
-
-
-    public P getBreweryPlugin() {
-        return breweryPlugin;
-    }
-
 }
 

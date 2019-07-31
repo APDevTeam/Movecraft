@@ -19,6 +19,8 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import static net.countercraft.movecraft.utils.ChatUtils.MOVECRAFT_COMMAND_PREFIX;
@@ -30,12 +32,12 @@ public class AssaultInfoCommand implements CommandExecutor {
             return false;
         }
         if (!Settings.AssaultEnable) {
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Assault is not enabled, this shouldn't even show up"));
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Assault - Disabled"));
             return true;
         }
 
         if(!(commandSender instanceof Player)){
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "you need to be a player to get assault info");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("AssaultInfo - Must Be Player"));
             return true;
         }
         Player player = (Player) commandSender;
@@ -46,7 +48,7 @@ public class AssaultInfoCommand implements CommandExecutor {
         }
         ApplicableRegionSet regions = WorldguardUtils.getRegionsAt(player.getLocation());
         if (regions.size() == 0) {
-            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("No Assault eligible regions found"));
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("AssaultInfo - No Region Found"));
             return true;
         }
         LocalPlayer lp = Movecraft.getInstance().getWorldGuardPlugin().wrapPlayer(player);
@@ -64,7 +66,7 @@ public class AssaultInfoCommand implements CommandExecutor {
             }
         }
         if (!foundOwnedRegion) {
-            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("You are not the owner of any assaultable region and can not assault others"));
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Assault - No Regions Owned"));
             return true;
         }
 
@@ -83,40 +85,45 @@ public class AssaultInfoCommand implements CommandExecutor {
             assaultRegion = tRegion;
         }
         if (assaultRegion == null) {
-            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("No Assault eligible regions found"));
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("AssaultInfo - No Region Found"));
             return true;
         }
 
         boolean canBeAssaulted = true;
-        String output = "REGION NAME: ";
+        List<String> lines = new ArrayList<>();
+        String output = I18nSupport.getInternationalisedString("AssaultInfo - Name") + ": ";
         output += assaultRegion.getId();
-        output += ", OWNED BY: ";
+        lines.add(output);
+        output = I18nSupport.getInternationalisedString("AssaultInfo - Owner")+": " ;
         output += WorldguardUtils.getRegionOwnerList(assaultRegion);
-        output += ", MAX DAMAGES: ";
+        lines.add(output);
+        output = I18nSupport.getInternationalisedString("AssaultInfo - Cap")+": ";
         double maxDamage = AssaultUtils.getMaxDamages(assaultRegion);
         output += String.format("%.2f", maxDamage);
-        output += ", COST TO ASSAULT: ";
+        lines.add(output);
+        output = I18nSupport.getInternationalisedString("AssaultInfo - Cost")+": ";
         double cost = AssaultUtils.getCostToAssault(assaultRegion);
         output += String.format("%.2f", cost);
+        lines.add(output);
         for (Assault assault : Movecraft.getInstance().getAssaultManager().getAssaults()) {
             if (assault.getRegionName().equals(assaultRegion.getId()) && System.currentTimeMillis() - assault.getStartTime() < Settings.AssaultCooldownHours * (60 * 60 * 1000)) {
                 canBeAssaulted = false;
-                output += ", NOT ASSAULTABLE DUE TO RECENT ASSAULT ACTIVITY";
+                lines.add("- "+I18nSupport.getInternationalisedString("AssaultInfo - Not Assaultable Damaged"));
                 break;
             }
         }
         if (!AssaultUtils.areDefendersOnline(assaultRegion)) {
             canBeAssaulted = false;
-            output += ", NOT ASSAULTABLE DUE TO INSUFFICIENT ONLINE DEFENDERS";
+            lines.add("- "+I18nSupport.getInternationalisedString("AssaultInfo - Not Assaultable - Insufficient Defenders"));
         }
         if (assaultRegion.isMember(lp)) {
-            output += ", NOT ASSAULTABLE BECAUSE YOU ARE A MEMBER";
+            lines.add("- "+I18nSupport.getInternationalisedString("AssaultInfo - Not Assaultable - You Are Member"));
             canBeAssaulted = false;
         }
         if (canBeAssaulted) {
-            output += ", AVAILABLE FOR ASSAULT";
+            lines.add("- "+I18nSupport.getInternationalisedString("AssaultInfo - Assaultable"));
         }
-        player.sendMessage(output);
+        player.sendMessage(lines.toArray(new String[1]));
         return true;
     }
 }

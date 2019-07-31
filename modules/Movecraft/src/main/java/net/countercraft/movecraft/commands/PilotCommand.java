@@ -5,8 +5,10 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftType;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.ICraft;
+import net.countercraft.movecraft.events.CraftPilotEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.MathUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -24,7 +26,7 @@ public class PilotCommand implements TabExecutor {
         if (!command.getName().equalsIgnoreCase("pilot"))
             return false;
         if(!(commandSender instanceof Player)){
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "you need to be a player to pilot a craft");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Pilot - Must Be Player"));
             return true;
         }
         Player player = (Player) commandSender;
@@ -33,7 +35,7 @@ public class PilotCommand implements TabExecutor {
             return true;
         }
         if (args.length < 1) {
-            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + "You need to supply a craft type");
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Pilot - No Craft Type"));
             return true;
         }
         if (!player.hasPermission("movecraft." + args[0] + ".pilot")) {
@@ -49,8 +51,9 @@ public class PilotCommand implements TabExecutor {
             Craft newCraft = new ICraft(craftType, player.getWorld());
             MovecraftLocation startPoint = MathUtils.bukkit2MovecraftLoc(player.getLocation());
             newCraft.detect(player, player, startPoint);
+            Bukkit.getServer().getPluginManager().callEvent(new CraftPilotEvent(newCraft, CraftPilotEvent.Reason.PLAYER));
         } else {
-            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Unknown craft type"));
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Pilot - Invalid Craft Type"));
         }
         return true;
     }

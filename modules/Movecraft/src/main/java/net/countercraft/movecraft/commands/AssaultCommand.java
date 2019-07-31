@@ -12,17 +12,20 @@ import net.countercraft.movecraft.MovecraftRepair;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.WorldguardUtils;
-import net.countercraft.movecraft.utils.weVectorUtils;
 import net.countercraft.movecraft.warfare.assault.Assault;
 import net.countercraft.movecraft.warfare.assault.AssaultBarTask;
 import net.countercraft.movecraft.warfare.assault.AssaultUtils;
 import net.countercraft.movecraft.warfare.siege.Siege;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.Sound;
+import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Vector;
 
 import java.util.Map;
 
@@ -37,11 +40,11 @@ public class AssaultCommand implements CommandExecutor{
             return false;
         }
         if (!Settings.AssaultEnable) {
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Assault is not enabled, you shouldn't even see this"));
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Assault - Disabled"));
             return true;
         }
         if(!(commandSender instanceof Player)){
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "you need to be a player to get assault info");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("AssaultInfo - Must Be Player"));
             return true;
         }
         Player player = (Player) commandSender;
@@ -50,7 +53,7 @@ public class AssaultCommand implements CommandExecutor{
             return true;
         }
         if (args.length == 0) {
-            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("No region specified"));
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Assault - No Region Specified"));
             return true;
         }
         RegionManager manager = WorldguardUtils.getRegionManager(player.getWorld());
@@ -58,7 +61,7 @@ public class AssaultCommand implements CommandExecutor{
 
 
         if (aRegion == null) {
-            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Region not found"));
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Assault - Region Not Found"));
             return true;
         }
         LocalPlayer lp = Movecraft.getInstance().getWorldGuardPlugin().wrapPlayer(player);
@@ -77,7 +80,7 @@ public class AssaultCommand implements CommandExecutor{
             }
         }
         if (!foundOwnedRegion) {
-            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("You are not the owner of any assaultable region and can not assault others"));
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Assault - No Region Owned"));
             return true;
         }
         boolean canBeAssaulted = true;
@@ -117,27 +120,21 @@ public class AssaultCommand implements CommandExecutor{
             canBeAssaulted = false;
         }
         if (!canBeAssaulted) {
-            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("You can not assault this region, check AssaultInfo"));
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Assault - Cannot Assault"));
             return true;
         }
         OfflinePlayer offP = Bukkit.getOfflinePlayer(player.getUniqueId());
         if (Movecraft.getInstance().getEconomy().getBalance(offP) < getCostToAssault(aRegion)) {
-            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("You can not afford to assault this region"));
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Assault - Insufficient Funds"));
             return true;
         }
 //			if(aRegion.getType() instanceof ProtectedCuboidRegion) { // Originally I wasn't going to do non-cubes, but we'll try it and see how it goes. In theory it may repair more than it should but... meh...
-        /*String repairStateName = Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/RegionRepairStates";
-        File file = new File(repairStateName);
-        if (!file.exists()) {
-            file.mkdirs();
+        if (!Movecraft.getInstance().getMovecraftRepair().saveRegionRepairState(player.getWorld(), aRegion)){
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Repair - Could not save file"));
+            return true;
         }
-        repairStateName += "/";
-        repairStateName += aRegion.getId().replaceAll("\\s+", "_");
-        repairStateName += ".schematic";
-        file = new File(repairStateName);
-*/     org.bukkit.util.Vector min = weVectorUtils.getMinimumPoint(aRegion);
-        org.bukkit.util.Vector max = weVectorUtils.getMaximumPoint(aRegion);
-
+        Vector min = new Vector(aRegion.getMinimumPoint().getBlockX(), aRegion.getMinimumPoint().getBlockY(), aRegion.getMinimumPoint().getBlockZ());
+        Vector max = new Vector(aRegion.getMaximumPoint().getBlockX(), aRegion.getMaximumPoint().getBlockY(), aRegion.getMaximumPoint().getBlockZ());
 
         /*
         if (max.subtract(min).getBlockX() > 256) {
@@ -158,8 +155,8 @@ public class AssaultCommand implements CommandExecutor{
         }*/
         MovecraftRepair movecraftRepair = Movecraft.getInstance().getMovecraftRepair();
 
-        if (!movecraftRepair.saveRegionRepairState(Movecraft.getInstance(), (player).getWorld(),aRegion)){
-            player.sendMessage(I18nSupport.getInternationalisedString("Could not save file"));
+        if (!movecraftRepair.saveRegionRepairState(player.getWorld(), aRegion)){
+            player.sendMessage(I18nSupport.getInternationalisedString("Repair - Could not save file"));
             return true;
         }
 //			} else {
@@ -167,7 +164,7 @@ public class AssaultCommand implements CommandExecutor{
 //				return true;
 //			}
         Movecraft.getInstance().getEconomy().withdrawPlayer(offP, getCostToAssault(aRegion));
-        Bukkit.getServer().broadcastMessage(String.format("%s is preparing to assault %s! All players wishing to participate in the defense should head there immediately! Assault will begin in %d minutes"
+        Bukkit.getServer().broadcastMessage(String.format(I18nSupport.getInternationalisedString("Assault - Starting Soon")
                 , player.getDisplayName(), args[0], Settings.AssaultDelay / 60));
         for (Player p : Bukkit.getOnlinePlayers()) {
             p.playSound(p.getLocation(), Sound.ENTITY_WITHER_DEATH, 1, (float) 0.25);
@@ -178,14 +175,15 @@ public class AssaultCommand implements CommandExecutor{
         final Player taskPlayer = player;
         final World taskWorld = player.getWorld();
         final long taskMaxDamages = (long) AssaultUtils.getMaxDamages(aRegion);
-        final org.bukkit.util.Vector taskMin = min;
+        final Vector taskMin = min;
         final org.bukkit.util.Vector taskMax = max;
         //TODO: Make async
         new BukkitRunnable() {
             @Override
             public void run() {
                 abTask.cancel();
-                Bukkit.getServer().broadcastMessage(String.format("The Assault of %s has commenced! The assault leader is %s. Destroy the enemy region!"
+
+                Bukkit.getServer().broadcastMessage(String.format(I18nSupport.getInternationalisedString("Assault - Assault Begun")
                         , taskAssaultName, taskPlayer.getDisplayName()));
                 for (Player p : Bukkit.getOnlinePlayers()) {
                     p.playSound(p.getLocation(), Sound.ENTITY_WITHER_DEATH, 1, 0.25F);

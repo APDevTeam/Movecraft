@@ -9,6 +9,7 @@ import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.utils.LegacyUtils;
+import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
@@ -69,19 +70,19 @@ public class CrewSign implements Listener {
             return;
         }
         if (Settings.IsLegacy ? !sign.getBlock().getRelative(0,-1,0).getType().equals(LegacyUtils.BED_BLOCK) : Arrays.binarySearch(beds, sign.getBlock().getRelative(0,-1,0).getType()) < 0) {
-            player.sendMessage("You need to have a bed below your crew sign");
+            player.sendMessage(I18nSupport.getInternationalisedString("CrewSign - Need Bed Below"));
             return;
         }
         if (!sign.getLine(1).equalsIgnoreCase(player.getName())) {
-            player.sendMessage("You don't own this crew sign");
+            player.sendMessage(I18nSupport.getInternationalisedString("CrewSign - Sign Not Owned"));
             return;
         }
         if(CraftManager.getInstance().getCraftByPlayer(player)!=null){
-            player.sendMessage("You can't set your priority crew sign to a piloted craft");
+            player.sendMessage(I18nSupport.getInternationalisedString("CrewSign - Craft Currently Piloted"));
             return;
         }
         Location location = sign.getLocation();
-        player.sendMessage("Priority crew bed set!");
+        player.sendMessage(I18nSupport.getInternationalisedString("CrewSign - Spawn Set"));
         player.setBedSpawnLocation(location, true);
         if (!Settings.SetHomeToCrewSign || Movecraft.getInstance().getEssentialsPlugin() == null) {
             return;
@@ -100,7 +101,7 @@ public class CrewSign implements Listener {
         if(craft.getSinking() || craft.getDisabled() || !craft.getCrewSigns().containsKey(player.getUniqueId())) {
             return;
         }
-        player.sendMessage("Respawning at crew bed!");
+        player.sendMessage(I18nSupport.getInternationalisedString("CrewSign - Respawn"));
         event.setRespawnLocation(craft.getCrewSigns().get(player.getUniqueId()));
     }
 

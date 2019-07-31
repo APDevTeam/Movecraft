@@ -7,7 +7,9 @@ import net.countercraft.movecraft.craft.CraftType;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.ICraft;
+import net.countercraft.movecraft.events.CraftPilotEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -107,6 +109,7 @@ public final class CraftSign implements Listener{
                 }
             }
         }
+        Bukkit.getServer().getPluginManager().callEvent(new CraftPilotEvent(c, CraftPilotEvent.Reason.PLAYER));
         event.setCancelled(true);
 
     }

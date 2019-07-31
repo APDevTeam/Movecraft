@@ -5,6 +5,8 @@ import com.sk89q.worldedit.extent.clipboard.Clipboard;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.world.block.BaseBlock;
 import com.sk89q.worldguard.protection.managers.RegionManager;
+import com.sk89q.worldedit.Vector;
+import com.sk89q.worldedit.extent.clipboard.Clipboard;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
@@ -14,10 +16,20 @@ import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.mapUpdater.update.WorldEdit7UpdateCommand;
 import net.countercraft.movecraft.repair.RepairUtils;
+import net.countercraft.movecraft.utils.LegacyUtils;
+import net.countercraft.movecraft.utils.LegacyWEUtils;
+import net.countercraft.movecraft.utils.WorldEditUtils;
 import net.countercraft.movecraft.utils.WorldguardUtils;
 import org.bukkit.*;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
+import net.countercraft.movecraft.mapUpdater.update.WorldEditUpdateCommand;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Material;
+import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.Sign;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
@@ -26,13 +38,11 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import java.util.UUID;
 
 public class RegionDamagedSign implements Listener {
-    private String HEADER = ChatColor.RED + "REGION DAMAGED!";
+    private final String HEADER = ChatColor.RED + "REGION DAMAGED!";
 
     @EventHandler
-    public void onSignRigtClick(PlayerInteractEvent event){
-        Player p = event.getPlayer();
-
-        if (event.getAction() != Action.RIGHT_CLICK_BLOCK){
+    public void onSignRightClick(PlayerInteractEvent event){
+        if (!event.getAction().equals(Action.RIGHT_CLICK_BLOCK)){
             return;
         }
         if (!event.getClickedBlock().getType().name().endsWith("WALL_SIGN")){
@@ -42,80 +52,101 @@ public class RegionDamagedSign implements Listener {
         if (!sign.getLine(0).equals(HEADER)){
             return;
         }
-        String regionName = sign.getLine(1).substring(7);
-        Long damages = Long.parseLong(sign.getLine(2).substring(7));
-        String[] owners = sign.getLine(3).substring(6).split(",");
-        if (Movecraft.getInstance().getEconomy().has(event.getPlayer(), damages)) {
-            Movecraft.getInstance().getEconomy().withdrawPlayer(event.getPlayer(), damages);
-        } else {
-            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("You do not have enough money"));
+        String regionName = sign.getLine(1).substring(sign.getLine(1).indexOf(":") + 1);
+        long damages = Long.parseLong(sign.getLine(2).substring(sign.getLine(2).indexOf(":") + 1));
+        String[] owners = sign.getLine(3).substring(sign.getLine(3).indexOf(":") + 1).split(",");
+        if (!Movecraft.getInstance().getEconomy().has(event.getPlayer(), damages)) {
+            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Economy - Not Enough Money"));
             return;
         }
-        event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Repairing region"));
-        if (!repairRegion(regionName, event.getClickedBlock().getWorld())) {
-            Bukkit.getServer().broadcastMessage(String.format("REPAIR OF %s FAILED, CONTACT AN ADMIN", regionName));
+
+        if (!repairRegion(event.getClickedBlock().getWorld(), regionName)) {
+            Bukkit.getServer().broadcastMessage(String.format(I18nSupport.getInternationalisedString("Assault - Repair Failed"), regionName));
             return;
         }
-        RegionManager manager = WorldguardUtils.getRegionManager(event.getClickedBlock().getWorld());
-        ProtectedRegion aRegion = manager.getRegion(regionName);
+        event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Assault - Repairing Region"));
+        Movecraft.getInstance().getEconomy().withdrawPlayer(event.getPlayer(), damages);
+        World world = event.getClickedBlock().getWorld();
+        ProtectedRegion aRegion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(world).getRegion(regionName);
         for (String ownerName : owners) {
             if (ownerName.length() > 16) {
                 aRegion.getOwners().addPlayer(UUID.fromString(ownerName));
             } else {
 
-                if (Bukkit.getPlayer(ownerName) != null){//Cannot add names directly as bug will allow free assaults
+                if (Bukkit.getPlayer(ownerName) != null) {//Cannot add names directly as bug will allow free assaults
                     aRegion.getOwners().addPlayer(Bukkit.getPlayer(ownerName).getUniqueId());
                 } else {
                     aRegion.getOwners().addPlayer(Bukkit.getOfflinePlayer(ownerName).getUniqueId());
                 }
-                //aRegion.getOwners().addPlayer(ownerName);
-
             }
-            //event.getPlayer().sendMessage(ownerName);
         }
-        int beaconX = sign.getX() - 2;
-        int beaconY = sign.getY() - 3;
-        int beaconZ = sign.getZ() - 1;
-        for (int x = beaconX; x < beaconX + 5; x++) {
-            for (int y = beaconY; y < beaconY + 4; y++) {
-                for (int z = beaconZ; z < beaconZ + 5; z++) {
-                    event.getClickedBlock().getWorld().getBlockAt(x, y, z).setType(Material.AIR);
+        //Clear the beacon
+        int minX = sign.getX() - 2;
+        int minY = sign.getY() - 3;
+        int minZ = sign.getZ() - 1;
+        int maxX = sign.getX() + 2;
+        int maxY = sign.getY();
+        int maxZ = sign.getZ() + 3;
+        for (int x = minX ; x <= maxX ; x++){
+            for (int y = minY ; y <= maxY ; y++){
+                for (int z = minZ; z <= maxZ ; z++){
+                    Block b = sign.getWorld().getBlockAt(x,y,z);
+                    if (b.getType() == Material.BEDROCK || b.getType() == Material.BEACON || b.getType() == Material.IRON_BLOCK ){
+                        b.setType(Material.AIR);
+                    }
                 }
             }
         }
-        return;
     }
-    public static boolean repairRegion(String regionName, World world){
-        MovecraftRepair movecraftRepair = Movecraft.getInstance().getMovecraftRepair();
-        Clipboard clipboard = movecraftRepair.loadRegionRepairStateClipboard(Movecraft.getInstance(), regionName, world);
+
+    public boolean repairRegion(World w, String regionName) {
+        if (w == null || regionName == null)
+            return false;
+        Clipboard clipboard = Movecraft.getInstance().getMovecraftRepair().loadRegionRepairStateClipboard(regionName, w);
         if (clipboard == null){
             return false;
         }
-        int minX = clipboard.getMinimumPoint().getBlockX();
-        int minY = clipboard.getMinimumPoint().getBlockY();
-        int minZ = clipboard.getMinimumPoint().getBlockZ();
-        int maxX = clipboard.getMaximumPoint().getBlockX();
-        int maxY = clipboard.getMaximumPoint().getBlockY();
-        int maxZ = clipboard.getMaximumPoint().getBlockZ();
-
-        for (int x = minX; x <= maxX; x++){
-            for (int y = minY; y <= maxY; y++){
-                for (int z = minZ; z <= maxZ; z++){
-                    if (Settings.IsLegacy){
-                        RepairUtils.legacyRepairRegion(clipboard, world,x,y,z);
-                    } else {
-                        BlockVector3 pos = BlockVector3.at(x,y,z);
-                        MovecraftLocation location = new MovecraftLocation(x,y,z);
-                        BaseBlock block = clipboard.getFullBlock(pos);
-                        Location bukkitLoc = location.toBukkit(world);
-                        if (bukkitLoc.getBlock().isLiquid() || bukkitLoc.getBlock().getType().name().endsWith("AIR"))
-                            continue;
-                        if (!Settings.AssaultDestroyableBlocks.contains(bukkitLoc.getBlock().getType()))
-                            continue;
-                        Material type = BukkitAdapter.adapt(block.getBlockType());
-                        WorldEdit7UpdateCommand weUp = new WorldEdit7UpdateCommand(block, world, location, type);
-                        MapUpdateManager.getInstance().scheduleUpdate(weUp);
+        int minx = clipboard.getMinimumPoint().getBlockX();
+        int miny = clipboard.getMinimumPoint().getBlockY();
+        int minz = clipboard.getMinimumPoint().getBlockZ();
+        int maxx = clipboard.getMaximumPoint().getBlockX();
+        int maxy = clipboard.getMaximumPoint().getBlockY();
+        int maxz = clipboard.getMaximumPoint().getBlockZ();
+        for (int x = minx; x < maxx; x++) {
+            for (int y = miny; y < maxy; y++) {
+                for (int z = minz; z < maxz; z++) {
+                    if (Settings.IsLegacy) {
+                        Vector ccloc = new Vector(x, y, z);
+                        com.sk89q.worldedit.blocks.BaseBlock bb = LegacyWEUtils.getBlock(clipboard,ccloc);
+                        if (!bb.isAir()) { // most blocks will be air, quickly move on to the next. This loop will run 16 million times, needs to be fast
+                            if (Settings.AssaultDestroyableBlocks.contains(bb.getId())) {
+                                if (!w.getChunkAt(x >> 4, z >> 4).isLoaded())
+                                    w.loadChunk(x >> 4, z >> 4);
+                                if (w.getBlockAt(x, y, z).isEmpty() || w.getBlockAt(x, y, z).isLiquid()) {
+                                    MovecraftLocation moveloc = new MovecraftLocation(x, y, z);
+                                    WorldEditUpdateCommand updateCommand = new WorldEditUpdateCommand(bb, w, moveloc, LegacyUtils.getMaterial(bb.getType()), (byte) bb.getData());
+                                    MapUpdateManager.getInstance().scheduleUpdate(updateCommand);
+                                }
+                            }
+                        }
+                        continue;
                     }
+                    BlockVector3 ccloc = BlockVector3.at(x, y, z);
+                    BaseBlock bb = clipboard.getFullBlock(ccloc);
+                    Material type = BukkitAdapter.adapt(bb.getBlockType());
+                    if (type.name().endsWith("AIR")){
+                        continue;
+                    }
+                    if (Settings.AssaultDestroyableBlocks.contains(type)) {
+                        if (!w.getChunkAt(x >> 4, z >> 4).isLoaded())
+                            w.loadChunk(x >> 4, z >> 4);
+                        if (w.getBlockAt(x, y, z).isEmpty() || w.getBlockAt(x, y, z).isLiquid()) {
+                            MovecraftLocation moveloc = new MovecraftLocation(x, y, z);
+                            WorldEdit7UpdateCommand updateCommand = new WorldEdit7UpdateCommand(bb, w, moveloc, type);
+                            MapUpdateManager.getInstance().scheduleUpdate(updateCommand);
+                        }
+                    }
+
                 }
             }
         }

@@ -3,7 +3,6 @@ package net.countercraft.movecraft.repair;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
-import net.countercraft.movecraft.utils.HitBox;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.boss.BarColor;
@@ -15,18 +14,19 @@ import java.util.LinkedList;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class Repair {
-    private String name;
-    private HitBox hitBox;
-    private LinkedList<UpdateCommand> updateCommands, fragileBlockUpdateCommands;
-    private UUID playerUUID;
-    private long missingBlocks, durationInTicks, ticksSinceStart;
-    private BossBar progressBar;
-    private Location signLoc;
-    private AtomicBoolean running = new AtomicBoolean(true);
-    public Repair(String name, HitBox hitBox, LinkedList<UpdateCommand> updateCommands, LinkedList<UpdateCommand> fragileBlockUpdateCommands,  UUID playerUUID, long missingBlocks, Location signLoc){
+public final class Repair {
+    private final String name;
+    private final Craft craft;
+    private final LinkedList<UpdateCommand> updateCommands, fragileBlockUpdateCommands;
+    private final UUID playerUUID;
+    private final long missingBlocks, durationInTicks;
+    private long ticksSinceStart;
+    private final  BossBar progressBar;
+    private final Location signLoc;
+    private final AtomicBoolean running = new AtomicBoolean(true);
+    public Repair(String name, Craft craft, LinkedList<UpdateCommand> updateCommands, LinkedList<UpdateCommand> fragileBlockUpdateCommands,  UUID playerUUID, long missingBlocks, Location signLoc){
         this.name = name;
-        this.hitBox = hitBox;
+        this.craft = craft;
         this.updateCommands = updateCommands;
         this.fragileBlockUpdateCommands = fragileBlockUpdateCommands;
         this.durationInTicks = missingBlocks * Settings.RepairTicksPerBlock;
@@ -34,60 +34,36 @@ public class Repair {
         this.missingBlocks = missingBlocks;
         this.playerUUID = playerUUID;
         this.signLoc = signLoc;
-        progressBar = Bukkit.createBossBar(this.name, BarColor.WHITE, BarStyle.SOLID, BarFlag.DARKEN_SKY);
-        progressBar.setVisible(true);
-        progressBar.setProgress(0.0);
+        this.progressBar = Bukkit.createBossBar(this.name, BarColor.WHITE, BarStyle.SOLID, BarFlag.DARKEN_SKY);
+        this.progressBar.setVisible(true);
+        this.progressBar.setProgress(0.0);
     }
     public String getName(){
         return name;
+    }
+
+    public Craft getCraft() {
+        return craft;
     }
 
     public UUID getPlayerUUID() {
         return playerUUID;
     }
 
-    public void setPlayerUUID(UUID playerUUID) {
-        this.playerUUID = playerUUID;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public long getMissingBlocks() {
         return missingBlocks;
-    }
-
-    public void setMissingBlocks(int missingBlocks) {
-        this.missingBlocks = missingBlocks;
     }
 
     public AtomicBoolean getRunning() {
         return running;
     }
 
-    public void setRunning(AtomicBoolean running) {
-        this.running = running;
-    }
-
     public long getDurationInTicks() {
         return durationInTicks;
     }
 
-    public void setDurationInTicks(int durationInTicks) {
-        this.durationInTicks = durationInTicks;
-    }
-
     public Location getSignLoc() {
         return signLoc;
-    }
-
-    public void setSignLoc(Location signLoc) {
-        this.signLoc = signLoc;
-    }
-
-    public HitBox getHitBox() {
-        return hitBox;
     }
 
     public BossBar getProgressBar() {

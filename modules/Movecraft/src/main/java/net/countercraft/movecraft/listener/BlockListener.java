@@ -93,7 +93,7 @@ public class BlockListener implements Listener {
         }
         if (e.getBlock().getType().name().endsWith("WALL_SIGN")) {
             Sign s = (Sign) e.getBlock().getState();
-            if (s.getLine(0).equalsIgnoreCase(ChatColor.RED + "REGION DAMAGED!")) {
+            if (s.getLine(0).equalsIgnoreCase(ChatColor.RED + I18nSupport.getInternationalisedString("Region Damaged"))) {
                 e.setCancelled(true);
                 return;
             }
@@ -123,7 +123,7 @@ public class BlockListener implements Listener {
             return;
         }
         for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(e.getLocation().getWorld())) {
-            if ((!tcraft.isNotProcessing()) && MathUtils.locationInHitbox(tcraft.getHitBox(), e.getLocation())) {
+            if ((!tcraft.isNotProcessing()) && MathUtils.locationInHitBox(tcraft.getHitBox(), e.getLocation())) {
                 e.setCancelled(true);
                 return;
             }

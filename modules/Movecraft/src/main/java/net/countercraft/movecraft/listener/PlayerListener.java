@@ -17,26 +17,24 @@
 
 package net.countercraft.movecraft.listener;
 
-import net.countercraft.movecraft.Movecraft;
-import net.countercraft.movecraft.utils.HitBox;
-import net.countercraft.movecraft.utils.MathUtils;
+
 import net.countercraft.movecraft.MovecraftLocation;
-import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.warfare.siege.Siege;
-import net.countercraft.movecraft.warfare.siege.SiegeStage;
+import net.countercraft.movecraft.utils.HitBox;
+import net.countercraft.movecraft.utils.MathUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
-import java.util.*;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 public class PlayerListener implements Listener {
     private final Map<Craft, Long> timeToReleaseAfter = new WeakHashMap<>();
@@ -168,17 +166,6 @@ public class PlayerListener implements Listener {
         CraftManager.getInstance().removeCraftByPlayer(e.getPlayer());
     }
 
-    @EventHandler
-    public void onPlayerLogin(PlayerLoginEvent e){
-        Player p = e.getPlayer();
-        if (!Settings.SiegeEnable)
-            return;
-        for (Siege siege : Movecraft.getInstance().getSiegeManager().getSieges()){
-            if (siege.getStage().get() == SiegeStage.INACTIVE) continue;
-            p.setScoreboard(siege.getScoreboard());
-        }
-    }
-
 
     @EventHandler
     public void onPlayerDeath(EntityDamageByEntityEvent e) {  // changed to death so when you shoot up an airship and hit the pilot, it still sinks
@@ -194,12 +181,14 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent event) {
-        final Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
+        Player p = event.getPlayer();
+        final Craft c = CraftManager.getInstance().getCraftByPlayer(p);
+
         if (c == null) {
             return;
         }
 
-        if(MathUtils.locationNearHitBox(c.getHitBox(), event.getPlayer().getLocation(), 2)){
+        if(MathUtils.locationNearHitBox(c.getHitBox(), p.getLocation(), 2)){
             timeToReleaseAfter.remove(c);
             return;
         }
@@ -211,15 +200,16 @@ public class PlayerListener implements Listener {
         }
 
         if (c.isNotProcessing() && c.getType().getMoveEntities() && !timeToReleaseAfter.containsKey(c)) {
-            if (Settings.ManOverBoardTimeout != 0) {
-                event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("You have left your craft. You may return to your craft by typing /manoverboard any time before the timeout expires"));
+            if (Settings.ManOverboardTimeout != 0) {
+                p.sendMessage(I18nSupport.getInternationalisedString("You have left your craft. You may return to your craft by typing /manoverboard any time before the timeout expires"));
+                CraftManager.getInstance().addOverboard(p);
             } else {
-                event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Release - Player has left craft"));
+                p.sendMessage(I18nSupport.getInternationalisedString("Release - Player has left craft"));
             }
             if (c.getHitBox().size() > 11000) {
-                event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Craft is too big to check its borders. Make sure this area is safe to release your craft in."));
+                p.sendMessage(I18nSupport.getInternationalisedString("Craft is too big to check its borders. Make sure this area is safe to release your craft in."));
             }
-            timeToReleaseAfter.put(c, System.currentTimeMillis() + 30000); //30 seconds to release
+            timeToReleaseAfter.put(c, System.currentTimeMillis() + 30000); //30 seconds to release TODO: config
         }
     }
 }

@@ -22,12 +22,12 @@ public class RotateCommand implements TabExecutor{
             return false;
         }
         if(!(commandSender instanceof Player)){
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "you need to be a player to pilot a craft");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Rotation - Must Be Player"));
             return true;
         }
         Player player = (Player) commandSender;
         if(args.length<1){
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "you need to supply a direction");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Rotation - Specify Direction"));
             return true;
         }
         if (args[0].equalsIgnoreCase("left")) {
@@ -37,7 +37,7 @@ public class RotateCommand implements TabExecutor{
             }
             final Craft craft = CraftManager.getInstance().getCraftByPlayerName(player.getName());
             if(craft==null){
-                player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("You need to be piloting a craft"));
+                player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("You must be piloting a craft"));
                 return true;
             }
             if (!player.hasPermission("movecraft." + craft.getType().getCraftName() + ".rotate")) {
@@ -55,7 +55,7 @@ public class RotateCommand implements TabExecutor{
             }
             final Craft craft = CraftManager.getInstance().getCraftByPlayerName(player.getName());
             if(craft==null){
-                player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("You need to be piloting a craft"));
+                player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("You must be piloting a craft"));
                 return true;
             }
             if (!player.hasPermission("movecraft." + craft.getType().getCraftName() + ".rotate")) {
@@ -65,7 +65,7 @@ public class RotateCommand implements TabExecutor{
             CraftManager.getInstance().getCraftByPlayerName(player.getName()).rotate(Rotation.CLOCKWISE, craft.getHitBox().getMidPoint());
             return true;
         }
-        player.sendMessage(MOVECRAFT_COMMAND_PREFIX + "invalid direction");
+        player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Rotation - Invalid Direction"));
         return true;
     }
 

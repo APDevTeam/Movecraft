@@ -30,7 +30,7 @@ public class WorldguardUtils {
         if (tRegion.getOwners().getUniqueIds().size() > 0) {
             for (UUID uid : tRegion.getOwners().getUniqueIds()) {
                 if (!first)
-                    output.append(",");
+                    output.append(", ");
                 else
                     first = false;
                 OfflinePlayer offP = Bukkit.getOfflinePlayer(uid);
