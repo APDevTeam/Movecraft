@@ -7,14 +7,13 @@ import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.world.block.BaseBlock;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.utils.Pair;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockState;
-import org.bukkit.block.Dispenser;
-import org.bukkit.block.Sign;
+import org.bukkit.block.*;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.inventory.FurnaceInventory;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.Objects;
@@ -100,60 +99,82 @@ public class WorldEdit7UpdateCommand extends UpdateCommand {
             if (state instanceof Sign) {
                 Sign s = (Sign) state;
                 CompoundTag nbtData = baseBlock.getNbtData();
-                //first line
-                String firstLine = nbtData.getString("Text1");
-                firstLine = firstLine.substring(2);
-                if (firstLine.substring(0, 5).equalsIgnoreCase("extra")){
-                    firstLine = firstLine.substring(17);
-                    String[] parts = firstLine.split("\"");
-                    firstLine = parts[0];
-                } else {
-                    firstLine = "";
-                }
-                //second line
-                String secondLine = nbtData.getString("Text2");
-                secondLine = secondLine.substring(2);
-                if (secondLine.substring(0, 5).equalsIgnoreCase("extra")){
-                    secondLine = secondLine.substring(17);
-                    String[] parts = secondLine.split("\"");
-                    secondLine = parts[0];
-                } else {
-                    secondLine = "";
-                }
-                //third line
-                String thirdLine = nbtData.getString("Text3");
-                thirdLine = thirdLine.substring(2);
-                if (thirdLine.substring(0, 5).equalsIgnoreCase("extra")){
-                    thirdLine = thirdLine.substring(17);
-                    String[] parts = thirdLine.split("\"");
-                    thirdLine = parts[0];
-                } else {
-                    thirdLine = "";
-                }
-                //fourth line
-                String fourthLine = nbtData.getString("Text4");
-                fourthLine = fourthLine.substring(2);
-                if (fourthLine.substring(0, 5).equalsIgnoreCase("extra")){
-                    fourthLine = fourthLine.substring(17);
-                    String[] parts = fourthLine.split("\"");
-                    fourthLine = parts[0];
-                } else {
-                    fourthLine = "";
-                }
-                String[] lines = new String[4];
-                if (firstLine.equalsIgnoreCase("\\\\  ||  /")){
-                    firstLine = "\\  ||  /";
-                    secondLine = "==      ==";
-                    thirdLine = "/  ||  \\";
-                }
-                lines[0] = firstLine;
-                lines[1] = secondLine;
-                lines[2] = thirdLine;
-                lines[3] = fourthLine;
-                for (int line = 0; line < lines.length; line++) {
-                    s.setLine(line, lines[line]);
+                //Text NBT tags for first to fourth line are called Text1 - Text4
+                for (int i = 1; i <= 4; i++) {
+                    String line = nbtData.getString("Text" + i);
+                    line = line.substring(2);
+                    if (line.substring(0, 5).equalsIgnoreCase("extra")) {
+                        line = line.substring(17);
+                        String[] parts = line.split("\"");
+                        line = parts[0];
+                    } else {
+                        line = "";
+                    }
+                    if (i == 1 && line.equalsIgnoreCase("\\\\  ||  /")) {
+                        s.setLine(0, "\\  ||  /");
+                        s.setLine(1, "==      ==");
+                        s.setLine(2, "/  ||  \\");
+                        break;
+                    }
+                    s.setLine(i - 1, line);
                 }
                 s.update(false, false);
+            }
+        }
+        if (type == Material.FURNACE){
+            ListTag list = baseBlock.getNbtData().getListTag("Items");
+            FurnaceInventory fInv = ((Furnace) block.getState()).getInventory();
+            if (list != null){
+                for (Tag t : list.getValue()){
+                    if (!(t instanceof CompoundTag)){
+                        continue;
+                    }
+                    CompoundTag ct = (CompoundTag) t;
+                    byte slot = ct.getByte("Slot");
+                    if (slot == 2){//Ignore the result slot
+                        continue;
+                    }
+                    String id = ct.getString("id");
+                    Pair<Material, Byte> content;
+                    if (id.equals("minecraft:coal")){
+                        byte data = (byte) ct.getShort("Damage");
+                        byte count = ct.getByte("Count");
+                        //Smelting slot
+
+                        if (slot == 0) {
+                            if (fInv.getSmelting() != null && fInv.getSmelting().getData().getData() == data){
+                                fInv.getSmelting().setAmount(count);
+                            } else {
+                                fInv.setSmelting(new ItemStack(Material.COAL, count, (short) 0, data));
+                            }
+                        } else if (slot == 1) {//Fuel slot
+                            if (fInv.getFuel() != null && fInv.getFuel().getData().getData() == data){
+                                fInv.getFuel().setAmount(count);
+                            } else {
+                                fInv.setFuel(new ItemStack(Material.COAL, count, (short) 0, data));
+                            }
+                        }
+
+                    }
+                    if (id.equals("minecraft:coal_block")){
+                        byte count = ct.getByte("Count");
+                        //Smelting slot
+                        //Fuel slot
+                        if (slot == 0) {
+                            if (fInv.getSmelting() != null){
+                                fInv.getSmelting().setAmount(count);
+                            } else {
+                                fInv.setSmelting(new ItemStack(Material.COAL_BLOCK, count));
+                            }
+                        } else if (slot == 1) {//Fuel slot
+                            if (fInv.getFuel() != null){
+                                fInv.getFuel().setAmount(count);
+                            } else {
+                                fInv.setFuel(new ItemStack(Material.COAL_BLOCK, count));
+                            }
+                        }
+                    }
+                }
             }
         }
     }

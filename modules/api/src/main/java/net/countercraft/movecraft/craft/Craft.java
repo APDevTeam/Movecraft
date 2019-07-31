@@ -69,7 +69,6 @@ public abstract class Craft {
     @Nullable private Player notificationPlayer;
     @Nullable private Player cannonDirector;
     @Nullable private Player AADirector;
-    @NotNull private final HashMap<Player, Long> movedPlayers = new HashMap<>();
     private float meanMoveTime;
     private int numMoves;
     @NotNull private final Map<MovecraftLocation,Material> phaseBlocks = new HashMap<>();
@@ -232,11 +231,6 @@ public abstract class Craft {
 
     public void setPilotLocked(boolean pilotLocked) {
         this.pilotLocked = pilotLocked;
-    }
-
-    @NotNull
-    public HashMap<Player, Long> getMovedPlayers() {
-        return movedPlayers;
     }
 
     public double getPilotLockedX() {

@@ -21,6 +21,7 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
 import net.countercraft.movecraft.craft.Craft;
 import org.bukkit.Location;
+import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -30,7 +31,15 @@ import java.util.Random;
 public class MathUtils {
 
 
-
+    /**
+     * Returns a Bukkit vector from a WorldEdit 6.0.0 vector
+     * @param vector the WE vector to be converted
+     * @return Corresponding bukkit vector
+     */
+    @Contract(pure = true)
+    public static Vector bukkitVectorFromWEVector(com.sk89q.worldedit.Vector vector){
+        return new Vector(vector.getBlockX(), vector.getBlockY(), vector.getBlockZ());
+    }
     /**
      * checks if <code>location</code> is within the bounding box <code>box</code> restricted by minimum values on x and z
      * @param box the bounding box to check within
@@ -65,7 +74,7 @@ public class MathUtils {
      * @return True if the player is within the given bounding box
      */
     @Contract(pure=true)
-    public static boolean locationInHitbox(@NotNull final HashHitBox hitBox, @NotNull final Location location) {
+    public static boolean locationInHitBox(@NotNull final HashHitBox hitBox, @NotNull final Location location) {
         return hitBox.inBounds(location.getX(),location.getY(),location.getZ());
     }
 
