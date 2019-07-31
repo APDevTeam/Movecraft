@@ -29,7 +29,6 @@
         <relativePath>../../</relativePath>
     </parent>
     <dependencies>
-
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot</artifactId>
@@ -59,10 +58,10 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-        <groupId>com.sk89q</groupId>
-        <artifactId>worldedit</artifactId>
-        <version>LATEST</version>
-    </dependency>
+            <groupId>com.sk89q</groupId>
+            <artifactId>worldedit</artifactId>
+            <version>LATEST</version>
+        </dependency>
         <dependency>
             <groupId>com.sk89q</groupId>
             <artifactId>worldguard</artifactId>

@@ -93,7 +93,7 @@ public class BlockListener implements Listener {
         }
         if (e.getBlock().getType().name().endsWith("WALL_SIGN")) {
             Sign s = (Sign) e.getBlock().getState();
-            if (s.getLine(0).equalsIgnoreCase(ChatColor.RED + I18nSupport.getInternationalisedString("Region Damaged"))) {
+            if (s.getLine(0).equalsIgnoreCase(ChatColor.RED + "REGION DAMAGED!")) {
                 e.setCancelled(true);
                 return;
             }
