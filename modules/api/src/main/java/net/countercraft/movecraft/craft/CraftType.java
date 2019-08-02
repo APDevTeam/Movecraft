@@ -17,7 +17,6 @@
 
 package net.countercraft.movecraft.craft;
 
-import net.countercraft.movecraft.MovecraftLocation;
 import org.bukkit.Material;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.Yaml;

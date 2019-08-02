@@ -42,7 +42,7 @@ public class AssaultTask extends BukkitRunnable {
             int beaconZ = assault.getMinPos().getBlockZ();
             int beaconY;
             for(beaconY = 255; beaconY > 0; beaconY--) {
-                if(w.getBlockAt(beaconX, beaconY, beaconZ).getType() != Material.AIR) {
+                if(w.getBlockAt(beaconX, beaconY, beaconZ).getType().isOccluding()) {
                     beaconY++;
                     break;
                 }

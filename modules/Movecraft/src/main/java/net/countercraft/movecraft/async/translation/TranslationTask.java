@@ -1,10 +1,10 @@
 package net.countercraft.movecraft.async.translation;
 
-import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.events.CraftCollisionEvent;
 import net.countercraft.movecraft.events.CraftTranslateEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.update.*;
@@ -23,7 +23,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -156,6 +155,13 @@ public class TranslationTask extends AsyncTask {
         }
 
         if(craft.getSinking()){
+            List<MovecraftLocation> air = new ArrayList<>();
+            for(MovecraftLocation location: oldHitBox){
+                if(location.toBukkit(craft.getW()).getBlock().getType() == Material.AIR){
+                    air.add(location.translate(dx,dy,dz));
+                }
+            }
+            newHitBox.removeAll(air);
             for(MovecraftLocation location : collisionBox){
                 if (craft.getType().getExplodeOnCrash() > 0.0F) {
                     if (System.currentTimeMillis() - craft.getOrigPilotTime() <= 1000) {
@@ -185,7 +191,7 @@ public class TranslationTask extends AsyncTask {
                 float explosionKey;
                 float explosionForce = craft.getType().getCollisionExplosion();
                 if (craft.getType().getFocusedExplosion()) {
-                    explosionForce *= oldHitBox.size();
+                    explosionForce *= Math.min(oldHitBox.size(), craft.getType().getMaxSize());
                 }
                 //TODO: Account for underwater explosions
                 /*if (location.getY() < waterLine) { // underwater explosions require more force to do anything
@@ -209,6 +215,10 @@ public class TranslationTask extends AsyncTask {
                 updates.add(new BlockCreateCommand(craft.getW(), location, Material.AIR));
             }
             newHitBox = new HashHitBox();
+        }
+
+        if(!collisionBox.isEmpty()){
+            Bukkit.getServer().getPluginManager().callEvent(new CraftCollisionEvent(craft, collisionBox));
         }
 
         updates.add(new CraftTranslateCommand(craft, new MovecraftLocation(dx, dy, dz)));
@@ -238,7 +248,6 @@ public class TranslationTask extends AsyncTask {
                 CraftManager.getInstance().addReleaseTask(craft);
         }
         captureYield(harvestedBlocks);
-
     }
 
     private static HitBox translateHitBox(HitBox hitBox, MovecraftLocation shift){

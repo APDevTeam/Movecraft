@@ -5,8 +5,10 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftType;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.ICraft;
+import net.countercraft.movecraft.events.CraftPilotEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.MathUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -49,6 +51,7 @@ public class PilotCommand implements TabExecutor {
             Craft newCraft = new ICraft(craftType, player.getWorld());
             MovecraftLocation startPoint = MathUtils.bukkit2MovecraftLoc(player.getLocation());
             newCraft.detect(player, player, startPoint);
+            Bukkit.getServer().getPluginManager().callEvent(new CraftPilotEvent(newCraft, CraftPilotEvent.Reason.PLAYER));
         } else {
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Pilot - Invalid Craft Type"));
         }

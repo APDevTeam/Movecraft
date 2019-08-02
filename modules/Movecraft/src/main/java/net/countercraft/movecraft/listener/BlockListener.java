@@ -131,7 +131,7 @@ public class BlockListener implements Listener {
             return;
         }
         for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(e.getLocation().getWorld())) {
-            if ((!tcraft.isNotProcessing()) && MathUtils.locationInHitbox(tcraft.getHitBox(), e.getLocation())) {
+            if ((!tcraft.isNotProcessing()) && MathUtils.locationInHitBox(tcraft.getHitBox(), e.getLocation())) {
                 e.setCancelled(true);
                 return;
             }

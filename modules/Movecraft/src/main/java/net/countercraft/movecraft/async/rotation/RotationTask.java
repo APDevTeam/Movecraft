@@ -25,18 +25,16 @@ import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
-import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.events.CraftRotateEvent;
-import net.countercraft.movecraft.events.CraftTranslateEvent;
-import net.countercraft.movecraft.utils.*;
-import net.countercraft.movecraft.utils.HashHitBox;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.events.CraftRotateEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.update.CraftRotateCommand;
 import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
+import net.countercraft.movecraft.utils.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -47,10 +45,8 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 public class RotationTask extends AsyncTask {
@@ -192,6 +188,7 @@ public class RotationTask extends AsyncTask {
                 break;
             }
         }
+
         if (failed) {
             if (this.isSubCraft && parentCraft != getCraft()) {
                 parentCraft.setProcessing(false);
@@ -310,12 +307,20 @@ public class RotationTask extends AsyncTask {
                 if (newHitBox.intersects(craft.getHitBox()) && craft != getCraft()) {
                     //newHitBox.addAll(CollectionUtils.filter(craft.getHitBox(),newHitBox));
                     //craft.setHitBox(newHitBox);
+                    if (Settings.Debug) {
+                        Bukkit.broadcastMessage(String.format("Size of %s hitbox: %d, Size of %s hitbox: %d", this.craft.getType().getCraftName(), newHitBox.size(), craft.getType().getCraftName(), craft.getHitBox().size()));
+                    }
                     craft.getHitBox().removeAll(oldHitBox);
                     craft.getHitBox().addAll(newHitBox);
+                    if (Settings.Debug){
+                        Bukkit.broadcastMessage(String.format("Hitbox of craft %s intersects hitbox of craft %s", this.craft.getType().getCraftName(), craft.getType().getCraftName()));
+                        Bukkit.broadcastMessage(String.format("Size of %s hitbox: %d, Size of %s hitbox: %d", this.craft.getType().getCraftName(), newHitBox.size(), craft.getType().getCraftName(), craft.getHitBox().size()));
+                    }
                     break;
                 }
             }
         }
+
 
     }
 
