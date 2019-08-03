@@ -374,7 +374,7 @@ final public class CraftType {
             ArrayList objList = (ArrayList) data.get("harvestBlocks");
             for (Object i : objList) {
                 if (i instanceof String) {
-                    Material mat = Material.getMaterial((String) i);
+                    Material mat = Material.getMaterial(((String) i).toUpperCase());
                     harvestBlocks.add(mat);
                 } else {
                     Material mat = Material.getMaterial((Integer) i);
@@ -387,7 +387,7 @@ final public class CraftType {
             ArrayList objList = (ArrayList) data.get("harvesterBladeBlocks");
             for (Object i : objList) {
                 if (i instanceof String) {
-                    Material mat = Material.getMaterial((String) i);
+                    Material mat = Material.getMaterial(((String) i).toUpperCase());
                     harvesterBladeBlocks.add(mat);
                 } else {
                     Integer typeID = (Integer) i;
@@ -401,7 +401,7 @@ final public class CraftType {
             ArrayList objList = (ArrayList) data.get("passthroughBlocks");
             for (Object i : objList) {
                 if (i instanceof String) {
-                    Material mat = Material.getMaterial((String) i);
+                    Material mat = Material.getMaterial(((String) i).toUpperCase());
                     passthroughBlocks.add(mat);
                 } else {
                     Material mat = Material.getMaterial((Integer) i);
@@ -558,6 +558,7 @@ final public class CraftType {
                     returnMap.put(type, new ArrayList<>());
                 } else if (o instanceof String){
                     String string = (String) o;
+                    string = string.toUpperCase();
                     if (string.contains(":")){
                         String[] parts = string.split(":");
                         Material type;
@@ -575,8 +576,18 @@ final public class CraftType {
                             returnMap.put(type, new ArrayList<>(data));
                         }
                     } else {
-                        Material type = Material.getMaterial(string);
-                        returnMap.put(type,new ArrayList<>());
+                        if (string.toUpperCase().startsWith("ALL_")){
+                            string = string.replace("ALL_", "");
+                            for (Material m : Material.values()){
+                                if (!m.name().endsWith(string)){
+                                    continue;
+                                }
+                                returnMap.put(m, new ArrayList<>());
+                            }
+                        } else {
+                            Material type = Material.getMaterial(string);
+                            returnMap.put(type, new ArrayList<>());
+                        }
                     }
                 } else {
                     Material type = (Material) o;
@@ -645,6 +656,7 @@ final public class CraftType {
                         materialMap.put(type, new ArrayList<>());
                     } else if (o instanceof String) {
                         String string = (String) o;
+                        string = string.toUpperCase();
                         if (string.contains(":")) {
                             String[] parts = string.split(":");
                             Material type;
@@ -666,6 +678,14 @@ final public class CraftType {
                                 materialMap.put(type, dataList);
                             }
 
+                        } else if (string.toUpperCase().startsWith("ALL_")){
+                            string = string.replace("ALL_", "");
+                            for (Material m : Material.values()){
+                                if (!m.name().endsWith(string)){
+                                    continue;
+                                }
+                                materialMap.put(m, new ArrayList<>());
+                            }
                         } else {
                             Material type;
                             if (string.contains("0") || string.contains("1") || string.contains("2") || string.contains("3") || string.contains("4") || string.contains("5") || string.contains("6") || string.contains("7") || string.contains("8") || string.contains("9")) {

@@ -2,248 +2,87 @@ name: Submarine
 maxSize: 100000
 minSize: 10
 allowedBlocks:
-    #beds
-    - WHITE_BED
-    - ORANGE_BED
-    - MAGENTA_BED
-    - LIGHT_BLUE_BED
-    - YELLOW_BED
-    - LIME_BED
-    - PINK_BED
-    - GRAY_BED
-    - LIGHT_BED
-    - CYAN_BED
-    - PURPLE_BED
-    - BLUE_BED
-    - BROWN_BED
-    - GREEN_BED
-    - RED_BED
-    - BLACK_BED
-    #buttons
-    - ACACIA_BUTTON
-    - BIRCH_BUTTON
-    - DARK_OAK_BUTTON
-    - JUNGLE_BUTTON
-    - OAK_BUTTON
-    - SPRUCE_BUTTON
-    - STONE_BUTTON
-    #carpets
-    - WHITE_CARPET
-    - ORANGE_CARPET
-    - MAGENTA_CARPET
-    - LIGHT_BLUE_CARPET
-    - YELLOW_CARPET
-    - LIME_CARPET
-    - PINK_CARPET
-    - GRAY_CARPET
-    - LIGHT_CARPET
-    - CYAN_CARPET
-    - PURPLE_CARPET
-    - BLUE_CARPET
-    - BROWN_CARPET
-    - GREEN_CARPET
-    - RED_CARPET
-    - BLACK_CARPET
-    #doors
-    - ACACIA_DOOR
-    - BIRCH_DOOR
-    - DARK_OAK_DOOR
-    - IRON_DOOR
-    - JUNGLE_DOOR
-    - OAK_DOOR
-    - SPRUCE_DOOR
-    #fences
-    - ACACIA_FENCE
-    - BIRCH_FENCE
-    - DARK_OAK_FENCE
-    - JUNGLE_FENCE
-    - OAK_FENCE
-    - NETHER_BRICK_FENCE
-    - SPRUCE_FENCE
-    #fence gates
-    - ACACIA_FENCE_GATE
-    - BIRCH_FENCE_GATE
-    - DARK_OAK_FENCE_GATE
-    - JUNGLE_FENCE_GATE
-    - OAK_FENCE_GATE
-    - SPRUCE_FENCE_GATE
-    #glass
-    - GLASS
-    - WHITE_STAINED_GLASS
-    - ORANGE_STAINED_GLASS
-    - MAGENTA_STAINED_GLASS
-    - LIGHT_BLUE_STAINED_GLASS
-    - YELLOW_STAINED_GLASS
-    - LIME_STAINED_GLASS
-    - PINK_STAINED_GLASS
-    - GRAY_STAINED_GLASS
-    - LIGHT_GRAY_STAINED_GLASS
-    - CYAN_STAINED_GLASS
-    - PURPLE_STAINED_GLASS
-    - BLUE_STAINED_GLASS
-    - BROWN_STAINED_GLASS
-    - GREEN_STAINED_GLASS
-    - RED_STAINED_GLASS
-    - BLACK_STAINED_GLASS
-    #glass pane
-    - GLASS_PANE
-    - WHITE_STAINED_GLASS_PANE
-    - ORANGE_STAINED_GLASS_PANE
-    - MAGENTA_STAINED_GLASS_PANE
-    - LIGHT_BLUE_STAINED_GLASS_PANE
-    - YELLOW_STAINED_GLASS_PANE
-    - LIME_STAINED_GLASS_PANE
-    - PINK_STAINED_GLASS_PANE
-    - GRAY_STAINED_GLASS_PANE
-    - LIGHT_GRAY_STAINED_GLASS_PANE
-    - CYAN_STAINED_GLASS_PANE
-    - PURPLE_STAINED_GLASS_PANE
-    - BLUE_STAINED_GLASS_PANE
-    - BROWN_STAINED_GLASS_PANE
-    - GREEN_STAINED_GLASS_PANE
-    - RED_STAINED_GLASS_PANE
-    - BLACK_STAINED_GLASS_PANE
-    #liquids
-    - LAVA
-    - WATER
-    #logs
-    - BIRCH_LOG
-    - JUNGLE_LOG
-    - OAK_LOG
-    - SPRUCE_LOG
-    - STRIPPED_BIRCH_LOG
-    - STRIPPED_JUNGLE_LOG
-    - STRIPPED_OAK_LOG
-    - STRIPPED_SPRUCE_LOG
-    #misc
-    - BOOKSHELF
-    - BREWING_STAND
-    - CRAFTING_TABLE
-    - CAULDRON
-    - FURNACE
-    - GLOWSTONE
-    - IRON_BARS
-    - LADDER
-    - NETHER_BRICKS
-    - SIGN
-    - TORCH
-    - WALL_SIGN
-    - WALL_TORCH
-    #planks
-    - ACACIA_PLANKS
-    - BIRCH_PLANKS
-    - DARK_OAK_PLANKS
-    - JUNGLE_PLANKS
-    - OAK_PLANKS
-    - SPRUCE_PLANKS
-    #pressure plates
-    - ACACIA_PRESSURE_PLATE
-    - BIRCH_PRESSURE_PLATE
-    - DARK_OAK_PRESSURE_PLATE
-    - HEAVY_WEIGHTED_PRESSURE_PLATE
-    - JUNGLE_PRESSURE_PLATE
-    - LIGHT_WEIGHTED_PRESSURE_PLATE
-    - OAK_PRESSURE_PLATE
-    - SPRUCE_PRESSURE_PLATE
-    - STONE_PRESSURE_PLATE
-    #redstone
-    - COMPARATOR
-    - LEVER
-    - NOTE_BLOCK
-    - PISTON
-    - PISTON_HEAD
-    - REDSTONE_BLOCK
-    - REDSTONE_WIRE
-    - REPEATER
-    - REDSTONE_TORCH
-    - REDSTONE_WALL_TORCH
-    - STICKY_PISTON
-    - TRIPWIRE_HOOK
-    #slabs
-    - ACACIA_SLAB
-    - BIRCH_SLAB
-    - BRICK_SLAB
-    - COBBLESTONE_SLAB
-    - DARK_OAK_SLAB
-    - DARK_PRISMARINE
-    - JUNGLE_SLAB
-    - NETHER_BRICK_SLAB
-    - OAK_SLAB
-    - PETRIFIED_OAK_SLAB
-    - PRISMARINE_SLAB
-    - PRISMARINE_BRICK_SLAB
-    - RED_SANDSTONE_SLAB
-    - QUARTZ_SLAB
-    - SPRUCE_SLAB
-    - STONE_SLAB
-    #stairs
-    - BIRCH_STAIRS
-    - JUNGLE_STAIRS
-    - OAK_STAIRS
-    - NETHER_BRICK_STAIRS
-    - SMOOTH_STAIRS
-    - SPRUCE_STAIRS
-    - STONE_BRICK_STAIRS
-    #storage
-    - CHEST
-    - DISPENSER
-    - DROPPER
-    - HOPPER
-    - TRAPPED_CHEST
-    #terracotta
-    - WHITE_TERRACOTTA
-    - ORANGE_TERRACOTTA
-    - MAGENTA_TERRACOTTA
-    - LIGHT_BLUE_TERRACOTTA
-    - YELLOW_TERRACOTTA
-    - LIME_TERRACOTTA
-    - PINK_TERRACOTTA
-    - GRAY_TERRACOTTA
-    - LIGHT_GRAY_TERRACOTTA
-    - CYAN_TERRACOTTA
-    - PURPLE_TERRACOTTA
-    - BLUE_TERRACOTTA
-    - BROWN_TERRACOTTA
-    - GREEN_TERRACOTTA
-    - RED_TERRACOTTA
-    - BLACK_TERRACOTTA
-    #trapdoors
-    - ACACIA_TRAPDOOR
-    - BIRCH_TRAPDOOR
-    - DARK_OAK_TRAPDOOR
-    - JUNGLE_TRAPDOOR
-    - OAK_TRAPDOOR
-    - SPRUCE_TRAPDOOR
-    #weapon blocks
-    - COAL_BLOCK
-    #wood
-    - ACACIA_WOOD
-    - BIRCH_WOOD
-    - DARK_OAK_WOOD
-    - OAK_WOOD
-    - SPRUCE_WOOD
-    - STRIPPED_ACACIA_WOOD
-    - STRIPPED_BIRCH_WOOD
-    - STRIPPED_DARK_OAK_WOOD
-    - STRIPPED_OAK_WOOD
-    - STRIPPED_SPRUCE_WOOD
-    #wool
-    - WHITE_WOOL
-    - ORANGE_WOOL
-    - MAGENTA_WOOL
-    - LIGHT_BLUE_WOOL
-    - YELLOW_WOOL
-    - LIME_WOOL
-    - PINK_WOOL
-    - GRAY_WOOL
-    - LIGHT_GRAY_WOOL
-    - CYAN_WOOL
-    - PURPLE_WOOL
-    - BLUE_WOOL
-    - BROWN_WOOL
-    - GREEN_WOOL
-    - RED_WOOL
-    - BLACK_WOOL
+        - ALL_WOOD
+        - WATER
+        - LAVA
+        - ALL_LOG
+        - all_planks
+        - GLASS
+        - LAPIS_BLOCK
+        - DISPENSER
+        - NOTE_BLOCK
+        - ALL_BED
+        - sticky_piston
+        - piston_head
+        - all_wool
+        - GOLD_BLOCK
+        - IRON_BLOCK
+        - all_slab
+        - BOOKSHELF
+        - TORCH
+        - FIRE
+        - oak_stairs
+        - birch_stairs
+        - jungle_stairs
+        - spruce_stairs
+        - stone_brick_stairs
+        - quartz_stairs
+        - nether_brick_stairs
+        - chest
+        - redstone_wire
+        - diamond_block
+        - nether_brick_stairs
+        - furnace
+        - all_sign
+        - ladder
+        - all_door
+        - lever
+        - all_pressure_plate
+        - redstone_torch
+        - redstone_wall_torch
+        - all_button
+        - clay
+        - all_fence
+        - netherrack
+        - glowstone
+        - cake
+        - redstone_repeater
+        - all_stained_glass
+        - all_trapdoor
+        - all_stone_bricks
+        - iron_bars
+        - glass_pane
+        - all_fence_gate
+        - nether_brick
+        - enchantment_table
+        - brewing_stand
+        - cauldron
+        - end_stone
+        - dragon_egg
+        - redstone_lamp
+        - ender chest
+        - TRIPWIRE_HOOK
+        - EMERALD_BLOCK
+        - BEACON
+        - cobblestone_wall
+        - mossy_cobblestone_wall
+        - FLOWER_POT
+        - SKULL
+        - all_ANVIL
+        - TRAPPED_CHEST
+        - REDSTONE_COMPARATOR
+        - daylight_detector
+        - REDSTONE_BLOCK
+        - HOPPER
+        - all_QUARTZ_BLOCK
+        - all_rail
+        - DROPPER
+        - ALL_TERRACOTTA
+        - ALL_STAINED_GLASS_PANE
+        - SLIME_BLOCK
+        - ALL_CARPET
+        - COAL_BLOCK
+        - END_STONE_BRICKS
 
 canCruise: true
 cruiseSkipBlocks: 4
@@ -257,6 +96,13 @@ requireWaterContact: true
 allowVerticalMovement: true
 fuelBurnRate: 1.0
 tryNudge: false
+
+passthroughBlocks:
+    - kelp
+    - kelp_plant
+    - tall_seagrass
+    - seagrass
+    - bubble_column
 flyblocks:
     [ACACIA_PLANKS, BIRCH_PLANKS, DARK_OAK_PLANKS, JUNGLE_PLANKS, OAK_PLANKS, SPRUCE_PLANKS]:
         - 25.0
