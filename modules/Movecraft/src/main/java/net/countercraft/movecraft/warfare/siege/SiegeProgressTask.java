@@ -1,5 +1,7 @@
 package net.countercraft.movecraft.warfare.siege;
 
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.domains.DefaultDomain;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.countercraft.movecraft.Movecraft;
@@ -8,8 +10,10 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.utils.LegacyUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
+import org.bukkit.boss.BarColor;
 import org.bukkit.entity.Player;
 
 import java.util.List;
@@ -22,17 +26,18 @@ public class SiegeProgressTask extends SiegeTask {
 
     //every 20 ticks = 1 second
     public void run() {
-        if ((siege.getDuration() - ((System.currentTimeMillis() - siege.getStartTime()) / 1000)) % Settings.SiegeTaskSeconds != 0) {
+        int timeLeft = siege.getDuration() - (((int) System.currentTimeMillis() - siege.getStartTime()) / 1000);
+        double progress = (double) (timeLeft - siege.getDelayBeforeStart()) / (double) (siege.getDuration() - siege.getDelayBeforeStart());
+        siege.getProgressBar().setProgress(Math.min(progress, 1.0));Player siegeLeader = Movecraft.getInstance().getServer().getPlayer(siege.getPlayerUUID());
+        Craft siegeCraft = CraftManager.getInstance().getCraftByPlayer(siegeLeader);
+        BarColor bColor = leaderPilotingShip(siegeCraft) && leaderShipInRegion(siegeCraft, siegeLeader) ? BarColor.GREEN : BarColor.RED;
+        siege.getProgressBar().setColor(bColor);
+        if (timeLeft % Settings.SiegeTaskSeconds != 0) {
             return;
         }
 
-        Player siegeLeader = Movecraft.getInstance().getServer().getPlayer(siege.getPlayerUUID());
-        Craft siegeCraft = CraftManager.getInstance().getCraftByPlayer(siegeLeader);
-        int timeLeft = (siege.getDuration() - (((int)System.currentTimeMillis() - siege.getStartTime())/1000));
-        double progress = (double) ((((int)System.currentTimeMillis() - siege.getStartTime())/1000) - siege.getDelayBeforeStart()) / (double) (siege.getDuration() - siege.getDelayBeforeStart());
-        if (timeLeft % 60 != 0) {
-            return;
-        }
+
+
 
         if (timeLeft > 10) {
             if (!leaderPilotingShip(siegeCraft)) {
@@ -54,6 +59,7 @@ public class SiegeProgressTask extends SiegeTask {
                         siege.getName(), siegeLeader.getDisplayName())
                         + formatMinutes(timeLeft));
             }
+            return;
         } else {
             endSiege(siegeCraft, siegeLeader);
         }
@@ -79,10 +85,17 @@ public class SiegeProgressTask extends SiegeTask {
         else {
             failSiege(siegeLeader);
         }
+        siege.getProgressBar().setVisible(false);
+        siege.getProgressBar().setColor(BarColor.BLUE);
     }
 
     private void winSiege(Player siegeLeader) {
-        ProtectedRegion controlRegion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(siegeLeader.getWorld()).getRegion(siege.getCaptureRegion());
+        ProtectedRegion controlRegion;
+        if (Settings.IsLegacy){
+            controlRegion = LegacyUtils.getRegionManager(Movecraft.getInstance().getWorldGuardPlugin(), siegeLeader.getWorld()).getRegion(siege.getCaptureRegion());
+        } else {
+            controlRegion = WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(siegeLeader.getWorld())).getRegion(siege.getCaptureRegion());
+        }
         DefaultDomain newOwner = new DefaultDomain();
         newOwner.addPlayer(siege.getPlayerUUID());
         controlRegion.setOwners(newOwner);
@@ -128,7 +141,12 @@ public class SiegeProgressTask extends SiegeTask {
 
     private boolean leaderShipInRegion(Craft siegeCraft, Player siegeLeader) {
         MovecraftLocation mid = siegeCraft.getHitBox().getMidPoint();
-        ProtectedRegion r = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(siegeLeader.getWorld()).getRegion(siege.getAttackRegion());
+        ProtectedRegion r;
+        if (Settings.IsLegacy){
+            r = LegacyUtils.getRegionManager(Movecraft.getInstance().getWorldGuardPlugin(), siegeLeader.getWorld()).getRegion(siege.getAttackRegion());
+        } else {
+            r = WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(siegeLeader.getWorld())).getRegion(siege.getAttackRegion());
+        }
         return r.contains(mid.getX(), mid.getY(), mid.getZ());
     }
 }

@@ -1,8 +1,12 @@
 package net.countercraft.movecraft.warfare.siege;
 
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.countercraft.movecraft.Movecraft;
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.utils.LegacyUtils;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 
@@ -27,8 +31,12 @@ public class SiegePaymentTask extends SiegeTask {
             int minute = rightNow.get(Calendar.MINUTE);
             if ((hour == 1) && (minute == 1)) {
                 for (World tW : Movecraft.getInstance().getServer().getWorlds()) {
-                    ProtectedRegion tRegion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(tW).getRegion(siege.getCaptureRegion());
-
+                    ProtectedRegion tRegion;
+                    if (Settings.IsLegacy){
+                        tRegion = LegacyUtils.getRegionManager(Movecraft.getInstance().getWorldGuardPlugin(), tW).getRegion(siege.getCaptureRegion());
+                    } else {
+                        tRegion = WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(tW)).getRegion(siege.getCaptureRegion());
+                    }
                     if (tRegion != null) {
                         payRegion(tRegion);
                         return;

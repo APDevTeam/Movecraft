@@ -129,7 +129,6 @@ public class RepairSign implements Listener{
             return;
         }
         String repairName = event.getPlayer().getName();
-        repairName += "_";
         repairName += sign.getLine(1);
         MovecraftRepair movecraftRepair = Movecraft.getInstance().getMovecraftRepair();
         Clipboard clipboard = movecraftRepair.loadCraftRepairStateClipboard(pCraft, sign);

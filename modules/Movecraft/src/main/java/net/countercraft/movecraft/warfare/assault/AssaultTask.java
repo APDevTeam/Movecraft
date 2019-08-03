@@ -1,12 +1,17 @@
 package net.countercraft.movecraft.warfare.assault;
 
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.protection.flags.DefaultFlag;
+import com.sk89q.worldguard.protection.flags.Flag;
+import com.sk89q.worldguard.protection.flags.Flags;
 import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.sign.RegionDamagedSign;
+import net.countercraft.movecraft.utils.LegacyUtils;
 import org.bukkit.*;
 import org.bukkit.block.Sign;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -33,9 +38,17 @@ public class AssaultTask extends BukkitRunnable {
             assault.getRunning().set(false);
             World w = assault.getWorld();
             Bukkit.getServer().broadcastMessage(String.format(I18nSupport.getInternationalisedString("Assault - Assault Successful"), assault.getRegionName()));
-            ProtectedRegion tRegion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(w).getRegion(assault.getRegionName());
+            ProtectedRegion tRegion;
+            Flag flag;
+            if (Settings.IsLegacy){
+                tRegion = LegacyUtils.getRegionManager(Movecraft.getInstance().getWorldGuardPlugin(), w).getRegion(assault.getRegionName());
+                flag = DefaultFlag.TNT;
+            } else {
+                tRegion = WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(w)).getRegion(assault.getRegionName());
+                flag = Flags.TNT;
+            }
             assert tRegion != null;
-            tRegion.setFlag(DefaultFlag.TNT, StateFlag.State.DENY);
+            tRegion.setFlag(flag, StateFlag.State.DENY);
 
             //first, find a position for the repair beacon
             int beaconX = assault.getMinPos().getBlockX();
@@ -89,7 +102,7 @@ public class AssaultTask extends BukkitRunnable {
                 w.getBlockAt(beaconX + 2, beaconY + 2, beaconZ + 2).setType(Material.BEACON);
                 w.getBlockAt(beaconX + 2, beaconY + 3, beaconZ + 2).setType(Material.BEDROCK);
                 // finally the sign on the beacon
-                w.getBlockAt(beaconX + 2, beaconY + 3, beaconZ + 1).setType(Material.OAK_WALL_SIGN);
+                w.getBlockAt(beaconX + 2, beaconY + 3, beaconZ + 1).setType(Settings.is1_14 ? Material.OAK_WALL_SIGN : LegacyUtils.WALL_SIGN);
                 Sign s = (Sign) w.getBlockAt(beaconX + 2, beaconY + 3, beaconZ + 1).getState();
                 s.setLine(0, ChatColor.RED + I18nSupport.getInternationalisedString("Region Damaged"));
                 s.setLine(1, I18nSupport.getInternationalisedString("Region Name")+":" + assault.getRegionName());
@@ -104,7 +117,12 @@ public class AssaultTask extends BukkitRunnable {
                 // assault has failed to reach damage cap within required time
                 assault.getRunning().set(false);
                 Bukkit.getServer().broadcastMessage(String.format(I18nSupport.getInternationalisedString("Assault - Assault Failed"), assault.getRegionName()));
-                ProtectedRegion tRegion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(assault.getWorld()).getRegion(assault.getRegionName());
+                ProtectedRegion tRegion;
+                if (Settings.IsLegacy){
+                    tRegion = LegacyUtils.getRegionManager(Movecraft.getInstance().getWorldGuardPlugin(), assault.getWorld()).getRegion(assault.getRegionName());
+                } else {
+                    tRegion = WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(assault.getWorld())).getRegion(assault.getRegionName());
+                }
                 assert tRegion != null;
                 tRegion.setFlag(DefaultFlag.TNT, StateFlag.State.DENY);
                 // repair the damages that have occurred so far

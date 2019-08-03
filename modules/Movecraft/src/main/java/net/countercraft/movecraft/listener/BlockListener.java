@@ -17,8 +17,14 @@
 
 package net.countercraft.movecraft.listener;
 
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldedit.math.BlockVector3;
+import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.flags.DefaultFlag;
+import com.sk89q.worldguard.protection.flags.Flags;
+import com.sk89q.worldguard.protection.flags.StateFlag;
+import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.utils.LegacyUtils;
 import net.countercraft.movecraft.utils.MathUtils;
@@ -77,7 +83,12 @@ public class BlockListener implements Listener {
                 return;
             }
             Location loc = e.getBlockPlaced().getLocation();
-            ApplicableRegionSet regions = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(loc.getWorld()).getApplicableRegions(loc);
+            ApplicableRegionSet regions;
+            if (Settings.IsLegacy){
+                regions = LegacyUtils.getApplicableRegions(LegacyUtils.getRegionManager(Movecraft.getInstance().getWorldGuardPlugin(), loc.getWorld()), loc);//.getApplicableRegions();
+            } else {
+                regions = WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(loc.getWorld())).getApplicableRegions(BlockVector3.at(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()));
+            }
             if (regions.size() == 0) {
                 e.getPlayer().sendMessage(I18nSupport.getInternationalisedString("SIB MUST BE PLACED IN REGION"));
                 e.setCancelled(true);
@@ -272,9 +283,19 @@ public class BlockListener implements Listener {
         }
         // check to see if fire spread is allowed, don't check if compatmanager integration is not enabled
         if (Movecraft.getInstance().getWorldGuardPlugin() != null && (Settings.WorldGuardBlockMoveOnBuildPerm || Settings.WorldGuardBlockSinkOnPVPPerm)) {
-            ApplicableRegionSet set = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(testBlock.getWorld()).getApplicableRegions(testBlock.getLocation());
-            if (!set.allows(DefaultFlag.FIRE_SPREAD)) {
-                return;
+            ApplicableRegionSet set;
+            Location loc = testBlock.getLocation();
+            if (Settings.IsLegacy){
+                set = LegacyUtils.getApplicableRegions(LegacyUtils.getRegionManager(Movecraft.getInstance().getWorldGuardPlugin(), loc.getWorld()), loc);//.getApplicableRegions();
+                if (!LegacyUtils.allows(set, DefaultFlag.FIRE_SPREAD))
+                    return;
+            } else {
+                set = WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(testBlock.getWorld())).getApplicableRegions(BlockVector3.at(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()));
+                for (ProtectedRegion region : set){
+                    if (region.getFlag(Flags.FIRE_SPREAD) == StateFlag.State.DENY){
+                        return;
+                    }
+                }
             }
         }
         testBlock.setType(org.bukkit.Material.AIR);

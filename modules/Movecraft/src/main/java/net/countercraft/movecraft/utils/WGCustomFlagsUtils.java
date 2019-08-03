@@ -74,7 +74,7 @@ public class WGCustomFlagsUtils {
 
     public boolean validateFlag(Location loc, Object flag) {
         if (flag != null) {
-            StateFlag.State state = (StateFlag.State) Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(loc.getWorld()).getApplicableRegions(loc).getFlag((Flag) flag);
+            StateFlag.State state = LegacyUtils.getFlag(Movecraft.getInstance().getWorldGuardPlugin(), loc, flag);
             return state != null && state == StateFlag.State.ALLOW;
         } else {
             return true;
@@ -83,7 +83,7 @@ public class WGCustomFlagsUtils {
 
     public boolean validateFlag(Location loc, Object flag, LocalPlayer lp) {
         if (flag != null) {
-            StateFlag.State state = (StateFlag.State) Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(loc.getWorld()).getApplicableRegions(loc).getFlag((Flag) flag, lp);
+            StateFlag.State state = LegacyUtils.getFlag(Movecraft.getInstance().getWorldGuardPlugin(), loc, flag, lp);
             return state != null && state == StateFlag.State.ALLOW;
         } else {
             return true;

@@ -11,6 +11,7 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.events.CraftRotateEvent;
 import net.countercraft.movecraft.events.CraftTranslateEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.utils.LegacyUtils;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -49,7 +50,7 @@ public class WorldGuardCompatManager implements Listener {
     }
     private boolean pilotHasAccessToRegion(Player player, MovecraftLocation location, World world){
         if (Settings.IsLegacy){
-            return Movecraft.getInstance().getWorldGuardPlugin().canBuild(player, location.toBukkit(world));
+            return LegacyUtils.canBuild(Movecraft.getInstance().getWorldGuardPlugin(), world, location, player);
         } else {
             RegionQuery query = WorldGuard.getInstance().getPlatform().getRegionContainer().createQuery();
             LocalPlayer lPlayer = Movecraft.getInstance().getWorldGuardPlugin().wrapPlayer(player);

@@ -81,19 +81,24 @@
             <version>7.0.0-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>com.sk89q</groupId>
-            <artifactId>worldguard</artifactId>
-            <version>LATEST</version>
+            <groupId>com.sk89q.worldguard</groupId>
+            <artifactId>worldguard-core</artifactId>
+            <version>7.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.sk89q.worldguard</groupId>
-            <artifactId>worldguard-core</artifactId>
-            <version>7.0.0-SNAPSHOT</version>
+            <artifactId>worldguard-bukkit</artifactId>
+            <version>7.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sk89q</groupId>
+            <artifactId>worldguard</artifactId>
+            <version>6.1.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.sk89q</groupId>
             <artifactId>worldedit</artifactId>
-            <version>LATEST</version>
+            <version>6.0.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>net.countercraft</groupId>
@@ -169,55 +174,6 @@
             <version>LATEST</version>
             <scope>system</scope>
             <systemPath>${project.basedir}/../../libs/WGCustomFlags.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>com.massivecraft</groupId>
-            <artifactId>Factions</artifactId>
-            <version>LATEST</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/../../libs/Factions.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>com.massivecraft</groupId>
-            <artifactId>MassiveCore</artifactId>
-            <version>LATEST</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/../../libs/MassiveCore.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>com.daemitus</groupId>
-            <artifactId>Deadbolt</artifactId>
-            <version>1.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/../../libs/Deadbolt-1.0-SNAPSHOT.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>me.ryanhamshire</groupId>
-            <artifactId>GriefPrevention</artifactId>
-            <version>1.5.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/../../libs/GriefPrevention.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>sun.jdk</groupId>
-            <artifactId>kingdoms</artifactId>
-            <version>1.5.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/../../libs/FabledKingdoms.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>sun.jdk</groupId>
-            <artifactId>redprotect</artifactId>
-            <version>1.5.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/../../libs/RedProtect-7.5.5-b129-Universal.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>com.dre</groupId>
-            <artifactId>Brewery</artifactId>
-            <version>1.7.1</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/../../libs/Brewery-1.7.1.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>org.jetbrains</groupId>

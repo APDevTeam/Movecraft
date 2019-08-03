@@ -1,43 +1,34 @@
 package net.countercraft.movecraft.commands;
 
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldedit.math.BlockVector3;
+import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.countercraft.movecraft.Movecraft;
-import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.MovecraftLocation;
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.utils.LegacyUtils;
 import net.countercraft.movecraft.utils.TopicPaginator;
-import net.countercraft.movecraft.utils.WorldguardUtils;
 import net.countercraft.movecraft.warfare.siege.Siege;
 import net.countercraft.movecraft.warfare.siege.SiegeManager;
 import net.countercraft.movecraft.warfare.siege.SiegeStage;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Sound;
-import org.bukkit.World;
-import org.bukkit.boss.BarColor;
-import org.bukkit.boss.BarFlag;
-import org.bukkit.boss.BarStyle;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.text.NumberFormat;
 import java.util.*;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Calendar;
-import java.util.TimeZone;
 import java.util.logging.Level;
-
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import static net.countercraft.movecraft.utils.ChatUtils.MOVECRAFT_COMMAND_PREFIX;
 
@@ -170,7 +161,13 @@ public class SiegeCommand implements CommandExecutor {
             return true;
         }
         MovecraftLocation mid = siegeCraft.getHitBox().getMidPoint();
-        if(!Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(player.getWorld()).getRegion(siege.getAttackRegion()).contains(mid.getX(), mid.getY(), mid.getZ())) {
+        ProtectedRegion siegeRegion;
+        if (Settings.IsLegacy){
+            siegeRegion = LegacyUtils.getRegionManager(Movecraft.getInstance().getWorldGuardPlugin(), player.getWorld()).getRegion(siege.getAttackRegion());
+        } else {
+            siegeRegion = WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(player.getWorld())).getRegion(siege.getAttackRegion());
+        }
+        if(!siegeRegion.contains(mid.getX(), mid.getY(), mid.getZ())) {
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("You must be piloting a craft in the siege region!"));
             return true;
         }
@@ -185,7 +182,7 @@ public class SiegeCommand implements CommandExecutor {
             Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), startCommand.replaceAll("%r", siege.getAttackRegion()).replaceAll("%c", "" + siege.getCost()));
         }
         Bukkit.getServer().broadcastMessage(String.format(I18nSupport.getInternationalisedString("Siege - Siege About To Begin")
-                , player.getDisplayName(), siege.getName(), siege.getDelayBeforeStart() / 60));
+                , player.getDisplayName(), siege.getName()) + formatMinutes(siege.getDelayBeforeStart()));
         for (Player p : Bukkit.getOnlinePlayers()) {
             p.playSound(p.getLocation(), Sound.ENTITY_WITHER_DEATH, 1, 0.25F);
         }
@@ -211,7 +208,12 @@ public class SiegeCommand implements CommandExecutor {
 
     @Nullable
     private Siege getSiege(Player player, SiegeManager siegeManager) {
-        ApplicableRegionSet regions = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(player.getWorld()).getApplicableRegions(player.getLocation());
+        ApplicableRegionSet regions;
+        if (Settings.IsLegacy){
+            regions = LegacyUtils.getApplicableRegions(LegacyUtils.getRegionManager(Movecraft.getInstance().getWorldGuardPlugin(), player.getWorld()), player.getLocation());//.getApplicableRegions();
+        } else {
+            regions = WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(player.getWorld())).getApplicableRegions(BlockVector3.at(player.getLocation().getBlockX(), player.getLocation().getBlockY(), player.getLocation().getBlockZ()));
+        }
         for (ProtectedRegion tRegion : regions.getRegions()) {
             for (Siege tempSiege : siegeManager.getSieges()) {
                 if (tRegion.getId().equalsIgnoreCase(tempSiege.getAttackRegion())) {
@@ -225,7 +227,12 @@ public class SiegeCommand implements CommandExecutor {
     private long calcSiegeCost(Siege siege, SiegeManager siegeManager, Player player) {
         long cost = siege.getCost();
         for (Siege tempSiege : siegeManager.getSieges()) {
-            ProtectedRegion tRegion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(player.getWorld()).getRegion(tempSiege.getCaptureRegion());
+            ProtectedRegion tRegion;
+            if (Settings.IsLegacy){
+                tRegion = LegacyUtils.getRegionManager(Movecraft.getInstance().getWorldGuardPlugin(), player.getWorld()).getRegion(tempSiege.getAttackRegion());
+            } else {
+                tRegion = WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(player.getWorld())).getRegion(tempSiege.getAttackRegion());
+            }
             assert tRegion != null;
             if (tempSiege.isDoubleCostPerOwnedSiegeRegion() && tRegion.getOwners().contains(player.getUniqueId()))
                 cost *= 2;
@@ -350,5 +357,26 @@ public class SiegeCommand implements CommandExecutor {
         sender.sendMessage(I18nSupport.getInternationalisedString("Siege - Start Time") + start + militaryTimeIntToString(siege.getScheduleStart()) + " UTC");
         sender.sendMessage(I18nSupport.getInternationalisedString("Siege - End Time") + end + militaryTimeIntToString(siege.getScheduleEnd()) + " " + Settings.SiegeTimeZone);
         sender.sendMessage(I18nSupport.getInternationalisedString("Siege - Duration") + ChatColor.WHITE + secondsIntToString(siege.getDuration()));
+    }
+
+    private String formatMinutes(int seconds) {
+        if (seconds < 60) {
+            if (seconds > 0) {
+                return String.format(I18nSupport.getInternationalisedString("Siege - Ending in X seconds"), seconds);
+            } else {
+                return I18nSupport.getInternationalisedString("Siege - Ending Soon");
+            }
+        }
+
+        int minutes = seconds / 60;
+        if (minutes == 1) {
+            return I18nSupport.getInternationalisedString("Siege - Ending In 1 Minute");
+        }
+        else {
+
+            return String.format(I18nSupport.getInternationalisedString("Siege - Ending In X Minutes"), minutes);
+
+
+        }
     }
 }

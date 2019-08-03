@@ -19,10 +19,14 @@ package net.countercraft.movecraft.async;
 
 import at.pavlov.cannons.cannon.Cannon;
 import com.google.common.collect.Lists;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldedit.math.BlockVector3;
+import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
+import com.sk89q.worldguard.protection.regions.RegionContainer;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
@@ -582,9 +586,20 @@ public class AsyncManager extends BukkitRunnable {
             if (Movecraft.getInstance().getWorldGuardPlugin() != null){
                 WorldGuardPlugin wgPlugin = Movecraft.getInstance().getWorldGuardPlugin();
                 ProtectedRegion region = null;
-                RegionManager regionManager = wgPlugin.getRegionManager(pcraft.getW());
+                RegionManager regionManager;
+                if (Settings.IsLegacy){
+                    regionManager = LegacyUtils.getRegionManager(wgPlugin, pcraft.getW());
+                } else {
+                    RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
+                    regionManager = container.get(BukkitAdapter.adapt(pcraft.getW()));
+                }
                 for (MovecraftLocation location : pcraft.getHitBox()){
-                    ApplicableRegionSet regions = regionManager.getApplicableRegions(location.toBukkit(pcraft.getW()));
+                    ApplicableRegionSet regions;
+                    if (Settings.IsLegacy)
+                        regions = LegacyUtils.getApplicableRegions(regionManager, location.toBukkit(pcraft.getW()));
+                    else {
+                        regions = regionManager.getApplicableRegions(BlockVector3.at(location.getX(), location.getY(), location.getZ()));
+                    }
                     for (ProtectedRegion pr : regions.getRegions()){
                         if (WorldguardUtils.pvpAllowed(pr)){
                             region = pr;

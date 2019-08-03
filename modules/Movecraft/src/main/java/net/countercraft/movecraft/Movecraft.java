@@ -18,21 +18,15 @@
 package net.countercraft.movecraft;
 
 import at.pavlov.cannons.Cannons;
-import br.net.fabiozumbi12.RedProtect.Bukkit.RedProtect;
-import com.daemitus.deadbolt.DeadboltPlugin;
-import com.dre.brewery.P;
 import com.earth2me.essentials.Essentials;
-import com.massivecraft.factions.Factions;
 import com.mewin.WGCustomFlags.WGCustomFlagsPlugin;
 import com.palmergames.bukkit.towny.Towny;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.flags.StateFlag;
-import com.songoda.kingdoms.main.Kingdoms;
-import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import net.countercraft.movecraft.async.AsyncManager;
 import net.countercraft.movecraft.commands.*;
-import net.countercraft.movecraft.compatmanager.*;
+import net.countercraft.movecraft.compatmanager.WorldGuardCompatManager;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.listener.BlockListener;
@@ -74,16 +68,6 @@ public class Movecraft extends JavaPlugin {
     private static Cannons cannonsPlugin = null;
     private static Towny townyPlugin = null;
     private static Essentials essentialsPlugin = null;
-    private static Factions factionsPlugin;
-    private static DeadboltPlugin deadboltPlugin;
-    private static GriefPrevention griefPreventionPlugin;
-    private static Kingdoms kingdomsPlugin;
-    private static RedProtect redProtectPlugin;
-    private static P breweryPlugin;
-    /*public HashMap<MovecraftLocation, Long> blockFadeTimeMap = new HashMap<>();
-    public HashMap<MovecraftLocation, Integer> blockFadeTypeMap = new HashMap<>();
-    public HashMap<MovecraftLocation, Boolean> blockFadeWaterMap = new HashMap<>();
-    public HashMap<MovecraftLocation, World> blockFadeWorldMap = new HashMap<>();*/
     private Logger logger;
     private boolean shuttingDown;
     private WorldHandler worldHandler;
@@ -106,6 +90,7 @@ public class Movecraft extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        saveLocaleFiles();
         String packageName = this.getServer().getClass().getPackage().getName();
         String version = packageName.substring(packageName.lastIndexOf('.') + 1);
         String[] parts = version.split("_");
@@ -129,6 +114,7 @@ public class Movecraft extends JavaPlugin {
 
 
         Settings.LOCALE = getConfig().getString("Locale");
+        I18nSupport.init();
         Settings.RestrictSiBsToRegions = getConfig().getBoolean("RestrictSiBsToRegions", false);
         Settings.Debug = getConfig().getBoolean("Debug", false);
         Settings.DisableSpillProtection = getConfig().getBoolean("DisableSpillProtection", false);
@@ -517,7 +503,12 @@ public class Movecraft extends JavaPlugin {
             e.printStackTrace();
         }
     }
-
+    private void saveLocaleFiles(){
+        final String[] LOCALES = {"en", "cz", "nl"};
+        for (String locale : LOCALES){
+            saveResource("localisation/movecraftlang_" + locale + ".properties", false);
+        }
+    }
 
 
     public WorldGuardPlugin getWorldGuardPlugin() {

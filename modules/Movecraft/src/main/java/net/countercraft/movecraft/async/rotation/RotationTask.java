@@ -20,7 +20,10 @@ package net.countercraft.movecraft.async.rotation;
 import com.palmergames.bukkit.towny.object.Town;
 import com.palmergames.bukkit.towny.object.TownBlock;
 import com.palmergames.bukkit.towny.object.TownyWorld;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldguard.LocalPlayer;
+import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
@@ -395,7 +398,13 @@ public class RotationTask extends AsyncTask {
         if (failed) {
             if (Movecraft.getInstance().getWorldGuardPlugin() != null && Movecraft.getInstance().getWGCustomFlagsPlugin() != null && Settings.WGCustomFlagsUsePilotFlag) {
                 LocalPlayer lp = Movecraft.getInstance().getWorldGuardPlugin().wrapPlayer(p);
-                ApplicableRegionSet regions = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(plugLoc.getWorld()).getApplicableRegions(plugLoc);
+                ApplicableRegionSet regions;
+                if (Settings.IsLegacy){
+                    regions = LegacyUtils.getApplicableRegions(LegacyUtils.getRegionManager(Movecraft.getInstance().getWorldGuardPlugin(), plugLoc.getWorld()), plugLoc);//.getApplicableRegions();
+                } else {
+                    regions = WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(plugLoc.getWorld())).getApplicableRegions(BlockVector3.at(plugLoc.getBlockX(), plugLoc.getBlockY(), plugLoc.getBlockZ()));
+                }
+
                 if (regions.size() != 0) {
                     WGCustomFlagsUtils WGCFU = new WGCustomFlagsUtils();
                     if (WGCFU.validateFlag(plugLoc, Movecraft.FLAG_ROTATE, lp)) {

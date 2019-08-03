@@ -1,9 +1,10 @@
 package net.countercraft.movecraft.warfare.siege;
 
 import org.bukkit.Bukkit;
-import org.bukkit.scoreboard.DisplaySlot;
-import org.bukkit.scoreboard.Objective;
-import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarFlag;
+import org.bukkit.boss.BarStyle;
+import org.bukkit.boss.BossBar;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -20,7 +21,7 @@ public class Siege {
     private long lastPayout;
     private final boolean doubleCostPerOwnedSiegeRegion;
     private UUID playerUUID;
-    private final Scoreboard scoreboard;
+    private final BossBar progressBar;
 
     public Siege(
             @NotNull String name, @NotNull String captureRegion, @NotNull String attackRegion,
@@ -48,14 +49,9 @@ public class Siege {
         lastUpdate = 0;
         stage = new AtomicReference<>();
         stage.set(SiegeStage.INACTIVE);
-        scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
-        scoreboard.registerNewObjective(name, "dummy",name);
-        scoreboard.registerNewObjective("stage","dummy","Stage: " + stage.get().name().toLowerCase().replace("_", " "));
-        scoreboard.registerNewObjective("timeLeft","dummy","Time left: ");
-        scoreboard.registerNewObjective("shipInRegion", "dummy", "");
-        for (Objective objective : scoreboard.getObjectives()){
-            objective.setDisplaySlot(DisplaySlot.SIDEBAR);
-        }
+        progressBar = Bukkit.createBossBar(name, BarColor.BLUE, BarStyle.SEGMENTED_20, BarFlag.DARKEN_SKY);
+        progressBar.setProgress(0.0);
+        progressBar.setVisible(false);
     }
 
     @NotNull
@@ -167,5 +163,9 @@ public class Siege {
 
     public String toString() {
         return name;
+    }
+
+    public BossBar getProgressBar() {
+        return progressBar;
     }
 }

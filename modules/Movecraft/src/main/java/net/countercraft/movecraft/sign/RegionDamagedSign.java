@@ -1,29 +1,22 @@
 package net.countercraft.movecraft.sign;
 
+import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.world.block.BaseBlock;
+import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.protection.managers.RegionManager;
-import com.sk89q.worldedit.Vector;
-import com.sk89q.worldedit.extent.clipboard.Clipboard;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
-import net.countercraft.movecraft.MovecraftRepair;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.mapUpdater.update.WorldEdit7UpdateCommand;
-import net.countercraft.movecraft.repair.RepairUtils;
+import net.countercraft.movecraft.mapUpdater.update.WorldEditUpdateCommand;
 import net.countercraft.movecraft.utils.LegacyUtils;
 import net.countercraft.movecraft.utils.LegacyWEUtils;
-import net.countercraft.movecraft.utils.WorldEditUtils;
-import net.countercraft.movecraft.utils.WorldguardUtils;
-import org.bukkit.*;
-import org.bukkit.block.Sign;
-import org.bukkit.entity.Player;
-import net.countercraft.movecraft.mapUpdater.update.WorldEditUpdateCommand;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -45,7 +38,7 @@ public class RegionDamagedSign implements Listener {
         if (!event.getAction().equals(Action.RIGHT_CLICK_BLOCK)){
             return;
         }
-        if (!event.getClickedBlock().getType().name().endsWith("WALL_SIGN")){
+        if (event.getClickedBlock().getType() != (Settings.is1_14 ? Material.OAK_WALL_SIGN : LegacyUtils.WALL_SIGN)){
             return;
         }
         Sign sign = (Sign) event.getClickedBlock().getState();
@@ -67,7 +60,13 @@ public class RegionDamagedSign implements Listener {
         event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Assault - Repairing Region"));
         Movecraft.getInstance().getEconomy().withdrawPlayer(event.getPlayer(), damages);
         World world = event.getClickedBlock().getWorld();
-        ProtectedRegion aRegion = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(world).getRegion(regionName);
+        ProtectedRegion aRegion;
+        if (Settings.IsLegacy) {
+            RegionManager rm = LegacyUtils.getRegionManager(Movecraft.getInstance().getWorldGuardPlugin(), world);
+            aRegion = rm.getRegion(regionName);
+        } else {
+            aRegion = WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(world)).getRegion(regionName);
+        }
         for (String ownerName : owners) {
             if (ownerName.length() > 16) {
                 aRegion.getOwners().addPlayer(UUID.fromString(ownerName));
