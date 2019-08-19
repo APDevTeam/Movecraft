@@ -15,6 +15,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -78,42 +79,48 @@ public final class StatusSign implements Listener{
         int signLine=1;
         int signColumn=0;
         for(Map<Material, List<Integer>> alFlyBlock : craft.getType().getFlyBlocks().keySet()) {
-            Material flyBlock = (Material) alFlyBlock.keySet().toArray()[0];
+            ArrayList<Material> flyBlocks = new ArrayList<>(alFlyBlock.keySet());
             Double minimum=craft.getType().getFlyBlocks().get(alFlyBlock).get(0);
-            if(foundBlocks.containsKey(flyBlock) && minimum>0) { // if it has a minimum, it should be considered for sinking consideration
-                int amount=foundBlocks.get(flyBlock);
-                Double percentPresent=(double) (amount*100/totalBlocks);
+            for (Material flyBlock : flyBlocks) {
+                if (foundBlocks.containsKey(flyBlock) && minimum > 0) { // if it has a minimum, it should be considered for sinking consideration
+                    int amount = foundBlocks.get(flyBlock);
+                    Double percentPresent = (double) (amount * 100 / totalBlocks);
 
-                String signText="";
-                if(percentPresent>minimum*1.04) {
-                    signText+= ChatColor.GREEN;
-                } else if(percentPresent>minimum*1.02) {
-                    signText+=ChatColor.YELLOW;
-                } else {
-                    signText+=ChatColor.RED;
-                }
-                if(flyBlock == Material.REDSTONE_BLOCK) {
-                    signText+="R";
-                } else if(flyBlock == Material.IRON_BLOCK) {
-                    signText+="I";
-                } else {
-                    signText+= flyBlock.toString().charAt(0);
-                }
+                    String signText = "";
+                    if (percentPresent > minimum * 1.04) {
+                        signText += ChatColor.GREEN;
+                    } else if (percentPresent > minimum * 1.02) {
+                        signText += ChatColor.YELLOW;
+                    } else {
+                        signText += ChatColor.RED;
+                    }
+                    if (flyBlock == Material.REDSTONE_BLOCK) {
+                        signText += "R";
+                    } else if (flyBlock == Material.IRON_BLOCK) {
+                        signText += "I";
+                    } else if (flyBlock.name().endsWith("_WOOL")){
+                        signText += "W";
+                    }
+                    else {
+                        signText += flyBlock.toString().charAt(0);
+                    }
 
-                signText+=" ";
-                signText+=percentPresent.intValue();
-                signText+="/";
-                signText+=minimum.intValue();
-                signText+="  ";
-                if(signColumn==0) {
-                    event.setLine(signLine,signText);
-                    signColumn++;
-                } else if(signLine < 3) {
-                    String existingLine=event.getLine(signLine);
-                    existingLine+=signText;
-                    event.setLine(signLine, existingLine);
-                    signLine++;
-                    signColumn=0;
+                    signText += " ";
+                    signText += percentPresent.intValue();
+                    signText += "/";
+                    signText += minimum.intValue();
+                    signText += "  ";
+                    if (signColumn == 0) {
+                        event.setLine(signLine, signText);
+                        signColumn++;
+                    } else if (signLine < 3) {
+                        String existingLine = event.getLine(signLine);
+                        existingLine += signText;
+                        event.setLine(signLine, existingLine);
+                        signLine++;
+                        signColumn = 0;
+                    }
+                    break;
                 }
             }
         }

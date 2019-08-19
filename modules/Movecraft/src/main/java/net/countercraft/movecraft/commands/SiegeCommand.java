@@ -19,6 +19,9 @@ import net.countercraft.movecraft.warfare.siege.SiegeStage;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Sound;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarFlag;
+import org.bukkit.boss.BarStyle;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -188,7 +191,8 @@ public class SiegeCommand implements CommandExecutor {
         }
         Movecraft.getInstance().getLogger().log(Level.INFO, String.format(I18nSupport.getInternationalisedString("Siege - Log Siege Start"), siege.getName(), player.getName(), cost));
         Movecraft.getInstance().getEconomy().withdrawPlayer(player, cost);
-
+        siege.setProgressBar(Bukkit.createBossBar(siege.getName(), BarColor.BLUE, BarStyle.SEGMENTED_20, BarFlag.DARKEN_SKY));
+        siege.getProgressBar().setProgress(0.0);
         siege.setPlayerUUID(player.getUniqueId());
         siege.setStartTime((int)System.currentTimeMillis());
         siege.setStage(SiegeStage.PREPERATION);

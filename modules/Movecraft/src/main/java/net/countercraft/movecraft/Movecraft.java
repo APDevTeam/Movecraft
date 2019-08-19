@@ -89,6 +89,7 @@ public class Movecraft extends JavaPlugin {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void onEnable() {
         saveLocaleFiles();
         String packageName = this.getServer().getClass().getPackage().getName();

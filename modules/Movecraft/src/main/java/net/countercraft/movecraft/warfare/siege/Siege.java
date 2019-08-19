@@ -1,9 +1,5 @@
 package net.countercraft.movecraft.warfare.siege;
 
-import org.bukkit.Bukkit;
-import org.bukkit.boss.BarColor;
-import org.bukkit.boss.BarFlag;
-import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.jetbrains.annotations.NotNull;
 
@@ -21,7 +17,7 @@ public class Siege {
     private long lastPayout;
     private final boolean doubleCostPerOwnedSiegeRegion;
     private UUID playerUUID;
-    private final BossBar progressBar;
+    private BossBar progressBar;
 
     public Siege(
             @NotNull String name, @NotNull String captureRegion, @NotNull String attackRegion,
@@ -49,9 +45,6 @@ public class Siege {
         lastUpdate = 0;
         stage = new AtomicReference<>();
         stage.set(SiegeStage.INACTIVE);
-        progressBar = Bukkit.createBossBar(name, BarColor.BLUE, BarStyle.SEGMENTED_20, BarFlag.DARKEN_SKY);
-        progressBar.setProgress(0.0);
-        progressBar.setVisible(false);
     }
 
     @NotNull
@@ -167,5 +160,9 @@ public class Siege {
 
     public BossBar getProgressBar() {
         return progressBar;
+    }
+
+    public void setProgressBar(BossBar progressBar) {
+        this.progressBar = progressBar;
     }
 }
