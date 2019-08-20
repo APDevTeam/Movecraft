@@ -98,7 +98,7 @@ public final class StatusSign implements Listener{
                         signText += "R";
                     } else if (flyBlock == Material.IRON_BLOCK) {
                         signText += "I";
-                    } else if (flyBlock.name().endsWith("_WOOL")){
+                    } else if (flyBlock.name().endsWith("WOOL")){
                         signText += "W";
                     }
                     else {
