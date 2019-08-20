@@ -364,6 +364,14 @@ public class TranslationTask extends AsyncTask {
                     drops.add(seeds);
                 }
             }
+            if (block.getType() == Material.BEETROOT_BLOCK){
+                Random rand = new Random();
+                int amount = rand.nextInt(4);
+                if (amount > 0) {
+                    ItemStack seeds = new ItemStack(Material.BEETROOT_SEEDS, amount);
+                    drops.add(seeds);
+                }
+            }
             //get contents of inventories before deposting
             if (block.getState() instanceof InventoryHolder) {
                 if (block.getState() instanceof Chest) {
