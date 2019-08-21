@@ -65,11 +65,6 @@ public class Settings {
     public static boolean TownyBlockMoveOnSwitchPerm = false;
     public static boolean TownyBlockSinkOnNoPVP = false;
 
-    //RedProtect Settings
-    public static boolean RedProtectBlockMoveOnNoEntry = false;
-    public static boolean RedProtectBlockMoveOnNoBuild = false;
-    public static boolean RedProtectBlockMoveOnNoExit = false;
-    public static boolean RedProtectBlockSinkOnNoPvP = false;
     public static Map<String, TownyWorldHeightLimits> TownProtectionHeightLimits;
     public static Map<Material, Integer> DurabilityOverride;
     public static boolean IsPaper = false;
@@ -95,6 +90,7 @@ public class Settings {
 
     public static boolean SiegeEnable;
     public static String SiegeTimeZone;
-    public static boolean KOTHSiege = false;
     public static long TracerMinDistanceSqrd;
+
+    public static Map<List<Material>, String> StatusSignMarkers = new HashMap<>();
 }

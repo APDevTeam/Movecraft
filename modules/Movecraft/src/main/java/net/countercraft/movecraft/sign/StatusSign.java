@@ -5,6 +5,7 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -15,10 +16,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public final class StatusSign implements Listener{
 
@@ -45,8 +43,8 @@ public final class StatusSign implements Listener{
         if (!ChatColor.stripColor(event.getLine(0)).equalsIgnoreCase("Status:")) {
             return;
         }
-        int fuel=0;
-        int totalBlocks=0;
+        int fuel = 0;
+        int totalBlocks = 0;
         Map<Material, Integer> foundBlocks = new HashMap<>();
         for (MovecraftLocation ml : craft.getHitBox()) {
             Material blockType = craft.getW().getBlockAt(ml.getX(), ml.getY(), ml.getZ()).getType();
@@ -59,12 +57,12 @@ public final class StatusSign implements Listener{
 
             if (blockType == Material.FURNACE) {
                 InventoryHolder inventoryHolder = (InventoryHolder) craft.getW().getBlockAt(ml.getX(), ml.getY(), ml.getZ()).getState();
-                for (Material fuelType : Settings.FuelTypes.keySet()){
-                    if (!inventoryHolder.getInventory().contains(fuelType)){
+                for (Material fuelType : Settings.FuelTypes.keySet()) {
+                    if (!inventoryHolder.getInventory().contains(fuelType)) {
                         continue;
                     }
                     ItemStack[] content = inventoryHolder.getInventory().getContents();
-                    for (ItemStack item : content){
+                    for (ItemStack item : content) {
                         if (item == null)
                             continue;
                         fuel += item.getAmount() * Settings.FuelTypes.get(fuelType);
@@ -76,53 +74,54 @@ public final class StatusSign implements Listener{
                 totalBlocks++;
             }
         }
-        int signLine=1;
-        int signColumn=0;
-        for(Map<Material, List<Integer>> alFlyBlock : craft.getType().getFlyBlocks().keySet()) {
+        int signLine = 1;
+        int signColumn = 0;
+        for (Map<Material, List<Integer>> alFlyBlock : craft.getType().getFlyBlocks().keySet()) {
             ArrayList<Material> flyBlocks = new ArrayList<>(alFlyBlock.keySet());
-            Double minimum=craft.getType().getFlyBlocks().get(alFlyBlock).get(0);
+            Collections.sort(flyBlocks);
+            Double minimum = craft.getType().getFlyBlocks().get(alFlyBlock).get(0);
+            int amount = 0;
+            boolean addToStatus = false;
             for (Material flyBlock : flyBlocks) {
                 if (foundBlocks.containsKey(flyBlock) && minimum > 0) { // if it has a minimum, it should be considered for sinking consideration
-                    int amount = foundBlocks.get(flyBlock);
-                    Double percentPresent = (double) (amount * 100 / totalBlocks);
-
-                    String signText = "";
-                    if (percentPresent > minimum * 1.04) {
-                        signText += ChatColor.GREEN;
-                    } else if (percentPresent > minimum * 1.02) {
-                        signText += ChatColor.YELLOW;
-                    } else {
-                        signText += ChatColor.RED;
-                    }
-                    if (flyBlock == Material.REDSTONE_BLOCK) {
-                        signText += "R";
-                    } else if (flyBlock == Material.IRON_BLOCK) {
-                        signText += "I";
-                    } else if (flyBlock.name().endsWith("WOOL")){
-                        signText += "W";
-                    }
-                    else {
-                        signText += flyBlock.toString().charAt(0);
-                    }
-
-                    signText += " ";
-                    signText += percentPresent.intValue();
-                    signText += "/";
-                    signText += minimum.intValue();
-                    signText += "  ";
-                    if (signColumn == 0) {
-                        event.setLine(signLine, signText);
-                        signColumn++;
-                    } else if (signLine < 3) {
-                        String existingLine = event.getLine(signLine);
-                        existingLine += signText;
-                        event.setLine(signLine, existingLine);
-                        signLine++;
-                        signColumn = 0;
-                    }
-                    break;
+                    amount += foundBlocks.get(flyBlock);
+                    addToStatus = true;
                 }
             }
+            Material flyBlock = flyBlocks.get(0);
+            if (addToStatus) {
+                Double percentPresent = (double) (amount * 100 / totalBlocks);
+                Bukkit.broadcastMessage("test");
+                String signText = "";
+                if (percentPresent > minimum * 1.04) {
+                    signText += ChatColor.GREEN;
+                } else if (percentPresent > minimum * 1.02) {
+                    signText += ChatColor.YELLOW;
+                } else {
+                    signText += ChatColor.RED;
+                }
+                Bukkit.broadcastMessage(Settings.StatusSignMarkers.get(flyBlocks));
+                signText += Settings.StatusSignMarkers.get(flyBlocks);
+                signText += " ";
+                signText += percentPresent.intValue();
+                signText += "/";
+                signText += minimum.intValue();
+                signText += "  ";
+                Bukkit.broadcastMessage(signLine + " " + signColumn + signText);
+                if (signColumn == 0) {
+                    event.setLine(signLine, signText);
+                    signColumn++;
+                } else if (signLine < 3) {
+                    String existingLine = event.getLine(signLine);
+                    existingLine += signText;
+                    event.setLine(signLine, existingLine);
+                    signLine++;
+                    signColumn = 0;
+                }
+            }
+        }
+        if (signLine < 3 && signColumn == 0){
+            signLine++;
         }
         String fuelText="";
         int fuelRange=(int) ((fuel*(1+craft.getType().getCruiseSkipBlocks()))/craft.getType().getFuelBurnRate());

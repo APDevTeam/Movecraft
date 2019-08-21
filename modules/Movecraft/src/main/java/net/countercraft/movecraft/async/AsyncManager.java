@@ -24,6 +24,10 @@ import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
+import com.sk89q.worldguard.protection.flags.DefaultFlag;
+import com.sk89q.worldguard.protection.flags.Flag;
+import com.sk89q.worldguard.protection.flags.Flags;
+import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import com.sk89q.worldguard.protection.regions.RegionContainer;
@@ -552,6 +556,7 @@ public class AsyncManager extends BukkitRunnable {
                 double movePercent = pcraft.getType().getMoveBlocks().get(i).get(0);
                 double disablePercent = movePercent * pcraft.getType().getSinkPercent() / 100.0;
                 if (percent < disablePercent && !pcraft.getDisabled() && pcraft.isNotProcessing()) {
+                    Bukkit.broadcastMessage(String.valueOf(percent));
                     pcraft.setDisabled(true);
                     if (pcraft.getNotificationPlayer() != null) {
                         Location loc = pcraft.getNotificationPlayer().getLocation();
@@ -610,7 +615,8 @@ public class AsyncManager extends BukkitRunnable {
                         break;
                     }
                 }
-                if (region != null && Settings.WorldGuardBlockSinkOnPVPPerm){
+                Flag pvpFlag = Settings.IsLegacy ? DefaultFlag.PVP : Flags.PVP;
+                if (region != null && Settings.WorldGuardBlockSinkOnPVPPerm && region.getFlag(pvpFlag).equals(StateFlag.State.DENY)){
                     notifyP.sendMessage(I18nSupport.getInternationalisedString("Player- Craft should sink but PVP is not allowed in this WorldGuard region"));
                     isSinking = false;
                 }

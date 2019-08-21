@@ -722,6 +722,7 @@ final public class CraftType {
                 materialMap.put(type, new ArrayList<>());
             } else if (i instanceof String) {
                 String string = (String) i;
+                string = string.toUpperCase();
                 if (string.contains(":")) {
                     String[] parts = string.split(":");
                     Material type;

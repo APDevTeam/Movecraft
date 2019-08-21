@@ -38,7 +38,7 @@ allowedBlocks:
         - netherrack
         - glowstone
         - cake
-        - redstone_repeater
+        - repeater
         - all_stained_glass
         - all_trapdoor
         - all_stone_bricks
@@ -58,7 +58,7 @@ allowedBlocks:
         - SKULL
         - all_ANVIL
         - TRAPPED_CHEST
-        - REDSTONE_COMPARATOR
+        - COMPARATOR
         - daylight_detector
         - REDSTONE_BLOCK
         - HOPPER

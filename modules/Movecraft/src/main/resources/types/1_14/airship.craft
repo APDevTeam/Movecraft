@@ -2,6 +2,7 @@ name: Airship
 maxSize: 5000
 minSize: 1000
 allowedBlocks:
+   - crafting_table
    - ALL_WOOD
    - WATER
    - LAVA
@@ -13,7 +14,7 @@ allowedBlocks:
    - NOTE_BLOCK
    - ALL_BED
    - sticky_piston
-   - piston_head
+   - piston
    - all_wool
    - GOLD_BLOCK
    - IRON_BLOCK
@@ -46,7 +47,7 @@ allowedBlocks:
    - netherrack
    - glowstone
    - cake
-   - redstone_repeater
+   - repeater
    - all_stained_glass
    - all_trapdoor
    - all_stone_bricks
@@ -70,7 +71,7 @@ allowedBlocks:
    - SKULL
    - all_ANVIL
    - TRAPPED_CHEST
-   - REDSTONE_COMPARATOR
+   - COMPARATOR
    - daylight_detector
    - REDSTONE_BLOCK
    - HOPPER
