@@ -376,7 +376,13 @@ public class TranslationTask extends AsyncTask {
         }
 
         if(!collisionBox.isEmpty()){
-            Bukkit.getServer().getPluginManager().callEvent(new CraftCollisionEvent(craft, collisionBox));
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    Bukkit.getServer().getPluginManager().callEvent(new CraftCollisionEvent(craft, collisionBox));
+                }
+            }.runTask(Movecraft.getInstance());
+
         }
 
         updates.add(new CraftTranslateCommand(craft, new MovecraftLocation(dx, dy, dz)));

@@ -5,7 +5,6 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -91,7 +90,6 @@ public final class StatusSign implements Listener{
             Material flyBlock = flyBlocks.get(0);
             if (addToStatus) {
                 Double percentPresent = (double) (amount * 100 / totalBlocks);
-                Bukkit.broadcastMessage("test");
                 String signText = "";
                 if (percentPresent > minimum * 1.04) {
                     signText += ChatColor.GREEN;
@@ -100,14 +98,12 @@ public final class StatusSign implements Listener{
                 } else {
                     signText += ChatColor.RED;
                 }
-                Bukkit.broadcastMessage(Settings.StatusSignMarkers.get(flyBlocks));
                 signText += Settings.StatusSignMarkers.get(flyBlocks);
                 signText += " ";
                 signText += percentPresent.intValue();
                 signText += "/";
                 signText += minimum.intValue();
                 signText += "  ";
-                Bukkit.broadcastMessage(signLine + " " + signColumn + signText);
                 if (signColumn == 0) {
                     event.setLine(signLine, signText);
                     signColumn++;
@@ -120,7 +116,7 @@ public final class StatusSign implements Listener{
                 }
             }
         }
-        if (signLine < 3 && signColumn == 0){
+        if (signLine < 3 && signColumn == 1){
             signLine++;
         }
         String fuelText="";
