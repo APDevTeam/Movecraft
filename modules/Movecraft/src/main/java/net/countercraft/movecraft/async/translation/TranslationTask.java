@@ -98,6 +98,13 @@ public class TranslationTask extends AsyncTask {
                     continue;
                 }
                 MovecraftLocation newLoc = loc.translate(dx, dy, dz);
+                if (oldHitBox.contains(newLoc)){
+                    continue;
+                }
+                if (craft.getType().getCanHover()){
+
+                }
+
                 Location bukkitLoc = newLoc.toBukkit(craft.getW());
                 Material testSurface = bukkitLoc.getBlock().getRelative(0,-1, 0).getType();
                 if (!testSurface.equals(Material.AIR) && !craft.getType().getPassthroughBlocks().contains(testSurface) || newLoc.getY() <= craft.getType().getMinHeightLimit()){
@@ -106,9 +113,7 @@ public class TranslationTask extends AsyncTask {
                     }
                     onGround = true;
                 }
-                if (oldHitBox.contains(newLoc)){
-                    continue;
-                }
+
 
                 if (!bukkitLoc.getBlock().getType().equals(Material.AIR) && !craft.getType().getPassthroughBlocks().contains(bukkitLoc.getBlock().getType()) && !craft.getType().getHarvestBlocks().contains(bukkitLoc.getBlock().getType())){
                     inclined = true;
