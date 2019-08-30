@@ -21,10 +21,12 @@ package net.countercraft.movecraft.async.detection;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.async.AsyncTask;
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.HashHitBox;
 import net.countercraft.movecraft.utils.LegacyUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -65,6 +67,7 @@ public class DetectionTask extends AsyncTask {
 
     @Override
     public void execute() {
+        long startTime = System.currentTimeMillis();
         Map<Map<Material, List<Integer>>, List<Double>> flyBlocks = getCraft().getType().getFlyBlocks();
         dFlyBlocks = flyBlocks;
         blockStack.push(startLocation);
@@ -96,6 +99,10 @@ public class DetectionTask extends AsyncTask {
                 data.setHitBox(blockList);
 
             }
+        }
+        long endTime = System.currentTimeMillis();
+        if (Settings.Debug){
+            Bukkit.broadcastMessage("Detection took (ms): " + (endTime - startTime));
         }
     }
 
