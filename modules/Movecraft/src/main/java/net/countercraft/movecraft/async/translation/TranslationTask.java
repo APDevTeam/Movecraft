@@ -479,6 +479,8 @@ public class TranslationTask extends AsyncTask {
             MovecraftLocation nl = ml.translate(dx, dy, dz);
             if (hitBox.contains(nl))
                 continue;
+            if (ml.getY() > hitBox.getMinY())
+                continue;
             collisionBox.add(nl);
         }
         for (MovecraftLocation ml : collisionBox){
