@@ -12,6 +12,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
@@ -127,7 +128,6 @@ public class ICraft extends Craft {
         boolean applyGravity = false;
         if (getType().getUseGravity()) {
             MoveOnRotate move = moveUp(rotation, originPoint);
-            Bukkit.broadcastMessage(move.name());
             if (move.equals(MoveOnRotate.UP)) {
                 translate(0, 1, 0);
                 applyGravity = true;
@@ -167,7 +167,6 @@ public class ICraft extends Craft {
             MovecraftLocation newLoc = MathUtils.rotateVec(rotation, origLoc.subtract(originPoint)).add(originPoint);
             Location bukkitLoc = newLoc.toBukkit(getW());
             Material testSurface = bukkitLoc.getBlock().getRelative(0, -1, 0).getType();
-            Bukkit.broadcastMessage(bukkitLoc.getBlock().getType().name());
             if (getHitBox().contains(newLoc)){
                 continue;
             }
@@ -178,6 +177,17 @@ public class ICraft extends Craft {
                 if (getType().getHarvestBlocks().contains(testSurface) && getType().getHarvesterBladeBlocks().contains(origLoc.toBukkit(getW()).getBlock().getType())) {
                     continue;
                 }
+                return MoveOnRotate.NONE;
+            }
+        }
+        if (getType().getCanHover()){
+            MovecraftLocation bottomPoint = new MovecraftLocation(getHitBox().getMidPoint().getX(), getHitBox().getMinY(), getHitBox().getMidPoint().getZ());
+            MovecraftLocation surface = bottomPoint;
+            while (surface.toBukkit(getW()).getBlock().getRelative(BlockFace.DOWN).getType() == Material.AIR || getType().getPassthroughBlocks().contains(surface.toBukkit(getW()).getBlock().getRelative(BlockFace.DOWN).getType())){
+                surface = surface.translate(0, -1, 0);
+            }
+            int distance = bottomPoint.getY() - surface.getY();
+            if (distance <= getType().getHoverLimit()){
                 return MoveOnRotate.NONE;
             }
         }

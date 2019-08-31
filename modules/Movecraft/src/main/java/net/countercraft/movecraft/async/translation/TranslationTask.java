@@ -16,6 +16,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.Chest;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -92,37 +93,41 @@ public class TranslationTask extends AsyncTask {
         }
         if (craft.getType().getUseGravity() && !craft.getSinking()){
             boolean onGround = false;
-            boolean inclined = false;
+            boolean inclined = inclineCraft(oldHitBox);
+            boolean hoverCraft = craft.getType().getCanHover();
             for (MovecraftLocation loc : oldHitBox){
                 if (loc.getY() > oldHitBox.getMinY()){
                     continue;
                 }
                 MovecraftLocation newLoc = loc.translate(dx, dy, dz);
-                if (oldHitBox.contains(newLoc)){
+                if (oldHitBox.contains(newLoc.translate(0, -1, 0))){
                     continue;
                 }
-                if (craft.getType().getCanHover()){
 
-                }
 
                 Location bukkitLoc = newLoc.toBukkit(craft.getW());
-                Material testSurface = bukkitLoc.getBlock().getRelative(0,-1, 0).getType();
-                if (!testSurface.equals(Material.AIR) && !craft.getType().getPassthroughBlocks().contains(testSurface) || newLoc.getY() <= craft.getType().getMinHeightLimit()){
-                    if (craft.getType().getHarvestBlocks().contains(testSurface) && craft.getType().getHarvesterBladeBlocks().contains(loc.toBukkit(craft.getW()).getBlock().getType())){
+                Material testSurfaceType = bukkitLoc.getBlock().getRelative(0,-1, 0).getType();
+                if (!testSurfaceType.equals(Material.AIR) && !craft.getType().getPassthroughBlocks().contains(testSurfaceType) || newLoc.getY() <= craft.getType().getMinHeightLimit()){
+                    if (craft.getType().getHarvestBlocks().contains(testSurfaceType) && craft.getType().getHarvesterBladeBlocks().contains(loc.toBukkit(craft.getW()).getBlock().getType())){
                         continue;
                     }
                     onGround = true;
                 }
-
-
-                if (!bukkitLoc.getBlock().getType().equals(Material.AIR) && !craft.getType().getPassthroughBlocks().contains(bukkitLoc.getBlock().getType()) && !craft.getType().getHarvestBlocks().contains(bukkitLoc.getBlock().getType())){
-                    inclined = true;
-                }
             }
             if (inclined){
                 dy = 1;
-            }
-            else if (!onGround){
+            } else if (!onGround && hoverCraft){
+                MovecraftLocation midPoint = oldHitBox.getMidPoint();
+                MovecraftLocation bottomPoint = new MovecraftLocation(midPoint.getX(), oldHitBox.getMinY(), midPoint.getZ());
+                MovecraftLocation testSurface = bottomPoint.translate(0, -1, 0);
+                while (oldHitBox.contains(testSurface) || testSurface.toBukkit(craft.getW()).getBlock().getRelative(BlockFace.DOWN).getType().equals(Material.AIR) || craft.getType().getPassthroughBlocks().contains(testSurface.toBukkit(craft.getW()).getBlock().getRelative(BlockFace.DOWN).getType())){
+                    testSurface = testSurface.translate(0, -1, 0);
+                }
+                int distance = bottomPoint.getY() - testSurface.getY();
+                if (distance > craft.getType().getHoverLimit()){
+                    dy = -1;
+                }
+            } else if (!onGround){
                 dy = -1;
             }
         }
@@ -472,6 +477,23 @@ public class TranslationTask extends AsyncTask {
 
         }
         return true;
+    }
+
+    private boolean inclineCraft(HashHitBox hitBox){
+        HashHitBox collisionBox = new HashHitBox();
+        for (MovecraftLocation ml : hitBox){
+            MovecraftLocation nl = ml.translate(dx, dy, dz);
+            if (hitBox.contains(nl))
+                continue;
+            collisionBox.add(nl);
+        }
+        for (MovecraftLocation ml : collisionBox){
+            if (!ml.toBukkit(craft.getW()).getBlock().getType().equals(Material.AIR) && !craft.getType().getPassthroughBlocks().contains(ml.toBukkit(craft.getW()).getBlock().getType()) && !craft.getType().getHarvestBlocks().contains(ml.toBukkit(craft.getW()).getBlock().getType())){
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public boolean failed(){
