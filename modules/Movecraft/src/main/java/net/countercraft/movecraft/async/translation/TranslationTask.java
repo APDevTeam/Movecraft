@@ -190,18 +190,12 @@ public class TranslationTask extends AsyncTask {
         }
 
         if (!craft.getType().getCanHoverOverWater()){
-            boolean overWater = false;
-            MovecraftLocation test = new MovecraftLocation(oldHitBox.getMidPoint().getX(), oldHitBox.getMinY(), oldHitBox.getMidPoint().getZ());
-            Block testBlock = test.toBukkit(craft.getW()).getBlock();
-            while (testBlock.getType().equals(Material.AIR) || craft.getType().getPassthroughBlocks().contains(testBlock.getType())){
+            MovecraftLocation test = new MovecraftLocation(oldHitBox.getMidPoint().getX(), oldHitBox.getMinY(), oldHitBox.getMidPoint().getZ()).translate(dx, dy, dz);
+            test = test.translate(0, -1, 0);
+            while (test.toBukkit(craft.getW()).getBlock().getType().equals(Material.AIR) || craft.getType().getPassthroughBlocks().contains(test.toBukkit(craft.getW()).getBlock().getType())){
                 test = test.translate(0, -1, 0);
-                testBlock = test.toBukkit(craft.getW()).getBlock();
-                if (testBlock.getType() != Material.STATIONARY_WATER || testBlock.getType() != Material.WATER ){
-                    overWater = true;
-                    break;
-                }
             }
-            if (overWater){
+            if (test.toBukkit(craft.getW()).getBlock().getType().equals(Material.STATIONARY_WATER) || test.toBukkit(craft.getW()).getBlock().getType().equals(Material.WATER) ){
                 fail(I18nSupport.getInternationalisedString("Translation - Failed Craft over water"));
             }
         }
