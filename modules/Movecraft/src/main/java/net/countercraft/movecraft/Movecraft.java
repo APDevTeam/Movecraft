@@ -395,9 +395,9 @@ public class Movecraft extends JavaPlugin {
                 if (MovecraftRepair.getInstance() != null){
                     repairManager = new RepairManager();
                     repairManager.runTaskTimerAsynchronously(this, 0, 1);
+                    repairManager.convertOldCraftRepairStates();
                 }
             }
-            repairManager.convertOldCraftRepairStates();
             this.getCommand("movecraft").setExecutor(new MovecraftCommand());
             this.getCommand("release").setExecutor(new ReleaseCommand());
             this.getCommand("pilot").setExecutor(new PilotCommand());
