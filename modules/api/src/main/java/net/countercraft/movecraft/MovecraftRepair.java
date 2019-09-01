@@ -194,8 +194,8 @@ public class MovecraftRepair {
         Vector size = clipboard.getDimensions();
         Vector offset = new Vector(sign.getX() - distance.getBlockX(), sign.getY() - distance.getBlockY(), sign.getZ() - distance.getBlockZ());
         for (int x = 0; x <= size.getBlockX(); x++) {
-            for (int y = 0; y <= size.getBlockY(); y++) {
-                for (int z = 0; z <= size.getBlockZ(); z++) {
+            for (int z = 0; z <= size.getBlockZ(); z++) {
+                for (int y = 0; y <= size.getBlockY(); y++) {
                     Vector position = new Vector(minPos.getBlockX() + x, minPos.getBlockY() + y, minPos.getBlockZ() + z);
                     Location bukkitLoc = new Location(sign.getWorld(), offset.getBlockX() + x, offset.getBlockY() + y, offset.getBlockZ() + z);
                     BaseBlock block = clipboard.getBlock(position);
