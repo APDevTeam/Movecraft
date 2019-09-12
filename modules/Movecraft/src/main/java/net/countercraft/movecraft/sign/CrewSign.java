@@ -3,11 +3,11 @@ package net.countercraft.movecraft.sign;
 import com.earth2me.essentials.User;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
-import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -55,6 +55,7 @@ public class CrewSign implements Listener {
         if (!Settings.AllowCrewSigns || !event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
             return;
         }
+
         Player player = event.getPlayer();
         if (!player.isSneaking() || !(event.getClickedBlock().getState() instanceof Sign)) {
             return;
@@ -96,7 +97,12 @@ public class CrewSign implements Listener {
             return;
         }
         player.sendMessage(I18nSupport.getInternationalisedString("CrewSign - Respawn"));
-        event.setRespawnLocation(craft.getCrewSigns().get(player.getUniqueId()));
+        Location respawnLoc = craft.getCrewSigns().get(player.getUniqueId());
+        Bukkit.broadcastMessage(respawnLoc.getBlock().getType().name());
+        if (!respawnLoc.getBlock().getType().equals(Material.BED_BLOCK)){
+            return;
+        }
+        event.setRespawnLocation(respawnLoc);
     }
 
     @EventHandler
@@ -108,8 +114,8 @@ public class CrewSign implements Listener {
                 continue;
             }
             Sign sign = (Sign) block.getState();
-            if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Crew:")) {
-               event.getCraft().getCrewSigns().put(Bukkit.getPlayer(sign.getLine(1)).getUniqueId(),block.getLocation());
+            if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Crew:") && sign.getLocation().subtract(0,1,0).getBlock().getType().equals(Material.BED_BLOCK)) {
+               event.getCraft().getCrewSigns().put(Bukkit.getPlayer(sign.getLine(1)).getUniqueId(),block.getLocation().subtract(0,1,0));
             }
         }
     }
