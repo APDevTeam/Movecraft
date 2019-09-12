@@ -98,7 +98,6 @@ public class CrewSign implements Listener {
         }
         player.sendMessage(I18nSupport.getInternationalisedString("CrewSign - Respawn"));
         Location respawnLoc = craft.getCrewSigns().get(player.getUniqueId());
-        Bukkit.broadcastMessage(respawnLoc.getBlock().getType().name());
         if (!respawnLoc.getBlock().getType().equals(Material.BED_BLOCK)){
             return;
         }
