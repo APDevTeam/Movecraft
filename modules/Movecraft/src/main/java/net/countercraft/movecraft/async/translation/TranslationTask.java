@@ -21,7 +21,6 @@ import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Furnace;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -387,30 +386,8 @@ public class TranslationTask extends AsyncTask {
 
         updates.add(new CraftTranslateCommand(craft, new MovecraftLocation(dx, dy, dz)));
 
-        //prevents torpedo and rocket pilots
-        if (craft.getType().getMoveEntities() && !(craft.getSinking() && craft.getType().getOnlyMovePlayers())) {
-            Location midpoint = new Location(
-                    craft.getW(),
-                    (oldHitBox.getMaxX() + oldHitBox.getMinX())/2.0,
-                    (oldHitBox.getMaxY() + oldHitBox.getMinY())/2.0,
-                    (oldHitBox.getMaxZ() + oldHitBox.getMinZ())/2.0);
-            for (Entity entity : craft.getW().getNearbyEntities(midpoint, oldHitBox.getXLength() / 2.0 + 1, oldHitBox.getYLength() / 2.0 + 2, oldHitBox.getZLength() / 2.0 + 1)) {
-                if (entity.getType() == EntityType.PLAYER) {
-                    if(craft.getSinking()){
-                        continue;
-                    }
-                    EntityMoveUpdateCommand eUp = new EntityMoveUpdateCommand(entity, dx, dy, dz, 0, 0);
-                    updates.add(eUp);
-                } else if (!craft.getType().getOnlyMovePlayers() || entity.getType() == EntityType.PRIMED_TNT) {
-                    EntityMoveUpdateCommand eUp = new EntityMoveUpdateCommand(entity, dx, dy, dz, 0, 0);
-                    updates.add(eUp);
-                }
-            }
-        } else {
-            //add releaseTask without playermove to manager
-            if (!craft.getType().getCruiseOnPilot() && !craft.getSinking())  // not necessary to release cruiseonpilot crafts, because they will already be released
-                CraftManager.getInstance().addReleaseTask(craft);
-        }
+
+
         captureYield(harvestedBlocks);
     }
 

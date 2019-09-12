@@ -7,6 +7,7 @@ import net.countercraft.movecraft.async.detection.DetectionTask;
 import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.sync.EntityProcessor;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -85,6 +86,7 @@ public class ICraft extends Craft {
         if (isClimbing()){
             setClimbing(false);
         }
+        new EntityProcessor(this, new MovecraftLocation(dx, dy, dz)).runTask(Movecraft.getInstance());
         Movecraft.getInstance().getAsyncManager().submitTask(new TranslationTask(this, dx, dy, dz), this);
     }
 
