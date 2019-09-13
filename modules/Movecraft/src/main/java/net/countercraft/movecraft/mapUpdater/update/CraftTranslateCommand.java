@@ -166,6 +166,15 @@ public class CraftTranslateCommand extends UpdateCommand {
                 }
             }
 
+            for (MovecraftLocation l : failed){
+                MovecraftLocation orig = l.subtract(displacement);
+                if (craft.getHitBox().contains(orig) || failed.contains(orig)){
+                    continue;
+                }
+                confirmed.add(orig);
+
+            }
+
             //place confirmed blocks if they have been un-phased
             for (MovecraftLocation location : confirmed) {
                 if (!craft.getPhaseBlocks().containsKey(location)) {
