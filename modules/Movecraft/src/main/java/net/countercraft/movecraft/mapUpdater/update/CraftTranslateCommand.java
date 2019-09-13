@@ -142,7 +142,7 @@ public class CraftTranslateCommand extends UpdateCommand {
             }
 
 
-            for (MovecraftLocation l : craft.getHitBox().boundingHitBox()){
+            for (MovecraftLocation l : failed){
                 MovecraftLocation orig = l.subtract(displacement);
                 if (craft.getHitBox().contains(orig) || failed.contains(orig)){
                     continue;
