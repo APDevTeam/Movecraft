@@ -86,8 +86,9 @@ public class ICraft extends Craft {
         if (isClimbing()){
             setClimbing(false);
         }
-        new EntityProcessor(this, new MovecraftLocation(dx, dy, dz)).runTask(Movecraft.getInstance());
-        Movecraft.getInstance().getAsyncManager().submitTask(new TranslationTask(this, dx, dy, dz), this);
+        TranslationTask task = new TranslationTask(this, dx, dy, dz);
+        task.getUpdates().addAll(EntityProcessor.translateEntities(this, new MovecraftLocation(dx, dy, dz)));
+        Movecraft.getInstance().getAsyncManager().submitTask(task, this);
     }
 
     @Override
@@ -133,12 +134,16 @@ public class ICraft extends Craft {
                 }
             }
         }*/
-        Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(this, originPoint, rotation, this.getW()), this);
+        RotationTask task = new RotationTask(this, originPoint, rotation, this.getW());
+        task.getUpdates().addAll(EntityProcessor.rotateEntities(this, originPoint, rotation));
+        Movecraft.getInstance().getAsyncManager().submitTask(task, this);
     }
 
     @Override
     public void rotate(Rotation rotation, MovecraftLocation originPoint, boolean isSubCraft) {
-        Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(this, originPoint, rotation, this.getW(), isSubCraft), this);
+        RotationTask task = new RotationTask(this, originPoint, rotation, this.getW(), isSubCraft);
+        task.getUpdates().addAll(EntityProcessor.rotateEntities(this, originPoint, rotation));
+        Movecraft.getInstance().getAsyncManager().submitTask(task, this);
     }
 
     @Override

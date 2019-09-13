@@ -35,7 +35,6 @@ import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.CraftRotateEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.update.CraftRotateCommand;
-import net.countercraft.movecraft.mapUpdater.update.EntityMoveUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import net.countercraft.movecraft.utils.*;
 import org.bukkit.Bukkit;
@@ -45,8 +44,6 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Furnace;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
@@ -211,30 +208,7 @@ public class RotationTask extends AsyncTask {
 
 
         updates.add(new CraftRotateCommand(getCraft(),originPoint, rotation));
-        //rotate entities in the craft
-        Location tOP = new Location(getCraft().getW(), originPoint.getX(), originPoint.getY(), originPoint.getZ());
-        tOP.setX(tOP.getBlockX() + 0.5);
-        tOP.setZ(tOP.getBlockZ() + 0.5);
 
-        if (craft.getType().getMoveEntities() && !(craft.getSinking() && craft.getType().getOnlyMovePlayers())) {
-            Location midpoint = new Location(
-                    craft.getW(),
-                    (oldHitBox.getMaxX() + oldHitBox.getMinX())/2.0,
-                    (oldHitBox.getMaxY() + oldHitBox.getMinY())/2.0,
-                    (oldHitBox.getMaxZ() + oldHitBox.getMinZ())/2.0);
-            for(Entity entity : craft.getW().getNearbyEntities(midpoint, oldHitBox.getXLength()/2.0 + 1, oldHitBox.getYLength()/2.0 + 2, oldHitBox.getZLength()/2.0 + 1)){
-                if ((entity.getType() == EntityType.PLAYER && !craft.getSinking()) || !craft.getType().getOnlyMovePlayers()) {
-                    // Player is onboard this craft
-
-                    Location adjustedPLoc = entity.getLocation().subtract(tOP);
-
-                    double[] rotatedCoords = MathUtils.rotateVecNoRound(rotation, adjustedPLoc.getX(), adjustedPLoc.getZ());
-                    float newYaw = rotation == Rotation.CLOCKWISE ? 90F : -90F;
-                    EntityMoveUpdateCommand eUp = new EntityMoveUpdateCommand(entity, rotatedCoords[0] + tOP.getX() - entity.getLocation().getX(), 0, rotatedCoords[1] + tOP.getZ() - entity.getLocation().getZ(), newYaw, 0);
-                    updates.add(eUp);
-                }
-            }
-        }
 
         if (getCraft().getCruising()) {
             if (rotation == Rotation.ANTICLOCKWISE) {
