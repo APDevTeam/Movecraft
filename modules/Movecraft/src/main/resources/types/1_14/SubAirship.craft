@@ -4,7 +4,6 @@ minSize: 1000
 allowedBlocks:
    - crafting_table
    - ALL_WOOD
-   - WATER
    - LAVA
    - ALL_LOG
    - all_planks
@@ -102,8 +101,15 @@ tryNudge: false
 halfSpeedUnderwater: true
 sinkPercent: 99.0
 overallSinkPercent: 60.0
+
+passthroughBlocks:
+    - kelp
+    - kelp_plant
+    - tall_seagrass
+    - seagrass
+    - bubble_column
 moveblocks:
-    152: # redstone represents engines
+    redstone_block: # redstone represents engines
         - 1.0
         - 100.0
 flyblocks:
