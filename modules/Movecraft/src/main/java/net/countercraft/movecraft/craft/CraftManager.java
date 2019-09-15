@@ -119,7 +119,6 @@ public class CraftManager implements Iterable<Craft>{
             File[] files = v1_14dir.listFiles();
             for (File craftFile : files) {
                 final String fileName = craftFile.getName();
-                Bukkit.getLogger().info(fileName);
                 File destination = new File(craftsFile, fileName);
                 if (!craftFile.renameTo(destination)) continue;
                 craftFile.delete();
@@ -137,7 +136,6 @@ public class CraftManager implements Iterable<Craft>{
             if (file.isFile()) {
 
                 if (file.getName().contains(".craft")) {
-                    Bukkit.getLogger().info(file.getName());
                     CraftType type = new CraftType(file);
                     craftTypes.add(type);
                 }
