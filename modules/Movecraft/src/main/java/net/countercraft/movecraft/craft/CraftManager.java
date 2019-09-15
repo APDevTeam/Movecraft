@@ -21,8 +21,6 @@ import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.utils.ChatUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -80,14 +78,7 @@ public class CraftManager implements Iterable<Craft>{
                 Movecraft.getInstance().saveResource("types/legacy/SubAirship.craft", false);
                 Movecraft.getInstance().saveResource("types/legacy/Submarine.craft", false);
                 Movecraft.getInstance().saveResource("types/legacy/Turret.craft", false);
-                final File legacydir = new File(craftsFile,"legacy");
-                for (File craftFile : legacydir.listFiles()){
-                    final String fileName = craftFile.getName();
-                    if (!craftFile.renameTo(new File(craftFile, fileName))) continue;
-                    craftFile.delete();
-                }
-                if (legacydir.listFiles().length == 0)
-                    legacydir.delete();
+
             } else if (Settings.is1_14){ //if 1.14, save 1.14 files
                 Movecraft.getInstance().saveResource("types/1_14/airship.craft", false);
                 Movecraft.getInstance().saveResource("types/1_14/airskiff.craft", false);
@@ -99,14 +90,7 @@ public class CraftManager implements Iterable<Craft>{
                 Movecraft.getInstance().saveResource("types/1_14/SubAirship.craft", false);
                 Movecraft.getInstance().saveResource("types/1_14/Submarine.craft", false);
                 Movecraft.getInstance().saveResource("types/1_14/Turret.craft", false);
-                final File v1_14dir = new File(craftsFile,"/1_14");
-                for (File craftFile : v1_14dir.listFiles()){
-                    final String fileName = craftFile.getName();
-                    if (!craftFile.renameTo(new File(craftFile, fileName))) continue;
-                    craftFile.delete();
-                }
-                if (v1_14dir.listFiles().length == 0)
-                    v1_14dir.delete();
+
             } else { //if 1.13, save 1.13 files
                 Movecraft.getInstance().saveResource("types/airship.craft", false);
                 Movecraft.getInstance().saveResource("types/airskiff.craft", false);
@@ -120,7 +104,29 @@ public class CraftManager implements Iterable<Craft>{
                 Movecraft.getInstance().saveResource("types/Turret.craft", false);
             }
         }
-
+        final File legacydir = new File(craftsFile,"legacy");
+        if (legacydir.exists()) {
+            for (File craftFile : legacydir.listFiles()) {
+                final String fileName = craftFile.getName();
+                if (!craftFile.renameTo(new File(craftsFile, fileName))) continue;
+                craftFile.delete();
+            }
+            if (legacydir.listFiles().length == 0)
+                legacydir.delete();
+        }
+        final File v1_14dir = new File(craftsFile,"1_14");
+        if (v1_14dir.exists()) {
+            File[] files = v1_14dir.listFiles();
+            for (File craftFile : files) {
+                final String fileName = craftFile.getName();
+                Bukkit.getLogger().info(fileName);
+                File destination = new File(craftsFile, fileName);
+                if (!craftFile.renameTo(destination)) continue;
+                craftFile.delete();
+            }
+            if (v1_14dir.listFiles().length == 0)
+                v1_14dir.delete();
+        }
         Set<CraftType> craftTypes = new HashSet<>();
         File[] files = craftsFile.listFiles();
         if (files == null){
@@ -131,6 +137,7 @@ public class CraftManager implements Iterable<Craft>{
             if (file.isFile()) {
 
                 if (file.getName().contains(".craft")) {
+                    Bukkit.getLogger().info(file.getName());
                     CraftType type = new CraftType(file);
                     craftTypes.add(type);
                 }

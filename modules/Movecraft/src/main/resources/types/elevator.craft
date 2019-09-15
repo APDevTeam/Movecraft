@@ -62,7 +62,7 @@ allowedBlocks:
         - daylight_detector
         - REDSTONE_BLOCK
         - HOPPER
-        - all_QUARTZ_BLOCK:
+        - all_QUARTZ_BLOCK
         - all_rail
         - DROPPER
         - ALL_STAINED_GLASS_PANE
