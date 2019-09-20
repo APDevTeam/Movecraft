@@ -7,11 +7,7 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.CraftType;
 import net.countercraft.movecraft.craft.ICraft;
-import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.CraftPilotEvent;
-import net.countercraft.movecraft.events.CraftReleaseEvent;
-import net.countercraft.movecraft.events.CraftRotateEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.MathUtils;
 import org.bukkit.Bukkit;
@@ -25,7 +21,8 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 
 public final class SubcraftRotateSign implements Listener {
     private static final String HEADER = "Subcraft Rotate";
@@ -49,7 +46,7 @@ public final class SubcraftRotateSign implements Listener {
             return;
         }
         final Location loc = event.getClickedBlock().getLocation();
-        final MovecraftLocation startPoint = new MovecraftLocation(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+        final MovecraftLocation startPoint = MathUtils.bukkit2MovecraftLoc(loc);
         if(rotatingCrafts.contains(startPoint)){
             event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Already Rotating"));
             event.setCancelled(true);
@@ -103,7 +100,7 @@ public final class SubcraftRotateSign implements Listener {
                     }
                 }.runTaskLater(Movecraft.getInstance(), 3);
             }
-        }.runTaskLater(Movecraft.getInstance(), 3);
+        }.runTaskLater(Movecraft.getInstance(), 5);
         event.setCancelled(true);
     }
 

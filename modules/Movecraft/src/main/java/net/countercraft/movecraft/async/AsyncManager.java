@@ -455,10 +455,10 @@ public class AsyncManager extends BukkitRunnable {
             if (pcraft.getCruiseDirection() == BlockFace.NORTH) {
                 dz = 0 - 1 - pcraft.getType().getCruiseSkipBlocks();
                 if (bankRight) {
-                    dx = (0 - 1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
+                    dx = (1 + pcraft.getType().getCruiseSkipBlocks()) >> 1;
                 }
                 if (bankLeft) {
-                    dx = (1 + pcraft.getType().getCruiseSkipBlocks()) >> 1;
+                    dx = (0 - 1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
                 }
             }
             // ship faces south

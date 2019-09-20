@@ -155,6 +155,7 @@ public class CraftTranslateCommand extends UpdateCommand {
                 craft.getPhaseBlocks().put(location, material);
             }
             //translate the craft
+
             handler.translateCraft(craft, displacement);
             //trigger sign events
             for (MovecraftLocation location : craft.getHitBox()) {

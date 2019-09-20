@@ -93,6 +93,7 @@ public class RotationTask extends AsyncTask {
             return;
         Player craftPilot = CraftManager.getInstance().getPlayerFromCraft(getCraft());
 
+
         if (getCraft().getDisabled() && (!getCraft().getSinking())) {
             failed = true;
             failMessage = I18nSupport.getInternationalisedString("Translation - Failed Craft Is Disabled");

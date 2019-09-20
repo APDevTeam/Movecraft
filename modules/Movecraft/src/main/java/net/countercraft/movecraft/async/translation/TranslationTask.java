@@ -383,6 +383,13 @@ public class TranslationTask extends AsyncTask {
             }.runTask(Movecraft.getInstance());
 
         }
+        if (oldHitBox.isEmpty())
+            return;
+        if (!craft.getType().getMoveEntities() && !(craft.getSinking() && craft.getType().getOnlyMovePlayers())) {
+            //add releaseTask without playermove to manager
+            if (!craft.getType().getCruiseOnPilot() && !craft.getSinking())  // not necessary to release cruiseonpilot crafts, because they will already be released
+                CraftManager.getInstance().addReleaseTask(craft);
+        }
 
         updates.add(new CraftTranslateCommand(craft, new MovecraftLocation(dx, dy, dz)));
 

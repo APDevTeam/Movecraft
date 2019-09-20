@@ -160,7 +160,12 @@ public class CraftManager implements Iterable<Craft>{
 
     public void removeCraft(@NotNull Craft c) {
         //TODO move this to callers
-        Bukkit.getServer().getPluginManager().callEvent(new CraftReleaseEvent(c, CraftReleaseEvent.Reason.PLAYER));
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                Bukkit.getServer().getPluginManager().callEvent(new CraftReleaseEvent(c, CraftReleaseEvent.Reason.PLAYER));
+            }
+        }.runTask(Movecraft.getInstance());
         removeReleaseTask(c);
         Player player = getPlayerFromCraft(c);
         if (player!=null)

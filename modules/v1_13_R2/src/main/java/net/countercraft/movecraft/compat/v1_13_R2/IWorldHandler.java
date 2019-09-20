@@ -305,7 +305,7 @@ public class IWorldHandler extends WorldHandler{
     public void disableShadow(@NotNull Material type) {
         Method method;
         //try {
-            Block tempBlock = CraftMagicNumbers.getBlock(type);
+        Item item = CraftMagicNumbers.getItem(type);
             //method = Block.class.getDeclaredMethod("d", int.class);
             //method.setAccessible(true);
             //method.invoke(tempBlock, 0);

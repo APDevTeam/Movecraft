@@ -717,8 +717,11 @@ final public class CraftType {
                     }
                 }
             } else if (i instanceof Integer) {
+                if (!Settings.IsLegacy){
+                    throw new IllegalArgumentException("Numerical IDs are not supported by the current server version!");
+                }
                 Integer typeID = (Integer) i;
-                Material type = Settings.IsLegacy ? Material.getMaterial(typeID) : null;
+                Material type = Material.getMaterial(typeID);
                 materialMap.put(type, new ArrayList<>());
             } else if (i instanceof String) {
                 String string = (String) i;
@@ -745,19 +748,31 @@ final public class CraftType {
                     }
                 } else {
                     Material type;
+                    boolean all = false;
+                    if (string.toUpperCase().startsWith("ALL_")) {
+                        string = string.replace("ALL_", "");
+                        for (Material m : Material.values()){
+                            if (m.name().endsWith(string)){
+                                materialMap.put(m, new ArrayList<>());
+                            }
+                            all = true;
+                        }
+                    }
                     if (string.contains("0") || string.contains("1") || string.contains("2") || string.contains("3") || string.contains("4") || string.contains("5") || string.contains("6") || string.contains("7") || string.contains("8") || string.contains("9")) {
                         Integer typeID = Integer.valueOf(string);
                         type = Material.getMaterial(typeID);
 
-                    } else {
+                    }  else {
                         type = Material.getMaterial(string);
                     }
-                    if (materialMap.containsKey(type)) {
-                        List<Integer> dataList = materialMap.get(type);
-                        materialMap.put(type, dataList);
-                    } else {
-                        List<Integer> dataList = new ArrayList<>();
-                        materialMap.put(type, dataList);
+                    if (!all) {
+                        if (materialMap.containsKey(type)) {
+                            List<Integer> dataList = materialMap.get(type);
+                            materialMap.put(type, dataList);
+                        } else {
+                            List<Integer> dataList = new ArrayList<>();
+                            materialMap.put(type, dataList);
+                        }
                     }
                 }
             } else {

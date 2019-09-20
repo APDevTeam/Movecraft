@@ -87,7 +87,7 @@ public class ICraft extends Craft {
             setClimbing(false);
         }
         TranslationTask task = new TranslationTask(this, dx, dy, dz);
-        task.getUpdates().addAll(EntityProcessor.translateEntities(this, new MovecraftLocation(dx, dy, dz)));
+        task.getUpdates().addAll(EntityProcessor.translateEntities(this, dx, dy, dz));
         Movecraft.getInstance().getAsyncManager().submitTask(task, this);
     }
 

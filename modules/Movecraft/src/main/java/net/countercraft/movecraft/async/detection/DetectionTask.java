@@ -399,32 +399,33 @@ public class DetectionTask extends AsyncTask {
             float blockPercentage = (((float) numberOfBlocks / data.getBlockList().size()) * 100);
             Double minPercentage = flyBlocks.get(i).get(0);
             Double maxPercentage = flyBlocks.get(i).get(1);
+            ArrayList<Material> flyBlockTypes = new ArrayList<>(i.keySet());
             if (minPercentage < 10000.0) {
                 if (blockPercentage < minPercentage) {
-                    if (i != null) {
-                        if (i.get(0) != null) {
-                            if (i.get(0).isEmpty() || i.get(0) == null) {
+
+                        if (i.get(flyBlockTypes.get(0)) == null) {
+                            if (i.get(flyBlockTypes.get(0)).isEmpty()) {
                                 fail(String.format(
                                         I18nSupport.getInternationalisedString("Not enough flyblock") + ": %s %.2f%% < %.2f%%",
-                                        i.keySet().iterator().next().name().toLowerCase().replace("_", " "), blockPercentage,
+                                        flyBlockTypes.get(0).name().toLowerCase().replace("_", " "), blockPercentage,
                                         minPercentage));
                                 return false;
                             } else {
                                 fail(String.format(
                                         I18nSupport.getInternationalisedString("Not enough flyblock") + ": %s %.2f%% < %.2f%%",
-                                        i.keySet().iterator().next().name().toLowerCase().replace("_", " "),
+                                        flyBlockTypes.get(0).name().toLowerCase().replace("_", " "),
                                         blockPercentage, minPercentage));
                                 return false;
                             }
                         } else {
                             fail(String.format(
                                     I18nSupport.getInternationalisedString("Not enough flyblock") + ": %s %.2f%% < %.2f%%",
-                                    i.keySet().iterator().next().name().toLowerCase().replace("_", " "), blockPercentage,
+                                    flyBlockTypes.get(0).name().toLowerCase().replace("_", " "), blockPercentage,
                                     minPercentage));
                             return false;
                         }
                     }
-                }
+
             } else {
                 if (numberOfBlocks < flyBlocks.get(i).get(0) - 10000.0) {
                     if (i != null) {
@@ -432,19 +433,19 @@ public class DetectionTask extends AsyncTask {
                             if (i.get(0).isEmpty() || i.get(0) == null) {
                                 fail(String.format(
                                         I18nSupport.getInternationalisedString("Not enough flyblock") + ": %s %d < %d",
-                                        i.keySet().iterator().next().name().toLowerCase().replace("_", " "), numberOfBlocks,
+                                        flyBlockTypes.get(0).name().toLowerCase().replace("_", " "), numberOfBlocks,
                                         flyBlocks.get(i).get(0).intValue() - 10000));
                                 return false;
                             } else {
                                 fail(String.format(
                                         I18nSupport.getInternationalisedString("Not enough flyblock") + ": %s %d < %d",
-                                        i.keySet().iterator().next().name().toLowerCase().replace("_", " "),
+                                        flyBlockTypes.get(0).name().toLowerCase().replace("_", " "),
                                         numberOfBlocks, flyBlocks.get(i).get(0).intValue() - 10000));
                                 return false;
                             }
                         } else {
                             fail(String.format(I18nSupport.getInternationalisedString("Not enough flyblock") + ": %s %d > %d",
-                                    i.keySet().iterator().next().name().toLowerCase().replace("_", " "), numberOfBlocks,
+                                    flyBlockTypes.get(0).name().toLowerCase().replace("_", " "), numberOfBlocks,
                                     flyBlocks.get(i).get(1).intValue() - 10000));
                             return false;
                         }
@@ -458,20 +459,20 @@ public class DetectionTask extends AsyncTask {
                             if (i.get(0).isEmpty() || i.get(0) == null) {
                                 fail(String.format(
                                         I18nSupport.getInternationalisedString("Too much flyblock") + ": %s %.2f%% > %.2f%%",
-                                        i.keySet().iterator().next().name().toLowerCase().replace("_", " "), blockPercentage,
+                                        flyBlockTypes.get(0).name().toLowerCase().replace("_", " "), blockPercentage,
                                         maxPercentage));
                                 return false;
                             } else {
                                 fail(String.format(
                                         I18nSupport.getInternationalisedString("Too much flyblock") + ": %s %.2f%% > %.2f%%",
-                                        i.keySet().iterator().next().name().toLowerCase().replace("_", " "),
+                                        flyBlockTypes.get(0).name().toLowerCase().replace("_", " "),
                                         blockPercentage, maxPercentage));
                                 return false;
                             }
                         } else {
                             fail(String.format(
                                     I18nSupport.getInternationalisedString("Too much flyblock") + ": %s %.2f%% > %.2f%%",
-                                    i.keySet().iterator().next().name().toLowerCase().replace("_", " "),
+                                    flyBlockTypes.get(0).name().toLowerCase().replace("_", " "),
                                     blockPercentage, maxPercentage));
                             return false;
                         }
@@ -483,18 +484,18 @@ public class DetectionTask extends AsyncTask {
                         if (i.get(0) != null) {
                             if (i.get(0).isEmpty()) {
                                 fail(String.format(I18nSupport.getInternationalisedString("Too much flyblock") + ": %s %d > %d",
-                                        i.keySet().iterator().next().name().toLowerCase().replace("_", " "), numberOfBlocks,
+                                        flyBlockTypes.get(0).name().toLowerCase().replace("_", " "), numberOfBlocks,
                                         flyBlocks.get(i).get(1).intValue() - 10000));
                                 return false;
                             } else {
                                 fail(String.format(I18nSupport.getInternationalisedString("Too much flyblock") + ": %s %d > %d",
-                                        i.keySet().iterator().next().name().toLowerCase().replace("_", " "),
+                                        flyBlockTypes.get(0).name().toLowerCase().replace("_", " "),
                                         numberOfBlocks, flyBlocks.get(i).get(1).intValue() - 10000));
                                 return false;
                             }
                         } else {
                             fail(String.format(I18nSupport.getInternationalisedString("Too much flyblock") + ": %s %d > %d",
-                                    i.keySet().iterator().next().name().toLowerCase().replace("_", " "), numberOfBlocks,
+                                    flyBlockTypes.get(0).name().toLowerCase().replace("_", " "), numberOfBlocks,
                                     flyBlocks.get(i).get(1).intValue() - 10000));
                             return false;
                         }
