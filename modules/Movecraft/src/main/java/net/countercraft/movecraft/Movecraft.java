@@ -112,7 +112,17 @@ public class Movecraft extends JavaPlugin {
         }catch (Exception e){
             Settings.IsPaper=false;
         }
-
+        if (!Settings.IsPaper){
+            logger.warning("======== Movecraft === Use Paper =======");
+            logger.warning("Your server version: " + getServer().getVersion());
+            logger.warning("You may experience performance issues");
+            logger.warning("with this server platform.");
+            logger.warning("");
+            logger.warning("It is recommended you use Paper");
+            logger.warning("for better performance.");
+            logger.warning("Download at papermc.io/downloads");
+            logger.warning("======== Movecraft === Use Paper =======");
+        }
 
 
         Settings.LOCALE = getConfig().getString("Locale");

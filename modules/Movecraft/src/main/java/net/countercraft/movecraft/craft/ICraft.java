@@ -6,10 +6,18 @@ import net.countercraft.movecraft.Rotation;
 import net.countercraft.movecraft.async.detection.DetectionTask;
 import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
+import net.countercraft.movecraft.mapUpdater.update.FuelBurnUpdateCommand;
 import net.countercraft.movecraft.sync.EntityProcessor;
+import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.Furnace;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.InventoryHolder;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
@@ -87,6 +95,7 @@ public class ICraft extends Craft {
             setClimbing(false);
         }
         TranslationTask task = new TranslationTask(this, dx, dy, dz);
+
         task.getUpdates().addAll(EntityProcessor.translateEntities(this, dx, dy, dz));
         Movecraft.getInstance().getAsyncManager().submitTask(task, this);
     }
@@ -135,6 +144,42 @@ public class ICraft extends Craft {
             }
         }*/
         RotationTask task = new RotationTask(this, originPoint, rotation, this.getW());
+        if (getType().getFuelBurnRate() > 0.0) {
+
+            // check for fuel, burn some from a furnace if needed. Blocks of coal are supported, in addition to coal and charcoal
+            double fuelBurnRate = getType().getFuelBurnRate();
+            // going down doesn't require fuel
+            if (fuelBurnRate == 0.0 || getSinking()) {
+                return;
+            }
+            if (getBurningFuel() >= fuelBurnRate) {
+                setBurningFuel(getBurningFuel() - fuelBurnRate);
+                return;
+            }
+            Block fuelHolder = null;
+            for (MovecraftLocation bTest : getHitBox()) {
+                Block b = getW().getBlockAt(bTest.getX(), bTest.getY(), bTest.getZ());
+                //Get all fuel holders
+                if (b.getType() == Material.FURNACE) {
+                    InventoryHolder holder = (InventoryHolder) b.getState();
+                    for (Material fuel : Settings.FuelTypes.keySet()) {
+                        if (holder.getInventory().contains(fuel)) {
+                            fuelHolder = b;
+                            break;
+                        }
+                    }
+                }
+                if (fuelHolder != null) break;
+
+            }
+            if (fuelHolder == null) {
+                getNotificationPlayer().sendMessage(I18nSupport.getInternationalisedString("Translation - Failed Craft out of fuel"));
+                return;
+            }
+            Furnace furnace = (Furnace) fuelHolder.getState();
+            MapUpdateManager.getInstance().scheduleUpdate(new FuelBurnUpdateCommand(this, fuelHolder));
+
+        }
         task.getUpdates().addAll(EntityProcessor.rotateEntities(this, originPoint, rotation));
         Movecraft.getInstance().getAsyncManager().submitTask(task, this);
     }
@@ -142,6 +187,41 @@ public class ICraft extends Craft {
     @Override
     public void rotate(Rotation rotation, MovecraftLocation originPoint, boolean isSubCraft) {
         RotationTask task = new RotationTask(this, originPoint, rotation, this.getW(), isSubCraft);
+        if (getType().getFuelBurnRate() > 0.0) {
+
+            // check for fuel, burn some from a furnace if needed. Blocks of coal are supported, in addition to coal and charcoal
+            double fuelBurnRate = getType().getFuelBurnRate();
+            // going down doesn't require fuel
+            if (fuelBurnRate == 0.0 || getSinking()) {
+                return;
+            }
+            if (getBurningFuel() >= fuelBurnRate) {
+                setBurningFuel(getBurningFuel() - fuelBurnRate);
+                return;
+            }
+            Block fuelHolder = null;
+            for (MovecraftLocation bTest : getHitBox()) {
+                Block b = getW().getBlockAt(bTest.getX(), bTest.getY(), bTest.getZ());
+                //Get all fuel holders
+                if (b.getType() == Material.FURNACE) {
+                    InventoryHolder holder = (InventoryHolder) b.getState();
+                    for (Material fuel : Settings.FuelTypes.keySet()) {
+                        if (holder.getInventory().contains(fuel)) {
+                            fuelHolder = b;
+                            break;
+                        }
+                    }
+                }
+                if (fuelHolder != null) break;
+
+            }
+            if (fuelHolder == null) {
+                getNotificationPlayer().sendMessage(I18nSupport.getInternationalisedString("Translation - Failed Craft out of fuel"));
+                return;
+            }
+            MapUpdateManager.getInstance().scheduleUpdate(new FuelBurnUpdateCommand(this, fuelHolder));
+
+        }
         task.getUpdates().addAll(EntityProcessor.rotateEntities(this, originPoint, rotation));
         Movecraft.getInstance().getAsyncManager().submitTask(task, this);
     }

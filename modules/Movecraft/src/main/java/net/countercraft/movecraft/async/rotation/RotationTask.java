@@ -98,13 +98,14 @@ public class RotationTask extends AsyncTask {
             failed = true;
             failMessage = I18nSupport.getInternationalisedString("Translation - Failed Craft Is Disabled");
         }
-        double fuelBurnRate = craft.getType().getFuelBurnRate();
-        if (fuelBurnRate > 0.0) {
+        if (craft.getType().getFuelBurnRate() > 0.0) {
+
             new BukkitRunnable() {
                 @Override
                 public void run() {
                     // check for fuel, burn some from a furnace if needed. Blocks of coal are supported, in addition to coal and charcoal
-
+                    double fuelBurnRate = craft.getType().getFuelBurnRate();
+                    // going down doesn't require fuel
                     if (fuelBurnRate == 0.0 || craft.getSinking()) {
                         return;
                     }
@@ -113,7 +114,7 @@ public class RotationTask extends AsyncTask {
                         return;
                     }
                     Block fuelHolder = null;
-                    for (MovecraftLocation bTest : craft.getHitBox()) {
+                    for (MovecraftLocation bTest : oldHitBox) {
                         Block b = craft.getW().getBlockAt(bTest.getX(), bTest.getY(), bTest.getZ());
                         //Get all fuel holders
                         if (b.getType() == Material.FURNACE) {
@@ -134,8 +135,8 @@ public class RotationTask extends AsyncTask {
                         return;
                     }
                     Furnace furnace = (Furnace) fuelHolder.getState();
-                    for (Material fuel : Settings.FuelTypes.keySet()) {
-                        if (furnace.getInventory().contains(fuel)) {
+                    for (Material fuel : Settings.FuelTypes.keySet()){
+                        if (furnace.getInventory().contains(fuel)){
                             ItemStack item = furnace.getInventory().getItem(furnace.getInventory().first(fuel));
                             int amount = item.getAmount();
                             if (amount == 1) {
@@ -148,6 +149,7 @@ public class RotationTask extends AsyncTask {
                     }
                 }
             }.runTask(Movecraft.getInstance());
+
         }
         // if a subcraft, find the parent craft. If not a subcraft, it is it's own parent
         Set<Craft> craftsInWorld = CraftManager.getInstance().getCraftsInWorld(getCraft().getW());
