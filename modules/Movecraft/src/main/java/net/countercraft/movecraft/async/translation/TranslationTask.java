@@ -19,6 +19,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Furnace;
 import org.bukkit.entity.EntityType;
@@ -165,7 +166,27 @@ public class TranslationTask extends AsyncTask {
                 dy = Math.min(dy,-1);
             }
         }
-
+        if (craft.getType().getUseGravity() && !craft.getSinking()){
+            boolean onGround = isOnGround(oldHitBox);
+            boolean inclined = dy >= 0 && inclineCraft(oldHitBox);
+            boolean hoverCraft = craft.getType().getCanHover();
+            if (inclined){
+                dy = 1;
+            } else if (!onGround && hoverCraft){
+                MovecraftLocation midPoint = oldHitBox.getMidPoint();
+                MovecraftLocation bottomPoint = new MovecraftLocation(midPoint.getX(), oldHitBox.getMinY(), midPoint.getZ());
+                MovecraftLocation testSurface = bottomPoint.translate(0, -1, 0);
+                while (oldHitBox.contains(testSurface) || testSurface.toBukkit(craft.getW()).getBlock().getRelative(BlockFace.DOWN).getType().equals(Material.AIR) || craft.getType().getPassthroughBlocks().contains(testSurface.toBukkit(craft.getW()).getBlock().getRelative(BlockFace.DOWN).getType())){
+                    testSurface = testSurface.translate(0, -1, 0);
+                }
+                int distance = bottomPoint.getY() - testSurface.getY();
+                if (distance > craft.getType().getHoverLimit()){
+                    dy = -1;
+                }
+            } else if (!onGround){
+                dy = -1;
+            }
+        }
         //Fail the movement if the craft is too high
         if (dy>0 && maxY + dy > craft.getType().getMaxHeightLimit()) {
             fail(I18nSupport.getInternationalisedString("Translation - Failed Craft hit height limit"));
@@ -293,6 +314,12 @@ public class TranslationTask extends AsyncTask {
                     newHitBox.add(newLocation);
                 }
             } //END OF: if (blockObstructed)
+        }
+        for (UpdateCommand update : getUpdates()){
+            if (!(update instanceof EntityMoveUpdateCommand))
+                continue;
+            EntityMoveUpdateCommand eUp = (EntityMoveUpdateCommand) update;
+            eUp.setY(dy);
         }
 
         //call event
@@ -521,7 +548,40 @@ public class TranslationTask extends AsyncTask {
         return stack;
     }
 
+    private boolean inclineCraft(HashHitBox hitBox){
+        HashHitBox collisionBox = new HashHitBox();
+        for (MovecraftLocation ml : hitBox){
+            MovecraftLocation nl = ml.translate(dx, dy, dz);
+            if (hitBox.contains(nl))
+                continue;
+            if (ml.getY() > hitBox.getMinY())
+                continue;
+            collisionBox.add(nl);
+        }
+        for (MovecraftLocation ml : collisionBox){
+            if (!ml.toBukkit(craft.getW()).getBlock().getType().equals(Material.AIR) && !craft.getType().getPassthroughBlocks().contains(ml.toBukkit(craft.getW()).getBlock().getType()) && !craft.getType().getHarvestBlocks().contains(ml.toBukkit(craft.getW()).getBlock().getType())){
+                return true;
+            }
+        }
 
+        return false;
+    }
+
+    private boolean isOnGround(HashHitBox hitBox){
+        for (MovecraftLocation location : hitBox){
+            MovecraftLocation newLoc = location.translate(dx, dy, dz);
+            int minY = hitBox.getMinY() + dy;
+            if (newLoc.getY() > minY){
+                continue;
+            }
+            Location groundLoc = newLoc.translate(0,-1,0).toBukkit(craft.getW());
+            if (groundLoc.getBlock().getType().equals(Material.AIR) || craft.getType().getPassthroughBlocks().contains(groundLoc.getBlock().getType())){
+                continue;
+            }
+            return true;
+        }
+        return false;
+    }
 
 
     public boolean failed(){

@@ -465,10 +465,10 @@ public class AsyncManager extends BukkitRunnable {
             if (pcraft.getCruiseDirection() == BlockFace.SOUTH) {
                 dz = 1 + pcraft.getType().getCruiseSkipBlocks();
                 if (bankLeft) {
-                    dx = (0 - 1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
+                    dx = (1 + pcraft.getType().getCruiseSkipBlocks()) >> 1;
                 }
                 if (bankRight) {
-                    dx = (1 + pcraft.getType().getCruiseSkipBlocks()) >> 1;
+                    dx = (0 - 1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
                 }
             }
             if (pcraft.getType().getCruiseOnPilot()) {

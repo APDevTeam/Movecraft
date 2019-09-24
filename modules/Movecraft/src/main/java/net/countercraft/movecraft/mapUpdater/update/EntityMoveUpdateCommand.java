@@ -30,7 +30,7 @@ import java.util.Objects;
 public class EntityMoveUpdateCommand extends UpdateCommand {
     private final Entity entity;
     private final double x;
-    private final double y;
+    private double y;
     private final double z;
     private final float yaw;
     private final float pitch;
@@ -57,6 +57,10 @@ public class EntityMoveUpdateCommand extends UpdateCommand {
         }
         Movecraft.getInstance().getWorldHandler().addPlayerLocation((Player) entity,x,y,z,yaw,pitch);
 
+
+    }
+    public void setY(int y){
+        this.y = y;
     }
 
     @Override

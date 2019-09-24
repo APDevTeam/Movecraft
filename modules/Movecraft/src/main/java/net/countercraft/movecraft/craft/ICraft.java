@@ -6,18 +6,16 @@ import net.countercraft.movecraft.Rotation;
 import net.countercraft.movecraft.async.detection.DetectionTask;
 import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
-import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
-import net.countercraft.movecraft.mapUpdater.update.FuelBurnUpdateCommand;
 import net.countercraft.movecraft.sync.EntityProcessor;
+import net.countercraft.movecraft.utils.HashHitBox;
+import net.countercraft.movecraft.utils.MathUtils;
+import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.World;
-import org.bukkit.block.Block;
-import org.bukkit.block.Furnace;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
@@ -143,88 +141,125 @@ public class ICraft extends Craft {
                 }
             }
         }*/
-        RotationTask task = new RotationTask(this, originPoint, rotation, this.getW());
-        if (getType().getFuelBurnRate() > 0.0) {
-
-            // check for fuel, burn some from a furnace if needed. Blocks of coal are supported, in addition to coal and charcoal
-            double fuelBurnRate = getType().getFuelBurnRate();
-            // going down doesn't require fuel
-            if (fuelBurnRate == 0.0 || getSinking()) {
-                return;
-            }
-            if (getBurningFuel() >= fuelBurnRate) {
-                setBurningFuel(getBurningFuel() - fuelBurnRate);
-                return;
-            }
-            Block fuelHolder = null;
-            for (MovecraftLocation bTest : getHitBox()) {
-                Block b = getW().getBlockAt(bTest.getX(), bTest.getY(), bTest.getZ());
-                //Get all fuel holders
-                if (b.getType() == Material.FURNACE) {
-                    InventoryHolder holder = (InventoryHolder) b.getState();
-                    for (Material fuel : Settings.FuelTypes.keySet()) {
-                        if (holder.getInventory().contains(fuel)) {
-                            fuelHolder = b;
-                            break;
-                        }
+        if (getType().getUseGravity()) {
+            MoveOnRotate move = moveUp(rotation, originPoint);
+            final Craft craft = this;
+            if (move.equals(MoveOnRotate.UP)) {
+                translate(0, 1, 0);
+                new BukkitRunnable(){
+                    @Override
+                    public void run() {
+                        RotationTask task = new RotationTask(craft, originPoint, rotation, craft.getW());
+                        task.getUpdates().addAll(EntityProcessor.rotateEntities(craft, originPoint, rotation));
+                        Movecraft.getInstance().getAsyncManager().submitTask(task, craft);
                     }
-                }
-                if (fuelHolder != null) break;
-
-            }
-            if (fuelHolder == null) {
-                getNotificationPlayer().sendMessage(I18nSupport.getInternationalisedString("Translation - Failed Craft out of fuel"));
+                }.runTaskLaterAsynchronously(Movecraft.getInstance(), 5);
+                return;
+            } else if (move.equals(MoveOnRotate.DOWN)) {
+                RotationTask task = new RotationTask(craft, originPoint, rotation, craft.getW());
+                task.getUpdates().addAll(EntityProcessor.rotateEntities(craft, originPoint, rotation));
+                Movecraft.getInstance().getAsyncManager().submitTask(task, craft);
+                new BukkitRunnable(){
+                    @Override
+                    public void run() {
+                        translate(0, -1, 0);
+                    }
+                }.runTaskLaterAsynchronously(Movecraft.getInstance(), 5);
                 return;
             }
-            Furnace furnace = (Furnace) fuelHolder.getState();
-            MapUpdateManager.getInstance().scheduleUpdate(new FuelBurnUpdateCommand(this, fuelHolder));
-
         }
+        RotationTask task = new RotationTask(this, originPoint, rotation, this.getW());
         task.getUpdates().addAll(EntityProcessor.rotateEntities(this, originPoint, rotation));
         Movecraft.getInstance().getAsyncManager().submitTask(task, this);
+
     }
 
     @Override
     public void rotate(Rotation rotation, MovecraftLocation originPoint, boolean isSubCraft) {
-        RotationTask task = new RotationTask(this, originPoint, rotation, this.getW(), isSubCraft);
-        if (getType().getFuelBurnRate() > 0.0) {
+        if (getType().getUseGravity()) {
+            MoveOnRotate move = moveUp(rotation, originPoint);
+            boolean translated = false;
+            if (move.equals(MoveOnRotate.UP)) {
+                translate(0, 1, 0);
+                translated = true;
+            } else if (move.equals(MoveOnRotate.DOWN)) {
+                translate(0, -1, 0);
+                translated = true;
+            }
+            if (translated){
+                final Craft craft = this;
+                new BukkitRunnable(){
 
-            // check for fuel, burn some from a furnace if needed. Blocks of coal are supported, in addition to coal and charcoal
-            double fuelBurnRate = getType().getFuelBurnRate();
-            // going down doesn't require fuel
-            if (fuelBurnRate == 0.0 || getSinking()) {
-                return;
-            }
-            if (getBurningFuel() >= fuelBurnRate) {
-                setBurningFuel(getBurningFuel() - fuelBurnRate);
-                return;
-            }
-            Block fuelHolder = null;
-            for (MovecraftLocation bTest : getHitBox()) {
-                Block b = getW().getBlockAt(bTest.getX(), bTest.getY(), bTest.getZ());
-                //Get all fuel holders
-                if (b.getType() == Material.FURNACE) {
-                    InventoryHolder holder = (InventoryHolder) b.getState();
-                    for (Material fuel : Settings.FuelTypes.keySet()) {
-                        if (holder.getInventory().contains(fuel)) {
-                            fuelHolder = b;
-                            break;
-                        }
+                    @Override
+                    public void run() {
+                        RotationTask task = new RotationTask(craft, originPoint, rotation, craft.getW(), isSubCraft);
+                        task.getUpdates().addAll(EntityProcessor.rotateEntities(craft, originPoint, rotation));
+                        Movecraft.getInstance().getAsyncManager().submitTask(task, craft);
                     }
-                }
-                if (fuelHolder != null) break;
-
-            }
-            if (fuelHolder == null) {
-                getNotificationPlayer().sendMessage(I18nSupport.getInternationalisedString("Translation - Failed Craft out of fuel"));
+                }.runTaskLaterAsynchronously(Movecraft.getInstance(), 8);
                 return;
             }
-            MapUpdateManager.getInstance().scheduleUpdate(new FuelBurnUpdateCommand(this, fuelHolder));
-
         }
+        RotationTask task = new RotationTask(this, originPoint, rotation, this.getW(), isSubCraft);
         task.getUpdates().addAll(EntityProcessor.rotateEntities(this, originPoint, rotation));
         Movecraft.getInstance().getAsyncManager().submitTask(task, this);
     }
+
+    private MoveOnRotate moveUp(Rotation rotation, MovecraftLocation originPoint){
+        HashHitBox newHitBox = new HashHitBox();
+        for (MovecraftLocation origLoc : getHitBox()) {
+            MovecraftLocation newLoc = MathUtils.rotateVec(rotation, origLoc.subtract(originPoint)).add(originPoint);
+            if (getHitBox().contains(newLoc)){
+                continue;
+            }
+            newHitBox.add(newLoc);
+        }
+        for (MovecraftLocation newLoc : newHitBox){
+            Location bukkitLoc = newLoc.toBukkit(getW());
+            Material testObstackle = bukkitLoc.getBlock().getType();
+            if (!testObstackle.equals(Material.AIR) && !getType().getPassthroughBlocks().contains(testObstackle) && !getType().getHarvestBlocks().contains(testObstackle)) {
+                return MoveOnRotate.UP;
+            }
+        }
+        for (MovecraftLocation newLoc : newHitBox){
+            Rotation invertedRotation;
+            if (rotation.equals(Rotation.CLOCKWISE)){
+                invertedRotation = Rotation.ANTICLOCKWISE;
+            } else if (rotation.equals(Rotation.ANTICLOCKWISE)){
+                invertedRotation = Rotation.CLOCKWISE;
+            } else {
+                invertedRotation = rotation;
+            }
+            MovecraftLocation origLoc = MathUtils.rotateVec(invertedRotation , newLoc.subtract(originPoint)).add(originPoint);
+            Location bukkitLoc = newLoc.toBukkit(getW());
+            Material testSurface = bukkitLoc.getBlock().getRelative(0, -1, 0).getType();
+            if (!testSurface.equals(Material.AIR) &&
+                    !getType().getPassthroughBlocks().contains(testSurface) || newLoc.getY() <= getType().getMinHeightLimit()) {
+                if (getType().getHarvestBlocks().contains(testSurface) && getType().getHarvesterBladeBlocks().contains(origLoc.toBukkit(getW()).getBlock().getType())) {
+                    continue;
+                }
+                return MoveOnRotate.NONE;
+            }
+        }
+
+
+
+
+
+        if (getType().getCanHover()){
+            MovecraftLocation bottomPoint = new MovecraftLocation(getHitBox().getMidPoint().getX(), getHitBox().getMinY(), getHitBox().getMidPoint().getZ());
+            MovecraftLocation surface = bottomPoint;
+            while (surface.toBukkit(getW()).getBlock().getRelative(BlockFace.DOWN).getType() == Material.AIR || getType().getPassthroughBlocks().contains(surface.toBukkit(getW()).getBlock().getRelative(BlockFace.DOWN).getType())){
+                surface = surface.translate(0, -1, 0);
+            }
+            int distance = bottomPoint.getY() - surface.getY();
+            if (distance <= getType().getHoverLimit()){
+                return MoveOnRotate.NONE;
+            }
+        }
+        return MoveOnRotate.DOWN;
+    }
+
 
     @Override
     public boolean equals(Object obj) {
@@ -239,4 +274,7 @@ public class ICraft extends Craft {
         return id.hashCode();
     }
 
+    private enum MoveOnRotate{
+        NONE, UP, DOWN
+    }
 }

@@ -1,6 +1,5 @@
 package net.countercraft.movecraft.sign;
 
-import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
@@ -99,9 +98,6 @@ public final class CruiseSign implements Listener{
             sign.update(true);
             CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCruising(false);
         }
-        if (c == null)
-            return;
-        Movecraft.getInstance().getLogger().info("Cruising: " + c.getCruising());
     }
 
     @EventHandler(priority = EventPriority.NORMAL)

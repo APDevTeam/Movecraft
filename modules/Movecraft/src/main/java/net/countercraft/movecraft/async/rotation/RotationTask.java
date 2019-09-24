@@ -237,19 +237,19 @@ public class RotationTask extends AsyncTask {
                 // ship faces west
                 switch (getCraft().getCruiseDirection()) {
                     case WEST:
-                        getCraft().setCruiseDirection(BlockFace.SOUTH);
+                        getCraft().setCruiseDirection(BlockFace.NORTH);
                         break;
                     // ship faces east
                     case EAST:
-                        getCraft().setCruiseDirection(BlockFace.NORTH);
+                        getCraft().setCruiseDirection(BlockFace.SOUTH);
                         break;
                     // ship faces north
                     case NORTH:
-                        getCraft().setCruiseDirection(BlockFace.WEST);
+                        getCraft().setCruiseDirection(BlockFace.EAST);
                         break;
                     // ship faces south
                     case SOUTH:
-                        getCraft().setCruiseDirection(BlockFace.EAST);
+                        getCraft().setCruiseDirection(BlockFace.WEST);
                         break;
                 }
             }
