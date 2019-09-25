@@ -178,25 +178,28 @@ public class ICraft extends Craft {
     public void rotate(Rotation rotation, MovecraftLocation originPoint, boolean isSubCraft) {
         if (getType().getUseGravity()) {
             MoveOnRotate move = moveUp(rotation, originPoint);
-            boolean translated = false;
+            final Craft craft = this;
             if (move.equals(MoveOnRotate.UP)) {
                 translate(0, 1, 0);
-                translated = true;
-            } else if (move.equals(MoveOnRotate.DOWN)) {
-                translate(0, -1, 0);
-                translated = true;
-            }
-            if (translated){
-                final Craft craft = this;
                 new BukkitRunnable(){
-
                     @Override
                     public void run() {
-                        RotationTask task = new RotationTask(craft, originPoint, rotation, craft.getW(), isSubCraft);
+                        RotationTask task = new RotationTask(craft, originPoint, rotation, craft.getW());
                         task.getUpdates().addAll(EntityProcessor.rotateEntities(craft, originPoint, rotation));
                         Movecraft.getInstance().getAsyncManager().submitTask(task, craft);
                     }
-                }.runTaskLaterAsynchronously(Movecraft.getInstance(), 8);
+                }.runTaskLaterAsynchronously(Movecraft.getInstance(), 5);
+                return;
+            } else if (move.equals(MoveOnRotate.DOWN)) {
+                RotationTask task = new RotationTask(craft, originPoint, rotation, craft.getW());
+                task.getUpdates().addAll(EntityProcessor.rotateEntities(craft, originPoint, rotation));
+                Movecraft.getInstance().getAsyncManager().submitTask(task, craft);
+                new BukkitRunnable(){
+                    @Override
+                    public void run() {
+                        translate(0, -1, 0);
+                    }
+                }.runTaskLaterAsynchronously(Movecraft.getInstance(), 5);
                 return;
             }
         }
