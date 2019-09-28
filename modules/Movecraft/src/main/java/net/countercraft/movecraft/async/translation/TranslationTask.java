@@ -92,7 +92,7 @@ public class TranslationTask extends AsyncTask {
             return;
         }
         if (craft.getType().getUseGravity() && !craft.getSinking()){
-            boolean onGround = false;
+            boolean onGround = isOnGround(oldHitBox);
             boolean inclined = inclineCraft(oldHitBox);
             boolean hoverCraft = craft.getType().getCanHover();
             for (MovecraftLocation loc : oldHitBox){
@@ -489,6 +489,22 @@ public class TranslationTask extends AsyncTask {
             }
         }
 
+        return false;
+    }
+
+    private boolean isOnGround(HashHitBox hitBox){
+        for (MovecraftLocation location : hitBox){
+            MovecraftLocation newLoc = location.translate(dx, dy, dz);
+            int minY = hitBox.getMinY() + dy;
+            if (newLoc.getY() > minY){
+                continue;
+            }
+            Location groundLoc = newLoc.translate(0,-1,0).toBukkit(craft.getW());
+            if (groundLoc.getBlock().getType().equals(Material.AIR) || craft.getType().getPassthroughBlocks().contains(groundLoc.getBlock().getType())){
+                continue;
+            }
+            return true;
+        }
         return false;
     }
 
