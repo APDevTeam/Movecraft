@@ -7,11 +7,11 @@ import net.countercraft.movecraft.async.detection.DetectionTask;
 import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.utils.HashHitBox;
 import net.countercraft.movecraft.utils.MathUtils;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
@@ -164,31 +164,38 @@ public class ICraft extends Craft {
     }
 
     private MoveOnRotate moveUp(Rotation rotation, MovecraftLocation originPoint){
+        HashHitBox newHitBox = new HashHitBox();
         for (MovecraftLocation origLoc : getHitBox()) {
             MovecraftLocation newLoc = MathUtils.rotateVec(rotation, origLoc.subtract(originPoint)).add(originPoint);
-            Location bukkitLoc = newLoc.toBukkit(getW());
-            Material testSurface = bukkitLoc.getBlock().getRelative(0, -1, 0).getType();
             if (getHitBox().contains(newLoc)){
                 continue;
             }
-            if (!bukkitLoc.getBlock().getType().equals(Material.AIR) && !getType().getPassthroughBlocks().contains(bukkitLoc.getBlock().getType()) && !getType().getHarvestBlocks().contains(bukkitLoc.getBlock().getType())) {
+            newHitBox.add(newLoc);
+        }
+        for (MovecraftLocation newLoc : newHitBox){
+            Location bukkitLoc = newLoc.toBukkit(getW());
+            Material testObstackle = bukkitLoc.getBlock().getType();
+            if (!testObstackle.equals(Material.AIR) && !getType().getPassthroughBlocks().contains(testObstackle) && !getType().getHarvestBlocks().contains(testObstackle)) {
                 return MoveOnRotate.UP;
             }
-            if (!testSurface.equals(Material.AIR) && !getType().getPassthroughBlocks().contains(testSurface) || newLoc.getY() <= getType().getMinHeightLimit()) {
+        }
+        for (MovecraftLocation newLoc : newHitBox){
+            Rotation invertedRotation;
+            if (rotation.equals(Rotation.CLOCKWISE)){
+                invertedRotation = Rotation.ANTICLOCKWISE;
+            } else if (rotation.equals(Rotation.ANTICLOCKWISE)){
+                invertedRotation = Rotation.CLOCKWISE;
+            } else {
+                invertedRotation = rotation;
+            }
+            MovecraftLocation origLoc = MathUtils.rotateVec(invertedRotation , newLoc.subtract(originPoint)).add(originPoint);
+            Location bukkitLoc = newLoc.toBukkit(getW());
+            Material testSurface = bukkitLoc.getBlock().getRelative(0, -1, 0).getType();
+            if (!testSurface.equals(Material.AIR) &&
+                    !getType().getPassthroughBlocks().contains(testSurface) || newLoc.getY() <= getType().getMinHeightLimit()) {
                 if (getType().getHarvestBlocks().contains(testSurface) && getType().getHarvesterBladeBlocks().contains(origLoc.toBukkit(getW()).getBlock().getType())) {
                     continue;
                 }
-                return MoveOnRotate.NONE;
-            }
-        }
-        if (getType().getCanHover()){
-            MovecraftLocation bottomPoint = new MovecraftLocation(getHitBox().getMidPoint().getX(), getHitBox().getMinY(), getHitBox().getMidPoint().getZ());
-            MovecraftLocation surface = bottomPoint;
-            while (surface.toBukkit(getW()).getBlock().getRelative(BlockFace.DOWN).getType() == Material.AIR || getType().getPassthroughBlocks().contains(surface.toBukkit(getW()).getBlock().getRelative(BlockFace.DOWN).getType())){
-                surface = surface.translate(0, -1, 0);
-            }
-            int distance = bottomPoint.getY() - surface.getY();
-            if (distance <= getType().getHoverLimit()){
                 return MoveOnRotate.NONE;
             }
         }
