@@ -106,7 +106,7 @@ public class ICraft extends Craft {
                     public void run() {
                         Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(craft, originPoint, rotation, craft.getW()), craft);
                     }
-                }.runTaskLaterAsynchronously(Movecraft.getInstance(), 5);
+                }.runTaskLaterAsynchronously(Movecraft.getInstance(), 4);
                 return;
             } else if (move.equals(MoveOnRotate.DOWN)) {
                 Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(craft, originPoint, rotation, craft.getW()), craft);
@@ -115,7 +115,7 @@ public class ICraft extends Craft {
                     public void run() {
                         translate(0, -1, 0);
                     }
-                }.runTaskLaterAsynchronously(Movecraft.getInstance(), 5);
+                }.runTaskLaterAsynchronously(Movecraft.getInstance(), 4);
                 return;
             }
         }
@@ -134,7 +134,7 @@ public class ICraft extends Craft {
                     public void run() {
                         Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(craft, originPoint, rotation, craft.getW()), craft);
                     }
-                }.runTaskLaterAsynchronously(Movecraft.getInstance(), 5);
+                }.runTaskLaterAsynchronously(Movecraft.getInstance(), 4);
                 return;
             } else if (move.equals(MoveOnRotate.DOWN)) {
                 Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(craft, originPoint, rotation, craft.getW()), craft);
@@ -143,7 +143,7 @@ public class ICraft extends Craft {
                     public void run() {
                         translate(0, -1, 0);
                     }
-                }.runTaskLaterAsynchronously(Movecraft.getInstance(), 5);
+                }.runTaskLaterAsynchronously(Movecraft.getInstance(), 4);
                 return;
             }
         }
