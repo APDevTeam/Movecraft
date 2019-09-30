@@ -4,7 +4,10 @@ package net.countercraft.movecraft;
 import com.sk89q.jnbt.CompoundTag;
 import com.sk89q.jnbt.ListTag;
 import com.sk89q.jnbt.Tag;
-import com.sk89q.worldedit.*;
+import com.sk89q.worldedit.MaxChangedBlocksException;
+import com.sk89q.worldedit.Vector;
+import com.sk89q.worldedit.WorldEdit;
+import com.sk89q.worldedit.WorldEditException;
 import com.sk89q.worldedit.blocks.BaseBlock;
 import com.sk89q.worldedit.bukkit.BukkitWorld;
 import com.sk89q.worldedit.extent.Extent;
@@ -24,11 +27,8 @@ import com.sk89q.worldguard.protection.regions.ProtectedPolygonalRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.utils.CollectionUtils;
 import net.countercraft.movecraft.utils.HashHitBox;
-import net.countercraft.movecraft.utils.HitBox;
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.bukkit.Location;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Dispenser;
@@ -81,23 +81,17 @@ public class MovecraftRepair {
         repairName += ".schematic";
         File repairStateFile = new File(playerDirectory, repairName);
         Set<BaseBlock> blockSet = baseBlocksFromCraft(craft);
-        HitBox outsideBlocks = CollectionUtils.filter(solidBlockLocs(craft.getW(), cRegion), craft.getHitBox());//Blocks not part of the craft's hitbox
-        EditSession source = WorldEdit.getInstance().getEditSessionFactory().getEditSession(weWorld, -1);
         BlockArrayClipboard clipboard = new BlockArrayClipboard(cRegion);
         clipboard.setOrigin(origin);
-        ForwardExtentCopy copy = new ForwardExtentCopy(source, cRegion, clipboard.getOrigin(), clipboard, clipboard.getOrigin());
+        Extent source = WorldEdit.getInstance().getEditSessionFactory().getEditSession(weWorld, -1);
+        Extent destination = clipboard;
+        ForwardExtentCopy copy = new ForwardExtentCopy(source, cRegion, clipboard.getOrigin(), destination, clipboard.getOrigin());
         BlockMask mask = new BlockMask(source, blockSet);
         copy.setSourceMask(mask);
 
         try {
             Operations.completeLegacy(copy);
             ClipboardWriter writer = ClipboardFormat.SCHEMATIC.getWriter(new FileOutputStream(repairStateFile, false));
-            //Remove blocks outside a craft's hitbox from the clipboard
-            if (!outsideBlocks.isEmpty()){
-                for (MovecraftLocation ml : outsideBlocks){
-                    clipboard.setBlock(new Vector(ml.getX(), ml.getY(), ml.getZ()), new BaseBlock(0));
-                }
-            }
             writer.write(clipboard, worldData);
             writer.close();
             return true;
