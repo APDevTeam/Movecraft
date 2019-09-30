@@ -35,10 +35,10 @@ public class EntityProcessor {
                 if(craft.getSinking()){
                     continue;
                 }
-                EntityMoveUpdateCommand eUp = new EntityMoveUpdateCommand(entity, dx, dy, dz, 0, 0);
+                EntityMoveUpdateCommand eUp = new EntityMoveUpdateCommand(entity, dx, dy, dz, entity.getLocation().getYaw(), entity.getLocation().getPitch());
                 updateCmds.add(eUp);
             } else if (!craft.getType().getOnlyMovePlayers() || entity.getType() == EntityType.PRIMED_TNT) {
-                EntityMoveUpdateCommand eUp = new EntityMoveUpdateCommand(entity, dx, dy, dz, 0, 0);
+                EntityMoveUpdateCommand eUp = new EntityMoveUpdateCommand(entity, dx, dy, dz,  entity.getLocation().getYaw(), entity.getLocation().getPitch());
                 updateCmds.add(eUp);
             }
         }

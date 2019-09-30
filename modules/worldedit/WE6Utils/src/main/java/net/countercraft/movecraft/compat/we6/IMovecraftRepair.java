@@ -49,12 +49,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class IMovecraftRepair extends MovecraftRepair {
-    private static MovecraftRepair instance;
     private final Plugin plugin;
     private HashMap<String, ArrayDeque<Pair<Vector,Vector>>> locMissingBlocksMap = new HashMap<>();
     private HashMap<String, Long> numDiffBlocksMap = new HashMap<>();
     private HashMap<String, HashMap<Pair<Material, Byte>, Double>> missingBlocksMap = new HashMap<>();
-    private final HashMap<String, Vector> distanceMap = new HashMap<>();
 
     public IMovecraftRepair(Plugin plugin) {
         this.plugin = plugin;

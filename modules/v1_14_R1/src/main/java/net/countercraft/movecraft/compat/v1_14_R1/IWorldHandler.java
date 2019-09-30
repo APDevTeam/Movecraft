@@ -7,15 +7,16 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.utils.CollectionUtils;
 import net.countercraft.movecraft.utils.MathUtils;
-
 import net.minecraft.server.v1_14_R1.*;
-
-import org.bukkit.craftbukkit.v1_14_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_14_R1.block.CraftBlockState;
-import org.bukkit.craftbukkit.v1_14_R1.util.CraftMagicNumbers;
-
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.craftbukkit.v1_14_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_14_R1.block.CraftBlockState;
+import org.bukkit.craftbukkit.v1_14_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_14_R1.util.CraftMagicNumbers;
+import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -246,6 +247,24 @@ public class IWorldHandler extends WorldHandler {
             }
         }
         //sendToPlayers(chunks.toArray(new Chunk[0]));
+    }
+
+    @Override
+    public void addPlayerLocation(Player player, double x, double y, double z, float yaw, float pitch){
+        EntityPlayer ePlayer = ((CraftPlayer) player).getHandle();
+        if(internalTeleportMH == null) {
+            //something went wrong
+            super.addPlayerLocation(player, x, y, z, yaw, pitch);
+            return;
+        }
+        try {
+            final Location oldLoc = player.getLocation().clone();
+            final Location newLoc = player.getLocation().add(x,y,z);
+            internalTeleportMH.invoke(ePlayer.playerConnection, x + player.getLocation().getX(), y + player.getLocation().getY(), z + player.getLocation().getZ(), yaw, pitch, EnumSet.allOf(PacketPlayOutPosition.EnumPlayerTeleportFlags.class));
+            Bukkit.getServer().getPluginManager().callEvent(new PlayerMoveEvent(player,oldLoc,newLoc));
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
     }
 
     @Nullable
