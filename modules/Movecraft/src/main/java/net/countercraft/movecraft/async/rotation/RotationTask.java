@@ -68,7 +68,6 @@ public class RotationTask extends AsyncTask {
 
     private final HashHitBox oldHitBox;
     private final HashHitBox newHitBox;
-    private int dy = 0;
 
     public RotationTask(Craft c, MovecraftLocation originPoint, Rotation rotation, World w, boolean isSubCraft) {
         super(c);

@@ -96,56 +96,66 @@ public class ICraft extends Craft {
                 getNotificationPlayer().sendMessage(I18nSupport.getInternationalisedString("Rotation - Turning Too Quickly"));
             return;
         }
+        setLastRotateTime(System.nanoTime());
         if (getType().getUseGravity()) {
-            MoveOnRotate move = moveUp(rotation, originPoint);
+            final MoveOnRotate move = moveUp(rotation, originPoint);
             final Craft craft = this;
-            if (move.equals(MoveOnRotate.UP)) {
-                translate(0, 1, 0);
-                new BukkitRunnable(){
-                    @Override
-                    public void run() {
-                        Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(craft, originPoint, rotation, craft.getW()), craft);
-                    }
-                }.runTaskLaterAsynchronously(Movecraft.getInstance(), 4);
-                return;
-            } else if (move.equals(MoveOnRotate.DOWN)) {
-                Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(craft, originPoint, rotation, craft.getW()), craft);
-                new BukkitRunnable(){
-                    @Override
-                    public void run() {
-                        translate(0, -1, 0);
-                    }
-                }.runTaskLaterAsynchronously(Movecraft.getInstance(), 4);
-                return;
+            switch (move){
+                case UP:
+                    translate(0, 1, 0);
+                    break;
+                case DOWN:
+                    Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(craft, originPoint, rotation, craft.getW()), craft);
+                    break;
             }
+            new BukkitRunnable(){
+                @Override
+                public void run() {
+                    switch (move){
+                        case DOWN:
+                            translate(0, -1, 0);
+                            break;
+                        case UP:
+                            Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(craft, originPoint, rotation, craft.getW()), craft);
+                            break;
+                    }
+
+                }
+            }.runTaskLaterAsynchronously(Movecraft.getInstance(), 4);
+            return;
         }
+
         Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(this, originPoint, rotation, this.getW()), this);
     }
 
     @Override
     public void rotate(Rotation rotation, MovecraftLocation originPoint, boolean isSubCraft) {
         if (getType().getUseGravity()) {
-            MoveOnRotate move = moveUp(rotation, originPoint);
+            final MoveOnRotate move = moveUp(rotation, originPoint);
             final Craft craft = this;
-            if (move.equals(MoveOnRotate.UP)) {
-                translate(0, 1, 0);
-                new BukkitRunnable(){
-                    @Override
-                    public void run() {
-                        Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(craft, originPoint, rotation, craft.getW()), craft);
-                    }
-                }.runTaskLaterAsynchronously(Movecraft.getInstance(), 4);
-                return;
-            } else if (move.equals(MoveOnRotate.DOWN)) {
-                Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(craft, originPoint, rotation, craft.getW()), craft);
-                new BukkitRunnable(){
-                    @Override
-                    public void run() {
-                        translate(0, -1, 0);
-                    }
-                }.runTaskLaterAsynchronously(Movecraft.getInstance(), 4);
-                return;
+            switch (move){
+                case UP:
+                    translate(0, 1, 0);
+                    break;
+                case DOWN:
+                    Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(craft, originPoint, rotation, craft.getW()), craft);
+                    break;
             }
+            new BukkitRunnable(){
+                @Override
+                public void run() {
+                    switch (move){
+                        case DOWN:
+                            translate(0, -1, 0);
+                            break;
+                        case UP:
+                            Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(craft, originPoint, rotation, craft.getW()), craft);
+                            break;
+                    }
+
+                }
+            }.runTaskLaterAsynchronously(Movecraft.getInstance(), 4);
+            return;
         }
         Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(this, originPoint, rotation, this.getW(), isSubCraft), this);
     }
