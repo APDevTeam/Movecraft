@@ -97,8 +97,8 @@ public class ICraft extends Craft {
             return;
         }
         setLastRotateTime(System.nanoTime());
-        @NotNull final MoveOnRotate move = moveUp(rotation, originPoint);
-        if (getType().getUseGravity() && move != MoveOnRotate.NONE) {
+        @NotNull final MoveOnRotate move = getMoveOnRotate(rotation, originPoint);
+        if (move != MoveOnRotate.NONE) {
             @NotNull final Craft craft = this;
             BukkitRunnable runnable = null;
             switch (move){
@@ -131,8 +131,8 @@ public class ICraft extends Craft {
 
     @Override
     public void rotate(Rotation rotation, MovecraftLocation originPoint, boolean isSubCraft) {
-        @NotNull final MoveOnRotate move = moveUp(rotation, originPoint);
-        if (getType().getUseGravity() && move != MoveOnRotate.NONE) {
+        @NotNull final MoveOnRotate move = getMoveOnRotate(rotation, originPoint);
+        if (move != MoveOnRotate.NONE) {
             @NotNull final Craft craft = this;
             BukkitRunnable runnable = null;
             switch (move){
@@ -175,8 +175,11 @@ public class ICraft extends Craft {
         return id.hashCode();
     }
 
-    private MoveOnRotate moveUp(Rotation rotation, MovecraftLocation originPoint){
+    private MoveOnRotate getMoveOnRotate(Rotation rotation, MovecraftLocation originPoint){
         HashHitBox newHitBox = new HashHitBox();
+        if (!getType().getUseGravity()){
+            return MoveOnRotate.NONE;
+        }
         for (MovecraftLocation origLoc : getHitBox()) {
             MovecraftLocation newLoc = MathUtils.rotateVec(rotation, origLoc.subtract(originPoint)).add(originPoint);
             if (getHitBox().contains(newLoc)){
