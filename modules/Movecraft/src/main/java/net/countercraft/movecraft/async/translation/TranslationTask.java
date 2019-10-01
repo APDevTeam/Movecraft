@@ -18,10 +18,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
-import org.bukkit.block.Chest;
-import org.bukkit.block.Furnace;
+import org.bukkit.block.*;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -504,19 +501,28 @@ public class TranslationTask extends AsyncTask {
                 }
             }
             //get contents of inventories before deposting
-            if (block.getState() instanceof InventoryHolder) {
-                if (block.getState() instanceof Chest) {
-                    drops.addAll(Arrays.asList(((Chest) block.getState()).getBlockInventory().getContents()));
-                } else {
-                    drops.addAll(Arrays.asList((((InventoryHolder) block.getState()).getInventory().getContents())));
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    if (block.getState() instanceof InventoryHolder) {
+                        if (block.getState() instanceof Chest) {
+                            drops.addAll(Arrays.asList(((Chest) block.getState()).getBlockInventory().getContents()));
+                        } else if (block.getState() instanceof Barrel){
+                            drops.addAll(Arrays.asList(((Barrel) block.getState()).getInventory().getContents()));
+                        }
+                        else {
+                            drops.addAll(Arrays.asList((((InventoryHolder) block.getState()).getInventory().getContents())));
+                        }
+                    }
+                    for (ItemStack drop : drops) {
+                        ItemStack retStack = putInToChests(drop, chests);
+                        if (retStack != null)
+                            //drop items on position
+                            updates.add(new ItemDropUpdateCommand(new Location(craft.getW(), harvestedBlock.getX(), harvestedBlock.getY(), harvestedBlock.getZ()), retStack));
+                    }
                 }
-            }
-            for (ItemStack drop : drops) {
-                ItemStack retStack = putInToChests(drop, chests);
-                if (retStack != null)
-                    //drop items on position
-                    updates.add(new ItemDropUpdateCommand(new Location(craft.getW(), harvestedBlock.getX(), harvestedBlock.getY(), harvestedBlock.getZ()), retStack));
-            }
+            }.runTask(Movecraft.getInstance());
+
         }
     }
 
