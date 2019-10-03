@@ -53,6 +53,7 @@ public abstract class Craft {
     private long lastCruiseUpdate;
     private long lastBlockCheck;
     private long lastRotateTime=0;
+    private long lastGravityOnRotateTime=0;
     private long origPilotTime;
     private int lastDX, lastDY, lastDZ;
     private double burningFuel;
@@ -345,6 +346,14 @@ public abstract class Craft {
 
     public void setLastRotateTime(long lastRotateTime) {
         this.lastRotateTime = lastRotateTime;
+    }
+
+    public long getLastGravityOnRotateTime() {
+        return lastGravityOnRotateTime;
+    }
+
+    public void setLastGravityOnRotateTime(long lastGravityOnRotateTime) {
+        this.lastGravityOnRotateTime = lastGravityOnRotateTime;
     }
 
     public int getWaterLine(){

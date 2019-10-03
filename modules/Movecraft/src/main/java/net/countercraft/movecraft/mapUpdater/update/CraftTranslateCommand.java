@@ -13,6 +13,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.logging.Logger;
@@ -20,11 +21,21 @@ import java.util.logging.Logger;
 public class CraftTranslateCommand extends UpdateCommand {
     @NotNull private final Craft craft;
     @NotNull private final MovecraftLocation displacement;
+    @Nullable private final HashHitBox newHitBox;
 
     public CraftTranslateCommand(@NotNull Craft craft, @NotNull MovecraftLocation displacement){
         this.craft = craft;
         this.displacement = displacement;
+        this.newHitBox = null;
     }
+
+    public CraftTranslateCommand(@NotNull Craft craft, @NotNull MovecraftLocation displacement, @NotNull HashHitBox newHitBox){
+        this.craft = craft;
+        this.displacement = displacement;
+        this.newHitBox = newHitBox;
+    }
+
+
 
     @Override
     public void doUpdate() {
@@ -168,7 +179,10 @@ public class CraftTranslateCommand extends UpdateCommand {
                 }
             }
         }
-
+        //Update hitbox if new hitbox is not null
+        if (newHitBox != null){
+            craft.setHitBox(newHitBox);
+        }
         if (!craft.isNotProcessing())
             craft.setProcessing(false);
         time = System.nanoTime() - time;

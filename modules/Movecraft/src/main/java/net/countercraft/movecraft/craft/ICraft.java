@@ -7,13 +7,8 @@ import net.countercraft.movecraft.async.detection.DetectionTask;
 import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.utils.HashHitBox;
-import net.countercraft.movecraft.utils.MathUtils;
-import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
@@ -97,68 +92,11 @@ public class ICraft extends Craft {
             return;
         }
         setLastRotateTime(System.nanoTime());
-        @NotNull final MoveOnRotate move = getMoveOnRotate(rotation, originPoint);
-        if (move != MoveOnRotate.NONE) {
-            @NotNull final Craft craft = this;
-            BukkitRunnable runnable = null;
-            switch (move){
-                case UP:
-                    translate(0, 1, 0);
-                    runnable = new BukkitRunnable() {
-                        @Override
-                        public void run() {
-                            Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(craft, originPoint, rotation, craft.getW()), craft);
-                        }
-                    };
-                    break;
-                case DOWN:
-                    Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(craft, originPoint, rotation, craft.getW()), craft);
-                    runnable = new BukkitRunnable() {
-                        @Override
-                        public void run() {
-                            translate(0,-1,0);
-                        }
-                    };
-                    break;
-            }
-            assert runnable != null;
-            runnable.runTaskLaterAsynchronously(Movecraft.getInstance(), 2);
-            return;
-        }
-
         Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(this, originPoint, rotation, this.getW()), this);
     }
 
     @Override
     public void rotate(Rotation rotation, MovecraftLocation originPoint, boolean isSubCraft) {
-        @NotNull final MoveOnRotate move = getMoveOnRotate(rotation, originPoint);
-        if (move != MoveOnRotate.NONE) {
-            @NotNull final Craft craft = this;
-            BukkitRunnable runnable = null;
-            switch (move){
-                case UP:
-                    translate(0, 1, 0);
-                    runnable = new BukkitRunnable() {
-                        @Override
-                        public void run() {
-                            Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(craft, originPoint, rotation, craft.getW()), craft);
-                        }
-                    };
-                    break;
-                case DOWN:
-                    Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(craft, originPoint, rotation, craft.getW()), craft);
-                    runnable = new BukkitRunnable() {
-                        @Override
-                        public void run() {
-                            translate(0,-1,0);
-                        }
-                    };
-                    break;
-            }
-            assert runnable != null;
-            runnable.runTaskLaterAsynchronously(Movecraft.getInstance(), 2);
-            return;
-        }
         Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(this, originPoint, rotation, this.getW(), isSubCraft), this);
     }
 
@@ -175,49 +113,4 @@ public class ICraft extends Craft {
         return id.hashCode();
     }
 
-    private MoveOnRotate getMoveOnRotate(Rotation rotation, MovecraftLocation originPoint){
-        HashHitBox newHitBox = new HashHitBox();
-        if (!getType().getUseGravity()){
-            return MoveOnRotate.NONE;
-        }
-        for (MovecraftLocation origLoc : getHitBox()) {
-            MovecraftLocation newLoc = MathUtils.rotateVec(rotation, origLoc.subtract(originPoint)).add(originPoint);
-            if (getHitBox().contains(newLoc)){
-                continue;
-            }
-            newHitBox.add(newLoc);
-        }
-        for (MovecraftLocation newLoc : newHitBox){
-            Location bukkitLoc = newLoc.toBukkit(getW());
-            Material testObstackle = bukkitLoc.getBlock().getType();
-            if (!testObstackle.equals(Material.AIR) && !getType().getPassthroughBlocks().contains(testObstackle) && !getType().getHarvestBlocks().contains(testObstackle)) {
-                return MoveOnRotate.UP;
-            }
-        }
-        for (MovecraftLocation newLoc : newHitBox){
-            Rotation invertedRotation;
-            if (rotation.equals(Rotation.CLOCKWISE)){
-                invertedRotation = Rotation.ANTICLOCKWISE;
-            } else if (rotation.equals(Rotation.ANTICLOCKWISE)){
-                invertedRotation = Rotation.CLOCKWISE;
-            } else {
-                invertedRotation = rotation;
-            }
-            MovecraftLocation origLoc = MathUtils.rotateVec(invertedRotation , newLoc.subtract(originPoint)).add(originPoint);
-            Location bukkitLoc = newLoc.toBukkit(getW());
-            Material testType = bukkitLoc.getBlock().getRelative(0, -1, 0).getType();
-            if (!testType.equals(Material.AIR) &&
-                    !getType().getPassthroughBlocks().contains(testType) || newLoc.getY() <= getType().getMinHeightLimit()) {
-                if (getType().getHarvestBlocks().contains(testType) && getType().getHarvesterBladeBlocks().contains(origLoc.toBukkit(getW()).getBlock().getType())) {
-                    continue;
-                }
-                return MoveOnRotate.NONE;
-            }
-        }
-        return MoveOnRotate.DOWN;
-    }
-
-    private enum MoveOnRotate{
-        NONE, UP, DOWN
-    }
 }
