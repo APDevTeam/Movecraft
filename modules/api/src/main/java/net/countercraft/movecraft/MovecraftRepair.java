@@ -82,7 +82,6 @@ public class MovecraftRepair {
         File repairStateFile = new File(playerDirectory, repairName);
         Set<BaseBlock> blockSet = baseBlocksFromCraft(craft);
 
-
         try {
             BlockArrayClipboard clipboard = new BlockArrayClipboard(cRegion);
             clipboard.setOrigin(origin);
