@@ -503,8 +503,6 @@ public class TranslationTask extends AsyncTask {
             }
             translatedBottomLocsInAir = false;
         }
-        Bukkit.broadcastMessage("Bottom locs on ground: " + bottomLocsOnGround);
-        Bukkit.broadcastMessage("translated Bottom Locs In Air: " + translatedBottomLocsInAir);
         if (dy > 0){
             return bottomLocsOnGround && translatedBottomLocsInAir;
         }
