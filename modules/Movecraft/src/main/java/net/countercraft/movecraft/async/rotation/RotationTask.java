@@ -45,9 +45,8 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.LinkedList;
+import java.util.HashSet;
 import java.util.Set;
 
 public class RotationTask extends AsyncTask {
@@ -58,7 +57,7 @@ public class RotationTask extends AsyncTask {
     private boolean failed = false;
     private String failMessage;
     //private final MovecraftLocation[] blockList;    // used to be final, not sure why. Changed by Mark / Loraxe42
-    private LinkedList<UpdateCommand> updates = new LinkedList<>();
+    private Set<UpdateCommand> updates = new HashSet<>();
     //private int[][][] hitbox;
     //private Integer minX, minZ;
 
@@ -69,8 +68,6 @@ public class RotationTask extends AsyncTask {
 
     private final HashHitBox oldHitBox;
     private final HashHitBox newHitBox;
-
-    private boolean processingGravity = false;
 
     public RotationTask(Craft c, MovecraftLocation originPoint, Rotation rotation, World w, boolean isSubCraft) {
         super(c);
@@ -142,7 +139,6 @@ public class RotationTask extends AsyncTask {
                 getCraft().setBurningFuel(getCraft().getBurningFuel() - fuelBurnRate);
             }
         }
-
         // if a subcraft, find the parent craft. If not a subcraft, it is it's own parent
         Set<Craft> craftsInWorld = CraftManager.getInstance().getCraftsInWorld(getCraft().getW());
         Craft parentCraft = getCraft();
@@ -152,7 +148,7 @@ public class RotationTask extends AsyncTask {
                 break;
             }
         }
-        boolean moveUp = false;
+
         for(MovecraftLocation originalLocation : oldHitBox){
             MovecraftLocation newLocation = MathUtils.rotateVec(rotation,originalLocation.subtract(originPoint)).add(originPoint);
             newHitBox.add(newLocation);
@@ -185,14 +181,6 @@ public class RotationTask extends AsyncTask {
                 //getCraft().getPhaseBlocks().put(newLocation, newMaterial);
                 continue;
             }
-            newMaterial = newLocation.translate(0, 1, 0).toBukkit(w).getBlock().getType();
-            if (craft.getType().getUseGravity() && (newMaterial == Material.AIR || newMaterial == Material.PISTON_EXTENSION) || craft.getType().getPassthroughBlocks().contains(newMaterial)){
-                if (!oldHitBox.contains(newLocation) && newLocation.getY() == newHitBox.getMinY()){
-                    moveUp = true;
-                }
-
-                continue;
-            }
 
             if (!oldHitBox.contains(newLocation)) {
                 failed = true;
@@ -207,59 +195,6 @@ public class RotationTask extends AsyncTask {
             }
             return;
         }
-        boolean moveDown = true;
-
-        for (MovecraftLocation ml : newHitBox){
-            if (ml.getY() > newHitBox.getMinY()){
-                continue;
-            }
-            Material typeUnder = ml.translate(0, -1, 0).toBukkit(w).getBlock().getType();
-
-            if (typeUnder != Material.AIR && !craft.getType().getPassthroughBlocks().contains(typeUnder)){
-                moveDown = false;
-            }
-        }
-        if (craft.getType().getCanHover() && craft.getType().getHoverLimit() > 0){
-            MovecraftLocation midPoint = newHitBox.getMidPoint();
-            int centreMinY = newHitBox.getLocalMinY(midPoint.getX(), midPoint.getZ());
-            int groundY = centreMinY;
-            while (w.getBlockAt(midPoint.getX(), groundY - 1, midPoint.getZ()).getType() == Material.AIR || craft.getType().getPassthroughBlocks().contains(w.getBlockAt(midPoint.getX(), groundY - 1, midPoint.getZ()).getType())){
-                groundY--;
-            }
-            //Don't move down if height is within hover limit
-            if (centreMinY - groundY <= craft.getType().getHoverLimit() && moveDown){
-                moveDown = false;
-            }
-        }
-        //Don't process gravity on the second movement processing
-        if (craft.getLastGravityOnRotateTime() + 1e9 > System.nanoTime()){
-            moveDown = false;
-            moveUp = false;
-        }
-        processingGravity = moveUp;
-        if (moveUp || moveDown){
-            if (!craft.isNotProcessing()){
-                craft.setProcessing(false);
-            }
-            craft.setLastGravityOnRotateTime(System.nanoTime());
-            final boolean upward = moveUp;
-            new BukkitRunnable(){
-
-                @Override
-                public void run() {
-                    if (upward){
-                        craft.rotate(rotation, originPoint, false);
-                    } else {
-                        craft.translate(0, -1, 0);
-                    }
-                }
-            }.runTaskLaterAsynchronously(Movecraft.getInstance(), 2);
-            if (moveUp){
-                craft.translate(0, 1, 0);
-                return;
-            }
-
-        }
         //call event
         CraftRotateEvent event = new CraftRotateEvent(craft, oldHitBox, newHitBox);
         Bukkit.getServer().getPluginManager().callEvent(event);
@@ -268,8 +203,9 @@ public class RotationTask extends AsyncTask {
             failMessage = event.getFailMessage();
             return;
         }
-        updates.add(new CraftRotateCommand(getCraft(),originPoint, rotation));
 
+
+        updates.add(new CraftRotateCommand(getCraft(),originPoint, rotation));
         //rotate entities in the craft
         Location tOP = new Location(getCraft().getW(), originPoint.getX(), originPoint.getY(), originPoint.getZ());
         tOP.setX(tOP.getBlockX() + 0.5);
@@ -388,7 +324,6 @@ public class RotationTask extends AsyncTask {
 
     }
 
-
     private static HitBox rotateHitBox(HitBox hitBox, MovecraftLocation originPoint, Rotation rotation){
         MutableHitBox output = new HashHitBox();
         for(MovecraftLocation location : hitBox){
@@ -408,7 +343,7 @@ public class RotationTask extends AsyncTask {
         return failMessage;
     }
 
-    public LinkedList<UpdateCommand> getUpdates() {
+    public Set<UpdateCommand> getUpdates() {
         return updates;
     }
 
@@ -418,10 +353,6 @@ public class RotationTask extends AsyncTask {
 
     public boolean getIsSubCraft() {
         return isSubCraft;
-    }
-
-    public boolean isProcessingGravity() {
-        return processingGravity;
     }
 
     private void isTownyBlock(Location plugLoc, Player craftPilot){
@@ -514,3 +445,4 @@ public class RotationTask extends AsyncTask {
         return newHitBox;
     }
 }
+
