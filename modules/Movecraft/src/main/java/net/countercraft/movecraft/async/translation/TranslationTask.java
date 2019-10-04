@@ -170,7 +170,7 @@ public class TranslationTask extends AsyncTask {
                 test = test.translate(0, -1, 0);
             }
             Material testType = test.toBukkit(craft.getW()).getBlock().getType();
-            if (!craft.getType().getPassthroughBlocks().contains(testType)){
+            if (craft.getType().getPassthroughBlocks().contains(testType)){
                 fail(String.format(I18nSupport.getInternationalisedString("Translation - Failed Craft over passthrough block"), testType.name().toLowerCase().replace("_", " ")));
             }
         }
@@ -463,23 +463,52 @@ public class TranslationTask extends AsyncTask {
     }
 
     private boolean isOnGround(HashHitBox hitBox){
+        MutableHitBox bottomLocs = new HashHitBox();
+        MutableHitBox translatedBottomLocs = new HashHitBox();
         for (MovecraftLocation location : hitBox){
-            MovecraftLocation newLoc = location.translate(dx, dy, dz);
-            int minY = hitBox.getMinY() + dy;
-            if (newLoc.getY() > minY){
+            MovecraftLocation beneath = location.translate(0, -1, 0);
+            //If the hitbox contains the location beneath this one, continue the loop
+            if (hitBox.contains(beneath)){
+                    continue;
+            }
+            //If not, check if it is an exterior location
+            int y;
+            for (y = beneath.getY() ; y >= hitBox.getMinY() ; y--){
+                if (hitBox.contains(beneath.getX(), y, beneath.getZ())){
+                    break;
+                }
+            }
+            //Continue if the shift was an interior location
+            if (y > hitBox.getMinY()){
                 continue;
             }
-            MovecraftLocation groundLoc = newLoc.translate(0,-1,0);
-            if (hitBox.contains(groundLoc)){
-                continue;
-            }
-            Location bGroundLoc = groundLoc.toBukkit(craft.getW());
-            if (bGroundLoc.getBlock().getType().equals(Material.AIR) || craft.getType().getPassthroughBlocks().contains(bGroundLoc.getBlock().getType())){
-                continue;
-            }
-            return true;
+            //Otherwise, add to bottom locations
+            bottomLocs.add(location);
         }
-        return false;
+        boolean bottomLocsOnGround = false;
+        for (MovecraftLocation bottomLoc : bottomLocs){
+            translatedBottomLocs.add(bottomLoc.translate(dx, dy, dz));
+            Material testType = bottomLoc.translate(0, -1, 0).toBukkit(craft.getW()).getBlock().getType();
+            //If the lowest part of the bottom locs touch the ground, return true anyways
+            if (testType != Material.AIR && !craft.getType().getPassthroughBlocks().contains(testType)){
+                bottomLocsOnGround = true;
+            }
+        }
+        boolean translatedBottomLocsInAir = true;
+        for (MovecraftLocation translatedBottomLoc : translatedBottomLocs){
+            MovecraftLocation beneath = translatedBottomLoc.translate(0, -1, 0);
+            Material testType = beneath.toBukkit(craft.getW()).getBlock().getType();
+            if (bottomLocs.contains(beneath) || testType == Material.AIR || craft.getType().getPassthroughBlocks().contains(testType)){
+                continue;
+            }
+            translatedBottomLocsInAir = false;
+        }
+        Bukkit.broadcastMessage("Bottom locs on ground: " + bottomLocsOnGround);
+        Bukkit.broadcastMessage("translated Bottom Locs In Air: " + translatedBottomLocsInAir);
+        if (dy > 0){
+            return bottomLocsOnGround && translatedBottomLocsInAir;
+        }
+        return !translatedBottomLocsInAir;
     }
 
     public boolean failed(){

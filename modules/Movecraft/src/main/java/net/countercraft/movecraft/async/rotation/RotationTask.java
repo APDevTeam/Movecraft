@@ -235,17 +235,12 @@ public class RotationTask extends AsyncTask {
             moveDown = false;
             moveUp = false;
         }
-        processingGravity = moveDown || moveUp;
+        processingGravity = moveUp;
         if (moveUp || moveDown){
             if (!craft.isNotProcessing()){
                 craft.setProcessing(false);
             }
             craft.setLastGravityOnRotateTime(System.nanoTime());
-            if (moveUp){
-                craft.translate(0, 1, 0);
-            } else {
-                craft.rotate(rotation, originPoint, false);
-            }
             final boolean upward = moveUp;
             new BukkitRunnable(){
 
@@ -254,11 +249,15 @@ public class RotationTask extends AsyncTask {
                     if (upward){
                         craft.rotate(rotation, originPoint, false);
                     } else {
-                        craft.translate(0, 1, 0);
+                        craft.translate(0, -1, 0);
                     }
                 }
             }.runTaskLaterAsynchronously(Movecraft.getInstance(), 2);
-            return;
+            if (moveUp){
+                craft.translate(0, 1, 0);
+                return;
+            }
+
         }
         //call event
         CraftRotateEvent event = new CraftRotateEvent(craft, oldHitBox, newHitBox);
