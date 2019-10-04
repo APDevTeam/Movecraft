@@ -169,8 +169,9 @@ public class TranslationTask extends AsyncTask {
             while (test.toBukkit(craft.getW()).getBlock().getType().equals(Material.AIR) || craft.getType().getPassthroughBlocks().contains(test.toBukkit(craft.getW()).getBlock().getType())){
                 test = test.translate(0, -1, 0);
             }
-            if (test.toBukkit(craft.getW()).getBlock().getType().equals(Material.STATIONARY_WATER) || test.toBukkit(craft.getW()).getBlock().getType().equals(Material.WATER) ){
-                fail(I18nSupport.getInternationalisedString("Translation - Failed Craft over water"));
+            Material testType = test.toBukkit(craft.getW()).getBlock().getType();
+            if (!craft.getType().getPassthroughBlocks().contains(testType)){
+                fail(String.format(I18nSupport.getInternationalisedString("Translation - Failed Craft over passthrough block"), testType.name().toLowerCase().replace("_", " ")));
             }
         }
         //call event
