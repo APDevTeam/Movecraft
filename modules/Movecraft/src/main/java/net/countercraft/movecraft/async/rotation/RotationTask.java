@@ -226,6 +226,7 @@ public class RotationTask extends AsyncTask {
             while (w.getBlockAt(midPoint.getX(), groundY - 1, midPoint.getZ()).getType() == Material.AIR || craft.getType().getPassthroughBlocks().contains(w.getBlockAt(midPoint.getX(), groundY - 1, midPoint.getZ()).getType())){
                 groundY--;
             }
+            //Don't move down if height is within hover limit
             if (centreMinY - groundY <= craft.getType().getHoverLimit() && moveDown){
                 moveDown = false;
             }
