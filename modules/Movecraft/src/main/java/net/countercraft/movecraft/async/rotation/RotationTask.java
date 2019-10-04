@@ -236,32 +236,26 @@ public class RotationTask extends AsyncTask {
             moveUp = false;
         }
         processingGravity = moveDown || moveUp;
-        if (moveUp){
+        if (moveUp || moveDown){
             if (!craft.isNotProcessing()){
                 craft.setProcessing(false);
             }
             craft.setLastGravityOnRotateTime(System.nanoTime());
-            craft.translate(0, 1, 0);
-            new BukkitRunnable(){
-
-                @Override
-                public void run() {
-                    craft.rotate(rotation, originPoint, false);
-                }
-            }.runTaskLaterAsynchronously(Movecraft.getInstance(), 2);
-            return;
-        }
-        else if (moveDown){
-            if (!craft.isNotProcessing()){
-                craft.setProcessing(false);
+            if (moveUp){
+                craft.translate(0, 1, 0);
+            } else {
+                craft.rotate(rotation, originPoint, false);
             }
-            craft.setLastGravityOnRotateTime(System.nanoTime());
-            craft.rotate(rotation, originPoint, false);
+            final boolean upward = moveUp;
             new BukkitRunnable(){
+
                 @Override
                 public void run() {
-                    craft.translate(0, -1, 0);
-
+                    if (upward){
+                        craft.rotate(rotation, originPoint, false);
+                    } else {
+                        craft.translate(0, 1, 0);
+                    }
                 }
             }.runTaskLaterAsynchronously(Movecraft.getInstance(), 2);
             return;
