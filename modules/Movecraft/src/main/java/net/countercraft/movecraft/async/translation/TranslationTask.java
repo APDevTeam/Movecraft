@@ -164,9 +164,9 @@ public class TranslationTask extends AsyncTask {
         }
 
         if (!craft.getType().getCanHoverOverWater()){
-            MovecraftLocation test = new MovecraftLocation(oldHitBox.getMidPoint().getX(), oldHitBox.getMinY(), oldHitBox.getMidPoint().getZ()).translate(dx, dy, dz);
+            MovecraftLocation test = new MovecraftLocation(newHitBox.getMidPoint().getX(), newHitBox.getMinY(), newHitBox.getMidPoint().getZ());
             test = test.translate(0, -1, 0);
-            while (test.toBukkit(craft.getW()).getBlock().getType().equals(Material.AIR) || craft.getType().getPassthroughBlocks().contains(test.toBukkit(craft.getW()).getBlock().getType())){
+            while (test.toBukkit(craft.getW()).getBlock().getType() == Material.AIR){
                 test = test.translate(0, -1, 0);
             }
             Material testType = test.toBukkit(craft.getW()).getBlock().getType();
@@ -502,6 +502,7 @@ public class TranslationTask extends AsyncTask {
                 continue;
             }
             translatedBottomLocsInAir = false;
+            break;
         }
         if (dy > 0){
             return bottomLocsOnGround && translatedBottomLocsInAir;
