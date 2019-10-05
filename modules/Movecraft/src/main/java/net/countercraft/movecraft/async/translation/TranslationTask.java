@@ -202,11 +202,11 @@ public class TranslationTask extends AsyncTask {
                     }
                 }
                 List<MovecraftLocation> toRemove = new ArrayList<>();
-                MovecraftLocation next = location;
-                do {
+                MovecraftLocation next = location.translate(-dx,-dy,-dz);
+                while(oldHitBox.contains(next)) {
                     toRemove.add(next);
-                    next = next.add(new MovecraftLocation(0,1,0));
-                }while (newHitBox.contains(next));
+                    next = next.translate(0,1,0);
+                }
                 craft.getCollapsedHitBox().addAll(toRemove);
                 newHitBox.removeAll(toRemove);
             }

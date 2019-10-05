@@ -33,6 +33,8 @@ import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
+import net.countercraft.movecraft.mapUpdater.update.BlockCreateCommand;
+import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import net.countercraft.movecraft.utils.CollectionUtils;
 import net.countercraft.movecraft.utils.HashHitBox;
 import net.countercraft.movecraft.utils.HitBox;
@@ -855,9 +857,12 @@ public class AsyncManager extends BukkitRunnable {
             final HitBox hitBox = entry.getKey();
             final Map<MovecraftLocation, Material> phaseBlocks = wreckPhases.get(hitBox);
             final World world = wreckWorlds.get(hitBox);
+            ArrayList<UpdateCommand> commands = new ArrayList<>();
             for (MovecraftLocation location : hitBox){
-                handler.setBlockFast(location.toBukkit(world), phaseBlocks.getOrDefault(location, Material.AIR),(byte) 0);
+                commands.add(new BlockCreateCommand(world, location, phaseBlocks.getOrDefault(location, Material.AIR)));
+                
             }
+            MapUpdateManager.getInstance().scheduleUpdates(commands);
             processed.add(hitBox);
         }
         for(HitBox hitBox : processed){
