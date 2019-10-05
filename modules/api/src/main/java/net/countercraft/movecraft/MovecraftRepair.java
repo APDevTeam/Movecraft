@@ -27,7 +27,9 @@ import com.sk89q.worldguard.protection.regions.ProtectedPolygonalRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.utils.CollectionUtils;
 import net.countercraft.movecraft.utils.HashHitBox;
+import net.countercraft.movecraft.utils.HitBox;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -81,16 +83,18 @@ public class MovecraftRepair {
         repairName += ".schematic";
         File repairStateFile = new File(playerDirectory, repairName);
         Set<BaseBlock> blockSet = baseBlocksFromCraft(craft);
-
+        HitBox outsideLocs = CollectionUtils.filter(solidBlockLocs(craft.getW(), cRegion), craft.getHitBox());
         try {
             BlockArrayClipboard clipboard = new BlockArrayClipboard(cRegion);
             clipboard.setOrigin(origin);
             Extent source = WorldEdit.getInstance().getEditSessionFactory().getEditSession(weWorld, -1);
-            Extent destination = clipboard;
-            ForwardExtentCopy copy = new ForwardExtentCopy(source, cRegion, clipboard.getOrigin(), destination, clipboard.getOrigin());
+            ForwardExtentCopy copy = new ForwardExtentCopy(source, cRegion, clipboard.getOrigin(), clipboard, clipboard.getOrigin());
             BlockMask mask = new BlockMask(source, blockSet);
             copy.setSourceMask(mask);
             Operations.completeLegacy(copy);
+            for (MovecraftLocation outsideLoc : outsideLocs){
+                clipboard.setBlock(new Vector(outsideLoc.getX(), outsideLoc.getY(), outsideLoc.getZ()), new BaseBlock(0));
+            }
             ClipboardWriter writer = ClipboardFormat.SCHEMATIC.getWriter(new FileOutputStream(repairStateFile, false));
             writer.write(clipboard, worldData);
             writer.close();
