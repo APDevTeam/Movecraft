@@ -11,10 +11,7 @@ import net.countercraft.movecraft.mapUpdater.update.*;
 import net.countercraft.movecraft.utils.HashHitBox;
 import net.countercraft.movecraft.utils.HitBox;
 import net.countercraft.movecraft.utils.MutableHitBox;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Sound;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.entity.Entity;
@@ -67,7 +64,7 @@ public class TranslationTask extends AsyncTask {
             final MovecraftLocation middle = oldHitBox.getMidPoint();
             int testY = minY;
             while (testY > 0){
-                testY -= 1;
+                testY--;
                 if (craft.getW().getBlockTypeIdAt(middle.getX(),testY,middle.getZ()) != 0)
                     break;
             }
@@ -89,6 +86,24 @@ public class TranslationTask extends AsyncTask {
         if (!checkFuel()) {
             fail(I18nSupport.getInternationalisedString("Translation - Failed Craft out of fuel"));
             return;
+        }
+        if (craft.getType().getUseGravity() && !craft.getSinking()){
+            if (inclineCraft(oldHitBox)){
+                dy = 1;
+            } else if (!isOnGround(oldHitBox) && craft.getType().getCanHover()){
+                MovecraftLocation midPoint = oldHitBox.getMidPoint();
+                int centreMinY = oldHitBox.getLocalMinY(midPoint.getX(), midPoint.getZ());
+                int groundY = centreMinY;
+                World w = craft.getW();
+                while (w.getBlockAt(midPoint.getX(), groundY - 1, midPoint.getZ()).getType() == Material.AIR || craft.getType().getPassthroughBlocks().contains(w.getBlockAt(midPoint.getX(), groundY - 1, midPoint.getZ()).getType())){
+                    groundY--;
+                }
+                if (centreMinY - groundY > craft.getType().getHoverLimit()){
+                    dy = -1;
+                }
+            } else if (!isOnGround(oldHitBox)){
+                dy = -1;
+            }
         }
 
         //TODO: Add and handle event for towny and factions
@@ -133,6 +148,8 @@ public class TranslationTask extends AsyncTask {
                 }
             }
 
+
+
             if (blockObstructed) {
                 if (!craft.getSinking() && craft.getType().getCollisionExplosion() == 0.0F) {
                     fail(String.format(I18nSupport.getInternationalisedString("Translation - Failed Craft is obstructed") + " @ %d,%d,%d,%s", newLocation.getX(), newLocation.getY(), newLocation.getZ(), testMaterial.toString()));
@@ -146,6 +163,17 @@ public class TranslationTask extends AsyncTask {
             } //END OF: if (blockObstructed)
         }
 
+        if (!craft.getType().getCanHoverOverWater()){
+            MovecraftLocation test = new MovecraftLocation(newHitBox.getMidPoint().getX(), newHitBox.getMinY(), newHitBox.getMidPoint().getZ());
+            test = test.translate(0, -1, 0);
+            while (test.toBukkit(craft.getW()).getBlock().getType() == Material.AIR){
+                test = test.translate(0, -1, 0);
+            }
+            Material testType = test.toBukkit(craft.getW()).getBlock().getType();
+            if (craft.getType().getPassthroughBlocks().contains(testType)){
+                fail(String.format(I18nSupport.getInternationalisedString("Translation - Failed Craft over passthrough block"), testType.name().toLowerCase().replace("_", " ")));
+            }
+        }
         //call event
         CraftTranslateEvent event = new CraftTranslateEvent(craft, oldHitBox, newHitBox);
         Bukkit.getServer().getPluginManager().callEvent(event);
@@ -410,6 +438,76 @@ public class TranslationTask extends AsyncTask {
 
         }
         return true;
+    }
+
+    private boolean inclineCraft(HashHitBox hitBox){
+        if (isOnGround(hitBox) && dy < 0){
+            dy = 0;
+        }
+        HashHitBox collisionBox = new HashHitBox();
+        for (MovecraftLocation ml : hitBox){
+            MovecraftLocation nl = ml.translate(dx, dy, dz);
+            if (hitBox.contains(nl))
+                continue;
+            if (ml.getY() > hitBox.getMinY())
+                continue;
+            collisionBox.add(nl);
+        }
+        for (MovecraftLocation ml : collisionBox){
+            if (!ml.toBukkit(craft.getW()).getBlock().getType().equals(Material.AIR) && !craft.getType().getPassthroughBlocks().contains(ml.toBukkit(craft.getW()).getBlock().getType()) && !craft.getType().getHarvestBlocks().contains(ml.toBukkit(craft.getW()).getBlock().getType())){
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean isOnGround(HashHitBox hitBox){
+        MutableHitBox bottomLocs = new HashHitBox();
+        MutableHitBox translatedBottomLocs = new HashHitBox();
+        for (MovecraftLocation location : hitBox){
+            MovecraftLocation beneath = location.translate(0, -1, 0);
+            //If the hitbox contains the location beneath this one, continue the loop
+            if (hitBox.contains(beneath)){
+                    continue;
+            }
+            //If not, check if it is an exterior location
+            int y;
+            for (y = beneath.getY() ; y >= hitBox.getMinY() ; y--){
+                if (hitBox.contains(beneath.getX(), y, beneath.getZ())){
+                    break;
+                }
+            }
+            //Continue if the shift was an interior location
+            if (y > hitBox.getMinY()){
+                continue;
+            }
+            //Otherwise, add to bottom locations
+            bottomLocs.add(location);
+        }
+        boolean bottomLocsOnGround = false;
+        for (MovecraftLocation bottomLoc : bottomLocs){
+            translatedBottomLocs.add(bottomLoc.translate(dx, dy, dz));
+            Material testType = bottomLoc.translate(0, -1, 0).toBukkit(craft.getW()).getBlock().getType();
+            //If the lowest part of the bottom locs touch the ground, return true anyways
+            if (testType != Material.AIR && !craft.getType().getPassthroughBlocks().contains(testType)){
+                bottomLocsOnGround = true;
+            }
+        }
+        boolean translatedBottomLocsInAir = true;
+        for (MovecraftLocation translatedBottomLoc : translatedBottomLocs){
+            MovecraftLocation beneath = translatedBottomLoc.translate(0, -1, 0);
+            Material testType = beneath.toBukkit(craft.getW()).getBlock().getType();
+            if (bottomLocs.contains(beneath) || testType == Material.AIR || craft.getType().getPassthroughBlocks().contains(testType)){
+                continue;
+            }
+            translatedBottomLocsInAir = false;
+            break;
+        }
+        if (dy > 0){
+            return bottomLocsOnGround && translatedBottomLocsInAir;
+        }
+        return !translatedBottomLocsInAir;
     }
 
     public boolean failed(){

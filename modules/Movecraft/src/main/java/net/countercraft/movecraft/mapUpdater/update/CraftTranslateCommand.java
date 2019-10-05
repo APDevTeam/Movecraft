@@ -26,6 +26,9 @@ public class CraftTranslateCommand extends UpdateCommand {
         this.displacement = displacement;
     }
 
+
+
+
     @Override
     public void doUpdate() {
         final Logger logger = Movecraft.getInstance().getLogger();
@@ -179,7 +182,6 @@ public class CraftTranslateCommand extends UpdateCommand {
                 }
             }
         }
-
         if (!craft.isNotProcessing())
             craft.setProcessing(false);
         time = System.nanoTime() - time;

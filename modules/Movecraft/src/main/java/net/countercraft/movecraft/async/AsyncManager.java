@@ -285,7 +285,6 @@ public class AsyncManager extends BukkitRunnable {
                 // Process rotation task
                 RotationTask task = (RotationTask) poll;
                 Player notifyP = c.getNotificationPlayer();
-
                 // Check that the craft hasn't been sneakily unpiloted
                 if (notifyP != null || task.getIsSubCraft()) {
 

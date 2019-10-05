@@ -1,6 +1,5 @@
 package net.countercraft.movecraft.mapUpdater.update;
 
-import com.google.common.collect.Sets;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
@@ -27,6 +26,7 @@ public class CraftRotateCommand extends UpdateCommand {
     private final Rotation rotation;
     @NotNull
     private final MovecraftLocation originLocation;
+
 
     public CraftRotateCommand(@NotNull final Craft craft, @NotNull final MovecraftLocation originLocation, @NotNull final Rotation rotation) {
         this.craft = craft;
@@ -176,6 +176,7 @@ public class CraftRotateCommand extends UpdateCommand {
                 }
             }
         }
+
         if (!craft.isNotProcessing())
             craft.setProcessing(false);
         time = System.nanoTime() - time;
