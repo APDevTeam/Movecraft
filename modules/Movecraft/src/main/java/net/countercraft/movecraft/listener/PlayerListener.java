@@ -138,9 +138,6 @@ public class PlayerListener implements Listener {
             } else {
                 p.sendMessage(I18nSupport.getInternationalisedString("Release - Player has left craft"));
             }
-            if (c.getHitBox().size() > 11000) {
-                p.sendMessage(I18nSupport.getInternationalisedString("Craft is too big to check its borders. Make sure this area is safe to release your craft in."));
-            }
             timeToReleaseAfter.put(c, System.currentTimeMillis() + 30000); //30 seconds to release TODO: config
         }
     }
