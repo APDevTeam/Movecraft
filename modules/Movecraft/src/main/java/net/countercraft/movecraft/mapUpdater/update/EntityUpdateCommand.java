@@ -18,6 +18,7 @@
 package net.countercraft.movecraft.mapUpdater.update;
 
 import net.countercraft.movecraft.Movecraft;
+import net.countercraft.movecraft.utils.TeleportUtils;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -50,12 +51,13 @@ public class EntityUpdateCommand extends UpdateCommand {
 
     @Override
     public void doUpdate() {
+        Location playerLoc = entity.getLocation();
         if (!(entity instanceof Player)) {
-            Location playerLoc = entity.getLocation();
             entity.teleport(new Location(entity.getWorld(), x + playerLoc.getX(),y + playerLoc.getY(),z + playerLoc.getZ(),yaw + playerLoc.getYaw(),pitch + playerLoc.getPitch()));
             return;
         }
-        Movecraft.getInstance().getWorldHandler().addPlayerLocation((Player) entity,x,y,z,yaw,pitch);
+        //Movecraft.getInstance().getWorldHandler().addPlayerLocation((Player) entity,x,y,z,yaw,pitch);
+        TeleportUtils.teleport((Player) entity, new Location(entity.getWorld(), playerLoc.getX() + x, playerLoc.getY() + y, playerLoc.getZ() + z));
     }
 
     @Override
