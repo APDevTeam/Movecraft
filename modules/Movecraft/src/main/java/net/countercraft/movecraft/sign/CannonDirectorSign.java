@@ -47,7 +47,7 @@ public final class CannonDirectorSign implements Listener {
         }
 
         if (!foundCraft.getType().allowCannonDirectorSign()) {
-            event.getPlayer().sendMessage(ERROR_PREFIX + I18nSupport.getInternationalisedString("CannonDirector - Not Allowed on Craft"));
+            event.getPlayer().sendMessage(ERROR_PREFIX + I18nSupport.getInternationalisedString("CannonDirector - Not Allowed On Craft"));
             return;
         }
         if(event.getAction()==Action.LEFT_CLICK_BLOCK && event.getPlayer()==foundCraft.getCannonDirector()){

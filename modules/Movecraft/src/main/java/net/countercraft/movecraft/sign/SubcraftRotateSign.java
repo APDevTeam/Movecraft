@@ -7,12 +7,8 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.CraftType;
 import net.countercraft.movecraft.craft.ICraft;
-import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.CraftPilotEvent;
-import net.countercraft.movecraft.events.CraftReleaseEvent;
-import net.countercraft.movecraft.events.CraftRotateEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.utils.MathUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -25,7 +21,8 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 
 public final class SubcraftRotateSign implements Listener {
     private static final String HEADER = "Subcraft Rotate";
@@ -51,7 +48,7 @@ public final class SubcraftRotateSign implements Listener {
         final Location loc = event.getClickedBlock().getLocation();
         final MovecraftLocation startPoint = new MovecraftLocation(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
         if(rotatingCrafts.contains(startPoint)){
-            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Already Rotating"));
+            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Rotation - Already Rotating"));
             event.setCancelled(true);
             return;
         }
@@ -76,7 +73,7 @@ public final class SubcraftRotateSign implements Listener {
         final Craft craft = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
         if(craft!=null) {
             if (!craft.isNotProcessing()) {
-                event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Parent Craft is busy"));
+                event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Detection - Parent Craft is busy"));
                 return;
             }
             craft.setProcessing(true); // prevent the parent craft from moving or updating until the subcraft is done

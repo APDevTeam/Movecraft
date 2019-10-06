@@ -18,16 +18,15 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.text.NumberFormat;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Calendar;
+import java.util.List;
 import java.util.TimeZone;
 import java.util.logging.Level;
-
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import static net.countercraft.movecraft.utils.ChatUtils.MOVECRAFT_COMMAND_PREFIX;
 
@@ -97,7 +96,7 @@ public class SiegeCommand implements CommandExecutor {
             else
                 page = Integer.parseInt(args[1]);
         }catch(NumberFormatException e){
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Invalid Page") +" \"" + args[1] + "\"");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Paginator - Invalid Page") +" \"" + args[1] + "\"");
             return true;
         }
         TopicPaginator paginator = new TopicPaginator("Sieges");
@@ -105,7 +104,7 @@ public class SiegeCommand implements CommandExecutor {
             paginator.addLine("- " + siege.getName());
         }
         if(!paginator.isInBounds(page)){
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Invalid Page") +" \"" + args[1] + "\"");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Paginator - Invalid Page") +" \"" + args[1] + "\"");
             return true;
         }
         for(String line : paginator.getPage(page))
@@ -234,25 +233,25 @@ public class SiegeCommand implements CommandExecutor {
         String output = "Error";
         switch (day){
             case 1:
-                output = "Sunday";
+                output = "Siege - Sunday";
                 break;
             case 2:
-                output = "Monday";
+                output = "Siege - Monday";
                 break;
             case 3:
-                output = "Tuesday";
+                output = "Siege - Tuesday";
                 break;
             case 4:
-                output = "Wednesday";
+                output = "Siege - Wednesday";
                 break;
             case 5:
-                output = "Thursday";
+                output = "Siege - Thursday";
                 break;
             case 6:
-                output = "Friday";
+                output = "Siege - Friday";
                 break;
             case 7:
-                output = "Saturday";
+                output = "Siege - Saturday";
                 break;
         }
         output = I18nSupport.getInternationalisedString(output);

@@ -392,13 +392,13 @@ public class DetectionTask extends AsyncTask {
                 if (blockPercentage < minPercentage) {
                     if (i.get(0) < 10000) {
                         fail(String.format(
-                                I18nSupport.getInternationalisedString("Not enough flyblock") + ": %s %.2f%% < %.2f%%",
+                                I18nSupport.getInternationalisedString("Detection - Not enough flyblock") + ": %s %.2f%% < %.2f%%",
                                 Material.getMaterial(i.get(0)).name().toLowerCase().replace("_", " "), blockPercentage,
                                 minPercentage));
                         return false;
                     } else {
                         fail(String.format(
-                                I18nSupport.getInternationalisedString("Not enough flyblock") + ": %s %.2f%% < %.2f%%",
+                                I18nSupport.getInternationalisedString("Detection - Not enough flyblock") + ": %s %.2f%% < %.2f%%",
                                 Material.getMaterial((i.get(0) - 10000) >> 4).name().toLowerCase().replace("_", " "),
                                 blockPercentage, minPercentage));
                         return false;
@@ -408,13 +408,13 @@ public class DetectionTask extends AsyncTask {
                 if (numberOfBlocks < flyBlocks.get(i).get(0) - 10000.0) {
                     if (i.get(0) < 10000) {
                         fail(String.format(
-                                I18nSupport.getInternationalisedString("Not enough flyblock") + ": %s %d < %d",
+                                I18nSupport.getInternationalisedString("Detection - Not enough flyblock") + ": %s %d < %d",
                                 Material.getMaterial(i.get(0)).name().toLowerCase().replace("_", " "), numberOfBlocks,
                                 flyBlocks.get(i).get(0).intValue() - 10000));
                         return false;
                     } else {
                         fail(String.format(
-                                I18nSupport.getInternationalisedString("Not enough flyblock") + ": %s %d < %d",
+                                I18nSupport.getInternationalisedString("Detection - Not enough flyblock") + ": %s %d < %d",
                                 Material.getMaterial((i.get(0) - 10000) >> 4).name().toLowerCase().replace("_", " "),
                                 numberOfBlocks, flyBlocks.get(i).get(0).intValue() - 10000));
                         return false;
@@ -425,13 +425,13 @@ public class DetectionTask extends AsyncTask {
                 if (blockPercentage > maxPercentage) {
                     if (i.get(0) < 10000) {
                         fail(String.format(
-                                I18nSupport.getInternationalisedString("Too much flyblock") + ": %s %.2f%% > %.2f%%",
+                                I18nSupport.getInternationalisedString("Detection - Too much flyblock") + ": %s %.2f%% > %.2f%%",
                                 Material.getMaterial(i.get(0)).name().toLowerCase().replace("_", " "), blockPercentage,
                                 maxPercentage));
                         return false;
                     } else {
                         fail(String.format(
-                                I18nSupport.getInternationalisedString("Too much flyblock") + ": %s %.2f%% > %.2f%%",
+                                I18nSupport.getInternationalisedString("Detection - Too much flyblock") + ": %s %.2f%% > %.2f%%",
                                 Material.getMaterial((i.get(0) - 10000) >> 4).name().toLowerCase().replace("_", " "),
                                 blockPercentage, maxPercentage));
                         return false;
@@ -440,12 +440,12 @@ public class DetectionTask extends AsyncTask {
             } else {
                 if (numberOfBlocks > flyBlocks.get(i).get(1) - 10000.0) {
                     if (i.get(0) < 10000) {
-                        fail(String.format(I18nSupport.getInternationalisedString("Too much flyblock") + ": %s %d > %d",
+                        fail(String.format(I18nSupport.getInternationalisedString("Detection - Too much flyblock") + ": %s %d > %d",
                                 Material.getMaterial(i.get(0)).name().toLowerCase().replace("_", " "), numberOfBlocks,
                                 flyBlocks.get(i).get(1).intValue() - 10000));
                         return false;
                     } else {
-                        fail(String.format(I18nSupport.getInternationalisedString("Too much flyblock") + ": %s %d > %d",
+                        fail(String.format(I18nSupport.getInternationalisedString("Detection - Too much flyblock") + ": %s %d > %d",
                                 Material.getMaterial((i.get(0) - 10000) >> 4).name().toLowerCase().replace("_", " "),
                                 numberOfBlocks, flyBlocks.get(i).get(1).intValue() - 10000));
                         return false;
