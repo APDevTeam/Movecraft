@@ -122,6 +122,9 @@ public class CraftTranslateCommand extends UpdateCommand {
                 }
                 confirmed.addAll(visited);
             }
+            if(craft.getSinking()){
+                confirmed.addAll(invertedHitBox);
+            }
             failed.addAll(CollectionUtils.filter(invertedHitBox, confirmed));
 
             final WorldHandler handler = Movecraft.getInstance().getWorldHandler();
