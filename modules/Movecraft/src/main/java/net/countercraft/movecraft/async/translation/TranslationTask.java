@@ -195,7 +195,7 @@ public class TranslationTask extends AsyncTask {
                     if (System.currentTimeMillis() - craft.getOrigPilotTime() <= 1000) {
                         continue;
                     }
-                    Location loc = location.toBukkit(craft.getW());
+                    Location loc = location.translate(-dx,-dy,-dz).toBukkit(craft.getW());
                     if (!loc.getBlock().getType().equals(Material.AIR)  && ThreadLocalRandom.current().nextDouble(1) < .05) {
                         updates.add(new ExplosionUpdateCommand( loc, craft.getType().getExplodeOnCrash()));
                         collisionExplosion=true;
@@ -226,7 +226,7 @@ public class TranslationTask extends AsyncTask {
                     explosionForce += 25;//TODO: find the correct amount
                 }*/
                 explosionKey = explosionForce;
-                Location loc = location.toBukkit(craft.getW());
+                Location loc = location.translate(-dx,-dy,-dz).toBukkit(craft.getW());
                 if (!loc.getBlock().getType().equals(Material.AIR)) {
                     updates.add(new ExplosionUpdateCommand(loc, explosionKey));
                     collisionExplosion = true;
