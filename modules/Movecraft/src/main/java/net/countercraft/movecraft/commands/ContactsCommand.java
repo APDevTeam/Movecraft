@@ -38,7 +38,7 @@ public class ContactsCommand implements CommandExecutor {
             else
                 page = Integer.parseInt(args[0]);
         }catch(NumberFormatException e){
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + " Invalid page \"" + args[0] + "\"");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Paginator - Invalid Page") +" \"" + args[0] + "\"");
             return true;
         }
 
@@ -67,7 +67,8 @@ public class ContactsCommand implements CommandExecutor {
                     (long) (tcraft.getOrigBlockCount() * tcraft.getType().getDetectionMultiplier()) :
                     (long) (tcraft.getOrigBlockCount() * tcraft.getType().getUnderwaterDetectionMultiplier());
             if (distsquared < detectionRangeSquared && tcraft.getNotificationPlayer() != ccraft.getNotificationPlayer()) {
-                String notification = "Contact: ";
+                String notification = I18nSupport.getInternationalisedString("Contact");
+                notification += ": ";
                 notification += tcraft.getSinking() ? ChatColor.RED : tcraft.getDisabled() ? ChatColor.BLUE : "";
                 notification += tcraft.getName().length() >= 1 ? tcraft.getName() + " (" : "";
                 notification += tcraft.getType().getCraftName();
@@ -82,13 +83,13 @@ public class ContactsCommand implements CommandExecutor {
                 notification += " "+I18nSupport.getInternationalisedString("Contacts - To The");
                 if (Math.abs(diffx) > Math.abs(diffz))
                     if (diffx < 0)
-                        notification += " "+I18nSupport.getInternationalisedString("east") + ".";
+                        notification += " "+I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - East") + ".";
                     else
-                        notification += " "+I18nSupport.getInternationalisedString("west") + ".";
+                        notification += " "+I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - West") + ".";
                 else if (diffz < 0)
-                    notification += " "+I18nSupport.getInternationalisedString("south") + ".";
+                    notification += " "+I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - South") + ".";
                 else
-                    notification += " "+I18nSupport.getInternationalisedString("east") + ".";
+                    notification += " "+I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - North") + ".";
                 pageinator.addLine(notification);
             }
         }
@@ -97,7 +98,7 @@ public class ContactsCommand implements CommandExecutor {
             return true;
         }
         if(!pageinator.isInBounds(page)){
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Invalid page") + "\"" + args[1] + "\"");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Paginator - Invalid page") + "\"" + args[1] + "\"");
             return true;
         }
         for(String line :pageinator.getPage(page))

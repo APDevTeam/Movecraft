@@ -129,7 +129,7 @@ public class PlayerListener implements Listener {
 
         if (c.isNotProcessing() && c.getType().getMoveEntities() && !timeToReleaseAfter.containsKey(c)) {
             if (Settings.ManOverboardTimeout != 0) {
-                p.sendMessage(I18nSupport.getInternationalisedString("You have left your craft. You may return to your craft by typing /manoverboard any time before the timeout expires"));
+                p.sendMessage(I18nSupport.getInternationalisedString("Manoverboard - Player has left craft"));
                 String mergePoint = checkCraftBorders(c);
                 if (mergePoint.length() > 0){
                     p.sendMessage(I18nSupport.getInternationalisedString("Manoverboard - Craft May Merge") + " " + mergePoint);

@@ -31,7 +31,7 @@ public class RepairTask extends BukkitRunnable {
         repair.getProgressBar().setTitle(repair.getName() + ": " + secsFromStart + "/" + durationInSecs);
 
         if (p != null && ticksFromStart % 1200 == 0){
-            p.sendMessage(I18nSupport.getInternationalisedString("Repairs underway") + ": " + secsFromStart + "/" + durationInSecs);
+            p.sendMessage(I18nSupport.getInternationalisedString("Repair - Repairs underway") + ": " + secsFromStart + "/" + durationInSecs);
         }
         ticksFromStart++;
         repair.setTicksSinceStart(ticksFromStart);
@@ -51,10 +51,10 @@ public class RepairTask extends BukkitRunnable {
         if ((ticksFromStart >= repair.getDurationInTicks()) && repair.getUpdateCommands().isEmpty() && repair.getFragileBlockUpdateCommands().isEmpty()){
             if (p != null && repair.getRunning().get()) {
 
-                p.sendMessage(I18nSupport.getInternationalisedString("Repairs complete. You may now pilot the craft"));
+                p.sendMessage(I18nSupport.getInternationalisedString("Repair - Repairs complete"));
                 CraftManager.getInstance().removeCraft(repair.getCraft());
             }
-            Movecraft.getInstance().getLogger().info(I18nSupport.getInternationalisedString("Repair Complete Console"));
+            Movecraft.getInstance().getLogger().info(I18nSupport.getInternationalisedString("Repair - Repair Complete Console"));
             repair.getProgressBar().setVisible(false);
             repair.getRunning().set(false);
         }

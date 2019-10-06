@@ -115,7 +115,7 @@ public class BlockListener implements Listener {
                 }
                 for (MovecraftLocation tloc : craft.getHitBox()) {
                     if (tloc.equals(mloc)) {
-                        e.getPlayer().sendMessage(I18nSupport.getInternationalisedString("BLOCK IS PART OF A PILOTED CRAFT"));
+                        e.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Player - Block part of piloted craft"));
                         e.setCancelled(true);
                         return;
                     }
