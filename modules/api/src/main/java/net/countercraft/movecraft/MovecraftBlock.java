@@ -6,9 +6,13 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
+/**
+ * Represents a block with the respective
+ */
 public final class MovecraftBlock {
     private final Material type;
     private final Byte data;
+
     public MovecraftBlock(Material type, Byte data){
         this.type = type;
         this.data = data;
@@ -41,6 +45,11 @@ public final class MovecraftBlock {
     @Override
     public int hashCode() {
         return Objects.hash(type, data);
+    }
+
+    @Override
+    public String toString() {
+        return "{Type: " + type.name() + (data != null ? ", Data: " + data : "") + "}";
     }
 }
 
