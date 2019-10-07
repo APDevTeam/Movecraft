@@ -98,6 +98,10 @@ public class RepairSign implements Listener{
             event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("You must be piloting a craft"));
             return;
         }
+        if (!event.getPlayer().hasPermission("movecraft." + pCraft.getType().getCraftName() + ".repair")){
+            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
+            return;
+        }
 
         MovecraftRepair movecraftRepair = MovecraftRepair.getInstance();
         event.setCancelled(true);
@@ -118,8 +122,14 @@ public class RepairSign implements Listener{
             event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("You must be piloting a craft"));
             return;
         }
+
         if (Settings.RepairTicksPerBlock == 0) {
             event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Repair functionality is disabled or WorldEdit was not detected"));
+            return;
+        }
+
+        if (!event.getPlayer().hasPermission("movecraft." + pCraft.getType().getCraftName() + ".repair")){
+            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
             return;
         }
         String repairName = event.getPlayer().getUniqueId().toString();
