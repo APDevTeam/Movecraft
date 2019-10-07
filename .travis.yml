@@ -14,6 +14,14 @@ before_install: |
   wget -O BuildTools.jar https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
   java -jar BuildTools.jar --rev 1.12.1 | grep -vE "[^/ ]*/[^/ ]*\s*KB\s*$" | grep -v "^\s*$"
    fi
+  if [ ! -d "$HOME/.m2/repository/org/spigotmc/spigot/1.13.2-R0.1-SNAPSHOT" ]; then
+    wget -O BuildTools.jar https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
+    java -jar BuildTools.jar --rev 1.13.2 | grep -vE "[^/ ]*/[^/ ]*\s*KB\s*$" | grep -v "^\s*$"
+    fi
+  if [ ! -d "$HOME/.m2/repository/org/spigotmc/spigot/1.14.4-R0.1-SNAPSHOT" ]; then
+    wget -O BuildTools.jar https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
+    java -jar BuildTools.jar --rev 1.14.4 | grep -vE "[^/ ]*/[^/ ]*\s*KB\s*$" | grep -v "^\s*$"
+    fi
 language: java
 jdk: oraclejdk8
 sudo: false
@@ -26,5 +34,5 @@ deploy:
   file: "target/Movecraft.jar"
   skip_cleanup: true
   on:
-    repo: APDevTeam/Movecraft
+    repo: eirikh1996/Movecraft
     tags: true
