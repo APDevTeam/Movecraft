@@ -24,10 +24,6 @@ import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
-import com.sk89q.worldguard.protection.flags.DefaultFlag;
-import com.sk89q.worldguard.protection.flags.Flag;
-import com.sk89q.worldguard.protection.flags.Flags;
-import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import com.sk89q.worldguard.protection.regions.RegionContainer;
@@ -615,8 +611,7 @@ public class AsyncManager extends BukkitRunnable {
                         break;
                     }
                 }
-                Flag pvpFlag = Settings.IsLegacy ? DefaultFlag.PVP : Flags.PVP;
-                if (region != null && Settings.WorldGuardBlockSinkOnPVPPerm && region.getFlag(pvpFlag).equals(StateFlag.State.DENY)){
+                if (region != null && Settings.WorldGuardBlockSinkOnPVPPerm && WorldguardUtils.pvpAllowed(region)){
                     notifyP.sendMessage(I18nSupport.getInternationalisedString("Player- Craft should sink but PVP is not allowed in this WorldGuard region"));
                     isSinking = false;
                 }

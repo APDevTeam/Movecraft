@@ -1,6 +1,8 @@
 package net.countercraft.movecraft.utils;
 
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.bukkit.BukkitWorld;
+import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.flags.DefaultFlag;
@@ -76,6 +78,22 @@ public class WorldguardUtils {
                 }
             }
 
+        }
+        return true;
+    }
+    public static boolean allowFireSpread(Location loc){
+        ApplicableRegionSet set;
+        if (Settings.IsLegacy){
+            set = LegacyUtils.getApplicableRegions(LegacyUtils.getRegionManager(Movecraft.getInstance().getWorldGuardPlugin(), loc.getWorld()), loc);//.getApplicableRegions();
+            return LegacyUtils.allows(set, DefaultFlag.FIRE_SPREAD);
+
+        } else {
+            set = WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(loc.getWorld())).getApplicableRegions(BlockVector3.at(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()));
+            for (ProtectedRegion region : set){
+                if (region.getFlag(Flags.FIRE_SPREAD) == StateFlag.State.DENY){
+                    return false;
+                }
+            }
         }
         return true;
     }

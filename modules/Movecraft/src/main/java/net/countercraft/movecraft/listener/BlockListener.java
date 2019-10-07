@@ -21,24 +21,17 @@ import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
-import com.sk89q.worldguard.protection.flags.DefaultFlag;
-import com.sk89q.worldguard.protection.flags.Flags;
-import com.sk89q.worldguard.protection.flags.StateFlag;
-import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.countercraft.movecraft.Movecraft;
-import net.countercraft.movecraft.utils.LegacyUtils;
-import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.MovecraftLocation;
-import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.utils.LegacyUtils;
+import net.countercraft.movecraft.utils.MathUtils;
+import net.countercraft.movecraft.utils.WorldguardUtils;
 import net.countercraft.movecraft.warfare.assault.AssaultUtils;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Hopper;
@@ -283,19 +276,8 @@ public class BlockListener implements Listener {
         }
         // check to see if fire spread is allowed, don't check if compatmanager integration is not enabled
         if (Movecraft.getInstance().getWorldGuardPlugin() != null && (Settings.WorldGuardBlockMoveOnBuildPerm || Settings.WorldGuardBlockSinkOnPVPPerm)) {
-            ApplicableRegionSet set;
-            Location loc = testBlock.getLocation();
-            if (Settings.IsLegacy){
-                set = LegacyUtils.getApplicableRegions(LegacyUtils.getRegionManager(Movecraft.getInstance().getWorldGuardPlugin(), loc.getWorld()), loc);//.getApplicableRegions();
-                if (!LegacyUtils.allows(set, DefaultFlag.FIRE_SPREAD))
-                    return;
-            } else {
-                set = WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(testBlock.getWorld())).getApplicableRegions(BlockVector3.at(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()));
-                for (ProtectedRegion region : set){
-                    if (region.getFlag(Flags.FIRE_SPREAD) == StateFlag.State.DENY){
-                        return;
-                    }
-                }
+            if (!WorldguardUtils.allowFireSpread(testBlock.getLocation())){
+                return;
             }
         }
         testBlock.setType(org.bukkit.Material.AIR);
