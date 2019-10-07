@@ -27,7 +27,7 @@ public class WorldGuardCompatManager implements Listener {
         for(MovecraftLocation location : event.getNewHitBox()){
             if(!pilotHasAccessToRegion(event.getCraft().getNotificationPlayer(), location, event.getCraft().getW())){
                 event.setCancelled(true);
-                event.setFailMessage(String.format( I18nSupport.getInternationalisedString( "Translation - Failed Player is not permitted to build in this WorldGuard region" )+" @ %d,%d,%d", location.getX(), location.getY(), location.getZ() ) );
+                event.setFailMessage(String.format( I18nSupport.getInternationalisedString( "Translation - WorldGuard - Not Permitted To Build" )+" @ %d,%d,%d", location.getX(), location.getY(), location.getZ() ) );
                 return;
             }
 
@@ -43,7 +43,7 @@ public class WorldGuardCompatManager implements Listener {
         for(MovecraftLocation location : event.getNewHitBox()){
             if(!pilotHasAccessToRegion(event.getCraft().getNotificationPlayer(), location, event.getCraft().getW())){
                 event.setCancelled(true);
-                event.setFailMessage(String.format( I18nSupport.getInternationalisedString("Rotation - Player is not permitted to build in this WorldGuard region" )+" @ %d,%d,%d", location.getX(), location.getY(), location.getZ()));
+                event.setFailMessage(String.format( I18nSupport.getInternationalisedString("Rotation - WorldGuard - Not Permitted To Build" )+" @ %d,%d,%d", location.getX(), location.getY(), location.getZ()));
                 return;
             }
         }

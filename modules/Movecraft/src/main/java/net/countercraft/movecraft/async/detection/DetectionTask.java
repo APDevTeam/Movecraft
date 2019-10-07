@@ -403,106 +403,43 @@ public class DetectionTask extends AsyncTask {
             if (minPercentage < 10000.0) {
                 if (blockPercentage < minPercentage) {
 
-                        if (i.get(flyBlockTypes.get(0)) == null) {
-                            if (i.get(flyBlockTypes.get(0)).isEmpty()) {
-                                fail(String.format(
-                                        I18nSupport.getInternationalisedString("Not enough flyblock") + ": %s %.2f%% < %.2f%%",
-                                        flyBlockTypes.get(0).name().toLowerCase().replace("_", " "), blockPercentage,
-                                        minPercentage));
-                                return false;
-                            } else {
-                                fail(String.format(
-                                        I18nSupport.getInternationalisedString("Not enough flyblock") + ": %s %.2f%% < %.2f%%",
-                                        flyBlockTypes.get(0).name().toLowerCase().replace("_", " "),
-                                        blockPercentage, minPercentage));
-                                return false;
-                            }
-                        } else {
-                            fail(String.format(
-                                    I18nSupport.getInternationalisedString("Not enough flyblock") + ": %s %.2f%% < %.2f%%",
-                                    flyBlockTypes.get(0).name().toLowerCase().replace("_", " "), blockPercentage,
-                                    minPercentage));
-                            return false;
-                        }
-                    }
+                        fail(String.format(
+                                I18nSupport.getInternationalisedString("Detection - Not enough flyblock") + ": %s %.2f%% < %.2f%%",
+                                flyBlockTypes.get(0).name().toLowerCase().replace("_", " "),
+                                blockPercentage, minPercentage));
+                        return false;
 
-            } else {
-                if (numberOfBlocks < flyBlocks.get(i).get(0) - 10000.0) {
-                    if (i != null) {
-                        if (i.get(0) != null) {
-                            if (i.get(0).isEmpty() || i.get(0) == null) {
-                                fail(String.format(
-                                        I18nSupport.getInternationalisedString("Not enough flyblock") + ": %s %d < %d",
-                                        flyBlockTypes.get(0).name().toLowerCase().replace("_", " "), numberOfBlocks,
-                                        flyBlocks.get(i).get(0).intValue() - 10000));
-                                return false;
-                            } else {
-                                fail(String.format(
-                                        I18nSupport.getInternationalisedString("Not enough flyblock") + ": %s %d < %d",
-                                        flyBlockTypes.get(0).name().toLowerCase().replace("_", " "),
-                                        numberOfBlocks, flyBlocks.get(i).get(0).intValue() - 10000));
-                                return false;
-                            }
-                        } else {
-                            fail(String.format(I18nSupport.getInternationalisedString("Not enough flyblock") + ": %s %d > %d",
-                                    flyBlockTypes.get(0).name().toLowerCase().replace("_", " "), numberOfBlocks,
-                                    flyBlocks.get(i).get(1).intValue() - 10000));
-                            return false;
-                        }
-                    }
-                }
-            }
-            if (maxPercentage < 10000.0) {
-                if (blockPercentage > maxPercentage) {
-                    if (i != null) {
-                        if (i.get(0) != null) {
-                            if (i.get(0).isEmpty() || i.get(0) == null) {
-                                fail(String.format(
-                                        I18nSupport.getInternationalisedString("Too much flyblock") + ": %s %.2f%% > %.2f%%",
-                                        flyBlockTypes.get(0).name().toLowerCase().replace("_", " "), blockPercentage,
-                                        maxPercentage));
-                                return false;
-                            } else {
-                                fail(String.format(
-                                        I18nSupport.getInternationalisedString("Too much flyblock") + ": %s %.2f%% > %.2f%%",
-                                        flyBlockTypes.get(0).name().toLowerCase().replace("_", " "),
-                                        blockPercentage, maxPercentage));
-                                return false;
-                            }
-                        } else {
+
+                } else {
+                    if (numberOfBlocks < flyBlocks.get(i).get(0) - 10000.0) {
+
                             fail(String.format(
-                                    I18nSupport.getInternationalisedString("Too much flyblock") + ": %s %.2f%% > %.2f%%",
+                                    I18nSupport.getInternationalisedString("Detection - Not enough flyblock") + ": %s %d < %d",
                                     flyBlockTypes.get(0).name().toLowerCase().replace("_", " "),
-                                    blockPercentage, maxPercentage));
+                                    numberOfBlocks, flyBlocks.get(i).get(0).intValue() - 10000));
+                            return false;
+
+                    }
+                }
+                if (maxPercentage < 10000.0) {
+                    if (blockPercentage > maxPercentage) {
+                            fail(String.format(
+                                    I18nSupport.getInternationalisedString("Detection - Too much flyblock") + ": %s %.2f%% > %.2f%%",
+                                    flyBlockTypes.get(0).name().toLowerCase().replace("_", " "), blockPercentage,
+                                    maxPercentage));
                             return false;
                         }
                     }
-                }
-            } else {
-                if (numberOfBlocks > flyBlocks.get(i).get(1) - 10000.0) {
-                    if (i != null) {
-                        if (i.get(0) != null) {
-                            if (i.get(0).isEmpty()) {
-                                fail(String.format(I18nSupport.getInternationalisedString("Too much flyblock") + ": %s %d > %d",
-                                        flyBlockTypes.get(0).name().toLowerCase().replace("_", " "), numberOfBlocks,
-                                        flyBlocks.get(i).get(1).intValue() - 10000));
-                                return false;
-                            } else {
-                                fail(String.format(I18nSupport.getInternationalisedString("Too much flyblock") + ": %s %d > %d",
-                                        flyBlockTypes.get(0).name().toLowerCase().replace("_", " "),
-                                        numberOfBlocks, flyBlocks.get(i).get(1).intValue() - 10000));
-                                return false;
-                            }
-                        } else {
-                            fail(String.format(I18nSupport.getInternationalisedString("Too much flyblock") + ": %s %d > %d",
+                } else {
+                    if (numberOfBlocks > flyBlocks.get(i).get(1) - 10000.0) {
+                            fail(String.format(I18nSupport.getInternationalisedString("Detection - Too much flyblock") + ": %s %d > %d",
                                     flyBlockTypes.get(0).name().toLowerCase().replace("_", " "), numberOfBlocks,
                                     flyBlocks.get(i).get(1).intValue() - 10000));
                             return false;
-                        }
+
                     }
                 }
             }
-        }
 
         return true;
     }

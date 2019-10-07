@@ -54,7 +54,7 @@ public class ReleaseCommand implements TabExecutor {
 
                 }
             }
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Release - Released Player Crafts"));
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Release - Released All Player Crafts"));
             return true;
         }
 
@@ -74,13 +74,13 @@ public class ReleaseCommand implements TabExecutor {
                     CraftManager.getInstance().removeCraft(craft);
                 }
             }
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Release - Released Null Crafts"));
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Release - Released All Null Crafts"));
             return true;
         }
 
         Player target = Bukkit.getPlayer(args[0]);
         if (target == null) {
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Player Not Found"));
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Player - Not Found"));
             return true;
         }
         final Craft pCraft = CraftManager.getInstance().getCraftByPlayerName(args[0]);
@@ -89,7 +89,7 @@ public class ReleaseCommand implements TabExecutor {
             commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Release - Successful Force Release"));
             return true;
         }
-        commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Player Not Piloting"));
+        commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Player - Not Piloting"));
         return true;
     }
 

@@ -26,6 +26,9 @@ public class CraftTranslateCommand extends UpdateCommand {
         this.displacement = displacement;
     }
 
+
+
+
     @Override
     public void doUpdate() {
         final Logger logger = Movecraft.getInstance().getLogger();
@@ -84,7 +87,7 @@ public class CraftTranslateCommand extends UpdateCommand {
         } else {
             MutableHitBox originalLocations = new HashHitBox();
             for (MovecraftLocation movecraftLocation : craft.getHitBox()) {
-                originalLocations.add((movecraftLocation).subtract(displacement));
+                originalLocations.add(movecraftLocation.subtract(displacement));
             }
             final HitBox to = CollectionUtils.filter(craft.getHitBox(), originalLocations);
             for (MovecraftLocation location : to) {
@@ -123,7 +126,7 @@ public class CraftTranslateCommand extends UpdateCommand {
             }
 
             //Check to see which locations in the from set are actually outside of the craft
-            for (MovecraftLocation location :validExterior ) {
+            for (MovecraftLocation location : validExterior ) {
                 if (craft.getHitBox().contains(location) || confirmed.contains(location)) {
                     continue;
                 }
@@ -143,6 +146,9 @@ public class CraftTranslateCommand extends UpdateCommand {
                     }
                 }
                 confirmed.addAll(visited);
+            }
+            if(craft.getSinking()){
+                confirmed.addAll(invertedHitBox);
             }
             failed.addAll(CollectionUtils.filter(invertedHitBox, confirmed));
 
@@ -182,14 +188,14 @@ public class CraftTranslateCommand extends UpdateCommand {
                     continue;
                 }
                 //Do not place if it is at a collapsed HitBox location
-                if (craft.getCollapsedHitBox().contains(location))
+                if (!craft.getCollapsedHitBox().isEmpty() && craft.getCollapsedHitBox().contains(location))
                     continue;
                 handler.setBlockFast(location.toBukkit(craft.getW()), craft.getPhaseBlocks().get(location), (byte) 0);
                 craft.getPhaseBlocks().remove(location);
             }
 
             for(MovecraftLocation location : originalLocations){
-                if(!craft.getHitBox().inBounds(location) && craft.getPhaseBlocks().containsKey(location)){
+                if(!craft.getHitBox().contains(location) && craft.getPhaseBlocks().containsKey(location)){
                     handler.setBlockFast(location.toBukkit(craft.getW()), craft.getPhaseBlocks().remove(location), (byte) 0);
                 }
             }
@@ -203,7 +209,6 @@ public class CraftTranslateCommand extends UpdateCommand {
                 }
             }
         }
-
         if (!craft.isNotProcessing())
             craft.setProcessing(false);
         time = System.nanoTime() - time;

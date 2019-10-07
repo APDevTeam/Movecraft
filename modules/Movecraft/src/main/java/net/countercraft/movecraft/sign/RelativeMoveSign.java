@@ -1,11 +1,9 @@
 package net.countercraft.movecraft.sign;
 
-import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.utils.LegacyUtils;
+import net.countercraft.movecraft.utils.SignUtils;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.event.EventHandler;
@@ -75,23 +73,23 @@ public final class RelativeMoveSign implements Listener{
             dBackwardForward = -maxMove;
         int dx = 0;
         int dz = 0;
-        switch (sign.getRawData()) {
-            case 0x3:
+        switch (SignUtils.getFacing(sign).getOppositeFace()) {
+            case NORTH:
                 // North
                 dx = dLeftRight;
                 dz = -dBackwardForward;
                 break;
-            case 0x2:
+            case SOUTH:
                 // South
                 dx = -dLeftRight;
                 dz = dBackwardForward;
                 break;
-            case 0x4:
+            case EAST:
                 // East
                 dx = dBackwardForward;
                 dz = dLeftRight;
                 break;
-            case 0x5:
+            case WEST:
                 // West
                 dx = -dBackwardForward;
                 dz = -dLeftRight;

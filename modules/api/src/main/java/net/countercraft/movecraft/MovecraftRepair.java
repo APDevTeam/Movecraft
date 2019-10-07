@@ -16,7 +16,6 @@ public abstract class MovecraftRepair {
     public abstract boolean saveCraftRepairState(Craft craft, Sign sign);
 
     public abstract boolean saveRegionRepairState(World world, ProtectedRegion region);
-
     public abstract Clipboard loadCraftRepairStateClipboard(Craft craft, Sign sign);
 
     public abstract Clipboard loadRegionRepairStateClipboard(String repairStateName, World bukkitWorld);

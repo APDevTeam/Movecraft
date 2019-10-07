@@ -1,11 +1,8 @@
 package net.countercraft.movecraft.sign;
 
-import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.utils.LegacyUtils;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.event.EventHandler;
@@ -72,7 +69,6 @@ public final class MoveSign implements Listener{
         }
         if (CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getCanStaticMove()) {
             CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).translate(dx, dy, dz);
-            //timeMap.put(event.getPlayer(), System.currentTimeMillis());
             CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setLastCruiseUpdate(System.currentTimeMillis());
         }
     }

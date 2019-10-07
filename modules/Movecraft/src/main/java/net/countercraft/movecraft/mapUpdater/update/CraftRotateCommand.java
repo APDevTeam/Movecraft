@@ -27,6 +27,7 @@ public class CraftRotateCommand extends UpdateCommand {
     @NotNull
     private final MovecraftLocation originLocation;
 
+
     public CraftRotateCommand(@NotNull final Craft craft, @NotNull final MovecraftLocation originLocation, @NotNull final Rotation rotation) {
         this.craft = craft;
         this.rotation = rotation;
@@ -194,6 +195,7 @@ public class CraftRotateCommand extends UpdateCommand {
                 }
             }
         }
+
         if (!craft.isNotProcessing())
             craft.setProcessing(false);
         time = System.nanoTime() - time;

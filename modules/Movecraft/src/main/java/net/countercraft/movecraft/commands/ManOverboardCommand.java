@@ -1,6 +1,5 @@
 package net.countercraft.movecraft.commands;
 
-import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
@@ -11,6 +10,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.util.Vector;
 
 import static net.countercraft.movecraft.utils.ChatUtils.MOVECRAFT_COMMAND_PREFIX;
 
@@ -54,6 +54,7 @@ public class ManOverboardCommand implements CommandExecutor{
             return true;
         }
 
+        player.setVelocity(new Vector(0, 0, 0));
         player.teleport(telPoint);
         return true;
     }

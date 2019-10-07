@@ -19,7 +19,6 @@ package net.countercraft.movecraft.craft;
 
 import net.countercraft.movecraft.config.Settings;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
 import org.bukkit.entity.EntityType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -555,7 +554,7 @@ final public class CraftType {
                     } catch (Throwable t){
                         throw new CraftTypeException("Numerical block IDs are not supported by your current Minecraft version", t);
                     }
-                    returnMap.put(type, new ArrayList<>());
+                    returnMap.put(type, Collections.emptyList());
                 } else if (o instanceof String){
                     String string = (String) o;
                     string = string.toUpperCase();
@@ -582,23 +581,22 @@ final public class CraftType {
                                 if (!m.name().endsWith(string)){
                                     continue;
                                 }
-                                returnMap.put(m, new ArrayList<>());
+                                returnMap.put(m, Collections.emptyList());
                             }
                         } else {
                             Material type = Material.getMaterial(string);
-                            returnMap.put(type, new ArrayList<>());
+                            returnMap.put(type, Collections.emptyList());
                         }
                     }
                 } else {
                     Material type = (Material) o;
-                    returnMap.put(type, new ArrayList<>());
+                    returnMap.put(type, Collections.emptyList());
                 }
             }
         } else {
             HashMap<Object, Object> objMap = (HashMap<Object, Object>) obj;
 
             for (Object o : objMap.keySet()) {
-                Block block;
                 Material type;
                 if (o instanceof Integer) {
                     Integer id = (Integer) o;
@@ -610,7 +608,7 @@ final public class CraftType {
                     type = (Material) o;
                 }
                 ArrayList<Object> objList = (ArrayList<Object>) objMap.get(o);
-                ArrayList<Integer> dataList = new ArrayList<>();
+                List<Integer> dataList = Collections.emptyList();
                 if (objList != null) {
                     for (Object dataObj : objList) {
                         if (dataObj instanceof String) {

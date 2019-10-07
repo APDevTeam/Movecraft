@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class SolidHitBoxTest {
 
     final private MovecraftLocation minimum = new MovecraftLocation(0,0,0);
-    final private MovecraftLocation maximum = new MovecraftLocation(3,3,3);
+    final private MovecraftLocation maximum = new MovecraftLocation(3,0,3);
     final private HitBox hitBox = new SolidHitBox(minimum, maximum);
 
     @Test
@@ -33,17 +33,17 @@ public class SolidHitBoxTest {
 
     @Test
     public void testSize(){
-        assertEquals(64, hitBox.size());
-        assertThat(hitBox, iterableWithSize(64));
+        assertEquals(16, hitBox.size());
+        assertThat(hitBox, iterableWithSize(16));
     }
 
 
     @Test
     public void testContents(){
-        final List<MovecraftLocation> locations = new ArrayList<>(64);
+        final List<MovecraftLocation> locations = new ArrayList<>(16);
         for(int x = minimum.getX(); x <= maximum.getX(); x++){
             for(int y = minimum.getY(); y <= maximum.getY(); y++){
-                for(int z = minimum.getX(); z <= maximum.getY(); z++){
+                for(int z = minimum.getX(); z <= maximum.getZ(); z++){
                     locations.add(new MovecraftLocation(x,y,z));
                 }
             }
@@ -58,7 +58,7 @@ public class SolidHitBoxTest {
 
     @Test
     public void testContainsAll(){
-        final List<MovecraftLocation> locations = new ArrayList<>(64);
+        final List<MovecraftLocation> locations = new ArrayList<>(16);
         for(int x = minimum.getX(); x <= maximum.getX(); x++){
             for(int y = minimum.getY(); y <= maximum.getY(); y++){
                 for(int z = minimum.getX(); z <= maximum.getY(); z++){

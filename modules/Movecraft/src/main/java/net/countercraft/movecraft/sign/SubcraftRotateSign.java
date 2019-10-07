@@ -48,7 +48,7 @@ public final class SubcraftRotateSign implements Listener {
         final Location loc = event.getClickedBlock().getLocation();
         final MovecraftLocation startPoint = MathUtils.bukkit2MovecraftLoc(loc);
         if(rotatingCrafts.contains(startPoint)){
-            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Already Rotating"));
+            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Rotation - Already Rotating"));
             event.setCancelled(true);
             return;
         }
@@ -73,7 +73,7 @@ public final class SubcraftRotateSign implements Listener {
         final Craft craft = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
         if(craft!=null) {
             if (!craft.isNotProcessing()) {
-                event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Parent Craft is busy"));
+                event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Detection - Parent Craft is busy"));
                 return;
             }
             craft.setProcessing(true); // prevent the parent craft from moving or updating until the subcraft is done

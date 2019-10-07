@@ -266,23 +266,26 @@ public class RotationTask extends AsyncTask {
                 if (Math.abs(loc.getZ() - originPoint.getZ()) > Math.abs(farthestZ))
                     farthestZ = loc.getZ() - originPoint.getZ();
             }
+            String faceMessage = I18nSupport.getInternationalisedString("Rotation - Farthest Extent Facing");
+            faceMessage += " ";
             if (Math.abs(farthestX) > Math.abs(farthestZ)) {
                 if (farthestX > 0) {
                     if (getCraft().getNotificationPlayer() != null)
-                        getCraft().getNotificationPlayer().sendMessage("The farthest extent now faces East");
+                        faceMessage += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - East");
                 } else {
                     if (getCraft().getNotificationPlayer() != null)
-                        getCraft().getNotificationPlayer().sendMessage("The farthest extent now faces West");
+                        faceMessage += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - West");
                 }
             } else {
                 if (farthestZ > 0) {
                     if (getCraft().getNotificationPlayer() != null)
-                        getCraft().getNotificationPlayer().sendMessage("The farthest extent now faces South");
+                        faceMessage += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - South");
                 } else {
                     if (getCraft().getNotificationPlayer() != null)
-                        getCraft().getNotificationPlayer().sendMessage("The farthest extent now faces North");
+                        faceMessage += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - North");
                 }
             }
+            getCraft().getNotificationPlayer().sendMessage(faceMessage);
 
             craftsInWorld = CraftManager.getInstance().getCraftsInWorld(getCraft().getW());
             for (Craft craft : craftsInWorld) {
@@ -433,3 +436,4 @@ public class RotationTask extends AsyncTask {
         return newHitBox;
     }
 }
+
