@@ -18,6 +18,9 @@
 package net.countercraft.movecraft.craft;
 
 import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.utils.BlockContainer;
+import net.countercraft.movecraft.utils.BlockLimitManager;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 import org.bukkit.potion.PotionEffect;
@@ -84,15 +87,11 @@ final public class CraftType {
     private final float explodeOnCrash;
     private final float collisionExplosion;
     @NotNull private final String craftName;
-    //@NotNull private final int[] allowedBlocks;
-    @NotNull private final Map<Material, List<Integer>> allowedBlocks;
-    //@NotNull private final Map<Material,List<Integer>> allowedBlocks;
-    //@NotNull private final int[] forbiddenBlocks;
-    @NotNull private final Map<Material, List<Integer>> forbiddenBlocks;
-    //@NotNull private final Map<Material,List<Integer>> forbiddenBlocks;
+    @NotNull private final BlockContainer allowedBlocks;
+    @NotNull private final BlockContainer forbiddenBlocks;
     @NotNull private final String[] forbiddenSignStrings;
-    @NotNull private final Map<Map<Material, List<Integer>>, List<Double>> flyBlocks;
-    @NotNull private final Map<Map<Material, List<Integer>>, List<Double>> moveBlocks;
+    @NotNull private final BlockLimitManager flyBlocks;
+    @NotNull private final BlockLimitManager moveBlocks;
     @NotNull private final List<Material> harvestBlocks;
     @NotNull private final List<Material> harvesterBladeBlocks;
     @NotNull private final Set<Material> passthroughBlocks;
@@ -114,13 +113,14 @@ final public class CraftType {
         }
 
         craftName = (String) data.get("name");
+        Bukkit.getLogger().info(craftName);
         maxSize = integerFromObject(data.get("maxSize"));
         minSize = integerFromObject(data.get("minSize"));
-        allowedBlocks = materialMapFromObject(data.get("allowedBlocks"));
+        allowedBlocks = new BlockContainer(data.get("allowedBlocks"));
         if (data.containsKey("forbiddenBlocks")){
-            forbiddenBlocks = materialMapFromObject(data.get("forbiddenBlocks"));
+            forbiddenBlocks = new BlockContainer(data.get("forbiddenBlocks"));
         } else {
-            forbiddenBlocks = Collections.emptyMap();
+            forbiddenBlocks = new BlockContainer();
         }
         forbiddenSignStrings = stringListFromObject(data.get("forbiddenSignStrings"));
         if (data.containsKey("canFly")) {
@@ -147,11 +147,11 @@ final public class CraftType {
             cruiseTickCooldown = tickCooldown;
         }
 
-        flyBlocks = materialMapListFromObject(data.get("flyblocks"));
+        flyBlocks = new BlockLimitManager(data.get("flyblocks"));
         if (data.containsKey("moveblocks")) {
-            moveBlocks = materialMapListFromObject(data.get("moveblocks"));
+            moveBlocks = new BlockLimitManager(data.get("moveblocks"));
         } else {
-            moveBlocks = new HashMap<>();
+            moveBlocks = new BlockLimitManager();
         }
 
         if (data.containsKey("canCruise")) {
@@ -882,11 +882,13 @@ final public class CraftType {
         return minSize;
     }
 
-    public Map<Material, List<Integer>> getAllowedBlocks() {
+    @NotNull
+    public BlockContainer getAllowedBlocks() {
         return allowedBlocks;
     }
 
-    public Map<Material, List<Integer>> getForbiddenBlocks() {
+    @NotNull
+    public BlockContainer getForbiddenBlocks() {
         return forbiddenBlocks;
     }
 
@@ -1031,12 +1033,12 @@ final public class CraftType {
     }
 
     @NotNull
-    public Map<Map<Material, List<Integer>>, List<Double>> getFlyBlocks() {
+    public BlockLimitManager getFlyBlocks() {
         return flyBlocks;
     }
 
     @NotNull
-    public Map<Map<Material, List<Integer>>, List<Double>> getMoveBlocks() {
+    public BlockLimitManager getMoveBlocks() {
         return moveBlocks;
     }
 

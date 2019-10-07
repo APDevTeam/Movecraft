@@ -27,10 +27,8 @@ import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import com.sk89q.worldguard.protection.regions.RegionContainer;
-import net.countercraft.movecraft.Movecraft;
-import net.countercraft.movecraft.MovecraftLocation;
+import net.countercraft.movecraft.*;
 import net.countercraft.movecraft.Rotation;
-import net.countercraft.movecraft.WorldHandler;
 import net.countercraft.movecraft.async.detection.DetectionTask;
 import net.countercraft.movecraft.async.detection.DetectionTaskData;
 import net.countercraft.movecraft.async.rotation.RotationTask;
@@ -499,24 +497,28 @@ public class AsyncManager extends BukkitRunnable {
             final World w = pcraft.getW();
             int totalNonAirBlocks = 0;
             int totalNonAirWaterBlocks = 0;
-            HashMap<Map<Material, List<Integer>>, Integer> foundFlyBlocks = new HashMap<>();
-            HashMap<Map<Material, List<Integer>>, Integer> foundMoveBlocks = new HashMap<>();
+            HashMap<Set<MovecraftBlock>, Integer> foundFlyBlocks = new HashMap<>();
+            HashMap<Set<MovecraftBlock>, Integer> foundMoveBlocks = new HashMap<>();
             // go through each block in the blocklist, and
             // if its in the FlyBlocks, total up the number
             // of them
+            BlockLimitManager moveBlocks = pcraft.getType().getMoveBlocks();
+            BlockLimitManager flyBlocks = pcraft.getType().getFlyBlocks();
             for (MovecraftLocation l : pcraft.getHitBox()) {
                 Material blockType = w.getBlockAt(l.getX(), l.getY(), l.getZ()).getType();
                 byte dataID = w.getBlockAt(l.getX(), l.getY(), l.getZ()).getData();
-                for (Map<Material, List<Integer>> flyBlockDef : pcraft.getType().getFlyBlocks().keySet()) {
-                    if ((flyBlockDef.containsKey(blockType) && flyBlockDef.get(blockType).isEmpty())|| (flyBlockDef.containsKey(blockType) && flyBlockDef.get(blockType).contains(dataID))) {
-                        foundFlyBlocks.merge(flyBlockDef, 1, (a, b) -> a + b);
-                    }
+                if (flyBlocks.contains(blockType)) {
+                    foundFlyBlocks.merge(flyBlocks.get(blockType).getBlocks(), 1, (a, b) -> a + b);
+                } else if (flyBlocks.contains(blockType, dataID)){
+                    foundFlyBlocks.merge(flyBlocks.get(blockType, dataID).getBlocks(), 1, (a, b) -> a + b);
                 }
-                for (Map<Material, List<Integer>> moveBlockDef : pcraft.getType().getMoveBlocks().keySet()) {
-                    if ((moveBlockDef.containsKey(blockType) && moveBlockDef.get(blockType).isEmpty())|| (moveBlockDef.containsKey(blockType) && moveBlockDef.get(blockType).contains(dataID))) {
-                        foundMoveBlocks.merge(moveBlockDef, 1, (a, b) -> a + b);
+
+                    if (moveBlocks.contains(blockType)) {
+                        foundMoveBlocks.merge(moveBlocks.get(blockType).getBlocks(), 1, (a, b) -> a + b);
+                    } else if (moveBlocks.contains(blockType, dataID)){
+                        foundMoveBlocks.merge(moveBlocks.get(blockType, dataID).getBlocks(), 1, (a, b) -> a + b);
                     }
-                }
+
 
                 if (blockType != Material.AIR) {
                     totalNonAirBlocks++;
@@ -531,29 +533,28 @@ public class AsyncManager extends BukkitRunnable {
             // SinkPercent
             boolean isSinking = false;
 
-            for (Map<Material, List<Integer>> i : pcraft.getType().getFlyBlocks().keySet()) {
+            for (BlockLimitManager.Entry i : pcraft.getType().getFlyBlocks().getEntries()) {
                 int numfound = 0;
-                if (foundFlyBlocks.get(i) != null) {
-                    numfound = foundFlyBlocks.get(i);
+                if (foundFlyBlocks.get(i.getBlocks()) != null) {
+                    numfound = foundFlyBlocks.get(i.getBlocks());
                 }
                 double percent = ((double) numfound / (double) totalNonAirBlocks) * 100.0;
-                double flyPercent = pcraft.getType().getFlyBlocks().get(i).get(0);
+                double flyPercent = i.getLowerLimit();
                 double sinkPercent = flyPercent * pcraft.getType().getSinkPercent() / 100.0;
                 if (percent < sinkPercent) {
                     isSinking = true;
                 }
 
             }
-            for (Map<Material, List<Integer>> i : pcraft.getType().getMoveBlocks().keySet()) {
+            for (BlockLimitManager.Entry i : pcraft.getType().getMoveBlocks().getEntries()) {
                 int numfound = 0;
-                if (foundMoveBlocks.get(i) != null) {
-                    numfound = foundMoveBlocks.get(i);
+                if (foundMoveBlocks.get(i.getBlocks()) != null) {
+                    numfound = foundMoveBlocks.get(i.getBlocks());
                 }
                 double percent = ((double) numfound / (double) totalNonAirBlocks) * 100.0;
-                double movePercent = pcraft.getType().getMoveBlocks().get(i).get(0);
+                double movePercent = i.getLowerLimit();
                 double disablePercent = movePercent * pcraft.getType().getSinkPercent() / 100.0;
                 if (percent < disablePercent && !pcraft.getDisabled() && pcraft.isNotProcessing()) {
-                    Bukkit.broadcastMessage(String.valueOf(percent));
                     pcraft.setDisabled(true);
                     if (pcraft.getNotificationPlayer() != null) {
                         Location loc = pcraft.getNotificationPlayer().getLocation();
@@ -612,7 +613,7 @@ public class AsyncManager extends BukkitRunnable {
                         break;
                     }
                 }
-                if (region != null && Settings.WorldGuardBlockSinkOnPVPPerm && WorldguardUtils.pvpAllowed(region)){
+                if (region != null && Settings.WorldGuardBlockSinkOnPVPPerm && WorldguardUtils.pvpAllowed(region) && notifyP != null){
                     notifyP.sendMessage(I18nSupport.getInternationalisedString("Player- Craft should sink but PVP is not allowed in this WorldGuard region"));
                     isSinking = false;
                 }

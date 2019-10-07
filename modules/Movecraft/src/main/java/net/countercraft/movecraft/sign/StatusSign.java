@@ -5,17 +5,20 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
+import net.countercraft.movecraft.utils.BlockLimitManager;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.Furnace;
 import org.bukkit.block.Sign;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public final class StatusSign implements Listener{
 
@@ -43,53 +46,53 @@ public final class StatusSign implements Listener{
             return;
         }
         int fuel = 0;
-        int totalBlocks = 0;
-        Map<Material, Integer> foundBlocks = new HashMap<>();
-        for (MovecraftLocation ml : craft.getHitBox()) {
-            Material blockType = craft.getW().getBlockAt(ml.getX(), ml.getY(), ml.getZ()).getType();
-            Integer count = foundBlocks.get(blockType);
-            if (foundBlocks.containsKey(blockType)) {
-                foundBlocks.put(blockType, count + 1);
-            } else {
-                foundBlocks.put(blockType, 1);
-            }
-
-            if (blockType == Material.FURNACE) {
-                InventoryHolder inventoryHolder = (InventoryHolder) craft.getW().getBlockAt(ml.getX(), ml.getY(), ml.getZ()).getState();
-                for (Material fuelType : Settings.FuelTypes.keySet()) {
-                    if (!inventoryHolder.getInventory().contains(fuelType)) {
-                        continue;
-                    }
-                    ItemStack[] content = inventoryHolder.getInventory().getContents();
-                    for (ItemStack item : content) {
-                        if (item == null)
-                            continue;
-                        fuel += item.getAmount() * Settings.FuelTypes.get(fuelType);
-                    }
-                }
-
-            }
-            if (blockType != Material.AIR || blockType != Material.CAVE_AIR || blockType != Material.VOID_AIR) {
-                totalBlocks++;
-            }
-        }
+        int totalBlocks = craft.getHitBox().size();
         int signLine = 1;
         int signColumn = 0;
-        for (Map<Material, List<Integer>> alFlyBlock : craft.getType().getFlyBlocks().keySet()) {
-            ArrayList<Material> flyBlocks = new ArrayList<>(alFlyBlock.keySet());
-            Collections.sort(flyBlocks);
-            Double minimum = craft.getType().getFlyBlocks().get(alFlyBlock).get(0);
-            int amount = 0;
-            boolean addToStatus = false;
-            for (Material flyBlock : flyBlocks) {
-                if (foundBlocks.containsKey(flyBlock) && minimum > 0) { // if it has a minimum, it should be considered for sinking consideration
-                    amount += foundBlocks.get(flyBlock);
-                    addToStatus = true;
+        final BlockLimitManager flyBlocks = craft.getType().getFlyBlocks();
+        Map<BlockLimitManager.Entry, Integer> foundFlyBlocks = new HashMap<>();
+        for (MovecraftLocation ml : craft.getHitBox()){
+            Location loc = ml.toBukkit(craft.getW());
+            Material testType = loc.getBlock().getType();
+            byte data = 0;
+            if (Settings.IsLegacy){
+                data = loc.getBlock().getData();
+            }
+
+            if (flyBlocks.contains(testType)){
+                if (foundFlyBlocks.containsKey(flyBlocks.get(testType))){
+                    int count = foundFlyBlocks.get(flyBlocks.get(testType));
+                    count++;
+                    foundFlyBlocks.put(flyBlocks.get(testType), count);
+                } else {
+                    foundFlyBlocks.put(flyBlocks.get(testType), 1);
+                }
+            } else if (flyBlocks.contains(testType, data)){
+                if (foundFlyBlocks.containsKey(flyBlocks.get(testType, data))){
+                    int count = foundFlyBlocks.get(flyBlocks.get(testType, data));
+                    count++;
+                    foundFlyBlocks.put(flyBlocks.get(testType, data), count);
+                } else {
+                    foundFlyBlocks.put(flyBlocks.get(testType, data), 1);
                 }
             }
-            Material flyBlock = flyBlocks.get(0);
-            if (addToStatus) {
-                Double percentPresent = (double) (amount * 100 / totalBlocks);
+
+            if (testType == Material.FURNACE) {
+                Furnace furnace = (Furnace) loc.getBlock().getState();
+                for (ItemStack fuelStack : furnace.getInventory().getContents()) {
+                    if (fuelStack == null || !Settings.FuelTypes.containsKey(fuelStack.getType())) {
+                        continue;
+                    }
+                    fuel += fuelStack.getAmount() * Settings.FuelTypes.get(fuelStack.getType());
+                }
+            }
+        }
+        for (BlockLimitManager.Entry entry : foundFlyBlocks.keySet()) {
+            int amount = foundFlyBlocks.get(entry);
+            double minimum = entry.getLowerLimit();
+            if (minimum == 0)
+                continue;
+            double percentPresent = ((double) amount * 100 / (double) totalBlocks);
                 String signText = "";
                 if (percentPresent > minimum * 1.04) {
                     signText += ChatColor.GREEN;
@@ -100,9 +103,9 @@ public final class StatusSign implements Listener{
                 }
                 signText += Settings.StatusSignMarkers.get(flyBlocks);
                 signText += " ";
-                signText += percentPresent.intValue();
+                signText += (int) percentPresent;
                 signText += "/";
-                signText += minimum.intValue();
+                signText += (int) minimum;
                 signText += "  ";
                 if (signColumn == 0) {
                     event.setLine(signLine, signText);
@@ -115,7 +118,7 @@ public final class StatusSign implements Listener{
                     signColumn = 0;
                 }
             }
-        }
+
         if (signLine < 3 && signColumn == 1){
             signLine++;
         }

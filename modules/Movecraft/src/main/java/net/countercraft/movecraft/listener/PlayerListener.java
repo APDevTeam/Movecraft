@@ -23,6 +23,7 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.utils.BlockContainer;
 import net.countercraft.movecraft.utils.MathUtils;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -34,7 +35,6 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
-import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -43,8 +43,8 @@ public class PlayerListener implements Listener {
 
     private String checkCraftBorders(Craft craft) {
         String ret = "";
-        final Map<Material, List<Integer>> ALLOWED_BLOCKS = craft.getType().getAllowedBlocks();
-        final Map<Material, List<Integer>> FORBIDDEN_BLOCKS = craft.getType().getForbiddenBlocks();
+        final BlockContainer ALLOWED_BLOCKS = craft.getType().getAllowedBlocks();
+        final BlockContainer FORBIDDEN_BLOCKS = craft.getType().getForbiddenBlocks();
         final MovecraftLocation[] SHIFTS = {
                 //x
                 new MovecraftLocation(-1, 0, 0),
@@ -74,14 +74,14 @@ public class PlayerListener implements Listener {
                 }
                 Block testBlock = test.toBukkit(craft.getW()).getBlock();
                 Material type = testBlock.getType();
-                int metaData = testBlock.getData();
+                byte metaData = testBlock.getData();
                 //Break the loop if an allowed block is found adjacent to the craft's hitbox
-                if (ALLOWED_BLOCKS.get(type) == null || ALLOWED_BLOCKS.get(type).isEmpty() ? ALLOWED_BLOCKS.containsKey(type) : ALLOWED_BLOCKS.get(type).contains(metaData)){
+                if (ALLOWED_BLOCKS.contains(type) || ALLOWED_BLOCKS.contains(type, metaData)){
                     ret = "@ " + test.toString() + " " + type.name();
                     break;
                 }
                 //Do the same if a forbidden block is found
-                else if (FORBIDDEN_BLOCKS.get(type) == null || FORBIDDEN_BLOCKS.get(type).isEmpty() ? FORBIDDEN_BLOCKS.containsKey(type) : FORBIDDEN_BLOCKS.get(type).contains(metaData)){
+                else if (FORBIDDEN_BLOCKS.contains(type) || FORBIDDEN_BLOCKS.contains(type, metaData)){
                     ret = "@ " + test.toString() + " " + type.name();
                     break;
                 }
