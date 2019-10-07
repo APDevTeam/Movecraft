@@ -558,6 +558,23 @@ public class Movecraft extends JavaPlugin {
         }
     }
 
+    public void reload(){
+        onDisable();
+        asyncManager.cancel();
+        if (assaultManager != null)
+            assaultManager.cancel();
+        assaultManager = null;
+        if (siegeManager != null)
+            siegeManager.cancel();
+        siegeManager = null;
+        if (repairManager != null){
+            repairManager.cancel();
+        }
+        repairManager = null;
+        onEnable();
+
+
+    }
 
     public WorldGuardPlugin getWorldGuardPlugin() {
         return worldGuardPlugin;

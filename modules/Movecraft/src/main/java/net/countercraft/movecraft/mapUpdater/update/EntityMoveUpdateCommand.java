@@ -21,6 +21,7 @@ import net.countercraft.movecraft.utils.TeleportUtils;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerTeleportEvent;
 
 import java.util.Objects;
 
@@ -51,8 +52,8 @@ public class EntityMoveUpdateCommand extends UpdateCommand {
     @Override
     public void doUpdate() {
         Location playerLoc = entity.getLocation();
-        if (!(entity instanceof Player) || yaw > .01 || pitch > .01) {
-            entity.teleport(new Location(entity.getWorld(), x + playerLoc.getX(), y + playerLoc.getY(), z + playerLoc.getZ(), yaw + playerLoc.getYaw(), pitch + playerLoc.getPitch()));
+        if (!(entity instanceof Player) || Math.abs(yaw) > .01 || pitch > .01) {
+            entity.teleport(new Location(entity.getWorld(), x + playerLoc.getX(), y + playerLoc.getY(), z + playerLoc.getZ(), yaw + playerLoc.getYaw(), pitch + playerLoc.getPitch()), PlayerTeleportEvent.TeleportCause.UNKNOWN);
             return;
         }
         //Movecraft.getInstance().getWorldHandler().addPlayerLocation((Player) entity,x,y,z,yaw,pitch);
