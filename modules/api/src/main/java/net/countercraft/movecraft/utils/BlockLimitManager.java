@@ -13,6 +13,10 @@ public class BlockLimitManager {
     public BlockLimitManager(Object obj){
         HashMap objMap = (HashMap) obj;
         for (Object i : objMap.keySet()) {
+            //Ignore keys that are null
+            if (i == null){
+                continue;
+            }
             Set<MovecraftBlock> blocks = new HashSet<>();
             if (i instanceof ArrayList<?>) {
                 for (Object o : (ArrayList) i) {

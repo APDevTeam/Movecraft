@@ -370,6 +370,8 @@ public class DetectionTask extends AsyncTask {
             Double minPercentage = i.getLowerLimit();
             Double maxPercentage = i.getUpperLimit();
             ArrayList<MovecraftBlock> flyBlockTypes = new ArrayList<>(i.getBlocks());
+            if (flyBlockTypes.isEmpty())
+                continue;
             String name = flyBlockTypes.get(0).getType().name();
             if (minPercentage < 10000.0) {
                 if (blockPercentage < minPercentage) {

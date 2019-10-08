@@ -35,4 +35,5 @@ deploy:
   skip_cleanup: true
   on:
     repo: eirikh1996/Movecraft
+    dist: trusty
     tags: true
