@@ -320,7 +320,7 @@ public abstract class Craft {
                     count++;
             }
             double woolRatio = count / hitBox.size();
-            return Math.max((int)Math.round((20.0 * type.getCruiseSkipBlocks())/((type.getDynamicFlyBlockSpeedFactor()+1)*(woolRatio - .5) + (20.0/type.getCruiseTickCooldown()) + 1)), 1);
+            return Math.max((int)Math.round((20.0 * type.getCruiseSkipBlocks())/((type.getDynamicFlyBlockSpeedFactor()*1.5)*(woolRatio - .5) + (20.0/type.getCruiseTickCooldown()) + 1)), 1);
             //return Math.max((int)((20.0 * type.getDynamicFlyBlockSpeedFactor()/100.0)/(woolRatio - .499)),0) + type.getCruiseTickCooldown();
         }
 
