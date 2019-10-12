@@ -332,8 +332,8 @@ public abstract class Craft {
                 if(flyBlockMaterials.contains(location.toBukkit(w).getBlock().getType()))
                     count++;
             }
-            return Math.max((int) (20 / (type.getCruiseTickCooldown() * (1  + type.getDynamicFlyBlockSpeedFactor() * (count /hitBox.size() - .5)))), 1);
-            //return  Math.max((int)(type.getCruiseTickCooldown()* (1 - count /hitBox.size()) +chestPenalty),1);
+            double woolRatio = count / hitBox.size();
+            return Math.max((int)((20.0 * type.getDynamicFlyBlockSpeedFactor()/100.0)/(woolRatio - .50001)),0) + type.getCruiseTickCooldown();
         }
 
         if(type.getDynamicLagSpeedFactor()==0)

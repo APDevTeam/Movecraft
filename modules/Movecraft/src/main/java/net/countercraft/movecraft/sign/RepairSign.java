@@ -97,7 +97,6 @@ public class RepairSign implements Listener{
             return;
         }
 
-
         MovecraftRepair movecraftRepair = Movecraft.getInstance().getMovecraftRepair();
         event.setCancelled(true);
         if (movecraftRepair.saveCraftRepairState(pCraft, sign)) {
@@ -117,6 +116,7 @@ public class RepairSign implements Listener{
             event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("You must be piloting a craft"));
             return;
         }
+
         if (Settings.RepairTicksPerBlock == 0) {
             event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Repair functionality is disabled or WorldEdit was not detected"));
             return;
@@ -125,8 +125,9 @@ public class RepairSign implements Listener{
             event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
             return;
         }
-        String repairName = event.getPlayer().getName();
-        repairName += sign.getLine(1);
+        String repairName = event.getPlayer().getUniqueId().toString();
+        repairName += "_";
+        repairName += ChatColor.stripColor(sign.getLine(1));
         MovecraftRepair movecraftRepair = Movecraft.getInstance().getMovecraftRepair();
         Clipboard clipboard = movecraftRepair.loadCraftRepairStateClipboard(pCraft, sign);
         if (clipboard == null){
