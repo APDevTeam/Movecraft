@@ -27,10 +27,13 @@ import com.sk89q.worldedit.world.block.BlockType;
 import com.sk89q.worldguard.protection.regions.ProtectedCuboidRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedPolygonalRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
+import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.MovecraftRepair;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.utils.CollectionUtils;
 import net.countercraft.movecraft.utils.HashHitBox;
+import net.countercraft.movecraft.utils.HitBox;
 import net.countercraft.movecraft.utils.Pair;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -85,8 +88,12 @@ public class IMovecraftRepair extends MovecraftRepair {
         ForwardExtentCopy copy = new ForwardExtentCopy(source, region, clipboard.getOrigin(), destination, clipboard.getOrigin());
         ExistingBlockMask mask = new ExistingBlockMask(source);
         copy.setSourceMask(mask);
+        final HitBox outsideLocs = CollectionUtils.filter(solidBlockLocs(world, region), hitBox);
         try {
             Operations.complete(copy);
+            for (MovecraftLocation ml : outsideLocs){
+                clipboard.setBlock(BlockVector3.at(ml.getX(), ml.getY(), ml.getZ()), BukkitAdapter.asBlockType(Material.AIR).getDefaultState());
+            }
         } catch (WorldEditException e) {
             e.printStackTrace();
             return false;
@@ -444,5 +451,20 @@ public class IMovecraftRepair extends MovecraftRepair {
     @Override
     public long getNumDiffBlocks(String s) {
         return numDiffBlocksMap.get(s);
+    }
+
+    private HashHitBox solidBlockLocs(World w, CuboidRegion cr){
+        HashHitBox returnSet = new HashHitBox();
+        for (int x = cr.getMinimumPoint().getBlockX(); x <= cr.getMaximumPoint().getBlockX(); x++){
+            for (int y = cr.getMinimumPoint().getBlockY(); y <= cr.getMaximumPoint().getBlockY(); y++){
+                for (int z = cr.getMinimumPoint().getBlockZ(); z <= cr.getMaximumPoint().getBlockZ(); z++){
+                    MovecraftLocation ml = new MovecraftLocation(x, y, z);
+                    if (ml.toBukkit(w).getBlock().getType() != Material.AIR){
+                        returnSet.add(ml);
+                    }
+                }
+            }
+        }
+        return returnSet;
     }
 }

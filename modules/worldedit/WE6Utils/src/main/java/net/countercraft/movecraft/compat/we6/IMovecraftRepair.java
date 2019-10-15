@@ -5,6 +5,7 @@ import com.sk89q.jnbt.ListTag;
 import com.sk89q.jnbt.Tag;
 import com.sk89q.worldedit.MaxChangedBlocksException;
 import com.sk89q.worldedit.WorldEdit;
+import com.sk89q.worldedit.WorldEditException;
 import com.sk89q.worldedit.blocks.BaseBlock;
 import com.sk89q.worldedit.bukkit.BukkitWorld;
 import com.sk89q.worldedit.extent.Extent;
@@ -26,9 +27,7 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.MovecraftRepair;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.utils.HashHitBox;
-import net.countercraft.movecraft.utils.MathUtils;
-import net.countercraft.movecraft.utils.Pair;
+import net.countercraft.movecraft.utils.*;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Dispenser;
@@ -80,6 +79,7 @@ public class IMovecraftRepair extends MovecraftRepair {
         repairName += ".schematic";
         File repairStateFile = new File(playerDirectory, repairName);
         Set<BaseBlock> blockSet = baseBlocksFromCraft(craft);
+        final HitBox outsideLocs = CollectionUtils.filter(solidBlockLocs(craft.getW(), cRegion), hitBox);
         try {
 
             BlockArrayClipboard clipboard = new BlockArrayClipboard(cRegion);
@@ -90,11 +90,14 @@ public class IMovecraftRepair extends MovecraftRepair {
             copy.setSourceMask(mask);
             Operations.completeLegacy(copy);
             ClipboardWriter writer = ClipboardFormat.SCHEMATIC.getWriter(new FileOutputStream(repairStateFile, false));
+            for (MovecraftLocation ml : outsideLocs){
+                clipboard.setBlock(new com.sk89q.worldedit.Vector(ml.getX(), ml.getY(), ml.getZ()), new BaseBlock(0));
+            }
             writer.write(clipboard, worldData);
             writer.close();
             return true;
 
-        } catch (MaxChangedBlocksException | IOException e) {
+        } catch (IOException | WorldEditException e) {
             e.printStackTrace();
             return false;
         }
@@ -595,6 +598,21 @@ public class IMovecraftRepair extends MovecraftRepair {
         }
         if (Settings.Debug) {
             Bukkit.getLogger().info(returnSet.toString());
+        }
+        return returnSet;
+    }
+
+    private HashHitBox solidBlockLocs(World w, CuboidRegion cr){
+        HashHitBox returnSet = new HashHitBox();
+        for (int x = cr.getMinimumPoint().getBlockX(); x <= cr.getMaximumPoint().getBlockX(); x++){
+            for (int y = cr.getMinimumPoint().getBlockY(); y <= cr.getMaximumPoint().getBlockY(); y++){
+                for (int z = cr.getMinimumPoint().getBlockZ(); z <= cr.getMaximumPoint().getBlockZ(); z++){
+                    MovecraftLocation ml = new MovecraftLocation(x, y, z);
+                    if (ml.toBukkit(w).getBlock().getType() != Material.AIR){
+                        returnSet.add(ml);
+                    }
+                }
+            }
         }
         return returnSet;
     }
