@@ -3,6 +3,7 @@ package net.countercraft.movecraft.sign;
 import com.sk89q.worldedit.blocks.BaseBlock;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
+import javafx.util.Pair;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.MovecraftRepair;
@@ -17,7 +18,6 @@ import net.countercraft.movecraft.repair.Repair;
 import net.countercraft.movecraft.repair.RepairManager;
 import net.countercraft.movecraft.repair.RepairUtils;
 import net.countercraft.movecraft.utils.LegacyUtils;
-import net.countercraft.movecraft.utils.Pair;
 import net.countercraft.movecraft.utils.WorldEditUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -126,7 +126,6 @@ public class RepairSign implements Listener{
             return;
         }
         String repairName = event.getPlayer().getUniqueId().toString();
-        repairName += "_";
         repairName += ChatColor.stripColor(sign.getLine(1));
         MovecraftRepair movecraftRepair = Movecraft.getInstance().getMovecraftRepair();
         Clipboard clipboard = movecraftRepair.loadCraftRepairStateClipboard(pCraft, sign);
@@ -156,13 +155,13 @@ public class RepairSign implements Listener{
                     Block b = pCraft.getW().getBlockAt(loc.getX(), loc.getY(), loc.getZ());
                     if ((b.getType() == Material.CHEST) || (b.getType() == Material.TRAPPED_CHEST)) {
                         InventoryHolder inventoryHolder = (InventoryHolder) b.getState();
-                        if (inventoryHolder.getInventory().contains(type.getLeft()) && remainingQty > 0) {
-                            HashMap<Integer, ? extends ItemStack> foundItems = inventoryHolder.getInventory().all(type.getLeft());
+                        if (inventoryHolder.getInventory().contains(type.getKey()) && remainingQty > 0) {
+                            HashMap<Integer, ? extends ItemStack> foundItems = inventoryHolder.getInventory().all(type.getKey());
                             // count how many were in the chest
                             int numfound = 0;
                             for (ItemStack istack : foundItems.values()) {
                                 //Check data value if it is coal
-                                if (istack.getType().equals(Material.COAL) && istack.getData().getData() != type.getRight()){
+                                if (istack.getType().equals(Material.COAL) && istack.getData().getData() != type.getValue()){
                                     continue;
                                 }
                                 numfound += istack.getAmount();
@@ -173,15 +172,15 @@ public class RepairSign implements Listener{
                     }
                 }
                 if (remainingQty > 0) {
-                    if (type.getLeft().equals(Material.COAL)) {
-                        event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("Repair - Need more of material") + ": %s - %d", type.getRight() == 1 ? "charcoal" : "coal", remainingQty));
+                    if (type.getKey().equals(Material.COAL)) {
+                        event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("Repair - Need more of material") + ": %s - %d", type.getValue() == 1 ? "charcoal" : "coal", remainingQty));
                     } else {
-                        event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("Repair - Need more of material") + ": %s - %d", type.getLeft().name().toLowerCase().replace("_", " "), remainingQty));
+                        event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("Repair - Need more of material") + ": %s - %d", type.getKey().name().toLowerCase().replace("_", " "), remainingQty));
                     }
 
                     enoughMaterial = false;
                 } else {
-                    chestsToTakeFrom.put(type.getLeft(), chests);
+                    chestsToTakeFrom.put(type.getKey(), chests);
                 }
             }
             if (Movecraft.getInstance().getEconomy() != null && enoughMaterial) {
@@ -197,10 +196,10 @@ public class RepairSign implements Listener{
                 // we know we have enough materials to make the repairs, so remove the materials from the chests
                 for (Pair<Material, Byte> type : numMissingItems.keySet()) {
                     int remainingQty = (int) Math.round(numMissingItems.get(type));
-                    for (InventoryHolder inventoryHolder : chestsToTakeFrom.get(type.getLeft())) {
-                        HashMap<Integer, ? extends ItemStack> foundItems = inventoryHolder.getInventory().all(type.getLeft());
+                    for (InventoryHolder inventoryHolder : chestsToTakeFrom.get(type.getKey())) {
+                        HashMap<Integer, ? extends ItemStack> foundItems = inventoryHolder.getInventory().all(type.getKey());
                         for (ItemStack istack : foundItems.values()) {
-                            if (istack.getType().equals(Material.COAL) && istack.getData().getData() != type.getRight()){
+                            if (istack.getType().equals(Material.COAL) && istack.getData().getData() != type.getValue()){
                                 continue;
                             }
                             if (istack.getAmount() <= remainingQty) {
@@ -222,8 +221,8 @@ public class RepairSign implements Listener{
                 while (!locMissingBlocks.isEmpty()){
                     Pair<Vector,Vector> locs = locMissingBlocks.pollFirst();
                     assert locs != null;
-                    Vector cLoc = locs.getRight();
-                    MovecraftLocation moveLoc = new MovecraftLocation(locs.getLeft().getBlockX(), locs.getLeft().getBlockY(), locs.getLeft().getBlockZ());
+                    Vector cLoc = locs.getValue();
+                    MovecraftLocation moveLoc = new MovecraftLocation(locs.getKey().getBlockX(), locs.getKey().getBlockY(), locs.getKey().getBlockZ());
                     //To avoid any issues during the repair, keep certain blocks in different linked lists
                     Material type;
                     if (Settings.IsLegacy) {
@@ -264,12 +263,12 @@ public class RepairSign implements Listener{
                 return;
             }
             if (numDifferentBlocks != 0) {
-                for (Pair<Material, Byte> blockType : numMissingItems.keySet()) {
                 event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Repair - Supplies needed"));
-                    if (blockType.getLeft().equals(Material.COAL)) {
-                        event.getPlayer().sendMessage(String.format("%s : %d", blockType.getRight() == 1 ? "charcoal" : "coal" , Math.round(numMissingItems.get(blockType))));
+                for (Pair<Material, Byte> blockType : numMissingItems.keySet()) {
+                    if (blockType.getKey().equals(Material.COAL)) {
+                        event.getPlayer().sendMessage(String.format("%s : %d", blockType.getValue() == 1 ? "charcoal" : "coal" , Math.round(numMissingItems.get(blockType))));
                     } else {
-                        event.getPlayer().sendMessage(String.format("%s : %d", blockType.getLeft().name().toLowerCase().replace("_", " "), Math.round(numMissingItems.get(blockType))));
+                        event.getPlayer().sendMessage(String.format("%s : %d", blockType.getKey().name().toLowerCase().replace("_", " "), Math.round(numMissingItems.get(blockType))));
                     }
                 }
                 long durationInSeconds = numDifferentBlocks * Settings.RepairTicksPerBlock / 20;

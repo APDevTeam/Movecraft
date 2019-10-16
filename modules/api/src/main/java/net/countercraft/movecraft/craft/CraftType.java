@@ -112,353 +112,351 @@ final public class CraftType {
             throw new TypeNotFoundException("No file found at path " + f.getAbsolutePath());
         }
 
-        craftName = (String) data.get("name");
-        Bukkit.getLogger().info(craftName);
-        maxSize = integerFromObject(data.get("maxSize"));
-        minSize = integerFromObject(data.get("minSize"));
-        allowedBlocks = new BlockContainer(data.get("allowedBlocks"));
-        if (data.containsKey("forbiddenBlocks")){
-            forbiddenBlocks = new BlockContainer(data.get("forbiddenBlocks"));
-        } else {
-            forbiddenBlocks = new BlockContainer();
-        }
-        forbiddenSignStrings = stringListFromObject(data.get("forbiddenSignStrings"));
-        if (data.containsKey("canFly")) {
-            blockedByWater = (Boolean) data.get("canFly");
-        } else if (data.containsKey("blockedByWater")) {
-            blockedByWater = (Boolean) data.get("blockedByWater");
-        } else {
-            blockedByWater = true;
-        }
-        if (data.containsKey("requireWaterContact")) {
-            requireWaterContact = (Boolean) data.get("requireWaterContact");
-        } else {
-            requireWaterContact = false;
-        }
-        if (data.containsKey("tryNudge")) {
-            tryNudge = (Boolean) data.get("tryNudge");
-        } else {
-            tryNudge = false;
-        }
-        tickCooldown = (int) Math.ceil(20 / (doubleFromObject(data.get("speed"))));
-        if (data.containsKey("cruiseSpeed")) {
-            cruiseTickCooldown = (int) Math.ceil(20 / (doubleFromObject(data.get("cruiseSpeed"))));
-        } else {
-            cruiseTickCooldown = tickCooldown;
-        }
-
-        flyBlocks = new BlockLimitManager(data.get("flyblocks"));
-        if (data.containsKey("moveblocks")) {
-            moveBlocks = new BlockLimitManager(data.get("moveblocks"));
-        } else {
-            moveBlocks = new BlockLimitManager();
-        }
-
-        if (data.containsKey("canCruise")) {
-            canCruise = (Boolean) data.get("canCruise");
-        } else {
-            canCruise = false;
-        }
-        if (data.containsKey("canTeleport")) {
-            canTeleport = (Boolean) data.get("canTeleport");
-        } else {
-            canTeleport = false;
-        }
-        if (data.containsKey("canBeNamed")){
-            canBeNamed = (Boolean) data.get("canBeNamed");
-        } else {
-            canBeNamed = true;
-        }
-        if (data.containsKey("cruiseOnPilot")) {
-            cruiseOnPilot = (Boolean) data.get("cruiseOnPilot");
-        } else {
-            cruiseOnPilot = false;
-        }
-        if (data.containsKey("cruiseOnPilotVertMove")) {
-            cruiseOnPilotVertMove = integerFromObject(data.get("cruiseOnPilotVertMove"));
-        } else {
-            cruiseOnPilotVertMove = 0;
-        }
-        if (data.containsKey("allowVerticalMovement")) {
-            allowVerticalMovement = (Boolean) data.get("allowVerticalMovement");
-        } else {
-            allowVerticalMovement = true;
-        }
-        if (data.containsKey("rotateAtMidpoint")) {
-            rotateAtMidpoint = (Boolean) data.get("rotateAtMidpoint");
-        } else {
-            rotateAtMidpoint = false;
-        }
-        if (data.containsKey("allowHorizontalMovement")) {
-            allowHorizontalMovement = (Boolean) data.get("allowHorizontalMovement");
-        } else {
-            allowHorizontalMovement = true;
-        }
-        if (data.containsKey("allowRemoteSign")) {
-            allowRemoteSign = (Boolean) data.get("allowRemoteSign");
-        } else {
-            allowRemoteSign = true;
-        }
-        if (data.containsKey("allowCannonDirectorSign")) {
-            allowCannonDirectorSign = (Boolean) data.get("allowCannonDirectorSign");
-        } else {
-            allowCannonDirectorSign = true;
-        }
-        if (data.containsKey("allowAADirectorSign")) {
-            allowAADirectorSign = (Boolean) data.get("allowAADirectorSign");
-        } else {
-            allowAADirectorSign = true;
-        }
-        if (data.containsKey("canStaticMove")) {
-            canStaticMove = (Boolean) data.get("canStaticMove");
-        } else {
-            canStaticMove = false;
-        }
-        if (data.containsKey("maxStaticMove")) {
-            maxStaticMove = integerFromObject(data.get("maxStaticMove"));
-        } else {
-            maxStaticMove = 10000;
-        }
-        if (data.containsKey("cruiseSkipBlocks")) {
-            cruiseSkipBlocks = integerFromObject(data.get("cruiseSkipBlocks"));
-        } else {
-            cruiseSkipBlocks = 0;
-        }
-        if (data.containsKey("vertCruiseSkipBlocks")) {
-            vertCruiseSkipBlocks = integerFromObject(data.get("vertCruiseSkipBlocks"));
-        } else {
-            vertCruiseSkipBlocks = cruiseSkipBlocks;
-        }
-        if (data.containsKey("halfSpeedUnderwater")) {
-            halfSpeedUnderwater = (Boolean) data.get("halfSpeedUnderwater");
-        } else {
-            halfSpeedUnderwater = false;
-        }
-        if (data.containsKey("focusedExplosion")) {
-            focusedExplosion = (Boolean) data.get("focusedExplosion");
-        } else {
-            focusedExplosion = false;
-        }
-        if (data.containsKey("mustBeSubcraft")) {
-            mustBeSubcraft = (Boolean) data.get("mustBeSubcraft");
-        } else {
-            mustBeSubcraft = false;
-        }
-        if (data.containsKey("staticWaterLevel")) {
-            staticWaterLevel = integerFromObject(data.get("staticWaterLevel"));
-        } else {
-            staticWaterLevel = 0;
-        }
-        if (data.containsKey("fuelBurnRate")) {
-            fuelBurnRate = doubleFromObject(data.get("fuelBurnRate"));
-        } else {
-            fuelBurnRate = 0d;
-        }
-        if (data.containsKey("sinkPercent")) {
-            sinkPercent = doubleFromObject(data.get("sinkPercent"));
-        } else {
-            sinkPercent = 0d;
-        }
-        if (data.containsKey("overallSinkPercent")) {
-            overallSinkPercent = doubleFromObject(data.get("overallSinkPercent"));
-        } else {
-            overallSinkPercent = 0d;
-        }
-        if (data.containsKey("detectionMultiplier")) {
-            detectionMultiplier = doubleFromObject(data.get("detectionMultiplier"));
-        } else {
-            detectionMultiplier = 0d;
-        }
-        if (data.containsKey("underwaterDetectionMultiplier")) {
-            underwaterDetectionMultiplier = doubleFromObject(data.get("underwaterDetectionMultiplier"));
-        } else {
-            underwaterDetectionMultiplier = detectionMultiplier;
-        }
-        if(data.containsKey("sinkTickRate")){
-            sinkRateTicks = integerFromObject(data.get("sinkTickRate"));
-        }else if (data.containsKey("sinkSpeed")) {
-            sinkRateTicks = (int) Math.ceil(20 / (doubleFromObject(data.get("sinkSpeed"))));
-        } else {
-            //sinkRateTicks = (int) Settings.SinkRateTicks;
-            sinkRateTicks = 0;
-        }
-        if (data.containsKey("keepMovingOnSink")) {
-            keepMovingOnSink = (Boolean) data.get("keepMovingOnSink");
-        } else {
-            keepMovingOnSink = false;
-        }
-        if (data.containsKey("smokeOnSink")) {
-            smokeOnSink = integerFromObject(data.get("smokeOnSink"));
-        } else {
-            smokeOnSink = 0;
-        }
-        if (data.containsKey("explodeOnCrash")) {
-            double temp = doubleFromObject(data.get("explodeOnCrash"));
-            explodeOnCrash = (float) temp;
-        } else {
-            explodeOnCrash = 0F;
-        }
-        if (data.containsKey("collisionExplosion")) {
-            double temp = doubleFromObject(data.get("collisionExplosion"));
-            collisionExplosion = (float) temp;
-        } else {
-            collisionExplosion = 0F;
-        }
-        if (data.containsKey("minHeightLimit")) {
-            minHeightLimit = Math.max(0, integerFromObject(data.get("minHeightLimit")));
-        } else {
-            minHeightLimit = 0;
-        }
-        if (data.containsKey("maxHeightLimit")) {
-            int value = integerFromObject(data.get("maxHeightLimit"));
-            if (value <= minHeightLimit) {
-                value = 255;
-            }
-            maxHeightLimit = value;
-        } else {
-            maxHeightLimit = 254;
-        }
-        if (data.containsKey("maxHeightAboveGround")) {
-            maxHeightAboveGround = integerFromObject(data.get("maxHeightAboveGround"));
-        } else {
-            maxHeightAboveGround = -1;
-        }
-        if (data.containsKey("canDirectControl")) {
-            canDirectControl = (Boolean) data.get("canDirectControl");
-        } else {
-            canDirectControl = true;
-        }
-        if (data.containsKey("canHover")) {
-            canHover = (Boolean) data.get("canHover");
-        } else {
-            canHover = false;
-        }
-        if (data.containsKey("canHoverOverWater")) {
-            canHoverOverWater = (Boolean) data.get("canHoverOverWater");
-        } else {
-            canHoverOverWater = true;
-        }
-        if (data.containsKey("moveEntities")) {
-            moveEntities = (Boolean) data.get("moveEntities");
-        } else {
-            moveEntities = true;
-        }
-
-        if(data.containsKey("onlyMovePlayers")){
-            onlyMovePlayers = (Boolean) data.get("onlyMovePlayers");
-        } else {
-            onlyMovePlayers = true;
-        }
-
-        if (data.containsKey("useGravity")) {
-            useGravity = (Boolean) data.get("useGravity");
-        } else {
-            useGravity = false;
-        }
-
-        if (data.containsKey("hoverLimit")) {
-            hoverLimit = Math.max(0, integerFromObject(data.get("hoverLimit")));
-        } else {
-            hoverLimit = 0;
-        }
-        harvestBlocks = new ArrayList<>();
-        harvesterBladeBlocks = new ArrayList<>();
-        if (data.containsKey("harvestBlocks")) {
-    /*        	String[] temp = ((ArrayList<String> ) data.get( "harvestBlocks" )).toArray( new String[1] );
-                    for (int i = 0; i < temp.length; i++){
-                            Material mat = Material.getMaterial(temp[i]);
-                            if (mat != null ){
-                                    harvestBlocks.add(mat);
-                            }*/
-            ArrayList objList = (ArrayList) data.get("harvestBlocks");
-            for (Object i : objList) {
-                if (i instanceof String) {
-                    Material mat = Material.getMaterial(((String) i).toUpperCase());
-                    harvestBlocks.add(mat);
-                } else {
-                    Material mat = Material.getMaterial((Integer) i);
-                    harvestBlocks.add(mat);
-                }
-            }
-
-        }
-        if (data.containsKey("harvesterBladeBlocks")) {
-            ArrayList objList = (ArrayList) data.get("harvesterBladeBlocks");
-            for (Object i : objList) {
-                if (i instanceof String) {
-                    Material mat = Material.getMaterial(((String) i).toUpperCase());
-                    harvesterBladeBlocks.add(mat);
-                } else {
-                    Integer typeID = (Integer) i;
-                    Material mat = Material.getMaterial((Integer) i);
-                    harvesterBladeBlocks.add(mat);
-                }
-            }
-        }
-        passthroughBlocks = new HashSet<>();
-        if (data.containsKey("passthroughBlocks")) {
-            ArrayList objList = (ArrayList) data.get("passthroughBlocks");
-            for (Object i : objList) {
-                if (i instanceof String) {
-                    Material mat = Material.getMaterial(((String) i).toUpperCase());
-                    passthroughBlocks.add(mat);
-                } else {
-                    Material mat = Material.getMaterial((Integer) i);
-                    passthroughBlocks.add(mat);
-                }
-            }
-        }
-        if(!blockedByWater){
-            passthroughBlocks.add(Material.WATER);
-            if (Settings.IsLegacy){
-                passthroughBlocks.add(Material.STATIONARY_WATER);
+        try {
+            craftName = (String) data.get("name");
+            Bukkit.getLogger().info(craftName);
+            maxSize = integerFromObject(data.get("maxSize"));
+            minSize = integerFromObject(data.get("minSize"));
+            allowedBlocks = new BlockContainer(data.get("allowedBlocks"));
+            if (data.containsKey("forbiddenBlocks")) {
+                forbiddenBlocks = new BlockContainer(data.get("forbiddenBlocks"));
             } else {
-                passthroughBlocks.add(Material.getMaterial("BUBBLE_COLUMN"));
+                forbiddenBlocks = new BlockContainer();
+            }
+            forbiddenSignStrings = stringListFromObject(data.get("forbiddenSignStrings"));
+            if (data.containsKey("canFly")) {
+                blockedByWater = (Boolean) data.get("canFly");
+            } else if (data.containsKey("blockedByWater")) {
+                blockedByWater = (Boolean) data.get("blockedByWater");
+            } else {
+                blockedByWater = true;
+            }
+            if (data.containsKey("requireWaterContact")) {
+                requireWaterContact = (Boolean) data.get("requireWaterContact");
+            } else {
+                requireWaterContact = false;
+            }
+            if (data.containsKey("tryNudge")) {
+                tryNudge = (Boolean) data.get("tryNudge");
+            } else {
+                tryNudge = false;
+            }
+            tickCooldown = (int) Math.ceil(20 / (doubleFromObject(data.get("speed"))));
+            if (data.containsKey("cruiseSpeed")) {
+                cruiseTickCooldown = (int) Math.ceil(20 / (doubleFromObject(data.get("cruiseSpeed"))));
+            } else {
+                cruiseTickCooldown = tickCooldown;
             }
 
-        }
-        if (data.containsKey("allowVerticalTakeoffAndLanding")) {
-            allowVerticalTakeoffAndLanding = (Boolean) data.get("allowVerticalTakeoffAndLanding");
-        } else {
-            allowVerticalTakeoffAndLanding = true;
-        }
+            flyBlocks = new BlockLimitManager(data.get("flyblocks"));
+            if (data.containsKey("moveblocks")) {
+                moveBlocks = new BlockLimitManager(data.get("moveblocks"));
+            } else {
+                moveBlocks = new BlockLimitManager();
+            }
 
-        if (data.containsKey("dynamicLagSpeedFactor")) {
-            dynamicLagSpeedFactor = doubleFromObject(data.get("dynamicLagSpeedFactor"));
-        } else {
-            dynamicLagSpeedFactor = 0d;
-        }
-        if (data.containsKey("dynamicFlyBlockSpeedFactor")) {
-            dynamicFlyBlockSpeedFactor = doubleFromObject(data.get("dynamicFlyBlockSpeedFactor"));
-        } else {
-            dynamicFlyBlockSpeedFactor = 0d;
-        }
-        dynamicFlyBlocks = new HashSet<>();
-        if (data.containsKey("dynamicFlyBlocks")) {
-            ArrayList entries = (ArrayList) data.get("dynamicFlyBlocks");
-            for (Object o : entries){
-                if (o instanceof String){
-                    dynamicFlyBlocks.add(Material.getMaterial((String) o));
+            if (data.containsKey("canCruise")) {
+                canCruise = (Boolean) data.get("canCruise");
+            } else {
+                canCruise = false;
+            }
+            if (data.containsKey("canTeleport")) {
+                canTeleport = (Boolean) data.get("canTeleport");
+            } else {
+                canTeleport = false;
+            }
+            if (data.containsKey("canBeNamed")) {
+                canBeNamed = (Boolean) data.get("canBeNamed");
+            } else {
+                canBeNamed = true;
+            }
+            if (data.containsKey("cruiseOnPilot")) {
+                cruiseOnPilot = (Boolean) data.get("cruiseOnPilot");
+            } else {
+                cruiseOnPilot = false;
+            }
+            if (data.containsKey("cruiseOnPilotVertMove")) {
+                cruiseOnPilotVertMove = integerFromObject(data.get("cruiseOnPilotVertMove"));
+            } else {
+                cruiseOnPilotVertMove = 0;
+            }
+            if (data.containsKey("allowVerticalMovement")) {
+                allowVerticalMovement = (Boolean) data.get("allowVerticalMovement");
+            } else {
+                allowVerticalMovement = true;
+            }
+            if (data.containsKey("rotateAtMidpoint")) {
+                rotateAtMidpoint = (Boolean) data.get("rotateAtMidpoint");
+            } else {
+                rotateAtMidpoint = false;
+            }
+            if (data.containsKey("allowHorizontalMovement")) {
+                allowHorizontalMovement = (Boolean) data.get("allowHorizontalMovement");
+            } else {
+                allowHorizontalMovement = true;
+            }
+            if (data.containsKey("allowRemoteSign")) {
+                allowRemoteSign = (Boolean) data.get("allowRemoteSign");
+            } else {
+                allowRemoteSign = true;
+            }
+            if (data.containsKey("allowCannonDirectorSign")) {
+                allowCannonDirectorSign = (Boolean) data.get("allowCannonDirectorSign");
+            } else {
+                allowCannonDirectorSign = true;
+            }
+            if (data.containsKey("allowAADirectorSign")) {
+                allowAADirectorSign = (Boolean) data.get("allowAADirectorSign");
+            } else {
+                allowAADirectorSign = true;
+            }
+            if (data.containsKey("canStaticMove")) {
+                canStaticMove = (Boolean) data.get("canStaticMove");
+            } else {
+                canStaticMove = false;
+            }
+            if (data.containsKey("maxStaticMove")) {
+                maxStaticMove = integerFromObject(data.get("maxStaticMove"));
+            } else {
+                maxStaticMove = 10000;
+            }
+            if (data.containsKey("cruiseSkipBlocks")) {
+                cruiseSkipBlocks = integerFromObject(data.get("cruiseSkipBlocks"));
+            } else {
+                cruiseSkipBlocks = 0;
+            }
+            if (data.containsKey("vertCruiseSkipBlocks")) {
+                vertCruiseSkipBlocks = integerFromObject(data.get("vertCruiseSkipBlocks"));
+            } else {
+                vertCruiseSkipBlocks = cruiseSkipBlocks;
+            }
+            if (data.containsKey("halfSpeedUnderwater")) {
+                halfSpeedUnderwater = (Boolean) data.get("halfSpeedUnderwater");
+            } else {
+                halfSpeedUnderwater = false;
+            }
+            if (data.containsKey("focusedExplosion")) {
+                focusedExplosion = (Boolean) data.get("focusedExplosion");
+            } else {
+                focusedExplosion = false;
+            }
+            if (data.containsKey("mustBeSubcraft")) {
+                mustBeSubcraft = (Boolean) data.get("mustBeSubcraft");
+            } else {
+                mustBeSubcraft = false;
+            }
+            if (data.containsKey("staticWaterLevel")) {
+                staticWaterLevel = integerFromObject(data.get("staticWaterLevel"));
+            } else {
+                staticWaterLevel = 0;
+            }
+            if (data.containsKey("fuelBurnRate")) {
+                fuelBurnRate = doubleFromObject(data.get("fuelBurnRate"));
+            } else {
+                fuelBurnRate = 0d;
+            }
+            if (data.containsKey("sinkPercent")) {
+                sinkPercent = doubleFromObject(data.get("sinkPercent"));
+            } else {
+                sinkPercent = 0d;
+            }
+            if (data.containsKey("overallSinkPercent")) {
+                overallSinkPercent = doubleFromObject(data.get("overallSinkPercent"));
+            } else {
+                overallSinkPercent = 0d;
+            }
+            if (data.containsKey("detectionMultiplier")) {
+                detectionMultiplier = doubleFromObject(data.get("detectionMultiplier"));
+            } else {
+                detectionMultiplier = 0d;
+            }
+            if (data.containsKey("underwaterDetectionMultiplier")) {
+                underwaterDetectionMultiplier = doubleFromObject(data.get("underwaterDetectionMultiplier"));
+            } else {
+                underwaterDetectionMultiplier = detectionMultiplier;
+            }
+            if (data.containsKey("sinkTickRate")) {
+                sinkRateTicks = integerFromObject(data.get("sinkTickRate"));
+            } else if (data.containsKey("sinkSpeed")) {
+                sinkRateTicks = (int) Math.ceil(20 / (doubleFromObject(data.get("sinkSpeed"))));
+            } else {
+                //sinkRateTicks = (int) Settings.SinkRateTicks;
+                sinkRateTicks = 0;
+            }
+            if (data.containsKey("keepMovingOnSink")) {
+                keepMovingOnSink = (Boolean) data.get("keepMovingOnSink");
+            } else {
+                keepMovingOnSink = false;
+            }
+            if (data.containsKey("smokeOnSink")) {
+                smokeOnSink = integerFromObject(data.get("smokeOnSink"));
+            } else {
+                smokeOnSink = 0;
+            }
+            if (data.containsKey("explodeOnCrash")) {
+                double temp = doubleFromObject(data.get("explodeOnCrash"));
+                explodeOnCrash = (float) temp;
+            } else {
+                explodeOnCrash = 0F;
+            }
+            if (data.containsKey("collisionExplosion")) {
+                double temp = doubleFromObject(data.get("collisionExplosion"));
+                collisionExplosion = (float) temp;
+            } else {
+                collisionExplosion = 0F;
+            }
+            if (data.containsKey("minHeightLimit")) {
+                minHeightLimit = Math.max(0, integerFromObject(data.get("minHeightLimit")));
+            } else {
+                minHeightLimit = 0;
+            }
+            if (data.containsKey("maxHeightLimit")) {
+                int value = integerFromObject(data.get("maxHeightLimit"));
+                if (value <= minHeightLimit) {
+                    value = 255;
+                }
+                maxHeightLimit = value;
+            } else {
+                maxHeightLimit = 254;
+            }
+            if (data.containsKey("maxHeightAboveGround")) {
+                maxHeightAboveGround = integerFromObject(data.get("maxHeightAboveGround"));
+            } else {
+                maxHeightAboveGround = -1;
+            }
+            if (data.containsKey("canDirectControl")) {
+                canDirectControl = (Boolean) data.get("canDirectControl");
+            } else {
+                canDirectControl = true;
+            }
+            if (data.containsKey("canHover")) {
+                canHover = (Boolean) data.get("canHover");
+            } else {
+                canHover = false;
+            }
+            if (data.containsKey("canHoverOverWater")) {
+                canHoverOverWater = (Boolean) data.get("canHoverOverWater");
+            } else {
+                canHoverOverWater = true;
+            }
+            if (data.containsKey("moveEntities")) {
+                moveEntities = (Boolean) data.get("moveEntities");
+            } else {
+                moveEntities = true;
+            }
+
+            if (data.containsKey("onlyMovePlayers")) {
+                onlyMovePlayers = (Boolean) data.get("onlyMovePlayers");
+            } else {
+                onlyMovePlayers = true;
+            }
+
+            if (data.containsKey("useGravity")) {
+                useGravity = (Boolean) data.get("useGravity");
+            } else {
+                useGravity = false;
+            }
+
+            if (data.containsKey("hoverLimit")) {
+                hoverLimit = Math.max(0, integerFromObject(data.get("hoverLimit")));
+            } else {
+                hoverLimit = 0;
+            }
+            harvestBlocks = new ArrayList<>();
+            harvesterBladeBlocks = new ArrayList<>();
+            if (data.containsKey("harvestBlocks")) {
+                ArrayList objList = (ArrayList) data.get("harvestBlocks");
+                for (Object i : objList) {
+                    if (i instanceof String) {
+                        Material mat = Material.getMaterial(((String) i).toUpperCase());
+                        harvestBlocks.add(mat);
+                    } else {
+                        Material mat = Material.getMaterial((Integer) i);
+                        harvestBlocks.add(mat);
+                    }
+                }
+
+            }
+            if (data.containsKey("harvesterBladeBlocks")) {
+                ArrayList objList = (ArrayList) data.get("harvesterBladeBlocks");
+                for (Object i : objList) {
+                    if (i instanceof String) {
+                        Material mat = Material.getMaterial(((String) i).toUpperCase());
+                        harvesterBladeBlocks.add(mat);
+                    } else {
+                        Integer typeID = (Integer) i;
+                        Material mat = Material.getMaterial((Integer) i);
+                        harvesterBladeBlocks.add(mat);
+                    }
+                }
+            }
+            passthroughBlocks = new HashSet<>();
+            if (data.containsKey("passthroughBlocks")) {
+                ArrayList objList = (ArrayList) data.get("passthroughBlocks");
+                for (Object i : objList) {
+                    if (i instanceof String) {
+                        Material mat = Material.getMaterial(((String) i).toUpperCase());
+                        passthroughBlocks.add(mat);
+                    } else {
+                        Material mat = Material.getMaterial((Integer) i);
+                        passthroughBlocks.add(mat);
+                    }
+                }
+            }
+            if (!blockedByWater) {
+                passthroughBlocks.add(Material.WATER);
+                if (Settings.IsLegacy) {
+                    passthroughBlocks.add(Material.STATIONARY_WATER);
                 } else {
-                    dynamicFlyBlocks.add(Material.getMaterial((Integer) o));
+                    passthroughBlocks.add(Material.getMaterial("BUBBLE_COLUMN"));
+                }
+
+            }
+            if (data.containsKey("allowVerticalTakeoffAndLanding")) {
+                allowVerticalTakeoffAndLanding = (Boolean) data.get("allowVerticalTakeoffAndLanding");
+            } else {
+                allowVerticalTakeoffAndLanding = true;
+            }
+
+            if (data.containsKey("dynamicLagSpeedFactor")) {
+                dynamicLagSpeedFactor = doubleFromObject(data.get("dynamicLagSpeedFactor"));
+            } else {
+                dynamicLagSpeedFactor = 0d;
+            }
+            if (data.containsKey("dynamicFlyBlockSpeedFactor")) {
+                dynamicFlyBlockSpeedFactor = doubleFromObject(data.get("dynamicFlyBlockSpeedFactor"));
+            } else {
+                dynamicFlyBlockSpeedFactor = 0d;
+            }
+            dynamicFlyBlocks = new HashSet<>();
+            if (data.containsKey("dynamicFlyBlocks")) {
+                ArrayList entries = (ArrayList) data.get("dynamicFlyBlocks");
+                for (Object o : entries) {
+                    if (o instanceof String) {
+                        dynamicFlyBlocks.add(Material.getMaterial((String) o));
+                    } else {
+                        dynamicFlyBlocks.add(Material.getMaterial((Integer) o));
+                    }
                 }
             }
-        }
-        chestPenalty = data.containsKey("chestPenalty") ? doubleFromObject(data.get("chestPenalty")) : 0d;
-        effectRange = data.containsKey("effectRange") ? integerFromObject(data.get("effectRange")) : 0;
-        potionEffectsToApply = data.containsKey("potionEffectsToApply") ? effectListFromObject(data.get("potionEffectsToApply")) : Collections.emptyMap();
-        if (data.containsKey("entitiesToSpawn")){
-            entitiesToSpawn = new HashSet<>();
-            ArrayList entries = (ArrayList) data.get("entitiesToSpawn");
-            for (Object o : entries){
-                if (o instanceof String){
-                    entitiesToSpawn.add(EntityType.valueOf(((String) o).toUpperCase()));
+            chestPenalty = data.containsKey("chestPenalty") ? doubleFromObject(data.get("chestPenalty")) : 0d;
+            effectRange = data.containsKey("effectRange") ? integerFromObject(data.get("effectRange")) : 0;
+            potionEffectsToApply = data.containsKey("potionEffectsToApply") ? effectListFromObject(data.get("potionEffectsToApply")) : Collections.emptyMap();
+            if (data.containsKey("entitiesToSpawn")) {
+                entitiesToSpawn = new HashSet<>();
+                ArrayList entries = (ArrayList) data.get("entitiesToSpawn");
+                for (Object o : entries) {
+                    if (o instanceof String) {
+                        entitiesToSpawn.add(EntityType.valueOf(((String) o).toUpperCase()));
+                    }
                 }
+            } else {
+                entitiesToSpawn = Collections.emptySet();
             }
-        } else {
-            entitiesToSpawn = Collections.emptySet();
+            maxEntitiesToBeSpawned = data.containsKey("maxEntitiesToBeSpawned") ? (int) data.get("maxEntitiesToBeSpawned") : 0;
+        } catch (Exception e){
+            throw new CraftTypeException("Craft file " + f.getName() + " is malformed", e);
         }
-        maxEntitiesToBeSpawned = data.containsKey("maxEntitiesToBeSpawned") ? (int) data.get("maxEntitiesToBeSpawned") : 0;
     }
 
     private Integer integerFromObject(Object obj) {

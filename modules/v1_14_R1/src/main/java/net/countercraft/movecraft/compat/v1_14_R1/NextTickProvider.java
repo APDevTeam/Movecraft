@@ -1,7 +1,6 @@
 package net.countercraft.movecraft.compat.v1_14_R1;
 
-import net.countercraft.movecraft.utils.Pair;
-
+import javafx.util.Pair;
 import net.minecraft.server.v1_14_R1.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -39,14 +38,14 @@ public class NextTickProvider {
         if(!isRegistered(world))
             registerWorld(world);
         Pair<Set<NextTickListEntry>, Collection<NextTickListEntry>> listPair = tickMap.get(world);
-        for(Iterator<NextTickListEntry> iterator = listPair.getLeft().iterator(); iterator.hasNext();) {
+        for(Iterator<NextTickListEntry> iterator = listPair.getKey().iterator(); iterator.hasNext();) {
             NextTickListEntry listEntry = iterator.next();
             if (position.equals(listEntry.a)) {
                 iterator.remove();
                 return listEntry;
             }
         }
-        for(Iterator<NextTickListEntry> iterator = listPair.getRight().iterator(); iterator.hasNext();) {
+        for(Iterator<NextTickListEntry> iterator = listPair.getValue().iterator(); iterator.hasNext();) {
             NextTickListEntry listEntry = iterator.next();
             if (position.equals(listEntry.a)) {
                 iterator.remove();

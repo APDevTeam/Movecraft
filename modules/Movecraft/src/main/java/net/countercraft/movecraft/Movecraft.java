@@ -255,7 +255,13 @@ public class Movecraft extends JavaPlugin {
         }
         List<String> disableShadowBlocks = getConfig().getStringList("DisableShadowBlocks");
         for (String typ : disableShadowBlocks){
-            Settings.DisableShadowBlocks.add(Material.getMaterial(typ.toUpperCase()));
+            Material type;
+            try {
+                type = LegacyUtils.getMaterial(Integer.parseInt(typ));
+            } catch (NumberFormatException e){
+                type = Material.getMaterial(typ);
+            }
+            Settings.DisableShadowBlocks.add(type);
         }
         Settings.RepairMaxPercent = getConfig().getDouble("RepairMaxPercent", 50.0);
         Settings.ForbiddenRemoteSigns = new HashSet<>(getConfig().getStringList("ForbiddenRemoteSigns"));
@@ -270,7 +276,7 @@ public class Movecraft extends JavaPlugin {
         }
         //load up WorldGuard if it's present
         Plugin wGPlugin = getServer().getPluginManager().getPlugin("WorldGuard");
-        if (wGPlugin == null || !(wGPlugin instanceof WorldGuardPlugin)) {
+        if (!(wGPlugin instanceof WorldGuardPlugin)) {
             logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - WG Not Found"));
             Settings.SiegeEnable = false;
             Settings.AssaultEnable = false;

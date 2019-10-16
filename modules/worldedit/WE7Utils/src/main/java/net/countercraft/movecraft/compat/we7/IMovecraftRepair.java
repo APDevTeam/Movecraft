@@ -27,6 +27,7 @@ import com.sk89q.worldedit.world.block.BlockType;
 import com.sk89q.worldguard.protection.regions.ProtectedCuboidRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedPolygonalRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
+import javafx.util.Pair;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.MovecraftRepair;
 import net.countercraft.movecraft.config.Settings;
@@ -34,7 +35,6 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.utils.CollectionUtils;
 import net.countercraft.movecraft.utils.HashHitBox;
 import net.countercraft.movecraft.utils.HitBox;
-import net.countercraft.movecraft.utils.Pair;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -54,7 +54,6 @@ import java.util.Set;
 
 public class IMovecraftRepair extends MovecraftRepair {
     private final HashMap<String, ArrayDeque<Pair<Vector,Vector>>> locMissingBlocksMap = new HashMap<>();
-    private final HashMap<String, Vector> offsetMap = new HashMap<>();
     private final HashMap<String, Long> numDiffBlocksMap = new HashMap<>();
     private final HashMap<String, HashMap<Pair<Material, Byte>, Double>> missingBlocksMap = new HashMap<>();
     private final HashMap<String, Vector> distanceMap = new HashMap<>();
@@ -84,8 +83,7 @@ public class IMovecraftRepair extends MovecraftRepair {
         BlockArrayClipboard clipboard = new BlockArrayClipboard(region);
         clipboard.setOrigin(origin);
         Extent source = WorldEdit.getInstance().getEditSessionFactory().getEditSession(weWorld, -1);
-        Extent destination = clipboard;
-        ForwardExtentCopy copy = new ForwardExtentCopy(source, region, clipboard.getOrigin(), destination, clipboard.getOrigin());
+        ForwardExtentCopy copy = new ForwardExtentCopy(source, region, clipboard.getOrigin(), clipboard, clipboard.getOrigin());
         ExistingBlockMask mask = new ExistingBlockMask(source);
         copy.setSourceMask(mask);
         final HitBox outsideLocs = CollectionUtils.filter(solidBlockLocs(world, region), hitBox);
@@ -168,7 +166,7 @@ public class IMovecraftRepair extends MovecraftRepair {
 
     @Override
     public Clipboard loadCraftRepairStateClipboard(Craft craft, Sign sign) {
-        String s = craft.getNotificationPlayer().getName() + sign.getLine(1);
+        String s = craft.getNotificationPlayer().getUniqueId().toString() + sign.getLine(1);
         File dataDirectory = new File(plugin.getDataFolder(), "RepairStates");
         File playerDirectory = new File(dataDirectory, craft.getNotificationPlayer().getUniqueId().toString());
         File file = new File(playerDirectory, sign.getLine(1) + ".schematic"); // The schematic file
@@ -444,7 +442,6 @@ public class IMovecraftRepair extends MovecraftRepair {
 
     @Override
     public ArrayDeque<Pair<Vector, Vector>> getMissingBlockLocations(String s) {
-
         return locMissingBlocksMap.get(s);
     }
 
