@@ -27,6 +27,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class TranslationTask extends AsyncTask {
     private static final int[] FALL_THROUGH_BLOCKS = {0, 8, 9, 10, 11, 31, 37, 38, 39, 40, 50, 51, 55, 59, 63, 65, 68, 69, 70, 72, 75, 76, 77, 78, 83, 85, 93, 94, 111, 141, 142, 143, 171};
 
+    private World world;
     private int dx, dy, dz;
     private HashHitBox newHitBox, oldHitBox;
     private boolean failed;
@@ -34,8 +35,9 @@ public class TranslationTask extends AsyncTask {
     private String failMessage;
     private Collection<UpdateCommand> updates = new HashSet<>();
 
-    public TranslationTask(Craft c, int dx, int dy, int dz) {
+    public TranslationTask(Craft c, World world, int dx, int dy, int dz) {
         super(c);
+        this.world = world;
         this.dx = dx;
         this.dy = dy;
         this.dz = dz;
@@ -58,19 +60,23 @@ public class TranslationTask extends AsyncTask {
         final int maxY = oldHitBox.getMaxY();
 
         //Check if the craft is too high
-        if(craft.getType().getMaxHeightLimit() < craft.getHitBox().getMinY()){
-            dy = Math.min(dy,-1);
-        }else if(craft.getType().getMaxHeightAboveGround() > 0){
-            final MovecraftLocation middle = oldHitBox.getMidPoint();
-            int testY = minY;
-            while (testY > 0){
-                testY--;
-                if (craft.getW().getBlockTypeIdAt(middle.getX(),testY,middle.getZ()) != 0)
-                    break;
-            }
-            if (minY - testY > craft.getType().getMaxHeightAboveGround()) {
-                dy = Math.min(dy,-1);
-            }
+        if (world.equals(craft.getW())) { // Only modify dy when not switching worlds
+        	
+	        if(craft.getType().getMaxHeightLimit() < craft.getHitBox().getMinY()){
+	            dy = Math.min(dy,-1);
+	        }else if(craft.getType().getMaxHeightAboveGround() > 0){
+	            final MovecraftLocation middle = oldHitBox.getMidPoint();
+	            int testY = minY;
+	            while (testY > 0){
+	                testY--;
+	                if (craft.getW().getBlockTypeIdAt(middle.getX(),testY,middle.getZ()) != 0)
+	                    break;
+	            }
+	            if (minY - testY > craft.getType().getMaxHeightAboveGround()) {
+	                dy = Math.min(dy,-1);
+	            }
+	        }
+	        
         }
 
         //Fail the movement if the craft is too high
@@ -87,15 +93,14 @@ public class TranslationTask extends AsyncTask {
             fail(I18nSupport.getInternationalisedString("Translation - Failed Craft out of fuel"));
             return;
         }
-        if (craft.getType().getUseGravity() && !craft.getSinking()){
+        if (world.equals(craft.getW()) && craft.getType().getUseGravity() && !craft.getSinking()){ // Only modify dy when not switching worlds
             if (inclineCraft(oldHitBox)){
                 dy = 1;
             } else if (!isOnGround(oldHitBox) && craft.getType().getCanHover()){
                 MovecraftLocation midPoint = oldHitBox.getMidPoint();
                 int centreMinY = oldHitBox.getLocalMinY(midPoint.getX(), midPoint.getZ());
                 int groundY = centreMinY;
-                World w = craft.getW();
-                while (w.getBlockAt(midPoint.getX(), groundY - 1, midPoint.getZ()).getType() == Material.AIR || craft.getType().getPassthroughBlocks().contains(w.getBlockAt(midPoint.getX(), groundY - 1, midPoint.getZ()).getType())){
+                while (world.getBlockAt(midPoint.getX(), groundY - 1, midPoint.getZ()).getType() == Material.AIR || craft.getType().getPassthroughBlocks().contains(world.getBlockAt(midPoint.getX(), groundY - 1, midPoint.getZ()).getType())){
                     groundY--;
                 }
                 if (centreMinY - groundY > craft.getType().getHoverLimit()){
@@ -115,11 +120,11 @@ public class TranslationTask extends AsyncTask {
             final MovecraftLocation newLocation = oldLocation.translate(dx,dy,dz);
             //If the new location already exists in the old hitbox than this is unnecessary because a craft can't hit
             //itself
-            if(oldHitBox.contains(newLocation)){
+            if(world.equals(craft.getW()) && oldHitBox.contains(newLocation)){
                 newHitBox.add(newLocation);
                 continue;
             }
-            final Material testMaterial = newLocation.toBukkit(craft.getW()).getBlock().getType();
+            final Material testMaterial = newLocation.toBukkit(world).getBlock().getType();
 
             if ((testMaterial.equals(Material.CHEST) || testMaterial.equals(Material.TRAPPED_CHEST)) && checkChests(testMaterial, newLocation)) {
                 //prevent chests collision
@@ -166,22 +171,23 @@ public class TranslationTask extends AsyncTask {
         if (!craft.getType().getCanHoverOverWater()){
             MovecraftLocation test = new MovecraftLocation(newHitBox.getMidPoint().getX(), newHitBox.getMinY(), newHitBox.getMidPoint().getZ());
             test = test.translate(0, -1, 0);
-            while (test.toBukkit(craft.getW()).getBlock().getType() == Material.AIR){
+            while (test.toBukkit(world).getBlock().getType() == Material.AIR){
                 test = test.translate(0, -1, 0);
             }
-            Material testType = test.toBukkit(craft.getW()).getBlock().getType();
+            Material testType = test.toBukkit(world).getBlock().getType();
             if (craft.getType().getPassthroughBlocks().contains(testType)){
                 fail(String.format(I18nSupport.getInternationalisedString("Translation - Failed Craft over passthrough block"), testType.name().toLowerCase().replace("_", " ")));
             }
         }
         //call event
-        CraftTranslateEvent event = new CraftTranslateEvent(craft, oldHitBox, newHitBox);
+        CraftTranslateEvent event = new CraftTranslateEvent(craft, oldHitBox, newHitBox, world);
         Bukkit.getServer().getPluginManager().callEvent(event);
         if(event.isCancelled()){
             this.fail(event.getFailMessage());
             return;
         }
 
+        // do not switch world if sinking
         if(craft.getSinking()){
             List<MovecraftLocation> air = new ArrayList<>();
             for(MovecraftLocation location: oldHitBox){
@@ -226,7 +232,7 @@ public class TranslationTask extends AsyncTask {
                     explosionForce += 25;//TODO: find the correct amount
                 }*/
                 explosionKey = explosionForce;
-                Location loc = location.translate(-dx,-dy,-dz).toBukkit(craft.getW());
+                Location loc = location.translate(-dx,-dy,-dz).toBukkit(world);
                 if (!loc.getBlock().getType().equals(Material.AIR)) {
                     updates.add(new ExplosionUpdateCommand(loc, explosionKey));
                     collisionExplosion = true;
@@ -246,10 +252,10 @@ public class TranslationTask extends AsyncTask {
         }
 
         if(!collisionBox.isEmpty()){
-            Bukkit.getServer().getPluginManager().callEvent(new CraftCollisionEvent(craft, collisionBox));
+            Bukkit.getServer().getPluginManager().callEvent(new CraftCollisionEvent(craft, collisionBox, world));
         }
 
-        updates.add(new CraftTranslateCommand(craft, new MovecraftLocation(dx, dy, dz)));
+        updates.add(new CraftTranslateCommand(craft, new MovecraftLocation(dx, dy, dz), world));
 
         //prevents torpedo and rocket pilots
         if (craft.getType().getMoveEntities() && !(craft.getSinking() && craft.getType().getOnlyMovePlayers())) {
@@ -263,10 +269,10 @@ public class TranslationTask extends AsyncTask {
                     if(craft.getSinking()){
                         continue;
                     }
-                    EntityUpdateCommand eUp = new EntityUpdateCommand(entity, dx, dy, dz, 0, 0);
+                    EntityUpdateCommand eUp = new EntityUpdateCommand(entity, dx, dy, dz, 0, 0, world);
                     updates.add(eUp);
                 } else if (!craft.getType().getOnlyMovePlayers() || entity.getType() == EntityType.PRIMED_TNT) {
-                    EntityUpdateCommand eUp = new EntityUpdateCommand(entity, dx, dy, dz, 0, 0);
+                    EntityUpdateCommand eUp = new EntityUpdateCommand(entity, dx, dy, dz, 0, 0, world);
                     updates.add(eUp);
                 }
             }

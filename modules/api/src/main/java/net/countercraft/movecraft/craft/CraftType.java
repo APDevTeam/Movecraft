@@ -34,6 +34,7 @@ final public class CraftType {
     private final boolean canBeNamed;
     private final boolean canCruise;
     private final boolean canTeleport;
+    private final boolean canSwitchWorld;
     private final boolean canStaticMove;
     private final boolean canHover;
     private final boolean canDirectControl;
@@ -149,6 +150,11 @@ final public class CraftType {
             canTeleport = (Boolean) data.get("canTeleport");
         } else {
             canTeleport = false;
+        }
+        if (data.containsKey("canSwitchWorld")) {
+            canSwitchWorld = (Boolean) data.get("canSwitchWorld");
+        } else {
+            canSwitchWorld = false;
         }
         if (data.containsKey("canBeNamed")){
             canBeNamed = (Boolean) data.get("canBeNamed");
@@ -602,6 +608,10 @@ final public class CraftType {
 
     public boolean getCanTeleport() {
         return canTeleport;
+    }
+    
+    public boolean getCanSwitchWorld() {
+        return canSwitchWorld;
     }
 
     public boolean getCanStaticMove() {

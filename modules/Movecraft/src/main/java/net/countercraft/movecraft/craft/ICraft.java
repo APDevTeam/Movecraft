@@ -28,8 +28,13 @@ public class ICraft extends Craft {
     }
 
     @Override
-    public void translate(int dx, int dy, int dz) {
+    public void translate(World world, int dx, int dy, int dz) {
         // check to see if the craft is trying to move in a direction not permitted by the type
+    	if (!this.getType().getCanSwitchWorld() && !this.getSinking()) {
+    		if (!world.equals(w)) {
+    			return;
+    		}
+    	}
         if (!this.getType().allowHorizontalMovement() && !this.getSinking()) {
             dx = 0;
             dz = 0;
@@ -81,7 +86,7 @@ public class ICraft extends Craft {
             }
         }*/
 
-        Movecraft.getInstance().getAsyncManager().submitTask(new TranslationTask(this, dx, dy, dz), this);
+        Movecraft.getInstance().getAsyncManager().submitTask(new TranslationTask(this, world, dx, dy, dz), this);
     }
 
     @Override

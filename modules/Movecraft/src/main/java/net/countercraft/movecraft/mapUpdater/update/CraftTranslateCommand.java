@@ -10,6 +10,7 @@ import net.countercraft.movecraft.events.SignTranslateEvent;
 import net.countercraft.movecraft.utils.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.jetbrains.annotations.NotNull;
@@ -20,10 +21,18 @@ import java.util.logging.Logger;
 public class CraftTranslateCommand extends UpdateCommand {
     @NotNull private final Craft craft;
     @NotNull private final MovecraftLocation displacement;
+    @NotNull private final World world;
 
     public CraftTranslateCommand(@NotNull Craft craft, @NotNull MovecraftLocation displacement){
         this.craft = craft;
         this.displacement = displacement;
+        this.world = craft.getW();
+    }
+    
+    public CraftTranslateCommand(@NotNull Craft craft, @NotNull MovecraftLocation displacement, @NotNull World world){
+        this.craft = craft;
+        this.displacement = displacement;
+        this.world = world;
     }
 
 
@@ -38,6 +47,7 @@ public class CraftTranslateCommand extends UpdateCommand {
             return;
         }
         long time = System.nanoTime();
+        World oldWorld = craft.getW();
         final Set<Material> passthroughBlocks = new HashSet<>(craft.getType().getPassthroughBlocks());
         if(craft.getSinking()){
             passthroughBlocks.add(Material.STATIONARY_WATER);
@@ -49,7 +59,8 @@ public class CraftTranslateCommand extends UpdateCommand {
         }
         if(passthroughBlocks.isEmpty()){
             //translate the craft
-            Movecraft.getInstance().getWorldHandler().translateCraft(craft,displacement);
+            Movecraft.getInstance().getWorldHandler().translateCraft(craft,displacement,world);
+            craft.setW(world);
             //trigger sign events
             for(MovecraftLocation location : craft.getHitBox()){
                 Block block = location.toBukkit(craft.getW()).getBlock();
@@ -66,7 +77,7 @@ public class CraftTranslateCommand extends UpdateCommand {
             }
             final HitBox to = CollectionUtils.filter(craft.getHitBox(), originalLocations);
             for (MovecraftLocation location : to) {
-                Material material = location.toBukkit(craft.getW()).getBlock().getType();
+                Material material = location.toBukkit(world).getBlock().getType();
                 if (passthroughBlocks.contains(material)) {
                     craft.getPhaseBlocks().put(location, material);
                 }
@@ -129,14 +140,15 @@ public class CraftTranslateCommand extends UpdateCommand {
 
             final WorldHandler handler = Movecraft.getInstance().getWorldHandler();
             for (MovecraftLocation location : CollectionUtils.filter(invertedHitBox, confirmed)) {
-                Material material = location.toBukkit(craft.getW()).getBlock().getType();
+                Material material = location.toBukkit(world).getBlock().getType();
                 if (!passthroughBlocks.contains(material)) {
                     continue;
                 }
                 craft.getPhaseBlocks().put(location, material);
             }
             //translate the craft
-            handler.translateCraft(craft, displacement);
+            handler.translateCraft(craft, displacement,world);
+            craft.setW(world);
             //trigger sign events
             for (MovecraftLocation location : craft.getHitBox()) {
                 Block block = location.toBukkit(craft.getW()).getBlock();
@@ -172,15 +184,15 @@ public class CraftTranslateCommand extends UpdateCommand {
 
             for(MovecraftLocation location : originalLocations){
                 if(!craft.getHitBox().contains(location) && craft.getPhaseBlocks().containsKey(location)){
-                    handler.setBlockFast(location.toBukkit(craft.getW()), craft.getPhaseBlocks().remove(location), (byte) 0);
+                    handler.setBlockFast(location.toBukkit(oldWorld), craft.getPhaseBlocks().remove(location), (byte) 0);
                 }
             }
 
             for (MovecraftLocation location : failed) {
-                final Material material = location.toBukkit(craft.getW()).getBlock().getType();
+                final Material material = location.toBukkit(oldWorld).getBlock().getType();
                 if (passthroughBlocks.contains(material)) {
                     craft.getPhaseBlocks().put(location, material);
-                    handler.setBlockFast(location.toBukkit(craft.getW()), Material.AIR, (byte) 0);
+                    handler.setBlockFast(location.toBukkit(oldWorld), Material.AIR, (byte) 0);
 
                 }
             }
