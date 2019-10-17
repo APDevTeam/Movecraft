@@ -206,7 +206,7 @@ public class IMovecraftRepair extends MovecraftRepair {
                         Block bukkitBlock = sign.getWorld().getBlockAt(loc);
                         boolean isImportant = true;
 
-                        if (type == null || type.equals(Material.AIR) || type.equals(Material.CAVE_AIR) || type.equals(Material.VOID_AIR)){
+                        if (type.equals(Material.AIR) || type.equals(Material.CAVE_AIR) || type.equals(Material.VOID_AIR)){
                             isImportant = false;
                         }
                         boolean blockMissing = isImportant && type != bukkitBlock.getType();
@@ -226,6 +226,7 @@ public class IMovecraftRepair extends MovecraftRepair {
                         }
 
                         if (blockMissing){
+
                             Material typeToConsume = type;
                             double qtyToConsume = 1.0;
                             if (type.equals(Material.WATER)||type.equals(Material.LAVA)){

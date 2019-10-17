@@ -123,6 +123,20 @@ public class Movecraft extends JavaPlugin {
             logger.warning("Download at papermc.io/downloads");
             logger.warning("======== Movecraft === Use Paper =======");
         }
+        try {
+            Class.forName("com.boydti.fawe.Fawe");
+            if (!Settings.IsLegacy){
+                logger.warning("======= Movecraft === FAWE detected ========");
+                logger.warning("FAWE has been detected on the server");
+                logger.warning("the 1.13+ version of FAWE has critical");
+                logger.warning("bugs that will break the repair system");
+                logger.warning("Therefore, use WorldEdit instead or disable");
+                logger.warning("repair functionality and assault");
+                logger.warning("======= Movecraft === FAWE detected ========");
+            }
+        } catch (ClassNotFoundException e) {
+
+        }
 
 
         Settings.LOCALE = getConfig().getString("Locale");
