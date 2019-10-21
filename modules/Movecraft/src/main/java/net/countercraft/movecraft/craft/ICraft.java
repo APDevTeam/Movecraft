@@ -85,6 +85,11 @@ public class ICraft extends Craft {
                 }
             }
         }*/
+        
+        // ensure chunks are loaded
+        for (MovecraftLocation location : hitBox) {
+        	location.translate(dx, dy, dz).toBukkit(world).getBlock().getType();
+        }
 
         Movecraft.getInstance().getAsyncManager().submitTask(new TranslationTask(this, world, dx, dy, dz), this);
     }
