@@ -64,7 +64,7 @@ public class EntityUpdateCommand extends UpdateCommand {
     @Override
     public void doUpdate() {
         Location playerLoc = entity.getLocation();
-        if (!(entity instanceof Player) || yaw > .01 || pitch > .01) {
+        if (!(entity instanceof Player) || yaw > .01 || pitch > .01 || yaw < -.01 || pitch < -.01) {
             entity.teleport(new Location(world, x + playerLoc.getX(),y + playerLoc.getY(),z + playerLoc.getZ(),yaw + playerLoc.getYaw(),pitch + playerLoc.getPitch()));
             return;
         }
