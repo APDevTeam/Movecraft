@@ -28,7 +28,7 @@ import java.util.Objects;
 /**
  * Class that stores the data about a single blocks changes to the map in an unspecified world. The world is retrieved contextually from the submitting craft.
  */
-public class EntityMoveUpdateCommand extends UpdateCommand {
+public class EntityUpdateCommand extends UpdateCommand {
     private final Entity entity;
     private final double x;
     private double y;
@@ -36,7 +36,7 @@ public class EntityMoveUpdateCommand extends UpdateCommand {
     private final float yaw;
     private final float pitch;
 
-    public EntityMoveUpdateCommand(Entity entity, double x, double y, double z, float yaw, float pitch) {
+    public EntityUpdateCommand(Entity entity, double x, double y, double z, float yaw, float pitch) {
         this.entity = entity;
         this.x = x;
         this.y = y;
@@ -71,10 +71,10 @@ public class EntityMoveUpdateCommand extends UpdateCommand {
 
     @Override
     public boolean equals(Object obj) {
-        if(!(obj instanceof EntityMoveUpdateCommand)){
+        if(!(obj instanceof EntityUpdateCommand)){
             return false;
         }
-        EntityMoveUpdateCommand other = (EntityMoveUpdateCommand) obj;
+        EntityUpdateCommand other = (EntityUpdateCommand) obj;
         return this.x == other.x &&
                 this.y == other.y &&
                 this.z == other.z &&

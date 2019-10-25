@@ -46,7 +46,7 @@ allowedBlocks:
         - netherrack
         - glowstone
         - cake
-        - redstone_repeater
+        - repeater
         - all_stained_glass
         - all_trapdoor
         - all_stone_bricks
@@ -54,13 +54,13 @@ allowedBlocks:
         - glass_pane
         - all_fence_gate
         - nether_brick
-        - enchantment_table
+        - enchanting_table
         - brewing_stand
         - cauldron
         - end_stone
         - dragon_egg
         - redstone_lamp
-        - ender chest
+        - ender_chest
         - TRIPWIRE_HOOK
         - EMERALD_BLOCK
         - BEACON
@@ -70,7 +70,7 @@ allowedBlocks:
         - SKULL
         - all_ANVIL
         - TRAPPED_CHEST
-        - REDSTONE_COMPARATOR
+        - COMPARATOR
         - daylight_detector
         - REDSTONE_BLOCK
         - HOPPER

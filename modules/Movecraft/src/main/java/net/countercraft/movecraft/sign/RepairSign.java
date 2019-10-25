@@ -136,7 +136,7 @@ public class RepairSign implements Listener{
         long numDifferentBlocks = movecraftRepair.getNumDiffBlocks(repairName);
         boolean secondClick = false;
         if (!playerInteractTimeMap.isEmpty()) {
-            if (System.currentTimeMillis() - playerInteractTimeMap.get(p.getUniqueId()) < 5000) {
+            if (playerInteractTimeMap.get(p.getUniqueId()) != null && System.currentTimeMillis() - playerInteractTimeMap.get(p.getUniqueId()) < 5000) {
                     secondClick = true;
             }
         }

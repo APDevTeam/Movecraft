@@ -320,9 +320,9 @@ public class TranslationTask extends AsyncTask {
             } //END OF: if (blockObstructed)
         }
         for (UpdateCommand update : getUpdates()){
-            if (!(update instanceof EntityMoveUpdateCommand))
+            if (!(update instanceof EntityUpdateCommand))
                 continue;
-            EntityMoveUpdateCommand eUp = (EntityMoveUpdateCommand) update;
+            EntityUpdateCommand eUp = (EntityUpdateCommand) update;
             eUp.setY(dy);
         }
 

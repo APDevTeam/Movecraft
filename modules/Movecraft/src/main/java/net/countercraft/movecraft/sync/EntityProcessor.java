@@ -3,7 +3,7 @@ package net.countercraft.movecraft.sync;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.mapUpdater.update.EntityMoveUpdateCommand;
+import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import net.countercraft.movecraft.utils.HashHitBox;
 import net.countercraft.movecraft.utils.MathUtils;
@@ -35,10 +35,10 @@ public class EntityProcessor {
                 if(craft.getSinking()){
                     continue;
                 }
-                EntityMoveUpdateCommand eUp = new EntityMoveUpdateCommand(entity, dx, dy, dz, 0, 0);
+                EntityUpdateCommand eUp = new EntityUpdateCommand(entity, dx, dy, dz, 0, 0);
                 updateCmds.add(eUp);
             } else if (!craft.getType().getOnlyMovePlayers() || entity.getType() == EntityType.PRIMED_TNT) {
-                EntityMoveUpdateCommand eUp = new EntityMoveUpdateCommand(entity, dx, dy, dz,  0, 0);
+                EntityUpdateCommand eUp = new EntityUpdateCommand(entity, dx, dy, dz,  0, 0);
                 updateCmds.add(eUp);
             }
         }
@@ -68,7 +68,7 @@ public class EntityProcessor {
 
                     double[] rotatedCoords = MathUtils.rotateVecNoRound(rotation, adjustedPLoc.getX(), adjustedPLoc.getZ());
                     float newYaw = rotation == Rotation.CLOCKWISE ? 90F : -90F;
-                    EntityMoveUpdateCommand eUp = new EntityMoveUpdateCommand(entity, rotatedCoords[0] + tOP.getX() - entity.getLocation().getX(), 0, rotatedCoords[1] + tOP.getZ() - entity.getLocation().getZ(), newYaw, 0);
+                    EntityUpdateCommand eUp = new EntityUpdateCommand(entity, rotatedCoords[0] + tOP.getX() - entity.getLocation().getX(), 0, rotatedCoords[1] + tOP.getZ() - entity.getLocation().getZ(), newYaw, 0);
                     updates.add(eUp);
                 }
             }

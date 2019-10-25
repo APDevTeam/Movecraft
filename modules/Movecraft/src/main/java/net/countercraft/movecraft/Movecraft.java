@@ -145,13 +145,25 @@ public class Movecraft extends JavaPlugin {
         Settings.Debug = getConfig().getBoolean("Debug", false);
         Settings.DisableSpillProtection = getConfig().getBoolean("DisableSpillProtection", false);
         // if the PilotTool is specified in the config_legacy.yml file, use it
-        if (getConfig().getString("PilotTool") != null || getConfig().getString("PilotTool") != "") {
-            logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Recognized Pilot Tool")
-                    + getConfig().getString("PilotTool"));
-            Settings.PilotTool = Material.getMaterial(getConfig().getString("PilotTool"));
+        Object pt = getConfig().get("PilotTool");
+        final Material pilotTool;
+        if (pt instanceof Integer){
+            int toolID = (int) pt;
+            if (!Settings.IsLegacy) {
+                throw new IllegalArgumentException("Numerical block IDs are not supported by this version");
+            }
+            pilotTool = LegacyUtils.getMaterial(toolID);
+        } else if (pt instanceof String){
+            String str = (String) pt;
+            str = str.toUpperCase();
+            pilotTool = Material.getMaterial(str);
         } else {
-            logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - No Pilot Tool"));
+            pilotTool = null;
         }
+        Settings.PilotTool = pilotTool != null ? pilotTool : Material.STICK;
+        logger.info(pilotTool != null ?I18nSupport.getInternationalisedString("Startup - Recognized Pilot Tool")
+                + pilotTool.name().toLowerCase() :
+                I18nSupport.getInternationalisedString("Startup - No Pilot Tool"));
         //Switch to interfaces
 
         try {
@@ -274,8 +286,13 @@ public class Movecraft extends JavaPlugin {
                 type = LegacyUtils.getMaterial(Integer.parseInt(typ));
             } catch (NumberFormatException e){
                 type = Material.getMaterial(typ);
+            } catch (NoSuchMethodError e){
+                logger.warning(I18nSupport.getInternationalisedString("Startup - Numerical ID found") + " DisableShadowBlocks: " + typ);
+                type = null;
             }
-            Settings.DisableShadowBlocks.add(type);
+            if (type != null) {
+                Settings.DisableShadowBlocks.add(type);
+            }
         }
         Settings.RepairMaxPercent = getConfig().getDouble("RepairMaxPercent", 50.0);
         Settings.ForbiddenRemoteSigns = new HashSet<>(getConfig().getStringList("ForbiddenRemoteSigns"));
