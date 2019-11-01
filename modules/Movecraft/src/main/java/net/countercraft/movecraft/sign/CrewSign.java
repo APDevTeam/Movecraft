@@ -104,7 +104,8 @@ public class CrewSign implements Listener {
         }
         player.sendMessage(I18nSupport.getInternationalisedString("CrewSign - Respawn"));
         Location respawnLoc = craft.getCrewSigns().get(player.getUniqueId());
-        if (Arrays.binarySearch(beds, respawnLoc.getBlock().getType()) < 0){
+        Material test = respawnLoc.getBlock().getType();
+        if (Settings.IsLegacy ? test == LegacyUtils.BED_BLOCK : test.name().endsWith("BED")){
             return;
         }
         event.setRespawnLocation(respawnLoc);

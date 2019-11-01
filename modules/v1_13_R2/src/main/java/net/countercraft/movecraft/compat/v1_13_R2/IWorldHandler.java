@@ -36,6 +36,7 @@ public class IWorldHandler extends WorldHandler{
     }
     private final NextTickProvider tickProvider = new NextTickProvider();
     private final HashMap<World,List<TileEntity>> bMap = new HashMap<>();
+    private final HashMap<BlockPosition, TileEntity> tileMap = new HashMap<>();
     private MethodHandle internalTeleportMH;
 
     public IWorldHandler() {
@@ -353,6 +354,7 @@ public class IWorldHandler extends WorldHandler{
             nativeWorld.capturedTileEntities.put(newPosition, tile);
             return;
         }
+        tileMap.put(newPosition, tile);
         tile.setPosition(newPosition);
         chunk.tileEntities.put(newPosition, tile);
     }

@@ -23,7 +23,6 @@ import com.sk89q.worldedit.world.registry.WorldData;
 import com.sk89q.worldguard.protection.regions.ProtectedCuboidRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedPolygonalRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-import javafx.util.Pair;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.MovecraftRepair;
 import net.countercraft.movecraft.config.Settings;
@@ -46,16 +45,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayDeque;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class IMovecraftRepair extends MovecraftRepair {
     private final Plugin plugin;
-    private HashMap<String, ArrayDeque<Pair<Vector,Vector>>> locMissingBlocksMap = new HashMap<>();
+    private HashMap<String, ArrayDeque<AbstractMap.SimpleImmutableEntry<Vector,Vector>>> locMissingBlocksMap = new HashMap<>();
     private HashMap<String, Long> numDiffBlocksMap = new HashMap<>();
-    private HashMap<String, HashMap<Pair<Material, Byte>, Double>> missingBlocksMap = new HashMap<>();
+    private HashMap<String, HashMap<AbstractMap.SimpleImmutableEntry<Material, Byte>, Double>> missingBlocksMap = new HashMap<>();
 
     public IMovecraftRepair(Plugin plugin) {
         this.plugin = plugin;
@@ -188,8 +184,8 @@ public class IMovecraftRepair extends MovecraftRepair {
             return null;
         }
         long numDiffBlocks = 0;
-        HashMap<Pair<Material, Byte>, Double> missingBlocks = new HashMap<>();
-        ArrayDeque<Pair<Vector,Vector>> locMissingBlocks = new ArrayDeque<>();
+        HashMap<AbstractMap.SimpleImmutableEntry<Material, Byte>, Double> missingBlocks = new HashMap<>();
+        ArrayDeque<AbstractMap.SimpleImmutableEntry<Vector,Vector>> locMissingBlocks = new ArrayDeque<>();
         Vector minPos = MathUtils.we6vectorToBukkitVector(clipboard.getMinimumPoint());
         Vector distance = MathUtils.we6vectorToBukkitVector(clipboard.getOrigin().subtract(clipboard.getMinimumPoint()));
         Vector size = MathUtils.we6vectorToBukkitVector(clipboard.getDimensions());
@@ -221,10 +217,10 @@ public class IMovecraftRepair extends MovecraftRepair {
                                             continue;
                                         }
                                         String id = ct.getString("id");
-                                        Pair<Material, Byte> content;
+                                        AbstractMap.SimpleImmutableEntry<Material, Byte> content;
                                         if (id.equals("minecraft:coal")){
                                             byte data = (byte) ct.getShort("Damage");
-                                            content = new Pair<>(Material.COAL, data);
+                                            content = new AbstractMap.SimpleImmutableEntry<>(Material.COAL, data);
                                             if (!missingBlocks.containsKey(content)){
                                                 missingBlocks.put(content, (double) ct.getByte("Count"));
                                             } else {
@@ -234,7 +230,7 @@ public class IMovecraftRepair extends MovecraftRepair {
                                             }
                                         }
                                         if (id.equals("minecraft:coal_block")){
-                                            content = new Pair<>(Material.COAL_BLOCK, (byte) 0);
+                                            content = new AbstractMap.SimpleImmutableEntry<>(Material.COAL_BLOCK, (byte) 0);
                                             if (!missingBlocks.containsKey(content)){
                                                 missingBlocks.put(content, (double) ct.getByte("Count"));
                                             } else {
@@ -340,9 +336,9 @@ public class IMovecraftRepair extends MovecraftRepair {
                                         }
                                     }
                                 }
-                                Pair<Material, Byte> content;
+                                AbstractMap.SimpleImmutableEntry<Material, Byte> content;
                                 if (numTNT > 0) {
-                                    content = new Pair<>(Material.TNT, (byte) 0);
+                                    content = new AbstractMap.SimpleImmutableEntry<>(Material.TNT, (byte) 0);
                                     if (!missingBlocks.containsKey(content)) {
                                         missingBlocks.put(content, (double) numTNT);
                                     } else {
@@ -352,7 +348,7 @@ public class IMovecraftRepair extends MovecraftRepair {
                                     }
                                 }
                                 if (numFireCharges > 0) {
-                                    content = new Pair<>(Material.FIREBALL, (byte) 0);
+                                    content = new AbstractMap.SimpleImmutableEntry<>(Material.FIREBALL, (byte) 0);
                                     if (!missingBlocks.containsKey(content)) {
                                         missingBlocks.put(content, (double) numFireCharges);
                                     } else {
@@ -362,7 +358,7 @@ public class IMovecraftRepair extends MovecraftRepair {
                                     }
                                 }
                                 if (numWaterBuckets > 0) {
-                                    content = new Pair<>(Material.WATER_BUCKET, (byte) 0);
+                                    content = new AbstractMap.SimpleImmutableEntry<>(Material.WATER_BUCKET, (byte) 0);
                                     if (!missingBlocks.containsKey(content)) {
                                         missingBlocks.put(content, (double) numWaterBuckets);
                                     } else {
@@ -389,7 +385,7 @@ public class IMovecraftRepair extends MovecraftRepair {
                             }
                         }
                         if (itemToConsume != 0) {
-                            Pair<Material, Byte> missingBlock = new Pair<>(Material.getMaterial(itemToConsume), (byte) 0);
+                            AbstractMap.SimpleImmutableEntry<Material, Byte> missingBlock = new AbstractMap.SimpleImmutableEntry<>(Material.getMaterial(itemToConsume), (byte) 0);
                             if (!missingBlocks.containsKey(missingBlock)) {
                                 missingBlocks.put(missingBlock, qtyToConsume);
                             } else {
@@ -397,7 +393,7 @@ public class IMovecraftRepair extends MovecraftRepair {
                                 num += qtyToConsume;
                                 missingBlocks.put(missingBlock, num);
                             }
-                            locMissingBlocks.addLast(new Pair<>(new Vector(offset.getBlockX() + x, offset.getBlockY() + y, offset.getBlockZ() + z),new Vector(position.getBlockX(),position.getBlockY(),position.getBlockZ())));
+                            locMissingBlocks.addLast(new AbstractMap.SimpleImmutableEntry<>(new Vector(offset.getBlockX() + x, offset.getBlockY() + y, offset.getBlockZ() + z),new Vector(position.getBlockX(),position.getBlockY(),position.getBlockZ())));
                         }
                     }
                     if (bukkitBlock.getType() == Material.DISPENSER && block.getType() == 23) {
@@ -442,9 +438,9 @@ public class IMovecraftRepair extends MovecraftRepair {
                             }
                         }
                         //Bukkit.getLogger().info(String.format("TNT: %d, Fireballs: %d, Water buckets: %d", numTNT, numFireCharges, numWaterBuckets));
-                        Pair<Material, Byte> content;
+                        AbstractMap.SimpleImmutableEntry<Material, Byte> content;
                         if (numTNT > 0) {
-                            content = new Pair<>(Material.TNT, (byte) 0);
+                            content = new AbstractMap.SimpleImmutableEntry<>(Material.TNT, (byte) 0);
                             if (!missingBlocks.containsKey(content)) {
                                 missingBlocks.put(content, (double) numTNT);
                             } else {
@@ -455,7 +451,7 @@ public class IMovecraftRepair extends MovecraftRepair {
                             needReplace = true;
                         }
                         if (numFireCharges > 0) {
-                            content = new Pair<>(Material.FIREBALL, (byte) 0);
+                            content = new AbstractMap.SimpleImmutableEntry<>(Material.FIREBALL, (byte) 0);
                             if (!missingBlocks.containsKey(content)) {
                                 missingBlocks.put(content, (double) numFireCharges);
                             } else {
@@ -466,7 +462,7 @@ public class IMovecraftRepair extends MovecraftRepair {
                             needReplace = true;
                         }
                         if (numWaterBuckets > 0) {
-                            content = new Pair<>(Material.WATER_BUCKET, (byte) 0);
+                            content = new AbstractMap.SimpleImmutableEntry<>(Material.WATER_BUCKET, (byte) 0);
                             if (!missingBlocks.containsKey(content)) {
                                 missingBlocks.put(content, (double) numWaterBuckets);
                             } else {
@@ -478,7 +474,7 @@ public class IMovecraftRepair extends MovecraftRepair {
                         }
                         if (needReplace) {
                             numDiffBlocks++;
-                            locMissingBlocks.addLast(new Pair<>(new Vector(offset.getBlockX() + x, offset.getBlockY() + y, offset.getBlockZ() + z),new Vector(position.getBlockX(),position.getBlockY(),position.getBlockZ())));
+                            locMissingBlocks.addLast(new AbstractMap.SimpleImmutableEntry<>(new Vector(offset.getBlockX() + x, offset.getBlockY() + y, offset.getBlockZ() + z),new Vector(position.getBlockX(),position.getBlockY(),position.getBlockZ())));
                         }
                     }
                     if (bukkitBlock.getType() == Material.FURNACE && block.getType() == 61){
@@ -497,7 +493,7 @@ public class IMovecraftRepair extends MovecraftRepair {
                                     continue;
                                 }
                                 String id = ct.getString("id");
-                                Pair<Material, Byte> content;
+                                AbstractMap.SimpleImmutableEntry<Material, Byte> content;
                                 if (id.equals("minecraft:coal")){
                                     byte data = (byte)ct.getShort("Damage");
                                     byte count = ct.getByte("Count");
@@ -511,7 +507,7 @@ public class IMovecraftRepair extends MovecraftRepair {
                                         }
                                     }
                                     if (count > 0) {
-                                        content = new Pair<>(Material.COAL, data);
+                                        content = new AbstractMap.SimpleImmutableEntry<>(Material.COAL, data);
                                         if (!missingBlocks.containsKey(content)) {
                                             missingBlocks.put(content, (double) count);
                                         } else {
@@ -532,7 +528,7 @@ public class IMovecraftRepair extends MovecraftRepair {
                                         count -= fInv.getFuel() != null ? (byte) fInv.getFuel().getAmount() : 0;
                                     }
                                     if (count > 0) {
-                                        content = new Pair<>(Material.COAL_BLOCK, (byte) 0);
+                                        content = new AbstractMap.SimpleImmutableEntry<>(Material.COAL_BLOCK, (byte) 0);
                                         if (!missingBlocks.containsKey(content)) {
                                             missingBlocks.put(content, (double) count);
                                         } else {
@@ -547,7 +543,7 @@ public class IMovecraftRepair extends MovecraftRepair {
                         }
                         if (needsRefill > 0){
                             numDiffBlocks++;
-                            locMissingBlocks.addLast(new Pair<>(new Vector(offset.getBlockX() + x, offset.getBlockY() + y, offset.getBlockZ() + z),new Vector(position.getBlockX(),position.getBlockY(),position.getBlockZ())));
+                            locMissingBlocks.addLast(new AbstractMap.SimpleImmutableEntry<>(new Vector(offset.getBlockX() + x, offset.getBlockY() + y, offset.getBlockZ() + z),new Vector(position.getBlockX(),position.getBlockY(),position.getBlockZ())));
                         }
                     }
                 }
@@ -578,11 +574,11 @@ public class IMovecraftRepair extends MovecraftRepair {
     }
 
     @Override
-    public HashMap<javafx.util.Pair<Material, Byte>, Double> getMissingBlocks(String repairName) {
+    public HashMap<AbstractMap.SimpleImmutableEntry<Material, Byte>, Double> getMissingBlocks(String repairName) {
         return missingBlocksMap.get(repairName);
     }
 
-    public ArrayDeque<javafx.util.Pair<Vector, Vector>> getMissingBlockLocations(String repairName) {
+    public ArrayDeque<AbstractMap.SimpleImmutableEntry<Vector, Vector>> getMissingBlockLocations(String repairName) {
         return locMissingBlocksMap.get(repairName);
     }
 
