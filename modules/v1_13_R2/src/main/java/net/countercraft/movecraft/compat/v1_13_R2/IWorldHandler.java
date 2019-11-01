@@ -70,12 +70,14 @@ public class IWorldHandler extends WorldHandler{
         for(BlockPosition position : rotatedPositions.keySet()){
             //TileEntity tile = nativeWorld.removeTileEntity(position);
             TileEntity tile = removeTileEntity(nativeWorld,position);
+
             if(tile == null)
                 continue;
             tile.a(ROTATION[rotation.ordinal()]);
             //get the nextTick to move with the tile
             tiles.add(new TileHolder(tile, tickProvider.getNextTick((WorldServer)nativeWorld,position), position));
         }
+        ((WorldServer)nativeWorld).getBlockTickList().a();
 
         //*******************************************
         //*   Step three: Translate all the blocks  *
@@ -104,7 +106,7 @@ public class IWorldHandler extends WorldHandler{
             if(tileHolder.getNextTick()==null)
                 continue;
             final long currentTime = nativeWorld.worldData.getTime();
-            //nativeWorld.b(rotatedPositions.get(tileHolder.getNextTick().a), tileHolder.getNextTick().a(), (int) (tileHolder.getNextTick().b - currentTime), tileHolder.getNextTick().c);
+            nativeWorld.getBlockTickList().a(rotatedPositions.get(tileHolder.getNextTick().a), tileHolder.getNextTick().a(), (int) (tileHolder.getNextTick().b - currentTime), tileHolder.getNextTick().c);
             //BlockPosition, Object, int, TickListPriority
             nativeWorld.b(rotatedPositions.get(tileHolder.getNextTick().a), tileHolder.getTile());
         }
@@ -210,7 +212,7 @@ public class IWorldHandler extends WorldHandler{
             if(tileHolder.getNextTick()==null)
                 continue;
             final long currentTime = nativeWorld.worldData.getTime();
-            //nativeWorld.b(tileHolder.getNextTick().a.a(translateVector), tileHolder.getNextTick().a(), (int) (tileHolder.getNextTick().b - currentTime), tileHolder.getNextTick().c);
+            nativeWorld.getBlockTickList().a(tileHolder.getNextTick().a.a(translateVector), tileHolder.getNextTick().a(), (int) (tileHolder.getNextTick().b - currentTime), tileHolder.getNextTick().c);
             nativeWorld.b(tileHolder.getNextTick().a.a(translateVector), tileHolder.getTile());
         }
         //*******************************************
@@ -278,6 +280,7 @@ public class IWorldHandler extends WorldHandler{
         if(!Settings.IsPaper)
             world.tileEntityList.remove(tile);
         world.tileEntityListTick.remove(tile);
+        world.getBlockTickList().a(position, tile.getBlock().getBlock(), (int) world.worldData.getTime());
         if(!bMap.containsKey(world)){
             try {
                 Field bField = World.class.getDeclaredField("c");
@@ -357,10 +360,10 @@ public class IWorldHandler extends WorldHandler{
     private class TileHolder{
         @NotNull private final TileEntity tile;
         @Nullable
-        private final NextTickListEntry nextTick;
+        private final NextTickListEntry<Block> nextTick;
         @NotNull private final BlockPosition tilePosition;
 
-        public TileHolder(@NotNull TileEntity tile, @Nullable NextTickListEntry nextTick, @NotNull BlockPosition tilePosition){
+        public TileHolder(@NotNull TileEntity tile, @Nullable NextTickListEntry<Block> nextTick, @NotNull BlockPosition tilePosition){
             this.tile = tile;
             this.nextTick = nextTick;
             this.tilePosition = tilePosition;
@@ -373,7 +376,7 @@ public class IWorldHandler extends WorldHandler{
         }
 
         @Nullable
-        public NextTickListEntry getNextTick() {
+        public NextTickListEntry<Block> getNextTick() {
             return nextTick;
         }
 

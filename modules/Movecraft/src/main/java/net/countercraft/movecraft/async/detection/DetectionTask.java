@@ -406,7 +406,7 @@ public class DetectionTask extends AsyncTask {
                 if (numberOfBlocks > i.getUpperLimit() - 10000.0) {
                     fail(String.format(I18nSupport.getInternationalisedString("Detection - Too much flyblock") + ": %s %d > %d",
                             name.toLowerCase().replace("_", " "), numberOfBlocks,
-                            i.getUpperLimit() - 10000));
+                            (int) (i.getUpperLimit() - 10000)));
                     return false;
 
                 }

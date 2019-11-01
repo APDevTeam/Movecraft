@@ -120,7 +120,11 @@ public class CrewSign implements Listener {
             }
             Sign sign = (Sign) block.getState();
             if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Crew:") && Arrays.binarySearch(beds, sign.getLocation().subtract(0,1,0).getBlock().getType()) >= 0) {
-               event.getCraft().getCrewSigns().put(Bukkit.getPlayer(sign.getLine(1)).getUniqueId(),block.getLocation().subtract(0,1,0));
+                final Player crew = Bukkit.getPlayer(sign.getLine(1));
+                if (crew == null){
+                    return;
+                }
+               event.getCraft().getCrewSigns().put(crew.getUniqueId(),block.getLocation().subtract(0,1,0));
             }
         }
     }
