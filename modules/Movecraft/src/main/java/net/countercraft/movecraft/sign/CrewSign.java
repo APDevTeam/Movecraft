@@ -105,7 +105,12 @@ public class CrewSign implements Listener {
         player.sendMessage(I18nSupport.getInternationalisedString("CrewSign - Respawn"));
         Location respawnLoc = craft.getCrewSigns().get(player.getUniqueId());
         Material test = respawnLoc.getBlock().getType();
-        if (Settings.IsLegacy ? test == LegacyUtils.BED_BLOCK : test.name().endsWith("BED")){
+        final boolean hasBed = Settings.IsLegacy ? test == LegacyUtils.BED_BLOCK : test.name().endsWith("BED");
+        if (Settings.Debug){
+            Bukkit.broadcastMessage("Has bed: " + hasBed + ". Found type at " + respawnLoc.toVector() + ": " + test.name());
+        }
+
+        if (!hasBed){
             return;
         }
         event.setRespawnLocation(respawnLoc);
