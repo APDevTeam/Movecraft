@@ -3,7 +3,6 @@ maxSize: 20000
 minSize: 10000
 allowedBlocks:
 - ALL_WOOD
-        - WATER
         - LAVA
         - ALL_LOG
         - all_planks
@@ -53,7 +52,7 @@ allowedBlocks:
         - iron_bars
         - glass_pane
         - all_fence_gate
-        - nether_brick
+        - nether_bricks
         - enchanting_table
         - brewing_stand
         - cauldron

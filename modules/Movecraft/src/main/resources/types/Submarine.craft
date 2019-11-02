@@ -53,7 +53,7 @@ allowedBlocks:
         - iron_bars
         - glass_pane
         - all_fence_gate
-        - nether_brick
+        - nether_bricks
         - enchanting_table
         - brewing_stand
         - cauldron
