@@ -28,23 +28,6 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class TranslationTask extends AsyncTask {
     private static final Set<Material> FALL_THROUGH_BLOCKS = new HashSet<>();//Settings.IsLegacy ? new Material[]{}:new Material[]{Material.AIR,
-            /*Material.WATER,
-            Material.LAVA,
-            Material.BROWN_MUSHROOM,
-            Material.RED_MUSHROOM,
-            Material.TORCH,
-            Material.FIRE,
-            Material.REDSTONE_WIRE,
-            Material.LADDER,
-            Material.WALL_SIGN,
-            Material.LEVER,
-            Material.STONE_BUTTON,
-            Material.SNOW,
-            Material.CARROT,
-            Material.POTATO,
-            };*/
-    //private static final int[] FALL_THROUGH_BLOCKS = {0, 8, 9, 10, 11, 31, 37, 38, 39, 40, 50, 51, 55, 59, 63, 65, 68, 69, 70, 72, 75, 76, 77, 78, 83, 85, 93, 94, 111, 141, 142, 143, 171};
-
     private int dx, dy, dz;
     private HashHitBox newHitBox, oldHitBox;
     private boolean failed;
@@ -272,7 +255,8 @@ public class TranslationTask extends AsyncTask {
                 newHitBox.add(newLocation);
                 continue;
             }
-            final Material testMaterial = newLocation.toBukkit(craft.getW()).getBlock().getType();
+            final Block b = newLocation.toBukkit(craft.getW()).getBlock();
+            final Material testMaterial = b.getType();
 
             if ((testMaterial.equals(Material.CHEST) || testMaterial.equals(Material.TRAPPED_CHEST)) && checkChests(testMaterial, newLocation)) {
                 //prevent chests collision
@@ -374,8 +358,10 @@ public class TranslationTask extends AsyncTask {
                 newHitBox.removeAll(toRemove);
 
             }
-            Bukkit.getLogger().info("Collapsed hitbox: "+craft.getCollapsedHitBox().size() + ", New hitbox: " + newHitBox.size());
-        }else{
+            if (Settings.Debug){
+                Bukkit.getLogger().info("Collapsed hitbox: "+craft.getCollapsedHitBox().size() + ", New hitbox: " + newHitBox.size());
+            }
+            }else{
             for(MovecraftLocation location : collisionBox){
                 if (!(craft.getType().getCollisionExplosion() != 0.0F) || System.currentTimeMillis() - craft.getOrigPilotTime() <= 1000) {
                     continue;

@@ -11,6 +11,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -20,6 +21,8 @@ public class EntityProcessor {
 
     }
     public static Set<UpdateCommand> translateEntities(Craft craft, int dx, int dy, int dz){
+        if (!craft.getType().getMoveEntities())
+            return Collections.emptySet();
         HashHitBox oldHitBox = craft.getHitBox();
         final HashSet<UpdateCommand> updateCmds = new HashSet<>();
         if (oldHitBox.isEmpty())

@@ -75,6 +75,7 @@ final public class CraftType {
     private final int smokeOnSink;
     private final int tickCooldown;
     private final int hoverLimit;
+    private final int maxTravelDistance;
     private final Set<Material> dynamicFlyBlocks;
     private final double fuelBurnRate;
     private final double sinkPercent;
@@ -439,6 +440,7 @@ final public class CraftType {
                     }
                 }
             }
+            maxTravelDistance = data.containsKey("maxTravelDistance") ? (int) data.get("maxTravelDistance") : 500;
             chestPenalty = data.containsKey("chestPenalty") ? doubleFromObject(data.get("chestPenalty")) : 0d;
             effectRange = data.containsKey("effectRange") ? integerFromObject(data.get("effectRange")) : 0;
             potionEffectsToApply = data.containsKey("potionEffectsToApply") ? effectListFromObject(data.get("potionEffectsToApply")) : Collections.emptyMap();
@@ -1124,18 +1126,8 @@ final public class CraftType {
         return effectRange;
     }
 
-    @NotNull
-    public Map<PotionEffect, Integer> getPotionEffectDelays() {
-        return potionEffectDelays;
-    }
-
-    @NotNull
-    public Set<EntityType> getEntitiesToSpawn() {
-        return entitiesToSpawn;
-    }
-
-    public int getMaxEntitiesToBeSpawned() {
-        return maxEntitiesToBeSpawned;
+    public int getMaxTravelDistance() {
+        return maxTravelDistance;
     }
 
     private class TypeNotFoundException extends RuntimeException {
@@ -1149,4 +1141,5 @@ final public class CraftType {
             super(message,cause);
         }
     }
+
 }

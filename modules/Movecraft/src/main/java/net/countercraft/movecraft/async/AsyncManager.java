@@ -19,16 +19,8 @@ package net.countercraft.movecraft.async;
 
 import at.pavlov.cannons.cannon.Cannon;
 import com.google.common.collect.Lists;
-import com.sk89q.worldedit.bukkit.BukkitAdapter;
-import com.sk89q.worldedit.math.BlockVector3;
-import com.sk89q.worldguard.WorldGuard;
-import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
-import com.sk89q.worldguard.protection.ApplicableRegionSet;
-import com.sk89q.worldguard.protection.managers.RegionManager;
-import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-import com.sk89q.worldguard.protection.regions.RegionContainer;
-import net.countercraft.movecraft.*;
 import net.countercraft.movecraft.Rotation;
+import net.countercraft.movecraft.*;
 import net.countercraft.movecraft.async.detection.DetectionTask;
 import net.countercraft.movecraft.async.detection.DetectionTaskData;
 import net.countercraft.movecraft.async.rotation.RotationTask;
@@ -39,9 +31,9 @@ import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
-import net.countercraft.movecraft.utils.*;
 import net.countercraft.movecraft.mapUpdater.update.BlockCreateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
+import net.countercraft.movecraft.utils.*;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -388,7 +380,6 @@ public class AsyncManager extends BukkitRunnable {
             boolean bankLeft = false;
             boolean bankRight = false;
             boolean dive = false;
-            boolean climb = pcraft.isClimbing();
             if (pcraft.getPilotLocked()) {
                 if (pcraft.getNotificationPlayer().isSneaking())
                     dive = true;
@@ -409,9 +400,6 @@ public class AsyncManager extends BukkitRunnable {
             // ascend
             if (pcraft.getCruiseDirection() == BlockFace.UP) {
                 dy = 1 + pcraft.getType().getVertCruiseSkipBlocks();
-            }
-            else if (climb){
-                dy = (1 + pcraft.getType().getCruiseSkipBlocks()) >> 1;
             }
             // descend
             if (pcraft.getCruiseDirection() == BlockFace.DOWN) {
@@ -586,38 +574,7 @@ public class AsyncManager extends BukkitRunnable {
             // know and release the craft. Otherwise
             // update the time for the next check
             Player notifyP = pcraft.getNotificationPlayer();
-            if (Movecraft.getInstance().getWorldGuardPlugin() != null){
-                WorldGuardPlugin wgPlugin = Movecraft.getInstance().getWorldGuardPlugin();
-                ProtectedRegion region = null;
-                RegionManager regionManager;
-                if (Settings.IsLegacy){
-                    regionManager = LegacyUtils.getRegionManager(wgPlugin, pcraft.getW());
-                } else {
-                    RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
-                    regionManager = container.get(BukkitAdapter.adapt(pcraft.getW()));
-                }
-                for (MovecraftLocation location : pcraft.getHitBox()){
-                    ApplicableRegionSet regions;
-                    if (Settings.IsLegacy)
-                        regions = LegacyUtils.getApplicableRegions(regionManager, location.toBukkit(pcraft.getW()));
-                    else {
-                        regions = regionManager.getApplicableRegions(BlockVector3.at(location.getX(), location.getY(), location.getZ()));
-                    }
-                    for (ProtectedRegion pr : regions.getRegions()){
-                        if (WorldguardUtils.pvpAllowed(pr)){
-                            region = pr;
-                            break;
-                        }
-                    }
-                    if (region != null){
-                        break;
-                    }
-                }
-                if (region != null && Settings.WorldGuardBlockSinkOnPVPPerm && WorldguardUtils.pvpAllowed(region) && notifyP != null){
-                    notifyP.sendMessage(I18nSupport.getInternationalisedString("Player- Craft should sink but PVP is not allowed in this WorldGuard region"));
-                    isSinking = false;
-                }
-            }
+
             if (isSinking && pcraft.isNotProcessing()) {
 
                 if (notifyP != null) {

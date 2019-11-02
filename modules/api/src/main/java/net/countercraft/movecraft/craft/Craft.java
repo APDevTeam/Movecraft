@@ -49,7 +49,6 @@ public abstract class Craft {
     @NotNull protected World w;
     @NotNull private final AtomicBoolean processing = new AtomicBoolean();
     private int maxHeightLimit;
-    private boolean climbing;
     private boolean cruising;
     private boolean sinking;
     private boolean disabled;
@@ -92,7 +91,6 @@ public abstract class Craft {
         this.cannonDirector = null;
         this.AADirector = null;
         this.lastCruiseUpdate = System.currentTimeMillis() - 10000;
-        this.climbing = false;
         this.cruising = false;
         this.sinking = false;
         this.repairing = false;
@@ -152,6 +150,7 @@ public abstract class Craft {
         return sinking;
     }
 
+
     /*public void setSinking(boolean sinking) {
         this.sinking = sinking;
     }*/
@@ -163,7 +162,6 @@ public abstract class Craft {
             notificationPlayer.sendMessage(event.getFailMessage());
             return;
         }
-
 
         sinking = true;
 
@@ -442,15 +440,4 @@ public abstract class Craft {
         this.repairing = repairing;
     }
 
-    public boolean isClimbing() {
-        return climbing;
-    }
-
-    public void setClimbing(boolean climbing) {
-        this.climbing = climbing;
-    }
-
-    public enum SinkReason{
-        NONE, DAMAGE, RANGE
-    }
 }

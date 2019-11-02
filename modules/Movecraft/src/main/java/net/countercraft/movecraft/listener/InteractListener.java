@@ -107,10 +107,6 @@ public final class InteractListener implements Listener {
             if (craft.getPilotLocked()) {
                 // right click moves up or down if using direct
                 // control
-                if (craft.getCruising()){
-                    craft.setClimbing(true);
-                    return;
-                }
                 int DY = 1;
                 if (event.getPlayer().isSneaking())
                     DY = -1;

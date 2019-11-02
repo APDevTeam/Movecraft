@@ -83,9 +83,7 @@ public class ICraft extends Craft {
         }*/
 
 
-        if (isClimbing()){
-            setClimbing(false);
-        }
+
         TranslationTask task = new TranslationTask(this, dx, dy, dz);
 
         task.getUpdates().addAll(EntityProcessor.translateEntities(this, dx, dy, dz));
