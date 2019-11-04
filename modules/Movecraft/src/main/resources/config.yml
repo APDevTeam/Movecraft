@@ -4,7 +4,7 @@ SinkRateTicks: 20
 SinkCheckTicks: 100
 TracerRateTicks: 5
 TracerMinDistance: 60 # Minimum distance for tracers to appear
-PilotTool: 280
+PilotTool: STICK
 WorldGuardBlockMoveOnBuildPerm: true
 WorldGuardBlockSinkOnPVPPerm: true
 ManOverboardTimeout: 30

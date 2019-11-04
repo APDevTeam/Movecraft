@@ -67,7 +67,7 @@ allowedBlocks:
            - cobblestone_wall
            - mossy_cobblestone_wall
            - FLOWER_POT
-           - SKULL
+           - all_SKULL
            - all_ANVIL
            - TRAPPED_CHEST
            - COMPARATOR
