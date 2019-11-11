@@ -99,8 +99,7 @@ final public class CraftType {
     @NotNull private final int effectRange;
     @NotNull private final Map<PotionEffect,Integer> potionEffectsToApply;
     @NotNull private final Map<PotionEffect, Integer> potionEffectDelays = Collections.emptyMap();
-    @NotNull private final Set<EntityType> entitiesToSpawn;
-    @NotNull private final int maxEntitiesToBeSpawned;
+    @NotNull private final Set<Material> forbiddenHoverOverBlocks;
 
     public CraftType(File f) {
         final Map data;
@@ -419,6 +418,27 @@ final public class CraftType {
                 allowVerticalTakeoffAndLanding = true;
             }
 
+        if(!blockedByWater){
+            passthroughBlocks.add(Material.WATER);
+            passthroughBlocks.add(Material.STATIONARY_WATER);
+        }
+        forbiddenHoverOverBlocks = new HashSet<>();
+        if (data.containsKey("forbiddenHoverOverBlocks")){
+            final ArrayList objList = (ArrayList) data.get("forbiddenHoverOverBlocks");
+            for (Object i : objList){
+                if (i instanceof Integer){
+                    forbiddenHoverOverBlocks.add(Material.getMaterial((int) i));
+                } else if (i instanceof String){
+                    forbiddenHoverOverBlocks.add(Material.getMaterial(((String) i).toUpperCase()));
+                }
+            }
+        }
+        if (!canHoverOverWater){
+            forbiddenHoverOverBlocks.add(Material.WATER);
+            forbiddenHoverOverBlocks.add(Material.STATIONARY_WATER);
+        }
+
+
             if (data.containsKey("dynamicLagSpeedFactor")) {
                 dynamicLagSpeedFactor = doubleFromObject(data.get("dynamicLagSpeedFactor"));
             } else {
@@ -444,18 +464,6 @@ final public class CraftType {
             chestPenalty = data.containsKey("chestPenalty") ? doubleFromObject(data.get("chestPenalty")) : 0d;
             effectRange = data.containsKey("effectRange") ? integerFromObject(data.get("effectRange")) : 0;
             potionEffectsToApply = data.containsKey("potionEffectsToApply") ? effectListFromObject(data.get("potionEffectsToApply")) : Collections.emptyMap();
-            if (data.containsKey("entitiesToSpawn")) {
-                entitiesToSpawn = new HashSet<>();
-                ArrayList entries = (ArrayList) data.get("entitiesToSpawn");
-                for (Object o : entries) {
-                    if (o instanceof String) {
-                        entitiesToSpawn.add(EntityType.valueOf(((String) o).toUpperCase()));
-                    }
-                }
-            } else {
-                entitiesToSpawn = Collections.emptySet();
-            }
-            maxEntitiesToBeSpawned = data.containsKey("maxEntitiesToBeSpawned") ? (int) data.get("maxEntitiesToBeSpawned") : 0;
         } catch (Exception e){
             throw new CraftTypeException("Craft file " + f.getName() + " is malformed", e);
         }
@@ -1128,6 +1136,10 @@ final public class CraftType {
 
     public int getMaxTravelDistance() {
         return maxTravelDistance;
+    }
+
+    public Set<Material> getForbiddenHoverOverBlocks() {
+        return forbiddenHoverOverBlocks;
     }
 
     private class TypeNotFoundException extends RuntimeException {
