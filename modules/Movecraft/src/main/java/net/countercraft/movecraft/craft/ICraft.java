@@ -7,7 +7,6 @@ import net.countercraft.movecraft.async.detection.DetectionTask;
 import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.sync.EntityProcessor;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -85,8 +84,6 @@ public class ICraft extends Craft {
 
 
         TranslationTask task = new TranslationTask(this, dx, dy, dz);
-
-        task.getUpdates().addAll(EntityProcessor.translateEntities(this, dx, dy, dz));
         Movecraft.getInstance().getAsyncManager().submitTask(task, this);
     }
 
@@ -99,14 +96,12 @@ public class ICraft extends Craft {
         }
         setLastRotateTime(System.nanoTime());
         RotationTask task = new RotationTask(this, originPoint, rotation, this.getW());
-        task.getUpdates().addAll(EntityProcessor.rotateEntities(this, originPoint, rotation));
         Movecraft.getInstance().getAsyncManager().submitTask(task, this);
     }
 
     @Override
     public void rotate(Rotation rotation, MovecraftLocation originPoint, boolean isSubCraft) {
         RotationTask task = new RotationTask(this, originPoint, rotation, this.getW(), isSubCraft);
-        task.getUpdates().addAll(EntityProcessor.rotateEntities(this, originPoint, rotation));
         Movecraft.getInstance().getAsyncManager().submitTask(task, this);
     }
 

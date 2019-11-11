@@ -131,7 +131,7 @@ public class TranslationTask extends AsyncTask {
             int testY = minY;
             while (testY > 0){
                 testY--;
-                if (craft.getW().getBlockAt(middle.getX(),testY,middle.getZ()).getType().name().endsWith("AIR"))
+                if (!craft.getW().getBlockAt(middle.getX(),testY,middle.getZ()).getType().name().endsWith("AIR"))
                     break;
             }
             if (minY - testY > craft.getType().getMaxHeightAboveGround()) {
@@ -156,6 +156,7 @@ public class TranslationTask extends AsyncTask {
                     dy = -1;
                 }
             } else if (!onGround){
+
                 dy = -1;
             }
         }
@@ -303,12 +304,6 @@ public class TranslationTask extends AsyncTask {
                 }
             } //END OF: if (blockObstructed)
         }
-        for (UpdateCommand update : getUpdates()){
-            if (!(update instanceof EntityUpdateCommand))
-                continue;
-            EntityUpdateCommand eUp = (EntityUpdateCommand) update;
-            eUp.setY(dy);
-        }
 
         if (!craft.getType().getCanHoverOverWater()){
             MovecraftLocation test = new MovecraftLocation(newHitBox.getMidPoint().getX(), newHitBox.getMinY(), newHitBox.getMidPoint().getZ());
@@ -417,7 +412,7 @@ public class TranslationTask extends AsyncTask {
         }
 
         updates.add(new CraftTranslateCommand(craft, new MovecraftLocation(dx, dy, dz)));
-
+        updates.add(new EntityTranslateUpdateCommand(craft, dx, dy, dz));
 
 
         captureYield(harvestedBlocks);
