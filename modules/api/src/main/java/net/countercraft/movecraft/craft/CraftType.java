@@ -88,7 +88,7 @@ final public class CraftType {
     @NotNull private final List<Material> harvestBlocks;
     @NotNull private final List<Material> harvesterBladeBlocks;
     @NotNull private final Set<Material> passthroughBlocks;
-    @NotNull private final Set<Material> cantHoverOverBlocks;
+    @NotNull private final Set<Material> forbiddenHoverOverBlocks;
 
     public CraftType(File f) {
         final Map data;
@@ -399,20 +399,20 @@ final public class CraftType {
             passthroughBlocks.add(Material.WATER);
             passthroughBlocks.add(Material.STATIONARY_WATER);
         }
-        cantHoverOverBlocks = new HashSet<>();
-        if (data.containsKey("cantHoverOverBlocks")){
-            final ArrayList objList = (ArrayList) data.get("cantHoverOverBlocks");
+        forbiddenHoverOverBlocks = new HashSet<>();
+        if (data.containsKey("forbiddenHoverOverBlocks")){
+            final ArrayList objList = (ArrayList) data.get("forbiddenHoverOverBlocks");
             for (Object i : objList){
                 if (i instanceof Integer){
-                    cantHoverOverBlocks.add(Material.getMaterial((int) i));
+                    forbiddenHoverOverBlocks.add(Material.getMaterial((int) i));
                 } else if (i instanceof String){
-                    cantHoverOverBlocks.add(Material.getMaterial(((String) i).toUpperCase()));
+                    forbiddenHoverOverBlocks.add(Material.getMaterial(((String) i).toUpperCase()));
                 }
             }
         }
         if (!canHoverOverWater){
-            cantHoverOverBlocks.add(Material.WATER);
-            cantHoverOverBlocks.add(Material.STATIONARY_WATER);
+            forbiddenHoverOverBlocks.add(Material.WATER);
+            forbiddenHoverOverBlocks.add(Material.STATIONARY_WATER);
         }
         if (data.containsKey("allowVerticalTakeoffAndLanding")) {
             allowVerticalTakeoffAndLanding = (Boolean) data.get("allowVerticalTakeoffAndLanding");
@@ -806,8 +806,8 @@ final public class CraftType {
     }
 
     @NotNull
-    public Set<Material> getCantHoverOverBlocks() {
-        return cantHoverOverBlocks;
+    public Set<Material> getForbiddenHoverOverBlocks() {
+        return forbiddenHoverOverBlocks;
     }
 
     private class TypeNotFoundException extends RuntimeException {

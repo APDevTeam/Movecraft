@@ -163,14 +163,14 @@ public class TranslationTask extends AsyncTask {
             } //END OF: if (blockObstructed)
         }
 
-        if (craft.getType().getCantHoverOverBlocks().size() > 0){
+        if (craft.getType().getForbiddenHoverOverBlocks().size() > 0){
             MovecraftLocation test = new MovecraftLocation(newHitBox.getMidPoint().getX(), newHitBox.getMinY(), newHitBox.getMidPoint().getZ());
             test = test.translate(0, -1, 0);
             while (test.toBukkit(craft.getW()).getBlock().getType() == Material.AIR){
                 test = test.translate(0, -1, 0);
             }
             Material testType = test.toBukkit(craft.getW()).getBlock().getType();
-            if (craft.getType().getCantHoverOverBlocks().contains(testType)){
+            if (craft.getType().getForbiddenHoverOverBlocks().contains(testType)){
                 fail(String.format(I18nSupport.getInternationalisedString("Translation - Failed Craft over block"), testType.name().toLowerCase().replace("_", " ")));
             }
         }
