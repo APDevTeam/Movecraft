@@ -88,6 +88,7 @@ final public class CraftType {
     @NotNull private final List<Material> harvestBlocks;
     @NotNull private final List<Material> harvesterBladeBlocks;
     @NotNull private final Set<Material> passthroughBlocks;
+    @NotNull private final Set<Material> cantHoverOverBlocks;
 
     public CraftType(File f) {
         final Map data;
@@ -397,6 +398,21 @@ final public class CraftType {
         if(!blockedByWater){
             passthroughBlocks.add(Material.WATER);
             passthroughBlocks.add(Material.STATIONARY_WATER);
+        }
+        cantHoverOverBlocks = new HashSet<>();
+        if (data.containsKey("cantHoverOverBlocks")){
+            final ArrayList objList = (ArrayList) data.get("cantHoverOverBlocks");
+            for (Object i : objList){
+                if (i instanceof Integer){
+                    cantHoverOverBlocks.add(Material.getMaterial((int) i));
+                } else if (i instanceof String){
+                    cantHoverOverBlocks.add(Material.getMaterial(((String) i).toUpperCase()));
+                }
+            }
+        }
+        if (!canHoverOverWater){
+            cantHoverOverBlocks.add(Material.WATER);
+            cantHoverOverBlocks.add(Material.STATIONARY_WATER);
         }
         if (data.containsKey("allowVerticalTakeoffAndLanding")) {
             allowVerticalTakeoffAndLanding = (Boolean) data.get("allowVerticalTakeoffAndLanding");
@@ -787,6 +803,11 @@ final public class CraftType {
 
     public boolean getOnlyMovePlayers() {
         return onlyMovePlayers;
+    }
+
+    @NotNull
+    public Set<Material> getCantHoverOverBlocks() {
+        return cantHoverOverBlocks;
     }
 
     private class TypeNotFoundException extends RuntimeException {
