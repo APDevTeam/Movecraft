@@ -22,7 +22,6 @@ import net.countercraft.movecraft.utils.BlockContainer;
 import net.countercraft.movecraft.utils.BlockLimitManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.entity.EntityType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
@@ -384,7 +383,6 @@ final public class CraftType {
                         Material mat = Material.getMaterial(((String) i).toUpperCase());
                         harvesterBladeBlocks.add(mat);
                     } else {
-                        Integer typeID = (Integer) i;
                         Material mat = Material.getMaterial((Integer) i);
                         harvesterBladeBlocks.add(mat);
                     }
@@ -418,25 +416,21 @@ final public class CraftType {
                 allowVerticalTakeoffAndLanding = true;
             }
 
-        if(!blockedByWater){
-            passthroughBlocks.add(Material.WATER);
-            passthroughBlocks.add(Material.STATIONARY_WATER);
-        }
-        forbiddenHoverOverBlocks = new HashSet<>();
-        if (data.containsKey("forbiddenHoverOverBlocks")){
-            final ArrayList objList = (ArrayList) data.get("forbiddenHoverOverBlocks");
-            for (Object i : objList){
-                if (i instanceof Integer){
-                    forbiddenHoverOverBlocks.add(Material.getMaterial((int) i));
-                } else if (i instanceof String){
-                    forbiddenHoverOverBlocks.add(Material.getMaterial(((String) i).toUpperCase()));
+            forbiddenHoverOverBlocks = new HashSet<>();
+            if (data.containsKey("forbiddenHoverOverBlocks")){
+                final ArrayList objList = (ArrayList) data.get("forbiddenHoverOverBlocks");
+                for (Object i : objList){
+                    if (i instanceof Integer){
+                        forbiddenHoverOverBlocks.add(Material.getMaterial((int) i));
+                    } else if (i instanceof String){
+                        forbiddenHoverOverBlocks.add(Material.getMaterial(((String) i).toUpperCase()));
+                    }
                 }
             }
-        }
-        if (!canHoverOverWater){
-            forbiddenHoverOverBlocks.add(Material.WATER);
-            forbiddenHoverOverBlocks.add(Material.STATIONARY_WATER);
-        }
+            if (!canHoverOverWater){
+                forbiddenHoverOverBlocks.add(Material.WATER);
+                forbiddenHoverOverBlocks.add(Material.STATIONARY_WATER);
+            }
 
 
             if (data.containsKey("dynamicLagSpeedFactor")) {
