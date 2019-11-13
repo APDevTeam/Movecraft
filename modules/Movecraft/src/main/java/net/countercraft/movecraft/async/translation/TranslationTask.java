@@ -413,6 +413,9 @@ public class TranslationTask extends AsyncTask {
 
         updates.add(new CraftTranslateCommand(craft, new MovecraftLocation(dx, dy, dz)));
         updates.add(new EntityTranslateUpdateCommand(craft, dx, dy, dz));
+        if (!Settings.IsLegacy){
+            updates.add(new WaterlogUpdateCommand(craft));
+        }
 
 
         captureYield(harvestedBlocks);

@@ -429,7 +429,12 @@ final public class CraftType {
             }
             if (!canHoverOverWater){
                 forbiddenHoverOverBlocks.add(Material.WATER);
-                forbiddenHoverOverBlocks.add(Material.STATIONARY_WATER);
+                if (Settings.IsLegacy){
+                    forbiddenHoverOverBlocks.add(Material.STATIONARY_WATER);
+                } else {
+                    forbiddenHoverOverBlocks.add(Material.getMaterial("BUBBLE_COLUMN"));
+                }
+
             }
 
 
