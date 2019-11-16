@@ -333,7 +333,13 @@ public class Movecraft extends JavaPlugin {
                 wEPlugin = getServer().getPluginManager().getPlugin("FastAsyncWorldEdit");
             }
         }
-        if (wEPlugin == null || !(wEPlugin instanceof WorldEditPlugin)) {
+        boolean WEpresent;
+        try {
+            WEpresent = wEPlugin == null || !(wEPlugin instanceof WorldEditPlugin);
+        } catch (Throwable t) {
+            WEpresent = false;
+        }
+        if (!WEpresent) {
             logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - WE Not Found"));
             Settings.AssaultEnable = false;
         } else {
@@ -361,8 +367,9 @@ public class Movecraft extends JavaPlugin {
                 Settings.AssaultEnable = false;
             }
             Settings.RepairMaxPercent = getConfig().getDouble("RepairMaxPercent", 50);
+            worldEditPlugin = (WorldEditPlugin) wEPlugin;
         }
-        worldEditPlugin = (WorldEditPlugin) wEPlugin;
+
 
 
 
