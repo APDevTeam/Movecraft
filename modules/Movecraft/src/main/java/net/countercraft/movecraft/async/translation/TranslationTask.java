@@ -410,12 +410,9 @@ public class TranslationTask extends AsyncTask {
             if (!craft.getType().getCruiseOnPilot() && !craft.getSinking())  // not necessary to release cruiseonpilot crafts, because they will already be released
                 CraftManager.getInstance().addReleaseTask(craft);
         }
-
         updates.add(new CraftTranslateCommand(craft, new MovecraftLocation(dx, dy, dz)));
         updates.add(new EntityTranslateUpdateCommand(craft, dx, dy, dz));
-        if (!Settings.IsLegacy){
-            updates.add(new WaterlogUpdateCommand(craft));
-        }
+
 
 
         captureYield(harvestedBlocks);
@@ -466,48 +463,50 @@ public class TranslationTask extends AsyncTask {
         if (harvestedBlocks.isEmpty()) {
             return;
         }
-        ArrayList<Inventory> chests = new ArrayList<>();
-        //find chests
-        for (MovecraftLocation loc : oldHitBox) {
-            Block block = craft.getW().getBlockAt(loc.getX(), loc.getY(), loc.getZ());
-            if (block.getType() == Material.CHEST || block.getType() == Material.TRAPPED_CHEST)
-                chests.add(((InventoryHolder) (block.getState())).getInventory());
-        }
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                ArrayList<Inventory> chests = new ArrayList<>();
+                //find chests
+                for (MovecraftLocation loc : oldHitBox) {
+                    Block block = craft.getW().getBlockAt(loc.getX(), loc.getY(), loc.getZ());
+                    if (block.getType() == Material.CHEST || block.getType() == Material.TRAPPED_CHEST)
+                        chests.add(((InventoryHolder) (block.getState())).getInventory());
+                }
 
-        for (MovecraftLocation harvestedBlock : harvestedBlocks) {
-            Block block = craft.getW().getBlockAt(harvestedBlock.getX(), harvestedBlock.getY(), harvestedBlock.getZ());
-            List<ItemStack> drops = new ArrayList<>(block.getDrops());
-            if (Settings.IsLegacy) {
-                //generate seed drops
-                if (block.getType() == LegacyUtils.CROPS) {
-                    Random rand = new Random();
-                    int amount = rand.nextInt(4);
-                    if (amount > 0) {
-                        ItemStack seeds = new ItemStack(LegacyUtils.SEEDS, amount);
-                        drops.add(seeds);
+                for (MovecraftLocation harvestedBlock : harvestedBlocks) {
+
+                    Block block = craft.getW().getBlockAt(harvestedBlock.getX(), harvestedBlock.getY(), harvestedBlock.getZ());
+                    List<ItemStack> drops = new ArrayList<>(block.getDrops());
+
+                    if (Settings.IsLegacy) {
+                        //generate seed drops
+                        if (block.getType() == LegacyUtils.CROPS) {
+                            Random rand = new Random();
+                            int amount = rand.nextInt(4);
+                            if (amount > 0) {
+                                ItemStack seeds = new ItemStack(LegacyUtils.SEEDS, amount);
+                                drops.add(seeds);
+                            }
+                        }
+                    } else {
+                        if (block.getType() == Material.WHEAT) {
+                            Random rand = new Random();
+                            int amount = rand.nextInt(4);
+                            if (amount > 0) {
+                                ItemStack seeds = new ItemStack(Material.WHEAT_SEEDS, amount);
+                                drops.add(seeds);
+                            }
+                        }
                     }
-                }
-            } else {
-                if (block.getType() == Material.WHEAT){
-                    Random rand = new Random();
-                    int amount = rand.nextInt(4);
-                    if (amount > 0){
-                        ItemStack seeds = new ItemStack(Material.WHEAT_SEEDS, amount);
-                        drops.add(seeds);
-                    }
-                }
-            }
-            //get contents of inventories before deposting
-            new BukkitRunnable() {
-                @Override
-                public void run() {
+                    //get contents of inventories before deposting
+
                     if (block.getState() instanceof InventoryHolder) {
                         if (block.getState() instanceof Chest) {
                             drops.addAll(Arrays.asList(((Chest) block.getState()).getBlockInventory().getContents()));
-                        } else if (block.getState() instanceof Barrel){
+                        } else if (block.getState() instanceof Barrel) {
                             drops.addAll(Arrays.asList(((Barrel) block.getState()).getInventory().getContents()));
-                        }
-                        else {
+                        } else {
                             drops.addAll(Arrays.asList((((InventoryHolder) block.getState()).getInventory().getContents())));
                         }
                     }
@@ -518,9 +517,9 @@ public class TranslationTask extends AsyncTask {
                             updates.add(new ItemDropUpdateCommand(new Location(craft.getW(), harvestedBlock.getX(), harvestedBlock.getY(), harvestedBlock.getZ()), retStack));
                     }
                 }
-            }.runTask(Movecraft.getInstance());
+            }
 
-        }
+        }.runTask(Movecraft.getInstance());
     }
 
     private ItemStack putInToChests(ItemStack stack, ArrayList<Inventory> inventories) {

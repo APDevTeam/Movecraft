@@ -100,7 +100,7 @@ final public class CraftType {
     @NotNull private final Map<PotionEffect, Integer> potionEffectDelays = Collections.emptyMap();
     @NotNull private final Set<Material> forbiddenHoverOverBlocks;
 
-    public CraftType(File f) {
+    public CraftType(File f) throws CraftTypeException{
         final Map data;
         try {
             InputStream input = new FileInputStream(f);
@@ -367,8 +367,19 @@ final public class CraftType {
                 ArrayList objList = (ArrayList) data.get("harvestBlocks");
                 for (Object i : objList) {
                     if (i instanceof String) {
-                        Material mat = Material.getMaterial(((String) i).toUpperCase());
-                        harvestBlocks.add(mat);
+                        String str = (String) i;
+                        str = str.toUpperCase();
+                        if (str.startsWith("ALL")){
+                            for (Material type : Material.values()){
+                                if (!type.name().endsWith(str.replace("ALL", ""))){
+                                    continue;
+                                }
+                                harvestBlocks.add(type);
+                            }
+                        } else {
+                            Material mat = Material.getMaterial(str);
+                            harvestBlocks.add(mat);
+                        }
                     } else {
                         Material mat = Material.getMaterial((Integer) i);
                         harvestBlocks.add(mat);
@@ -380,8 +391,20 @@ final public class CraftType {
                 ArrayList objList = (ArrayList) data.get("harvesterBladeBlocks");
                 for (Object i : objList) {
                     if (i instanceof String) {
-                        Material mat = Material.getMaterial(((String) i).toUpperCase());
-                        harvesterBladeBlocks.add(mat);
+                        String str = (String) i;
+                        str = str.toUpperCase();
+                        if (str.startsWith("ALL")){
+                            for (Material type : Material.values()){
+                                if (!type.name().endsWith(str.replace("ALL", ""))){
+                                    continue;
+                                }
+                                harvesterBladeBlocks.add(type);
+                            }
+                        } else {
+                            Material mat = Material.getMaterial(str);
+                            harvesterBladeBlocks.add(mat);
+                        }
+
                     } else {
                         Material mat = Material.getMaterial((Integer) i);
                         harvesterBladeBlocks.add(mat);

@@ -37,7 +37,6 @@ import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.update.CraftRotateCommand;
 import net.countercraft.movecraft.mapUpdater.update.EntityRotateUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
-import net.countercraft.movecraft.mapUpdater.update.WaterlogUpdateCommand;
 import net.countercraft.movecraft.utils.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -214,9 +213,7 @@ public class RotationTask extends AsyncTask {
 
         updates.add(new CraftRotateCommand(getCraft(),originPoint, rotation));
         updates.add(new EntityRotateUpdateCommand(craft, oldHitBox, rotation, originPoint));
-        if (!Settings.IsLegacy){
-            updates.add(new WaterlogUpdateCommand(craft));
-        }
+
 
         if (getCraft().getCruising()) {
             if (rotation == Rotation.ANTICLOCKWISE) {

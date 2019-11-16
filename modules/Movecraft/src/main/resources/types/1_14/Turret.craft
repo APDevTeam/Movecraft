@@ -30,8 +30,6 @@ allowedBlocks:
         - all_door
         - lever
         - all_pressure_plate
-        - redstone_torch
-        - redstone_wall_torch
         - all_button
         - all_fence
         - netherrack

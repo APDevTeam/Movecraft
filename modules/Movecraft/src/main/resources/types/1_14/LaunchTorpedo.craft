@@ -24,6 +24,12 @@ speed: 9.0
 tryNudge: false
 sinkPercent: 99.0
 overallSinkPercent: 99.0
+passthroughBlocks:
+    - kelp
+    - kelp_plant
+    - tall_seagrass
+    - seagrass
+    - bubble_column
 flyblocks:
     COAL_BLOCK:
         - 10.0
