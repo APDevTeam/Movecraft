@@ -5,7 +5,9 @@ import com.sk89q.jnbt.ListTag;
 import com.sk89q.jnbt.Tag;
 import com.sk89q.worldedit.blocks.BaseBlock;
 import net.countercraft.movecraft.MovecraftLocation;
+import net.countercraft.movecraft.config.Settings;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.*;
@@ -95,6 +97,9 @@ public class WorldEditUpdateCommand extends UpdateCommand {
                 //Text NBT tags for first to fourth line are called Text1 - Text4
                 for (int i = 1 ; i <= 4 ; i++){
                     String line = nbtData.getString("Text" + i);
+                    if (Settings.Debug){
+                        Bukkit.broadcastMessage("Text on line " + i + " at " + location.toString() + ": " + line);
+                    }
                     line = line.substring(2);
                     if (line.substring(0, 5).equalsIgnoreCase("extra")){
                         line = line.substring(17);

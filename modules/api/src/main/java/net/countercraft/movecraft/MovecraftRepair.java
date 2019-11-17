@@ -236,7 +236,7 @@ public class MovecraftRepair {
                                                 missingBlocks.put(content, (double) ct.getByte("Count"));
                                             } else {
                                                 double num = missingBlocks.get(content);
-                                                num += (double) ct.getByte("Count");
+                                                num +=  ct.getByte("Count");
                                                 missingBlocks.put(content, num);
                                             }
                                         }
