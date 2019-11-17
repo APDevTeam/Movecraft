@@ -368,6 +368,7 @@ public class MovecraftRepair {
                                         missingBlocks.put(content, num);
                                     }
                                 }
+                                break;
                             }
                             case 43: { // for double slabs, require 2 slabs
                                 itemToConsume = 44;
