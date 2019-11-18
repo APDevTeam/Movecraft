@@ -237,7 +237,7 @@ public class RepairSign implements Listener{
                     BaseBlock baseBlock = clipboard.getBlock(new com.sk89q.worldedit.Vector(cLoc.getBlockX(),cLoc.getBlockY(),cLoc.getBlockZ()));
                     Material type =  Material.getMaterial(baseBlock.getType());
                     if (fragileBlock(type)) {
-                        WorldEditUpdateCommand updateCommand = new WorldEditUpdateCommand(baseBlock, sign.getWorld(), moveLoc,type, (byte) baseBlock.getData());
+                        WorldEditUpdateCommand updateCommand = new WorldEditUpdateCommand(baseBlock, sign.getWorld(), moveLoc, type, (byte) baseBlock.getData());
                         updateCommandsFragileBlocks.add(updateCommand);
                     } else {
                         WorldEditUpdateCommand updateCommand = new WorldEditUpdateCommand(baseBlock, sign.getWorld(), moveLoc, type, (byte) baseBlock.getData());
@@ -282,6 +282,8 @@ public class RepairSign implements Listener{
                 || type.name().endsWith("DOOR_BLOCK")
                 || type.name().startsWith("DIODE")
                 || type.name().startsWith("REDSTONE_COMPARATOR")
+                || type.name().endsWith("WATER")
+                || type.name().endsWith("LAVA")
                 || type.equals(Material.LEVER)
                 || type.equals(Material.WALL_SIGN)
                 || type.equals(Material.WALL_BANNER)

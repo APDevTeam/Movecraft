@@ -115,7 +115,7 @@ public class WorldEditUpdateCommand extends UpdateCommand {
                             if (part.startsWith("{"))
                                 part = part.substring(1);
                             if (part.endsWith("}"))
-                                part = part.replace("}", "");
+                                part = part.substring(0, part.lastIndexOf("}"));
                             if (part.startsWith("color")){
                                 final String[] fragments = part.split(",");
                                 final String colorID = fragments[0].replace("color:", "");
