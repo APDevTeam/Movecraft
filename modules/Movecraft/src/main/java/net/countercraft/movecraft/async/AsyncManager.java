@@ -65,6 +65,7 @@ public class AsyncManager extends BukkitRunnable {
     private final HashMap<Craft, HashMap<Craft, Long>> recentContactTracking = new HashMap<>();
     private final BlockingQueue<AsyncTask> finishedAlgorithms = new LinkedBlockingQueue<>();
     private final HashSet<Craft> clearanceSet = new HashSet<>();
+    private final Queue<Craft> waterlogCheckQueue = new LinkedBlockingQueue<>();
     private HashMap<SmallFireball, Long> FireballTracking = new HashMap<>();
     private HashMap<HitBox, Long> wrecks = new HashMap<>();
     private HashMap<HitBox, World> wreckWorlds = new HashMap<>();
@@ -302,7 +303,7 @@ public class AsyncManager extends BukkitRunnable {
                     //c.setMinZ(task.getData().getMinZ());
                     //c.setHitBox(task.getData().getHitbox());
                     c.setHitBox(task.getNewHitBox());
-
+                    addToWaterlogQueue(c);
                     // move any cannons that were present
                     if (Movecraft.getInstance().getCannonsPlugin() != null && shipCannons != null) {
                         for (Cannon can : shipCannons) {
@@ -347,7 +348,7 @@ public class AsyncManager extends BukkitRunnable {
 
                         sentMapUpdate = true;
                         c.setHitBox(task.getNewHitBox());
-
+                        addToWaterlogQueue(c);
                         // rotate any cannons that were present
                         if (Movecraft.getInstance().getCannonsPlugin() != null && shipCannons != null) {
                             Location tloc = task.getOriginPoint().toBukkit(task.getCraft().getW());
@@ -1124,8 +1125,11 @@ public class AsyncManager extends BukkitRunnable {
     }
 
     private void processWaterlogging() {
+        if (waterlogCheckQueue.isEmpty())
+            return;
         final Set<UpdateCommand> updates = new HashSet<>();
-        for (final Craft craft : CraftManager.getInstance()){
+
+        final Craft craft = waterlogCheckQueue.poll();
             for (MovecraftLocation location : craft.getHitBox()){
                 final BlockData bData = location.toBukkit(craft.getW()).getBlock().getBlockData();
                 if (!(bData instanceof Waterlogged)){
@@ -1168,8 +1172,12 @@ public class AsyncManager extends BukkitRunnable {
                     updates.add(new WaterlogUpdateCommand(location.toBukkit(craft.getW()), true));
                 }
             }
-        }
+
         MapUpdateManager.getInstance().scheduleUpdates(updates);
+    }
+
+    private void addToWaterlogQueue(final Craft craft){
+        waterlogCheckQueue.add(craft);
     }
 
 
