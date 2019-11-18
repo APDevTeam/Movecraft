@@ -288,6 +288,10 @@ public class RepairSign implements Listener{
                 || type.equals(Material.REDSTONE_WIRE)
                 || type.equals(Material.LADDER)
                 || type.equals(Material.BED_BLOCK)
-                || type.equals(Material.TRIPWIRE_HOOK);
+                || type.equals(Material.TRIPWIRE_HOOK)
+                || type.equals(Material.TORCH)
+                || type.equals(Material.REDSTONE_TORCH_OFF)
+                || type.equals(Material.REDSTONE_TORCH_ON);
+
     }
 }
