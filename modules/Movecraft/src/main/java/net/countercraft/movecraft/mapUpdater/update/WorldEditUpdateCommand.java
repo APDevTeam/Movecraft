@@ -5,12 +5,17 @@ import com.sk89q.jnbt.ListTag;
 import com.sk89q.jnbt.Tag;
 import com.sk89q.worldedit.blocks.BaseBlock;
 import net.countercraft.movecraft.MovecraftLocation;
+import net.countercraft.movecraft.config.Settings;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.*;
 import org.bukkit.inventory.FurnaceInventory;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.HashMap;
 
 public class WorldEditUpdateCommand extends UpdateCommand {
     private final BaseBlock worldEditBaseBlock;
@@ -95,11 +100,35 @@ public class WorldEditUpdateCommand extends UpdateCommand {
                 //Text NBT tags for first to fourth line are called Text1 - Text4
                 for (int i = 1 ; i <= 4 ; i++){
                     String line = nbtData.getString("Text" + i);
-                    line = line.substring(2);
+                    line = line.replace("\"", "");
+
+                    line = line.substring(1);
+
                     if (line.substring(0, 5).equalsIgnoreCase("extra")){
-                        line = line.substring(17);
-                        String[] parts = line.split("\"");
-                        line = parts[0];
+                        HashMap<String, String> stringMap = new HashMap<>();
+                        line = line.substring(7);
+                        line = line.replace("],text:}", "");
+                        final String[] parts = line.split("},\\{");
+                        line = "";
+                        for (int index = 0 ; index < parts.length ; index++){
+                            String part = parts[index];
+                            if (part.startsWith("{"))
+                                part = part.substring(1);
+                            if (part.endsWith("}"))
+                                part = part.substring(0, part.lastIndexOf("}"));
+                            if (part.startsWith("color")){
+                                final String[] fragments = part.split(",");
+                                final String colorID = fragments[0].replace("color:", "");
+                                final String text = fragments[1].replace("text:", "");
+                                line += ChatColor.valueOf(colorID.toUpperCase());
+                                line += text;
+                            } else {
+                                line = part.replace("text:", "");
+                            }
+                        }
+                        if (Settings.Debug){
+                            Bukkit.broadcastMessage("Text on line " + i + " at " + location.toString() + ": " + line);
+                        }
                     } else {
                         line = "";
                     }
