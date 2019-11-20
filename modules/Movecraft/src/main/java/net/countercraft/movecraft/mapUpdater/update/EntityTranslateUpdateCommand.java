@@ -35,14 +35,16 @@ import java.util.Set;
  */
 public class EntityTranslateUpdateCommand extends UpdateCommand {
     private final Craft craft;
+    private final HitBox oldHitBox;
     private final double x;
     private final double y;
     private final double z;
     private final float yaw;
     private final float pitch;
 
-    public EntityTranslateUpdateCommand(Craft craft, double x, double y, double z) {
+    public EntityTranslateUpdateCommand(Craft craft, HitBox oldHitBox, double x, double y, double z) {
         this.craft = craft;
+        this.oldHitBox = oldHitBox;
         this.x = x;
         this.y = y;
         this.z = z;
@@ -57,7 +59,7 @@ public class EntityTranslateUpdateCommand extends UpdateCommand {
 
     @Override
     public void doUpdate() {
-        if (craft.getHitBox().isEmpty()){
+        if (oldHitBox.isEmpty()){
             return;
         }
         for (Entity entity : getEntitiesOnCraft()){
@@ -75,7 +77,7 @@ public class EntityTranslateUpdateCommand extends UpdateCommand {
 
     @Override
     public int hashCode() {
-        return Objects.hash(craft, x, y, z, pitch, yaw);
+        return Objects.hash(craft, oldHitBox, x, y, z, pitch, yaw);
     }
 
     @Override
@@ -89,11 +91,11 @@ public class EntityTranslateUpdateCommand extends UpdateCommand {
                 this.z == other.z &&
                 this.pitch == other.pitch &&
                 this.yaw == other.yaw &&
-                this.craft.equals(other.craft);
+                this.craft.equals(other.craft) &&
+                this.oldHitBox.equals(other.oldHitBox);
     }
 
     private Collection<Entity> getEntitiesOnCraft(){
-        final HitBox oldHitBox = craft.getHitBox();
         final Location midpoint = oldHitBox.getMidPoint().toBukkit(craft.getW());
         final Collection<Entity> entities = craft.getW().getNearbyEntities(midpoint, oldHitBox.getXLength() / 2.0 + 1, oldHitBox.getYLength() / 2.0 + 2, oldHitBox.getZLength() / 2.0 + 1);
         final Set<Entity> toMove = new HashSet<>();
