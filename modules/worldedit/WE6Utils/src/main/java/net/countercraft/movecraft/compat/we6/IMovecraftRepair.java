@@ -367,6 +367,7 @@ public class IMovecraftRepair extends MovecraftRepair {
                                         missingBlocks.put(content, num);
                                     }
                                 }
+                                break;
                             }
                             case 43: { // for double slabs, require 2 slabs
                                 itemToConsume = 44;
@@ -393,6 +394,8 @@ public class IMovecraftRepair extends MovecraftRepair {
                                 num += qtyToConsume;
                                 missingBlocks.put(missingBlock, num);
                             }
+                        }
+                        if (block.getType() != 0){
                             locMissingBlocks.addLast(new AbstractMap.SimpleImmutableEntry<>(new Vector(offset.getBlockX() + x, offset.getBlockY() + y, offset.getBlockZ() + z),new Vector(position.getBlockX(),position.getBlockY(),position.getBlockZ())));
                         }
                     }

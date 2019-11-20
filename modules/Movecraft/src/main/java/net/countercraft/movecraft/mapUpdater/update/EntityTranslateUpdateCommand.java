@@ -36,7 +36,7 @@ import java.util.Set;
 public class EntityTranslateUpdateCommand extends UpdateCommand {
     private final Craft craft;
     private final double x;
-    private double y;
+    private final double y;
     private final double z;
     private final float yaw;
     private final float pitch;
@@ -71,10 +71,6 @@ public class EntityTranslateUpdateCommand extends UpdateCommand {
         }
 
 
-    }
-
-    public void setY(int y){
-        this.y = y;
     }
 
     @Override

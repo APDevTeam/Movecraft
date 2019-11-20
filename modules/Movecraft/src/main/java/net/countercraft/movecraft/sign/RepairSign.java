@@ -135,7 +135,7 @@ public class RepairSign implements Listener{
         long numDifferentBlocks = movecraftRepair.getNumDiffBlocks(repairName);
         boolean secondClick = false;
         if (playerInteractTimeMap.containsKey(p.getUniqueId())) {
-            if (playerInteractTimeMap.get(p.getUniqueId()) != null && System.currentTimeMillis() - playerInteractTimeMap.get(p.getUniqueId()) < 5000) {
+            if (System.currentTimeMillis() - playerInteractTimeMap.get(p.getUniqueId()) < 5000) {
                     secondClick = true;
             }
         }
@@ -284,12 +284,17 @@ public class RepairSign implements Listener{
                 || type.name().endsWith("DOOR_BLOCK")
                 || type.name().startsWith("DIODE")
                 || type.name().startsWith("REDSTONE_COMPARATOR")
+                || type.name().endsWith("WATER")
+                || type.name().endsWith("LAVA")
                 || type.equals(Material.LEVER)
                 || type.name().endsWith("WALL_SIGN")
                 || type.name().endsWith("WALL_BANNER")
                 || type.equals(Material.REDSTONE_WIRE)
                 || type.equals(Material.LADDER)
                 || type.equals(LegacyUtils.BED_BLOCK)
-                || type.equals(Material.TRIPWIRE_HOOK);
+                || type.equals(Material.TRIPWIRE_HOOK)
+                || (Settings.IsLegacy ? type.equals(Material.TORCH)
+                || type.equals(LegacyUtils.REDSTONE_TORCH_OFF)
+                || type.equals(LegacyUtils.REDSTONE_TORCH_ON) : type.name().endsWith("WALL_TORCH"));
     }
 }
