@@ -55,7 +55,8 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 
-import static net.countercraft.movecraft.utils.WaterlogUtils.*;
+import static net.countercraft.movecraft.utils.WaterlogUtils.isWaterlogged;
+import static net.countercraft.movecraft.utils.WaterlogUtils.waterToSides;
 
 @SuppressWarnings("deprecation")
 public class AsyncManager extends BukkitRunnable {

@@ -305,7 +305,6 @@ public class IWorldHandler extends WorldHandler {
             chunkSection = chunk.getSections()[position.getY() >> 4];
 
         }
-
         chunkSection.setType(position.getX()&15, position.getY()&15, position.getZ()&15, data);
     }
 
