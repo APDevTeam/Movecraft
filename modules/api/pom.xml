@@ -7,12 +7,7 @@
     <url>http://github.com/apdevteam/Movecraft</url>
     <version>API</version>
 
-    <repositories>
-        <repository>
-            <id>sk89q-repo</id>
-            <url>http://maven.sk89q.com/repo/</url>
-        </repository>
-    </repositories>
+
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -28,6 +23,12 @@
         <version>parent</version>
         <relativePath>../../</relativePath>
     </parent>
+    <repositories>
+        <repository>
+            <id>sk89q-repo</id>
+            <url>http://maven.sk89q.com/repo/</url>
+        </repository>
+    </repositories>
     <dependencies>
         <dependency>
             <groupId>org.spigotmc</groupId>
