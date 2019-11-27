@@ -28,6 +28,7 @@
         <module>modules/worldedit/WE6Utils</module>
         <module>modules/worldedit/WE7Utils</module>
         <module>modules/Movecraft</module>
+        <module>modules/v1_15_R1</module>
     </modules>
 
     <repositories>
