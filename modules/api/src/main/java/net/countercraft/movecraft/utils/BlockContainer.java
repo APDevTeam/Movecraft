@@ -41,7 +41,7 @@ public class BlockContainer implements Iterable<MovecraftBlock>{
                         blocks.add(new MovecraftBlock(type, data));
                         continue;
                     } else if (str.startsWith("ALL_")){
-                        str = str.replace("ALL_", "");
+                        str = str.replace("ALL_", "_");
                         for (Material m : Material.values()){
                             if (!m.name().endsWith(str)){
                                 continue;

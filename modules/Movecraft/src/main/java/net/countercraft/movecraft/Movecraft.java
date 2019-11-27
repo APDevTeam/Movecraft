@@ -325,21 +325,9 @@ public class Movecraft extends JavaPlugin {
 
         //load up WorldEdit if it's present
 
-        Plugin wEPlugin = null;
-        if (getServer().getPluginManager().getPlugin("WorldEdit") != null){
-            wEPlugin = getServer().getPluginManager().getPlugin("WorldEdit");
-        } else {
-            if (!Settings.IsLegacy){
-                wEPlugin = getServer().getPluginManager().getPlugin("FastAsyncWorldEdit");
-            }
-        }
-        boolean WEpresent;
-        try {
-            WEpresent = wEPlugin == null || !(wEPlugin instanceof WorldEditPlugin);
-        } catch (Throwable t) {
-            WEpresent = false;
-        }
-        if (!WEpresent) {
+        Plugin wEPlugin = getServer().getPluginManager().getPlugin("WorldEdit");
+
+        if (wEPlugin == null || !(wEPlugin instanceof WorldEditPlugin)) {
             logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - WE Not Found"));
             Settings.AssaultEnable = false;
         } else {

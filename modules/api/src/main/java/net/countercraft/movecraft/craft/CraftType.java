@@ -369,9 +369,9 @@ final public class CraftType {
                     if (i instanceof String) {
                         String str = (String) i;
                         str = str.toUpperCase();
-                        if (str.startsWith("ALL")){
+                        if (str.startsWith("ALL_")){
                             for (Material type : Material.values()){
-                                if (!type.name().endsWith(str.replace("ALL", ""))){
+                                if (!type.name().endsWith(str.replace("ALL_", "_"))){
                                     continue;
                                 }
                                 harvestBlocks.add(type);
@@ -393,9 +393,9 @@ final public class CraftType {
                     if (i instanceof String) {
                         String str = (String) i;
                         str = str.toUpperCase();
-                        if (str.startsWith("ALL")){
+                        if (str.startsWith("ALL_")){
                             for (Material type : Material.values()){
-                                if (!type.name().endsWith(str.replace("ALL", ""))){
+                                if (!type.name().endsWith(str.replace("ALL_", "_"))){
                                     continue;
                                 }
                                 harvesterBladeBlocks.add(type);
@@ -476,7 +476,19 @@ final public class CraftType {
                 ArrayList entries = (ArrayList) data.get("dynamicFlyBlocks");
                 for (Object o : entries) {
                     if (o instanceof String) {
-                        dynamicFlyBlocks.add(Material.getMaterial((String) o));
+                        String str = (String) o;
+                        str = str.toUpperCase();
+                        if (str.startsWith("ALL_")){
+                            str = str.replace("ALL_", "_");
+                            for (Material type : Material.values()){
+                                if (!type.name().endsWith(str)){
+                                    continue;
+                                }
+                                dynamicFlyBlocks.add(type);
+                            }
+                            continue;
+                        }
+                        dynamicFlyBlocks.add(Material.getMaterial(str));
                     } else {
                         dynamicFlyBlocks.add(Material.getMaterial((Integer) o));
                     }
