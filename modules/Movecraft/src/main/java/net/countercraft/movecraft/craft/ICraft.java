@@ -127,8 +127,16 @@ public class ICraft extends Craft {
             else if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Ascend: ON")){
                 sign.setLine(0, "Ascend: OFF");
             }
+            else if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Ascend: OFF")
+                    && ChatColor.stripColor(clicked.getLine(0)).equalsIgnoreCase("Ascend: ON")){
+                sign.setLine(0, "Ascend: ON");
+            }
             else if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Descend: ON")){
                 sign.setLine(0, "Descend: OFF");
+            }
+            else if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Descend: OFF")
+                    && ChatColor.stripColor(clicked.getLine(0)).equalsIgnoreCase("Descend: ON")){
+                sign.setLine(0, "Descend: ON");
             }
             sign.update();
         }

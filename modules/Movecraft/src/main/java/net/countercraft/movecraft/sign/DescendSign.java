@@ -69,6 +69,7 @@ public final class DescendSign implements Listener{
                 sign.setLine(0, "Descend: OFF");
                 sign.update(true);
                 c.setCruising(false);
+                c.resetSigns(sign);
             }
         }
     }
