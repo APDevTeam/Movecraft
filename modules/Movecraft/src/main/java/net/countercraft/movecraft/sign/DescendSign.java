@@ -56,6 +56,7 @@ public final class DescendSign implements Listener{
             c.setCruiseDirection((byte) 0x43);
             c.setLastCruiseUpdate(System.currentTimeMillis());
             c.setCruising(true);
+            c.resetSigns(sign);
 
             if (!c.getType().getMoveEntities()) {
                 CraftManager.getInstance().addReleaseTask(c);

@@ -27,6 +27,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -35,6 +36,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+
 
 public abstract class Craft {
     @NotNull protected final CraftType type;
@@ -424,4 +427,6 @@ public abstract class Craft {
     public HashHitBox getCollapsedHitBox() {
         return collapsedHitBox;
     }
+
+    public abstract void resetSigns(@NotNull final Sign clicked);
 }
