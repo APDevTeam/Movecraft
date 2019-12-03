@@ -310,8 +310,6 @@ public abstract class Craft {
                 chestPenalty++;
         }
         chestPenalty*=type.getChestPenalty();
-        if(meanMoveTime==0)
-            return type.getCruiseTickCooldown()+(int)chestPenalty;
         if(!cruising)
             return type.getTickCooldown()+(int)chestPenalty;
         if(type.getDynamicFlyBlockSpeedFactor()!=0){
@@ -321,13 +319,16 @@ public abstract class Craft {
                 if(location.toBukkit(w).getBlock().getType()==flyBlockMaterial)
                     count++;
             }
-            return Math.max((int) (20 / (type.getCruiseTickCooldown() * (1  + type.getDynamicFlyBlockSpeedFactor() * (count /hitBox.size() - .5)))), 1);
-            //return  Math.max((int)(type.getCruiseTickCooldown()* (1 - count /hitBox.size()) +chestPenalty),1);
+            double woolRatio = count / hitBox.size();
+            return Math.max((int)Math.round((20.0 * type.getCruiseSkipBlocks())/((type.getDynamicFlyBlockSpeedFactor()*1.5)*(woolRatio - .5) + (20.0/type.getCruiseTickCooldown()) + 1)), 1);
+            //return Math.max((int)((20.0 * type.getDynamicFlyBlockSpeedFactor()/100.0)/(woolRatio - .499)),0) + type.getCruiseTickCooldown();
         }
 
         if(type.getDynamicLagSpeedFactor()==0)
             return type.getCruiseTickCooldown()+(int)chestPenalty;
         //TODO: modify skip blocks by an equal proportion to this, than add another modifier based on dynamic speed factor
+        if(meanMoveTime==0)
+            return type.getCruiseTickCooldown()+(int)chestPenalty;
         return Math.max((int)(type.getCruiseTickCooldown()*meanMoveTime*20/type.getDynamicLagSpeedFactor() +chestPenalty),1);
     }
 

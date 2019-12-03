@@ -163,15 +163,15 @@ public class TranslationTask extends AsyncTask {
             } //END OF: if (blockObstructed)
         }
 
-        if (!craft.getType().getCanHoverOverWater()){
+        if (craft.getType().getForbiddenHoverOverBlocks().size() > 0){
             MovecraftLocation test = new MovecraftLocation(newHitBox.getMidPoint().getX(), newHitBox.getMinY(), newHitBox.getMidPoint().getZ());
             test = test.translate(0, -1, 0);
             while (test.toBukkit(craft.getW()).getBlock().getType() == Material.AIR){
                 test = test.translate(0, -1, 0);
             }
             Material testType = test.toBukkit(craft.getW()).getBlock().getType();
-            if (craft.getType().getPassthroughBlocks().contains(testType)){
-                fail(String.format(I18nSupport.getInternationalisedString("Translation - Failed Craft over passthrough block"), testType.name().toLowerCase().replace("_", " ")));
+            if (craft.getType().getForbiddenHoverOverBlocks().contains(testType)){
+                fail(String.format(I18nSupport.getInternationalisedString("Translation - Failed Craft over block"), testType.name().toLowerCase().replace("_", " ")));
             }
         }
         //call event
@@ -195,7 +195,7 @@ public class TranslationTask extends AsyncTask {
                     if (System.currentTimeMillis() - craft.getOrigPilotTime() <= 1000) {
                         continue;
                     }
-                    Location loc = location.toBukkit(craft.getW());
+                    Location loc = location.translate(-dx,-dy,-dz).toBukkit(craft.getW());
                     if (!loc.getBlock().getType().equals(Material.AIR)  && ThreadLocalRandom.current().nextDouble(1) < .05) {
                         updates.add(new ExplosionUpdateCommand( loc, craft.getType().getExplodeOnCrash()));
                         collisionExplosion=true;
@@ -226,7 +226,7 @@ public class TranslationTask extends AsyncTask {
                     explosionForce += 25;//TODO: find the correct amount
                 }*/
                 explosionKey = explosionForce;
-                Location loc = location.toBukkit(craft.getW());
+                Location loc = location.translate(-dx,-dy,-dz).toBukkit(craft.getW());
                 if (!loc.getBlock().getType().equals(Material.AIR)) {
                     updates.add(new ExplosionUpdateCommand(loc, explosionKey));
                     collisionExplosion = true;
@@ -240,7 +240,7 @@ public class TranslationTask extends AsyncTask {
         if(!collisionBox.isEmpty() && craft.getType().getCruiseOnPilot()){
             CraftManager.getInstance().removeCraft(craft);
             for(MovecraftLocation location : oldHitBox){
-                updates.add(new BlockCreateCommand(craft.getW(), location, Material.AIR));
+                updates.add(new BlockCreateCommand(craft.getW(), location, craft.getPhaseBlocks().getOrDefault(location, Material.AIR)));
             }
             newHitBox = new HashHitBox();
         }

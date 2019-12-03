@@ -146,7 +146,7 @@ public final class InteractListener implements Listener {
             if (craft.getPilotLocked()) {
                 craft.setPilotLocked(false);
                 event.getPlayer().sendMessage(
-                        I18nSupport.getInternationalisedString("Leaving Direct Control Mode"));
+                        I18nSupport.getInternationalisedString("Direct Control - Leaving"));
                 event.setCancelled(true);
                 return;
             }
@@ -160,7 +160,7 @@ public final class InteractListener implements Listener {
             craft.setPilotLockedX(event.getPlayer().getLocation().getBlockX() + 0.5);
             craft.setPilotLockedY(event.getPlayer().getLocation().getY());
             craft.setPilotLockedZ(event.getPlayer().getLocation().getBlockZ() + 0.5);
-            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Entering Direct Control Mode"));
+            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Direct Control - Entering"));
             event.setCancelled(true);
         }
 

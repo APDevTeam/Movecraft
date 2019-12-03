@@ -98,14 +98,18 @@ public class RepairSign implements Listener{
             event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("You must be piloting a craft"));
             return;
         }
+        if (!event.getPlayer().hasPermission("movecraft." + pCraft.getType().getCraftName() + ".repair")){
+            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
+            return;
+        }
 
         MovecraftRepair movecraftRepair = MovecraftRepair.getInstance();
         event.setCancelled(true);
         if (movecraftRepair.saveCraftRepairState(pCraft, sign)) {
-            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("State saved"));
+            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Repair - State saved"));
             return;
         }
-        event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Could not save file"));
+        event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Repair - Could not save file"));
     }
     private void signRightClick(PlayerInteractEvent event){
         Sign sign = (Sign) event.getClickedBlock().getState();
@@ -118,8 +122,14 @@ public class RepairSign implements Listener{
             event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("You must be piloting a craft"));
             return;
         }
+
         if (Settings.RepairTicksPerBlock == 0) {
             event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Repair functionality is disabled or WorldEdit was not detected"));
+            return;
+        }
+
+        if (!event.getPlayer().hasPermission("movecraft." + pCraft.getType().getCraftName() + ".repair")){
+            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
             return;
         }
         String repairName = event.getPlayer().getUniqueId().toString();
@@ -130,12 +140,12 @@ public class RepairSign implements Listener{
 
 
         if (clipboard == null){
-            p.sendMessage(I18nSupport.getInternationalisedString("REPAIR STATE NOT FOUND"));
+            p.sendMessage(I18nSupport.getInternationalisedString("Repair - State not found"));
             return;
         } //if clipboard is not null
         long numDifferentBlocks = movecraftRepair.getNumDiffBlocks(repairName);
         boolean secondClick = false;
-        if (!playerInteractTimeMap.isEmpty()) {
+        if (playerInteractTimeMap.containsKey(p.getUniqueId())) {
             if (System.currentTimeMillis() - playerInteractTimeMap.get(p.getUniqueId()) < 5000) {
                     secondClick = true;
             }
@@ -173,9 +183,9 @@ public class RepairSign implements Listener{
                 }
                 if (remainingQty > 0) {
                     if (type.getLeft().equals(Material.COAL)) {
-                        event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("Need more of material") + ": %s - %d", type.getRight() == 1 ? "charcoal" : "coal", remainingQty));
+                        event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("Repair - Need more of material") + ": %s - %d", type.getRight() == 1 ? "charcoal" : "coal", remainingQty));
                     } else {
-                        event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("Need more of material") + ": %s - %d", type.getLeft().name().toLowerCase().replace("_", " "), remainingQty));
+                        event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("Repair - Need more of material") + ": %s - %d", type.getLeft().name().toLowerCase().replace("_", " "), remainingQty));
                     }
 
                     enoughMaterial = false;
@@ -227,7 +237,7 @@ public class RepairSign implements Listener{
                     BaseBlock baseBlock = clipboard.getBlock(new com.sk89q.worldedit.Vector(cLoc.getBlockX(),cLoc.getBlockY(),cLoc.getBlockZ()));
                     Material type =  Material.getMaterial(baseBlock.getType());
                     if (fragileBlock(type)) {
-                        WorldEditUpdateCommand updateCommand = new WorldEditUpdateCommand(baseBlock, sign.getWorld(), moveLoc,type, (byte) baseBlock.getData());
+                        WorldEditUpdateCommand updateCommand = new WorldEditUpdateCommand(baseBlock, sign.getWorld(), moveLoc, type, (byte) baseBlock.getData());
                         updateCommandsFragileBlocks.add(updateCommand);
                     } else {
                         WorldEditUpdateCommand updateCommand = new WorldEditUpdateCommand(baseBlock, sign.getWorld(), moveLoc, type, (byte) baseBlock.getData());
@@ -243,14 +253,14 @@ public class RepairSign implements Listener{
             }
         } else {
             float percent = ((float) numDifferentBlocks / (float) totalSize) * 100;
-            p.sendMessage(I18nSupport.getInternationalisedString("Total damaged blocks") + ": " + numDifferentBlocks);
-            p.sendMessage(I18nSupport.getInternationalisedString("Percentage of craft") + ": " + percent);
+            p.sendMessage(I18nSupport.getInternationalisedString("Repair - Total damaged blocks") + ": " + numDifferentBlocks);
+            p.sendMessage(I18nSupport.getInternationalisedString("Repair - Percentage of craft") + ": " + percent);
             if (percent > Settings.RepairMaxPercent){
                 p.sendMessage(I18nSupport.getInternationalisedString("Repair - Failed Craft Too Damaged"));
                 return;
             }
             if (numDifferentBlocks != 0) {
-                event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("SUPPLIES NEEDED"));
+                event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Repair - Supplies needed"));
                 for (ImmutablePair<Material, Byte> blockType : numMissingItems.keySet()) {
                     if (blockType.getLeft().equals(Material.COAL)) {
                         event.getPlayer().sendMessage(String.format("%s : %d", blockType.getRight() == 1 ? "charcoal" : "coal" , Math.round(numMissingItems.get(blockType))));
@@ -259,9 +269,9 @@ public class RepairSign implements Listener{
                     }
                 }
                 long durationInSeconds = numDifferentBlocks * Settings.RepairTicksPerBlock / 20;
-                event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("Seconds to complete repair") + ": %d", durationInSeconds));
+                event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("Repair - Seconds to complete repair") + ": %d", durationInSeconds));
                 int moneyCost = (int) (numDifferentBlocks * Settings.RepairMoneyPerBlock);
-                event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("Money to complete repair") + ": %d", moneyCost));
+                event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("Repair - Money to complete repair") + ": %d", moneyCost));
                 playerInteractTimeMap.put(event.getPlayer().getUniqueId(), System.currentTimeMillis());
             }
         }
@@ -272,12 +282,18 @@ public class RepairSign implements Listener{
                 || type.name().endsWith("DOOR_BLOCK")
                 || type.name().startsWith("DIODE")
                 || type.name().startsWith("REDSTONE_COMPARATOR")
+                || type.name().endsWith("WATER")
+                || type.name().endsWith("LAVA")
                 || type.equals(Material.LEVER)
                 || type.equals(Material.WALL_SIGN)
                 || type.equals(Material.WALL_BANNER)
                 || type.equals(Material.REDSTONE_WIRE)
                 || type.equals(Material.LADDER)
                 || type.equals(Material.BED_BLOCK)
-                || type.equals(Material.TRIPWIRE_HOOK);
+                || type.equals(Material.TRIPWIRE_HOOK)
+                || type.equals(Material.TORCH)
+                || type.equals(Material.REDSTONE_TORCH_OFF)
+                || type.equals(Material.REDSTONE_TORCH_ON);
+
     }
 }

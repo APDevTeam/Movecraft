@@ -172,7 +172,7 @@ public class AsyncManager extends BukkitRunnable {
                                         // carrier
                                         if (!craft.isNotProcessing()) {
                                             failed = true;
-                                            notifyP.sendMessage(I18nSupport.getInternationalisedString("Parent Craft is busy"));
+                                            notifyP.sendMessage(I18nSupport.getInternationalisedString("Detection - Parent Craft is busy"));
                                         }
                                         craft.setHitBox(new HashHitBox(CollectionUtils.filter(craft.getHitBox(),data.getBlockList())));
                                         craft.setOrigBlockCount(craft.getOrigBlockCount() - data.getBlockList().size());
@@ -550,7 +550,7 @@ public class AsyncManager extends BukkitRunnable {
             if (isSinking && pcraft.isNotProcessing()) {
                 Player notifyP = pcraft.getNotificationPlayer();
                 if (notifyP != null) {
-                    notifyP.sendMessage(I18nSupport.getInternationalisedString("Player- Craft is sinking"));
+                    notifyP.sendMessage(I18nSupport.getInternationalisedString("Player - Craft is sinking"));
                 }
                 pcraft.setCruising(false);
                 pcraft.sink();
@@ -920,7 +920,7 @@ public class AsyncManager extends BukkitRunnable {
                                     if (recentContactTracking.get(ccraft).get(tcraft) == null
                                             || System.currentTimeMillis()
                                             - recentContactTracking.get(ccraft).get(tcraft) > 60000) {
-                                        String notification = I18nSupport.getInternationalisedString("New Contact") + ": ";
+                                        String notification = I18nSupport.getInternationalisedString("Contact - New Contact") + ": ";
 
                                         if (tcraft.getName().length() >= 1){
                                             notification += tcraft.getName();
@@ -930,26 +930,26 @@ public class AsyncManager extends BukkitRunnable {
                                         if (tcraft.getName().length() >= 1){
                                             notification += ")";
                                         }
-                                        notification += " " + I18nSupport.getInternationalisedString("Commanded By")+" ";
+                                        notification += " " + I18nSupport.getInternationalisedString("Contact - Commanded By")+" ";
                                         if (tcraft.getNotificationPlayer() != null) {
                                             notification += tcraft.getNotificationPlayer().getDisplayName();
                                         } else {
                                             notification += "NULL";
                                         }
-                                        notification += ", " + I18nSupport.getInternationalisedString("Size") + ": ";
+                                        notification += ", " + I18nSupport.getInternationalisedString("Contact - Size") + ": ";
                                         notification += tcraft.getOrigBlockCount();
-                                        notification += ", " + I18nSupport.getInternationalisedString("Range") + ": ";
+                                        notification += ", " + I18nSupport.getInternationalisedString("Contact - Range") + ": ";
                                         notification += (int) Math.sqrt(distsquared);
-                                        notification += " " + I18nSupport.getInternationalisedString("To The") + " ";
+                                        notification += " " + I18nSupport.getInternationalisedString("Contact - To The") + " ";
                                         if (Math.abs(diffx) > Math.abs(diffz))
                                             if (diffx < 0)
-                                                notification += I18nSupport.getInternationalisedString("east");
+                                                notification += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - East");
                                             else
-                                                notification += I18nSupport.getInternationalisedString("west");
+                                                notification += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - West");
                                         else if (diffz < 0)
-                                            notification += I18nSupport.getInternationalisedString("south");
+                                            notification += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - South");
                                         else
-                                            notification += I18nSupport.getInternationalisedString("north");
+                                            notification += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - North");
                                         
                                         notification += ".";
                                         ccraft.getNotificationPlayer().sendMessage(notification);

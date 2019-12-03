@@ -29,7 +29,7 @@ public final class RemoteSign implements Listener{
             return;
         }
         else if(event.getLine(1).equals("")) {
-            event.getPlayer().sendMessage(ERROR_PREFIX + I18nSupport.getInternationalisedString("Remote Signs can't be blank!"));
+            event.getPlayer().sendMessage(ERROR_PREFIX + I18nSupport.getInternationalisedString("Remote Sign - Cannot be blank"));
             event.setLine(0,"");
             event.setLine(2,"");
             event.setLine(3,"");
@@ -64,23 +64,23 @@ public final class RemoteSign implements Listener{
         }
 
         if (foundCraft == null) {
-            event.getPlayer().sendMessage(ERROR_PREFIX+I18nSupport.getInternationalisedString("Remote Sign must be a part of a piloted craft!"));
+            event.getPlayer().sendMessage(ERROR_PREFIX+I18nSupport.getInternationalisedString("Remote Sign - Must be a part of a piloted craft"));
             return;
         }
 
         if (!foundCraft.getType().allowRemoteSign()) {
-            event.getPlayer().sendMessage(ERROR_PREFIX + I18nSupport.getInternationalisedString("Remote Signs not allowed on this craft!"));
+            event.getPlayer().sendMessage(ERROR_PREFIX + I18nSupport.getInternationalisedString("Remote Sign - Not allowed on this craft"));
             return;
         }
 
         String targetText = ChatColor.stripColor(sign.getLine(1));
         if(targetText.equalsIgnoreCase(HEADER)) {
-            event.getPlayer().sendMessage(ERROR_PREFIX+I18nSupport.getInternationalisedString("Remote Sign cannot remote another Remote Sign!"));
+            event.getPlayer().sendMessage(ERROR_PREFIX+I18nSupport.getInternationalisedString("Remote Sign - Cannot remote another Remote Sign"));
             return;
         }
 
         if(targetText.equalsIgnoreCase("")) {
-            event.getPlayer().sendMessage("ERROR: Remote Signs can't be blank!");
+            event.getPlayer().sendMessage("Remote Sign - Cannot be blank");
             return;
         }
 
@@ -96,7 +96,7 @@ public final class RemoteSign implements Listener{
             if (isEqualSign(ts, targetText)) {
                 if (isForbidden(ts)) {
                     if (firstError) {
-                        event.getPlayer().sendMessage("Warning: Forbidden remote sign(s) found at the following locations with the following text:");
+                        event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Remote Sign - Forbidden string found"));
                         firstError = false;
                     }
                     event.getPlayer().sendMessage(" - ".concat(tloc.toString()).concat(" : ").concat(ts.getLine(0)));
@@ -109,14 +109,14 @@ public final class RemoteSign implements Listener{
             return;
         }
         else if (foundLocations.isEmpty()) {
-            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("ERROR: Could not find target sign!"));
+            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Remote Sign - Could not find target sign"));
             return;
         }
 
         if (Settings.MaxRemoteSigns > -1) {
             int foundLocCount = foundLocations.size();
             if(foundLocCount > Settings.MaxRemoteSigns) {
-                event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("ERROR: ") + foundLocCount + I18nSupport.getInternationalisedString(" remote signs found.  Maximum allowed is: ") + Settings.MaxRemoteSigns);
+                event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("Remote Sign - Exceeding maximum allowed"), foundLocCount, Settings.MaxRemoteSigns));
                 return;
             }
         }

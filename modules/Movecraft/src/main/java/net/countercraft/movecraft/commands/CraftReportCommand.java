@@ -29,7 +29,7 @@ public class CraftReportCommand implements CommandExecutor{
             else
                 page = Integer.parseInt(args[0]);
         }catch(NumberFormatException e){
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Invalid page") + "\"" + args[0] + "\"");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Paginator - Invalid Page") + "\"" + args[0] + "\"");
             return true;
         }
         if (CraftManager.getInstance().isEmpty()){
@@ -49,7 +49,7 @@ public class CraftReportCommand implements CommandExecutor{
                     hitBox.getMinZ());
         }
         if(!paginator.isInBounds(page)){
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Invalid page") + "\"" + args[1] + "\"");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Paginator - Invalid page") + "\"" + args[1] + "\"");
             return true;
         }
         for(String line : paginator.getPage(page))
