@@ -34,6 +34,7 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.utils.CollectionUtils;
 import net.countercraft.movecraft.utils.HashHitBox;
 import net.countercraft.movecraft.utils.HitBox;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -165,7 +166,7 @@ public class IMovecraftRepair extends MovecraftRepair {
         String s = craft.getNotificationPlayer().getUniqueId().toString() + sign.getLine(1);
         File dataDirectory = new File(plugin.getDataFolder(), "RepairStates");
         File playerDirectory = new File(dataDirectory, craft.getNotificationPlayer().getUniqueId().toString());
-        File file = new File(playerDirectory, sign.getLine(1) + ".schematic"); // The schematic file
+        File file = new File(playerDirectory, ChatColor.stripColor(sign.getLine(1)) + ".schematic"); // The schematic file
         Clipboard clipboard = null;
         ClipboardFormat format = ClipboardFormats.findByFile(file);
         try {
