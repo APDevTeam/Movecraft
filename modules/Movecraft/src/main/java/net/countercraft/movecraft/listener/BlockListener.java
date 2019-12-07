@@ -280,31 +280,23 @@ public class BlockListener implements Listener {
         }
     }
 
+    @EventHandler
+    public void onFlow(BlockFromToEvent e){
+        if(Settings.DisableSpillProtection)
+            return;
+        if(!e.getBlock().isLiquid())
+            return;
+        MovecraftLocation loc = MathUtils.bukkit2MovecraftLoc(e.getBlock().getLocation());
+        for(Craft craft : CraftManager.getInstance().getCraftsInWorld(e.getBlock().getWorld())){
+            if(craft.getHitBox().contains((loc))) {
+                e.setCancelled(true);
+                break;
+            }
+        }
+    }
+
     @EventHandler(priority = EventPriority.NORMAL)
     public void explodeEvent(EntityExplodeEvent e) {
-        // Remove any blocks from the list that were adjacent to water, to prevent spillage
-        if (!Settings.DisableSpillProtection) {
-            e.blockList().removeIf(b -> b.getY() > b.getWorld().getSeaLevel() &&
-                    (b.getRelative(-1, 0, -1).isLiquid() ||
-                            b.getRelative(-1, 1, -1).isLiquid() ||
-                            b.getRelative(-1, 0, 0).isLiquid() ||
-                            b.getRelative(-1, 1, 0).isLiquid() ||
-                            b.getRelative(-1, 0, 1).isLiquid() ||
-                            b.getRelative(-1, 1, 1).isLiquid() ||
-                            b.getRelative(0, 0, -1).isLiquid() ||
-                            b.getRelative(0, 1, -1).isLiquid() ||
-                            b.getRelative(0, 0, 0).isLiquid() ||
-                            b.getRelative(0, 1, 0).isLiquid() ||
-                            b.getRelative(0, 0, 1).isLiquid() ||
-                            b.getRelative(0, 1, 1).isLiquid() ||
-                            b.getRelative(1, 0, -1).isLiquid() ||
-                            b.getRelative(1, 1, -1).isLiquid() ||
-                            b.getRelative(1, 0, 0).isLiquid() ||
-                            b.getRelative(1, 1, 0).isLiquid() ||
-                            b.getRelative(1, 0, 1).isLiquid() ||
-                            b.getRelative(1, 1, 1).isLiquid()));
-        }
-
         if (Settings.DurabilityOverride != null) {
             e.blockList().removeIf(b -> Settings.DurabilityOverride.containsKey(b.getTypeId()) &&
                     (new Random(b.getX() + b.getY() + b.getZ() + (System.currentTimeMillis() >> 12)))
