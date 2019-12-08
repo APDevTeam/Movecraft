@@ -153,16 +153,8 @@ public class DetectionTask extends AsyncTask {
                                 fail(I18nSupport.getInternationalisedString("Detection - Craft Type Cannot Be Named"));
                             }
                             for (String line : s.getLines()){
-                                boolean allowedString = true;
-                                if (craft.getType().getForbiddenSignStrings().length > 0){
-                                    for (String forbidden : craft.getType().getForbiddenSignStrings()){
-                                        if (!line.equalsIgnoreCase(forbidden)){
-                                            continue;
-                                        }
-                                        allowedString = false;
-                                    }
-                                }
-                                if (allowedString){
+
+                                if (!containsForbiddenSignString(line)){
                                     continue;
                                 }
                                 fail("Detection - Forbidden Sign String Found");
@@ -218,16 +210,10 @@ public class DetectionTask extends AsyncTask {
         return data.getForbiddenBlocks().contains(test) || data.getAllowedBlocks().contains(test, (byte) testData);
     }
 
-    private synchronized boolean containsForbiddenSignString(Block testBlock) {
-        Sign s = (Sign) testBlock.getState();
-
-        for (String str : s.getLines()) {
-            for (String forbidden : data.getForbiddenSignStrings()) {
-                if (forbidden == null)
-                    continue;
-                if (forbidden.equalsIgnoreCase(str)){
-                    return true;
-                }
+    private synchronized boolean containsForbiddenSignString(String testString) {
+        for (String s : data.getForbiddenSignStrings()) {
+            if (testString.equalsIgnoreCase(s)) {
+                return true;
             }
         }
 

@@ -371,9 +371,11 @@ public class TranslationTask extends AsyncTask {
                     explosionForce += 25;//TODO: find the correct amount
                 }*/
                 explosionKey = explosionForce;
+
                 int potEffRange = craft.getType().getEffectRange();
                 Map<PotionEffect,Integer> potionEffects = craft.getType().getPotionEffectsToApply();
-                Location loc = location.translate(-dx,-dy,-dz).toBukkit(craft.getW());
+
+                Location loc = location.toBukkit(craft.getW());
                 if (!loc.getBlock().getType().equals(Material.AIR)) {
                     updates.add(new ExplosionUpdateCommand(loc, explosionKey));
                     collisionExplosion = true;

@@ -22,6 +22,7 @@ public final class SpeedSign implements Listener{
                 if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Speed:")) {
                     sign.setLine(1, "0 m/s");
                     sign.setLine(2, "0ms");
+                    sign.setLine(3, "0T");
                     sign.update();
                 }
             }
@@ -36,5 +37,6 @@ public final class SpeedSign implements Listener{
         }
         event.setLine(1,String.format("%.2f",craft.getSpeed()) + "m/s");
         event.setLine(2,String.format("%.2f",craft.getMeanMoveTime() * 1000) + "ms");
+        event.setLine(3,craft.getTickCooldown() + "T");
     }
 }

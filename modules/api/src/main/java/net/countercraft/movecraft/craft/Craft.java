@@ -29,6 +29,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -38,6 +39,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+
 
 public abstract class Craft {
     @NotNull protected final CraftType type;
@@ -436,8 +439,6 @@ public abstract class Craft {
         return repairing;
     }
 
-    public void setRepairing(boolean repairing) {
-        this.repairing = repairing;
-    }
 
+    public abstract void resetSigns(@NotNull final Sign clicked);
 }
