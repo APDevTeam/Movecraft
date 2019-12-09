@@ -33,7 +33,7 @@ deploy:
   api_key:
     secure: BAb4F5UKiEUUbJyZkDKAnDlQMF+KJNYlg1Unv9sb/43w8JxdvM3x5uSp8KndVUzwLH1rXLudhY3TPVVvDha4hrsuMW7LzqevKLsrMFXTqXAVJIquJ01ohuvMPa4XV6+6keWVlv0QCCu2F4jjKR861bQRUUYdY5pMSSTc6wmnk8X2IRZNe6E1vK23wdaLNrkx4f9R+msXmo9lsqnktiAxRWKxrE1Btm3TchMgokz+qoCULjvSaZBZZdHEeZjJ93tD80Pmi6w8000NTwTNcEITYsLLJ4tbDfhGS8I2tzBFt7vXjs2UM74YoZIGsHvWf8gGBIv1txSG72Nornf5IX5lOOHfdCb1QxkqTyhdx+poyfL47z6g6IzC6dIHbZH6y6QLGcI95+TVhMxbtszDgttzGfmpxyUv/zDtNSgGLOG7u4ps56Qh132qS0X2+Ky6qoN1ExkuNuaZMhrUBlz0nu9Ze46A18CcXZrSGWSYrC0TQNWIeb3wVla9HQh/kIVa3kIs2LcjsJMtlTW1FKry+lvI3cGlXHsD4Nj2MLfA7M0JftNwO3WQZCF5sPAlJl6+3lsqYpMfN4MZ8Xv/aWRIqopN/J/Aou5L8Bj1hyJN2VwC/z2Oe1+uWFFQqeu2mWHa/WAdRucalMs2wSnBfBcZ92lroYLhGc602z74eN+uWEMSWOg=
   file: "target/Movecraft.jar"
-  skip_cleanup: true
+  skip_cleanup: false
   on:
     repo: eirikh1996/Movecraft
     tags: true
