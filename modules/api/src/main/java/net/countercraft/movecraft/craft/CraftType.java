@@ -20,7 +20,7 @@ package net.countercraft.movecraft.craft;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.utils.BlockContainer;
 import net.countercraft.movecraft.utils.BlockLimitManager;
-import org.bukkit.Bukkit;
+import net.countercraft.movecraft.utils.LegacyUtils;
 import org.bukkit.Material;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -158,8 +158,8 @@ final public class CraftType {
         sinkRateTicks = data.containsKey("sinkSpeed") ? (int) Math.ceil(20 / (doubleFromObject(data.get("sinkSpeed")))) : integerFromObject(data.getOrDefault("sinkTickRate", 0));
         keepMovingOnSink = (Boolean) data.getOrDefault("keepMovingOnSink", false);
         smokeOnSink = integerFromObject(data.getOrDefault("smokeOnSink", 0));
-        explodeOnCrash = (float) doubleFromObject(data.getOrDefault("explodeOnCrash", 0F));
-        collisionExplosion = (float) doubleFromObject(data.getOrDefault("collisionExplosion", 0F));
+        explodeOnCrash = floatFromObject(data.getOrDefault("explodeOnCrash", 0F));
+        collisionExplosion = floatFromObject(data.getOrDefault("collisionExplosion", 0F));
         minHeightLimit = Math.max(0, integerFromObject(data.getOrDefault("minHeightLimit", 0)));
         int value = integerFromObject(data.getOrDefault("maxHeightLimit", 254));
         if (value <= minHeightLimit) {
@@ -236,7 +236,7 @@ final public class CraftType {
             if (!blockedByWater) {
                 passthroughBlocks.add(Material.WATER);
                 if (Settings.IsLegacy) {
-                    passthroughBlocks.add(Material.STATIONARY_WATER);
+                    passthroughBlocks.add(LegacyUtils.STATIONARY_WATER);
                 } else {
                     passthroughBlocks.add(Material.getMaterial("BUBBLE_COLUMN"));
                 }
@@ -291,7 +291,12 @@ final public class CraftType {
             effectRange = data.containsKey("effectRange") ? integerFromObject(data.get("effectRange")) : 0;
         if (!canHoverOverWater){
             forbiddenHoverOverBlocks.add(Material.WATER);
-            forbiddenHoverOverBlocks.add(Material.STATIONARY_WATER);
+            if (Settings.IsLegacy) {
+                forbiddenHoverOverBlocks.add(LegacyUtils.STATIONARY_WATER);
+            } else {
+                forbiddenHoverOverBlocks.add(Material.getMaterial("BUBBLE_COLUMN"));
+            }
+
         }
             potionEffectsToApply = data.containsKey("potionEffectsToApply") ? effectListFromObject(data.get("potionEffectsToApply")) : Collections.emptyMap();
             allowVerticalTakeoffAndLanding = (boolean) data.getOrDefault("allowVerticalTakeoffAndLanding", true);
@@ -313,12 +318,20 @@ final public class CraftType {
         return (Integer) obj;
     }
 
+    private float floatFromObject(Object obj) {
+        if (obj instanceof Double) {
+            return ((Double) obj).floatValue();
+        } else if (obj instanceof Integer) {
+            return ((Integer) obj).floatValue();
+        }
+        return (float) obj;
+    }
 
     private double doubleFromObject(Object obj) {
         if (obj instanceof Integer) {
             return ((Integer) obj).doubleValue();
         }
-        return (Double) obj;
+        return (double) obj;
     }
     private Material materialFromObject(Object obj){
         if (obj instanceof Integer){

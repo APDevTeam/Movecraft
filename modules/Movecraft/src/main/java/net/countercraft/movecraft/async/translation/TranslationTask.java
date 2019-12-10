@@ -566,7 +566,7 @@ public class TranslationTask extends AsyncTask {
             collisionBox.add(nl);
         }
         for (MovecraftLocation ml : collisionBox){
-            if (!ml.toBukkit(craft.getW()).getBlock().getType().equals(Material.AIR) && !craft.getType().getPassthroughBlocks().contains(ml.toBukkit(craft.getW()).getBlock().getType()) && !craft.getType().getHarvestBlocks().contains(ml.toBukkit(craft.getW()).getBlock().getType())){
+            if (!ml.toBukkit(craft.getW()).getBlock().getType().name().endsWith("AIR") && !craft.getType().getPassthroughBlocks().contains(ml.toBukkit(craft.getW()).getBlock().getType()) && !craft.getType().getHarvestBlocks().contains(ml.toBukkit(craft.getW()).getBlock().getType())){
                 return true;
             }
         }
