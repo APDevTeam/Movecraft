@@ -2,6 +2,14 @@ cache:
   directories:
   - "$HOME/.m2/repository"
 before_install: |
+  if [ ! -d "$HOME/.m2/repository/org/spigotmc/spigot/1.8.8-R0.1-SNAPSHOT" ]; then
+    wget -O BuildTools.jar https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
+    java -jar BuildTools.jar --rev 1.8.8 | grep -vE "[^/ ]*/[^/ ]*\s*KB\s*$" | grep -v "^\s*$"
+    fi
+  if [ ! -d "$HOME/.m2/repository/org/spigotmc/spigot/1.9.4-R0.1-SNAPSHOT" ]; then
+    wget -O BuildTools.jar https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
+    java -jar BuildTools.jar --rev 1.9.4 | grep -vE "[^/ ]*/[^/ ]*\s*KB\s*$" | grep -v "^\s*$"
+    fi
   if [ ! -d "$HOME/.m2/repository/org/spigotmc/spigot/1.10.2-R0.1-SNAPSHOT" ]; then
   wget -O BuildTools.jar https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
   java -jar BuildTools.jar --rev 1.10.2 | grep -vE "[^/ ]*/[^/ ]*\s*KB\s*$" | grep -v "^\s*$"
