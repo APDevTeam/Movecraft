@@ -17,6 +17,7 @@
 
 package net.countercraft.movecraft.mapUpdater.update;
 
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.utils.HitBox;
 import net.countercraft.movecraft.utils.TeleportUtils;
@@ -64,7 +65,7 @@ public class EntityTranslateUpdateCommand extends UpdateCommand {
         }
         for (Entity entity : getEntitiesOnCraft()){
             Location playerLoc = entity.getLocation();
-            if (!(entity instanceof Player) || yaw > .01 || pitch > .01 || yaw < -.01 || pitch < -.01) {
+            if (!(entity instanceof Player) || yaw > .01 || pitch > .01 || yaw < -.01 || pitch < -.01 || Settings.IsPre1_9) {
                 entity.teleport(new Location(entity.getWorld(), x + playerLoc.getX(),y + playerLoc.getY(),z + playerLoc.getZ(),yaw + playerLoc.getYaw(),pitch + playerLoc.getPitch()));
                 return;
             }

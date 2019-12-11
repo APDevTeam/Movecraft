@@ -52,7 +52,8 @@ public class BlockContainer implements Iterable<MovecraftBlock>{
                     }
                     type = Material.getMaterial(str);
                     if (type == null){
-                        throw new IllegalArgumentException(str + "is not a valid Material ID");
+                        Bukkit.getLogger().warning("[Movecraft] " + str + " is not a valid Material ID");
+                        continue;
                     }
                     blocks.add(new MovecraftBlock(type));
                 } else if (o instanceof Integer){
