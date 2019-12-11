@@ -452,6 +452,15 @@ final public class CraftType {
         return (Double) obj;
     }
 
+    private float floatFromObject(Object obj) {
+        if (obj instanceof Double) {
+            return ((Double) obj).floatValue();
+        } else if (obj instanceof Integer) {
+            return ((Integer) obj).floatValue();
+        }
+        return (float) obj;
+    }
+
     private int[] blockIDListFromObject(Object obj) {
         ArrayList<Integer> returnList = new ArrayList<>();
         ArrayList objList = (ArrayList) obj;
