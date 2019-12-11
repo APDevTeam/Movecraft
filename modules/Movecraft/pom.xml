@@ -56,12 +56,6 @@
         </dependency>
         <dependency>
             <groupId>net.countercraft</groupId>
-            <artifactId>movecraft-v1_8_R3</artifactId>
-            <version>v1_8_R3</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>net.countercraft</groupId>
             <artifactId>movecraft-v1_9_R2</artifactId>
             <version>v1_9_R2</version>
             <type>jar</type>

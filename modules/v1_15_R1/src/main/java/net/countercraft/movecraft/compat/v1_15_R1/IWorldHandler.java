@@ -195,7 +195,8 @@ public class IWorldHandler extends WorldHandler {
         //translate the positions
         List<BlockPosition> newPositions = new ArrayList<>();
         for(BlockPosition position : positions){
-            newPositions.add(position.a(translateVector));
+            BlockPosition newPos = position.a(translateVector);
+            newPositions.add(newPos);
         }
         //create the new block
         for(int i = 0; i<newPositions.size(); i++) {
@@ -225,7 +226,8 @@ public class IWorldHandler extends WorldHandler {
         //*       Step six: Update the blocks       *
         //*******************************************
         for(BlockPosition newPosition : newPositions) {
-            CraftBlockState.getBlockState(nativeWorld, newPosition, 3).update(false,false);
+
+            CraftBlockState.getBlockState(nativeWorld, newPosition, 3).update(false, false);
         }
         for(BlockPosition deletedPosition : deletePositions){
             CraftBlockState.getBlockState(nativeWorld, deletedPosition, 3).update(false,false);
@@ -379,5 +381,14 @@ public class IWorldHandler extends WorldHandler {
         public BlockPosition getTilePosition() {
             return tilePosition;
         }
+    }
+
+    private boolean isRedstoneComponent(Block block) {
+        return block instanceof BlockRedstoneWire
+                || block instanceof BlockRedstoneComparator
+                || block instanceof BlockRepeater
+                || block instanceof BlockRedstoneTorch
+                || block instanceof BlockLever;
+
     }
 }
