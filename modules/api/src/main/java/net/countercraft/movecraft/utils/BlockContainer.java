@@ -37,7 +37,7 @@ public class BlockContainer implements Iterable<MovecraftBlock>{
                         } catch (Exception e){
                             throw new IllegalArgumentException("Numerical IDs are not supported by this version: " + Bukkit.getVersion(), e);
                         }
-                        Byte data = Byte.parseByte(parts[1]);
+                        byte data = (byte) Integer.parseInt(parts[1]);
                         blocks.add(new MovecraftBlock(type, data));
                         continue;
                     } else if (str.startsWith("ALL_")){

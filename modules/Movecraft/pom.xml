@@ -35,6 +35,12 @@
     </repositories>
 
     <dependencies>
+        <dependency>
+            <groupId>net.countercraft</groupId>
+            <artifactId>movecraft-v1_15_R1</artifactId>
+            <version>v1_15_R1</version>
+            <type>jar</type>
+        </dependency>
 
         <dependency>
             <groupId>net.countercraft</groupId>
