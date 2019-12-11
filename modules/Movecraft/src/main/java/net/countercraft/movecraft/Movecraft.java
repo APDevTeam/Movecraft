@@ -98,8 +98,9 @@ public class Movecraft extends JavaPlugin {
         String[] parts = version.split("_");
         int versionNumber = Integer.valueOf(parts[1]);
         //Check if the server is 1.12 and lower or 1.13 and higher
+        Settings.IsPre1_9 = versionNumber < 9;
         Settings.IsLegacy = versionNumber <= 12;
-        Settings.is1_14 = versionNumber == 14;
+        Settings.is1_14 = versionNumber >= 14;
         // Read in config
         if (!Settings.IsLegacy) {
             this.saveDefaultConfig();

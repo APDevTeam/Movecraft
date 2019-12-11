@@ -557,7 +557,7 @@ public class AsyncManager extends BukkitRunnable {
                     pcraft.setDisabled(true);
                     if (pcraft.getNotificationPlayer() != null) {
                         Location loc = pcraft.getNotificationPlayer().getLocation();
-                        pcraft.getW().playSound(loc, Settings.IsLegacy ? LegacyUtils.ENITIY_IRONGOLEM_DEATH : Sound.ENTITY_IRON_GOLEM_DEATH , 5.0f, 5.0f);
+                        pcraft.getW().playSound(loc, Settings.IsLegacy ? (Settings.IsPre1_9 ? LegacyUtils.IRONGOLEM_DEATH : LegacyUtils.ENITIY_IRONGOLEM_DEATH)  : Sound.ENTITY_IRON_GOLEM_DEATH , 5.0f, 5.0f);
                     }
                 }
             }

@@ -2,10 +2,8 @@ name: LaunchTorpedo
 maxSize: 7
 minSize: 1
 allowedBlocks: 
-    COAL_BLOCK:
+    - COAL_BLOCK
 
-forbiddenBlocks:
-    BEDROCK:
 
 canCruise: true
 cruiseOnPilot: true

@@ -14,11 +14,11 @@
     <name>Movecraft-v1_15_R1</name>
     <version>v1_15_R1</version>
     <dependencies>
-        <dependency>
+        <!--<dependency>
             <groupId>org.bukkit</groupId>
             <artifactId>craftbukkit</artifactId>
             <version>1.15-R0.1-SNAPSHOT</version>
-        </dependency>
+        </dependency>-->
     </dependencies>
 
 </project>

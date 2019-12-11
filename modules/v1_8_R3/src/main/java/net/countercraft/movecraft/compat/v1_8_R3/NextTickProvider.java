@@ -25,21 +25,21 @@ public class NextTickProvider {
 
     @SuppressWarnings("unchecked")
     private void registerWorld(@NotNull WorldServer world){
-        List<NextTickListEntry> U = new ArrayList<>();
-        HashTreeSet<NextTickListEntry> nextTickList = new HashTreeSet<>();
+        List<NextTickListEntry> V = new ArrayList<>();
+        HashTreeSet<NextTickListEntry> M = new HashTreeSet<>();
 
         try {
 
-            Field UField = WorldServer.class.getDeclaredField("U");
-            UField.setAccessible(true);
-            U = (List<NextTickListEntry>) UField.get(world);
-            Field nextTickListField = WorldServer.class.getDeclaredField("nextTickList");
-            nextTickListField.setAccessible(true);
-            nextTickList = (HashTreeSet<NextTickListEntry>) nextTickListField.get(world);
+            Field VField = WorldServer.class.getDeclaredField("V");
+            VField.setAccessible(true);
+            V = (List<NextTickListEntry>) VField.get(world);
+            Field MField = WorldServer.class.getDeclaredField("M");
+            MField.setAccessible(true);
+            M = (HashTreeSet<NextTickListEntry>) MField.get(world);
         } catch (IllegalAccessException | IllegalArgumentException | NoSuchFieldException | SecurityException e1) {
             e1.printStackTrace();
         }
-        tickMap.put(world, new ImmutablePair<>(new WeakReference<>(nextTickList), new WeakReference<>(U)));
+        tickMap.put(world, new ImmutablePair<>(new WeakReference<>(M), new WeakReference<>(V)));
     }
 
     @Nullable

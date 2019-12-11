@@ -69,7 +69,8 @@ public class LegacyUtils {
     public static Material YELLOW_FLOWER = Settings.IsLegacy ? Material.YELLOW_FLOWER : null;
 
     //Sounds removed in 1.13
-    public static Sound ENITIY_IRONGOLEM_DEATH = Settings.IsLegacy ? Sound.ENTITY_IRONGOLEM_DEATH : null;
+    public static Sound ENITIY_IRONGOLEM_DEATH = Settings.IsLegacy && !Settings.IsPre1_9 ? Sound.ENTITY_IRONGOLEM_DEATH : null;
+    public static Sound IRONGOLEM_DEATH = Sound.valueOf("IRONGOLEM_DEATH");
     //Methods removed in 1.13
     public static Material getMaterial(int id){
         try {
