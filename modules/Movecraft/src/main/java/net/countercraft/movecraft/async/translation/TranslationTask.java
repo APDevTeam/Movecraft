@@ -602,7 +602,7 @@ public class TranslationTask extends AsyncTask {
             translatedBottomLocs.add(bottomLoc.translate(dx, dy, dz));
             Material testType = bottomLoc.translate(0, -1, 0).toBukkit(craft.getW()).getBlock().getType();
             //If the lowest part of the bottom locs touch the ground, return true anyways
-            if (testType != Material.AIR && !craft.getType().getPassthroughBlocks().contains(testType)){
+            if (!testType.name().endsWith("AIR") && !craft.getType().getPassthroughBlocks().contains(testType)){
                 bottomLocsOnGround = true;
             }
         }
