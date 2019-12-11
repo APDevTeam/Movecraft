@@ -147,8 +147,8 @@ final public class CraftType {
         sinkRateTicks = data.containsKey("sinkSpeed") ? (int) Math.ceil(20 / (doubleFromObject(data.get("sinkSpeed")))) : integerFromObject(data.getOrDefault("sinkTickRate", 0));
         keepMovingOnSink = (Boolean) data.getOrDefault("keepMovingOnSink", false);
         smokeOnSink = integerFromObject(data.getOrDefault("smokeOnSink", 0));
-        explodeOnCrash = (float) doubleFromObject(data.getOrDefault("explodeOnCrash", 0F));
-        collisionExplosion = (float) doubleFromObject(data.getOrDefault("collisionExplosion", 0F));
+        explodeOnCrash = floatFromObject(data.getOrDefault("explodeOnCrash", 0F));
+        collisionExplosion = floatFromObject(data.getOrDefault("collisionExplosion", 0F));
         minHeightLimit = Math.max(0, integerFromObject(data.getOrDefault("minHeightLimit", 0)));
         int value = integerFromObject(data.getOrDefault("maxHeightLimit", 254));
         if (value <= minHeightLimit) {
@@ -243,6 +243,15 @@ final public class CraftType {
             return ((Integer) obj).doubleValue();
         }
         return (Double) obj;
+    }
+
+    private float floatFromObject(Object obj) {
+        if (obj instanceof Double) {
+            return ((Double) obj).floatValue();
+        } else if (obj instanceof Integer) {
+            return ((Integer) obj).floatValue();
+        }
+        return (float) obj;
     }
 
     private int[] blockIDListFromObject(Object obj) {
