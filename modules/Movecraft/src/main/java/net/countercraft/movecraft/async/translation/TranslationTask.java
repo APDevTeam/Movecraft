@@ -90,9 +90,19 @@ public class TranslationTask extends AsyncTask {
             return;
         }
         if (craft.getType().getUseGravity() && !craft.getSinking()){
-            Bukkit.broadcastMessage("Is On Ground: " + isOnGround(oldHitBox));
             if (inclineCraft(oldHitBox)){
-                dy = climbDistance;
+                //Ignore explosive crafts
+                if (craft.getType().getCollisionExplosion() > 0f) {
+                    dy = 0;
+                }
+                else if (craft.getType().getGravityInclineDistance() > -1 && climbDistance > craft.getType().getGravityInclineDistance()) {
+                    fail(I18nSupport.getInternationalisedString("Translation - Failed Incline too steep"));
+                    return;
+
+                } else {
+                    dy = climbDistance;
+                }
+
             } else if (!isOnGround(oldHitBox) && craft.getType().getCanHover()){
                 MovecraftLocation midPoint = oldHitBox.getMidPoint();
                 int centreMinY = oldHitBox.getLocalMinY(midPoint.getX(), midPoint.getZ());
@@ -476,9 +486,6 @@ public class TranslationTask extends AsyncTask {
             if (elevation < surfaceLoc.subtract(ml).getY()) {
                 elevation = surfaceLoc.subtract(ml).getY();
             }
-            if (craft.getType().getGravityInclineDistance() > -1) {
-                elevation = Math.min(elevation, craft.getType().getGravityInclineDistance());
-            }
 
         }
         if (elevation == 0) {
@@ -523,8 +530,6 @@ public class TranslationTask extends AsyncTask {
                 }
             }
         } while (dropDistance > craft.getType().getGravityDropDistance() && testType == Material.AIR && !craft.getType().getPassthroughBlocks().contains(testType));
-
-        Bukkit.broadcastMessage(String.valueOf(dropDistance));
         return dropDistance;
     }
 
@@ -563,7 +568,6 @@ public class TranslationTask extends AsyncTask {
         if (dy > 0){
             return bottomLocsOnGround && translatedBottomLocsInAir;
         }
-        Bukkit.broadcastMessage("Translated bottom locs in air: " + translatedBottomLocsInAir);
         return !translatedBottomLocsInAir;
     }
 
