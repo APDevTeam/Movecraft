@@ -524,7 +524,7 @@ public class TranslationTask extends AsyncTask {
             dropDistance--;
             for (MovecraftLocation ml : bottomLocs) {
 
-                testType = ml.translate(0, dropDistance, 0).toBukkit(craft.getW()).getBlock().getType();
+                testType = ml.translate(0, dropDistance - 1, 0).toBukkit(craft.getW()).getBlock().getType();
                 if (testType != Material.AIR && !craft.getType().getPassthroughBlocks().contains(testType)) {
                     break;
                 }
