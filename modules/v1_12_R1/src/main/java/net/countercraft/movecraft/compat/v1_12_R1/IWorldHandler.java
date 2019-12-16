@@ -235,7 +235,7 @@ public class IWorldHandler extends WorldHandler {
         //*       Step six: Update the blocks       *
         //*******************************************
         for(BlockPosition newPosition : newPositions) {
-            CraftBlockState.getBlockState(nativeWorld,newPosition.getX(), newPosition.getY(), newPosition.getZ()).update(false,false);
+            CraftBlockState.getBlockState(nativeWorld,newPosition.getX(), newPosition.getY(), newPosition.getZ()).update(false, false);
         }
         for(BlockPosition deletedPosition : deletePositions){
             CraftBlockState.getBlockState(nativeWorld,deletedPosition.getX(), deletedPosition.getY(), deletedPosition.getZ()).update(false,false);
