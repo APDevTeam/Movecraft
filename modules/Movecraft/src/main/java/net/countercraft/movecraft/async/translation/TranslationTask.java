@@ -519,8 +519,8 @@ public class TranslationTask extends AsyncTask {
                 //This has to be subtracted by one, or non-passthrough blocks will be within the y drop path
                 //obstructing the craft
                 Material testType = ml.translate(0, dropDistance - 1, 0).toBukkit(craft.getW()).getBlock().getType();
-                if (testType != Material.AIR && !craft.getType().getPassthroughBlocks().contains(testType)) {
-                    hitGround = true;
+                hitGround = testType != Material.AIR && !craft.getType().getPassthroughBlocks().contains(testType);
+                if (hitGround) {
                     break;
                 }
             }
