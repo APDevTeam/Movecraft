@@ -33,7 +33,6 @@ public class TranslationTask extends AsyncTask {
     private boolean collisionExplosion = false;
     private String failMessage;
     private Collection<UpdateCommand> updates = new HashSet<>();
-    private int climbDistance = 0;
 
     public TranslationTask(Craft c, int dx, int dy, int dz) {
         super(c);
