@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.sign;
 
+import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
@@ -33,7 +34,7 @@ public final class CannonDirectorSign implements Listener {
         Craft foundCraft = null;
         CraftManager.getInstance().getCraftsInWorld(block.getWorld());
         for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(block.getWorld())) {
-            if (MathUtils.locationInHitBox(tcraft.getHitBox(), event.getClickedBlock().getLocation()) &&
+            if ( tcraft.getHitBox().contains(MathUtils.bukkit2MovecraftLoc(block.getLocation())) &&
                     CraftManager.getInstance().getPlayerFromCraft(tcraft) != null) {
                 foundCraft = tcraft;
                 break;
