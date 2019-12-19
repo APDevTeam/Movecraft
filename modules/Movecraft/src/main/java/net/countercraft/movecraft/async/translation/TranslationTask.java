@@ -513,7 +513,7 @@ public class TranslationTask extends AsyncTask {
 
         do {
             boolean hitGround = false;
-            dropDistance--;
+
             for (MovecraftLocation ml : bottomLocs) {
                 //This has to be subtracted by one, or non-passthrough blocks will be within the y drop path
                 //obstructing the craft
@@ -526,6 +526,7 @@ public class TranslationTask extends AsyncTask {
             if (hitGround) {
                 break;
             }
+            dropDistance--;
         } while (dropDistance > craft.getType().getGravityDropDistance());
         return dropDistance;
     }
