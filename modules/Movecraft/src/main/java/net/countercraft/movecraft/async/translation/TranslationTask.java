@@ -496,9 +496,8 @@ public class TranslationTask extends AsyncTask {
         }
         boolean translatedBottomLocsInAir = true;
         for (MovecraftLocation translatedBottomLoc : translatedBottomLocs){
-            MovecraftLocation beneath = translatedBottomLoc.translate(0, -1, 0);
-            Material testType = beneath.toBukkit(craft.getW()).getBlock().getType();
-            if (bottomLocs.contains(beneath) || testType == Material.AIR || craft.getType().getPassthroughBlocks().contains(testType)){
+            Material testType = translatedBottomLoc.toBukkit(craft.getW()).getBlock().getType();
+            if (bottomLocs.contains(translatedBottomLoc) || testType == Material.AIR || craft.getType().getPassthroughBlocks().contains(testType)){
                 continue;
             }
             translatedBottomLocsInAir = false;
