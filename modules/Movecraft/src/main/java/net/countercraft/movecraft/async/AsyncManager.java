@@ -63,6 +63,7 @@ public class AsyncManager extends BukkitRunnable {
     private HashMap<HitBox, Long> wrecks = new HashMap<>();
     private HashMap<HitBox, World> wreckWorlds = new HashMap<>();
     private HashMap<HitBox, Map<MovecraftLocation,Material>> wreckPhases = new HashMap<>();
+    private Map<Craft, Integer> cooldownCache = new WeakHashMap<>();
 
     private long lastTracerUpdate = 0;
     private long lastFireballCheck = 0;
@@ -367,10 +368,17 @@ public class AsyncManager extends BukkitRunnable {
                 if (pcraft.getNotificationPlayer().getInventory().getHeldItemSlot() == 5)
                     bankRight = true;
             }
-
-            if (Math.abs(ticksElapsed) < pcraft.getTickCooldown()) {
+            int tickCoolDown;
+            if(cooldownCache.containsKey(pcraft)){
+                tickCoolDown = cooldownCache.get(pcraft);
+            } else {
+                tickCoolDown = pcraft.getTickCooldown();
+                cooldownCache.put(pcraft,tickCoolDown);
+            }
+            if (Math.abs(ticksElapsed) < tickCoolDown) {
                 continue;
             }
+            cooldownCache.remove(pcraft);
             int dx = 0;
             int dz = 0;
             int dy = 0;
