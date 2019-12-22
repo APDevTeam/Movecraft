@@ -28,10 +28,13 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.logging.Logger;
 
 public class MapUpdateManager extends BukkitRunnable {
 
     private final Queue<UpdateCommand> updates = new ConcurrentLinkedQueue<>();
+//    private final Queue<UpdateCommand> updates = new LinkedBlockingQueue<>();
     //private PriorityQueue<UpdateCommand> updateQueue = new PriorityQueue<>();
 
     //@Deprecated
@@ -45,6 +48,7 @@ public class MapUpdateManager extends BukkitRunnable {
 
     public void run() {
         if (updates.isEmpty()) return;
+        Logger logger = Movecraft.getInstance().getLogger();
         long startTime = System.currentTimeMillis();
         // and set all crafts that were updated to not processing
 
@@ -52,12 +56,11 @@ public class MapUpdateManager extends BukkitRunnable {
 
 
 
-        synchronized (updates) {
-            UpdateCommand next = updates.poll();
-            while(next != null) {
-                next.doUpdate();
-                next = updates.poll();
-            }
+
+        UpdateCommand next = updates.poll();
+        while(next != null) {
+            next.doUpdate();
+            next = updates.poll();
         }
 
         //TODO: re-add lighting updates
@@ -78,7 +81,7 @@ public class MapUpdateManager extends BukkitRunnable {
         }*/
         if (Settings.Debug) {
             long endTime = System.currentTimeMillis();
-            Movecraft.getInstance().getServer().broadcastMessage("Map update took (ms): " + (endTime - startTime));
+            logger.info("Map update took (ms): " + (endTime - startTime));
         }
     }
 
