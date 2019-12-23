@@ -37,11 +37,13 @@ public class NextTickProvider {
         if(!isRegistered(world))
             registerWorld(world);
         AbstractMap.SimpleImmutableEntry<Set<NextTickListEntry>, Collection<NextTickListEntry>> listPair = tickMap.get(world);
-        for(Iterator<NextTickListEntry> iterator = listPair.getKey().iterator(); iterator.hasNext();) {
-            NextTickListEntry listEntry = iterator.next();
-            if (position.equals(listEntry.a)) {
-                iterator.remove();
-                return listEntry;
+        if(listPair.getKey().contains(fakeEntry(position))) {
+            for (Iterator<NextTickListEntry> iterator = listPair.getKey().iterator(); iterator.hasNext(); ) {
+                NextTickListEntry listEntry = iterator.next();
+                if (position.equals(listEntry.a)) {
+                    iterator.remove();
+                    return listEntry;
+                }
             }
         }
         for(Iterator<NextTickListEntry> iterator = listPair.getValue().iterator(); iterator.hasNext();) {
@@ -53,5 +55,14 @@ public class NextTickProvider {
         }
         return null;
 
+    }
+    @NotNull
+    public Object fakeEntry(@NotNull BlockPosition position){
+        return new Object(){
+            @Override
+            public int hashCode() {
+                return position.hashCode();
+            }
+        };
     }
 }
