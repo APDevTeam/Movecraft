@@ -16,16 +16,16 @@ public class NextTickProvider {
 
     @SuppressWarnings("unchecked")
     private void registerWorld(@NotNull WorldServer world){
-        Collection<NextTickListEntry> W = new ArrayList<>();
-        Set<NextTickListEntry> nextTickList = new HashSet<>();
+        final Collection<NextTickListEntry> W = new ArrayList<>();
+        final Set<NextTickListEntry> nextTickList = new HashSet<>();
         TickListServer<Block> blockTickListServer = world.getBlockTickList();
         try {
             Field gField = TickListServer.class.getDeclaredField("g");
             gField.setAccessible(true);
-            W = (Collection<NextTickListEntry>) gField.get(blockTickListServer);
+            W.addAll((Collection<NextTickListEntry>) gField.get(blockTickListServer));
             Field ntlField = TickListServer.class.getDeclaredField("nextTickList");
             ntlField.setAccessible(true);
-            nextTickList = (Set<NextTickListEntry>) ntlField.get(blockTickListServer);
+            nextTickList.addAll((Set<NextTickListEntry>) ntlField.get(blockTickListServer));
         } catch (IllegalAccessException | IllegalArgumentException | NoSuchFieldException | SecurityException e1) {
             e1.printStackTrace();
         }
