@@ -36,7 +36,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -316,21 +315,21 @@ public abstract class Craft {
     public int getTickCooldown() {
         if(sinking)
             return type.getSinkRateTicks();
-        double chestPenalty = 0;
+        Map<Material, Integer> counter = new HashMap<>();
         for(MovecraftLocation location : hitBox){
-            if(location.toBukkit(w).getBlock().getType()==Material.CHEST)
-                chestPenalty++;
+            Material mat = location.toBukkit(w).getBlock().getType();
+            counter.put(mat, counter.getOrDefault(mat, 0) + 1);
         }
+        double chestPenalty = counter.getOrDefault(Material.CHEST, 0) + counter.getOrDefault(Material.TRAPPED_CHEST, 0);
         chestPenalty*=type.getChestPenalty();
         if(!cruising)
             return type.getTickCooldown()+(int)chestPenalty;
         if(type.getDynamicFlyBlockSpeedFactor()!=0){
             double count = 0;
-            Set<Material> flyBlockMaterials = type.getDynamicFlyBlocks();
-            for(MovecraftLocation location : hitBox){
-                if(flyBlockMaterials.contains(location.toBukkit(w).getBlock().getType()))
-                    count++;
+            for (Material flyBlockMaterial : type.getDynamicFlyBlocks()) {
+                count += counter.getOrDefault(flyBlockMaterial, 0);
             }
+
             double woolRatio = count / hitBox.size();
             return Math.max((int)Math.round((20.0 * type.getCruiseSkipBlocks())/((type.getDynamicFlyBlockSpeedFactor()*1.5)*(woolRatio - .5) + (20.0/type.getCruiseTickCooldown()) + 1)), 1);
             //return Math.max((int)((20.0 * type.getDynamicFlyBlockSpeedFactor()/100.0)/(woolRatio - .499)),0) + type.getCruiseTickCooldown();

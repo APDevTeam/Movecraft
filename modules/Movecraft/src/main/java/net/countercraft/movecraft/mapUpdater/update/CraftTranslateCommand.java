@@ -90,14 +90,13 @@ public class CraftTranslateCommand extends UpdateCommand {
                 originalLocations.add(movecraftLocation.subtract(displacement));
             }
             final HitBox to = CollectionUtils.filter(craft.getHitBox(), originalLocations);
+            //place phased blocks
             for (MovecraftLocation location : to) {
                 Material material = location.toBukkit(craft.getW()).getBlock().getType();
                 if (passthroughBlocks.contains(material)) {
                     craft.getPhaseBlocks().put(location, material);
                 }
             }
-
-            //place phased blocks
             //The subtraction of the set of coordinates in the HitBox cube and the HitBox itself
             final HitBox invertedHitBox = CollectionUtils.filter(craft.getHitBox().boundingHitBox(), craft.getHitBox());
 
@@ -126,27 +125,21 @@ public class CraftTranslateCommand extends UpdateCommand {
             }
 
             //Check to see which locations in the from set are actually outside of the craft
-            for (MovecraftLocation location : validExterior ) {
-                if (craft.getHitBox().contains(location) || confirmed.contains(location)) {
+            //use a modified BFS for multiple origin elements
+            Set<MovecraftLocation> visited = new HashSet<>();
+            Queue<MovecraftLocation> queue = new LinkedList<>(validExterior);
+            while (!queue.isEmpty()) {
+                MovecraftLocation node = queue.poll();
+                if(visited.contains(node))
                     continue;
+                visited.add(node);
+                //If the node is already a valid member of the exterior of the HitBox, continued search is unitary.
+                for (MovecraftLocation neighbor : CollectionUtils.neighbors(invertedHitBox, node)) {
+                    queue.add(neighbor);
                 }
-                //use a modified BFS for multiple origin elements
-                Set<MovecraftLocation> visited = new HashSet<>();
-                Queue<MovecraftLocation> queue = new LinkedList<>();
-                queue.add(location);
-                while (!queue.isEmpty()) {
-                    MovecraftLocation node = queue.poll();
-                    //If the node is already a valid member of the exterior of the HitBox, continued search is unitary.
-                    for (MovecraftLocation neighbor : CollectionUtils.neighbors(invertedHitBox, node)) {
-                        if (visited.contains(neighbor)) {
-                            continue;
-                        }
-                        visited.add(neighbor);
-                        queue.add(neighbor);
-                    }
-                }
-                confirmed.addAll(visited);
             }
+            confirmed.addAll(visited);
+
             if(craft.getSinking()){
                 confirmed.addAll(invertedHitBox);
             }

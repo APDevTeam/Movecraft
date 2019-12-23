@@ -222,18 +222,9 @@ public class IWorldHandler extends WorldHandler {
             setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
         }
 
-        //*******************************************
-        //*       Step six: Update the blocks       *
-        //*******************************************
-        for(BlockPosition newPosition : newPositions) {
 
-            CraftBlockState.getBlockState(nativeWorld, newPosition, 3).update(false, false);
-        }
-        for(BlockPosition deletedPosition : deletePositions){
-            CraftBlockState.getBlockState(nativeWorld, deletedPosition, 3).update(false,false);
-        }
         //*******************************************
-        //*       Step seven: Send to players       *
+        //*       Step six: Send to players       *
         //*******************************************
         List<Chunk> chunks = new ArrayList<>();
         for(BlockPosition position : newPositions){
