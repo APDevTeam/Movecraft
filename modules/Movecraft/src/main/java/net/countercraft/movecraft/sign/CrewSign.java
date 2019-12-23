@@ -10,6 +10,7 @@ import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
 import net.countercraft.movecraft.utils.LegacyUtils;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.utils.MathUtils;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
@@ -49,11 +50,19 @@ public class CrewSign implements Listener {
         if (crewPlayer == null) {
             return;
         }
-        Location location = event.getBlock().getLocation().subtract(0,1,0);
-        if (Settings.IsLegacy ? !craft.getW().getBlockAt(location).getType().equals(LegacyUtils.BED_BLOCK) : Arrays.binarySearch(beds, craft.getW().getBlockAt(location).getType()) >= 0) {
+        Location valid = null;
+        for(MovecraftLocation location : event.getLocations()){
+            Location bedLoc = location.toBukkit(craft.getW()).subtract(0,1,0);
+            Material bedType = craft.getW().getBlockAt(bedLoc).getType();
+            if (Settings.IsLegacy ? bedType.equals(LegacyUtils.BED_BLOCK) : Arrays.binarySearch(beds, bedType) >= 0) {
+                valid = bedLoc;
+                break;
+            }
+        }
+        if(valid == null){
             return;
         }
-        craft.getCrewSigns().put(crewPlayer.getUniqueId(), location);
+        craft.getCrewSigns().put(crewPlayer.getUniqueId(), valid);
     }
 
     @EventHandler

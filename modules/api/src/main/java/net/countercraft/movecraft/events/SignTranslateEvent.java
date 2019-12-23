@@ -1,19 +1,21 @@
 package net.countercraft.movecraft.events;
 
+import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
-import org.bukkit.block.Block;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
+import java.util.List;
+
 public class SignTranslateEvent extends CraftEvent{
     private static final HandlerList HANDLERS = new HandlerList();
-    @NotNull
-    private final Block block;
+    @NotNull private final List<MovecraftLocation> locations;
     @NotNull private String[] lines;
 
-    public SignTranslateEvent(@NotNull Block block, @NotNull Craft craft, @NotNull String[] lines) throws IndexOutOfBoundsException{
+    public SignTranslateEvent(@NotNull Craft craft, @NotNull String[] lines, @NotNull List<MovecraftLocation> locations) throws IndexOutOfBoundsException{
         super(craft);
-        this.block = block;
+        this.locations = locations;
         if(lines.length!=4)
             throw new IndexOutOfBoundsException();
         this.lines=lines;
@@ -47,7 +49,7 @@ public class SignTranslateEvent extends CraftEvent{
     }
 
     @NotNull
-    public Block getBlock() {
-        return block;
+    public List<MovecraftLocation> getLocations() {
+        return Collections.unmodifiableList(locations);
     }
 }
