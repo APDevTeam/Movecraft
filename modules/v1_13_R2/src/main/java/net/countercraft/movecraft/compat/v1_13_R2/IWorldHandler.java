@@ -11,9 +11,8 @@ import net.minecraft.server.v1_13_R2.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.v1_13_R2.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_13_R2.CraftWorld;
-import org.bukkit.craftbukkit.v1_13_R2.block.CraftBlockState;
+import org.bukkit.craftbukkit.v1_13_R2.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_13_R2.util.CraftMagicNumbers;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerMoveEvent;
@@ -214,16 +213,7 @@ public class IWorldHandler extends WorldHandler{
         }
 
         //*******************************************
-        //*       Step six: Update the blocks       *
-        //*******************************************
-        for(BlockPosition newPosition : newPositions) {
-            CraftBlockState.getBlockState(nativeWorld, newPosition, 3).update(false,false);
-        }
-        for(BlockPosition deletedPosition : deletePositions){
-            CraftBlockState.getBlockState(nativeWorld, deletedPosition, 3).update(false,false);
-        }
-        //*******************************************
-        //*       Step seven: Send to players       *
+        //*       Step six: Send to players       *
         //*******************************************
         List<Chunk> chunks = new ArrayList<>();
         for(BlockPosition position : newPositions){

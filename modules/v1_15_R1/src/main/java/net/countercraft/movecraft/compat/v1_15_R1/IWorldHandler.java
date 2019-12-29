@@ -106,6 +106,7 @@ public class IWorldHandler extends WorldHandler {
             final long currentTime = nativeWorld.worldData.getTime();
             //nativeWorld.b(rotatedPositions.get(tileHolder.getNextTick().a), tileHolder.getNextTick().a(), (int) (tileHolder.getNextTick().b - currentTime), tileHolder.getNextTick().c);
             //BlockPosition, Object, int, TickListPriority
+            nativeWorld.getBlockTickList().a(rotatedPositions.get(tileHolder.getNextTick().a), tileHolder.getNextTick().b(), (int) (tileHolder.getNextTick().b - currentTime), tileHolder.getNextTick().c);
             nativeWorld.b(rotatedPositions.get(tileHolder.getNextTick().a), tileHolder.getTile());
         }
 
@@ -174,7 +175,6 @@ public class IWorldHandler extends WorldHandler {
             if(tile == null)
                 continue;
             //get the nextTick to move with the tile
-
             //nativeWorld.capturedTileEntities.remove(position);
             //nativeWorld.getChunkAtWorldCoords(position).getTileEntities().remove(position);
             tiles.add(new TileHolder(tile, tickProvider.getNextTick((WorldServer)nativeWorld,position), position));
@@ -212,6 +212,7 @@ public class IWorldHandler extends WorldHandler {
                 continue;
             final long currentTime = nativeWorld.worldData.getTime();
             //nativeWorld.b(tileHolder.getNextTick().a.a(translateVector), tileHolder.getNextTick().a(), (int) (tileHolder.getNextTick().b - currentTime), tileHolder.getNextTick().c);
+            nativeWorld.getBlockTickList().a(tileHolder.getNextTick().a.a(translateVector), tileHolder.getNextTick().b(), (int) (tileHolder.getNextTick().b - currentTime));
             nativeWorld.b(tileHolder.getNextTick().a.a(translateVector), tileHolder.getTile());
         }
         //*******************************************
@@ -291,6 +292,9 @@ public class IWorldHandler extends WorldHandler {
 
     private void setBlockFast(@NotNull World world, @NotNull BlockPosition position,@NotNull IBlockData data) {
         Chunk chunk = world.getChunkAtWorldCoords(position);
+        if (!chunk.loaded) {
+            chunk.setLoaded(true);
+        }
         ChunkSection chunkSection = chunk.getSections()[position.getY()>>4];
         if (chunkSection == null) {
             // Put a GLASS block to initialize the section. It will be replaced next with the real block.
@@ -349,10 +353,10 @@ public class IWorldHandler extends WorldHandler {
     private class TileHolder{
         @NotNull private final TileEntity tile;
         @Nullable
-        private final NextTickListEntry nextTick;
+        private final NextTickListEntry<Block> nextTick;
         @NotNull private final BlockPosition tilePosition;
 
-        public TileHolder(@NotNull TileEntity tile, @Nullable NextTickListEntry nextTick, @NotNull BlockPosition tilePosition){
+        public TileHolder(@NotNull TileEntity tile, @Nullable NextTickListEntry<Block> nextTick, @NotNull BlockPosition tilePosition){
             this.tile = tile;
             this.nextTick = nextTick;
             this.tilePosition = tilePosition;
@@ -365,7 +369,7 @@ public class IWorldHandler extends WorldHandler {
         }
 
         @Nullable
-        public NextTickListEntry getNextTick() {
+        public NextTickListEntry<Block> getNextTick() {
             return nextTick;
         }
 

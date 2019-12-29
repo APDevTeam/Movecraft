@@ -12,7 +12,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_14_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_14_R1.block.CraftBlockState;
 import org.bukkit.craftbukkit.v1_14_R1.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_14_R1.util.CraftMagicNumbers;
 import org.bukkit.entity.Player;
@@ -106,6 +105,7 @@ public class IWorldHandler extends WorldHandler {
             final long currentTime = nativeWorld.worldData.getTime();
             //nativeWorld.b(rotatedPositions.get(tileHolder.getNextTick().a), tileHolder.getNextTick().a(), (int) (tileHolder.getNextTick().b - currentTime), tileHolder.getNextTick().c);
             //BlockPosition, Object, int, TickListPriority
+            nativeWorld.getBlockTickList().a(rotatedPositions.get(tileHolder.getNextTick().a), tileHolder.getNextTick().b(), (int) (tileHolder.getNextTick().b - currentTime), tileHolder.getNextTick().c);
             nativeWorld.b(rotatedPositions.get(tileHolder.getNextTick().a), tileHolder.getTile());
         }
 
@@ -200,6 +200,7 @@ public class IWorldHandler extends WorldHandler {
                 continue;
             final long currentTime = nativeWorld.worldData.getTime();
             //nativeWorld.b(tileHolder.getNextTick().a.a(translateVector), tileHolder.getNextTick().a(), (int) (tileHolder.getNextTick().b - currentTime), tileHolder.getNextTick().c);
+            nativeWorld.getBlockTickList().a(tileHolder.getNextTick().a.a(translateVector), tileHolder.getNextTick().b(), (int) (tileHolder.getNextTick().b - currentTime));
             nativeWorld.b(tileHolder.getNextTick().a.a(translateVector), tileHolder.getTile());
         }
         //*******************************************
@@ -211,16 +212,7 @@ public class IWorldHandler extends WorldHandler {
         }
 
         //*******************************************
-        //*       Step six: Update the blocks       *
-        //*******************************************
-        for(BlockPosition newPosition : newPositions) {
-            CraftBlockState.getBlockState(nativeWorld, newPosition, 3).update(false,false);
-        }
-        for(BlockPosition deletedPosition : deletePositions){
-            CraftBlockState.getBlockState(nativeWorld, deletedPosition, 3).update(false,false);
-        }
-        //*******************************************
-        //*       Step seven: Send to players       *
+        //*       Step six: Send to players       *
         //*******************************************
         List<Chunk> chunks = new ArrayList<>();
         for(BlockPosition position : newPositions){
@@ -346,10 +338,10 @@ public class IWorldHandler extends WorldHandler {
     private class TileHolder{
         @NotNull private final TileEntity tile;
         @Nullable
-        private final NextTickListEntry nextTick;
+        private final NextTickListEntry<Block> nextTick;
         @NotNull private final BlockPosition tilePosition;
 
-        public TileHolder(@NotNull TileEntity tile, @Nullable NextTickListEntry nextTick, @NotNull BlockPosition tilePosition){
+        public TileHolder(@NotNull TileEntity tile, @Nullable NextTickListEntry<Block> nextTick, @NotNull BlockPosition tilePosition){
             this.tile = tile;
             this.nextTick = nextTick;
             this.tilePosition = tilePosition;
@@ -362,7 +354,7 @@ public class IWorldHandler extends WorldHandler {
         }
 
         @Nullable
-        public NextTickListEntry getNextTick() {
+        public NextTickListEntry<Block> getNextTick() {
             return nextTick;
         }
 
