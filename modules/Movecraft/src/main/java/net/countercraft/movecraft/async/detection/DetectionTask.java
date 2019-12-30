@@ -244,7 +244,7 @@ public class DetectionTask extends AsyncTask {
     private boolean isForbiddenSignString(String testString) {
 
         for (String s : data.getForbiddenSignStrings()) {
-            if (testString.equals(s)) {
+            if (testString.equalsIgnoreCase(s)) {
                 return true;
             }
         }

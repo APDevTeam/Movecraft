@@ -51,13 +51,16 @@ public class NextTickProvider {
         if(!isRegistered(world))
             registerWorld(world);
         ImmutablePair<WeakReference<HashTreeSet<NextTickListEntry>>, WeakReference<List<NextTickListEntry>>> listPair = tickMap.get(world);
-        for(Iterator<NextTickListEntry> iterator = listPair.left.get().iterator(); iterator.hasNext();) {
-            NextTickListEntry listEntry = iterator.next();
-            if (position.equals(listEntry.a)) {
-                iterator.remove();
-                return listEntry;
+        if(listPair.left.get().contains(fakeEntry(position))) {
+            for (Iterator<NextTickListEntry> iterator = listPair.left.get().iterator(); iterator.hasNext(); ) {
+                NextTickListEntry listEntry = iterator.next();
+                if (position.equals(listEntry.a)) {
+                    iterator.remove();
+                    return listEntry;
+                }
             }
         }
+
         for(Iterator<NextTickListEntry> iterator = listPair.right.get().iterator(); iterator.hasNext();) {
             NextTickListEntry listEntry = iterator.next();
             if (position.equals(listEntry.a)) {
@@ -67,5 +70,15 @@ public class NextTickProvider {
         }
         return null;
 
+    }
+
+    @NotNull
+    public Object fakeEntry(@NotNull BlockPosition position){
+        return new Object(){
+            @Override
+            public int hashCode() {
+                return position.hashCode();
+            }
+        };
     }
 }

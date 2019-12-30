@@ -232,7 +232,7 @@ public class TranslationTask extends AsyncTask {
                     explosionForce += 25;//TODO: find the correct amount
                 }*/
                 explosionKey = explosionForce;
-                Location loc = location.translate(-dx,-dy,-dz).toBukkit(world);
+                Location loc = location.toBukkit(world);
                 if (!loc.getBlock().getType().equals(Material.AIR)) {
                     updates.add(new ExplosionUpdateCommand(loc, explosionKey));
                     collisionExplosion = true;
