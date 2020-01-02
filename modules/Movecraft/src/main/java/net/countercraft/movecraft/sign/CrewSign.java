@@ -9,6 +9,7 @@ import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.utils.MathUtils;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
@@ -43,11 +44,18 @@ public class CrewSign implements Listener {
         if (crewPlayer == null) {
             return;
         }
-        Location location = event.getBlock().getLocation().subtract(0,1,0);
-        if (!craft.getW().getBlockAt(location).getType().equals(Material.BED_BLOCK)) {
+        Location valid = null;
+        for(MovecraftLocation location : event.getLocations()){
+            Location bedLoc = location.toBukkit(craft.getW()).subtract(0,1,0);
+            if (craft.getW().getBlockAt(bedLoc).getType().equals(Material.BED_BLOCK)) {
+                valid = bedLoc;
+                break;
+            }
+        }
+        if(valid == null){
             return;
         }
-        craft.getCrewSigns().put(crewPlayer.getUniqueId(), location);
+        craft.getCrewSigns().put(crewPlayer.getUniqueId(), valid);
     }
 
     @EventHandler

@@ -51,14 +51,7 @@ public class CraftTranslateCommand extends UpdateCommand {
             //translate the craft
             Movecraft.getInstance().getWorldHandler().translateCraft(craft,displacement);
             //trigger sign events
-            for(MovecraftLocation location : craft.getHitBox()){
-                Block block = location.toBukkit(craft.getW()).getBlock();
-                if(block.getType() == Material.WALL_SIGN || block.getType() == Material.SIGN_POST){
-                    Sign sign = (Sign) block.getState();
-                    Bukkit.getServer().getPluginManager().callEvent(new SignTranslateEvent(block, craft, sign.getLines()));
-                    sign.update();
-                }
-            }
+            this.sendSignEvents();
         } else {
             MutableHitBox originalLocations = new HashHitBox();
             for (MovecraftLocation movecraftLocation : craft.getHitBox()) {
@@ -131,14 +124,7 @@ public class CraftTranslateCommand extends UpdateCommand {
             //translate the craft
             handler.translateCraft(craft, displacement);
             //trigger sign events
-            for (MovecraftLocation location : craft.getHitBox()) {
-                Block block = location.toBukkit(craft.getW()).getBlock();
-                if (block.getType() == Material.WALL_SIGN || block.getType() == Material.SIGN_POST) {
-                    Sign sign = (Sign) block.getState();
-                    Bukkit.getServer().getPluginManager().callEvent(new SignTranslateEvent(block, craft, sign.getLines()));
-                    sign.update();
-                }
-            }
+            this.sendSignEvents();
 
 
             for (MovecraftLocation l : failed){
@@ -184,6 +170,33 @@ public class CraftTranslateCommand extends UpdateCommand {
         if(Settings.Debug)
             logger.info("Total time: " + (time / 1e9) + " seconds. Moving with cooldown of " + craft.getTickCooldown() + ". Speed of: " + String.format("%.2f", craft.getSpeed()));
         craft.addMoveTime(time/1e9f);
+    }
+
+    private void sendSignEvents(){
+        Map<String[], List<MovecraftLocation>> signs = new HashMap<>();
+        for (MovecraftLocation location : craft.getHitBox()) {
+            Block block = location.toBukkit(craft.getW()).getBlock();
+            if (block.getType() == Material.WALL_SIGN || block.getType() == Material.SIGN_POST) {
+                Sign sign = (Sign) block.getState();
+                if(!signs.containsKey(sign.getLines()))
+                    signs.put(sign.getLines(), new ArrayList<>());
+                signs.get(sign.getLines()).add(location);
+            }
+        }
+        for(Map.Entry<String[], List<MovecraftLocation>> entry : signs.entrySet()){
+            Bukkit.getServer().getPluginManager().callEvent(new SignTranslateEvent(craft, entry.getKey(), entry.getValue()));
+            for(MovecraftLocation loc : entry.getValue()){
+                Block block = loc.toBukkit(craft.getW()).getBlock();
+                if (block.getType() != Material.WALL_SIGN && block.getType() != Material.SIGN_POST) {
+                    continue;
+                }
+                Sign sign = (Sign) block.getState();
+                for(int i = 0; i<4; i++){
+                    sign.setLine(i, entry.getKey()[i]);
+                }
+                sign.update();
+            }
+        }
     }
 
     @NotNull
