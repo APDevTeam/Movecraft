@@ -152,10 +152,11 @@ final public class CraftType {
         explodeOnCrash = floatFromObject(data.getOrDefault("explodeOnCrash", 0F));
         collisionExplosion = floatFromObject(data.getOrDefault("collisionExplosion", 0F));
         minHeightLimit = Math.max(0, integerFromObject(data.getOrDefault("minHeightLimit", 0)));
-        int value = integerFromObject(data.getOrDefault("maxHeightLimit", 254));
+        int value = Math.min(integerFromObject(data.getOrDefault("maxHeightLimit", 254)), 255);
         if (value <= minHeightLimit) {
             value = 255;
         }
+
         maxHeightLimit = value;
         maxHeightAboveGround = integerFromObject(data.getOrDefault("maxHeightAboveGround", -1));
         canDirectControl = (boolean) data.getOrDefault("canDirectControl", true);

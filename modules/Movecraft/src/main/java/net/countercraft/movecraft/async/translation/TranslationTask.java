@@ -72,21 +72,7 @@ public class TranslationTask extends AsyncTask {
                 dy = Math.min(dy,-1);
             }
         }
-
-        //Fail the movement if the craft is too high
-        if (dy>0 && maxY + dy > craft.getType().getMaxHeightLimit()) {
-            fail(I18nSupport.getInternationalisedString("Translation - Failed Craft hit height limit"));
-            return;
-        } else if (minY + dy < craft.getType().getMinHeightLimit() && dy < 0 && !craft.getSinking()) {
-            fail(I18nSupport.getInternationalisedString("Translation - Failed Craft hit minimum height limit"));
-            return;
-        }
-
-        //TODO: Check fuel
-        if (!checkFuel()) {
-            fail(I18nSupport.getInternationalisedString("Translation - Failed Craft out of fuel"));
-            return;
-        }
+        //Process gravity
         if (craft.getType().getUseGravity() && !craft.getSinking()){
             int incline = inclineCraft(oldHitBox);
             if (incline > 0){
@@ -117,6 +103,21 @@ public class TranslationTask extends AsyncTask {
                 dy = dropDistance(oldHitBox);
             }
         }
+        //Fail the movement if the craft is too high
+        if (dy>0 && maxY + dy > craft.getType().getMaxHeightLimit()) {
+            fail(I18nSupport.getInternationalisedString("Translation - Failed Craft hit height limit"));
+            return;
+        } else if (minY + dy < craft.getType().getMinHeightLimit() && dy < 0 && !craft.getSinking()) {
+            fail(I18nSupport.getInternationalisedString("Translation - Failed Craft hit minimum height limit"));
+            return;
+        }
+
+        //TODO: Check fuel
+        if (!checkFuel()) {
+            fail(I18nSupport.getInternationalisedString("Translation - Failed Craft out of fuel"));
+            return;
+        }
+
 
         //TODO: Add and handle event for towny and factions
         final List<Material> harvestBlocks = craft.getType().getHarvestBlocks();
@@ -455,13 +456,14 @@ public class TranslationTask extends AsyncTask {
     private MovecraftLocation surfaceLoc(MovecraftLocation ml) {
         MovecraftLocation surfaceLoc = ml;
         Material testType;
+        boolean hitSurface = false;
         do {
             surfaceLoc = surfaceLoc.translate(0, 1, 0);
-            if (surfaceLoc.getY() + 1 > craft.getType().getMaxHeightLimit()) {
-                break;
-            }
             testType = surfaceLoc.toBukkit(craft.getW()).getBlock().getType();
-        } while (testType != Material.AIR && !craft.getType().getPassthroughBlocks().contains(testType) && !oldHitBox.contains(surfaceLoc));
+        } while ((testType != Material.AIR &&
+                !craft.getType().getPassthroughBlocks().contains(testType) &&
+                !oldHitBox.contains(surfaceLoc)) &&
+                surfaceLoc.getY() + 1 > craft.getType().getMaxHeightLimit());
         return surfaceLoc;
     }
 

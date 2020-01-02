@@ -1,12 +1,12 @@
 package net.countercraft.movecraft.compat.v1_12_R1;
 
+import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
-import net.countercraft.movecraft.WorldHandler;
-import net.countercraft.movecraft.config.Settings;
-import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.utils.CollectionUtils;
-import net.countercraft.movecraft.utils.MathUtils;
+import net.countercraft.movecraft.WorldHandler;
+import net.countercraft.movecraft.craft.Craft;
 import net.minecraft.server.v1_12_R1.*;
 import org.bukkit.Location;
 import org.bukkit.Material;
