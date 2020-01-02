@@ -107,9 +107,12 @@ public class TranslationTask extends AsyncTask {
         if (dy>0 && maxY + dy > craft.getType().getMaxHeightLimit()) {
             fail(I18nSupport.getInternationalisedString("Translation - Failed Craft hit height limit"));
             return;
-        } else if (minY + dy < craft.getType().getMinHeightLimit() && dy < 0 && !craft.getSinking()) {
+        } else if (minY + dy < craft.getType().getMinHeightLimit() && dy < 0 && !craft.getSinking() && !craft.getType().getUseGravity()) {
             fail(I18nSupport.getInternationalisedString("Translation - Failed Craft hit minimum height limit"));
             return;
+        } else if (minY + dy < craft.getType().getMinHeightLimit() && dy < 0 && craft.getType().getUseGravity()) {
+            //if a craft using gravity hits the minimum height limit, set dy = 0 instead of failing
+            dy = 0;
         }
 
         //TODO: Check fuel
