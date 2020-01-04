@@ -18,6 +18,9 @@
 package net.countercraft.movecraft.craft;
 
 import org.bukkit.Material;
+import org.bukkit.entity.Animals;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.Yaml;
 
@@ -89,6 +92,7 @@ final public class CraftType {
     @NotNull private final List<Material> harvesterBladeBlocks;
     @NotNull private final Set<Material> passthroughBlocks;
     @NotNull private final Set<Material> forbiddenHoverOverBlocks;
+    @NotNull private final Set<Class<? extends Entity>> moveEntityList;
 
     @SuppressWarnings("unchecked")
     public CraftType(File f) {
@@ -160,7 +164,37 @@ final public class CraftType {
         canHover = (boolean) data.getOrDefault("canHover", false);
         canHoverOverWater = (boolean) data.getOrDefault("canHoverOverWater", true);
         moveEntities = (boolean) data.getOrDefault("moveEntities", true);
-        onlyMovePlayers = (boolean) data.getOrDefault("onlyMovePlayers", true);
+        onlyMovePlayers = (boolean) data.getOrDefault("onlyMovePlayers", false);
+        moveEntityList = new HashSet<Class<? extends Entity>>();
+        moveEntityList.add( Player.class);
+        if (data.containsKey("moveEntityList")) {
+            ClassLoader cl = ClassLoader.getSystemClassLoader();
+            ArrayList objList = (ArrayList) data.get("moveEntityList");
+            for (Object i : objList) {
+                if (i instanceof String) {
+                    try{
+                        Class cls = cl.loadClass("org.bukkit.entity."+(String) i);
+                        moveEntityList.add(cls);
+                        System.out.println("[Craft "+f.getName()+"] moveEntityList loaded Class "+cls.getCanonicalName());
+                    }catch ( ClassNotFoundException cnfe){
+                        System.out.println("ClassNotFoundException: in craft "+f.getName()+" option moveEntityList");
+                        System.out.println("Class "+(String) i+" is not in package org.bukkit.entity ");
+                    }catch (ClassCastException cce){
+                        System.out.println("ClassCastException: in craft "+f.getName()+" option moveEntityList");
+                        System.out.println("Class "+(String) i+" is not an Entity ");
+                    }catch (Exception e){
+                        System.out.println("[Movecraft] Unknown Error on loading craft file "+f.getName());
+                        System.out.println(e.getCause().toString());
+                        System.out.println(e.getCause().getStackTrace().toString());
+                    }
+
+                }
+            }
+
+        }else{
+            // Move Animals per default
+            moveEntityList.add( Animals.class);
+        }
         useGravity = (boolean) data.getOrDefault("useGravity", false);
         hoverLimit = Math.max(0, integerFromObject(data.getOrDefault("hoverLimit", 0)));
         harvestBlocks = new ArrayList<>();
@@ -610,6 +644,15 @@ final public class CraftType {
     @NotNull
     public Set<Material> getForbiddenHoverOverBlocks() {
         return forbiddenHoverOverBlocks;
+    }
+
+    public boolean shouldEntityBeMoved(Entity entity){
+        for (Class<? extends Entity> cls : moveEntityList) {
+            if(cls.isInstance(entity)){
+                return true;
+            }
+        }
+        return false;
     }
 
     private class TypeNotFoundException extends RuntimeException {
