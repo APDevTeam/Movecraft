@@ -171,23 +171,23 @@ final public class CraftType {
             ClassLoader cl = ClassLoader.getSystemClassLoader();
             ArrayList objList = (ArrayList) data.get("moveEntityList");
             for (Object i : objList) {
-                if (i instanceof String) {
-                    try{
-                        Class cls = cl.loadClass("org.bukkit.entity."+(String) i);
-                        moveEntityList.add(cls);
-                        System.out.println("[Craft "+f.getName()+"] moveEntityList loaded Class "+cls.getCanonicalName());
-                    }catch ( ClassNotFoundException cnfe){
-                        System.out.println("ClassNotFoundException: in craft "+f.getName()+" option moveEntityList");
-                        System.out.println("Class "+(String) i+" is not in package org.bukkit.entity ");
-                    }catch (ClassCastException cce){
-                        System.out.println("ClassCastException: in craft "+f.getName()+" option moveEntityList");
-                        System.out.println("Class "+(String) i+" is not an Entity ");
-                    }catch (Exception e){
-                        System.out.println("[Movecraft] Unknown Error on loading craft file "+f.getName());
-                        System.out.println(e.getCause().toString());
-                        System.out.println(e.getCause().getStackTrace().toString());
-                    }
-
+                if (!(i instanceof String)) {
+                    continue;
+                }
+                try{
+                    Class cls = cl.loadClass("org.bukkit.entity."+(String) i);
+                    moveEntityList.add(cls);
+                    System.out.println("[Craft "+f.getName()+"] moveEntityList loaded Class "+cls.getCanonicalName());
+                }catch ( ClassNotFoundException cnfe){
+                    System.out.println("ClassNotFoundException: in craft "+f.getName()+" option moveEntityList");
+                    System.out.println("Class "+(String) i+" is not in package org.bukkit.entity ");
+                }catch (ClassCastException cce){
+                    System.out.println("ClassCastException: in craft "+f.getName()+" option moveEntityList");
+                    System.out.println("Class "+(String) i+" is not an Entity ");
+                }catch (Exception e){
+                    System.out.println("[Movecraft] Unknown Error on loading craft file "+f.getName());
+                    System.out.println(e.getCause().toString());
+                    System.out.println(e.getCause().getStackTrace().toString());
                 }
             }
 
