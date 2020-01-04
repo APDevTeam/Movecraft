@@ -106,7 +106,6 @@ public class IWorldHandler extends WorldHandler {
             //nativeWorld.b(rotatedPositions.get(tileHolder.getNextTick().a), tileHolder.getNextTick().a(), (int) (tileHolder.getNextTick().b - currentTime), tileHolder.getNextTick().c);
             //BlockPosition, Object, int, TickListPriority
             nativeWorld.getBlockTickList().a(rotatedPositions.get(tileHolder.getNextTick().a), tileHolder.getNextTick().b(), (int) (tileHolder.getNextTick().b - currentTime), tileHolder.getNextTick().c);
-            nativeWorld.b(rotatedPositions.get(tileHolder.getNextTick().a), tileHolder.getTile());
         }
 
         //*******************************************
@@ -201,7 +200,6 @@ public class IWorldHandler extends WorldHandler {
             final long currentTime = nativeWorld.worldData.getTime();
             //nativeWorld.b(tileHolder.getNextTick().a.a(translateVector), tileHolder.getNextTick().a(), (int) (tileHolder.getNextTick().b - currentTime), tileHolder.getNextTick().c);
             nativeWorld.getBlockTickList().a(tileHolder.getNextTick().a.a(translateVector), tileHolder.getNextTick().b(), (int) (tileHolder.getNextTick().b - currentTime));
-            nativeWorld.b(tileHolder.getNextTick().a.a(translateVector), tileHolder.getTile());
         }
         //*******************************************
         //*   Step five: Destroy the leftovers      *

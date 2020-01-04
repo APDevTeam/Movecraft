@@ -12,7 +12,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_15_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_15_R1.block.CraftBlockState;
 import org.bukkit.craftbukkit.v1_15_R1.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_15_R1.util.CraftMagicNumbers;
 import org.bukkit.entity.Player;
@@ -107,7 +106,6 @@ public class IWorldHandler extends WorldHandler {
             //nativeWorld.b(rotatedPositions.get(tileHolder.getNextTick().a), tileHolder.getNextTick().a(), (int) (tileHolder.getNextTick().b - currentTime), tileHolder.getNextTick().c);
             //BlockPosition, Object, int, TickListPriority
             nativeWorld.getBlockTickList().a(rotatedPositions.get(tileHolder.getNextTick().a), tileHolder.getNextTick().b(), (int) (tileHolder.getNextTick().b - currentTime), tileHolder.getNextTick().c);
-            nativeWorld.b(rotatedPositions.get(tileHolder.getNextTick().a), tileHolder.getTile());
         }
 
         //*******************************************
@@ -119,19 +117,9 @@ public class IWorldHandler extends WorldHandler {
             setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
         }
 
+
         //*******************************************
-        //*       Step six: Update the blocks       *
-        //*******************************************
-        for(BlockPosition newPosition : rotatedPositions.values()) {
-            // CraftBlockState.getBlockState(nativeWorld,newPosition.getX(), newPosition.getY(), newPosition.getZ()).update(false,false);
-            CraftBlockState.getBlockState(nativeWorld, newPosition, 3).update(false, false);
-        }
-        for(BlockPosition deletedPosition : deletePositions){
-            // CraftBlockState.getBlockState(nativeWorld,deletedPosition.getX(), deletedPosition.getY(), deletedPosition.getZ()).update(false,false);
-            CraftBlockState.getBlockState(nativeWorld, deletedPosition, 3).update(false, false);
-        }
-        //*******************************************
-        //*       Step seven: Send to players       *
+        //*       Step six: Send to players       *
         //*******************************************
         List<Chunk> chunks = new ArrayList<>();
         for(BlockPosition position : rotatedPositions.values()){
@@ -200,6 +188,7 @@ public class IWorldHandler extends WorldHandler {
         }
         //create the new block
         for(int i = 0; i<newPositions.size(); i++) {
+
             setBlockFast(nativeWorld, newPositions.get(i), blockData.get(i));
         }
         //*******************************************
@@ -213,7 +202,7 @@ public class IWorldHandler extends WorldHandler {
             final long currentTime = nativeWorld.worldData.getTime();
             //nativeWorld.b(tileHolder.getNextTick().a.a(translateVector), tileHolder.getNextTick().a(), (int) (tileHolder.getNextTick().b - currentTime), tileHolder.getNextTick().c);
             nativeWorld.getBlockTickList().a(tileHolder.getNextTick().a.a(translateVector), tileHolder.getNextTick().b(), (int) (tileHolder.getNextTick().b - currentTime));
-            nativeWorld.b(tileHolder.getNextTick().a.a(translateVector), tileHolder.getTile());
+
         }
         //*******************************************
         //*   Step five: Destroy the leftovers      *
@@ -292,9 +281,6 @@ public class IWorldHandler extends WorldHandler {
 
     private void setBlockFast(@NotNull World world, @NotNull BlockPosition position,@NotNull IBlockData data) {
         Chunk chunk = world.getChunkAtWorldCoords(position);
-        if (!chunk.loaded) {
-            chunk.setLoaded(true);
-        }
         ChunkSection chunkSection = chunk.getSections()[position.getY()>>4];
         if (chunkSection == null) {
             // Put a GLASS block to initialize the section. It will be replaced next with the real block.

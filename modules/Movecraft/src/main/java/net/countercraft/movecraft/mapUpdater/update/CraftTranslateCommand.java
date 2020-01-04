@@ -188,8 +188,9 @@ public class CraftTranslateCommand extends UpdateCommand {
                 }
             }
         }
-        if (!craft.isNotProcessing())
+        if (!craft.isNotProcessing()) {
             craft.setProcessing(false);
+        }
         time = System.nanoTime() - time;
         if(Settings.Debug)
             logger.info("Total time: " + (time / 1e9) + " seconds. Moving with cooldown of " + craft.getTickCooldown() + ". Speed of: " + String.format("%.2f", craft.getSpeed()));

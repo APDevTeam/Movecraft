@@ -139,6 +139,7 @@ public class AsyncManager extends BukkitRunnable {
     }*/
 
     public void submitTask(AsyncTask task, Craft c) {
+
         if (c.isNotProcessing()) {
             c.setProcessing(true);
             ownershipMap.put(task, c);
