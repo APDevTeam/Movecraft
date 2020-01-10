@@ -4,7 +4,7 @@ version: ${project.version}
 api-version: 1.13
 #version: ${env.BUILD_NUMBER}
 description: The original flight and movement plugin for minecraft.
-authors: [BaccaYarro, cccm5]
+authors: [BaccaYarro, cccm5, eirikh1996]
 website: http://www.youtube.com/BaccaYarro
 main: net.countercraft.movecraft.Movecraft
 database: false

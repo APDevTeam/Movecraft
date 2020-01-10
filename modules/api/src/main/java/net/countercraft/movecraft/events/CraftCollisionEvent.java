@@ -15,6 +15,11 @@ public class CraftCollisionEvent extends CraftEvent{
         this.hitBox = hitBox;
     }
 
+    public CraftCollisionEvent(@NotNull Craft craft, @NotNull HashHitBox hitBox, boolean isAsync) {
+        super(craft, isAsync);
+        this.hitBox = hitBox;
+    }
+
     @NotNull
     public HashHitBox getHitBox() {
         return hitBox;

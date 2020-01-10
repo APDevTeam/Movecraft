@@ -63,7 +63,7 @@ public class IWorldHandler extends WorldHandler {
         //*******************************************
         //*         Step two: Get the tiles         *
         //*******************************************
-        World nativeWorld = ((CraftWorld) craft.getW()).getHandle();
+        WorldServer nativeWorld = ((CraftWorld) craft.getW()).getHandle();
         List<TileHolder> tiles = new ArrayList<>();
         //get the tiles
         for(BlockPosition position : rotatedPositions.keySet()){
@@ -145,27 +145,28 @@ public class IWorldHandler extends WorldHandler {
         //*******************************************
         BlockPosition translateVector = locationToPosition(displacement);
         List<BlockPosition> positions = new ArrayList<>();
+        WorldServer nativeWorld = ((CraftWorld) craft.getW()).getHandle();
         for(MovecraftLocation movecraftLocation : craft.getHitBox()) {
-            positions.add(locationToPosition((movecraftLocation)).b(translateVector));
+            BlockPosition origPos = locationToPosition((movecraftLocation)).b(translateVector);
+            positions.add(origPos);
 
         }
+
         //*******************************************
         //*         Step two: Get the tiles         *
         //*******************************************
-        World nativeWorld = ((CraftWorld) craft.getW()).getHandle();
+
         List<TileHolder> tiles = new ArrayList<>();
         //get the tiles
         for(BlockPosition position : positions){
+            nativeWorld.setForceLoaded(position.getX() >> 4, position.getZ() >> 4, true);
             if(nativeWorld.getType(position) == Blocks.AIR.getBlockData())
                 continue;
-            //TileEntity tile = nativeWorld.removeTileEntity(position);
             TileEntity tile = removeTileEntity(nativeWorld,position);
             if(tile == null)
                 continue;
             //get the nextTick to move with the tile
-            //nativeWorld.capturedTileEntities.remove(position);
-            //nativeWorld.getChunkAtWorldCoords(position).getTileEntities().remove(position);
-            tiles.add(new TileHolder(tile, tickProvider.getNextTick((WorldServer)nativeWorld,position), position));
+            tiles.add(new TileHolder(tile, tickProvider.getNextTick(nativeWorld, position), position));
 
         }
         //*******************************************
@@ -188,7 +189,6 @@ public class IWorldHandler extends WorldHandler {
         }
         //create the new block
         for(int i = 0; i<newPositions.size(); i++) {
-
             setBlockFast(nativeWorld, newPositions.get(i), blockData.get(i));
         }
         //*******************************************
@@ -209,6 +209,7 @@ public class IWorldHandler extends WorldHandler {
         //*******************************************
         Collection<BlockPosition> deletePositions =  CollectionUtils.filter(positions,newPositions);
         for(BlockPosition position : deletePositions){
+            nativeWorld.setForceLoaded(position.getX() >> 4, position.getZ() >> 4, false);
             setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
         }
 
@@ -219,6 +220,7 @@ public class IWorldHandler extends WorldHandler {
         List<Chunk> chunks = new ArrayList<>();
         for(BlockPosition position : newPositions){
             Chunk chunk = nativeWorld.getChunkAtWorldCoords(position);
+
             if(!chunks.contains(chunk)){
                 chunks.add(chunk);
             }
@@ -279,9 +281,12 @@ public class IWorldHandler extends WorldHandler {
         return new BlockPosition(loc.getX(), loc.getY(), loc.getZ());
     }
 
-    private void setBlockFast(@NotNull World world, @NotNull BlockPosition position,@NotNull IBlockData data) {
+    private void setBlockFast(@NotNull WorldServer world, @NotNull BlockPosition position,@NotNull IBlockData data) {
         Chunk chunk = world.getChunkAtWorldCoords(position);
         ChunkSection chunkSection = chunk.getSections()[position.getY()>>4];
+        if (!chunk.loaded) {
+
+        }
         if (chunkSection == null) {
             // Put a GLASS block to initialize the section. It will be replaced next with the real block.
             chunk.setType(position, Blocks.GLASS.getBlockData(), true);
@@ -301,7 +306,7 @@ public class IWorldHandler extends WorldHandler {
     public void setBlockFast(@NotNull Location location, @NotNull Rotation rotation, @NotNull Material material, byte data) {
         IBlockData blockData =  CraftMagicNumbers.getBlock(material).getBlockData();
         blockData = blockData.a(ROTATION[rotation.ordinal()]);
-        World world = ((CraftWorld)(location.getWorld())).getHandle();
+        WorldServer world = ((CraftWorld)(location.getWorld())).getHandle();
         BlockPosition blockPosition = locationToPosition(bukkit2MovecraftLoc(location));
         setBlockFast(world,blockPosition,blockData);
     }

@@ -32,6 +32,7 @@ public class TranslationTask extends AsyncTask {
     private HashHitBox newHitBox, oldHitBox;
     private boolean failed;
     private boolean collisionExplosion = false;
+    private boolean allChunksLoaded = true;
     private String failMessage;
     private Collection<UpdateCommand> updates = new HashSet<>();
 
@@ -248,10 +249,15 @@ public class TranslationTask extends AsyncTask {
         final List<MovecraftLocation> harvestedBlocks = new ArrayList<>();
         final List<Material> harvesterBladeBlocks = craft.getType().getHarvesterBladeBlocks();
         final HashHitBox collisionBox = new HashHitBox();
+        final Set<UpdateCommand> chunkUpdateCmds = new HashSet<>();
         for(MovecraftLocation oldLocation : oldHitBox){
             final MovecraftLocation newLocation = oldLocation.translate(dx,dy,dz);
             //If the new location already exists in the old hitbox than this is unnecessary because a craft can't hit
             //itself
+            final Chunk origChunk = oldLocation.toBukkit(craft.getW()).getChunk();
+            if (!origChunk.isLoaded()) {
+                allChunksLoaded = false;
+            }
             if(oldHitBox.contains(newLocation)){
                 newHitBox.add(newLocation);
                 continue;
@@ -323,7 +329,6 @@ public class TranslationTask extends AsyncTask {
             this.fail(event.getFailMessage());
             return;
         }
-
         if(craft.getSinking()){
             List<MovecraftLocation> air = new ArrayList<>();
             for(MovecraftLocation location: oldHitBox){
@@ -397,13 +402,7 @@ public class TranslationTask extends AsyncTask {
         }
 
         if(!collisionBox.isEmpty()){
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-                    Bukkit.getServer().getPluginManager().callEvent(new CraftCollisionEvent(craft, collisionBox));
-                }
-            }.runTask(Movecraft.getInstance());
-
+            Bukkit.getServer().getPluginManager().callEvent(new CraftCollisionEvent(craft, collisionBox));
         }
         if (oldHitBox.isEmpty())
             return;
@@ -652,5 +651,9 @@ public class TranslationTask extends AsyncTask {
 
     public boolean isCollisionExplosion() {
         return collisionExplosion;
+    }
+
+    public boolean areAllChunksLoaded() {
+        return allChunksLoaded;
     }
 }

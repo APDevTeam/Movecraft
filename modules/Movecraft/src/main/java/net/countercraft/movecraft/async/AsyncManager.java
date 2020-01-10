@@ -139,7 +139,7 @@ public class AsyncManager extends BukkitRunnable {
     }*/
 
     public void submitTask(AsyncTask task, Craft c) {
-
+        Bukkit.getLogger().info("Processing: " + !c.isNotProcessing());
         if (c.isNotProcessing()) {
             c.setProcessing(true);
             ownershipMap.put(task, c);
@@ -271,7 +271,7 @@ public class AsyncManager extends BukkitRunnable {
 
                 if (task.failed()) {
                     // The craft translation failed
-                    if (notifyP != null && !c.getSinking())
+                    if (notifyP != null && !c.getSinking() && task.getFailMessage() != null)
                         notifyP.sendMessage(task.getFailMessage());
 
                     if (task.isCollisionExplosion()) {
@@ -283,7 +283,9 @@ public class AsyncManager extends BukkitRunnable {
                         CraftManager.getInstance().addReleaseTask(c);
 
                     }
-                } else {
+                } else if (task.areAllChunksLoaded()) {
+
+
                     // The craft is clear to move, perform the block updates
                     MapUpdateManager.getInstance().scheduleUpdates(task.getUpdates());
                     // get list of cannons before sending map updates, to avoid
