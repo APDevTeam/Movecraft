@@ -150,7 +150,7 @@ public class IWorldHandler extends WorldHandler {
 
     @Override
     public void translateCraft(@NotNull Craft craft, @NotNull MovecraftLocation displacement, @NotNull org.bukkit.World world) {
-        //TODO: Add supourt for rotations
+        //TODO: Add support for rotations
         //A craftTranslateCommand should only occur if the craft is moving to a valid position
         //*******************************************
         //*      Step one: Convert to Positions     *
