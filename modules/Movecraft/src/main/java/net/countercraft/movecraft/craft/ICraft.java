@@ -52,39 +52,6 @@ public class ICraft extends Craft {
             }
         }
 
-        // find region that will need to be loaded to translate this craft
-        /*int cminX = minX;
-        int cmaxX = minX;
-        if (dx < 0)
-            cminX = cminX + dx;
-        int cminZ = minZ;
-        int cmaxZ = minZ;
-        if (dz < 0)
-            cminZ = cminZ + dz;
-        for (MovecraftLocation m : blockList) {
-            if (m.getX() > cmaxX)
-                cmaxX = m.getX();
-            if (m.getZ() > cmaxZ)
-                cmaxZ = m.getZ();
-        }
-        if (dx > 0)
-            cmaxX = cmaxX + dx;
-        if (dz > 0)
-            cmaxZ = cmaxZ + dz;
-        cminX = cminX >> 4;
-        cminZ = cminZ >> 4;
-        cmaxX = cmaxX >> 4;
-        cmaxZ = cmaxZ >> 4;
-
-
-        // load all chunks that will be needed to translate this craft
-        for (int posX = cminX - 1; posX <= cmaxX + 1; posX++) {
-            for (int posZ = cminZ - 1; posZ <= cmaxZ + 1; posZ++) {
-                if (!this.getW().isChunkLoaded(posX, posZ)) {
-                    this.getW().loadChunk(posX, posZ);
-                }
-            }
-        }*/
         Movecraft.getInstance().getAsyncManager().submitTask(new TranslationTask(this, dx, dy, dz), this);
     }
 

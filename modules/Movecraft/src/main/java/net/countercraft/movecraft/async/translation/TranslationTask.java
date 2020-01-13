@@ -32,7 +32,6 @@ public class TranslationTask extends AsyncTask {
     private HashHitBox newHitBox, oldHitBox;
     private boolean failed;
     private boolean collisionExplosion = false;
-    private boolean allChunksLoaded = true;
     private String failMessage;
     private Collection<UpdateCommand> updates = new HashSet<>();
 
@@ -250,17 +249,17 @@ public class TranslationTask extends AsyncTask {
         final List<Material> harvesterBladeBlocks = craft.getType().getHarvesterBladeBlocks();
         final HashHitBox collisionBox = new HashHitBox();
         final Set<UpdateCommand> chunkUpdateCmds = new HashSet<>();
+        boolean structureIntact = true;
         for(MovecraftLocation oldLocation : oldHitBox){
             final MovecraftLocation newLocation = oldLocation.translate(dx,dy,dz);
             //If the new location already exists in the old hitbox than this is unnecessary because a craft can't hit
             //itself
-            final Chunk origChunk = oldLocation.toBukkit(craft.getW()).getChunk();
-            if (!origChunk.isLoaded()) {
-                allChunksLoaded = false;
-            }
             if(oldHitBox.contains(newLocation)){
                 newHitBox.add(newLocation);
                 continue;
+            }
+            if (oldLocation.toBukkit(craft.getW()).getBlock().getType().name().endsWith("AIR")) {
+                structureIntact = false;
             }
             final Block b = newLocation.toBukkit(craft.getW()).getBlock();
             final Material testMaterial = b.getType();
@@ -310,6 +309,7 @@ public class TranslationTask extends AsyncTask {
                 }
             } //END OF: if (blockObstructed)
         }
+        Bukkit.getLogger().info("Structure intact: " + structureIntact);
 
         if (craft.getType().getForbiddenHoverOverBlocks().size() > 0){
             MovecraftLocation test = new MovecraftLocation(newHitBox.getMidPoint().getX(), newHitBox.getMinY(), newHitBox.getMidPoint().getZ());
@@ -651,9 +651,5 @@ public class TranslationTask extends AsyncTask {
 
     public boolean isCollisionExplosion() {
         return collisionExplosion;
-    }
-
-    public boolean areAllChunksLoaded() {
-        return allChunksLoaded;
     }
 }

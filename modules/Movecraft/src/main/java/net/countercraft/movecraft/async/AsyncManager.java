@@ -139,7 +139,9 @@ public class AsyncManager extends BukkitRunnable {
     }*/
 
     public void submitTask(AsyncTask task, Craft c) {
-        Bukkit.getLogger().info("Processing: " + !c.isNotProcessing());
+        if (!c.getHitBox().isEmpty()) {
+            Bukkit.getLogger().info("Is not processing: " + c.isNotProcessing() + ", Center point: " + c.getHitBox().getMidPoint());
+        }
         if (c.isNotProcessing()) {
             c.setProcessing(true);
             ownershipMap.put(task, c);
@@ -283,7 +285,7 @@ public class AsyncManager extends BukkitRunnable {
                         CraftManager.getInstance().addReleaseTask(c);
 
                     }
-                } else if (task.areAllChunksLoaded()) {
+                } else {
 
 
                     // The craft is clear to move, perform the block updates
