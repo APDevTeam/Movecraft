@@ -9,7 +9,6 @@ import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.SignTranslateEvent;
 import net.countercraft.movecraft.utils.*;
 import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
@@ -72,14 +71,6 @@ public class CraftTranslateCommand extends UpdateCommand {
                 passthroughBlocks.add(Material.BUBBLE_COLUMN);
 
             }
-        }
-        for (MovecraftLocation ml : craft.getHitBox()) {
-            Chunk c = ml.toBukkit(craft.getW()).getChunk();
-            if (c.isLoaded()) {
-                continue;
-            }
-            c.addPluginChunkTicket(Movecraft.getInstance());
-            c.load(true);
         }
         if(passthroughBlocks.isEmpty()){
             //translate the craft
