@@ -197,12 +197,12 @@ public class CraftTranslateCommand extends UpdateCommand {
                 }
             }
         }
-        for (MovecraftLocation ml : craft.getHitBox()) {
-            ml.subtract(displacement).toBukkit(craft.getW()).getChunk().removePluginChunkTicket(Movecraft.getInstance());
-        }
 
         if (!craft.isNotProcessing()) {
             craft.setProcessing(false);
+        }
+        if (craft.isTranslating()) {
+            craft.setTranslating(false);
         }
         time = System.nanoTime() - time;
         if(Settings.Debug)

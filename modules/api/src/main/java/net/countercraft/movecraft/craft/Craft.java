@@ -52,6 +52,7 @@ public abstract class Craft {
     @NotNull private final AtomicBoolean processing = new AtomicBoolean();
     private int maxHeightLimit;
     private boolean cruising;
+    private boolean translating = false;
     private boolean sinking;
     private boolean disabled;
     private boolean repairing;
@@ -306,6 +307,14 @@ public abstract class Craft {
 
     public float getMeanMoveTime() {
         return meanMoveTime;
+    }
+
+    public boolean isTranslating() {
+        return translating;
+    }
+
+    public void setTranslating(boolean translating) {
+        this.translating = translating;
     }
 
     public void addMoveTime(float moveTime){

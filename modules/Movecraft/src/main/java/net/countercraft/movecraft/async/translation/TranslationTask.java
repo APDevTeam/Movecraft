@@ -441,6 +441,9 @@ public class TranslationTask extends AsyncTask {
                 //craft.setCurTickCooldown(craft.getType().getCruiseTickCooldown());
             }
         }
+        if (craft.isTranslating()) {
+            craft.setTranslating(false);
+        }
     }
 
     private static final MovecraftLocation[] SHIFTS = {

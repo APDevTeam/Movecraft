@@ -51,6 +51,9 @@ public class ICraft extends Craft {
                 return;
             }
         }
+        if (isTranslating())
+            return;
+        setTranslating(true);
 
         Movecraft.getInstance().getAsyncManager().submitTask(new TranslationTask(this, dx, dy, dz), this);
     }
