@@ -185,9 +185,16 @@ public class IWorldHandler extends WorldHandler {
         for(BlockPosition position : positions){
             newPositions.add(position.a(translateVector));
         }
+        Map<BlockPosition, IBlockData> redstoneComponents = new HashMap<>();
         //create the new block
         for(int i = 0; i<newPositions.size(); i++) {
-            setBlockFast(nativeWorld, newPositions.get(i), blockData.get(i));
+            final BlockPosition newPosition = newPositions.get(i);
+            final IBlockData iBlockData = blockData.get(i);
+            if (isRedstoneComponent(iBlockData)) {
+                redstoneComponents.put(newPosition, iBlockData);
+                //continue;
+            }
+            setBlockFast(nativeWorld, newPosition, iBlockData);
         }
         //*******************************************
         //*    Step four: replace all the tiles     *
@@ -207,6 +214,11 @@ public class IWorldHandler extends WorldHandler {
         Collection<BlockPosition> deletePositions =  CollectionUtils.filter(positions,newPositions);
         for(BlockPosition position : deletePositions){
             setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
+        }
+
+        //Place redstone blocks and apply physics
+        for (BlockPosition position : redstoneComponents.keySet()) {
+            setBlockFast(nativeWorld, position, redstoneComponents.get(position), true);
         }
 
         //*******************************************
@@ -276,6 +288,10 @@ public class IWorldHandler extends WorldHandler {
     }
 
     private void setBlockFast(@NotNull World world, @NotNull BlockPosition position,@NotNull IBlockData data) {
+        setBlockFast(world, position, data, false);
+    }
+
+    private void setBlockFast(@NotNull World world, @NotNull BlockPosition position,@NotNull IBlockData data, boolean physics) {
         Chunk chunk = world.getChunkAtWorldCoords(position);
         ChunkSection chunkSection = chunk.getSections()[position.getY()>>4];
         if (chunkSection == null) {
@@ -285,6 +301,10 @@ public class IWorldHandler extends WorldHandler {
 
         }
         chunkSection.setType(position.getX()&15, position.getY()&15, position.getZ()&15, data);
+        if (physics) {
+            world.notifyAndUpdatePhysics(position, chunk, data, data, data, 3);
+            return;
+        }
         world.notify(position, data, data, 3);
     }
 
@@ -331,6 +351,17 @@ public class IWorldHandler extends WorldHandler {
         }
         tile.setPosition(newPosition);
         chunk.tileEntities.put(newPosition, tile);
+    }
+
+    private boolean isRedstoneComponent(IBlockData blockData) {
+        final Block block = blockData.getBlock();
+        return block instanceof BlockRedstoneComparator ||
+                block instanceof BlockRedstoneWire ||
+                block instanceof BlockRepeater ||
+                block instanceof BlockButtonAbstract ||
+                block instanceof BlockLever ||
+                block instanceof BlockDispenser;
+
     }
 
     private class TileHolder{

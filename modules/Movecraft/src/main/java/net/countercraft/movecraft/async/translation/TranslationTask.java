@@ -33,7 +33,7 @@ public class TranslationTask extends AsyncTask {
     private boolean failed;
     private boolean collisionExplosion = false;
     private String failMessage;
-    private Collection<UpdateCommand> updates = new HashSet<>();
+    private Collection<UpdateCommand> updates = new LinkedList<>();
 
     public TranslationTask(Craft c, int dx, int dy, int dz) {
         super(c);
@@ -258,9 +258,6 @@ public class TranslationTask extends AsyncTask {
                 newHitBox.add(newLocation);
                 continue;
             }
-            if (oldLocation.toBukkit(craft.getW()).getBlock().getType().name().endsWith("AIR")) {
-                structureIntact = false;
-            }
             final Block b = newLocation.toBukkit(craft.getW()).getBlock();
             final Material testMaterial = b.getType();
 
@@ -309,7 +306,6 @@ public class TranslationTask extends AsyncTask {
                 }
             } //END OF: if (blockObstructed)
         }
-        Bukkit.getLogger().info("Structure intact: " + structureIntact);
 
         if (craft.getType().getForbiddenHoverOverBlocks().size() > 0){
             MovecraftLocation test = new MovecraftLocation(newHitBox.getMidPoint().getX(), newHitBox.getMinY(), newHitBox.getMidPoint().getZ());
@@ -402,7 +398,7 @@ public class TranslationTask extends AsyncTask {
         }
 
         if(!collisionBox.isEmpty()){
-            Bukkit.getServer().getPluginManager().callEvent(new CraftCollisionEvent(craft, collisionBox));
+            Bukkit.getServer().getPluginManager().callEvent(new CraftCollisionEvent(craft, collisionBox, true));
         }
         if (oldHitBox.isEmpty())
             return;

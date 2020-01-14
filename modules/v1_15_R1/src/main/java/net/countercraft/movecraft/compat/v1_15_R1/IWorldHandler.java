@@ -32,6 +32,7 @@ public class IWorldHandler extends WorldHandler {
         ROTATION[Rotation.NONE.ordinal()] = EnumBlockRotation.NONE;
         ROTATION[Rotation.CLOCKWISE.ordinal()] = EnumBlockRotation.CLOCKWISE_90;
         ROTATION[Rotation.ANTICLOCKWISE.ordinal()] = EnumBlockRotation.COUNTERCLOCKWISE_90;
+
     }
     private final NextTickProvider tickProvider = new NextTickProvider();
     private final HashMap<World, List<TileEntity>> bMap = new HashMap<>();
@@ -187,10 +188,18 @@ public class IWorldHandler extends WorldHandler {
             BlockPosition newPos = position.a(translateVector);
             newPositions.add(newPos);
         }
+        Map<BlockPosition, IBlockData> redstoneComponents = new HashMap<>();
         //create the new block
         for(int i = 0; i<newPositions.size(); i++) {
-            setBlockFast(nativeWorld, newPositions.get(i), blockData.get(i));
+            final BlockPosition newPosition = newPositions.get(i);
+            final IBlockData iBlockData = blockData.get(i);
+            if (isRedstoneComponent(iBlockData)) {
+                redstoneComponents.put(newPosition, iBlockData);
+                //continue;
+            }
+            setBlockFast(nativeWorld, newPosition, iBlockData);
         }
+
         //*******************************************
         //*    Step four: replace all the tiles     *
         //*******************************************
@@ -200,7 +209,6 @@ public class IWorldHandler extends WorldHandler {
             if(tileHolder.getNextTick()==null)
                 continue;
             final long currentTime = nativeWorld.worldData.getTime();
-            //nativeWorld.b(tileHolder.getNextTick().a.a(translateVector), tileHolder.getNextTick().a(), (int) (tileHolder.getNextTick().b - currentTime), tileHolder.getNextTick().c);
             nativeWorld.getBlockTickList().a(tileHolder.getNextTick().a.a(translateVector), tileHolder.getNextTick().b(), (int) (tileHolder.getNextTick().b - currentTime));
 
         }
@@ -213,7 +221,10 @@ public class IWorldHandler extends WorldHandler {
             setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
         }
 
-
+        //Place redstone blocks and apply physics
+        for (BlockPosition position : redstoneComponents.keySet()) {
+            setBlockFast(nativeWorld, position, redstoneComponents.get(position), true);
+        }
         //*******************************************
         //*       Step six: Send to players       *
         //*******************************************
@@ -281,12 +292,13 @@ public class IWorldHandler extends WorldHandler {
         return new BlockPosition(loc.getX(), loc.getY(), loc.getZ());
     }
 
-    private void setBlockFast(@NotNull WorldServer world, @NotNull BlockPosition position,@NotNull IBlockData data) {
+    private void setBlockFast(@NotNull World world, @NotNull BlockPosition position,@NotNull IBlockData data) {
+        setBlockFast(world, position, data, false);
+    }
+
+    private void setBlockFast(@NotNull World world, @NotNull BlockPosition position,@NotNull IBlockData data, boolean physics) {
         Chunk chunk = world.getChunkAtWorldCoords(position);
         ChunkSection chunkSection = chunk.getSections()[position.getY()>>4];
-        if (!chunk.loaded) {
-
-        }
         if (chunkSection == null) {
             // Put a GLASS block to initialize the section. It will be replaced next with the real block.
             chunk.setType(position, Blocks.GLASS.getBlockData(), true);
@@ -294,6 +306,10 @@ public class IWorldHandler extends WorldHandler {
 
         }
         chunkSection.setType(position.getX()&15, position.getY()&15, position.getZ()&15, data);
+        if (physics) {
+            world.notifyAndUpdatePhysics(position, chunk, data, data, data, 3);
+            return;
+        }
         world.notify(position, data, data, 3);
     }
 
@@ -308,7 +324,7 @@ public class IWorldHandler extends WorldHandler {
         blockData = blockData.a(ROTATION[rotation.ordinal()]);
         WorldServer world = ((CraftWorld)(location.getWorld())).getHandle();
         BlockPosition blockPosition = locationToPosition(bukkit2MovecraftLoc(location));
-        setBlockFast(world,blockPosition,blockData);
+        setBlockFast(world,blockPosition,blockData, false);
     }
 
     @Override
@@ -370,12 +386,14 @@ public class IWorldHandler extends WorldHandler {
         }
     }
 
-    private boolean isRedstoneComponent(Block block) {
-        return block instanceof BlockRedstoneWire
-                || block instanceof BlockRedstoneComparator
-                || block instanceof BlockRepeater
-                || block instanceof BlockRedstoneTorch
-                || block instanceof BlockLever;
+    private boolean isRedstoneComponent(IBlockData blockData) {
+        final Block block = blockData.getBlock();
+        return block instanceof BlockRedstoneComparator ||
+                block instanceof BlockRedstoneWire ||
+                block instanceof BlockRepeater ||
+                block instanceof BlockButtonAbstract ||
+                block instanceof BlockLever ||
+                block instanceof BlockDispenser;
 
     }
 }

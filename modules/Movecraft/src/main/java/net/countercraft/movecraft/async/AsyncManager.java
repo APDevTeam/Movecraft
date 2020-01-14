@@ -139,10 +139,6 @@ public class AsyncManager extends BukkitRunnable {
     }*/
 
     public void submitTask(AsyncTask task, Craft c) {
-
-        if (!c.getHitBox().isEmpty()) {
-            Bukkit.getLogger().info("Is not processing: " + c.isNotProcessing() + ", Center point: " + c.getHitBox().getMidPoint());
-        }
         if (c.isNotProcessing()) {
             c.setProcessing(true);
             ownershipMap.put(task, c);
