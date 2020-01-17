@@ -8,11 +8,15 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.SignTranslateEvent;
+import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.utils.*;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -44,6 +48,7 @@ public class CraftRotateCommand extends UpdateCommand {
         }
         long time = System.nanoTime();
         final Set<Material> passthroughBlocks = new HashSet<>(craft.getType().getPassthroughBlocks());
+        final Set<UpdateCommand> toRotate = new HashSet<>();
         if(craft.getSinking()){
 
             passthroughBlocks.add(Material.WATER);
@@ -69,6 +74,25 @@ public class CraftRotateCommand extends UpdateCommand {
                 passthroughBlocks.add(Material.LILAC);
                 passthroughBlocks.add(Material.PEONY);
 
+            }
+        } else if (craft.getType().getMoveEntities()) {
+            Location tOP = new Location(craft.getW(), originLocation.getX(), originLocation.getY(), originLocation.getZ());
+            tOP.setX(tOP.getBlockX() + 0.5);
+            tOP.setZ(tOP.getBlockZ() + 0.5);
+            Location midpoint = craft.getHitBox().getMidPoint().toBukkit(craft.getW());
+            for(Entity entity : craft.getW().getNearbyEntities(midpoint, craft.getHitBox().getZLength()/2.0 + 1, craft.getHitBox().getYLength()/2.0 + 2, craft.getHitBox().getXLength()/2.0 + 1)){
+
+                // Player is onboard this craft
+
+                Location adjustedPLoc = entity.getLocation().subtract(tOP);
+
+                double[] rotatedCoords = MathUtils.rotateVecNoRound(rotation, adjustedPLoc.getX(), adjustedPLoc.getZ());
+                float newYaw = rotation == Rotation.CLOCKWISE ? 90F : -90F;
+                if ((entity.getType() != EntityType.PLAYER && craft.getType().getOnlyMovePlayers()) || craft.getSinking()) {
+                    continue;
+                }
+                EntityUpdateCommand eUp = new EntityUpdateCommand(entity, rotatedCoords[0] + tOP.getX() - entity.getLocation().getX(), 0, rotatedCoords[1] + tOP.getZ() - entity.getLocation().getZ(), newYaw, 0);
+                toRotate.add(eUp);
             }
         }
         if (!passthroughBlocks.isEmpty()) {
@@ -181,7 +205,7 @@ public class CraftRotateCommand extends UpdateCommand {
             //trigger sign events
             sendSignEvents();
         }
-
+        MapUpdateManager.getInstance().scheduleUpdates(toRotate);
         if (!craft.isNotProcessing())
             craft.setProcessing(false);
         time = System.nanoTime() - time;

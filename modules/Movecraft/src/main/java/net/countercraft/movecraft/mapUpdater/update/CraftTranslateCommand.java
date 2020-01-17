@@ -7,11 +7,15 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.SignTranslateEvent;
+import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.utils.*;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -39,6 +43,7 @@ public class CraftTranslateCommand extends UpdateCommand {
         }
         long time = System.nanoTime();
         final Set<Material> passthroughBlocks = new HashSet<>(craft.getType().getPassthroughBlocks());
+        final Set<UpdateCommand> toMove = new HashSet<>();
         if(craft.getSinking()){
             passthroughBlocks.add(Material.WATER);//Same in the 1.13 API, but other values are different
             if (Settings.IsLegacy){ //use pre-1.13 values if running on 1.12.2 or lower
@@ -70,6 +75,20 @@ public class CraftTranslateCommand extends UpdateCommand {
 
                 passthroughBlocks.add(Material.BUBBLE_COLUMN);
 
+            }
+        } else if (craft.getType().getMoveEntities()){
+            final Location midpoint = craft.getHitBox().getMidPoint().subtract(displacement).toBukkit(craft.getW());
+            final Collection<Entity> entities = craft.getW().getNearbyEntities(midpoint, craft.getHitBox().getXLength() / 2.0 + 1, craft.getHitBox().getYLength() / 2.0 + 2, craft.getHitBox().getZLength() / 2.0 + 1);
+
+            for (Entity entity : entities){
+                if (entity.getType() == EntityType.PLAYER) {
+                    if(craft.getSinking()){
+                        continue;
+                    }
+                    toMove.add(new EntityUpdateCommand(entity, displacement.getX(), displacement.getY(), displacement.getZ(), 0, 0));
+                } else if (!craft.getType().getOnlyMovePlayers() || entity.getType() == EntityType.PRIMED_TNT) {
+                    toMove.add(new EntityUpdateCommand(entity, displacement.getX(), displacement.getY(), displacement.getZ(), 0, 0));
+                }
             }
         }
         if(passthroughBlocks.isEmpty()){
@@ -188,7 +207,7 @@ public class CraftTranslateCommand extends UpdateCommand {
                 }
             }
         }
-
+        MapUpdateManager.getInstance().scheduleUpdates(toMove);
         if (!craft.isNotProcessing()) {
             craft.setProcessing(false);
         }

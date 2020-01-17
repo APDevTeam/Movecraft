@@ -408,7 +408,6 @@ public class TranslationTask extends AsyncTask {
                 CraftManager.getInstance().addReleaseTask(craft);
         }
         updates.add(new CraftTranslateCommand(craft, new MovecraftLocation(dx, dy, dz)));
-        updates.add(new EntityTranslateUpdateCommand(craft, oldHitBox, dx, dy, dz));
 
 
 
