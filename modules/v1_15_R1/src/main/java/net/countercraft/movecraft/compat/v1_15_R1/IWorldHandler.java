@@ -89,9 +89,15 @@ public class IWorldHandler extends WorldHandler {
         for(BlockPosition position : rotatedPositions.keySet()){
             blockData.put(position,nativeWorld.getType(position).a(ROTATION[rotation.ordinal()]));
         }
+        HashMap<BlockPosition, IBlockData> redstoneComponents = new HashMap<>();
         //create the new block
         for(Map.Entry<BlockPosition,IBlockData> entry : blockData.entrySet()) {
-            setBlockFast(nativeWorld, rotatedPositions.get(entry.getKey()), entry.getValue());
+            final BlockPosition newPosition = rotatedPositions.get(entry.getKey());
+            final IBlockData iBlockData = entry.getValue();
+            if (isRedstoneComponent(iBlockData)) {
+                redstoneComponents.put(newPosition, iBlockData);
+            }
+            setBlockFast(nativeWorld, newPosition, iBlockData);
         }
 
 
@@ -118,6 +124,9 @@ public class IWorldHandler extends WorldHandler {
             setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
         }
 
+        for (BlockPosition position : redstoneComponents.keySet()) {
+            setBlockFast(nativeWorld, position, redstoneComponents.get(position), true);
+        }
 
         //*******************************************
         //*       Step six: Send to players       *
