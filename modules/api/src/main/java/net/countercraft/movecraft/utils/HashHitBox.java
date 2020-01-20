@@ -103,7 +103,7 @@ public class HashHitBox implements MutableHitBox {
         }
         int yValue=-1;
         for(MovecraftLocation location : locationSet){
-            if(location.getX()==x && location.getZ() ==z && (yValue==-1 || location.getY()>yValue)){
+            if(location.getX()==x && location.getZ() ==z && (yValue==-1 || location.getY() < yValue)){
                 yValue=location.getY();
             }
         }

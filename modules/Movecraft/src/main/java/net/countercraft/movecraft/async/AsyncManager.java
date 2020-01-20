@@ -119,10 +119,11 @@ public class AsyncManager extends BukkitRunnable {
                 transparent.add(Material.getMaterial("WALL_SIGN"));
             }
             transparent.add(Material.GLASS_PANE);
-            transparent.add(Material.BLACK_STAINED_GLASS_PANE);
-            transparent.add(Material.WHITE_STAINED_GLASS_PANE);
-            transparent.add(Material.GRAY_STAINED_GLASS_PANE);
-            transparent.add(Material.GREEN_STAINED_GLASS_PANE);
+            for (Material transparent : Material.values()) {
+                if (!transparent.name().endsWith("STAINED_GLASS") && !transparent.name().endsWith("STAINED_GLASS_PANE"))
+                    continue;
+                this.transparent.add(transparent);
+            }
         }
     }
     public void addWreck(Craft craft){
@@ -424,7 +425,7 @@ public class AsyncManager extends BukkitRunnable {
             }
             // descend
             if (pcraft.getCruiseDirection() == BlockFace.DOWN) {
-                dy = 0 - 1 - pcraft.getType().getVertCruiseSkipBlocks();
+                dy = -1 - pcraft.getType().getVertCruiseSkipBlocks();
                 if (pcraft.getHitBox().getMinY() <= w.getSeaLevel()) {
                     dy = -1;
                 }
@@ -436,9 +437,9 @@ public class AsyncManager extends BukkitRunnable {
             }
             // ship faces west
             if (pcraft.getCruiseDirection() == BlockFace.WEST) {
-                dx = 0 - 1 - pcraft.getType().getCruiseSkipBlocks();
+                dx = -1 - pcraft.getType().getCruiseSkipBlocks();
                 if (bankRight) {
-                    dz = (0 - 1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
+                    dz = (-1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
                 }
                 if (bankLeft) {
                     dz = (1 + pcraft.getType().getCruiseSkipBlocks()) >> 1;
@@ -449,7 +450,7 @@ public class AsyncManager extends BukkitRunnable {
             if (pcraft.getCruiseDirection() == BlockFace.EAST) {
                 dx = 1 + pcraft.getType().getCruiseSkipBlocks();
                 if (bankLeft) {
-                    dz = (0 - 1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
+                    dz = (-1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
                 }
                 if (bankRight) {
                     dz = (1 + pcraft.getType().getCruiseSkipBlocks()) >> 1;
@@ -457,12 +458,12 @@ public class AsyncManager extends BukkitRunnable {
             }
             // ship faces north
             if (pcraft.getCruiseDirection() == BlockFace.NORTH) {
-                dz = 0 - 1 - pcraft.getType().getCruiseSkipBlocks();
+                dz = -1 - pcraft.getType().getCruiseSkipBlocks();
                 if (bankRight) {
                     dx = (1 + pcraft.getType().getCruiseSkipBlocks()) >> 1;
                 }
                 if (bankLeft) {
-                    dx = (0 - 1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
+                    dx = (-1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
                 }
             }
             // ship faces south
@@ -472,7 +473,7 @@ public class AsyncManager extends BukkitRunnable {
                     dx = (1 + pcraft.getType().getCruiseSkipBlocks()) >> 1;
                 }
                 if (bankRight) {
-                    dx = (0 - 1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
+                    dx = (-1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
                 }
             }
             if (pcraft.getType().getCruiseOnPilot()) {

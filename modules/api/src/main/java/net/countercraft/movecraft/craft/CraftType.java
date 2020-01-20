@@ -99,6 +99,8 @@ final public class CraftType {
     @NotNull private final Map<PotionEffect,Integer> potionEffectsToApply;
     @NotNull private final Map<PotionEffect, Integer> potionEffectDelays = Collections.emptyMap();
     @NotNull private final Set<Material> forbiddenHoverOverBlocks;
+    private final int gravityDropDistance;
+    private final int gravityInclineDistance;
 
     @SuppressWarnings("unchecked")
     public CraftType(File f) throws CraftTypeException{
@@ -161,10 +163,11 @@ final public class CraftType {
         explodeOnCrash = floatFromObject(data.getOrDefault("explodeOnCrash", 0F));
         collisionExplosion = floatFromObject(data.getOrDefault("collisionExplosion", 0F));
         minHeightLimit = Math.max(0, integerFromObject(data.getOrDefault("minHeightLimit", 0)));
-        int value = integerFromObject(data.getOrDefault("maxHeightLimit", 254));
+        int value = Math.min(integerFromObject(data.getOrDefault("maxHeightLimit", 254)), 255);
         if (value <= minHeightLimit) {
             value = 255;
         }
+
         maxHeightLimit = value;
         maxHeightAboveGround = integerFromObject(data.getOrDefault("maxHeightAboveGround", -1));
         canDirectControl = (boolean) data.getOrDefault("canDirectControl", true);
@@ -303,11 +306,12 @@ final public class CraftType {
             dynamicLagSpeedFactor = doubleFromObject(data.getOrDefault("dynamicLagSpeedFactor", 0d));
             dynamicFlyBlockSpeedFactor = doubleFromObject(data.getOrDefault("dynamicFlyBlockSpeedFactor", 0d));
             chestPenalty = doubleFromObject(data.getOrDefault("chestPenalty", 0));
+            gravityInclineDistance = integerFromObject(data.getOrDefault("gravityInclineDistance", -1));
+            int dropdist = integerFromObject(data.getOrDefault("gravityDropDistance", -8));
+            gravityDropDistance = dropdist > 0 ? -dropdist : dropdist;
         } catch (Exception e){
             throw new CraftTypeException("Craft file " + f.getName() + " is malformed", e);
         }
-
-
 
     }
 
@@ -991,6 +995,14 @@ final public class CraftType {
 
     public Set<Material> getForbiddenHoverOverBlocks() {
         return forbiddenHoverOverBlocks;
+    }
+
+    public int getGravityDropDistance() {
+        return gravityDropDistance;
+    }
+
+    public int getGravityInclineDistance() {
+        return gravityInclineDistance;
     }
 
     private class TypeNotFoundException extends RuntimeException {
