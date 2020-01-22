@@ -308,7 +308,9 @@ public class AsyncManager extends BukkitRunnable {
                     //c.setMinZ(task.getData().getMinZ());
                     //c.setHitBox(task.getData().getHitbox());
                     c.setHitBox(task.getNewHitBox());
-                    addToWaterlogQueue(c);
+                    if (!c.getSinking()) {
+                        addToWaterlogQueue(c);
+                    }
                     // move any cannons that were present
                     if (Movecraft.getInstance().getCannonsPlugin() != null && shipCannons != null) {
                         for (Cannon can : shipCannons) {

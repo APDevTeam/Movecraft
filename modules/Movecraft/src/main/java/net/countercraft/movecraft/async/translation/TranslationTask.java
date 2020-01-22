@@ -256,6 +256,11 @@ public class TranslationTask extends AsyncTask {
                 return;
             }
 
+            if (!craft.getW().getWorldBorder().isInside(newLocation.toBukkit(craft.getW()))) {
+                fail(I18nSupport.getInternationalisedString("Translation - Failed Craft cannot pass world border"));
+                return;
+            }
+
             boolean blockObstructed;
             if (craft.getSinking()) {
                 blockObstructed = !FALL_THROUGH_BLOCKS.contains(testMaterial);

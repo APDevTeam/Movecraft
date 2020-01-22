@@ -110,8 +110,6 @@ public class IWorldHandler extends WorldHandler {
             if(tileHolder.getNextTick()==null)
                 continue;
             final long currentTime = nativeWorld.worldData.getTime();
-            //nativeWorld.b(rotatedPositions.get(tileHolder.getNextTick().a), tileHolder.getNextTick().a(), (int) (tileHolder.getNextTick().b - currentTime), tileHolder.getNextTick().c);
-            //BlockPosition, Object, int, TickListPriority
             nativeWorld.getBlockTickList().a(rotatedPositions.get(tileHolder.getNextTick().a), tileHolder.getNextTick().b(), (int) (tileHolder.getNextTick().b - currentTime), tileHolder.getNextTick().c);
         }
 
@@ -204,7 +202,6 @@ public class IWorldHandler extends WorldHandler {
             final IBlockData iBlockData = blockData.get(i);
             if (isRedstoneComponent(iBlockData)) {
                 redstoneComponents.put(newPosition, iBlockData);
-                //continue;
             }
             setBlockFast(nativeWorld, newPosition, iBlockData);
         }
@@ -313,6 +310,9 @@ public class IWorldHandler extends WorldHandler {
             chunk.setType(position, Blocks.GLASS.getBlockData(), true);
             chunkSection = chunk.getSections()[position.getY() >> 4];
 
+        }
+        if (world.getType(position).getBlock().isTileEntity()) {
+            removeTileEntity(world, position);
         }
         chunkSection.setType(position.getX()&15, position.getY()&15, position.getZ()&15, data);
         if (physics) {
