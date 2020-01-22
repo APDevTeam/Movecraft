@@ -632,8 +632,10 @@ public class AsyncManager extends BukkitRunnable {
             int dx = 0;
             int dz = 0;
             if (craft.getType().getKeepMovingOnSink()) {
-                dx = craft.getLastDX();
-                dz = craft.getLastDZ();
+                final int limit = craft.getType().getKeepMovingOnSinkMaxMove();
+                final boolean limitMotion = craft.getType().getKeepMovingOnSinkMaxMove() > -1;
+                dx = limitMotion ? Math.min(craft.getLastDX(), limit)  : craft.getLastDX();
+                dz = limitMotion ? Math.min(craft.getLastDZ(), limit)  : craft.getLastDZ();
             }
             craft.translate(dx, -1, dz);
             craft.setLastCruiseUpdate(System.currentTimeMillis() - (craft.getLastCruiseUpdate() != -1 ? 0 : 30000));

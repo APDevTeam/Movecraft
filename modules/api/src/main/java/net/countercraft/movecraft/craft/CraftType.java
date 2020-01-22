@@ -101,6 +101,7 @@ final public class CraftType {
     @NotNull private final Set<Material> forbiddenHoverOverBlocks;
     private final int gravityDropDistance;
     private final int gravityInclineDistance;
+    private final int keepMovingOnSinkMaxMove;
 
     @SuppressWarnings("unchecked")
     public CraftType(File f) throws CraftTypeException{
@@ -159,6 +160,7 @@ final public class CraftType {
         underwaterDetectionMultiplier = doubleFromObject(data.getOrDefault("underwaterDetectionMultiplier", detectionMultiplier));
         sinkRateTicks = data.containsKey("sinkSpeed") ? (int) Math.ceil(20 / (doubleFromObject(data.get("sinkSpeed")))) : integerFromObject(data.getOrDefault("sinkTickRate", 0));
         keepMovingOnSink = (Boolean) data.getOrDefault("keepMovingOnSink", false);
+        keepMovingOnSinkMaxMove = integerFromObject(data.getOrDefault("keepMovingOnSinkMaxMove", -1));
         smokeOnSink = integerFromObject(data.getOrDefault("smokeOnSink", 0));
         explodeOnCrash = floatFromObject(data.getOrDefault("explodeOnCrash", 0F));
         collisionExplosion = floatFromObject(data.getOrDefault("collisionExplosion", 0F));
@@ -1003,6 +1005,10 @@ final public class CraftType {
 
     public int getGravityInclineDistance() {
         return gravityInclineDistance;
+    }
+
+    public int getKeepMovingOnSinkMaxMove() {
+        return keepMovingOnSinkMaxMove;
     }
 
     private class TypeNotFoundException extends RuntimeException {
