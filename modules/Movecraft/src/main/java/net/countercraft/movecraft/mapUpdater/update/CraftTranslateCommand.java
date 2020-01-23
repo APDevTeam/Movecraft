@@ -51,28 +51,20 @@ public class CraftTranslateCommand extends UpdateCommand {
             //translate the craft
             Movecraft.getInstance().getWorldHandler().translateCraft(craft,displacement);
             //trigger sign events
-            for(MovecraftLocation location : craft.getHitBox()){
-                Block block = location.toBukkit(craft.getW()).getBlock();
-                if(block.getType() == Material.WALL_SIGN || block.getType() == Material.SIGN_POST){
-                    Sign sign = (Sign) block.getState();
-                    Bukkit.getServer().getPluginManager().callEvent(new SignTranslateEvent(block, craft, sign.getLines()));
-                    sign.update();
-                }
-            }
+            this.sendSignEvents();
         } else {
             MutableHitBox originalLocations = new HashHitBox();
             for (MovecraftLocation movecraftLocation : craft.getHitBox()) {
                 originalLocations.add(movecraftLocation.subtract(displacement));
             }
             final HitBox to = CollectionUtils.filter(craft.getHitBox(), originalLocations);
+            //place phased blocks
             for (MovecraftLocation location : to) {
                 Material material = location.toBukkit(craft.getW()).getBlock().getType();
                 if (passthroughBlocks.contains(material)) {
                     craft.getPhaseBlocks().put(location, material);
                 }
             }
-
-            //place phased blocks
             //The subtraction of the set of coordinates in the HitBox cube and the HitBox itself
             final HitBox invertedHitBox = CollectionUtils.filter(craft.getHitBox().boundingHitBox(), craft.getHitBox());
 
@@ -101,27 +93,21 @@ public class CraftTranslateCommand extends UpdateCommand {
             }
 
             //Check to see which locations in the from set are actually outside of the craft
-            for (MovecraftLocation location : validExterior ) {
-                if (craft.getHitBox().contains(location) || confirmed.contains(location)) {
+            //use a modified BFS for multiple origin elements
+            Set<MovecraftLocation> visited = new HashSet<>();
+            Queue<MovecraftLocation> queue = new LinkedList<>(validExterior);
+            while (!queue.isEmpty()) {
+                MovecraftLocation node = queue.poll();
+                if(visited.contains(node))
                     continue;
+                visited.add(node);
+                //If the node is already a valid member of the exterior of the HitBox, continued search is unitary.
+                for (MovecraftLocation neighbor : CollectionUtils.neighbors(invertedHitBox, node)) {
+                    queue.add(neighbor);
                 }
-                //use a modified BFS for multiple origin elements
-                Set<MovecraftLocation> visited = new HashSet<>();
-                Queue<MovecraftLocation> queue = new LinkedList<>();
-                queue.add(location);
-                while (!queue.isEmpty()) {
-                    MovecraftLocation node = queue.poll();
-                    //If the node is already a valid member of the exterior of the HitBox, continued search is unitary.
-                    for (MovecraftLocation neighbor : CollectionUtils.neighbors(invertedHitBox, node)) {
-                        if (visited.contains(neighbor)) {
-                            continue;
-                        }
-                        visited.add(neighbor);
-                        queue.add(neighbor);
-                    }
-                }
-                confirmed.addAll(visited);
             }
+            confirmed.addAll(visited);
+
             if(craft.getSinking()){
                 confirmed.addAll(invertedHitBox);
             }
@@ -138,14 +124,7 @@ public class CraftTranslateCommand extends UpdateCommand {
             //translate the craft
             handler.translateCraft(craft, displacement);
             //trigger sign events
-            for (MovecraftLocation location : craft.getHitBox()) {
-                Block block = location.toBukkit(craft.getW()).getBlock();
-                if (block.getType() == Material.WALL_SIGN || block.getType() == Material.SIGN_POST) {
-                    Sign sign = (Sign) block.getState();
-                    Bukkit.getServer().getPluginManager().callEvent(new SignTranslateEvent(block, craft, sign.getLines()));
-                    sign.update();
-                }
-            }
+            this.sendSignEvents();
 
 
             for (MovecraftLocation l : failed){
@@ -191,6 +170,33 @@ public class CraftTranslateCommand extends UpdateCommand {
         if(Settings.Debug)
             logger.info("Total time: " + (time / 1e9) + " seconds. Moving with cooldown of " + craft.getTickCooldown() + ". Speed of: " + String.format("%.2f", craft.getSpeed()));
         craft.addMoveTime(time/1e9f);
+    }
+
+    private void sendSignEvents(){
+        Map<String[], List<MovecraftLocation>> signs = new HashMap<>();
+        for (MovecraftLocation location : craft.getHitBox()) {
+            Block block = location.toBukkit(craft.getW()).getBlock();
+            if (block.getType() == Material.WALL_SIGN || block.getType() == Material.SIGN_POST) {
+                Sign sign = (Sign) block.getState();
+                if(!signs.containsKey(sign.getLines()))
+                    signs.put(sign.getLines(), new ArrayList<>());
+                signs.get(sign.getLines()).add(location);
+            }
+        }
+        for(Map.Entry<String[], List<MovecraftLocation>> entry : signs.entrySet()){
+            Bukkit.getServer().getPluginManager().callEvent(new SignTranslateEvent(craft, entry.getKey(), entry.getValue()));
+            for(MovecraftLocation loc : entry.getValue()){
+                Block block = loc.toBukkit(craft.getW()).getBlock();
+                if (block.getType() != Material.WALL_SIGN && block.getType() != Material.SIGN_POST) {
+                    continue;
+                }
+                Sign sign = (Sign) block.getState();
+                for(int i = 0; i<4; i++){
+                    sign.setLine(i, entry.getKey()[i]);
+                }
+                sign.update();
+            }
+        }
     }
 
     @NotNull

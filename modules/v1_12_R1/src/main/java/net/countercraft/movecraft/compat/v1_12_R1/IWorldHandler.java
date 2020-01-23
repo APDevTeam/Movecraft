@@ -1,17 +1,16 @@
 package net.countercraft.movecraft.compat.v1_12_R1;
 
-import net.countercraft.movecraft.config.Settings;
-import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
-import net.countercraft.movecraft.utils.CollectionUtils;
 import net.countercraft.movecraft.WorldHandler;
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.utils.CollectionUtils;
+import net.countercraft.movecraft.utils.MathUtils;
 import net.minecraft.server.v1_12_R1.*;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_12_R1.block.CraftBlockState;
 import org.bukkit.craftbukkit.v1_12_R1.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_12_R1.util.CraftMagicNumbers;
 import org.bukkit.entity.Player;
@@ -130,18 +129,8 @@ public class IWorldHandler extends WorldHandler {
         for(BlockPosition position : deletePositions){
             setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
         }
-
         //*******************************************
-        //*       Step six: Update the blocks       *
-        //*******************************************
-        for(BlockPosition newPosition : rotatedPositions.values()) {
-            CraftBlockState.getBlockState(nativeWorld,newPosition.getX(), newPosition.getY(), newPosition.getZ()).update(false,false);
-        }
-        for(BlockPosition deletedPosition : deletePositions){
-            CraftBlockState.getBlockState(nativeWorld,deletedPosition.getX(), deletedPosition.getY(), deletedPosition.getZ()).update(false,false);
-        }
-        //*******************************************
-        //*       Step seven: Send to players       *
+        //*       Step six: Send to players       *
         //*******************************************
         List<Chunk> chunks = new ArrayList<>();
         for(BlockPosition position : rotatedPositions.values()){
@@ -160,7 +149,7 @@ public class IWorldHandler extends WorldHandler {
 
     @Override
     public void translateCraft(@NotNull Craft craft, @NotNull MovecraftLocation displacement) {
-        //TODO: Add supourt for rotations
+        //TODO: Add support for rotations
         //A craftTranslateCommand should only occur if the craft is moving to a valid position
         //*******************************************
         //*      Step one: Convert to Positions     *
@@ -230,18 +219,8 @@ public class IWorldHandler extends WorldHandler {
         for(BlockPosition position : deletePositions){
             setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
         }
-
         //*******************************************
-        //*       Step six: Update the blocks       *
-        //*******************************************
-        for(BlockPosition newPosition : newPositions) {
-            CraftBlockState.getBlockState(nativeWorld,newPosition.getX(), newPosition.getY(), newPosition.getZ()).update(false,false);
-        }
-        for(BlockPosition deletedPosition : deletePositions){
-            CraftBlockState.getBlockState(nativeWorld,deletedPosition.getX(), deletedPosition.getY(), deletedPosition.getZ()).update(false,false);
-        }
-        //*******************************************
-        //*       Step seven: Send to players       *
+        //*       Step six: Send to players       *
         //*******************************************
         List<Chunk> chunks = new ArrayList<>();
         for(BlockPosition position : newPositions){
@@ -298,6 +277,7 @@ public class IWorldHandler extends WorldHandler {
         }
 
         chunkSection.setType(position.getX()&15, position.getY()&15, position.getZ()&15, data);
+        world.notify(position, data, data, 3);
     }
 
     @Override
