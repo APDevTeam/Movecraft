@@ -29,6 +29,7 @@ import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.events.CraftPreRotateEvent;
 import net.countercraft.movecraft.events.CraftRotateEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.update.CraftRotateCommand;
@@ -50,8 +51,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class RotationTask extends AsyncTask {
-    private final MovecraftLocation originPoint;
-    private final Rotation rotation;
+    private MovecraftLocation originPoint;
+    private Rotation rotation;
     private final World w;
     private final boolean isSubCraft;
     private boolean failed = false;
@@ -93,6 +94,16 @@ public class RotationTask extends AsyncTask {
         if (getCraft().getDisabled() && (!getCraft().getSinking())) {
             failed = true;
             failMessage = I18nSupport.getInternationalisedString("Translation - Failed Craft Is Disabled");
+        }
+        final CraftPreRotateEvent preRotateEvent = new CraftPreRotateEvent(craft, rotation, originPoint);
+        Bukkit.getServer().getPluginManager().callEvent(preRotateEvent);
+        if (preRotateEvent.isCancelled()) {
+            failed = true;
+            failMessage = preRotateEvent.getFailMessage();
+            return;
+        } else if (rotation != preRotateEvent.getRotation() || !originPoint.equals(preRotateEvent.getOriginPoint())) {
+            rotation = preRotateEvent.getRotation();
+            originPoint = preRotateEvent.getOriginPoint();
         }
 
         // check for fuel, burn some from a furnace if needed. Blocks of coal are supported, in addition to coal and charcoal

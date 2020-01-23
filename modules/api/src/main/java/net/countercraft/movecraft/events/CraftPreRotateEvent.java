@@ -15,6 +15,7 @@ import org.jetbrains.annotations.NotNull;
 public class CraftPreRotateEvent extends CraftEvent implements Cancellable {
     @NotNull private Rotation rotation;
     @NotNull private MovecraftLocation originPoint;
+    @NotNull private String failMessage = "";
     @NotNull private static final HandlerList HANDLERS = new HandlerList();
     private boolean cancelled = false;
     public CraftPreRotateEvent(@NotNull Craft craft, @NotNull Rotation rotation, @NotNull MovecraftLocation originPoint) {
@@ -39,6 +40,15 @@ public class CraftPreRotateEvent extends CraftEvent implements Cancellable {
 
     public void setOriginPoint(@NotNull MovecraftLocation originPoint) {
         this.originPoint = originPoint;
+    }
+
+    @NotNull
+    public String getFailMessage() {
+        return failMessage;
+    }
+
+    public void setFailMessage(@NotNull String failMessage) {
+        this.failMessage = failMessage;
     }
 
     @Override
