@@ -49,6 +49,11 @@ public class CraftRotateCommand extends UpdateCommand {
         long time = System.nanoTime();
         final Set<Material> passthroughBlocks = new HashSet<>(craft.getType().getPassthroughBlocks());
         final Set<UpdateCommand> toRotate = new HashSet<>();
+        MutableHitBox originalLocations = new HashHitBox();
+        final Rotation counterRotation = rotation == Rotation.CLOCKWISE ? Rotation.ANTICLOCKWISE : Rotation.CLOCKWISE;
+        for (MovecraftLocation movecraftLocation : craft.getHitBox()) {
+            originalLocations.add(MathUtils.rotateVec(counterRotation, movecraftLocation.subtract(originLocation)).add(originLocation));
+        }
         if(craft.getSinking()){
 
             passthroughBlocks.add(Material.WATER);
@@ -76,11 +81,11 @@ public class CraftRotateCommand extends UpdateCommand {
 
             }
         } else if (craft.getType().getMoveEntities()) {
-            Location tOP = new Location(craft.getW(), originLocation.getX(), originLocation.getY(), originLocation.getZ());
+            Location tOP = originLocation.toBukkit(craft.getW());
             tOP.setX(tOP.getBlockX() + 0.5);
             tOP.setZ(tOP.getBlockZ() + 0.5);
-            Location midpoint = craft.getHitBox().getMidPoint().toBukkit(craft.getW());
-            for(Entity entity : craft.getW().getNearbyEntities(midpoint, craft.getHitBox().getZLength()/2.0 + 1, craft.getHitBox().getYLength()/2.0 + 2, craft.getHitBox().getXLength()/2.0 + 1)){
+            Location midpoint = originalLocations.getMidPoint().toBukkit(craft.getW());
+            for(Entity entity : craft.getW().getNearbyEntities(midpoint, originalLocations.getXLength()/2.0 + 1, originalLocations.getYLength()/2.0 + 2, originalLocations.getZLength()/2.0 + 1)){
 
                 // Player is onboard this craft
 
@@ -96,11 +101,7 @@ public class CraftRotateCommand extends UpdateCommand {
             }
         }
         if (!passthroughBlocks.isEmpty()) {
-            MutableHitBox originalLocations = new HashHitBox();
-            final Rotation counterRotation = rotation == Rotation.CLOCKWISE ? Rotation.ANTICLOCKWISE : Rotation.CLOCKWISE;
-            for (MovecraftLocation movecraftLocation : craft.getHitBox()) {
-                originalLocations.add(MathUtils.rotateVec(counterRotation, movecraftLocation.subtract(originLocation)).add(originLocation));
-            }
+
 
             final HitBox to = CollectionUtils.filter(craft.getHitBox(), originalLocations);
 
