@@ -265,11 +265,9 @@ public class TranslationTask extends AsyncTask {
                     }
                     EntityUpdateCommand eUp = new EntityUpdateCommand(entity, dx, dy, dz, 0, 0);
                     updates.add(eUp);
-                } else if (!craft.getType().getOnlyMovePlayers() || entity.getType() == EntityType.PRIMED_TNT) {
-                    if(craft.getType().shouldEntityBeMoved(entity)){
-                        EntityUpdateCommand eUp = new EntityUpdateCommand(entity, dx, dy, dz, 0, 0);
-                        updates.add(eUp);
-                    }
+                } else if (entity.getType() == EntityType.PRIMED_TNT || (!craft.getType().getOnlyMovePlayers() && craft.getType().shouldEntityBeMoved(entity))) {
+                    EntityUpdateCommand eUp = new EntityUpdateCommand(entity, dx, dy, dz, 0, 0);
+                    updates.add(eUp);
                 }
             }
         } else {
