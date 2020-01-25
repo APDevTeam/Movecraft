@@ -2,6 +2,8 @@ package net.countercraft.movecraft.events;
 
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.utils.HashHitBox;
+
+import org.bukkit.World;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
@@ -16,13 +18,15 @@ public class CraftTranslateEvent extends CraftEvent implements Cancellable {
     private static final HandlerList HANDLERS = new HandlerList();
     @NotNull private final HashHitBox oldHitBox;
     @NotNull private final HashHitBox newHitBox;
+    @NotNull private final World world;
     @NotNull private String failMessage = "";
     private boolean isCancelled = false;
 
-    public CraftTranslateEvent(@NotNull Craft craft, @NotNull HashHitBox oldHitBox, @NotNull HashHitBox newHitBox) {
+    public CraftTranslateEvent(@NotNull Craft craft, @NotNull HashHitBox oldHitBox, @NotNull HashHitBox newHitBox, @NotNull World world) {
         super(craft, true);
         this.oldHitBox = oldHitBox;
         this.newHitBox = newHitBox;
+        this.world = world;
     }
 
     @NotNull
@@ -33,6 +37,11 @@ public class CraftTranslateEvent extends CraftEvent implements Cancellable {
     @NotNull
     public HashHitBox getOldHitBox(){
         return oldHitBox;
+    }
+    
+    @NotNull
+    public World getWorld() {
+    	return world;
     }
 
     @Override

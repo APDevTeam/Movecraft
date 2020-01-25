@@ -123,10 +123,17 @@ public abstract class Craft {
     public World getW() {
         return w;
     }
+    
+    public void setW(World world) {
+    	this.w = world;
+    }
 
     public abstract void detect(Player player, Player notificationPlayer, MovecraftLocation startPoint);
 
-    public abstract void translate(int dx, int dy, int dz);
+    public void translate(int dx, int dy, int dz) {
+    	translate(w, dx, dy, dz);
+    }
+    public abstract void translate(World world, int dx, int dy, int dz);
 
     public abstract void rotate(Rotation rotation, MovecraftLocation originPoint);
 

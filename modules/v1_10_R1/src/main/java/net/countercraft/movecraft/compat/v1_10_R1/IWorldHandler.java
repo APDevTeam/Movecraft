@@ -149,7 +149,7 @@ public class IWorldHandler extends WorldHandler {
     }
 
     @Override
-    public void translateCraft(@NotNull Craft craft, @NotNull MovecraftLocation displacement) {
+    public void translateCraft(@NotNull Craft craft, @NotNull MovecraftLocation displacement, @NotNull org.bukkit.World world) {
         //TODO: Add supourt for rotations
         //A craftTranslateCommand should only occur if the craft is moving to a valid position
         //*******************************************
@@ -164,21 +164,22 @@ public class IWorldHandler extends WorldHandler {
         //*******************************************
         //*         Step two: Get the tiles         *
         //*******************************************
-        World nativeWorld = ((CraftWorld) craft.getW()).getHandle();
+        World oldNativeWorld = ((CraftWorld) craft.getW()).getHandle();
+        World nativeWorld = ((CraftWorld) world).getHandle();
         List<TileHolder> tiles = new ArrayList<>();
         //get the tiles
         for(BlockPosition position : positions){
-            if(nativeWorld.getType(position) == Blocks.AIR.getBlockData())
+            if(oldNativeWorld.getType(position) == Blocks.AIR.getBlockData())
                 continue;
             //TileEntity tile = nativeWorld.removeTileEntity(position);
-            TileEntity tile = removeTileEntity(nativeWorld,position);
+            TileEntity tile = removeTileEntity(oldNativeWorld,position);
             if(tile == null)
                 continue;
             //get the nextTick to move with the tile
 
             //nativeWorld.capturedTileEntities.remove(position);
             //nativeWorld.getChunkAtWorldCoords(position).getTileEntities().remove(position);
-            tiles.add(new TileHolder(tile, tickProvider.getNextTick((WorldServer)nativeWorld,position), position));
+            tiles.add(new TileHolder(tile, tickProvider.getNextTick((WorldServer)oldNativeWorld,position), position));
 
         }
         //*******************************************
@@ -191,7 +192,7 @@ public class IWorldHandler extends WorldHandler {
         //get the blocks
         List<IBlockData> blockData = new ArrayList<>();
         for(BlockPosition position : positions){
-            blockData.add(nativeWorld.getType(position));
+            blockData.add(oldNativeWorld.getType(position));
         }
         //translate the positions
         List<BlockPosition> newPositions = new ArrayList<>();
@@ -218,7 +219,7 @@ public class IWorldHandler extends WorldHandler {
         //*******************************************
         Collection<BlockPosition> deletePositions =  CollectionUtils.filter(positions,newPositions);
         for(BlockPosition position : deletePositions){
-            setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
+            setBlockFast(oldNativeWorld, position, Blocks.AIR.getBlockData());
         }
         //*******************************************
         //*       Step six: Send to players       *
@@ -231,7 +232,7 @@ public class IWorldHandler extends WorldHandler {
             }
         }
         for(BlockPosition position : deletePositions){
-            Chunk chunk = nativeWorld.getChunkAtWorldCoords(position);
+            Chunk chunk = oldNativeWorld.getChunkAtWorldCoords(position);
             if(!chunks.contains(chunk)){
                 chunks.add(chunk);
             }

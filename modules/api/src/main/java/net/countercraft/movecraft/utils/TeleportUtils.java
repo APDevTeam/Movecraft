@@ -87,6 +87,12 @@ public class TeleportUtils {
     }
 
     public static void teleport(Player player, Location location) {
+    	// Use bukkit teleporting API for changing worlds
+    	if (!location.getWorld().equals(player.getWorld())) {
+    		player.teleport(location);
+    		return;
+    	}
+    	
         double x = location.getX();
         double y = location.getY();
         double z = location.getZ();

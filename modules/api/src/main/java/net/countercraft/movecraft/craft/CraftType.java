@@ -1,3 +1,4 @@
+
 /*
  * This file is part of Movecraft.
  *
@@ -34,6 +35,7 @@ final public class CraftType {
     private final boolean canBeNamed;
     private final boolean canCruise;
     private final boolean canTeleport;
+    private final boolean canSwitchWorld;
     private final boolean canStaticMove;
     private final boolean canHover;
     private final boolean canDirectControl;
@@ -89,8 +91,8 @@ final public class CraftType {
     @NotNull private final List<Material> harvesterBladeBlocks;
     @NotNull private final Set<Material> passthroughBlocks;
     @NotNull private final Set<Material> forbiddenHoverOverBlocks;
-    private final int gravityDropDistance;
     private final int gravityInclineDistance;
+    private final int gravityDropDistance;
 
     @SuppressWarnings("unchecked")
     public CraftType(File f) {
@@ -124,6 +126,7 @@ final public class CraftType {
         moveBlocks = blockIDMapListFromObject(data.getOrDefault("moveblocks", new HashMap<>()));
         canCruise = (boolean) data.getOrDefault("canCruise", false);
         canTeleport = (boolean) data.getOrDefault("canTeleport", false);
+        canSwitchWorld = (boolean) data.getOrDefault("canSwitchWorld", false);
         canBeNamed = (boolean) data.getOrDefault("canBeNamed", true);
         cruiseOnPilot = (boolean) data.getOrDefault("cruiseOnPilot", false);
         cruiseOnPilotVertMove = integerFromObject(data.getOrDefault("cruiseOnPilotVertMove", 0));
@@ -152,11 +155,10 @@ final public class CraftType {
         explodeOnCrash = floatFromObject(data.getOrDefault("explodeOnCrash", 0F));
         collisionExplosion = floatFromObject(data.getOrDefault("collisionExplosion", 0F));
         minHeightLimit = Math.max(0, integerFromObject(data.getOrDefault("minHeightLimit", 0)));
-        int value = Math.min(integerFromObject(data.getOrDefault("maxHeightLimit", 254)), 255);
+        int value = integerFromObject(data.getOrDefault("maxHeightLimit", 254));
         if (value <= minHeightLimit) {
             value = 255;
         }
-
         maxHeightLimit = value;
         maxHeightAboveGround = integerFromObject(data.getOrDefault("maxHeightAboveGround", -1));
         canDirectControl = (boolean) data.getOrDefault("canDirectControl", true);
@@ -426,6 +428,10 @@ final public class CraftType {
 
     public boolean getCanTeleport() {
         return canTeleport;
+    }
+    
+    public boolean getCanSwitchWorld() {
+        return canSwitchWorld;
     }
 
     public boolean getCanStaticMove() {
