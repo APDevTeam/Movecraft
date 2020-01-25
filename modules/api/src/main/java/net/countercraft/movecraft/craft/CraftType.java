@@ -93,6 +93,8 @@ final public class CraftType {
     @NotNull private final Set<Material> passthroughBlocks;
     @NotNull private final Set<Material> forbiddenHoverOverBlocks;
     @NotNull private final Set<Class<? extends Entity>> moveEntityList;
+    private final int gravityDropDistance;
+    private final int gravityInclineDistance;
 
     @SuppressWarnings("unchecked")
     public CraftType(File f) {
@@ -154,10 +156,11 @@ final public class CraftType {
         explodeOnCrash = floatFromObject(data.getOrDefault("explodeOnCrash", 0F));
         collisionExplosion = floatFromObject(data.getOrDefault("collisionExplosion", 0F));
         minHeightLimit = Math.max(0, integerFromObject(data.getOrDefault("minHeightLimit", 0)));
-        int value = integerFromObject(data.getOrDefault("maxHeightLimit", 254));
+        int value = Math.min(integerFromObject(data.getOrDefault("maxHeightLimit", 254)), 255);
         if (value <= minHeightLimit) {
             value = 255;
         }
+
         maxHeightLimit = value;
         maxHeightAboveGround = integerFromObject(data.getOrDefault("maxHeightAboveGround", -1));
         canDirectControl = (boolean) data.getOrDefault("canDirectControl", true);
@@ -249,6 +252,9 @@ final public class CraftType {
         dynamicFlyBlockSpeedFactor = doubleFromObject(data.getOrDefault("dynamicFlyBlockSpeedFactor", 0d));
         dynamicFlyBlock = integerFromObject(data.getOrDefault("dynamicFlyBlock", 0));
         chestPenalty = doubleFromObject(data.getOrDefault("chestPenalty", 0));
+        gravityInclineDistance = integerFromObject(data.getOrDefault("gravityInclineDistance", -1));
+        int dropdist = integerFromObject(data.getOrDefault("gravityDropDistance", -8));
+        gravityDropDistance = dropdist > 0 ? -dropdist : dropdist;
     }
 
     private int integerFromObject(Object obj) {
@@ -640,6 +646,14 @@ final public class CraftType {
             }
         }
         return false;
+    }
+  
+    public int getGravityDropDistance() {
+        return gravityDropDistance;
+    }
+
+    public int getGravityInclineDistance() {
+        return gravityInclineDistance;
     }
 
     private class TypeNotFoundException extends RuntimeException {
