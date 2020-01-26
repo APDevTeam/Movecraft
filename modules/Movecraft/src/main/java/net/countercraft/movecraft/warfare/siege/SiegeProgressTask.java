@@ -1,20 +1,18 @@
 package net.countercraft.movecraft.warfare.siege;
 
-import com.avaje.ebean.validation.NotNull;
-import java.util.List;
 import com.sk89q.worldguard.domains.DefaultDomain;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.countercraft.movecraft.Movecraft;
-import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.MovecraftLocation;
-import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.List;
 
 public class SiegeProgressTask extends SiegeTask {
 
