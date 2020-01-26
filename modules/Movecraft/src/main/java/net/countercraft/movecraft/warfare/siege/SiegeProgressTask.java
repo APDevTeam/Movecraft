@@ -22,7 +22,6 @@ public class SiegeProgressTask extends SiegeTask {
 
     //every 20 ticks = 1 second
     public void run() {
-        Bukkit.broadcastMessage(String.valueOf((siege.getDuration() - ((System.currentTimeMillis() - siege.getStartTime()) / 1000))));
         if ((siege.getDuration() - ((System.currentTimeMillis() - siege.getStartTime()) / 1000)) % Settings.SiegeTaskSeconds != 0) {
             return;
         }
