@@ -22,13 +22,14 @@ public class SiegeProgressTask extends SiegeTask {
 
     //every 20 ticks = 1 second
     public void run() {
+        Bukkit.broadcastMessage(String.valueOf((siege.getDuration() - ((System.currentTimeMillis() - siege.getStartTime()) / 1000))));
         if ((siege.getDuration() - ((System.currentTimeMillis() - siege.getStartTime()) / 1000)) % Settings.SiegeTaskSeconds != 0) {
             return;
         }
 
         Player siegeLeader = Movecraft.getInstance().getServer().getPlayer(siege.getPlayerUUID());
         Craft siegeCraft = CraftManager.getInstance().getCraftByPlayer(siegeLeader);
-        int timeLeft = (siege.getDuration() - (((int)System.currentTimeMillis() - siege.getStartTime())/1000));
+        int timeLeft = (siege.getDuration() - (int) ((System.currentTimeMillis() - siege.getStartTime())/1000));
 
         if (timeLeft > 10) {
             if (!leaderPilotingShip(siegeCraft)) {
@@ -54,7 +55,7 @@ public class SiegeProgressTask extends SiegeTask {
             endSiege(siegeCraft, siegeLeader);
         }
 
-        siege.setStage(SiegeStage.INACTIVE);
+
 
         for (Player p : Bukkit.getOnlinePlayers()){
             p.playSound(p.getLocation(), Sound.ENTITY_WITHER_DEATH, 1,0);
@@ -75,6 +76,7 @@ public class SiegeProgressTask extends SiegeTask {
         else {
             failSiege(siegeLeader);
         }
+        siege.setStage(SiegeStage.INACTIVE);
     }
 
     private void winSiege(Player siegeLeader) {

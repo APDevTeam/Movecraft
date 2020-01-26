@@ -12,7 +12,8 @@ public class Siege {
     private final int scheduleStart, scheduleEnd, delayBeforeStart, duration, dailyIncome, cost;
     @NotNull private final String attackRegion, captureRegion, name;
     @NotNull private final AtomicReference<SiegeStage> stage;
-    private int startTime, lastUpdate;
+    private long startTime;
+    private int lastUpdate;
     private long lastPayout;
     private final boolean doubleCostPerOwnedSiegeRegion;
     private UUID playerUUID;
@@ -76,11 +77,11 @@ public class Siege {
         return duration;
     }
 
-    public int getStartTime() {
+    public long getStartTime() {
         return startTime;
     }
 
-    public void setStartTime(int startTime) {
+    public void setStartTime(long startTime) {
         this.startTime = startTime;
     }
 
