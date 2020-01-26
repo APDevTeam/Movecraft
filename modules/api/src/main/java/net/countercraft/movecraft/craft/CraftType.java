@@ -17,6 +17,7 @@
 
 package net.countercraft.movecraft.craft;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -180,7 +181,7 @@ final public class CraftType {
                     Class cls = cl.loadClass("org.bukkit.entity."+(String) i);
                     moveEntityList.add(cls);
                 }catch (Exception e){
-                    // Empty Catch. Need to log the error but the API can't access Movecraft.getInstance().getLogger()
+                    Bukkit.getLogger().warning("["+f.getName()+"] moveEntityList: wrong Value: "+i);
                 }
             }
         }
@@ -326,7 +327,6 @@ final public class CraftType {
         HashMap<Object, Object> objMap = (HashMap<Object, Object>) obj;
         for (Object i : objMap.keySet()) {
             ArrayList<Integer> rowList = new ArrayList<>();
-
             // first read in the list of the blocks that type of flyblock. It could be a single string (with or without a ":") or integer, or it could be multiple of them
             if (i instanceof ArrayList<?>) {
                 for (Object o : (ArrayList<Object>) i) {
