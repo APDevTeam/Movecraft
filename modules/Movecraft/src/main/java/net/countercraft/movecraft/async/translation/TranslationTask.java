@@ -58,22 +58,35 @@ public class TranslationTask extends AsyncTask {
         }
         final int minY = oldHitBox.getMinY();
         final int maxY = oldHitBox.getMaxY();
+        //Process gravity
         if (world.equals(craft.getW()) && craft.getType().getUseGravity() && !craft.getSinking()){ // Only modify dy when not switching worlds
             int incline = inclineCraft(oldHitBox);
             if (incline > 0){
-                dy = incline;
+                //Ignore explosive crafts
+                if (craft.getType().getCollisionExplosion() > 0f) {
+                    dy = 0;
+                }
+                else if (craft.getType().getGravityInclineDistance() > -1 && incline > craft.getType().getGravityInclineDistance()) {
+                    fail(I18nSupport.getInternationalisedString("Translation - Failed Incline too steep"));
+                    return;
+
+                } else {
+                    dy = incline;
+                }
+
             } else if (!isOnGround(oldHitBox) && craft.getType().getCanHover()){
                 MovecraftLocation midPoint = oldHitBox.getMidPoint();
                 int centreMinY = oldHitBox.getLocalMinY(midPoint.getX(), midPoint.getZ());
                 int groundY = centreMinY;
-                while (world.getBlockAt(midPoint.getX(), groundY - 1, midPoint.getZ()).getType() == Material.AIR || craft.getType().getPassthroughBlocks().contains(world.getBlockAt(midPoint.getX(), groundY - 1, midPoint.getZ()).getType())){
+                World w = craft.getW();
+                while (w.getBlockAt(midPoint.getX(), groundY - 1, midPoint.getZ()).getType() == Material.AIR || craft.getType().getPassthroughBlocks().contains(w.getBlockAt(midPoint.getX(), groundY - 1, midPoint.getZ()).getType())){
                     groundY--;
                 }
                 if (centreMinY - groundY > craft.getType().getHoverLimit()){
                     dy = -1;
                 }
             } else if (!isOnGround(oldHitBox)){
-                dy = -1;
+                dy = dropDistance(oldHitBox);
             }
         }
         //Check if the craft is too high
