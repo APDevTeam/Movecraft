@@ -18,7 +18,6 @@
 package net.countercraft.movecraft.craft;
 
 import org.bukkit.Material;
-import org.bukkit.entity.Animals;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -167,7 +166,7 @@ final public class CraftType {
         canHover = (boolean) data.getOrDefault("canHover", false);
         canHoverOverWater = (boolean) data.getOrDefault("canHoverOverWater", true);
         moveEntities = (boolean) data.getOrDefault("moveEntities", true);
-        onlyMovePlayers = (boolean) data.getOrDefault("onlyMovePlayers", false);
+        onlyMovePlayers = (boolean) data.getOrDefault("onlyMovePlayers", true);
         moveEntityList = new HashSet<Class<? extends Entity>>();
         moveEntityList.add(Player.class);
         if (data.containsKey("moveEntityList")) {
