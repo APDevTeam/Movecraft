@@ -11,7 +11,6 @@ import net.minecraft.server.v1_10_R1.*;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_10_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_10_R1.block.CraftBlockState;
 import org.bukkit.craftbukkit.v1_10_R1.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_10_R1.util.CraftMagicNumbers;
 import org.bukkit.entity.Player;
@@ -322,6 +321,9 @@ public class IWorldHandler extends WorldHandler {
             tile.setPosition(newPosition);
             nativeWorld.capturedTileEntities.put(newPosition, tile);
             return;
+        }
+        if (tile.getWorld() != nativeWorld) {
+            tile.a(nativeWorld);
         }
         tile.setPosition(newPosition);
         chunk.tileEntities.put(newPosition, tile);
