@@ -7,6 +7,7 @@ import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.CraftCollisionEvent;
 import net.countercraft.movecraft.events.CraftPreTranslateEvent;
 import net.countercraft.movecraft.events.CraftTranslateEvent;
+import net.countercraft.movecraft.events.ItemHarvestEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.update.*;
 import net.countercraft.movecraft.utils.HashHitBox;
@@ -384,6 +385,9 @@ public class TranslationTask extends AsyncTask {
                     drops.addAll(Arrays.asList((((InventoryHolder) block.getState()).getInventory().getContents())));
                 }
             }
+            //call event
+            final ItemHarvestEvent harvestEvent = new ItemHarvestEvent(craft, drops);
+            Bukkit.getServer().getPluginManager().callEvent(harvestEvent);
             for (ItemStack drop : drops) {
                 ItemStack retStack = putInToChests(drop, chests);
                 if (retStack != null)

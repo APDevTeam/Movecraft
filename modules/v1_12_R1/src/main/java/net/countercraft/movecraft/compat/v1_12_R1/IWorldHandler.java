@@ -33,6 +33,7 @@ public class IWorldHandler extends WorldHandler {
         ROTATION[Rotation.CLOCKWISE.ordinal()] = EnumBlockRotation.CLOCKWISE_90;
         ROTATION[Rotation.ANTICLOCKWISE.ordinal()] = EnumBlockRotation.COUNTERCLOCKWISE_90;
     }
+
     private final NextTickProvider tickProvider = new NextTickProvider();
     private final HashMap<World,List<TileEntity>> bMap = new HashMap<>();
     private MethodHandle internalTeleportMH;
@@ -212,6 +213,7 @@ public class IWorldHandler extends WorldHandler {
             final long currentTime = nativeWorld.worldData.getTime();
             nativeWorld.b(tileHolder.getNextTick().a.a(translateVector), tileHolder.getNextTick().a(), (int) (tileHolder.getNextTick().b - currentTime), tileHolder.getNextTick().c);
         }
+
         //*******************************************
         //*   Step five: Destroy the leftovers      *
         //*******************************************
@@ -276,7 +278,12 @@ public class IWorldHandler extends WorldHandler {
             chunkSection = chunk.getSections()[position.getY() >> 4];
         }
 
+
         chunkSection.setType(position.getX()&15, position.getY()&15, position.getZ()&15, data);
+        if (data.getBlock() instanceof BlockFire) {
+            world.notifyAndUpdatePhysics(position, chunk, data, data, 3);
+            return;
+        }
         world.notify(position, data, data, 3);
     }
 
@@ -325,13 +332,15 @@ public class IWorldHandler extends WorldHandler {
         chunk.tileEntities.put(newPosition, tile);
     }
 
-    private class TileHolder{
-        @NotNull private final TileEntity tile;
+    private class TileHolder {
+        @NotNull
+        private final TileEntity tile;
         @Nullable
         private final NextTickListEntry nextTick;
-        @NotNull private final BlockPosition tilePosition;
+        @NotNull
+        private final BlockPosition tilePosition;
 
-        public TileHolder(@NotNull TileEntity tile, @Nullable NextTickListEntry nextTick, @NotNull BlockPosition tilePosition){
+        public TileHolder(@NotNull TileEntity tile, @Nullable NextTickListEntry nextTick, @NotNull BlockPosition tilePosition) {
             this.tile = tile;
             this.nextTick = nextTick;
             this.tilePosition = tilePosition;
