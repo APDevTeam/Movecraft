@@ -58,7 +58,37 @@ public class TranslationTask extends AsyncTask {
         }
         final int minY = oldHitBox.getMinY();
         final int maxY = oldHitBox.getMaxY();
+        //Process gravity
+        if (world.equals(craft.getW()) && craft.getType().getUseGravity() && !craft.getSinking()){ // Only modify dy when not switching worlds
+            int incline = inclineCraft(oldHitBox);
+            if (incline > 0){
+                //Ignore explosive crafts
+                if (craft.getType().getCollisionExplosion() > 0f) {
+                    dy = 0;
+                }
+                else if (craft.getType().getGravityInclineDistance() > -1 && incline > craft.getType().getGravityInclineDistance()) {
+                    fail(I18nSupport.getInternationalisedString("Translation - Failed Incline too steep"));
+                    return;
 
+                } else {
+                    dy = incline;
+                }
+
+            } else if (!isOnGround(oldHitBox) && craft.getType().getCanHover()){
+                MovecraftLocation midPoint = oldHitBox.getMidPoint();
+                int centreMinY = oldHitBox.getLocalMinY(midPoint.getX(), midPoint.getZ());
+                int groundY = centreMinY;
+                World w = craft.getW();
+                while (w.getBlockAt(midPoint.getX(), groundY - 1, midPoint.getZ()).getType() == Material.AIR || craft.getType().getPassthroughBlocks().contains(w.getBlockAt(midPoint.getX(), groundY - 1, midPoint.getZ()).getType())){
+                    groundY--;
+                }
+                if (centreMinY - groundY > craft.getType().getHoverLimit()){
+                    dy = -1;
+                }
+            } else if (!isOnGround(oldHitBox)){
+                dy = dropDistance(oldHitBox);
+            }
+        }
         //Check if the craft is too high
         if (world.equals(craft.getW())) { // Only modify dy when not switching worlds
         	
@@ -93,23 +123,7 @@ public class TranslationTask extends AsyncTask {
             fail(I18nSupport.getInternationalisedString("Translation - Failed Craft out of fuel"));
             return;
         }
-        if (world.equals(craft.getW()) && craft.getType().getUseGravity() && !craft.getSinking()){ // Only modify dy when not switching worlds
-            if (inclineCraft(oldHitBox)){
-                dy = 1;
-            } else if (!isOnGround(oldHitBox) && craft.getType().getCanHover()){
-                MovecraftLocation midPoint = oldHitBox.getMidPoint();
-                int centreMinY = oldHitBox.getLocalMinY(midPoint.getX(), midPoint.getZ());
-                int groundY = centreMinY;
-                while (world.getBlockAt(midPoint.getX(), groundY - 1, midPoint.getZ()).getType() == Material.AIR || craft.getType().getPassthroughBlocks().contains(world.getBlockAt(midPoint.getX(), groundY - 1, midPoint.getZ()).getType())){
-                    groundY--;
-                }
-                if (centreMinY - groundY > craft.getType().getHoverLimit()){
-                    dy = -1;
-                }
-            } else if (!isOnGround(oldHitBox)){
-                dy = -1;
-            }
-        }
+
 
         //TODO: Add and handle event for towny and factions
         final List<Material> harvestBlocks = craft.getType().getHarvestBlocks();
@@ -446,7 +460,21 @@ public class TranslationTask extends AsyncTask {
         return true;
     }
 
-    private boolean inclineCraft(HashHitBox hitBox){
+    private MovecraftLocation surfaceLoc(MovecraftLocation ml) {
+        MovecraftLocation surfaceLoc = ml;
+        Material testType;
+        boolean hitSurface = false;
+        do {
+            surfaceLoc = surfaceLoc.translate(0, 1, 0);
+            testType = surfaceLoc.toBukkit(craft.getW()).getBlock().getType();
+        } while ((testType != Material.AIR &&
+                !craft.getType().getPassthroughBlocks().contains(testType) &&
+                !oldHitBox.contains(surfaceLoc)) &&
+                surfaceLoc.getY() + 1 > craft.getType().getMaxHeightLimit());
+        return surfaceLoc;
+    }
+
+    private int inclineCraft(HashHitBox hitBox){
         if (isOnGround(hitBox) && dy < 0){
             dy = 0;
         }
@@ -455,37 +483,71 @@ public class TranslationTask extends AsyncTask {
             MovecraftLocation nl = ml.translate(dx, dy, dz);
             if (hitBox.contains(nl))
                 continue;
-            if (ml.getY() > hitBox.getMinY())
-                continue;
             collisionBox.add(nl);
         }
-        for (MovecraftLocation ml : collisionBox){
-            if (!ml.toBukkit(craft.getW()).getBlock().getType().equals(Material.AIR) && !craft.getType().getPassthroughBlocks().contains(ml.toBukkit(craft.getW()).getBlock().getType()) && !craft.getType().getHarvestBlocks().contains(ml.toBukkit(craft.getW()).getBlock().getType())){
-                return true;
-            }
-        }
 
-        return false;
+        int elevation = 0;
+        for (MovecraftLocation ml : collisionBox){
+            Material testType = ml.toBukkit(craft.getW()).getBlock().getType();
+            if (testType == Material.AIR || craft.getType().getPassthroughBlocks().contains(testType)) {
+                continue;
+            }
+            MovecraftLocation surfaceLoc = surfaceLoc(ml);
+            if (elevation < surfaceLoc.subtract(ml).getY()) {
+                elevation = surfaceLoc.subtract(ml).getY();
+            }
+
+        }
+        if (elevation == 0) {
+            return 0;
+        }
+        HashHitBox movedCollBox = new HashHitBox();
+        for (MovecraftLocation ml : collisionBox) {
+            movedCollBox.add(ml.translate(0, elevation, 0));
+
+        }
+        return movedCollBox.getMinY() - hitBox.getMinY();
+    }
+
+    private int dropDistance (HashHitBox hitBox) {
+        MutableHitBox bottomLocs = new HashHitBox();
+        for (MovecraftLocation location : hitBox){
+            if (location.getY() != hitBox.getLocalMinY(location.getX(), location.getZ())) {
+                continue;
+            }
+            //Otherwise, add to bottom locations
+            bottomLocs.add(location.translate(0, -1, 0));
+        }
+        int dropDistance = 0;
+
+        do {
+            boolean hitGround = false;
+
+            for (MovecraftLocation ml : bottomLocs) {
+                //This has to be subtracted by one, or non-passthrough blocks will be within the y drop path
+                //obstructing the craft
+                Material testType = ml.translate(0, dropDistance , 0).toBukkit(craft.getW()).getBlock().getType();
+                hitGround = testType != Material.AIR && !craft.getType().getPassthroughBlocks().contains(testType);
+                if (hitGround) {
+                    break;
+                }
+            }
+            if (hitGround) {
+                break;
+            }
+            dropDistance--;
+        } while (dropDistance > craft.getType().getGravityDropDistance());
+        return dropDistance;
     }
 
     private boolean isOnGround(HashHitBox hitBox){
         MutableHitBox bottomLocs = new HashHitBox();
         MutableHitBox translatedBottomLocs = new HashHitBox();
+        if (hitBox.getMinY() <= craft.getType().getMinHeightLimit()) {
+            return true;
+        }
         for (MovecraftLocation location : hitBox){
-            MovecraftLocation beneath = location.translate(0, -1, 0);
-            //If the hitbox contains the location beneath this one, continue the loop
-            if (hitBox.contains(beneath)){
-                    continue;
-            }
-            //If not, check if it is an exterior location
-            int y;
-            for (y = beneath.getY() ; y >= hitBox.getMinY() ; y--){
-                if (hitBox.contains(beneath.getX(), y, beneath.getZ())){
-                    break;
-                }
-            }
-            //Continue if the shift was an interior location
-            if (y > hitBox.getMinY()){
+            if (location.getY() > hitBox.getLocalMinY(location.getX(), location.getZ())) {
                 continue;
             }
             //Otherwise, add to bottom locations
@@ -504,7 +566,7 @@ public class TranslationTask extends AsyncTask {
         for (MovecraftLocation translatedBottomLoc : translatedBottomLocs){
             MovecraftLocation beneath = translatedBottomLoc.translate(0, -1, 0);
             Material testType = beneath.toBukkit(craft.getW()).getBlock().getType();
-            if (bottomLocs.contains(beneath) || testType == Material.AIR || craft.getType().getPassthroughBlocks().contains(testType)){
+            if (hitBox.contains(beneath) || bottomLocs.contains(beneath) || testType == Material.AIR || craft.getType().getPassthroughBlocks().contains(testType)){
                 continue;
             }
             translatedBottomLocsInAir = false;

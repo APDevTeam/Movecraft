@@ -1,3 +1,4 @@
+
 /*
  * This file is part of Movecraft.
  *
@@ -90,6 +91,8 @@ final public class CraftType {
     @NotNull private final List<Material> harvesterBladeBlocks;
     @NotNull private final Set<Material> passthroughBlocks;
     @NotNull private final Set<Material> forbiddenHoverOverBlocks;
+    private final int gravityInclineDistance;
+    private final int gravityDropDistance;
 
     @SuppressWarnings("unchecked")
     public CraftType(File f) {
@@ -230,6 +233,9 @@ final public class CraftType {
         dynamicFlyBlockSpeedFactor = doubleFromObject(data.getOrDefault("dynamicFlyBlockSpeedFactor", 0d));
         dynamicFlyBlock = integerFromObject(data.getOrDefault("dynamicFlyBlock", 0));
         chestPenalty = doubleFromObject(data.getOrDefault("chestPenalty", 0));
+        gravityInclineDistance = integerFromObject(data.getOrDefault("gravityInclineDistance", -1));
+        int dropdist = integerFromObject(data.getOrDefault("gravityDropDistance", -8));
+        gravityDropDistance = dropdist > 0 ? -dropdist : dropdist;
     }
 
     private int integerFromObject(Object obj) {
@@ -616,6 +622,14 @@ final public class CraftType {
     @NotNull
     public Set<Material> getForbiddenHoverOverBlocks() {
         return forbiddenHoverOverBlocks;
+    }
+
+    public int getGravityDropDistance() {
+        return gravityDropDistance;
+    }
+
+    public int getGravityInclineDistance() {
+        return gravityInclineDistance;
     }
 
     private class TypeNotFoundException extends RuntimeException {
