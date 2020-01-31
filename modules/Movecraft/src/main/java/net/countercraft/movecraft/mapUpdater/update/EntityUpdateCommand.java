@@ -17,7 +17,6 @@
 
 package net.countercraft.movecraft.mapUpdater.update;
 
-import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.utils.TeleportUtils;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
@@ -53,7 +52,7 @@ public class EntityUpdateCommand extends UpdateCommand {
     @Override
     public void doUpdate() {
         final Location entityLoc = entity.getLocation();
-        if (!(entity instanceof Player) || yaw > .01 || pitch > .01 || yaw < -.01 || pitch < -.01 || Settings.IsPre1_9) {
+        if (!(entity instanceof Player) || yaw > .01 || pitch > .01 || yaw < -.01 || pitch < -.01 ) {
             entity.teleport(new Location(entity.getWorld(), x + entityLoc.getX(),y + entityLoc.getY(),z + entityLoc.getZ(),yaw + entityLoc.getYaw(),pitch + entityLoc.getPitch()));
             return;
         }
