@@ -237,8 +237,6 @@ public class TranslationTask extends AsyncTask {
         final List<MovecraftLocation> harvestedBlocks = new ArrayList<>();
         final List<Material> harvesterBladeBlocks = craft.getType().getHarvesterBladeBlocks();
         final HashHitBox collisionBox = new HashHitBox();
-        final Set<UpdateCommand> chunkUpdateCmds = new HashSet<>();
-        boolean structureIntact = true;
         for(MovecraftLocation oldLocation : oldHitBox){
             final MovecraftLocation newLocation = oldLocation.translate(dx,dy,dz);
             //If the new location already exists in the old hitbox than this is unnecessary because a craft can't hit
