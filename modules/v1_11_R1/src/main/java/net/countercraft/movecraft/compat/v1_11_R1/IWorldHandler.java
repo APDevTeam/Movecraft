@@ -1,17 +1,16 @@
 package net.countercraft.movecraft.compat.v1_11_R1;
 
-import net.countercraft.movecraft.config.Settings;
-import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
-import net.countercraft.movecraft.utils.CollectionUtils;
 import net.countercraft.movecraft.WorldHandler;
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.utils.CollectionUtils;
+import net.countercraft.movecraft.utils.MathUtils;
 import net.minecraft.server.v1_11_R1.*;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_11_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_11_R1.block.CraftBlockState;
 import org.bukkit.craftbukkit.v1_11_R1.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_11_R1.util.CraftMagicNumbers;
 import org.bukkit.entity.Player;
@@ -188,14 +187,11 @@ public class IWorldHandler extends WorldHandler {
         //TODO: Simplify
         //TODO: go by chunks
         //TODO: Don't move unnecessary blocks
-        //get the blocks
+        //get the blocks and translate the positions
         List<IBlockData> blockData = new ArrayList<>();
-        for(BlockPosition position : positions){
-            blockData.add(nativeWorld.getType(position));
-        }
-        //translate the positions
         List<BlockPosition> newPositions = new ArrayList<>();
         for(BlockPosition position : positions){
+            blockData.add(nativeWorld.getType(position));
             newPositions.add(position.a(translateVector));
         }
         //create the new block
