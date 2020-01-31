@@ -217,6 +217,19 @@ public class TranslationTask extends AsyncTask {
                 } else {
                     dy = incline;
                 }
+            } else if (!isOnGround(oldHitBox) && craft.getType().getCanHover()){
+                MovecraftLocation midPoint = oldHitBox.getMidPoint();
+                int centreMinY = oldHitBox.getLocalMinY(midPoint.getX(), midPoint.getZ());
+                int groundY = centreMinY;
+                World w = craft.getW();
+                while (w.getBlockAt(midPoint.getX(), groundY - 1, midPoint.getZ()).getType() == Material.AIR || craft.getType().getPassthroughBlocks().contains(w.getBlockAt(midPoint.getX(), groundY - 1, midPoint.getZ()).getType())){
+                    groundY--;
+                }
+                if (centreMinY - groundY > craft.getType().getHoverLimit()){
+                    dy = -1;
+                }
+            } else if (!isOnGround(oldHitBox)){
+                dy = dropDistance(oldHitBox);
             }
         }
         //Fail the movement if the craft is too high
