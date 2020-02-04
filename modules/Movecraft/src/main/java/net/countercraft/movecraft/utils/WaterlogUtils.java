@@ -1,33 +1,48 @@
 package net.countercraft.movecraft.utils;
 
 import net.countercraft.movecraft.MovecraftLocation;
+import net.countercraft.movecraft.craft.Craft;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.data.Bisected;
 import org.bukkit.block.data.Waterlogged;
+import org.bukkit.block.data.type.TrapDoor;
 
 public class WaterlogUtils {
     private WaterlogUtils(){
 
     }
-    public static boolean adjacentToWater(World world, MovecraftLocation ml){
-        for (MovecraftLocation shift : SHIFTS){
-            final MovecraftLocation test = ml.add(shift);
-            final Block testBlock = test.toBukkit(world).getBlock();
+    public static void waterlogBlocksOnCraft(Craft craft, HitBox interior) {
 
-            if (testBlock.getType() == Material.WATER){
-                return true;
+        for (MovecraftLocation ml : craft.getHitBox()) {
+            boolean waterlog = true;
+            Block b = ml.toBukkit(craft.getW()).getBlock();
+            if (!(b.getBlockData() instanceof Waterlogged)) {
+                continue;
             }
-            else if (testBlock.getBlockData() instanceof Waterlogged){
-                Waterlogged wlog = (Waterlogged) testBlock.getBlockData();
-                if (!wlog.isWaterlogged()){
-                    return false;
+            Waterlogged wLog = (Waterlogged) b.getBlockData();
+            boolean exteriorBlock = false;
+            for (MovecraftLocation shift : SHIFTS) {
+                if (craft.getHitBox().contains(ml.subtract(shift)) || interior.contains(ml.subtract(shift))) {
+                    continue;
                 }
-                return true;
+                exteriorBlock = true;
+                break;
             }
+            if (!exteriorBlock || ml.getY() > craft.getWaterLine()) {
+                waterlog = false;
+            } else if (wLog instanceof TrapDoor) {
+                TrapDoor td = (TrapDoor) wLog;
+                if (td.getHalf() == Bisected.Half.TOP && (interior.contains(ml.translate(0, -1, 0)) || craft.getHitBox().contains(ml.translate(0, -1, 0)))) {
+                    waterlog = false;
+                } else if (td.getHalf() == Bisected.Half.BOTTOM && (interior.contains(ml.translate(0, 1, 0)) || craft.getHitBox().contains(ml.translate(0, 1, 0)))) {
+                    waterlog = false;
+                }
+            }
+            wLog.setWaterlogged(waterlog);
+            b.setBlockData(wLog);
         }
-        return false;
     }
 
     public static boolean isWaterlogged(Location location){

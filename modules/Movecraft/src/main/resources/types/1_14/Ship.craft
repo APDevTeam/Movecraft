@@ -2,24 +2,24 @@ name: Ship
 maxSize: 100000
 minSize: 10
 allowedBlocks:
-- ALL_WOOD
-        - LAVA
-        - ALL_LOG
+        - all_wood
+        - lava
+        - all_log
         - all_planks
-        - GLASS
-        - LAPIS_BLOCK
-        - DISPENSER
-        - NOTE_BLOCK
-        - ALL_BED
+        - glass
+        - lapis_block
+        - dispenser
+        - note_block
+        - all_bed
         - sticky_piston
         - piston_head
         - all_wool
-        - GOLD_BLOCK
-        - IRON_BLOCK
+        - gold_block
+        - iron_block
         - all_slab
-        - BOOKSHELF
-        - TORCH
-        - FIRE
+        - bookshelf
+        - torch
+        - fire
         - oak_stairs
         - birch_stairs
         - jungle_stairs
@@ -60,28 +60,28 @@ allowedBlocks:
         - dragon_egg
         - redstone_lamp
         - ender_chest
-        - TRIPWIRE_HOOK
-        - EMERALD_BLOCK
-        - BEACON
+        - tripwire_hook
+        - emerald_block
+        - beacon
         - cobblestone_wall
         - mossy_cobblestone_wall
-        - FLOWER_POT
-        - all_SKULL
-        - all_ANVIL
-        - TRAPPED_CHEST
-        - COMPARATOR
+        - flower_pot
+        - all_skull
+        - all_anvil
+        - trapped_chest
+        - comparator
         - daylight_detector
-        - REDSTONE_BLOCK
-        - HOPPER
-        - all_QUARTZ_BLOCK
+        - redstone_block
+        - hopper
+        - all_quartz_block
         - all_rail
-        - DROPPER
-        - ALL_TERRACOTTA
-        - ALL_STAINED_GLASS_PANE
-        - SLIME_BLOCK
-        - ALL_CARPET
-        - COAL_BLOCK
-        - END_STONE_BRICKS
+        - dropper
+        - all_terracotta
+        - all_stained_glass_pane
+        - slime_block
+        - all_carpet
+        - coal_block
+        - end_stone_bricks
         - barrel
 canCruise: true
 cruiseSkipBlocks: 4

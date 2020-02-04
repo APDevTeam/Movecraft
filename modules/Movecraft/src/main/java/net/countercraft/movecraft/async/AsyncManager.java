@@ -308,9 +308,6 @@ public class AsyncManager extends BukkitRunnable {
                     //c.setMinZ(task.getData().getMinZ());
                     //c.setHitBox(task.getData().getHitbox());
                     c.setHitBox(task.getNewHitBox());
-                    if (!c.getSinking()) {
-                        addToWaterlogQueue(c);
-                    }
                     // move any cannons that were present
                     if (Movecraft.getInstance().getCannonsPlugin() != null && shipCannons != null) {
                         for (Cannon can : shipCannons) {
@@ -355,7 +352,6 @@ public class AsyncManager extends BukkitRunnable {
 
                         sentMapUpdate = true;
                         c.setHitBox(task.getNewHitBox());
-                        addToWaterlogQueue(c);
                         // rotate any cannons that were present
                         if (Movecraft.getInstance().getCannonsPlugin() != null && shipCannons != null) {
                             Location tloc = task.getOriginPoint().toBukkit(task.getCraft().getW());

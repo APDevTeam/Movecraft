@@ -91,6 +91,8 @@ public class CraftTranslateCommand extends UpdateCommand {
                 }
             }
         }
+        MutableHitBox interior = new HashHitBox();
+        MutableHitBox exterior = new HashHitBox();
         if(passthroughBlocks.isEmpty()){
             //translate the craft
             Movecraft.getInstance().getWorldHandler().translateCraft(craft,displacement);
@@ -206,8 +208,13 @@ public class CraftTranslateCommand extends UpdateCommand {
 
                 }
             }
+            interior.addAll(failed);
+
         }
         MapUpdateManager.getInstance().scheduleUpdates(toMove);
+        if (!Settings.IsLegacy) {
+            WaterlogUtils.waterlogBlocksOnCraft(craft, interior);
+        }
         if (!craft.isNotProcessing()) {
             craft.setProcessing(false);
         }

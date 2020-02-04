@@ -2,22 +2,22 @@ name: Turret
 maxSize: 1000
 minSize: 1
 allowedBlocks:
-        - ALL_WOOD
-        - WATER
-        - LAVA
-        - ALL_LOG
+        - all_wood
+        - water
+        - lava
+        - all_log
         - all_planks
-        - GLASS
-        - DISPENSER
-        - NOTE_BLOCK
-        - ALL_BED
+        - glass
+        - dispenser
+        - note_block
+        - all_bed
         - sticky_piston
         - piston_head
         - light_gray_wool
         - all_slab
-        - BOOKSHELF
-        - TORCH
-        - FIRE
+        - bookshelf
+        - torch
+        - fire
         - oak_stairs
         - birch_stairs
         - jungle_stairs
@@ -48,27 +48,27 @@ allowedBlocks:
         - dragon_egg
         - redstone_lamp
         - ender_chest
-        - TRIPWIRE_HOOK
-        - EMERALD_BLOCK
-        - BEACON
-        - FLOWER_POT
-        - all_SKULL
-        - all_ANVIL
-        - TRAPPED_CHEST
-        - COMPARATOR
+        - tripwire_hook
+        - emerald_block
+        - beacon
+        - flower_pot
+        - all_skull
+        - all_anvil
+        - trapped_chest
+        - comparator
         - daylight_detector
-        - REDSTONE_BLOCK
-        - HOPPER
+        - redstone_block
+        - hopper
         - all_rail
-        - DROPPER
+        - dropper
         - light_gray_terracotta
         - gray_terracotta
         - black_terracotta
-        - ALL_STAINED_GLASS_PANE
-        - SLIME_BLOCK
-        - ALL_CARPET
-        - COAL_BLOCK
-        - END_STONE_BRICKS
+        - all_stained_glass_pane
+        - slime_block
+        - all_carpet
+        - coal_block
+        - end_stone_bricks
 forbiddenBlocks:
     - PISTON_HEAD
 
