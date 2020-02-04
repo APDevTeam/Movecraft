@@ -184,16 +184,12 @@ public class IWorldHandler extends WorldHandler {
         //TODO: Simplify
         //TODO: go by chunks
         //TODO: Don't move unnecessary blocks
-        //get the blocks
+        //get the blocks and translate the positions
         List<IBlockData> blockData = new ArrayList<>();
-        for(BlockPosition position : positions){
-            blockData.add(nativeWorld.getType(position));
-        }
-        //translate the positions
         List<BlockPosition> newPositions = new ArrayList<>();
         for(BlockPosition position : positions){
-            BlockPosition newPos = position.a(translateVector);
-            newPositions.add(newPos);
+            blockData.add(nativeWorld.getType(position));
+            newPositions.add(position.a(translateVector));
         }
         Map<BlockPosition, IBlockData> redstoneComponents = new HashMap<>();
         //create the new block
