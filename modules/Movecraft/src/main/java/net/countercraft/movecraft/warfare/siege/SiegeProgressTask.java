@@ -26,16 +26,17 @@ public class SiegeProgressTask extends SiegeTask {
 
     //every 20 ticks = 1 second
     public void run() {
-        int timeLeft = siege.getDuration() - (((int) System.currentTimeMillis() - siege.getStartTime()) / 1000);
+        int timeLeft = (siege.getDuration() - (int) ((System.currentTimeMillis() - siege.getStartTime())/1000));
         double progress = (double) (siege.getDelayBeforeStart() - timeLeft) / (double) (siege.getDuration() - siege.getDelayBeforeStart());
-        siege.getProgressBar().setProgress(Math.min(progress, 1.0));Player siegeLeader = Movecraft.getInstance().getServer().getPlayer(siege.getPlayerUUID());
+        siege.getProgressBar().setProgress(Math.min(progress, 1.0));
+        Player siegeLeader = Movecraft.getInstance().getServer().getPlayer(siege.getPlayerUUID());
         Craft siegeCraft = CraftManager.getInstance().getCraftByPlayer(siegeLeader);
+
         BarColor bColor = leaderPilotingShip(siegeCraft) && leaderShipInRegion(siegeCraft, siegeLeader) ? BarColor.GREEN : BarColor.RED;
         siege.getProgressBar().setColor(bColor);
         if (timeLeft % Settings.SiegeTaskSeconds != 0) {
             return;
         }
-
 
 
 
@@ -64,7 +65,7 @@ public class SiegeProgressTask extends SiegeTask {
             endSiege(siegeCraft, siegeLeader);
         }
 
-        siege.setStage(SiegeStage.INACTIVE);
+
 
         for (Player p : Bukkit.getOnlinePlayers()){
             p.playSound(p.getLocation(), Sound.ENTITY_WITHER_DEATH, 1,0);
@@ -87,6 +88,7 @@ public class SiegeProgressTask extends SiegeTask {
         }
         siege.getProgressBar().setVisible(false);
         siege.getProgressBar().setColor(BarColor.BLUE);
+        siege.setStage(SiegeStage.INACTIVE);
     }
 
     private void winSiege(Player siegeLeader) {

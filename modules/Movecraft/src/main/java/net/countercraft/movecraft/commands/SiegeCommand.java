@@ -185,7 +185,8 @@ public class SiegeCommand implements CommandExecutor {
             Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), startCommand.replaceAll("%r", siege.getAttackRegion()).replaceAll("%c", "" + siege.getCost()));
         }
         Bukkit.getServer().broadcastMessage(String.format(I18nSupport.getInternationalisedString("Siege - Siege About To Begin")
-                , player.getDisplayName(), siege.getName()) + formatMinutes(siege.getDelayBeforeStart()));
+                , player.getDisplayName(), siege.getName()) + String.format(I18nSupport.getInternationalisedString("Siege - Ending In X Minutes"), siege.getDelayBeforeStart() / 60));
+
         for (Player p : Bukkit.getOnlinePlayers()) {
             p.playSound(p.getLocation(), Sound.ENTITY_WITHER_DEATH, 1, 0.25F);
         }
@@ -194,7 +195,7 @@ public class SiegeCommand implements CommandExecutor {
         siege.setProgressBar(Bukkit.createBossBar(siege.getName(), BarColor.BLUE, BarStyle.SEGMENTED_20, BarFlag.DARKEN_SKY));
         siege.getProgressBar().setProgress(0.0);
         siege.setPlayerUUID(player.getUniqueId());
-        siege.setStartTime((int)System.currentTimeMillis());
+        siege.setStartTime(System.currentTimeMillis());
         siege.setStage(SiegeStage.PREPERATION);
     }
 
