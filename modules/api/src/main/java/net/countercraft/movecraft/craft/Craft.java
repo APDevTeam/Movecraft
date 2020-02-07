@@ -143,8 +143,11 @@ public abstract class Craft {
 
     public void setCruising(boolean cruising) {
         if(notificationPlayer!=null){
-
-            notificationPlayer.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent("Cruising " + (cruising ? "enabled" : "disabled")));
+            if (Settings.IsPre1_9) {
+                notificationPlayer.sendMessage("Cruising " + (cruising ? "enabled" : "disabled"));
+            } else {
+                notificationPlayer.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent("Cruising " + (cruising ? "enabled" : "disabled")));
+            }
         }
         this.cruising = cruising;
     }

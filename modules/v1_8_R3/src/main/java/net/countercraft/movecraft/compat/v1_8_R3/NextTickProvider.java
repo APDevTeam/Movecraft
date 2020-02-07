@@ -1,10 +1,10 @@
-package net.countercraft.movecraft.compat.v1_9_R2;
+package net.countercraft.movecraft.compat.v1_8_R3;
 
-import net.minecraft.server.v1_9_R2.BlockPosition;
-import net.minecraft.server.v1_9_R2.NextTickListEntry;
-import net.minecraft.server.v1_9_R2.WorldServer;
+import net.minecraft.server.v1_8_R3.BlockPosition;
+import net.minecraft.server.v1_8_R3.NextTickListEntry;
+import net.minecraft.server.v1_8_R3.WorldServer;
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.bukkit.craftbukkit.v1_9_R2.util.HashTreeSet;
+import org.bukkit.craftbukkit.v1_8_R3.util.HashTreeSet;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -29,10 +29,10 @@ public class NextTickProvider {
 
         try {
 
-            Field UField = WorldServer.class.getDeclaredField("U");
+            Field UField = WorldServer.class.getDeclaredField("V");
             UField.setAccessible(true);
             U = (List<NextTickListEntry>) UField.get(world);
-            Field nextTickListField = WorldServer.class.getDeclaredField("nextTickList");
+            Field nextTickListField = WorldServer.class.getDeclaredField("M");
             nextTickListField.setAccessible(true);
             nextTickList = (HashTreeSet<NextTickListEntry>) nextTickListField.get(world);
         } catch (IllegalAccessException | IllegalArgumentException | NoSuchFieldException | SecurityException e1) {

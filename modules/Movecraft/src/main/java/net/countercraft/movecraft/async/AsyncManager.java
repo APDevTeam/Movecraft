@@ -33,17 +33,10 @@ import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.mapUpdater.update.BlockCreateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
-import net.countercraft.movecraft.mapUpdater.update.WaterlogUpdateCommand;
 import net.countercraft.movecraft.utils.*;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.data.Bisected;
-import org.bukkit.block.data.BlockData;
-import org.bukkit.block.data.Waterlogged;
-import org.bukkit.block.data.type.Slab;
-import org.bukkit.block.data.type.Stairs;
-import org.bukkit.block.data.type.TrapDoor;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.SmallFireball;
 import org.bukkit.entity.TNTPrimed;
@@ -54,9 +47,6 @@ import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
-
-import static net.countercraft.movecraft.utils.WaterlogUtils.isWaterlogged;
-import static net.countercraft.movecraft.utils.WaterlogUtils.waterToSides;
 
 @SuppressWarnings("deprecation")
 public class AsyncManager extends BukkitRunnable {
@@ -1095,9 +1085,6 @@ public class AsyncManager extends BukkitRunnable {
         processFadingBlocks();
         processDetection();
         processAlgorithmQueue();
-        if (!Settings.IsLegacy){
-            processWaterlogging();
-        }
         //processScheduledBlockChanges();
 //		if(Settings.CompatibilityMode==false)
 //			FastBlockChanger.getInstance().run();
@@ -1118,62 +1105,6 @@ public class AsyncManager extends BukkitRunnable {
             }
         }
 
-    }
-
-    private void processWaterlogging() {
-        if (waterlogCheckQueue.isEmpty())
-            return;
-        final Set<UpdateCommand> updates = new HashSet<>();
-
-        final Craft craft = waterlogCheckQueue.poll();
-            for (MovecraftLocation location : craft.getHitBox()){
-                final BlockData bData = location.toBukkit(craft.getW()).getBlock().getBlockData();
-                if (!(bData instanceof Waterlogged)){
-                    continue;
-                }
-                final Waterlogged wLog = (Waterlogged) bData;
-                boolean waterlog = false;
-                if (wLog.isWaterlogged() && location.getY() > craft.getWaterLine()){
-                    updates.add(new WaterlogUpdateCommand(location.toBukkit(craft.getW()), false));
-                } else if (!wLog.isWaterlogged() && location.getY() <= craft.getWaterLine() ){
-                    if (wLog instanceof TrapDoor){
-                        final TrapDoor trapDoor = (TrapDoor) wLog;
-                        final Location testLoc = location.translate(0, (trapDoor.getHalf() == Bisected.Half.TOP ? -1 : 1), 0).toBukkit(craft.getW());
-                        if (testLoc.getBlock().getType() == Material.WATER || isWaterlogged(testLoc)){
-                            waterlog = true;
-                        }
-                    } else if (wLog instanceof Slab){
-                        final Slab slab = (Slab) wLog;
-                        if (slab.getType() == Slab.Type.DOUBLE){
-                            continue;
-                        }
-                        final Location testLoc = location.translate(0, (slab.getType() == Slab.Type.TOP ? -1 : 1), 0).toBukkit(craft.getW());
-                        if (testLoc.getBlock().getType() == Material.WATER || isWaterlogged(testLoc) || waterToSides(location.toBukkit(craft.getW()))){
-                            waterlog = true;
-                        }
-
-                    } else if (wLog instanceof Stairs){
-                        final Stairs stairs = (Stairs) wLog;
-                        Block testBlock = location.toBukkit(craft.getW()).getBlock().getRelative(stairs.getFacing().getOppositeFace());
-                        Block yTest = location.translate(0, (stairs.getHalf() == Bisected.Half.TOP ? -1 : 1), 0).toBukkit(craft.getW()).getBlock();
-                        waterlog = testBlock.getType() == Material.WATER || isWaterlogged(testBlock.getLocation()) || yTest.getType() == Material.WATER || isWaterlogged(yTest.getLocation());
-                    }
-
-                    else if (waterToSides( location.toBukkit(craft.getW()))){
-                        waterlog = true;
-                    }
-
-                }
-                if (waterlog){
-                    updates.add(new WaterlogUpdateCommand(location.toBukkit(craft.getW()), true));
-                }
-            }
-
-        MapUpdateManager.getInstance().scheduleUpdates(updates);
-    }
-
-    private void addToWaterlogQueue(final Craft craft){
-        waterlogCheckQueue.add(craft);
     }
 
 

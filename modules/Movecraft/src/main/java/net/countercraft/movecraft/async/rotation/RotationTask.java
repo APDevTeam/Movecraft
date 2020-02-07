@@ -37,10 +37,7 @@ import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.update.CraftRotateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import net.countercraft.movecraft.utils.*;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Furnace;
@@ -176,8 +173,12 @@ public class RotationTask extends AsyncTask {
 
             // See if they are permitted to build in the area, if WorldGuard integration is turned on
             Location plugLoc = newLocation.toBukkit(w);
+            WorldBorder border = craft.getW().getWorldBorder();
+            boolean inside = Settings.IsPre1_9 ? plugLoc.subtract(border.getCenter()).getBlockX() <= border.getSize() &&
+                    plugLoc.subtract(border.getCenter()).getBlockZ() <= border.getSize() :
+                    craft.getW().getWorldBorder().isInside(plugLoc);
 
-            if (!craft.getW().getWorldBorder().isInside(plugLoc)) {
+            if (!inside) {
                 failMessage = I18nSupport.getInternationalisedString("Rotation - Failed Craft cannot pass world border");
                 failed = true;
                 return;

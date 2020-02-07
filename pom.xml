@@ -20,6 +20,8 @@
 
     <modules>
         <module>modules/api</module>
+        <module>modules/v1_7_R4</module>
+        <module>modules/v1_8_R3</module>
         <module>modules/v1_9_R2</module>
         <module>modules/v1_10_R1</module>
         <module>modules/v1_11_R1</module>
@@ -30,6 +32,8 @@
         <module>modules/worldedit/WE6Utils</module>
         <module>modules/worldedit/WE7Utils</module>
         <module>modules/Movecraft</module>
+
+
     </modules>
 
     <repositories>
