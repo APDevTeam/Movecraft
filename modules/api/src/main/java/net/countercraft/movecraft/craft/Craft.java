@@ -332,7 +332,7 @@ public abstract class Craft {
             Material mat = location.toBukkit(w).getBlock().getType();
             counter.put(mat, counter.getOrDefault(mat, 0) + 1);
         }
-        double chestPenalty = counter.getOrDefault(Material.CHEST, 0) + counter.getOrDefault(Material.TRAPPED_CHEST, 0);
+        double chestPenalty = counter.getOrDefault(Material.CHEST, 0) + counter.getOrDefault(Material.TRAPPED_CHEST, 0) + counter.getOrDefault(Material.getMaterial("BARREL"), 0);
         chestPenalty*=type.getChestPenalty();
         if(!cruising)
             return type.getTickCooldown()+(int)chestPenalty;

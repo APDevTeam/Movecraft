@@ -188,9 +188,16 @@ final public class CraftType {
                     String str = (String) i;
                     if (str.startsWith("ALL_")) {
                         str = str.replace("ALL_", "");
-                        for (Material type : Material.values()) {
-
+                        for (Material type : Material.values()){
+                            str = str.replace("ALL", "");
+                            if (!type.name().endsWith(str)){
+                                continue;
+                            } else if (type.name().split("_").length == 1 && !type.name().endsWith(str.substring(1))) {
+                                continue;
+                            }
+                            harvestBlocks.add(type);
                         }
+                        continue;
                     }
                     Material mat = Material.getMaterial((String) i);
                     harvestBlocks.add(mat);
@@ -209,7 +216,10 @@ final public class CraftType {
                         str = str.toUpperCase();
                         if (str.startsWith("ALL_")){
                             for (Material type : Material.values()){
-                                if (!type.name().endsWith(str.replace("ALL_", "_"))){
+                                str = str.replace("ALL", "");
+                                if (!type.name().endsWith(str)){
+                                    continue;
+                                } else if (type.name().split("_").length == 1 && !type.name().endsWith(str.substring(1))) {
                                     continue;
                                 }
                                 harvesterBladeBlocks.add(type);
@@ -230,7 +240,20 @@ final public class CraftType {
                 ArrayList objList = (ArrayList) data.get("passthroughBlocks");
                 for (Object i : objList) {
                     if (i instanceof String) {
-                        Material mat = Material.getMaterial(((String) i).toUpperCase());
+                        String str = ((String) i).toUpperCase();
+                        if (str.startsWith("ALL_")) {
+                            str = str.replace("ALL", "");
+                            for (Material type : Material.values()) {
+                                if (!type.name().endsWith(str)) {
+                                    continue;
+                                } else if (type.name().split("_").length == 1 && !type.name().endsWith(str.substring(1))) {
+                                    continue;
+                                }
+                                passthroughBlocks.add(type);
+                            }
+                            continue;
+                        }
+                        Material mat = Material.getMaterial(str);
                         passthroughBlocks.add(mat);
                     } else {
                         Material mat = Material.getMaterial((Integer) i);

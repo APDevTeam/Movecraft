@@ -50,6 +50,8 @@ public class BlockLimitManager {
                             for (Material m : Material.values()){
                                 if (!m.name().endsWith(string)){
                                     continue;
+                                } else if (m.name().split("_").length == 1 && m.name().endsWith(string.substring(1))) {
+                                    continue;
                                 }
                                 blocks.add(new MovecraftBlock(m));
                             }
@@ -101,9 +103,11 @@ public class BlockLimitManager {
                                 dataList = new ArrayList<>();
                             dataList.add(data);
                         } else if (string.toUpperCase().startsWith("ALL_")){
-                            string = string.replace("ALL_", "");
+                            string = string.replace("ALL", "");
                             for (Material m : Material.values()){
                                 if (!m.name().endsWith(string)){
+                                    continue;
+                                } else if (m.name().split("_").length == 1 && m.name().endsWith(string.substring(1))) {
                                     continue;
                                 }
                                 blocks.add(new MovecraftBlock(m));

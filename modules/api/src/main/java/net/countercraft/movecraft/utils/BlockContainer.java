@@ -45,6 +45,8 @@ public class BlockContainer implements Iterable<MovecraftBlock>{
                         for (Material m : Material.values()){
                             if (!m.name().endsWith(str)){
                                 continue;
+                            } else if (m.name().split("_").length == 1 && m.name().endsWith(str.substring(1))) {
+                                continue;
                             }
                             blocks.add(new MovecraftBlock(m));
                         }
