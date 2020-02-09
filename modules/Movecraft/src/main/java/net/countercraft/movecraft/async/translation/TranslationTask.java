@@ -60,7 +60,7 @@ public class TranslationTask extends AsyncTask {
         final CraftPreTranslateEvent preTranslateEvent = new CraftPreTranslateEvent(craft, dx, dy, dz);
         Bukkit.getServer().getPluginManager().callEvent(preTranslateEvent);
         if (preTranslateEvent.isCancelled()) {
-            fail(preTranslateEvent.getFailMessage());
+            fail(preTranslateEvent.getFailMessage(), preTranslateEvent.isPlayingFailSound());
             return;
         }
         if (dx != preTranslateEvent.getDx()) {
@@ -212,7 +212,7 @@ public class TranslationTask extends AsyncTask {
         CraftTranslateEvent translateEvent = new CraftTranslateEvent(craft, oldHitBox, newHitBox);
         Bukkit.getServer().getPluginManager().callEvent(translateEvent);
         if(translateEvent.isCancelled()){
-            this.fail(translateEvent.getFailMessage());
+            this.fail(translateEvent.getFailMessage(), translateEvent.isPlayingFailSound());
             return;
         }
 
@@ -320,20 +320,26 @@ public class TranslationTask extends AsyncTask {
         return output;
     }
 
-    private void fail(String message) {
+    private void fail(String failMessage) {
+        fail(failMessage, true);
+    }
+
+    private void fail(String message, boolean playSound) {
         failed=true;
         failMessage=message;
         Player craftPilot = CraftManager.getInstance().getPlayerFromCraft(craft);
-        if (craftPilot != null) {
-            Location location = craftPilot.getLocation();
-            if (!craft.getDisabled()) {
-                craft.getW().playSound(location, Sound.BLOCK_ANVIL_LAND, 1.0f, 0.25f);
-                //craft.setCurTickCooldown(craft.getType().getCruiseTickCooldown());
-            } else {
-                craft.getW().playSound(location, Sound.ENTITY_IRONGOLEM_DEATH, 5.0f, 5.0f);
-                //craft.setCurTickCooldown(craft.getType().getCruiseTickCooldown());
-            }
+        if (craftPilot == null) {
+            return;
         }
+        Location location = craftPilot.getLocation();
+        if (craft.getDisabled()) {
+            craft.getW().playSound(location, Sound.ENTITY_IRONGOLEM_DEATH, 5.0f, 5.0f);
+            return;
+        }
+        if (!playSound) {
+            return;
+        }
+        craft.getW().playSound(location, Sound.BLOCK_ANVIL_LAND, 1.0f, 0.25f);
     }
 
     private static final MovecraftLocation[] SHIFTS = {

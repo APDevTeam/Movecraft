@@ -14,6 +14,7 @@ public class CraftPreTranslateEvent extends CraftEvent implements Cancellable {
     private int dx, dy, dz;
     private boolean cancelled = false;
     @NotNull private String failMessage = "";
+    private boolean playingFailSound = true;
     @NotNull private static final HandlerList HANDLERS = new HandlerList();
     public CraftPreTranslateEvent(@NotNull Craft craft, int dx, int dy, int dz) {
         super(craft, true);
@@ -30,6 +31,11 @@ public class CraftPreTranslateEvent extends CraftEvent implements Cancellable {
         return dx;
     }
 
+    /**
+     * Sets the translation change in X direction
+     * @param dx translation change in X direction
+     */
+
     public void setDx(int dx) {
         this.dx = dx;
     }
@@ -42,6 +48,10 @@ public class CraftPreTranslateEvent extends CraftEvent implements Cancellable {
         return dy;
     }
 
+    /**
+     * Sets the translation change in Y direction
+     * @param dy translation change in Y direction
+     */
     public void setDy(int dy) {
         this.dy = dy;
     }
@@ -54,6 +64,10 @@ public class CraftPreTranslateEvent extends CraftEvent implements Cancellable {
         return dz;
     }
 
+    /**
+     * Sets the translation change in Z direction
+     * @param dz translation change in Z direction
+     */
     public void setDz(int dz) {
         this.dz = dz;
     }
@@ -61,6 +75,14 @@ public class CraftPreTranslateEvent extends CraftEvent implements Cancellable {
     @NotNull
     public String getFailMessage() {
         return failMessage;
+    }
+
+    public boolean isPlayingFailSound() {
+        return playingFailSound;
+    }
+
+    public void setPlayingFailSound(boolean playingFailSound) {
+        this.playingFailSound = playingFailSound;
     }
 
     public void setFailMessage(@NotNull String failMessage) {
