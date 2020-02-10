@@ -196,7 +196,7 @@ public class RotationTask extends AsyncTask {
             return;
         }
         //call event
-        CraftRotateEvent event = new CraftRotateEvent(craft, rotation, originPoint, newHitBox, oldHitBox);
+        CraftRotateEvent event = new CraftRotateEvent(craft, rotation, originPoint, oldHitBox, newHitBox);
         Bukkit.getServer().getPluginManager().callEvent(event);
         if(event.isCancelled()){
             failed = true;
