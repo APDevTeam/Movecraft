@@ -325,13 +325,13 @@ public class IWorldHandler extends WorldHandler {
         chunk.tileEntities.put(newPosition, tile);
     }
 
-    private class TileHolder {
+    private class TileHolder{
         @NotNull private final TileEntity tile;
         @Nullable
         private final NextTickListEntry nextTick;
         @NotNull private final BlockPosition tilePosition;
 
-        public TileHolder(@NotNull TileEntity tile, @Nullable NextTickListEntry nextTick, @NotNull BlockPosition tilePosition) {
+        public TileHolder(@NotNull TileEntity tile, @Nullable NextTickListEntry nextTick, @NotNull BlockPosition tilePosition){
             this.tile = tile;
             this.nextTick = nextTick;
             this.tilePosition = tilePosition;
