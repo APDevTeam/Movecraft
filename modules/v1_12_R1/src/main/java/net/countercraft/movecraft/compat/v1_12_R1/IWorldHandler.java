@@ -326,12 +326,10 @@ public class IWorldHandler extends WorldHandler {
     }
 
     private class TileHolder {
-        @NotNull
-        private final TileEntity tile;
+        @NotNull private final TileEntity tile;
         @Nullable
         private final NextTickListEntry nextTick;
-        @NotNull
-        private final BlockPosition tilePosition;
+        @NotNull private final BlockPosition tilePosition;
 
         public TileHolder(@NotNull TileEntity tile, @Nullable NextTickListEntry nextTick, @NotNull BlockPosition tilePosition) {
             this.tile = tile;
