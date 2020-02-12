@@ -392,7 +392,7 @@ public class TranslationTask extends AsyncTask {
                 }
             }
             //call event
-            final ItemHarvestEvent harvestEvent = new ItemHarvestEvent(craft, drops);
+            final ItemHarvestEvent harvestEvent = new ItemHarvestEvent(craft, drops, harvestedBlock.toBukkit(craft.getW()));
             Bukkit.getServer().getPluginManager().callEvent(harvestEvent);
             for (ItemStack drop : drops) {
                 ItemStack retStack = putInToChests(drop, chests);
