@@ -219,6 +219,15 @@ public class IWorldHandler extends WorldHandler {
         for(BlockPosition position : deletePositions){
             setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
         }
+
+        for (BlockPosition position : newPositions) {
+            IBlockData type = nativeWorld.getType(position);
+            if (!(type.getBlock() instanceof BlockFire)) {
+                continue;
+            }
+            BlockFire fire = (BlockFire) type.getBlock();
+            fire.b(nativeWorld, position, type, new Random());
+        }
         //*******************************************
         //*       Step six: Send to players       *
         //*******************************************
