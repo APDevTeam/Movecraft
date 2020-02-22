@@ -187,7 +187,7 @@ final public class CraftType {
                 if (i instanceof String) {
                     String str = (String) i;
                     if (str.startsWith("ALL_")) {
-                        str = str.replace("ALL_", "");
+                        str = str.replace("ALL_", "").toUpperCase();
                         for (Material type : Material.values()){
                             str = str.replace("ALL", "");
                             if (!type.name().endsWith(str)){
@@ -199,7 +199,7 @@ final public class CraftType {
                         }
                         continue;
                     }
-                    Material mat = Material.getMaterial((String) i);
+                    Material mat = Material.getMaterial(((String) i).toUpperCase());
                     harvestBlocks.add(mat);
                 } else {
                     Material mat = Material.getMaterial((Integer) i);
