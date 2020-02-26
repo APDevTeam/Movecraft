@@ -22,6 +22,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -320,11 +321,11 @@ public class TranslationTask extends AsyncTask {
         return output;
     }
 
-    private void fail(String failMessage) {
+    private void fail(@NotNull String failMessage) {
         fail(failMessage, true);
     }
 
-    private void fail(String message, boolean playSound) {
+    private void fail(@NotNull String message, boolean playSound) {
         failed=true;
         failMessage=message;
         Player craftPilot = CraftManager.getInstance().getPlayerFromCraft(craft);
