@@ -57,7 +57,9 @@ import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.material.Attachable;
 import org.bukkit.material.MaterialData;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -411,7 +413,8 @@ public class BlockListener implements Listener {
 
     }
 
-    private Craft adjacentCraft(Location location) {
+    @Nullable
+    private Craft adjacentCraft(@NotNull Location location) {
         for (Craft craft : CraftManager.getInstance().getCraftsInWorld(location.getWorld())) {
             if (!MathUtils.locIsNearCraftFast(craft, MathUtils.bukkit2MovecraftLoc(location))) {
                 continue;

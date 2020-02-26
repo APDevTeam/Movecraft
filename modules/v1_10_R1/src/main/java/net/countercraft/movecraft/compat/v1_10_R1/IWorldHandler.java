@@ -88,7 +88,7 @@ public class IWorldHandler extends WorldHandler {
                 continue;
             tile.a(ROTATION[rotation.ordinal()]);
             //get the nextTick to move with the tile
-            tiles.add(new TileHolder(tile, tickProvider.getNextTick((WorldServer)nativeWorld,position), position));
+            tiles.add(new TileHolder(tile, tickProvider.getNextTick((WorldServer) nativeWorld, position), position));
         }
 
         //*******************************************
@@ -138,7 +138,15 @@ public class IWorldHandler extends WorldHandler {
                 continue;
             }
             BlockFire fire = (BlockFire) type.getBlock();
-            fire.b(nativeWorld, position, type, new Random());
+            int l;
+            try {
+                Field lField = World.class.getDeclaredField("l");
+                lField.setAccessible(true);
+                l = lField.getInt(nativeWorld);
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                l = 0;
+            }
+            fire.b(nativeWorld, position, type, l);
         }
         //*******************************************
         //*       Step seven: Send to players       *
@@ -188,7 +196,7 @@ public class IWorldHandler extends WorldHandler {
 
             //nativeWorld.capturedTileEntities.remove(position);
             //nativeWorld.getChunkAtWorldCoords(position).getTileEntities().remove(position);
-            tiles.add(new TileHolder(tile, tickProvider.getNextTick((WorldServer)nativeWorld,position), position));
+            tiles.add(new TileHolder(tile, tickProvider.getNextTick((WorldServer) nativeWorld, position), position));
 
         }
         //*******************************************
@@ -239,7 +247,15 @@ public class IWorldHandler extends WorldHandler {
                 continue;
             }
             BlockFire fire = (BlockFire) type.getBlock();
-            fire.b(nativeWorld, position, type, new Random());
+            int l;
+            try {
+                Field lField = World.class.getDeclaredField("l");
+                lField.setAccessible(true);
+                l = lField.getInt(nativeWorld);
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                l = 0;
+            }
+            fire.b(nativeWorld, position, type, l);
         }
         //*******************************************
         //*       Step seven: Send to players       *
