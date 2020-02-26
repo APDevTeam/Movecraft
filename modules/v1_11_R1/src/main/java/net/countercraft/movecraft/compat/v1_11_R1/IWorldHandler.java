@@ -138,15 +138,7 @@ public class IWorldHandler extends WorldHandler {
                 continue;
             }
             BlockFire fire = (BlockFire) type.getBlock();
-            int l;
-            try {
-                Field lField = World.class.getDeclaredField("l");
-                lField.setAccessible(true);
-                l = lField.getInt(nativeWorld);
-            } catch (NoSuchFieldException | IllegalAccessException e) {
-                l = 0;
-            }
-            fire.b(nativeWorld, position, type, l);
+            fire.b(nativeWorld, position, type, nativeWorld.random);
         }
         //*******************************************
         //*       Step seven: Send to players       *
@@ -247,7 +239,7 @@ public class IWorldHandler extends WorldHandler {
                 continue;
             }
             BlockFire fire = (BlockFire) type.getBlock();
-            fire.b(nativeWorld, position, type, new Random());
+            fire.b(nativeWorld, position, type, nativeWorld.random);
         }
         //*******************************************
         //*       Step seven: Send to players       *
