@@ -8,7 +8,9 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.CraftType;
 import net.countercraft.movecraft.events.CraftCollisionEvent;
+import net.countercraft.movecraft.events.CraftPreTranslateEvent;
 import net.countercraft.movecraft.events.CraftTranslateEvent;
+import net.countercraft.movecraft.events.ItemHarvestEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.update.*;
 import net.countercraft.movecraft.utils.HashHitBox;
@@ -23,6 +25,7 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -116,10 +119,21 @@ public class TranslationTask extends AsyncTask {
             fail(I18nSupport.getInternationalisedString("Translation - Failed Craft Is Disabled"));
             return;
         }
-
-        if (getCraft().isRepairing()){
-            fail("You cannot move a repairing craft!");
+        //call event
+        final CraftPreTranslateEvent preTranslateEvent = new CraftPreTranslateEvent(craft, dx, dy, dz);
+        Bukkit.getServer().getPluginManager().callEvent(preTranslateEvent);
+        if (preTranslateEvent.isCancelled()) {
+            fail(preTranslateEvent.getFailMessage(), preTranslateEvent.isPlayingFailSound());
             return;
+        }
+        if (dx != preTranslateEvent.getDx()) {
+            dx = preTranslateEvent.getDx();
+        }
+        if (dy != preTranslateEvent.getDy()) {
+            dy = preTranslateEvent.getDy();
+        }
+        if (dz != preTranslateEvent.getDz()) {
+            dz = preTranslateEvent.getDz();
         }
         final int minY = oldHitBox.getMinY();
         final int maxY = oldHitBox.getMaxY();
@@ -322,10 +336,10 @@ public class TranslationTask extends AsyncTask {
             }
         }
         //call event
-        CraftTranslateEvent event = new CraftTranslateEvent(craft, oldHitBox, newHitBox);
-        Bukkit.getServer().getPluginManager().callEvent(event);
-        if(event.isCancelled()){
-            this.fail(event.getFailMessage());
+        CraftTranslateEvent translateEvent = new CraftTranslateEvent(craft, oldHitBox, newHitBox);
+        Bukkit.getServer().getPluginManager().callEvent(translateEvent);
+        if(translateEvent.isCancelled()){
+            this.fail(translateEvent.getFailMessage(), translateEvent.isPlayingFailSound());
             return;
         }
         if(craft.getSinking()){
@@ -425,23 +439,29 @@ public class TranslationTask extends AsyncTask {
         return output;
     }
 
-    private void fail(String message) {
+    private void fail(@NotNull String failMessage) {
+        fail(failMessage, true);
+    }
+
+    private void fail(@NotNull String message, boolean playSound) {
         failed=true;
         failMessage=message;
         Player craftPilot = CraftManager.getInstance().getPlayerFromCraft(craft);
-        if (craftPilot != null) {
-            Location location = craftPilot.getLocation();
-            if (!craft.getDisabled()) {
-                craft.getW().playSound(location, Sound.BLOCK_ANVIL_LAND, 1.0f, 0.25f);
-                //craft.setCurTickCooldown(craft.getType().getCruiseTickCooldown());
-            } else {
-                craft.getW().playSound(location, Settings.IsLegacy ? (Settings.IsPre1_9 ? LegacyUtils.IRONGOLEM_DEATH : LegacyUtils.ENITIY_IRONGOLEM_DEATH) : Sound.ENTITY_IRON_GOLEM_DEATH, 5.0f, 5.0f);
-                //craft.setCurTickCooldown(craft.getType().getCruiseTickCooldown());
-            }
+        if (craftPilot == null) {
+            return;
         }
+        Location location = craftPilot.getLocation();
         if (craft.isTranslating()) {
             craft.setTranslating(false);
         }
+        if (craft.getDisabled()) {
+            craft.getW().playSound(location, Settings.IsLegacy ? (Settings.IsPre1_9 ? LegacyUtils.IRONGOLEM_DEATH : LegacyUtils.ENITIY_IRONGOLEM_DEATH) : Sound.ENTITY_IRON_GOLEM_DEATH, 5.0f, 5.0f);
+            return;
+        }
+        if (!playSound) {
+            return;
+        }
+        craft.getW().playSound(location, Sound.BLOCK_ANVIL_LAND, 1.0f, 0.25f);
     }
 
     private static final MovecraftLocation[] SHIFTS = {
@@ -512,6 +532,9 @@ public class TranslationTask extends AsyncTask {
                             drops.addAll(Arrays.asList((((InventoryHolder) block.getState()).getInventory().getContents())));
                         }
                     }
+                    //call event
+                    final ItemHarvestEvent harvestEvent = new ItemHarvestEvent(craft, drops, harvestedBlock.toBukkit(craft.getW()));
+                    Bukkit.getServer().getPluginManager().callEvent(harvestEvent);
                     for (ItemStack drop : drops) {
                         ItemStack retStack = putInToChests(drop, chests);
                         if (retStack != null)

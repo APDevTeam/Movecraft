@@ -215,7 +215,51 @@ public class AsyncManager extends BukkitRunnable {
                             c.setNotificationPlayer(notifyP);
                             final int waterLine = c.getWaterLine();
                             if(!c.getType().blockedByWater() && c.getHitBox().getMinY() <= waterLine){
-                                for(MovecraftLocation location : c.getHitBox().boundingHitBox()){
+                                //The subtraction of the set of coordinates in the HitBox cube and the HitBox itself
+                                final HitBox invertedHitBox = CollectionUtils.filter(c.getHitBox().boundingHitBox(), c.getHitBox());
+
+                                //A set of locations that are confirmed to be "exterior" locations
+                                final MutableHitBox confirmed = new HashHitBox();
+                                final MutableHitBox entireHitbox = new HashHitBox(c.getHitBox());
+
+                                //place phased blocks
+                                final Set<MovecraftLocation> overlap = new HashSet<>(c.getPhaseBlocks().keySet());
+                                overlap.retainAll(c.getHitBox().asSet());
+                                final int minX = c.getHitBox().getMinX();
+                                final int maxX = c.getHitBox().getMaxX();
+                                final int minY = c.getHitBox().getMinY();
+                                final int maxY = overlap.isEmpty() ? c.getHitBox().getMaxY() : Collections.max(overlap, Comparator.comparingInt(MovecraftLocation::getY)).getY();
+                                final int minZ = c.getHitBox().getMinZ();
+                                final int maxZ = c.getHitBox().getMaxZ();
+                                final HitBox[] surfaces = {
+                                        new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(minX, maxY, maxZ)),
+                                        new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(maxX, maxY, minZ)),
+                                        new SolidHitBox(new MovecraftLocation(maxX, minY, maxZ), new MovecraftLocation(minX, maxY, maxZ)),
+                                        new SolidHitBox(new MovecraftLocation(maxX, minY, maxZ), new MovecraftLocation(maxX, maxY, minZ)),
+                                        new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(maxX, minY, maxZ))};
+                                final Set<MovecraftLocation> validExterior = new HashSet<>();
+                                for (HitBox hitBox : surfaces) {
+                                    validExterior.addAll(CollectionUtils.filter(hitBox, c.getHitBox()).asSet());
+                                }
+
+                                //Check to see which locations in the from set are actually outside of the craft
+                                //use a modified BFS for multiple origin elements
+                                Set<MovecraftLocation> visited = new HashSet<>();
+                                Queue<MovecraftLocation> queue = new LinkedList<>(validExterior);
+                                while (!queue.isEmpty()) {
+                                    MovecraftLocation node = queue.poll();
+                                    if(visited.contains(node))
+                                        continue;
+                                    visited.add(node);
+                                    //If the node is already a valid member of the exterior of the HitBox, continued search is unitary.
+                                    for (MovecraftLocation neighbor : CollectionUtils.neighbors(invertedHitBox, node)) {
+                                        queue.add(neighbor);
+                                    }
+                                }
+                                confirmed.addAll(visited);
+                                entireHitbox.addAll(CollectionUtils.filter(invertedHitBox, confirmed));
+
+                                for(MovecraftLocation location : entireHitbox){
                                     if(location.getY() <= waterLine){
                                         c.getPhaseBlocks().put(location, Material.WATER);
                                     }

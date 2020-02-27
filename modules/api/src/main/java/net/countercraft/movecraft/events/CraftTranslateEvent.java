@@ -17,6 +17,7 @@ public class CraftTranslateEvent extends CraftEvent implements Cancellable {
     @NotNull private final HashHitBox oldHitBox;
     @NotNull private final HashHitBox newHitBox;
     @NotNull private String failMessage = "";
+    private boolean playingFailSound = true;
     private boolean isCancelled = false;
 
     public CraftTranslateEvent(@NotNull Craft craft, @NotNull HashHitBox oldHitBox, @NotNull HashHitBox newHitBox) {
@@ -43,6 +44,14 @@ public class CraftTranslateEvent extends CraftEvent implements Cancellable {
     @Override
     public void setCancelled(boolean cancel) {
         isCancelled=cancel;
+    }
+
+    public boolean isPlayingFailSound() {
+        return playingFailSound;
+    }
+
+    public void setPlayingFailSound(boolean playingFailSound) {
+        this.playingFailSound = playingFailSound;
     }
 
     @Override

@@ -20,6 +20,7 @@ package net.countercraft.movecraft.listener;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldguard.WorldGuard;
+import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
@@ -31,6 +32,8 @@ import net.countercraft.movecraft.utils.LegacyUtils;
 import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.utils.WorldguardUtils;
 import net.countercraft.movecraft.warfare.assault.AssaultUtils;
+import net.countercraft.movecraft.utils.MathUtils;
+import net.countercraft.movecraft.warfare.assault.Assault;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -49,15 +52,38 @@ import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.material.Attachable;
 import org.bukkit.material.MaterialData;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
 public class BlockListener implements Listener {
 
 
-
+    private long lastDamagesUpdate;
+    final Material[] fragileBlocks = Settings.IsLegacy ? new Material[]{LegacyUtils.BED_BLOCK, LegacyUtils.PISTON_EXTENSION, Material.TORCH, Material.REDSTONE_WIRE, LegacyUtils.SIGN_POST, LegacyUtils.WOOD_DOOR, Material.LADDER, Material.getMaterial("WALL_SIGN"),
+            Material.BIRCH_SIGN,Material.OAK_SIGN,Material.DARK_OAK_SIGN,Material.JUNGLE_SIGN,Material.SPRUCE_SIGN,Material.ACACIA_SIGN,Material.BIRCH_WALL_SIGN
+            ,Material.OAK_WALL_SIGN,Material.DARK_OAK_WALL_SIGN, Material.JUNGLE_WALL_SIGN, Material.SPRUCE_WALL_SIGN, Material.ACACIA_WALL_SIGN, Material.LEVER, LegacyUtils.STONE_PLATE, LegacyUtils.IRON_DOOR_BLOCK, LegacyUtils.WOOD_PLATE, LegacyUtils.REDSTONE_TORCH_OFF, LegacyUtils.REDSTONE_TORCH_ON, Material.STONE_BUTTON, LegacyUtils.DIODE_BLOCK_OFF, LegacyUtils.DIODE_BLOCK_ON, LegacyUtils.TRAP_DOOR, Material.TRIPWIRE_HOOK,
+            Material.TRIPWIRE, LegacyUtils.WOOD_BUTTON, LegacyUtils.GOLD_PLATE, LegacyUtils.IRON_PLATE, LegacyUtils.REDSTONE_COMPARATOR_OFF, LegacyUtils.REDSTONE_COMPARATOR_ON, Material.DAYLIGHT_DETECTOR, LegacyUtils.CARPET, LegacyUtils.DAYLIGHT_DETECTOR_INVERTED, Material.SPRUCE_DOOR, Material.BIRCH_DOOR, Material.JUNGLE_DOOR, Material.ACACIA_DOOR, Material.DARK_OAK_DOOR}
+            :
+            new Material[]
+                    //Beds
+                    {Material.CYAN_BED, Material.BLACK_BED, Material.BLUE_BED,
+                            Material.BROWN_BED, Material.GRAY_BED, Material.GREEN_BED, Material.LIGHT_BLUE_BED, Material.LIGHT_GRAY_BED, Material.LIME_BED, Material.MAGENTA_BED,
+                            Material.ORANGE_BED, Material.PINK_BED, Material.PURPLE_BED, Material.RED_BED, Material.WHITE_BED, Material.YELLOW_BED,
+                            //Redstone components
+                            Material.REDSTONE_WIRE, Material.REPEATER, Material.COMPARATOR, Material.REDSTONE_TORCH, Material.REDSTONE_WALL_TORCH, Material.TRIPWIRE_HOOK,
+                            //Pressure plates
+                            Material.STONE_PRESSURE_PLATE, Material.ACACIA_PRESSURE_PLATE, Material.BIRCH_PRESSURE_PLATE, Material.DARK_OAK_PRESSURE_PLATE, Material.HEAVY_WEIGHTED_PRESSURE_PLATE, Material.LIGHT_WEIGHTED_PRESSURE_PLATE, Material.JUNGLE_PRESSURE_PLATE, Material.OAK_PRESSURE_PLATE, Material.SPRUCE_PRESSURE_PLATE,
+                            //Buttons
+                            Material.STONE_BUTTON, Material.BIRCH_BUTTON, Material.ACACIA_BUTTON, Material.DARK_OAK_BUTTON, Material.JUNGLE_BUTTON, Material.OAK_BUTTON, Material.SPRUCE_BUTTON,
+                            //Doors
+                            Material.SPRUCE_DOOR, Material.BIRCH_DOOR, Material.JUNGLE_DOOR, Material.ACACIA_DOOR, Material.DARK_OAK_DOOR, Material.OAK_DOOR, Material.IRON_DOOR,
+                            //Trapdoors
+                            Material.IRON_TRAPDOOR, Material.ACACIA_TRAPDOOR, Material.BIRCH_TRAPDOOR};
 
     @EventHandler
     public void onBlockPlace(final BlockPlaceEvent e) {
@@ -257,30 +283,33 @@ public class BlockListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOW)
     public void onBlockIgnite(BlockIgniteEvent event) {
+        if (event.isCancelled()) {
+            return;
+        }
+        final Craft adjacentCraft = adjacentCraft(event.getBlock().getLocation());
         // replace blocks with fire occasionally, to prevent fast craft from simply ignoring fire
-        if (!Settings.FireballPenetration ||
-                event.isCancelled() ||
-                event.getCause() != BlockIgniteEvent.IgniteCause.FIREBALL) {
-            return;
-        }
-        Block testBlock = event.getBlock().getRelative(-1, 0, 0);
-        if (!testBlock.getType().isBurnable())
-            testBlock = event.getBlock().getRelative(1, 0, 0);
-        if (!testBlock.getType().isBurnable())
-            testBlock = event.getBlock().getRelative(0, 0, -1);
-        if (!testBlock.getType().isBurnable())
-            testBlock = event.getBlock().getRelative(0, 0, 1);
-
-        if (!testBlock.getType().isBurnable()) {
-            return;
-        }
-        // check to see if fire spread is allowed, don't check if compatmanager integration is not enabled
-        if (Movecraft.getInstance().getWorldGuardPlugin() != null && (Settings.WorldGuardBlockMoveOnBuildPerm || Settings.WorldGuardBlockSinkOnPVPPerm)) {
-            if (!WorldguardUtils.allowFireSpread(testBlock.getLocation())){
+        if (Settings.FireballPenetration && event.getCause() == BlockIgniteEvent.IgniteCause.FIREBALL) {
+            Block testBlock = event.getBlock().getRelative(-1, 0, 0);
+            if (!testBlock.getType().isBurnable())
+                testBlock = event.getBlock().getRelative(1, 0, 0);
+            if (!testBlock.getType().isBurnable())
+                testBlock = event.getBlock().getRelative(0, 0, -1);
+            if (!testBlock.getType().isBurnable())
+                testBlock = event.getBlock().getRelative(0, 0, 1);
+            if (!testBlock.getType().isBurnable()) {
                 return;
             }
+            // check to see if fire spread is allowed, don't check if worldguard integration is not enabled
+            if (Movecraft.getInstance().getWorldGuardPlugin() != null && (Settings.WorldGuardBlockMoveOnBuildPerm || Settings.WorldGuardBlockSinkOnPVPPerm) && !WorldguardUtils.allowFireSpread(testBlock.getLocation())) {
+                    return;
+
+            }
+            testBlock.setType(org.bukkit.Material.AIR);
+        } else if (adjacentCraft != null) {
+
+            adjacentCraft.getHitBox().add(MathUtils.bukkit2MovecraftLoc(event.getBlock().getLocation()));
         }
-        testBlock.setType(org.bukkit.Material.AIR);
+
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -319,7 +348,7 @@ public class BlockListener implements Listener {
                             .nextInt(100) < Settings.DurabilityOverride.get(b.getType()));
         }
         if (Settings.AssaultEnable) {
-            AssaultUtils.processAssault(e);
+            processAssault(e);
         }
         if (e.getEntity() == null)
             return;
@@ -362,5 +391,90 @@ public class BlockListener implements Listener {
                 }
             }
         }
+    }
+
+    private void processAssault(EntityExplodeEvent e){
+        List<Assault> assaults = Movecraft.getInstance().getAssaultManager() != null ? Movecraft.getInstance().getAssaultManager().getAssaults() : null;
+        if (assaults == null || assaults.size() == 0) {
+            return;
+        }
+        WorldGuardPlugin worldGuard = Movecraft.getInstance().getWorldGuardPlugin();
+        for (final Assault assault : assaults) {
+            Iterator<Block> i = e.blockList().iterator();
+            while (i.hasNext()) {
+                Block b = i.next();
+                if (b.getWorld() != assault.getWorld())
+                    continue;
+                ApplicableRegionSet regions = WorldguardUtils.getRegionsAt(b.getLocation());
+                boolean isInAssaultRegion = false;
+                for (com.sk89q.worldguard.protection.regions.ProtectedRegion tregion : regions.getRegions()) {
+                    if (assault.getRegionName().equals(tregion.getId())) {
+                        isInAssaultRegion = true;
+                    }
+                }
+                if (!isInAssaultRegion)
+                    continue;
+                // first see if it is outside the destroyable area
+                org.bukkit.util.Vector min = assault.getMinPos();
+                org.bukkit.util.Vector max = assault.getMaxPos();
+
+                if (b.getLocation().getBlockX() < min.getBlockX() ||
+                        b.getLocation().getBlockX() > max.getBlockX() ||
+                        b.getLocation().getBlockZ() < min.getBlockZ() ||
+                        b.getLocation().getBlockZ() > max.getBlockZ() ||
+                        !Settings.AssaultDestroyableBlocks.contains(b.getType()) ||
+                        Arrays.binarySearch(fragileBlocks, b.getRelative(BlockFace.SOUTH).getType()) >= 0 ||
+                        Arrays.binarySearch(fragileBlocks, b.getRelative(BlockFace.DOWN).getType()) >= 0 ||
+                        Arrays.binarySearch(fragileBlocks, b.getRelative(BlockFace.UP).getType()) >= 0 ||
+                        Arrays.binarySearch(fragileBlocks, b.getRelative(BlockFace.EAST).getType()) >= 0 ||
+                        Arrays.binarySearch(fragileBlocks, b.getRelative(BlockFace.WEST).getType()) >= 0 ||
+                        Arrays.binarySearch(fragileBlocks, b.getRelative(BlockFace.NORTH).getType()) >= 0 ) {
+                    i.remove();
+                }
+
+
+                // whether or not you actually destroyed the block, add to damages
+                long damages = assault.getDamages() + Settings.AssaultDamagesPerBlock;
+                if (damages < assault.getMaxDamages()) {
+                    assault.setDamages(damages);
+                } else {
+                    assault.setDamages(assault.getMaxDamages());
+                }
+
+                // notify nearby players of the damages, do this 1 second later so all damages from this volley will be included
+                if (System.currentTimeMillis() < lastDamagesUpdate + 4000) {
+                    continue;
+                }
+                final Location floc = b.getLocation();
+                final World fworld = b.getWorld();
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        long fdamages = assault.getDamages();
+                        for (Player p : fworld.getPlayers()) {
+                            if (Math.round(p.getLocation().getBlockX() / 1000.0) == Math.round(floc.getBlockX() / 1000.0) &&
+                                    Math.round(p.getLocation().getBlockZ() / 1000.0) == Math.round(floc.getBlockZ() / 1000.0)) {
+                                p.sendMessage("Damages: " + fdamages);
+
+                            }
+                        }
+                    }
+                }.runTaskLater(Movecraft.getInstance(), 20);
+                lastDamagesUpdate = System.currentTimeMillis();
+
+            }
+        }
+
+    }
+
+    @Nullable
+    private Craft adjacentCraft(@NotNull Location location) {
+        for (Craft craft : CraftManager.getInstance().getCraftsInWorld(location.getWorld())) {
+            if (!MathUtils.locIsNearCraftFast(craft, MathUtils.bukkit2MovecraftLoc(location))) {
+                continue;
+            }
+            return craft;
+        }
+        return null;
     }
 }
