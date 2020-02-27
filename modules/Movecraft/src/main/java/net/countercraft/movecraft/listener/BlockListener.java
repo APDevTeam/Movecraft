@@ -21,18 +21,14 @@ import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.flags.DefaultFlag;
 import net.countercraft.movecraft.Movecraft;
-import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.MovecraftLocation;
-import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.warfare.assault.Assault;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Hopper;
@@ -50,6 +46,8 @@ import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.material.Attachable;
 import org.bukkit.material.MaterialData;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -233,31 +231,36 @@ public class BlockListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOW)
     public void onBlockIgnite(BlockIgniteEvent event) {
+        if (event.isCancelled()) {
+            return;
+        }
+        final Craft adjacentCraft = adjacentCraft(event.getBlock().getLocation());
         // replace blocks with fire occasionally, to prevent fast craft from simply ignoring fire
-        if (!Settings.FireballPenetration ||
-                event.isCancelled() ||
-                event.getCause() != BlockIgniteEvent.IgniteCause.FIREBALL) {
-            return;
-        }
-        Block testBlock = event.getBlock().getRelative(-1, 0, 0);
-        if (!testBlock.getType().isBurnable())
-            testBlock = event.getBlock().getRelative(1, 0, 0);
-        if (!testBlock.getType().isBurnable())
-            testBlock = event.getBlock().getRelative(0, 0, -1);
-        if (!testBlock.getType().isBurnable())
-            testBlock = event.getBlock().getRelative(0, 0, 1);
+        if (Settings.FireballPenetration && event.getCause() == BlockIgniteEvent.IgniteCause.FIREBALL) {
+            Block testBlock = event.getBlock().getRelative(-1, 0, 0);
+            if (!testBlock.getType().isBurnable())
+                testBlock = event.getBlock().getRelative(1, 0, 0);
+            if (!testBlock.getType().isBurnable())
+                testBlock = event.getBlock().getRelative(0, 0, -1);
+            if (!testBlock.getType().isBurnable())
+                testBlock = event.getBlock().getRelative(0, 0, 1);
 
-        if (!testBlock.getType().isBurnable()) {
-            return;
-        }
-        // check to see if fire spread is allowed, don't check if worldguard integration is not enabled
-        if (Movecraft.getInstance().getWorldGuardPlugin() != null && (Settings.WorldGuardBlockMoveOnBuildPerm || Settings.WorldGuardBlockSinkOnPVPPerm)) {
-            ApplicableRegionSet set = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(testBlock.getWorld()).getApplicableRegions(testBlock.getLocation());
-            if (!set.allows(DefaultFlag.FIRE_SPREAD)) {
+            if (!testBlock.getType().isBurnable()) {
                 return;
             }
+            // check to see if fire spread is allowed, don't check if worldguard integration is not enabled
+            if (Movecraft.getInstance().getWorldGuardPlugin() != null && (Settings.WorldGuardBlockMoveOnBuildPerm || Settings.WorldGuardBlockSinkOnPVPPerm)) {
+                ApplicableRegionSet set = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(testBlock.getWorld()).getApplicableRegions(testBlock.getLocation());
+                if (!set.allows(DefaultFlag.FIRE_SPREAD)) {
+                    return;
+                }
+            }
+            testBlock.setType(org.bukkit.Material.AIR);
+        } else if (adjacentCraft != null) {
+
+            adjacentCraft.getHitBox().add(MathUtils.bukkit2MovecraftLoc(event.getBlock().getLocation()));
         }
-        testBlock.setType(org.bukkit.Material.AIR);
+
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -397,5 +400,16 @@ public class BlockListener implements Listener {
             }
         }
 
+    }
+
+    @Nullable
+    private Craft adjacentCraft(@NotNull Location location) {
+        for (Craft craft : CraftManager.getInstance().getCraftsInWorld(location.getWorld())) {
+            if (!MathUtils.locIsNearCraftFast(craft, MathUtils.bukkit2MovecraftLoc(location))) {
+                continue;
+            }
+            return craft;
+        }
+        return null;
     }
 }
