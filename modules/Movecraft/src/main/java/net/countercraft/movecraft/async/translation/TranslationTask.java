@@ -4,8 +4,11 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.craft.CraftType;
 import net.countercraft.movecraft.events.CraftCollisionEvent;
+import net.countercraft.movecraft.events.CraftPreTranslateEvent;
 import net.countercraft.movecraft.events.CraftTranslateEvent;
+import net.countercraft.movecraft.events.ItemHarvestEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.update.*;
 import net.countercraft.movecraft.utils.HashHitBox;
@@ -20,6 +23,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -54,6 +58,22 @@ public class TranslationTask extends AsyncTask {
             fail(I18nSupport.getInternationalisedString("Translation - Failed Craft Is Disabled"));
             return;
         }
+        //call event
+        final CraftPreTranslateEvent preTranslateEvent = new CraftPreTranslateEvent(craft, dx, dy, dz);
+        Bukkit.getServer().getPluginManager().callEvent(preTranslateEvent);
+        if (preTranslateEvent.isCancelled()) {
+            fail(preTranslateEvent.getFailMessage(), preTranslateEvent.isPlayingFailSound());
+            return;
+        }
+        if (dx != preTranslateEvent.getDx()) {
+            dx = preTranslateEvent.getDx();
+        }
+        if (dy != preTranslateEvent.getDy()) {
+            dy = preTranslateEvent.getDy();
+        }
+        if (dz != preTranslateEvent.getDz()) {
+            dz = preTranslateEvent.getDz();
+        }
         final int minY = oldHitBox.getMinY();
         final int maxY = oldHitBox.getMaxY();
 
@@ -76,18 +96,12 @@ public class TranslationTask extends AsyncTask {
         if (craft.getType().getUseGravity() && !craft.getSinking()){
             int incline = inclineCraft(oldHitBox);
             if (incline > 0){
-                //Ignore explosive crafts
-                if (craft.getType().getCollisionExplosion() > 0f) {
-                    dy = 0;
-                }
-                else if (craft.getType().getGravityInclineDistance() > -1 && incline > craft.getType().getGravityInclineDistance()) {
+                boolean tooSteep = craft.getType().getGravityInclineDistance() > -1 && incline > craft.getType().getGravityInclineDistance();
+                if (tooSteep && craft.getType().getCollisionExplosion() <= 0f) {
                     fail(I18nSupport.getInternationalisedString("Translation - Failed Incline too steep"));
                     return;
-
-                } else {
-                    dy = incline;
                 }
-
+                dy = tooSteep ? 0 : incline;
             } else if (!isOnGround(oldHitBox) && craft.getType().getCanHover()){
                 MovecraftLocation midPoint = oldHitBox.getMidPoint();
                 int centreMinY = oldHitBox.getLocalMinY(midPoint.getX(), midPoint.getZ());
@@ -103,10 +117,12 @@ public class TranslationTask extends AsyncTask {
                 dy = dropDistance(oldHitBox);
             }
         }
-        //Fail the movement if the craft is too high
-        if (dy>0 && maxY + dy > craft.getType().getMaxHeightLimit()) {
+        //Fail the movement if the craft is too high and if the craft is not explosive
+        if (dy>0 && maxY + dy > craft.getType().getMaxHeightLimit() && craft.getType().getCollisionExplosion() <= 0f) {
             fail(I18nSupport.getInternationalisedString("Translation - Failed Craft hit height limit"));
             return;
+        } else if (dy>0 && maxY + dy > craft.getType().getMaxHeightLimit()) { //If explosive and too high, set dy to 0
+            dy = 0;
         } else if (minY + dy < craft.getType().getMinHeightLimit() && dy < 0 && !craft.getSinking() && !craft.getType().getUseGravity()) {
             fail(I18nSupport.getInternationalisedString("Translation - Failed Craft hit minimum height limit"));
             return;
@@ -191,10 +207,10 @@ public class TranslationTask extends AsyncTask {
             }
         }
         //call event
-        CraftTranslateEvent event = new CraftTranslateEvent(craft, oldHitBox, newHitBox);
-        Bukkit.getServer().getPluginManager().callEvent(event);
-        if(event.isCancelled()){
-            this.fail(event.getFailMessage());
+        CraftTranslateEvent translateEvent = new CraftTranslateEvent(craft, oldHitBox, newHitBox);
+        Bukkit.getServer().getPluginManager().callEvent(translateEvent);
+        if(translateEvent.isCancelled()){
+            this.fail(translateEvent.getFailMessage(), translateEvent.isPlayingFailSound());
             return;
         }
 
@@ -302,20 +318,26 @@ public class TranslationTask extends AsyncTask {
         return output;
     }
 
-    private void fail(String message) {
+    private void fail(@NotNull String failMessage) {
+        fail(failMessage, true);
+    }
+
+    private void fail(@NotNull String message, boolean playSound) {
         failed=true;
         failMessage=message;
         Player craftPilot = CraftManager.getInstance().getPlayerFromCraft(craft);
-        if (craftPilot != null) {
-            Location location = craftPilot.getLocation();
-            if (!craft.getDisabled()) {
-                craft.getW().playSound(location, Sound.BLOCK_ANVIL_LAND, 1.0f, 0.25f);
-                //craft.setCurTickCooldown(craft.getType().getCruiseTickCooldown());
-            } else {
-                craft.getW().playSound(location, Sound.ENTITY_IRONGOLEM_DEATH, 5.0f, 5.0f);
-                //craft.setCurTickCooldown(craft.getType().getCruiseTickCooldown());
-            }
+        if (craftPilot == null) {
+            return;
         }
+        Location location = craftPilot.getLocation();
+        if (craft.getDisabled()) {
+            craft.getW().playSound(location, Sound.ENTITY_IRONGOLEM_DEATH, 5.0f, 5.0f);
+            return;
+        }
+        if (!playSound) {
+            return;
+        }
+        craft.getW().playSound(location, Sound.BLOCK_ANVIL_LAND, 1.0f, 0.25f);
     }
 
     private static final MovecraftLocation[] SHIFTS = {
@@ -367,6 +389,9 @@ public class TranslationTask extends AsyncTask {
                     drops.addAll(Arrays.asList((((InventoryHolder) block.getState()).getInventory().getContents())));
                 }
             }
+            //call event
+            final ItemHarvestEvent harvestEvent = new ItemHarvestEvent(craft, drops, harvestedBlock.toBukkit(craft.getW()));
+            Bukkit.getServer().getPluginManager().callEvent(harvestEvent);
             for (ItemStack drop : drops) {
                 ItemStack retStack = putInToChests(drop, chests);
                 if (retStack != null)
@@ -459,7 +484,6 @@ public class TranslationTask extends AsyncTask {
     private MovecraftLocation surfaceLoc(MovecraftLocation ml) {
         MovecraftLocation surfaceLoc = ml;
         Material testType;
-        boolean hitSurface = false;
         do {
             surfaceLoc = surfaceLoc.translate(0, 1, 0);
             testType = surfaceLoc.toBukkit(craft.getW()).getBlock().getType();
@@ -485,7 +509,10 @@ public class TranslationTask extends AsyncTask {
         int elevation = 0;
         for (MovecraftLocation ml : collisionBox){
             Material testType = ml.toBukkit(craft.getW()).getBlock().getType();
-            if (testType == Material.AIR || craft.getType().getPassthroughBlocks().contains(testType)) {
+            if (testType == Material.AIR ||
+                    craft.getType().getPassthroughBlocks().contains(testType) ||
+                    (craft.getType().getHarvestBlocks().contains(testType) &&
+                            craft.getType().getHarvesterBladeBlocks().contains(ml.translate(-dx, -dy, -dz).toBukkit(craft.getW()).getBlock().getType()))) {
                 continue;
             }
             MovecraftLocation surfaceLoc = surfaceLoc(ml);
@@ -520,10 +547,16 @@ public class TranslationTask extends AsyncTask {
             boolean hitGround = false;
 
             for (MovecraftLocation ml : bottomLocs) {
+                final MovecraftLocation translated = ml.translate(dx, dy, dz);
                 //This has to be subtracted by one, or non-passthrough blocks will be within the y drop path
                 //obstructing the craft
-                Material testType = ml.translate(0, dropDistance , 0).toBukkit(craft.getW()).getBlock().getType();
-                hitGround = testType != Material.AIR && !craft.getType().getPassthroughBlocks().contains(testType);
+                Material testType = translated.translate(0, dropDistance , 0).toBukkit(craft.getW()).getBlock().getType();
+                hitGround = testType != Material.AIR &&
+                        !craft.getType().getPassthroughBlocks().contains(testType) &&
+                        !(craft.getType().getHarvestBlocks().contains(testType) &&
+                        craft.getType().getHarvesterBladeBlocks().contains(ml.translate(0, 1, 0).toBukkit(craft.getW()).getBlock().getType())) ||
+                        craft.getType().getMinHeightLimit() == translated.translate(0, dropDistance + 1 , 0).getY();
+
                 if (hitGround) {
                     break;
                 }
@@ -532,7 +565,9 @@ public class TranslationTask extends AsyncTask {
                 break;
             }
             dropDistance--;
+
         } while (dropDistance > craft.getType().getGravityDropDistance());
+
         return dropDistance;
     }
 
@@ -554,15 +589,26 @@ public class TranslationTask extends AsyncTask {
             translatedBottomLocs.add(bottomLoc.translate(dx, dy, dz));
             Material testType = bottomLoc.translate(0, -1, 0).toBukkit(craft.getW()).getBlock().getType();
             //If the lowest part of the bottom locs touch the ground, return true anyways
-            if (testType != Material.AIR && !craft.getType().getPassthroughBlocks().contains(testType)){
-                bottomLocsOnGround = true;
+            if (testType == Material.AIR){
+                continue;
+            } else if (craft.getType().getPassthroughBlocks().contains(testType)) {
+                continue;
+            } else if (craft.getType().getHarvestBlocks().contains(testType) && craft.getType().getHarvesterBladeBlocks().contains(bottomLoc.toBukkit(craft.getW()).getBlock().getType())) {
+                continue;
             }
+
+            bottomLocsOnGround = true;
         }
         boolean translatedBottomLocsInAir = true;
         for (MovecraftLocation translatedBottomLoc : translatedBottomLocs){
             MovecraftLocation beneath = translatedBottomLoc.translate(0, -1, 0);
             Material testType = beneath.toBukkit(craft.getW()).getBlock().getType();
-            if (hitBox.contains(beneath) || bottomLocs.contains(beneath) || testType == Material.AIR || craft.getType().getPassthroughBlocks().contains(testType)){
+            final CraftType type = craft.getType();
+            if (hitBox.contains(beneath) ||
+                    bottomLocs.contains(beneath) ||
+                    testType == Material.AIR ||
+                    type.getPassthroughBlocks().contains(testType) ||
+                    (type.getHarvestBlocks().contains(testType) && type.getHarvesterBladeBlocks().contains(translatedBottomLoc.translate(-dx, -dy, -dz).toBukkit(craft.getW()).getBlock().getType()))){
                 continue;
             }
             translatedBottomLocsInAir = false;
