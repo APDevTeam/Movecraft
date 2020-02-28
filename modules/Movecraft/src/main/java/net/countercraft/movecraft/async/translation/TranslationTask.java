@@ -78,6 +78,12 @@ public class TranslationTask extends AsyncTask {
         FALL_THROUGH_BLOCKS.add(Material.SNOW);
         FALL_THROUGH_BLOCKS.add(Material.CARROT);
         FALL_THROUGH_BLOCKS.add(Material.POTATO);
+        for (Material type : Material.values()) {
+            if (!type.name().endsWith("FENCE")) {
+                continue;
+            }
+            FALL_THROUGH_BLOCKS.add(type);
+        }
         if (Settings.IsLegacy) {
             FALL_THROUGH_BLOCKS.add(LegacyUtils.STATIONARY_WATER);
             FALL_THROUGH_BLOCKS.add(LegacyUtils.STATIONARY_LAVA);
@@ -117,6 +123,14 @@ public class TranslationTask extends AsyncTask {
             FALL_THROUGH_BLOCKS.add(Material.LILAC);
             FALL_THROUGH_BLOCKS.add(Material.PEONY);
             FALL_THROUGH_BLOCKS.add(Material.SEA_PICKLE);
+            FALL_THROUGH_BLOCKS.add(Material.REPEATER);
+            FALL_THROUGH_BLOCKS.add(Material.COMPARATOR);
+            for (Material type : Material.values()) {
+                if (!type.name().endsWith("BUTTON") && !type.name().endsWith("PRESSURE_PLATE") && !type.name().endsWith("CARPET")) {
+                    continue;
+                }
+                FALL_THROUGH_BLOCKS.add(type);
+            }
 
         }
     }

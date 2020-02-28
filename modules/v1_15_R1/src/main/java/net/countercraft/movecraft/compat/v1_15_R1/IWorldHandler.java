@@ -74,7 +74,7 @@ public class IWorldHandler extends WorldHandler {
                 continue;
             tile.a(ROTATION[rotation.ordinal()]);
             //get the nextTick to move with the tile
-            tiles.add(new TileHolder(tile, tickProvider.getNextTick((WorldServer)nativeWorld,position), position));
+            tiles.add(new TileHolder(tile, tickProvider.getNextTick(nativeWorld,position), position));
         }
 
         //*******************************************
@@ -87,6 +87,7 @@ public class IWorldHandler extends WorldHandler {
         //get the blocks and rotate them
         HashMap<BlockPosition,IBlockData> blockData = new HashMap<>();
         for(BlockPosition position : rotatedPositions.keySet()){
+
             blockData.put(position,nativeWorld.getType(position).a(ROTATION[rotation.ordinal()]));
         }
         HashMap<BlockPosition, IBlockData> redstoneComponents = new HashMap<>();
@@ -94,9 +95,11 @@ public class IWorldHandler extends WorldHandler {
         for(Map.Entry<BlockPosition,IBlockData> entry : blockData.entrySet()) {
             final BlockPosition newPosition = rotatedPositions.get(entry.getKey());
             final IBlockData iBlockData = entry.getValue();
-            if (isRedstoneComponent(iBlockData)) {
-                redstoneComponents.put(newPosition, iBlockData);
+            if (nativeWorld.getTileEntity(newPosition) != null) {
+                removeTileEntity(nativeWorld, newPosition);
             }
+            if (isRedstoneComponent(iBlockData))
+                redstoneComponents.put(newPosition, iBlockData);
 
             setBlockFast(nativeWorld, newPosition, iBlockData);
         }
@@ -133,6 +136,21 @@ public class IWorldHandler extends WorldHandler {
             }
             BlockFire fire = (BlockFire) type.getBlock();
             fire.tick(type, nativeWorld, position, nativeWorld.random);
+        }
+
+        for (Map.Entry<BlockPosition, IBlockData> entry : redstoneComponents.entrySet()) {
+            final BlockPosition position = entry.getKey();
+            final IBlockData data = entry.getValue();
+            Chunk chunk = nativeWorld.getChunkAtWorldCoords(position);
+            ChunkSection chunkSection = chunk.getSections()[position.getY()>>4];
+            if (chunkSection == null) {
+                // Put a GLASS block to initialize the section. It will be replaced next with the real block.
+                chunk.setType(position, Blocks.GLASS.getBlockData(), true);
+                chunkSection = chunk.getSections()[position.getY() >> 4];
+
+            }
+            chunkSection.setType(position.getX()&15, position.getY()&15, position.getZ()&15, data);
+            nativeWorld.notifyAndUpdatePhysics(position, chunk, data, data, data, 3);
         }
 
         //*******************************************
@@ -200,6 +218,7 @@ public class IWorldHandler extends WorldHandler {
             blockData.add(nativeWorld.getType(position));
             newPositions.add(position.a(translateVector));
         }
+        Map<BlockPosition, IBlockData> redstoneComponents = new HashMap<>();
         //create the new block
         for(int i = 0; i<newPositions.size(); i++) {
             final BlockPosition newPosition = newPositions.get(i);
@@ -208,6 +227,8 @@ public class IWorldHandler extends WorldHandler {
             if (nativeWorld.getTileEntity(newPosition) != null) {
                 removeTileEntity(nativeWorld, newPosition);
             }
+            if (isRedstoneComponent(iBlockData))
+                redstoneComponents.put(newPosition, iBlockData);
             setBlockFast(nativeWorld, newPosition, iBlockData);
         }
 
@@ -240,12 +261,24 @@ public class IWorldHandler extends WorldHandler {
             IBlockData type = nativeWorld.getType(position);
             if (type.getBlock() instanceof BlockFire) {
                 type.getBlock().tick(type, nativeWorld, position, nativeWorld.random);
-            } else if (isRedstoneComponent(type)) {
-                nativeWorld.applyPhysics(position, type.getBlock());
             }
 
         }
 
+        for (Map.Entry<BlockPosition, IBlockData> entry : redstoneComponents.entrySet()) {
+            final BlockPosition position = entry.getKey();
+            final IBlockData data = entry.getValue();
+            Chunk chunk = nativeWorld.getChunkAtWorldCoords(position);
+            ChunkSection chunkSection = chunk.getSections()[position.getY()>>4];
+            if (chunkSection == null) {
+                // Put a GLASS block to initialize the section. It will be replaced next with the real block.
+                chunk.setType(position, Blocks.GLASS.getBlockData(), true);
+                chunkSection = chunk.getSections()[position.getY() >> 4];
+
+            }
+            chunkSection.setType(position.getX()&15, position.getY()&15, position.getZ()&15, data);
+            nativeWorld.notifyAndUpdatePhysics(position, chunk, data, data, data, 3);
+        }
         //*******************************************
         //*       Step six: Send to players       *
         //*******************************************
@@ -322,8 +355,7 @@ public class IWorldHandler extends WorldHandler {
             chunkSection = chunk.getSections()[position.getY() >> 4];
 
         }
-
-        chunkSection.setType(position.getX()&15, position.getY()&15, position.getZ()&15, data);
+        chunkSection.setType(position.getX() & 15, position.getY() & 15, position.getZ() & 15, data);
         world.notify(position, data, data, 3);
     }
 
@@ -338,6 +370,9 @@ public class IWorldHandler extends WorldHandler {
         blockData = blockData.a(ROTATION[rotation.ordinal()]);
         WorldServer world = ((CraftWorld)(location.getWorld())).getHandle();
         BlockPosition blockPosition = locationToPosition(bukkit2MovecraftLoc(location));
+        if (world.getTileEntity(blockPosition) != null) {
+            removeTileEntity(world, blockPosition);
+        }
         setBlockFast(world,blockPosition,blockData);
     }
 
@@ -407,5 +442,16 @@ public class IWorldHandler extends WorldHandler {
                 block instanceof BlockButtonAbstract ||
                 block instanceof BlockLever;
 
+    }
+
+    private boolean isPowered (IBlockData data) {
+        if (data.getBlock() instanceof BlockRedstoneWire) {
+            return data.get(BlockRedstoneWire.POWER) > 0;
+        } else if (data.getBlock() instanceof BlockDiodeAbstract) {
+            return data.get(BlockDiodeAbstract.c);
+        } else if (data.getBlock() instanceof BlockButtonAbstract || data.getBlock() instanceof BlockLever) {
+            return data.get(BlockButtonAbstract.POWERED);
+        }
+        return false;
     }
 }

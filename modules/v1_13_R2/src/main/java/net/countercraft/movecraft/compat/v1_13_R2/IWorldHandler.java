@@ -91,9 +91,18 @@ public class IWorldHandler extends WorldHandler{
         for(BlockPosition position : rotatedPositions.keySet()){
             blockData.put(position,nativeWorld.getType(position).a(ROTATION[rotation.ordinal()]));
         }
+        HashMap<BlockPosition, IBlockData> redstoneComponents = new HashMap<>();
         //create the new block
         for(Map.Entry<BlockPosition,IBlockData> entry : blockData.entrySet()) {
-            setBlockFast(nativeWorld, rotatedPositions.get(entry.getKey()), entry.getValue());
+            final BlockPosition newPosition = rotatedPositions.get(entry.getKey());
+            final IBlockData iBlockData = entry.getValue();
+            if (nativeWorld.getTileEntity(newPosition) != null) {
+                removeTileEntity(nativeWorld, newPosition);
+            }
+            if (isRedstoneComponent(iBlockData))
+                redstoneComponents.put(newPosition, iBlockData);
+
+            setBlockFast(nativeWorld, newPosition, iBlockData);
         }
 
 
@@ -128,6 +137,21 @@ public class IWorldHandler extends WorldHandler{
             }
             BlockFire fire = (BlockFire) type.getBlock();
             fire.a(type, nativeWorld, position, nativeWorld.random);
+        }
+
+        for (Map.Entry<BlockPosition, IBlockData> entry : redstoneComponents.entrySet()) {
+            final BlockPosition position = entry.getKey();
+            final IBlockData data = entry.getValue();
+            Chunk chunk = nativeWorld.getChunkAtWorldCoords(position);
+            ChunkSection chunkSection = chunk.getSections()[position.getY()>>4];
+            if (chunkSection == null) {
+                // Put a GLASS block to initialize the section. It will be replaced next with the real block.
+                chunk.setType(position, Blocks.GLASS.getBlockData(), true);
+                chunkSection = chunk.getSections()[position.getY() >> 4];
+
+            }
+            chunkSection.setType(position.getX()&15, position.getY()&15, position.getZ()&15, data);
+            nativeWorld.notifyAndUpdatePhysics(position, chunk, data, data, data, 3);
         }
         //*******************************************
         //*       Step six: Send to players       *
@@ -224,11 +248,6 @@ public class IWorldHandler extends WorldHandler{
             setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
         }
 
-        //Place redstone blocks and apply physics
-        for (BlockPosition position : redstoneComponents.keySet()) {
-            setBlockFast(nativeWorld, position, redstoneComponents.get(position), true);
-        }
-
         //*******************************************
         //*   Step six: Process fire spread         *
         //*******************************************
@@ -239,6 +258,21 @@ public class IWorldHandler extends WorldHandler{
             }
             BlockFire fire = (BlockFire) type.getBlock();
             fire.a(type, nativeWorld, position, nativeWorld.random);
+        }
+
+        for (Map.Entry<BlockPosition, IBlockData> entry : redstoneComponents.entrySet()) {
+            final BlockPosition position = entry.getKey();
+            final IBlockData data = entry.getValue();
+            Chunk chunk = nativeWorld.getChunkAtWorldCoords(position);
+            ChunkSection chunkSection = chunk.getSections()[position.getY()>>4];
+            if (chunkSection == null) {
+                // Put a GLASS block to initialize the section. It will be replaced next with the real block.
+                chunk.setType(position, Blocks.GLASS.getBlockData(), true);
+                chunkSection = chunk.getSections()[position.getY() >> 4];
+
+            }
+            chunkSection.setType(position.getX()&15, position.getY()&15, position.getZ()&15, data);
+            nativeWorld.notifyAndUpdatePhysics(position, chunk, data, data, data, 3);
         }
         //*******************************************
         //*       Step six: Send to players       *
@@ -308,10 +342,6 @@ public class IWorldHandler extends WorldHandler{
     }
 
     private void setBlockFast(@NotNull World world, @NotNull BlockPosition position,@NotNull IBlockData data) {
-        setBlockFast(world, position, data, false);
-    }
-
-    private void setBlockFast(@NotNull World world, @NotNull BlockPosition position,@NotNull IBlockData data, boolean physics) {
         Chunk chunk = world.getChunkAtWorldCoords(position);
         ChunkSection chunkSection = chunk.getSections()[position.getY()>>4];
         if (chunkSection == null) {
@@ -321,10 +351,6 @@ public class IWorldHandler extends WorldHandler{
 
         }
         chunkSection.setType(position.getX()&15, position.getY()&15, position.getZ()&15, data);
-        if (physics) {
-            world.notifyAndUpdatePhysics(position, chunk, data, data, data, 3);
-            return;
-        }
         world.notify(position, data, data, 3);
     }
 
