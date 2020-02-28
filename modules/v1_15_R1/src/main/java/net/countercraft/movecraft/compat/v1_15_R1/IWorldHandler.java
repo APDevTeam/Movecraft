@@ -97,6 +97,7 @@ public class IWorldHandler extends WorldHandler {
             if (isRedstoneComponent(iBlockData)) {
                 redstoneComponents.put(newPosition, iBlockData);
             }
+
             setBlockFast(nativeWorld, newPosition, iBlockData);
         }
 
@@ -122,8 +123,16 @@ public class IWorldHandler extends WorldHandler {
             setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
         }
 
-        for (BlockPosition position : redstoneComponents.keySet()) {
-            setBlockFast(nativeWorld, position, redstoneComponents.get(position), true);
+        //*******************************************
+        //*   Step six: Process fire spread         *
+        //*******************************************
+        for (BlockPosition position : rotatedPositions.values()) {
+            IBlockData type = nativeWorld.getType(position);
+            if (!(type.getBlock() instanceof BlockFire)) {
+                continue;
+            }
+            BlockFire fire = (BlockFire) type.getBlock();
+            fire.tick(type, nativeWorld, position, nativeWorld.random);
         }
 
         //*******************************************
@@ -191,13 +200,13 @@ public class IWorldHandler extends WorldHandler {
             blockData.add(nativeWorld.getType(position));
             newPositions.add(position.a(translateVector));
         }
-        Map<BlockPosition, IBlockData> redstoneComponents = new HashMap<>();
         //create the new block
         for(int i = 0; i<newPositions.size(); i++) {
             final BlockPosition newPosition = newPositions.get(i);
             final IBlockData iBlockData = blockData.get(i);
-            if (isRedstoneComponent(iBlockData)) {
-                redstoneComponents.put(newPosition, iBlockData);
+
+            if (nativeWorld.getTileEntity(newPosition) != null) {
+                removeTileEntity(nativeWorld, newPosition);
             }
             setBlockFast(nativeWorld, newPosition, iBlockData);
         }
@@ -223,10 +232,20 @@ public class IWorldHandler extends WorldHandler {
             setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
         }
 
-        //Place redstone blocks and apply physics
-        for (BlockPosition position : redstoneComponents.keySet()) {
-            setBlockFast(nativeWorld, position, redstoneComponents.get(position), true);
+
+        //**********************************************
+        //* Step six: Process fire spread and redstone *
+        //**********************************************
+        for (BlockPosition position : newPositions) {
+            IBlockData type = nativeWorld.getType(position);
+            if (type.getBlock() instanceof BlockFire) {
+                type.getBlock().tick(type, nativeWorld, position, nativeWorld.random);
+            } else if (isRedstoneComponent(type)) {
+                nativeWorld.applyPhysics(position, type.getBlock());
+            }
+
         }
+
         //*******************************************
         //*       Step six: Send to players       *
         //*******************************************
@@ -295,10 +314,6 @@ public class IWorldHandler extends WorldHandler {
     }
 
     private void setBlockFast(@NotNull World world, @NotNull BlockPosition position,@NotNull IBlockData data) {
-        setBlockFast(world, position, data, false);
-    }
-
-    private void setBlockFast(@NotNull World world, @NotNull BlockPosition position,@NotNull IBlockData data, boolean physics) {
         Chunk chunk = world.getChunkAtWorldCoords(position);
         ChunkSection chunkSection = chunk.getSections()[position.getY()>>4];
         if (chunkSection == null) {
@@ -309,10 +324,6 @@ public class IWorldHandler extends WorldHandler {
         }
 
         chunkSection.setType(position.getX()&15, position.getY()&15, position.getZ()&15, data);
-        if (physics) {
-            world.notifyAndUpdatePhysics(position, chunk, data, data, data, 3);
-            return;
-        }
         world.notify(position, data, data, 3);
     }
 
@@ -327,7 +338,7 @@ public class IWorldHandler extends WorldHandler {
         blockData = blockData.a(ROTATION[rotation.ordinal()]);
         WorldServer world = ((CraftWorld)(location.getWorld())).getHandle();
         BlockPosition blockPosition = locationToPosition(bukkit2MovecraftLoc(location));
-        setBlockFast(world,blockPosition,blockData, false);
+        setBlockFast(world,blockPosition,blockData);
     }
 
     @Override
@@ -391,12 +402,10 @@ public class IWorldHandler extends WorldHandler {
 
     private boolean isRedstoneComponent(IBlockData blockData) {
         final Block block = blockData.getBlock();
-        return block instanceof BlockRedstoneComparator ||
-                block instanceof BlockRedstoneWire ||
-                block instanceof BlockRepeater ||
+        return block instanceof BlockRedstoneWire ||
+                block instanceof BlockDiodeAbstract ||
                 block instanceof BlockButtonAbstract ||
-                block instanceof BlockLever ||
-                block instanceof BlockDispenser;
+                block instanceof BlockLever;
 
     }
 }

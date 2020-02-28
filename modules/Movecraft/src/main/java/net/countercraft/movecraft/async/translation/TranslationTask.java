@@ -102,6 +102,21 @@ public class TranslationTask extends AsyncTask {
             FALL_THROUGH_BLOCKS.add(Material.KELP_PLANT);
             FALL_THROUGH_BLOCKS.add(Material.SEAGRASS);
             FALL_THROUGH_BLOCKS.add(Material.TALL_SEAGRASS);
+            //Leaves
+            FALL_THROUGH_BLOCKS.add(Material.ACACIA_LEAVES);
+            FALL_THROUGH_BLOCKS.add(Material.BIRCH_LEAVES);
+            FALL_THROUGH_BLOCKS.add(Material.DARK_OAK_LEAVES);
+            FALL_THROUGH_BLOCKS.add(Material.JUNGLE_LEAVES);
+            FALL_THROUGH_BLOCKS.add(Material.OAK_LEAVES);
+            FALL_THROUGH_BLOCKS.add(Material.SPRUCE_LEAVES);
+            //Grass
+            FALL_THROUGH_BLOCKS.add(Material.GRASS);
+            //Double plants
+            FALL_THROUGH_BLOCKS.add(Material.ROSE_BUSH);
+            FALL_THROUGH_BLOCKS.add(Material.SUNFLOWER);
+            FALL_THROUGH_BLOCKS.add(Material.LILAC);
+            FALL_THROUGH_BLOCKS.add(Material.PEONY);
+            FALL_THROUGH_BLOCKS.add(Material.SEA_PICKLE);
 
         }
     }

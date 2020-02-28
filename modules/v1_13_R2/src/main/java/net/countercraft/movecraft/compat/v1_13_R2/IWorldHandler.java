@@ -119,6 +119,17 @@ public class IWorldHandler extends WorldHandler{
         }
 
         //*******************************************
+        //*   Step six: Process fire spread         *
+        //*******************************************
+        for (BlockPosition position : rotatedPositions.values()) {
+            IBlockData type = nativeWorld.getType(position);
+            if (!(type.getBlock() instanceof BlockFire)) {
+                continue;
+            }
+            BlockFire fire = (BlockFire) type.getBlock();
+            fire.a(type, nativeWorld, position, nativeWorld.random);
+        }
+        //*******************************************
         //*       Step six: Send to players       *
         //*******************************************
         List<Chunk> chunks = new ArrayList<>();
@@ -216,6 +227,18 @@ public class IWorldHandler extends WorldHandler{
         //Place redstone blocks and apply physics
         for (BlockPosition position : redstoneComponents.keySet()) {
             setBlockFast(nativeWorld, position, redstoneComponents.get(position), true);
+        }
+
+        //*******************************************
+        //*   Step six: Process fire spread         *
+        //*******************************************
+        for (BlockPosition position : newPositions) {
+            IBlockData type = nativeWorld.getType(position);
+            if (!(type.getBlock() instanceof BlockFire)) {
+                continue;
+            }
+            BlockFire fire = (BlockFire) type.getBlock();
+            fire.a(type, nativeWorld, position, nativeWorld.random);
         }
         //*******************************************
         //*       Step six: Send to players       *
