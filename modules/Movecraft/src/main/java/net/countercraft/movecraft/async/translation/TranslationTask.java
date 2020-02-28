@@ -32,7 +32,7 @@ public class TranslationTask extends AsyncTask {
     private static final int[] FALL_THROUGH_BLOCKS = {0, 8, 9, 10, 11, 31, 37, 38, 39, 40, 50, 51, 55, 59, 63, 65, 68, 69, 70, 72, 75, 76, 77, 78, 83, 85, 93, 94, 111, 141, 142, 143, 171};
 
     private int dx, dy, dz;
-    private HashHitBox newHitBox, oldHitBox;
+    private HashHitBox newHitBox, oldHitBox, oldFluidList, newFluidList;
     private boolean failed;
     private boolean collisionExplosion = false;
     private String failMessage;
@@ -45,6 +45,8 @@ public class TranslationTask extends AsyncTask {
         this.dz = dz;
         newHitBox = new HashHitBox();
         oldHitBox = new HashHitBox(c.getHitBox());
+        oldFluidList = new HashHitBox(c.getFluidLocations());
+        newFluidList = new HashHitBox();
     }
 
     @Override
@@ -193,6 +195,12 @@ public class TranslationTask extends AsyncTask {
                     newHitBox.add(newLocation);
                 }
             } //END OF: if (blockObstructed)
+        }
+
+        if (!oldFluidList.isEmpty()) {
+            for (MovecraftLocation fluidLoc : oldFluidList) {
+                newFluidList.add(fluidLoc.translate(dx, dy, dz));
+            }
         }
 
         if (craft.getType().getForbiddenHoverOverBlocks().size() > 0){
@@ -630,6 +638,10 @@ public class TranslationTask extends AsyncTask {
 
     public HashHitBox getNewHitBox() {
         return newHitBox;
+    }
+
+    public HashHitBox getNewFluidList() {
+        return newFluidList;
     }
 
     public Collection<UpdateCommand> getUpdates() {

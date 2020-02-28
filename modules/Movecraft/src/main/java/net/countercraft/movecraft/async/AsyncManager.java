@@ -187,6 +187,7 @@ public class AsyncManager extends BukkitRunnable {
                         }
                         if (!failed) {
                             c.setHitBox(task.getData().getBlockList());
+                            c.setFluidLocations(task.getData().getFluidBox());
                             c.setOrigBlockCount(data.getBlockList().size());
                             c.setNotificationPlayer(notifyP);
                             final int waterLine = c.getWaterLine();
@@ -285,6 +286,7 @@ public class AsyncManager extends BukkitRunnable {
 
                     if (task.isCollisionExplosion()) {
                         c.setHitBox(task.getNewHitBox());
+                        c.setFluidLocations(task.getNewFluidList());
                         //c.setBlockList(task.getData().getBlockList());
                         //boolean failed = MapUpdateManager.getInstance().addWorldUpdate(c.getW(), updates, null, null, exUpdates);
                         MapUpdateManager.getInstance().scheduleUpdates(task.getUpdates());
@@ -315,6 +317,7 @@ public class AsyncManager extends BukkitRunnable {
                     //c.setMinZ(task.getData().getMinZ());
                     //c.setHitBox(task.getData().getHitbox());
                     c.setHitBox(task.getNewHitBox());
+                    c.setFluidLocations(task.getNewFluidList());
 
                     // move any cannons that were present
                     if (Movecraft.getInstance().getCannonsPlugin() != null && shipCannons != null) {
@@ -360,6 +363,7 @@ public class AsyncManager extends BukkitRunnable {
 
                         sentMapUpdate = true;
                         c.setHitBox(task.getNewHitBox());
+                        c.setFluidLocations(task.getNewFluidList());
 
                         // rotate any cannons that were present
                         if (Movecraft.getInstance().getCannonsPlugin() != null && shipCannons != null) {
