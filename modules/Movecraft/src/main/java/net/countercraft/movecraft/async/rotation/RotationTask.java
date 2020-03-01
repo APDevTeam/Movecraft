@@ -213,6 +213,10 @@ public class RotationTask extends AsyncTask {
             failMessage = event.getFailMessage();
             return;
         }
+        if (parentCraft != craft) {
+            parentCraft.getFluidLocations().removeAll(oldFluidList);
+            parentCraft.getFluidLocations().addAll(newFluidList);
+        }
 
 
         updates.add(new CraftRotateCommand(getCraft(),originPoint, rotation));
