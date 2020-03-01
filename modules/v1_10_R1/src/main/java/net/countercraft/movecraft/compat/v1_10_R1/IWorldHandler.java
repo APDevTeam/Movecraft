@@ -88,7 +88,7 @@ public class IWorldHandler extends WorldHandler {
                 continue;
             tile.a(ROTATION[rotation.ordinal()]);
             //get the nextTick to move with the tile
-            tiles.add(new TileHolder(tile, tickProvider.getNextTick((WorldServer)nativeWorld,position), position));
+            tiles.add(new TileHolder(tile, tickProvider.getNextTick((WorldServer) nativeWorld, position), position));
         }
 
         //*******************************************
@@ -130,7 +130,18 @@ public class IWorldHandler extends WorldHandler {
             setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
         }
         //*******************************************
-        //*       Step six: Send to players       *
+        //*   Step six: Process fire spread         *
+        //*******************************************
+        for (BlockPosition position : rotatedPositions.values()) {
+            IBlockData type = nativeWorld.getType(position);
+            if (!(type.getBlock() instanceof BlockFire)) {
+                continue;
+            }
+            BlockFire fire = (BlockFire) type.getBlock();
+            fire.b(nativeWorld, position, type, nativeWorld.random);
+        }
+        //*******************************************
+        //*       Step seven: Send to players       *
         //*******************************************
         List<Chunk> chunks = new ArrayList<>();
         for(BlockPosition position : rotatedPositions.values()){
@@ -178,7 +189,7 @@ public class IWorldHandler extends WorldHandler {
 
             //nativeWorld.capturedTileEntities.remove(position);
             //nativeWorld.getChunkAtWorldCoords(position).getTileEntities().remove(position);
-            tiles.add(new TileHolder(tile, tickProvider.getNextTick((WorldServer)oldNativeWorld,position), position));
+            tiles.add(new TileHolder(tile, tickProvider.getNextTick((WorldServer) oldNativeWorld ,position), position));
 
         }
         //*******************************************
@@ -221,7 +232,18 @@ public class IWorldHandler extends WorldHandler {
             setBlockFast(oldNativeWorld, position, Blocks.AIR.getBlockData());
         }
         //*******************************************
-        //*       Step six: Send to players       *
+        //*   Step six: Process fire spread         *
+        //*******************************************
+        for (BlockPosition position : newPositions) {
+            IBlockData type = nativeWorld.getType(position);
+            if (!(type.getBlock() instanceof BlockFire)) {
+                continue;
+            }
+            BlockFire fire = (BlockFire) type.getBlock();
+            fire.b(nativeWorld, position, type, nativeWorld.random);
+        }
+        //*******************************************
+        //*       Step seven: Send to players       *
         //*******************************************
         List<Chunk> chunks = new ArrayList<>();
         for(BlockPosition position : newPositions){
