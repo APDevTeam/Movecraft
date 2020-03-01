@@ -38,6 +38,7 @@ public class DetectionTask extends AsyncTask {
     private final int maxSize;
     private final Stack<MovecraftLocation> blockStack = new Stack<>();
     private final HashHitBox blockList = new HashHitBox();
+    private final HashHitBox fluidList = new HashHitBox();
     private final HashSet<MovecraftLocation> visited = new HashSet<>();
     private final HashMap<List<Integer>, Integer> blockTypeCount = new HashMap<>();
     private final DetectionTaskData data;
@@ -87,7 +88,7 @@ public class DetectionTask extends AsyncTask {
             data.setBlockList(blockList);
             if (confirmStructureRequirements(flyBlocks, blockTypeCount)) {
                 data.setHitBox(blockList);
-
+                data.setFluidBox(fluidList);
             }
         }
     }
@@ -181,6 +182,8 @@ public class DetectionTask extends AsyncTask {
                     }
                 }
 
+
+
                 Location loc = new Location(data.getWorld(), x, y, z);
                 Player p;
                 if (data.getPlayer() == null) {
@@ -189,7 +192,9 @@ public class DetectionTask extends AsyncTask {
                     p = data.getPlayer();
                 }
                 if (p != null) {
-
+                    if (testID == 8 || testID == 9 || testID == 10 || testID == 11) {
+                        fluidList.add(workingLocation);
+                    }
                     addToBlockList(workingLocation);
                     Integer blockID = testID;
                     Integer dataID = testData;

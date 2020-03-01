@@ -30,6 +30,7 @@ public class DetectionTaskData {
     private boolean waterContact;
     private String failMessage;
     private HashHitBox hitBox;
+    private HashHitBox fluidBox;
     private Player player;
     private Player notificationPlayer;
     private int minX, minZ;
@@ -121,6 +122,14 @@ public class DetectionTaskData {
 
     void setHitBox(HashHitBox hitBox) {
         this.hitBox = hitBox;
+    }
+
+    public HashHitBox getFluidBox() {
+        return fluidBox;
+    }
+
+    void setFluidBox(HashHitBox fluidBox) {
+        this.fluidBox = fluidBox;
     }
 
     public Integer getMinX() {
