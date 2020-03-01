@@ -8,12 +8,16 @@ import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.ChatColor;
+import org.bukkit.Chunk;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import static net.countercraft.movecraft.utils.SignUtils.getFacing;
@@ -92,9 +96,7 @@ public class ICraft extends Craft {
         }*/
         
         // ensure chunks are loaded
-        for (MovecraftLocation location : hitBox) {
-        	location.translate(dx, dy, dz).toBukkit(world).getBlock().getType();
-        }
+        loadChunks(world, dx, dy, dz);
 
         Movecraft.getInstance().getAsyncManager().submitTask(new TranslationTask(this, world, dx, dy, dz), this);
     }
@@ -163,6 +165,34 @@ public class ICraft extends Craft {
     @Override
     public int hashCode() {
         return id.hashCode();
+    }
+    
+    private void loadChunks(World world, int dx, int dy, int dz) {
+    	List<Chunk> chunks = new ArrayList<Chunk>();
+    	for (MovecraftLocation location : hitBox) {
+        	Chunk c = location.translate(dx, dy, dz).toBukkit(world).getChunk();
+        	if (!chunks.contains(c)) chunks.add(c);
+        }
+    	
+    	List<Chunk> list = new ArrayList<Chunk>();
+    	list.addAll(chunks);
+    	for (Chunk chunk : list) {
+    		if (chunk.isLoaded()) continue;
+    		for (int x = -1; x <= 1; x++) {
+    			for (int z = -1; z <= 1; z++) {
+    				Chunk c = chunk.getWorld().getChunkAt(chunk.getX() + x, chunk.getZ() + z);
+    				if (!chunks.contains(c)) chunks.add(c);
+    			}
+    		}
+    	}
+    	
+		new BukkitRunnable() {
+			@Override
+			public void run() {
+				for (Chunk chunk : chunks)
+		    		if (!chunk.isLoaded()) chunk.load(true);
+			}
+		}.runTaskTimer(Movecraft.getInstance(), 0, 1);
     }
 
 }
