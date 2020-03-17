@@ -964,7 +964,7 @@ public class AsyncManager extends BukkitRunnable {
 
                                         if (tcraft.getName().length() >= 1){
                                             notification += tcraft.getName();
-				notification += ChatColor.RESET;
+						notification += ChatColor.RESET;
                                             notification += " (";
                                         }
                                         notification += tcraft.getType().getCraftName();
