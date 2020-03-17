@@ -173,14 +173,14 @@ public class SiegeCommand implements CommandExecutor {
             Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), startCommand.replaceAll("%r", siege.getAttackRegion()).replaceAll("%c", "" + siege.getCost()));
         }
         Bukkit.getServer().broadcastMessage(String.format(I18nSupport.getInternationalisedString("Siege - Siege About To Begin")
-                , player.getDisplayName(), siege.getName(), siege.getDelayBeforeStart() / 60));
+                , player.getDisplayName(), siege.getName()) + String.format(I18nSupport.getInternationalisedString("Siege - Ending In X Minutes"), siege.getDelayBeforeStart() / 60));
         for (Player p : Bukkit.getOnlinePlayers()) {
             p.playSound(p.getLocation(), Sound.ENTITY_WITHER_DEATH, 1, 0.25F);
         }
         Movecraft.getInstance().getLogger().log(Level.INFO, String.format(I18nSupport.getInternationalisedString("Siege - Log Siege Start"), siege.getName(), player.getName(), cost));
         Movecraft.getInstance().getEconomy().withdrawPlayer(player, cost);
         siege.setPlayerUUID(player.getUniqueId());
-        siege.setStartTime((int)System.currentTimeMillis());
+        siege.setStartTime(System.currentTimeMillis());
         siege.setStage(SiegeStage.PREPERATION);
     }
 

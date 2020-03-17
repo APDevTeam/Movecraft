@@ -61,6 +61,7 @@ public final class CruiseSign implements Listener{
             c.setCruiseDirection(sign.getRawData());
             c.setLastCruiseUpdate(System.currentTimeMillis());
             c.setCruising(true);
+            c.resetSigns(sign);
             if (!c.getType().getMoveEntities()) {
                 CraftManager.getInstance().addReleaseTask(c);
             }
@@ -69,9 +70,11 @@ public final class CruiseSign implements Listener{
         if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Cruise: ON")
                 && CraftManager.getInstance().getCraftByPlayer(event.getPlayer()) != null
                 && CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getCanCruise()) {
+            Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
             sign.setLine(0, "Cruise: OFF");
             sign.update(true);
-            CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCruising(false);
+            c.setCruising(false);
+            c.resetSigns(sign);
         }
     }
 
