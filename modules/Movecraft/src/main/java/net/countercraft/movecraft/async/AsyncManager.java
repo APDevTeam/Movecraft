@@ -24,7 +24,6 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
 import net.countercraft.movecraft.WorldHandler;
 import net.countercraft.movecraft.async.detection.DetectionTask;
-import net.countercraft.movecraft.async.detection.DetectionTaskData;
 import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.config.Settings;
@@ -132,22 +131,21 @@ public class AsyncManager extends BukkitRunnable {
                 // Process detection task
 
                 DetectionTask task = (DetectionTask) poll;
-                DetectionTaskData data = task.getData();
 
-                Player p = data.getPlayer();
-                Player notifyP = data.getNotificationPlayer();
+                Player p = task.getPlayer();
+                Player notifyP = task.getNotificationPlayer();
                 Craft pCraft = CraftManager.getInstance().getCraftByPlayer(p);
 
                 if (pCraft != null && p != null) {
                     // Player is already controlling a craft
                     notifyP.sendMessage(I18nSupport.getInternationalisedString("Detection - Failed - Already commanding a craft"));
                 } else {
-                    if (data.failed()) {
+                    if (task.isFailed()) {
                         if (notifyP != null)
-                            notifyP.sendMessage(data.getFailMessage());
+                            notifyP.sendMessage(task.getFailMessage());
                         else
                             Movecraft.getInstance().getLogger().log(Level.INFO,
-                            		I18nSupport.getInternationalisedString("Detection - NULL Player Detection Failed") + ": " + data.getFailMessage());
+                            		I18nSupport.getInternationalisedString("Detection - NULL Player Detection Failed") + ": " + task.getFailMessage());
 
                     } else {
                         Set<Craft> craftsInWorld = CraftManager.getInstance().getCraftsInWorld(c.getW());
@@ -155,11 +153,11 @@ public class AsyncManager extends BukkitRunnable {
                         boolean isSubcraft = false;
 
                         for (Craft craft : craftsInWorld) {
-                            if(craft.getHitBox().intersects(data.getBlockList())){
+                            if(craft.getHitBox().intersects(task.getBlockList())){
                                 isSubcraft = true;
                                 if (c.getType().getCruiseOnPilot() || p != null) {
                                     if (craft.getType() == c.getType()
-                                            || craft.getHitBox().size() <= data.getBlockList().size()) {
+                                            || craft.getHitBox().size() <= task.getBlockList().size()) {
                                         notifyP.sendMessage(I18nSupport.getInternationalisedString(
                                                 "Detection - Failed Craft is already being controlled"));
                                         failed = true;
@@ -173,8 +171,8 @@ public class AsyncManager extends BukkitRunnable {
                                             failed = true;
                                             notifyP.sendMessage(I18nSupport.getInternationalisedString("Detection - Parent Craft is busy"));
                                         }
-                                        craft.setHitBox(new HashHitBox(CollectionUtils.filter(craft.getHitBox(),data.getBlockList())));
-                                        craft.setOrigBlockCount(craft.getOrigBlockCount() - data.getBlockList().size());
+                                        craft.setHitBox(new HashHitBox(CollectionUtils.filter(craft.getHitBox(), task.getBlockList())));
+                                        craft.setOrigBlockCount(craft.getOrigBlockCount() - task.getBlockList().size());
                                     }
                                 }
                             }
@@ -186,9 +184,9 @@ public class AsyncManager extends BukkitRunnable {
                             notifyP.sendMessage(I18nSupport.getInternationalisedString("Craft must be part of another craft"));
                         }
                         if (!failed) {
-                            c.setHitBox(task.getData().getBlockList());
-                            c.setFluidLocations(task.getData().getFluidBox());
-                            c.setOrigBlockCount(data.getBlockList().size());
+                            c.setHitBox(task.getHitBox());
+                            c.setFluidLocations(task.getFluidBox());
+                            c.setOrigBlockCount(task.getBlockList().size());
                             c.setNotificationPlayer(notifyP);
                             final int waterLine = c.getWaterLine();
                             if(!c.getType().blockedByWater() && c.getHitBox().getMinY() <= waterLine){
