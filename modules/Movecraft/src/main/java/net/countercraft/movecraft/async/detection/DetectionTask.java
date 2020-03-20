@@ -21,8 +21,10 @@ package net.countercraft.movecraft.async.detection;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.events.HitBoxDetectEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.HashHitBox;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -85,6 +87,13 @@ public class DetectionTask extends AsyncTask {
             data.dynamicFlyBlockSpeedMultiplier = ratio;
         }
         if (isWithinLimit(blockList.size(), minSize, maxSize)) {
+            //call event
+            final HitBoxDetectEvent event = new HitBoxDetectEvent(craft, blockList);
+            Bukkit.getPluginManager().callEvent(event);
+            if (event.isCancelled()) {
+                fail(event.getFailMessage());
+                return;
+            }
             data.setBlockList(blockList);
             if (confirmStructureRequirements(flyBlocks, blockTypeCount)) {
                 data.setHitBox(blockList);

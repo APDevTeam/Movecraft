@@ -3,8 +3,8 @@ package net.countercraft.movecraft.towny;
 import com.palmergames.bukkit.towny.object.Town;
 import com.palmergames.bukkit.towny.object.TownBlock;
 import net.countercraft.movecraft.MovecraftLocation;
-import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.CraftTranslateEvent;
+import net.countercraft.movecraft.events.HitBoxDetectEvent;
 import net.countercraft.movecraft.utils.TownyUtils;
 import net.countercraft.movecraft.utils.TownyWorldHeightLimits;
 import org.bukkit.event.EventHandler;
@@ -27,7 +27,15 @@ public class TownyCompatManager implements Listener {
     }
 
     @EventHandler
-    public void onCraftDetect(CraftDetectEvent event) {
-
+    public void onHitboxDetect(HitBoxDetectEvent event) {
+        for (MovecraftLocation ml : event.getHitBox()) {
+            TownBlock townBlock = TownyUtils.getTownBlock(ml.toBukkit(event.getCraft().getW()));
+            if (townBlock == null || !townBlock.hasTown()) {
+                continue;
+            }
+            Town town = TownyUtils.getTown(townBlock);
+            if (town == null)
+                continue;
+        }
     }
 }
