@@ -925,34 +925,20 @@ public class AsyncManager extends BukkitRunnable {
                                 recentContactTracking.put(ccraft, new HashMap<>());
                             }
                             for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(w)) {
-                                long cposx = ccraft.getHitBox().getMaxX() + ccraft.getHitBox().getMinX();
-                                long cposy = ccraft.getHitBox().getMaxY() + ccraft.getHitBox().getMinY();
-                                long cposz = ccraft.getHitBox().getMaxZ() + ccraft.getHitBox().getMinZ();
-                                cposx = cposx >> 1;
-                                cposy = cposy >> 1;
-                                cposz = cposz >> 1;
-                                long tposx = tcraft.getHitBox().getMaxX() + tcraft.getHitBox().getMinX();
-                                long tposy = tcraft.getHitBox().getMaxY() + tcraft.getHitBox().getMinY();
-                                long tposz = tcraft.getHitBox().getMaxZ() + tcraft.getHitBox().getMinZ();
-                                tposx = tposx >> 1;
-                                tposy = tposy >> 1;
-                                tposz = tposz >> 1;
-                                long diffx = cposx - tposx;
-                                long diffy = cposy - tposy;
-                                long diffz = cposz - tposz;
-                                long distsquared = Math.abs(diffx) * Math.abs(diffx);
-                                distsquared += Math.abs(diffy) * Math.abs(diffy);
-                                distsquared += Math.abs(diffz) * Math.abs(diffz);
-                                long detectionRange;
-                                if (tposy > 65) {
-                                    detectionRange = (long) (Math.sqrt(tcraft.getOrigBlockCount())
-                                            * tcraft.getType().getDetectionMultiplier());
+                                MovecraftLocation ccenter = ccraft.getHitBox().getMidPoint();
+                                MovecraftLocation tcenter = tcraft.getHitBox().getMidPoint();
+                                int diffx = ccenter.getX() - tcenter.getX();
+                                int diffz = ccenter.getZ() - tcenter.getZ();
+                                int distsquared = ccenter.distance(tcenter);
+                                int detectionRange;
+                                if (tcenter.getY() > 65) {
+                                    detectionRange = (int) (Math.sqrt(tcraft.getOrigBlockCount())
+                                                                                * tcraft.getType().getDetectionMultiplier());
                                 } else {
-                                    detectionRange = (long) (Math.sqrt(tcraft.getOrigBlockCount())
-                                            * tcraft.getType().getUnderwaterDetectionMultiplier());
+                                    detectionRange = (int) (Math.sqrt(tcraft.getOrigBlockCount())
+                                                                                * tcraft.getType().getUnderwaterDetectionMultiplier());
                                 }
-                                if (distsquared < detectionRange * detectionRange
-                                        && tcraft.getNotificationPlayer() != ccraft.getNotificationPlayer()) {
+                                if (distsquared < detectionRange * detectionRange && tcraft.getNotificationPlayer() != ccraft.getNotificationPlayer()) {
                                     // craft has been detected
 
                                     // has the craft not been seen in the last
@@ -964,7 +950,7 @@ public class AsyncManager extends BukkitRunnable {
 
                                         if (tcraft.getName().length() >= 1){
                                             notification += tcraft.getName();
-					    notification += ChatColor.RESET;
+					                        notification += ChatColor.RESET;
                                             notification += " (";
                                         }
                                         notification += tcraft.getType().getCraftName();
@@ -994,17 +980,7 @@ public class AsyncManager extends BukkitRunnable {
                                         
                                         notification += ".";
                                         ccraft.getNotificationPlayer().sendMessage(notification);
-                                        w.playSound(ccraft.getNotificationPlayer().getLocation(),
-                                                Sound.BLOCK_ANVIL_LAND, 1.0f, 2.0f);
-/*										final World sw = w;
-                                        final Player sp = ccraft.getNotificationPlayer();
-										BukkitTask replaysound = new BukkitRunnable() {
-											@Override
-											public void run() {
-												sw.playSound(sp.getLocation(), Sound.BLOCK_ANVIL_LAND, 10.0f, 2.0f);
-											}
-										}.runTaskLater(Movecraft.getInstance(), (5));*/
-
+                                        w.playSound(ccraft.getNotificationPlayer().getLocation(), Sound.BLOCK_ANVIL_LAND, 1.0f, 2.0f);
                                     }
 
                                     long timestamp = System.currentTimeMillis();

@@ -80,6 +80,20 @@ final public class MovecraftLocation {
         return new MovecraftLocation(getX() - l.getX(), getY() - l.getY(), getZ() - l.getZ());
     }
 
+    /**
+     *
+     * Gives the distance between this MovecraftLocation and another MovecraftLocation
+     *
+     * @param other the MovecraftLocation distant from this one
+     * @return the distance between this and the other MovecraftLocation
+     */
+    public int distance(MovecraftLocation other) {
+        int diffx = this.x - other.x;
+        int diffy = this.y - other.y;
+        int diffz = this.z - other.z;
+        return diffx * diffx + diffy * diffy + diffz * diffz;
+    }
+
     public Location toBukkit(World world){
         return new Location(world, this.x, this.y, this.z);
     }
