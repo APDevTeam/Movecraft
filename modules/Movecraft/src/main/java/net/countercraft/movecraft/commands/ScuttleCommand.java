@@ -42,13 +42,13 @@ public class ScuttleCommand implements CommandExecutor {
             return true;
         }
         if(craft.getSinking()){
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "Scuttle - Craft Already Sinking");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Scuttle - Craft Already Sinking"));
             return true;
         }
         craft.setCruising(false);
         craft.sink();
         CraftManager.getInstance().removePlayerFromCraft(craft);
-        commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "Scuttle - Scuttle Activated");
+        commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Scuttle - Scuttle Activated"));
         return true;
 
     }

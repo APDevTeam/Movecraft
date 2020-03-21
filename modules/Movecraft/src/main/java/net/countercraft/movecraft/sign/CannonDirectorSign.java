@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.sign;
 
+import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.craft.CraftManager;
@@ -34,7 +35,7 @@ public final class CannonDirectorSign implements Listener {
         Craft foundCraft = null;
         CraftManager.getInstance().getCraftsInWorld(block.getWorld());
         for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(block.getWorld())) {
-            if (MathUtils.locationInHitbox(tcraft.getHitBox(), event.getClickedBlock().getLocation()) &&
+            if ( tcraft.getHitBox().contains(MathUtils.bukkit2MovecraftLoc(block.getLocation())) &&
                     CraftManager.getInstance().getPlayerFromCraft(tcraft) != null) {
                 foundCraft = tcraft;
                 break;
@@ -47,7 +48,7 @@ public final class CannonDirectorSign implements Listener {
         }
 
         if (!foundCraft.getType().allowCannonDirectorSign()) {
-            event.getPlayer().sendMessage(ERROR_PREFIX + I18nSupport.getInternationalisedString("CannonDirector - Not Allowed on Craft"));
+            event.getPlayer().sendMessage(ERROR_PREFIX + I18nSupport.getInternationalisedString("CannonDirector - Not Allowed On Craft"));
             return;
         }
         if(event.getAction()==Action.LEFT_CLICK_BLOCK && event.getPlayer()==foundCraft.getCannonDirector()){

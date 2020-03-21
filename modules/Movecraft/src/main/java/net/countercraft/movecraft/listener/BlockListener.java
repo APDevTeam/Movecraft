@@ -21,18 +21,14 @@ import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.flags.DefaultFlag;
 import net.countercraft.movecraft.Movecraft;
-import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.MovecraftLocation;
-import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.warfare.assault.Assault;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Hopper;
@@ -43,20 +39,17 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockDispenseEvent;
-import org.bukkit.event.block.BlockFromToEvent;
-import org.bukkit.event.block.BlockIgniteEvent;
-import org.bukkit.event.block.BlockPhysicsEvent;
-import org.bukkit.event.block.BlockPistonExtendEvent;
-import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.block.BlockRedstoneEvent;
+import org.bukkit.event.block.*;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.material.Attachable;
 import org.bukkit.material.MaterialData;
+import org.bukkit.material.PistonBaseMaterial;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -115,7 +108,7 @@ public class BlockListener implements Listener {
                 }
                 for (MovecraftLocation tloc : craft.getHitBox()) {
                     if (tloc.equals(mloc)) {
-                        e.getPlayer().sendMessage(I18nSupport.getInternationalisedString("BLOCK IS PART OF A PILOTED CRAFT"));
+                        e.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Player - Block part of piloted craft"));
                         e.setCancelled(true);
                         return;
                     }
@@ -131,7 +124,7 @@ public class BlockListener implements Listener {
             return;
         }
         for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(e.getLocation().getWorld())) {
-            if ((!tcraft.isNotProcessing()) && MathUtils.locationInHitbox(tcraft.getHitBox(), e.getLocation())) {
+            if ((!tcraft.isNotProcessing()) && MathUtils.locationInHitBox(tcraft.getHitBox(), e.getLocation())) {
                 e.setCancelled(true);
                 return;
             }
@@ -240,31 +233,36 @@ public class BlockListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOW)
     public void onBlockIgnite(BlockIgniteEvent event) {
+        if (event.isCancelled()) {
+            return;
+        }
+        final Craft adjacentCraft = adjacentCraft(event.getBlock().getLocation());
         // replace blocks with fire occasionally, to prevent fast craft from simply ignoring fire
-        if (!Settings.FireballPenetration ||
-                event.isCancelled() ||
-                event.getCause() != BlockIgniteEvent.IgniteCause.FIREBALL) {
-            return;
-        }
-        Block testBlock = event.getBlock().getRelative(-1, 0, 0);
-        if (!testBlock.getType().isBurnable())
-            testBlock = event.getBlock().getRelative(1, 0, 0);
-        if (!testBlock.getType().isBurnable())
-            testBlock = event.getBlock().getRelative(0, 0, -1);
-        if (!testBlock.getType().isBurnable())
-            testBlock = event.getBlock().getRelative(0, 0, 1);
+        if (Settings.FireballPenetration && event.getCause() == BlockIgniteEvent.IgniteCause.FIREBALL) {
+            Block testBlock = event.getBlock().getRelative(-1, 0, 0);
+            if (!testBlock.getType().isBurnable())
+                testBlock = event.getBlock().getRelative(1, 0, 0);
+            if (!testBlock.getType().isBurnable())
+                testBlock = event.getBlock().getRelative(0, 0, -1);
+            if (!testBlock.getType().isBurnable())
+                testBlock = event.getBlock().getRelative(0, 0, 1);
 
-        if (!testBlock.getType().isBurnable()) {
-            return;
-        }
-        // check to see if fire spread is allowed, don't check if worldguard integration is not enabled
-        if (Movecraft.getInstance().getWorldGuardPlugin() != null && (Settings.WorldGuardBlockMoveOnBuildPerm || Settings.WorldGuardBlockSinkOnPVPPerm)) {
-            ApplicableRegionSet set = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(testBlock.getWorld()).getApplicableRegions(testBlock.getLocation());
-            if (!set.allows(DefaultFlag.FIRE_SPREAD)) {
+            if (!testBlock.getType().isBurnable()) {
                 return;
             }
+            // check to see if fire spread is allowed, don't check if worldguard integration is not enabled
+            if (Movecraft.getInstance().getWorldGuardPlugin() != null && (Settings.WorldGuardBlockMoveOnBuildPerm || Settings.WorldGuardBlockSinkOnPVPPerm)) {
+                ApplicableRegionSet set = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(testBlock.getWorld()).getApplicableRegions(testBlock.getLocation());
+                if (!set.allows(DefaultFlag.FIRE_SPREAD)) {
+                    return;
+                }
+            }
+            testBlock.setType(org.bukkit.Material.AIR);
+        } else if (adjacentCraft != null) {
+
+            adjacentCraft.getHitBox().add(MathUtils.bukkit2MovecraftLoc(event.getBlock().getLocation()));
         }
-        testBlock.setType(org.bukkit.Material.AIR);
+
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -280,31 +278,24 @@ public class BlockListener implements Listener {
         }
     }
 
+    @EventHandler
+    public void onFlow(BlockFromToEvent e){
+        if(Settings.DisableSpillProtection)
+            return;
+        if(!e.getBlock().isLiquid())
+            return;
+        MovecraftLocation loc = MathUtils.bukkit2MovecraftLoc(e.getBlock().getLocation());
+        MovecraftLocation toLoc = MathUtils.bukkit2MovecraftLoc(e.getToBlock().getLocation());
+        for(Craft craft : CraftManager.getInstance().getCraftsInWorld(e.getBlock().getWorld())){
+            if(craft.getHitBox().contains((loc)) && !craft.getFluidLocations().contains(toLoc)) {
+                e.setCancelled(true);
+                break;
+            }
+        }
+    }
+
     @EventHandler(priority = EventPriority.NORMAL)
     public void explodeEvent(EntityExplodeEvent e) {
-        // Remove any blocks from the list that were adjacent to water, to prevent spillage
-        if (!Settings.DisableSpillProtection) {
-            e.blockList().removeIf(b -> b.getY() > b.getWorld().getSeaLevel() &&
-                    (b.getRelative(-1, 0, -1).isLiquid() ||
-                            b.getRelative(-1, 1, -1).isLiquid() ||
-                            b.getRelative(-1, 0, 0).isLiquid() ||
-                            b.getRelative(-1, 1, 0).isLiquid() ||
-                            b.getRelative(-1, 0, 1).isLiquid() ||
-                            b.getRelative(-1, 1, 1).isLiquid() ||
-                            b.getRelative(0, 0, -1).isLiquid() ||
-                            b.getRelative(0, 1, -1).isLiquid() ||
-                            b.getRelative(0, 0, 0).isLiquid() ||
-                            b.getRelative(0, 1, 0).isLiquid() ||
-                            b.getRelative(0, 0, 1).isLiquid() ||
-                            b.getRelative(0, 1, 1).isLiquid() ||
-                            b.getRelative(1, 0, -1).isLiquid() ||
-                            b.getRelative(1, 1, -1).isLiquid() ||
-                            b.getRelative(1, 0, 0).isLiquid() ||
-                            b.getRelative(1, 1, 0).isLiquid() ||
-                            b.getRelative(1, 0, 1).isLiquid() ||
-                            b.getRelative(1, 1, 1).isLiquid()));
-        }
-
         if (Settings.DurabilityOverride != null) {
             e.blockList().removeIf(b -> Settings.DurabilityOverride.containsKey(b.getTypeId()) &&
                     (new Random(b.getX() + b.getY() + b.getZ() + (System.currentTimeMillis() >> 12)))
@@ -412,5 +403,34 @@ public class BlockListener implements Listener {
             }
         }
 
+    }
+
+    @Nullable
+    private Craft adjacentCraft(@NotNull Location location) {
+        for (Craft craft : CraftManager.getInstance().getCraftsInWorld(location.getWorld())) {
+            if (!MathUtils.locIsNearCraftFast(craft, MathUtils.bukkit2MovecraftLoc(location))) {
+                continue;
+            }
+            return craft;
+        }
+        return null;
+    }
+
+    private boolean pistonFacingLocation(Location loc) {
+        final Vector[] SHIFTS = {new Vector(0,1,0), new Vector(0,-1,0),
+                new Vector(1,0,0), new Vector(-1,0,0),
+                new Vector(0,0,1), new Vector(0,0,-1)};
+        for (Vector shift : SHIFTS) {
+            final Location test = loc.add(shift);
+            if (!(test.getBlock().getState().getData() instanceof PistonBaseMaterial)) {
+                continue;
+            }
+            PistonBaseMaterial piston = (PistonBaseMaterial) test.getBlock().getState().getData();
+            if (!test.getBlock().getRelative(piston.getFacing()).getLocation().equals(loc)) {
+                continue;
+            }
+            return true;
+        }
+        return false;
     }
 }

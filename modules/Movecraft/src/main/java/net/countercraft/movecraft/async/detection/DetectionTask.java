@@ -18,12 +18,11 @@
 package net.countercraft.movecraft.async.detection;
 
 
-import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.utils.*;
+import net.countercraft.movecraft.utils.HashHitBox;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -39,6 +38,7 @@ public class DetectionTask extends AsyncTask {
     private final int maxSize;
     private final Stack<MovecraftLocation> blockStack = new Stack<>();
     private final HashHitBox blockList = new HashHitBox();
+    private final HashHitBox fluidList = new HashHitBox();
     private final HashSet<MovecraftLocation> visited = new HashSet<>();
     private final HashMap<List<Integer>, Integer> blockTypeCount = new HashMap<>();
     private final DetectionTaskData data;
@@ -88,7 +88,7 @@ public class DetectionTask extends AsyncTask {
             data.setBlockList(blockList);
             if (confirmStructureRequirements(flyBlocks, blockTypeCount)) {
                 data.setHitBox(blockList);
-
+                data.setFluidBox(fluidList);
             }
         }
     }
@@ -182,6 +182,8 @@ public class DetectionTask extends AsyncTask {
                     }
                 }
 
+
+
                 Location loc = new Location(data.getWorld(), x, y, z);
                 Player p;
                 if (data.getPlayer() == null) {
@@ -190,7 +192,9 @@ public class DetectionTask extends AsyncTask {
                     p = data.getPlayer();
                 }
                 if (p != null) {
-
+                    if (testID == 8 || testID == 9 || testID == 10 || testID == 11) {
+                        fluidList.add(workingLocation);
+                    }
                     addToBlockList(workingLocation);
                     Integer blockID = testID;
                     Integer dataID = testData;
@@ -245,7 +249,7 @@ public class DetectionTask extends AsyncTask {
     private boolean isForbiddenSignString(String testString) {
 
         for (String s : data.getForbiddenSignStrings()) {
-            if (testString.equals(s)) {
+            if (testString.equalsIgnoreCase(s)) {
                 return true;
             }
         }
@@ -393,13 +397,13 @@ public class DetectionTask extends AsyncTask {
                 if (blockPercentage < minPercentage) {
                     if (i.get(0) < 10000) {
                         fail(String.format(
-                                I18nSupport.getInternationalisedString("Not enough flyblock") + ": %s %.2f%% < %.2f%%",
+                                I18nSupport.getInternationalisedString("Detection - Not enough flyblock") + ": %s %.2f%% < %.2f%%",
                                 Material.getMaterial(i.get(0)).name().toLowerCase().replace("_", " "), blockPercentage,
                                 minPercentage));
                         return false;
                     } else {
                         fail(String.format(
-                                I18nSupport.getInternationalisedString("Not enough flyblock") + ": %s %.2f%% < %.2f%%",
+                                I18nSupport.getInternationalisedString("Detection - Not enough flyblock") + ": %s %.2f%% < %.2f%%",
                                 Material.getMaterial((i.get(0) - 10000) >> 4).name().toLowerCase().replace("_", " "),
                                 blockPercentage, minPercentage));
                         return false;
@@ -409,13 +413,13 @@ public class DetectionTask extends AsyncTask {
                 if (numberOfBlocks < flyBlocks.get(i).get(0) - 10000.0) {
                     if (i.get(0) < 10000) {
                         fail(String.format(
-                                I18nSupport.getInternationalisedString("Not enough flyblock") + ": %s %d < %d",
+                                I18nSupport.getInternationalisedString("Detection - Not enough flyblock") + ": %s %d < %d",
                                 Material.getMaterial(i.get(0)).name().toLowerCase().replace("_", " "), numberOfBlocks,
                                 flyBlocks.get(i).get(0).intValue() - 10000));
                         return false;
                     } else {
                         fail(String.format(
-                                I18nSupport.getInternationalisedString("Not enough flyblock") + ": %s %d < %d",
+                                I18nSupport.getInternationalisedString("Detection - Not enough flyblock") + ": %s %d < %d",
                                 Material.getMaterial((i.get(0) - 10000) >> 4).name().toLowerCase().replace("_", " "),
                                 numberOfBlocks, flyBlocks.get(i).get(0).intValue() - 10000));
                         return false;
@@ -426,13 +430,13 @@ public class DetectionTask extends AsyncTask {
                 if (blockPercentage > maxPercentage) {
                     if (i.get(0) < 10000) {
                         fail(String.format(
-                                I18nSupport.getInternationalisedString("Too much flyblock") + ": %s %.2f%% > %.2f%%",
+                                I18nSupport.getInternationalisedString("Detection - Too much flyblock") + ": %s %.2f%% > %.2f%%",
                                 Material.getMaterial(i.get(0)).name().toLowerCase().replace("_", " "), blockPercentage,
                                 maxPercentage));
                         return false;
                     } else {
                         fail(String.format(
-                                I18nSupport.getInternationalisedString("Too much flyblock") + ": %s %.2f%% > %.2f%%",
+                                I18nSupport.getInternationalisedString("Detection - Too much flyblock") + ": %s %.2f%% > %.2f%%",
                                 Material.getMaterial((i.get(0) - 10000) >> 4).name().toLowerCase().replace("_", " "),
                                 blockPercentage, maxPercentage));
                         return false;
@@ -441,12 +445,12 @@ public class DetectionTask extends AsyncTask {
             } else {
                 if (numberOfBlocks > flyBlocks.get(i).get(1) - 10000.0) {
                     if (i.get(0) < 10000) {
-                        fail(String.format(I18nSupport.getInternationalisedString("Too much flyblock") + ": %s %d > %d",
+                        fail(String.format(I18nSupport.getInternationalisedString("Detection - Too much flyblock") + ": %s %d > %d",
                                 Material.getMaterial(i.get(0)).name().toLowerCase().replace("_", " "), numberOfBlocks,
                                 flyBlocks.get(i).get(1).intValue() - 10000));
                         return false;
                     } else {
-                        fail(String.format(I18nSupport.getInternationalisedString("Too much flyblock") + ": %s %d > %d",
+                        fail(String.format(I18nSupport.getInternationalisedString("Detection - Too much flyblock") + ": %s %d > %d",
                                 Material.getMaterial((i.get(0) - 10000) >> 4).name().toLowerCase().replace("_", " "),
                                 numberOfBlocks, flyBlocks.get(i).get(1).intValue() - 10000));
                         return false;

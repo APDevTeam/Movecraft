@@ -1,17 +1,21 @@
 package net.countercraft.movecraft.mapUpdater.update;
 
+import com.google.gson.Gson;
 import com.sk89q.jnbt.CompoundTag;
 import com.sk89q.jnbt.ListTag;
 import com.sk89q.jnbt.Tag;
 import com.sk89q.worldedit.blocks.BaseBlock;
 import net.countercraft.movecraft.MovecraftLocation;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockState;
-import org.bukkit.block.Dispenser;
-import org.bukkit.block.Sign;
+import org.bukkit.block.*;
+import org.bukkit.inventory.FurnaceInventory;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.List;
+import java.util.Map;
 
 public class WorldEditUpdateCommand extends UpdateCommand {
     private final BaseBlock worldEditBaseBlock;
@@ -94,15 +98,25 @@ public class WorldEditUpdateCommand extends UpdateCommand {
                 Sign s = (Sign) state;
                 CompoundTag nbtData = worldEditBaseBlock.getNbtData();
                 //Text NBT tags for first to fourth line are called Text1 - Text4
+                final Gson gson = new Gson();
+                final String[] STYLES = {"bold", "italic", "underline", "strikethrough"};
                 for (int i = 1 ; i <= 4 ; i++){
-                    String line = nbtData.getString("Text" + i);
-                    line = line.substring(2);
-                    if (line.substring(0, 5).equalsIgnoreCase("extra")){
-                        line = line.substring(17);
-                        String[] parts = line.split("\"");
-                        line = parts[0];
-                    } else {
-                        line = "";
+                    Map lineData = gson.fromJson(nbtData.getString("Text" + i), Map.class);
+                    if (!lineData.containsKey("extra"))
+                        continue;
+                    List<Map> extras = (List<Map>) lineData.get("extra");
+                    String line = "";
+                    for (Map textComponent : extras) {
+                        if (textComponent.containsKey("color")) {
+                            line += ChatColor.valueOf(((String) textComponent.get("color")).toUpperCase());
+                        }
+                        for (String style : STYLES) {
+                            if (!(boolean) textComponent.getOrDefault(style, false)) {
+                                continue;
+                            }
+                            line += ChatColor.valueOf(style.toUpperCase());
+                        }
+                        line += textComponent.get("text");
                     }
                     if (i == 1 && line.equalsIgnoreCase("\\\\  ||  /")){
                         s.setLine(0,"\\  ||  /");
@@ -113,6 +127,62 @@ public class WorldEditUpdateCommand extends UpdateCommand {
                     s.setLine(i - 1, line);
                 }
                 s.update(false, false);
+            }
+        }
+        if (type == Material.FURNACE){
+            ListTag list = worldEditBaseBlock.getNbtData().getListTag("Items");
+            FurnaceInventory fInv = ((Furnace) block.getState()).getInventory();
+            if (list != null){
+                for (Tag t : list.getValue()){
+                    if (!(t instanceof CompoundTag)){
+                        continue;
+                    }
+                    CompoundTag ct = (CompoundTag) t;
+                    byte slot = ct.getByte("Slot");
+                    if (slot == 2){//Ignore the result slot
+                        continue;
+                    }
+                    String id = ct.getString("id");
+                    ImmutablePair<Material, Byte> content;
+                    if (id.equals("minecraft:coal")){
+                        byte data = (byte) ct.getShort("Damage");
+                        byte count = ct.getByte("Count");
+                        //Smelting slot
+
+                        if (slot == 0) {
+                            if (fInv.getSmelting() != null && fInv.getSmelting().getData().getData() == data){
+                                fInv.getSmelting().setAmount(count);
+                            } else {
+                                fInv.setSmelting(new ItemStack(Material.COAL, count, (short) 0, data));
+                            }
+                        } else if (slot == 1) {//Fuel slot
+                            if (fInv.getFuel() != null && fInv.getFuel().getData().getData() == data){
+                                fInv.getFuel().setAmount(count);
+                            } else {
+                                fInv.setFuel(new ItemStack(Material.COAL, count, (short) 0, data));
+                            }
+                        }
+
+                    }
+                    if (id.equals("minecraft:coal_block")){
+                        byte count = ct.getByte("Count");
+                        //Smelting slot
+                        //Fuel slot
+                        if (slot == 0) {
+                            if (fInv.getSmelting() != null){
+                                fInv.getSmelting().setAmount(count);
+                            } else {
+                                fInv.setSmelting(new ItemStack(Material.COAL_BLOCK, count));
+                            }
+                        } else if (slot == 1) {//Fuel slot
+                            if (fInv.getFuel() != null){
+                                fInv.getFuel().setAmount(count);
+                            } else {
+                                fInv.setFuel(new ItemStack(Material.COAL_BLOCK, count));
+                            }
+                        }
+                    }
+                }
             }
         }
     }

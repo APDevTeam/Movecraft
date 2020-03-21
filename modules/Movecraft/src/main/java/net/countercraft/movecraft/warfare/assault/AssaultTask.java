@@ -5,19 +5,15 @@ import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
-import net.countercraft.movecraft.listener.WorldEditInteractListener;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.World;
+import net.countercraft.movecraft.sign.RegionDamagedSign;
+import org.bukkit.*;
 import org.bukkit.block.Sign;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import static net.countercraft.movecraft.utils.ChatUtils.ERROR_PREFIX;
-
 import java.util.UUID;
+
+import static net.countercraft.movecraft.utils.ChatUtils.ERROR_PREFIX;
 
 public class AssaultTask extends BukkitRunnable {
     private final Assault assault;
@@ -46,7 +42,7 @@ public class AssaultTask extends BukkitRunnable {
             int beaconZ = assault.getMinPos().getBlockZ();
             int beaconY;
             for(beaconY = 255; beaconY > 0; beaconY--) {
-                if(w.getBlockAt(beaconX, beaconY, beaconZ).getType() != Material.AIR) {
+                if(w.getBlockAt(beaconX, beaconY, beaconZ).getType().isOccluding()) {
                     beaconY++;
                     break;
                 }
@@ -112,7 +108,7 @@ public class AssaultTask extends BukkitRunnable {
                 assert tRegion != null;
                 tRegion.setFlag(DefaultFlag.TNT, StateFlag.State.DENY);
                 // repair the damages that have occurred so far
-                if (!new WorldEditInteractListener().repairRegion(assault.getWorld(), assault.getRegionName())) {
+                if (!new RegionDamagedSign().repairRegion(assault.getWorld(), assault.getRegionName())) {
                     Bukkit.getServer().broadcastMessage(ERROR_PREFIX+String.format(I18nSupport.getInternationalisedString("Assault - Repair Failed"), assault.getRegionName().toUpperCase()));
                 }
             }

@@ -7,6 +7,7 @@ import com.sk89q.jnbt.Tag;
 import com.sk89q.worldedit.MaxChangedBlocksException;
 import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.WorldEdit;
+import com.sk89q.worldedit.WorldEditException;
 import com.sk89q.worldedit.blocks.BaseBlock;
 import com.sk89q.worldedit.bukkit.BukkitWorld;
 import com.sk89q.worldedit.extent.Extent;
@@ -26,12 +27,16 @@ import com.sk89q.worldguard.protection.regions.ProtectedPolygonalRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.utils.CollectionUtils;
 import net.countercraft.movecraft.utils.HashHitBox;
+import net.countercraft.movecraft.utils.HitBox;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Dispenser;
+import org.bukkit.block.Furnace;
 import org.bukkit.block.Sign;
+import org.bukkit.inventory.FurnaceInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 
@@ -50,7 +55,7 @@ public class MovecraftRepair {
     private final Plugin plugin;
     private HashMap<String, ArrayDeque<ImmutablePair<Vector,Vector>>> locMissingBlocksMap = new HashMap<>();
     private HashMap<String, Long> numDiffBlocksMap = new HashMap<>();
-    private HashMap<String, HashMap<Material, Double>> missingBlocksMap = new HashMap<>();
+    private HashMap<String, HashMap<ImmutablePair<Material, Byte>, Double>> missingBlocksMap = new HashMap<>();
     private final HashMap<String, Vector> distanceMap = new HashMap<>();
 
     public MovecraftRepair(Plugin plugin) {
@@ -59,7 +64,7 @@ public class MovecraftRepair {
 
     public boolean saveCraftRepairState(Craft craft, Sign sign) {
         HashHitBox hitBox = craft.getHitBox();
-        File saveDirectory = new File(plugin.getDataFolder(), "CraftRepairStates");
+        File saveDirectory = new File(plugin.getDataFolder(), "RepairStates");
         World world = craft.getW();
         com.sk89q.worldedit.world.World weWorld = new BukkitWorld(world);
         WorldData worldData = weWorld.getWorldData();
@@ -70,28 +75,32 @@ public class MovecraftRepair {
         Vector minPos = new Vector(hitBox.getMinX(), hitBox.getMinY(), hitBox.getMinZ());
         Vector maxPos = new Vector(hitBox.getMaxX(), hitBox.getMaxY(), hitBox.getMaxZ());
         CuboidRegion cRegion = new CuboidRegion(minPos, maxPos);
-        String repairName = craft.getNotificationPlayer().getName();
-        repairName += "_";
-        repairName += ChatColor.stripColor(sign.getLine(1));
+        File playerDirectory = new File(saveDirectory,craft.getNotificationPlayer().getUniqueId().toString());
+        if (!playerDirectory.exists()){
+            playerDirectory.mkdirs();
+        }
+        String repairName = ChatColor.stripColor(sign.getLine(1));
         repairName += ".schematic";
-        File repairStateFile = new File(saveDirectory, repairName);
+        File repairStateFile = new File(playerDirectory, repairName);
         Set<BaseBlock> blockSet = baseBlocksFromCraft(craft);
+        HitBox outsideLocs = CollectionUtils.filter(solidBlockLocs(craft.getW(), cRegion), craft.getHitBox());
         try {
-
             BlockArrayClipboard clipboard = new BlockArrayClipboard(cRegion);
             clipboard.setOrigin(origin);
             Extent source = WorldEdit.getInstance().getEditSessionFactory().getEditSession(weWorld, -1);
-            Extent destination = clipboard;
-            ForwardExtentCopy copy = new ForwardExtentCopy(source, cRegion, clipboard.getOrigin(), destination, clipboard.getOrigin());
+            ForwardExtentCopy copy = new ForwardExtentCopy(source, cRegion, clipboard.getOrigin(), clipboard, clipboard.getOrigin());
             BlockMask mask = new BlockMask(source, blockSet);
             copy.setSourceMask(mask);
             Operations.completeLegacy(copy);
+            for (MovecraftLocation outsideLoc : outsideLocs){
+                clipboard.setBlock(new Vector(outsideLoc.getX(), outsideLoc.getY(), outsideLoc.getZ()), new BaseBlock(0));
+            }
             ClipboardWriter writer = ClipboardFormat.SCHEMATIC.getWriter(new FileOutputStream(repairStateFile, false));
             writer.write(clipboard, worldData);
             writer.close();
             return true;
 
-        } catch (MaxChangedBlocksException | IOException e) {
+        } catch (IOException | WorldEditException e) {
             e.printStackTrace();
             return false;
         }
@@ -101,7 +110,7 @@ public class MovecraftRepair {
 
     public boolean saveRegionRepairState(World world, ProtectedRegion region) {
 
-        File saveDirectory = new File(plugin.getDataFolder(), "RegionRepairStates");
+        File saveDirectory = new File(plugin.getDataFolder(), "AssaultSnapshots");
         com.sk89q.worldedit.world.World weWorld = new BukkitWorld(world);
         WorldData worldData = weWorld.getWorldData();
         Vector weMinPos = region.getMinimumPoint();
@@ -127,7 +136,7 @@ public class MovecraftRepair {
                     if (block.getType().equals(Material.AIR)) {
                         continue;
                     }
-                    if (Settings.AssaultDestroyableBlocks.contains(block.getType())) {
+                    if (Settings.AssaultDestroyableBlocks.contains(block.getTypeId())) {
                         baseBlockSet.add(new BaseBlock(block.getTypeId(), block.getData()));
                     }
                 }
@@ -154,12 +163,14 @@ public class MovecraftRepair {
     }
 
     public Clipboard loadCraftRepairStateClipboard(Craft craft, Sign sign) {
-        File dataDirectory = new File(plugin.getDataFolder(), "CraftRepairStates");
-        String repairName = craft.getNotificationPlayer().getName();
-        repairName += "_";
-        repairName += ChatColor.stripColor(sign.getLine(1));
+        File dataDirectory = new File(plugin.getDataFolder(), "RepairStates");
+        File playerDirectory = new File(dataDirectory,craft.getNotificationPlayer().getUniqueId().toString());
+        if (!playerDirectory.exists()){
+            return null;
+        }
+        String repairName = ChatColor.stripColor(sign.getLine(1));
         repairName += ".schematic";
-        File file = new File(dataDirectory, repairName); // The schematic file
+        File file = new File(playerDirectory, repairName); // The schematic file
         com.sk89q.worldedit.world.World weWorld = new BukkitWorld(sign.getWorld());
         WorldData worldData = weWorld.getWorldData();
         Clipboard clipboard;
@@ -174,25 +185,64 @@ public class MovecraftRepair {
             return null;
         }
         long numDiffBlocks = 0;
-        HashMap<Material, Double> missingBlocks = new HashMap<>();
+        HashMap<ImmutablePair<Material, Byte>, Double> missingBlocks = new HashMap<>();
         ArrayDeque<ImmutablePair<Vector,Vector>> locMissingBlocks = new ArrayDeque<>();
         Vector minPos = clipboard.getMinimumPoint();
         Vector distance = clipboard.getOrigin().subtract(clipboard.getMinimumPoint());
         Vector size = clipboard.getDimensions();
         Vector offset = new Vector(sign.getX() - distance.getBlockX(), sign.getY() - distance.getBlockY(), sign.getZ() - distance.getBlockZ());
         for (int x = 0; x <= size.getBlockX(); x++) {
-            for (int y = 0; y <= size.getBlockY(); y++) {
-                for (int z = 0; z <= size.getBlockZ(); z++) {
+            for (int z = 0; z <= size.getBlockZ(); z++) {
+                for (int y = 0; y <= size.getBlockY(); y++) {
                     Vector position = new Vector(minPos.getBlockX() + x, minPos.getBlockY() + y, minPos.getBlockZ() + z);
                     Location bukkitLoc = new Location(sign.getWorld(), offset.getBlockX() + x, offset.getBlockY() + y, offset.getBlockZ() + z);
                     BaseBlock block = clipboard.getBlock(position);
                     Block bukkitBlock = sign.getWorld().getBlockAt(bukkitLoc);
                     if (block.getType() != 0 && bukkitBlock.getTypeId() != block.getType()) {
                         int itemToConsume = block.getType();
+                        byte dataToConsume = (byte) block.getData();
                         double qtyToConsume = 1.0;
                         numDiffBlocks++;
                         //some blocks aren't represented by items with the same number as the block
                         switch (itemToConsume) {
+                            case 61:
+                                //Count fuel in furnaces
+                                ListTag list = block.getNbtData().getListTag("Items");
+                                if (list != null){
+                                    for (Tag t : list.getValue()){
+                                        if (!(t instanceof CompoundTag)){
+                                            continue;
+                                        }
+                                        CompoundTag ct = (CompoundTag) t;
+                                        if (ct.getByte("Slot") == 2){//Ignore the result slot
+                                            continue;
+                                        }
+                                        String id = ct.getString("id");
+                                        ImmutablePair<Material, Byte> content;
+                                        if (id.equals("minecraft:coal")){
+                                            byte data = (byte) ct.getShort("Damage");
+                                            content = new ImmutablePair<>(Material.COAL, data);
+                                            if (!missingBlocks.containsKey(content)){
+                                                missingBlocks.put(content, (double) ct.getByte("Count"));
+                                            } else {
+                                                double num = missingBlocks.get(content);
+                                                num += (double) ct.getByte("Count");
+                                                missingBlocks.put(content, num);
+                                            }
+                                        }
+                                        if (id.equals("minecraft:coal_block")){
+                                            content = new ImmutablePair<>(Material.COAL_BLOCK, (byte) 0);
+                                            if (!missingBlocks.containsKey(content)){
+                                                missingBlocks.put(content, (double) ct.getByte("Count"));
+                                            } else {
+                                                double num = missingBlocks.get(content);
+                                                num +=  ct.getByte("Count");
+                                                missingBlocks.put(content, num);
+                                            }
+                                        }
+                                    }
+                                }
+                                break;
                             case 62://burning furnace
                                 itemToConsume = 61;
                                 break;
@@ -287,33 +337,38 @@ public class MovecraftRepair {
                                         }
                                     }
                                 }
+                                ImmutablePair<Material, Byte> content;
                                 if (numTNT > 0) {
-                                    if (!missingBlocks.containsKey(Material.TNT)) {
-                                        missingBlocks.put(Material.TNT, (double) numTNT);
+                                    content = new ImmutablePair<>(Material.TNT, (byte) 0);
+                                    if (!missingBlocks.containsKey(content)) {
+                                        missingBlocks.put(content, (double) numTNT);
                                     } else {
-                                        Double num = missingBlocks.get(Material.TNT);
+                                        double num = missingBlocks.get(content);
                                         num += numTNT;
-                                        missingBlocks.put(Material.TNT, num);
+                                        missingBlocks.put(content, num);
                                     }
                                 }
                                 if (numFireCharges > 0) {
-                                    if (!missingBlocks.containsKey(Material.FIREBALL)) {
-                                        missingBlocks.put(Material.FIREBALL, (double) numFireCharges);
+                                    content = new ImmutablePair<>(Material.FIREBALL, (byte) 0);
+                                    if (!missingBlocks.containsKey(content)) {
+                                        missingBlocks.put(content, (double) numFireCharges);
                                     } else {
-                                        Double num = missingBlocks.get(Material.FIREBALL);
+                                        double num = missingBlocks.get(content);
                                         num += numFireCharges;
-                                        missingBlocks.put(Material.FIREBALL, num);
+                                        missingBlocks.put(content, num);
                                     }
                                 }
                                 if (numWaterBuckets > 0) {
-                                    if (!missingBlocks.containsKey(Material.WATER_BUCKET)) {
-                                        missingBlocks.put(Material.WATER_BUCKET, (double) numWaterBuckets);
+                                    content = new ImmutablePair<>(Material.WATER_BUCKET, (byte) 0);
+                                    if (!missingBlocks.containsKey(content)) {
+                                        missingBlocks.put(content, (double) numWaterBuckets);
                                     } else {
-                                        Double num = missingBlocks.get(Material.WATER_BUCKET);
+                                        double num = missingBlocks.get(content);
                                         num += numWaterBuckets;
-                                        missingBlocks.put(Material.WATER_BUCKET, num);
+                                        missingBlocks.put(content, num);
                                     }
                                 }
+                                break;
                             }
                             case 43: { // for double slabs, require 2 slabs
                                 itemToConsume = 44;
@@ -332,13 +387,17 @@ public class MovecraftRepair {
                             }
                         }
                         if (itemToConsume != 0) {
-                            if (!missingBlocks.containsKey(Material.getMaterial(itemToConsume))) {
-                                missingBlocks.put(Material.getMaterial(itemToConsume), qtyToConsume);
+                            ImmutablePair<Material, Byte> missingBlock = new ImmutablePair<>(Material.getMaterial(itemToConsume), (byte) 0);
+                            if (!missingBlocks.containsKey(missingBlock)) {
+                                missingBlocks.put(missingBlock, qtyToConsume);
                             } else {
-                                Double num = missingBlocks.get(Material.getMaterial(itemToConsume));
+                                Double num = missingBlocks.get(missingBlock);
                                 num += qtyToConsume;
-                                missingBlocks.put(Material.getMaterial(itemToConsume), num);
+                                missingBlocks.put(missingBlock, num);
                             }
+
+                        }
+                        if (block.getType() != 0){
                             locMissingBlocks.addLast(new ImmutablePair<>(new Vector(offset.getBlockX() + x, offset.getBlockY() + y, offset.getBlockZ() + z),new Vector(position.getBlockX(),position.getBlockY(),position.getBlockZ())));
                         }
                     }
@@ -384,33 +443,37 @@ public class MovecraftRepair {
                             }
                         }
                         //Bukkit.getLogger().info(String.format("TNT: %d, Fireballs: %d, Water buckets: %d", numTNT, numFireCharges, numWaterBuckets));
+                        ImmutablePair<Material, Byte> content;
                         if (numTNT > 0) {
-                            if (!missingBlocks.containsKey(Material.TNT)) {
-                                missingBlocks.put(Material.TNT, (double) numTNT);
+                            content = new ImmutablePair<>(Material.TNT, (byte) 0);
+                            if (!missingBlocks.containsKey(content)) {
+                                missingBlocks.put(content, (double) numTNT);
                             } else {
-                                Double num = missingBlocks.get(Material.TNT);
+                                double num = missingBlocks.get(content);
                                 num += numTNT;
-                                missingBlocks.put(Material.TNT, num);
+                                missingBlocks.put(content, num);
                             }
                             needReplace = true;
                         }
                         if (numFireCharges > 0) {
-                            if (!missingBlocks.containsKey(Material.FIREBALL)) {
-                                missingBlocks.put(Material.FIREBALL, (double) numFireCharges);
+                            content = new ImmutablePair<>(Material.FIREBALL, (byte) 0);
+                            if (!missingBlocks.containsKey(content)) {
+                                missingBlocks.put(content, (double) numFireCharges);
                             } else {
-                                Double num = missingBlocks.get(Material.FIREBALL);
+                                double num = missingBlocks.get(content);
                                 num += numFireCharges;
-                                missingBlocks.put(Material.FIREBALL, num);
+                                missingBlocks.put(content, num);
                             }
                             needReplace = true;
                         }
                         if (numWaterBuckets > 0) {
-                            if (!missingBlocks.containsKey(Material.WATER_BUCKET)) {
-                                missingBlocks.put(Material.WATER_BUCKET, (double) numWaterBuckets);
+                            content = new ImmutablePair<>(Material.WATER_BUCKET, (byte) 0);
+                            if (!missingBlocks.containsKey(content)) {
+                                missingBlocks.put(content, (double) numWaterBuckets);
                             } else {
-                                Double num = missingBlocks.get(Material.WATER_BUCKET);
+                                double num = missingBlocks.get(content);
                                 num += numWaterBuckets;
-                                missingBlocks.put(Material.WATER_BUCKET, num);
+                                missingBlocks.put(content, num);
                             }
                             needReplace = true;
                         }
@@ -419,10 +482,81 @@ public class MovecraftRepair {
                             locMissingBlocks.addLast(new ImmutablePair<>(new Vector(offset.getBlockX() + x, offset.getBlockY() + y, offset.getBlockZ() + z),new Vector(position.getBlockX(),position.getBlockY(),position.getBlockZ())));
                         }
                     }
+                    if (bukkitBlock.getType() == Material.FURNACE && block.getType() == 61){
+                        //Count fuel in furnaces
+                        ListTag list = block.getNbtData().getListTag("Items");
+                        FurnaceInventory fInv = ((Furnace) bukkitBlock.getState()).getInventory();
+                        byte needsRefill = 0;
+                        if (list != null){
+                            for (Tag t : list.getValue()){
+                                if (!(t instanceof CompoundTag)){
+                                    continue;
+                                }
+                                CompoundTag ct = (CompoundTag) t;
+                                byte slot = ct.getByte("Slot");
+                                if (slot == 2){//Ignore the result slot
+                                    continue;
+                                }
+                                String id = ct.getString("id");
+                                ImmutablePair<Material, Byte> content;
+                                if (id.equals("minecraft:coal")){
+                                    byte data = (byte)ct.getShort("Damage");
+                                    byte count = ct.getByte("Count");
+                                    if (slot == 0) {//Smelting slot
+                                        if (fInv.getSmelting() != null && fInv.getSmelting().getData().getData() == data){
+                                            count -= (byte) fInv.getSmelting().getAmount();
+                                        }
+                                    } else if (slot == 1) {//Fuel slot
+                                        if (fInv.getFuel() != null && fInv.getFuel().getData().getData() == data){
+                                            count -= (byte) fInv.getFuel().getAmount();
+                                        }
+                                    }
+                                    if (count > 0) {
+                                        content = new ImmutablePair<>(Material.COAL, data);
+                                        if (!missingBlocks.containsKey(content)) {
+                                            missingBlocks.put(content, (double) count);
+                                        } else {
+                                            double num = missingBlocks.get(content);
+                                            num += (double) count;
+                                            missingBlocks.put(content, num);
+                                        }
+                                        needsRefill++;
+                                    }
+                                }
+                                if (id.equals("minecraft:coal_block")){
+                                    byte count = ct.getByte("Count");
+                                    //Smelting slot
+                                    //Fuel slot
+                                    if (slot == 0) {
+                                        count -= fInv.getSmelting() != null ? (byte) fInv.getSmelting().getAmount() : 0;
+                                    } else if (slot == 1) {
+                                        count -= fInv.getFuel() != null ? (byte) fInv.getFuel().getAmount() : 0;
+                                    }
+                                    if (count > 0) {
+                                        content = new ImmutablePair<>(Material.COAL_BLOCK, (byte) 0);
+                                        if (!missingBlocks.containsKey(content)) {
+                                            missingBlocks.put(content, (double) count);
+                                        } else {
+                                            double num = missingBlocks.get(content);
+                                            num += (double) count;
+                                            missingBlocks.put(content, num);
+                                        }
+                                        needsRefill++;
+                                    }
+                                }
+                            }
+                        }
+                        if (needsRefill > 0){
+                            numDiffBlocks++;
+                            locMissingBlocks.addLast(new ImmutablePair<>(new Vector(offset.getBlockX() + x, offset.getBlockY() + y, offset.getBlockZ() + z),new Vector(position.getBlockX(),position.getBlockY(),position.getBlockZ())));
+                        }
+                    }
                 }
             }
         }
-        String repairStateName = repairName.replace(".schematic","");
+        String repairStateName = craft.getNotificationPlayer().getUniqueId().toString();
+        repairStateName += "_";
+        repairStateName += repairName.replace(".schematic","");
         locMissingBlocksMap.put(repairStateName, locMissingBlocks);
         missingBlocksMap.put(repairStateName, missingBlocks);
         numDiffBlocksMap.put(repairStateName, numDiffBlocks);
@@ -430,7 +564,7 @@ public class MovecraftRepair {
     }
 
     public Clipboard loadRegionRepairStateClipboard(String s, World world) {
-        File dataDirectory = new File(plugin.getDataFolder(), "RegionRepairStates");
+        File dataDirectory = new File(plugin.getDataFolder(), "AssaultSnapshots");
         File file = new File(dataDirectory, s + ".schematic"); // The schematic file
         com.sk89q.worldedit.world.World weWorld = new BukkitWorld(world);
         WorldData worldData = weWorld.getWorldData();
@@ -443,7 +577,7 @@ public class MovecraftRepair {
         }
     }
 
-    public HashMap<Material, Double> getMissingBlocks(String repairName) {
+    public HashMap<ImmutablePair<Material, Byte>, Double> getMissingBlocks(String repairName) {
         return missingBlocksMap.get(repairName);
     }
 
@@ -461,11 +595,28 @@ public class MovecraftRepair {
         HashHitBox hitBox = craft.getHitBox();
         World w = craft.getW();
         for (MovecraftLocation location : hitBox) {
-            Integer id = w.getBlockTypeIdAt(location.getX(), location.getY(), location.getZ());
-            Byte data = w.getBlockAt(location.getX(), location.getY(), location.getZ()).getData();
+            int id = w.getBlockTypeIdAt(location.toBukkit(w));
+            byte data = w.getBlockAt(location.getX(), location.getY(), location.getZ()).getData();
             returnSet.add(new BaseBlock(id, data));
         }
-        Bukkit.getLogger().info(returnSet.toString());
+        if (Settings.Debug) {
+            Bukkit.getLogger().info(returnSet.toString());
+        }
+        return returnSet;
+    }
+
+    private HashHitBox solidBlockLocs(World w, CuboidRegion cr){
+        HashHitBox returnSet = new HashHitBox();
+        for (int x = cr.getMinimumPoint().getBlockX(); x <= cr.getMaximumPoint().getBlockX(); x++){
+            for (int y = cr.getMinimumPoint().getBlockY(); y <= cr.getMaximumPoint().getBlockY(); y++){
+                for (int z = cr.getMinimumPoint().getBlockZ(); z <= cr.getMaximumPoint().getBlockZ(); z++){
+                    MovecraftLocation ml = new MovecraftLocation(x, y, z);
+                    if (ml.toBukkit(w).getBlock().getType() != Material.AIR){
+                        returnSet.add(ml);
+                    }
+                }
+            }
+        }
         return returnSet;
     }
 
@@ -477,4 +628,6 @@ public class MovecraftRepair {
     public static MovecraftRepair getInstance() {
         return instance;
     }
+
+
 }

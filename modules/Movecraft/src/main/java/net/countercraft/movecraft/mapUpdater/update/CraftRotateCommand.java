@@ -1,6 +1,5 @@
 package net.countercraft.movecraft.mapUpdater.update;
 
-import com.google.common.collect.Sets;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
@@ -27,6 +26,7 @@ public class CraftRotateCommand extends UpdateCommand {
     private final Rotation rotation;
     @NotNull
     private final MovecraftLocation originLocation;
+
 
     public CraftRotateCommand(@NotNull final Craft craft, @NotNull final MovecraftLocation originLocation, @NotNull final Rotation rotation) {
         this.craft = craft;
@@ -84,11 +84,10 @@ public class CraftRotateCommand extends UpdateCommand {
             final int maxZ = craft.getHitBox().getMaxZ();
             final HitBox[] surfaces = {
                     new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(minX, maxY, maxZ)),
-                    new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(maxX, minY, maxZ)),
-                    new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(maxX, maxY, minZ))};
-//                    new SolidHitBox(new MovecraftLocation(maxX, maxY, maxZ), new MovecraftLocation(minX, maxY, maxZ)),
-//                    new SolidHitBox(new MovecraftLocation(maxX, maxY, maxZ), new MovecraftLocation(maxX, minY, maxZ)),
-//                    new SolidHitBox(new MovecraftLocation(maxX, maxY, maxZ), new MovecraftLocation(maxX, maxY, minZ))};
+                    new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(maxX, maxY, minZ)),
+                    new SolidHitBox(new MovecraftLocation(maxX, minY, maxZ), new MovecraftLocation(minX, maxY, maxZ)),
+                    new SolidHitBox(new MovecraftLocation(maxX, minY, maxZ), new MovecraftLocation(maxX, maxY, minZ)),
+                    new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(maxX, minY, maxZ))};
             //Valid exterior starts as the 6 surface planes of the HitBox with the locations that lie in the HitBox removed
             final Set<MovecraftLocation> validExterior = new HashSet<>();
             for (HitBox hitBox : surfaces) {
@@ -131,14 +130,7 @@ public class CraftRotateCommand extends UpdateCommand {
 
             handler.rotateCraft(craft, originLocation, rotation);
             //trigger sign events
-            for (MovecraftLocation location : craft.getHitBox()) {
-                Block block = location.toBukkit(craft.getW()).getBlock();
-                if (block.getType() == Material.WALL_SIGN || block.getType() == Material.SIGN_POST) {
-                    Sign sign = (Sign) block.getState();
-                    Bukkit.getServer().getPluginManager().callEvent(new SignTranslateEvent(block, craft, sign.getLines()));
-                    sign.update();
-                }
-            }
+            sendSignEvents();
 
             //place confirmed blocks if they have been un-phased
             for (MovecraftLocation location : exterior) {
@@ -168,21 +160,42 @@ public class CraftRotateCommand extends UpdateCommand {
 
             Movecraft.getInstance().getWorldHandler().rotateCraft(craft, originLocation, rotation);
             //trigger sign events
-            for (MovecraftLocation location : craft.getHitBox()) {
-                Block block = location.toBukkit(craft.getW()).getBlock();
-                if (block.getType() == Material.WALL_SIGN || block.getType() == Material.SIGN_POST) {
-                    Sign sign = (Sign) block.getState();
-                    Bukkit.getServer().getPluginManager().callEvent(new SignTranslateEvent(block, craft, sign.getLines()));
-                    sign.update();
-                }
-            }
+            sendSignEvents();
         }
+
         if (!craft.isNotProcessing())
             craft.setProcessing(false);
         time = System.nanoTime() - time;
         if (Settings.Debug)
             logger.info("Total time: " + (time / 1e9) + " seconds. Moving with cooldown of " + craft.getTickCooldown() + ". Speed of: " + String.format("%.2f", craft.getSpeed()));
         craft.addMoveTime(time / 1e9f);
+    }
+
+    private void sendSignEvents(){
+        Map<String[], List<MovecraftLocation>> signs = new HashMap<>();
+        for (MovecraftLocation location : craft.getHitBox()) {
+            Block block = location.toBukkit(craft.getW()).getBlock();
+            if (block.getType() == Material.WALL_SIGN || block.getType() == Material.SIGN_POST) {
+                Sign sign = (Sign) block.getState();
+                if(!signs.containsKey(sign.getLines()))
+                    signs.put(sign.getLines(), new ArrayList<>());
+                signs.get(sign.getLines()).add(location);
+            }
+        }
+        for(Map.Entry<String[], List<MovecraftLocation>> entry : signs.entrySet()){
+            Bukkit.getServer().getPluginManager().callEvent(new SignTranslateEvent(craft, entry.getKey(), entry.getValue()));
+            for(MovecraftLocation loc : entry.getValue()){
+                Block block = loc.toBukkit(craft.getW()).getBlock();
+                if (block.getType() != Material.WALL_SIGN && block.getType() != Material.SIGN_POST) {
+                    continue;
+                }
+                Sign sign = (Sign) block.getState();
+                for(int i = 0; i<4; i++){
+                    sign.setLine(i, entry.getKey()[i]);
+                }
+                sign.update();
+            }
+        }
     }
 
     @NotNull

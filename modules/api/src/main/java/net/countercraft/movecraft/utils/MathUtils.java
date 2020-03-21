@@ -62,7 +62,7 @@ public class MathUtils {
      * @return True if the player is within the given bounding box
      */
     @Contract(pure=true)
-    public static boolean locationInHitbox(@NotNull final HashHitBox hitBox, @NotNull final Location location) {
+    public static boolean locationInHitBox(@NotNull final HashHitBox hitBox, @NotNull final Location location) {
         return hitBox.inBounds(location.getX(),location.getY(),location.getZ());
     }
 

@@ -3,12 +3,13 @@ package net.countercraft.movecraft.sign;
 import com.earth2me.essentials.User;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
-import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.utils.MathUtils;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
@@ -43,11 +44,18 @@ public class CrewSign implements Listener {
         if (crewPlayer == null) {
             return;
         }
-        Location location = event.getBlock().getLocation().subtract(0,1,0);
-        if (!craft.getW().getBlockAt(location).getType().equals(Material.BED_BLOCK)) {
+        Location valid = null;
+        for(MovecraftLocation location : event.getLocations()){
+            Location bedLoc = location.toBukkit(craft.getW()).subtract(0,1,0);
+            if (craft.getW().getBlockAt(bedLoc).getType().equals(Material.BED_BLOCK)) {
+                valid = bedLoc;
+                break;
+            }
+        }
+        if(valid == null){
             return;
         }
-        craft.getCrewSigns().put(crewPlayer.getUniqueId(), location);
+        craft.getCrewSigns().put(crewPlayer.getUniqueId(), valid);
     }
 
     @EventHandler
@@ -55,6 +63,7 @@ public class CrewSign implements Listener {
         if (!Settings.AllowCrewSigns || !event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
             return;
         }
+
         Player player = event.getPlayer();
         if (!player.isSneaking() || !(event.getClickedBlock().getState() instanceof Sign)) {
             return;
@@ -96,7 +105,11 @@ public class CrewSign implements Listener {
             return;
         }
         player.sendMessage(I18nSupport.getInternationalisedString("CrewSign - Respawn"));
-        event.setRespawnLocation(craft.getCrewSigns().get(player.getUniqueId()));
+        Location respawnLoc = craft.getCrewSigns().get(player.getUniqueId());
+        if (!respawnLoc.getBlock().getType().equals(Material.BED_BLOCK)){
+            return;
+        }
+        event.setRespawnLocation(respawnLoc);
     }
 
     @EventHandler
@@ -108,8 +121,8 @@ public class CrewSign implements Listener {
                 continue;
             }
             Sign sign = (Sign) block.getState();
-            if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Crew:")) {
-               event.getCraft().getCrewSigns().put(Bukkit.getPlayer(sign.getLine(1)).getUniqueId(),block.getLocation());
+            if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Crew:") && sign.getLocation().subtract(0,1,0).getBlock().getType().equals(Material.BED_BLOCK)) {
+               event.getCraft().getCrewSigns().put(Bukkit.getPlayer(sign.getLine(1)).getUniqueId(),block.getLocation().subtract(0,1,0));
             }
         }
     }

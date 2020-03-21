@@ -11,7 +11,6 @@ import net.minecraft.server.v1_10_R1.*;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_10_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_10_R1.block.CraftBlockState;
 import org.bukkit.craftbukkit.v1_10_R1.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_10_R1.util.CraftMagicNumbers;
 import org.bukkit.entity.Player;
@@ -89,7 +88,7 @@ public class IWorldHandler extends WorldHandler {
                 continue;
             tile.a(ROTATION[rotation.ordinal()]);
             //get the nextTick to move with the tile
-            tiles.add(new TileHolder(tile, tickProvider.getNextTick((WorldServer)nativeWorld,position), position));
+            tiles.add(new TileHolder(tile, tickProvider.getNextTick((WorldServer) nativeWorld, position), position));
         }
 
         //*******************************************
@@ -130,15 +129,16 @@ public class IWorldHandler extends WorldHandler {
         for(BlockPosition position : deletePositions){
             setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
         }
-
         //*******************************************
-        //*       Step six: Update the blocks       *
+        //*   Step six: Process fire spread         *
         //*******************************************
-        for(BlockPosition newPosition : rotatedPositions.values()) {
-            CraftBlockState.getBlockState(nativeWorld,newPosition.getX(), newPosition.getY(), newPosition.getZ()).update(false,false);
-        }
-        for(BlockPosition deletedPosition : deletePositions){
-            CraftBlockState.getBlockState(nativeWorld,deletedPosition.getX(), deletedPosition.getY(), deletedPosition.getZ()).update(false,false);
+        for (BlockPosition position : rotatedPositions.values()) {
+            IBlockData type = nativeWorld.getType(position);
+            if (!(type.getBlock() instanceof BlockFire)) {
+                continue;
+            }
+            BlockFire fire = (BlockFire) type.getBlock();
+            fire.b(nativeWorld, position, type, nativeWorld.random);
         }
         //*******************************************
         //*       Step seven: Send to players       *
@@ -188,7 +188,7 @@ public class IWorldHandler extends WorldHandler {
 
             //nativeWorld.capturedTileEntities.remove(position);
             //nativeWorld.getChunkAtWorldCoords(position).getTileEntities().remove(position);
-            tiles.add(new TileHolder(tile, tickProvider.getNextTick((WorldServer)nativeWorld,position), position));
+            tiles.add(new TileHolder(tile, tickProvider.getNextTick((WorldServer) nativeWorld, position), position));
 
         }
         //*******************************************
@@ -230,15 +230,16 @@ public class IWorldHandler extends WorldHandler {
         for(BlockPosition position : deletePositions){
             setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
         }
-
         //*******************************************
-        //*       Step six: Update the blocks       *
+        //*   Step six: Process fire spread         *
         //*******************************************
-        for(BlockPosition newPosition : newPositions) {
-            CraftBlockState.getBlockState(nativeWorld,newPosition.getX(), newPosition.getY(), newPosition.getZ()).update(false,false);
-        }
-        for(BlockPosition deletedPosition : deletePositions){
-            CraftBlockState.getBlockState(nativeWorld,deletedPosition.getX(), deletedPosition.getY(), deletedPosition.getZ()).update(false,false);
+        for (BlockPosition position : newPositions) {
+            IBlockData type = nativeWorld.getType(position);
+            if (!(type.getBlock() instanceof BlockFire)) {
+                continue;
+            }
+            BlockFire fire = (BlockFire) type.getBlock();
+            fire.b(nativeWorld, position, type, nativeWorld.random);
         }
         //*******************************************
         //*       Step seven: Send to players       *
@@ -298,6 +299,7 @@ public class IWorldHandler extends WorldHandler {
         }
 
         chunkSection.setType(position.getX()&15, position.getY()&15, position.getZ()&15, data);
+        world.notify(position, data, data, 3);
     }
 
     @Override

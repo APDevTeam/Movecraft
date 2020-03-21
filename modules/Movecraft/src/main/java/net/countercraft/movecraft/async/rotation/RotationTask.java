@@ -25,18 +25,16 @@ import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
-import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.events.CraftRotateEvent;
-import net.countercraft.movecraft.events.CraftTranslateEvent;
-import net.countercraft.movecraft.utils.*;
-import net.countercraft.movecraft.utils.HashHitBox;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.events.CraftRotateEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.update.CraftRotateCommand;
 import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
+import net.countercraft.movecraft.utils.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -47,10 +45,8 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 public class RotationTask extends AsyncTask {
@@ -72,6 +68,8 @@ public class RotationTask extends AsyncTask {
 
     private final HashHitBox oldHitBox;
     private final HashHitBox newHitBox;
+    private final HashHitBox oldFluidList;
+    private final HashHitBox newFluidList;
 
     public RotationTask(Craft c, MovecraftLocation originPoint, Rotation rotation, World w, boolean isSubCraft) {
         super(c);
@@ -81,6 +79,8 @@ public class RotationTask extends AsyncTask {
         this.isSubCraft = isSubCraft;
         this.newHitBox = new HashHitBox();
         this.oldHitBox = new HashHitBox(c.getHitBox());
+        this.oldFluidList = new HashHitBox(c.getFluidLocations());
+        this.newFluidList = new HashHitBox(c.getFluidLocations());
     }
 
     public RotationTask(Craft c, MovecraftLocation originPoint, Rotation rotation, World w) {
@@ -192,6 +192,13 @@ public class RotationTask extends AsyncTask {
                 break;
             }
         }
+
+        if (!oldFluidList.isEmpty()) {
+            for (MovecraftLocation fluidLoc : oldFluidList) {
+                newFluidList.add(MathUtils.rotateVec(rotation, fluidLoc.subtract(originPoint)).add(originPoint));
+            }
+        }
+
         if (failed) {
             if (this.isSubCraft && parentCraft != getCraft()) {
                 parentCraft.setProcessing(false);
@@ -199,12 +206,16 @@ public class RotationTask extends AsyncTask {
             return;
         }
         //call event
-        CraftRotateEvent event = new CraftRotateEvent(craft, oldHitBox, newHitBox);
+        CraftRotateEvent event = new CraftRotateEvent(craft, rotation, originPoint, oldHitBox, newHitBox);
         Bukkit.getServer().getPluginManager().callEvent(event);
         if(event.isCancelled()){
             failed = true;
             failMessage = event.getFailMessage();
             return;
+        }
+        if (parentCraft != craft) {
+            parentCraft.getFluidLocations().removeAll(oldFluidList);
+            parentCraft.getFluidLocations().addAll(newFluidList);
         }
 
 
@@ -287,35 +298,46 @@ public class RotationTask extends AsyncTask {
                 if (Math.abs(loc.getZ() - originPoint.getZ()) > Math.abs(farthestZ))
                     farthestZ = loc.getZ() - originPoint.getZ();
             }
+            String faceMessage = I18nSupport.getInternationalisedString("Rotation - Farthest Extent Facing");
+            faceMessage += " ";
             if (Math.abs(farthestX) > Math.abs(farthestZ)) {
                 if (farthestX > 0) {
                     if (getCraft().getNotificationPlayer() != null)
-                        getCraft().getNotificationPlayer().sendMessage("The farthest extent now faces East");
+                        faceMessage += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - East");
                 } else {
                     if (getCraft().getNotificationPlayer() != null)
-                        getCraft().getNotificationPlayer().sendMessage("The farthest extent now faces West");
+                        faceMessage += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - West");
                 }
             } else {
                 if (farthestZ > 0) {
                     if (getCraft().getNotificationPlayer() != null)
-                        getCraft().getNotificationPlayer().sendMessage("The farthest extent now faces South");
+                        faceMessage += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - South");
                 } else {
                     if (getCraft().getNotificationPlayer() != null)
-                        getCraft().getNotificationPlayer().sendMessage("The farthest extent now faces North");
+                        faceMessage += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - North");
                 }
             }
+            getCraft().getNotificationPlayer().sendMessage(faceMessage);
 
             craftsInWorld = CraftManager.getInstance().getCraftsInWorld(getCraft().getW());
             for (Craft craft : craftsInWorld) {
                 if (newHitBox.intersects(craft.getHitBox()) && craft != getCraft()) {
                     //newHitBox.addAll(CollectionUtils.filter(craft.getHitBox(),newHitBox));
                     //craft.setHitBox(newHitBox);
+                    if (Settings.Debug) {
+                        Bukkit.broadcastMessage(String.format("Size of %s hitbox: %d, Size of %s hitbox: %d", this.craft.getType().getCraftName(), newHitBox.size(), craft.getType().getCraftName(), craft.getHitBox().size()));
+                    }
                     craft.getHitBox().removeAll(oldHitBox);
                     craft.getHitBox().addAll(newHitBox);
+                    if (Settings.Debug){
+                        Bukkit.broadcastMessage(String.format("Hitbox of craft %s intersects hitbox of craft %s", this.craft.getType().getCraftName(), craft.getType().getCraftName()));
+                        Bukkit.broadcastMessage(String.format("Size of %s hitbox: %d, Size of %s hitbox: %d", this.craft.getType().getCraftName(), newHitBox.size(), craft.getType().getCraftName(), craft.getHitBox().size()));
+                    }
                     break;
                 }
             }
         }
+
 
     }
 
@@ -439,4 +461,9 @@ public class RotationTask extends AsyncTask {
     public HashHitBox getNewHitBox() {
         return newHitBox;
     }
+
+    public HashHitBox getNewFluidList() {
+        return newFluidList;
+    }
 }
+
