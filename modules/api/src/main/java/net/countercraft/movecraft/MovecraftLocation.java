@@ -82,18 +82,28 @@ final public class MovecraftLocation {
 
     /**
      *
-     * Gives the distance between this MovecraftLocation and another MovecraftLocation
+     * Gives the euclidean distance between this MovecraftLocation and another MovecraftLocation
      *
      * @param other the MovecraftLocation distant from this one
-     * @return the distance between this and the other MovecraftLocation
+     * @return the euclidean distance between this and the other MovecraftLocation
      */
-    public int distance(MovecraftLocation other) {
+    public int distanceSquared(MovecraftLocation other) {
         int diffx = this.x - other.x;
         int diffy = this.y - other.y;
         int diffz = this.z - other.z;
         return diffx * diffx + diffy * diffy + diffz * diffz;
     }
 
+    /**
+     *
+     * Gives the direct distance between this MovecraftLocation and another MovecraftLocation
+     *
+     * @param other the MovecraftLocation distant from this one
+     * @return the direct distance between this and the other MovecraftLocation
+     */
+    public double distance(MovecraftLocation other) {
+        return Math.sqrt(distanceSquared(other));
+    }
     public Location toBukkit(World world){
         return new Location(world, this.x, this.y, this.z);
     }

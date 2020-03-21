@@ -43,7 +43,7 @@ public class ContactsSign implements Listener{
         for(Craft tcraft : CraftManager.getInstance().getCraftsInWorld(craft.getW())) {
             MovecraftLocation center = craft.getHitBox().getMidPoint();
             MovecraftLocation tcenter = tcraft.getHitBox().getMidPoint();
-            int distsquared= center.distance(tcenter);
+            int distsquared= center.distanceSquared(tcenter);
             int detectionRange;
             if(tcenter.getY() > tcraft.getW().getSeaLevel()) {
                 detectionRange= (int) (Math.sqrt(tcraft.getOrigBlockCount())*tcraft.getType().getDetectionMultiplier());

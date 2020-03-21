@@ -929,7 +929,7 @@ public class AsyncManager extends BukkitRunnable {
                                 MovecraftLocation tcenter = tcraft.getHitBox().getMidPoint();
                                 int diffx = ccenter.getX() - tcenter.getX();
                                 int diffz = ccenter.getZ() - tcenter.getZ();
-                                int distsquared = ccenter.distance(tcenter);
+                                int distsquared = ccenter.distanceSquared(tcenter);
                                 int detectionRange;
                                 if (tcenter.getY() > 65) {
                                     detectionRange = (int) (Math.sqrt(tcraft.getOrigBlockCount())

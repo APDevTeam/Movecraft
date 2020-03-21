@@ -53,7 +53,7 @@ public class ContactsCommand implements CommandExecutor {
                 continue;
             MovecraftLocation tCenter = tHitBox.getMidPoint();
 
-            int distsquared = center.distance(tCenter);
+            int distsquared = center.distanceSquared(tCenter);
             int detectionRangeSquared = (int) (tCenter.getY() > tcraft.getType().getStaticWaterLevel() ?
                                 (Math.sqrt(tcraft.getOrigBlockCount()) * tcraft.getType().getDetectionMultiplier()) :
                                 (Math.sqrt(tcraft.getOrigBlockCount()) * tcraft.getType().getUnderwaterDetectionMultiplier()));
