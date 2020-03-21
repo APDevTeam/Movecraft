@@ -238,7 +238,7 @@ public class TranslationTask extends AsyncTask {
                     Location loc = location.toBukkit(craft.getW());
                     if (!loc.getBlock().getType().equals(Material.AIR)  && ThreadLocalRandom.current().nextDouble(1) < .05) {
                         updates.add(new ExplosionUpdateCommand( loc, craft.getType().getExplodeOnCrash()));
-                        collisionExplosion=true;
+                        collisionExplosion = true;
                     }
                 }
                 List<MovecraftLocation> toRemove = new ArrayList<>();
@@ -250,29 +250,25 @@ public class TranslationTask extends AsyncTask {
                 craft.getCollapsedHitBox().addAll(toRemove);
                 newHitBox.removeAll(toRemove);
             }
-
-        }else{
-            for(MovecraftLocation location : collisionBox){
-                if (!(craft.getType().getCollisionExplosion() != 0.0F) || System.currentTimeMillis() - craft.getOrigPilotTime() <= 1000) {
-                    continue;
-                }
-                float explosionKey;
-                float explosionForce = craft.getType().getCollisionExplosion();
-                if (craft.getType().getFocusedExplosion()) {
-                    explosionForce *= Math.min(oldHitBox.size(), craft.getType().getMaxSize());
-                }
-                //TODO: Account for underwater explosions
-                /*if (location.getY() < waterLine) { // underwater explosions require more force to do anything
-                    explosionForce += 25;//TODO: find the correct amount
-                }*/
-                explosionKey = explosionForce;
-                Location loc = location.toBukkit(craft.getW());
-                if (!loc.getBlock().getType().equals(Material.AIR)) {
-                    updates.add(new ExplosionUpdateCommand(loc, explosionKey));
-                    collisionExplosion = true;
-                }
-                if (craft.getType().getFocusedExplosion()) { // don't handle any further collisions if it is set to focusedexplosion
-                    break;
+        } else {
+            if ((craft.getType().getCollisionExplosion() != 0.0F) && System.currentTimeMillis() - craft.getOrigPilotTime() > 1000) {
+                for(MovecraftLocation location : collisionBox) {
+                    float explosionForce = craft.getType().getCollisionExplosion();
+                    if (craft.getType().getFocusedExplosion()) {
+                        explosionForce *= Math.min(oldHitBox.size(), craft.getType().getMaxSize());
+                    }
+                    //TODO: Account for underwater explosions
+                    /*if (location.getY() < waterLine) { // underwater explosions require more force to do anything
+                        explosionForce += 25;//TODO: find the correct amount
+                    }*/
+                    Location loc = location.toBukkit(craft.getW());
+                    if (!loc.getBlock().getType().equals(Material.AIR)) {
+                        updates.add(new ExplosionUpdateCommand(loc, explosionForce));
+                        collisionExplosion = true;
+                    }
+                    if (craft.getType().getFocusedExplosion()) { // don't handle any further collisions if it is set to focusedexplosion
+                        break;
+                    }
                 }
             }
         }

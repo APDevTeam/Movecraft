@@ -49,6 +49,10 @@ public class ExplosionUpdateCommand extends UpdateCommand {
             }
         }
         loc.getWorld().createExplosion(loc.getX() + 0.5, loc.getY() + 0.5, loc.getZ() + 0.5, explosionPower);
+        
+        if (Settings.Debug){
+            Bukkit.broadcastMessage("Explosion: (" + (loc.getX() + 0.5) + ", " + (loc.getY() + 0.5) + ", " + (loc.getZ() + 0.5) + ": " + explosionPower + ")");
+        }
     }
 
     @Override
