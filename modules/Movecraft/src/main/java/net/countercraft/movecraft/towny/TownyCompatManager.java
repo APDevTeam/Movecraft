@@ -120,7 +120,7 @@ public class TownyCompatManager implements Listener {
     public void onCraftSink(CraftSinkEvent event) {
         final Set<TownBlock> townBlocks = new HashSet<>();
         final Craft craft = event.getCraft();
-        if (!Settings.TownyBlockMoveOnSwitchPerm)
+        if (!Settings.TownyBlockSinkOnNoPVP)
             return;
         final HitBox hitBox = craft.getHitBox();
         if (hitBox.isEmpty())
