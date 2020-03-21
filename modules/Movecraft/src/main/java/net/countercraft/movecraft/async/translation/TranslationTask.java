@@ -261,7 +261,7 @@ public class TranslationTask extends AsyncTask {
                     /*if (location.getY() < waterLine) { // underwater explosions require more force to do anything
                         explosionForce += 25;//TODO: find the correct amount
                     }*/
-                    Location loc = location.toBukkit(craft.getW());
+                    Location loc = location.translate(-dx,-dy,-dz).toBukkit(craft.getW());
                     if (!loc.getBlock().getType().equals(Material.AIR)) {
                         updates.add(new ExplosionUpdateCommand(loc, explosionForce));
                         collisionExplosion = true;
