@@ -251,8 +251,7 @@ public class TranslationTask extends AsyncTask {
                 craft.getCollapsedHitBox().addAll(toRemove);
                 newHitBox.removeAll(toRemove);
             }
-        } else if ((craft.getType().getCollisionExplosion() != 0.0F) && System.currentTimeMillis() - craft.getOrigPilotTime() > 1000) {
-            //TODO: Add config for arming time
+        } else if ((craft.getType().getCollisionExplosion() != 0.0F) && System.currentTimeMillis() - craft.getOrigPilotTime() > Settings.CollisionPrimer) {
             for(MovecraftLocation location : collisionBox) {
                 float explosionForce = craft.getType().getCollisionExplosion();
                 if (craft.getType().getFocusedExplosion()) {
