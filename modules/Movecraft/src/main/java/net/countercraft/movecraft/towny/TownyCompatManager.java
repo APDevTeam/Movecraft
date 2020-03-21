@@ -6,10 +6,7 @@ import com.palmergames.bukkit.towny.object.TownyWorld;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.events.CraftRotateEvent;
-import net.countercraft.movecraft.events.CraftSinkEvent;
-import net.countercraft.movecraft.events.CraftTranslateEvent;
-import net.countercraft.movecraft.events.HitBoxDetectEvent;
+import net.countercraft.movecraft.events.*;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.HitBox;
 import net.countercraft.movecraft.utils.TownyUtils;
@@ -88,11 +85,11 @@ public class TownyCompatManager implements Listener {
     }
 
     @EventHandler
-    public void onHitboxDetect(HitBoxDetectEvent event) {
+    public void onHitboxDetect(CraftDetectEvent event) {
         final Set<TownBlock> townBlocks = new HashSet<>();
         final Craft craft = event.getCraft();
         final TownyWorld townyWorld = TownyUtils.getTownyWorld(craft.getW());
-        for (MovecraftLocation ml : event.getHitBox()) {
+        for (MovecraftLocation ml : event.getCraft().getHitBox()) {
 
             TownBlock townBlock = TownyUtils.getTownBlock(ml.toBukkit(event.getCraft().getW()));
             if (townBlock == null || townBlocks.contains(townBlock)) {
