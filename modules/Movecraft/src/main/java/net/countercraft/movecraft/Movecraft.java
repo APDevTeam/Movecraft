@@ -37,6 +37,7 @@ import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.repair.RepairManager;
 import net.countercraft.movecraft.sign.*;
 import net.countercraft.movecraft.utils.LegacyUtils;
+import net.countercraft.movecraft.towny.TownyCompatManager;
 import net.countercraft.movecraft.utils.TownyUtils;
 import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
 import net.countercraft.movecraft.warfare.assault.AssaultManager;
@@ -274,11 +275,22 @@ public class Movecraft extends JavaPlugin {
         Settings.AssaultRequiredDefendersOnline = getConfig().getInt("AssaultRequiredDefendersOnline", 2);
         Settings.AssaultRequiredOwnersOnline = getConfig().getInt("AssaultRequiredOwnersOnline", 1);
         Settings.AssaultMaxBalance = getConfig().getDouble("AssaultMaxBalance", 5000000);
-        Settings.AssaultOwnerWeightPercent = getConfig().getInt("AssaultOwnerWeightPercent", 100);
-        Settings.AssaultMemberWeightPercent = getConfig().getInt("AssaultMemberWeightPercent", 100);
-        List<String> assaultDestroyableBlocks = getConfig().getStringList("AssaultDestroyableBlocks");
-        for (String matStr : assaultDestroyableBlocks){
-            Settings.AssaultDestroyableBlocks.add(Material.getMaterial(matStr.toUpperCase()));
+        Settings.CollisionPrimer = getConfig().getInt("CollisionPrimer", 1000);
+        List<?> assaultDestroyableBlocks = getConfig().getList("AssaultDestroyableBlocks");
+        for (Object id : assaultDestroyableBlocks) {
+            final Material type;
+            if (id instanceof Integer)
+                type = LegacyUtils.getMaterial((Integer) id);
+            else
+                type = Material.getMaterial(((String) id).toUpperCase());
+            if (type == null)
+                continue;
+            Settings.AssaultDestroyableBlocks.add(type);
+        }
+        Settings.ForbiddenRemoteSigns = new HashSet<>();
+
+        for(String s : getConfig().getStringList("ForbiddenRemoteSigns")) {
+            Settings.ForbiddenRemoteSigns.add(s.toLowerCase());
         }
         List<String> disableShadowBlocks = getConfig().getStringList("DisableShadowBlocks");
         for (String typ : disableShadowBlocks){
@@ -289,7 +301,7 @@ public class Movecraft extends JavaPlugin {
                 type = Material.getMaterial(typ);
             } catch (NoSuchMethodError e){
                 logger.warning(I18nSupport.getInternationalisedString("Startup - Numerical ID found") + " DisableShadowBlocks: " + typ);
-                type = null;
+                continue;
             }
             if (type != null) {
                 Settings.DisableShadowBlocks.add(type);
@@ -405,6 +417,7 @@ public class Movecraft extends JavaPlugin {
             TownyUtils.initTownyConfig();
             Settings.TownyBlockMoveOnSwitchPerm = getConfig().getBoolean("TownyBlockMoveOnSwitchPerm", false);
             Settings.TownyBlockSinkOnNoPVP = getConfig().getBoolean("TownyBlockSinkOnNoPVP", false);
+            getServer().getPluginManager().registerEvents(new TownyCompatManager(), this);
             logger.log(Level.INFO, "Settings: TownyBlockMoveOnSwitchPerm - {0}", Settings.TownyBlockMoveOnSwitchPerm);
             logger.log(Level.INFO, "Settings: TownyBlockSinkOnNoPVP - {0}", Settings.TownyBlockSinkOnNoPVP);
 

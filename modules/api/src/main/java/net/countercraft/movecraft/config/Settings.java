@@ -49,6 +49,7 @@ public class Settings {
     public static int ManOverboardTimeout = 60;
     public static double ManOverboardDistSquared = 1000000;
     public static int FireballLifespan = 6;
+    public static int CollisionPrimer = 1000;
     public static int RepairTicksPerBlock = 0;
     public static double RepairMaxPercent = 50;
     public static int BlockQueueChunkSize = 1000;

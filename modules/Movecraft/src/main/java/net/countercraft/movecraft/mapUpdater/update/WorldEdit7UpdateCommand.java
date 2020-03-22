@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.mapUpdater.update;
 
+import com.google.gson.Gson;
 import com.sk89q.jnbt.CompoundTag;
 import com.sk89q.jnbt.ListTag;
 import com.sk89q.jnbt.Tag;
@@ -17,6 +18,8 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.inventory.FurnaceInventory;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class WorldEdit7UpdateCommand extends UpdateCommand {
@@ -101,38 +104,25 @@ public class WorldEdit7UpdateCommand extends UpdateCommand {
                 Sign s = (Sign) state;
                 CompoundTag nbtData = baseBlock.getNbtData();
                 //Text NBT tags for first to fourth line are called Text1 - Text4
-                for (int i = 1; i <= 4; i++) {
-                    String line = nbtData.getString("Text" + i);
-                    line = line.replace("\"", "");
-
-                    line = line.substring(1);
-
-                    if (line.substring(0, 5).equalsIgnoreCase("extra")){
-                        line = line.substring(7);
-                        line = line.replace("],text:}", "");
-                        final String[] parts = line.split("},\\{");
-                        line = "";
-                        for (int index = 0 ; index < parts.length ; index++){
-                            String part = parts[index];
-                            if (part.startsWith("{"))
-                                part = part.substring(1);
-                            if (part.endsWith("}"))
-                                part = part.substring(0, part.lastIndexOf("}"));
-                            if (part.startsWith("color")){
-                                final String[] fragments = part.split(",");
-                                final String colorID = fragments[0].replace("color:", "");
-                                final String text = fragments[1].replace("text:", "");
-                                line += ChatColor.valueOf(colorID.toUpperCase());
-                                line += text;
-                            } else {
-                                line = part.replace("text:", "");
+                final Gson gson = new Gson();
+                final String[] STYLES = {"bold", "italic", "underline", "strikethrough"};
+                for (int i = 1 ; i <= 4 ; i++){
+                    Map lineData = gson.fromJson(nbtData.getString("Text" + i), Map.class);
+                    if (!lineData.containsKey("extra"))
+                        continue;
+                    List<Map> extras = (List<Map>) lineData.get("extra");
+                    String line = "";
+                    for (Map textComponent : extras) {
+                        if (textComponent.containsKey("color")) {
+                            line += ChatColor.valueOf(((String) textComponent.get("color")).toUpperCase());
+                        }
+                        for (String style : STYLES) {
+                            if (!(boolean) textComponent.getOrDefault(style, false)) {
+                                continue;
                             }
+                            line += ChatColor.valueOf(style.toUpperCase());
                         }
-                        if (Settings.Debug){
-                            Bukkit.broadcastMessage("Text on line " + i + " at " + location.toString() + ": " + line);
-                        }
-                    } else {
-                        line = "";
+                        line += textComponent.get("text");
                     }
                     if (i == 1 && line.equalsIgnoreCase("\\\\  ||  /")) {
                         s.setLine(0, "\\  ||  /");

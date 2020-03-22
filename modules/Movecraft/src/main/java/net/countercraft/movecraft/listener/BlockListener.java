@@ -51,7 +51,9 @@ import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.material.Attachable;
 import org.bukkit.material.MaterialData;
+import org.bukkit.material.PistonBaseMaterial;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -332,8 +334,9 @@ public class BlockListener implements Listener {
         if(!e.getBlock().isLiquid())
             return;
         MovecraftLocation loc = MathUtils.bukkit2MovecraftLoc(e.getBlock().getLocation());
+        MovecraftLocation toLoc = MathUtils.bukkit2MovecraftLoc(e.getToBlock().getLocation());
         for(Craft craft : CraftManager.getInstance().getCraftsInWorld(e.getBlock().getWorld())){
-            if(craft.getHitBox().contains((loc))) {
+            if(craft.getHitBox().contains((loc)) && !craft.getFluidLocations().contains(toLoc)) {
                 e.setCancelled(true);
                 break;
             }
@@ -476,5 +479,23 @@ public class BlockListener implements Listener {
             return craft;
         }
         return null;
+    }
+
+    private boolean pistonFacingLocation(Location loc) {
+        final Vector[] SHIFTS = {new Vector(0,1,0), new Vector(0,-1,0),
+                new Vector(1,0,0), new Vector(-1,0,0),
+                new Vector(0,0,1), new Vector(0,0,-1)};
+        for (Vector shift : SHIFTS) {
+            final Location test = loc.add(shift);
+            if (!(test.getBlock().getState().getData() instanceof PistonBaseMaterial)) {
+                continue;
+            }
+            PistonBaseMaterial piston = (PistonBaseMaterial) test.getBlock().getState().getData();
+            if (!test.getBlock().getRelative(piston.getFacing()).getLocation().equals(loc)) {
+                continue;
+            }
+            return true;
+        }
+        return false;
     }
 }

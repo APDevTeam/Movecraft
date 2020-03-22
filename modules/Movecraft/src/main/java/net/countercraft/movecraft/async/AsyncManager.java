@@ -161,7 +161,7 @@ public class AsyncManager extends BukkitRunnable {
                 Player p = data.getPlayer();
                 Player notifyP = data.getNotificationPlayer();
                 Craft pCraft = CraftManager.getInstance().getCraftByPlayer(p);
-
+                boolean failed = false;
                 if (pCraft != null && p != null) {
                     // Player is already controlling a craft
                     notifyP.sendMessage(I18nSupport.getInternationalisedString("Detection - Failed - Already commanding a craft"));
@@ -171,11 +171,11 @@ public class AsyncManager extends BukkitRunnable {
                             notifyP.sendMessage(data.getFailMessage());
                         else
                             Movecraft.getInstance().getLogger().log(Level.INFO,
-                            		I18nSupport.getInternationalisedString("Detection - NULL Player Detection Failed") + ": " + data.getFailMessage());
+                                    I18nSupport.getInternationalisedString("Detection - NULL Player Detection Failed") + ": " + data.getFailMessage());
 
                     } else {
                         Set<Craft> craftsInWorld = CraftManager.getInstance().getCraftsInWorld(c.getW());
-                        boolean failed = false;
+
                         boolean isSubcraft = false;
 
                         for (Craft craft : craftsInWorld) {
@@ -211,6 +211,7 @@ public class AsyncManager extends BukkitRunnable {
                         }
                         if (!failed) {
                             c.setHitBox(task.getData().getBlockList());
+                            c.setFluidLocations(task.getData().getFluidBox());
                             c.setOrigBlockCount(data.getBlockList().size());
                             c.setNotificationPlayer(notifyP);
                             final int waterLine = c.getWaterLine();
@@ -266,31 +267,39 @@ public class AsyncManager extends BukkitRunnable {
                                 }
 
                             }
-
-                            if (notifyP != null) {
-                                notifyP.sendMessage(I18nSupport
-                                        .getInternationalisedString("Detection - Successfully piloted craft")
-                                        + " Size: " + c.getHitBox().size());
-                                Movecraft.getInstance().getLogger().log(Level.INFO,
-                                        String.format(
-                                                I18nSupport.getInternationalisedString(
-                                                        "Detection - Success - Log Output"),
-                                                notifyP.getName(), c.getType().getCraftName(), c.getHitBox().size(),
-                                                c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
-                            } else {
-                                Movecraft.getInstance().getLogger().log(Level.INFO,
-                                        String.format(
-                                                I18nSupport.getInternationalisedString(
-                                                        "Detection - Success - Log Output"),
-                                                "NULL PLAYER", c.getType().getCraftName(), c.getHitBox().size(),
-                                                c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
-                            }
-                            CraftManager.getInstance().addCraft(c, p);
                         }
                     }
                 }
-                if(c!=null){
-                    Bukkit.getPluginManager().callEvent(new CraftDetectEvent(c));
+                if(c!=null && !failed){
+                    final CraftDetectEvent event = new CraftDetectEvent(c);
+                    Bukkit.getPluginManager().callEvent(event);
+                    failed = event.isCancelled();
+                    if (notifyP != null) {
+                        notifyP.sendMessage(failed ? event.getFailMessage()
+                                        :
+                                        I18nSupport.getInternationalisedString("Detection - Successfully piloted craft")
+                                + " Size: " + c.getHitBox().size());
+                        if (!failed) {
+                            Movecraft.getInstance().getLogger().log(Level.INFO,
+                                    String.format(
+                                            I18nSupport.getInternationalisedString(
+                                                    "Detection - Success - Log Output"),
+                                            notifyP.getName(), c.getType().getCraftName(), c.getHitBox().size(),
+                                            c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
+                        }
+
+                    } else {
+                        Movecraft.getInstance().getLogger().log(Level.INFO, failed ?
+                                        I18nSupport.getInternationalisedString("Detection - NULL Player Detection Failed") + ": " + event.getFailMessage()
+                                        :
+                                        String.format(
+                                        I18nSupport.getInternationalisedString(
+                                                "Detection - Success - Log Output"),
+                                        "NULL PLAYER", c.getType().getCraftName(), c.getHitBox().size(),
+                                        c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
+                    }
+                    if (!failed)
+                        CraftManager.getInstance().addCraft(c, p);
                 }
 
             } else if (poll instanceof TranslationTask) {
@@ -310,6 +319,7 @@ public class AsyncManager extends BukkitRunnable {
 
                     if (task.isCollisionExplosion()) {
                         c.setHitBox(task.getNewHitBox());
+                        c.setFluidLocations(task.getNewFluidList());
                         //c.setBlockList(task.getData().getBlockList());
                         //boolean failed = MapUpdateManager.getInstance().addWorldUpdate(c.getW(), updates, null, null, exUpdates);
                         MapUpdateManager.getInstance().scheduleUpdates(task.getUpdates());
@@ -342,6 +352,7 @@ public class AsyncManager extends BukkitRunnable {
                     //c.setMinZ(task.getData().getMinZ());
                     //c.setHitBox(task.getData().getHitbox());
                     c.setHitBox(task.getNewHitBox());
+                    c.setFluidLocations(task.getNewFluidList());
                     // move any cannons that were present
                     if (Movecraft.getInstance().getCannonsPlugin() != null && shipCannons != null) {
                         for (Cannon can : shipCannons) {
@@ -386,6 +397,7 @@ public class AsyncManager extends BukkitRunnable {
 
                         sentMapUpdate = true;
                         c.setHitBox(task.getNewHitBox());
+                        c.setFluidLocations(task.getNewFluidList());
                         // rotate any cannons that were present
                         if (Movecraft.getInstance().getCannonsPlugin() != null && shipCannons != null) {
                             Location tloc = task.getOriginPoint().toBukkit(task.getCraft().getW());
@@ -954,34 +966,20 @@ public class AsyncManager extends BukkitRunnable {
                                 recentContactTracking.put(ccraft, new HashMap<>());
                             }
                             for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(w)) {
-                                long cposx = ccraft.getHitBox().getMaxX() + ccraft.getHitBox().getMinX();
-                                long cposy = ccraft.getHitBox().getMaxY() + ccraft.getHitBox().getMinY();
-                                long cposz = ccraft.getHitBox().getMaxZ() + ccraft.getHitBox().getMinZ();
-                                cposx = cposx >> 1;
-                                cposy = cposy >> 1;
-                                cposz = cposz >> 1;
-                                long tposx = tcraft.getHitBox().getMaxX() + tcraft.getHitBox().getMinX();
-                                long tposy = tcraft.getHitBox().getMaxY() + tcraft.getHitBox().getMinY();
-                                long tposz = tcraft.getHitBox().getMaxZ() + tcraft.getHitBox().getMinZ();
-                                tposx = tposx >> 1;
-                                tposy = tposy >> 1;
-                                tposz = tposz >> 1;
-                                long diffx = cposx - tposx;
-                                long diffy = cposy - tposy;
-                                long diffz = cposz - tposz;
-                                long distsquared = Math.abs(diffx) * Math.abs(diffx);
-                                distsquared += Math.abs(diffy) * Math.abs(diffy);
-                                distsquared += Math.abs(diffz) * Math.abs(diffz);
-                                long detectionRange;
-                                if (tposy > 65) {
-                                    detectionRange = (long) (Math.sqrt(tcraft.getOrigBlockCount())
-                                            * tcraft.getType().getDetectionMultiplier());
+                                MovecraftLocation ccenter = ccraft.getHitBox().getMidPoint();
+                                MovecraftLocation tcenter = tcraft.getHitBox().getMidPoint();
+                                int diffx = ccenter.getX() - tcenter.getX();
+                                int diffz = ccenter.getZ() - tcenter.getZ();
+                                int distsquared = ccenter.distanceSquared(tcenter);
+                                int detectionRange;
+                                if (tcenter.getY() > 65) {
+                                    detectionRange = (int) (Math.sqrt(tcraft.getOrigBlockCount())
+                                                                                * tcraft.getType().getDetectionMultiplier());
                                 } else {
-                                    detectionRange = (long) (Math.sqrt(tcraft.getOrigBlockCount())
-                                            * tcraft.getType().getUnderwaterDetectionMultiplier());
+                                    detectionRange = (int) (Math.sqrt(tcraft.getOrigBlockCount())
+                                                                                * tcraft.getType().getUnderwaterDetectionMultiplier());
                                 }
-                                if (distsquared < detectionRange * detectionRange
-                                        && tcraft.getNotificationPlayer() != ccraft.getNotificationPlayer()) {
+                                if (distsquared < detectionRange * detectionRange && tcraft.getNotificationPlayer() != ccraft.getNotificationPlayer()) {
                                     // craft has been detected
 
                                     // has the craft not been seen in the last
@@ -993,6 +991,7 @@ public class AsyncManager extends BukkitRunnable {
 
                                         if (tcraft.getName() != null && tcraft.getName().length() >= 1){
                                             notification += tcraft.getName();
+					                        notification += ChatColor.RESET;
                                             notification += " (";
                                         }
                                         notification += tcraft.getType().getCraftName();
@@ -1022,17 +1021,7 @@ public class AsyncManager extends BukkitRunnable {
                                         
                                         notification += ".";
                                         ccraft.getNotificationPlayer().sendMessage(notification);
-                                        w.playSound(ccraft.getNotificationPlayer().getLocation(),
-                                                Sound.BLOCK_ANVIL_LAND, 1.0f, 2.0f);
-/*										final World sw = w;
-                                        final Player sp = ccraft.getNotificationPlayer();
-										BukkitTask replaysound = new BukkitRunnable() {
-											@Override
-											public void run() {
-												sw.playSound(sp.getLocation(), Sound.BLOCK_ANVIL_LAND, 10.0f, 2.0f);
-											}
-										}.runTaskLater(Movecraft.getInstance(), (5));*/
-
+                                        w.playSound(ccraft.getNotificationPlayer().getLocation(), Sound.BLOCK_ANVIL_LAND, 1.0f, 2.0f);
                                     }
 
                                     long timestamp = System.currentTimeMillis();

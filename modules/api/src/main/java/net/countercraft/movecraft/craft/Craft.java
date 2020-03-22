@@ -47,6 +47,7 @@ public abstract class Craft {
     //protected MovecraftLocation[] blockList;
     @NotNull protected HashHitBox hitBox;
     @NotNull protected final HashHitBox collapsedHitBox;
+    @NotNull protected HashHitBox fluidLocations;
 
     @NotNull protected World w;
     @NotNull private final AtomicBoolean processing = new AtomicBoolean();
@@ -452,4 +453,13 @@ public abstract class Craft {
 
 
     public abstract void resetSigns(@NotNull final Sign clicked);
+
+    @NotNull
+    public HashHitBox getFluidLocations() {
+        return fluidLocations;
+    }
+
+    public void setFluidLocations(@NotNull HashHitBox fluidLocations) {
+        this.fluidLocations = fluidLocations;
+    }
 }

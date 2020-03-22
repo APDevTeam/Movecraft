@@ -122,6 +122,9 @@ public final class StatusSign implements Listener{
         if (signLine < 3 && signColumn == 1){
             signLine++;
         }
+        if (signLine < 3 && signColumn == 1){
+            signLine++;
+        }
         String fuelText="";
         int fuelRange=(int) ((fuel*(1+craft.getType().getCruiseSkipBlocks()))/craft.getType().getFuelBurnRate());
         if(fuelRange>1000) {
