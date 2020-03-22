@@ -32,7 +32,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
@@ -178,7 +177,7 @@ public class DetectionTask extends AsyncTask {
                     p = data.getPlayer();
                 }
                 if (p != null) {
-                    if (testID == 8 || testID == 9 || testID == 10 || testID == 11) {
+                    if (testType.name().endsWith("WATER") || testType.name().endsWith("LAVA")) {
                         fluidList.add(workingLocation);
                     }
                     addToBlockList(workingLocation);

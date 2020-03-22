@@ -17,6 +17,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -101,7 +102,8 @@ public final class StatusSign implements Listener{
                 } else {
                     signText += ChatColor.RED;
                 }
-                signText += Settings.StatusSignMarkers.get(flyBlocks);
+                String[] parts = new ArrayList<>(entry.getBlocks()).get(0).getType().name().split("_");
+                signText += parts[ entry.getBlocks().size() > 1 ? parts.length - 1 : 0 ].charAt(0);
                 signText += " ";
                 signText += (int) percentPresent;
                 signText += "/";
@@ -119,9 +121,6 @@ public final class StatusSign implements Listener{
                 }
             }
 
-        if (signLine < 3 && signColumn == 1){
-            signLine++;
-        }
         if (signLine < 3 && signColumn == 1){
             signLine++;
         }
