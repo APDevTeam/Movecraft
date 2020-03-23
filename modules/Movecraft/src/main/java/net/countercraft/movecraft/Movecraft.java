@@ -524,7 +524,6 @@ public class Movecraft extends JavaPlugin {
 
             getServer().getPluginManager().registerEvents(new InteractListener(), this);
             if (worldEditPlugin != null) {
-                final Class clazz;
                 if (movecraftRepair != null){
                     repairManager = new RepairManager();
                     repairManager.runTaskTimerAsynchronously(this, 0, 1);
