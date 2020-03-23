@@ -161,12 +161,12 @@ public class AsyncManager extends BukkitRunnable {
                 Player p = data.getPlayer();
                 Player notifyP = data.getNotificationPlayer();
                 Craft pCraft = CraftManager.getInstance().getCraftByPlayer(p);
-                boolean failed = false;
+                boolean failed = data.failed();
                 if (pCraft != null && p != null) {
                     // Player is already controlling a craft
                     notifyP.sendMessage(I18nSupport.getInternationalisedString("Detection - Failed - Already commanding a craft"));
                 } else {
-                    if (data.failed()) {
+                    if (failed) {
                         if (notifyP != null)
                             notifyP.sendMessage(data.getFailMessage());
                         else
