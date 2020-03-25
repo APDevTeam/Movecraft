@@ -137,7 +137,7 @@ sinkPercent: 99.0
 overallSinkPercent: 60.0
 halfSpeedUnderwater: true
 moveblocks:
-    REDSTONNE_BLOCK: # redstone represents engines
+    REDSTONE_BLOCK: # redstone represents engines
         - 1.0
         - 100.0
 flyblocks:

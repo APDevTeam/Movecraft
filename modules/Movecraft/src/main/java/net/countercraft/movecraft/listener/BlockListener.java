@@ -31,14 +31,11 @@ import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.LegacyUtils;
 import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.utils.WorldguardUtils;
-import net.countercraft.movecraft.warfare.assault.AssaultUtils;
-import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.warfare.assault.Assault;
 import org.bukkit.*;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
-import org.bukkit.block.Hopper;
-import org.bukkit.block.Sign;
+import org.bukkit.block.*;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.Directional;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -57,7 +54,6 @@ import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
@@ -66,26 +62,17 @@ public class BlockListener implements Listener {
 
 
     private long lastDamagesUpdate;
-    final Material[] fragileBlocks = Settings.IsLegacy ? new Material[]{LegacyUtils.BED_BLOCK, LegacyUtils.PISTON_EXTENSION, Material.TORCH, Material.REDSTONE_WIRE, LegacyUtils.SIGN_POST, LegacyUtils.WOOD_DOOR, Material.LADDER, Material.getMaterial("WALL_SIGN"),
-            Material.BIRCH_SIGN,Material.OAK_SIGN,Material.DARK_OAK_SIGN,Material.JUNGLE_SIGN,Material.SPRUCE_SIGN,Material.ACACIA_SIGN,Material.BIRCH_WALL_SIGN
-            ,Material.OAK_WALL_SIGN,Material.DARK_OAK_WALL_SIGN, Material.JUNGLE_WALL_SIGN, Material.SPRUCE_WALL_SIGN, Material.ACACIA_WALL_SIGN, Material.LEVER, LegacyUtils.STONE_PLATE, LegacyUtils.IRON_DOOR_BLOCK, LegacyUtils.WOOD_PLATE, LegacyUtils.REDSTONE_TORCH_OFF, LegacyUtils.REDSTONE_TORCH_ON, Material.STONE_BUTTON, LegacyUtils.DIODE_BLOCK_OFF, LegacyUtils.DIODE_BLOCK_ON, LegacyUtils.TRAP_DOOR, Material.TRIPWIRE_HOOK,
-            Material.TRIPWIRE, LegacyUtils.WOOD_BUTTON, LegacyUtils.GOLD_PLATE, LegacyUtils.IRON_PLATE, LegacyUtils.REDSTONE_COMPARATOR_OFF, LegacyUtils.REDSTONE_COMPARATOR_ON, Material.DAYLIGHT_DETECTOR, LegacyUtils.CARPET, LegacyUtils.DAYLIGHT_DETECTOR_INVERTED, Material.SPRUCE_DOOR, Material.BIRCH_DOOR, Material.JUNGLE_DOOR, Material.ACACIA_DOOR, Material.DARK_OAK_DOOR}
+    final Material[] fragileBlocks = Settings.IsLegacy ? new Material[]{
+
+    }
             :
             new Material[]
                     //Beds
-                    {Material.CYAN_BED, Material.BLACK_BED, Material.BLUE_BED,
-                            Material.BROWN_BED, Material.GRAY_BED, Material.GREEN_BED, Material.LIGHT_BLUE_BED, Material.LIGHT_GRAY_BED, Material.LIME_BED, Material.MAGENTA_BED,
-                            Material.ORANGE_BED, Material.PINK_BED, Material.PURPLE_BED, Material.RED_BED, Material.WHITE_BED, Material.YELLOW_BED,
+                    {
                             //Redstone components
-                            Material.REDSTONE_WIRE, Material.REPEATER, Material.COMPARATOR, Material.REDSTONE_TORCH, Material.REDSTONE_WALL_TORCH, Material.TRIPWIRE_HOOK,
-                            //Pressure plates
-                            Material.STONE_PRESSURE_PLATE, Material.ACACIA_PRESSURE_PLATE, Material.BIRCH_PRESSURE_PLATE, Material.DARK_OAK_PRESSURE_PLATE, Material.HEAVY_WEIGHTED_PRESSURE_PLATE, Material.LIGHT_WEIGHTED_PRESSURE_PLATE, Material.JUNGLE_PRESSURE_PLATE, Material.OAK_PRESSURE_PLATE, Material.SPRUCE_PRESSURE_PLATE,
-                            //Buttons
-                            Material.STONE_BUTTON, Material.BIRCH_BUTTON, Material.ACACIA_BUTTON, Material.DARK_OAK_BUTTON, Material.JUNGLE_BUTTON, Material.OAK_BUTTON, Material.SPRUCE_BUTTON,
-                            //Doors
-                            Material.SPRUCE_DOOR, Material.BIRCH_DOOR, Material.JUNGLE_DOOR, Material.ACACIA_DOOR, Material.DARK_OAK_DOOR, Material.OAK_DOOR, Material.IRON_DOOR,
-                            //Trapdoors
-                            Material.IRON_TRAPDOOR, Material.ACACIA_TRAPDOOR, Material.BIRCH_TRAPDOOR};
+
+
+                            };
 
     @EventHandler
     public void onBlockPlace(final BlockPlaceEvent e) {
@@ -250,36 +237,36 @@ public class BlockListener implements Listener {
         }
 
         Block block = event.getBlock();
-
-        final Material[] fragileBlocks = Settings.IsLegacy ? new Material[]{LegacyUtils.BED_BLOCK, LegacyUtils.PISTON_EXTENSION, Material.TORCH, Material.REDSTONE_WIRE, LegacyUtils.SIGN_POST, LegacyUtils.WOOD_DOOR, Material.LADDER, Material.getMaterial("WALL_SIGN"), Material.LEVER, LegacyUtils.STONE_PLATE, LegacyUtils.IRON_DOOR_BLOCK, LegacyUtils.WOOD_PLATE, LegacyUtils.REDSTONE_TORCH_OFF, LegacyUtils.REDSTONE_TORCH_ON, Material.STONE_BUTTON, LegacyUtils.DIODE_BLOCK_OFF, LegacyUtils.DIODE_BLOCK_ON, LegacyUtils.TRAP_DOOR, Material.TRIPWIRE_HOOK,
-                Material.TRIPWIRE, LegacyUtils.WOOD_BUTTON, LegacyUtils.GOLD_PLATE, LegacyUtils.IRON_PLATE, LegacyUtils.REDSTONE_COMPARATOR_OFF, LegacyUtils.REDSTONE_COMPARATOR_ON, Material.DAYLIGHT_DETECTOR, LegacyUtils.CARPET, LegacyUtils.DAYLIGHT_DETECTOR_INVERTED, Material.SPRUCE_DOOR, Material.BIRCH_DOOR, Material.JUNGLE_DOOR, Material.ACACIA_DOOR, Material.DARK_OAK_DOOR}
-                : null;
-        CraftManager.getInstance().getCraftsInWorld(block.getWorld());
         for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(block.getWorld())) {
             MovecraftLocation mloc = new MovecraftLocation(block.getX(), block.getY(), block.getZ());
             if (!MathUtils.locIsNearCraftFast(tcraft, mloc)) {
                 continue;
             }
 
-            if (Settings.IsLegacy) {
-                if (Arrays.binarySearch(fragileBlocks, block.getType()) >= 0) {
+            if (isFragileBlock(block)) {
+                BlockFace face = BlockFace.DOWN;
+                boolean faceAlwaysDown = false;
+                if (Settings.IsLegacy) {
                     MaterialData m = block.getState().getData();
-                    BlockFace face = BlockFace.DOWN;
-                    boolean faceAlwaysDown = false;
                     if (block.getType() == LegacyUtils.REDSTONE_COMPARATOR_ON || block.getType() == LegacyUtils.REDSTONE_COMPARATOR_OFF || block.getType() == LegacyUtils.DIODE_BLOCK_ON|| block.getType() == LegacyUtils.DIODE_BLOCK_OFF)
                         faceAlwaysDown = true;
                     if (m instanceof Attachable && !faceAlwaysDown) {
                         face = ((Attachable) m).getAttachedFace();
                     }
-                    if (!event.getBlock().getRelative(face).getType().isSolid()) {
-//						if(event.getEventName().equals("BlockPhysicsEvent")) {
-                        event.setCancelled(true);
-                        return;
-                    }
+                } else {
+                    BlockData data = block.getBlockData();
+                    if (block.getType() == Material.REPEATER || block.getType() == Material.COMPARATOR)
+                        faceAlwaysDown = true;
+                    if (data instanceof Directional && !faceAlwaysDown)
+                        face = ((Directional) data).getFacing().getOppositeFace();
                 }
-            } else {
-
+                if (!event.getBlock().getRelative(face).getType().isSolid()) {
+//						if(event.getEventName().equals("BlockPhysicsEvent")) {
+                    event.setCancelled(true);
+                    return;
+                }
             }
+
         }
     }
 
@@ -426,12 +413,12 @@ public class BlockListener implements Listener {
                         b.getLocation().getBlockZ() < min.getBlockZ() ||
                         b.getLocation().getBlockZ() > max.getBlockZ() ||
                         !Settings.AssaultDestroyableBlocks.contains(b.getType()) ||
-                        Arrays.binarySearch(fragileBlocks, b.getRelative(BlockFace.SOUTH).getType()) >= 0 ||
-                        Arrays.binarySearch(fragileBlocks, b.getRelative(BlockFace.DOWN).getType()) >= 0 ||
-                        Arrays.binarySearch(fragileBlocks, b.getRelative(BlockFace.UP).getType()) >= 0 ||
-                        Arrays.binarySearch(fragileBlocks, b.getRelative(BlockFace.EAST).getType()) >= 0 ||
-                        Arrays.binarySearch(fragileBlocks, b.getRelative(BlockFace.WEST).getType()) >= 0 ||
-                        Arrays.binarySearch(fragileBlocks, b.getRelative(BlockFace.NORTH).getType()) >= 0 ) {
+                        isFragileBlock(b.getRelative(BlockFace.SOUTH)) ||
+                        isFragileBlock(b.getRelative(BlockFace.DOWN)) ||
+                        isFragileBlock(b.getRelative(BlockFace.UP)) ||
+                        isFragileBlock(b.getRelative(BlockFace.EAST)) ||
+                        isFragileBlock(b.getRelative(BlockFace.WEST)) ||
+                        isFragileBlock(b.getRelative(BlockFace.NORTH)) ) {
                     i.remove();
                 }
 
@@ -497,5 +484,42 @@ public class BlockListener implements Listener {
             return true;
         }
         return false;
+    }
+    private boolean isFragileBlock(Block block) {
+        Material type = block.getType();
+        BlockState state = block.getState();
+        return type.name().endsWith("_BED") ||
+                state instanceof Sign ||
+                type.name().endsWith("DOOR") ||
+                type.name().endsWith("BUTTON") ||
+                type.name().endsWith("_PLATE") ||
+                type == Material.REDSTONE_WIRE ||
+                type.name().endsWith("TORCH") ||
+                type == Material.TRIPWIRE ||
+                type == Material.TRIPWIRE_HOOK ||
+                type == Material.LADDER ||
+                type == Material.LEVER ||
+                type == Material.DAYLIGHT_DETECTOR ||
+                (Settings.IsLegacy ?
+                        (type == LegacyUtils.BED_BLOCK||
+                        type == LegacyUtils.PISTON_EXTENSION||
+                        type == LegacyUtils.SIGN_POST||
+                        type == LegacyUtils.WOOD_DOOR||
+                        type == LegacyUtils.WALL_SIGN||
+                        type == LegacyUtils.IRON_DOOR_BLOCK||
+                        type == LegacyUtils.REDSTONE_TORCH_OFF||
+                        type == LegacyUtils.REDSTONE_TORCH_ON||
+                        type == LegacyUtils.DIODE_BLOCK_OFF||
+                        type == LegacyUtils.DIODE_BLOCK_ON||
+                        type == LegacyUtils.TRAP_DOOR ||
+                        type == LegacyUtils.REDSTONE_COMPARATOR_OFF||
+                        type == LegacyUtils.REDSTONE_COMPARATOR_ON ||
+                        type == LegacyUtils.CARPET||
+                        type == LegacyUtils.DAYLIGHT_DETECTOR_INVERTED)
+        :
+                        (type == Material.REPEATER ||
+                        type == Material.COMPARATOR )
+        );
+
     }
 }
