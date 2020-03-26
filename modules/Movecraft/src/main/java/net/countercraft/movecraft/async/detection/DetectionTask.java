@@ -37,8 +37,8 @@ public class DetectionTask extends AsyncTask {
     private final int minSize;
     private final int maxSize;
     private final Stack<MovecraftLocation> blockStack = new Stack<>();
-    private final HashHitBox blockList = new HashHitBox();
-    private final HashHitBox fluidList = new HashHitBox();
+    private final HashHitBox fluidBox = new HashHitBox();
+    private final HashHitBox hitBox = new HashHitBox();
     private final HashSet<MovecraftLocation> visited = new HashSet<>();
     private final HashMap<List<Integer>, Integer> blockTypeCount = new HashMap<>();
     private final World world;
@@ -55,7 +55,6 @@ public class DetectionTask extends AsyncTask {
     private double dynamicFlyBlockSpeedMultiplier;
     private boolean failed;
     private boolean waterContact;
-    private HashHitBox hitBox, fluidBox;
     private String failMessage;
 
     public DetectionTask(Craft c, MovecraftLocation startLocation, Player player) {
@@ -84,7 +83,7 @@ public class DetectionTask extends AsyncTask {
             return;
         }
         if (getCraft().getType().getDynamicFlyBlockSpeedFactor() != 0.0) {
-            int totalBlocks = blockList.size();
+            int totalBlocks = hitBox.size();
             double ratio = (double) foundDynamicFlyBlock / totalBlocks;
             double foundMinimum = 0.0;
             for (List<Integer> i : flyBlocks.keySet()) {
@@ -95,12 +94,10 @@ public class DetectionTask extends AsyncTask {
             ratio = ratio * getCraft().getType().getDynamicFlyBlockSpeedFactor();
             dynamicFlyBlockSpeedMultiplier = ratio;
         }
-        if (isWithinLimit(blockList.size(), minSize, maxSize)) {
-            if (confirmStructureRequirements(flyBlocks, blockTypeCount)) {
-                hitBox = blockList;
-                fluidBox = fluidList;
-            }
+        if (!isWithinLimit(hitBox.size(), minSize, maxSize)) {
+            return;
         }
+        confirmStructureRequirements(flyBlocks, blockTypeCount);
     }
 
     private void detectBlock(int x, int y, int z) {
@@ -203,7 +200,7 @@ public class DetectionTask extends AsyncTask {
                 }
                 if (p != null) {
                     if (testID == 8 || testID == 9 || testID == 10 || testID == 11) {
-                        fluidList.add(workingLocation);
+                        fluidBox.add(workingLocation);
                     }
                     addToBlockList(workingLocation);
                     Integer blockID = testID;
@@ -222,7 +219,7 @@ public class DetectionTask extends AsyncTask {
                         }
                     }
 
-                    if (isWithinLimit(blockList.size(), 0, maxSize)) {
+                    if (isWithinLimit(hitBox.size(), 0, maxSize)) {
 
                         addToDetectionStack(workingLocation);
 
@@ -277,7 +274,7 @@ public class DetectionTask extends AsyncTask {
     }
 
     private void addToBlockList(MovecraftLocation l) {
-        blockList.add(l);
+        hitBox.add(l);
     }
 
     private void addToDetectionStack(MovecraftLocation l) {
@@ -374,7 +371,7 @@ public class DetectionTask extends AsyncTask {
                 numberOfBlocks = 0;
             }
 
-            float blockPercentage = (((float) numberOfBlocks / blockList.size()) * 100);
+            float blockPercentage = (((float) numberOfBlocks / hitBox.size()) * 100);
             Double minPercentage = flyBlocks.get(i).get(0);
             Double maxPercentage = flyBlocks.get(i).get(1);
             if (minPercentage < 10000.0) {
@@ -479,16 +476,12 @@ public class DetectionTask extends AsyncTask {
         return dynamicFlyBlockSpeedMultiplier;
     }
 
-    public boolean isFailed() {
+    public boolean failed() {
         return failed;
     }
 
     public HashHitBox getHitBox() {
         return hitBox;
-    }
-
-    public HashHitBox getBlockList() {
-        return blockList;
     }
 
     public HashHitBox getFluidBox() {

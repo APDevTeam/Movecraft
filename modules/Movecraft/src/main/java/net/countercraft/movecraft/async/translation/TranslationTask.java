@@ -2,6 +2,7 @@ package net.countercraft.movecraft.async.translation;
 
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.async.AsyncTask;
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.CraftType;
@@ -235,10 +236,10 @@ public class TranslationTask extends AsyncTask {
                     if (System.currentTimeMillis() - craft.getOrigPilotTime() <= 1000) {
                         continue;
                     }
-                    Location loc = location.translate(-dx,-dy,-dz).toBukkit(craft.getW());
+                    Location loc = location.toBukkit(craft.getW());
                     if (!loc.getBlock().getType().equals(Material.AIR)  && ThreadLocalRandom.current().nextDouble(1) < .05) {
                         updates.add(new ExplosionUpdateCommand( loc, craft.getType().getExplodeOnCrash()));
-                        collisionExplosion=true;
+                        collisionExplosion = true;
                     }
                 }
                 List<MovecraftLocation> toRemove = new ArrayList<>();
@@ -250,13 +251,8 @@ public class TranslationTask extends AsyncTask {
                 craft.getCollapsedHitBox().addAll(toRemove);
                 newHitBox.removeAll(toRemove);
             }
-
-        }else{
-            for(MovecraftLocation location : collisionBox){
-                if (!(craft.getType().getCollisionExplosion() != 0.0F) || System.currentTimeMillis() - craft.getOrigPilotTime() <= 1000) {
-                    continue;
-                }
-                float explosionKey;
+        } else if ((craft.getType().getCollisionExplosion() != 0.0F) && System.currentTimeMillis() - craft.getOrigPilotTime() > Settings.CollisionPrimer) {
+            for(MovecraftLocation location : collisionBox) {
                 float explosionForce = craft.getType().getCollisionExplosion();
                 if (craft.getType().getFocusedExplosion()) {
                     explosionForce *= Math.min(oldHitBox.size(), craft.getType().getMaxSize());
@@ -265,10 +261,10 @@ public class TranslationTask extends AsyncTask {
                 /*if (location.getY() < waterLine) { // underwater explosions require more force to do anything
                     explosionForce += 25;//TODO: find the correct amount
                 }*/
-                explosionKey = explosionForce;
-                Location loc = location.toBukkit(craft.getW());
-                if (!loc.getBlock().getType().equals(Material.AIR)) {
-                    updates.add(new ExplosionUpdateCommand(loc, explosionKey));
+                Location oldLocation = location.translate(-dx,-dy,-dz).toBukkit(craft.getW());
+                Location newLocation = location.toBukkit(craft.getW());
+                if (!oldLocation.getBlock().getType().equals(Material.AIR)) {
+                    updates.add(new ExplosionUpdateCommand(newLocation, explosionForce));
                     collisionExplosion = true;
                 }
                 if (craft.getType().getFocusedExplosion()) { // don't handle any further collisions if it is set to focusedexplosion
