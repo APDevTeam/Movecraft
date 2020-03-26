@@ -137,21 +137,21 @@ public class AsyncManager extends BukkitRunnable {
                 Player p = data.getPlayer();
                 Player notifyP = data.getNotificationPlayer();
                 Craft pCraft = CraftManager.getInstance().getCraftByPlayer(p);
-
+                boolean failed = data.failed();
                 if (pCraft != null && p != null) {
                     // Player is already controlling a craft
                     notifyP.sendMessage(I18nSupport.getInternationalisedString("Detection - Failed - Already commanding a craft"));
                 } else {
-                    if (data.failed()) {
+                    if (failed) {
                         if (notifyP != null)
                             notifyP.sendMessage(data.getFailMessage());
                         else
                             Movecraft.getInstance().getLogger().log(Level.INFO,
-                            		I18nSupport.getInternationalisedString("Detection - NULL Player Detection Failed") + ": " + data.getFailMessage());
+                                    I18nSupport.getInternationalisedString("Detection - NULL Player Detection Failed") + ": " + data.getFailMessage());
 
                     } else {
                         Set<Craft> craftsInWorld = CraftManager.getInstance().getCraftsInWorld(c.getW());
-                        boolean failed = false;
+
                         boolean isSubcraft = false;
 
                         for (Craft craft : craftsInWorld) {
@@ -242,31 +242,39 @@ public class AsyncManager extends BukkitRunnable {
                                     }
                                 }
                             }
-
-                            if (notifyP != null) {
-                                notifyP.sendMessage(I18nSupport
-                                        .getInternationalisedString("Detection - Successfully piloted craft")
-                                        + " Size: " + c.getHitBox().size());
-                                Movecraft.getInstance().getLogger().log(Level.INFO,
-                                        String.format(
-                                                I18nSupport.getInternationalisedString(
-                                                        "Detection - Success - Log Output"),
-                                                notifyP.getName(), c.getType().getCraftName(), c.getHitBox().size(),
-                                                c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
-                            } else {
-                                Movecraft.getInstance().getLogger().log(Level.INFO,
-                                        String.format(
-                                                I18nSupport.getInternationalisedString(
-                                                        "Detection - Success - Log Output"),
-                                                "NULL PLAYER", c.getType().getCraftName(), c.getHitBox().size(),
-                                                c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
-                            }
-                            CraftManager.getInstance().addCraft(c, p);
                         }
                     }
                 }
-                if(c!=null){
-                    Bukkit.getPluginManager().callEvent(new CraftDetectEvent(c));
+                if(c!=null && !failed){
+                    final CraftDetectEvent event = new CraftDetectEvent(c);
+                    Bukkit.getPluginManager().callEvent(event);
+                    failed = event.isCancelled();
+                    if (notifyP != null) {
+                        notifyP.sendMessage(failed ? event.getFailMessage()
+                                        :
+                                        I18nSupport.getInternationalisedString("Detection - Successfully piloted craft")
+                                + " Size: " + c.getHitBox().size());
+                        if (!failed) {
+                            Movecraft.getInstance().getLogger().log(Level.INFO,
+                                    String.format(
+                                            I18nSupport.getInternationalisedString(
+                                                    "Detection - Success - Log Output"),
+                                            notifyP.getName(), c.getType().getCraftName(), c.getHitBox().size(),
+                                            c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
+                        }
+
+                    } else {
+                        Movecraft.getInstance().getLogger().log(Level.INFO, failed ?
+                                        I18nSupport.getInternationalisedString("Detection - NULL Player Detection Failed") + ": " + event.getFailMessage()
+                                        :
+                                        String.format(
+                                        I18nSupport.getInternationalisedString(
+                                                "Detection - Success - Log Output"),
+                                        "NULL PLAYER", c.getType().getCraftName(), c.getHitBox().size(),
+                                        c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
+                    }
+                    if (!failed)
+                        CraftManager.getInstance().addCraft(c, p);
                 }
 
             } else if (poll instanceof TranslationTask) {
