@@ -19,6 +19,7 @@ package net.countercraft.movecraft.craft;
 
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.events.CraftSinkEvent;
 import net.countercraft.movecraft.utils.HashHitBox;
 import net.md_5.bungee.api.ChatMessageType;
@@ -308,29 +309,34 @@ public abstract class Craft {
     public int getTickCooldown() {
         if(sinking)
             return type.getSinkRateTicks();
+
         Map<Material, Integer> counter = new HashMap<>();
         for(MovecraftLocation location : hitBox){
             Material mat = location.toBukkit(w).getBlock().getType();
             counter.put(mat, counter.getOrDefault(mat, 0) + 1);
         }
-        double chestPenalty = counter.getOrDefault(Material.CHEST, 0) + counter.getOrDefault(Material.TRAPPED_CHEST, 0);
-        chestPenalty*=type.getChestPenalty();
+        int chestPenalty = (int)(counter.getOrDefault(Material.CHEST, 0) + counter.getOrDefault(Material.TRAPPED_CHEST, 0) * type.getChestPenalty());
+
         if(!cruising)
-            return type.getTickCooldown()+(int)chestPenalty;
-        if(type.getDynamicFlyBlockSpeedFactor()!=0){
+            return type.getTickCooldown() + chestPenalty;
+
+        if(type.getDynamicFlyBlockSpeedFactor() != 0){
             Material flyBlockMaterial = Material.getMaterial(type.getDynamicFlyBlock());
             double count = counter.getOrDefault(flyBlockMaterial, 0);
             double woolRatio = count / hitBox.size();
-            return Math.max((int)Math.round((20.0 * type.getCruiseSkipBlocks())/((type.getDynamicFlyBlockSpeedFactor()*1.5)*(woolRatio - .5) + (20.0/type.getCruiseTickCooldown()) + 1)), 1);
-            //return Math.max((int)((20.0 * type.getDynamicFlyBlockSpeedFactor()/100.0)/(woolRatio - .499)),0) + type.getCruiseTickCooldown();
+            return Math.max((int)Math.round((20.0 * type.getCruiseSkipBlocks()) / ((type.getDynamicFlyBlockSpeedFactor() * 1.5) * (woolRatio - .5) + (20.0 / type.getCruiseTickCooldown()) + 1)), 1);
         }
 
-        if(type.getDynamicLagSpeedFactor()==0)
-            return type.getCruiseTickCooldown()+(int)chestPenalty;
-        //TODO: modify skip blocks by an equal proportion to this, than add another modifier based on dynamic speed factor
-        if(meanMoveTime==0)
-            return type.getCruiseTickCooldown()+(int)chestPenalty;
-        return Math.max((int)(type.getCruiseTickCooldown()*meanMoveTime*20/type.getDynamicLagSpeedFactor() +chestPenalty),1);
+        if(type.getDynamicLagSpeedFactor() == 0 || type.getDynamicLagPowerFactor() == 0 || Math.abs(type.getDynamicLagPowerFactor()) < 1)
+            return type.getCruiseTickCooldown() + chestPenalty;
+        if(meanMoveTime == 0)
+            return type.getCruiseTickCooldown() + chestPenalty;
+
+        double speed = 20.0 / type.getTickCooldown();
+        speed -= type.getDynamicLagSpeedFactor() * Math.pow(getMeanMoveTime(), type.getDynamicLagPowerFactor());
+        speed = Math.round(Math.min(type.getDynamicLagMinSpeed(), speed));
+        return (int)Math.round((20 * type.getCruiseSkipBlocks()) / speed) - chestPenalty;
+            //In theory, the chest penalty is not needed for a DynamicLag craft.
     }
 
     /**

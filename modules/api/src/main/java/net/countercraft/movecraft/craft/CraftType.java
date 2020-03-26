@@ -75,6 +75,8 @@ final public class CraftType {
     private final double detectionMultiplier;
     private final double underwaterDetectionMultiplier;
     private final double dynamicLagSpeedFactor;
+    private final double dynamicLagPowerFactor;
+    private final double dynamicLagMinSpeed;
     private final double dynamicFlyBlockSpeedFactor;
     private final double chestPenalty;
     private final float explodeOnCrash;
@@ -228,6 +230,8 @@ final public class CraftType {
         }
         allowVerticalTakeoffAndLanding = (boolean) data.getOrDefault("allowVerticalTakeoffAndLanding", true);
         dynamicLagSpeedFactor = doubleFromObject(data.getOrDefault("dynamicLagSpeedFactor", 0d));
+        dynamicLagPowerFactor = doubleFromObject(data.getOrDefault("dynamicLagSpeedFactor", 0d));
+        dynamicLagMinSpeed = doubleFromObject((data.getOrDefault("dynamicLagMinSpeed", 0d)));
         dynamicFlyBlockSpeedFactor = doubleFromObject(data.getOrDefault("dynamicFlyBlockSpeedFactor", 0d));
         dynamicFlyBlock = integerFromObject(data.getOrDefault("dynamicFlyBlock", 0));
         chestPenalty = doubleFromObject(data.getOrDefault("chestPenalty", 0));
@@ -590,6 +594,14 @@ final public class CraftType {
 
     public double getDynamicLagSpeedFactor() {
         return dynamicLagSpeedFactor;
+    }
+
+    public double getDynamicLagPowerFactor() {
+        return dynamicLagPowerFactor;
+    }
+
+    public double getDynamicLagMinSpeed() {
+        return dynamicLagMinSpeed;
     }
 
     public double getDynamicFlyBlockSpeedFactor() {
