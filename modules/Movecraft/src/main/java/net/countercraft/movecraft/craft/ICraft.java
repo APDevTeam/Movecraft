@@ -107,6 +107,7 @@ public class ICraft extends Craft {
         Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(this, originPoint, rotation, this.getW(), isSubCraft), this);
     }
 
+    @NotNull
     @Override
     public Set<Craft> getContacts() {
         final Set<Craft> contacts = new HashSet<>();
@@ -114,15 +115,9 @@ public class ICraft extends Craft {
             MovecraftLocation ccenter = this.getHitBox().getMidPoint();
             MovecraftLocation tcenter = contact.getHitBox().getMidPoint();
             int distsquared = ccenter.distanceSquared(tcenter);
-            int detectionRange;
-            if (tcenter.getY() > 65) {
-                detectionRange = (int) (Math.sqrt(contact.getOrigBlockCount())
-                        * contact.getType().getDetectionMultiplier());
-            } else {
-                detectionRange = (int) (Math.sqrt(contact.getOrigBlockCount())
-                        * contact.getType().getUnderwaterDetectionMultiplier());
-            }
-            if (distsquared > detectionRange * detectionRange || contact.getNotificationPlayer() == this.getNotificationPlayer()) {
+            int detectionRange = (int) (contact.getOrigBlockCount() * (tcenter.getY() > 65 ? contact.getType().getDetectionMultiplier() : contact.getType().getUnderwaterDetectionMultiplier()));
+            detectionRange = detectionRange * 10;
+            if (distsquared > detectionRange || contact.getNotificationPlayer() == this.getNotificationPlayer()) {
                 continue;
             }
             contacts.add(contact);

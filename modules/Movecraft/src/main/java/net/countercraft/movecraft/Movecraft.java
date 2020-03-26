@@ -130,19 +130,6 @@ public class Movecraft extends JavaPlugin {
         } else {
             logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - No Pilot Tool"));
         }
-        // if the CompatibilityMode is specified in the config.yml file, use it.
-        // Otherwise set to false.
-        /*Settings.CompatibilityMode = getConfig().getBoolean("CompatibilityMode", false);
-        if (!Settings.CompatibilityMode) {
-            try {
-                Class.forName("net.minecraft.server.v1_10_R1.Chunk");
-            } catch (ClassNotFoundException e) {
-                Settings.CompatibilityMode = true;
-                logger.log(Level.INFO, "WARNING: CompatibilityMode was set to false, but required build-specific classes were not found. FORCING COMPATIBILITY MODE");
-            }
-        }
-        logger.log(Level.INFO, "CompatiblityMode is set to {0}", Settings.CompatibilityMode);*/
-        //Switch to interfaces
         String packageName = this.getServer().getClass().getPackage().getName();
         String version = packageName.substring(packageName.lastIndexOf('.') + 1);
         try {
