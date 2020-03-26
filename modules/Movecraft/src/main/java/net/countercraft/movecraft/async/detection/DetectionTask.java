@@ -29,33 +29,35 @@ import org.bukkit.World;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
 public class DetectionTask extends AsyncTask {
-    private final MovecraftLocation startLocation;
+    @NotNull private final MovecraftLocation startLocation;
     private final int minSize;
     private final int maxSize;
-    private final Stack<MovecraftLocation> blockStack = new Stack<>();
-    private final HashHitBox fluidBox = new HashHitBox();
-    private final HashHitBox hitBox = new HashHitBox();
-    private final HashSet<MovecraftLocation> visited = new HashSet<>();
-    private final HashMap<List<Integer>, Integer> blockTypeCount = new HashMap<>();
-    private final World world;
-    private final Player player, notificationPlayer;
+    @NotNull private final Stack<MovecraftLocation> blockStack = new Stack<>();
+    @NotNull private final HashHitBox fluidBox = new HashHitBox();
+    @NotNull private final HashHitBox hitBox = new HashHitBox();
+    @NotNull private final HashSet<MovecraftLocation> visited = new HashSet<>();
+    @NotNull private final HashMap<List<Integer>, Integer> blockTypeCount = new HashMap<>();
+    @NotNull private final World world;
+    @Nullable private final Player player, notificationPlayer;
     private final int[] allowedBlocks;
     private final int[] forbiddenBlocks;
-    private final String[] forbiddenSignStrings;
+    @NotNull private final String[] forbiddenSignStrings;
     private int maxX;
     private int maxY;
     private int maxZ;
     private int minY;
-    private Map<List<Integer>, List<Double>> dFlyBlocks;
+    @NotNull private Map<List<Integer>, List<Double>> dFlyBlocks = new HashMap<>();
     private int foundDynamicFlyBlock = 0;
     private double dynamicFlyBlockSpeedMultiplier;
     private boolean failed;
     private boolean waterContact;
-    private String failMessage;
+    @NotNull private String failMessage = "";
 
     public DetectionTask(Craft c, MovecraftLocation startLocation, Player player) {
         super(c);
@@ -448,14 +450,17 @@ public class DetectionTask extends AsyncTask {
         failMessage = message;
     }
 
+    @NotNull
     public World getWorld() {
         return world;
     }
 
+    @Nullable
     public Player getNotificationPlayer() {
         return notificationPlayer;
     }
 
+    @Nullable
     public Player getPlayer() {
         return player;
     }
@@ -468,6 +473,7 @@ public class DetectionTask extends AsyncTask {
         return forbiddenBlocks;
     }
 
+    @NotNull
     public String[] getForbiddenSignStrings() {
         return forbiddenSignStrings;
     }
@@ -480,10 +486,12 @@ public class DetectionTask extends AsyncTask {
         return failed;
     }
 
+    @NotNull
     public HashHitBox getHitBox() {
         return hitBox;
     }
 
+    @NotNull
     public HashHitBox getFluidBox() {
         return fluidBox;
     }
@@ -492,6 +500,7 @@ public class DetectionTask extends AsyncTask {
         return waterContact;
     }
 
+    @NotNull
     public String getFailMessage() {
         return failMessage;
     }
