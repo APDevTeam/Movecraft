@@ -7,13 +7,14 @@ import net.countercraft.movecraft.async.detection.DetectionTask;
 import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.localisation.I18nSupport;
+
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -39,10 +40,8 @@ public class ICraft extends Craft {
     @Override
     public void translate(World world, int dx, int dy, int dz) {
         // check to see if the craft is trying to move in a direction not permitted by the type
-    	if (!this.getType().getCanSwitchWorld() && !this.getSinking()) {
-    		if (!world.equals(w)) {
-    			return;
-    		}
+    	if (!world.equals(w) && !this.getType().getCanSwitchWorld() && !this.getSinking()) {
+    		return;
     	}
         if (!this.getType().allowHorizontalMovement() && !this.getSinking()) {
             dx = 0;
@@ -95,8 +94,15 @@ public class ICraft extends Craft {
             }
         }*/
         
-        // ensure chunks are loaded
-        loadChunks(world, dx, dy, dz);
+        // ensure chunks are loaded only if teleportation or world switching is allowed and change in location is large
+        if (this.getType().getCanTeleport() || this.getType().getCanSwitchWorld())
+	        if (!world.equals(w) || dx + hitBox.getXLength() >= Bukkit.getServer().getViewDistance() * 16
+	        		|| dz + hitBox.getZLength() >= Bukkit.getServer().getViewDistance() * 16) {
+	        	
+	        	this.getNotificationPlayer().sendMessage("Loading Chunks...");
+	        	loadChunks(world, dx, dy, dz);
+	        	
+	        }
 
         Movecraft.getInstance().getAsyncManager().submitTask(new TranslationTask(this, world, dx, dy, dz), this);
     }
@@ -168,12 +174,16 @@ public class ICraft extends Craft {
     }
     
     private void loadChunks(World world, int dx, int dy, int dz) {
+    	// find all chunks in the old and new hitboxes
     	List<Chunk> chunks = new ArrayList<Chunk>();
     	for (MovecraftLocation location : hitBox) {
-        	Chunk c = location.translate(dx, dy, dz).toBukkit(world).getChunk();
-        	if (!chunks.contains(c)) chunks.add(c);
+    		Chunk oldChunk = location.toBukkit(world).getChunk();
+        	Chunk newChunk = location.translate(dx, dy, dz).toBukkit(world).getChunk();
+        	if (!chunks.contains(oldChunk)) chunks.add(oldChunk);
+        	if (!chunks.contains(newChunk)) chunks.add(newChunk);
         }
     	
+    	// add all chunks surrounding the included chunks
     	List<Chunk> list = new ArrayList<Chunk>();
     	list.addAll(chunks);
     	for (Chunk chunk : list) {
@@ -186,13 +196,8 @@ public class ICraft extends Craft {
     		}
     	}
     	
-		new BukkitRunnable() {
-			@Override
-			public void run() {
-				for (Chunk chunk : chunks)
-		    		if (!chunk.isLoaded()) chunk.load(true);
-			}
-		}.runTaskTimer(Movecraft.getInstance(), 0, 1);
+    	// keep those chunks loaded for 10 seconds while the craft teleports
+		ChunkManager.addChunksToLoad(chunks);
     }
 
 }
