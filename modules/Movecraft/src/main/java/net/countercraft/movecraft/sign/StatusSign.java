@@ -118,13 +118,16 @@ public final class StatusSign implements Listener{
                     event.setLine(signLine,signText);
                     signColumn++;
                 } else if(signLine<3) {
-                    String existingLine=event.getLine(signLine);
-                    existingLine+=signText;
+                    String existingLine = event.getLine(signLine);
+                    existingLine += signText;
                     event.setLine(signLine, existingLine);
                     signLine++;
                     signColumn=0;
                 }
             }
+        }
+        if (signLine < 3 && signColumn == 1){
+            signLine++;
         }
         String fuelText="";
         int fuelRange=(int) ((fuel*(1+craft.getType().getCruiseSkipBlocks()))/craft.getType().getFuelBurnRate());

@@ -68,6 +68,8 @@ public class RotationTask extends AsyncTask {
 
     private final HashHitBox oldHitBox;
     private final HashHitBox newHitBox;
+    private final HashHitBox oldFluidList;
+    private final HashHitBox newFluidList;
 
     public RotationTask(Craft c, MovecraftLocation originPoint, Rotation rotation, World w, boolean isSubCraft) {
         super(c);
@@ -77,6 +79,8 @@ public class RotationTask extends AsyncTask {
         this.isSubCraft = isSubCraft;
         this.newHitBox = new HashHitBox();
         this.oldHitBox = new HashHitBox(c.getHitBox());
+        this.oldFluidList = new HashHitBox(c.getFluidLocations());
+        this.newFluidList = new HashHitBox(c.getFluidLocations());
     }
 
     public RotationTask(Craft c, MovecraftLocation originPoint, Rotation rotation, World w) {
@@ -189,6 +193,12 @@ public class RotationTask extends AsyncTask {
             }
         }
 
+        if (!oldFluidList.isEmpty()) {
+            for (MovecraftLocation fluidLoc : oldFluidList) {
+                newFluidList.add(MathUtils.rotateVec(rotation, fluidLoc.subtract(originPoint)).add(originPoint));
+            }
+        }
+
         if (failed) {
             if (this.isSubCraft && parentCraft != getCraft()) {
                 parentCraft.setProcessing(false);
@@ -202,6 +212,10 @@ public class RotationTask extends AsyncTask {
             failed = true;
             failMessage = event.getFailMessage();
             return;
+        }
+        if (parentCraft != craft) {
+            parentCraft.getFluidLocations().removeAll(oldFluidList);
+            parentCraft.getFluidLocations().addAll(newFluidList);
         }
 
 
@@ -447,5 +461,8 @@ public class RotationTask extends AsyncTask {
     public HashHitBox getNewHitBox() {
         return newHitBox;
     }
-}
 
+    public HashHitBox getNewFluidList() {
+        return newFluidList;
+    }
+}

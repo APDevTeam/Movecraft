@@ -18,7 +18,9 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static net.countercraft.movecraft.utils.SignUtils.getFacing;
@@ -59,50 +61,16 @@ public class ICraft extends Craft {
                 return;
             }
         }
-
-        // find region that will need to be loaded to translate this craft
-        /*int cminX = minX;
-        int cmaxX = minX;
-        if (dx < 0)
-            cminX = cminX + dx;
-        int cminZ = minZ;
-        int cmaxZ = minZ;
-        if (dz < 0)
-            cminZ = cminZ + dz;
-        for (MovecraftLocation m : blockList) {
-            if (m.getX() > cmaxX)
-                cmaxX = m.getX();
-            if (m.getZ() > cmaxZ)
-                cmaxZ = m.getZ();
-        }
-        if (dx > 0)
-            cmaxX = cmaxX + dx;
-        if (dz > 0)
-            cmaxZ = cmaxZ + dz;
-        cminX = cminX >> 4;
-        cminZ = cminZ >> 4;
-        cmaxX = cmaxX >> 4;
-        cmaxZ = cmaxZ >> 4;
-
-
-        // load all chunks that will be needed to translate this craft
-        for (int posX = cminX - 1; posX <= cmaxX + 1; posX++) {
-            for (int posZ = cminZ - 1; posZ <= cmaxZ + 1; posZ++) {
-                if (!this.getW().isChunkLoaded(posX, posZ)) {
-                    this.getW().loadChunk(posX, posZ);
-                }
-            }
-        }*/
         
         // ensure chunks are loaded only if teleportation or world switching is allowed and change in location is large
-        if (this.getType().getCanTeleport() || this.getType().getCanSwitchWorld())
+        if (this.getType().getCanTeleport() || this.getType().getCanSwitchWorld()) {
 	        if (!world.equals(w) || dx + hitBox.getXLength() >= Bukkit.getServer().getViewDistance() * 16
 	        		|| dz + hitBox.getZLength() >= Bukkit.getServer().getViewDistance() * 16) {
 	        	
-	        	this.getNotificationPlayer().sendMessage("Loading Chunks...");
 	        	loadChunks(world, dx, dy, dz);
 	        	
 	        }
+    	}
 
         Movecraft.getInstance().getAsyncManager().submitTask(new TranslationTask(this, world, dx, dy, dz), this);
     }
@@ -121,6 +89,24 @@ public class ICraft extends Craft {
     @Override
     public void rotate(Rotation rotation, MovecraftLocation originPoint, boolean isSubCraft) {
         Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(this, originPoint, rotation, this.getW(), isSubCraft), this);
+    }
+    
+    @NotNull
+    @Override
+    public Set<Craft> getContacts() {
+        final Set<Craft> contacts = new HashSet<>();
+        for (Craft contact : CraftManager.getInstance().getCraftsInWorld(w)) {
+            MovecraftLocation ccenter = this.getHitBox().getMidPoint();
+            MovecraftLocation tcenter = contact.getHitBox().getMidPoint();
+            int distsquared = ccenter.distanceSquared(tcenter);
+            int detectionRange = (int) (contact.getOrigBlockCount() * (tcenter.getY() > 65 ? contact.getType().getDetectionMultiplier() : contact.getType().getUnderwaterDetectionMultiplier()));
+            detectionRange = detectionRange * 10;
+            if (distsquared > detectionRange || contact.getNotificationPlayer() == this.getNotificationPlayer()) {
+                continue;
+            }
+            contacts.add(contact);
+        }
+        return contacts;
     }
 
     @Override

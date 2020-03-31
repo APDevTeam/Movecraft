@@ -2,6 +2,7 @@ package net.countercraft.movecraft.async.translation;
 
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.async.AsyncTask;
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.CraftType;
@@ -33,7 +34,7 @@ public class TranslationTask extends AsyncTask {
 
     private World world;
     private int dx, dy, dz;
-    private HashHitBox newHitBox, oldHitBox;
+    private HashHitBox newHitBox, oldHitBox, oldFluidList, newFluidList;
     private boolean failed;
     private boolean collisionExplosion = false;
     private String failMessage;
@@ -47,6 +48,8 @@ public class TranslationTask extends AsyncTask {
         this.dz = dz;
         newHitBox = new HashHitBox();
         oldHitBox = new HashHitBox(c.getHitBox());
+        oldFluidList = new HashHitBox(c.getFluidLocations());
+        newFluidList = new HashHitBox();
     }
 
     @Override
@@ -180,6 +183,12 @@ public class TranslationTask extends AsyncTask {
                 }
             } //END OF: if (blockObstructed)
         }
+        
+        if (!oldFluidList.isEmpty()) {
+            for (MovecraftLocation fluidLoc : oldFluidList) {
+                newFluidList.add(fluidLoc.translate(dx, dy, dz));
+            }
+        }
 
         if (craft.getType().getForbiddenHoverOverBlocks().size() > 0){
             MovecraftLocation test = new MovecraftLocation(newHitBox.getMidPoint().getX(), newHitBox.getMinY(), newHitBox.getMidPoint().getZ());
@@ -214,10 +223,10 @@ public class TranslationTask extends AsyncTask {
                     if (System.currentTimeMillis() - craft.getOrigPilotTime() <= 1000) {
                         continue;
                     }
-                    Location loc = location.translate(-dx,-dy,-dz).toBukkit(craft.getW());
+                    Location loc = location.toBukkit(craft.getW());
                     if (!loc.getBlock().getType().equals(Material.AIR)  && ThreadLocalRandom.current().nextDouble(1) < .05) {
                         updates.add(new ExplosionUpdateCommand( loc, craft.getType().getExplodeOnCrash()));
-                        collisionExplosion=true;
+                        collisionExplosion = true;
                     }
                 }
                 List<MovecraftLocation> toRemove = new ArrayList<>();
@@ -229,13 +238,8 @@ public class TranslationTask extends AsyncTask {
                 craft.getCollapsedHitBox().addAll(toRemove);
                 newHitBox.removeAll(toRemove);
             }
-
-        }else{
-            for(MovecraftLocation location : collisionBox){
-                if (!(craft.getType().getCollisionExplosion() != 0.0F) || System.currentTimeMillis() - craft.getOrigPilotTime() <= 1000) {
-                    continue;
-                }
-                float explosionKey;
+        } else if ((craft.getType().getCollisionExplosion() != 0.0F) && System.currentTimeMillis() - craft.getOrigPilotTime() > Settings.CollisionPrimer) {
+        	for(MovecraftLocation location : collisionBox) {
                 float explosionForce = craft.getType().getCollisionExplosion();
                 if (craft.getType().getFocusedExplosion()) {
                     explosionForce *= Math.min(oldHitBox.size(), craft.getType().getMaxSize());
@@ -244,10 +248,10 @@ public class TranslationTask extends AsyncTask {
                 /*if (location.getY() < waterLine) { // underwater explosions require more force to do anything
                     explosionForce += 25;//TODO: find the correct amount
                 }*/
-                explosionKey = explosionForce;
-                Location loc = location.toBukkit(world);
-                if (!loc.getBlock().getType().equals(Material.AIR)) {
-                    updates.add(new ExplosionUpdateCommand(loc, explosionKey));
+                Location oldLocation = location.translate(-dx,-dy,-dz).toBukkit(craft.getW());
+                Location newLocation = location.toBukkit(craft.getW());
+                if (!oldLocation.getBlock().getType().equals(Material.AIR)) {
+                	updates.add(new ExplosionUpdateCommand(newLocation, explosionForce));
                     collisionExplosion = true;
                 }
                 if (craft.getType().getFocusedExplosion()) { // don't handle any further collisions if it is set to focusedexplosion
@@ -617,6 +621,10 @@ public class TranslationTask extends AsyncTask {
 
     public HashHitBox getNewHitBox() {
         return newHitBox;
+    }
+    
+    public HashHitBox getNewFluidList() {
+        return newFluidList;
     }
 
     public Collection<UpdateCommand> getUpdates() {

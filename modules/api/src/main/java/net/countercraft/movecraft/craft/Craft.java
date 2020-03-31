@@ -32,9 +32,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
@@ -45,6 +43,7 @@ public abstract class Craft {
     //protected MovecraftLocation[] blockList;
     @NotNull protected HashHitBox hitBox;
     @NotNull protected final HashHitBox collapsedHitBox;
+    @NotNull protected HashHitBox fluidLocations;
 
     @NotNull protected World w;
     @NotNull private final AtomicBoolean processing = new AtomicBoolean();
@@ -167,6 +166,13 @@ public abstract class Craft {
         this.sinking = true;
 
     }
+
+
+    /**
+     * Gets the crafts that have made contact with this craft
+     * @return a set of crafts on contact with this craft
+     */
+    public abstract Set<Craft> getContacts();
 
     public boolean getDisabled() {
         return disabled;
@@ -433,4 +439,13 @@ public abstract class Craft {
     }
 
     public abstract void resetSigns(@NotNull final Sign clicked);
+
+    @NotNull
+    public HashHitBox getFluidLocations() {
+        return fluidLocations;
+    }
+
+    public void setFluidLocations(@NotNull HashHitBox fluidLocations) {
+        this.fluidLocations = fluidLocations;
+    }
 }
