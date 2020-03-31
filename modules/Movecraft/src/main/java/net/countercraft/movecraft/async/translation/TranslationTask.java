@@ -162,6 +162,11 @@ public class TranslationTask extends AsyncTask {
                 return;
             }
 
+            if (!withinWorldBorder(newLocation)) {
+                fail(I18nSupport.getInternationalisedString("Translation - Failed Craft cannot pass world border"));
+                return;
+            }
+
             boolean blockObstructed;
             if (craft.getSinking()) {
                 blockObstructed = !(Arrays.binarySearch(FALL_THROUGH_BLOCKS, testMaterial.getId()) >= 0);
@@ -622,6 +627,15 @@ public class TranslationTask extends AsyncTask {
             return bottomLocsOnGround && translatedBottomLocsInAir;
         }
         return !translatedBottomLocsInAir;
+    }
+
+    private boolean withinWorldBorder(MovecraftLocation location) {
+        WorldBorder border = craft.getW().getWorldBorder();
+        int minX = border.getCenter().getBlockX() - (int) border.getSize();
+        int maxX = border.getCenter().getBlockX() + (int) border.getSize();
+        int minZ = border.getCenter().getBlockZ() - (int) border.getSize();
+        int maxZ = border.getCenter().getBlockZ() + (int) border.getSize();
+        return location.getX() >= minX && location.getX() <= maxX && location.getZ() >= minZ && location.getZ() <= maxZ;
     }
 
     public boolean failed(){
