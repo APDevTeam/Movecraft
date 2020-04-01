@@ -24,6 +24,7 @@ RepairMaxPercent: 50
 SiegeTaskSeconds: 600 # Seconds per siege message, defaults to 600 (10 minutes)
 AllowContactsSigns: true
 AllowCrewSigns: true
+AllowCruiseSigns: true
 AllowDirectorSigns: true
 AllowHelmSigns: true
 AllowMoveSigns: true
