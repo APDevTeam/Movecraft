@@ -7,6 +7,7 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.CraftType;
 import net.countercraft.movecraft.craft.ICraft;
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.events.CraftPilotEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.Bukkit;
@@ -44,6 +45,9 @@ public final class SubcraftRotateSign implements Listener {
         Sign sign = (Sign) event.getClickedBlock().getState();
         if (!ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase(HEADER)) {
             return;
+        }
+        if (!Settings.AllowSubcraftRotateSigns) {
+        	return;
         }
         final Location loc = event.getClickedBlock().getLocation();
         final MovecraftLocation startPoint = new MovecraftLocation(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());

@@ -1,6 +1,7 @@
 package net.countercraft.movecraft.sign;
 
 import net.countercraft.movecraft.MovecraftLocation;
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.CraftDetectEvent;
@@ -43,8 +44,11 @@ public class AscendSign implements Listener {
         }
         Sign sign = (Sign) event.getClickedBlock().getState();
         if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Ascend: OFF")) {
-            if (CraftManager.getInstance().getCraftByPlayer(event.getPlayer()) == null) {
+        	if (CraftManager.getInstance().getCraftByPlayer(event.getPlayer()) == null) {
                 return;
+            }
+        	if (!Settings.AllowCruiseSigns) {
+            	return;
             }
             Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
             if (!c.getType().getCanCruise()) {
@@ -66,6 +70,9 @@ public class AscendSign implements Listener {
         }
         if (!ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Ascend: ON")) {
             return;
+        }
+        if (!Settings.AllowCruiseSigns) {
+        	return;
         }
         Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
         if (c == null || !c.getType().getCanCruise()) {

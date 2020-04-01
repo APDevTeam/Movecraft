@@ -1,5 +1,7 @@
 package net.countercraft.movecraft.sign;
 
+
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.craft.CraftManager;
@@ -30,6 +32,9 @@ public class AntiAircraftDirectorSign implements Listener {
         Sign sign = (Sign) event.getClickedBlock().getState();
         if (!ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase(HEADER)) {
             return;
+        }
+        if (!Settings.AllowDirectorSigns) {
+        	return;
         }
         Craft foundCraft = null;
         CraftManager.getInstance().getCraftsInWorld(block.getWorld());

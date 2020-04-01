@@ -1,6 +1,7 @@
 package net.countercraft.movecraft.sign;
 
 import net.countercraft.movecraft.MovecraftLocation;
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.CraftDetectEvent;
@@ -45,6 +46,9 @@ public final class DescendSign implements Listener{
             if (CraftManager.getInstance().getCraftByPlayer(event.getPlayer()) == null) {
                 return;
             }
+            if (!Settings.AllowCruiseSigns) {
+            	return;
+            }
             Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
             if (!c.getType().getCanCruise()) {
                 return;
@@ -65,7 +69,7 @@ public final class DescendSign implements Listener{
         }
         if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Descend: ON")) {
             Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
-            if (c != null && c.getType().getCanCruise()) {
+            if (c != null && c.getType().getCanCruise() && Settings.AllowCruiseSigns) {
                 sign.setLine(0, "Descend: OFF");
                 sign.update(true);
                 c.setCruising(false);

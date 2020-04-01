@@ -2,6 +2,7 @@ package net.countercraft.movecraft.sign;
 
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
 import org.bukkit.ChatColor;
@@ -37,6 +38,9 @@ public class ContactsSign implements Listener{
         Craft craft = event.getCraft();
         if (!ChatColor.stripColor(lines[0]).equalsIgnoreCase("Contacts:")) {
             return;
+        }
+        if (!Settings.AllowContactsSigns) {
+        	return;
         }
         int signLine=1;
         for(Craft tcraft : craft.getContacts()) {
