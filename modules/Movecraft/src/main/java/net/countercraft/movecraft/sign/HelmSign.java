@@ -2,6 +2,7 @@ package net.countercraft.movecraft.sign;
 
 import net.countercraft.movecraft.Rotation;
 import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
@@ -46,6 +47,9 @@ public final class HelmSign implements Listener {
                 ChatColor.stripColor(sign.getLine(1)).equals("==      ==") &&
                 ChatColor.stripColor(sign.getLine(2)).equals("/  ||  \\"))) {
             return;
+        }
+        if (!Settings.AllowHelmSigns) {
+        	return;
         }
         Craft craft = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
         if (craft == null) {

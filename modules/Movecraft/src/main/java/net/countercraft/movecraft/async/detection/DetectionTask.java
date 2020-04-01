@@ -21,6 +21,7 @@ package net.countercraft.movecraft.async.detection;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.HashHitBox;
 import org.bukkit.Location;
@@ -124,7 +125,7 @@ public class DetectionTask extends AsyncTask {
                 BlockState state = world.getBlockAt(x, y, z).getState();
                 if (state instanceof Sign) {
                     Sign s = (Sign) state;
-                    if (s.getLine(0).equalsIgnoreCase("Pilot:") && player != null) {
+                    if (s.getLine(0).equalsIgnoreCase("Pilot:") && player != null && Settings.AllowPilotSigns) {
                         String playerName = player.getName();
                         boolean foundPilot = false;
                         if (s.getLine(1).equalsIgnoreCase(playerName) || s.getLine(2).equalsIgnoreCase(playerName)

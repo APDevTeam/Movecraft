@@ -24,6 +24,11 @@ public final class NameSign implements Listener {
             //Player is null or does not have permission (when required)
             return;
         }
+        
+        if(!Settings.AllowNameSigns) {
+        	//Name Signs are disabled by global config
+        	return;
+        }
 
         World w = c.getW();
 

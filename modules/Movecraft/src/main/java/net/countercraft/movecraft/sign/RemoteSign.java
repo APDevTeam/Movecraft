@@ -50,6 +50,9 @@ public final class RemoteSign implements Listener{
         if (!ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase(HEADER)) {
             return;
         }
+        if (!Settings.AllowRemoteSigns) {
+        	return;
+        }
         Craft foundCraft = null;
         CraftManager.getInstance().getCraftsInWorld(event.getClickedBlock().getWorld());
         for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(event.getClickedBlock().getWorld())) {

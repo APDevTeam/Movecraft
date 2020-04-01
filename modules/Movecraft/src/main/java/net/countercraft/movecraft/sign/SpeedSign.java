@@ -1,6 +1,7 @@
 package net.countercraft.movecraft.sign;
 
 import net.countercraft.movecraft.MovecraftLocation;
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
@@ -35,6 +36,9 @@ public final class SpeedSign implements Listener{
         Craft craft = event.getCraft();
         if (!ChatColor.stripColor(event.getLine(0)).equalsIgnoreCase("Speed:")) {
             return;
+        }
+        if (!Settings.AllowSpeedSigns) {
+        	return;
         }
         event.setLine(1,String.format("%.2f",craft.getSpeed()) + "m/s");
         event.setLine(2,String.format("%.2f",craft.getMeanMoveTime() * 1000) + "ms");
