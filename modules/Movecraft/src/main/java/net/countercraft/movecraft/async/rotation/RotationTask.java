@@ -35,10 +35,7 @@ import net.countercraft.movecraft.mapUpdater.update.CraftRotateCommand;
 import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import net.countercraft.movecraft.utils.*;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -180,6 +177,12 @@ public class RotationTask extends AsyncTask {
             //TODO: ADD TOWNY
 
             //isTownyBlock(plugLoc,craftPilot);
+            if (!withinWorldBorder(newLocation)) {
+                failMessage = I18nSupport.getInternationalisedString("Rotation - Failed Craft cannot pass world border") + String.format(" @ %d,%d,%d", newLocation.getX(), newLocation.getY(), newLocation.getZ());
+                failed = true;
+                return;
+            }
+
             Material newMaterial = newLocation.toBukkit(w).getBlock().getType();
             if ((newMaterial == Material.AIR) || (newMaterial == Material.PISTON_EXTENSION) || craft.getType().getPassthroughBlocks().contains(newMaterial)) {
                 //getCraft().getPhaseBlocks().put(newLocation, newMaterial);
@@ -456,6 +459,22 @@ public class RotationTask extends AsyncTask {
         aroundNewLoc = newLoc.translate(0, 0, -1);
         testMaterial = craft.getW().getBlockAt(aroundNewLoc.getX(), aroundNewLoc.getY(), aroundNewLoc.getZ()).getType();
         return !testMaterial.equals(mBlock) || oldHitBox.contains(aroundNewLoc);
+    }
+
+    private boolean withinWorldBorder(MovecraftLocation location) {
+        WorldBorder border = craft.getW().getWorldBorder();
+        int radius = (int) (border.getSize() / 2.0);
+        //The visible border will always end at 29,999,984 blocks, despite being larger
+        int minX = border.getCenter().getBlockX() - radius;
+        int maxX = border.getCenter().getBlockX() + radius;
+        int minZ = border.getCenter().getBlockZ() - radius;
+        int maxZ = border.getCenter().getBlockZ() + radius;
+        return Math.abs(location.getX()) < 29999984 &&
+                Math.abs(location.getZ()) < 29999984 &&
+                location.getX() >= minX &&
+                location.getX() <= maxX &&
+                location.getZ() >= minZ &&
+                location.getZ() <= maxZ;
     }
 
     public HashHitBox getNewHitBox() {
