@@ -327,15 +327,15 @@ public abstract class Craft {
             return Math.max((int)Math.round((20.0 * (type.getCruiseSkipBlocks() + 1)) / ((type.getDynamicFlyBlockSpeedFactor() * 1.5) * (woolRatio - .5) + (20.0 / type.getCruiseTickCooldown()) + 1)), 1);
         }
 
-        if(type.getDynamicLagSpeedFactor() == 0 || type.getDynamicLagPowerFactor() == 0 || Math.abs(type.getDynamicLagPowerFactor()) > 1)
+        if(type.getDynamicLagSpeedFactor() == 0.0 || type.getDynamicLagPowerFactor() == 0.0 || Math.abs(type.getDynamicLagPowerFactor()) > 1.0)
             return type.getCruiseTickCooldown() + chestPenalty;
         if(meanMoveTime == 0)
             return type.getCruiseTickCooldown() + chestPenalty;
 
-        double speed = 20.0 * (type.getCruiseSkipBlocks() + 1) / type.getTickCooldown();
+        double speed = 20.0 * (type.getCruiseSkipBlocks() + 1.0) / (float)type.getTickCooldown();
         speed -= type.getDynamicLagSpeedFactor() * Math.pow(getMeanMoveTime() * 1000.0, type.getDynamicLagPowerFactor());
         speed = Math.max(type.getDynamicLagMinSpeed(), speed);
-        return (int)Math.round((20 * (type.getCruiseSkipBlocks() + 1)) / speed) - chestPenalty;
+        return (int)Math.round((20.0 * (type.getCruiseSkipBlocks() + 1.0)) / speed);
             //In theory, the chest penalty is not needed for a DynamicLag craft.
     }
 
