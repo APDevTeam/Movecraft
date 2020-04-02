@@ -35,6 +35,7 @@ import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.repair.RepairManager;
 import net.countercraft.movecraft.sign.*;
+import net.countercraft.movecraft.towny.TownyCompatManager;
 import net.countercraft.movecraft.utils.TownyUtils;
 import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
 import net.countercraft.movecraft.warfare.assault.AssaultManager;
@@ -129,19 +130,6 @@ public class Movecraft extends JavaPlugin {
         } else {
             logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - No Pilot Tool"));
         }
-        // if the CompatibilityMode is specified in the config.yml file, use it.
-        // Otherwise set to false.
-        /*Settings.CompatibilityMode = getConfig().getBoolean("CompatibilityMode", false);
-        if (!Settings.CompatibilityMode) {
-            try {
-                Class.forName("net.minecraft.server.v1_10_R1.Chunk");
-            } catch (ClassNotFoundException e) {
-                Settings.CompatibilityMode = true;
-                logger.log(Level.INFO, "WARNING: CompatibilityMode was set to false, but required build-specific classes were not found. FORCING COMPATIBILITY MODE");
-            }
-        }
-        logger.log(Level.INFO, "CompatiblityMode is set to {0}", Settings.CompatibilityMode);*/
-        //Switch to interfaces
         String packageName = this.getServer().getClass().getPackage().getName();
         String version = packageName.substring(packageName.lastIndexOf('.') + 1);
         try {
@@ -198,6 +186,7 @@ public class Movecraft extends JavaPlugin {
         Settings.AssaultMaxBalance = getConfig().getDouble("AssaultMaxBalance", 5000000);
         Settings.AssaultOwnerWeightPercent = getConfig().getDouble("AssaultOwnerWeightPercent", 1.0);
         Settings.AssaultMemberWeightPercent = getConfig().getDouble("AssaultMemberWeightPercent", 1.0);
+        Settings.CollisionPrimer = getConfig().getInt("CollisionPrimer", 1000);
         Settings.AssaultDestroyableBlocks = new HashSet<>(getConfig().getIntegerList("AssaultDestroyableBlocks"));
         Settings.DisableShadowBlocks = new HashSet<>(getConfig().getIntegerList("DisableShadowBlocks"));  //REMOVE FOR PUBLIC VERSION
         Settings.ForbiddenRemoteSigns = new HashSet<>();
@@ -284,6 +273,7 @@ public class Movecraft extends JavaPlugin {
             TownyUtils.initTownyConfig();
             Settings.TownyBlockMoveOnSwitchPerm = getConfig().getBoolean("TownyBlockMoveOnSwitchPerm", false);
             Settings.TownyBlockSinkOnNoPVP = getConfig().getBoolean("TownyBlockSinkOnNoPVP", false);
+            getServer().getPluginManager().registerEvents(new TownyCompatManager(), this);
             logger.log(Level.INFO, "Settings: TownyBlockMoveOnSwitchPerm - {0}", Settings.TownyBlockMoveOnSwitchPerm);
             logger.log(Level.INFO, "Settings: TownyBlockSinkOnNoPVP - {0}", Settings.TownyBlockSinkOnNoPVP);
 

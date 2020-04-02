@@ -130,7 +130,18 @@ public class IWorldHandler extends WorldHandler {
             setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
         }
         //*******************************************
-        //*       Step six: Send to players       *
+        //*   Step six: Process fire spread         *
+        //*******************************************
+        for (BlockPosition position : rotatedPositions.values()) {
+            IBlockData type = nativeWorld.getType(position);
+            if (!(type.getBlock() instanceof BlockFire)) {
+                continue;
+            }
+            BlockFire fire = (BlockFire) type.getBlock();
+            fire.b(nativeWorld, position, type, nativeWorld.random);
+        }
+        //*******************************************
+        //*       Step seven: Send to players       *
         //*******************************************
         List<Chunk> chunks = new ArrayList<>();
         for(BlockPosition position : rotatedPositions.values()){
@@ -216,8 +227,20 @@ public class IWorldHandler extends WorldHandler {
         for(BlockPosition position : deletePositions){
             setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
         }
+
         //*******************************************
-        //*       Step six: Send to players       *
+        //*   Step six: Process fire spread         *
+        //*******************************************
+        for (BlockPosition position : newPositions) {
+            IBlockData type = nativeWorld.getType(position);
+            if (!(type.getBlock() instanceof BlockFire)) {
+                continue;
+            }
+            BlockFire fire = (BlockFire) type.getBlock();
+            fire.b(nativeWorld, position, type, nativeWorld.random);
+        }
+        //*******************************************
+        //*       Step seven: Send to players       *
         //*******************************************
         List<Chunk> chunks = new ArrayList<>();
         for(BlockPosition position : newPositions){
