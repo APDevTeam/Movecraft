@@ -334,14 +334,14 @@ public abstract class Craft {
 
         if(Settings.Debug) {
             Bukkit.broadcastMessage("Skip: " + type.getCruiseSkipBlocks());
-            Bukkit.broadcastMessage("Tick: " + type.getTickCooldown());
+            Bukkit.broadcastMessage("Tick: " + type.getCruiseTickCooldown());
             Bukkit.broadcastMessage("SpeedFactor: " + type.getDynamicLagSpeedFactor());
             Bukkit.broadcastMessage("PowerFactor: " + type.getDynamicLagPowerFactor());
             Bukkit.broadcastMessage("MinSpeed: " + type.getDynamicLagMinSpeed());
             Bukkit.broadcastMessage("MoveTime: " + getMeanMoveTime() * 1000.0 + "ms");
         }
 
-        double speed = 20.0 * (type.getCruiseSkipBlocks() + 1.0) / (float)type.getTickCooldown();
+        double speed = 20.0 * (type.getCruiseSkipBlocks() + 1.0) / (float)type.getCruiseTickCooldown();
         speed -= type.getDynamicLagSpeedFactor() * Math.pow(getMeanMoveTime() * 1000.0, type.getDynamicLagPowerFactor());
         speed = Math.max(type.getDynamicLagMinSpeed(), speed);
         return (int)Math.round((20.0 * (type.getCruiseSkipBlocks() + 1.0)) / speed);
