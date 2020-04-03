@@ -17,6 +17,8 @@
 
 package net.countercraft.movecraft.craft;
 
+import net.countercraft.movecraft.config.Settings;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.Yaml;
@@ -26,6 +28,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.logging.Level;
 
 final public class CraftType {
     private final boolean blockedByWater;
@@ -122,7 +125,6 @@ final public class CraftType {
         blockedByWater = (boolean) (data.containsKey("canFly") ? data.get("canFly") : data.getOrDefault("blockedByWater", true));
         requireWaterContact = (boolean) data.getOrDefault("requireWaterContact", false);
         tryNudge = (boolean) data.getOrDefault("tryNudge", false);
-        cruiseTickCooldown = (int) Math.ceil(20 / (doubleFromObject(data.getOrDefault("cruiseSpeed", tickCooldown))));
         moveBlocks = blockIDMapListFromObject(data.getOrDefault("moveblocks", new HashMap<>()));
         canCruise = (boolean) data.getOrDefault("canCruise", false);
         canTeleport = (boolean) data.getOrDefault("canTeleport", false);
@@ -154,6 +156,15 @@ final public class CraftType {
         explodeOnCrash = floatFromObject(data.getOrDefault("explodeOnCrash", 0F));
         collisionExplosion = floatFromObject(data.getOrDefault("collisionExplosion", 0F));
         minHeightLimit = Math.max(0, integerFromObject(data.getOrDefault("minHeightLimit", 0)));
+
+        double cruiseSpeed = doubleFromObject(data.getOrDefault("cruiseSpeed", 20.0 / tickCooldown));
+        cruiseTickCooldown = (int) Math.round((1.0 + cruiseSkipBlocks) * 20.0 / cruiseSpeed);
+        if(Settings.Debug) {
+            Bukkit.getLogger().log(Level.SEVERE, "Craft: " + craftName);
+            Bukkit.getLogger().log(Level.SEVERE, "CruiseSpeed: " + cruiseSpeed);
+            Bukkit.getLogger().log(Level.SEVERE, "Cooldown: " + cruiseTickCooldown);
+        }
+
         int value = Math.min(integerFromObject(data.getOrDefault("maxHeightLimit", 254)), 255);
         if (value <= minHeightLimit) {
             value = 255;
