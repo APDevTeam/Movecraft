@@ -75,7 +75,7 @@ public final class CruiseSign implements Listener{
                 && CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getCanCruise()
                 && Settings.AllowCruiseSigns) {
             
-        	Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
+            Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
             sign.setLine(0, "Cruise: OFF");
             sign.update(true);
             c.setCruising(false);
