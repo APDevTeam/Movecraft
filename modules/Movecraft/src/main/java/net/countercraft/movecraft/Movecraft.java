@@ -167,7 +167,6 @@ public class Movecraft extends JavaPlugin {
                 + pilotTool.name().toLowerCase() :
                 I18nSupport.getInternationalisedString("Startup - No Pilot Tool"));
         //Switch to interfaces
-
         try {
             final Class<?> clazz = Class.forName("net.countercraft.movecraft.compat." + version + ".IWorldHandler");
             // Check if we have a NMSHandler class at that location.

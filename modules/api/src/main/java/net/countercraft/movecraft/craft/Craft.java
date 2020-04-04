@@ -34,9 +34,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
@@ -173,6 +171,13 @@ public abstract class Craft {
         sinking = true;
 
     }
+
+
+    /**
+     * Gets the crafts that have made contact with this craft
+     * @return a set of crafts on contact with this craft
+     */
+    public abstract Set<Craft> getContacts();
 
     public boolean getDisabled() {
         return disabled;

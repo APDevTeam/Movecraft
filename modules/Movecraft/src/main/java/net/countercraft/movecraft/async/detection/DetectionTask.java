@@ -25,6 +25,7 @@ import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.utils.BlockContainer;
 import net.countercraft.movecraft.utils.BlockLimitManager;
 import net.countercraft.movecraft.utils.HashHitBox;
 import net.countercraft.movecraft.utils.LegacyUtils;
@@ -36,26 +37,35 @@ import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
 public class DetectionTask extends AsyncTask {
-    private final MovecraftLocation startLocation;
+    @NotNull private final MovecraftLocation startLocation;
     private final int minSize;
     private final int maxSize;
-    private final Stack<MovecraftLocation> blockStack = new Stack<>();
-    private final HashHitBox blockList = new HashHitBox();
-    private final HashHitBox fluidList = new HashHitBox();
-    private final HashSet<MovecraftLocation> visited = new HashSet<>();
-    private final HashMap<Set<MovecraftBlock>, Integer> blockTypeCount = new HashMap<>();
-    private final DetectionTaskData data;
-    private final World world;
+    @NotNull private final Stack<MovecraftLocation> blockStack = new Stack<>();
+    @NotNull private final HashHitBox fluidBox = new HashHitBox();
+    @NotNull private final HashHitBox hitBox = new HashHitBox();
+    @NotNull private final HashSet<MovecraftLocation> visited = new HashSet<>();
+    @NotNull private final HashMap<Set<MovecraftBlock>, Integer> blockTypeCount = new HashMap<>();
+    @NotNull private final World world;
+    @Nullable private final Player player, notificationPlayer;
+    private final BlockContainer allowedBlocks;
+    private final BlockContainer forbiddenBlocks;
+    @NotNull private final String[] forbiddenSignStrings;
     private int maxX;
     private int maxY;
     private int maxZ;
     private int minY;
-    private BlockLimitManager dFlyBlocks;
+    @NotNull private BlockLimitManager dFlyBlocks;
     private int foundDynamicFlyBlock = 0;
+    private double dynamicFlyBlockSpeedMultiplier;
+    private boolean failed;
+    private boolean waterContact;
+    @NotNull private String failMessage = "";
 
     public DetectionTask(Craft c, MovecraftLocation startLocation, Player player) {
         super(c);
@@ -63,8 +73,11 @@ public class DetectionTask extends AsyncTask {
         this.minSize = craft.getType().getMinSize();
         this.maxSize = craft.getType().getMaxSize();
         this.world = craft.getW();
-        data = new DetectionTaskData(craft.getW(), player, craft.getNotificationPlayer(), craft.getType().getAllowedBlocks(), craft.getType().getForbiddenBlocks(),
-                craft.getType().getForbiddenSignStrings());
+        this.player = player;
+        this.notificationPlayer = craft.getNotificationPlayer();
+        this.allowedBlocks = craft.getType().getAllowedBlocks();
+        this.forbiddenBlocks = craft.getType().getForbiddenBlocks();
+        this.forbiddenSignStrings = craft.getType().getForbiddenSignStrings();
     }
 
     @Override
@@ -76,12 +89,11 @@ public class DetectionTask extends AsyncTask {
         do {
             detectSurrounding(blockStack.pop());
         } while (!blockStack.isEmpty());
-        if (data.failed()) {
-            Movecraft.getInstance().getLogger().info("failed");
+        if (failed) {
             return;
         }
         if (getCraft().getType().getDynamicFlyBlockSpeedFactor() != 0.0) {
-            int totalBlocks = blockList.size();
+            int totalBlocks = hitBox.size();
             double ratio = (double) foundDynamicFlyBlock / totalBlocks;
             double foundMinimum = 0.0;
             for (BlockLimitManager.Entry entry : flyBlocks.getEntries()){
@@ -94,14 +106,13 @@ public class DetectionTask extends AsyncTask {
             }
             ratio = ratio - (foundMinimum / 100.0);
             ratio = ratio * getCraft().getType().getDynamicFlyBlockSpeedFactor();
-            data.dynamicFlyBlockSpeedMultiplier = ratio;
+            dynamicFlyBlockSpeedMultiplier = ratio;
         }
-        if (isWithinLimit(blockList.size(), minSize, maxSize)) {
-            data.setBlockList(blockList);
-            if (confirmStructureRequirements(flyBlocks, blockTypeCount)) {
-                data.setHitBox(blockList);
-                data.setFluidBox(fluidList);
-            }
+        if (!isWithinLimit(hitBox.size(), minSize, maxSize)) {
+            return;
+        }
+        if (!confirmStructureRequirements(flyBlocks, blockTypeCount)) {
+            return;
         }
         long endTime = System.currentTimeMillis();
         if (Settings.Debug){
@@ -118,46 +129,33 @@ public class DetectionTask extends AsyncTask {
             Material testType = null;
             int testData = 0;
             try {
-                testData = data.getWorld().getBlockAt(x, y, z).getData();
-                testType = data.getWorld().getBlockAt(x, y, z).getType();
-
+                testData = world.getBlockAt(x, y, z).getData();
+                testType = world.getBlockAt(x, y, z).getType();
             } catch (Exception e) {
                 fail(String.format(I18nSupport.getInternationalisedString("Detection - Craft too large"), maxSize));
             }
 
             if ((testType == Material.WATER) || (testType == LegacyUtils.STATIONARY_WATER)) {
-                data.setWaterContact(true);
+                waterContact = true;
             }
-            if (testType.name().endsWith("SIGN")) {
+            if (testType.name().endsWith("SIGN") || testType == LegacyUtils.SIGN_POST) {
                 new BukkitRunnable() {
+                    @Override
                     public void run() {
-
-                        BlockState state = data.getWorld().getBlockAt(x, y, z).getState();
+                        BlockState state = world.getBlockAt(x, y, z).getState();
                         if (state instanceof Sign) {
                             Sign s = (Sign) state;
-                            if (s.getLine(0).equalsIgnoreCase("Pilot:") && data.getPlayer() != null) {
-                                String playerName = data.getPlayer().getName();
+                            if (s.getLine(0).equalsIgnoreCase("Pilot:") && player != null) {
+                                String playerName = player.getName();
                                 boolean foundPilot = false;
                                 if (s.getLine(1).equalsIgnoreCase(playerName) || s.getLine(2).equalsIgnoreCase(playerName)
                                         || s.getLine(3).equalsIgnoreCase(playerName)) {
                                     foundPilot = true;
                                 }
-                                if (!foundPilot && (!data.getPlayer().hasPermission("movecraft.bypasslock"))) {
+                                if (!foundPilot && (!player.hasPermission("movecraft.bypasslock"))) {
                                     fail(I18nSupport.getInternationalisedString(
                                             "Detection - Not Registered Pilot"));
                                 }
-                            }
-
-
-                            if (s.getLine(0).equalsIgnoreCase("Name:") && !craft.getType().getCanBeNamed()) {
-                                fail(I18nSupport.getInternationalisedString("Detection - Craft Type Cannot Be Named"));
-                            }
-                            for (String line : s.getLines()){
-
-                                if (!containsForbiddenSignString(line)){
-                                    continue;
-                                }
-                                fail("Detection - Forbidden Sign String Found");
                             }
                         }
                     }
@@ -166,19 +164,16 @@ public class DetectionTask extends AsyncTask {
             if (isForbiddenBlock(testType, testData)) {
                 fail(I18nSupport.getInternationalisedString("Detection - Forbidden block found"));
             } else if (isAllowedBlock(testType, testData)) {
-
-
-
-                Location loc = new Location(data.getWorld(), x, y, z);
+                Location loc = new Location(world, x, y, z);
                 Player p;
-                if (data.getPlayer() == null) {
-                    p = data.getNotificationPlayer();
+                if (player == null) {
+                    p = notificationPlayer;
                 } else {
-                    p = data.getPlayer();
+                    p = player;
                 }
                 if (p != null) {
                     if (testType.name().endsWith("WATER") || testType.name().endsWith("LAVA")) {
-                        fluidList.add(workingLocation);
+                        fluidBox.add(workingLocation);
                     }
                     addToBlockList(workingLocation);
                     Material blockType = testType;
@@ -194,7 +189,7 @@ public class DetectionTask extends AsyncTask {
                         }
                     }
 
-                    if (isWithinLimit(blockList.size(), 0, maxSize)) {
+                    if (isWithinLimit(hitBox.size(), 0, maxSize)) {
 
                         addToDetectionStack(workingLocation);
 
@@ -207,25 +202,22 @@ public class DetectionTask extends AsyncTask {
     }
 
     private boolean isAllowedBlock(Material test, int testData) {
-        return data.getAllowedBlocks().contains(test) || data.getAllowedBlocks().contains(test, (byte) testData);
+        return allowedBlocks.contains(test) || allowedBlocks.contains(test, (byte) testData);
     }
 
     private boolean isForbiddenBlock(Material test, int testData) {
-        return data.getForbiddenBlocks().contains(test) || data.getAllowedBlocks().contains(test, (byte) testData);
+        return forbiddenBlocks.contains(test) || forbiddenBlocks.contains(test, (byte) testData);
     }
 
-    private synchronized boolean containsForbiddenSignString(String testString) {
-        for (String s : data.getForbiddenSignStrings()) {
+    private boolean isForbiddenSignString(String testString) {
+
+        for (String s : forbiddenSignStrings) {
             if (testString.equalsIgnoreCase(s)) {
                 return true;
             }
         }
 
         return false;
-    }
-
-    public DetectionTaskData getData() {
-        return data;
     }
 
     private boolean notVisited(MovecraftLocation l, HashSet<MovecraftLocation> locations) {
@@ -238,7 +230,7 @@ public class DetectionTask extends AsyncTask {
     }
 
     private void addToBlockList(MovecraftLocation l) {
-        blockList.add(l);
+        hitBox.add(l);
     }
 
     private void addToDetectionStack(MovecraftLocation l) {
@@ -297,16 +289,16 @@ public class DetectionTask extends AsyncTask {
         }
         if (l.getZ() > maxZ) {
             maxZ = l.getZ();
-        }
+        }/*
         if (data.getMinX() == null || l.getX() < data.getMinX()) {
             data.setMinX(l.getX());
-        }
+        }*/
         if (l.getY() < minY) {
             minY = l.getY();
-        }
+        }/*
         if (data.getMinZ() == null || l.getZ() < data.getMinZ()) {
             data.setMinZ(l.getZ());
-        }
+        }*/
     }
 
     private boolean isWithinLimit(int size, int min, int max) {
@@ -322,43 +314,20 @@ public class DetectionTask extends AsyncTask {
 
     }
 
-    private MovecraftLocation[] finaliseBlockList(HashSet<MovecraftLocation> blockSet) {
-        // MovecraftLocation[] finalList=blockSet.toArray( new
-        // MovecraftLocation[1] );
-        ArrayList<MovecraftLocation> finalList = new ArrayList<>();
-
-        // Sort the blocks from the bottom up to minimize lower altitude block
-        // updates
-        for (int posx = data.getMinX(); posx <= this.maxX; posx++) {
-            for (int posz = data.getMinZ(); posz <= this.maxZ; posz++) {
-                for (int posy = this.minY; posy <= this.maxY; posy++) {
-                    MovecraftLocation test = new MovecraftLocation(posx, posy, posz);
-                    if (blockSet.contains(test))
-                        finalList.add(test);
-                }
-            }
-        }
-        return finalList.toArray(new MovecraftLocation[1]);
-    }
-
     private boolean confirmStructureRequirements(BlockLimitManager flyBlocks,
                                                  HashMap<Set<MovecraftBlock>, Integer> countData) {
-        if (getCraft().getType().getRequireWaterContact()) {
-            if (!data.getWaterContact()) {
-                fail(I18nSupport
-                        .getInternationalisedString("Detection - Failed - Water contact required but not found"));
-                return false;
-            }
+        if (getCraft().getType().getRequireWaterContact() && !waterContact) {
+            fail(I18nSupport.getInternationalisedString("Detection - Failed - Water contact required but not found"));
+            return false;
         }
         for (BlockLimitManager.Entry i : flyBlocks.getEntries()) {
             Integer numberOfBlocks = countData.get(i.getBlocks());
             if (numberOfBlocks == null) {
                 numberOfBlocks = 0;
             }
-
-            float blockPercentage = (((float) numberOfBlocks / data.getBlockList().size()) * 100);
-            Double minPercentage = i.getLowerLimit();
-            Double maxPercentage = i.getUpperLimit();
+            float blockPercentage = (((float) numberOfBlocks / hitBox.size()) * 100);
+            double minPercentage = i.getLowerLimit();
+            double maxPercentage = i.getUpperLimit();
             ArrayList<MovecraftBlock> flyBlockTypes = new ArrayList<>(i.getBlocks());
             if (flyBlockTypes.isEmpty())
                 continue;
@@ -407,7 +376,62 @@ public class DetectionTask extends AsyncTask {
     }
 
     private void fail(String message) {
-        data.setFailed(true);
-        data.setFailMessage(message);
+        failed = true;
+        failMessage = message;
+    }
+
+    @NotNull
+    public World getWorld() {
+        return world;
+    }
+
+    @Nullable
+    public Player getNotificationPlayer() {
+        return notificationPlayer;
+    }
+
+    @Nullable
+    public Player getPlayer() {
+        return player;
+    }
+
+    public BlockContainer getAllowedBlocks() {
+        return allowedBlocks;
+    }
+
+    public BlockContainer getForbiddenBlocks() {
+        return forbiddenBlocks;
+    }
+
+    @NotNull
+    public String[] getForbiddenSignStrings() {
+        return forbiddenSignStrings;
+    }
+
+    public double getDynamicFlyBlockSpeedMultiplier() {
+        return dynamicFlyBlockSpeedMultiplier;
+    }
+
+    public boolean failed() {
+        return failed;
+    }
+
+    @NotNull
+    public HashHitBox getHitBox() {
+        return hitBox;
+    }
+
+    @NotNull
+    public HashHitBox getFluidBox() {
+        return fluidBox;
+    }
+
+    public boolean isWaterContact() {
+        return waterContact;
+    }
+
+    @NotNull
+    public String getFailMessage() {
+        return failMessage;
     }
 }

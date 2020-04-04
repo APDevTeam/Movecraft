@@ -77,7 +77,7 @@ public class CraftTranslateCommand extends UpdateCommand {
 
             }
         } else if (craft.getType().getMoveEntities()){
-            final Location midpoint = craft.getHitBox().getMidPoint().subtract(displacement).toBukkit(craft.getW());
+            final Location midpoint = craft.getHitBox().getMidPoint().subtract(displacement).toBukkit(craft.getW()).add(.5,.5,.5);
             final Collection<Entity> entities = craft.getW().getNearbyEntities(midpoint, craft.getHitBox().getXLength() / 2.0 + 1, craft.getHitBox().getYLength() / 2.0 + 2, craft.getHitBox().getZLength() / 2.0 + 1);
 
             for (Entity entity : entities){

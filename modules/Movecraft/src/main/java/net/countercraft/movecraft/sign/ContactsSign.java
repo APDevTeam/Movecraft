@@ -4,7 +4,6 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
-import net.countercraft.movecraft.craft.CraftManager;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -39,43 +38,36 @@ public class ContactsSign implements Listener{
             return;
         }
         int signLine=1;
-        for(Craft tcraft : CraftManager.getInstance().getCraftsInWorld(craft.getW())) {
+        for(Craft tcraft : craft.getContacts()) {
             MovecraftLocation center = craft.getHitBox().getMidPoint();
             MovecraftLocation tcenter = tcraft.getHitBox().getMidPoint();
             int distsquared= center.distanceSquared(tcenter);
-            int detectionRange;
-            if(tcenter.getY() > tcraft.getW().getSeaLevel()) {
-                detectionRange= (int) (Math.sqrt(tcraft.getOrigBlockCount())*tcraft.getType().getDetectionMultiplier());
-            } else {
-                detectionRange= (int) (Math.sqrt(tcraft.getOrigBlockCount())*tcraft.getType().getUnderwaterDetectionMultiplier());
+            // craft has been detected
+            String notification = ChatColor.BLUE + tcraft.getType().getCraftName();
+            if(notification.length()>9) {
+                notification = notification.substring(0, 7);
             }
-            if(distsquared<detectionRange*detectionRange && tcraft.getNotificationPlayer()!=craft.getNotificationPlayer()) {
-                // craft has been detected
-                String notification = ChatColor.BLUE + tcraft.getType().getCraftName();
-                if(notification.length()>9) {
-                    notification = notification.substring(0, 7);
-                }
-                notification += " " + (int)Math.sqrt(distsquared);
-                int diffx=center.getX() - tcenter.getX();
-                int diffz=center.getZ() - tcenter.getZ();
-                if(Math.abs(diffx) > Math.abs(diffz)) {
-                    if(diffx<0) {
-                        notification+=" E";
-                    } else {
-                        notification+=" W";
-                    }
+            notification += " " + (int)Math.sqrt(distsquared);
+            int diffx=center.getX() - tcenter.getX();
+            int diffz=center.getZ() - tcenter.getZ();
+            if(Math.abs(diffx) > Math.abs(diffz)) {
+                if(diffx<0) {
+                    notification+=" E";
                 } else {
-                    if(diffz<0) {
-                        notification+=" S";
-                    } else {
-                        notification+=" N";
-                    }
+                    notification+=" W";
                 }
-                lines[signLine++] = notification;
-                if (signLine >= 4) {
-                    break;
+            } else {
+                if(diffz<0) {
+                    notification+=" S";
+                } else {
+                    notification+=" N";
                 }
             }
+            lines[signLine++] = notification;
+            if (signLine >= 4) {
+                break;
+            }
+
         }
         if(signLine<4) {
             for(int i=signLine; i<4; i++) {

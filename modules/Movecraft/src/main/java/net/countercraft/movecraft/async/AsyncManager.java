@@ -22,7 +22,6 @@ import com.google.common.collect.Lists;
 import net.countercraft.movecraft.Rotation;
 import net.countercraft.movecraft.*;
 import net.countercraft.movecraft.async.detection.DetectionTask;
-import net.countercraft.movecraft.async.detection.DetectionTaskData;
 import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.config.Settings;
@@ -156,22 +155,22 @@ public class AsyncManager extends BukkitRunnable {
                 // Process detection task
 
                 DetectionTask task = (DetectionTask) poll;
-                DetectionTaskData data = task.getData();
 
-                Player p = data.getPlayer();
-                Player notifyP = data.getNotificationPlayer();
+                Player p = task.getPlayer();
+                Player notifyP = task.getNotificationPlayer();
                 Craft pCraft = CraftManager.getInstance().getCraftByPlayer(p);
-                boolean failed = data.failed();
+                boolean failed = task.failed();
                 if (pCraft != null && p != null) {
                     // Player is already controlling a craft
                     notifyP.sendMessage(I18nSupport.getInternationalisedString("Detection - Failed - Already commanding a craft"));
                 } else {
                     if (failed) {
                         if (notifyP != null)
-                            notifyP.sendMessage(data.getFailMessage());
+                            notifyP.sendMessage(task.getFailMessage());
                         else
                             Movecraft.getInstance().getLogger().log(Level.INFO,
-                                    I18nSupport.getInternationalisedString("Detection - NULL Player Detection Failed") + ": " + data.getFailMessage());
+                            		I18nSupport.getInternationalisedString("Detection - NULL Player Detection Failed") + ": " + task.getFailMessage());
+
 
                     } else {
                         Set<Craft> craftsInWorld = CraftManager.getInstance().getCraftsInWorld(c.getW());
@@ -179,11 +178,11 @@ public class AsyncManager extends BukkitRunnable {
                         boolean isSubcraft = false;
 
                         for (Craft craft : craftsInWorld) {
-                            if(craft.getHitBox().intersects(data.getBlockList())){
+                            if(craft.getHitBox().intersects(task.getHitBox())){
                                 isSubcraft = true;
                                 if (c.getType().getCruiseOnPilot() || p != null) {
                                     if (craft.getType() == c.getType()
-                                            || craft.getHitBox().size() <= data.getBlockList().size()) {
+                                            || craft.getHitBox().size() <= task.getHitBox().size()) {
                                         notifyP.sendMessage(I18nSupport.getInternationalisedString(
                                                 "Detection - Failed Craft is already being controlled"));
                                         failed = true;
@@ -197,8 +196,8 @@ public class AsyncManager extends BukkitRunnable {
                                             failed = true;
                                             notifyP.sendMessage(I18nSupport.getInternationalisedString("Detection - Parent Craft is busy"));
                                         }
-                                        craft.setHitBox(new HashHitBox(CollectionUtils.filter(craft.getHitBox(),data.getBlockList())));
-                                        craft.setOrigBlockCount(craft.getOrigBlockCount() - data.getBlockList().size());
+                                        craft.setHitBox(new HashHitBox(CollectionUtils.filter(craft.getHitBox(), task.getHitBox())));
+                                        craft.setOrigBlockCount(craft.getOrigBlockCount() - task.getHitBox().size());
                                     }
                                 }
                             }
@@ -210,9 +209,9 @@ public class AsyncManager extends BukkitRunnable {
                             notifyP.sendMessage(I18nSupport.getInternationalisedString("Craft must be part of another craft"));
                         }
                         if (!failed) {
-                            c.setHitBox(task.getData().getBlockList());
-                            c.setFluidLocations(task.getData().getFluidBox());
-                            c.setOrigBlockCount(data.getBlockList().size());
+                            c.setHitBox(task.getHitBox());
+                            c.setFluidLocations(task.getFluidBox());
+                            c.setOrigBlockCount(task.getHitBox().size());
                             c.setNotificationPlayer(notifyP);
                             final int waterLine = c.getWaterLine();
                             if(!c.getType().blockedByWater() && c.getHitBox().getMinY() <= waterLine){
@@ -320,7 +319,7 @@ public class AsyncManager extends BukkitRunnable {
                     if (task.isCollisionExplosion()) {
                         c.setHitBox(task.getNewHitBox());
                         c.setFluidLocations(task.getNewFluidList());
-                        //c.setBlockList(task.getData().getBlockList());
+                        //c.setBlockList(task.getData().getHitBox());
                         //boolean failed = MapUpdateManager.getInstance().addWorldUpdate(c.getW(), updates, null, null, exUpdates);
                         MapUpdateManager.getInstance().scheduleUpdates(task.getUpdates());
                         sentMapUpdate = true;
@@ -347,7 +346,7 @@ public class AsyncManager extends BukkitRunnable {
                     }
 
                     sentMapUpdate = true;
-                    //c.setBlockList(task.getData().getBlockList());
+                    //c.setBlockList(task.getData().getHitBox());
                     //c.setMinX(task.getData().getMinX());
                     //c.setMinZ(task.getData().getMinZ());
                     //c.setHitBox(task.getData().getHitbox());
@@ -959,77 +958,72 @@ public class AsyncManager extends BukkitRunnable {
         long ticksElapsed = (System.currentTimeMillis() - lastContactCheck) / 50;
         if (ticksElapsed > 21) {
             for (World w : Bukkit.getWorlds()) {
-                if (w != null) {
-                    for (Craft ccraft : CraftManager.getInstance().getCraftsInWorld(w)) {
-                        if (CraftManager.getInstance().getPlayerFromCraft(ccraft) != null) {
-                            if (!recentContactTracking.containsKey(ccraft)) {
-                                recentContactTracking.put(ccraft, new HashMap<>());
-                            }
-                            for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(w)) {
-                                MovecraftLocation ccenter = ccraft.getHitBox().getMidPoint();
-                                MovecraftLocation tcenter = tcraft.getHitBox().getMidPoint();
-                                int diffx = ccenter.getX() - tcenter.getX();
-                                int diffz = ccenter.getZ() - tcenter.getZ();
-                                int distsquared = ccenter.distanceSquared(tcenter);
-                                int detectionRange;
-                                if (tcenter.getY() > 65) {
-                                    detectionRange = (int) (Math.sqrt(tcraft.getOrigBlockCount())
-                                                                                * tcraft.getType().getDetectionMultiplier());
-                                } else {
-                                    detectionRange = (int) (Math.sqrt(tcraft.getOrigBlockCount())
-                                                                                * tcraft.getType().getUnderwaterDetectionMultiplier());
-                                }
-                                if (distsquared < detectionRange * detectionRange && tcraft.getNotificationPlayer() != ccraft.getNotificationPlayer()) {
-                                    // craft has been detected
-
-                                    // has the craft not been seen in the last
-                                    // minute, or is completely new?
-                                    if (recentContactTracking.get(ccraft).get(tcraft) == null
-                                            || System.currentTimeMillis()
-                                            - recentContactTracking.get(ccraft).get(tcraft) > 60000) {
-                                        String notification = I18nSupport.getInternationalisedString("Contact - New Contact") + ": ";
-
-                                        if (tcraft.getName() != null && tcraft.getName().length() >= 1){
-                                            notification += tcraft.getName();
-					                        notification += ChatColor.RESET;
-                                            notification += " (";
-                                        }
-                                        notification += tcraft.getType().getCraftName();
-                                        if (tcraft.getName() != null && tcraft.getName().length() >= 1){
-                                            notification += ")";
-                                        }
-                                        notification += " " + I18nSupport.getInternationalisedString("Contact - Commanded By")+" ";
-                                        if (tcraft.getNotificationPlayer() != null) {
-                                            notification += tcraft.getNotificationPlayer().getDisplayName();
-                                        } else {
-                                            notification += "NULL";
-                                        }
-                                        notification += ", " + I18nSupport.getInternationalisedString("Contact - Size") + ": ";
-                                        notification += tcraft.getOrigBlockCount();
-                                        notification += ", " + I18nSupport.getInternationalisedString("Contact - Range") + ": ";
-                                        notification += (int) Math.sqrt(distsquared);
-                                        notification += " " + I18nSupport.getInternationalisedString("Contact - To The") + " ";
-                                        if (Math.abs(diffx) > Math.abs(diffz))
-                                            if (diffx < 0)
-                                                notification += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - East");
-                                            else
-                                                notification += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - West");
-                                        else if (diffz < 0)
-                                            notification += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - South");
-                                        else
-                                            notification += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - North");
-                                        
-                                        notification += ".";
-                                        ccraft.getNotificationPlayer().sendMessage(notification);
-                                        w.playSound(ccraft.getNotificationPlayer().getLocation(), Sound.BLOCK_ANVIL_LAND, 1.0f, 2.0f);
-                                    }
-
-                                    long timestamp = System.currentTimeMillis();
-                                    recentContactTracking.get(ccraft).put(tcraft, timestamp);
-                                }
-                            }
-                        }
+                if (w == null) {
+                    continue;
+                }
+                for (Craft ccraft : CraftManager.getInstance().getCraftsInWorld(w)) {
+                    if (CraftManager.getInstance().getPlayerFromCraft(ccraft) == null) {
+                        continue;
                     }
+                    if (!recentContactTracking.containsKey(ccraft)) {
+                        recentContactTracking.put(ccraft, new HashMap<>());
+                    }
+                    for (Craft tcraft : ccraft.getContacts()) {
+                        MovecraftLocation ccenter = ccraft.getHitBox().getMidPoint();
+                        MovecraftLocation tcenter = tcraft.getHitBox().getMidPoint();
+                        int diffx = ccenter.getX() - tcenter.getX();
+                        int diffz = ccenter.getZ() - tcenter.getZ();
+                        int distsquared = ccenter.distanceSquared(tcenter);
+                        // craft has been detected
+
+                        // has the craft not been seen in the last
+                        // minute, or is completely new?
+                        if (System.currentTimeMillis() - recentContactTracking.get(ccraft).getOrDefault(tcraft, 0L) <= 60000) {
+                            continue;
+                        }
+                        String notification = I18nSupport.getInternationalisedString("Contact - New Contact") + ": ";
+
+                        if (tcraft.getName().length() >= 1){
+                            notification += tcraft.getName();
+                            notification += ChatColor.RESET;
+                            notification += " (";
+                        }
+                        notification += tcraft.getType().getCraftName();
+                        if (tcraft.getName().length() >= 1){
+                            notification += ")";
+                        }
+                        notification += " " + I18nSupport.getInternationalisedString("Contact - Commanded By")+" ";
+                        if (tcraft.getNotificationPlayer() != null) {
+                            notification += tcraft.getNotificationPlayer().getDisplayName();
+                        } else {
+                            notification += "NULL";
+                        }
+                        notification += ", " + I18nSupport.getInternationalisedString("Contact - Size") + ": ";
+                        notification += tcraft.getOrigBlockCount();
+                        notification += ", " + I18nSupport.getInternationalisedString("Contact - Range") + ": ";
+                        notification += (int) Math.sqrt(distsquared);
+                        notification += " " + I18nSupport.getInternationalisedString("Contact - To The") + " ";
+                        if (Math.abs(diffx) > Math.abs(diffz))
+                            if (diffx < 0)
+                                notification += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - East");
+                            else
+                                notification += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - West");
+                        else if (diffz < 0)
+                            notification += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - South");
+                        else
+                            notification += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - North");
+
+                        notification += ".";
+                        ccraft.getNotificationPlayer().sendMessage(notification);
+                        w.playSound(ccraft.getNotificationPlayer().getLocation(), Sound.BLOCK_ANVIL_LAND, 1.0f, 2.0f);
+
+
+                        long timestamp = System.currentTimeMillis();
+                        recentContactTracking.get(ccraft).put(tcraft, timestamp);
+
+                    }
+
+
                 }
             }
 
