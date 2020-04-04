@@ -47,7 +47,7 @@ public class AscendSign implements Listener {
             if (CraftManager.getInstance().getCraftByPlayer(event.getPlayer()) == null) {
                 return;
             }
-        	if (!Settings.AllowCruiseSigns) {
+            if (!Settings.AllowCruiseSigns) {
             	return;
             }
             Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
