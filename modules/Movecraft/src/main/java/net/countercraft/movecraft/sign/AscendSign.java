@@ -44,7 +44,7 @@ public class AscendSign implements Listener {
         }
         Sign sign = (Sign) event.getClickedBlock().getState();
         if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Ascend: OFF")) {
-        	if (CraftManager.getInstance().getCraftByPlayer(event.getPlayer()) == null) {
+            if (CraftManager.getInstance().getCraftByPlayer(event.getPlayer()) == null) {
                 return;
             }
         	if (!Settings.AllowCruiseSigns) {
