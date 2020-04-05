@@ -26,6 +26,7 @@ import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.flags.StateFlag;
 import net.countercraft.movecraft.async.AsyncManager;
 import net.countercraft.movecraft.commands.*;
+import net.countercraft.movecraft.utils.UpdateManager;
 import net.countercraft.movecraft.worldguard.WorldGuardCompatManager;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.CraftManager;
@@ -569,6 +570,8 @@ public class Movecraft extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new SubcraftRotateSign(), this);
             getServer().getPluginManager().registerEvents(new TeleportSign(), this);
 
+            //Start the update manager
+            UpdateManager.getInstance();
             logger.log(Level.INFO, String.format(
                     I18nSupport.getInternationalisedString("Startup - Enabled message"),
                     getDescription().getVersion()));

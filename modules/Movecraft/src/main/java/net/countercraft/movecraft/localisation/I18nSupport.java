@@ -59,6 +59,36 @@ public final class I18nSupport {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        InputStream resource = Movecraft.getInstance().getResource("localisation/movecraftlang" + "_" + Settings.LOCALE + ".properties");
+        Properties jarLangFile = new Properties();
+        if (resource == null) {
+            return;
+        }
+        try {
+            jarLangFile.load(resource);
+            resource.close();
+        } catch (IOException e) {
+            if (Settings.Debug)
+                e.printStackTrace();
+            return;
+        }
+        boolean updated = false;
+        for (Object key : jarLangFile.keySet()) {
+            if (languageFile.contains(key)) {
+                continue;
+            }
+            languageFile.setProperty((String) key, (String) jarLangFile.get(key));
+            updated = true;
+        }
+        if (!updated)
+            return;
+        try {
+            OutputStream output = new FileOutputStream(localisationDirectory.getAbsolutePath() + "/movecraftlang" + "_" + Settings.LOCALE + ".properties");
+            languageFile.store(output, null);
+            output.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
 
     }
