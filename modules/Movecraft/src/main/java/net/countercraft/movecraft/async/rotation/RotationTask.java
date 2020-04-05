@@ -46,6 +46,8 @@ import org.bukkit.inventory.ItemStack;
 import java.util.HashSet;
 import java.util.Set;
 
+import static net.countercraft.movecraft.utils.MathUtils.withinWorldBorder;
+
 public class RotationTask extends AsyncTask {
     private final MovecraftLocation originPoint;
     private final Rotation rotation;
@@ -177,7 +179,7 @@ public class RotationTask extends AsyncTask {
             //TODO: ADD TOWNY
 
             //isTownyBlock(plugLoc,craftPilot);
-            if (!withinWorldBorder(newLocation)) {
+            if (!withinWorldBorder(craft.getW(), newLocation)) {
                 failMessage = I18nSupport.getInternationalisedString("Rotation - Failed Craft cannot pass world border") + String.format(" @ %d,%d,%d", newLocation.getX(), newLocation.getY(), newLocation.getZ());
                 failed = true;
                 return;
@@ -461,21 +463,7 @@ public class RotationTask extends AsyncTask {
         return !testMaterial.equals(mBlock) || oldHitBox.contains(aroundNewLoc);
     }
 
-    private boolean withinWorldBorder(MovecraftLocation location) {
-        WorldBorder border = craft.getW().getWorldBorder();
-        int radius = (int) (border.getSize() / 2.0);
-        //The visible border will always end at 29,999,984 blocks, despite being larger
-        int minX = border.getCenter().getBlockX() - radius;
-        int maxX = border.getCenter().getBlockX() + radius;
-        int minZ = border.getCenter().getBlockZ() - radius;
-        int maxZ = border.getCenter().getBlockZ() + radius;
-        return Math.abs(location.getX()) < 29999984 &&
-                Math.abs(location.getZ()) < 29999984 &&
-                location.getX() >= minX &&
-                location.getX() <= maxX &&
-                location.getZ() >= minZ &&
-                location.getZ() <= maxZ;
-    }
+
 
     public HashHitBox getNewHitBox() {
         return newHitBox;

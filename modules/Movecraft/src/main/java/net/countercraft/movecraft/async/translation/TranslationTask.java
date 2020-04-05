@@ -29,6 +29,8 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
+import static net.countercraft.movecraft.utils.MathUtils.withinWorldBorder;
+
 public class TranslationTask extends AsyncTask {
     private static final int[] FALL_THROUGH_BLOCKS = {0, 8, 9, 10, 11, 31, 37, 38, 39, 40, 50, 51, 55, 59, 63, 65, 68, 69, 70, 72, 75, 76, 77, 78, 83, 85, 93, 94, 111, 141, 142, 143, 171};
 
@@ -161,7 +163,7 @@ public class TranslationTask extends AsyncTask {
                 fail(String.format(I18nSupport.getInternationalisedString("Translation - Failed Craft is obstructed") + " @ %d,%d,%d,%s", newLocation.getX(), newLocation.getY(), newLocation.getZ(), newLocation.toBukkit(craft.getW()).getBlock().getType().toString()));
                 return;
             }
-            if (!withinWorldBorder(newLocation)) {
+            if (!withinWorldBorder(craft.getW(), newLocation)) {
                 fail(I18nSupport.getInternationalisedString("Translation - Failed Craft cannot pass world border") + String.format(" @ %d,%d,%d", newLocation.getX(), newLocation.getY(), newLocation.getZ()));
                 return;
             }
@@ -626,22 +628,6 @@ public class TranslationTask extends AsyncTask {
             return bottomLocsOnGround && translatedBottomLocsInAir;
         }
         return !translatedBottomLocsInAir;
-    }
-
-    private boolean withinWorldBorder(MovecraftLocation location) {
-        WorldBorder border = craft.getW().getWorldBorder();
-        int radius = (int) (border.getSize() / 2.0);
-        //The visible border will always end at 29,999,984 blocks, despite being larger
-        int minX = border.getCenter().getBlockX() - radius;
-        int maxX = border.getCenter().getBlockX() + radius;
-        int minZ = border.getCenter().getBlockZ() - radius;
-        int maxZ = border.getCenter().getBlockZ() + radius;
-        return Math.abs(location.getX()) < 29999984 &&
-                Math.abs(location.getZ()) < 29999984 &&
-                location.getX() >= minX &&
-                location.getX() <= maxX &&
-                location.getZ() >= minZ &&
-                location.getZ() <= maxZ;
     }
 
     public boolean failed(){
