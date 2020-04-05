@@ -35,10 +35,7 @@ import net.countercraft.movecraft.mapUpdater.update.CraftRotateCommand;
 import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import net.countercraft.movecraft.utils.*;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -48,6 +45,8 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.HashSet;
 import java.util.Set;
+
+import static net.countercraft.movecraft.utils.MathUtils.withinWorldBorder;
 
 public class RotationTask extends AsyncTask {
     private final MovecraftLocation originPoint;
@@ -180,6 +179,12 @@ public class RotationTask extends AsyncTask {
             //TODO: ADD TOWNY
 
             //isTownyBlock(plugLoc,craftPilot);
+            if (!withinWorldBorder(craft.getW(), newLocation)) {
+                failMessage = I18nSupport.getInternationalisedString("Rotation - Failed Craft cannot pass world border") + String.format(" @ %d,%d,%d", newLocation.getX(), newLocation.getY(), newLocation.getZ());
+                failed = true;
+                return;
+            }
+
             Material newMaterial = newLocation.toBukkit(w).getBlock().getType();
             if ((newMaterial == Material.AIR) || (newMaterial == Material.PISTON_EXTENSION) || craft.getType().getPassthroughBlocks().contains(newMaterial)) {
                 //getCraft().getPhaseBlocks().put(newLocation, newMaterial);
@@ -457,6 +462,8 @@ public class RotationTask extends AsyncTask {
         testMaterial = craft.getW().getBlockAt(aroundNewLoc.getX(), aroundNewLoc.getY(), aroundNewLoc.getZ()).getType();
         return !testMaterial.equals(mBlock) || oldHitBox.contains(aroundNewLoc);
     }
+
+
 
     public HashHitBox getNewHitBox() {
         return newHitBox;
