@@ -178,7 +178,7 @@ public class MathUtils {
      * @return true if location is within the world border, false otherwise
      */
     @Contract(pure = true)
-    public static boolean withinWorldBorder(World world, MovecraftLocation location) {
+    public static boolean withinWorldBorder(@NotNull World world, @NotNull MovecraftLocation location) {
         WorldBorder border = world.getWorldBorder();
         int radius = (int) (border.getSize() / 2.0);
         //The visible border will always end at 29,999,984 blocks, despite being larger
