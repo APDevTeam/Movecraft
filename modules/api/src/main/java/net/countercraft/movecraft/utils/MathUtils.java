@@ -21,12 +21,11 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
 import net.countercraft.movecraft.craft.Craft;
 import org.bukkit.Location;
+import org.bukkit.World;
+import org.bukkit.WorldBorder;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.ArrayList;
-import java.util.Random;
 
 public class MathUtils {
 
@@ -179,20 +178,25 @@ public class MathUtils {
     }
 
     /**
-     * Returns a random integer between two integers
-     * @param min the lowest permitted number
-     * @param max the highest permitted number
-     * @return a random number between min and max
+     * Checks if a <link>MovecraftLocation</link> is within the border of the given <link>World</link>
+     * @param world the world to check in
+     * @param location the location in the given <link>World</link>
+     * @return true if location is within the world border, false otherwise
      */
-    public static int randomInteger(int min, int max){
-        ArrayList<Integer> integers = new ArrayList<>();
-        for (int i = min ; i <= max ; i++){
-            integers.add(i);
-        }
-        int bound = max - min;
-        Random random = new Random();
-        int r = random.nextInt(bound);
-
-        return integers.get(r);
+    @Contract(pure = true)
+    public static boolean withinWorldBorder(@NotNull World world, @NotNull MovecraftLocation location) {
+        WorldBorder border = world.getWorldBorder();
+        int radius = (int) (border.getSize() / 2.0);
+        //The visible border will always end at 29,999,984 blocks, despite being larger
+        int minX = border.getCenter().getBlockX() - radius;
+        int maxX = border.getCenter().getBlockX() + radius;
+        int minZ = border.getCenter().getBlockZ() - radius;
+        int maxZ = border.getCenter().getBlockZ() + radius;
+        return Math.abs(location.getX()) < 29999984 &&
+                Math.abs(location.getZ()) < 29999984 &&
+                location.getX() >= minX &&
+                location.getX() <= maxX &&
+                location.getZ() >= minZ &&
+                location.getZ() <= maxZ;
     }
 }
