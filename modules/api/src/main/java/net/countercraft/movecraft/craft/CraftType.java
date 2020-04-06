@@ -79,6 +79,8 @@ final public class CraftType {
     private final double fuelBurnRate;
     private final double sinkPercent;
     private final double overallSinkPercent;
+    private final double staticDetectionRange;
+    private final double underwaterStaticDetectionRange;
     private final double detectionMultiplier;
     private final double underwaterDetectionMultiplier;
     private final double dynamicLagSpeedFactor;
@@ -181,6 +183,8 @@ final public class CraftType {
         hoverLimit = Math.max(0, integerFromObject(data.getOrDefault("hoverLimit", 0)));
         harvestBlocks = new ArrayList<>();
         harvesterBladeBlocks = new ArrayList<>();
+        staticDetectionRange = doubleFromObject(data.getOrDefault("staticDetectionRange", 0d));
+        underwaterStaticDetectionRange = doubleFromObject(data.getOrDefault("underwaterStaticDetectionRange", 0d));
         if (data.containsKey("harvestBlocks")) {
             ArrayList objList = (ArrayList) data.get("harvestBlocks");
             for (Object i : objList) {
@@ -1032,6 +1036,14 @@ final public class CraftType {
 
     public int getKeepMovingOnSinkMaxMove() {
         return keepMovingOnSinkMaxMove;
+    }
+
+    public double getUnderwaterStaticDetectionRange() {
+        return underwaterStaticDetectionRange;
+    }
+
+    public double getStaticDetectionRange() {
+        return staticDetectionRange;
     }
 
     private class TypeNotFoundException extends RuntimeException {

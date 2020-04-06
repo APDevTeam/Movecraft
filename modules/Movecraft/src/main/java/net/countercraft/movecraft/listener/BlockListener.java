@@ -62,17 +62,6 @@ public class BlockListener implements Listener {
 
 
     private long lastDamagesUpdate;
-    final Material[] fragileBlocks = Settings.IsLegacy ? new Material[]{
-
-    }
-            :
-            new Material[]
-                    //Beds
-                    {
-                            //Redstone components
-
-
-                            };
 
     @EventHandler
     public void onBlockPlace(final BlockPlaceEvent e) {
