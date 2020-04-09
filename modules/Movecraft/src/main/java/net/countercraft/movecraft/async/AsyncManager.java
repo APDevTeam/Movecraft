@@ -59,7 +59,7 @@ public class AsyncManager extends BukkitRunnable {
     private HashMap<SmallFireball, Long> FireballTracking = new HashMap<>();
     private HashMap<HitBox, Long> wrecks = new HashMap<>();
     private HashMap<HitBox, World> wreckWorlds = new HashMap<>();
-    private HashMap<HitBox, Map<MovecraftLocation,Material>> wreckPhases = new HashMap<>();
+    private HashMap<HitBox, Map<MovecraftLocation, AbstractMap.SimpleImmutableEntry<Material, Byte>>> wreckPhases = new HashMap<>();
     private Map<Craft, Integer> cooldownCache = new WeakHashMap<>();
 
     private long lastTracerUpdate = 0;
@@ -237,7 +237,7 @@ public class AsyncManager extends BukkitRunnable {
 
                                 for(MovecraftLocation location : entireHitbox){
                                     if(location.getY() <= waterLine){
-                                        c.getPhaseBlocks().put(location, Material.WATER);
+                                        c.getPhaseBlocks().put(location, new AbstractMap.SimpleImmutableEntry<>(Material.WATER, (byte) 0));
                                     }
                                 }
                             }
@@ -902,11 +902,12 @@ public class AsyncManager extends BukkitRunnable {
                 continue;
             }
             final HitBox hitBox = entry.getKey();
-            final Map<MovecraftLocation, Material> phaseBlocks = wreckPhases.get(hitBox);
+            final Map<MovecraftLocation, AbstractMap.SimpleImmutableEntry<Material, Byte>> phaseBlocks = wreckPhases.get(hitBox);
             final World world = wreckWorlds.get(hitBox);
             ArrayList<UpdateCommand> commands = new ArrayList<>();
             for (MovecraftLocation location : hitBox){
-                commands.add(new BlockCreateCommand(world, location, phaseBlocks.getOrDefault(location, Material.AIR)));
+                AbstractMap.SimpleImmutableEntry<Material, Byte> phaseBlock = phaseBlocks.getOrDefault(location, new AbstractMap.SimpleImmutableEntry<>(Material.AIR, (byte) 0));
+                commands.add(new BlockCreateCommand(world, location, phaseBlock.getKey(), phaseBlock.getValue()));
                 
             }
             MapUpdateManager.getInstance().scheduleUpdates(commands);

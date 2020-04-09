@@ -62,9 +62,11 @@ public class CraftRotateCommand extends UpdateCommand {
             final HitBox to = CollectionUtils.filter(craft.getHitBox(), originalLocations);
 
             for (MovecraftLocation location : to) {
-                Material material = location.toBukkit(craft.getW()).getBlock().getType();
+                Block b = location.toBukkit(craft.getW()).getBlock();
+                Material material = b.getType();
+                byte data = b.getData();
                 if (passthroughBlocks.contains(material)) {
-                    craft.getPhaseBlocks().put(location, material);
+                    craft.getPhaseBlocks().put(location, new AbstractMap.SimpleImmutableEntry<>(material, data));
                 }
             }
             //The subtraction of the set of coordinates in the HitBox cube and the HitBox itself
@@ -119,11 +121,13 @@ public class CraftRotateCommand extends UpdateCommand {
 
             final WorldHandler handler = Movecraft.getInstance().getWorldHandler();
             for (MovecraftLocation location : CollectionUtils.filter(invertedHitBox, exterior)) {
-                Material material = location.toBukkit(craft.getW()).getBlock().getType();
+                Block b = location.toBukkit(craft.getW()).getBlock();
+                Material material = b.getType();
+                byte data = b.getData();
                 if (!passthroughBlocks.contains(material)) {
                     continue;
                 }
-                craft.getPhaseBlocks().put(location, material);
+                craft.getPhaseBlocks().put(location, new AbstractMap.SimpleImmutableEntry<>(material, data));
             }
 
             //translate the craft
@@ -137,20 +141,24 @@ public class CraftRotateCommand extends UpdateCommand {
                 if (!craft.getPhaseBlocks().containsKey(location)) {
                     continue;
                 }
-                handler.setBlockFast(location.toBukkit(craft.getW()), craft.getPhaseBlocks().get(location), (byte) 0);
+                AbstractMap.SimpleImmutableEntry<Material, Byte> phaseBlock = craft.getPhaseBlocks().remove(location);
+                handler.setBlockFast(location.toBukkit(craft.getW()), phaseBlock.getKey(), phaseBlock.getValue());
                 craft.getPhaseBlocks().remove(location);
             }
 
             for(MovecraftLocation location : originalLocations.boundingHitBox()){
                 if(!craft.getHitBox().inBounds(location) && craft.getPhaseBlocks().containsKey(location)){
-                    handler.setBlockFast(location.toBukkit(craft.getW()), craft.getPhaseBlocks().remove(location), (byte) 0);
+                    AbstractMap.SimpleImmutableEntry<Material, Byte> phaseBlock = craft.getPhaseBlocks().remove(location);
+                    handler.setBlockFast(location.toBukkit(craft.getW()), phaseBlock.getKey(), phaseBlock.getValue());
                 }
             }
 
             for (MovecraftLocation location : interior) {
-                final Material material = location.toBukkit(craft.getW()).getBlock().getType();
+                Block b = location.toBukkit(craft.getW()).getBlock();
+                Material material = b.getType();
+                byte data = b.getData();
                 if (passthroughBlocks.contains(material)) {
-                    craft.getPhaseBlocks().put(location, material);
+                    craft.getPhaseBlocks().put(location, new AbstractMap.SimpleImmutableEntry<>(material, data));
                     handler.setBlockFast(location.toBukkit(craft.getW()), Material.AIR, (byte) 0);
 
                 }
