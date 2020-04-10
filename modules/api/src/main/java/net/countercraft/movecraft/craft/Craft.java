@@ -23,6 +23,7 @@ import net.countercraft.movecraft.events.CraftSinkEvent;
 import net.countercraft.movecraft.utils.HashHitBox;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -68,7 +69,7 @@ public abstract class Craft {
     @Nullable private Player AADirector;
     private float meanMoveTime;
     private int numMoves;
-    @NotNull private final Map<MovecraftLocation, AbstractMap.SimpleImmutableEntry<Material, Byte>> phaseBlocks = new HashMap<>();
+    @NotNull private final Map<MovecraftLocation, ImmutablePair<Material, Byte>> phaseBlocks = new HashMap<>();
     @NotNull private final HashMap<UUID, Location> crewSigns = new HashMap<>();
     @NotNull private String name = "";
 
@@ -408,7 +409,7 @@ public abstract class Craft {
     }
 
     @NotNull
-    public Map<MovecraftLocation, AbstractMap.SimpleImmutableEntry<Material, Byte>> getPhaseBlocks(){
+    public Map<MovecraftLocation, ImmutablePair<Material, Byte>> getPhaseBlocks(){
         return phaseBlocks;
     }
 
