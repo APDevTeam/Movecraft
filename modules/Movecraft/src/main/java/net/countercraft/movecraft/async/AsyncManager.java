@@ -33,6 +33,7 @@ import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.mapUpdater.update.BlockCreateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import net.countercraft.movecraft.utils.*;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -59,7 +60,7 @@ public class AsyncManager extends BukkitRunnable {
     private HashMap<SmallFireball, Long> FireballTracking = new HashMap<>();
     private HashMap<HitBox, Long> wrecks = new HashMap<>();
     private HashMap<HitBox, World> wreckWorlds = new HashMap<>();
-    private HashMap<HitBox, Map<MovecraftLocation,Material>> wreckPhases = new HashMap<>();
+    private HashMap<HitBox, Map<MovecraftLocation, ImmutablePair<Material, Byte>>> wreckPhases = new HashMap<>();
     private Map<Craft, Integer> cooldownCache = new WeakHashMap<>();
     private long lastTracerUpdate = 0;
     private long lastFireballCheck = 0;
@@ -261,7 +262,7 @@ public class AsyncManager extends BukkitRunnable {
 
                                 for(MovecraftLocation location : entireHitbox){
                                     if(location.getY() <= waterLine){
-                                        c.getPhaseBlocks().put(location, Material.WATER);
+                                        c.getPhaseBlocks().put(location, new ImmutablePair<>(Material.WATER, (byte) 0));
                                     }
                                 }
 
@@ -934,11 +935,12 @@ public class AsyncManager extends BukkitRunnable {
                 continue;
             }
             final HitBox hitBox = entry.getKey();
-            final Map<MovecraftLocation, Material> phaseBlocks = wreckPhases.get(hitBox);
+            final Map<MovecraftLocation, ImmutablePair<Material, Byte>> phaseBlocks = wreckPhases.get(hitBox);
             final World world = wreckWorlds.get(hitBox);
             ArrayList<UpdateCommand> commands = new ArrayList<>();
             for (MovecraftLocation location : hitBox){
-                commands.add(new BlockCreateCommand(world, location, phaseBlocks.getOrDefault(location, Material.AIR)));
+                ImmutablePair<Material, Byte> phaseBlock = phaseBlocks.getOrDefault(location, new ImmutablePair<>(Material.AIR, (byte) 0));
+                commands.add(new BlockCreateCommand(world, location, phaseBlock.getKey(), phaseBlock.getValue()));
                 
             }
             MapUpdateManager.getInstance().scheduleUpdates(commands);
