@@ -60,7 +60,7 @@ public class BlockCreateCommand extends UpdateCommand {
     @SuppressWarnings("deprecation")
     public void doUpdate() {
         // now do the block updates, move entities when you set the block they are on
-        Movecraft.getInstance().getWorldHandler().setBlockFast(newBlockLocation.toBukkit(world),type,dataID);
+        Movecraft.getInstance().getWorldHandler().setBlockFast(newBlockLocation.toBukkit(world),type, Settings.IsLegacy ? dataID : bData);
         //craft.incrementBlockUpdates();
         newBlockLocation.toBukkit(world).getBlock().getState().update(false, false);
 

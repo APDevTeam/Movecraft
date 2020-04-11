@@ -9,7 +9,6 @@ import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.SignTranslateEvent;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.utils.*;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -109,9 +108,9 @@ public class CraftTranslateCommand extends UpdateCommand {
             for (MovecraftLocation location : to) {
                 Block b = location.toBukkit(craft.getW()).getBlock();
                 Material material = b.getType();
-                byte data = b.getData();
+                Object data = Settings.IsLegacy ? b.getData() : b.getBlockData();
                 if (passthroughBlocks.contains(material)) {
-                    craft.getPhaseBlocks().put(location, new ImmutablePair<>(material, data));
+                    craft.getPhaseBlocks().put(location, new AbstractMap.SimpleImmutableEntry<>(material, data));
                 }
             }
             //The subtraction of the set of coordinates in the HitBox cube and the HitBox itself
@@ -166,11 +165,11 @@ public class CraftTranslateCommand extends UpdateCommand {
             for (MovecraftLocation location : CollectionUtils.filter(invertedHitBox, confirmed)) {
                 Block b = location.toBukkit(craft.getW()).getBlock();
                 Material material = b.getType();
-                byte data = b.getData();
+                Object data = Settings.IsLegacy ? b.getData() : b.getBlockData();
                 if (!passthroughBlocks.contains(material)) {
                     continue;
                 }
-                craft.getPhaseBlocks().put(location, new ImmutablePair<>(material, data));
+                craft.getPhaseBlocks().put(location, new AbstractMap.SimpleImmutableEntry<>(material, data));
             }
             //translate the craft
 
@@ -195,14 +194,14 @@ public class CraftTranslateCommand extends UpdateCommand {
                 //Do not place if it is at a collapsed HitBox location
                 if (!craft.getCollapsedHitBox().isEmpty() && craft.getCollapsedHitBox().contains(location))
                     continue;
-                ImmutablePair<Material, Byte> phaseBlock = craft.getPhaseBlocks().remove(location);
+                AbstractMap.SimpleImmutableEntry<Material, Object> phaseBlock = craft.getPhaseBlocks().remove(location);
                 handler.setBlockFast(location.toBukkit(craft.getW()), phaseBlock.getKey(), phaseBlock.getValue());
                 craft.getPhaseBlocks().remove(location);
             }
 
             for(MovecraftLocation location : originalLocations){
                 if(!craft.getHitBox().contains(location) && craft.getPhaseBlocks().containsKey(location)){
-                    ImmutablePair<Material, Byte> phaseBlock = craft.getPhaseBlocks().remove(location);
+                    AbstractMap.SimpleImmutableEntry<Material, Object> phaseBlock = craft.getPhaseBlocks().remove(location);
                     handler.setBlockFast(location.toBukkit(craft.getW()), phaseBlock.getKey(), phaseBlock.getValue());
                 }
             }
@@ -210,9 +209,9 @@ public class CraftTranslateCommand extends UpdateCommand {
             for (MovecraftLocation location : failed) {
                 Block b = location.toBukkit(craft.getW()).getBlock();
                 Material material = b.getType();
-                byte data = b.getData();
+                Object data = Settings.IsLegacy ? b.getData() : b.getBlockData();
                 if (passthroughBlocks.contains(material)) {
-                    craft.getPhaseBlocks().put(location, new ImmutablePair<>(material, data));
+                    craft.getPhaseBlocks().put(location, new AbstractMap.SimpleImmutableEntry<>(material, data));
                     handler.setBlockFast(location.toBukkit(craft.getW()), Material.AIR, (byte) 0);
 
                 }

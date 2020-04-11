@@ -17,9 +17,12 @@ import net.countercraft.movecraft.utils.HashHitBox;
 import net.countercraft.movecraft.utils.HitBox;
 import net.countercraft.movecraft.utils.LegacyUtils;
 import net.countercraft.movecraft.utils.MutableHitBox;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.bukkit.*;
-import org.bukkit.block.*;
+import org.bukkit.block.Barrel;
+import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
+import org.bukkit.block.Furnace;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
@@ -436,8 +439,12 @@ public class TranslationTask extends AsyncTask {
         if(!collisionBox.isEmpty() && craft.getType().getCruiseOnPilot()){
             CraftManager.getInstance().removeCraft(craft);
             for(MovecraftLocation location : oldHitBox){
-                ImmutablePair<Material, Byte> phaseBlock = craft.getPhaseBlocks().getOrDefault(location, new ImmutablePair<>(Material.AIR, (byte) 0));
-                updates.add(new BlockCreateCommand(craft.getW(), location, phaseBlock.getKey(), phaseBlock.getValue()));
+                AbstractMap.SimpleImmutableEntry<Material, Object> phaseBlock = craft.getPhaseBlocks().getOrDefault(location, new AbstractMap.SimpleImmutableEntry<>(Material.AIR, Settings.IsLegacy ? (byte) 0 : Bukkit.createBlockData(Material.AIR)));
+                if (Settings.IsLegacy) {
+                    updates.add(new BlockCreateCommand(craft.getW(), location, phaseBlock.getKey(), (byte) phaseBlock.getValue()));
+                    continue;
+                }
+                updates.add(new BlockCreateCommand(craft.getW(), location, phaseBlock.getKey(), (BlockData) phaseBlock.getValue()));
             }
             newHitBox = new HashHitBox();
         }

@@ -301,13 +301,16 @@ public class IWorldHandler extends WorldHandler {
     }
 
     @Override
-    public void setBlockFast(@NotNull Location location, @NotNull Material material, byte data){
+    public void setBlockFast(@NotNull Location location, @NotNull Material material, Object data){
         setBlockFast(location, Rotation.NONE, material, data);
     }
 
     @Override
-    public void setBlockFast(@NotNull Location location, @NotNull Rotation rotation, @NotNull Material material, byte data) {
-        IBlockData blockData =  CraftMagicNumbers.getBlock(material).fromLegacyData(data);
+    public void setBlockFast(@NotNull Location location, @NotNull Rotation rotation, @NotNull Material material, Object data) {
+        if (!(data instanceof Byte)) {
+            throw new IllegalArgumentException("data must be byte value for v1_9_R2");
+        }
+        IBlockData blockData =  CraftMagicNumbers.getBlock(material).fromLegacyData((byte) data);
         blockData = blockData.a(ROTATION[rotation.ordinal()]);
         World world = ((CraftWorld)(location.getWorld())).getHandle();
         BlockPosition blockPosition = locationToPosition(bukkit2MovecraftLoc(location));
