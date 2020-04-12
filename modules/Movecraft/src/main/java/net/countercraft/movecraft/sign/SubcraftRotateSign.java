@@ -8,6 +8,7 @@ import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.CraftType;
 import net.countercraft.movecraft.craft.ICraft;
 import net.countercraft.movecraft.events.CraftPilotEvent;
+import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -92,16 +93,21 @@ public final class SubcraftRotateSign implements Listener {
             @Override
             public void run() {
                 subCraft.rotate(rotation, startPoint, true);
-                new BukkitRunnable() {
-                    @Override
-                    public void run() {
-                        rotatingCrafts.remove(startPoint);
-                        CraftManager.getInstance().removeCraft(subCraft);
-                    }
-                }.runTaskLater(Movecraft.getInstance(), 3);
             }
         }.runTaskLater(Movecraft.getInstance(), 3);
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                rotatingCrafts.remove(startPoint);
+                CraftManager.getInstance().removeCraft(subCraft);
+            }
+        }.runTaskLater(Movecraft.getInstance(), 6);
         event.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onCraftRelease(CraftReleaseEvent event){
+        rotatingCrafts.removeAll(event.getCraft().getHitBox().asSet());
     }
 
 }
