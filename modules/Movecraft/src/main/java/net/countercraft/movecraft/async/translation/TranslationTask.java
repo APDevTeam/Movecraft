@@ -17,6 +17,7 @@ import net.countercraft.movecraft.utils.HashHitBox;
 import net.countercraft.movecraft.utils.HitBox;
 import net.countercraft.movecraft.utils.LegacyUtils;
 import net.countercraft.movecraft.utils.MutableHitBox;
+import net.countercraft.movecraft.utils.SolidHitBox;
 import org.bukkit.*;
 import org.bukkit.block.Barrel;
 import org.bukkit.block.Block;
@@ -496,7 +497,7 @@ public class TranslationTask extends AsyncTask {
         if (!playSound) {
             return;
         }
-        craft.getW().playSound(location, Sound.BLOCK_ANVIL_LAND, 1.0f, 0.25f);
+        craft.getW().playSound(location, craft.getType().getCollisionSound(), 1.0f, 0.25f);
     }
 
     private static final MovecraftLocation[] SHIFTS = {
@@ -663,12 +664,14 @@ public class TranslationTask extends AsyncTask {
 
     private int dropDistance (HashHitBox hitBox) {
         MutableHitBox bottomLocs = new HashHitBox();
-        for (MovecraftLocation location : hitBox){
-            if (location.getY() != hitBox.getLocalMinY(location.getX(), location.getZ())) {
+        MovecraftLocation corner1 = new MovecraftLocation(hitBox.getMinX(), 0, hitBox.getMinZ());
+        MovecraftLocation corner2 = new MovecraftLocation(hitBox.getMaxX(), 0, hitBox.getMaxZ());
+        for(MovecraftLocation location : new SolidHitBox(corner1, corner2)){
+            int test = hitBox.getLocalMinY(location.getX(), location.getZ());
+            if(test == -1){
                 continue;
             }
-            //Otherwise, add to bottom locations
-            bottomLocs.add(location.translate(0, -1, 0));
+            bottomLocs.add(new MovecraftLocation(location.getX(), test, location.getZ()));
         }
         int dropDistance = 0;
 
@@ -706,13 +709,16 @@ public class TranslationTask extends AsyncTask {
         if (hitBox.getMinY() <= craft.getType().getMinHeightLimit()) {
             return true;
         }
-        for (MovecraftLocation location : hitBox){
-            if (location.getY() > hitBox.getLocalMinY(location.getX(), location.getZ())) {
+        MovecraftLocation corner1 = new MovecraftLocation(hitBox.getMinX(), 0, hitBox.getMinZ());
+        MovecraftLocation corner2 = new MovecraftLocation(hitBox.getMaxX(), 0, hitBox.getMaxZ());
+        for(MovecraftLocation location : new SolidHitBox(corner1, corner2)){
+            int test = hitBox.getLocalMinY(location.getX(), location.getZ());
+            if(test == -1){
                 continue;
             }
-            //Otherwise, add to bottom locations
-            bottomLocs.add(location);
+            bottomLocs.add(new MovecraftLocation(location.getX(), test, location.getZ()));
         }
+
         boolean bottomLocsOnGround = false;
         for (MovecraftLocation bottomLoc : bottomLocs){
             translatedBottomLocs.add(bottomLoc.translate(dx, dy, dz));

@@ -24,6 +24,7 @@ import net.countercraft.movecraft.utils.LegacyUtils;
 import org.bukkit.Material;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.Sound;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.Yaml;
 
@@ -104,6 +105,7 @@ final public class CraftType {
     private final int gravityDropDistance;
     private final int gravityInclineDistance;
     private final int keepMovingOnSinkMaxMove;
+    private final Sound collisionSound;
 
     @SuppressWarnings("unchecked")
     public CraftType(File f) throws CraftTypeException{
@@ -321,15 +323,15 @@ final public class CraftType {
             }
             maxTravelDistance = data.containsKey("maxTravelDistance") ? (int) data.get("maxTravelDistance") : 500;
             effectRange = data.containsKey("effectRange") ? integerFromObject(data.get("effectRange")) : 0;
-        if (!canHoverOverWater){
-            forbiddenHoverOverBlocks.add(Material.WATER);
-            if (Settings.IsLegacy) {
-                forbiddenHoverOverBlocks.add(LegacyUtils.STATIONARY_WATER);
-            } else {
-                forbiddenHoverOverBlocks.add(Material.getMaterial("BUBBLE_COLUMN"));
-            }
+            if (!canHoverOverWater){
+                forbiddenHoverOverBlocks.add(Material.WATER);
+                if (Settings.IsLegacy) {
+                    forbiddenHoverOverBlocks.add(LegacyUtils.STATIONARY_WATER);
+                } else {
+                    forbiddenHoverOverBlocks.add(Material.getMaterial("BUBBLE_COLUMN"));
+                }
 
-        }
+            }
             potionEffectsToApply = data.containsKey("potionEffectsToApply") ? effectListFromObject(data.get("potionEffectsToApply")) : Collections.emptyMap();
             allowVerticalTakeoffAndLanding = (boolean) data.getOrDefault("allowVerticalTakeoffAndLanding", true);
             dynamicLagSpeedFactor = doubleFromObject(data.getOrDefault("dynamicLagSpeedFactor", 0d));
@@ -338,10 +340,10 @@ final public class CraftType {
             gravityInclineDistance = integerFromObject(data.getOrDefault("gravityInclineDistance", -1));
             int dropdist = integerFromObject(data.getOrDefault("gravityDropDistance", -8));
             gravityDropDistance = dropdist > 0 ? -dropdist : dropdist;
+            collisionSound = Sound.valueOf((String) data.getOrDefault("collisionSound", "BLOCK_ANVIL_LAND"));
         } catch (Exception e){
             throw new CraftTypeException("Craft file " + f.getName() + " is malformed", e);
         }
-
     }
 
     private int integerFromObject(Object obj) {
@@ -407,116 +409,6 @@ final public class CraftType {
             ret.put(potEffect,delay);
         }
         return ret;
-    }
-
-    private int[] blockIDListFromObject(Object obj) {
-        ArrayList<Integer> returnList = new ArrayList<>();
-        ArrayList objList = (ArrayList) obj;
-        for (Object i : objList) {
-            if (i instanceof String) {
-                String str = (String) i;
-                if (str.contains(":")) {
-                    String[] parts = str.split(":");
-                    Integer typeID = Integer.valueOf(parts[0]);
-                    Integer metaData = Integer.valueOf(parts[1]);
-                    returnList.add(10000 + (typeID << 4) + metaData);  // id greater than 10000 indicates it has a meta data / damage value
-                } else {
-                    Integer typeID = Integer.valueOf(str);
-                    returnList.add(typeID);
-                }
-            } else {
-                Integer typeID = (Integer) i;
-                returnList.add(typeID);
-            }
-        }
-        int[] output = new int[returnList.size()];
-        for (int i = 0; i < output.length; i++)
-            output[i] = returnList.get(i);
-        return output;
-    }
-    private Map<Material, List<Integer>> materialMapFromObject(Object obj){
-        HashMap<Material, List<Integer>> returnMap = new HashMap<>();
-        if (obj instanceof ArrayList<?>){
-            for (Object o : (ArrayList<Object>) obj){
-                if (o instanceof Integer){
-                    Integer id = (Integer) o;
-                    Material type;
-                    try {
-                         type = Material.getMaterial(id);
-                    } catch (Throwable t){
-                        throw new CraftTypeException("Numerical block IDs are not supported by your current Minecraft version", t);
-                    }
-                    returnMap.put(type, Collections.emptyList());
-                } else if (o instanceof String){
-                    String string = (String) o;
-                    string = string.toUpperCase();
-                    if (string.contains(":")){
-                        String[] parts = string.split(":");
-                        Material type;
-                        Integer data = Integer.valueOf(parts[1]);
-                        if (parts[0].contains("0")||parts[0].contains("1")||parts[0].contains("2")||parts[0].contains("3")||parts[0].contains("4")||parts[0].contains("5")||parts[0].contains("6")||parts[0].contains("7")||parts[0].contains("8")||parts[0].contains("9")){
-                            Integer typeID = Integer.valueOf(parts[0]);
-                            type = Material.getMaterial(typeID);
-
-                        } else {
-                            type = Material.getMaterial(parts[0]);
-                        }
-                        if (returnMap.containsKey(type)){
-                            returnMap.get(type).add(data);
-                        } else {
-                            returnMap.put(type, new ArrayList<>(data));
-                        }
-                    } else {
-                        if (string.toUpperCase().startsWith("ALL_")){
-                            string = string.replace("ALL_", "");
-                            for (Material m : Material.values()){
-                                if (!m.name().endsWith(string)){
-                                    continue;
-                                }
-                                returnMap.put(m, Collections.emptyList());
-                            }
-                        } else {
-                            Material type = Material.getMaterial(string);
-                            returnMap.put(type, Collections.emptyList());
-                        }
-                    }
-                } else {
-                    Material type = (Material) o;
-                    returnMap.put(type, Collections.emptyList());
-                }
-            }
-        } else {
-            HashMap<Object, Object> objMap = (HashMap<Object, Object>) obj;
-
-            for (Object o : objMap.keySet()) {
-                Material type;
-                if (o instanceof Integer) {
-                    Integer id = (Integer) o;
-                    type = Material.getMaterial(id);
-                } else if (o instanceof String) {
-                    String str = (String) o;
-                    type = Material.getMaterial(str);
-                } else {
-                    type = (Material) o;
-                }
-                ArrayList<Object> objList = (ArrayList<Object>) objMap.get(o);
-                List<Integer> dataList = Collections.emptyList();
-                if (objList != null) {
-                    for (Object dataObj : objList) {
-                        if (dataObj instanceof String) {
-                            String s = (String) dataObj;
-                            Integer data = Integer.valueOf(s);
-                            dataList.add(data);
-                        } else {
-                            Integer data = (Integer) dataObj;
-                            dataList.add(data);
-                        }
-                    }
-                }
-                returnMap.put(type, dataList);
-            }
-        }
-        return returnMap;
     }
 
     private String[] stringListFromObject(Object obj) {
@@ -1046,13 +938,18 @@ final public class CraftType {
         return staticDetectionRange;
     }
 
-    private class TypeNotFoundException extends RuntimeException {
+    @NotNull
+    public Sound getCollisionSound() {
+        return collisionSound;
+    }
+
+    private static class TypeNotFoundException extends RuntimeException {
         public TypeNotFoundException(String s) {
             super(s);
         }
     }
 
-    private class CraftTypeException extends RuntimeException{
+    private static class CraftTypeException extends RuntimeException{
         public CraftTypeException(String message, Throwable cause){
             super(message,cause);
         }
