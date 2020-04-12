@@ -305,6 +305,8 @@ public class IWorldHandler extends WorldHandler {
         }
 
         chunkSection.setType(position.getX()&15, position.getY()&15, position.getZ()&15, data);
+        world.notify(position);
+        chunk.e();
     }
 
     @Override
