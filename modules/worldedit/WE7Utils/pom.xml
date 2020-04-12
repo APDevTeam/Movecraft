@@ -44,6 +44,11 @@
             <artifactId>worldguard-bukkit</artifactId>
             <version>7.0.1-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>org.bukkit</groupId>
+            <artifactId>bukkit</artifactId>
+            <version>1.15.2-R0.1-SNAPSHOT</version>
+        </dependency>
     <dependency>
         <groupId>net.countercraft</groupId>
         <artifactId>movecraft-api</artifactId>

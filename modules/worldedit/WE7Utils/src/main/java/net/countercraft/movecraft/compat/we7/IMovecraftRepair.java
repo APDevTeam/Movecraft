@@ -145,8 +145,7 @@ public class IMovecraftRepair extends MovecraftRepair {
 
             BlockArrayClipboard clipboard = new BlockArrayClipboard(weRegion);
             Extent source = WorldEdit.getInstance().getEditSessionFactory().getEditSession(weWorld, -1);
-            Extent destination = clipboard;
-            ForwardExtentCopy copy = new ForwardExtentCopy(source, weRegion, destination, weMinPos);
+            ForwardExtentCopy copy = new ForwardExtentCopy(source, weRegion, clipboard, weMinPos);
             BlockTypeMask mask = new BlockTypeMask(source, blockTypeSet);
             copy.setSourceMask(mask);
             Operations.completeLegacy(copy);
@@ -242,8 +241,23 @@ public class IMovecraftRepair extends MovecraftRepair {
                                     }
                                 }
                             }
-                            if (type.equals(Material.WALL_SIGN)){
-                                typeToConsume = Material.SIGN;
+                            if (type.name().equals("WALL_SIGN")){
+                                typeToConsume = Material.getMaterial("SIGN");
+                            }
+                            if (type == Material.ACACIA_WALL_SIGN){
+                                typeToConsume = Material.ACACIA_SIGN;
+                            }
+                            if (type == Material.BIRCH_WALL_SIGN){
+                                typeToConsume = Material.BIRCH_SIGN;
+                            }
+                            if (type == Material.DARK_OAK_WALL_SIGN){
+                                typeToConsume = Material.DARK_OAK_SIGN;
+                            }
+                            if (type == Material.OAK_WALL_SIGN){
+                                typeToConsume = Material.OAK_SIGN;
+                            }
+                            if (type == Material.SPRUCE_WALL_SIGN){
+                                typeToConsume = Material.SPRUCE_SIGN;
                             }
                             if (type.equals(Material.REDSTONE_WALL_TORCH)){
                                 typeToConsume = Material.REDSTONE_TORCH;
