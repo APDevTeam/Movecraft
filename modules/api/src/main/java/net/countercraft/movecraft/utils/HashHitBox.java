@@ -8,7 +8,15 @@ import java.util.*;
 
 public class HashHitBox implements MutableHitBox {
     private final Set<MovecraftLocation> locationSet = new HashSet<>();
-    private int minX,maxX,minY,maxY,minZ,maxZ;
+//    private int minX,maxX,minY,maxY,minZ,maxZ;
+
+    private TreeSet<MovecraftLocation> xQueue = new TreeSet<>(Comparator.comparingInt(MovecraftLocation::getX));
+    private TreeSet<MovecraftLocation> yQueue = new TreeSet<>(Comparator.comparingInt(MovecraftLocation::getY));
+    private TreeSet<MovecraftLocation> zQueue = new TreeSet<>(Comparator.comparingInt(MovecraftLocation::getZ));
+
+//    private HashMap<IntPair, TreeSet<MovecraftLocation>> xyPlane = new HashMap<>();
+    private HashMap<IntPair, TreeSet<MovecraftLocation>> xzPlane = new HashMap<>();
+//    private HashMap<IntPair, TreeSet<MovecraftLocation>> yzPlane = new HashMap<>();
 
     public HashHitBox(){
     }
@@ -24,90 +32,85 @@ public class HashHitBox implements MutableHitBox {
         if(locationSet.isEmpty()){
             throw new EmptyHitBoxException();
         }
-        return minX;
+        return xQueue.first().getX();
     }
 
     public int getMaxX() {
         if(locationSet.isEmpty()){
             throw new EmptyHitBoxException();
         }
-        return maxX;
+        return xQueue.last().getX();
     }
 
     public int getMinY() {
         if(locationSet.isEmpty()){
             throw new EmptyHitBoxException();
         }
-        return minY;
+        return yQueue.first().getY();
     }
 
     public int getMaxY() {
         if(locationSet.isEmpty()){
             throw new EmptyHitBoxException();
         }
-        return maxY;
+        return yQueue.last().getY();
     }
 
     public int getMinZ() {
         if(locationSet.isEmpty()){
             throw new EmptyHitBoxException();
         }
-        return minZ;
+        return zQueue.first().getZ();
     }
 
     public int getMaxZ() {
         if(locationSet.isEmpty()){
             throw new EmptyHitBoxException();
         }
-        return maxZ;
+        return zQueue.last().getZ();
     }
 
     public int getXLength(){
         if(locationSet.isEmpty()){
             return 0;
         }
-        return Math.abs(maxX-minX);
+        return Math.abs(getMaxX()-getMinX());
     }
 
     public int getYLength(){
         if(locationSet.isEmpty()){
             return 0;
         }
-        return maxY-minY;
+        return getMaxY()-getMinY();
     }
 
     public int getZLength(){
         if(locationSet.isEmpty()){
             throw new EmptyHitBoxException();
         }
-        return Math.abs(maxZ-minZ);
+        return Math.abs(getMaxZ()-getMinZ());
     }
 
-    //TODO: Optomize
     public int getLocalMaxY(int x, int z){
         if(locationSet.isEmpty()){
             throw new EmptyHitBoxException();
         }
-        int yValue=-1;
-        for(MovecraftLocation location : locationSet){
-            if(location.getX()==x && location.getZ() ==z && location.getY()>yValue){
-                yValue=location.getY();
-            }
+        IntPair point = new IntPair(x,z);
+        if(!xzPlane.containsKey(point) || xzPlane.get(point).isEmpty() ){
+            return -1;
         }
-        return yValue;
+        return xzPlane.get(point).last().getY();
     }
 
     public int getLocalMinY(int x, int z){
         if(locationSet.isEmpty()){
             throw new EmptyHitBoxException();
         }
-        int yValue=-1;
-        for(MovecraftLocation location : locationSet){
-            if(location.getX()==x && location.getZ() ==z && (yValue==-1 || location.getY() < yValue)){
-                yValue=location.getY();
-            }
+        IntPair point = new IntPair(x,z);
+        if(!xzPlane.containsKey(point) || xzPlane.get(point).isEmpty()){
+            return -1;
         }
-        return yValue;
+        return xzPlane.get(point).first().getY();
     }
 
     @NotNull
@@ -115,25 +118,25 @@ public class HashHitBox implements MutableHitBox {
         if(locationSet.isEmpty()){
             throw new EmptyHitBoxException();
         }
-        return new MovecraftLocation((minX+maxX)/2, (minY+maxY)/2,(minZ+maxZ)/2);
+        return new MovecraftLocation((getMinX()+getMaxX())/2, (getMinY()+getMaxY())/2,(getMinZ()+getMaxZ())/2);
     }
 
     public boolean inBounds(MovecraftLocation location){
         if(locationSet.isEmpty()){
             return false;
         }
-        return location.getX() >= minX && location.getX() <= maxX &&
-                location.getY() >= minY && location.getY() <= maxY &&
-                location.getZ() >= minZ && location.getZ() <= maxZ;
+        return location.getX() >= getMinX() && location.getX() <= getMaxX() &&
+                location.getY() >= getMinY() && location.getY() <= getMaxY() &&
+                location.getZ() >= getMinZ() && location.getZ() <= getMaxZ();
     }
 
     public boolean inBounds(double x, double y, double z){
         if(locationSet.isEmpty()){
             return false;
         }
-        return x >= minX && x <= maxX &&
-                y >= minY && y <= maxY &&
-                z >= minZ && z <= maxZ;
+        return x >= getMinX() && x <= getMaxX() &&
+                y >= getMinY() && y <= getMaxY() &&
+                z >= getMinZ() && z <= getMaxZ();
     }
 
     public boolean intersects(HitBox hitBox){
@@ -196,18 +199,11 @@ public class HashHitBox implements MutableHitBox {
 
     @Override
     public boolean add(@NotNull MovecraftLocation movecraftLocation) {
-        if(locationSet.isEmpty() || movecraftLocation.getX() < minX)
-            minX=movecraftLocation.getX();
-        if(locationSet.isEmpty() || movecraftLocation.getX() > maxX)
-            maxX=movecraftLocation.getX();
-        if(locationSet.isEmpty() || movecraftLocation.getY() < minY)
-            minY=movecraftLocation.getY();
-        if(locationSet.isEmpty() || movecraftLocation.getY() > maxY)
-            maxY=movecraftLocation.getY();
-        if(locationSet.isEmpty() || movecraftLocation.getZ() < minZ)
-            minZ=movecraftLocation.getZ();
-        if(locationSet.isEmpty() || movecraftLocation.getZ() > maxZ)
-            maxZ=movecraftLocation.getZ();
+        xQueue.add(movecraftLocation);
+        yQueue.add(movecraftLocation);
+        zQueue.add(movecraftLocation);
+        initPlanes(movecraftLocation);
+        xzPlane.get(new IntPair(movecraftLocation, Plane.XZ)).add(movecraftLocation);
         return locationSet.add(movecraftLocation);
     }
 
@@ -216,8 +212,12 @@ public class HashHitBox implements MutableHitBox {
         if(!locationSet.contains(location))
             return false;
         locationSet.remove(location);
-        if(minX==location.getX() || maxX == location.getX() || minY == location.getY() || maxY==location.getY() || minZ==location.getZ() || maxZ==location.getZ()){
-            updateBounds();
+        xQueue.remove(location);
+        yQueue.remove(location);
+        zQueue.remove(location);
+        IntPair point = new IntPair(location, Plane.XZ);
+        if(xzPlane.containsKey(point)){
+            xzPlane.get(point).remove(location);
         }
         return true;
     }
@@ -249,54 +249,20 @@ public class HashHitBox implements MutableHitBox {
 
     @Override
     public boolean removeAll(@NotNull Collection<? extends MovecraftLocation> c) {
-        boolean updateBounds = false;
         boolean modified = false;
-        for(MovecraftLocation location : c){
-            if(locationSet.remove(location)) {
+        for (MovecraftLocation location : c) {
+            if (remove(location))
                 modified = true;
-                if (location.getX() < minX)
-                    updateBounds=true;
-                if (location.getX() > maxX)
-                    updateBounds=true;
-                if (location.getY() < minY)
-                    updateBounds=true;
-                if (location.getY() > maxY)
-                    updateBounds=true;
-                if (location.getZ() < minZ)
-                    updateBounds=true;
-                if (location.getZ() > maxZ)
-                    updateBounds=true;
-            }
-        }
-        if(updateBounds){
-            updateBounds();
         }
         return modified;
     }
 
     @Override
     public boolean removeAll(@NotNull HitBox hitBox) {
-        boolean updateBounds = false;
         boolean modified = false;
-        for(MovecraftLocation location : hitBox){
-            if(locationSet.remove(location)) {
+        for (MovecraftLocation location : hitBox) {
+            if (remove(location))
                 modified = true;
-                if (location.getX() < minX)
-                    updateBounds=true;
-                if (location.getX() > maxX)
-                    updateBounds=true;
-                if (location.getY() < minY)
-                    updateBounds=true;
-                if (location.getY() > maxY)
-                    updateBounds=true;
-                if (location.getZ() < minZ)
-                    updateBounds=true;
-                if (location.getZ() > maxZ)
-                    updateBounds=true;
-            }
-        }
-        if(updateBounds){
-            updateBounds();
         }
         return modified;
     }
@@ -344,20 +310,66 @@ public class HashHitBox implements MutableHitBox {
         return null;
     }
 
-    private void updateBounds(){
-        for (MovecraftLocation location : locationSet){
-            if(location.getX()<minX)
-                minX=location.getX();
-            if(location.getX()>maxX)
-                maxX=location.getX();
-            if(location.getY()<minY)
-                minY=location.getY();
-            if(location.getY()>maxY)
-                maxY=location.getY();
-            if(location.getZ()<minZ)
-                minZ=location.getZ();
-            if(location.getZ()>maxZ)
-                maxZ=location.getZ();
+    @NotNull @Override
+    public Set<MovecraftLocation> asSet(){
+        return Collections.unmodifiableSet(this.locationSet);
+    }
+
+    private void initPlanes(@NotNull MovecraftLocation location){
+//        xyPlane.putIfAbsent(new IntPair(location, Plane.XY), new TreeSet<>(Comparator.comparingInt(MovecraftLocation::getZ)));
+        xzPlane.putIfAbsent(new IntPair(location, Plane.XZ), new TreeSet<>(Comparator.comparingInt(MovecraftLocation::getY)));
+//        yzPlane.putIfAbsent(new IntPair(location, Plane.YZ), new TreeSet<>(Comparator.comparingInt(MovecraftLocation::getX)));
+    }
+    private enum Plane{
+        XY,XZ,YZ
+    }
+    private class IntPair {
+
+        final int i,j;
+        private IntPair(@NotNull MovecraftLocation location, @NotNull Plane plain){
+            switch (plain){
+                case XY:
+                    i = location.getX();
+                    j = location.getY();
+                    break;
+                case XZ:
+                    i = location.getX();
+                    j = location.getZ();
+                    break;
+                case YZ:
+                    i = location.getY();
+                    j = location.getZ();
+                    break;
+                default:
+                    throw new NullPointerException();
+            }
+        }
+
+        private IntPair(int i, int j){
+            this.i = i;
+            this.j = j;
+        }
+
+        public int getI(){
+            return i;
+        }
+
+        public int getJ(){
+            return j;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            IntPair intPair = (IntPair) o;
+            return i == intPair.i &&
+                    j == intPair.j;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(i, j);
         }
     }
 }

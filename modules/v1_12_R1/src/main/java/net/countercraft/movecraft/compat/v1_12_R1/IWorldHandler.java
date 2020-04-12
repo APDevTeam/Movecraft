@@ -199,15 +199,12 @@ public class IWorldHandler extends WorldHandler {
         //TODO: Simplify
         //TODO: go by chunks
         //TODO: Don't move unnecessary blocks
-        //get the blocks
+        //get the blocks and translate the positions
         List<IBlockData> blockData = new ArrayList<>();
-        for(BlockPosition position : positions){
-            blockData.add(oldNativeWorld.getType(position));
-        }
-        //translate the positions
         List<BlockPosition> newPositions = new ArrayList<>();
         for(BlockPosition position : positions){
-            newPositions.add(position.a(translateVector));
+        	blockData.add(oldNativeWorld.getType(position));
+        	newPositions.add(position.a(translateVector));
         }
         //create the new block
         for(int i = 0; i<newPositions.size(); i++) {
@@ -302,6 +299,7 @@ public class IWorldHandler extends WorldHandler {
 
         chunkSection.setType(position.getX()&15, position.getY()&15, position.getZ()&15, data);
         world.notify(position, data, data, 3);
+        chunk.markDirty();
     }
 
     @Override
