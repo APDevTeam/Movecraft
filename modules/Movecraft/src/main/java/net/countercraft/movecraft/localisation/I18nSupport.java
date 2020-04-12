@@ -74,7 +74,7 @@ public final class I18nSupport {
         }
         boolean updated = false;
         for (Object key : jarLangFile.keySet()) {
-            if (languageFile.contains(key)) {
+            if (languageFile.containsKey(key)) {
                 continue;
             }
             languageFile.setProperty((String) key, (String) jarLangFile.get(key));
