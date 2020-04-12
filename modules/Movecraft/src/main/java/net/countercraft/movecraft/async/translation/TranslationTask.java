@@ -350,7 +350,7 @@ public class TranslationTask extends AsyncTask {
         if (!playSound) {
             return;
         }
-        craft.getW().playSound(location, Sound.BLOCK_ANVIL_LAND, 1.0f, 0.25f);
+        craft.getW().playSound(location, craft.getType().getCollisionSound(), 1.0f, 0.25f);
     }
 
     private static final MovecraftLocation[] SHIFTS = {

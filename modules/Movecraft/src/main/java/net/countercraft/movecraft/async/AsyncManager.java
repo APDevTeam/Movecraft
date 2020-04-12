@@ -984,7 +984,7 @@ public class AsyncManager extends BukkitRunnable {
 
                         notification += ".";
                         ccraft.getNotificationPlayer().sendMessage(notification);
-                        w.playSound(ccraft.getNotificationPlayer().getLocation(), Sound.BLOCK_ANVIL_LAND, 1.0f, 2.0f);
+                        w.playSound(ccraft.getNotificationPlayer().getLocation(), ccraft.getType().getCollisionSound(), 1.0f, 2.0f);
 
 
                         long timestamp = System.currentTimeMillis();
