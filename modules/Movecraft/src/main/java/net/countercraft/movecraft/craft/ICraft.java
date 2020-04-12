@@ -7,7 +7,6 @@ import net.countercraft.movecraft.async.detection.DetectionTask;
 import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -94,7 +93,6 @@ public class ICraft extends Craft {
             detectionRange = detectionRange * 10;
             int staticDetectionRange = (int) ((tcenter.getY() > 65 ? contact.getType().getStaticDetectionRange() : contact.getType().getUnderwaterStaticDetectionRange()));
             staticDetectionRange = staticDetectionRange * staticDetectionRange;
-            Bukkit.broadcastMessage("Static detection range: " + staticDetectionRange + " Distance Squared: " + distsquared);
             if (distsquared <= staticDetectionRange)  {
                 contacts.add(contact);
             }
