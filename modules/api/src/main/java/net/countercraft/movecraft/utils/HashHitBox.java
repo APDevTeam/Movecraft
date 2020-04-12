@@ -310,6 +310,11 @@ public class HashHitBox implements MutableHitBox {
         return null;
     }
 
+    @NotNull @Override
+    public Set<MovecraftLocation> asSet(){
+        return Collections.unmodifiableSet(this.locationSet);
+    }
+
     private void initPlanes(@NotNull MovecraftLocation location){
 //        xyPlane.putIfAbsent(new IntPair(location, Plane.XY), new TreeSet<>(Comparator.comparingInt(MovecraftLocation::getZ)));
         xzPlane.putIfAbsent(new IntPair(location, Plane.XZ), new TreeSet<>(Comparator.comparingInt(MovecraftLocation::getY)));
