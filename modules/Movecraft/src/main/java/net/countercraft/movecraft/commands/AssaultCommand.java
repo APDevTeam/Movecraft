@@ -104,6 +104,12 @@ public class AssaultCommand implements CommandExecutor{
         if (aRegion.isMember(lp)) {
             canBeAssaulted = false;
         }
+        for(Assault assault : Movecraft.getInstance().getAssaultManager().getAssaults()){
+            if(assault.getRegionName().equals(args[0])){
+                canBeAssaulted = false;
+                break;
+            }
+        }
         if (!canBeAssaulted) {
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Assault - Cannot Assault"));
             return true;

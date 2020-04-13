@@ -17,6 +17,7 @@ public class HashHitBox implements MutableHitBox {
 //    private HashMap<IntPair, TreeSet<MovecraftLocation>> xyPlane = new HashMap<>();
     private HashMap<IntPair, TreeSet<MovecraftLocation>> xzPlane = new HashMap<>();
 //    private HashMap<IntPair, TreeSet<MovecraftLocation>> yzPlane = new HashMap<>();
+    private boolean differBounds = true;
 
     public HashHitBox(){
     }
@@ -32,6 +33,7 @@ public class HashHitBox implements MutableHitBox {
         if(locationSet.isEmpty()){
             throw new EmptyHitBoxException();
         }
+        initBounds();
         return xQueue.first().getX();
     }
 
@@ -39,6 +41,7 @@ public class HashHitBox implements MutableHitBox {
         if(locationSet.isEmpty()){
             throw new EmptyHitBoxException();
         }
+        initBounds();
         return xQueue.last().getX();
     }
 
@@ -46,6 +49,7 @@ public class HashHitBox implements MutableHitBox {
         if(locationSet.isEmpty()){
             throw new EmptyHitBoxException();
         }
+        initBounds();
         return yQueue.first().getY();
     }
 
@@ -53,6 +57,7 @@ public class HashHitBox implements MutableHitBox {
         if(locationSet.isEmpty()){
             throw new EmptyHitBoxException();
         }
+        initBounds();
         return yQueue.last().getY();
     }
 
@@ -60,6 +65,7 @@ public class HashHitBox implements MutableHitBox {
         if(locationSet.isEmpty()){
             throw new EmptyHitBoxException();
         }
+        initBounds();
         return zQueue.first().getZ();
     }
 
@@ -67,6 +73,7 @@ public class HashHitBox implements MutableHitBox {
         if(locationSet.isEmpty()){
             throw new EmptyHitBoxException();
         }
+        initBounds();
         return zQueue.last().getZ();
     }
 
@@ -95,6 +102,7 @@ public class HashHitBox implements MutableHitBox {
         if(locationSet.isEmpty()){
             throw new EmptyHitBoxException();
         }
+        initBounds();
         IntPair point = new IntPair(x,z);
         if(!xzPlane.containsKey(point) || xzPlane.get(point).isEmpty() ){
             return -1;
@@ -106,6 +114,7 @@ public class HashHitBox implements MutableHitBox {
         if(locationSet.isEmpty()){
             throw new EmptyHitBoxException();
         }
+        initBounds();
         IntPair point = new IntPair(x,z);
         if(!xzPlane.containsKey(point) || xzPlane.get(point).isEmpty()){
             return -1;
@@ -199,11 +208,13 @@ public class HashHitBox implements MutableHitBox {
 
     @Override
     public boolean add(@NotNull MovecraftLocation movecraftLocation) {
-        xQueue.add(movecraftLocation);
-        yQueue.add(movecraftLocation);
-        zQueue.add(movecraftLocation);
-        initPlanes(movecraftLocation);
-        xzPlane.get(new IntPair(movecraftLocation, Plane.XZ)).add(movecraftLocation);
+        if(!differBounds){
+            xQueue.add(movecraftLocation);
+            yQueue.add(movecraftLocation);
+            zQueue.add(movecraftLocation);
+            initPlanes(movecraftLocation);
+            xzPlane.get(new IntPair(movecraftLocation, Plane.XZ)).add(movecraftLocation);
+        }
         return locationSet.add(movecraftLocation);
     }
 
@@ -313,6 +324,12 @@ public class HashHitBox implements MutableHitBox {
     @NotNull @Override
     public Set<MovecraftLocation> asSet(){
         return Collections.unmodifiableSet(this.locationSet);
+    }
+
+    private void initBounds(){
+        if(!differBounds) return;
+        differBounds = false;
+        addAll(this);
     }
 
     private void initPlanes(@NotNull MovecraftLocation location){
