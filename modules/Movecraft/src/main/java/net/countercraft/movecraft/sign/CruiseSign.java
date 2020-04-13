@@ -6,12 +6,12 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.utils.SignUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
-import org.bukkit.block.data.type.WallSign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -60,29 +60,7 @@ public final class CruiseSign implements Listener{
 
             sign.setLine(0, "Cruise: ON");
             sign.update(true);
-            final BlockFace direction;
-            if (Settings.IsLegacy){
-                if (sign.getData() instanceof org.bukkit.material.Sign){
-                    org.bukkit.material.Sign signData = (org.bukkit.material.Sign) sign.getData();
-                    if (signData.isWallSign()) {
-                        direction = signData.getAttachedFace();
-                    } else {
-                        direction = signData.getFacing().getOppositeFace();
-                    }
-                }else {
-                    direction = null;
-                }
-            } else {
-                if (sign.getBlockData() instanceof org.bukkit.block.data.type.Sign){
-                    org.bukkit.block.data.type.Sign signData = (org.bukkit.block.data.type.Sign)sign.getBlockData();
-                    direction = signData.getRotation().getOppositeFace();
-                }else if (sign.getBlockData() instanceof org.bukkit.block.data.type.WallSign){
-                    WallSign signData = (WallSign)sign.getBlockData();
-                    direction = signData.getFacing().getOppositeFace();
-                } else {
-                    direction = null;
-                }
-            }
+            final BlockFace direction = SignUtils.getFacing(sign);
             c.setCruiseDirection(direction);
             c.setLastCruiseUpdate(System.currentTimeMillis());
             c.setCruising(true);
