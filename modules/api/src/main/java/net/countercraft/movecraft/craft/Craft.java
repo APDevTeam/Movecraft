@@ -320,6 +320,11 @@ public abstract class Craft {
         if(!cruising)
             return type.getTickCooldown() + chestPenalty;
 
+        // Ascent or Descent
+        if(cruiseDirection == 0x42 || cruiseDirection == 0x43) {
+            return type.getCruiseTickCooldown() + chestPenalty;
+        }
+
         if(type.getDynamicFlyBlockSpeedFactor() != 0){
             Material flyBlockMaterial = Material.getMaterial(type.getDynamicFlyBlock());
             double count = counter.getOrDefault(flyBlockMaterial, 0);
