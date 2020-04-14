@@ -17,11 +17,11 @@ import net.countercraft.movecraft.repair.Repair;
 import net.countercraft.movecraft.repair.RepairManager;
 import net.countercraft.movecraft.repair.RepairUtils;
 import net.countercraft.movecraft.utils.LegacyUtils;
+import net.countercraft.movecraft.utils.SignUtils;
 import net.countercraft.movecraft.utils.WorldEditUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -57,11 +57,11 @@ public class RepairSign implements Listener{
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK && event.getAction() != Action.LEFT_CLICK_BLOCK) {
             return;
         }
-        BlockState state = event.getClickedBlock().getState();
-        if (!(state instanceof Sign)) {
+        Block block = event.getClickedBlock();
+        if (!SignUtils.isSign(block)) {
             return;
         }
-        Sign sign = (Sign) event.getClickedBlock().getState();
+        Sign sign = (Sign) block.getState();
         String signText = ChatColor.stripColor(sign.getLine(0));
         if (signText == null) {
             return;

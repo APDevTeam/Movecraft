@@ -11,6 +11,7 @@ import net.countercraft.movecraft.events.CraftPilotEvent;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.MathUtils;
+import net.countercraft.movecraft.utils.SignUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -39,7 +40,7 @@ public final class SubcraftRotateSign implements Listener {
             return;
         }
         Block block = event.getClickedBlock();
-        if (!(block.getState() instanceof Sign)) {
+        if (!SignUtils.isSign(block)) {
             return;
         }
         Sign sign = (Sign) event.getClickedBlock().getState();

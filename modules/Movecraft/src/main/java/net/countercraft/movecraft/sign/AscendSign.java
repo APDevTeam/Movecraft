@@ -4,6 +4,7 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.CraftDetectEvent;
+import net.countercraft.movecraft.utils.SignUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -21,12 +22,13 @@ public class AscendSign implements Listener {
         World world = event.getCraft().getW();
         for(MovecraftLocation location: event.getCraft().getHitBox()){
             Block block = location.toBukkit(world).getBlock();
-            if(block.getState() instanceof Sign){
-                Sign sign = (Sign) block.getState();
-                if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Ascend: ON")) {
-                    sign.setLine(0, "Ascend: OFF");
-                    sign.update();
-                }
+            if(!SignUtils.isSign(block)){
+                return;
+            }
+            Sign sign = (Sign) block.getState();
+            if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Ascend: ON")) {
+                sign.setLine(0, "Ascend: OFF");
+                sign.update();
             }
         }
     }
@@ -38,7 +40,7 @@ public class AscendSign implements Listener {
             return;
         }
         Block block = event.getClickedBlock();
-        if (!(event.getClickedBlock().getState() instanceof Sign)){
+        if (!SignUtils.isSign(block)){
             return;
         }
         Sign sign = (Sign) event.getClickedBlock().getState();

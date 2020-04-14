@@ -6,6 +6,7 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
 import net.countercraft.movecraft.utils.BlockLimitManager;
+import net.countercraft.movecraft.utils.SignUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -28,14 +29,15 @@ public final class StatusSign implements Listener{
         World world = event.getCraft().getW();
         for(MovecraftLocation location: event.getCraft().getHitBox()){
             Block block = location.toBukkit(world).getBlock();
-            if(block.getState() instanceof Sign){
-                Sign sign = (Sign) block.getState();
-                if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Status:")) {
-                    sign.setLine(1, "");
-                    sign.setLine(2, "");
-                    sign.setLine(3, "");
-                    sign.update();
-                }
+            if(!SignUtils.isSign(block)){
+                return;
+            }
+            Sign sign = (Sign) block.getState();
+            if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Status:")) {
+                sign.setLine(1, "");
+                sign.setLine(2, "");
+                sign.setLine(3, "");
+                sign.update();
             }
         }
     }

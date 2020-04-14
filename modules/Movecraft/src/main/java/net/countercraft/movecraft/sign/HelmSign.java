@@ -5,6 +5,7 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.utils.SignUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
@@ -37,7 +38,7 @@ public final class HelmSign implements Listener {
             return;
         }
         Block block = event.getClickedBlock();
-        if (!(block.getState() instanceof Sign)) {
+        if (!SignUtils.isSign(block)) {
             return;
         }
         Sign sign = (Sign) event.getClickedBlock().getState();

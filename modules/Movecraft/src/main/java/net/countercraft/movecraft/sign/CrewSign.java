@@ -8,9 +8,9 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
-import net.countercraft.movecraft.utils.LegacyUtils;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.utils.MathUtils;
+import net.countercraft.movecraft.utils.LegacyUtils;
+import net.countercraft.movecraft.utils.SignUtils;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
@@ -72,10 +72,11 @@ public class CrewSign implements Listener {
         }
 
         Player player = event.getPlayer();
-        if (!player.isSneaking() || !(event.getClickedBlock().getState() instanceof Sign)) {
+        final Block block = event.getClickedBlock();
+        if (!player.isSneaking() || !SignUtils.isSign(block)) {
             return;
         }
-        Sign sign = (Sign) event.getClickedBlock().getState();
+        Sign sign = (Sign) block.getState();
         if (!sign.getLine(0).equalsIgnoreCase("Crew:")) {
             return;
         }
