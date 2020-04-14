@@ -39,6 +39,7 @@ public class CraftReportCommand implements CommandExecutor{
         TopicPaginator paginator = new TopicPaginator(I18nSupport.getInternationalisedString("Craft Report"));
         for (Craft craft : CraftManager.getInstance()) {
             HashHitBox hitBox = craft.getHitBox();
+
             paginator.addLine((craft.getSinking() ? ChatColor.RED : craft.getDisabled() ? ChatColor.BLUE : "") +
                     craft.getType().getCraftName() + " " +
                     ChatColor.RESET +

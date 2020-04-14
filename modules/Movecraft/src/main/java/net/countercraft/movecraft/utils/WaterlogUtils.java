@@ -10,7 +10,10 @@ import org.bukkit.block.data.Waterlogged;
 import org.bukkit.block.data.type.Slab;
 import org.bukkit.block.data.type.TrapDoor;
 
+import java.util.AbstractMap;
+
 public class WaterlogUtils {
+    private static AbstractMap.SimpleImmutableEntry<Material, Object> DEFAULT_PHASE_BLOCK = new AbstractMap.SimpleImmutableEntry<>(Material.WATER, 0);
     private WaterlogUtils(){
 
     }
@@ -31,7 +34,8 @@ public class WaterlogUtils {
                 exteriorBlock = true;
                 break;
             }
-            if (!exteriorBlock || ml.getY() > craft.getWaterLine() || !adjacentToWater(ml.toBukkit(craft.getW()))) {
+            final Material phaseBlock = craft.getPhaseBlocks().getOrDefault(ml, DEFAULT_PHASE_BLOCK).getKey();
+            if (!exteriorBlock || phaseBlock != Material.WATER || !adjacentToWater(ml.toBukkit(craft.getW()))) {
                 waterlog = false;
             } else if (wLog instanceof TrapDoor) {
                 TrapDoor td = (TrapDoor) wLog;
