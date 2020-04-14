@@ -73,6 +73,7 @@ public class Movecraft extends JavaPlugin {
     private static Essentials essentialsPlugin = null;
     private Logger logger;
     private boolean shuttingDown;
+    private boolean startup = true;
     private WorldHandler worldHandler;
     private MovecraftRepair movecraftRepair;
 
@@ -472,11 +473,13 @@ public class Movecraft extends JavaPlugin {
 
             // Startup procedure
             asyncManager = new AsyncManager();
-            asyncManager.runTaskTimer(this, 0, 1);
+            if (startup)
+                asyncManager.runTaskTimer(this, 0, 1);
             MapUpdateManager.getInstance().runTaskTimer(this, 0, 1);
             if(Settings.AssaultEnable) {
                 assaultManager = new AssaultManager(this);
-                assaultManager.runTaskTimerAsynchronously(this, 0, 20);
+                if (startup)
+                    assaultManager.runTaskTimerAsynchronously(this, 0, 20);
             }
 
             if(Settings.SiegeEnable) {
@@ -517,7 +520,8 @@ public class Movecraft extends JavaPlugin {
                     logger.log(Level.INFO, "Siege configuration loaded.");
 
                 }
-                siegeManager.runTaskTimerAsynchronously(this, 0, 20);
+                if (startup)
+                    siegeManager.runTaskTimerAsynchronously(this, 0, 20);
 
             }
             CraftManager.initialize();
@@ -526,7 +530,8 @@ public class Movecraft extends JavaPlugin {
             if (worldEditPlugin != null) {
                 if (movecraftRepair != null){
                     repairManager = new RepairManager();
-                    repairManager.runTaskTimerAsynchronously(this, 0, 1);
+                    if (startup)
+                        repairManager.runTaskTimerAsynchronously(this, 0, 1);
                     repairManager.convertOldCraftRepairStates();
                 }
             }
@@ -576,6 +581,7 @@ public class Movecraft extends JavaPlugin {
                     I18nSupport.getInternationalisedString("Startup - Enabled message"),
                     getDescription().getVersion()));
         }
+        startup = false;
     }
 
     @Override
