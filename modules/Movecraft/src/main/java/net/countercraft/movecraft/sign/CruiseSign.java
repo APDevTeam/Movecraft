@@ -61,7 +61,7 @@ public final class CruiseSign implements Listener{
 
             sign.setLine(0, "Cruise: ON");
             sign.update(true);
-            final BlockFace direction = SignUtils.getFacing(sign);
+            final BlockFace direction = SignUtils.getFacing(sign).getOppositeFace();
             c.setCruiseDirection(direction);
             c.setLastCruiseUpdate(System.currentTimeMillis());
             c.setCruising(true);
