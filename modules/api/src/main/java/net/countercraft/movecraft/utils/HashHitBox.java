@@ -17,7 +17,7 @@ public class HashHitBox implements MutableHitBox {
     private MinMaxPriorityQueue<MovecraftLocation> zQueue = MinMaxPriorityQueue.orderedBy(Comparator.comparingInt(MovecraftLocation::getZ)).create();
 
 //    private HashMap<IntPair, TreeSet<MovecraftLocation>> xyPlane = new HashMap<>();
-    private HashMap<IntPair, MinMaxPriorityQueue<MovecraftLocation>> xzPlane = new HashMap<>();
+    private HashMap<IntPair, BitSet> xzPlane = new HashMap<>();
 //    private HashMap<IntPair, TreeSet<MovecraftLocation>> yzPlane = new HashMap<>();
     private boolean differBounds = true;
 
@@ -110,7 +110,7 @@ public class HashHitBox implements MutableHitBox {
         if(!xzPlane.containsKey(point) || xzPlane.get(point).isEmpty() ){
             return -1;
         }
-        return xzPlane.get(point).peekLast().getY();
+        return xzPlane.get(point).previousSetBit(xzPlane.get(point).size());
     }
 
     public int getLocalMinY(int x, int z){
@@ -122,7 +122,7 @@ public class HashHitBox implements MutableHitBox {
         if(!xzPlane.containsKey(point) || xzPlane.get(point).isEmpty()){
             return -1;
         }
-        return xzPlane.get(point).peekFirst().getY();
+        return xzPlane.get(point).nextSetBit(0);
     }
 
     @NotNull
@@ -216,7 +216,7 @@ public class HashHitBox implements MutableHitBox {
             yQueue.add(movecraftLocation);
             zQueue.add(movecraftLocation);
             initPlanes(movecraftLocation);
-            xzPlane.get(new IntPair(movecraftLocation, Plane.XZ)).add(movecraftLocation);
+            xzPlane.get(new IntPair(movecraftLocation, Plane.XZ)).set(movecraftLocation.getY());
         }
         return locationSet.add(movecraftLocation);
     }
@@ -231,7 +231,7 @@ public class HashHitBox implements MutableHitBox {
         zQueue.remove(location);
         IntPair point = new IntPair(location, Plane.XZ);
         if(xzPlane.containsKey(point)){
-            xzPlane.get(point).remove(location);
+            xzPlane.get(point).clear(location.getY());
         }
         return true;
     }
@@ -337,7 +337,7 @@ public class HashHitBox implements MutableHitBox {
 
     private void initPlanes(@NotNull MovecraftLocation location){
 //        xyPlane.putIfAbsent(new IntPair(location, Plane.XY), new TreeSet<>(Comparator.comparingInt(MovecraftLocation::getZ)));
-        xzPlane.putIfAbsent(new IntPair(location, Plane.XZ), MinMaxPriorityQueue.orderedBy(Comparator.comparingInt(MovecraftLocation::getY)).maximumSize(256).create());
+        xzPlane.putIfAbsent(new IntPair(location, Plane.XZ), new BitSet(256));
 //        yzPlane.putIfAbsent(new IntPair(location, Plane.YZ), new TreeSet<>(Comparator.comparingInt(MovecraftLocation::getX)));
     }
     private enum Plane{
