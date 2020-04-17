@@ -58,7 +58,7 @@ public class WGCustomFlagsUtils {
 
 
     public void init() {
-        if (Movecraft.FLAG_PILOT != null) {
+        /*if (Movecraft.FLAG_PILOT != null) {
             this.registerStageFlag(Movecraft.FLAG_PILOT);
         }
         if (Movecraft.FLAG_MOVE != null) {
@@ -69,7 +69,7 @@ public class WGCustomFlagsUtils {
         }
         if (Movecraft.FLAG_SINK != null) {
             this.registerStageFlag(Movecraft.FLAG_SINK);
-        }
+        }*/
     }
 
     public boolean validateFlag(Location loc, Object flag) {

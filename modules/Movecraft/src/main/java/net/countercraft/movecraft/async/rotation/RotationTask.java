@@ -17,14 +17,8 @@
 
 package net.countercraft.movecraft.async.rotation;
 
-import com.palmergames.bukkit.towny.object.Town;
 import com.palmergames.bukkit.towny.object.TownBlock;
 import com.palmergames.bukkit.towny.object.TownyWorld;
-import com.sk89q.worldedit.bukkit.BukkitAdapter;
-import com.sk89q.worldedit.math.BlockVector3;
-import com.sk89q.worldguard.LocalPlayer;
-import com.sk89q.worldguard.WorldGuard;
-import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
@@ -37,7 +31,9 @@ import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.update.CraftRotateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import net.countercraft.movecraft.utils.*;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Furnace;
@@ -353,64 +349,6 @@ public class RotationTask extends AsyncTask {
 
     public boolean getIsSubCraft() {
         return isSubCraft;
-    }
-
-    private void isTownyBlock(Location plugLoc, Player craftPilot){
-        //towny
-        Player p = craftPilot == null ? getCraft().getNotificationPlayer() : craftPilot;
-        if (p == null) {
-            return;
-        }
-        if (Movecraft.getInstance().getWorldGuardPlugin() != null && Movecraft.getInstance().getWGCustomFlagsPlugin() != null && Settings.WGCustomFlagsUsePilotFlag) {
-            LocalPlayer lp = Movecraft.getInstance().getWorldGuardPlugin().wrapPlayer(p);
-            WGCustomFlagsUtils WGCFU = new WGCustomFlagsUtils();
-            if (!WGCFU.validateFlag(plugLoc, Movecraft.FLAG_ROTATE, lp)) {
-                failed = true;
-                failMessage = String.format(I18nSupport.getInternationalisedString("WGCustomFlags - Rotation Failed") + " @ %d,%d,%d", plugLoc.getX(), plugLoc.getY(), plugLoc.getZ());
-                return;
-            }
-        }
-
-        if (!townyEnabled) {
-            return;
-        }
-        TownBlock townBlock = TownyUtils.getTownBlock(plugLoc);
-        if (townBlock == null || townBlockSet.contains(townBlock)) {
-            return;
-        }
-        if (TownyUtils.validateCraftMoveEvent(p, plugLoc, townyWorld)) {
-            townBlockSet.add(townBlock);
-            return;
-        }
-        Town town = TownyUtils.getTown(townBlock);
-        if (town == null) {
-            return;
-        }
-        Location locSpawn = TownyUtils.getTownSpawn(townBlock);
-        if (locSpawn == null || !townyWorldHeightLimits.validate(newHitBox.getMaxY(), locSpawn.getBlockY())) {
-            failed = true;
-        }
-        if (failed) {
-            if (Movecraft.getInstance().getWorldGuardPlugin() != null && Movecraft.getInstance().getWGCustomFlagsPlugin() != null && Settings.WGCustomFlagsUsePilotFlag) {
-                LocalPlayer lp = Movecraft.getInstance().getWorldGuardPlugin().wrapPlayer(p);
-                ApplicableRegionSet regions;
-                if (Settings.IsLegacy){
-                    regions = LegacyUtils.getApplicableRegions(LegacyUtils.getRegionManager(Movecraft.getInstance().getWorldGuardPlugin(), plugLoc.getWorld()), plugLoc);//.getApplicableRegions();
-                } else {
-                    regions = WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(plugLoc.getWorld())).getApplicableRegions(BlockVector3.at(plugLoc.getBlockX(), plugLoc.getBlockY(), plugLoc.getBlockZ()));
-                }
-
-                if (regions.size() != 0) {
-                    WGCustomFlagsUtils WGCFU = new WGCustomFlagsUtils();
-                    if (WGCFU.validateFlag(plugLoc, Movecraft.FLAG_ROTATE, lp)) {
-                        failed = false;
-                    }
-                }
-            }
-        }
-        if (failed) {
-            failMessage = String.format(I18nSupport.getInternationalisedString("Towny - Rotation Failed") + " %s @ %d,%d,%d", town.getName(), plugLoc.getX(), plugLoc.getY(), plugLoc.getZ());
-        }
     }
 
 

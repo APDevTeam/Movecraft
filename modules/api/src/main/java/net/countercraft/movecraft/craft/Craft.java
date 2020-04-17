@@ -101,6 +101,7 @@ public abstract class Craft {
         this.disabled = false;
         this.origPilotTime = System.currentTimeMillis();
         numMoves = 0;
+        fluidLocations = new HashHitBox();
     }
 
     public boolean isNotProcessing() {

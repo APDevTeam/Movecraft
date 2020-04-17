@@ -23,8 +23,8 @@ import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarFlag;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -35,7 +35,7 @@ import java.util.logging.Level;
 
 import static net.countercraft.movecraft.utils.ChatUtils.MOVECRAFT_COMMAND_PREFIX;
 
-public class SiegeCommand implements CommandExecutor {
+public class SiegeCommand implements TabExecutor {
     //TODO: Add tab complete
     private final NumberFormat currencyFormat = NumberFormat.getCurrencyInstance();
     private final Map<UUID,Long> playerTimeMap = new HashMap<>();
@@ -194,6 +194,7 @@ public class SiegeCommand implements CommandExecutor {
         Movecraft.getInstance().getEconomy().withdrawPlayer(player, cost);
         siege.setProgressBar(Bukkit.createBossBar(siege.getName(), BarColor.BLUE, BarStyle.SEGMENTED_20, BarFlag.DARKEN_SKY));
         siege.getProgressBar().setProgress(0.0);
+        siege.getProgressBar().setVisible(true);
         siege.setPlayerUUID(player.getUniqueId());
         siege.setStartTime(System.currentTimeMillis());
         siege.setStage(SiegeStage.PREPERATION);
@@ -383,5 +384,36 @@ public class SiegeCommand implements CommandExecutor {
 
 
         }
+    }
+
+    @Nullable
+    @Override
+    public List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] strings) {
+        if (!commandSender.hasPermission("movecraft.siege")) {
+            return Collections.emptyList();
+        }
+        ArrayList<String> tabCompletions = new ArrayList<>();
+        if (strings.length <= 1) {
+            tabCompletions.add("begin");
+            tabCompletions.add("info");
+            tabCompletions.add("abort");
+            tabCompletions.add("list");
+        } else if (strings[0].equalsIgnoreCase("info")) {
+            for (Siege siege : Movecraft.getInstance().getSiegeManager().getSieges()) {
+                tabCompletions.add(siege.getName());
+            }
+        }
+        Collections.sort(tabCompletions);
+        if (strings.length == 0) {
+            return tabCompletions;
+        }
+        List<String> completions = new ArrayList<>();
+        for (String tabCompletion : tabCompletions) {
+            if (!tabCompletion.startsWith(strings[strings.length - 1]))
+                continue;
+            completions.add(tabCompletion);
+        }
+        Collections.sort(completions);
+        return completions;
     }
 }

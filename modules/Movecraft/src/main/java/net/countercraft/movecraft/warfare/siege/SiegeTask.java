@@ -1,5 +1,7 @@
 package net.countercraft.movecraft.warfare.siege;
 
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import net.countercraft.movecraft.localisation.I18nSupport;
 
@@ -12,6 +14,12 @@ public abstract class SiegeTask extends BukkitRunnable {
 
     @Override
     public abstract void run();
+
+    protected void addPlayersToProgressBar() {
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            siege.getProgressBar().addPlayer(p);
+        }
+    }
 
     public String formatMinutes(int seconds) {
         if (seconds < 60) {

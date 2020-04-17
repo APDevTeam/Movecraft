@@ -280,23 +280,11 @@ public class AsyncManager extends BukkitRunnable {
                                         I18nSupport.getInternationalisedString("Detection - Successfully piloted craft")
                                 + " Size: " + c.getHitBox().size());
                         if (!failed) {
-                            Movecraft.getInstance().getLogger().log(Level.INFO,
-                                    String.format(
-                                            I18nSupport.getInternationalisedString(
-                                                    "Detection - Success - Log Output"),
-                                            notifyP.getName(), c.getType().getCraftName(), c.getHitBox().size(),
-                                            c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
+                            Movecraft.getInstance().getLogger().log(Level.INFO, String.format(I18nSupport.getInternationalisedString("Detection - Success - Log Output"), notifyP.getName(), c.getType().getCraftName(), c.getHitBox().size(), c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
                         }
 
                     } else {
-                        Movecraft.getInstance().getLogger().log(Level.INFO, failed ?
-                                        I18nSupport.getInternationalisedString("Detection - NULL Player Detection Failed") + ": " + event.getFailMessage()
-                                        :
-                                        String.format(
-                                        I18nSupport.getInternationalisedString(
-                                                "Detection - Success - Log Output"),
-                                        "NULL PLAYER", c.getType().getCraftName(), c.getHitBox().size(),
-                                        c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
+                        Movecraft.getInstance().getLogger().log(Level.INFO, failed ? I18nSupport.getInternationalisedString("Detection - NULL Player Detection Failed") + ": " + event.getFailMessage() : String.format(I18nSupport.getInternationalisedString("Detection - Success - Log Output"), "NULL PLAYER", c.getType().getCraftName(), c.getHitBox().size(), c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
                     }
                     if (!failed)
                         CraftManager.getInstance().addCraft(c, p);
@@ -675,7 +663,7 @@ public class AsyncManager extends BukkitRunnable {
             int dz = 0;
             if (craft.getType().getKeepMovingOnSink()) {
                 final int limit = craft.getType().getKeepMovingOnSinkMaxMove();
-                final boolean limitMotion = craft.getType().getKeepMovingOnSinkMaxMove() > -1;
+                final boolean limitMotion = limit > -1;
                 dx = limitMotion ? Math.min(craft.getLastDX(), (craft.getLastDX() > 0 ? 1 : -1) * limit)  : craft.getLastDX();
                 dz = limitMotion ? Math.min(craft.getLastDZ(), (craft.getLastDX() > 0 ? 1 : -1) * limit)  : craft.getLastDZ();
             }

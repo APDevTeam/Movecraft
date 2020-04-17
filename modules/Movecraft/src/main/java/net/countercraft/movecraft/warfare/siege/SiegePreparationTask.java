@@ -16,6 +16,7 @@ public class SiegePreparationTask extends SiegeTask {
     @Override
     public void run() {
         siege.getProgressBar().setVisible(true);
+        addPlayersToProgressBar();
         int timePassed = ((int)(System.currentTimeMillis() - siege.getStartTime())); //time passed in milliseconds
         int timePassedInSeconds = timePassed / 1000;
         double progress = (double) timePassedInSeconds / (double) siege.getDelayBeforeStart();
@@ -23,6 +24,7 @@ public class SiegePreparationTask extends SiegeTask {
         if (timePassedInSeconds >= siege.getDelayBeforeStart()){
             siege.getProgressBar().setProgress(0.0);
             siege.setStage(SiegeStage.IN_PROGRESS);
+            return;
         }
         if ((siege.getDelayBeforeStart() - timePassedInSeconds) % Settings.SiegeTaskSeconds != 0 || timePassed < 3000){
              return;

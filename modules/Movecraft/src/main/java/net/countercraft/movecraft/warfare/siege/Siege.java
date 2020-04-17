@@ -16,6 +16,7 @@ public class Siege {
     private long startTime;
     private int lastUpdate;
     private long lastPayout;
+    private boolean progressTaskStarted;
     private final boolean doubleCostPerOwnedSiegeRegion;
     private UUID playerUUID;
     private BossBar progressBar;
@@ -165,5 +166,13 @@ public class Siege {
 
     public void setProgressBar(BossBar progressBar) {
         this.progressBar = progressBar;
+    }
+
+    public boolean isProgressTaskStarted() {
+        return progressTaskStarted;
+    }
+
+    public void setProgressTaskStarted(boolean progressTaskStarted) {
+        this.progressTaskStarted = progressTaskStarted;
     }
 }

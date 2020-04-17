@@ -26,6 +26,7 @@ public class SiegeProgressTask extends SiegeTask {
 
     //every 20 ticks = 1 second
     public void run() {
+        addPlayersToProgressBar();
         int timeLeft = (siege.getDuration() - (int) ((System.currentTimeMillis() - siege.getStartTime())/1000));
         double progress = (double) (siege.getDelayBeforeStart() - timeLeft) / (double) (siege.getDuration() - siege.getDelayBeforeStart());
         siege.getProgressBar().setProgress(Math.min(progress, 1.0));
@@ -34,10 +35,10 @@ public class SiegeProgressTask extends SiegeTask {
 
         BarColor bColor = leaderPilotingShip(siegeCraft) && leaderShipInRegion(siegeCraft, siegeLeader) ? BarColor.GREEN : BarColor.RED;
         siege.getProgressBar().setColor(bColor);
-        if (timeLeft % Settings.SiegeTaskSeconds != 0) {
+        if (timeLeft % Settings.SiegeTaskSeconds != 0 && siege.isProgressTaskStarted()) {
             return;
         }
-
+        siege.setProgressTaskStarted(true);
 
 
         if (timeLeft > 10) {
@@ -88,6 +89,7 @@ public class SiegeProgressTask extends SiegeTask {
         }
         siege.getProgressBar().setVisible(false);
         siege.getProgressBar().setColor(BarColor.BLUE);
+        siege.setProgressTaskStarted(false);
         siege.setStage(SiegeStage.INACTIVE);
     }
 

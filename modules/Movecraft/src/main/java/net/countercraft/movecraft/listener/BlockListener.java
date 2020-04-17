@@ -36,6 +36,7 @@ import org.bukkit.*;
 import org.bukkit.block.*;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Directional;
+import org.bukkit.block.data.type.Door;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -246,11 +247,10 @@ public class BlockListener implements Listener {
                     BlockData data = block.getBlockData();
                     if (block.getType() == Material.REPEATER || block.getType() == Material.COMPARATOR)
                         faceAlwaysDown = true;
-                    if (data instanceof Directional && !faceAlwaysDown)
+                    if (data instanceof Directional && !faceAlwaysDown && !(data instanceof Door))
                         face = ((Directional) data).getFacing().getOppositeFace();
                 }
                 if (!event.getBlock().getRelative(face).getType().isSolid()) {
-//						if(event.getEventName().equals("BlockPhysicsEvent")) {
                     event.setCancelled(true);
                     return;
                 }
