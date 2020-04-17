@@ -325,6 +325,7 @@ public class Movecraft extends JavaPlugin {
             Settings.WorldGuardBlockMoveOnBuildPerm = getConfig().getBoolean("WorldGuardBlockMoveOnBuildPerm", false);
             Settings.WorldGuardBlockSinkOnPVPPerm = getConfig().getBoolean("WorldGuardBlockSinkOnPVPPerm", false);
             logger.log(Level.INFO, "Settings: WorldGuardBlockMoveOnBuildPerm - {0}, WorldGuardBlockSinkOnPVPPerm - {1}", new Object[]{Settings.WorldGuardBlockMoveOnBuildPerm, Settings.WorldGuardBlockSinkOnPVPPerm});
+            getServer().getPluginManager().registerEvents(new WorldGuardCompatManager(), this);
         }
 
 
@@ -560,7 +561,7 @@ public class Movecraft extends JavaPlugin {
         Plugin wGPlugin = getServer().getPluginManager().getPlugin("WorldGuard");
         if (wGPlugin instanceof WorldGuardPlugin) {
             worldGuardPlugin = (WorldGuardPlugin) wGPlugin;
-            getServer().getPluginManager().registerEvents(new WorldGuardCompatManager(), this);
+            WorldGuardCompatManager.registerFlags();
         }
     }
 

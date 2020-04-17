@@ -38,7 +38,7 @@ public class WorldGuardCompatManager implements Listener {
     public static StateFlag FLAG_ROTATE = new StateFlag("movecraft-rotate", true);
     public static StateFlag FLAG_SINK = new StateFlag("movecraft-sink", true);
 
-    public WorldGuardCompatManager() {
+    public static void registerFlags() {
         FlagRegistry flags;
         if (Settings.IsLegacy) {
             try {
