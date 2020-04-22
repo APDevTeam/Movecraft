@@ -69,7 +69,7 @@ public abstract class Craft {
     @Nullable private Player notificationPlayer;
     @Nullable private Player cannonDirector;
     @Nullable private Player AADirector;
-    private float meanMoveTime;
+    private float meanCruiseTime;
     private int numMoves;
     @NotNull private final Map<MovecraftLocation,Material> phaseBlocks = new HashMap<>();
     @NotNull private final HashMap<UUID, Location> crewSigns = new HashMap<>();
@@ -298,12 +298,12 @@ public abstract class Craft {
         return origPilotTime;
     }
 
-    public float getMeanMoveTime() {
-        return meanMoveTime;
+    public float getMeanCruiseTime() {
+        return meanCruiseTime;
     }
 
-    public void addMoveTime(float moveTime){
-        meanMoveTime = (meanMoveTime*numMoves + moveTime)/(++numMoves);
+    public void addCruiseTime(float cruiseTime){
+        meanCruiseTime = (meanCruiseTime *numMoves + cruiseTime)/(++numMoves);
     }
 
     public int getTickCooldown() {
@@ -315,13 +315,18 @@ public abstract class Craft {
             Material mat = location.toBukkit(w).getBlock().getType();
             counter.put(mat, counter.getOrDefault(mat, 0) + 1);
         }
-        int chestPenalty = (int)(counter.getOrDefault(Material.CHEST, 0) + counter.getOrDefault(Material.TRAPPED_CHEST, 0) * type.getChestPenalty());
+        int chestPenalty = (int)(((counter.getOrDefault(Material.CHEST, 0) + counter.getOrDefault(Material.TRAPPED_CHEST, 0)) * type.getChestPenalty()));
 
         if(!cruising)
             return type.getTickCooldown() + chestPenalty;
 
         // Ascent or Descent
         if(cruiseDirection == 0x42 || cruiseDirection == 0x43) {
+            if(Settings.Debug) {
+                Bukkit.broadcastMessage("Skip: " + type.getCruiseSkipBlocks());
+                Bukkit.broadcastMessage("Tick: " + type.getCruiseTickCooldown());
+                Bukkit.broadcastMessage("Penalty: " + chestPenalty);
+            }
             return type.getCruiseTickCooldown() + chestPenalty;
         }
 
@@ -334,7 +339,7 @@ public abstract class Craft {
 
         if(type.getDynamicLagSpeedFactor() == 0.0 || type.getDynamicLagPowerFactor() == 0.0 || Math.abs(type.getDynamicLagPowerFactor()) > 1.0)
             return type.getCruiseTickCooldown() + chestPenalty;
-        if(meanMoveTime == 0)
+        if(meanCruiseTime == 0)
             return type.getCruiseTickCooldown() + chestPenalty;
 
         if(Settings.Debug) {
@@ -343,11 +348,11 @@ public abstract class Craft {
             Bukkit.broadcastMessage("SpeedFactor: " + type.getDynamicLagSpeedFactor());
             Bukkit.broadcastMessage("PowerFactor: " + type.getDynamicLagPowerFactor());
             Bukkit.broadcastMessage("MinSpeed: " + type.getDynamicLagMinSpeed());
-            Bukkit.broadcastMessage("MoveTime: " + getMeanMoveTime() * 1000.0 + "ms");
+            Bukkit.broadcastMessage("CruiseTime: " + getMeanCruiseTime() * 1000.0 + "ms");
         }
 
         double speed = 20.0 * (type.getCruiseSkipBlocks() + 1.0) / (float)type.getCruiseTickCooldown();
-        speed -= type.getDynamicLagSpeedFactor() * Math.pow(getMeanMoveTime() * 1000.0, type.getDynamicLagPowerFactor());
+        speed -= type.getDynamicLagSpeedFactor() * Math.pow(getMeanCruiseTime() * 1000.0, type.getDynamicLagPowerFactor());
         speed = Math.max(type.getDynamicLagMinSpeed(), speed);
         return (int)Math.round((20.0 * (type.getCruiseSkipBlocks() + 1.0)) / speed);
             //In theory, the chest penalty is not needed for a DynamicLag craft.
