@@ -8,6 +8,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.data.Bisected;
 import org.bukkit.block.data.Waterlogged;
 import org.bukkit.block.data.type.Slab;
+import org.bukkit.block.data.type.Stairs;
 import org.bukkit.block.data.type.TrapDoor;
 
 import java.util.AbstractMap;
@@ -35,7 +36,7 @@ public class WaterlogUtils {
                 break;
             }
             final Material phaseBlock = craft.getPhaseBlocks().getOrDefault(ml, DEFAULT_PHASE_BLOCK).getKey();
-            if (!exteriorBlock || phaseBlock != Material.WATER || !adjacentToWater(ml.toBukkit(craft.getW()))) {
+            if (!exteriorBlock || phaseBlock != Material.WATER) {
                 waterlog = false;
             } else if (wLog instanceof TrapDoor) {
                 TrapDoor td = (TrapDoor) wLog;
@@ -49,6 +50,17 @@ public class WaterlogUtils {
                 if (s.getType() == Slab.Type.TOP && (interior.contains(ml.translate(0, -1, 0)) || craft.getHitBox().contains(ml.translate(0, -1, 0)))) {
                     waterlog = false;
                 } else if (s.getType() == Slab.Type.BOTTOM && (interior.contains(ml.translate(0, 1, 0)) || craft.getHitBox().contains(ml.translate(0, 1, 0)))) {
+                    waterlog = false;
+                }
+            } else if (wLog instanceof Stairs) {
+                Stairs s = (Stairs) wLog;
+                MovecraftLocation facingLoc = MathUtils.bukkit2MovecraftLoc(b.getRelative(s.getFacing()).getLocation());
+                if (interior.contains(facingLoc) || craft.getHitBox().contains(facingLoc)) {
+                    waterlog = false;
+                }
+                if (s.getHalf() == Bisected.Half.TOP && (interior.contains(ml.translate(0, -1, 0)) || craft.getHitBox().contains(ml.translate(0, -1, 0)))) {
+                    waterlog = false;
+                } else if (s.getHalf() == Bisected.Half.BOTTOM && (interior.contains(ml.translate(0, 1, 0)) || craft.getHitBox().contains(ml.translate(0, 1, 0)))) {
                     waterlog = false;
                 }
             }
