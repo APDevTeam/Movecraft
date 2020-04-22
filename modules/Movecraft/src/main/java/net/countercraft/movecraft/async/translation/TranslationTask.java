@@ -15,6 +15,8 @@ import net.countercraft.movecraft.mapUpdater.update.*;
 import net.countercraft.movecraft.utils.HashHitBox;
 import net.countercraft.movecraft.utils.HitBox;
 import net.countercraft.movecraft.utils.MutableHitBox;
+import net.countercraft.movecraft.utils.SolidHitBox;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
@@ -28,6 +30,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
+
+import static net.countercraft.movecraft.utils.MathUtils.withinWorldBorder;
 
 public class TranslationTask extends AsyncTask {
     private static final int[] FALL_THROUGH_BLOCKS = {0, 8, 9, 10, 11, 31, 37, 38, 39, 40, 50, 51, 55, 59, 63, 65, 68, 69, 70, 72, 75, 76, 77, 78, 83, 85, 93, 94, 111, 141, 142, 143, 171};
@@ -161,6 +165,10 @@ public class TranslationTask extends AsyncTask {
                 fail(String.format(I18nSupport.getInternationalisedString("Translation - Failed Craft is obstructed") + " @ %d,%d,%d,%s", newLocation.getX(), newLocation.getY(), newLocation.getZ(), newLocation.toBukkit(craft.getW()).getBlock().getType().toString()));
                 return;
             }
+            if (!withinWorldBorder(craft.getW(), newLocation)) {
+                fail(I18nSupport.getInternationalisedString("Translation - Failed Craft cannot pass world border") + String.format(" @ %d,%d,%d", newLocation.getX(), newLocation.getY(), newLocation.getZ()));
+                return;
+            }
 
             boolean blockObstructed;
             if (craft.getSinking()) {
@@ -276,7 +284,8 @@ public class TranslationTask extends AsyncTask {
         if(!collisionBox.isEmpty() && craft.getType().getCruiseOnPilot()){
             CraftManager.getInstance().removeCraft(craft);
             for(MovecraftLocation location : oldHitBox){
-                updates.add(new BlockCreateCommand(craft.getW(), location, craft.getPhaseBlocks().getOrDefault(location, Material.AIR)));
+                ImmutablePair<Material, Byte> phaseBlock = craft.getPhaseBlocks().getOrDefault(location, new ImmutablePair<>(Material.AIR, (byte) 0));
+                updates.add(new BlockCreateCommand(craft.getW(), location, phaseBlock.getKey(), phaseBlock.getValue()));
             }
             newHitBox = new HashHitBox();
         }
@@ -341,7 +350,7 @@ public class TranslationTask extends AsyncTask {
         if (!playSound) {
             return;
         }
-        craft.getW().playSound(location, Sound.BLOCK_ANVIL_LAND, 1.0f, 0.25f);
+        craft.getW().playSound(location, craft.getType().getCollisionSound(), 1.0f, 0.25f);
     }
 
     private static final MovecraftLocation[] SHIFTS = {
@@ -538,12 +547,14 @@ public class TranslationTask extends AsyncTask {
 
     private int dropDistance (HashHitBox hitBox) {
         MutableHitBox bottomLocs = new HashHitBox();
-        for (MovecraftLocation location : hitBox){
-            if (location.getY() != hitBox.getLocalMinY(location.getX(), location.getZ())) {
+        MovecraftLocation corner1 = new MovecraftLocation(hitBox.getMinX(), 0, hitBox.getMinZ());
+        MovecraftLocation corner2 = new MovecraftLocation(hitBox.getMaxX(), 0, hitBox.getMaxZ());
+        for(MovecraftLocation location : new SolidHitBox(corner1, corner2)){
+            int test = hitBox.getLocalMinY(location.getX(), location.getZ());
+            if(test == -1){
                 continue;
             }
-            //Otherwise, add to bottom locations
-            bottomLocs.add(location.translate(0, -1, 0));
+            bottomLocs.add(new MovecraftLocation(location.getX(), test, location.getZ()));
         }
         int dropDistance = 0;
 
@@ -581,13 +592,16 @@ public class TranslationTask extends AsyncTask {
         if (hitBox.getMinY() <= craft.getType().getMinHeightLimit()) {
             return true;
         }
-        for (MovecraftLocation location : hitBox){
-            if (location.getY() > hitBox.getLocalMinY(location.getX(), location.getZ())) {
+        MovecraftLocation corner1 = new MovecraftLocation(hitBox.getMinX(), 0, hitBox.getMinZ());
+        MovecraftLocation corner2 = new MovecraftLocation(hitBox.getMaxX(), 0, hitBox.getMaxZ());
+        for(MovecraftLocation location : new SolidHitBox(corner1, corner2)){
+            int test = hitBox.getLocalMinY(location.getX(), location.getZ());
+            if(test == -1){
                 continue;
             }
-            //Otherwise, add to bottom locations
-            bottomLocs.add(location);
+            bottomLocs.add(new MovecraftLocation(location.getX(), test, location.getZ()));
         }
+
         boolean bottomLocsOnGround = false;
         for (MovecraftLocation bottomLoc : bottomLocs){
             translatedBottomLocs.add(bottomLoc.translate(dx, dy, dz));
