@@ -54,13 +54,14 @@ public class WaterlogUtils {
                 }
             } else if (wLog instanceof Stairs) {
                 Stairs s = (Stairs) wLog;
-                MovecraftLocation facingLoc = MathUtils.bukkit2MovecraftLoc(b.getRelative(s.getFacing()).getLocation());
-                if (interior.contains(facingLoc) || craft.getHitBox().contains(facingLoc)) {
-                    waterlog = false;
-                }
+                MovecraftLocation facingLoc = MathUtils.bukkit2MovecraftLoc(b.getRelative(s.getFacing().getOppositeFace()).getLocation());
+
                 if (s.getHalf() == Bisected.Half.TOP && (interior.contains(ml.translate(0, -1, 0)) || craft.getHitBox().contains(ml.translate(0, -1, 0)))) {
                     waterlog = false;
                 } else if (s.getHalf() == Bisected.Half.BOTTOM && (interior.contains(ml.translate(0, 1, 0)) || craft.getHitBox().contains(ml.translate(0, 1, 0)))) {
+                    waterlog = false;
+                }
+                if (interior.contains(facingLoc) || craft.getHitBox().contains(facingLoc)) {
                     waterlog = false;
                 }
             }
