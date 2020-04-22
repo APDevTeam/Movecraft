@@ -14,14 +14,15 @@ import org.bukkit.block.data.type.TrapDoor;
 import java.util.AbstractMap;
 
 public class WaterlogUtils {
-    private static AbstractMap.SimpleImmutableEntry<Material, Object> DEFAULT_PHASE_BLOCK = new AbstractMap.SimpleImmutableEntry<>(Material.WATER, 0);
+    private static AbstractMap.SimpleImmutableEntry<Material, Object> DEFAULT_PHASE_BLOCK = new AbstractMap.SimpleImmutableEntry<>(Material.AIR, 0);
     private WaterlogUtils(){
 
     }
     public static void waterlogBlocksOnCraft(Craft craft, HitBox interior) {
 
         for (MovecraftLocation ml : craft.getHitBox()) {
-            boolean waterlog = true;
+            final Material phaseBlock = craft.getPhaseBlocks().getOrDefault(ml, DEFAULT_PHASE_BLOCK).getKey();
+            boolean waterlog = phaseBlock == Material.WATER;
             Block b = ml.toBukkit(craft.getW()).getBlock();
             if (!(b.getBlockData() instanceof Waterlogged)) {
                 continue;
@@ -35,10 +36,11 @@ public class WaterlogUtils {
                 exteriorBlock = true;
                 break;
             }
-            final Material phaseBlock = craft.getPhaseBlocks().getOrDefault(ml, DEFAULT_PHASE_BLOCK).getKey();
-            if (!exteriorBlock || phaseBlock != Material.WATER) {
+
+            if (!exteriorBlock) {
                 waterlog = false;
-            } else if (wLog instanceof TrapDoor) {
+            }
+            if (wLog instanceof TrapDoor) {
                 TrapDoor td = (TrapDoor) wLog;
                 if (td.getHalf() == Bisected.Half.TOP && (interior.contains(ml.translate(0, -1, 0)) || craft.getHitBox().contains(ml.translate(0, -1, 0)))) {
                     waterlog = false;
