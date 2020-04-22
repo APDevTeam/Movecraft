@@ -20,6 +20,7 @@ package net.countercraft.movecraft.craft;
 import net.countercraft.movecraft.config.Settings;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.Yaml;
 
@@ -96,6 +97,7 @@ final public class CraftType {
     @NotNull private final Set<Material> forbiddenHoverOverBlocks;
     private final int gravityDropDistance;
     private final int gravityInclineDistance;
+    private final Sound collisionSound;
 
     @SuppressWarnings("unchecked")
     public CraftType(File f) {
@@ -249,6 +251,7 @@ final public class CraftType {
         gravityInclineDistance = integerFromObject(data.getOrDefault("gravityInclineDistance", -1));
         int dropdist = integerFromObject(data.getOrDefault("gravityDropDistance", -8));
         gravityDropDistance = dropdist > 0 ? -dropdist : dropdist;
+        collisionSound = Sound.valueOf((String) data.getOrDefault("collisionSound", "BLOCK_ANVIL_LAND"));
     }
 
     private int integerFromObject(Object obj) {
@@ -647,6 +650,11 @@ final public class CraftType {
 
     public int getGravityInclineDistance() {
         return gravityInclineDistance;
+    }
+
+    @NotNull
+    public Sound getCollisionSound() {
+        return collisionSound;
     }
 
     private class TypeNotFoundException extends RuntimeException {

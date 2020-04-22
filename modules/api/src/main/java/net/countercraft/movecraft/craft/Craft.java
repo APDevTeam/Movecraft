@@ -24,6 +24,7 @@ import net.countercraft.movecraft.events.CraftSinkEvent;
 import net.countercraft.movecraft.utils.HashHitBox;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -33,9 +34,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
@@ -71,7 +70,7 @@ public abstract class Craft {
     @Nullable private Player AADirector;
     private float meanCruiseTime;
     private int numMoves;
-    @NotNull private final Map<MovecraftLocation,Material> phaseBlocks = new HashMap<>();
+    @NotNull private final Map<MovecraftLocation, ImmutablePair<Material, Byte>> phaseBlocks = new HashMap<>();
     @NotNull private final HashMap<UUID, Location> crewSigns = new HashMap<>();
     @NotNull private String name = "";
 
@@ -162,6 +161,13 @@ public abstract class Craft {
         this.sinking = true;
 
     }
+
+
+    /**
+     * Gets the crafts that have made contact with this craft
+     * @return a set of crafts on contact with this craft
+     */
+    public abstract Set<Craft> getContacts();
 
     public boolean getDisabled() {
         return disabled;
@@ -428,7 +434,7 @@ public abstract class Craft {
     }
 
     @NotNull
-    public Map<MovecraftLocation,Material> getPhaseBlocks(){
+    public Map<MovecraftLocation, ImmutablePair<Material, Byte>> getPhaseBlocks(){
         return phaseBlocks;
     }
 
