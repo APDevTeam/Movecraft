@@ -84,11 +84,15 @@ public class CraftTranslateCommand extends UpdateCommand {
             for (Entity entity : entities){
                 vehicle = entity.getVehicle();
                 if (entity.getType() == EntityType.PLAYER) {
-
+                    //Only teleport one player if more players ride the same vehicle
                     if (playerVehicle != null && playerVehicle.getPassengers().contains(entity)) {
                         continue;
                     }
                     playerVehicle = entity.getVehicle();
+                    //If player has a vehicle and craft should only move players, eject its passengers
+                    if (playerVehicle != null && craft.getType().getOnlyMovePlayers()) {
+                        playerVehicle.eject();
+                    }
                     toMove.add(new EntityUpdateCommand(entity, displacement.getX(), displacement.getY(), displacement.getZ(), 0, 0));
                 } else if (!craft.getType().getOnlyMovePlayers() || entity.getType() == EntityType.PRIMED_TNT) {
                     boolean isPlayerVehicle = false;

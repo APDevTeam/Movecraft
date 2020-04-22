@@ -106,6 +106,10 @@ public class CraftRotateCommand extends UpdateCommand {
                         continue;
                     }
                     playerVehicle = entity.getVehicle();
+                    //If player has a vehicle and craft should only move players, eject its passengers
+                    if (playerVehicle != null && craft.getType().getOnlyMovePlayers()) {
+                        playerVehicle.eject();
+                    }
                     toRotate.add(new EntityUpdateCommand(entity, rotatedCoords[0] + tOP.getX() - entity.getLocation().getX(), 0, rotatedCoords[1] + tOP.getZ() - entity.getLocation().getZ(), newYaw, 0));
                 } else if (!craft.getType().getOnlyMovePlayers() || entity.getType() == EntityType.PRIMED_TNT) {
                     boolean isPlayerVehicle = false;
