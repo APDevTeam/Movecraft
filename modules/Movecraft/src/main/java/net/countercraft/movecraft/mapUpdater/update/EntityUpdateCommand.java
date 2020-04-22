@@ -51,13 +51,13 @@ public class EntityUpdateCommand extends UpdateCommand {
 
     @Override
     public void doUpdate() {
-        final Location entityLoc = entity.getLocation();
-        if (!(entity instanceof Player) || yaw > .01 || pitch > .01 || yaw < -.01 || pitch < -.01 ) {
-            entity.teleport(new Location(entity.getWorld(), x + entityLoc.getX(),y + entityLoc.getY(),z + entityLoc.getZ(),yaw + entityLoc.getYaw(),pitch + entityLoc.getPitch()));
+        final Location entityLoc = entity.getVehicle() != null ? entity.getVehicle().getLocation() : entity.getLocation();
+        if (!(entity instanceof Player)) {
+            TeleportUtils.teleportEntity(entity, new Location(entity.getWorld(), entityLoc.getX() + x, entityLoc.getY() + y, entityLoc.getZ() + z,yaw + entityLoc.getYaw(),pitch + entityLoc.getPitch()));
             return;
         }
         //Movecraft.getInstance().getWorldHandler().addPlayerLocation((Player) entity,x,y,z,yaw,pitch);
-        TeleportUtils.teleport((Player) entity, new Location(entity.getWorld(), entityLoc.getX() + x, entityLoc.getY() + y, entityLoc.getZ() + z));
+        TeleportUtils.teleport((Player) entity, new Location(entity.getWorld(), entityLoc.getX() + x, entityLoc.getY() + y, entityLoc.getZ() + z), yaw);
 
 
 

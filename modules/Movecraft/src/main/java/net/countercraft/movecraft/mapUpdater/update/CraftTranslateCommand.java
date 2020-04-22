@@ -76,17 +76,32 @@ public class CraftTranslateCommand extends UpdateCommand {
                 passthroughBlocks.add(Material.BUBBLE_COLUMN);
 
             }
-        } else if (craft.getType().getMoveEntities()){
+        } else if (craft.getType().getMoveEntities() && !craft.getSinking()){
             final Location midpoint = craft.getHitBox().getMidPoint().subtract(displacement).toBukkit(craft.getW()).add(.5,.5,.5);
             final Collection<Entity> entities = craft.getW().getNearbyEntities(midpoint, craft.getHitBox().getXLength() / 2.0 + 1, craft.getHitBox().getYLength() / 2.0 + 2, craft.getHitBox().getZLength() / 2.0 + 1);
-
+            Entity vehicle;
+            Entity playerVehicle = null;
             for (Entity entity : entities){
+                vehicle = entity.getVehicle();
                 if (entity.getType() == EntityType.PLAYER) {
-                    if(craft.getSinking()){
+
+                    if (playerVehicle != null && playerVehicle.getPassengers().contains(entity)) {
                         continue;
                     }
+                    playerVehicle = entity.getVehicle();
                     toMove.add(new EntityUpdateCommand(entity, displacement.getX(), displacement.getY(), displacement.getZ(), 0, 0));
                 } else if (!craft.getType().getOnlyMovePlayers() || entity.getType() == EntityType.PRIMED_TNT) {
+                    boolean isPlayerVehicle = false;
+                    for (Entity pass : entity.getPassengers()) {
+                        if (pass.getType() != EntityType.PLAYER) {
+                            continue;
+                        }
+                        isPlayerVehicle = true;
+                        break;
+                    }
+                    if (vehicle != null && vehicle.getPassengers().contains(entity) || entity == playerVehicle || isPlayerVehicle) {
+                        continue;
+                    }
                     toMove.add(new EntityUpdateCommand(entity, displacement.getX(), displacement.getY(), displacement.getZ(), 0, 0));
                 }
             }

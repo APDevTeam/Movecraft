@@ -81,24 +81,47 @@ public class CraftRotateCommand extends UpdateCommand {
                 passthroughBlocks.add(Material.PEONY);
 
             }
-        } else if (craft.getType().getMoveEntities()) {
+        } else if (craft.getType().getMoveEntities() && !craft.getSinking()) {
             Location tOP = originLocation.toBukkit(craft.getW());
             tOP.setX(tOP.getBlockX() + 0.5);
             tOP.setZ(tOP.getBlockZ() + 0.5);
             Location midpoint = originalLocations.getMidPoint().toBukkit(craft.getW());
+            Entity vehicle;
+            Entity playerVehicle = null;
             for(Entity entity : craft.getW().getNearbyEntities(midpoint, originalLocations.getXLength()/2.0 + 1, originalLocations.getYLength()/2.0 + 2, originalLocations.getZLength()/2.0 + 1)){
-
                 // Player is onboard this craft
 
                 Location adjustedPLoc = entity.getLocation().subtract(tOP);
+                if (entity.getVehicle() != null) {
+                    adjustedPLoc = entity.getVehicle().getLocation().subtract(tOP);
+                }
 
                 double[] rotatedCoords = MathUtils.rotateVecNoRound(rotation, adjustedPLoc.getX(), adjustedPLoc.getZ());
                 float newYaw = rotation == Rotation.CLOCKWISE ? 90F : -90F;
-                if ((entity.getType() != EntityType.PLAYER && craft.getType().getOnlyMovePlayers()) || craft.getSinking()) {
-                    continue;
+                vehicle = entity.getVehicle();
+
+                if (entity.getType() == EntityType.PLAYER) {
+
+                    if (playerVehicle != null && playerVehicle.getPassengers().contains(entity)) {
+                        continue;
+                    }
+                    playerVehicle = entity.getVehicle();
+                    toRotate.add(new EntityUpdateCommand(entity, rotatedCoords[0] + tOP.getX() - entity.getLocation().getX(), 0, rotatedCoords[1] + tOP.getZ() - entity.getLocation().getZ(), newYaw, 0));
+                } else if (!craft.getType().getOnlyMovePlayers() || entity.getType() == EntityType.PRIMED_TNT) {
+                    boolean isPlayerVehicle = false;
+                    for (Entity pass : entity.getPassengers()) {
+                        if (pass.getType() != EntityType.PLAYER) {
+                            continue;
+                        }
+                        isPlayerVehicle = true;
+                        break;
+                    }
+                    if (vehicle != null && vehicle.getPassengers().contains(entity) || entity == playerVehicle || isPlayerVehicle) {
+                        continue;
+                    }
+                    toRotate.add(new EntityUpdateCommand(entity, rotatedCoords[0] + tOP.getX() - entity.getLocation().getX(), 0, rotatedCoords[1] + tOP.getZ() - entity.getLocation().getZ(), newYaw, 0));
                 }
-                EntityUpdateCommand eUp = new EntityUpdateCommand(entity, rotatedCoords[0] + tOP.getX() - entity.getLocation().getX(), 0, rotatedCoords[1] + tOP.getZ() - entity.getLocation().getZ(), newYaw, 0);
-                toRotate.add(eUp);
+
             }
         }
         if (!passthroughBlocks.isEmpty()) {
