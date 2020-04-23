@@ -93,12 +93,6 @@ public class Movecraft extends JavaPlugin {
         saveLocaleFiles();
         String packageName = this.getServer().getClass().getPackage().getName();
         String version = packageName.substring(packageName.lastIndexOf('.') + 1);
-        String[] parts = version.split("_");
-        int versionNumber = Integer.valueOf(parts[1]);
-        //Check if the server is 1.12 and lower or 1.13 and higher
-        Settings.IsPre1_9 = versionNumber < 9;
-        Settings.IsLegacy = versionNumber <= 12;
-        Settings.is1_14 = versionNumber >= 14;
         // Read in config
         if (!Settings.IsLegacy) {
             this.saveDefaultConfig();
@@ -554,7 +548,14 @@ public class Movecraft extends JavaPlugin {
 
     @Override
     public void onLoad() {
-        super.onLoad();
+        String packageName = this.getServer().getClass().getPackage().getName();
+        String version = packageName.substring(packageName.lastIndexOf('.') + 1);
+        String[] parts = version.split("_");
+        int versionNumber = Integer.valueOf(parts[1]);
+        //Check if the server is 1.12 and lower or 1.13 and higher
+        Settings.IsPre1_9 = versionNumber < 9;
+        Settings.IsLegacy = versionNumber <= 12;
+        Settings.is1_14 = versionNumber >= 14;
         instance = this;
         logger = getLogger();
         //load up WorldGuard if it's present

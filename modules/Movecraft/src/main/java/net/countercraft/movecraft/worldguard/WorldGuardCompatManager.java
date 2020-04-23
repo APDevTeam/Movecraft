@@ -51,6 +51,7 @@ public class WorldGuardCompatManager implements Listener {
         } else {
             flags = WorldGuard.getInstance().getFlagRegistry();
         }
+        Movecraft.getInstance().getLogger().info("Registered custom flags");
         flags.register(FLAG_MOVE);
         flags.register(FLAG_PILOT);
         flags.register(FLAG_ROTATE);
