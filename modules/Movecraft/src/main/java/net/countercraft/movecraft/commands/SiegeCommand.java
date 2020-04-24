@@ -15,22 +15,19 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Sound;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.text.NumberFormat;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.List;
-import java.util.TimeZone;
+import java.util.*;
 import java.util.logging.Level;
 
 import static net.countercraft.movecraft.utils.ChatUtils.MOVECRAFT_COMMAND_PREFIX;
 
-public class SiegeCommand implements CommandExecutor {
+public class SiegeCommand implements TabExecutor {
     //TODO: Add tab complete
     private final NumberFormat currencyFormat = NumberFormat.getCurrencyInstance();
 
@@ -296,5 +293,30 @@ public class SiegeCommand implements CommandExecutor {
         sender.sendMessage(I18nSupport.getInternationalisedString("Siege - Start Time") + start + militaryTimeIntToString(siege.getScheduleStart()) + " UTC");
         sender.sendMessage(I18nSupport.getInternationalisedString("Siege - End Time") + end + militaryTimeIntToString(siege.getScheduleEnd()) + " UTC");
         sender.sendMessage(I18nSupport.getInternationalisedString("Siege - Duration") + ChatColor.WHITE + secondsIntToString(siege.getDuration()));
+    }
+
+    @Override
+    public List<String> onTabComplete(CommandSender commandSender, Command command, String s, String[] strings) {
+        final List<String> tabCompletions = new ArrayList<>();
+        if (strings.length <= 1) {
+            tabCompletions.add("info");
+            tabCompletions.add("begin");
+            tabCompletions.add("list");
+        } else if (strings[0].equalsIgnoreCase("info")) {
+            for (Siege siege : Movecraft.getInstance().getSiegeManager().getSieges()) {
+                tabCompletions.add(siege.getName());
+            }
+        }
+        if (strings.length == 0) {
+            return tabCompletions;
+        }
+        final List<String> completions = new ArrayList<>();
+        for (String completion : tabCompletions) {
+            if (!completion.startsWith(strings[strings.length - 1])) {
+                continue;
+            }
+            completions.add(completion);
+        }
+        return completions;
     }
 }
