@@ -20,6 +20,7 @@ package net.countercraft.movecraft.craft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
 import net.countercraft.movecraft.events.CraftSinkEvent;
+import net.countercraft.movecraft.utils.BitmapHitBox;
 import net.countercraft.movecraft.utils.HashHitBox;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -42,9 +43,9 @@ public abstract class Craft {
     @NotNull protected final CraftType type;
     //protected int[][][] hitBox;
     //protected MovecraftLocation[] blockList;
-    @NotNull protected HashHitBox hitBox;
-    @NotNull protected final HashHitBox collapsedHitBox;
-    @NotNull protected HashHitBox fluidLocations;
+    @NotNull protected BitmapHitBox hitBox;
+    @NotNull protected final BitmapHitBox collapsedHitBox;
+    @NotNull protected BitmapHitBox fluidLocations;
 
     @NotNull protected World w;
     @NotNull private final AtomicBoolean processing = new AtomicBoolean();
@@ -76,8 +77,9 @@ public abstract class Craft {
     public Craft(@NotNull CraftType type, @NotNull World world) {
         this.type = type;
         this.w = world;
-        this.hitBox = new HashHitBox();
-        this.collapsedHitBox = new HashHitBox();
+        this.hitBox = new BitmapHitBox();
+        this.collapsedHitBox = new BitmapHitBox();
+        this.fluidLocations = new BitmapHitBox();
         if (type.getMaxHeightLimit() > w.getMaxHeight() - 1) {
             this.maxHeightLimit = w.getMaxHeight() - 1;
         } else {
@@ -106,11 +108,11 @@ public abstract class Craft {
     }
 
     @NotNull
-    public HashHitBox getHitBox() {
+    public BitmapHitBox getHitBox() {
         return hitBox;
     }
 
-    public void setHitBox(@NotNull HashHitBox hitBox){
+    public void setHitBox(@NotNull BitmapHitBox hitBox){
         this.hitBox = hitBox;
     }
 
@@ -428,18 +430,18 @@ public abstract class Craft {
     }
 
     @NotNull
-    public HashHitBox getCollapsedHitBox() {
+    public BitmapHitBox getCollapsedHitBox() {
         return collapsedHitBox;
     }
 
     public abstract void resetSigns(@NotNull final Sign clicked);
 
     @NotNull
-    public HashHitBox getFluidLocations() {
+    public BitmapHitBox getFluidLocations() {
         return fluidLocations;
     }
 
-    public void setFluidLocations(@NotNull HashHitBox fluidLocations) {
+    public void setFluidLocations(@NotNull BitmapHitBox fluidLocations) {
         this.fluidLocations = fluidLocations;
     }
 }

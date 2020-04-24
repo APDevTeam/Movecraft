@@ -27,6 +27,7 @@ import com.sk89q.worldguard.protection.regions.ProtectedPolygonalRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.utils.BitmapHitBox;
 import net.countercraft.movecraft.utils.CollectionUtils;
 import net.countercraft.movecraft.utils.HashHitBox;
 import net.countercraft.movecraft.utils.HitBox;
@@ -63,7 +64,7 @@ public class MovecraftRepair {
     }
 
     public boolean saveCraftRepairState(Craft craft, Sign sign) {
-        HashHitBox hitBox = craft.getHitBox();
+        HitBox hitBox = craft.getHitBox();
         File saveDirectory = new File(plugin.getDataFolder(), "RepairStates");
         World world = craft.getW();
         com.sk89q.worldedit.world.World weWorld = new BukkitWorld(world);
@@ -83,7 +84,7 @@ public class MovecraftRepair {
         repairName += ".schematic";
         File repairStateFile = new File(playerDirectory, repairName);
         Set<BaseBlock> blockSet = baseBlocksFromCraft(craft);
-        HitBox outsideLocs = CollectionUtils.filter(solidBlockLocs(craft.getW(), cRegion), craft.getHitBox());
+        BitmapHitBox outsideLocs = solidBlockLocs(craft.getW(), cRegion).difference(craft.getHitBox());
         try {
             BlockArrayClipboard clipboard = new BlockArrayClipboard(cRegion);
             clipboard.setOrigin(origin);
@@ -592,7 +593,7 @@ public class MovecraftRepair {
 
     private Set<BaseBlock> baseBlocksFromCraft(Craft craft) {
         HashSet<BaseBlock> returnSet = new HashSet<>();
-        HashHitBox hitBox = craft.getHitBox();
+        HitBox hitBox = craft.getHitBox();
         World w = craft.getW();
         for (MovecraftLocation location : hitBox) {
             int id = w.getBlockTypeIdAt(location.toBukkit(w));
@@ -605,8 +606,8 @@ public class MovecraftRepair {
         return returnSet;
     }
 
-    private HashHitBox solidBlockLocs(World w, CuboidRegion cr){
-        HashHitBox returnSet = new HashHitBox();
+    private BitmapHitBox solidBlockLocs(World w, CuboidRegion cr){
+        BitmapHitBox returnSet = new BitmapHitBox();
         for (int x = cr.getMinimumPoint().getBlockX(); x <= cr.getMaximumPoint().getBlockX(); x++){
             for (int y = cr.getMinimumPoint().getBlockY(); y <= cr.getMaximumPoint().getBlockY(); y++){
                 for (int z = cr.getMinimumPoint().getBlockZ(); z <= cr.getMaximumPoint().getBlockZ(); z++){

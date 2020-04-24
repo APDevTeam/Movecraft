@@ -155,7 +155,7 @@ public class AsyncManager extends BukkitRunnable {
                         boolean isSubcraft = false;
 
                         for (Craft craft : craftsInWorld) {
-                            if(craft.getHitBox().intersects(task.getHitBox())){
+                            if(!craft.getHitBox().union(task.getHitBox()).isEmpty()){
                                 isSubcraft = true;
                                 if (c.getType().getCruiseOnPilot() || p != null) {
                                     if (craft.getType() == c.getType()
@@ -173,7 +173,7 @@ public class AsyncManager extends BukkitRunnable {
                                             failed = true;
                                             notifyP.sendMessage(I18nSupport.getInternationalisedString("Detection - Parent Craft is busy"));
                                         }
-                                        craft.setHitBox(new HashHitBox(CollectionUtils.filter(craft.getHitBox(), task.getHitBox())));
+                                        craft.setHitBox(craft.getHitBox().difference(task.getHitBox()));
                                         craft.setOrigBlockCount(craft.getOrigBlockCount() - task.getHitBox().size());
                                     }
                                 }
@@ -193,11 +193,11 @@ public class AsyncManager extends BukkitRunnable {
                             final int waterLine = c.getWaterLine();
                             if(!c.getType().blockedByWater() && c.getHitBox().getMinY() <= waterLine){
                                 //The subtraction of the set of coordinates in the HitBox cube and the HitBox itself
-                                final HitBox invertedHitBox = CollectionUtils.filter(c.getHitBox().boundingHitBox(), c.getHitBox());
+                                final BitmapHitBox invertedHitBox = new BitmapHitBox(c.getHitBox().boundingHitBox()).difference(c.getHitBox());
 
                                 //A set of locations that are confirmed to be "exterior" locations
-                                final MutableHitBox confirmed = new HashHitBox();
-                                final MutableHitBox entireHitbox = new HashHitBox(c.getHitBox());
+                                final BitmapHitBox confirmed = new BitmapHitBox();
+                                final BitmapHitBox entireHitbox = new BitmapHitBox(c.getHitBox());
 
                                 //place phased blocks
                                 final Set<MovecraftLocation> overlap = new HashSet<>(c.getPhaseBlocks().keySet());
@@ -214,15 +214,15 @@ public class AsyncManager extends BukkitRunnable {
                                         new SolidHitBox(new MovecraftLocation(maxX, minY, maxZ), new MovecraftLocation(minX, maxY, maxZ)),
                                         new SolidHitBox(new MovecraftLocation(maxX, minY, maxZ), new MovecraftLocation(maxX, maxY, minZ)),
                                         new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(maxX, minY, maxZ))};
-                                final Set<MovecraftLocation> validExterior = new HashSet<>();
+                                final BitmapHitBox validExterior = new BitmapHitBox();
                                 for (HitBox hitBox : surfaces) {
-                                    validExterior.addAll(CollectionUtils.filter(hitBox, c.getHitBox()).asSet());
+                                    validExterior.addAll(new BitmapHitBox(hitBox).difference(c.getHitBox()));
                                 }
 
                                 //Check to see which locations in the from set are actually outside of the craft
                                 //use a modified BFS for multiple origin elements
                                 Set<MovecraftLocation> visited = new HashSet<>();
-                                Queue<MovecraftLocation> queue = new LinkedList<>(validExterior);
+                                Queue<MovecraftLocation> queue = Lists.newLinkedList(validExterior);
                                 while (!queue.isEmpty()) {
                                     MovecraftLocation node = queue.poll();
                                     if(visited.contains(node))
@@ -234,7 +234,7 @@ public class AsyncManager extends BukkitRunnable {
                                     }
                                 }
                                 confirmed.addAll(visited);
-                                entireHitbox.addAll(CollectionUtils.filter(invertedHitBox, confirmed));
+                                entireHitbox.addAll(invertedHitBox.difference(confirmed));
 
                                 for(MovecraftLocation location : entireHitbox){
                                     if(location.getY() <= waterLine){
