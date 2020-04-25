@@ -64,10 +64,10 @@ public class RotationTask extends AsyncTask {
     private TownyWorld townyWorld;
     private TownyWorldHeightLimits townyWorldHeightLimits;
 
-    private final HashHitBox oldHitBox;
-    private final HashHitBox newHitBox;
-    private final HashHitBox oldFluidList;
-    private final HashHitBox newFluidList;
+    private final BitmapHitBox oldHitBox;
+    private final BitmapHitBox newHitBox;
+    private final BitmapHitBox oldFluidList;
+    private final BitmapHitBox newFluidList;
 
     public RotationTask(Craft c, MovecraftLocation originPoint, Rotation rotation, World w, boolean isSubCraft) {
         super(c);
@@ -75,10 +75,10 @@ public class RotationTask extends AsyncTask {
         this.rotation = rotation;
         this.w = w;
         this.isSubCraft = isSubCraft;
-        this.newHitBox = new HashHitBox();
-        this.oldHitBox = new HashHitBox(c.getHitBox());
-        this.oldFluidList = new HashHitBox(c.getFluidLocations());
-        this.newFluidList = new HashHitBox(c.getFluidLocations());
+        this.newHitBox = new BitmapHitBox();
+        this.oldHitBox = new BitmapHitBox(c.getHitBox());
+        this.oldFluidList = new BitmapHitBox(c.getFluidLocations());
+        this.newFluidList = new BitmapHitBox(c.getFluidLocations());
     }
 
     public RotationTask(Craft c, MovecraftLocation originPoint, Rotation rotation, World w) {
@@ -154,7 +154,7 @@ public class RotationTask extends AsyncTask {
         Set<Craft> craftsInWorld = CraftManager.getInstance().getCraftsInWorld(getCraft().getW());
         Craft parentCraft = getCraft();
         for (Craft craft : craftsInWorld) {
-            if ( craft != getCraft() && craft.getHitBox().intersects(oldHitBox)) {
+            if ( craft != getCraft() && !craft.getHitBox().intersection(oldHitBox).isEmpty()) {
                 parentCraft = craft;
                 break;
             }
@@ -300,7 +300,7 @@ public class RotationTask extends AsyncTask {
 
             craftsInWorld = CraftManager.getInstance().getCraftsInWorld(getCraft().getW());
             for (Craft craft : craftsInWorld) {
-                if (newHitBox.intersects(craft.getHitBox()) && craft != getCraft()) {
+                if (!newHitBox.intersection(craft.getHitBox()).isEmpty() && craft != getCraft()) {
                     //newHitBox.addAll(CollectionUtils.filter(craft.getHitBox(),newHitBox));
                     //craft.setHitBox(newHitBox);
                     if (Settings.Debug) {
@@ -387,11 +387,11 @@ public class RotationTask extends AsyncTask {
 
 
 
-    public HashHitBox getNewHitBox() {
+    public BitmapHitBox getNewHitBox() {
         return newHitBox;
     }
 
-    public HashHitBox getNewFluidList() {
+    public BitmapHitBox getNewFluidList() {
         return newFluidList;
     }
 }

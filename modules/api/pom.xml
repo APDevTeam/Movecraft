@@ -72,7 +72,12 @@
             <artifactId>worldguard</artifactId>
             <version>6.1.1-SNAPSHOT</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.roaringbitmap</groupId>
+            <artifactId>RoaringBitmap</artifactId>
+            <version>0.8.13</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <build>

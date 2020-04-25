@@ -4,6 +4,7 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.utils.HashHitBox;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.utils.HitBox;
 import net.countercraft.movecraft.utils.TopicPaginator;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -38,8 +39,7 @@ public class CraftReportCommand implements CommandExecutor{
         }
         TopicPaginator paginator = new TopicPaginator(I18nSupport.getInternationalisedString("Craft Report"));
         for (Craft craft : CraftManager.getInstance()) {
-            HashHitBox hitBox = craft.getHitBox();
-
+            HitBox hitBox = craft.getHitBox();
             paginator.addLine((craft.getSinking() ? ChatColor.RED : craft.getDisabled() ? ChatColor.BLUE : "") +
                     craft.getType().getCraftName() + " " +
                     ChatColor.RESET +

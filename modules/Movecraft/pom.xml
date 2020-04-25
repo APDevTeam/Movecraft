@@ -194,6 +194,12 @@
             <artifactId>annotations-java5</artifactId>
             <version>RELEASE</version>
         </dependency>
+        <dependency>
+            <groupId>org.roaringbitmap</groupId>
+            <artifactId>RoaringBitmap</artifactId>
+            <version>0.8.13</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -260,6 +266,7 @@
                             <artifactSet>
                                 <includes>
                                     <include>net.countercraft:movecraft*</include>
+                                    <include>org.roaringbitmap:*</include>
                                 </includes>
                             </artifactSet>
                         </configuration>

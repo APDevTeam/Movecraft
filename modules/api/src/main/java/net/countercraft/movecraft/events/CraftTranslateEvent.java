@@ -1,6 +1,7 @@
 package net.countercraft.movecraft.events;
 
 import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.utils.BitmapHitBox;
 import net.countercraft.movecraft.utils.HashHitBox;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
@@ -14,25 +15,25 @@ import org.jetbrains.annotations.NotNull;
 @SuppressWarnings("unused")
 public class CraftTranslateEvent extends CraftEvent implements Cancellable {
     private static final HandlerList HANDLERS = new HandlerList();
-    @NotNull private final HashHitBox oldHitBox;
-    @NotNull private final HashHitBox newHitBox;
+    @NotNull private final BitmapHitBox oldHitBox;
+    @NotNull private final BitmapHitBox newHitBox;
     @NotNull private String failMessage = "";
     private boolean playingFailSound = true;
     private boolean isCancelled = false;
 
-    public CraftTranslateEvent(@NotNull Craft craft, @NotNull HashHitBox oldHitBox, @NotNull HashHitBox newHitBox) {
+    public CraftTranslateEvent(@NotNull Craft craft, @NotNull BitmapHitBox oldHitBox, @NotNull BitmapHitBox newHitBox) {
         super(craft, true);
         this.oldHitBox = oldHitBox;
         this.newHitBox = newHitBox;
     }
 
     @NotNull
-    public HashHitBox getNewHitBox() {
+    public BitmapHitBox getNewHitBox() {
         return newHitBox;
     }
 
     @NotNull
-    public HashHitBox getOldHitBox(){
+    public BitmapHitBox getOldHitBox(){
         return oldHitBox;
     }
 

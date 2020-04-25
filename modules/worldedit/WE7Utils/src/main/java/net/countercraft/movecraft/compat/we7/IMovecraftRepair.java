@@ -12,8 +12,8 @@ import com.sk89q.worldedit.extent.Extent;
 import com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
 import com.sk89q.worldedit.extent.clipboard.io.*;
+import com.sk89q.worldedit.function.mask.BlockMask;
 import com.sk89q.worldedit.function.mask.BlockTypeMask;
-import com.sk89q.worldedit.function.mask.ExistingBlockMask;
 import com.sk89q.worldedit.function.operation.ForwardExtentCopy;
 import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.math.BlockVector3;
@@ -31,13 +31,11 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.MovecraftRepair;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.utils.BitmapHitBox;
 import net.countercraft.movecraft.utils.CollectionUtils;
 import net.countercraft.movecraft.utils.HashHitBox;
 import net.countercraft.movecraft.utils.HitBox;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Dispenser;
 import org.bukkit.block.Sign;
@@ -62,7 +60,7 @@ public class IMovecraftRepair extends MovecraftRepair {
 
     @Override
     public boolean saveCraftRepairState(Craft craft, Sign sign) {
-        HashHitBox hitBox = craft.getHitBox();
+        BitmapHitBox hitBox = craft.getHitBox();
         File saveDirectory = new File(plugin.getDataFolder(), "RepairStates");
         World world = craft.getW();
         if (!saveDirectory.exists()){
@@ -81,7 +79,7 @@ public class IMovecraftRepair extends MovecraftRepair {
         clipboard.setOrigin(origin);
         Extent source = WorldEdit.getInstance().getEditSessionFactory().getEditSession(weWorld, -1);
         ForwardExtentCopy copy = new ForwardExtentCopy(source, region, clipboard.getOrigin(), clipboard, clipboard.getOrigin());
-        ExistingBlockMask mask = new ExistingBlockMask(source);
+        BlockMask mask = new BlockMask(source, baseBlocksFromCraft(craft));
         copy.setSourceMask(mask);
         final HitBox outsideLocs = CollectionUtils.filter(solidBlockLocs(world, region), hitBox);
         try {
@@ -460,6 +458,20 @@ public class IMovecraftRepair extends MovecraftRepair {
     @Override
     public long getNumDiffBlocks(String s) {
         return numDiffBlocksMap.get(s);
+    }
+
+    private Set<BaseBlock> baseBlocksFromCraft(Craft craft) {
+        HashSet<BaseBlock> returnSet = new HashSet<>();
+        BitmapHitBox hitBox = craft.getHitBox();
+        World w = craft.getW();
+        for (MovecraftLocation location : hitBox) {
+            Material type = w.getBlockAt(location.toBukkit(w)).getType();
+            returnSet.add(BukkitAdapter.asBlockType(type).getDefaultState().toBaseBlock());
+        }
+        if (Settings.Debug) {
+            Bukkit.getLogger().info(returnSet.toString());
+        }
+        return returnSet;
     }
 
     private HashHitBox solidBlockLocs(World w, CuboidRegion cr){

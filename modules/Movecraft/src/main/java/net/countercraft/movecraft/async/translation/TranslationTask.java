@@ -13,11 +13,8 @@ import net.countercraft.movecraft.events.CraftTranslateEvent;
 import net.countercraft.movecraft.events.ItemHarvestEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.update.*;
-import net.countercraft.movecraft.utils.HashHitBox;
-import net.countercraft.movecraft.utils.HitBox;
-import net.countercraft.movecraft.utils.LegacyUtils;
-import net.countercraft.movecraft.utils.MutableHitBox;
-import net.countercraft.movecraft.utils.SolidHitBox;
+
+import net.countercraft.movecraft.utils.*;
 import org.bukkit.*;
 import org.bukkit.block.Barrel;
 import org.bukkit.block.Block;
@@ -40,7 +37,7 @@ import static net.countercraft.movecraft.utils.MathUtils.withinWorldBorder;
 public class TranslationTask extends AsyncTask {
     private static final Set<Material> FALL_THROUGH_BLOCKS = new HashSet<>();//Settings.IsLegacy ? new Material[]{}:new Material[]{Material.AIR,
     private int dx, dy, dz;
-    private HashHitBox newHitBox, oldHitBox, oldFluidList, newFluidList;
+    private BitmapHitBox newHitBox, oldHitBox, oldFluidList, newFluidList;
     private boolean failed;
     private boolean collisionExplosion = false;
     private String failMessage;
@@ -51,8 +48,6 @@ public class TranslationTask extends AsyncTask {
         this.dx = dx;
         this.dy = dy;
         this.dz = dz;
-        newHitBox = new HashHitBox();
-        oldHitBox = new HashHitBox(c.getHitBox());
         FALL_THROUGH_BLOCKS.add(Material.AIR);
         FALL_THROUGH_BLOCKS.add(Material.WATER);
         FALL_THROUGH_BLOCKS.add(Material.LAVA);
@@ -139,8 +134,10 @@ public class TranslationTask extends AsyncTask {
             }
 
         }
-        oldFluidList = new HashHitBox(c.getFluidLocations());
-        newFluidList = new HashHitBox();
+        newHitBox = new BitmapHitBox();
+        oldHitBox = new BitmapHitBox(c.getHitBox());
+        oldFluidList = new BitmapHitBox(c.getFluidLocations());
+        newFluidList = new BitmapHitBox();
     }
 
     @Override
@@ -298,7 +295,7 @@ public class TranslationTask extends AsyncTask {
         final List<Material> harvestBlocks = craft.getType().getHarvestBlocks();
         final List<MovecraftLocation> harvestedBlocks = new ArrayList<>();
         final List<Material> harvesterBladeBlocks = craft.getType().getHarvesterBladeBlocks();
-        final HashHitBox collisionBox = new HashHitBox();
+        final BitmapHitBox collisionBox = new BitmapHitBox();
         for(MovecraftLocation oldLocation : oldHitBox){
             final MovecraftLocation newLocation = oldLocation.translate(dx,dy,dz);
             //If the new location already exists in the old hitbox than this is unnecessary because a craft can't hit
@@ -447,11 +444,11 @@ public class TranslationTask extends AsyncTask {
                 }
                 updates.add(new BlockCreateCommand(craft.getW(), location, phaseBlock.getKey(), (BlockData) phaseBlock.getValue()));
             }
-            newHitBox = new HashHitBox();
+            newHitBox = new BitmapHitBox();
         }
 
         if(!collisionBox.isEmpty()){
-            Bukkit.getServer().getPluginManager().callEvent(new CraftCollisionEvent(craft, collisionBox, true));
+            Bukkit.getServer().getPluginManager().callEvent(new CraftCollisionEvent(craft, collisionBox));
         }
         if (oldHitBox.isEmpty())
             return;
@@ -624,11 +621,11 @@ public class TranslationTask extends AsyncTask {
         return surfaceLoc;
     }
 
-    private int inclineCraft(HashHitBox hitBox){
+    private int inclineCraft(BitmapHitBox hitBox){
         if (isOnGround(hitBox) && dy < 0){
             dy = 0;
         }
-        HashHitBox collisionBox = new HashHitBox();
+        BitmapHitBox collisionBox = new BitmapHitBox();
         for (MovecraftLocation ml : hitBox){
             MovecraftLocation nl = ml.translate(dx, dy, dz);
             if (hitBox.contains(nl))
@@ -654,7 +651,7 @@ public class TranslationTask extends AsyncTask {
         if (elevation == 0) {
             return 0;
         }
-        HashHitBox movedCollBox = new HashHitBox();
+        BitmapHitBox movedCollBox = new BitmapHitBox();
         for (MovecraftLocation ml : collisionBox) {
             movedCollBox.add(ml.translate(0, elevation, 0));
 
@@ -662,8 +659,8 @@ public class TranslationTask extends AsyncTask {
         return movedCollBox.getMinY() - hitBox.getMinY();
     }
 
-    private int dropDistance (HashHitBox hitBox) {
-        MutableHitBox bottomLocs = new HashHitBox();
+    private int dropDistance (BitmapHitBox hitBox) {
+        MutableHitBox bottomLocs = new BitmapHitBox();
         MovecraftLocation corner1 = new MovecraftLocation(hitBox.getMinX(), 0, hitBox.getMinZ());
         MovecraftLocation corner2 = new MovecraftLocation(hitBox.getMaxX(), 0, hitBox.getMaxZ());
         for(MovecraftLocation location : new SolidHitBox(corner1, corner2)){
@@ -703,9 +700,9 @@ public class TranslationTask extends AsyncTask {
         return dropDistance;
     }
 
-    private boolean isOnGround(HashHitBox hitBox){
-        MutableHitBox bottomLocs = new HashHitBox();
-        MutableHitBox translatedBottomLocs = new HashHitBox();
+    private boolean isOnGround(BitmapHitBox hitBox){
+        MutableHitBox bottomLocs = new BitmapHitBox();
+        MutableHitBox translatedBottomLocs = new BitmapHitBox();
         if (hitBox.getMinY() <= craft.getType().getMinHeightLimit()) {
             return true;
         }
@@ -763,11 +760,11 @@ public class TranslationTask extends AsyncTask {
         return failMessage;
     }
 
-    public HashHitBox getNewHitBox() {
+    public BitmapHitBox getNewHitBox() {
         return newHitBox;
     }
 
-    public HashHitBox getNewFluidList() {
+    public BitmapHitBox getNewFluidList() {
         return newFluidList;
     }
 

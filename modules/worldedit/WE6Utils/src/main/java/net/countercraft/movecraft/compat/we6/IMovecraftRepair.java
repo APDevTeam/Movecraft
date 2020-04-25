@@ -27,10 +27,7 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.MovecraftRepair;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.utils.CollectionUtils;
-import net.countercraft.movecraft.utils.HashHitBox;
-import net.countercraft.movecraft.utils.HitBox;
-import net.countercraft.movecraft.utils.MathUtils;
+import net.countercraft.movecraft.utils.*;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Dispenser;
@@ -59,7 +56,7 @@ public class IMovecraftRepair extends MovecraftRepair {
 
     @Override
     public boolean saveCraftRepairState(Craft craft, Sign sign) {
-        HashHitBox hitBox = craft.getHitBox();
+        BitmapHitBox hitBox = craft.getHitBox();
         File saveDirectory = new File(plugin.getDataFolder(), "RepairStates");
         World world = craft.getW();
         com.sk89q.worldedit.world.World weWorld = new BukkitWorld(world);
@@ -592,7 +589,7 @@ public class IMovecraftRepair extends MovecraftRepair {
 
     private Set<BaseBlock> baseBlocksFromCraft(Craft craft) {
         HashSet<BaseBlock> returnSet = new HashSet<>();
-        HashHitBox hitBox = craft.getHitBox();
+        BitmapHitBox hitBox = craft.getHitBox();
         World w = craft.getW();
         for (MovecraftLocation location : hitBox) {
             int id = w.getBlockTypeIdAt(location.toBukkit(w));

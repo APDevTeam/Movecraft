@@ -4,7 +4,9 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.utils.BitmapHitBox;
 import net.countercraft.movecraft.utils.HashHitBox;
+import net.countercraft.movecraft.utils.HitBox;
 import net.countercraft.movecraft.utils.TopicPaginator;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -45,10 +47,10 @@ public class ContactsCommand implements CommandExecutor {
 
         TopicPaginator pageinator = new TopicPaginator(I18nSupport.getInternationalisedString("Contacts"));
         Craft ccraft = CraftManager.getInstance().getCraftByPlayer(player);
-        HashHitBox hitBox = ccraft.getHitBox();
+        HitBox hitBox = ccraft.getHitBox();
         MovecraftLocation center = hitBox.getMidPoint();
         for (Craft tcraft : ccraft.getContacts()) {
-            HashHitBox tHitBox = tcraft.getHitBox();
+            HitBox tHitBox = tcraft.getHitBox();
             if (tHitBox.isEmpty())
                 continue;
             MovecraftLocation tCenter = tHitBox.getMidPoint();
