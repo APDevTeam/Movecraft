@@ -186,7 +186,8 @@ public class CraftTranslateCommand extends UpdateCommand {
         Map<String[], List<MovecraftLocation>> signs = new HashMap<>();
         for (MovecraftLocation location : craft.getHitBox()) {
             Block block = location.toBukkit(craft.getW()).getBlock();
-            if (block.getType() == Material.WALL_SIGN || block.getType() == Material.SIGN_POST) {
+            Material type = block.getType();
+            if (type == Material.WALL_SIGN || type == Material.SIGN_POST) {
                 Sign sign = (Sign) block.getState();
                 if(!signs.containsKey(sign.getLines()))
                     signs.put(sign.getLines(), new ArrayList<>());

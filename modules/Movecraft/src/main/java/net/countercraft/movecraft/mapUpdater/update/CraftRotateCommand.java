@@ -195,7 +195,8 @@ public class CraftRotateCommand extends UpdateCommand {
             Bukkit.getServer().getPluginManager().callEvent(new SignTranslateEvent(craft, entry.getKey(), entry.getValue()));
             for(MovecraftLocation loc : entry.getValue()){
                 Block block = loc.toBukkit(craft.getW()).getBlock();
-                if (block.getType() != Material.WALL_SIGN && block.getType() != Material.SIGN_POST) {
+                Material type = block.getType();
+                if (type != Material.WALL_SIGN && type != Material.SIGN_POST) {
                     continue;
                 }
                 Sign sign = (Sign) block.getState();
