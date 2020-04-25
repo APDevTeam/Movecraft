@@ -38,6 +38,7 @@ import net.countercraft.movecraft.towny.TownyCompatManager;
 import net.countercraft.movecraft.utils.LegacyUtils;
 import net.countercraft.movecraft.utils.TownyUtils;
 import net.countercraft.movecraft.utils.UpdateManager;
+import net.countercraft.movecraft.utils.WorldguardUtils;
 import net.countercraft.movecraft.warfare.assault.AssaultManager;
 import net.countercraft.movecraft.warfare.siege.Siege;
 import net.countercraft.movecraft.warfare.siege.SiegeManager;
@@ -462,10 +463,20 @@ public class Movecraft extends JavaPlugin {
                     List<Siege> sieges = siegeManager.getSieges();
                     for (Map.Entry<String, Map<String, ?>> entry : siegesMap.entrySet()) {
                         Map<String,Object> siegeMap = (Map<String, Object>) entry.getValue();
+                        final String regionToControl = (String) siegeMap.get("RegionToControl");
+                        if (!WorldguardUtils.regionExists(regionToControl)) {
+                            logger.severe(String.format(I18nSupport.getInternationalisedString("Startup - Siege Invalid region name"), "RegionToControl", regionToControl));
+                            continue;
+                        }
+                        final String siegeRegion = (String) siegeMap.get("SiegeRegion");
+                        if (!WorldguardUtils.regionExists(siegeRegion)) {
+                            logger.severe(String.format(I18nSupport.getInternationalisedString("Startup - Siege Invalid region name"), "SiegeRegion", regionToControl));
+                            continue;
+                        }
                         sieges.add(new Siege(
                                 entry.getKey(),
-                                (String) siegeMap.get("RegionToControl"),
-                                (String) siegeMap.get("SiegeRegion"),
+                                regionToControl,
+                                siegeRegion,
                                 (Integer) siegeMap.get("ScheduleStart"),
                                 (Integer) siegeMap.get("ScheduleEnd"),
                                 (Integer) siegeMap.getOrDefault("DelayBeforeStart", 0),
@@ -477,7 +488,8 @@ public class Movecraft extends JavaPlugin {
                                 (List<String>) siegeMap.getOrDefault("CraftsToWin", Collections.emptyList()),
                                 (List<String>) siegeMap.getOrDefault("SiegeCommandsOnStart", Collections.emptyList()),
                                 (List<String>) siegeMap.getOrDefault("SiegeCommandsOnWin", Collections.emptyList()),
-                                (List<String>) siegeMap.getOrDefault("SiegeCommandsOnLose", Collections.emptyList())));
+                                (List<String>) siegeMap.getOrDefault("SiegeCommandsOnLose", Collections.emptyList()),
+                                (Integer) siegeMap.getOrDefault("Cooldown", 0)));
                     }
                     logger.log(Level.INFO, "Siege configuration loaded.");
 

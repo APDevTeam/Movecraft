@@ -51,6 +51,17 @@ public class WorldguardUtils {
         }
         return output.toString();
     }
+    public static boolean regionExists(String regionName) {
+        for (World bukkitWorld : Bukkit.getWorlds()) {
+            final RegionManager rm = getRegionManager(bukkitWorld);
+            if (rm.hasRegion(regionName)) {
+                return true;
+            }
+
+        }
+        return false;
+    }
+
     public static boolean pvpAllowed(ProtectedRegion region){
         if (Settings.IsLegacy) {
             return region.getFlag(DefaultFlag.PVP)  == StateFlag.State.ALLOW;
@@ -97,28 +108,22 @@ public class WorldguardUtils {
         }
         return true;
     }
+
     public static ApplicableRegionSet getRegionsAt(Location loc){
         World world = loc.getWorld();
         ApplicableRegionSet regions;
+        RegionManager rm = getRegionManager(world);
         if (Settings.IsLegacy) {
-            RegionManager rm = LegacyUtils.getRegionManager(Movecraft.getInstance().getWorldGuardPlugin(), world);
             regions = LegacyUtils.getApplicableRegions(rm, loc);
         } else {
-            RegionQuery query = WorldGuard.getInstance().getPlatform().getRegionContainer().createQuery();
-            com.sk89q.worldedit.world.World weWorld = new BukkitWorld(world);
-            com.sk89q.worldedit.util.Location wgLoc = new com.sk89q.worldedit.util.Location(weWorld, loc.getX(), loc.getY(), loc.getZ());
-            regions = query.getApplicableRegions(wgLoc);
+            regions = rm.getApplicableRegions(BlockVector3.at(loc.getX(), loc.getY(), loc.getZ()));
         }
         return regions;
     }
     public static RegionManager getRegionManager(World world){
         RegionManager manager;
         if (Settings.IsLegacy){
-            try {
-                manager = LegacyUtils.getRegionManager(Movecraft.getInstance().getWorldGuardPlugin(), world);
-            } catch (Throwable t){
-                manager = null;
-            }
+            manager = LegacyUtils.getRegionManager(Movecraft.getInstance().getWorldGuardPlugin(), world);
         } else {
             com.sk89q.worldedit.world.World weWorld = new BukkitWorld(world);
             manager = WorldGuard.getInstance().getPlatform().getRegionContainer().get(weWorld);
@@ -128,5 +133,7 @@ public class WorldguardUtils {
     public Flag flag(String string){
         return null;
     }
+
+
 
 }

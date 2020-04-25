@@ -23,6 +23,7 @@ public class SiegePreparationTask extends SiegeTask {
         siege.getProgressBar().setProgress(Math.min(progress, 1.0));
         if (timePassedInSeconds >= siege.getDelayBeforeStart()){
             siege.getProgressBar().setProgress(0.0);
+            siege.setJustCommenced(true);
             siege.setStage(SiegeStage.IN_PROGRESS);
             return;
         }

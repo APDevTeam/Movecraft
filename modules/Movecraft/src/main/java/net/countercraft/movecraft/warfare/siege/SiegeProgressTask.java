@@ -35,18 +35,14 @@ public class SiegeProgressTask extends SiegeTask {
 
         BarColor bColor = leaderPilotingShip(siegeCraft) && leaderShipInRegion(siegeCraft, siegeLeader) ? BarColor.GREEN : BarColor.RED;
         siege.getProgressBar().setColor(bColor);
-        if (timeLeft % Settings.SiegeTaskSeconds != 0 && siege.isProgressTaskStarted()) {
+        if (timeLeft % Settings.SiegeTaskSeconds != 0 && !siege.isJustCommenced()) {
             return;
         }
-        siege.setProgressTaskStarted(true);
+        siege.setJustCommenced(false);
 
 
         if (timeLeft > 10) {
-            if (!leaderPilotingShip(siegeCraft)) {
-                return;
-            }
-
-            if (leaderShipInRegion(siegeCraft, siegeLeader)) {
+            if (leaderPilotingShip(siegeCraft) && leaderShipInRegion(siegeCraft, siegeLeader)) {
                 MovecraftLocation mid = siegeCraft.getHitBox().getMidPoint();
                 Bukkit.getServer().broadcastMessage(String.format(
                         I18nSupport.getInternationalisedString("Siege - Flagship In Box"),
@@ -61,7 +57,6 @@ public class SiegeProgressTask extends SiegeTask {
                         siege.getName(), siegeLeader.getDisplayName())
                         + formatMinutes(timeLeft));
             }
-            return;
         } else {
             endSiege(siegeCraft, siegeLeader);
         }
@@ -89,7 +84,6 @@ public class SiegeProgressTask extends SiegeTask {
         }
         siege.getProgressBar().setVisible(false);
         siege.getProgressBar().setColor(BarColor.BLUE);
-        siege.setProgressTaskStarted(false);
         siege.setStage(SiegeStage.INACTIVE);
     }
 
