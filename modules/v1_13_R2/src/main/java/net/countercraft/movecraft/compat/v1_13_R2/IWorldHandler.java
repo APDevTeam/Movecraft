@@ -8,16 +8,12 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.utils.CollectionUtils;
 import net.countercraft.movecraft.utils.MathUtils;
 import net.minecraft.server.v1_13_R2.*;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.v1_13_R2.CraftWorld;
 import org.bukkit.craftbukkit.v1_13_R2.block.data.CraftBlockData;
-import org.bukkit.craftbukkit.v1_13_R2.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_13_R2.util.CraftMagicNumbers;
-import org.bukkit.entity.Player;
-import org.bukkit.event.player.PlayerMoveEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -189,23 +185,8 @@ public class IWorldHandler extends WorldHandler{
         //*******************************************
         //*         Step two: Get the tiles         *
         //*******************************************
-        World nativeWorld = ((CraftWorld) craft.getW()).getHandle();
-        List<TileHolder> tiles = new ArrayList<>();
-        //get the tiles
-        for(BlockPosition position : positions){
-            if(nativeWorld.getType(position) == Blocks.AIR.getBlockData())
-                continue;
-            //TileEntity tile = nativeWorld.removeTileEntity(position);
-            TileEntity tile = removeTileEntity(nativeWorld,position);
-            if(tile == null)
-                continue;
-            //get the nextTick to move with the tile
-
-            //nativeWorld.capturedTileEntities.remove(position);
-            //nativeWorld.getChunkAtWorldCoords(position).getTileEntities().remove(position);
-            tiles.add(new TileHolder(tile, tickProvider.getNextTick((WorldServer)nativeWorld,position), position));
-
-        }
+        WorldServer nativeWorld = ((CraftWorld) craft.getW()).getHandle();
+        List<TileHolder> tiles = getTiles(positions, nativeWorld);
         //*******************************************
         //*   Step three: Translate all the blocks  *
         //*******************************************
@@ -220,62 +201,26 @@ public class IWorldHandler extends WorldHandler{
             blockData.add(nativeWorld.getType(position));
             newPositions.add(position.a(translateVector));
         }
-        Map<BlockPosition, IBlockData> redstoneComponents = new HashMap<>();
         //create the new block
-        for(int i = 0; i<newPositions.size(); i++) {
-            final BlockPosition newPosition = newPositions.get(i);
-            final IBlockData iBlockData = blockData.get(i);
-            if (isRedstoneComponent(iBlockData)) {
-                redstoneComponents.put(newPosition, iBlockData);
-                //continue;
-            }
-            setBlockFast(nativeWorld, newPosition, iBlockData);
-        }
+        setBlocks(newPositions, blockData, nativeWorld);
         //*******************************************
         //*    Step four: replace all the tiles     *
         //*******************************************
         //TODO: go by chunks
-        for(TileHolder tileHolder : tiles){
-            moveTileEntity(nativeWorld, tileHolder.getTilePosition().a(translateVector),tileHolder.getTile());
-            if(tileHolder.getNextTick()==null)
-                continue;
-            final long currentTime = nativeWorld.worldData.getTime();
-            nativeWorld.getBlockTickList().a(tileHolder.getNextTick().a.a(translateVector), tileHolder.getNextTick().a(), (int) (tileHolder.getNextTick().b - currentTime), tileHolder.getNextTick().c);
-        }
+        processTiles(tiles, nativeWorld, translateVector);
         //*******************************************
         //*   Step five: Destroy the leftovers      *
         //*******************************************
         Collection<BlockPosition> deletePositions =  CollectionUtils.filter(positions,newPositions);
-        for(BlockPosition position : deletePositions){
-            setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
-        }
-
+        setAir(deletePositions, nativeWorld);
         //*******************************************
         //*   Step six: Process fire spread         *
         //*******************************************
-        for (BlockPosition position : newPositions) {
-            IBlockData type = nativeWorld.getType(position);
-            if (!(type.getBlock() instanceof BlockFire)) {
-                continue;
-            }
-            BlockFire fire = (BlockFire) type.getBlock();
-            fire.a(type, nativeWorld, position, nativeWorld.random);
-        }
-
-        for (Map.Entry<BlockPosition, IBlockData> entry : redstoneComponents.entrySet()) {
-            final BlockPosition position = entry.getKey();
-            final IBlockData data = entry.getValue();
-            Chunk chunk = nativeWorld.getChunkAtWorldCoords(position);
-            ChunkSection chunkSection = chunk.getSections()[position.getY()>>4];
-            if (chunkSection == null) {
-                // Put a GLASS block to initialize the section. It will be replaced next with the real block.
-                chunk.setType(position, Blocks.GLASS.getBlockData(), true);
-                chunkSection = chunk.getSections()[position.getY() >> 4];
-
-            }
-            chunkSection.setType(position.getX()&15, position.getY()&15, position.getZ()&15, data);
-            nativeWorld.notifyAndUpdatePhysics(position, chunk, data, data, data, 3);
-        }
+        processFireSpread(newPositions, nativeWorld);
+        //*******************************************
+        //*   Step six: Process redstone        *
+        //*******************************************
+        processRedstone(newPositions, nativeWorld);
         //*******************************************
         //*       Step six: Send to players       *
         //*******************************************
@@ -295,21 +240,82 @@ public class IWorldHandler extends WorldHandler{
         //sendToPlayers(chunks.toArray(new Chunk[0]));
     }
 
-    @Override
-    public void addPlayerLocation(Player player, double x, double y, double z, float yaw, float pitch){
-        EntityPlayer ePlayer = ((CraftPlayer) player).getHandle();
-        if(internalTeleportMH == null) {
-            //something went wrong
-            super.addPlayerLocation(player, x, y, z, yaw, pitch);
-            return;
+
+    private void setBlocks(List<BlockPosition> newPositions, List<IBlockData> blockData, World nativeWorld){
+        Map<BlockPosition, IBlockData> redstoneComponents = new HashMap<>();
+        for(int i = 0; i<newPositions.size(); i++) {
+            setBlockFast(nativeWorld, newPositions.get(i), blockData.get(i));
         }
-        try {
-            final Location oldLoc = player.getLocation().clone();
-            final Location newLoc = player.getLocation().add(x,y,z);
-            internalTeleportMH.invoke(ePlayer.playerConnection, x + player.getLocation().getX(), y + player.getLocation().getY(), z + player.getLocation().getZ(), yaw, pitch, EnumSet.allOf(PacketPlayOutPosition.EnumPlayerTeleportFlags.class));
-            Bukkit.getServer().getPluginManager().callEvent(new PlayerMoveEvent(player,oldLoc,newLoc));
-        } catch (Throwable throwable) {
-            throwable.printStackTrace();
+    }
+
+    private List<TileHolder> getTiles(Iterable<BlockPosition> positions, WorldServer nativeWorld){
+        List<TileHolder> tiles = new ArrayList<>();
+        //get the tiles
+        for(BlockPosition position : positions){
+            if(nativeWorld.getType(position) == Blocks.AIR.getBlockData())
+                continue;
+            //TileEntity tile = nativeWorld.removeTileEntity(position);
+            TileEntity tile = removeTileEntity(nativeWorld,position);
+            if(tile == null)
+                continue;
+            //get the nextTick to move with the tile
+
+            //nativeWorld.capturedTileEntities.remove(position);
+            //nativeWorld.getChunkAtWorldCoords(position).getTileEntities().remove(position);
+            tiles.add(new TileHolder(tile, tickProvider.getNextTick(nativeWorld, position), position));
+
+        }
+        return tiles;
+    }
+
+    private void processTiles(Iterable<TileHolder> tiles, World world, BlockPosition translateVector){
+        for(TileHolder tileHolder : tiles){
+            moveTileEntity(world, tileHolder.getTilePosition().a(translateVector),tileHolder.getTile());
+            if(tileHolder.getNextTick()==null)
+                continue;
+            final long currentTime = world.worldData.getTime();
+            world.getBlockTickList().a(tileHolder.getNextTick().a.a(translateVector), tileHolder.getNextTick().a(), (int) (tileHolder.getNextTick().b - currentTime), tileHolder.getNextTick().c);
+        }
+    }
+
+    private void processFireSpread(Iterable<BlockPosition> positions, World world){
+        for (BlockPosition position : positions) {
+            IBlockData type = world.getType(position);
+            if (!(type.getBlock() instanceof BlockFire)) {
+                continue;
+            }
+            BlockFire fire = (BlockFire) type.getBlock();
+            fire.a(type, world, position, world.random);
+        }
+    }
+
+    private void processRedstone(List<BlockPosition> redstone, World world) {
+        Map<BlockPosition, IBlockData> redstoneComponents = new HashMap<>();
+        for (int i = 0 ; i < redstone.size(); i++) {
+            BlockPosition pos = redstone.get(i);
+            IBlockData data = world.getType(pos);
+            if (isRedstoneComponent(data))
+                redstoneComponents.put(pos, data);
+        }
+        for (Map.Entry<BlockPosition, IBlockData> entry : redstoneComponents.entrySet()) {
+            final BlockPosition position = entry.getKey();
+            final IBlockData data = entry.getValue();
+            Chunk chunk = world.getChunkAtWorldCoords(position);
+            ChunkSection chunkSection = chunk.getSections()[position.getY()>>4];
+            if (chunkSection == null) {
+                // Put a GLASS block to initialize the section. It will be replaced next with the real block.
+                chunk.setType(position, Blocks.GLASS.getBlockData(), true);
+                chunkSection = chunk.getSections()[position.getY() >> 4];
+
+            }
+            chunkSection.setType(position.getX()&15, position.getY()&15, position.getZ()&15, data);
+            world.notifyAndUpdatePhysics(position, chunk, data, data, data, 3);
+        }
+    }
+
+    private void setAir(Iterable<BlockPosition> positions, World world){
+        for(BlockPosition position : positions){
+            setBlockFast(world, position, Blocks.AIR.getBlockData());
         }
     }
 
