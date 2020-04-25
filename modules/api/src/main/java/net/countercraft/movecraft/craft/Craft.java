@@ -17,10 +17,13 @@
 
 package net.countercraft.movecraft.craft;
 
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
 import net.countercraft.movecraft.events.CraftSinkEvent;
 import net.countercraft.movecraft.utils.BitmapHitBox;
+import net.countercraft.movecraft.utils.Counter;
 import net.countercraft.movecraft.utils.HashHitBox;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -46,7 +49,7 @@ public abstract class Craft {
     @NotNull protected BitmapHitBox hitBox;
     @NotNull protected final BitmapHitBox collapsedHitBox;
     @NotNull protected BitmapHitBox fluidLocations;
-
+    @NotNull protected final Counter<Material> materials;
     @NotNull protected World w;
     @NotNull private final AtomicBoolean processing = new AtomicBoolean();
     private int maxHeightLimit;
@@ -97,6 +100,7 @@ public abstract class Craft {
         this.disabled = false;
         this.origPilotTime = System.currentTimeMillis();
         numMoves = 0;
+        materials = new Counter<>();
     }
 
     public boolean isNotProcessing() {
@@ -316,18 +320,21 @@ public abstract class Craft {
     public int getTickCooldown() {
         if(sinking)
             return type.getSinkRateTicks();
-        Map<Material, Integer> counter = new HashMap<>();
-        for(MovecraftLocation location : hitBox){
-            Material mat = location.toBukkit(w).getBlock().getType();
-            counter.put(mat, counter.getOrDefault(mat, 0) + 1);
+//        Counter<Material> counter = new Counter<>();
+//        Map<Material, Integer> counter = new HashMap<>();
+        if(materials.isEmpty()){
+            for(MovecraftLocation location : hitBox){
+                materials.add(location.toBukkit(w).getBlock().getType());
+            }
         }
-        double chestPenalty = counter.getOrDefault(Material.CHEST, 0) + counter.getOrDefault(Material.TRAPPED_CHEST, 0);
+
+        double chestPenalty = materials.get(Material.CHEST) + materials.get(Material.TRAPPED_CHEST);
         chestPenalty*=type.getChestPenalty();
         if(!cruising)
             return type.getTickCooldown()+(int)chestPenalty;
         if(type.getDynamicFlyBlockSpeedFactor()!=0){
             Material flyBlockMaterial = Material.getMaterial(type.getDynamicFlyBlock());
-            double count = counter.getOrDefault(flyBlockMaterial, 0);
+            double count = materials.get(flyBlockMaterial);
             double woolRatio = count / hitBox.size();
             return Math.max((int)Math.round((20.0 * type.getCruiseSkipBlocks())/((type.getDynamicFlyBlockSpeedFactor()*1.5)*(woolRatio - .5) + (20.0/type.getCruiseTickCooldown()) + 1)), 1);
             //return Math.max((int)((20.0 * type.getDynamicFlyBlockSpeedFactor()/100.0)/(woolRatio - .499)),0) + type.getCruiseTickCooldown();
