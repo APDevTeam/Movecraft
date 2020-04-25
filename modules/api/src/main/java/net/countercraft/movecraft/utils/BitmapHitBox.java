@@ -1,5 +1,7 @@
 package net.countercraft.movecraft.utils;
 
+import it.unimi.dsi.fastutil.longs.Long2IntMap;
+import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.exception.EmptyHitBoxException;
 import org.jetbrains.annotations.NotNull;
@@ -11,6 +13,7 @@ import java.util.Iterator;
 
 public class BitmapHitBox implements MutableHitBox {
     private final Roaring64NavigableMap backing;
+    private final Long2IntMap localMinY;
     private boolean invalidateBounds = false;
     private int minX = Integer.MAX_VALUE;
     private int minY = Integer.MAX_VALUE;
@@ -22,15 +25,18 @@ public class BitmapHitBox implements MutableHitBox {
 
     public BitmapHitBox() {
         backing = new Roaring64NavigableMap(true);
+        localMinY = new Long2IntOpenHashMap();
     }
 
     private BitmapHitBox(Roaring64NavigableMap backing) {
         this.backing = backing;
+        localMinY = new Long2IntOpenHashMap();
     }
 
     public BitmapHitBox(HitBox hitBox){
         backing = new Roaring64NavigableMap(true);
         this.addAll(hitBox);
+        localMinY = new Long2IntOpenHashMap();
     }
 
     public BitmapHitBox(BitmapHitBox hitBox){
@@ -42,6 +48,7 @@ public class BitmapHitBox implements MutableHitBox {
         maxX = hitBox.maxX;
         maxY = hitBox.maxY;
         maxZ = hitBox.maxZ;
+        localMinY = new Long2IntOpenHashMap(hitBox.localMinY);
         invalidateBounds = hitBox.invalidateBounds;
     }
 
@@ -95,7 +102,8 @@ public class BitmapHitBox implements MutableHitBox {
                 location.getZ() == minZ ||
                 location.getX() == maxX ||
                 location.getY() == maxY ||
-                location.getZ() == maxZ) {
+                location.getZ() == maxZ ||
+                localMinY.getOrDefault((long)location.getX() << 32 | location.getZ(), -1) == location.getY()) {
             invalidateBounds = true;
         }
         backing.removeLong(l);
@@ -135,6 +143,7 @@ public class BitmapHitBox implements MutableHitBox {
         maxX = Integer.MIN_VALUE;
         maxY = Integer.MIN_VALUE;
         maxZ = Integer.MIN_VALUE;
+        localMinY.clear();
         invalidateBounds = false;
     }
 
@@ -205,18 +214,28 @@ public class BitmapHitBox implements MutableHitBox {
     }
 
     public int getLocalMinY(int x, int z){
-        int out = Integer.MAX_VALUE;
-        for(MovecraftLocation location : this){
-            if(location.getZ() == z && location.getX() == x && location.getY() < out){
-                out = location.getY();
-            }
+        if(this.isEmpty()){
+            throw new EmptyHitBoxException();
         }
-        return out;
+        if (invalidateBounds) {
+            validateBounds();
+        }
+        return localMinY.getOrDefault((long)x << 32 | z, -1);
     }
 
     @Override
     public int size() {
         return backing.getIntCardinality();
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return backing.isEmpty();
+    }
+
+    @Override
+    public boolean contains(int x, int y, int z) {
+        return backing.contains(MovecraftLocation.pack(x,y,z));
     }
 
     @NotNull
@@ -302,6 +321,9 @@ public class BitmapHitBox implements MutableHitBox {
         }
         if (location.getZ() < minZ) {
             minZ = location.getZ();
+        }
+        if(location.getY() < localMinY.getOrDefault((long)location.getX() << 32 | location.getZ(), 256)){
+            localMinY.put((long)location.getX() << 32 | location.getZ(), location.getY());
         }
     }
 }
