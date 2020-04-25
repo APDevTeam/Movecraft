@@ -17,10 +17,14 @@
 
 package net.countercraft.movecraft.craft;
 
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.events.CraftSinkEvent;
+import net.countercraft.movecraft.utils.BitmapHitBox;
+import net.countercraft.movecraft.utils.Counter;
 import net.countercraft.movecraft.utils.HashHitBox;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -43,10 +47,10 @@ public abstract class Craft {
     @NotNull protected final CraftType type;
     //protected int[][][] hitBox;
     //protected MovecraftLocation[] blockList;
-    @NotNull protected HashHitBox hitBox;
-    @NotNull protected final HashHitBox collapsedHitBox;
-    @NotNull protected HashHitBox fluidLocations;
-
+    @NotNull protected BitmapHitBox hitBox;
+    @NotNull protected final BitmapHitBox collapsedHitBox;
+    @NotNull protected BitmapHitBox fluidLocations;
+    @NotNull protected final Counter<Material> materials;
     @NotNull protected World w;
     @NotNull private final AtomicBoolean processing = new AtomicBoolean();
     private int maxHeightLimit;
@@ -77,8 +81,9 @@ public abstract class Craft {
     public Craft(@NotNull CraftType type, @NotNull World world) {
         this.type = type;
         this.w = world;
-        this.hitBox = new HashHitBox();
-        this.collapsedHitBox = new HashHitBox();
+        this.hitBox = new BitmapHitBox();
+        this.collapsedHitBox = new BitmapHitBox();
+        this.fluidLocations = new BitmapHitBox();
         if (type.getMaxHeightLimit() > w.getMaxHeight() - 1) {
             this.maxHeightLimit = w.getMaxHeight() - 1;
         } else {
@@ -96,6 +101,7 @@ public abstract class Craft {
         this.disabled = false;
         this.origPilotTime = System.currentTimeMillis();
         numMoves = 0;
+        materials = new Counter<>();
     }
 
     public boolean isNotProcessing() {
@@ -107,11 +113,11 @@ public abstract class Craft {
     }
 
     @NotNull
-    public HashHitBox getHitBox() {
+    public BitmapHitBox getHitBox() {
         return hitBox;
     }
 
-    public void setHitBox(@NotNull HashHitBox hitBox){
+    public void setHitBox(@NotNull BitmapHitBox hitBox){
         this.hitBox = hitBox;
     }
 
@@ -316,13 +322,15 @@ public abstract class Craft {
         if(sinking)
             return type.getSinkRateTicks();
 
-        Map<Material, Integer> counter = new HashMap<>();
-        for(MovecraftLocation location : hitBox){
-            Material mat = location.toBukkit(w).getBlock().getType();
-            counter.put(mat, counter.getOrDefault(mat, 0) + 1);
+//        Counter<Material> counter = new Counter<>();
+//        Map<Material, Integer> counter = new HashMap<>();
+        if(materials.isEmpty()){
+            for(MovecraftLocation location : hitBox){
+                materials.add(location.toBukkit(w).getBlock().getType());
+            }
         }
-        int chestPenalty = (int)(((counter.getOrDefault(Material.CHEST, 0) + counter.getOrDefault(Material.TRAPPED_CHEST, 0)) * type.getChestPenalty()));
 
+        int chestPenalty = (materials.get(Material.CHEST) + materials.get(Material.TRAPPED_CHEST)) * type.getChestPenalty();
         if(!cruising)
             return type.getTickCooldown() + chestPenalty;
 
@@ -338,7 +346,7 @@ public abstract class Craft {
 
         if(type.getDynamicFlyBlockSpeedFactor() != 0){
             Material flyBlockMaterial = Material.getMaterial(type.getDynamicFlyBlock());
-            double count = counter.getOrDefault(flyBlockMaterial, 0);
+            double count = materials.get(flyBlockMaterial);
             double woolRatio = count / hitBox.size();
             return Math.max((int)Math.round((20.0 * (type.getCruiseSkipBlocks() + 1)) / ((type.getDynamicFlyBlockSpeedFactor() * 1.5) * (woolRatio - .5) + (20.0 / type.getCruiseTickCooldown()) + 1)), 1);
         }
@@ -453,18 +461,18 @@ public abstract class Craft {
     }
 
     @NotNull
-    public HashHitBox getCollapsedHitBox() {
+    public BitmapHitBox getCollapsedHitBox() {
         return collapsedHitBox;
     }
 
     public abstract void resetSigns(@NotNull final Sign clicked);
 
     @NotNull
-    public HashHitBox getFluidLocations() {
+    public BitmapHitBox getFluidLocations() {
         return fluidLocations;
     }
 
-    public void setFluidLocations(@NotNull HashHitBox fluidLocations) {
+    public void setFluidLocations(@NotNull BitmapHitBox fluidLocations) {
         this.fluidLocations = fluidLocations;
     }
 }

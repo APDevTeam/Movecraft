@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 
 @SuppressWarnings("UnstableApiUsage")
+@Deprecated
 public class HashHitBox implements MutableHitBox {
     private final Set<MovecraftLocation> locationSet = new HashSet<>();
 //    private int minX,maxX,minY,maxY,minZ,maxZ;

@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.mapUpdater.update;
 
+import com.google.common.collect.Lists;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.WorldHandler;
@@ -54,11 +55,11 @@ public class CraftTranslateCommand extends UpdateCommand {
             //trigger sign events
             this.sendSignEvents();
         } else {
-            MutableHitBox originalLocations = new HashHitBox();
+            BitmapHitBox originalLocations = new BitmapHitBox();
             for (MovecraftLocation movecraftLocation : craft.getHitBox()) {
                 originalLocations.add(movecraftLocation.subtract(displacement));
             }
-            final HitBox to = CollectionUtils.filter(craft.getHitBox(), originalLocations);
+            final HitBox to = craft.getHitBox().difference(originalLocations);
             //place phased blocks
             for (MovecraftLocation location : to) {
                 Block b = location.toBukkit(craft.getW()).getBlock();
@@ -69,11 +70,11 @@ public class CraftTranslateCommand extends UpdateCommand {
                 }
             }
             //The subtraction of the set of coordinates in the HitBox cube and the HitBox itself
-            final HitBox invertedHitBox = CollectionUtils.filter(craft.getHitBox().boundingHitBox(), craft.getHitBox());
+            final BitmapHitBox invertedHitBox = new BitmapHitBox(craft.getHitBox().boundingHitBox()).difference(craft.getHitBox());
 
             //A set of locations that are confirmed to be "exterior" locations
-            final MutableHitBox confirmed = new HashHitBox();
-            final MutableHitBox failed = new HashHitBox();
+            final BitmapHitBox confirmed = new BitmapHitBox();
+            final BitmapHitBox failed = new BitmapHitBox();
 
             //place phased blocks
             final Set<MovecraftLocation> overlap = new HashSet<>(craft.getPhaseBlocks().keySet());
@@ -90,15 +91,15 @@ public class CraftTranslateCommand extends UpdateCommand {
                     new SolidHitBox(new MovecraftLocation(maxX, minY, maxZ), new MovecraftLocation(minX, maxY, maxZ)),
                     new SolidHitBox(new MovecraftLocation(maxX, minY, maxZ), new MovecraftLocation(maxX, maxY, minZ)),
                     new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(maxX, minY, maxZ))};
-            final Set<MovecraftLocation> validExterior = new HashSet<>();
+            final BitmapHitBox validExterior = new BitmapHitBox();
             for (HitBox hitBox : surfaces) {
-                validExterior.addAll(CollectionUtils.filter(hitBox, craft.getHitBox()).asSet());
+                validExterior.addAll(new BitmapHitBox(hitBox).difference(craft.getHitBox()));
             }
 
             //Check to see which locations in the from set are actually outside of the craft
             //use a modified BFS for multiple origin elements
-            Set<MovecraftLocation> visited = new HashSet<>();
-            Queue<MovecraftLocation> queue = new LinkedList<>(validExterior);
+            BitmapHitBox visited = new BitmapHitBox();
+            Queue<MovecraftLocation> queue = Lists.newLinkedList(validExterior);
             while (!queue.isEmpty()) {
                 MovecraftLocation node = queue.poll();
                 if(visited.contains(node))
@@ -114,10 +115,10 @@ public class CraftTranslateCommand extends UpdateCommand {
             if(craft.getSinking()){
                 confirmed.addAll(invertedHitBox);
             }
-            failed.addAll(CollectionUtils.filter(invertedHitBox, confirmed));
+            failed.addAll(invertedHitBox.difference(confirmed));
 
             final WorldHandler handler = Movecraft.getInstance().getWorldHandler();
-            for (MovecraftLocation location : CollectionUtils.filter(invertedHitBox, confirmed)) {
+            for (MovecraftLocation location : invertedHitBox.difference(confirmed)) {
                 Block b = location.toBukkit(craft.getW()).getBlock();
                 Material material = b.getType();
                 byte data = b.getData();

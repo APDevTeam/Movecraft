@@ -54,13 +54,13 @@ public class CraftRotateCommand extends UpdateCommand {
             passthroughBlocks.add(Material.DOUBLE_PLANT);
         }
         if (!passthroughBlocks.isEmpty()) {
-            MutableHitBox originalLocations = new HashHitBox();
+            BitmapHitBox originalLocations = new BitmapHitBox();
             final Rotation counterRotation = rotation == Rotation.CLOCKWISE ? Rotation.ANTICLOCKWISE : Rotation.CLOCKWISE;
             for (MovecraftLocation movecraftLocation : craft.getHitBox()) {
                 originalLocations.add(MathUtils.rotateVec(counterRotation, movecraftLocation.subtract(originLocation)).add(originLocation));
             }
 
-            final HitBox to = CollectionUtils.filter(craft.getHitBox(), originalLocations);
+            final HitBox to = craft.getHitBox().difference(originalLocations);
 
             for (MovecraftLocation location : to) {
                 Block b = location.toBukkit(craft.getW()).getBlock();
@@ -71,10 +71,10 @@ public class CraftRotateCommand extends UpdateCommand {
                 }
             }
             //The subtraction of the set of coordinates in the HitBox cube and the HitBox itself
-            final HitBox invertedHitBox = CollectionUtils.filter(craft.getHitBox().boundingHitBox(), craft.getHitBox());
+            final BitmapHitBox invertedHitBox = new BitmapHitBox(craft.getHitBox().boundingHitBox()).difference(craft.getHitBox());
             //A set of locations that are confirmed to be "exterior" locations
-            final MutableHitBox exterior = new HashHitBox();
-            final MutableHitBox interior = new HashHitBox();
+            final BitmapHitBox exterior = new BitmapHitBox();
+            final BitmapHitBox interior = new BitmapHitBox();
 
             //place phased blocks
             final Set<MovecraftLocation> overlap = new HashSet<>(craft.getPhaseBlocks().keySet());
@@ -92,9 +92,9 @@ public class CraftRotateCommand extends UpdateCommand {
                     new SolidHitBox(new MovecraftLocation(maxX, minY, maxZ), new MovecraftLocation(maxX, maxY, minZ)),
                     new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(maxX, minY, maxZ))};
             //Valid exterior starts as the 6 surface planes of the HitBox with the locations that lie in the HitBox removed
-            final Set<MovecraftLocation> validExterior = new HashSet<>();
+            final BitmapHitBox validExterior = new BitmapHitBox();
             for (HitBox hitBox : surfaces) {
-                validExterior.addAll(CollectionUtils.filter(hitBox, craft.getHitBox()).asSet());
+                validExterior.addAll(new BitmapHitBox(hitBox).difference(craft.getHitBox()));
             }
             //Check to see which locations in the from set are actually outside of the craft
             for (MovecraftLocation location :validExterior ) {
@@ -102,7 +102,7 @@ public class CraftRotateCommand extends UpdateCommand {
                     continue;
                 }
                 //use a modified BFS for multiple origin elements
-                Set<MovecraftLocation> visited = new HashSet<>();
+                BitmapHitBox visited = new BitmapHitBox();
                 Queue<MovecraftLocation> queue = new LinkedList<>();
                 queue.add(location);
                 while (!queue.isEmpty()) {
@@ -118,10 +118,10 @@ public class CraftRotateCommand extends UpdateCommand {
                 }
                 exterior.addAll(visited);
             }
-            interior.addAll(CollectionUtils.filter(invertedHitBox, exterior));
+            interior.addAll(invertedHitBox.difference(exterior));
 
             final WorldHandler handler = Movecraft.getInstance().getWorldHandler();
-            for (MovecraftLocation location : CollectionUtils.filter(invertedHitBox, exterior)) {
+            for (MovecraftLocation location : invertedHitBox.difference(exterior)) {
                 Block b = location.toBukkit(craft.getW()).getBlock();
                 Material material = b.getType();
                 byte data = b.getData();
