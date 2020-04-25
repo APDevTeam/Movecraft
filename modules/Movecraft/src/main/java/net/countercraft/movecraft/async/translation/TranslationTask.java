@@ -247,7 +247,7 @@ public class TranslationTask extends AsyncTask {
                         collisionExplosion = true;
                     }
                 }
-                List<MovecraftLocation> toRemove = new ArrayList<>();
+                BitmapHitBox toRemove = new BitmapHitBox();
                 MovecraftLocation next = location.translate(-dx,-dy,-dz);
                 while(oldHitBox.contains(next)) {
                     toRemove.add(next);

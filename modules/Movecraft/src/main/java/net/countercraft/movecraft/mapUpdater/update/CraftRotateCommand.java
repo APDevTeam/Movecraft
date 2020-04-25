@@ -102,7 +102,7 @@ public class CraftRotateCommand extends UpdateCommand {
                     continue;
                 }
                 //use a modified BFS for multiple origin elements
-                Set<MovecraftLocation> visited = new HashSet<>();
+                BitmapHitBox visited = new BitmapHitBox();
                 Queue<MovecraftLocation> queue = new LinkedList<>();
                 queue.add(location);
                 while (!queue.isEmpty()) {

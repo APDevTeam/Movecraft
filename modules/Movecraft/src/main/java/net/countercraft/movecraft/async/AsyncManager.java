@@ -221,7 +221,7 @@ public class AsyncManager extends BukkitRunnable {
 
                                 //Check to see which locations in the from set are actually outside of the craft
                                 //use a modified BFS for multiple origin elements
-                                Set<MovecraftLocation> visited = new HashSet<>();
+                                BitmapHitBox visited = new BitmapHitBox();
                                 Queue<MovecraftLocation> queue = Lists.newLinkedList(validExterior);
                                 while (!queue.isEmpty()) {
                                     MovecraftLocation node = queue.poll();
