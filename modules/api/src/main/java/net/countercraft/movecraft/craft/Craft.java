@@ -330,7 +330,7 @@ public abstract class Craft {
             }
         }
 
-        int chestPenalty = (materials.get(Material.CHEST) + materials.get(Material.TRAPPED_CHEST)) * type.getChestPenalty();
+        int chestPenalty = (int)((materials.get(Material.CHEST) + materials.get(Material.TRAPPED_CHEST)) * type.getChestPenalty());
         if(!cruising)
             return type.getTickCooldown() + chestPenalty;
 

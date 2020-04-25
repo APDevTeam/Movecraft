@@ -440,8 +440,7 @@ public class AsyncManager extends BukkitRunnable {
                 } else {
                     tickCoolDown *= (Math.sqrt(Math.pow(1 + pcraft.getType().getCruiseSkipBlocks(), 2) + Math.pow(pcraft.getType().getCruiseSkipBlocks() >> 1, 2) + 1) / (1 + pcraft.getType().getCruiseSkipBlocks()));
                 }
-            }
-            else if(dive) {
+            } else if(dive) {
                 tickCoolDown *= (Math.sqrt(Math.pow(1 + pcraft.getType().getCruiseSkipBlocks(), 2) + 1) / (1 + pcraft.getType().getCruiseSkipBlocks()));
             }
             if(Settings.Debug) {
