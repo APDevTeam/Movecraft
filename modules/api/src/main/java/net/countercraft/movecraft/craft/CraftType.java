@@ -162,9 +162,9 @@ final public class CraftType {
         double cruiseSpeed = doubleFromObject(data.getOrDefault("cruiseSpeed", 20.0 / tickCooldown));
         cruiseTickCooldown = (int) Math.round((1.0 + cruiseSkipBlocks) * 20.0 / cruiseSpeed);
         if(Settings.Debug) {
-            Bukkit.getLogger().log(Level.SEVERE, "Craft: " + craftName);
-            Bukkit.getLogger().log(Level.SEVERE, "CruiseSpeed: " + cruiseSpeed);
-            Bukkit.getLogger().log(Level.SEVERE, "Cooldown: " + cruiseTickCooldown);
+            Bukkit.getLogger().info("Craft: " + craftName);
+            Bukkit.getLogger().info("CruiseSpeed: " + cruiseSpeed);
+            Bukkit.getLogger().info("Cooldown: " + cruiseTickCooldown);
         }
 
         int value = Math.min(integerFromObject(data.getOrDefault("maxHeightLimit", 254)), 255);

@@ -329,9 +329,9 @@ public abstract class Craft {
         // Ascent or Descent
         if(cruiseDirection == 0x42 || cruiseDirection == 0x43) {
             if(Settings.Debug) {
-                Bukkit.broadcastMessage("Skip: " + type.getCruiseSkipBlocks());
-                Bukkit.broadcastMessage("Tick: " + type.getCruiseTickCooldown());
-                Bukkit.broadcastMessage("Penalty: " + chestPenalty);
+                Bukkit.getLogger().info("Skip: " + type.getCruiseSkipBlocks());
+                Bukkit.getLogger().info("Tick: " + type.getCruiseTickCooldown());
+                Bukkit.getLogger().info("Penalty: " + chestPenalty);
             }
             return type.getCruiseTickCooldown() + chestPenalty;
         }
@@ -349,12 +349,12 @@ public abstract class Craft {
             return type.getCruiseTickCooldown() + chestPenalty;
 
         if(Settings.Debug) {
-            Bukkit.broadcastMessage("Skip: " + type.getCruiseSkipBlocks());
-            Bukkit.broadcastMessage("Tick: " + type.getCruiseTickCooldown());
-            Bukkit.broadcastMessage("SpeedFactor: " + type.getDynamicLagSpeedFactor());
-            Bukkit.broadcastMessage("PowerFactor: " + type.getDynamicLagPowerFactor());
-            Bukkit.broadcastMessage("MinSpeed: " + type.getDynamicLagMinSpeed());
-            Bukkit.broadcastMessage("CruiseTime: " + getMeanCruiseTime() * 1000.0 + "ms");
+            Bukkit.getLogger().info("Skip: " + type.getCruiseSkipBlocks());
+            Bukkit.getLogger().info("Tick: " + type.getCruiseTickCooldown());
+            Bukkit.getLogger().info("SpeedFactor: " + type.getDynamicLagSpeedFactor());
+            Bukkit.getLogger().info("PowerFactor: " + type.getDynamicLagPowerFactor());
+            Bukkit.getLogger().info("MinSpeed: " + type.getDynamicLagMinSpeed());
+            Bukkit.getLogger().info("CruiseTime: " + getMeanCruiseTime() * 1000.0 + "ms");
         }
 
         double speed = 20.0 * (type.getCruiseSkipBlocks() + 1.0) / (float)type.getCruiseTickCooldown();
