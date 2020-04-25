@@ -128,6 +128,10 @@ final public class MovecraftLocation {
         return (x & BITS_26) | ((z & BITS_26) << 26) | (((y & (long) BITS_12) << (26 + 26)));
     }
 
+    public static long pack(int x, int y, int z){
+        return (x & BITS_26) | ((z & BITS_26) << 26) | (((y & (long) BITS_12) << (26 + 26)));
+    }
+
     @NotNull
     public static MovecraftLocation unpack(long l){
         return new MovecraftLocation(unpackX(l), unpackY(l), unpackZ(l));

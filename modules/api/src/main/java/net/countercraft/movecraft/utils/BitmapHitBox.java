@@ -228,6 +228,16 @@ public class BitmapHitBox implements MutableHitBox {
         return backing.getIntCardinality();
     }
 
+    @Override
+    public boolean isEmpty() {
+        return backing.isEmpty();
+    }
+
+    @Override
+    public boolean contains(int x, int y, int z) {
+        return backing.contains(MovecraftLocation.pack(x,y,z));
+    }
+
     @NotNull
     @Override
     public Iterator<MovecraftLocation> iterator() {
