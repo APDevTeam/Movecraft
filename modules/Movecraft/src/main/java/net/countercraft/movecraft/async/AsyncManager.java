@@ -183,15 +183,15 @@ public class AsyncManager extends BukkitRunnable {
                                 continue;
                             }
                             if(!craft.getHitBox().union(task.getHitBox()).isEmpty()){
-                                if(craft.getNotificationPlayer() != null && !craft.getType().getCruiseOnPilot()){
-                                    continue;
-                                }
                                 isSubcraft = true;
                                 if (craft.getType() == c.getType()
-                                        || craft.getHitBox().size() <= task.getHitBox().size()) {
+                                        || craft.getHitBox().size() <= task.getHitBox().size()
+                                        || (craft.getNotificationPlayer() != null
+                                        && !craft.getType().getCruiseOnPilot())) {
                                     p.sendMessage(I18nSupport.getInternationalisedString(
                                             "Detection - Failed Craft is already being controlled"));
                                     failed = true;
+                                    break;
                                 } else {
                                     // if this is a different type than
                                     // the overlapping craft, and is
