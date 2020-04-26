@@ -181,7 +181,7 @@ public class CraftTranslateCommand extends UpdateCommand {
             logger.info("Total time: " + (time / 1e6) + " milliseconds. Moving with cooldown of " + craft.getTickCooldown() + ". Speed of: " + String.format("%.2f", craft.getSpeed()) + ". Displacement of: " + displacement);
 
         // Only add cruise time if cruising
-        if(displacement.getY() == 0 && (displacement.getX() == 0 || displacement.getZ() == 0))
+        if(craft.getCruising() && displacement.getY() == 0 && (displacement.getX() == 0 || displacement.getZ() == 0))
             craft.addCruiseTime(time / 1e9f);
     }
 
