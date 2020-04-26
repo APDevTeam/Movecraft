@@ -13,7 +13,6 @@ import net.countercraft.movecraft.events.ItemHarvestEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.update.*;
 import net.countercraft.movecraft.utils.*;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
@@ -281,8 +280,8 @@ public class TranslationTask extends AsyncTask {
         if(!collisionBox.isEmpty() && craft.getType().getCruiseOnPilot()){
             CraftManager.getInstance().removeCraft(craft);
             for(MovecraftLocation location : oldHitBox){
-                ImmutablePair<Material, Byte> phaseBlock = craft.getPhaseBlocks().getOrDefault(location, new ImmutablePair<>(Material.AIR, (byte) 0));
-                updates.add(new BlockCreateCommand(craft.getW(), location, phaseBlock.getKey(), phaseBlock.getValue()));
+                Pair<Material, Byte> phaseBlock = craft.getPhaseBlocks().getOrDefault(location, new Pair<>(Material.AIR, (byte) 0));
+                updates.add(new BlockCreateCommand(craft.getW(), location, phaseBlock.getLeft(), phaseBlock.getRight()));
             }
             newHitBox = new BitmapHitBox();
         }
