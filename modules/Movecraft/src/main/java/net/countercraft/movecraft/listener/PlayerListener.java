@@ -144,7 +144,7 @@ public class PlayerListener implements Listener {
             } else {
                 p.sendMessage(I18nSupport.getInternationalisedString("Release - Player has left craft"));
             }
-            timeToReleaseAfter.put(c, System.currentTimeMillis() + 30000); //30 seconds to release TODO: config
+            timeToReleaseAfter.put(c, System.currentTimeMillis() + (Settings.ManOverboardTimeout * 1000)); //30 seconds to release TODO: config
         }
     }
 }
