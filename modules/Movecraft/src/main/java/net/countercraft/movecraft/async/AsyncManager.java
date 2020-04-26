@@ -157,7 +157,7 @@ public class AsyncManager extends BukkitRunnable {
                             if(craft == task.craft){
                                 continue;
                             }
-                            if(!craft.getHitBox().union(task.getHitBox()).isEmpty()){
+                            if(!craft.getHitBox().intersection(task.getHitBox()).isEmpty()){
                                 isSubcraft = true;
                                 if (craft.getType() == c.getType()
                                         || craft.getHitBox().size() <= task.getHitBox().size()
