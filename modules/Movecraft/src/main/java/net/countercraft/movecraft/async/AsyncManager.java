@@ -137,9 +137,9 @@ public class AsyncManager extends BukkitRunnable {
                 Player notifyP = task.getNotificationPlayer();
                 Craft pCraft = CraftManager.getInstance().getCraftByPlayer(p);
                 boolean failed = task.failed();
-                if (pCraft != null && p != null) {
+                if (pCraft != null) {
                     // Player is already controlling a craft
-                    notifyP.sendMessage(I18nSupport.getInternationalisedString("Detection - Failed - Already commanding a craft"));
+                    p.sendMessage(I18nSupport.getInternationalisedString("Detection - Failed - Already commanding a craft"));
                 } else {
                     if (failed) {
                         if (notifyP != null)
@@ -155,27 +155,31 @@ public class AsyncManager extends BukkitRunnable {
                         boolean isSubcraft = false;
 
                         for (Craft craft : craftsInWorld) {
+                            if(craft == task.craft){
+                                continue;
+                            }
                             if(!craft.getHitBox().union(task.getHitBox()).isEmpty()){
+                                if(craft.getNotificationPlayer() != null && !craft.getType().getCruiseOnPilot()){
+                                    continue;
+                                }
                                 isSubcraft = true;
-                                if (c.getType().getCruiseOnPilot() || p != null) {
-                                    if (craft.getType() == c.getType()
-                                            || craft.getHitBox().size() <= task.getHitBox().size()) {
-                                        notifyP.sendMessage(I18nSupport.getInternationalisedString(
-                                                "Detection - Failed Craft is already being controlled"));
+                                if (craft.getType() == c.getType()
+                                        || craft.getHitBox().size() <= task.getHitBox().size()) {
+                                    p.sendMessage(I18nSupport.getInternationalisedString(
+                                            "Detection - Failed Craft is already being controlled"));
+                                    failed = true;
+                                } else {
+                                    // if this is a different type than
+                                    // the overlapping craft, and is
+                                    // smaller, this must be a child
+                                    // craft, like a fighter on a
+                                    // carrier
+                                    if (!craft.isNotProcessing()) {
                                         failed = true;
-                                    } else {
-                                        // if this is a different type than
-                                        // the overlapping craft, and is
-                                        // smaller, this must be a child
-                                        // craft, like a fighter on a
-                                        // carrier
-                                        if (!craft.isNotProcessing()) {
-                                            failed = true;
-                                            notifyP.sendMessage(I18nSupport.getInternationalisedString("Detection - Parent Craft is busy"));
-                                        }
-                                        craft.setHitBox(craft.getHitBox().difference(task.getHitBox()));
-                                        craft.setOrigBlockCount(craft.getOrigBlockCount() - task.getHitBox().size());
+                                        p.sendMessage(I18nSupport.getInternationalisedString("Detection - Parent Craft is busy"));
                                     }
+                                    craft.setHitBox(craft.getHitBox().difference(task.getHitBox()));
+                                    craft.setOrigBlockCount(craft.getOrigBlockCount() - task.getHitBox().size());
                                 }
                             }
 
@@ -183,7 +187,7 @@ public class AsyncManager extends BukkitRunnable {
                         }
                         if (c.getType().getMustBeSubcraft() && !isSubcraft) {
                             failed = true;
-                            notifyP.sendMessage(I18nSupport.getInternationalisedString("Craft must be part of another craft"));
+                            p.sendMessage(I18nSupport.getInternationalisedString("Craft must be part of another craft"));
                         }
                         if (!failed) {
                             c.setHitBox(task.getHitBox());
