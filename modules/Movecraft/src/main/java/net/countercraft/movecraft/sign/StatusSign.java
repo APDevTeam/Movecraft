@@ -130,7 +130,7 @@ public final class StatusSign implements Listener{
             signLine++;
         }
         String fuelText="";
-        int fuelRange=(int) ((fuel*(1+craft.getType().getCruiseSkipBlocks()))/craft.getType().getFuelBurnRate());
+        int fuelRange=(int) ((fuel*(1+(craft.getType().getCruiseSkipBlocks()+1)))/craft.getType().getFuelBurnRate());
         if(fuelRange>1000) {
             fuelText+=ChatColor.GREEN;
         } else if(fuelRange>100) {

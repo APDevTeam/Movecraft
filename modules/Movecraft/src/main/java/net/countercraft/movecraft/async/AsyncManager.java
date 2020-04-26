@@ -433,6 +433,25 @@ public class AsyncManager extends BukkitRunnable {
                 tickCoolDown = pcraft.getTickCooldown();
                 cooldownCache.put(pcraft,tickCoolDown);
             }
+
+            // Account for banking and diving in speed calculations by changing the tickCoolDown
+            if(Settings.Debug) {
+                Movecraft.getInstance().getLogger().info("TickCoolDown: " + tickCoolDown);
+            }
+            if(bankLeft || bankRight) {
+                if (!dive) {
+                    tickCoolDown *= (Math.sqrt(Math.pow(1 + pcraft.getType().getCruiseSkipBlocks(), 2) + Math.pow(pcraft.getType().getCruiseSkipBlocks() >> 1, 2)) / (1 + pcraft.getType().getCruiseSkipBlocks()));
+                } else {
+                    tickCoolDown *= (Math.sqrt(Math.pow(1 + pcraft.getType().getCruiseSkipBlocks(), 2) + Math.pow(pcraft.getType().getCruiseSkipBlocks() >> 1, 2) + 1) / (1 + pcraft.getType().getCruiseSkipBlocks()));
+                }
+            } else if(dive) {
+                tickCoolDown *= (Math.sqrt(Math.pow(1 + pcraft.getType().getCruiseSkipBlocks(), 2) + 1) / (1 + pcraft.getType().getCruiseSkipBlocks()));
+            }
+            if(Settings.Debug) {
+                Movecraft.getInstance().getLogger().info("New TickCoolDown: " + tickCoolDown);
+                Movecraft.getInstance().getLogger().info("Direction:" + (bankLeft ? " Banking Left" : "") + (bankRight ? " Banking Right" : "") + (dive ? " Diving" : ""));
+            }
+
             if (Math.abs(ticksElapsed) < tickCoolDown) {
                 continue;
             }

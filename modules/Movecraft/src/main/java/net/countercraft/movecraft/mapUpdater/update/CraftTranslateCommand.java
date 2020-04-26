@@ -178,8 +178,11 @@ public class CraftTranslateCommand extends UpdateCommand {
             craft.setProcessing(false);
         time = System.nanoTime() - time;
         if(Settings.Debug)
-            logger.info("Total time: " + (time / 1e9) + " seconds. Moving with cooldown of " + craft.getTickCooldown() + ". Speed of: " + String.format("%.2f", craft.getSpeed()));
-        craft.addMoveTime(time/1e9f);
+            logger.info("Total time: " + (time / 1e6) + " milliseconds. Moving with cooldown of " + craft.getTickCooldown() + ". Speed of: " + String.format("%.2f", craft.getSpeed()) + ". Displacement of: " + displacement);
+
+        // Only add cruise time if cruising
+        if(craft.getCruising() && displacement.getY() == 0 && (displacement.getX() == 0 || displacement.getZ() == 0))
+            craft.addCruiseTime(time / 1e9f);
     }
 
     private void sendSignEvents(){
