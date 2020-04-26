@@ -194,7 +194,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>2.2</version>
+                <version>3.2.3</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -202,7 +202,27 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-<!--                            <minimizeJar>true</minimizeJar>-->
+                            <minimizeJar>true</minimizeJar>
+                            <filters>
+                                <filter>
+                                    <artifact>net.countercraft:movecraft-v1_11_R1</artifact>
+                                    <includes>
+                                        <include>**</include>
+                                    </includes>
+                                </filter>
+                                <filter>
+                                    <artifact>net.countercraft:movecraft-v1_10_R1</artifact>
+                                    <includes>
+                                        <include>**</include>
+                                    </includes>
+                                </filter>
+                                <filter>
+                                    <artifact>net.countercraft:movecraft-v1_12_R1</artifact>
+                                    <includes>
+                                        <include>**</include>
+                                    </includes>
+                                </filter>
+                            </filters>
 <!--                            <artifactSet>-->
 <!--                                <includes>-->
 <!--                                    <include>net.countercraft:movecraft*</include>-->
