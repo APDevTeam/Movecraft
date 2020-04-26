@@ -35,8 +35,8 @@ public class BitmapHitBox implements MutableHitBox {
 
     public BitmapHitBox(HitBox hitBox){
         backing = new Roaring64NavigableMap(true);
-        this.addAll(hitBox);
         localMinY = new Long2IntOpenHashMap();
+        this.addAll(hitBox);
     }
 
     public BitmapHitBox(BitmapHitBox hitBox){
@@ -131,6 +131,7 @@ public class BitmapHitBox implements MutableHitBox {
     public boolean removeAll(@NotNull BitmapHitBox hitBox){
         int size = backing.getIntCardinality();
         backing.andNot(hitBox.backing);
+        invalidateBounds |= (backing.getIntCardinality() != size);
         return backing.getIntCardinality() != size;
     }
 
@@ -303,7 +304,7 @@ public class BitmapHitBox implements MutableHitBox {
         invalidateBounds = false;
     }
 
-    private void checkBounds(MovecraftLocation location) {
+    private void checkBounds(@NotNull MovecraftLocation location) {
         if (location.getX() > maxX) {
             maxX = location.getX();
         }
