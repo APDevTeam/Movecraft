@@ -248,8 +248,7 @@ public class CraftRotateCommand extends UpdateCommand {
             craft.setProcessing(false);
         time = System.nanoTime() - time;
         if (Settings.Debug)
-            logger.info("Total time: " + (time / 1e9) + " seconds. Moving with cooldown of " + craft.getTickCooldown() + ". Speed of: " + String.format("%.2f", craft.getSpeed()));
-        craft.addMoveTime(time / 1e9f);
+            logger.info("Total time: " + (time / 1e6) + " milliseconds. Moving with cooldown of " + craft.getTickCooldown() + ". Speed of: " + String.format("%.2f", craft.getSpeed()));
     }
 
     private void sendSignEvents(){
@@ -267,7 +266,7 @@ public class CraftRotateCommand extends UpdateCommand {
             Bukkit.getServer().getPluginManager().callEvent(new SignTranslateEvent(craft, entry.getKey(), entry.getValue()));
             for(MovecraftLocation loc : entry.getValue()){
                 Block block = loc.toBukkit(craft.getW()).getBlock();
-                if (!(block.getState() instanceof Sign)) {
+                if (!SignUtils.isSign(block)) {
                     continue;
                 }
                 Sign sign = (Sign) block.getState();
