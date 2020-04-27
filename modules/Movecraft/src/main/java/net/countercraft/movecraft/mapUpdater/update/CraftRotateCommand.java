@@ -139,7 +139,7 @@ public class CraftRotateCommand extends UpdateCommand {
                 Material material = b.getType();
                 Object data = Settings.IsLegacy ? b.getData() : b.getBlockData();
                 if (passthroughBlocks.contains(material)) {
-                    craft.getPhaseBlocks().put(location, new AbstractMap.SimpleImmutableEntry<>(material, data));
+                    craft.getPhaseBlocks().put(location, new Pair<>(material, data));
                 }
             }
             //The subtraction of the set of coordinates in the HitBox cube and the HitBox itself
@@ -200,7 +200,7 @@ public class CraftRotateCommand extends UpdateCommand {
                 if (!passthroughBlocks.contains(material)) {
                     continue;
                 }
-                craft.getPhaseBlocks().put(location, new AbstractMap.SimpleImmutableEntry<>(material, data));
+                craft.getPhaseBlocks().put(location, new Pair<>(material, data));
             }
 
             //translate the craft
@@ -214,15 +214,15 @@ public class CraftRotateCommand extends UpdateCommand {
                 if (!craft.getPhaseBlocks().containsKey(location)) {
                     continue;
                 }
-                AbstractMap.SimpleImmutableEntry<Material, Object> phaseBlock = craft.getPhaseBlocks().remove(location);
-                handler.setBlockFast(location.toBukkit(craft.getW()), phaseBlock.getKey(), phaseBlock.getValue());
+                Pair<Material, Object> phaseBlock = craft.getPhaseBlocks().remove(location);
+                handler.setBlockFast(location.toBukkit(craft.getW()), phaseBlock.getLeft(), phaseBlock.getRight());
                 craft.getPhaseBlocks().remove(location);
             }
 
             for(MovecraftLocation location : originalLocations.boundingHitBox()){
                 if(!craft.getHitBox().inBounds(location) && craft.getPhaseBlocks().containsKey(location)){
-                    AbstractMap.SimpleImmutableEntry<Material, Object> phaseBlock = craft.getPhaseBlocks().remove(location);
-                    handler.setBlockFast(location.toBukkit(craft.getW()), phaseBlock.getKey(), phaseBlock.getValue());
+                    Pair<Material, Object> phaseBlock = craft.getPhaseBlocks().remove(location);
+                    handler.setBlockFast(location.toBukkit(craft.getW()), phaseBlock.getLeft(), phaseBlock.getRight());
                 }
             }
 
@@ -231,7 +231,7 @@ public class CraftRotateCommand extends UpdateCommand {
                 Material material = b.getType();
                 Object data = Settings.IsLegacy ? b.getData() : b.getBlockData();
                 if (passthroughBlocks.contains(material)) {
-                    craft.getPhaseBlocks().put(location, new AbstractMap.SimpleImmutableEntry<>(material, data));
+                    craft.getPhaseBlocks().put(location, new Pair<>(material, data));
                     handler.setBlockFast(location.toBukkit(craft.getW()), Material.AIR, (byte) 0);
 
                 }

@@ -31,10 +31,7 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.MovecraftRepair;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.utils.BitmapHitBox;
-import net.countercraft.movecraft.utils.CollectionUtils;
-import net.countercraft.movecraft.utils.HashHitBox;
-import net.countercraft.movecraft.utils.HitBox;
+import net.countercraft.movecraft.utils.*;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Dispenser;
@@ -45,12 +42,15 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.util.Vector;
 
 import java.io.*;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 public class IMovecraftRepair extends MovecraftRepair {
-    private final HashMap<String, ArrayDeque<AbstractMap.SimpleImmutableEntry<Vector,Vector>>> locMissingBlocksMap = new HashMap<>();
+    private final HashMap<String, ArrayDeque<Pair<Vector,Vector>>> locMissingBlocksMap = new HashMap<>();
     private final HashMap<String, Long> numDiffBlocksMap = new HashMap<>();
-    private final HashMap<String, HashMap<AbstractMap.SimpleImmutableEntry<Material, Byte>, Double>> missingBlocksMap = new HashMap<>();
+    private final HashMap<String, HashMap<Pair<Material, Byte>, Double>> missingBlocksMap = new HashMap<>();
     private final HashMap<String, Vector> distanceMap = new HashMap<>();
     private final Plugin plugin;
 
@@ -178,8 +178,8 @@ public class IMovecraftRepair extends MovecraftRepair {
         }
         if (clipboard != null){
             long numDiffBlocks = 0;
-            HashMap<AbstractMap.SimpleImmutableEntry<Material, Byte>, Double> missingBlocks = new HashMap<>();
-            ArrayDeque<AbstractMap.SimpleImmutableEntry<Vector,Vector>> locMissingBlocks = new ArrayDeque<>();
+            HashMap<Pair<Material, Byte>, Double> missingBlocks = new HashMap<>();
+            ArrayDeque<Pair<Vector,Vector>> locMissingBlocks = new ArrayDeque<>();
             HashMap<Vector,Material> materials = new HashMap<>();
             BlockVector3 minPoint = clipboard.getMinimumPoint();
             BlockVector3 length = clipboard.getDimensions();
@@ -289,9 +289,9 @@ public class IMovecraftRepair extends MovecraftRepair {
                                         }
                                     }
                                 }
-                                AbstractMap.SimpleImmutableEntry<Material, Byte> content;
+                                Pair<Material, Byte> content;
                                 if (numTNT > 0){
-                                    content = new AbstractMap.SimpleImmutableEntry<>(Material.TNT, (byte) 0);
+                                    content = new Pair<>(Material.TNT, (byte) 0);
                                     if (missingBlocks.containsKey(content)){
                                         double count = missingBlocks.get(content);
                                         count += numTNT;
@@ -301,7 +301,7 @@ public class IMovecraftRepair extends MovecraftRepair {
                                     }
                                 }
                                 if (numFirecharge > 0){
-                                    content = new AbstractMap.SimpleImmutableEntry<>(Material.FIRE_CHARGE, (byte) 0);
+                                    content = new Pair<>(Material.FIRE_CHARGE, (byte) 0);
                                     if (missingBlocks.containsKey(content)){
                                         double count = missingBlocks.get(content);
                                         count += numFirecharge;
@@ -311,7 +311,7 @@ public class IMovecraftRepair extends MovecraftRepair {
                                     }
                                 }
                                 if (numWaterBucket > 0){
-                                    content = new AbstractMap.SimpleImmutableEntry<>(Material.WATER_BUCKET, (byte) 0);
+                                    content = new Pair<>(Material.WATER_BUCKET, (byte) 0);
                                     if (missingBlocks.containsKey(content)){
                                         double count = missingBlocks.get(content);
                                         count += numWaterBucket;
@@ -321,9 +321,9 @@ public class IMovecraftRepair extends MovecraftRepair {
                                     }
                                 }
                             }
-                            locMissingBlocks.addLast(new AbstractMap.SimpleImmutableEntry<>(new Vector(cx,cy,cz),new Vector(position.getBlockX(),position.getBlockY(),position.getBlockZ())));
+                            locMissingBlocks.addLast(new Pair<>(new Vector(cx,cy,cz),new Vector(position.getBlockX(),position.getBlockY(),position.getBlockZ())));
                             numDiffBlocks++;
-                            AbstractMap.SimpleImmutableEntry<Material, Byte> missingBlock = new AbstractMap.SimpleImmutableEntry<>(typeToConsume, (byte) 0);
+                            Pair<Material, Byte> missingBlock = new Pair<>(typeToConsume, (byte) 0);
                             if (missingBlocks.containsKey(missingBlock)){
                                 double count = missingBlocks.get(missingBlock);
                                 count += qtyToConsume;
@@ -374,9 +374,9 @@ public class IMovecraftRepair extends MovecraftRepair {
                                 }
                             }
                             boolean needsReplace = false;
-                            AbstractMap.SimpleImmutableEntry<Material, Byte> content;
+                            Pair<Material, Byte> content;
                             if (numTNT > 0){
-                                content = new AbstractMap.SimpleImmutableEntry<>(Material.TNT, (byte) 0);
+                                content = new Pair<>(Material.TNT, (byte) 0);
                                 if (missingBlocks.containsKey(content)){
                                     double count = missingBlocks.get(content);
                                     count += numTNT;
@@ -387,7 +387,7 @@ public class IMovecraftRepair extends MovecraftRepair {
                                 needsReplace = true;
                             }
                             if (numFireCharge > 0){
-                                content = new AbstractMap.SimpleImmutableEntry<>(Material.FIRE_CHARGE, (byte) 0);
+                                content = new Pair<>(Material.FIRE_CHARGE, (byte) 0);
                                 if (missingBlocks.containsKey(content)){
                                     double count = missingBlocks.get(content);
                                     count += numFireCharge;
@@ -398,7 +398,7 @@ public class IMovecraftRepair extends MovecraftRepair {
                                 needsReplace = true;
                             }
                             if (numWaterBucket > 0){
-                                content = new AbstractMap.SimpleImmutableEntry<>(Material.WATER_BUCKET, (byte) 0);
+                                content = new Pair<>(Material.WATER_BUCKET, (byte) 0);
                                 if (missingBlocks.containsKey(content)){
                                     double count = missingBlocks.get(content);
                                     count += numWaterBucket;
@@ -409,7 +409,7 @@ public class IMovecraftRepair extends MovecraftRepair {
                                 needsReplace = true;
                             }
                             if (needsReplace){
-                                locMissingBlocks.addLast(new AbstractMap.SimpleImmutableEntry<>(new Vector(cx,cy,cz),new Vector(position.getBlockX(),position.getBlockY(),position.getBlockZ())));
+                                locMissingBlocks.addLast(new Pair<>(new Vector(cx,cy,cz),new Vector(position.getBlockX(),position.getBlockY(),position.getBlockZ())));
                                 numDiffBlocks++;
 
                             }
@@ -446,12 +446,12 @@ public class IMovecraftRepair extends MovecraftRepair {
     }
 
     @Override
-    public HashMap<AbstractMap.SimpleImmutableEntry<Material, Byte>, Double> getMissingBlocks(String s) {
+    public HashMap<Pair<Material, Byte>, Double> getMissingBlocks(String s) {
         return missingBlocksMap.get(s);
     }
 
     @Override
-    public ArrayDeque<AbstractMap.SimpleImmutableEntry<Vector, Vector>> getMissingBlockLocations(String s) {
+    public ArrayDeque<Pair<Vector, Vector>> getMissingBlockLocations(String s) {
         return locMissingBlocksMap.get(s);
     }
 

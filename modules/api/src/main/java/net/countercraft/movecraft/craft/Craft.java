@@ -17,14 +17,13 @@
 
 package net.countercraft.movecraft.craft;
 
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.events.CraftSinkEvent;
 import net.countercraft.movecraft.utils.BitmapHitBox;
 import net.countercraft.movecraft.utils.Counter;
+import net.countercraft.movecraft.utils.Pair;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
@@ -37,7 +36,10 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
@@ -77,7 +79,7 @@ public abstract class Craft {
     @Nullable private Player AADirector;
     private float meanCruiseTime;
     private int numMoves;
-    @NotNull private final Map<MovecraftLocation, AbstractMap.SimpleImmutableEntry<Material, Object>> phaseBlocks = new HashMap<>();
+    @NotNull private final Map<MovecraftLocation, Pair<Material, Object>> phaseBlocks = new HashMap<>();
     @NotNull private final HashMap<UUID, Location> crewSigns = new HashMap<>();
     @NotNull private String name = "";
 
@@ -464,7 +466,7 @@ public abstract class Craft {
     }
 
     @NotNull
-    public Map<MovecraftLocation, AbstractMap.SimpleImmutableEntry<Material, Object>> getPhaseBlocks(){
+    public Map<MovecraftLocation, Pair<Material, Object>> getPhaseBlocks(){
         return phaseBlocks;
     }
 

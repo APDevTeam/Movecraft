@@ -60,7 +60,7 @@ public class AsyncManager extends BukkitRunnable {
     private HashMap<SmallFireball, Long> FireballTracking = new HashMap<>();
     private HashMap<HitBox, Long> wrecks = new HashMap<>();
     private HashMap<HitBox, World> wreckWorlds = new HashMap<>();
-    private HashMap<HitBox, Map<MovecraftLocation, AbstractMap.SimpleImmutableEntry<Material, Object>>> wreckPhases = new HashMap<>();
+    private HashMap<HitBox, Map<MovecraftLocation, Pair<Material, Object>>> wreckPhases = new HashMap<>();
     private Map<Craft, Integer> cooldownCache = new WeakHashMap<>();
     private long lastTracerUpdate = 0;
     private long lastFireballCheck = 0;
@@ -182,7 +182,7 @@ public class AsyncManager extends BukkitRunnable {
                             if(craft == task.craft){
                                 continue;
                             }
-                            if(!craft.getHitBox().union(task.getHitBox()).isEmpty()){
+                            if(!craft.getHitBox().intersection(task.getHitBox()).isEmpty()){
                                 isSubcraft = true;
                                 if (craft.getType() == c.getType()
                                         || craft.getHitBox().size() <= task.getHitBox().size()
@@ -266,7 +266,7 @@ public class AsyncManager extends BukkitRunnable {
 
                                 for(MovecraftLocation location : entireHitbox){
                                     if(location.getY() <= waterLine){
-                                        c.getPhaseBlocks().put(location, new AbstractMap.SimpleImmutableEntry<>(Material.WATER, Settings.IsLegacy ? (byte) 0 : Bukkit.createBlockData(Material.WATER)));
+                                        c.getPhaseBlocks().put(location, new Pair<>(Material.WATER, Settings.IsLegacy ? (byte) 0 : Bukkit.createBlockData(Material.WATER)));
                                     }
                                 }
 
@@ -946,16 +946,16 @@ public class AsyncManager extends BukkitRunnable {
                 continue;
             }
             final HitBox hitBox = entry.getKey();
-            final Map<MovecraftLocation, AbstractMap.SimpleImmutableEntry<Material, Object>> phaseBlocks = wreckPhases.get(hitBox);
+            final Map<MovecraftLocation, Pair<Material, Object>> phaseBlocks = wreckPhases.get(hitBox);
             final World world = wreckWorlds.get(hitBox);
             ArrayList<UpdateCommand> commands = new ArrayList<>();
             for (MovecraftLocation location : hitBox){
-                AbstractMap.SimpleImmutableEntry<Material, Object> phaseBlock = phaseBlocks.getOrDefault(location, new AbstractMap.SimpleImmutableEntry<>(Material.AIR, Settings.IsLegacy ? (byte) 0 : Bukkit.createBlockData(Material.AIR)));
+                Pair<Material, Object> phaseBlock = phaseBlocks.getOrDefault(location, new Pair<>(Material.AIR, Settings.IsLegacy ? 0 : Bukkit.createBlockData(Material.AIR)));
                 if (Settings.IsLegacy) {
-                    commands.add(new BlockCreateCommand(world, location, phaseBlock.getKey(), (byte) phaseBlock.getValue()));
+                    commands.add(new BlockCreateCommand(world, location, phaseBlock.getLeft(), (byte) phaseBlock.getRight()));
                     continue;
                 }
-                commands.add(new BlockCreateCommand(world, location, phaseBlock.getKey(), (BlockData) phaseBlock.getValue()));
+                commands.add(new BlockCreateCommand(world, location, phaseBlock.getLeft(), (BlockData) phaseBlock.getRight()));
             }
             MapUpdateManager.getInstance().scheduleUpdates(commands);
             processed.add(hitBox);
