@@ -66,7 +66,9 @@ public class WorldGuardCompatManager implements Listener {
             return;
         for(MovecraftLocation location : event.getNewHitBox()){
             if (canMoveInRegion(location, event.getCraft().getWorld())) {
-                continue;
+                event.setFailMessage(I18nSupport.getInternationalisedString("WGCustomFlags - Translation Failed"));
+                event.setCancelled(true);
+                return;
             }
 
             if(!pilotHasAccessToRegion(event.getCraft().getNotificationPlayer(), location, event.getCraft().getWorld())){
@@ -85,8 +87,10 @@ public class WorldGuardCompatManager implements Listener {
         if(event.getCraft().getNotificationPlayer() == null)
             return;
         for(MovecraftLocation location : event.getNewHitBox()){
-            if (canRotateInRegion(location, event.getCraft().getWorld())) {
-                continue;
+            if (!canRotateInRegion(location, event.getCraft().getWorld())) {
+                event.setFailMessage(I18nSupport.getInternationalisedString("WGCustomFlags - Rotation Failed"));
+                event.setCancelled(true);
+                return;
             }
             if(!pilotHasAccessToRegion(event.getCraft().getNotificationPlayer(), location, event.getCraft().getWorld())){
                 event.setCancelled(true);
@@ -215,7 +219,7 @@ public class WorldGuardCompatManager implements Listener {
                 regions = regionManager.getApplicableRegions(BlockVector3.at(location.getX(), location.getY(), location.getZ()));
             }
             for (ProtectedRegion pr : regions.getRegions()){
-                if (WorldguardUtils.pvpAllowed(pr) || pr.getFlag(FLAG_SINK) == StateFlag.State.DENY){
+                if (pr.getFlag(FLAG_PILOT) == StateFlag.State.DENY){
                     region = pr;
                     break;
                 }

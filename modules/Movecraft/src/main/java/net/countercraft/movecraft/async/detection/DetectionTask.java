@@ -439,6 +439,9 @@ public class DetectionTask extends AsyncTask {
                 cannonsCount.put(limitedCannonNames, count);
             }
         }
+        if (cannonsCount.isEmpty()) {
+            return;
+        }
         for (List<String> limitedCannonNames : craft.getType().getMaxCannons().keySet()) {
             final double limit = craft.getType().getMaxCannons().get(limitedCannonNames);
             int count = cannonsCount.get(limitedCannonNames);
