@@ -407,7 +407,7 @@ public class DetectionTask extends AsyncTask {
         }
         for (Map.Entry<List<String>, Double> entry : craft.getType().getMaxSignsWithString().entrySet()) {
             final double limit = entry.getValue();
-            int count = signWithStringCount.get(entry.getKey());
+            int count = signWithStringCount.getOrDefault(entry.getKey(), 0);
             if (limit >= 10000.0) {
                 int max = (int) (limit - 10000.0);
                 if (count <= max) {
@@ -426,6 +426,9 @@ public class DetectionTask extends AsyncTask {
     }
 
     private void checkMaxCannons() {
+        if (Movecraft.getInstance().getCannonsPlugin() == null) {
+            return;
+        }
         for (Cannon can : CannonsAPI.getCannonsInBox(hitBox.getMidPoint().toBukkit(world), hitBox.getXLength(), hitBox.getYLength(), hitBox.getZLength())) {
             for (Location barrelLoc : can.getCannonDesign().getBarrelBlocks(can)) {
                 if (!hitBox.contains(MathUtils.bukkit2MovecraftLoc(barrelLoc))) {
