@@ -402,6 +402,9 @@ public class DetectionTask extends AsyncTask {
     }
 
     private void checkMaxSignLimits() {
+        if (signWithStringCount.isEmpty()) {
+            return;
+        }
         for (Map.Entry<List<String>, Double> entry : craft.getType().getMaxSignsWithString().entrySet()) {
             final double limit = entry.getValue();
             int count = signWithStringCount.get(entry.getKey());
