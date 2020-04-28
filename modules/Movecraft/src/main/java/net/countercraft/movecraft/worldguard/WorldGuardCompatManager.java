@@ -65,11 +65,11 @@ public class WorldGuardCompatManager implements Listener {
         if(event.getCraft().getNotificationPlayer() == null)
             return;
         for(MovecraftLocation location : event.getNewHitBox()){
-            if (canMoveInRegion(location, event.getCraft().getW())) {
+            if (canMoveInRegion(location, event.getCraft().getWorld())) {
                 continue;
             }
 
-            if(!pilotHasAccessToRegion(event.getCraft().getNotificationPlayer(), location, event.getCraft().getW())){
+            if(!pilotHasAccessToRegion(event.getCraft().getNotificationPlayer(), location, event.getCraft().getWorld())){
                 event.setCancelled(true);
                 event.setFailMessage(String.format( I18nSupport.getInternationalisedString( "Translation - WorldGuard - Not Permitted To Build" )+" @ %d,%d,%d", location.getX(), location.getY(), location.getZ() ) );
                 return;
@@ -85,10 +85,10 @@ public class WorldGuardCompatManager implements Listener {
         if(event.getCraft().getNotificationPlayer() == null)
             return;
         for(MovecraftLocation location : event.getNewHitBox()){
-            if (canRotateInRegion(location, event.getCraft().getW())) {
+            if (canRotateInRegion(location, event.getCraft().getWorld())) {
                 continue;
             }
-            if(!pilotHasAccessToRegion(event.getCraft().getNotificationPlayer(), location, event.getCraft().getW())){
+            if(!pilotHasAccessToRegion(event.getCraft().getNotificationPlayer(), location, event.getCraft().getWorld())){
                 event.setCancelled(true);
                 event.setFailMessage(String.format( I18nSupport.getInternationalisedString("Rotation - WorldGuard - Not Permitted To Build" )+" @ %d,%d,%d", location.getX(), location.getY(), location.getZ()));
                 return;
@@ -155,15 +155,15 @@ public class WorldGuardCompatManager implements Listener {
             ProtectedRegion region = null;
             RegionManager regionManager;
             if (Settings.IsLegacy){
-                regionManager = LegacyUtils.getRegionManager(wgPlugin, pcraft.getW());
+                regionManager = LegacyUtils.getRegionManager(wgPlugin, pcraft.getWorld());
             } else {
                 RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
-                regionManager = container.get(BukkitAdapter.adapt(pcraft.getW()));
+                regionManager = container.get(BukkitAdapter.adapt(pcraft.getWorld()));
             }
             for (MovecraftLocation location : pcraft.getHitBox()){
                 ApplicableRegionSet regions;
                 if (Settings.IsLegacy)
-                    regions = LegacyUtils.getApplicableRegions(regionManager, location.toBukkit(pcraft.getW()));
+                    regions = LegacyUtils.getApplicableRegions(regionManager, location.toBukkit(pcraft.getWorld()));
                 else {
                     regions = regionManager.getApplicableRegions(BlockVector3.at(location.getX(), location.getY(), location.getZ()));
                 }
@@ -202,15 +202,15 @@ public class WorldGuardCompatManager implements Listener {
         ProtectedRegion region = null;
         RegionManager regionManager;
         if (Settings.IsLegacy){
-            regionManager = LegacyUtils.getRegionManager(wgPlugin, pcraft.getW());
+            regionManager = LegacyUtils.getRegionManager(wgPlugin, pcraft.getWorld());
         } else {
             RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
-            regionManager = container.get(BukkitAdapter.adapt(pcraft.getW()));
+            regionManager = container.get(BukkitAdapter.adapt(pcraft.getWorld()));
         }
         for (MovecraftLocation location : pcraft.getHitBox()){
             ApplicableRegionSet regions;
             if (Settings.IsLegacy)
-                regions = LegacyUtils.getApplicableRegions(regionManager, location.toBukkit(pcraft.getW()));
+                regions = LegacyUtils.getApplicableRegions(regionManager, location.toBukkit(pcraft.getWorld()));
             else {
                 regions = regionManager.getApplicableRegions(BlockVector3.at(location.getX(), location.getY(), location.getZ()));
             }

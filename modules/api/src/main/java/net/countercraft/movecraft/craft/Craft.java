@@ -54,7 +54,7 @@ public abstract class Craft {
     @NotNull protected final BitmapHitBox collapsedHitBox;
     @NotNull protected BitmapHitBox fluidLocations;
     @NotNull protected final Counter<Material> materials;
-    @NotNull protected World w;
+    @NotNull protected World world;
     @NotNull private final AtomicBoolean processing = new AtomicBoolean();
     private int maxHeightLimit;
     private boolean cruising;
@@ -85,12 +85,12 @@ public abstract class Craft {
 
     public Craft(@NotNull CraftType type, @NotNull World world) {
         this.type = type;
-        this.w = world;
+        this.world = world;
         this.hitBox = new BitmapHitBox();
         this.collapsedHitBox = new BitmapHitBox();
         this.fluidLocations = new BitmapHitBox();
-        if (type.getMaxHeightLimit() > w.getMaxHeight() - 1) {
-            this.maxHeightLimit = w.getMaxHeight() - 1;
+        if (type.getMaxHeightLimit() > world.getMaxHeight() - 1) {
+            this.maxHeightLimit = world.getMaxHeight() - 1;
         } else {
             this.maxHeightLimit = type.getMaxHeightLimit();
         }
@@ -132,9 +132,23 @@ public abstract class Craft {
         return type;
     }
 
+    /**
+     * @deprecated Use <code>getWorld</code> instead
+     * @return the world this craft is in
+     */
+    @Deprecated
     @NotNull
     public World getW() {
-        return w;
+        return world;
+    }
+
+    /**
+     * Gets the world the craft is currently in
+     * @return the world this craft is in
+     */
+    @NotNull
+    public World getWorld() {
+        return world;
     }
 
     public abstract void detect(Player player, Player notificationPlayer, MovecraftLocation startPoint);
@@ -347,7 +361,7 @@ public abstract class Craft {
 //        Map<Material, Integer> counter = new HashMap<>();
         if(materials.isEmpty()){
             for(MovecraftLocation location : hitBox){
-                materials.add(location.toBukkit(w).getBlock().getType());
+                materials.add(location.toBukkit(world).getBlock().getType());
             }
         }
 
@@ -428,7 +442,7 @@ public abstract class Craft {
             int posZ;
             posZ = hitBox.getMinZ() - 1;
             for (posX = hitBox.getMinX() - 1; posX <= hitBox.getMaxX() + 1; posX++) {
-                Material type = w.getBlockAt(posX, posY, posZ).getType();
+                Material type = world.getBlockAt(posX, posY, posZ).getType();
                 if (Settings.IsLegacy ? type == Material.STATIONARY_WATER : type == Material.WATER)
                     numWater++;
                 if (Settings.IsLegacy ? type == Material.AIR : (type == Material.AIR || type == Material.getMaterial("CAVE_AIR") || type == Material.getMaterial("VOID_AIR")))
@@ -436,7 +450,7 @@ public abstract class Craft {
             }
             posZ = hitBox.getMaxZ() + 1;
             for (posX = hitBox.getMinX() - 1; posX <= hitBox.getMaxX() + 1; posX++) {
-                Material type = w.getBlockAt(posX, posY, posZ).getType();
+                Material type = world.getBlockAt(posX, posY, posZ).getType();
                 if (Settings.IsLegacy ? type == Material.STATIONARY_WATER : type == Material.WATER)
                     numWater++;
                 if (Settings.IsLegacy ? type == Material.AIR : (type == Material.AIR || type == Material.getMaterial("CAVE_AIR") || type == Material.getMaterial("VOID_AIR")))
@@ -444,7 +458,7 @@ public abstract class Craft {
             }
             posX = hitBox.getMinX() - 1;
             for (posZ = hitBox.getMinZ(); posZ <= hitBox.getMaxZ(); posZ++) {
-                Material type = w.getBlockAt(posX, posY, posZ).getType();
+                Material type = world.getBlockAt(posX, posY, posZ).getType();
                 if (Settings.IsLegacy ? type == Material.STATIONARY_WATER : type == Material.WATER)
                     numWater++;
                 if (Settings.IsLegacy ? type == Material.AIR : (type == Material.AIR || type == Material.getMaterial("CAVE_AIR") || type == Material.getMaterial("VOID_AIR")))
@@ -452,7 +466,7 @@ public abstract class Craft {
             }
             posX = hitBox.getMaxX() + 1;
             for (posZ = hitBox.getMinZ(); posZ <= hitBox.getMaxZ(); posZ++) {
-                Material type = w.getBlockAt(posX, posY, posZ).getType();
+                Material type = world.getBlockAt(posX, posY, posZ).getType();
                 if (Settings.IsLegacy ? type == Material.STATIONARY_WATER : type == Material.WATER)
                     numWater++;
                 if (Settings.IsLegacy ? type == Material.AIR : (type == Material.AIR || type == Material.getMaterial("CAVE_AIR") || type == Material.getMaterial("VOID_AIR")))
@@ -479,6 +493,7 @@ public abstract class Craft {
     public String getName(){
         return name;
     }
+
     public void setName(@NotNull String name){
         this.name = name;
     }

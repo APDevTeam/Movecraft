@@ -37,6 +37,9 @@
       <plugin>
         <artifactId>maven-jar-plugin</artifactId>
         <version>2.4</version>
+        <configuration>
+          <forceCreation>true</forceCreation>
+        </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -55,14 +58,91 @@
       </plugin>
       <plugin>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>2.2</version>
+        <version>3.2.3</version>
         <executions>
           <execution>
             <phase>package</phase>
             <goals>
               <goal>shade</goal>
             </goals>
-            <configuration />
+            <configuration>
+              <relocations>
+                <relocation>
+                  <pattern>it.unimi</pattern>
+                  <shadedPattern>net.countercraft.movecraft.libs.it.unimi</shadedPattern>
+                </relocation>
+              </relocations>
+              <minimizeJar>true</minimizeJar>
+              <filters>
+                <filter>
+                  <artifact>net.countercraft:movecraft-WE6Utils</artifact>
+                  <includes>
+                    <include>**</include>
+                  </includes>
+                </filter>
+                <filter>
+                  <artifact>net.countercraft:movecraft-WE7Utils</artifact>
+                  <includes>
+                    <include>**</include>
+                  </includes>
+                </filter>
+                <filter>
+                  <artifact>net.countercraft:movecraft-v1_8_R3</artifact>
+                  <includes>
+                    <include>**</include>
+                  </includes>
+                </filter>
+                <filter>
+                  <artifact>net.countercraft:movecraft-v1_9_R2</artifact>
+                  <includes>
+                    <include>**</include>
+                  </includes>
+                </filter>
+                <filter>
+                  <artifact>net.countercraft:movecraft-v1_11_R1</artifact>
+                  <includes>
+                    <include>**</include>
+                  </includes>
+                </filter>
+                <filter>
+                  <artifact>net.countercraft:movecraft-v1_10_R1</artifact>
+                  <includes>
+                    <include>**</include>
+                  </includes>
+                </filter>
+                <filter>
+                  <artifact>net.countercraft:movecraft-v1_12_R1</artifact>
+                  <includes>
+                    <include>**</include>
+                  </includes>
+                </filter>
+                <filter>
+                  <artifact>net.countercraft:movecraft-v1_13_R2</artifact>
+                  <includes>
+                    <include>**</include>
+                  </includes>
+                </filter>
+                <filter>
+                  <artifact>net.countercraft:movecraft-v1_14_R1</artifact>
+                  <includes>
+                    <include>**</include>
+                  </includes>
+                </filter>
+                <filter>
+                  <artifact>net.countercraft:movecraft-v1_15_R1</artifact>
+                  <includes>
+                    <include>**</include>
+                  </includes>
+                </filter>
+              </filters>
+              <artifactSet>
+                <includes>
+                  <include>net.countercraft:movecraft*</include>
+                  <include>org.roaringbitmap:*</include>
+                  <include>it.unimi.dsi:fastutil*</include>
+                </includes>
+              </artifactSet>
+            </configuration>
           </execution>
         </executions>
       </plugin>
@@ -92,16 +172,34 @@
   </repositories>
   <dependencies>
     <dependency>
+      <groupId>com.sk89q.worldedit</groupId>
+      <artifactId>worldedit-bukkit</artifactId>
+      <version>7.0.1-SNAPSHOT</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.sk89q.worldguard</groupId>
+      <artifactId>worldguard-core</artifactId>
+      <version>7.0.1-SNAPSHOT</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.sk89q.worldguard</groupId>
+      <artifactId>worldguard-bukkit</artifactId>
+      <version>7.0.1-SNAPSHOT</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
       <groupId>com.sk89q</groupId>
       <artifactId>worldguard</artifactId>
       <version>6.1.1-SNAPSHOT</version>
       <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <artifactId>bukkit-classloader-check</artifactId>
-          <groupId>com.sk89q.spigot</groupId>
-        </exclusion>
-      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>com.sk89q</groupId>
+      <artifactId>worldedit</artifactId>
+      <version>6.0.0-SNAPSHOT</version>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>at.pavlov</groupId>
@@ -120,6 +218,12 @@
       </exclusions>
     </dependency>
     <dependency>
+      <groupId>org.yaml</groupId>
+      <artifactId>snakeyaml</artifactId>
+      <version>1.10</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
       <groupId>net.milkbowl.vault</groupId>
       <artifactId>VaultAPI</artifactId>
       <version>1.7</version>
@@ -130,54 +234,29 @@
       <artifactId>EssentialsX</artifactId>
       <version>2.16.1</version>
       <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <artifactId>NMSProvider</artifactId>
-          <groupId>net.ess3</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>UpdatedMetaProvider</artifactId>
-          <groupId>net.ess3</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>1_8_R1Provider</artifactId>
-          <groupId>net.ess3</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>1_8_R2Provider</artifactId>
-          <groupId>net.ess3</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>LegacyProvider</artifactId>
-          <groupId>net.ess3</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>ReflectionProvider</artifactId>
-          <groupId>net.ess3</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>FlattenedProvider</artifactId>
-          <groupId>net.ess3</groupId>
-        </exclusion>
-      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.jetbrains</groupId>
+      <artifactId>annotations-java5</artifactId>
+      <version>RELEASE</version>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>com.palmergames</groupId>
       <artifactId>Towny</artifactId>
       <version>LATEST</version>
       <scope>system</scope>
-      <systemPath>C:\Users\eirik\IdeaProjects\Movecraft\modules\Movecraft/../../libs/Towny.jar</systemPath>
+      <systemPath>${project.basedir}/../../libs/Towny.jar</systemPath>
     </dependency>
     <dependency>
       <groupId>com.mewin</groupId>
       <artifactId>WGCustomFlags</artifactId>
       <version>LATEST</version>
       <scope>system</scope>
-      <systemPath>C:\Users\eirik\IdeaProjects\Movecraft\modules\Movecraft/../../libs/WGCustomFlags.jar</systemPath>
+      <systemPath>${project.basedir}/../../libs/WGCustomFlags.jar</systemPath>
     </dependency>
   </dependencies>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 </project>
-

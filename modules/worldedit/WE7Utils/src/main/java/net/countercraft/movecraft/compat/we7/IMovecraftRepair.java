@@ -62,7 +62,7 @@ public class IMovecraftRepair extends MovecraftRepair {
     public boolean saveCraftRepairState(Craft craft, Sign sign) {
         BitmapHitBox hitBox = craft.getHitBox();
         File saveDirectory = new File(plugin.getDataFolder(), "RepairStates");
-        World world = craft.getW();
+        World world = craft.getWorld();
         if (!saveDirectory.exists()){
             saveDirectory.mkdirs();
         }
@@ -463,7 +463,7 @@ public class IMovecraftRepair extends MovecraftRepair {
     private Set<BaseBlock> baseBlocksFromCraft(Craft craft) {
         HashSet<BaseBlock> returnSet = new HashSet<>();
         BitmapHitBox hitBox = craft.getHitBox();
-        World w = craft.getW();
+        World w = craft.getWorld();
         for (MovecraftLocation location : hitBox) {
             Material type = w.getBlockAt(location.toBukkit(w)).getType();
             returnSet.add(BukkitAdapter.asBlockType(type).getDefaultState().toBaseBlock());

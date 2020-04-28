@@ -18,6 +18,8 @@
 package net.countercraft.movecraft.async.detection;
 
 
+import at.pavlov.cannons.API.CannonsAPI;
+import at.pavlov.cannons.cannon.Cannon;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftBlock;
 import net.countercraft.movecraft.MovecraftLocation;
@@ -25,15 +27,8 @@ import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.utils.BlockContainer;
-import net.countercraft.movecraft.utils.BlockLimitManager;
-import net.countercraft.movecraft.utils.BitmapHitBox;
-import net.countercraft.movecraft.utils.HashHitBox;
-import net.countercraft.movecraft.utils.LegacyUtils;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import net.countercraft.movecraft.utils.*;
+import org.bukkit.*;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
@@ -52,6 +47,8 @@ public class DetectionTask extends AsyncTask {
     @NotNull private final BitmapHitBox hitBox = new BitmapHitBox();
     @NotNull private final HashSet<MovecraftLocation> visited = new HashSet<>();
     @NotNull private final HashMap<Set<MovecraftBlock>, Integer> blockTypeCount = new HashMap<>();
+    @NotNull private final HashMap<List<String>, Integer> signWithStringCount = new HashMap<>();
+    @NotNull private final HashMap<List<String>, Integer> cannonsCount = new HashMap<>();
     @NotNull private final World world;
     @Nullable private final Player player, notificationPlayer;
     private final BlockContainer allowedBlocks;
@@ -73,7 +70,7 @@ public class DetectionTask extends AsyncTask {
         this.startLocation = startLocation;
         this.minSize = craft.getType().getMinSize();
         this.maxSize = craft.getType().getMaxSize();
-        this.world = craft.getW();
+        this.world = craft.getWorld();
         this.player = player;
         this.notificationPlayer = craft.getNotificationPlayer();
         this.allowedBlocks = craft.getType().getAllowedBlocks();
@@ -115,6 +112,8 @@ public class DetectionTask extends AsyncTask {
         if (!confirmStructureRequirements(flyBlocks, blockTypeCount)) {
             return;
         }
+        checkMaxSignLimits();
+        checkMaxCannons();
         long endTime = System.currentTimeMillis();
         if (Settings.Debug){
             Bukkit.broadcastMessage("Detection took (ms): " + (endTime - startTime));
@@ -134,6 +133,7 @@ public class DetectionTask extends AsyncTask {
                 testType = world.getBlockAt(x, y, z).getType();
             } catch (Exception e) {
                 fail(String.format(I18nSupport.getInternationalisedString("Detection - Craft too large"), maxSize));
+                return;
             }
 
             if ((testType == Material.WATER) || (testType == LegacyUtils.STATIONARY_WATER)) {
@@ -157,6 +157,31 @@ public class DetectionTask extends AsyncTask {
                                     fail(I18nSupport.getInternationalisedString(
                                             "Detection - Not Registered Pilot"));
                                 }
+
+                            }
+                            String previous = "";
+                            for (String line : s.getLines()) {
+                                if (line.length() == 0) {
+                                    continue;
+                                }
+                                line = ChatColor.stripColor(line);
+                                if (isForbiddenSignString(line)) {
+                                    fail(I18nSupport.getInternationalisedString("Detection - Forbidden sign string found"));
+                                    return;
+                                }
+                                if (previous.equals(line)) {
+                                    continue;
+                                }
+                                for (List<String> limitedStrings : craft.getType().getMaxSignsWithString().keySet()) {
+                                    if (!limitedStrings.contains(line.toLowerCase())) {
+                                        continue;
+                                    }
+                                    int count = signWithStringCount.getOrDefault(limitedStrings, 0);
+                                    count++;
+                                    signWithStringCount.put(limitedStrings, count);
+                                    previous = line;
+                                }
+
                             }
                         }
                     }
@@ -374,6 +399,63 @@ public class DetectionTask extends AsyncTask {
         }
 
         return true;
+    }
+
+    private void checkMaxSignLimits() {
+        for (Map.Entry<List<String>, Double> entry : craft.getType().getMaxSignsWithString().entrySet()) {
+            final double limit = entry.getValue();
+            int count = signWithStringCount.get(entry.getKey());
+            if (limit >= 10000.0) {
+                int max = (int) (limit - 10000.0);
+                if (count <= max) {
+                    continue;
+                }
+                fail(I18nSupport.getInternationalisedString("Detection - Too many signs with string") + " " + String.join(", ", entry.getKey()) + ": " + count + " > " + max);
+            } else {
+                int maxCount = (int) (hitBox.size() * (limit / 100.0));
+                //double ratio = ((double) count / (double) hitBox.size()) * 100.0;
+                if (count <= maxCount) {
+                    continue;
+                }
+                fail(I18nSupport.getInternationalisedString("Detection - Too many signs with string") + " " + String.join(", ", entry.getKey()) + ": " + count + "% > " + maxCount + "%");
+            }
+        }
+    }
+
+    private void checkMaxCannons() {
+        for (Cannon can : CannonsAPI.getCannonsInBox(hitBox.getMidPoint().toBukkit(world), hitBox.getXLength(), hitBox.getYLength(), hitBox.getZLength())) {
+            for (Location barrelLoc : can.getCannonDesign().getBarrelBlocks(can)) {
+                if (!hitBox.contains(MathUtils.bukkit2MovecraftLoc(barrelLoc))) {
+                    continue;
+                }
+                break;
+            }
+            for (List<String> limitedCannonNames : craft.getType().getMaxCannons().keySet()) {
+                if (!limitedCannonNames.contains(can.getCannonDesign().getDesignName().toLowerCase())) {
+                    continue;
+                }
+                int count = cannonsCount.getOrDefault(limitedCannonNames, 0);
+                count++;
+                cannonsCount.put(limitedCannonNames, count);
+            }
+        }
+        for (List<String> limitedCannonNames : craft.getType().getMaxCannons().keySet()) {
+            final double limit = craft.getType().getMaxCannons().get(limitedCannonNames);
+            int count = cannonsCount.get(limitedCannonNames);
+            if (limit >= 10000.0) {
+                int max = (int) (limit - 10000.0);
+                if (count <= max) {
+                    continue;
+                }
+                fail(I18nSupport.getInternationalisedString("Detection - Too many cannons") + " " + String.join(", ", limitedCannonNames) + ": " + count + " > " + max);
+            } else {
+                int maxCount = (int) (hitBox.size() * (limit / 100.0));
+                if (count <= maxCount) {
+                    continue;
+                }
+                fail(I18nSupport.getInternationalisedString("Detection - Too many cannons") + " " + String.join(", ", limitedCannonNames) + ": " + count + " > " + maxCount );
+            }
+        }
     }
 
     private void fail(String message) {

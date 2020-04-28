@@ -58,7 +58,7 @@ public class IMovecraftRepair extends MovecraftRepair {
     public boolean saveCraftRepairState(Craft craft, Sign sign) {
         BitmapHitBox hitBox = craft.getHitBox();
         File saveDirectory = new File(plugin.getDataFolder(), "RepairStates");
-        World world = craft.getW();
+        World world = craft.getWorld();
         com.sk89q.worldedit.world.World weWorld = new BukkitWorld(world);
         WorldData worldData = weWorld.getWorldData();
         com.sk89q.worldedit.Vector origin = new com.sk89q.worldedit.Vector(sign.getX(),sign.getY(),sign.getZ());
@@ -76,7 +76,7 @@ public class IMovecraftRepair extends MovecraftRepair {
         repairName += ".schematic";
         File repairStateFile = new File(playerDirectory, repairName);
         Set<BaseBlock> blockSet = baseBlocksFromCraft(craft);
-        final HitBox outsideLocs = CollectionUtils.filter(solidBlockLocs(craft.getW(), cRegion), hitBox);
+        final HitBox outsideLocs = CollectionUtils.filter(solidBlockLocs(craft.getWorld(), cRegion), hitBox);
         try {
 
             BlockArrayClipboard clipboard = new BlockArrayClipboard(cRegion);
@@ -590,7 +590,7 @@ public class IMovecraftRepair extends MovecraftRepair {
     private Set<BaseBlock> baseBlocksFromCraft(Craft craft) {
         HashSet<BaseBlock> returnSet = new HashSet<>();
         BitmapHitBox hitBox = craft.getHitBox();
-        World w = craft.getW();
+        World w = craft.getWorld();
         for (MovecraftLocation location : hitBox) {
             int id = w.getBlockTypeIdAt(location.toBukkit(w));
             byte data = w.getBlockAt(location.getX(), location.getY(), location.getZ()).getData();

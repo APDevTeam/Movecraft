@@ -68,13 +68,13 @@ public class ICraft extends Craft {
             return;
         }
         setLastRotateTime(System.nanoTime());
-        RotationTask task = new RotationTask(this, originPoint, rotation, this.getW());
+        RotationTask task = new RotationTask(this, originPoint, rotation, this.getWorld());
         Movecraft.getInstance().getAsyncManager().submitTask(task, this);
     }
 
     @Override
     public void rotate(Rotation rotation, MovecraftLocation originPoint, boolean isSubCraft) {
-        RotationTask task = new RotationTask(this, originPoint, rotation, this.getW(), isSubCraft);
+        RotationTask task = new RotationTask(this, originPoint, rotation, this.getWorld(), isSubCraft);
         Movecraft.getInstance().getAsyncManager().submitTask(task, this);
     }
 
@@ -82,7 +82,7 @@ public class ICraft extends Craft {
     @Override
     public Set<Craft> getContacts() {
         final Set<Craft> contacts = new HashSet<>();
-        for (Craft contact : CraftManager.getInstance().getCraftsInWorld(w)) {
+        for (Craft contact : CraftManager.getInstance().getCraftsInWorld(world)) {
             if (contact.getNotificationPlayer() == this.getNotificationPlayer()) {
                 continue;
             }
@@ -107,7 +107,7 @@ public class ICraft extends Craft {
     @Override
     public void resetSigns(@NotNull Sign clicked) {
         for (final MovecraftLocation ml : hitBox) {
-            final Block b = ml.toBukkit(w).getBlock();
+            final Block b = ml.toBukkit(world).getBlock();
             if (!(b.getState() instanceof Sign)) {
                 continue;
             }

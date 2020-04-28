@@ -200,7 +200,7 @@ public class CraftManager implements Iterable<Craft>{
     public Set<Craft> getCraftsInWorld(@NotNull World w) {
         Set<Craft> crafts = new HashSet<>();
         for(Craft c : this.craftList){
-            if(c.getW() == w)
+            if(c.getWorld() == w)
                 crafts.add(c);
         }
         return crafts;

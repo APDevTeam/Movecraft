@@ -25,23 +25,23 @@ public class TownyCompatManager implements Listener {
     public void onCraftTranslate(CraftTranslateEvent event){
         final Set<TownBlock> townBlocks = new HashSet<>();
         final Craft craft = event.getCraft();
-        final TownyWorld townyWorld = TownyUtils.getTownyWorld(craft.getW());
+        final TownyWorld townyWorld = TownyUtils.getTownyWorld(craft.getWorld());
         if (!Settings.TownyBlockMoveOnSwitchPerm)
             return;
         for (MovecraftLocation ml : event.getNewHitBox()) {
 
-            TownBlock townBlock = TownyUtils.getTownBlock(ml.toBukkit(event.getCraft().getW()));
+            TownBlock townBlock = TownyUtils.getTownBlock(ml.toBukkit(event.getCraft().getWorld()));
             if (townBlock == null || townBlocks.contains(townBlock)) {
                 continue;
             }
-            if (TownyUtils.validateCraftMoveEvent(craft.getNotificationPlayer(), ml.toBukkit(craft.getW()), townyWorld)) {
+            if (TownyUtils.validateCraftMoveEvent(craft.getNotificationPlayer(), ml.toBukkit(craft.getWorld()), townyWorld)) {
                 townBlocks.add(townBlock);
                 continue;
             }
             Town town = TownyUtils.getTown(townBlock);
             if (town == null)
                 continue;
-            final TownyWorldHeightLimits whLim = TownyUtils.getWorldLimits(event.getCraft().getW());
+            final TownyWorldHeightLimits whLim = TownyUtils.getWorldLimits(event.getCraft().getWorld());
             final Location spawnLoc = TownyUtils.getTownSpawn(townBlock);
             if (whLim.validate(ml.getY(), spawnLoc.getBlockY())) {
                 continue;
@@ -57,23 +57,23 @@ public class TownyCompatManager implements Listener {
     public void onCraftRotate(CraftRotateEvent event) {
         final Set<TownBlock> townBlocks = new HashSet<>();
         final Craft craft = event.getCraft();
-        final TownyWorld townyWorld = TownyUtils.getTownyWorld(craft.getW());
+        final TownyWorld townyWorld = TownyUtils.getTownyWorld(craft.getWorld());
         if (!Settings.TownyBlockMoveOnSwitchPerm)
             return;
         for (MovecraftLocation ml : event.getNewHitBox()) {
 
-            TownBlock townBlock = TownyUtils.getTownBlock(ml.toBukkit(event.getCraft().getW()));
+            TownBlock townBlock = TownyUtils.getTownBlock(ml.toBukkit(event.getCraft().getWorld()));
             if (townBlock == null || townBlocks.contains(townBlock)) {
                 continue;
             }
-            if (TownyUtils.validateCraftMoveEvent(craft.getNotificationPlayer(), ml.toBukkit(craft.getW()), townyWorld)) {
+            if (TownyUtils.validateCraftMoveEvent(craft.getNotificationPlayer(), ml.toBukkit(craft.getWorld()), townyWorld)) {
                 townBlocks.add(townBlock);
                 continue;
             }
             Town town = TownyUtils.getTown(townBlock);
             if (town == null)
                 continue;
-            final TownyWorldHeightLimits whLim = TownyUtils.getWorldLimits(event.getCraft().getW());
+            final TownyWorldHeightLimits whLim = TownyUtils.getWorldLimits(event.getCraft().getWorld());
             final Location spawnLoc = TownyUtils.getTownSpawn(townBlock);
             if (whLim.validate(ml.getY(), spawnLoc.getBlockY())) {
                 continue;
@@ -88,21 +88,21 @@ public class TownyCompatManager implements Listener {
     public void onHitboxDetect(CraftDetectEvent event) {
         final Set<TownBlock> townBlocks = new HashSet<>();
         final Craft craft = event.getCraft();
-        final TownyWorld townyWorld = TownyUtils.getTownyWorld(craft.getW());
+        final TownyWorld townyWorld = TownyUtils.getTownyWorld(craft.getWorld());
         for (MovecraftLocation ml : event.getCraft().getHitBox()) {
 
-            TownBlock townBlock = TownyUtils.getTownBlock(ml.toBukkit(event.getCraft().getW()));
+            TownBlock townBlock = TownyUtils.getTownBlock(ml.toBukkit(event.getCraft().getWorld()));
             if (townBlock == null || townBlocks.contains(townBlock)) {
                 continue;
             }
-            if (TownyUtils.validateCraftMoveEvent(craft.getNotificationPlayer(), ml.toBukkit(craft.getW()), townyWorld)) {
+            if (TownyUtils.validateCraftMoveEvent(craft.getNotificationPlayer(), ml.toBukkit(craft.getWorld()), townyWorld)) {
                 townBlocks.add(townBlock);
                 continue;
             }
             Town town = TownyUtils.getTown(townBlock);
             if (town == null)
                 continue;
-            final TownyWorldHeightLimits whLim = TownyUtils.getWorldLimits(event.getCraft().getW());
+            final TownyWorldHeightLimits whLim = TownyUtils.getWorldLimits(event.getCraft().getWorld());
             final Location spawnLoc = TownyUtils.getTownSpawn(townBlock);
             if (whLim.validate(ml.getY(), spawnLoc.getBlockY())) {
                 continue;
@@ -124,7 +124,7 @@ public class TownyCompatManager implements Listener {
             return;
         for (MovecraftLocation ml : hitBox) {
 
-            TownBlock townBlock = TownyUtils.getTownBlock(ml.toBukkit(event.getCraft().getW()));
+            TownBlock townBlock = TownyUtils.getTownBlock(ml.toBukkit(event.getCraft().getWorld()));
             if (townBlock == null || townBlocks.contains(townBlock)) {
                 continue;
             }

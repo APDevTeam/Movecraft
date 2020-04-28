@@ -78,8 +78,8 @@ public class CraftTranslateCommand extends UpdateCommand {
 
             }
         } else if (craft.getType().getMoveEntities() && !craft.getSinking()){
-            final Location midpoint = craft.getHitBox().getMidPoint().subtract(displacement).toBukkit(craft.getW()).add(.5,.5,.5);
-            final Collection<Entity> entities = craft.getW().getNearbyEntities(midpoint, craft.getHitBox().getXLength() / 2.0 + 1, craft.getHitBox().getYLength() / 2.0 + 2, craft.getHitBox().getZLength() / 2.0 + 1);
+            final Location midpoint = craft.getHitBox().getMidPoint().subtract(displacement).toBukkit(craft.getWorld()).add(.5,.5,.5);
+            final Collection<Entity> entities = craft.getWorld().getNearbyEntities(midpoint, craft.getHitBox().getXLength() / 2.0 + 1, craft.getHitBox().getYLength() / 2.0 + 2, craft.getHitBox().getZLength() / 2.0 + 1);
             Entity vehicle;
             Entity playerVehicle = null;
             for (Entity entity : entities){
@@ -126,7 +126,7 @@ public class CraftTranslateCommand extends UpdateCommand {
             final HitBox to = craft.getHitBox().difference(originalLocations);
             //place phased blocks
             for (MovecraftLocation location : to) {
-                Block b = location.toBukkit(craft.getW()).getBlock();
+                Block b = location.toBukkit(craft.getWorld()).getBlock();
                 Material material = b.getType();
                 Object data = Settings.IsLegacy ? b.getData() : b.getBlockData();
                 if (passthroughBlocks.contains(material)) {
@@ -183,7 +183,7 @@ public class CraftTranslateCommand extends UpdateCommand {
 
             final WorldHandler handler = Movecraft.getInstance().getWorldHandler();
             for (MovecraftLocation location : invertedHitBox.difference(confirmed)) {
-                Block b = location.toBukkit(craft.getW()).getBlock();
+                Block b = location.toBukkit(craft.getWorld()).getBlock();
                 Material material = b.getType();
                 Object data = Settings.IsLegacy ? b.getData() : b.getBlockData();
                 if (!passthroughBlocks.contains(material)) {
@@ -216,24 +216,24 @@ public class CraftTranslateCommand extends UpdateCommand {
                     continue;
 
                 Pair<Material, Object> phaseBlock = craft.getPhaseBlocks().remove(location);
-                handler.setBlockFast(location.toBukkit(craft.getW()), phaseBlock.getLeft(), phaseBlock.getRight());
+                handler.setBlockFast(location.toBukkit(craft.getWorld()), phaseBlock.getLeft(), phaseBlock.getRight());
                 craft.getPhaseBlocks().remove(location);
             }
 
             for(MovecraftLocation location : originalLocations){
                 if(!craft.getHitBox().contains(location) && craft.getPhaseBlocks().containsKey(location)){
                     Pair<Material, Object> phaseBlock = craft.getPhaseBlocks().remove(location);
-                    handler.setBlockFast(location.toBukkit(craft.getW()), phaseBlock.getLeft(), phaseBlock.getRight());
+                    handler.setBlockFast(location.toBukkit(craft.getWorld()), phaseBlock.getLeft(), phaseBlock.getRight());
                 }
             }
 
             for (MovecraftLocation location : failed) {
-                Block b = location.toBukkit(craft.getW()).getBlock();
+                Block b = location.toBukkit(craft.getWorld()).getBlock();
                 Material material = b.getType();
                 Object data = Settings.IsLegacy ? b.getData() : b.getBlockData();
                 if (passthroughBlocks.contains(material)) {
                     craft.getPhaseBlocks().put(location, new Pair<>(material, data));
-                    handler.setBlockFast(location.toBukkit(craft.getW()), Material.AIR, (byte) 0);
+                    handler.setBlockFast(location.toBukkit(craft.getWorld()), Material.AIR, (byte) 0);
 
                 }
             }
@@ -262,7 +262,7 @@ public class CraftTranslateCommand extends UpdateCommand {
     private void sendSignEvents(){
         Map<String[], List<MovecraftLocation>> signs = new HashMap<>();
         for (MovecraftLocation location : craft.getHitBox()) {
-            Block block = location.toBukkit(craft.getW()).getBlock();
+            Block block = location.toBukkit(craft.getWorld()).getBlock();
             if (SignUtils.isSign(block)) {
                 Sign sign = (Sign) block.getState();
                 if(!signs.containsKey(sign.getLines()))
@@ -273,7 +273,7 @@ public class CraftTranslateCommand extends UpdateCommand {
         for(Map.Entry<String[], List<MovecraftLocation>> entry : signs.entrySet()){
             Bukkit.getServer().getPluginManager().callEvent(new SignTranslateEvent(craft, entry.getKey(), entry.getValue()));
             for(MovecraftLocation loc : entry.getValue()){
-                Block block = loc.toBukkit(craft.getW()).getBlock();
+                Block block = loc.toBukkit(craft.getWorld()).getBlock();
                 if (!(block.getState() instanceof Sign)) {
                     continue;
                 }

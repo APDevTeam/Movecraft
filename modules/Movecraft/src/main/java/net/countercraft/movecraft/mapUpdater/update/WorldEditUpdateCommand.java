@@ -35,7 +35,7 @@ public class WorldEditUpdateCommand extends UpdateCommand {
 
     @Override
     public void doUpdate() {
-        world.getBlockAt(location.getX(), location.getY(), location.getZ()).setType(type);
+        world.getBlockAt(location.getX(), location.getY(), location.getZ()).setType(type, false);
         LegacyUtils.setData(world.getBlockAt(location.getX(), location.getY(), location.getZ()), data);
         Block block = location.toBukkit(world).getBlock();
         // put inventory into dispensers if its a repair

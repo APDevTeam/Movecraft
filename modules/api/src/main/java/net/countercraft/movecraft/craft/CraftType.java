@@ -23,9 +23,9 @@ import net.countercraft.movecraft.utils.BlockLimitManager;
 import net.countercraft.movecraft.utils.LegacyUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.Sound;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.Yaml;
 
@@ -34,7 +34,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
-import java.util.logging.Level;
 
 final public class CraftType {
     private final boolean blockedByWater;
@@ -104,7 +103,8 @@ final public class CraftType {
     @NotNull private final Set<Material> passthroughBlocks;
     @NotNull private final int effectRange;
     @NotNull private final Map<PotionEffect,Integer> potionEffectsToApply;
-    @NotNull private final Map<PotionEffect, Integer> potionEffectDelays = Collections.emptyMap();
+    @NotNull private final Map<List<String>, Double> maxSignsWithString;
+    @NotNull private final Map<List<String>, Double> maxCannons;
     @NotNull private final Set<Material> forbiddenHoverOverBlocks;
     private final int gravityDropDistance;
     private final int gravityInclineDistance;
@@ -125,114 +125,87 @@ final public class CraftType {
 
 
         try {
-        //Required craft flags
-        craftName = (String) data.get("name");
-        maxSize = integerFromObject(data.get("maxSize"));
-        minSize = integerFromObject(data.get("minSize"));
-        allowedBlocks = new BlockContainer(data.get("allowedBlocks"));
+            //Required craft flags
+            craftName = (String) data.get("name");
+            maxSize = integerFromObject(data.get("maxSize"));
+            minSize = integerFromObject(data.get("minSize"));
+            allowedBlocks = new BlockContainer(data.get("allowedBlocks"));
 
-        forbiddenBlocks = data.containsKey("forbiddenBlocks") ? new BlockContainer(data.get("forbiddenBlocks")) : new BlockContainer();;
-        forbiddenSignStrings = stringListFromObject(data.get("forbiddenSignStrings"));
-        tickCooldown = (int) Math.ceil(20 / (doubleFromObject(data.get("speed"))));
-        flyBlocks = new BlockLimitManager(data.get("flyblocks"));
+            forbiddenBlocks = data.containsKey("forbiddenBlocks") ? new BlockContainer(data.get("forbiddenBlocks")) : new BlockContainer();;
+            forbiddenSignStrings = stringListFromObject(data.get("forbiddenSignStrings"));
+            tickCooldown = (int) Math.ceil(20 / (doubleFromObject(data.get("speed"))));
+            flyBlocks = new BlockLimitManager(data.get("flyblocks"));
 
-        //Optional craft flags
-        blockedByWater = (boolean) (data.containsKey("canFly") ? data.get("canFly") : data.getOrDefault("blockedByWater", true));
-        requireWaterContact = (boolean) data.getOrDefault("requireWaterContact", false);
-        tryNudge = (boolean) data.getOrDefault("tryNudge", false);
-        moveBlocks = new BlockLimitManager(data.getOrDefault("moveblocks", new HashMap<>()));
-        canCruise = (boolean) data.getOrDefault("canCruise", false);
-        canTeleport = (boolean) data.getOrDefault("canTeleport", false);
-        canBeNamed = (boolean) data.getOrDefault("canBeNamed", true);
-        cruiseOnPilot = (boolean) data.getOrDefault("cruiseOnPilot", false);
-        cruiseOnPilotVertMove = integerFromObject(data.getOrDefault("cruiseOnPilotVertMove", 0));
-        allowVerticalMovement = (boolean) data.getOrDefault("allowVerticalMovement", true);
-        rotateAtMidpoint = (boolean) data.getOrDefault("rotateAtMidpoint", false);
-        allowHorizontalMovement = (boolean) data.getOrDefault("allowHorizontalMovement", true);
-        allowRemoteSign = (boolean) data.getOrDefault("allowRemoteSign", true);
-        allowCannonDirectorSign = (boolean) data.getOrDefault("allowCannonDirectorSign", true);
-        allowAADirectorSign = (boolean) data.getOrDefault("allowAADirectorSign", true);
-        canStaticMove = (boolean) data.getOrDefault("canStaticMove", false);
-        maxStaticMove = integerFromObject(data.getOrDefault("maxStaticMove", 10000));
-        cruiseSkipBlocks = integerFromObject(data.getOrDefault("cruiseSkipBlocks", 0));
-        vertCruiseSkipBlocks = integerFromObject(data.getOrDefault("vertCruiseSkipBlocks", cruiseSkipBlocks));
-        halfSpeedUnderwater = (boolean) data.getOrDefault("halfSpeedUnderwater", false);
-        focusedExplosion = (boolean) data.getOrDefault("focusedExplosion", false);
-        mustBeSubcraft = (boolean) data.getOrDefault("mustBeSubcraft", false);
-        staticWaterLevel = integerFromObject(data.getOrDefault("staticWaterLevel", 0));
-        fuelBurnRate = doubleFromObject(data.getOrDefault("fuelBurnRate", 0d));
-        sinkPercent = doubleFromObject(data.getOrDefault("sinkPercent", 0d));
-        overallSinkPercent = doubleFromObject(data.getOrDefault("overallSinkPercent", 0d));
-        detectionMultiplier = doubleFromObject(data.getOrDefault("detectionMultiplier", 0d));
-        underwaterDetectionMultiplier = doubleFromObject(data.getOrDefault("underwaterDetectionMultiplier", detectionMultiplier));
-        sinkRateTicks = data.containsKey("sinkSpeed") ? (int) Math.ceil(20 / (doubleFromObject(data.get("sinkSpeed")))) : integerFromObject(data.getOrDefault("sinkTickRate", 0));
-        keepMovingOnSink = (Boolean) data.getOrDefault("keepMovingOnSink", false);
-        keepMovingOnSinkMaxMove = integerFromObject(data.getOrDefault("keepMovingOnSinkMaxMove", -1));
-        smokeOnSink = integerFromObject(data.getOrDefault("smokeOnSink", 0));
-        explodeOnCrash = floatFromObject(data.getOrDefault("explodeOnCrash", 0F));
-        collisionExplosion = floatFromObject(data.getOrDefault("collisionExplosion", 0F));
-        minHeightLimit = Math.max(0, integerFromObject(data.getOrDefault("minHeightLimit", 0)));
+            //Optional craft flags
+            blockedByWater = (boolean) (data.containsKey("canFly") ? data.get("canFly") : data.getOrDefault("blockedByWater", true));
+            requireWaterContact = (boolean) data.getOrDefault("requireWaterContact", false);
+            tryNudge = (boolean) data.getOrDefault("tryNudge", false);
+            moveBlocks = new BlockLimitManager(data.getOrDefault("moveblocks", new HashMap<>()));
+            canCruise = (boolean) data.getOrDefault("canCruise", false);
+            canTeleport = (boolean) data.getOrDefault("canTeleport", false);
+            canBeNamed = (boolean) data.getOrDefault("canBeNamed", true);
+            cruiseOnPilot = (boolean) data.getOrDefault("cruiseOnPilot", false);
+            cruiseOnPilotVertMove = integerFromObject(data.getOrDefault("cruiseOnPilotVertMove", 0));
+            allowVerticalMovement = (boolean) data.getOrDefault("allowVerticalMovement", true);
+            rotateAtMidpoint = (boolean) data.getOrDefault("rotateAtMidpoint", false);
+            allowHorizontalMovement = (boolean) data.getOrDefault("allowHorizontalMovement", true);
+            allowRemoteSign = (boolean) data.getOrDefault("allowRemoteSign", true);
+            allowCannonDirectorSign = (boolean) data.getOrDefault("allowCannonDirectorSign", true);
+            allowAADirectorSign = (boolean) data.getOrDefault("allowAADirectorSign", true);
+            canStaticMove = (boolean) data.getOrDefault("canStaticMove", false);
+            maxStaticMove = integerFromObject(data.getOrDefault("maxStaticMove", 10000));
+            cruiseSkipBlocks = integerFromObject(data.getOrDefault("cruiseSkipBlocks", 0));
+            vertCruiseSkipBlocks = integerFromObject(data.getOrDefault("vertCruiseSkipBlocks", cruiseSkipBlocks));
+            halfSpeedUnderwater = (boolean) data.getOrDefault("halfSpeedUnderwater", false);
+            focusedExplosion = (boolean) data.getOrDefault("focusedExplosion", false);
+            mustBeSubcraft = (boolean) data.getOrDefault("mustBeSubcraft", false);
+            staticWaterLevel = integerFromObject(data.getOrDefault("staticWaterLevel", 0));
+            fuelBurnRate = doubleFromObject(data.getOrDefault("fuelBurnRate", 0d));
+            sinkPercent = doubleFromObject(data.getOrDefault("sinkPercent", 0d));
+            overallSinkPercent = doubleFromObject(data.getOrDefault("overallSinkPercent", 0d));
+            detectionMultiplier = doubleFromObject(data.getOrDefault("detectionMultiplier", 0d));
+            underwaterDetectionMultiplier = doubleFromObject(data.getOrDefault("underwaterDetectionMultiplier", detectionMultiplier));
+            sinkRateTicks = data.containsKey("sinkSpeed") ? (int) Math.ceil(20 / (doubleFromObject(data.get("sinkSpeed")))) : integerFromObject(data.getOrDefault("sinkTickRate", 0));
+            keepMovingOnSink = (Boolean) data.getOrDefault("keepMovingOnSink", false);
+            keepMovingOnSinkMaxMove = integerFromObject(data.getOrDefault("keepMovingOnSinkMaxMove", -1));
+            smokeOnSink = integerFromObject(data.getOrDefault("smokeOnSink", 0));
+            explodeOnCrash = floatFromObject(data.getOrDefault("explodeOnCrash", 0F));
+            collisionExplosion = floatFromObject(data.getOrDefault("collisionExplosion", 0F));
+            minHeightLimit = Math.max(0, integerFromObject(data.getOrDefault("minHeightLimit", 0)));
 
-        double cruiseSpeed = doubleFromObject(data.getOrDefault("cruiseSpeed", 20.0 / tickCooldown));
-        cruiseTickCooldown = (int) Math.round((1.0 + cruiseSkipBlocks) * 20.0 / cruiseSpeed);
-        if(Settings.Debug) {
-            Bukkit.getLogger().info("Craft: " + craftName);
-            Bukkit.getLogger().info("CruiseSpeed: " + cruiseSpeed);
-            Bukkit.getLogger().info("Cooldown: " + cruiseTickCooldown);
-        }
-
-        int value = Math.min(integerFromObject(data.getOrDefault("maxHeightLimit", 254)), 255);
-        if (value <= minHeightLimit) {
-            value = 255;
-        }
-
-        maxHeightLimit = value;
-        maxHeightAboveGround = integerFromObject(data.getOrDefault("maxHeightAboveGround", -1));
-        canDirectControl = (boolean) data.getOrDefault("canDirectControl", true);
-        canHover = (boolean) data.getOrDefault("canHover", false);
-        canHoverOverWater = (boolean) data.getOrDefault("canHoverOverWater", true);
-        moveEntities = (boolean) data.getOrDefault("moveEntities", true);
-        onlyMovePlayers = (boolean) data.getOrDefault("onlyMovePlayers", true);
-        useGravity = (boolean) data.getOrDefault("useGravity", false);
-        hoverLimit = Math.max(0, integerFromObject(data.getOrDefault("hoverLimit", 0)));
-        harvestBlocks = new ArrayList<>();
-        harvesterBladeBlocks = new ArrayList<>();
-        staticDetectionRange = doubleFromObject(data.getOrDefault("staticDetectionRange", 0d));
-        underwaterStaticDetectionRange = doubleFromObject(data.getOrDefault("underwaterStaticDetectionRange", 0d));
-        if (data.containsKey("harvestBlocks")) {
-            ArrayList objList = (ArrayList) data.get("harvestBlocks");
-            for (Object i : objList) {
-                if (i instanceof String) {
-                    String str = (String) i;
-                    if (str.startsWith("ALL_")) {
-                        str = str.replace("ALL_", "").toUpperCase();
-                        for (Material type : Material.values()){
-                            str = str.replace("ALL", "");
-                            if (!type.name().endsWith(str)){
-                                continue;
-                            } else if (type.name().split("_").length == 1 && !type.name().endsWith(str.substring(1))) {
-                                continue;
-                            }
-                            harvestBlocks.add(type);
-                        }
-                        continue;
-                    }
-                    Material mat = Material.getMaterial(((String) i).toUpperCase());
-                    harvestBlocks.add(mat);
-                } else {
-                    Material mat = Material.getMaterial((Integer) i);
-                    harvestBlocks.add(mat);
-                }
-
+            double cruiseSpeed = doubleFromObject(data.getOrDefault("cruiseSpeed", 20.0 / tickCooldown));
+            cruiseTickCooldown = (int) Math.round((1.0 + cruiseSkipBlocks) * 20.0 / cruiseSpeed);
+            if(Settings.Debug) {
+                Bukkit.getLogger().info("Craft: " + craftName);
+                Bukkit.getLogger().info("CruiseSpeed: " + cruiseSpeed);
+                Bukkit.getLogger().info("Cooldown: " + cruiseTickCooldown);
             }
-        }
-        if (data.containsKey("harvesterBladeBlocks")) {
-                ArrayList objList = (ArrayList) data.get("harvesterBladeBlocks");
+
+            int value = Math.min(integerFromObject(data.getOrDefault("maxHeightLimit", 254)), 255);
+            if (value <= minHeightLimit) {
+                value = 255;
+            }
+
+            maxHeightLimit = value;
+            maxHeightAboveGround = integerFromObject(data.getOrDefault("maxHeightAboveGround", -1));
+            canDirectControl = (boolean) data.getOrDefault("canDirectControl", true);
+            canHover = (boolean) data.getOrDefault("canHover", false);
+            canHoverOverWater = (boolean) data.getOrDefault("canHoverOverWater", true);
+            moveEntities = (boolean) data.getOrDefault("moveEntities", true);
+            onlyMovePlayers = (boolean) data.getOrDefault("onlyMovePlayers", true);
+            useGravity = (boolean) data.getOrDefault("useGravity", false);
+            hoverLimit = Math.max(0, integerFromObject(data.getOrDefault("hoverLimit", 0)));
+            harvestBlocks = new ArrayList<>();
+            harvesterBladeBlocks = new ArrayList<>();
+            staticDetectionRange = doubleFromObject(data.getOrDefault("staticDetectionRange", 0d));
+            underwaterStaticDetectionRange = doubleFromObject(data.getOrDefault("underwaterStaticDetectionRange", 0d));
+            if (data.containsKey("harvestBlocks")) {
+                ArrayList objList = (ArrayList) data.get("harvestBlocks");
                 for (Object i : objList) {
                     if (i instanceof String) {
                         String str = (String) i;
-                        str = str.toUpperCase();
-                        if (str.startsWith("ALL_")){
+                        if (str.startsWith("ALL_")) {
+                            str = str.replace("ALL_", "").toUpperCase();
                             for (Material type : Material.values()){
                                 str = str.replace("ALL", "");
                                 if (!type.name().endsWith(str)){
@@ -240,19 +213,46 @@ final public class CraftType {
                                 } else if (type.name().split("_").length == 1 && !type.name().endsWith(str.substring(1))) {
                                     continue;
                                 }
-                                harvesterBladeBlocks.add(type);
+                                harvestBlocks.add(type);
                             }
-                        } else {
-                            Material mat = Material.getMaterial(str);
-                            harvesterBladeBlocks.add(mat);
+                            continue;
                         }
-
+                        Material mat = Material.getMaterial(((String) i).toUpperCase());
+                        harvestBlocks.add(mat);
                     } else {
                         Material mat = Material.getMaterial((Integer) i);
-                        harvesterBladeBlocks.add(mat);
+                        harvestBlocks.add(mat);
                     }
+
                 }
-        }
+            }
+            if (data.containsKey("harvesterBladeBlocks")) {
+                    ArrayList objList = (ArrayList) data.get("harvesterBladeBlocks");
+                    for (Object i : objList) {
+                        if (i instanceof String) {
+                            String str = (String) i;
+                            str = str.toUpperCase();
+                            if (str.startsWith("ALL_")){
+                                for (Material type : Material.values()){
+                                    str = str.replace("ALL", "");
+                                    if (!type.name().endsWith(str)){
+                                        continue;
+                                    } else if (type.name().split("_").length == 1 && !type.name().endsWith(str.substring(1))) {
+                                        continue;
+                                    }
+                                    harvesterBladeBlocks.add(type);
+                                }
+                            } else {
+                                Material mat = Material.getMaterial(str);
+                                harvesterBladeBlocks.add(mat);
+                            }
+
+                        } else {
+                            Material mat = Material.getMaterial((Integer) i);
+                            harvesterBladeBlocks.add(mat);
+                        }
+                    }
+            }
             passthroughBlocks = new HashSet<>();
             if (data.containsKey("passthroughBlocks")) {
                 ArrayList objList = (ArrayList) data.get("passthroughBlocks");
@@ -355,6 +355,8 @@ final public class CraftType {
             int dropdist = integerFromObject(data.getOrDefault("gravityDropDistance", -8));
             gravityDropDistance = dropdist > 0 ? -dropdist : dropdist;
             collisionSound = Sound.valueOf((String) data.getOrDefault("collisionSound", "BLOCK_ANVIL_LAND"));
+            maxSignsWithString = stringDoubleMapFromObject(data.getOrDefault("maxSignsWithString", new HashMap<>()));
+            maxCannons = stringDoubleMapFromObject(data.getOrDefault("maxCannons", new HashMap<>()));
         } catch (Exception e){
             throw new CraftTypeException("Craft file " + f.getName() + " is malformed", e);
         }
@@ -392,6 +394,43 @@ final public class CraftType {
         }
 
     }
+
+    private Map<List<String>, Double> stringDoubleMapFromObject(Object obj) {
+        Map objMap = (Map) obj;
+        Map<List<String>, Double> retMap = new HashMap<>();
+        for (Object k : objMap.keySet()) {
+            final List<String> key = new ArrayList<>();
+            if (k instanceof List) {
+                List strings = (List) k;
+                for (Object i : strings) {
+                    if (i instanceof String) {
+                        key.add(((String) i).toLowerCase());
+                    } else {
+                        key.add(String.valueOf(i).toLowerCase());
+                    }
+                }
+            } else if (k instanceof String) {
+                key.add(((String) k).toLowerCase());
+            } else {
+                key.add(String.valueOf(k).toLowerCase());
+            }
+            final Object v = objMap.get(k);
+            final double value;
+            if (v instanceof String) {
+                final String str = (String) v;
+                if (str.startsWith("N")) {
+                    value = 10000.0 + Double.parseDouble(str.substring(1));
+                } else {
+                    value = Double.parseDouble(str);
+                }
+            } else {
+                value = (double) v;
+            }
+            retMap.put(key, value);
+        }
+        return retMap;
+    }
+
     private HashMap<PotionEffect, Integer> effectListFromObject(Object obj){
         Map<Object,Object> objMap = (Map<Object, Object>) obj;
         HashMap<PotionEffect,Integer> ret = new HashMap<>();
@@ -440,233 +479,6 @@ final public class CraftType {
             }
         }
         return returnList.toArray(new String[1]);
-    }
-    private Map<Map<Material, List<Integer>>, List<Double>> materialMapListFromObject(Object obj){
-        HashMap<Map<Material, List<Integer>>, List<Double>> returnMap = new HashMap<>();
-        HashMap<Object, Object> objMap = (HashMap<Object, Object>) obj;
-        for (Object i : objMap.keySet()) {
-            HashMap<Material, List<Integer>> materialMap = new HashMap<>();
-            if (i instanceof ArrayList<?>) {
-                for (Object o : (ArrayList<Object>) i) {
-                    if (o instanceof Integer) {
-                        Integer typeID = (Integer) o;
-                        Material type = Material.getMaterial(typeID);
-                        materialMap.put(type, new ArrayList<>());
-                    } else if (o instanceof String) {
-                        String string = (String) o;
-                        string = string.toUpperCase();
-                        if (string.contains(":")) {
-                            String[] parts = string.split(":");
-                            Material type;
-                            Integer data = Integer.valueOf(parts[1]);
-                            if (parts[0].contains("0") || parts[0].contains("1") || parts[0].contains("2") || parts[0].contains("3") || parts[0].contains("4") || parts[0].contains("5") || parts[0].contains("6") || parts[0].contains("7") || parts[0].contains("8") || parts[0].contains("9")) {
-                                Integer typeID = Integer.valueOf(parts[0]);
-                                type = Material.getMaterial(typeID);
-
-                            } else {
-                                type = Material.getMaterial(parts[0]);
-                            }
-                            if (materialMap.containsKey(type)) {
-                                List<Integer> dataList = materialMap.get(type);
-                                dataList.add(data);
-                                materialMap.put(type, dataList);
-                            } else {
-                                List<Integer> dataList = new ArrayList<>();
-                                dataList.add(data);
-                                materialMap.put(type, dataList);
-                            }
-
-                        } else if (string.toUpperCase().startsWith("ALL_")){
-                            string = string.replace("ALL_", "");
-                            for (Material m : Material.values()){
-                                if (!m.name().endsWith(string)){
-                                    continue;
-                                }
-                                materialMap.put(m, new ArrayList<>());
-                            }
-                        } else {
-                            Material type;
-                            if (string.contains("0") || string.contains("1") || string.contains("2") || string.contains("3") || string.contains("4") || string.contains("5") || string.contains("6") || string.contains("7") || string.contains("8") || string.contains("9")) {
-                                Integer typeID = Integer.valueOf(string);
-                                type = Material.getMaterial(typeID);
-
-                            } else {
-                                type = Material.getMaterial(string);
-                            }
-                            materialMap.put(type, new ArrayList<>());
-                        }
-                    } else {
-                        Material type = (Material) o;
-                        materialMap.put(type, new ArrayList<>());
-                    }
-                }
-            } else if (i instanceof Map) {
-                HashMap<Object, Object> objMapKey = (HashMap<Object, Object>) i;
-                for (Object o : objMapKey.keySet()) {
-                    if (o instanceof Integer) {
-                        Integer typeID = (Integer) o;
-                        Material type = Material.getMaterial(typeID);
-                        List<Integer> dataList = (List<Integer>) objMapKey.get(o);
-                        materialMap.put(type, dataList);
-                    } else {
-                        Material type = (Material) o;
-                        List<Integer> dataList = (List<Integer>) objMapKey.get(o);
-                        materialMap.put(type, dataList);
-                    }
-                }
-            } else if (i instanceof Integer) {
-                if (!Settings.IsLegacy){
-                    throw new IllegalArgumentException("Numerical IDs are not supported by the current server version!");
-                }
-                Integer typeID = (Integer) i;
-                Material type = Material.getMaterial(typeID);
-                materialMap.put(type, new ArrayList<>());
-            } else if (i instanceof String) {
-                String string = (String) i;
-                string = string.toUpperCase();
-                if (string.contains(":")) {
-                    String[] parts = string.split(":");
-                    Material type;
-                    Integer data = Integer.valueOf(parts[1]);
-                    if (parts[0].contains("0") || parts[0].contains("1") || parts[0].contains("2") || parts[0].contains("3") || parts[0].contains("4") || parts[0].contains("5") || parts[0].contains("6") || parts[0].contains("7") || parts[0].contains("8") || parts[0].contains("9")) {
-                        Integer typeID = Integer.valueOf(parts[0]);
-                        type = Material.getMaterial(typeID);
-
-                    } else {
-                        type = Material.getMaterial(parts[0]);
-                    }
-                    if (materialMap.containsKey(type)) {
-                        List<Integer> dataList = materialMap.get(type);
-                        dataList.add(data);
-                        materialMap.put(type, dataList);
-                    } else {
-                        List<Integer> dataList = new ArrayList<>();
-                        dataList.add(data);
-                        materialMap.put(type, dataList);
-                    }
-                } else {
-                    Material type;
-                    boolean all = false;
-                    if (string.toUpperCase().startsWith("ALL_")) {
-                        string = string.replace("ALL_", "");
-                        for (Material m : Material.values()){
-                            if (m.name().endsWith(string)){
-                                materialMap.put(m, new ArrayList<>());
-                            }
-                            all = true;
-                        }
-                    }
-                    if (string.contains("0") || string.contains("1") || string.contains("2") || string.contains("3") || string.contains("4") || string.contains("5") || string.contains("6") || string.contains("7") || string.contains("8") || string.contains("9")) {
-                        Integer typeID = Integer.valueOf(string);
-                        type = Material.getMaterial(typeID);
-
-                    }  else {
-                        type = Material.getMaterial(string);
-                    }
-                    if (!all) {
-                        if (materialMap.containsKey(type)) {
-                            List<Integer> dataList = materialMap.get(type);
-                            materialMap.put(type, dataList);
-                        } else {
-                            List<Integer> dataList = new ArrayList<>();
-                            materialMap.put(type, dataList);
-                        }
-                    }
-                }
-            } else {
-                Material type = (Material) i;
-                materialMap.put(type, new ArrayList<>());
-            }
-
-            // then read in the limitation values, low and high
-            ArrayList<Object> objList = (ArrayList<Object>) objMap.get(i);
-            ArrayList<Double> limitList = new ArrayList<>();
-            for (Object limitObj : objList) {
-                if (limitObj instanceof String) {
-                    String str = (String) limitObj;
-                    if (str.contains("N")) { // a # indicates a specific quantity, IE: #2 for exactly 2 of the block
-                        String[] parts = str.split("N");
-                        Double val = Double.valueOf(parts[1]);
-                        limitList.add(10000d + val);  // limit greater than 10000 indicates an specific quantity (not a ratio)
-                    } else {
-                        Double val = Double.valueOf(str);
-                        limitList.add(val);
-                    }
-                } else if (limitObj instanceof Integer) {
-                    Double ret = ((Integer) limitObj).doubleValue();
-                    limitList.add(ret);
-                } else {
-                    limitList.add((Double) limitObj);
-                }
-            }
-            returnMap.put(materialMap, limitList);
-        }
-        return returnMap;
-    }
-    private Map<List<Integer>, List<Double>> blockIDMapListFromObject(Object obj) {
-        HashMap<List<Integer>, List<Double>> returnMap = new HashMap<>();
-        HashMap<Object, Object> objMap = (HashMap<Object, Object>) obj;
-        for (Object i : objMap.keySet()) {
-            ArrayList<Integer> rowList = new ArrayList<>();
-
-            // first read in the list of the blocks that type of flyblock. It could be a single string (with or without a ":") or integer, or it could be multiple of them
-            if (i instanceof ArrayList<?>) {
-                for (Object o : (ArrayList<Object>) i) {
-                    if (o instanceof String) {
-                        String str = (String) o;
-                        if (str.contains(":")) {
-                            String[] parts = str.split(":");
-                            Integer typeID = Integer.valueOf(parts[0]);
-                            Integer metaData = Integer.valueOf(parts[1]);
-                            rowList.add(10000 + (typeID << 4) + metaData);  // id greater than 10000 indicates it has a meta data / damage value
-                        } else {
-                            Integer typeID = Integer.valueOf(str);
-                            rowList.add(typeID);
-                        }
-                    } else {
-                        Integer typeID = (Integer) o;
-                        rowList.add(typeID);
-                    }
-                }
-            } else if (i instanceof String) {
-                String str = (String) i;
-                if (str.contains(":")) {
-                    String[] parts = str.split(":");
-                    Integer typeID = Integer.valueOf(parts[0]);
-                    Integer metaData = Integer.valueOf(parts[1]);
-                    rowList.add(10000 + (typeID << 4) + metaData);  // id greater than 10000 indicates it has a meta data / damage value
-                } else {
-                    Integer typeID = Integer.valueOf(str);
-                    rowList.add(typeID);
-                }
-            } else {
-                Integer typeID = (Integer) i;
-                rowList.add(typeID);
-            }
-
-            // then read in the limitation values, low and high
-            ArrayList<Object> objList = (ArrayList<Object>) objMap.get(i);
-            ArrayList<Double> limitList = new ArrayList<>();
-            for (Object limitObj : objList) {
-                    if (limitObj instanceof String) {
-                        String str = (String) limitObj;
-                        if (str.contains("N")) { // a # indicates a specific quantity, IE: #2 for exactly 2 of the block
-                            String[] parts = str.split("N");
-                            Double val = Double.valueOf(parts[1]);
-                            limitList.add(10000d + val);  // limit greater than 10000 indicates an specific quantity (not a ratio)
-                        } else {
-                            Double val = Double.valueOf(str);
-                            limitList.add(val);
-                        }
-                    } else if (limitObj instanceof Integer) {
-                        Double ret = ((Integer) limitObj).doubleValue();
-                        limitList.add(ret);
-                    } else
-                        limitList.add((Double) limitObj);
-            }
-            returnMap.put(rowList, limitList);
-        }
-        return returnMap;
     }
 
     @NotNull
@@ -965,6 +777,16 @@ final public class CraftType {
     @NotNull
     public Sound getCollisionSound() {
         return collisionSound;
+    }
+
+    @NotNull
+    public Map<List<String>, Double> getMaxSignsWithString() {
+        return maxSignsWithString;
+    }
+
+    @NotNull
+    public Map<List<String>, Double> getMaxCannons() {
+        return maxCannons;
     }
 
     private static class TypeNotFoundException extends RuntimeException {

@@ -11,19 +11,17 @@ import org.bukkit.block.data.type.Slab;
 import org.bukkit.block.data.type.Stairs;
 import org.bukkit.block.data.type.TrapDoor;
 
-import java.util.AbstractMap;
-
 public class WaterlogUtils {
-    private static AbstractMap.SimpleImmutableEntry<Material, Object> DEFAULT_PHASE_BLOCK = new AbstractMap.SimpleImmutableEntry<>(Material.AIR, 0);
+    private static Pair<Material, Object> DEFAULT_PHASE_BLOCK = new Pair<>(Material.AIR, 0);
     private WaterlogUtils(){
 
     }
     public static void waterlogBlocksOnCraft(Craft craft, HitBox interior) {
 
         for (MovecraftLocation ml : craft.getHitBox()) {
-            final Material phaseBlock = craft.getPhaseBlocks().getOrDefault(ml, DEFAULT_PHASE_BLOCK).getKey();
+            final Material phaseBlock = craft.getPhaseBlocks().getOrDefault(ml, DEFAULT_PHASE_BLOCK).getLeft();
             boolean waterlog = phaseBlock == Material.WATER;
-            Block b = ml.toBukkit(craft.getW()).getBlock();
+            Block b = ml.toBukkit(craft.getWorld()).getBlock();
             if (!(b.getBlockData() instanceof Waterlogged)) {
                 continue;
             }

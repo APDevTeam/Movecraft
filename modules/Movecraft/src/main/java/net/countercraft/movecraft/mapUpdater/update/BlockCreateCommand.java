@@ -26,7 +26,7 @@ public class BlockCreateCommand extends UpdateCommand {
         this.newBlockLocation = newBlockLocation;
         this.type = type;
         this.dataID = dataID;
-        this.world = craft.getW();
+        this.world = craft.getWorld();
         bData = null;
     }
 

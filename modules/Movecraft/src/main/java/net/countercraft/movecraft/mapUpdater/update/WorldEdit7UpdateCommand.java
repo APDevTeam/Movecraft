@@ -36,10 +36,10 @@ public class WorldEdit7UpdateCommand extends UpdateCommand {
     @Override
     public void doUpdate() {
         Block block = world.getBlockAt(location.getX(), location.getY(), location.getZ());
-        block.setType(type);
+        block.setType(type, false);
         assert baseBlock != null;
         BlockData bData = BukkitAdapter.adapt(baseBlock);
-        block.setBlockData(bData);
+        block.setBlockData(bData, false);
         if (Settings.Debug){
             Bukkit.broadcastMessage(String.format("Material: %s, Location: %s",type.name().toLowerCase().replace("_", " "),location.toString()));
         }

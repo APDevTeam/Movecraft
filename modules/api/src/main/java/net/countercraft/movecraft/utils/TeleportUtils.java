@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.List;
 
 /**
  * Code taken with permission from MicleBrick
@@ -135,7 +136,13 @@ public class TeleportUtils {
                 return;
             Object vehiclePacket = vehiclePacketConstructor.newInstance(handle);
             sendPacket(vehiclePacket, player);
-            for (Entity pass : vehicle.getPassengers()) {
+            List<Entity> passengers;
+            try {
+                passengers = (List<Entity>) Entity.class.getDeclaredMethod("getPassengers").invoke(vehicle);
+            } catch (Exception e) {
+                return;
+            }
+            for (Entity pass : passengers) {
                 if (pass.getType() != EntityType.PLAYER || pass.equals(player)) {
                     continue;
                 }

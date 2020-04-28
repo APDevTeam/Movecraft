@@ -121,7 +121,7 @@ public class AsyncManager extends BukkitRunnable {
             return;
         }
         wrecks.put(craft.getCollapsedHitBox(), System.currentTimeMillis());
-        wreckWorlds.put(craft.getCollapsedHitBox(), craft.getW());
+        wreckWorlds.put(craft.getCollapsedHitBox(), craft.getWorld());
         wreckPhases.put(craft.getCollapsedHitBox(), craft.getPhaseBlocks());
     }
 
@@ -174,7 +174,7 @@ public class AsyncManager extends BukkitRunnable {
 
 
                     } else {
-                        Set<Craft> craftsInWorld = CraftManager.getInstance().getCraftsInWorld(c.getW());
+                        Set<Craft> craftsInWorld = CraftManager.getInstance().getCraftsInWorld(c.getWorld());
 
                         boolean isSubcraft = false;
 
@@ -313,7 +313,7 @@ public class AsyncManager extends BukkitRunnable {
                         c.setHitBox(task.getNewHitBox());
                         c.setFluidLocations(task.getNewFluidList());
                         //c.setBlockList(task.getData().getHitBox());
-                        //boolean failed = MapUpdateManager.getInstance().addWorldUpdate(c.getW(), updates, null, null, exUpdates);
+                        //boolean failed = MapUpdateManager.getInstance().addWorldUpdate(c.getWorld(), updates, null, null, exUpdates);
                         MapUpdateManager.getInstance().scheduleUpdates(task.getUpdates());
                         sentMapUpdate = true;
                         CraftManager.getInstance().addReleaseTask(c);
@@ -331,7 +331,7 @@ public class AsyncManager extends BukkitRunnable {
                         // convert blocklist to location list
                         List<Location> shipLocations = new ArrayList<>();
                         for (MovecraftLocation loc : c.getHitBox()) {
-                            Location tloc = new Location(c.getW(), loc.getX(), loc.getY(), loc.getZ());
+                            Location tloc = new Location(c.getWorld(), loc.getX(), loc.getY(), loc.getZ());
                             shipLocations.add(tloc);
                         }
                         shipCannons = Movecraft.getInstance().getCannonsPlugin().getCannonsAPI()
@@ -378,7 +378,7 @@ public class AsyncManager extends BukkitRunnable {
                             // convert blocklist to location list
                             List<Location> shipLocations = new ArrayList<>();
                             for (MovecraftLocation loc : c.getHitBox()) {
-                                shipLocations.add(loc.toBukkit(c.getW()));
+                                shipLocations.add(loc.toBukkit(c.getWorld()));
                             }
                             shipCannons = Movecraft.getInstance().getCannonsPlugin().getCannonsAPI()
                                     .getCannons(shipLocations, c.getNotificationPlayer().getUniqueId(), true);
@@ -392,7 +392,7 @@ public class AsyncManager extends BukkitRunnable {
                         c.setFluidLocations(task.getNewFluidList());
                         // rotate any cannons that were present
                         if (Movecraft.getInstance().getCannonsPlugin() != null && shipCannons != null) {
-                            Location tloc = task.getOriginPoint().toBukkit(task.getCraft().getW());
+                            Location tloc = task.getOriginPoint().toBukkit(task.getCraft().getWorld());
                             for (Cannon can : shipCannons) {
                                 if (task.getRotation() == Rotation.CLOCKWISE)
                                     can.rotateRight(tloc.toVector());
@@ -422,7 +422,7 @@ public class AsyncManager extends BukkitRunnable {
                 continue;
             }
             long ticksElapsed = (System.currentTimeMillis() - pcraft.getLastCruiseUpdate()) / 50;
-            World w = pcraft.getW();
+            World w = pcraft.getWorld();
             // if the craft should go slower underwater, make
             // time pass more slowly there
             if (pcraft.getType().getHalfSpeedUnderwater() && pcraft.getHitBox().getMinY() < w.getSeaLevel())
@@ -559,7 +559,7 @@ public class AsyncManager extends BukkitRunnable {
             if (ticksElapsed <= Settings.SinkCheckTicks) {
                 continue;
             }
-            final World w = pcraft.getW();
+            final World w = pcraft.getWorld();
             int totalNonAirBlocks = 0;
             int totalNonAirWaterBlocks = 0;
             HashMap<Set<MovecraftBlock>, Integer> foundFlyBlocks = new HashMap<>();
@@ -623,7 +623,7 @@ public class AsyncManager extends BukkitRunnable {
                     pcraft.setDisabled(true);
                     if (pcraft.getNotificationPlayer() != null) {
                         Location loc = pcraft.getNotificationPlayer().getLocation();
-                        pcraft.getW().playSound(loc, Settings.IsLegacy ? (Settings.IsPre1_9 ? LegacyUtils.IRONGOLEM_DEATH : LegacyUtils.ENITIY_IRONGOLEM_DEATH)  : Sound.ENTITY_IRON_GOLEM_DEATH , 5.0f, 5.0f);
+                        pcraft.getWorld().playSound(loc, Settings.IsLegacy ? (Settings.IsPre1_9 ? LegacyUtils.IRONGOLEM_DEATH : LegacyUtils.ENITIY_IRONGOLEM_DEATH)  : Sound.ENTITY_IRON_GOLEM_DEATH , 5.0f, 5.0f);
                     }
                 }
             }
@@ -1062,7 +1062,7 @@ public class AsyncManager extends BukkitRunnable {
             //Check if there are any solid blocks below the craft
             for (int x = minX ; x <= maxX ; x++){
                 for (int z = minZ ; z <= maxZ ; z++){
-                    if (pCraft.getW().getBlockAt(x,minY,z).getType().isSolid()){
+                    if (pCraft.getWorld().getBlockAt(x,minY,z).getType().isSolid()){
                         onGround = true;
                         break;
                     }

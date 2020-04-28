@@ -72,7 +72,7 @@ public class PlayerListener implements Listener {
                 if (craft.getHitBox().contains(test)){
                     continue;
                 }
-                Block testBlock = test.toBukkit(craft.getW()).getBlock();
+                Block testBlock = test.toBukkit(craft.getWorld()).getBlock();
                 Material type = testBlock.getType();
                 byte metaData = testBlock.getData();
                 //Break the loop if an allowed block is found adjacent to the craft's hitbox

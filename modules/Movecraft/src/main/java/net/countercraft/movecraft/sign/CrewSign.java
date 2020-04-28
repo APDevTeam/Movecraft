@@ -52,8 +52,8 @@ public class CrewSign implements Listener {
         }
         Location valid = null;
         for(MovecraftLocation location : event.getLocations()){
-            Location bedLoc = location.toBukkit(craft.getW()).subtract(0,1,0);
-            Material bedType = craft.getW().getBlockAt(bedLoc).getType();
+            Location bedLoc = location.toBukkit(craft.getWorld()).subtract(0,1,0);
+            Material bedType = craft.getWorld().getBlockAt(bedLoc).getType();
             if (Settings.IsLegacy ? bedType.equals(LegacyUtils.BED_BLOCK) : Arrays.binarySearch(beds, bedType) >= 0) {
                 valid = bedLoc;
                 break;
@@ -128,7 +128,7 @@ public class CrewSign implements Listener {
 
     @EventHandler
     public void onCraftDetect(CraftDetectEvent event){
-        World world = event.getCraft().getW();
+        World world = event.getCraft().getWorld();
         for(MovecraftLocation location: event.getCraft().getHitBox()){
             Block block = location.toBukkit(world).getBlock();
             if (!(block.getState() instanceof Sign)) {

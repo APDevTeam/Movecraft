@@ -26,7 +26,7 @@ public final class StatusSign implements Listener{
 
     @EventHandler
     public void onCraftDetect(CraftDetectEvent event){
-        World world = event.getCraft().getW();
+        World world = event.getCraft().getWorld();
         for(MovecraftLocation location: event.getCraft().getHitBox()){
             Block block = location.toBukkit(world).getBlock();
             if(!SignUtils.isSign(block)){
@@ -55,7 +55,7 @@ public final class StatusSign implements Listener{
         final BlockLimitManager flyBlocks = craft.getType().getFlyBlocks();
         Map<BlockLimitManager.Entry, Integer> foundFlyBlocks = new HashMap<>();
         for (MovecraftLocation ml : craft.getHitBox()){
-            Location loc = ml.toBukkit(craft.getW());
+            Location loc = ml.toBukkit(craft.getWorld());
             Material testType = loc.getBlock().getType();
             byte data = 0;
             if (Settings.IsLegacy){
