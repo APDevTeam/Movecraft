@@ -62,11 +62,19 @@ public class WorldguardUtils {
         return false;
     }
 
-    public static boolean pvpAllowed(ProtectedRegion region){
-        if (Settings.IsLegacy) {
-            return region.getFlag(DefaultFlag.PVP)  == StateFlag.State.ALLOW;
+    public static boolean pvpAllowed(ApplicableRegionSet regions){
+        boolean allowed = true;
+        for (ProtectedRegion region : regions) {
+            if (Settings.IsLegacy) {
+                allowed = region.getFlag(DefaultFlag.PVP)  == StateFlag.State.ALLOW;
+            } else {
+                allowed = region.getFlag(Flags.PVP) == StateFlag.State.ALLOW;
+            }
+            if (!allowed)
+                break;
         }
-        return region.getFlag(Flags.PVP) == StateFlag.State.ALLOW;
+        return allowed;
+
     }
 
 
