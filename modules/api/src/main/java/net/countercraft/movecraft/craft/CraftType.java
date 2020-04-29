@@ -21,6 +21,7 @@ import net.countercraft.movecraft.config.Settings;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
+import org.bukkit.World;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.Yaml;
 
@@ -61,24 +62,33 @@ final public class CraftType {
     private final int maxSize;
     private final int minSize;
     private final int minHeightLimit;
+    @NotNull private final Map<String, Integer> perWorldMinHeightLimit;
     private final int maxHeightLimit;
+    @NotNull private final Map<String, Integer> perWorldMaxHeightLimit;
     private final int maxHeightAboveGround;
+    @NotNull private final Map<String, Integer> perWorldMaxHeightAboveGround;
     private final int cruiseOnPilotVertMove;
     private final int maxStaticMove;
     private final int cruiseSkipBlocks;
+    @NotNull private final Map<String, Integer> perWorldCruiseSkipBlocks;
     private final int vertCruiseSkipBlocks;
     private final int cruiseTickCooldown;
+    @NotNull private final Map<String, Integer> perWorldCruiseTickCooldown; // cruise speed setting
     private final int staticWaterLevel;
     private final int sinkRateTicks;
     private final int smokeOnSink;
     private final int tickCooldown;
+    @NotNull private final Map<String, Integer> perWorldTickCooldown; // speed setting
     private final int hoverLimit;
     private final int dynamicFlyBlock;
     private final double fuelBurnRate;
+    @NotNull private final Map<String, Double> perWorldFuelBurnRate;
     private final double sinkPercent;
     private final double overallSinkPercent;
     private final double detectionMultiplier;
+    @NotNull private final Map<String, Double> perWorldDetectionMultiplier;
     private final double underwaterDetectionMultiplier;
+    @NotNull private final Map<String, Double> perWorldUnderwaterDetectionMultiplier;
     private final double dynamicLagSpeedFactor;
     private final double dynamicLagPowerFactor;
     private final double dynamicLagMinSpeed;
@@ -122,6 +132,9 @@ final public class CraftType {
         forbiddenBlocks = blockIDListFromObject(data.get("forbiddenBlocks"));
         forbiddenSignStrings = stringListFromObject(data.get("forbiddenSignStrings"));
         tickCooldown = (int) Math.ceil(20 / (doubleFromObject(data.get("speed"))));
+        perWorldTickCooldown = new HashMap<>();
+        Map<String, Double> tickCooldownMap = stringToDoubleMapFromObject(data.getOrDefault("perWorldSpeed", new HashMap<>()));
+        tickCooldownMap.forEach((world, speed) -> perWorldTickCooldown.put(world, (int) Math.ceil(20 / speed)));
         flyBlocks = blockIDMapListFromObject(data.get("flyblocks"));
 
         //Optional craft flags
@@ -144,25 +157,44 @@ final public class CraftType {
         canStaticMove = (boolean) data.getOrDefault("canStaticMove", false);
         maxStaticMove = integerFromObject(data.getOrDefault("maxStaticMove", 10000));
         cruiseSkipBlocks = integerFromObject(data.getOrDefault("cruiseSkipBlocks", 0));
+        perWorldCruiseSkipBlocks = stringToIntMapFromObject(data.getOrDefault("perWorldCruiseSkipBlocks", new HashMap<>()));
         vertCruiseSkipBlocks = integerFromObject(data.getOrDefault("vertCruiseSkipBlocks", cruiseSkipBlocks));
         halfSpeedUnderwater = (boolean) data.getOrDefault("halfSpeedUnderwater", false);
         focusedExplosion = (boolean) data.getOrDefault("focusedExplosion", false);
         mustBeSubcraft = (boolean) data.getOrDefault("mustBeSubcraft", false);
         staticWaterLevel = integerFromObject(data.getOrDefault("staticWaterLevel", 0));
         fuelBurnRate = doubleFromObject(data.getOrDefault("fuelBurnRate", 0d));
+        perWorldFuelBurnRate = stringToDoubleMapFromObject(data.getOrDefault("perWorldFuelBurnRate", new HashMap<>()));
         sinkPercent = doubleFromObject(data.getOrDefault("sinkPercent", 0d));
         overallSinkPercent = doubleFromObject(data.getOrDefault("overallSinkPercent", 0d));
         detectionMultiplier = doubleFromObject(data.getOrDefault("detectionMultiplier", 0d));
+        perWorldDetectionMultiplier = stringToDoubleMapFromObject(data.getOrDefault("perWorldDetectionMultiplier", new HashMap<>()));
         underwaterDetectionMultiplier = doubleFromObject(data.getOrDefault("underwaterDetectionMultiplier", detectionMultiplier));
+        perWorldUnderwaterDetectionMultiplier = stringToDoubleMapFromObject(data.getOrDefault("perWorldUnderwaterDetectionMultiplier", new HashMap<>()));
         sinkRateTicks = data.containsKey("sinkSpeed") ? (int) Math.ceil(20 / (doubleFromObject(data.get("sinkSpeed")))) : integerFromObject(data.getOrDefault("sinkTickRate", 0));
         keepMovingOnSink = (Boolean) data.getOrDefault("keepMovingOnSink", false);
         smokeOnSink = integerFromObject(data.getOrDefault("smokeOnSink", 0));
         explodeOnCrash = floatFromObject(data.getOrDefault("explodeOnCrash", 0F));
         collisionExplosion = floatFromObject(data.getOrDefault("collisionExplosion", 0F));
         minHeightLimit = Math.max(0, integerFromObject(data.getOrDefault("minHeightLimit", 0)));
+        perWorldMinHeightLimit = new HashMap<>();
+        Map<String, Integer> minHeightMap = stringToIntMapFromObject(data.getOrDefault("perWorldMinHeightLimit", new HashMap<>()));
+        minHeightMap.forEach((world, height) -> perWorldMinHeightLimit.put(world, Math.max(0, height)));
         
         double cruiseSpeed = doubleFromObject(data.getOrDefault("cruiseSpeed", 20.0 / tickCooldown));
         cruiseTickCooldown = (int) Math.round((1.0 + cruiseSkipBlocks) * 20.0 / cruiseSpeed);
+        perWorldCruiseTickCooldown = new HashMap<>();
+        Map<String, Double> cruiseTickCooldownMap = stringToDoubleMapFromObject(data.getOrDefault("perWorldCruiseSpeed", new HashMap<>()));
+        cruiseTickCooldownMap.forEach((world, speed) -> {
+        	double worldCruiseSkipBlocks = perWorldCruiseSkipBlocks.getOrDefault(world, cruiseSkipBlocks);
+        	perWorldCruiseTickCooldown.put(world, (int) Math.round((1.0 + worldCruiseSkipBlocks) * 20.0 / cruiseSpeed));
+        });
+        tickCooldownMap.forEach((world, speed) -> {
+        	if (!perWorldCruiseTickCooldown.containsKey(world)) {
+        		perWorldCruiseTickCooldown.put(world, (int) Math.round((1.0 + cruiseSkipBlocks) * 20.0 / speed));
+        	}
+        });
+        
         if(Settings.Debug) {
             Bukkit.getLogger().info("Craft: " + craftName);
             Bukkit.getLogger().info("CruiseSpeed: " + cruiseSpeed);
@@ -173,9 +205,18 @@ final public class CraftType {
         if (value <= minHeightLimit) {
             value = 255;
         }
-        
         maxHeightLimit = value;
+        perWorldMaxHeightLimit = new HashMap<>();
+        Map<String, Integer> maxHeightMap = stringToIntMapFromObject(data.getOrDefault("perWorldMaxHeightLimit", new HashMap<>()));
+        maxHeightMap.forEach((world, height) -> {
+        	int worldValue = Math.min(height, 255);
+        	int worldMinHeight = perWorldMinHeightLimit.getOrDefault(world, minHeightLimit);
+        	if (worldValue <= worldMinHeight) worldValue = 255;
+        	perWorldMaxHeightLimit.put(world, worldValue);
+        });
+        
         maxHeightAboveGround = integerFromObject(data.getOrDefault("maxHeightAboveGround", -1));
+        perWorldMaxHeightAboveGround = stringToIntMapFromObject(data.getOrDefault("perWorldMaxHeightAboveGround", new HashMap<>()));
         canDirectControl = (boolean) data.getOrDefault("canDirectControl", true);
         canHover = (boolean) data.getOrDefault("canHover", false);
         canHoverOverWater = (boolean) data.getOrDefault("canHoverOverWater", true);
@@ -254,6 +295,21 @@ final public class CraftType {
         int dropdist = integerFromObject(data.getOrDefault("gravityDropDistance", -8));
         gravityDropDistance = dropdist > 0 ? -dropdist : dropdist;
         collisionSound = Sound.valueOf((String) data.getOrDefault("collisionSound", "BLOCK_ANVIL_LAND"));
+        
+        
+        /*System.out.println("MinHeightLimit: " + minHeightLimit);
+        System.out.println("MaxHeightLimit: " + maxHeightLimit);
+        System.out.println("MaxHeightAboveGround: " + maxHeightAboveGround);
+        System.out.println("CruiseSkipBlocks: " + cruiseSkipBlocks);
+        System.out.println("CruiseTickCooldown: " + cruiseTickCooldown); // cruise speed setting
+        System.out.println("TickCooldown: " + tickCooldown); // speed setting
+        
+        perWorldMinHeightLimit.forEach((world, i) -> System.out.println("MinHeightLimit: " + world + "=" + i));
+        perWorldMaxHeightLimit.forEach((world, i) -> System.out.println("MaxHeightLimit: " + world + "=" + i));
+        perWorldMaxHeightAboveGround.forEach((world, i) -> System.out.println("MaxHeightAboveGround: " + world + "=" + i));
+        perWorldCruiseSkipBlocks.forEach((world, i) -> System.out.println("CruiseSkipBlocks: " + world + "=" + i));
+        perWorldCruiseTickCooldown.forEach((world, i) -> System.out.println("CruiseTickCooldown: " + world + "=" + i)); // cruise speed setting
+        perWorldTickCooldown.forEach((world, i) -> System.out.println("TickCooldown: " + world + "=" + i)); // speed setting*/
     }
 
     private int integerFromObject(Object obj) {
@@ -278,6 +334,28 @@ final public class CraftType {
             return ((Integer) obj).floatValue();
         }
         return (float) obj;
+    }
+    
+    private Map<String, Integer> stringToIntMapFromObject(Object obj) {
+    	HashMap<String, Integer> returnMap = new HashMap<>();
+    	HashMap<Object, Object> objMap = (HashMap<Object, Object>) obj;
+    	for (Object key : objMap.keySet()) {
+    		String str = (String) key;
+    		Integer i = (Integer) objMap.get(key);
+    		returnMap.put(str, i);
+    	}
+    	return returnMap;
+    }
+    
+    private Map<String, Double> stringToDoubleMapFromObject(Object obj) {
+    	HashMap<String, Double> returnMap = new HashMap<>();
+    	HashMap<Object, Object> objMap = (HashMap<Object, Object>) obj;
+    	for (Object key : objMap.keySet()) {
+    		String str = (String) key;
+    		Double d = (Double) objMap.get(key);
+    		returnMap.put(str, d);
+    	}
+    	return returnMap;
     }
 
     private int[] blockIDListFromObject(Object obj) {
@@ -424,8 +502,12 @@ final public class CraftType {
         return canCruise;
     }
 
+    @Deprecated
     public int getCruiseSkipBlocks() {
-        return cruiseSkipBlocks;
+    	return cruiseSkipBlocks;
+    }
+    public int getCruiseSkipBlocks(World world) {
+    	return perWorldCruiseSkipBlocks.getOrDefault(world.getName(), cruiseSkipBlocks);
     }
 
     public int getVertCruiseSkipBlocks() {
@@ -488,8 +570,12 @@ final public class CraftType {
         return allowAADirectorSign;
     }
 
+    /*@Deprecated
     public double getFuelBurnRate() {
         return fuelBurnRate;
+    }*/
+    public double getFuelBurnRate(World world) {
+        return perWorldFuelBurnRate.getOrDefault(world.getName(), fuelBurnRate);
     }
 
     public double getSinkPercent() {
@@ -500,12 +586,20 @@ final public class CraftType {
         return overallSinkPercent;
     }
 
+    /*@Deprecated
     public double getDetectionMultiplier() {
         return detectionMultiplier;
+    }*/
+    public double getDetectionMultiplier(World world) {
+        return perWorldDetectionMultiplier.getOrDefault(world.getName(), detectionMultiplier);
     }
 
+    /*@Deprecated
     public double getUnderwaterDetectionMultiplier() {
         return underwaterDetectionMultiplier;
+    }*/
+    public double getUnderwaterDetectionMultiplier(World world) {
+        return perWorldUnderwaterDetectionMultiplier.getOrDefault(world.getName(), underwaterDetectionMultiplier);
     }
 
     public int getSinkRateTicks() {
@@ -528,12 +622,20 @@ final public class CraftType {
         return collisionExplosion;
     }
 
+    @Deprecated
     public int getTickCooldown() {
-        return tickCooldown;
+    	return tickCooldown;
+    }
+    public int getTickCooldown(World world) {
+        return perWorldTickCooldown.getOrDefault(world.getName(), tickCooldown);
     }
 
+    @Deprecated
     public int getCruiseTickCooldown() {
-        return cruiseTickCooldown;
+    	return cruiseTickCooldown;
+    }
+    public int getCruiseTickCooldown(World world) {
+        return perWorldCruiseTickCooldown.getOrDefault(world.getName(), cruiseTickCooldown);
     }
 
     public boolean getHalfSpeedUnderwater() {
@@ -562,16 +664,28 @@ final public class CraftType {
         return moveBlocks;
     }
 
+    @Deprecated
     public int getMaxHeightLimit() {
-        return maxHeightLimit;
+    	return maxHeightLimit;
+    }
+    public int getMaxHeightLimit(World world) {
+        return perWorldMaxHeightLimit.getOrDefault(world.getName(), maxHeightLimit);
     }
 
+    @Deprecated
     public int getMinHeightLimit() {
-        return minHeightLimit;
+    	return minHeightLimit;
+    }
+    public int getMinHeightLimit(World world) {
+        return perWorldMinHeightLimit.getOrDefault(world.getName(), minHeightLimit);
     }
 
+    @Deprecated
     public int getMaxHeightAboveGround() {
-        return maxHeightAboveGround;
+    	return maxHeightAboveGround;
+    }
+    public int getMaxHeightAboveGround(World world) {
+        return perWorldMaxHeightAboveGround.getOrDefault(world.getName(), maxHeightAboveGround);
     }
 
     public boolean getCanHover() {

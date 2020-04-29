@@ -87,9 +87,9 @@ public class TranslationTask extends AsyncTask {
         
         // Only modify dy when not switching worlds
         //Check if the craft is too high
-        if(world.equals(craft.getW()) && craft.getType().getMaxHeightLimit() < craft.getHitBox().getMinY()){
+        if(world.equals(craft.getW()) && craft.getType().getMaxHeightLimit(craft.getW()) < craft.getHitBox().getMinY()){
             dy = Math.min(dy,-1);
-        }else if(world.equals(craft.getW()) && craft.getType().getMaxHeightAboveGround() > 0){
+        }else if(world.equals(craft.getW()) && craft.getType().getMaxHeightAboveGround(craft.getW()) > 0){
             final MovecraftLocation middle = oldHitBox.getMidPoint();
             int testY = minY;
             while (testY > 0){
@@ -97,7 +97,7 @@ public class TranslationTask extends AsyncTask {
                 if (craft.getW().getBlockTypeIdAt(middle.getX(),testY,middle.getZ()) != 0)
                     break;
             }
-            if (minY - testY > craft.getType().getMaxHeightAboveGround()) {
+            if (minY - testY > craft.getType().getMaxHeightAboveGround(world)) {
                 dy = Math.min(dy,-1);
             }
         }
@@ -127,15 +127,15 @@ public class TranslationTask extends AsyncTask {
             }
         }
         //Fail the movement if the craft is too high and if the craft is not explosive
-        if (dy>0 && maxY + dy > craft.getType().getMaxHeightLimit() && craft.getType().getCollisionExplosion() <= 0f) {
+        if (dy>0 && maxY + dy > craft.getType().getMaxHeightLimit(world) && craft.getType().getCollisionExplosion() <= 0f) {
             fail(I18nSupport.getInternationalisedString("Translation - Failed Craft hit height limit"));
             return;
-        } else if (dy>0 && maxY + dy > craft.getType().getMaxHeightLimit()) { //If explosive and too high, set dy to 0
+        } else if (dy>0 && maxY + dy > craft.getType().getMaxHeightLimit(world)) { //If explosive and too high, set dy to 0
             dy = 0;
-        } else if (minY + dy < craft.getType().getMinHeightLimit() && dy < 0 && !craft.getSinking() && !craft.getType().getUseGravity()) {
+        } else if (minY + dy < craft.getType().getMinHeightLimit(world) && dy < 0 && !craft.getSinking() && !craft.getType().getUseGravity()) {
             fail(I18nSupport.getInternationalisedString("Translation - Failed Craft hit minimum height limit"));
             return;
-        } else if (minY + dy < craft.getType().getMinHeightLimit() && dy < 0 && craft.getType().getUseGravity()) {
+        } else if (minY + dy < craft.getType().getMinHeightLimit(world) && dy < 0 && craft.getType().getUseGravity()) {
             //if a craft using gravity hits the minimum height limit, set dy = 0 instead of failing
             dy = 0;
         }
@@ -447,7 +447,7 @@ public class TranslationTask extends AsyncTask {
 
     private boolean checkFuel(){
         // check for fuel, burn some from a furnace if needed. Blocks of coal are supported, in addition to coal and charcoal
-        double fuelBurnRate = craft.getType().getFuelBurnRate();
+        double fuelBurnRate = craft.getType().getFuelBurnRate(craft.getW());
         // going down doesn't require fuel
         if (dy == -1 && dx == 0 && dz == 0)
             fuelBurnRate = 0.0;
@@ -506,7 +506,7 @@ public class TranslationTask extends AsyncTask {
         } while ((testType != Material.AIR &&
                 !craft.getType().getPassthroughBlocks().contains(testType) &&
                 !oldHitBox.contains(surfaceLoc)) &&
-                surfaceLoc.getY() + 1 > craft.getType().getMaxHeightLimit());
+                surfaceLoc.getY() + 1 > craft.getType().getMaxHeightLimit(craft.getW()));
         return surfaceLoc;
     }
 
@@ -573,7 +573,7 @@ public class TranslationTask extends AsyncTask {
                         !craft.getType().getPassthroughBlocks().contains(testType) &&
                         !(craft.getType().getHarvestBlocks().contains(testType) &&
                         craft.getType().getHarvesterBladeBlocks().contains(ml.translate(0, 1, 0).toBukkit(craft.getW()).getBlock().getType())) ||
-                        craft.getType().getMinHeightLimit() == translated.translate(0, dropDistance + 1 , 0).getY();
+                        craft.getType().getMinHeightLimit(craft.getW()) == translated.translate(0, dropDistance + 1 , 0).getY();
 
                 if (hitGround) {
                     break;
@@ -592,7 +592,7 @@ public class TranslationTask extends AsyncTask {
     private boolean isOnGround(BitmapHitBox hitBox){
         MutableHitBox bottomLocs = new BitmapHitBox();
         MutableHitBox translatedBottomLocs = new BitmapHitBox();
-        if (hitBox.getMinY() <= craft.getType().getMinHeightLimit()) {
+        if (hitBox.getMinY() <= craft.getType().getMinHeightLimit(craft.getW())) {
             return true;
         }
         MovecraftLocation corner1 = new MovecraftLocation(hitBox.getMinX(), 0, hitBox.getMinZ());

@@ -84,10 +84,10 @@ public abstract class Craft {
         this.hitBox = new BitmapHitBox();
         this.collapsedHitBox = new BitmapHitBox();
         this.fluidLocations = new BitmapHitBox();
-        if (type.getMaxHeightLimit() > w.getMaxHeight() - 1) {
+        if (type.getMaxHeightLimit(w) > w.getMaxHeight() - 1) {
             this.maxHeightLimit = w.getMaxHeight() - 1;
         } else {
-            this.maxHeightLimit = type.getMaxHeightLimit();
+            this.maxHeightLimit = type.getMaxHeightLimit(w);
         }
         this.pilotLocked = false;
         this.pilotLockedX = 0.0;
@@ -133,6 +133,11 @@ public abstract class Craft {
     
     public void setW(World world) {
     	this.w = world;
+    	if (type.getMaxHeightLimit(w) > w.getMaxHeight() - 1) {
+            this.maxHeightLimit = w.getMaxHeight() - 1;
+        } else {
+            this.maxHeightLimit = type.getMaxHeightLimit(w);
+        }
     }
 
     public abstract void detect(Player player, Player notificationPlayer, MovecraftLocation startPoint);
@@ -339,43 +344,43 @@ public abstract class Craft {
 
         int chestPenalty = (int)((materials.get(Material.CHEST) + materials.get(Material.TRAPPED_CHEST)) * type.getChestPenalty());
         if(!cruising)
-            return type.getTickCooldown() + chestPenalty;
+            return type.getTickCooldown(w) + chestPenalty;
 
         // Ascent or Descent
         if(cruiseDirection == 0x42 || cruiseDirection == 0x43) {
             if(Settings.Debug) {
-                Bukkit.getLogger().info("Skip: " + type.getCruiseSkipBlocks());
-                Bukkit.getLogger().info("Tick: " + type.getCruiseTickCooldown());
+                Bukkit.getLogger().info("Skip: " + type.getCruiseSkipBlocks(w));
+                Bukkit.getLogger().info("Tick: " + type.getCruiseTickCooldown(w));
                 Bukkit.getLogger().info("Penalty: " + chestPenalty);
             }
-            return type.getCruiseTickCooldown() + chestPenalty;
+            return type.getCruiseTickCooldown(w) + chestPenalty;
         }
 
         if(type.getDynamicFlyBlockSpeedFactor() != 0){
             Material flyBlockMaterial = Material.getMaterial(type.getDynamicFlyBlock());
             double count = materials.get(flyBlockMaterial);
             double woolRatio = count / hitBox.size();
-            return Math.max((int)Math.round((20.0 * (type.getCruiseSkipBlocks() + 1)) / ((type.getDynamicFlyBlockSpeedFactor() * 1.5) * (woolRatio - .5) + (20.0 / type.getCruiseTickCooldown()) + 1)), 1);
+            return Math.max((int)Math.round((20.0 * (type.getCruiseSkipBlocks(w) + 1)) / ((type.getDynamicFlyBlockSpeedFactor() * 1.5) * (woolRatio - .5) + (20.0 / type.getCruiseTickCooldown(w)) + 1)), 1);
         }
 
         if(type.getDynamicLagSpeedFactor() == 0.0 || type.getDynamicLagPowerFactor() == 0.0 || Math.abs(type.getDynamicLagPowerFactor()) > 1.0)
-            return type.getCruiseTickCooldown() + chestPenalty;
+            return type.getCruiseTickCooldown(w) + chestPenalty;
         if(meanCruiseTime == 0)
-            return type.getCruiseTickCooldown() + chestPenalty;
+            return type.getCruiseTickCooldown(w) + chestPenalty;
 
         if(Settings.Debug) {
-            Bukkit.getLogger().info("Skip: " + type.getCruiseSkipBlocks());
-            Bukkit.getLogger().info("Tick: " + type.getCruiseTickCooldown());
+            Bukkit.getLogger().info("Skip: " + type.getCruiseSkipBlocks(w));
+            Bukkit.getLogger().info("Tick: " + type.getCruiseTickCooldown(w));
             Bukkit.getLogger().info("SpeedFactor: " + type.getDynamicLagSpeedFactor());
             Bukkit.getLogger().info("PowerFactor: " + type.getDynamicLagPowerFactor());
             Bukkit.getLogger().info("MinSpeed: " + type.getDynamicLagMinSpeed());
             Bukkit.getLogger().info("CruiseTime: " + getMeanCruiseTime() * 1000.0 + "ms");
         }
 
-        double speed = 20.0 * (type.getCruiseSkipBlocks() + 1.0) / (float)type.getCruiseTickCooldown();
+        double speed = 20.0 * (type.getCruiseSkipBlocks(w) + 1.0) / (float)type.getCruiseTickCooldown(w);
         speed -= type.getDynamicLagSpeedFactor() * Math.pow(getMeanCruiseTime() * 1000.0, type.getDynamicLagPowerFactor());
         speed = Math.max(type.getDynamicLagMinSpeed(), speed);
-        return (int)Math.round((20.0 * (type.getCruiseSkipBlocks() + 1.0)) / speed);
+        return (int)Math.round((20.0 * (type.getCruiseSkipBlocks(w) + 1.0)) / speed);
             //In theory, the chest penalty is not needed for a DynamicLag craft.
     }
 
@@ -384,7 +389,7 @@ public abstract class Craft {
      * @return the speed of the craft
      */
     public double getSpeed(){
-        return 20*(type.getCruiseSkipBlocks()+1)/(double)getTickCooldown();
+        return 20*(type.getCruiseSkipBlocks(w)+1)/(double)getTickCooldown();
     }
 
     public long getLastRotateTime() {
