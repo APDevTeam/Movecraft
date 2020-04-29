@@ -1,4 +1,3 @@
-
 /*
  * This file is part of Movecraft.
  *
@@ -18,6 +17,8 @@
 
 package net.countercraft.movecraft.craft;
 
+import net.countercraft.movecraft.config.Settings;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.jetbrains.annotations.NotNull;
@@ -28,6 +29,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.logging.Level;
 
 final public class CraftType {
     private final boolean blockedByWater;
@@ -78,6 +80,8 @@ final public class CraftType {
     private final double detectionMultiplier;
     private final double underwaterDetectionMultiplier;
     private final double dynamicLagSpeedFactor;
+    private final double dynamicLagPowerFactor;
+    private final double dynamicLagMinSpeed;
     private final double dynamicFlyBlockSpeedFactor;
     private final double chestPenalty;
     private final float explodeOnCrash;
@@ -124,7 +128,6 @@ final public class CraftType {
         blockedByWater = (boolean) (data.containsKey("canFly") ? data.get("canFly") : data.getOrDefault("blockedByWater", true));
         requireWaterContact = (boolean) data.getOrDefault("requireWaterContact", false);
         tryNudge = (boolean) data.getOrDefault("tryNudge", false);
-        cruiseTickCooldown = (int) Math.ceil(20 / (doubleFromObject(data.getOrDefault("cruiseSpeed", tickCooldown))));
         moveBlocks = blockIDMapListFromObject(data.getOrDefault("moveblocks", new HashMap<>()));
         canCruise = (boolean) data.getOrDefault("canCruise", false);
         canTeleport = (boolean) data.getOrDefault("canTeleport", false);
@@ -157,10 +160,20 @@ final public class CraftType {
         explodeOnCrash = floatFromObject(data.getOrDefault("explodeOnCrash", 0F));
         collisionExplosion = floatFromObject(data.getOrDefault("collisionExplosion", 0F));
         minHeightLimit = Math.max(0, integerFromObject(data.getOrDefault("minHeightLimit", 0)));
-        int value = integerFromObject(data.getOrDefault("maxHeightLimit", 254));
+        
+        double cruiseSpeed = doubleFromObject(data.getOrDefault("cruiseSpeed", 20.0 / tickCooldown));
+        cruiseTickCooldown = (int) Math.round((1.0 + cruiseSkipBlocks) * 20.0 / cruiseSpeed);
+        if(Settings.Debug) {
+            Bukkit.getLogger().info("Craft: " + craftName);
+            Bukkit.getLogger().info("CruiseSpeed: " + cruiseSpeed);
+            Bukkit.getLogger().info("Cooldown: " + cruiseTickCooldown);
+        }
+
+        int value = Math.min(integerFromObject(data.getOrDefault("maxHeightLimit", 254)), 255);
         if (value <= minHeightLimit) {
             value = 255;
         }
+        
         maxHeightLimit = value;
         maxHeightAboveGround = integerFromObject(data.getOrDefault("maxHeightAboveGround", -1));
         canDirectControl = (boolean) data.getOrDefault("canDirectControl", true);
@@ -232,6 +245,8 @@ final public class CraftType {
         }
         allowVerticalTakeoffAndLanding = (boolean) data.getOrDefault("allowVerticalTakeoffAndLanding", true);
         dynamicLagSpeedFactor = doubleFromObject(data.getOrDefault("dynamicLagSpeedFactor", 0d));
+        dynamicLagPowerFactor = doubleFromObject(data.getOrDefault("dynamicLagPowerFactor", 0d));
+        dynamicLagMinSpeed = doubleFromObject((data.getOrDefault("dynamicLagMinSpeed", 0d)));
         dynamicFlyBlockSpeedFactor = doubleFromObject(data.getOrDefault("dynamicFlyBlockSpeedFactor", 0d));
         dynamicFlyBlock = integerFromObject(data.getOrDefault("dynamicFlyBlock", 0));
         chestPenalty = doubleFromObject(data.getOrDefault("chestPenalty", 0));
@@ -599,6 +614,14 @@ final public class CraftType {
 
     public double getDynamicLagSpeedFactor() {
         return dynamicLagSpeedFactor;
+    }
+    
+    public double getDynamicLagPowerFactor() {
+        return dynamicLagPowerFactor;
+    }
+
+    public double getDynamicLagMinSpeed() {
+        return dynamicLagMinSpeed;
     }
 
     public double getDynamicFlyBlockSpeedFactor() {

@@ -14,7 +14,7 @@ import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.WorldEditUpdateCommand;
 import net.countercraft.movecraft.repair.Repair;
 import net.countercraft.movecraft.repair.RepairManager;
-import org.apache.commons.lang3.tuple.ImmutablePair;
+import net.countercraft.movecraft.utils.Pair;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -150,14 +150,14 @@ public class RepairSign implements Listener{
                     secondClick = true;
             }
         }
-        HashMap<ImmutablePair<Material, Byte>, Double> numMissingItems = movecraftRepair.getMissingBlocks(repairName);
-        ArrayDeque<ImmutablePair<Vector, Vector>> locMissingBlocks = movecraftRepair.getMissingBlockLocations(repairName);
+        HashMap<Pair<Material, Byte>, Double> numMissingItems = movecraftRepair.getMissingBlocks(repairName);
+        ArrayDeque<Pair<Vector, Vector>> locMissingBlocks = movecraftRepair.getMissingBlockLocations(repairName);
         int totalSize = locMissingBlocks.size() + pCraft.getHitBox().size();
         if (secondClick){
             // check all the chests for materials for the repair
             HashMap<Material, ArrayList<InventoryHolder>> chestsToTakeFrom = new HashMap<>(); // typeid, list of chest inventories
             boolean enoughMaterial = true;
-            for (ImmutablePair<Material, Byte> type : numMissingItems.keySet()) {
+            for (Pair<Material, Byte> type : numMissingItems.keySet()) {
                 long longRemQty = Math.round(numMissingItems.get(type));
                 int remainingQty = (int) longRemQty;
                 ArrayList<InventoryHolder> chests = new ArrayList<>();
@@ -204,7 +204,7 @@ public class RepairSign implements Listener{
             }
             if (enoughMaterial) {
                 // we know we have enough materials to make the repairs, so remove the materials from the chests
-                for (ImmutablePair<Material, Byte> type : numMissingItems.keySet()) {
+                for (Pair<Material, Byte> type : numMissingItems.keySet()) {
                     int remainingQty = (int) Math.round(numMissingItems.get(type));
                     for (InventoryHolder inventoryHolder : chestsToTakeFrom.get(type.getLeft())) {
                         HashMap<Integer, ? extends ItemStack> foundItems = inventoryHolder.getInventory().all(type.getLeft());
@@ -229,7 +229,7 @@ public class RepairSign implements Listener{
                 final LinkedList<UpdateCommand> updateCommandsFragileBlocks = new LinkedList<>();
 
                 while (!locMissingBlocks.isEmpty()){
-                    ImmutablePair<Vector,Vector> locs = locMissingBlocks.pollFirst();
+                    Pair<Vector,Vector> locs = locMissingBlocks.pollFirst();
                     assert locs != null;
                     Vector cLoc = locs.getRight();
                     MovecraftLocation moveLoc = new MovecraftLocation(locs.getLeft().getBlockX(), locs.getLeft().getBlockY(), locs.getLeft().getBlockZ());
@@ -261,7 +261,7 @@ public class RepairSign implements Listener{
             }
             if (numDifferentBlocks != 0) {
                 event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Repair - Supplies needed"));
-                for (ImmutablePair<Material, Byte> blockType : numMissingItems.keySet()) {
+                for (Pair<Material, Byte> blockType : numMissingItems.keySet()) {
                     if (blockType.getLeft().equals(Material.COAL)) {
                         event.getPlayer().sendMessage(String.format("%s : %d", blockType.getRight() == 1 ? "charcoal" : "coal" , Math.round(numMissingItems.get(blockType))));
                     } else {

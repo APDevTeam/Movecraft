@@ -5,13 +5,6 @@
     <artifactId>movecraft-parent</artifactId>
     <packaging>pom</packaging>
     <version>parent</version>
-    <dependencies>
-        <dependency>
-            <groupId>org.spigotmc</groupId>
-            <artifactId>spigot-api</artifactId>
-            <version>1.10.2-R0.1-SNAPSHOT</version>
-        </dependency>
-    </dependencies>
     <name>Movecraft Parent Pom</name>
     <url>http://github.com/apdevteam/Movecraft</url>
     <properties>

@@ -171,11 +171,11 @@ public class IWorldHandler extends WorldHandler {
             positions.add(locationToPosition((movecraftLocation)).b(translateVector));
 
         }
+        World oldNativeWorld = ((CraftWorld) craft.getW()).getHandle();
+        World nativeWorld = ((CraftWorld) world).getHandle();
         //*******************************************
         //*         Step two: Get the tiles         *
         //*******************************************
-        World oldNativeWorld = ((CraftWorld) craft.getW()).getHandle();
-        World nativeWorld = ((CraftWorld) world).getHandle();
         List<TileHolder> tiles = new ArrayList<>();
         //get the tiles
         for(BlockPosition position : positions){
@@ -203,8 +203,8 @@ public class IWorldHandler extends WorldHandler {
         List<IBlockData> blockData = new ArrayList<>();
         List<BlockPosition> newPositions = new ArrayList<>();
         for(BlockPosition position : positions){
-        	blockData.add(oldNativeWorld.getType(position));
-        	newPositions.add(position.a(translateVector));
+            blockData.add(oldNativeWorld.getType(position));
+            newPositions.add(position.a(translateVector));
         }
         //create the new block
         for(int i = 0; i<newPositions.size(); i++) {
@@ -260,7 +260,7 @@ public class IWorldHandler extends WorldHandler {
 
     @Nullable
     private TileEntity removeTileEntity(@NotNull World world, @NotNull BlockPosition position){
-        TileEntity tile = world.getTileEntity(position);
+        TileEntity tile = world.getChunkAtWorldCoords(position).a(position, Chunk.EnumTileEntityState.IMMEDIATE);
         if(tile == null)
             return null;
         //cleanup
@@ -342,9 +342,6 @@ public class IWorldHandler extends WorldHandler {
             tile.setPosition(newPosition);
             nativeWorld.capturedTileEntities.put(newPosition, tile);
             return;
-        }
-        if (tile.getWorld() != nativeWorld) {
-            tile.a(nativeWorld);
         }
         tile.setPosition(newPosition);
         chunk.tileEntities.put(newPosition, tile);

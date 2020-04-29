@@ -27,6 +27,7 @@ public class CollectionUtils {
 
     @NotNull
     @Contract(pure=true)
+    @Deprecated
     public static Collection<MovecraftLocation> filter(@NotNull final HitBox collection, @NotNull final Collection<MovecraftLocation> filter){
         final Collection<MovecraftLocation> returnList = new HashSet<>();
         final HashSet<MovecraftLocation> filterSet = new HashSet<>(filter);
@@ -40,11 +41,15 @@ public class CollectionUtils {
 
     @NotNull
     @Contract(pure=true)
-    public static HitBox filter(@NotNull final HitBox collection, @NotNull final HitBox filter){
-        final MutableHitBox returnList = new HashHitBox();
+    @Deprecated
+    public static BitmapHitBox filter(@NotNull final HitBox collection, @NotNull final HitBox filter){
+        final BitmapHitBox returnList = new BitmapHitBox();
+        int counter = filter.size();
         for(MovecraftLocation object : collection){
-            if(!filter.contains(object)){
+            if(counter <= 0 || !filter.contains(object)){
                 returnList.add(object);
+            } else {
+                counter--;
             }
         }
         return returnList;

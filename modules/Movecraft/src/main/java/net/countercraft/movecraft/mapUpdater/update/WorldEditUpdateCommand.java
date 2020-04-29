@@ -6,7 +6,7 @@ import com.sk89q.jnbt.ListTag;
 import com.sk89q.jnbt.Tag;
 import com.sk89q.worldedit.blocks.BaseBlock;
 import net.countercraft.movecraft.MovecraftLocation;
-import org.apache.commons.lang3.tuple.ImmutablePair;
+import net.countercraft.movecraft.utils.Pair;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -143,7 +143,6 @@ public class WorldEditUpdateCommand extends UpdateCommand {
                         continue;
                     }
                     String id = ct.getString("id");
-                    ImmutablePair<Material, Byte> content;
                     if (id.equals("minecraft:coal")){
                         byte data = (byte) ct.getShort("Damage");
                         byte count = ct.getByte("Count");

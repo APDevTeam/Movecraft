@@ -12,11 +12,7 @@ import net.countercraft.movecraft.events.CraftTranslateEvent;
 import net.countercraft.movecraft.events.ItemHarvestEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.update.*;
-import net.countercraft.movecraft.utils.HashHitBox;
-import net.countercraft.movecraft.utils.HitBox;
-import net.countercraft.movecraft.utils.MutableHitBox;
-import net.countercraft.movecraft.utils.SolidHitBox;
-import org.apache.commons.lang3.tuple.ImmutablePair;
+import net.countercraft.movecraft.utils.*;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
@@ -38,7 +34,7 @@ public class TranslationTask extends AsyncTask {
 
     private World world;
     private int dx, dy, dz;
-    private HashHitBox newHitBox, oldHitBox, oldFluidList, newFluidList;
+    private BitmapHitBox newHitBox, oldHitBox, oldFluidList, newFluidList;
     private boolean failed;
     private boolean collisionExplosion = false;
     private String failMessage;
@@ -50,10 +46,10 @@ public class TranslationTask extends AsyncTask {
         this.dx = dx;
         this.dy = dy;
         this.dz = dz;
-        newHitBox = new HashHitBox();
-        oldHitBox = new HashHitBox(c.getHitBox());
-        oldFluidList = new HashHitBox(c.getFluidLocations());
-        newFluidList = new HashHitBox();
+        newHitBox = new BitmapHitBox();
+        oldHitBox = new BitmapHitBox(c.getHitBox());
+        oldFluidList = new BitmapHitBox(c.getFluidLocations());
+        newFluidList = new BitmapHitBox();
     }
 
     @Override
@@ -88,8 +84,25 @@ public class TranslationTask extends AsyncTask {
         }
         final int minY = oldHitBox.getMinY();
         final int maxY = oldHitBox.getMaxY();
+        
+        // Only modify dy when not switching worlds
+        //Check if the craft is too high
+        if(world.equals(craft.getW()) && craft.getType().getMaxHeightLimit() < craft.getHitBox().getMinY()){
+            dy = Math.min(dy,-1);
+        }else if(world.equals(craft.getW()) && craft.getType().getMaxHeightAboveGround() > 0){
+            final MovecraftLocation middle = oldHitBox.getMidPoint();
+            int testY = minY;
+            while (testY > 0){
+                testY--;
+                if (craft.getW().getBlockTypeIdAt(middle.getX(),testY,middle.getZ()) != 0)
+                    break;
+            }
+            if (minY - testY > craft.getType().getMaxHeightAboveGround()) {
+                dy = Math.min(dy,-1);
+            }
+        }
         //Process gravity
-        if (world.equals(craft.getW()) && craft.getType().getUseGravity() && !craft.getSinking()){ // Only modify dy when not switching worlds
+        if (world.equals(craft.getW()) && craft.getType().getUseGravity() && !craft.getSinking()){
             int incline = inclineCraft(oldHitBox);
             if (incline > 0){
                 boolean tooSteep = craft.getType().getGravityInclineDistance() > -1 && incline > craft.getType().getGravityInclineDistance();
@@ -122,6 +135,9 @@ public class TranslationTask extends AsyncTask {
         } else if (minY + dy < craft.getType().getMinHeightLimit() && dy < 0 && !craft.getSinking() && !craft.getType().getUseGravity()) {
             fail(I18nSupport.getInternationalisedString("Translation - Failed Craft hit minimum height limit"));
             return;
+        } else if (minY + dy < craft.getType().getMinHeightLimit() && dy < 0 && craft.getType().getUseGravity()) {
+            //if a craft using gravity hits the minimum height limit, set dy = 0 instead of failing
+            dy = 0;
         }
 
         //TODO: Check fuel
@@ -135,7 +151,7 @@ public class TranslationTask extends AsyncTask {
         final List<Material> harvestBlocks = craft.getType().getHarvestBlocks();
         final List<MovecraftLocation> harvestedBlocks = new ArrayList<>();
         final List<Material> harvesterBladeBlocks = craft.getType().getHarvesterBladeBlocks();
-        final HashHitBox collisionBox = new HashHitBox();
+        final BitmapHitBox collisionBox = new BitmapHitBox();
         for(MovecraftLocation oldLocation : oldHitBox){
             final MovecraftLocation newLocation = oldLocation.translate(dx,dy,dz);
             //If the new location already exists in the old hitbox than this is unnecessary because a craft can't hit
@@ -271,10 +287,10 @@ public class TranslationTask extends AsyncTask {
         if(!collisionBox.isEmpty() && craft.getType().getCruiseOnPilot()){
             CraftManager.getInstance().removeCraft(craft);
             for(MovecraftLocation location : oldHitBox){
-            	ImmutablePair<Material, Byte> phaseBlock = craft.getPhaseBlocks().getOrDefault(location, new ImmutablePair<>(Material.AIR, (byte) 0));
-                updates.add(new BlockCreateCommand(craft.getW(), location, phaseBlock.getKey(), phaseBlock.getValue()));
+            	Pair<Material, Byte> phaseBlock = craft.getPhaseBlocks().getOrDefault(location, new Pair<>(Material.AIR, (byte) 0));
+                updates.add(new BlockCreateCommand(craft.getW(), location, phaseBlock.getLeft(), phaseBlock.getRight()));
             }
-            newHitBox = new HashHitBox();
+            newHitBox = new BitmapHitBox();
         }
 
         if(!collisionBox.isEmpty()){
@@ -494,11 +510,11 @@ public class TranslationTask extends AsyncTask {
         return surfaceLoc;
     }
 
-    private int inclineCraft(HashHitBox hitBox){
+    private int inclineCraft(BitmapHitBox hitBox){
         if (isOnGround(hitBox) && dy < 0){
             dy = 0;
         }
-        HashHitBox collisionBox = new HashHitBox();
+        BitmapHitBox collisionBox = new BitmapHitBox();
         for (MovecraftLocation ml : hitBox){
             MovecraftLocation nl = ml.translate(dx, dy, dz);
             if (hitBox.contains(nl))
@@ -524,7 +540,7 @@ public class TranslationTask extends AsyncTask {
         if (elevation == 0) {
             return 0;
         }
-        HashHitBox movedCollBox = new HashHitBox();
+        BitmapHitBox movedCollBox = new BitmapHitBox();
         for (MovecraftLocation ml : collisionBox) {
             movedCollBox.add(ml.translate(0, elevation, 0));
 
@@ -532,8 +548,8 @@ public class TranslationTask extends AsyncTask {
         return movedCollBox.getMinY() - hitBox.getMinY();
     }
 
-    private int dropDistance (HashHitBox hitBox) {
-    	MutableHitBox bottomLocs = new HashHitBox();
+    private int dropDistance (BitmapHitBox hitBox) {
+        MutableHitBox bottomLocs = new BitmapHitBox();
         MovecraftLocation corner1 = new MovecraftLocation(hitBox.getMinX(), 0, hitBox.getMinZ());
         MovecraftLocation corner2 = new MovecraftLocation(hitBox.getMaxX(), 0, hitBox.getMaxZ());
         for(MovecraftLocation location : new SolidHitBox(corner1, corner2)){
@@ -573,9 +589,9 @@ public class TranslationTask extends AsyncTask {
         return dropDistance;
     }
 
-    private boolean isOnGround(HashHitBox hitBox){
-        MutableHitBox bottomLocs = new HashHitBox();
-        MutableHitBox translatedBottomLocs = new HashHitBox();
+    private boolean isOnGround(BitmapHitBox hitBox){
+        MutableHitBox bottomLocs = new BitmapHitBox();
+        MutableHitBox translatedBottomLocs = new BitmapHitBox();
         if (hitBox.getMinY() <= craft.getType().getMinHeightLimit()) {
             return true;
         }
@@ -588,7 +604,7 @@ public class TranslationTask extends AsyncTask {
             }
             bottomLocs.add(new MovecraftLocation(location.getX(), test, location.getZ()));
         }
-        
+
         boolean bottomLocsOnGround = false;
         for (MovecraftLocation bottomLoc : bottomLocs){
             translatedBottomLocs.add(bottomLoc.translate(dx, dy, dz));
@@ -633,11 +649,11 @@ public class TranslationTask extends AsyncTask {
         return failMessage;
     }
 
-    public HashHitBox getNewHitBox() {
+    public BitmapHitBox getNewHitBox() {
         return newHitBox;
     }
-    
-    public HashHitBox getNewFluidList() {
+
+    public BitmapHitBox getNewFluidList() {
         return newFluidList;
     }
 
