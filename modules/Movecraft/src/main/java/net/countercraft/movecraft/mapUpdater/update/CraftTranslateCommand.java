@@ -111,8 +111,8 @@ public class CraftTranslateCommand extends UpdateCommand {
                 }
             }
         }
-        MutableHitBox interior = new HashHitBox();
-        MutableHitBox exterior = new HashHitBox();
+        MutableHitBox interior = new BitmapHitBox();
+        MutableHitBox exterior = new BitmapHitBox();
         if(passthroughBlocks.isEmpty()){
             //translate the craft
             Movecraft.getInstance().getWorldHandler().translateCraft(craft,displacement);

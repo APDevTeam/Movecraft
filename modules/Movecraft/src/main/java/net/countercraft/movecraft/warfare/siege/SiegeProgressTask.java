@@ -28,7 +28,8 @@ public class SiegeProgressTask extends SiegeTask {
     public void run() {
         addPlayersToProgressBar();
         int timeLeft = (siege.getDuration() - (int) ((System.currentTimeMillis() - siege.getStartTime())/1000));
-        double progress = (double) (siege.getDelayBeforeStart() - timeLeft) / (double) siege.getDuration();
+        int timePassed = (siege.getDuration() - siege.getDelayBeforeStart()) - timeLeft;
+        double progress = (double) timePassed / ((double) siege.getDuration() - siege.getDelayBeforeStart());
         siege.getProgressBar().setProgress(Math.min(progress, 1.0));
         Player siegeLeader = Movecraft.getInstance().getServer().getPlayer(siege.getPlayerUUID());
         Craft siegeCraft = CraftManager.getInstance().getCraftByPlayer(siegeLeader);

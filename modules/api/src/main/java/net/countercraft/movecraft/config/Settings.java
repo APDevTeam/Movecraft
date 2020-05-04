@@ -44,6 +44,7 @@ public class Settings {
     public static boolean RequireCreatePerm = false;
     public static boolean RequireNamePerm = false;
     public static boolean TNTContactExplosives = true;
+    public static boolean RequireSneakingForDirectControl = false;
     public static HashSet<String> ForbiddenRemoteSigns;
     public static int FadeWrecksAfter = 0;
     public static int ManOverboardTimeout = 60;

@@ -143,6 +143,9 @@ public final class InteractListener implements Listener {
             if (event.getItem() == null || event.getItem().getType() != Settings.PilotTool) {
                 return;
             }
+            if (Settings.RequireSneakingForDirectControl && !event.getPlayer().isSneaking()) {
+                return;
+            }
             Craft craft = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
             if (craft == null) {
                 return;

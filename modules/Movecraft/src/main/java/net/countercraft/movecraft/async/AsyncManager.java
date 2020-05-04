@@ -1078,43 +1078,6 @@ public class AsyncManager extends BukkitRunnable {
         }
     }
 
-    //Removed for refactor
-    /*private void processScheduledBlockChanges() {
-        for (World w : Bukkit.getWorlds()) {
-            if (w != null && CraftManager.getInstance().getCraftsInWorld(w) != null) {
-                ArrayList<BlockTranslateCommand> updateCommands = new ArrayList<>();
-                for (Craft pcraft : CraftManager.getInstance().getCraftsInWorld(w)) {
-                    HashMap<BlockTranslateCommand, Long> scheduledBlockChanges = pcraft.getScheduledBlockChanges();
-                    if (scheduledBlockChanges != null) {
-                        Iterator<BlockTranslateCommand> mucI = scheduledBlockChanges.keySet().iterator();
-                        boolean madeChanges = false;
-                        while (mucI.hasNext()) {
-                            BlockTranslateCommand muc = mucI.next();
-                            if ((pcraft.getScheduledBlockChanges().get(muc) < System.currentTimeMillis()) && (pcraft.isNotProcessing())) {
-                                int cx = muc.getNewBlockLocation().getX() >> 4;
-                                int cz = muc.getNewBlockLocation().getZ() >> 4;
-                                if (!w.isChunkLoaded(cx, cz)) {
-                                    w.loadChunk(cx, cz);
-                                }
-                                if (w.getBlockAt(muc.getNewBlockLocation().getX(), muc.getNewBlockLocation().getY(), muc.getNewBlockLocation().getZ()).getType() == muc.getType()) {
-                                    // if the block you will be updating later has changed type, something went horribly wrong: it burned away, was flooded, or was destroyed. Don't update it
-                                    updateCommands.add(muc);
-                                }
-                                mucI.remove();
-                                madeChanges = true;
-                            }
-                        }
-                        if (madeChanges) {
-                            pcraft.setScheduledBlockChanges(scheduledBlockChanges);
-                        }
-                    }
-                }
-                if (updateCommands.size() > 0) {
-                    MapUpdateManager.getInstance().scheduleUpdates(updateCommands.toArray(new BlockTranslateCommand[1]));
-                }
-            }
-        }
-    }*/
 
     public void run() {
         clearAll();
@@ -1128,9 +1091,6 @@ public class AsyncManager extends BukkitRunnable {
         processFadingBlocks();
         processDetection();
         processAlgorithmQueue();
-        //processScheduledBlockChanges();
-//		if(Settings.CompatibilityMode==false)
-//			FastBlockChanger.getInstance().run();
 
         // now cleanup craft that are bugged and have not moved in the past 60 seconds, but have no pilot or are still processing
         for (Craft pcraft : CraftManager.getInstance()) {

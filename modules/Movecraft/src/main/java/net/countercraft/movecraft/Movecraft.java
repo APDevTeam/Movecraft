@@ -229,6 +229,7 @@ public class Movecraft extends JavaPlugin {
         Settings.RequireNamePerm = getConfig().getBoolean("RequireNamePerm", false);
         Settings.TNTContactExplosives = getConfig().getBoolean("TNTContactExplosives", true);
         Settings.FadeWrecksAfter = getConfig().getInt("FadeWrecksAfter", 0);
+        Settings.RequireSneakingForDirectControl = getConfig().getBoolean("RequireSneakingForDirectControl", false);
         if (getConfig().contains("FuelTypes")){
             Map<String, Object> fuelTypes = getConfig().getConfigurationSection("FuelTypes").getValues(false);
             int numFuelTypes = 0;

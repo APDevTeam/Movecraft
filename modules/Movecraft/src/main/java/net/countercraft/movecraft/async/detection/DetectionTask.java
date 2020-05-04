@@ -18,7 +18,6 @@
 package net.countercraft.movecraft.async.detection;
 
 
-import at.pavlov.cannons.API.CannonsAPI;
 import at.pavlov.cannons.cannon.Cannon;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftBlock;
@@ -429,13 +428,8 @@ public class DetectionTask extends AsyncTask {
         if (Movecraft.getInstance().getCannonsPlugin() == null) {
             return;
         }
-        for (Cannon can : CannonsAPI.getCannonsInBox(hitBox.getMidPoint().toBukkit(world), hitBox.getXLength(), hitBox.getYLength(), hitBox.getZLength())) {
-            for (Location barrelLoc : can.getCannonDesign().getBarrelBlocks(can)) {
-                if (!hitBox.contains(MathUtils.bukkit2MovecraftLoc(barrelLoc))) {
-                    continue;
-                }
-                break;
-            }
+        for (Cannon can : CannonsUtils.getCannonsInHitBox(hitBox, world)) {
+
             for (List<String> limitedCannonNames : craft.getType().getMaxCannons().keySet()) {
                 if (!limitedCannonNames.contains(can.getCannonDesign().getDesignName().toLowerCase())) {
                     continue;
