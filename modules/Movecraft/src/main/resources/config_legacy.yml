@@ -12,6 +12,7 @@ FireballPenetration: true
 ProtectPilotedCrafts: true
 DisableSpillProtection: false
 RequireCreatePerm: false # require users to have the movecract.<CraftTypeName>.create permission in order to place command signs
+RequireSneakingForDirectControl: false #Require if player should sneak in order to activate direct control
 RequireNamePerm: false
 TNTContactExplosives: true
 DisableCrates: true
