@@ -95,14 +95,14 @@ public final class SubcraftRotateSign implements Listener {
             public void run() {
                 subCraft.rotate(rotation, startPoint, true);
             }
-        }.runTaskLater(Movecraft.getInstance(), 3);
+        }.runTaskLater(Movecraft.getInstance(), 4);
         new BukkitRunnable() {
             @Override
             public void run() {
                 rotatingCrafts.remove(startPoint);
                 CraftManager.getInstance().removeCraft(subCraft);
             }
-        }.runTaskLater(Movecraft.getInstance(), 6);
+        }.runTaskLater(Movecraft.getInstance(), 7);
         event.setCancelled(true);
     }
 
