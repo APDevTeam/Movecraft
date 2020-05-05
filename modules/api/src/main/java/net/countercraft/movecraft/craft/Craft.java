@@ -19,11 +19,13 @@ package net.countercraft.movecraft.craft;
 
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.events.CraftSinkEvent;
-import net.countercraft.movecraft.utils.HashHitBox;
+import net.countercraft.movecraft.utils.BitmapHitBox;
+import net.countercraft.movecraft.utils.Counter;
+import net.countercraft.movecraft.utils.Pair;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -33,7 +35,10 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
@@ -42,10 +47,10 @@ public abstract class Craft {
     @NotNull protected final CraftType type;
     //protected int[][][] hitBox;
     //protected MovecraftLocation[] blockList;
-    @NotNull protected HashHitBox hitBox;
-    @NotNull protected final HashHitBox collapsedHitBox;
-    @NotNull protected HashHitBox fluidLocations;
-
+    @NotNull protected BitmapHitBox hitBox;
+    @NotNull protected final BitmapHitBox collapsedHitBox;
+    @NotNull protected BitmapHitBox fluidLocations;
+    @NotNull protected final Counter<Material> materials;
     @NotNull protected World w;
     @NotNull private final AtomicBoolean processing = new AtomicBoolean();
     private int maxHeightLimit;
@@ -67,17 +72,18 @@ public abstract class Craft {
     @Nullable private Player notificationPlayer;
     @Nullable private Player cannonDirector;
     @Nullable private Player AADirector;
-    private float meanMoveTime;
+    private float meanCruiseTime;
     private int numMoves;
-    @NotNull private final Map<MovecraftLocation, ImmutablePair<Material, Byte>> phaseBlocks = new HashMap<>();
+    @NotNull private final Map<MovecraftLocation, Pair<Material, Byte>> phaseBlocks = new HashMap<>();
     @NotNull private final HashMap<UUID, Location> crewSigns = new HashMap<>();
     @NotNull private String name = "";
 
     public Craft(@NotNull CraftType type, @NotNull World world) {
         this.type = type;
         this.w = world;
-        this.hitBox = new HashHitBox();
-        this.collapsedHitBox = new HashHitBox();
+        this.hitBox = new BitmapHitBox();
+        this.collapsedHitBox = new BitmapHitBox();
+        this.fluidLocations = new BitmapHitBox();
         if (type.getMaxHeightLimit() > w.getMaxHeight() - 1) {
             this.maxHeightLimit = w.getMaxHeight() - 1;
         } else {
@@ -95,6 +101,7 @@ public abstract class Craft {
         this.disabled = false;
         this.origPilotTime = System.currentTimeMillis();
         numMoves = 0;
+        materials = new Counter<>();
     }
 
     public boolean isNotProcessing() {
@@ -106,11 +113,11 @@ public abstract class Craft {
     }
 
     @NotNull
-    public HashHitBox getHitBox() {
+    public BitmapHitBox getHitBox() {
         return hitBox;
     }
 
-    public void setHitBox(@NotNull HashHitBox hitBox){
+    public void setHitBox(@NotNull BitmapHitBox hitBox){
         this.hitBox = hitBox;
     }
 
@@ -303,40 +310,66 @@ public abstract class Craft {
         return origPilotTime;
     }
 
-    public float getMeanMoveTime() {
-        return meanMoveTime;
+    public float getMeanCruiseTime() {
+        return meanCruiseTime;
     }
 
-    public void addMoveTime(float moveTime){
-        meanMoveTime = (meanMoveTime*numMoves + moveTime)/(++numMoves);
+    public void addCruiseTime(float cruiseTime){
+        meanCruiseTime = (meanCruiseTime *numMoves + cruiseTime)/(++numMoves);
     }
 
     public int getTickCooldown() {
         if(sinking)
             return type.getSinkRateTicks();
-        Map<Material, Integer> counter = new HashMap<>();
-        for(MovecraftLocation location : hitBox){
-            Material mat = location.toBukkit(w).getBlock().getType();
-            counter.put(mat, counter.getOrDefault(mat, 0) + 1);
-        }
-        double chestPenalty = counter.getOrDefault(Material.CHEST, 0) + counter.getOrDefault(Material.TRAPPED_CHEST, 0);
-        chestPenalty*=type.getChestPenalty();
-        if(!cruising)
-            return type.getTickCooldown()+(int)chestPenalty;
-        if(type.getDynamicFlyBlockSpeedFactor()!=0){
-            Material flyBlockMaterial = Material.getMaterial(type.getDynamicFlyBlock());
-            double count = counter.getOrDefault(flyBlockMaterial, 0);
-            double woolRatio = count / hitBox.size();
-            return Math.max((int)Math.round((20.0 * type.getCruiseSkipBlocks())/((type.getDynamicFlyBlockSpeedFactor()*1.5)*(woolRatio - .5) + (20.0/type.getCruiseTickCooldown()) + 1)), 1);
-            //return Math.max((int)((20.0 * type.getDynamicFlyBlockSpeedFactor()/100.0)/(woolRatio - .499)),0) + type.getCruiseTickCooldown();
+
+//        Counter<Material> counter = new Counter<>();
+//        Map<Material, Integer> counter = new HashMap<>();
+        if(materials.isEmpty()){
+            for(MovecraftLocation location : hitBox){
+                materials.add(location.toBukkit(w).getBlock().getType());
+            }
         }
 
-        if(type.getDynamicLagSpeedFactor()==0)
-            return type.getCruiseTickCooldown()+(int)chestPenalty;
-        //TODO: modify skip blocks by an equal proportion to this, than add another modifier based on dynamic speed factor
-        if(meanMoveTime==0)
-            return type.getCruiseTickCooldown()+(int)chestPenalty;
-        return Math.max((int)(type.getCruiseTickCooldown()*meanMoveTime*20/type.getDynamicLagSpeedFactor() +chestPenalty),1);
+        int chestPenalty = (int)((materials.get(Material.CHEST) + materials.get(Material.TRAPPED_CHEST)) * type.getChestPenalty());
+        if(!cruising)
+            return type.getTickCooldown() + chestPenalty;
+
+        // Ascent or Descent
+        if(cruiseDirection == 0x42 || cruiseDirection == 0x43) {
+            if(Settings.Debug) {
+                Bukkit.getLogger().info("Skip: " + type.getCruiseSkipBlocks());
+                Bukkit.getLogger().info("Tick: " + type.getCruiseTickCooldown());
+                Bukkit.getLogger().info("Penalty: " + chestPenalty);
+            }
+            return type.getCruiseTickCooldown() + chestPenalty;
+        }
+
+        if(type.getDynamicFlyBlockSpeedFactor() != 0){
+            Material flyBlockMaterial = Material.getMaterial(type.getDynamicFlyBlock());
+            double count = materials.get(flyBlockMaterial);
+            double woolRatio = count / hitBox.size();
+            return Math.max((int)Math.round((20.0 * (type.getCruiseSkipBlocks() + 1)) / ((type.getDynamicFlyBlockSpeedFactor() * 1.5) * (woolRatio - .5) + (20.0 / type.getCruiseTickCooldown()) + 1)), 1);
+        }
+
+        if(type.getDynamicLagSpeedFactor() == 0.0 || type.getDynamicLagPowerFactor() == 0.0 || Math.abs(type.getDynamicLagPowerFactor()) > 1.0)
+            return type.getCruiseTickCooldown() + chestPenalty;
+        if(meanCruiseTime == 0)
+            return type.getCruiseTickCooldown() + chestPenalty;
+
+        if(Settings.Debug) {
+            Bukkit.getLogger().info("Skip: " + type.getCruiseSkipBlocks());
+            Bukkit.getLogger().info("Tick: " + type.getCruiseTickCooldown());
+            Bukkit.getLogger().info("SpeedFactor: " + type.getDynamicLagSpeedFactor());
+            Bukkit.getLogger().info("PowerFactor: " + type.getDynamicLagPowerFactor());
+            Bukkit.getLogger().info("MinSpeed: " + type.getDynamicLagMinSpeed());
+            Bukkit.getLogger().info("CruiseTime: " + getMeanCruiseTime() * 1000.0 + "ms");
+        }
+
+        double speed = 20.0 * (type.getCruiseSkipBlocks() + 1.0) / (float)type.getCruiseTickCooldown();
+        speed -= type.getDynamicLagSpeedFactor() * Math.pow(getMeanCruiseTime() * 1000.0, type.getDynamicLagPowerFactor());
+        speed = Math.max(type.getDynamicLagMinSpeed(), speed);
+        return (int)Math.round((20.0 * (type.getCruiseSkipBlocks() + 1.0)) / speed);
+            //In theory, the chest penalty is not needed for a DynamicLag craft.
     }
 
     /**
@@ -344,7 +377,7 @@ public abstract class Craft {
      * @return the speed of the craft
      */
     public double getSpeed(){
-        return 20*type.getCruiseSkipBlocks()/(double)getTickCooldown();
+        return 20*(type.getCruiseSkipBlocks()+1)/(double)getTickCooldown();
     }
 
     public long getLastRotateTime() {
@@ -409,7 +442,7 @@ public abstract class Craft {
     }
 
     @NotNull
-    public Map<MovecraftLocation, ImmutablePair<Material, Byte>> getPhaseBlocks(){
+    public Map<MovecraftLocation, Pair<Material, Byte>> getPhaseBlocks(){
         return phaseBlocks;
     }
 
@@ -428,18 +461,18 @@ public abstract class Craft {
     }
 
     @NotNull
-    public HashHitBox getCollapsedHitBox() {
+    public BitmapHitBox getCollapsedHitBox() {
         return collapsedHitBox;
     }
 
     public abstract void resetSigns(@NotNull final Sign clicked);
 
     @NotNull
-    public HashHitBox getFluidLocations() {
+    public BitmapHitBox getFluidLocations() {
         return fluidLocations;
     }
 
-    public void setFluidLocations(@NotNull HashHitBox fluidLocations) {
+    public void setFluidLocations(@NotNull BitmapHitBox fluidLocations) {
         this.fluidLocations = fluidLocations;
     }
 }

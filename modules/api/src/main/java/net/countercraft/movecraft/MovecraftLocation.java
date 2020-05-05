@@ -19,6 +19,9 @@ package net.countercraft.movecraft;
 
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.jetbrains.annotations.NotNull;
+
+import static net.countercraft.movecraft.utils.BitMath.*;
 
 /**
  * Represents a Block aligned coordinate triplet.
@@ -115,5 +118,22 @@ final public class MovecraftLocation {
     @Override
     public String toString(){
         return "(" + x + "," + y + "," + z +")";
+    }
+
+
+    private static final long BITS_26 = mask(26);
+    private static final long BITS_12 = mask(12);
+
+    public long pack(){
+        return (x & BITS_26) | ((z & BITS_26) << 26) | (((y & (long) BITS_12) << (26 + 26)));
+    }
+
+    public static long pack(int x, int y, int z){
+        return (x & BITS_26) | ((z & BITS_26) << 26) | (((y & (long) BITS_12) << (26 + 26)));
+    }
+
+    @NotNull
+    public static MovecraftLocation unpack(long l){
+        return new MovecraftLocation(unpackX(l), unpackY(l), unpackZ(l));
     }
 }

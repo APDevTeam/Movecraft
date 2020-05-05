@@ -64,7 +64,7 @@ public class MathUtils {
      * @return True if the player is within the given bounding box
      */
     @Contract(pure=true)
-    public static boolean locationInHitBox(@NotNull final HashHitBox hitBox, @NotNull final Location location) {
+    public static boolean locationInHitBox(@NotNull final HitBox hitBox, @NotNull final Location location) {
         return hitBox.inBounds(location.getX(),location.getY(),location.getZ());
     }
 
@@ -75,7 +75,7 @@ public class MathUtils {
      * @return True if <code>location</code> is less or equal to 3 blocks from <code>craft</code>
      */
     @Contract(pure=true)
-    public static boolean locationNearHitBox(@NotNull final HashHitBox hitBox, @NotNull final Location location, double distance) {
+    public static boolean locationNearHitBox(@NotNull final HitBox hitBox, @NotNull final Location location, double distance) {
         return !hitBox.isEmpty() &&
                 location.getX() >= hitBox.getMinX() - distance &&
                 location.getZ() >= hitBox.getMinZ() - distance &&
