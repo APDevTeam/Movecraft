@@ -275,37 +275,28 @@ public class AsyncManager extends BukkitRunnable {
 
         boolean isSubcraft = false;
 
-        for (Craft craft : craftsInWorld) {
-            if (craft == c) {
-                continue;
+        if (c.getType().getCruiseOnPilot() || p != null) {
+            for (Craft craft : craftsInWorld) {
+                if (craft.getHitBox().intersection(task.getHitBox()).isEmpty()) {
+                    continue;
+                }
+                if (craft.getType() == c.getType()
+                        || craft.getHitBox().size() <= task.getHitBox().size()) {
+                    notifyP.sendMessage(I18nSupport.getInternationalisedString(
+                            "Detection - Failed Craft is already being controlled"));
+                    return;
+                }
+                if (!craft.isNotProcessing()) {
+                    notifyP.sendMessage(I18nSupport.getInternationalisedString("Detection - Parent Craft is busy"));
+                    return;
+                }
+                isSubcraft = true;
+                craft.setHitBox(craft.getHitBox().difference(task.getHitBox()));
+                craft.setOrigBlockCount(craft.getOrigBlockCount() - task.getHitBox().size());
             }
-            if (craft.getHitBox().intersection(task.getHitBox()).isEmpty()) {
-                continue;
-            }
-            isSubcraft = true;
-            if (craft.getType() == c.getType() || craft.getHitBox().size() <= task.getHitBox().size()) {
-                notifyP.sendMessage(I18nSupport.getInternationalisedString(
-                        "Detection - Failed Craft is already being controlled"));
-                failed = true;
-                break;
-            }
-            // if this is a different type than
-            // the overlapping craft, and is
-            // smaller, this must be a child
-            // craft, like a fighter on a
-            // carrier
-            if (!craft.isNotProcessing()) {
-                failed = true;
-                notifyP.sendMessage(I18nSupport.getInternationalisedString("Detection - Parent Craft is busy"));
-            }
-            craft.setHitBox(craft.getHitBox().difference(task.getHitBox()));
-            craft.setOrigBlockCount(craft.getOrigBlockCount() - task.getHitBox().size());
         }
         if (c.getType().getMustBeSubcraft() && !isSubcraft) {
             notifyP.sendMessage(I18nSupport.getInternationalisedString("Craft must be part of another craft"));
-            return;
-        }
-        if(failed){
             return;
         }
         c.setHitBox(task.getHitBox());
@@ -367,21 +358,18 @@ public class AsyncManager extends BukkitRunnable {
         final CraftDetectEvent event = new CraftDetectEvent(c);
         Bukkit.getPluginManager().callEvent(event);
         failed = event.isCancelled();
-        notifyP.sendMessage(failed ? event.getFailMessage()
-                :
-                I18nSupport.getInternationalisedString("Detection - Successfully piloted craft")
-                        + " Size: " + c.getHitBox().size());
-        if (!failed) {
-            Movecraft.getInstance().getLogger().log(Level.INFO,
-                    String.format(
-                            I18nSupport.getInternationalisedString(
-                                    "Detection - Success - Log Output"),
-                            notifyP.getName(), c.getType().getCraftName(), c.getHitBox().size(),
-                            c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
+        if (failed) {
+            notifyP.sendMessage(event.getFailMessage());
+            return;
         }
+        notifyP.sendMessage(I18nSupport.getInternationalisedString("Detection - Successfully piloted craft")
+                + " Size: " + c.getHitBox().size());
+        Movecraft.getInstance().getLogger().info(String.format(
+                I18nSupport.getInternationalisedString("Detection - Success - Log Output"),
+                notifyP.getName(), c.getType().getCraftName(), c.getHitBox().size(),
+                c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
 
-        if (!failed)
-            CraftManager.getInstance().addCraft(c, p);
+        CraftManager.getInstance().addCraft(c, p);
     }
 
     private void processCruise() {
