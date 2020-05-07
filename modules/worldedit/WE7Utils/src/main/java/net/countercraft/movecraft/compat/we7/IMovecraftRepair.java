@@ -12,8 +12,8 @@ import com.sk89q.worldedit.extent.Extent;
 import com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
 import com.sk89q.worldedit.extent.clipboard.io.*;
-import com.sk89q.worldedit.function.mask.BlockMask;
 import com.sk89q.worldedit.function.mask.BlockTypeMask;
+import com.sk89q.worldedit.function.mask.ExistingBlockMask;
 import com.sk89q.worldedit.function.operation.ForwardExtentCopy;
 import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.math.BlockVector3;
@@ -51,7 +51,6 @@ public class IMovecraftRepair extends MovecraftRepair {
     private final HashMap<String, ArrayDeque<Pair<Vector,Vector>>> locMissingBlocksMap = new HashMap<>();
     private final HashMap<String, Long> numDiffBlocksMap = new HashMap<>();
     private final HashMap<String, HashMap<Pair<Material, Byte>, Double>> missingBlocksMap = new HashMap<>();
-    private final HashMap<String, Vector> distanceMap = new HashMap<>();
     private final Plugin plugin;
 
     public IMovecraftRepair(Plugin plugin) {
@@ -79,7 +78,7 @@ public class IMovecraftRepair extends MovecraftRepair {
         clipboard.setOrigin(origin);
         Extent source = WorldEdit.getInstance().getEditSessionFactory().getEditSession(weWorld, -1);
         ForwardExtentCopy copy = new ForwardExtentCopy(source, region, clipboard.getOrigin(), clipboard, clipboard.getOrigin());
-        BlockMask mask = new BlockMask(source, baseBlocksFromCraft(craft));
+        ExistingBlockMask mask = new ExistingBlockMask(source);
         copy.setSourceMask(mask);
         final HitBox outsideLocs = CollectionUtils.filter(solidBlockLocs(world, region), hitBox);
         try {
@@ -227,7 +226,6 @@ public class IMovecraftRepair extends MovecraftRepair {
                                 qtyToConsume = 0;
                             }
                             if (type.name().endsWith("_SLAB")){
-                                plugin.getLogger().info(type.name());
                                 for (Property property : block.getStates().keySet()){
                                     if (!(property instanceof EnumProperty)){
                                         continue;
