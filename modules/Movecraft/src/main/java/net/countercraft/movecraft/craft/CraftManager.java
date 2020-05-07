@@ -26,6 +26,7 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -206,7 +207,9 @@ public class CraftManager implements Iterable<Craft>{
         return crafts;
     }
 
-    public Craft getCraftByPlayer(@NotNull Player p) {
+    @Contract("null -> null")
+    @Nullable
+    public Craft getCraftByPlayer(@Nullable Player p) {
         if(p == null)
             return null;
         return craftPlayerIndex.get(p);

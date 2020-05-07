@@ -151,22 +151,6 @@ public class IWorldHandler extends WorldHandler{
             chunkSection.setType(position.getX()&15, position.getY()&15, position.getZ()&15, data);
             nativeWorld.notifyAndUpdatePhysics(position, chunk, data, data, data, 3);
         }
-        //*******************************************
-        //*       Step six: Send to players       *
-        //*******************************************
-        List<Chunk> chunks = new ArrayList<>();
-        for(BlockPosition position : rotatedPositions.values()){
-            Chunk chunk = nativeWorld.getChunkAtWorldCoords(position);
-            if(!chunks.contains(chunk)){
-                chunks.add(chunk);
-            }
-        }
-        for(BlockPosition position : deletePositions){
-            Chunk chunk = nativeWorld.getChunkAtWorldCoords(position);
-            if(!chunks.contains(chunk)){
-                chunks.add(chunk);
-            }
-        }
     }
 
     @Override
@@ -221,23 +205,6 @@ public class IWorldHandler extends WorldHandler{
         //*   Step six: Process redstone        *
         //*******************************************
         processRedstone(newPositions, nativeWorld);
-        //*******************************************
-        //*       Step six: Send to players       *
-        //*******************************************
-        List<Chunk> chunks = new ArrayList<>();
-        for(BlockPosition position : newPositions){
-            Chunk chunk = nativeWorld.getChunkAtWorldCoords(position);
-            if(!chunks.contains(chunk)){
-                chunks.add(chunk);
-            }
-        }
-        for(BlockPosition position : deletePositions){
-            Chunk chunk = nativeWorld.getChunkAtWorldCoords(position);
-            if(!chunks.contains(chunk)){
-                chunks.add(chunk);
-            }
-        }
-        //sendToPlayers(chunks.toArray(new Chunk[0]));
     }
 
 

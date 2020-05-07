@@ -31,6 +31,7 @@ public class BitmapHitBox implements MutableHitBox {
     private BitmapHitBox(Roaring64NavigableMap backing) {
         this.backing = backing;
         localMinY = new Long2IntOpenHashMap();
+        validateBounds();
     }
 
     public BitmapHitBox(HitBox hitBox){

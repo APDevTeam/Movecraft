@@ -140,22 +140,6 @@ public class IWorldHandler extends WorldHandler {
             BlockFire fire = (BlockFire) type.getBlock();
             fire.b(nativeWorld, position, type, nativeWorld.random);
         }
-        //*******************************************
-        //*       Step seven: Send to players       *
-        //*******************************************
-        List<Chunk> chunks = new ArrayList<>();
-        for(BlockPosition position : rotatedPositions.values()){
-            Chunk chunk = nativeWorld.getChunkAtWorldCoords(position);
-            if(!chunks.contains(chunk)){
-                chunks.add(chunk);
-            }
-        }
-        for(BlockPosition position : deletePositions){
-            Chunk chunk = nativeWorld.getChunkAtWorldCoords(position);
-            if(!chunks.contains(chunk)){
-                chunks.add(chunk);
-            }
-        }
     }
 
     @Override
@@ -205,23 +189,6 @@ public class IWorldHandler extends WorldHandler {
         //*   Step six: Process fire spread         *
         //*******************************************
         processFireSpread(newPositions, nativeWorld);
-        //*******************************************
-        //*       Step seven: Send to players       *
-        //*******************************************
-        List<Chunk> chunks = new ArrayList<>();
-        for(BlockPosition position : newPositions){
-            Chunk chunk = nativeWorld.getChunkAtWorldCoords(position);
-            if(!chunks.contains(chunk)){
-                chunks.add(chunk);
-            }
-        }
-        for(BlockPosition position : deletePositions){
-            Chunk chunk = nativeWorld.getChunkAtWorldCoords(position);
-            if(!chunks.contains(chunk)){
-                chunks.add(chunk);
-            }
-        }
-        //sendToPlayers(chunks.toArray(new Chunk[0]));
     }
 
     private void setBlocks(List<BlockPosition> newPositions, List<IBlockData> blockData, World nativeWorld){

@@ -49,9 +49,10 @@ public class DetectionTask extends AsyncTask {
     @NotNull private final HashMap<List<String>, Integer> signWithStringCount = new HashMap<>();
     @NotNull private final HashMap<List<String>, Integer> cannonsCount = new HashMap<>();
     @NotNull private final World world;
-    @Nullable private final Player player, notificationPlayer;
-    private final BlockContainer allowedBlocks;
-    private final BlockContainer forbiddenBlocks;
+    @Nullable private final Player player;
+    @NotNull private final Player notificationPlayer;
+    @NotNull private final BlockContainer allowedBlocks;
+    @NotNull private final BlockContainer forbiddenBlocks;
     @NotNull private final String[] forbiddenSignStrings;
     private int maxX;
     private int maxY;
@@ -64,14 +65,14 @@ public class DetectionTask extends AsyncTask {
     private boolean waterContact;
     @NotNull private String failMessage = "";
 
-    public DetectionTask(Craft c, MovecraftLocation startLocation, Player player) {
+    public DetectionTask(Craft c, @NotNull MovecraftLocation startLocation, @Nullable Player player, @NotNull Player notificationPlayer) {
         super(c);
         this.startLocation = startLocation;
         this.minSize = craft.getType().getMinSize();
         this.maxSize = craft.getType().getMaxSize();
         this.world = craft.getWorld();
         this.player = player;
-        this.notificationPlayer = craft.getNotificationPlayer();
+        this.notificationPlayer = notificationPlayer;
         this.allowedBlocks = craft.getType().getAllowedBlocks();
         this.forbiddenBlocks = craft.getType().getForbiddenBlocks();
         this.forbiddenSignStrings = craft.getType().getForbiddenSignStrings();
@@ -471,7 +472,7 @@ public class DetectionTask extends AsyncTask {
         return world;
     }
 
-    @Nullable
+    @NotNull
     public Player getNotificationPlayer() {
         return notificationPlayer;
     }
