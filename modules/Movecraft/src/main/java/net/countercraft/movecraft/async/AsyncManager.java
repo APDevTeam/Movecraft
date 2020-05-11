@@ -42,6 +42,7 @@ import org.bukkit.entity.SmallFireball;
 import org.bukkit.entity.TNTPrimed;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
@@ -138,111 +139,13 @@ public class AsyncManager extends BukkitRunnable {
                 // Process translation task
 
                 TranslationTask task = (TranslationTask) poll;
-                Player notifyP = c.getNotificationPlayer();
-
-                // Check that the craft hasn't been sneakily unpiloted
-                // if ( p != null ) { cruiseOnPilot crafts don't have player
-                // pilots
-
-                if (task.failed()) {
-                    // The craft translation failed
-                    if (notifyP != null && !c.getSinking())
-                        notifyP.sendMessage(task.getFailMessage());
-
-                    if (task.isCollisionExplosion()) {
-                        c.setHitBox(task.getNewHitBox());
-                        c.setFluidLocations(task.getNewFluidList());
-                        //c.setBlockList(task.getData().getHitBox());
-                        //boolean failed = MapUpdateManager.getInstance().addWorldUpdate(c.getW(), updates, null, null, exUpdates);
-                        MapUpdateManager.getInstance().scheduleUpdates(task.getUpdates());
-                        sentMapUpdate = true;
-                        CraftManager.getInstance().addReleaseTask(c);
-
-                    }
-                } else {
-                    // The craft is clear to move, perform the block updates
-                    MapUpdateManager.getInstance().scheduleUpdates(task.getUpdates());
-                    // get list of cannons before sending map updates, to avoid
-                    // conflicts
-                    HashSet<Cannon> shipCannons = null;
-                    if (Movecraft.getInstance().getCannonsPlugin() != null && c.getNotificationPlayer() != null) {
-                        // convert blocklist to location list
-                        List<Location> shipLocations = new ArrayList<>();
-                        for (MovecraftLocation loc : c.getHitBox()) {
-                            Location tloc = new Location(c.getW(), loc.getX(), loc.getY(), loc.getZ());
-                            shipLocations.add(tloc);
-                        }
-                        shipCannons = Movecraft.getInstance().getCannonsPlugin().getCannonsAPI()
-                                .getCannons(shipLocations, c.getNotificationPlayer().getUniqueId(), true);
-                    }
-
-                    sentMapUpdate = true;
-                    //c.setBlockList(task.getData().getHitBox());
-                    //c.setMinX(task.getData().getMinX());
-                    //c.setMinZ(task.getData().getMinZ());
-                    //c.setHitBox(task.getData().getHitbox());
-                    c.setHitBox(task.getNewHitBox());
-                    c.setFluidLocations(task.getNewFluidList());
-
-                    // move any cannons that were present
-                    if (Movecraft.getInstance().getCannonsPlugin() != null && shipCannons != null) {
-                        for (Cannon can : shipCannons) {
-                            can.move(new Vector(task.getDx(), task.getDy(), task.getDz()));
-                        }
-                    }
-
-
-                }
+                sentMapUpdate = processTranslation(task, c);
 
             } else if (poll instanceof RotationTask) {
                 // Process rotation task
                 RotationTask task = (RotationTask) poll;
-                Player notifyP = c.getNotificationPlayer();
-                // Check that the craft hasn't been sneakily unpiloted
-                if (notifyP != null || task.getIsSubCraft()) {
+                sentMapUpdate = processRotation(task, c);
 
-                    if (task.isFailed()) {
-                        // The craft translation failed, don't try to notify
-                        // them if there is no pilot
-                        if (notifyP != null)
-                            notifyP.sendMessage(task.getFailMessage());
-                        else
-                            Movecraft.getInstance().getLogger().log(Level.INFO,
-                            		I18nSupport.getInternationalisedString("Rotation - NULL Player Rotation Failed")+ ": " + task.getFailMessage());
-                    } else {
-                        // get list of cannons before sending map updates, to
-                        // avoid conflicts
-                        HashSet<Cannon> shipCannons = null;
-                        if (Movecraft.getInstance().getCannonsPlugin() != null && c.getNotificationPlayer() != null) {
-                            // convert blocklist to location list
-                            List<Location> shipLocations = new ArrayList<>();
-                            for (MovecraftLocation loc : c.getHitBox()) {
-                                shipLocations.add(loc.toBukkit(c.getW()));
-                            }
-                            shipCannons = Movecraft.getInstance().getCannonsPlugin().getCannonsAPI()
-                                    .getCannons(shipLocations, c.getNotificationPlayer().getUniqueId(), true);
-                        }
-
-                        MapUpdateManager.getInstance().scheduleUpdates(task.getUpdates());
-
-
-                        sentMapUpdate = true;
-                        c.setHitBox(task.getNewHitBox());
-                        c.setFluidLocations(task.getNewFluidList());
-
-                        // rotate any cannons that were present
-                        if (Movecraft.getInstance().getCannonsPlugin() != null && shipCannons != null) {
-                            Location tloc = task.getOriginPoint().toBukkit(task.getCraft().getW());
-                            for (Cannon can : shipCannons) {
-                                if (task.getRotation() == Rotation.CLOCKWISE)
-                                    can.rotateRight(tloc.toVector());
-                                if (task.getRotation() == Rotation.ANTICLOCKWISE)
-                                    can.rotateLeft(tloc.toVector());
-                            }
-                        }
-
-                    }
-                }
             }
 
             ownershipMap.remove(poll);
@@ -372,6 +275,111 @@ public class AsyncManager extends BukkitRunnable {
         CraftManager.getInstance().addCraft(c, p);
     }
 
+    /**
+     * Processes translation task for its corresponding craft
+     * @param task the task to process
+     * @param c the craft this task belongs to
+     * @return true if translation task succeded to process, otherwise false
+     */
+    private boolean processTranslation(@NotNull final TranslationTask task, @NotNull final Craft c) {
+        Player notifyP = c.getNotificationPlayer();
+
+        // Check that the craft hasn't been sneakily unpiloted
+
+        if (task.failed()) {
+            // The craft translation failed
+            if (notifyP != null && !c.getSinking())
+                notifyP.sendMessage(task.getFailMessage());
+
+            if (task.isCollisionExplosion()) {
+                c.setHitBox(task.getNewHitBox());
+                c.setFluidLocations(task.getNewFluidList());
+                MapUpdateManager.getInstance().scheduleUpdates(task.getUpdates());
+                CraftManager.getInstance().addReleaseTask(c);
+                return true;
+            }
+            return false;
+        }
+        // The craft is clear to move, perform the block updates
+        MapUpdateManager.getInstance().scheduleUpdates(task.getUpdates());
+        // get list of cannons before sending map updates, to avoid
+        // conflicts
+        if (Movecraft.getInstance().getCannonsPlugin() != null && c.getNotificationPlayer() != null) {
+            // convert blocklist to location list
+            List<Location> shipLocations = new ArrayList<>();
+            for (MovecraftLocation loc : c.getHitBox()) {
+                Location tloc = new Location(c.getW(), loc.getX(), loc.getY(), loc.getZ());
+                shipLocations.add(tloc);
+            }
+            HashSet<Cannon> shipCannons = Movecraft.getInstance().getCannonsPlugin().getCannonsAPI()
+                    .getCannons(shipLocations, c.getNotificationPlayer().getUniqueId(), true);
+            // move any cannons that were present
+            for (Cannon can : shipCannons) {
+                can.move(new Vector(task.getDx(), task.getDy(), task.getDz()));
+            }
+        }
+        c.setHitBox(task.getNewHitBox());
+        c.setFluidLocations(task.getNewFluidList());
+
+
+
+        return true;
+    }
+
+    private boolean processRotation(@NotNull final RotationTask task, @NotNull final Craft c) {
+        Player notifyP = c.getNotificationPlayer();
+        // Check that the craft hasn't been sneakily unpiloted
+        if (notifyP == null && !task.getIsSubCraft())  {
+            return false;
+        }
+
+        if (task.isFailed()) {
+            // The craft translation failed, don't try to notify
+            // them if there is no pilot
+            if (notifyP != null)
+                notifyP.sendMessage(task.getFailMessage());
+            else
+                Movecraft.getInstance().getLogger().log(Level.INFO,
+                        I18nSupport.getInternationalisedString("Rotation - NULL Player Rotation Failed")+ ": " + task.getFailMessage());
+            return false;
+        }
+
+        // get list of cannons before sending map updates, to
+        // avoid conflicts
+        HashSet<Cannon> shipCannons = null;
+        if (Movecraft.getInstance().getCannonsPlugin() != null && c.getNotificationPlayer() != null) {
+            // convert blocklist to location list
+            List<Location> shipLocations = new ArrayList<>();
+            for (MovecraftLocation loc : c.getHitBox()) {
+                shipLocations.add(loc.toBukkit(c.getW()));
+            }
+            shipCannons = Movecraft.getInstance().getCannonsPlugin().getCannonsAPI()
+                    .getCannons(shipLocations, c.getNotificationPlayer().getUniqueId(), true);
+        }
+
+        MapUpdateManager.getInstance().scheduleUpdates(task.getUpdates());
+
+
+
+        c.setHitBox(task.getNewHitBox());
+        c.setFluidLocations(task.getNewFluidList());
+
+        // rotate any cannons that were present
+        if (Movecraft.getInstance().getCannonsPlugin() != null && shipCannons != null) {
+            Location tloc = task.getOriginPoint().toBukkit(task.getCraft().getW());
+            for (Cannon can : shipCannons) {
+                if (task.getRotation() == Rotation.CLOCKWISE)
+                    can.rotateRight(tloc.toVector());
+                if (task.getRotation() == Rotation.ANTICLOCKWISE)
+                    can.rotateLeft(tloc.toVector());
+            }
+        }
+
+
+
+        return true;
+    }
+
     private void processCruise() {
         for (Craft pcraft : CraftManager.getInstance()) {
             if (pcraft == null || !pcraft.isNotProcessing() || !pcraft.getCruising()) {
@@ -435,21 +443,21 @@ public class AsyncManager extends BukkitRunnable {
             }
             // descend
             if (pcraft.getCruiseDirection() == 0x43) {
-                dy = 0 - 1 - pcraft.getType().getVertCruiseSkipBlocks();
+                dy = -1 - pcraft.getType().getVertCruiseSkipBlocks();
                 if (pcraft.getHitBox().getMinY() <= w.getSeaLevel()) {
                     dy = -1;
                 }
             } else if (dive) {
-                dy = 0 - ((pcraft.getType().getCruiseSkipBlocks() + 1) >> 1);
+                dy = -((pcraft.getType().getCruiseSkipBlocks() + 1) >> 1);
                 if (pcraft.getHitBox().getMinY() <= w.getSeaLevel()) {
                     dy = -1;
                 }
             }
             // ship faces west
             if (pcraft.getCruiseDirection() == 0x5) {
-                dx = 0 - 1 - pcraft.getType().getCruiseSkipBlocks();
+                dx = -1 - pcraft.getType().getCruiseSkipBlocks();
                 if (bankRight) {
-                    dz = (0 - 1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
+                    dz = (-1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
                 }
                 if (bankLeft) {
                     dz = (1 + pcraft.getType().getCruiseSkipBlocks()) >> 1;
@@ -459,7 +467,7 @@ public class AsyncManager extends BukkitRunnable {
             if (pcraft.getCruiseDirection() == 0x4) {
                 dx = 1 + pcraft.getType().getCruiseSkipBlocks();
                 if (bankLeft) {
-                    dz = (0 - 1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
+                    dz = (-1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
                 }
                 if (bankRight) {
                     dz = (1 + pcraft.getType().getCruiseSkipBlocks()) >> 1;
@@ -469,7 +477,7 @@ public class AsyncManager extends BukkitRunnable {
             if (pcraft.getCruiseDirection() == 0x2) {
                 dz = 1 + pcraft.getType().getCruiseSkipBlocks();
                 if (bankRight) {
-                    dx = (0 - 1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
+                    dx = (-1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
                 }
                 if (bankLeft) {
                     dx = (1 + pcraft.getType().getCruiseSkipBlocks()) >> 1;
@@ -477,9 +485,9 @@ public class AsyncManager extends BukkitRunnable {
             }
             // ship faces south
             if (pcraft.getCruiseDirection() == 0x3) {
-                dz = 0 - 1 - pcraft.getType().getCruiseSkipBlocks();
+                dz = -1 - pcraft.getType().getCruiseSkipBlocks();
                 if (bankLeft) {
-                    dx = (0 - 1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
+                    dx = (-1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
                 }
                 if (bankRight) {
                     dx = (1 + pcraft.getType().getCruiseSkipBlocks()) >> 1;
