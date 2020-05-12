@@ -326,6 +326,12 @@ public class AsyncManager extends BukkitRunnable {
         return true;
     }
 
+    /**
+     * Processes rotation task for its corresponding craft
+     * @param task the task to process
+     * @param c the craft this task belongs to
+     * @return true if translation task succeded to process, otherwise false
+     */
     private boolean processRotation(@NotNull final RotationTask task, @NotNull final Craft c) {
         Player notifyP = c.getNotificationPlayer();
         // Check that the craft hasn't been sneakily unpiloted
