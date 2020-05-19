@@ -31,10 +31,14 @@ public final class TeleportSign implements Listener {
         if (CraftManager.getInstance().getCraftByPlayer(event.getPlayer()) == null) {
             return;
         }
-        String[] numbers = ChatColor.stripColor(sign.getLine(1)).split(",");
-        int tX = Integer.parseInt(numbers[0]);
-        int tY = Integer.parseInt(numbers[1]);
-        int tZ = Integer.parseInt(numbers[2]);
+        
+        int tX = sign.getX(); int tY = sign.getY(); int tZ = sign.getZ();
+        try {
+	        String[] numbers = ChatColor.stripColor(sign.getLine(1)).replaceAll(" ", "").split(",");
+	        tX = Integer.parseInt(numbers[0]);
+	        tY = Integer.parseInt(numbers[1]);
+	        tZ = Integer.parseInt(numbers[2]);
+        } catch (IndexOutOfBoundsException | NumberFormatException e) {}
         
         String w = ChatColor.stripColor(sign.getLine(2));
         World world = Bukkit.getWorld(w);
