@@ -18,6 +18,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -36,9 +37,9 @@ public class ICraft extends Craft {
 
 
     @Override
-    public void detect(Player player, Player notificationPlayer, MovecraftLocation startPoint) {
+    public void detect(@Nullable Player player, @NotNull Player notificationPlayer, MovecraftLocation startPoint) {
         this.setNotificationPlayer(notificationPlayer);
-        Movecraft.getInstance().getAsyncManager().submitTask(new DetectionTask(this, startPoint, player), this);
+        Movecraft.getInstance().getAsyncManager().submitTask(new DetectionTask(this, startPoint, player, notificationPlayer), this);
     }
 
     @Override
@@ -107,7 +108,7 @@ public class ICraft extends Craft {
     public void rotate(Rotation rotation, MovecraftLocation originPoint, boolean isSubCraft) {
         Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(this, originPoint, rotation, this.getW(), isSubCraft), this);
     }
-    
+
     @NotNull
     @Override
     public Set<Craft> getContacts() {
