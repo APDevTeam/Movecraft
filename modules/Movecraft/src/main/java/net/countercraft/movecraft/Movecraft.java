@@ -174,6 +174,14 @@ public class Movecraft extends JavaPlugin {
                 Settings.DurabilityOverride.put(Integer.parseInt(str), (Integer) temp.get(str));
             }
         }
+        
+        if (getConfig().contains("WorldScaling")) {
+        	Map<String, Object> temp = getConfig().getConfigurationSection("WorldScaling").getValues(false);
+        	Settings.WorldScaling = new HashMap<>();
+        	for (String world : temp.keySet()) {
+        		Settings.WorldScaling.put(world, Double.parseDouble(temp.get(world).toString()));
+        	}
+        }
 
         Settings.AssaultEnable = getConfig().getBoolean("AssaultEnable", false);
         Settings.AssaultDamagesCapPercent = getConfig().getDouble("AssaultDamagesCapPercent", 1.0);

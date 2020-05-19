@@ -6,12 +6,14 @@ import net.countercraft.movecraft.Rotation;
 import net.countercraft.movecraft.async.detection.DetectionTask;
 import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.localisation.I18nSupport;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.World;
+import org.bukkit.World.Environment;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
@@ -52,7 +54,7 @@ public class ICraft extends Craft {
         if (!this.getType().allowVerticalMovement() && !this.getSinking()) {
             dy = 0;
         }
-        if (dx == 0 && dy == 0 && dz == 0) {
+        if (dx == 0 && dy == 0 && dz == 0 && world.equals(w)) {
             return;
         }
 
@@ -62,17 +64,44 @@ public class ICraft extends Craft {
             }
         }
         
+        // apply world switching scale factor
+        /*if (!world.equals(w)) {
+        	// 
+        	double worldScaleFactor = Settings.WorldScaling.getOrDefault(world.getName(), 1.0);
+        	double oldWorldScaleFactor = 1 / Settings.WorldScaling.getOrDefault(w.getName(), 1.0);
+        	double scaleFactor = worldScaleFactor * oldWorldScaleFactor;
+        	
+        	MovecraftLocation midpoint = hitBox.getMidPoint();
+        	int scaleDx = (int) (midpoint.getX() * scaleFactor - midpoint.getX());
+        	int scaleDz = (int) (midpoint.getZ() * scaleFactor - midpoint.getZ());
+        	dx += scaleDx;
+        	dz += scaleDz;
+        }*/
+        
+        getNotificationPlayer().sendMessage(dx + ", " + dy + ", " + dz);
         // ensure chunks are loaded only if teleportation or world switching is allowed and change in location is large
         if (this.getType().getCanTeleport() || this.getType().getCanSwitchWorld()) {
 	        if (!world.equals(w) || dx + hitBox.getXLength() >= Bukkit.getServer().getViewDistance() * 16
 	        		|| dz + hitBox.getZLength() >= Bukkit.getServer().getViewDistance() * 16) {
 	        	
+	        	getNotificationPlayer().sendMessage("Loading chunks...");
 	        	loadChunks(world, dx, dy, dz);
 	        	
 	        }
     	}
 
         Movecraft.getInstance().getAsyncManager().submitTask(new TranslationTask(this, world, dx, dy, dz), this);
+    }
+    
+    private double getScaleFactor(Environment env) {
+    	switch (env) {
+    	
+    	case NETHER:
+    		return 0.125;
+    	default:
+    		return 1.0;
+    	
+    	}
     }
 
     @Override
@@ -163,7 +192,7 @@ public class ICraft extends Craft {
     	// find all chunks in the old and new hitboxes
     	List<Chunk> chunks = new ArrayList<Chunk>();
     	for (MovecraftLocation location : hitBox) {
-    		Chunk oldChunk = location.toBukkit(world).getChunk();
+    		Chunk oldChunk = location.toBukkit(w).getChunk();
         	Chunk newChunk = location.translate(dx, dy, dz).toBukkit(world).getChunk();
         	if (!chunks.contains(oldChunk)) chunks.add(oldChunk);
         	if (!chunks.contains(newChunk)) chunks.add(newChunk);

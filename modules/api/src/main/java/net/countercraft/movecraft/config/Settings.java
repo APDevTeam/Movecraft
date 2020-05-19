@@ -68,6 +68,7 @@ public class Settings {
     public static boolean TownyBlockSinkOnNoPVP = false;
     public static Map<String, TownyWorldHeightLimits> TownProtectionHeightLimits;
     public static Map<Integer, Integer> DurabilityOverride;
+    public static Map<String, Double> WorldScaling;
     public static boolean IsPaper = false;
 
     public static boolean AssaultEnable;
