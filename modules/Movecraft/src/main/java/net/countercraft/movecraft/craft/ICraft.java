@@ -65,8 +65,8 @@ public class ICraft extends Craft {
         }
         
         // apply world switching scale factor
-        /*if (!world.equals(w)) {
-        	// 
+        if (!world.equals(w)) {
+        	
         	double worldScaleFactor = Settings.WorldScaling.getOrDefault(world.getName(), 1.0);
         	double oldWorldScaleFactor = 1 / Settings.WorldScaling.getOrDefault(w.getName(), 1.0);
         	double scaleFactor = worldScaleFactor * oldWorldScaleFactor;
@@ -76,32 +76,20 @@ public class ICraft extends Craft {
         	int scaleDz = (int) (midpoint.getZ() * scaleFactor - midpoint.getZ());
         	dx += scaleDx;
         	dz += scaleDz;
-        }*/
+        	
+        }
         
-        getNotificationPlayer().sendMessage(dx + ", " + dy + ", " + dz);
         // ensure chunks are loaded only if teleportation or world switching is allowed and change in location is large
         if (this.getType().getCanTeleport() || this.getType().getCanSwitchWorld()) {
-	        if (!world.equals(w) || dx + hitBox.getXLength() >= Bukkit.getServer().getViewDistance() * 16
-	        		|| dz + hitBox.getZLength() >= Bukkit.getServer().getViewDistance() * 16) {
+	        if (!world.equals(w) || Math.abs(dx) + hitBox.getXLength() >= (Bukkit.getServer().getViewDistance() - 1) * 16
+	        		|| Math.abs(dz) + hitBox.getZLength() >= (Bukkit.getServer().getViewDistance() - 1) * 16) {
 	        	
-	        	getNotificationPlayer().sendMessage("Loading chunks...");
 	        	loadChunks(world, dx, dy, dz);
 	        	
 	        }
     	}
 
         Movecraft.getInstance().getAsyncManager().submitTask(new TranslationTask(this, world, dx, dy, dz), this);
-    }
-    
-    private double getScaleFactor(Environment env) {
-    	switch (env) {
-    	
-    	case NETHER:
-    		return 0.125;
-    	default:
-    		return 1.0;
-    	
-    	}
     }
 
     @Override
