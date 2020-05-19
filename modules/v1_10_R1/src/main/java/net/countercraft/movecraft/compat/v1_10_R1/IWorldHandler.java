@@ -201,7 +201,8 @@ public class IWorldHandler extends WorldHandler {
         //*******************************************
         //*   Step five: Destroy the leftovers      *
         //*******************************************
-        Collection<BlockPosition> deletePositions =  CollectionUtils.filter(positions,newPositions);
+        Collection<BlockPosition> deletePositions = positions;
+        if (oldNativeWorld == nativeWorld) deletePositions = CollectionUtils.filter(positions,newPositions);
         setAir(deletePositions, oldNativeWorld);
         //*******************************************
         //*   Step six: Process fire spread         *

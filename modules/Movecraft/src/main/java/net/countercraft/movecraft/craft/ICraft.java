@@ -52,7 +52,7 @@ public class ICraft extends Craft {
         if (!this.getType().allowVerticalMovement() && !this.getSinking()) {
             dy = 0;
         }
-        if (dx == 0 && dy == 0 && dz == 0) {
+        if (dx == 0 && dy == 0 && dz == 0 && world.equals(w)) {
             return;
         }
 

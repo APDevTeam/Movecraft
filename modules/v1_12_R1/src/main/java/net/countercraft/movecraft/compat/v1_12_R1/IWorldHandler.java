@@ -224,7 +224,8 @@ public class IWorldHandler extends WorldHandler {
         //*******************************************
         //*   Step five: Destroy the leftovers      *
         //*******************************************
-        Collection<BlockPosition> deletePositions =  CollectionUtils.filter(positions,newPositions);
+        Collection<BlockPosition> deletePositions = positions;
+        if (oldNativeWorld == nativeWorld) deletePositions = CollectionUtils.filter(positions,newPositions);
         for(BlockPosition position : deletePositions){
             setBlockFast(oldNativeWorld, position, Blocks.AIR.getBlockData());
         }
