@@ -295,21 +295,6 @@ final public class CraftType {
         int dropdist = integerFromObject(data.getOrDefault("gravityDropDistance", -8));
         gravityDropDistance = dropdist > 0 ? -dropdist : dropdist;
         collisionSound = Sound.valueOf((String) data.getOrDefault("collisionSound", "BLOCK_ANVIL_LAND"));
-        
-        
-        /*System.out.println("MinHeightLimit: " + minHeightLimit);
-        System.out.println("MaxHeightLimit: " + maxHeightLimit);
-        System.out.println("MaxHeightAboveGround: " + maxHeightAboveGround);
-        System.out.println("CruiseSkipBlocks: " + cruiseSkipBlocks);
-        System.out.println("CruiseTickCooldown: " + cruiseTickCooldown); // cruise speed setting
-        System.out.println("TickCooldown: " + tickCooldown); // speed setting
-        
-        perWorldMinHeightLimit.forEach((world, i) -> System.out.println("MinHeightLimit: " + world + "=" + i));
-        perWorldMaxHeightLimit.forEach((world, i) -> System.out.println("MaxHeightLimit: " + world + "=" + i));
-        perWorldMaxHeightAboveGround.forEach((world, i) -> System.out.println("MaxHeightAboveGround: " + world + "=" + i));
-        perWorldCruiseSkipBlocks.forEach((world, i) -> System.out.println("CruiseSkipBlocks: " + world + "=" + i));
-        perWorldCruiseTickCooldown.forEach((world, i) -> System.out.println("CruiseTickCooldown: " + world + "=" + i)); // cruise speed setting
-        perWorldTickCooldown.forEach((world, i) -> System.out.println("TickCooldown: " + world + "=" + i)); // speed setting*/
     }
 
     private int integerFromObject(Object obj) {

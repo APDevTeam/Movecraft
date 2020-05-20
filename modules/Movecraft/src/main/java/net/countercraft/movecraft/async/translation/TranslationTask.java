@@ -532,26 +532,11 @@ public class TranslationTask extends AsyncTask {
 		}
     	
     	MovecraftLocation midpoint = oldHitBox.getMidPoint();
-    	/*craft.getNotificationPlayer().sendMessage("X: " + (portalX == 0 ? block.getX() : midpoint.getX()));
-    	craft.getNotificationPlayer().sendMessage("Z: " + (portalZ == 0 ? block.getZ() : midpoint.getZ()));
-    	int scaleDx = (int) ((portalX == 0 ? midpoint.getX() : block.getX()) * scaleFactor - midpoint.getX());
-    	int scaleDz = (int) ((portalZ == 0 ? midpoint.getZ() : block.getZ()) * scaleFactor - midpoint.getZ());*/
 		
 		int scaleDx = (int) (portalNegCorner.getBlockX() * scaleFactor - portalNegCorner.getBlockX());
 		int scaleDz = (int) (portalNegCorner.getBlockZ() * scaleFactor - portalNegCorner.getBlockZ());
 		dx += scaleDx;
     	dz += scaleDz;
-		
-    	/*
-		// search for destination portal
-		synchronized (this) {
-    		craft.getNotificationPlayer().sendMessage("Loading chunks...");
-    		loadChunks(2, 8);
-        	this.wait();
-		}
-		
-		Chunk chunk = new Location(world, portalNegCorner.getBlockX() + scaleDx, 1, portalNegCorner.getBlockZ() + scaleDz).getChunk();
-    	*/
     	
     	if (portalX == 0) {
     		if (midpoint.getX() < block.getX()) {
