@@ -41,7 +41,7 @@ public abstract class AsyncTask extends BukkitRunnable {
         }
     }
 
-    protected abstract void execute();
+    protected abstract void execute() throws Exception;
 
     protected Craft getCraft() {
         return craft;

@@ -163,6 +163,7 @@ public class Movecraft extends JavaPlugin {
         Settings.AllowCrewSigns = getConfig().getBoolean("AllowCrewSigns", true);
         Settings.SetHomeToCrewSign = getConfig().getBoolean("SetHomeToCrewSign", true);
         Settings.MaxRemoteSigns = getConfig().getInt("MaxRemoteSigns", -1);
+        Settings.CraftsUseNetherPortals = getConfig().getBoolean("CraftsUseNetherPortals", false);
         Settings.RequireCreatePerm = getConfig().getBoolean("RequireCreatePerm", false);
         Settings.RequireNamePerm = getConfig().getBoolean("RequireNamePerm", true);
         Settings.TNTContactExplosives = getConfig().getBoolean("TNTContactExplosives", true);
@@ -173,14 +174,6 @@ public class Movecraft extends JavaPlugin {
             for (String str : temp.keySet()) {
                 Settings.DurabilityOverride.put(Integer.parseInt(str), (Integer) temp.get(str));
             }
-        }
-        
-        if (getConfig().contains("WorldScaling")) {
-        	Map<String, Object> temp = getConfig().getConfigurationSection("WorldScaling").getValues(false);
-        	Settings.WorldScaling = new HashMap<>();
-        	for (String world : temp.keySet()) {
-        		Settings.WorldScaling.put(world, Double.parseDouble(temp.get(world).toString()));
-        	}
         }
 
         Settings.AssaultEnable = getConfig().getBoolean("AssaultEnable", false);

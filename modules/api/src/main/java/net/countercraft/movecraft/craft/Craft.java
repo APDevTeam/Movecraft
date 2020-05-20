@@ -35,7 +35,9 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -150,6 +152,27 @@ public abstract class Craft {
     public abstract void rotate(Rotation rotation, MovecraftLocation originPoint);
 
     public abstract void rotate(Rotation rotation, MovecraftLocation originPoint, boolean isSubCraft);
+    
+    /**
+	 * @param which 1 = current, 2 = destination, 3 = both
+	 * @param radius amount of buffer chunks around the craft
+	 * @return list of lists containing chunk x and z coordinates and world
+	 */
+	public abstract List<List<Object>> getChunks(int which, int radius, int dx, int dy, int dz, World world);
+	
+	public abstract void loadChunks(List<List<Object>> list, Object notify);
+	
+    public List<List<Object>> checkChunks(List<List<Object>> chunks) {
+		
+    	List<List<Object>> list = new ArrayList<List<Object>>();
+    	for (List<Object> chunk : chunks) {
+    		if (!((World) chunk.get(2)).isChunkLoaded((int) chunk.get(0), (int) chunk.get(1))) {
+    			list.add(chunk);
+    		}
+    	}
+    	return list;
+    	
+    }
 
     public boolean getCruising() {
         return cruising;

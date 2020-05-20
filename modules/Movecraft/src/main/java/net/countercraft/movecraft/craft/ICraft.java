@@ -9,14 +9,13 @@ import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.localisation.I18nSupport;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.World;
-import org.bukkit.World.Environment;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -64,31 +63,6 @@ public class ICraft extends Craft {
                 return;
             }
         }
-        
-        // apply world switching scale factor
-        if (!world.equals(w)) {
-        	
-        	double worldScaleFactor = Settings.WorldScaling.getOrDefault(world.getName(), 1.0);
-        	double oldWorldScaleFactor = 1 / Settings.WorldScaling.getOrDefault(w.getName(), 1.0);
-        	double scaleFactor = worldScaleFactor * oldWorldScaleFactor;
-        	
-        	MovecraftLocation midpoint = hitBox.getMidPoint();
-        	int scaleDx = (int) (midpoint.getX() * scaleFactor - midpoint.getX());
-        	int scaleDz = (int) (midpoint.getZ() * scaleFactor - midpoint.getZ());
-        	dx += scaleDx;
-        	dz += scaleDz;
-        	
-        }
-        
-        // ensure chunks are loaded only if teleportation or world switching is allowed and change in location is large
-        if (this.getType().getCanTeleport() || this.getType().getCanSwitchWorld()) {
-	        if (!world.equals(w) || Math.abs(dx) + hitBox.getXLength() >= (Bukkit.getServer().getViewDistance() - 1) * 16
-	        		|| Math.abs(dz) + hitBox.getZLength() >= (Bukkit.getServer().getViewDistance() - 1) * 16) {
-	        	
-	        	loadChunks(world, dx, dy, dz);
-	        	
-	        }
-    	}
 
         Movecraft.getInstance().getAsyncManager().submitTask(new TranslationTask(this, world, dx, dy, dz), this);
     }
@@ -107,6 +81,84 @@ public class ICraft extends Craft {
     @Override
     public void rotate(Rotation rotation, MovecraftLocation originPoint, boolean isSubCraft) {
         Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(this, originPoint, rotation, this.getW(), isSubCraft), this);
+    }
+    
+    /**
+     * @param which 1 = current, 2 = destination, 3 = both
+     * @param radius amount of buffer chunks around the craft
+     */
+    @Override
+    public List<List<Object>> getChunks(int which, int radius, int dx, int dy, int dz, World world) {
+    	
+    	List<List<Object>> chunks = new ArrayList<List<Object>>();
+    	
+    	for (MovecraftLocation location : hitBox) {
+    		if ((which & 01) != 0) {
+    			int chunkX = location.getX() / 16;
+    			if (location.getX() < 0) chunkX--;
+    			int chunkZ = location.getZ() / 16;
+    			if (location.getZ() < 0) chunkZ--;
+    			
+    			List<Object> chunk = new ArrayList<Object>();
+    			chunk.add(chunkX); chunk.add(chunkZ); chunk.add(w);
+    			if (!chunks.contains(chunk)) chunks.add(chunk);
+    		}
+    		if ((which & 10) != 0) {
+    			MovecraftLocation newLocation = location.translate(dx, dy, dz);
+    			int chunkX = newLocation.getX() / 16;
+    			if (newLocation.getX() < 0) chunkX--;
+    			int chunkZ = newLocation.getZ() / 16;
+    			if (newLocation.getZ() < 0) chunkZ--;
+    			
+    			List<Object> chunk = new ArrayList<Object>();
+    			chunk.add(chunkX); chunk.add(chunkZ); chunk.add(world);
+    			if (!chunks.contains(chunk)) chunks.add(chunk);
+    		}
+        }
+    	
+    	// add all chunks surrounding the included chunks
+    	if (radius > 0) {
+	    	List<List<Object>> tmp = new ArrayList<List<Object>>();
+	    	tmp.addAll(chunks);
+	    	for (List<Object> chunk : tmp) {
+	    		for (int x = -radius; x <= radius; x++) {
+	    			for (int z = -radius; z <= radius; z++) {
+	    				List<Object> c = new ArrayList<Object>();
+	    				c.add((int) (chunk.get(0)) + x); c.add((int) (chunk.get(1)) + z); c.add(chunk.get(2));
+	    				if (!chunks.contains(c)) chunks.add(c);
+	    			}
+	    		}
+	    	}
+    	}
+    	
+    	return chunks;
+    	
+    }
+    
+    @Override
+    public void loadChunks(List<List<Object>> list, Object notify) {
+    	if (Settings.Debug)
+    		Movecraft.getInstance().getLogger().info("Loading " + list.size() + " chunks...");
+    	
+    	new BukkitRunnable() {
+			
+			@Override
+			public void run() {
+				synchronized (notify) {
+			    	
+			    	// keep those chunks loaded for 10 seconds while the craft teleports
+					List<Chunk> chunks = new ArrayList<Chunk>();
+					for (List<Object> chunk : list) {
+						chunks.add(((World) chunk.get(2)).getChunkAt((int) chunk.get(0), (int) chunk.get(1)));
+					}
+					ChunkManager.addChunksToLoad(chunks);
+					notify.notifyAll();
+					
+				}
+				
+			}
+			
+		}.runTask(Movecraft.getInstance());
     }
 
     @NotNull
@@ -175,33 +227,6 @@ public class ICraft extends Craft {
     @Override
     public int hashCode() {
         return id.hashCode();
-    }
-    
-    private void loadChunks(World world, int dx, int dy, int dz) {
-    	// find all chunks in the old and new hitboxes
-    	List<Chunk> chunks = new ArrayList<Chunk>();
-    	for (MovecraftLocation location : hitBox) {
-    		Chunk oldChunk = location.toBukkit(w).getChunk();
-        	Chunk newChunk = location.translate(dx, dy, dz).toBukkit(world).getChunk();
-        	if (!chunks.contains(oldChunk)) chunks.add(oldChunk);
-        	if (!chunks.contains(newChunk)) chunks.add(newChunk);
-        }
-    	
-    	// add all chunks surrounding the included chunks
-    	List<Chunk> list = new ArrayList<Chunk>();
-    	list.addAll(chunks);
-    	for (Chunk chunk : list) {
-    		if (chunk.isLoaded()) continue;
-    		for (int x = -1; x <= 1; x++) {
-    			for (int z = -1; z <= 1; z++) {
-    				Chunk c = chunk.getWorld().getChunkAt(chunk.getX() + x, chunk.getZ() + z);
-    				if (!chunks.contains(c)) chunks.add(c);
-    			}
-    		}
-    	}
-    	
-    	// keep those chunks loaded for 10 seconds while the craft teleports
-		ChunkManager.addChunksToLoad(chunks);
     }
 
 }

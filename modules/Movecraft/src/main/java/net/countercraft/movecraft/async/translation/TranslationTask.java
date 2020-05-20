@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.async.translation;
 
+import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.config.Settings;
@@ -14,6 +15,7 @@ import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.update.*;
 import net.countercraft.movecraft.utils.*;
 import org.bukkit.*;
+import org.bukkit.World.Environment;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.entity.Entity;
@@ -39,6 +41,8 @@ public class TranslationTask extends AsyncTask {
     private boolean collisionExplosion = false;
     private String failMessage;
     private Collection<UpdateCommand> updates = new HashSet<>();
+    private Sound sound = null;
+    private float volume = 0.0f;
 
     public TranslationTask(Craft c, World world, int dx, int dy, int dz) {
         super(c);
@@ -53,7 +57,7 @@ public class TranslationTask extends AsyncTask {
     }
 
     @Override
-    protected void execute() {
+    protected void execute() throws InterruptedException {
 
         //Check if theres anything to move
         if(oldHitBox.isEmpty()){
@@ -84,7 +88,54 @@ public class TranslationTask extends AsyncTask {
         }
         final int minY = oldHitBox.getMinY();
         final int maxY = oldHitBox.getMaxY();
-        
+
+        // proccess nether portals
+        if (Settings.CraftsUseNetherPortals && craft.getW().getEnvironment() != Environment.THE_END && world.equals(craft.getW())) {
+        	
+        	// ensure chunks are loaded for portal checking only if change in location is large
+        	List<List<Object>> chunksToLoad = craft.checkChunks(craft.getChunks(2, 2, dx, dy, dz, world));
+            if (!chunksToLoad.isEmpty()) {
+            	
+            	synchronized (this) {
+            		craft.loadChunks(chunksToLoad, this);
+    	        	this.wait();
+    			}
+            	
+            }
+        	
+        	for (MovecraftLocation oldLocation : oldHitBox) {
+        		
+        		Location location = oldLocation.translate(dx,dy,dz).toBukkit(craft.getW());
+                Block block = craft.getW().getBlockAt(location);
+                if (block.getType() == Material.PORTAL) {
+                	
+                	boolean success = processNetherPortal(block);
+                	if (success) {
+                		sound = Sound.BLOCK_PORTAL_TRAVEL;
+                		volume = 0.25f;
+                		break;
+                	}
+                	
+                }
+                
+        	}
+        	
+        	
+        	
+        }
+
+        // ensure chunks are loaded only if world is different or change in location is large
+        // !world.equals(craft.getW()) || Math.abs(dx) + oldHitBox.getXLength() >= (Bukkit.getServer().getViewDistance() - 1) * 16 || Math.abs(dz) + oldHitBox.getZLength() >= (Bukkit.getServer().getViewDistance() - 1) * 16
+        List<List<Object>> chunksToLoad = craft.checkChunks(craft.getChunks(3, 1, dx, dy, dz, world));
+        if (!chunksToLoad.isEmpty()) {
+        	
+        	synchronized (this) {
+        		craft.loadChunks(chunksToLoad, this);
+	        	this.wait();
+			}
+        	
+        }
+
         // Only modify dy when not switching worlds
         //Check if the craft is too high
         if(world.equals(craft.getW()) && craft.getType().getMaxHeightLimit(craft.getW()) < craft.getHitBox().getMinY()){
@@ -311,7 +362,7 @@ public class TranslationTask extends AsyncTask {
                     if(craft.getSinking()){
                         continue;
                     }
-                    EntityUpdateCommand eUp = new EntityUpdateCommand(entity, dx, dy, dz, 0, 0, world);
+                    EntityUpdateCommand eUp = new EntityUpdateCommand(entity, dx, dy, dz, 0, 0, world, sound, volume);
                     updates.add(eUp);
                 } else if (!craft.getType().getOnlyMovePlayers() || entity.getType() == EntityType.PRIMED_TNT) {
                     EntityUpdateCommand eUp = new EntityUpdateCommand(entity, dx, dy, dz, 0, 0, world);
@@ -415,6 +466,117 @@ public class TranslationTask extends AsyncTask {
                     updates.add(new ItemDropUpdateCommand(new Location(craft.getW(), harvestedBlock.getX(), harvestedBlock.getY(), harvestedBlock.getZ()), retStack));
             }
         }
+    }
+    
+    private boolean processNetherPortal(Block block) {
+    	
+    	int portalX = 0; int portalZ = 0;
+    	Location portalNegCorner = new Location(block.getWorld(), 0, 0, 0);
+    	Location portalPosCorner = new Location(block.getWorld(), 0, 0, 0);
+    	if (block.getData() == 2) portalZ = 1;
+    	else portalX = 1;
+    	
+    	Material testMaterial;
+    	int testX = block.getX(); int testY = block.getY(); int testZ = block.getZ();
+    	do {
+    		testX -= portalX;
+    		testZ -= portalZ;
+    		testMaterial = block.getWorld().getBlockAt(testX, testY, testZ).getType();
+    	} while (testMaterial == Material.PORTAL);
+    	portalNegCorner.setX(testX + portalX);
+    	portalNegCorner.setZ(testZ + portalZ);
+    	
+    	testX = block.getX(); testY = block.getY(); testZ = block.getZ();
+    	do {
+    		testX += portalX;
+    		testZ += portalZ;
+    		testMaterial = block.getWorld().getBlockAt(testX, testY, testZ).getType();
+    	} while (testMaterial == Material.PORTAL);
+    	portalPosCorner.setX(testX - portalX);
+    	portalPosCorner.setZ(testZ - portalZ);
+    	
+    	testX = block.getX(); testY = block.getY(); testZ = block.getZ();
+    	do {
+    		testY -= 1;
+    		testMaterial = block.getWorld().getBlockAt(testX, testY, testZ).getType();
+    	} while (testMaterial == Material.PORTAL);
+    	portalNegCorner.setY(testY + 1);
+    	
+    	testX = block.getX(); testY = block.getY(); testZ = block.getZ();
+    	do {
+    		testY += 1;
+    		testMaterial = block.getWorld().getBlockAt(testX, testY, testZ).getType();
+    	} while (testMaterial == Material.PORTAL);
+    	portalPosCorner.setY(testY - 1);
+    	
+    	if (portalX == 1) {
+    		if (oldHitBox.getMinX() + dx < portalNegCorner.getBlockX()) return false;
+    		if (oldHitBox.getMaxX() + dx > portalPosCorner.getBlockX()) return false;
+    	}
+    	else {
+    		if (oldHitBox.getMinZ() + dz < portalNegCorner.getBlockZ()) return false;
+    		if (oldHitBox.getMaxZ() + dz > portalPosCorner.getBlockZ()) return false;
+    	}
+    	
+    	if (oldHitBox.getMinY() + dy < portalNegCorner.getBlockY()) return false;
+		if (oldHitBox.getMaxY() + dy > portalPosCorner.getBlockY()) return false;
+		
+		String worldName = craft.getW().getName();
+		double scaleFactor = 1.0;
+		if (craft.getW().getEnvironment() == Environment.NETHER) {
+			world = Bukkit.getWorld(worldName.substring(0, worldName.length() - 7)); // remove _nether from world name
+			scaleFactor = 8.0;
+		}
+		else {
+			world = Bukkit.getWorld(worldName += "_nether"); // add _nether to world name
+			scaleFactor = 0.125;
+		}
+    	
+    	MovecraftLocation midpoint = oldHitBox.getMidPoint();
+    	/*craft.getNotificationPlayer().sendMessage("X: " + (portalX == 0 ? block.getX() : midpoint.getX()));
+    	craft.getNotificationPlayer().sendMessage("Z: " + (portalZ == 0 ? block.getZ() : midpoint.getZ()));
+    	int scaleDx = (int) ((portalX == 0 ? midpoint.getX() : block.getX()) * scaleFactor - midpoint.getX());
+    	int scaleDz = (int) ((portalZ == 0 ? midpoint.getZ() : block.getZ()) * scaleFactor - midpoint.getZ());*/
+		
+		int scaleDx = (int) (portalNegCorner.getBlockX() * scaleFactor - portalNegCorner.getBlockX());
+		int scaleDz = (int) (portalNegCorner.getBlockZ() * scaleFactor - portalNegCorner.getBlockZ());
+		dx += scaleDx;
+    	dz += scaleDz;
+		
+    	/*
+		// search for destination portal
+		synchronized (this) {
+    		craft.getNotificationPlayer().sendMessage("Loading chunks...");
+    		loadChunks(2, 8);
+        	this.wait();
+		}
+		
+		Chunk chunk = new Location(world, portalNegCorner.getBlockX() + scaleDx, 1, portalNegCorner.getBlockZ() + scaleDz).getChunk();
+    	*/
+    	
+    	if (portalX == 0) {
+    		if (midpoint.getX() < block.getX()) {
+    			dx += oldHitBox.getXLength() + 1;
+    		}
+    		else {
+    			dx -= oldHitBox.getXLength() + 1;
+    		}
+    		
+    		// dz += oldHitBox.getMinZ() - portalNegCorner.getBlockZ();
+    	}
+    	else {
+    		if (midpoint.getZ() < block.getZ()) {
+    			dz += oldHitBox.getZLength() + 1;
+    		}
+    		else {
+    			dz -= oldHitBox.getZLength() + 1;
+    		}
+    		
+    		// dx += oldHitBox.getMinX() - portalNegCorner.getBlockX();
+    	}
+    	
+    	return true;
+    	
     }
 
     private ItemStack putInToChests(ItemStack stack, ArrayList<Inventory> inventories) {
