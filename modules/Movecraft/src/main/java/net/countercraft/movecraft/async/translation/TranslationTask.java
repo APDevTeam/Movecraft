@@ -1,8 +1,10 @@
 package net.countercraft.movecraft.async.translation;
 
+import net.countercraft.movecraft.MovecraftChunk;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.craft.ChunkManager;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.CraftType;
@@ -92,11 +94,13 @@ public class TranslationTask extends AsyncTask {
         if (Settings.CraftsUseNetherPortals && craft.getW().getEnvironment() != Environment.THE_END && world.equals(craft.getW())) {
         	
         	// ensure chunks are loaded for portal checking only if change in location is large
-        	List<List<Object>> chunksToLoad = craft.checkChunks(craft.getChunks(2, 2, dx, dy, dz, world));
+        	List<MovecraftChunk> chunksToLoad = ChunkManager.getChunks(oldHitBox, world, dx, dy, dz);
+        	MovecraftChunk.addSurroundingChunks(chunksToLoad, 2);
+        	ChunkManager.checkChunks(chunksToLoad);
             if (!chunksToLoad.isEmpty()) {
             	
             	synchronized (this) {
-            		craft.loadChunks(chunksToLoad, this);
+            		ChunkManager.loadChunks(chunksToLoad, this);
     	        	this.wait();
     			}
             	
@@ -104,12 +108,11 @@ public class TranslationTask extends AsyncTask {
         	
         	for (MovecraftLocation oldLocation : oldHitBox) {
         		
-        		Location location = oldLocation.translate(dx,dy,dz).toBukkit(craft.getW());
+        		Location location = oldLocation.translate(dx, dy, dz).toBukkit(craft.getW());
                 Block block = craft.getW().getBlockAt(location);
                 if (block.getType() == Material.PORTAL) {
                 	
-                	boolean success = processNetherPortal(block);
-                	if (success) {
+                	if (processNetherPortal(block)) {
                 		sound = Sound.BLOCK_PORTAL_TRAVEL;
                 		volume = 0.25f;
                 		break;
@@ -125,11 +128,14 @@ public class TranslationTask extends AsyncTask {
 
         // ensure chunks are loaded only if world is different or change in location is large
         // !world.equals(craft.getW()) || Math.abs(dx) + oldHitBox.getXLength() >= (Bukkit.getServer().getViewDistance() - 1) * 16 || Math.abs(dz) + oldHitBox.getZLength() >= (Bukkit.getServer().getViewDistance() - 1) * 16
-        List<List<Object>> chunksToLoad = craft.checkChunks(craft.getChunks(3, 1, dx, dy, dz, world));
+        List<MovecraftChunk> chunksToLoad = ChunkManager.getChunks(oldHitBox, craft.getW());
+        chunksToLoad.addAll(ChunkManager.getChunks(oldHitBox, world, dx, dy, dz));
+        MovecraftChunk.addSurroundingChunks(chunksToLoad, 1);
+    	ChunkManager.checkChunks(chunksToLoad);
         if (!chunksToLoad.isEmpty()) {
         	
         	synchronized (this) {
-        		craft.loadChunks(chunksToLoad, this);
+        		ChunkManager.loadChunks(chunksToLoad, this);
 	        	this.wait();
 			}
         	
@@ -323,9 +329,9 @@ public class TranslationTask extends AsyncTask {
                     explosionForce += 25;//TODO: find the correct amount
                 }*/
                 Location oldLocation = location.translate(-dx,-dy,-dz).toBukkit(craft.getW());
-                Location newLocation = location.toBukkit(craft.getW());
+                Location newLocation = location.toBukkit(world);
                 if (!oldLocation.getBlock().getType().equals(Material.AIR)) {
-                	updates.add(new ExplosionUpdateCommand(newLocation, explosionForce));
+                    updates.add(new ExplosionUpdateCommand(newLocation, explosionForce));
                     collisionExplosion = true;
                 }
                 if (craft.getType().getFocusedExplosion()) { // don't handle any further collisions if it is set to focusedexplosion
@@ -337,7 +343,7 @@ public class TranslationTask extends AsyncTask {
         if(!collisionBox.isEmpty() && craft.getType().getCruiseOnPilot()){
             CraftManager.getInstance().removeCraft(craft);
             for(MovecraftLocation location : oldHitBox){
-            	Pair<Material, Byte> phaseBlock = craft.getPhaseBlocks().getOrDefault(location, new Pair<>(Material.AIR, (byte) 0));
+                Pair<Material, Byte> phaseBlock = craft.getPhaseBlocks().getOrDefault(location, new Pair<>(Material.AIR, (byte) 0));
                 updates.add(new BlockCreateCommand(craft.getW(), location, phaseBlock.getLeft(), phaseBlock.getRight()));
             }
             newHitBox = new BitmapHitBox();
@@ -403,7 +409,7 @@ public class TranslationTask extends AsyncTask {
         if (!playSound) {
             return;
         }
-		craft.getW().playSound(location, craft.getType().getCollisionSound(), 1.0f, 0.25f);
+        craft.getW().playSound(location, craft.getType().getCollisionSound(), 1.0f, 0.25f);
     }
 
     private static final MovecraftLocation[] SHIFTS = {
@@ -467,7 +473,7 @@ public class TranslationTask extends AsyncTask {
         }
     }
     
-    private boolean processNetherPortal(Block block) {
+    private boolean processNetherPortal(@NotNull Block block) {
     	
     	int portalX = 0; int portalZ = 0;
     	Location portalNegCorner = new Location(block.getWorld(), 0, 0, 0);

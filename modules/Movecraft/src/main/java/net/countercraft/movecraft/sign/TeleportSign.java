@@ -33,12 +33,12 @@ public final class TeleportSign implements Listener {
         }
         
         int tX = sign.getX(); int tY = sign.getY(); int tZ = sign.getZ();
-        try {
-	        String[] numbers = ChatColor.stripColor(sign.getLine(1)).replaceAll(" ", "").split(",");
+        String[] numbers = ChatColor.stripColor(sign.getLine(1)).replaceAll(" ", "").split(",");
+        if (numbers.length >= 3) {
 	        tX = Integer.parseInt(numbers[0]);
 	        tY = Integer.parseInt(numbers[1]);
 	        tZ = Integer.parseInt(numbers[2]);
-        } catch (IndexOutOfBoundsException | NumberFormatException e) {}
+        }
         
         String w = ChatColor.stripColor(sign.getLine(2));
         World world = Bukkit.getWorld(w);

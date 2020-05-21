@@ -4,27 +4,32 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.Chunk;
+import org.bukkit.World;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import net.countercraft.movecraft.Movecraft;
+import net.countercraft.movecraft.MovecraftChunk;
+import net.countercraft.movecraft.MovecraftLocation;
+import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.utils.BitmapHitBox;
 
 public class ChunkManager implements Listener {
 	
-	private static List<Chunk> allChunks = new ArrayList<Chunk>();
+	private static List<MovecraftChunk> chunks = new ArrayList<MovecraftChunk>();
 	
-	public static void addChunksToLoad(List<Chunk> chunks) {
-		List<Chunk> list = new ArrayList<Chunk>();
-		for (Chunk chunk : chunks) {
-			if (!allChunks.contains(chunk))
-				list.add(chunk);
-		}
+	public static void addChunksToLoad(List<MovecraftChunk> list) {
 		
-		for (Chunk chunk : list) {
-			allChunks.add(chunk);
-			if (!chunk.isLoaded()) chunk.load(true);
+		for (MovecraftChunk chunk : list) {
+			if (!chunks.contains(chunk)) {
+				chunks.add(chunk);
+				if (!chunk.isLoaded()) {
+					chunk.toBukkit().load(true);
+				}
+			}
+			
 		}
 		
 		// remove chunks after 10 seconds
@@ -38,15 +43,80 @@ public class ChunkManager implements Listener {
 		}.runTaskLaterAsynchronously(Movecraft.getInstance(), 200L);
 	}
 	
-	private static void removeChunksToLoad(List<Chunk> chunks) {
-		for (Chunk chunk : chunks) {
-			allChunks.remove(chunk);
+	private static void removeChunksToLoad(List<MovecraftChunk> list) {
+		for (MovecraftChunk chunk : list) {
+			chunks.remove(chunk);
 		}
 	}
 	
 	@EventHandler
 	public void onChunkUnload(ChunkUnloadEvent event) {
-		if (allChunks.contains(event.getChunk())) event.setCancelled(true);
+		Chunk chunk = event.getChunk();
+		MovecraftChunk c = new MovecraftChunk(chunk.getX(), chunk.getZ(), chunk.getWorld());
+		if (chunks.contains(c)) event.setCancelled(true);
 	}
+	
+	
+	public static List<MovecraftChunk> getChunks(BitmapHitBox hitBox, World world) {
+		
+		List<MovecraftChunk> chunks = new ArrayList<MovecraftChunk>();
+    	
+    	for (MovecraftLocation location : hitBox) {
+    		
+			int chunkX = location.getX() / 16;
+			if (location.getX() < 0) chunkX--;
+			int chunkZ = location.getZ() / 16;
+			if (location.getZ() < 0) chunkZ--;
+			
+			MovecraftChunk chunk = new MovecraftChunk(chunkX, chunkZ, world);
+			if (!chunks.contains(chunk)) chunks.add(chunk);
+			
+        }
+		
+    	return chunks;
+    	
+	}
+	
+	public static List<MovecraftChunk> getChunks(BitmapHitBox oldHitBox, World world, int dx, int dy, int dz) {
+		
+		BitmapHitBox hitBox = new BitmapHitBox();
+		for (MovecraftLocation location : oldHitBox) {
+			hitBox.add(location.translate(dx, dy, dz));
+		}
+		
+		return getChunks(hitBox, world);
+		
+	}
+	
+	public static void checkChunks(List<MovecraftChunk> chunks) {
+		
+    	List<MovecraftChunk> list = new ArrayList<MovecraftChunk>();
+    	list.addAll(chunks);
+    	for (MovecraftChunk chunk : list) {
+    		if (chunk.isLoaded()) chunks.remove(chunk);
+    	}
+    	
+    }
+	
+	public static void loadChunks(List<MovecraftChunk> chunks, Object notify) {
+    	if (Settings.Debug)
+    		Movecraft.getInstance().getLogger().info("Loading " + chunks.size() + " chunks...");
+    	
+    	new BukkitRunnable() {
+			
+			@Override
+			public void run() {
+				synchronized (notify) {
+			    	
+			    	// keep those chunks loaded for 10 seconds while the craft teleports
+					ChunkManager.addChunksToLoad(chunks);
+					notify.notifyAll();
+					
+				}
+				
+			}
+			
+		}.runTask(Movecraft.getInstance());
+    }
 	
 }

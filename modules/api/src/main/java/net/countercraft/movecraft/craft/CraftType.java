@@ -491,7 +491,7 @@ final public class CraftType {
     public int getCruiseSkipBlocks() {
     	return cruiseSkipBlocks;
     }
-    public int getCruiseSkipBlocks(World world) {
+    public int getCruiseSkipBlocks(@NotNull World world) {
     	return perWorldCruiseSkipBlocks.getOrDefault(world.getName(), cruiseSkipBlocks);
     }
 
@@ -555,11 +555,11 @@ final public class CraftType {
         return allowAADirectorSign;
     }
 
-    /*@Deprecated
+    @Deprecated
     public double getFuelBurnRate() {
         return fuelBurnRate;
-    }*/
-    public double getFuelBurnRate(World world) {
+    }
+    public double getFuelBurnRate(@NotNull World world) {
         return perWorldFuelBurnRate.getOrDefault(world.getName(), fuelBurnRate);
     }
 
@@ -571,19 +571,19 @@ final public class CraftType {
         return overallSinkPercent;
     }
 
-    /*@Deprecated
+    @Deprecated
     public double getDetectionMultiplier() {
         return detectionMultiplier;
-    }*/
-    public double getDetectionMultiplier(World world) {
+    }
+    public double getDetectionMultiplier(@NotNull World world) {
         return perWorldDetectionMultiplier.getOrDefault(world.getName(), detectionMultiplier);
     }
 
-    /*@Deprecated
+    @Deprecated
     public double getUnderwaterDetectionMultiplier() {
         return underwaterDetectionMultiplier;
-    }*/
-    public double getUnderwaterDetectionMultiplier(World world) {
+    }
+    public double getUnderwaterDetectionMultiplier(@NotNull World world) {
         return perWorldUnderwaterDetectionMultiplier.getOrDefault(world.getName(), underwaterDetectionMultiplier);
     }
 
@@ -611,7 +611,7 @@ final public class CraftType {
     public int getTickCooldown() {
     	return tickCooldown;
     }
-    public int getTickCooldown(World world) {
+    public int getTickCooldown(@NotNull World world) {
         return perWorldTickCooldown.getOrDefault(world.getName(), tickCooldown);
     }
 
@@ -619,7 +619,7 @@ final public class CraftType {
     public int getCruiseTickCooldown() {
     	return cruiseTickCooldown;
     }
-    public int getCruiseTickCooldown(World world) {
+    public int getCruiseTickCooldown(@NotNull World world) {
         return perWorldCruiseTickCooldown.getOrDefault(world.getName(), cruiseTickCooldown);
     }
 
@@ -653,7 +653,7 @@ final public class CraftType {
     public int getMaxHeightLimit() {
     	return maxHeightLimit;
     }
-    public int getMaxHeightLimit(World world) {
+    public int getMaxHeightLimit(@NotNull World world) {
         return perWorldMaxHeightLimit.getOrDefault(world.getName(), maxHeightLimit);
     }
 
@@ -661,7 +661,7 @@ final public class CraftType {
     public int getMinHeightLimit() {
     	return minHeightLimit;
     }
-    public int getMinHeightLimit(World world) {
+    public int getMinHeightLimit(@NotNull World world) {
         return perWorldMinHeightLimit.getOrDefault(world.getName(), minHeightLimit);
     }
 
@@ -669,7 +669,7 @@ final public class CraftType {
     public int getMaxHeightAboveGround() {
     	return maxHeightAboveGround;
     }
-    public int getMaxHeightAboveGround(World world) {
+    public int getMaxHeightAboveGround(@NotNull World world) {
         return perWorldMaxHeightAboveGround.getOrDefault(world.getName(), maxHeightAboveGround);
     }
 

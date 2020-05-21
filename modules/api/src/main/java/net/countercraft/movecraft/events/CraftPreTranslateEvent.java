@@ -89,8 +89,7 @@ public class CraftPreTranslateEvent extends CraftEvent implements Cancellable {
      * Sets the destination world
      * @param world world to translate to
      */
-    @NotNull
-    public void setWorld(World world) {
+    public void setWorld(@NotNull World world) {
         this.world = world;
     }
 
