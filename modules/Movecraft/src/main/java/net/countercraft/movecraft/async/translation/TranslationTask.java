@@ -481,8 +481,12 @@ public class TranslationTask extends AsyncTask {
     	if (block.getData() == 2) portalZ = 1;
     	else portalX = 1;
     	
-    	Material testMaterial;
-    	int testX = block.getX(); int testY = block.getY(); int testZ = block.getZ();
+    	Material testMaterial = null;
+    	int testX = block.getX();
+    	int testY = block.getY();
+    	int testZ = block.getZ();
+    	
+    	// find lowest x or z
     	do {
     		testX -= portalX;
     		testZ -= portalZ;
@@ -491,7 +495,10 @@ public class TranslationTask extends AsyncTask {
     	portalNegCorner.setX(testX + portalX);
     	portalNegCorner.setZ(testZ + portalZ);
     	
-    	testX = block.getX(); testY = block.getY(); testZ = block.getZ();
+    	testX = block.getX();
+    	testZ = block.getZ();
+    	
+    	// find highest x or z
     	do {
     		testX += portalX;
     		testZ += portalZ;
@@ -500,69 +507,72 @@ public class TranslationTask extends AsyncTask {
     	portalPosCorner.setX(testX - portalX);
     	portalPosCorner.setZ(testZ - portalZ);
     	
-    	testX = block.getX(); testY = block.getY(); testZ = block.getZ();
+    	testX = block.getX();
+    	testZ = block.getZ();
+    	
+    	// find lowest y
     	do {
     		testY -= 1;
     		testMaterial = block.getWorld().getBlockAt(testX, testY, testZ).getType();
     	} while (testMaterial == Material.PORTAL);
     	portalNegCorner.setY(testY + 1);
     	
-    	testX = block.getX(); testY = block.getY(); testZ = block.getZ();
+    	testY = block.getY();
+    	
+    	// find highest y
     	do {
     		testY += 1;
     		testMaterial = block.getWorld().getBlockAt(testX, testY, testZ).getType();
     	} while (testMaterial == Material.PORTAL);
     	portalPosCorner.setY(testY - 1);
     	
-    	if (portalX == 1) {
+    	
+    	if (portalX == 1) { // if portal is on x axis fail if craft x length does not fit in portal
     		if (oldHitBox.getMinX() + dx < portalNegCorner.getBlockX()) return false;
     		if (oldHitBox.getMaxX() + dx > portalPosCorner.getBlockX()) return false;
     	}
-    	else {
+    	else { // if portal is on z axis fail if craft z length does not fit in portal
     		if (oldHitBox.getMinZ() + dz < portalNegCorner.getBlockZ()) return false;
     		if (oldHitBox.getMaxZ() + dz > portalPosCorner.getBlockZ()) return false;
     	}
     	
+    	// fail if craft y length does not fit in portal
     	if (oldHitBox.getMinY() + dy < portalNegCorner.getBlockY()) return false;
 		if (oldHitBox.getMaxY() + dy > portalPosCorner.getBlockY()) return false;
 		
 		String worldName = craft.getW().getName();
 		double scaleFactor = 1.0;
-		if (craft.getW().getEnvironment() == Environment.NETHER) {
+		if (craft.getW().getEnvironment() == Environment.NETHER) { // if in nether
 			world = Bukkit.getWorld(worldName.substring(0, worldName.length() - 7)); // remove _nether from world name
 			scaleFactor = 8.0;
 		}
-		else {
+		else { // if in overworld
 			world = Bukkit.getWorld(worldName += "_nether"); // add _nether to world name
 			scaleFactor = 0.125;
 		}
     	
-    	MovecraftLocation midpoint = oldHitBox.getMidPoint();
-		
+		// scale destination x and z based on negative most corner of portal
 		int scaleDx = (int) (portalNegCorner.getBlockX() * scaleFactor - portalNegCorner.getBlockX());
 		int scaleDz = (int) (portalNegCorner.getBlockZ() * scaleFactor - portalNegCorner.getBlockZ());
 		dx += scaleDx;
     	dz += scaleDz;
     	
-    	if (portalX == 0) {
-    		if (midpoint.getX() < block.getX()) {
+    	MovecraftLocation midpoint = oldHitBox.getMidPoint();
+    	if (portalX == 0) { // if portal is facing x axis
+    		if (midpoint.getX() < block.getX()) { // craft is on negative side of portal
     			dx += oldHitBox.getXLength() + 1;
     		}
-    		else {
+    		else { // craft is on positive side of portal
     			dx -= oldHitBox.getXLength() + 1;
     		}
-    		
-    		// dz += oldHitBox.getMinZ() - portalNegCorner.getBlockZ();
     	}
-    	else {
-    		if (midpoint.getZ() < block.getZ()) {
+    	else { // if portal is facing z axis
+    		if (midpoint.getZ() < block.getZ()) { // craft is on negative side of portal
     			dz += oldHitBox.getZLength() + 1;
     		}
-    		else {
+    		else { // craft is on positive side of portal
     			dz -= oldHitBox.getZLength() + 1;
     		}
-    		
-    		// dx += oldHitBox.getMinX() - portalNegCorner.getBlockX();
     	}
     	
     	return true;
