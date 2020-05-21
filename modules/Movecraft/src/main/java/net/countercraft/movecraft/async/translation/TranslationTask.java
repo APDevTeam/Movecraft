@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.async.translation;
 
+import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftChunk;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.async.AsyncTask;
@@ -28,6 +29,7 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static net.countercraft.movecraft.utils.MathUtils.withinWorldBorder;
@@ -58,7 +60,7 @@ public class TranslationTask extends AsyncTask {
     }
 
     @Override
-    protected void execute() throws InterruptedException {
+    protected void execute() throws InterruptedException, ExecutionException {
 
         //Check if theres anything to move
         if(oldHitBox.isEmpty()){
@@ -98,12 +100,7 @@ public class TranslationTask extends AsyncTask {
         	MovecraftChunk.addSurroundingChunks(chunksToLoad, 2);
         	ChunkManager.checkChunks(chunksToLoad);
             if (!chunksToLoad.isEmpty()) {
-            	
-            	synchronized (this) {
-            		ChunkManager.loadChunks(chunksToLoad, this);
-    	        	this.wait();
-    			}
-            	
+        		ChunkManager.syncLoadChunks(chunksToLoad).get();
             }
         	
         	for (MovecraftLocation oldLocation : oldHitBox) {
@@ -132,13 +129,8 @@ public class TranslationTask extends AsyncTask {
         chunksToLoad.addAll(ChunkManager.getChunks(oldHitBox, world, dx, dy, dz));
         MovecraftChunk.addSurroundingChunks(chunksToLoad, 1);
     	ChunkManager.checkChunks(chunksToLoad);
-        if (!chunksToLoad.isEmpty()) {
-        	
-        	synchronized (this) {
-        		ChunkManager.loadChunks(chunksToLoad, this);
-	        	this.wait();
-			}
-        	
+    	if (!chunksToLoad.isEmpty()) {
+    		ChunkManager.syncLoadChunks(chunksToLoad).get();
         }
 
         // Only modify dy when not switching worlds

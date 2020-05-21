@@ -2,7 +2,10 @@ package net.countercraft.movecraft.craft;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.World;
 import org.bukkit.event.EventHandler;
@@ -98,25 +101,19 @@ public class ChunkManager implements Listener {
     	
     }
 	
-	public static void loadChunks(List<MovecraftChunk> chunks, Object notify) {
+	public static Future<Boolean> syncLoadChunks(List<MovecraftChunk> chunks) {
     	if (Settings.Debug)
     		Movecraft.getInstance().getLogger().info("Loading " + chunks.size() + " chunks...");
     	
-    	new BukkitRunnable() {
-			
+    	return Bukkit.getScheduler().callSyncMethod(Movecraft.getInstance(), new Callable<Boolean>() {
+
 			@Override
-			public void run() {
-				synchronized (notify) {
-			    	
-			    	// keep those chunks loaded for 10 seconds while the craft teleports
-					ChunkManager.addChunksToLoad(chunks);
-					notify.notifyAll();
-					
-				}
-				
+			public Boolean call() throws Exception {
+				ChunkManager.addChunksToLoad(chunks);
+				return true;
 			}
 			
-		}.runTask(Movecraft.getInstance());
+		});
     }
 	
 }
