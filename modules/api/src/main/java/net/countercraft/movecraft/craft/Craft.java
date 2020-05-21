@@ -142,10 +142,12 @@ public abstract class Craft {
 
     public abstract void detect(Player player, Player notificationPlayer, MovecraftLocation startPoint);
 
+    public abstract void translate(World world, int dx, int dy, int dz);
+
+    @Deprecated
     public void translate(int dx, int dy, int dz) {
     	translate(w, dx, dy, dz);
     }
-    public abstract void translate(World world, int dx, int dy, int dz);
 
     public abstract void rotate(Rotation rotation, MovecraftLocation originPoint);
 

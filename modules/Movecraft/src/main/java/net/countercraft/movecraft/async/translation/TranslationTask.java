@@ -263,7 +263,7 @@ public class TranslationTask extends AsyncTask {
                 }
             } //END OF: if (blockObstructed)
         }
-        
+
         if (!oldFluidList.isEmpty()) {
             for (MovecraftLocation fluidLoc : oldFluidList) {
                 newFluidList.add(fluidLoc.translate(dx, dy, dz));
@@ -281,7 +281,7 @@ public class TranslationTask extends AsyncTask {
                 fail(String.format(I18nSupport.getInternationalisedString("Translation - Failed Craft over block"), testType.name().toLowerCase().replace("_", " ")));
             }
         }
-     	//call event
+        //call event
         CraftTranslateEvent translateEvent = new CraftTranslateEvent(craft, oldHitBox, newHitBox, world);
         Bukkit.getServer().getPluginManager().callEvent(translateEvent);
         if(translateEvent.isCancelled()){
@@ -309,7 +309,7 @@ public class TranslationTask extends AsyncTask {
                         collisionExplosion = true;
                     }
                 }
-                List<MovecraftLocation> toRemove = new ArrayList<>();
+                BitmapHitBox toRemove = new BitmapHitBox();
                 MovecraftLocation next = location.translate(-dx,-dy,-dz);
                 while(oldHitBox.contains(next)) {
                     toRemove.add(next);
@@ -319,7 +319,7 @@ public class TranslationTask extends AsyncTask {
                 newHitBox.removeAll(toRemove);
             }
         } else if ((craft.getType().getCollisionExplosion() != 0.0F) && System.currentTimeMillis() - craft.getOrigPilotTime() > Settings.CollisionPrimer) {
-        	for(MovecraftLocation location : collisionBox) {
+            for(MovecraftLocation location : collisionBox) {
                 float explosionForce = craft.getType().getCollisionExplosion();
                 if (craft.getType().getFocusedExplosion()) {
                     explosionForce *= Math.min(oldHitBox.size(), craft.getType().getMaxSize());

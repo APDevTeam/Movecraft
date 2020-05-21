@@ -37,7 +37,7 @@ public class ICraft extends Craft {
     }
 
     @Override
-    public void translate(World world, int dx, int dy, int dz) {
+    public void translate(@NotNull World world, int dx, int dy, int dz) {
         // check to see if the craft is trying to move in a direction not permitted by the type
     	if (!world.equals(w) && !this.getType().getCanSwitchWorld() && !this.getSinking()) {
     		world = w;

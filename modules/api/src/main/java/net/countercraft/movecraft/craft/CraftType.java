@@ -180,7 +180,7 @@ final public class CraftType {
         perWorldMinHeightLimit = new HashMap<>();
         Map<String, Integer> minHeightMap = stringToIntMapFromObject(data.getOrDefault("perWorldMinHeightLimit", new HashMap<>()));
         minHeightMap.forEach((world, height) -> perWorldMinHeightLimit.put(world, Math.max(0, height)));
-        
+
         double cruiseSpeed = doubleFromObject(data.getOrDefault("cruiseSpeed", 20.0 / tickCooldown));
         cruiseTickCooldown = (int) Math.round((1.0 + cruiseSkipBlocks) * 20.0 / cruiseSpeed);
         perWorldCruiseTickCooldown = new HashMap<>();
@@ -205,6 +205,7 @@ final public class CraftType {
         if (value <= minHeightLimit) {
             value = 255;
         }
+
         maxHeightLimit = value;
         perWorldMaxHeightLimit = new HashMap<>();
         Map<String, Integer> maxHeightMap = stringToIntMapFromObject(data.getOrDefault("perWorldMaxHeightLimit", new HashMap<>()));
@@ -489,7 +490,7 @@ final public class CraftType {
 
     @Deprecated
     public int getCruiseSkipBlocks() {
-    	return cruiseSkipBlocks;
+        return cruiseSkipBlocks;
     }
     public int getCruiseSkipBlocks(@NotNull World world) {
     	return perWorldCruiseSkipBlocks.getOrDefault(world.getName(), cruiseSkipBlocks);
@@ -609,7 +610,7 @@ final public class CraftType {
 
     @Deprecated
     public int getTickCooldown() {
-    	return tickCooldown;
+        return tickCooldown;
     }
     public int getTickCooldown(@NotNull World world) {
         return perWorldTickCooldown.getOrDefault(world.getName(), tickCooldown);
@@ -617,7 +618,7 @@ final public class CraftType {
 
     @Deprecated
     public int getCruiseTickCooldown() {
-    	return cruiseTickCooldown;
+        return cruiseTickCooldown;
     }
     public int getCruiseTickCooldown(@NotNull World world) {
         return perWorldCruiseTickCooldown.getOrDefault(world.getName(), cruiseTickCooldown);
@@ -651,7 +652,7 @@ final public class CraftType {
 
     @Deprecated
     public int getMaxHeightLimit() {
-    	return maxHeightLimit;
+        return maxHeightLimit;
     }
     public int getMaxHeightLimit(@NotNull World world) {
         return perWorldMaxHeightLimit.getOrDefault(world.getName(), maxHeightLimit);
@@ -659,7 +660,7 @@ final public class CraftType {
 
     @Deprecated
     public int getMinHeightLimit() {
-    	return minHeightLimit;
+        return minHeightLimit;
     }
     public int getMinHeightLimit(@NotNull World world) {
         return perWorldMinHeightLimit.getOrDefault(world.getName(), minHeightLimit);
@@ -667,7 +668,7 @@ final public class CraftType {
 
     @Deprecated
     public int getMaxHeightAboveGround() {
-    	return maxHeightAboveGround;
+        return maxHeightAboveGround;
     }
     public int getMaxHeightAboveGround(@NotNull World world) {
         return perWorldMaxHeightAboveGround.getOrDefault(world.getName(), maxHeightAboveGround);
@@ -714,7 +715,7 @@ final public class CraftType {
     public double getDynamicLagSpeedFactor() {
         return dynamicLagSpeedFactor;
     }
-    
+
     public double getDynamicLagPowerFactor() {
         return dynamicLagPowerFactor;
     }
