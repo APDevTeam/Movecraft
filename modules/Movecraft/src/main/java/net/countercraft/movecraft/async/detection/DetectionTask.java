@@ -22,6 +22,7 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.utils.BitmapHitBox;
 import net.countercraft.movecraft.utils.HashHitBox;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -39,12 +40,13 @@ public class DetectionTask extends AsyncTask {
     private final int minSize;
     private final int maxSize;
     @NotNull private final Stack<MovecraftLocation> blockStack = new Stack<>();
-    @NotNull private final HashHitBox fluidBox = new HashHitBox();
-    @NotNull private final HashHitBox hitBox = new HashHitBox();
+    @NotNull private final BitmapHitBox fluidBox = new BitmapHitBox();
+    @NotNull private final BitmapHitBox hitBox = new BitmapHitBox();
     @NotNull private final HashSet<MovecraftLocation> visited = new HashSet<>();
     @NotNull private final HashMap<List<Integer>, Integer> blockTypeCount = new HashMap<>();
     @NotNull private final World world;
-    @Nullable private final Player player, notificationPlayer;
+    @Nullable private final Player player;
+    @NotNull private final Player notificationPlayer;
     private final int[] allowedBlocks;
     private final int[] forbiddenBlocks;
     @NotNull private final String[] forbiddenSignStrings;
@@ -59,14 +61,14 @@ public class DetectionTask extends AsyncTask {
     private boolean waterContact;
     @NotNull private String failMessage = "";
 
-    public DetectionTask(Craft c, MovecraftLocation startLocation, Player player) {
+    public DetectionTask(Craft c, @NotNull MovecraftLocation startLocation, @Nullable Player player, @NotNull Player notificationPlayer) {
         super(c);
         this.startLocation = startLocation;
         this.minSize = craft.getType().getMinSize();
         this.maxSize = craft.getType().getMaxSize();
         this.world = craft.getW();
         this.player = player;
-        this.notificationPlayer = craft.getNotificationPlayer();
+        this.notificationPlayer = notificationPlayer;
         this.allowedBlocks = craft.getType().getAllowedBlocks();
         this.forbiddenBlocks = craft.getType().getForbiddenBlocks();
         this.forbiddenSignStrings = craft.getType().getForbiddenSignStrings();
@@ -455,7 +457,7 @@ public class DetectionTask extends AsyncTask {
         return world;
     }
 
-    @Nullable
+    @NotNull
     public Player getNotificationPlayer() {
         return notificationPlayer;
     }
@@ -487,12 +489,12 @@ public class DetectionTask extends AsyncTask {
     }
 
     @NotNull
-    public HashHitBox getHitBox() {
+    public BitmapHitBox getHitBox() {
         return hitBox;
     }
 
     @NotNull
-    public HashHitBox getFluidBox() {
+    public BitmapHitBox getFluidBox() {
         return fluidBox;
     }
 
