@@ -35,9 +35,16 @@ public final class TeleportSign implements Listener {
         int tX = sign.getX(); int tY = sign.getY(); int tZ = sign.getZ();
         String[] numbers = ChatColor.stripColor(sign.getLine(1)).replaceAll(" ", "").split(",");
         if (numbers.length >= 3) {
-	        tX = Integer.parseInt(numbers[0]);
-	        tY = Integer.parseInt(numbers[1]);
-	        tZ = Integer.parseInt(numbers[2]);
+            try {
+                
+                tX = Integer.parseInt(numbers[0]);
+                tY = Integer.parseInt(numbers[1]);
+                tZ = Integer.parseInt(numbers[2]);
+                
+            } catch (NumberFormatException e) {
+                event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Invalid Coordinates"));
+                return;
+            }
         }
         
         String w = ChatColor.stripColor(sign.getLine(2));
