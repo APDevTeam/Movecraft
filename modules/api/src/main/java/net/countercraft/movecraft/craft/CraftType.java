@@ -186,13 +186,13 @@ final public class CraftType {
         perWorldCruiseTickCooldown = new HashMap<>();
         Map<String, Double> cruiseTickCooldownMap = stringToDoubleMapFromObject(data.getOrDefault("perWorldCruiseSpeed", new HashMap<>()));
         cruiseTickCooldownMap.forEach((world, speed) -> {
-        	double worldCruiseSkipBlocks = perWorldCruiseSkipBlocks.getOrDefault(world, cruiseSkipBlocks);
-        	perWorldCruiseTickCooldown.put(world, (int) Math.round((1.0 + worldCruiseSkipBlocks) * 20.0 / cruiseSpeed));
+            double worldCruiseSkipBlocks = perWorldCruiseSkipBlocks.getOrDefault(world, cruiseSkipBlocks);
+            perWorldCruiseTickCooldown.put(world, (int) Math.round((1.0 + worldCruiseSkipBlocks) * 20.0 / cruiseSpeed));
         });
         tickCooldownMap.forEach((world, speed) -> {
-        	if (!perWorldCruiseTickCooldown.containsKey(world)) {
-        		perWorldCruiseTickCooldown.put(world, (int) Math.round((1.0 + cruiseSkipBlocks) * 20.0 / speed));
-        	}
+            if (!perWorldCruiseTickCooldown.containsKey(world)) {
+                perWorldCruiseTickCooldown.put(world, (int) Math.round((1.0 + cruiseSkipBlocks) * 20.0 / speed));
+            }
         });
         
         if(Settings.Debug) {
@@ -210,10 +210,10 @@ final public class CraftType {
         perWorldMaxHeightLimit = new HashMap<>();
         Map<String, Integer> maxHeightMap = stringToIntMapFromObject(data.getOrDefault("perWorldMaxHeightLimit", new HashMap<>()));
         maxHeightMap.forEach((world, height) -> {
-        	int worldValue = Math.min(height, 255);
-        	int worldMinHeight = perWorldMinHeightLimit.getOrDefault(world, minHeightLimit);
-        	if (worldValue <= worldMinHeight) worldValue = 255;
-        	perWorldMaxHeightLimit.put(world, worldValue);
+            int worldValue = Math.min(height, 255);
+            int worldMinHeight = perWorldMinHeightLimit.getOrDefault(world, minHeightLimit);
+            if (worldValue <= worldMinHeight) worldValue = 255;
+            perWorldMaxHeightLimit.put(world, worldValue);
         });
         
         maxHeightAboveGround = integerFromObject(data.getOrDefault("maxHeightAboveGround", -1));
@@ -323,25 +323,25 @@ final public class CraftType {
     }
     
     private Map<String, Integer> stringToIntMapFromObject(Object obj) {
-    	HashMap<String, Integer> returnMap = new HashMap<>();
-    	HashMap<Object, Object> objMap = (HashMap<Object, Object>) obj;
-    	for (Object key : objMap.keySet()) {
-    		String str = (String) key;
-    		Integer i = (Integer) objMap.get(key);
-    		returnMap.put(str, i);
-    	}
-    	return returnMap;
+        HashMap<String, Integer> returnMap = new HashMap<>();
+        HashMap<Object, Object> objMap = (HashMap<Object, Object>) obj;
+        for (Object key : objMap.keySet()) {
+            String str = (String) key;
+            Integer i = (Integer) objMap.get(key);
+            returnMap.put(str, i);
+        }
+        return returnMap;
     }
     
     private Map<String, Double> stringToDoubleMapFromObject(Object obj) {
-    	HashMap<String, Double> returnMap = new HashMap<>();
-    	HashMap<Object, Object> objMap = (HashMap<Object, Object>) obj;
-    	for (Object key : objMap.keySet()) {
-    		String str = (String) key;
-    		Double d = (Double) objMap.get(key);
-    		returnMap.put(str, d);
-    	}
-    	return returnMap;
+        HashMap<String, Double> returnMap = new HashMap<>();
+        HashMap<Object, Object> objMap = (HashMap<Object, Object>) obj;
+        for (Object key : objMap.keySet()) {
+            String str = (String) key;
+            Double d = (Double) objMap.get(key);
+            returnMap.put(str, d);
+        }
+        return returnMap;
     }
 
     private int[] blockIDListFromObject(Object obj) {
@@ -493,7 +493,7 @@ final public class CraftType {
         return cruiseSkipBlocks;
     }
     public int getCruiseSkipBlocks(@NotNull World world) {
-    	return perWorldCruiseSkipBlocks.getOrDefault(world.getName(), cruiseSkipBlocks);
+        return perWorldCruiseSkipBlocks.getOrDefault(world.getName(), cruiseSkipBlocks);
     }
 
     public int getVertCruiseSkipBlocks() {

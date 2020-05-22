@@ -1,6 +1,5 @@
 package net.countercraft.movecraft.async.translation;
 
-import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftChunk;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.async.AsyncTask;
@@ -86,51 +85,53 @@ public class TranslationTask extends AsyncTask {
         if (dz != preTranslateEvent.getDz()) {
             dz = preTranslateEvent.getDz();
         }
-        if (world != preTranslateEvent.getWorld()) {
-        	world = preTranslateEvent.getWorld();
-        }
+        world = preTranslateEvent.getWorld();
+
         final int minY = oldHitBox.getMinY();
         final int maxY = oldHitBox.getMaxY();
 
         // proccess nether portals
-        if (Settings.CraftsUseNetherPortals && craft.getW().getEnvironment() != Environment.THE_END && world.equals(craft.getW())) {
-        	
-        	// ensure chunks are loaded for portal checking only if change in location is large
-        	List<MovecraftChunk> chunksToLoad = ChunkManager.getChunks(oldHitBox, world, dx, dy, dz);
-        	MovecraftChunk.addSurroundingChunks(chunksToLoad, 2);
-        	ChunkManager.checkChunks(chunksToLoad);
+        if (Settings.CraftsUseNetherPortals && craft.getW().getEnvironment() != Environment.THE_END
+                && world.equals(craft.getW())) {
+
+            // ensure chunks are loaded for portal checking only if change in location is
+            // large
+            List<MovecraftChunk> chunksToLoad = ChunkManager.getChunks(oldHitBox, world, dx, dy, dz);
+            MovecraftChunk.addSurroundingChunks(chunksToLoad, 2);
+            ChunkManager.checkChunks(chunksToLoad);
             if (!chunksToLoad.isEmpty()) {
-        		ChunkManager.syncLoadChunks(chunksToLoad).get();
+                ChunkManager.syncLoadChunks(chunksToLoad).get();
             }
-        	
-        	for (MovecraftLocation oldLocation : oldHitBox) {
-        		
-        		Location location = oldLocation.translate(dx, dy, dz).toBukkit(craft.getW());
+
+            for (MovecraftLocation oldLocation : oldHitBox) {
+
+                Location location = oldLocation.translate(dx, dy, dz).toBukkit(craft.getW());
                 Block block = craft.getW().getBlockAt(location);
                 if (block.getType() == Material.PORTAL) {
-                	
-                	if (processNetherPortal(block)) {
-                		sound = Sound.BLOCK_PORTAL_TRAVEL;
-                		volume = 0.25f;
-                		break;
-                	}
-                	
+
+                    if (processNetherPortal(block)) {
+                        sound = Sound.BLOCK_PORTAL_TRAVEL;
+                        volume = 0.25f;
+                        break;
+                    }
+
                 }
-                
-        	}
-        	
-        	
-        	
+
+            }
+
         }
 
-        // ensure chunks are loaded only if world is different or change in location is large
-        // !world.equals(craft.getW()) || Math.abs(dx) + oldHitBox.getXLength() >= (Bukkit.getServer().getViewDistance() - 1) * 16 || Math.abs(dz) + oldHitBox.getZLength() >= (Bukkit.getServer().getViewDistance() - 1) * 16
+        // ensure chunks are loaded only if world is different or change in location is
+        // large
+        // !world.equals(craft.getW()) || Math.abs(dx) + oldHitBox.getXLength() >=
+        // (Bukkit.getServer().getViewDistance() - 1) * 16 || Math.abs(dz) +
+        // oldHitBox.getZLength() >= (Bukkit.getServer().getViewDistance() - 1) * 16
         List<MovecraftChunk> chunksToLoad = ChunkManager.getChunks(oldHitBox, craft.getW());
         chunksToLoad.addAll(ChunkManager.getChunks(oldHitBox, world, dx, dy, dz));
         MovecraftChunk.addSurroundingChunks(chunksToLoad, 1);
-    	ChunkManager.checkChunks(chunksToLoad);
-    	if (!chunksToLoad.isEmpty()) {
-    		ChunkManager.syncLoadChunks(chunksToLoad).get();
+        ChunkManager.checkChunks(chunksToLoad);
+        if (!chunksToLoad.isEmpty()) {
+            ChunkManager.syncLoadChunks(chunksToLoad).get();
         }
 
         // Only modify dy when not switching worlds
@@ -466,109 +467,110 @@ public class TranslationTask extends AsyncTask {
     }
     
     private boolean processNetherPortal(@NotNull Block block) {
-    	
-    	int portalX = 0; int portalZ = 0;
-    	Location portalNegCorner = new Location(block.getWorld(), 0, 0, 0);
-    	Location portalPosCorner = new Location(block.getWorld(), 0, 0, 0);
-    	if (block.getData() == 2) portalZ = 1;
-    	else portalX = 1;
-    	
-    	Material testMaterial = null;
-    	int testX = block.getX();
-    	int testY = block.getY();
-    	int testZ = block.getZ();
-    	
-    	// find lowest x or z
-    	do {
-    		testX -= portalX;
-    		testZ -= portalZ;
-    		testMaterial = block.getWorld().getBlockAt(testX, testY, testZ).getType();
-    	} while (testMaterial == Material.PORTAL);
-    	portalNegCorner.setX(testX + portalX);
-    	portalNegCorner.setZ(testZ + portalZ);
-    	
-    	testX = block.getX();
-    	testZ = block.getZ();
-    	
-    	// find highest x or z
-    	do {
-    		testX += portalX;
-    		testZ += portalZ;
-    		testMaterial = block.getWorld().getBlockAt(testX, testY, testZ).getType();
-    	} while (testMaterial == Material.PORTAL);
-    	portalPosCorner.setX(testX - portalX);
-    	portalPosCorner.setZ(testZ - portalZ);
-    	
-    	testX = block.getX();
-    	testZ = block.getZ();
-    	
-    	// find lowest y
-    	do {
-    		testY -= 1;
-    		testMaterial = block.getWorld().getBlockAt(testX, testY, testZ).getType();
-    	} while (testMaterial == Material.PORTAL);
-    	portalNegCorner.setY(testY + 1);
-    	
-    	testY = block.getY();
-    	
-    	// find highest y
-    	do {
-    		testY += 1;
-    		testMaterial = block.getWorld().getBlockAt(testX, testY, testZ).getType();
-    	} while (testMaterial == Material.PORTAL);
-    	portalPosCorner.setY(testY - 1);
-    	
-    	
-    	if (portalX == 1) { // if portal is on x axis fail if craft x length does not fit in portal
-    		if (oldHitBox.getMinX() + dx < portalNegCorner.getBlockX()) return false;
-    		if (oldHitBox.getMaxX() + dx > portalPosCorner.getBlockX()) return false;
-    	}
-    	else { // if portal is on z axis fail if craft z length does not fit in portal
-    		if (oldHitBox.getMinZ() + dz < portalNegCorner.getBlockZ()) return false;
-    		if (oldHitBox.getMaxZ() + dz > portalPosCorner.getBlockZ()) return false;
-    	}
-    	
-    	// fail if craft y length does not fit in portal
-    	if (oldHitBox.getMinY() + dy < portalNegCorner.getBlockY()) return false;
-		if (oldHitBox.getMaxY() + dy > portalPosCorner.getBlockY()) return false;
-		
-		String worldName = craft.getW().getName();
-		double scaleFactor = 1.0;
-		if (craft.getW().getEnvironment() == Environment.NETHER) { // if in nether
-			world = Bukkit.getWorld(worldName.substring(0, worldName.length() - 7)); // remove _nether from world name
-			scaleFactor = 8.0;
-		}
-		else { // if in overworld
-			world = Bukkit.getWorld(worldName += "_nether"); // add _nether to world name
-			scaleFactor = 0.125;
-		}
-    	
-		// scale destination x and z based on negative most corner of portal
-		int scaleDx = (int) (portalNegCorner.getBlockX() * scaleFactor - portalNegCorner.getBlockX());
-		int scaleDz = (int) (portalNegCorner.getBlockZ() * scaleFactor - portalNegCorner.getBlockZ());
-		dx += scaleDx;
-    	dz += scaleDz;
-    	
-    	MovecraftLocation midpoint = oldHitBox.getMidPoint();
-    	if (portalX == 0) { // if portal is facing x axis
-    		if (midpoint.getX() < block.getX()) { // craft is on negative side of portal
-    			dx += oldHitBox.getXLength() + 1;
-    		}
-    		else { // craft is on positive side of portal
-    			dx -= oldHitBox.getXLength() + 1;
-    		}
-    	}
-    	else { // if portal is facing z axis
-    		if (midpoint.getZ() < block.getZ()) { // craft is on negative side of portal
-    			dz += oldHitBox.getZLength() + 1;
-    		}
-    		else { // craft is on positive side of portal
-    			dz -= oldHitBox.getZLength() + 1;
-    		}
-    	}
-    	
-    	return true;
-    	
+
+        int portalX = 0;
+        int portalZ = 0;
+        Location portalNegCorner = new Location(block.getWorld(), 0, 0, 0);
+        Location portalPosCorner = new Location(block.getWorld(), 0, 0, 0);
+        if (block.getData() == 2) portalZ = 1;
+        else portalX = 1;
+
+        Material testMaterial = null;
+        int testX = block.getX();
+        int testY = block.getY();
+        int testZ = block.getZ();
+
+        // find lowest x or z
+        do {
+            testX -= portalX;
+            testZ -= portalZ;
+            testMaterial = block.getWorld().getBlockAt(testX, testY, testZ).getType();
+        } while (testMaterial == Material.PORTAL);
+        portalNegCorner.setX(testX + portalX);
+        portalNegCorner.setZ(testZ + portalZ);
+
+        testX = block.getX();
+        testZ = block.getZ();
+
+        // find highest x or z
+        do {
+            testX += portalX;
+            testZ += portalZ;
+            testMaterial = block.getWorld().getBlockAt(testX, testY, testZ).getType();
+        } while (testMaterial == Material.PORTAL);
+        portalPosCorner.setX(testX - portalX);
+        portalPosCorner.setZ(testZ - portalZ);
+
+        testX = block.getX();
+        testZ = block.getZ();
+
+        // find lowest y
+        do {
+            testY -= 1;
+            testMaterial = block.getWorld().getBlockAt(testX, testY, testZ).getType();
+        } while (testMaterial == Material.PORTAL);
+        portalNegCorner.setY(testY + 1);
+
+        testY = block.getY();
+
+        // find highest y
+        do {
+            testY += 1;
+            testMaterial = block.getWorld().getBlockAt(testX, testY, testZ).getType();
+        } while (testMaterial == Material.PORTAL);
+        portalPosCorner.setY(testY - 1);
+
+        if (portalX == 1) { // if portal is on x axis fail if craft x length does not fit in portal
+            if (oldHitBox.getMinX() + dx < portalNegCorner.getBlockX())
+                return false;
+            if (oldHitBox.getMaxX() + dx > portalPosCorner.getBlockX())
+                return false;
+        } else { // if portal is on z axis fail if craft z length does not fit in portal
+            if (oldHitBox.getMinZ() + dz < portalNegCorner.getBlockZ())
+                return false;
+            if (oldHitBox.getMaxZ() + dz > portalPosCorner.getBlockZ())
+                return false;
+        }
+
+        // fail if craft y length does not fit in portal
+        if (oldHitBox.getMinY() + dy < portalNegCorner.getBlockY())
+            return false;
+        if (oldHitBox.getMaxY() + dy > portalPosCorner.getBlockY())
+            return false;
+
+        String worldName = craft.getW().getName();
+        double scaleFactor = 1.0;
+        if (craft.getW().getEnvironment() == Environment.NETHER) { // if in nether
+            world = Bukkit.getWorld(worldName.substring(0, worldName.length() - 7)); // remove _nether from world name
+            scaleFactor = 8.0;
+        } else { // if in overworld
+            world = Bukkit.getWorld(worldName += "_nether"); // add _nether to world name
+            scaleFactor = 0.125;
+        }
+
+        // scale destination x and z based on negative most corner of portal
+        int scaleDx = (int) (portalNegCorner.getBlockX() * scaleFactor - portalNegCorner.getBlockX());
+        int scaleDz = (int) (portalNegCorner.getBlockZ() * scaleFactor - portalNegCorner.getBlockZ());
+        dx += scaleDx;
+        dz += scaleDz;
+
+        MovecraftLocation midpoint = oldHitBox.getMidPoint();
+        if (portalX == 0) { // if portal is facing x axis
+            if (midpoint.getX() < block.getX()) { // craft is on negative side of portal
+                dx += oldHitBox.getXLength() + 1;
+            } else { // craft is on positive side of portal
+                dx -= oldHitBox.getXLength() + 1;
+            }
+        } else { // if portal is facing z axis
+            if (midpoint.getZ() < block.getZ()) { // craft is on negative side of portal
+                dz += oldHitBox.getZLength() + 1;
+            } else { // craft is on positive side of portal
+                dz -= oldHitBox.getZLength() + 1;
+            }
+        }
+
+        return true;
+
     }
 
     private ItemStack putInToChests(ItemStack stack, ArrayList<Inventory> inventories) {

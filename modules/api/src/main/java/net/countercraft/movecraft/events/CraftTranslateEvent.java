@@ -43,7 +43,7 @@ public class CraftTranslateEvent extends CraftEvent implements Cancellable {
     
     @NotNull
     public World getWorld() {
-    	return world;
+        return world;
     }
 
     @Override

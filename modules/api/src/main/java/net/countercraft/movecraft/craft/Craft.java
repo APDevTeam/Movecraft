@@ -132,8 +132,8 @@ public abstract class Craft {
     }
     
     public void setW(World world) {
-    	this.w = world;
-    	if (type.getMaxHeightLimit(w) > w.getMaxHeight() - 1) {
+        this.w = world;
+        if (type.getMaxHeightLimit(w) > w.getMaxHeight() - 1) {
             this.maxHeightLimit = w.getMaxHeight() - 1;
         } else {
             this.maxHeightLimit = type.getMaxHeightLimit(w);
@@ -146,7 +146,7 @@ public abstract class Craft {
 
     @Deprecated
     public void translate(int dx, int dy, int dz) {
-    	translate(w, dx, dy, dz);
+        translate(w, dx, dy, dz);
     }
 
     public abstract void rotate(Rotation rotation, MovecraftLocation originPoint);

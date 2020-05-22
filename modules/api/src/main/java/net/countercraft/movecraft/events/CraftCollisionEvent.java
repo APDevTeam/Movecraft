@@ -27,7 +27,7 @@ public class CraftCollisionEvent extends CraftEvent{
     
     @NotNull
     public World getWorld() {
-    	return world;
+        return world;
     }
 
     @Override
