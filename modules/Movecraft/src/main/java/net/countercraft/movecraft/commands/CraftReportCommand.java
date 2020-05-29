@@ -48,7 +48,7 @@ public class CraftReportCommand implements CommandExecutor{
                     hitBox.getMinX() + "," +
                     hitBox.getMinY() + "," +
                     hitBox.getMinZ() + " - " +
-                    craft.getMeanCruiseTime());
+                    String.format("%.2f", 1000 * craft.getMeanCruiseTime()) + "ms");
         }
         if(!paginator.isInBounds(page)){
             commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Paginator - Invalid page") + "\"" + args[1] + "\"");
