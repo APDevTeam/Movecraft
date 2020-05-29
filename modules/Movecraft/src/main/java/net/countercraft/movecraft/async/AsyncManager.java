@@ -421,16 +421,16 @@ public class AsyncManager extends BukkitRunnable {
             if(Settings.Debug) {
                 Movecraft.getInstance().getLogger().info("TickCoolDown: " + tickCoolDown);
             }
-            if(pcraft.getCruiseDirection() == 0x42 || pcraft.getCruiseDirection() == 0x43) {
-                tickCoolDown *= (1 + pcraft.getType().getCruiseSkipBlocks()) / (1 + pcraft.getType().getVertCruiseSkipBlocks());
-            } else if(bankLeft || bankRight) {
-                if (!dive) {
-                    tickCoolDown *= (Math.sqrt(Math.pow(1 + pcraft.getType().getCruiseSkipBlocks(), 2) + Math.pow(pcraft.getType().getCruiseSkipBlocks() >> 1, 2)) / (1 + pcraft.getType().getCruiseSkipBlocks()));
-                } else {
-                    tickCoolDown *= (Math.sqrt(Math.pow(1 + pcraft.getType().getCruiseSkipBlocks(), 2) + Math.pow(pcraft.getType().getCruiseSkipBlocks() >> 1, 2) + 1) / (1 + pcraft.getType().getCruiseSkipBlocks()));
+            if(pcraft.getCruiseDirection() != 0x42 && pcraft.getCruiseDirection() != 0x43) {
+                if (bankLeft || bankRight) {
+                    if (!dive) {
+                        tickCoolDown *= (Math.sqrt(Math.pow(1 + pcraft.getType().getCruiseSkipBlocks(), 2) + Math.pow(pcraft.getType().getCruiseSkipBlocks() >> 1, 2)) / (1 + pcraft.getType().getCruiseSkipBlocks()));
+                    } else {
+                        tickCoolDown *= (Math.sqrt(Math.pow(1 + pcraft.getType().getCruiseSkipBlocks(), 2) + Math.pow(pcraft.getType().getCruiseSkipBlocks() >> 1, 2) + 1) / (1 + pcraft.getType().getCruiseSkipBlocks()));
+                    }
+                } else if (dive) {
+                    tickCoolDown *= (Math.sqrt(Math.pow(1 + pcraft.getType().getCruiseSkipBlocks(), 2) + 1) / (1 + pcraft.getType().getCruiseSkipBlocks()));
                 }
-            } else if(dive) {
-                tickCoolDown *= (Math.sqrt(Math.pow(1 + pcraft.getType().getCruiseSkipBlocks(), 2) + 1) / (1 + pcraft.getType().getCruiseSkipBlocks()));
             }
             if(Settings.Debug) {
                 Movecraft.getInstance().getLogger().info("New TickCoolDown: " + tickCoolDown);
