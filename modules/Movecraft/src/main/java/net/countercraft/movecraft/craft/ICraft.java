@@ -13,7 +13,10 @@ import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 import static net.countercraft.movecraft.utils.SignUtils.getFacing;
@@ -27,9 +30,9 @@ public class ICraft extends Craft {
 
 
     @Override
-    public void detect(Player player, Player notificationPlayer, MovecraftLocation startPoint) {
+    public void detect(@Nullable Player player, @NotNull Player notificationPlayer, MovecraftLocation startPoint) {
         this.setNotificationPlayer(notificationPlayer);
-        Movecraft.getInstance().getAsyncManager().submitTask(new DetectionTask(this, startPoint, player), this);
+        Movecraft.getInstance().getAsyncManager().submitTask(new DetectionTask(this, startPoint, player, notificationPlayer), this);
     }
 
     @Override
@@ -103,6 +106,24 @@ public class ICraft extends Craft {
     @Override
     public void rotate(Rotation rotation, MovecraftLocation originPoint, boolean isSubCraft) {
         Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(this, originPoint, rotation, this.getW(), isSubCraft), this);
+    }
+
+    @NotNull
+    @Override
+    public Set<Craft> getContacts() {
+        final Set<Craft> contacts = new HashSet<>();
+        for (Craft contact : CraftManager.getInstance().getCraftsInWorld(w)) {
+            MovecraftLocation ccenter = this.getHitBox().getMidPoint();
+            MovecraftLocation tcenter = contact.getHitBox().getMidPoint();
+            int distsquared = ccenter.distanceSquared(tcenter);
+            int detectionRange = (int) (contact.getOrigBlockCount() * (tcenter.getY() > 65 ? contact.getType().getDetectionMultiplier() : contact.getType().getUnderwaterDetectionMultiplier()));
+            detectionRange = detectionRange * 10;
+            if (distsquared > detectionRange || contact.getNotificationPlayer() == this.getNotificationPlayer()) {
+                continue;
+            }
+            contacts.add(contact);
+        }
+        return contacts;
     }
 
     @Override

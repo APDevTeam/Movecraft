@@ -19,6 +19,9 @@ package net.countercraft.movecraft;
 
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.jetbrains.annotations.NotNull;
+
+import static net.countercraft.movecraft.utils.BitMath.*;
 
 /**
  * Represents a Block aligned coordinate triplet.
@@ -80,6 +83,30 @@ final public class MovecraftLocation {
         return new MovecraftLocation(getX() - l.getX(), getY() - l.getY(), getZ() - l.getZ());
     }
 
+    /**
+     *
+     * Gives the euclidean distance between this MovecraftLocation and another MovecraftLocation
+     *
+     * @param other the MovecraftLocation distant from this one
+     * @return the euclidean distance between this and the other MovecraftLocation
+     */
+    public int distanceSquared(MovecraftLocation other) {
+        int diffx = this.x - other.x;
+        int diffy = this.y - other.y;
+        int diffz = this.z - other.z;
+        return diffx * diffx + diffy * diffy + diffz * diffz;
+    }
+
+    /**
+     *
+     * Gives the direct distance between this MovecraftLocation and another MovecraftLocation
+     *
+     * @param other the MovecraftLocation distant from this one
+     * @return the direct distance between this and the other MovecraftLocation
+     */
+    public double distance(MovecraftLocation other) {
+        return Math.sqrt(distanceSquared(other));
+    }
     public Location toBukkit(World world){
         return new Location(world, this.x, this.y, this.z);
     }
@@ -91,5 +118,22 @@ final public class MovecraftLocation {
     @Override
     public String toString(){
         return "(" + x + "," + y + "," + z +")";
+    }
+
+
+    private static final long BITS_26 = mask(26);
+    private static final long BITS_12 = mask(12);
+
+    public long pack(){
+        return (x & BITS_26) | ((z & BITS_26) << 26) | (((y & (long) BITS_12) << (26 + 26)));
+    }
+
+    public static long pack(int x, int y, int z){
+        return (x & BITS_26) | ((z & BITS_26) << 26) | (((y & (long) BITS_12) << (26 + 26)));
+    }
+
+    @NotNull
+    public static MovecraftLocation unpack(long l){
+        return new MovecraftLocation(unpackX(l), unpackY(l), unpackZ(l));
     }
 }

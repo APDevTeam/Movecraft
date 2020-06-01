@@ -35,10 +35,7 @@ import net.countercraft.movecraft.mapUpdater.update.CraftRotateCommand;
 import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import net.countercraft.movecraft.utils.*;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -48,6 +45,8 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.HashSet;
 import java.util.Set;
+
+import static net.countercraft.movecraft.utils.MathUtils.withinWorldBorder;
 
 public class RotationTask extends AsyncTask {
     private final MovecraftLocation originPoint;
@@ -66,8 +65,10 @@ public class RotationTask extends AsyncTask {
     private TownyWorld townyWorld;
     private TownyWorldHeightLimits townyWorldHeightLimits;
 
-    private final HashHitBox oldHitBox;
-    private final HashHitBox newHitBox;
+    private final BitmapHitBox oldHitBox;
+    private final BitmapHitBox newHitBox;
+    private final BitmapHitBox oldFluidList;
+    private final BitmapHitBox newFluidList;
 
     public RotationTask(Craft c, MovecraftLocation originPoint, Rotation rotation, World w, boolean isSubCraft) {
         super(c);
@@ -75,8 +76,10 @@ public class RotationTask extends AsyncTask {
         this.rotation = rotation;
         this.w = w;
         this.isSubCraft = isSubCraft;
-        this.newHitBox = new HashHitBox();
-        this.oldHitBox = new HashHitBox(c.getHitBox());
+        this.newHitBox = new BitmapHitBox();
+        this.oldHitBox = new BitmapHitBox(c.getHitBox());
+        this.oldFluidList = new BitmapHitBox(c.getFluidLocations());
+        this.newFluidList = new BitmapHitBox(c.getFluidLocations());
     }
 
     public RotationTask(Craft c, MovecraftLocation originPoint, Rotation rotation, World w) {
@@ -143,7 +146,7 @@ public class RotationTask extends AsyncTask {
         Set<Craft> craftsInWorld = CraftManager.getInstance().getCraftsInWorld(getCraft().getW());
         Craft parentCraft = getCraft();
         for (Craft craft : craftsInWorld) {
-            if ( craft != getCraft() && craft.getHitBox().intersects(oldHitBox)) {
+            if ( craft != getCraft() && !craft.getHitBox().intersection(oldHitBox).isEmpty()) {
                 parentCraft = craft;
                 break;
             }
@@ -176,6 +179,12 @@ public class RotationTask extends AsyncTask {
             //TODO: ADD TOWNY
 
             //isTownyBlock(plugLoc,craftPilot);
+            if (!withinWorldBorder(craft.getW(), newLocation)) {
+                failMessage = I18nSupport.getInternationalisedString("Rotation - Failed Craft cannot pass world border") + String.format(" @ %d,%d,%d", newLocation.getX(), newLocation.getY(), newLocation.getZ());
+                failed = true;
+                return;
+            }
+
             Material newMaterial = newLocation.toBukkit(w).getBlock().getType();
             if ((newMaterial == Material.AIR) || (newMaterial == Material.PISTON_EXTENSION) || craft.getType().getPassthroughBlocks().contains(newMaterial)) {
                 //getCraft().getPhaseBlocks().put(newLocation, newMaterial);
@@ -189,6 +198,12 @@ public class RotationTask extends AsyncTask {
             }
         }
 
+        if (!oldFluidList.isEmpty()) {
+            for (MovecraftLocation fluidLoc : oldFluidList) {
+                newFluidList.add(MathUtils.rotateVec(rotation, fluidLoc.subtract(originPoint)).add(originPoint));
+            }
+        }
+
         if (failed) {
             if (this.isSubCraft && parentCraft != getCraft()) {
                 parentCraft.setProcessing(false);
@@ -196,12 +211,16 @@ public class RotationTask extends AsyncTask {
             return;
         }
         //call event
-        CraftRotateEvent event = new CraftRotateEvent(craft, oldHitBox, newHitBox);
+        CraftRotateEvent event = new CraftRotateEvent(craft, rotation, originPoint, oldHitBox, newHitBox);
         Bukkit.getServer().getPluginManager().callEvent(event);
         if(event.isCancelled()){
             failed = true;
             failMessage = event.getFailMessage();
             return;
+        }
+        if (parentCraft != craft) {
+            parentCraft.getFluidLocations().removeAll(oldFluidList);
+            parentCraft.getFluidLocations().addAll(newFluidList);
         }
 
 
@@ -307,7 +326,7 @@ public class RotationTask extends AsyncTask {
 
             craftsInWorld = CraftManager.getInstance().getCraftsInWorld(getCraft().getW());
             for (Craft craft : craftsInWorld) {
-                if (newHitBox.intersects(craft.getHitBox()) && craft != getCraft()) {
+                if (!newHitBox.intersection(craft.getHitBox()).isEmpty() && craft != getCraft()) {
                     //newHitBox.addAll(CollectionUtils.filter(craft.getHitBox(),newHitBox));
                     //craft.setHitBox(newHitBox);
                     if (Settings.Debug) {
@@ -444,8 +463,14 @@ public class RotationTask extends AsyncTask {
         return !testMaterial.equals(mBlock) || oldHitBox.contains(aroundNewLoc);
     }
 
-    public HashHitBox getNewHitBox() {
+
+
+    public BitmapHitBox getNewHitBox() {
         return newHitBox;
+    }
+
+    public BitmapHitBox getNewFluidList() {
+        return newFluidList;
     }
 }
 

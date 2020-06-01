@@ -24,7 +24,6 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
 import net.countercraft.movecraft.WorldHandler;
 import net.countercraft.movecraft.async.detection.DetectionTask;
-import net.countercraft.movecraft.async.detection.DetectionTaskData;
 import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.config.Settings;
@@ -35,9 +34,7 @@ import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.mapUpdater.update.BlockCreateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
-import net.countercraft.movecraft.utils.CollectionUtils;
-import net.countercraft.movecraft.utils.HashHitBox;
-import net.countercraft.movecraft.utils.HitBox;
+import net.countercraft.movecraft.utils.*;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -45,6 +42,7 @@ import org.bukkit.entity.SmallFireball;
 import org.bukkit.entity.TNTPrimed;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
@@ -59,18 +57,18 @@ public class AsyncManager extends BukkitRunnable {
     private final HashMap<Craft, HashMap<Craft, Long>> recentContactTracking = new HashMap<>();
     private final BlockingQueue<AsyncTask> finishedAlgorithms = new LinkedBlockingQueue<>();
     private final HashSet<Craft> clearanceSet = new HashSet<>();
-    private HashMap<SmallFireball, Long> FireballTracking = new HashMap<>();
-    private HashMap<HitBox, Long> wrecks = new HashMap<>();
-    private HashMap<HitBox, World> wreckWorlds = new HashMap<>();
-    private HashMap<HitBox, Map<MovecraftLocation,Material>> wreckPhases = new HashMap<>();
-    private Map<Craft, Integer> cooldownCache = new WeakHashMap<>();
+    private final HashMap<SmallFireball, Long> FireballTracking = new HashMap<>();
+    private final HashMap<HitBox, Long> wrecks = new HashMap<>();
+    private final HashMap<HitBox, World> wreckWorlds = new HashMap<>();
+    private final HashMap<HitBox, Map<MovecraftLocation, Pair<Material, Byte>>> wreckPhases = new HashMap<>();
+    private final Map<Craft, Integer> cooldownCache = new WeakHashMap<>();
 
     private long lastTracerUpdate = 0;
     private long lastFireballCheck = 0;
     private long lastTNTContactCheck = 0;
     private long lastFadeCheck = 0;
     private long lastContactCheck = 0;
-    private HashSet<Material> transparent = null;
+    private final HashSet<Material> transparent;
 
     public AsyncManager() {
         transparent = new HashSet<>();
@@ -134,204 +132,20 @@ public class AsyncManager extends BukkitRunnable {
                 // Process detection task
 
                 DetectionTask task = (DetectionTask) poll;
-                DetectionTaskData data = task.getData();
 
-                Player p = data.getPlayer();
-                Player notifyP = data.getNotificationPlayer();
-                Craft pCraft = CraftManager.getInstance().getCraftByPlayer(p);
-
-                if (pCraft != null && p != null) {
-                    // Player is already controlling a craft
-                    notifyP.sendMessage(I18nSupport.getInternationalisedString("Detection - Failed - Already commanding a craft"));
-                } else {
-                    if (data.failed()) {
-                        if (notifyP != null)
-                            notifyP.sendMessage(data.getFailMessage());
-                        else
-                            Movecraft.getInstance().getLogger().log(Level.INFO,
-                            		I18nSupport.getInternationalisedString("Detection - NULL Player Detection Failed") + ": " + data.getFailMessage());
-
-                    } else {
-                        Set<Craft> craftsInWorld = CraftManager.getInstance().getCraftsInWorld(c.getW());
-                        boolean failed = false;
-                        boolean isSubcraft = false;
-
-                        for (Craft craft : craftsInWorld) {
-                            if(craft.getHitBox().intersects(data.getBlockList())){
-                                isSubcraft = true;
-                                if (c.getType().getCruiseOnPilot() || p != null) {
-                                    if (craft.getType() == c.getType()
-                                            || craft.getHitBox().size() <= data.getBlockList().size()) {
-                                        notifyP.sendMessage(I18nSupport.getInternationalisedString(
-                                                "Detection - Failed Craft is already being controlled"));
-                                        failed = true;
-                                    } else {
-                                        // if this is a different type than
-                                        // the overlapping craft, and is
-                                        // smaller, this must be a child
-                                        // craft, like a fighter on a
-                                        // carrier
-                                        if (!craft.isNotProcessing()) {
-                                            failed = true;
-                                            notifyP.sendMessage(I18nSupport.getInternationalisedString("Detection - Parent Craft is busy"));
-                                        }
-                                        craft.setHitBox(new HashHitBox(CollectionUtils.filter(craft.getHitBox(),data.getBlockList())));
-                                        craft.setOrigBlockCount(craft.getOrigBlockCount() - data.getBlockList().size());
-                                    }
-                                }
-                            }
-
-
-                        }
-                        if (c.getType().getMustBeSubcraft() && !isSubcraft) {
-                            failed = true;
-                            notifyP.sendMessage(I18nSupport.getInternationalisedString("Craft must be part of another craft"));
-                        }
-                        if (!failed) {
-                            c.setHitBox(task.getData().getBlockList());
-                            c.setOrigBlockCount(data.getBlockList().size());
-                            c.setNotificationPlayer(notifyP);
-                            final int waterLine = c.getWaterLine();
-                            if(!c.getType().blockedByWater() && c.getHitBox().getMinY() <= waterLine){
-                                for(MovecraftLocation location : c.getHitBox().boundingHitBox()){
-                                    if(location.getY() <= waterLine){
-                                        c.getPhaseBlocks().put(location, Material.WATER);
-                                    }
-                                }
-                            }
-
-                            if (notifyP != null) {
-                                notifyP.sendMessage(I18nSupport
-                                        .getInternationalisedString("Detection - Successfully piloted craft")
-                                        + " Size: " + c.getHitBox().size());
-                                Movecraft.getInstance().getLogger().log(Level.INFO,
-                                        String.format(
-                                                I18nSupport.getInternationalisedString(
-                                                        "Detection - Success - Log Output"),
-                                                notifyP.getName(), c.getType().getCraftName(), c.getHitBox().size(),
-                                                c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
-                            } else {
-                                Movecraft.getInstance().getLogger().log(Level.INFO,
-                                        String.format(
-                                                I18nSupport.getInternationalisedString(
-                                                        "Detection - Success - Log Output"),
-                                                "NULL PLAYER", c.getType().getCraftName(), c.getHitBox().size(),
-                                                c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
-                            }
-                            CraftManager.getInstance().addCraft(c, p);
-                        }
-                    }
-                }
-                if(c!=null){
-                    Bukkit.getPluginManager().callEvent(new CraftDetectEvent(c));
-                }
+                processDetection(task);
 
             } else if (poll instanceof TranslationTask) {
                 // Process translation task
 
                 TranslationTask task = (TranslationTask) poll;
-                Player notifyP = c.getNotificationPlayer();
-
-                // Check that the craft hasn't been sneakily unpiloted
-                // if ( p != null ) { cruiseOnPilot crafts don't have player
-                // pilots
-
-                if (task.failed()) {
-                    // The craft translation failed
-                    if (notifyP != null && !c.getSinking())
-                        notifyP.sendMessage(task.getFailMessage());
-
-                    if (task.isCollisionExplosion()) {
-                        c.setHitBox(task.getNewHitBox());
-                        //c.setBlockList(task.getData().getBlockList());
-                        //boolean failed = MapUpdateManager.getInstance().addWorldUpdate(c.getW(), updates, null, null, exUpdates);
-                        MapUpdateManager.getInstance().scheduleUpdates(task.getUpdates());
-                        sentMapUpdate = true;
-                        CraftManager.getInstance().addReleaseTask(c);
-
-                    }
-                } else {
-                    // The craft is clear to move, perform the block updates
-                    MapUpdateManager.getInstance().scheduleUpdates(task.getUpdates());
-                    // get list of cannons before sending map updates, to avoid
-                    // conflicts
-                    HashSet<Cannon> shipCannons = null;
-                    if (Movecraft.getInstance().getCannonsPlugin() != null && c.getNotificationPlayer() != null) {
-                        // convert blocklist to location list
-                        List<Location> shipLocations = new ArrayList<>();
-                        for (MovecraftLocation loc : c.getHitBox()) {
-                            Location tloc = new Location(c.getW(), loc.getX(), loc.getY(), loc.getZ());
-                            shipLocations.add(tloc);
-                        }
-                        shipCannons = Movecraft.getInstance().getCannonsPlugin().getCannonsAPI()
-                                .getCannons(shipLocations, c.getNotificationPlayer().getUniqueId(), true);
-                    }
-
-                    sentMapUpdate = true;
-                    //c.setBlockList(task.getData().getBlockList());
-                    //c.setMinX(task.getData().getMinX());
-                    //c.setMinZ(task.getData().getMinZ());
-                    //c.setHitBox(task.getData().getHitbox());
-                    c.setHitBox(task.getNewHitBox());
-
-                    // move any cannons that were present
-                    if (Movecraft.getInstance().getCannonsPlugin() != null && shipCannons != null) {
-                        for (Cannon can : shipCannons) {
-                            can.move(new Vector(task.getDx(), task.getDy(), task.getDz()));
-                        }
-                    }
-
-
-                }
+                sentMapUpdate = processTranslation(task, c);
 
             } else if (poll instanceof RotationTask) {
                 // Process rotation task
                 RotationTask task = (RotationTask) poll;
-                Player notifyP = c.getNotificationPlayer();
-                // Check that the craft hasn't been sneakily unpiloted
-                if (notifyP != null || task.getIsSubCraft()) {
+                sentMapUpdate = processRotation(task, c);
 
-                    if (task.isFailed()) {
-                        // The craft translation failed, don't try to notify
-                        // them if there is no pilot
-                        if (notifyP != null)
-                            notifyP.sendMessage(task.getFailMessage());
-                        else
-                            Movecraft.getInstance().getLogger().log(Level.INFO,
-                            		I18nSupport.getInternationalisedString("Rotation - NULL Player Rotation Failed")+ ": " + task.getFailMessage());
-                    } else {
-                        // get list of cannons before sending map updates, to
-                        // avoid conflicts
-                        HashSet<Cannon> shipCannons = null;
-                        if (Movecraft.getInstance().getCannonsPlugin() != null && c.getNotificationPlayer() != null) {
-                            // convert blocklist to location list
-                            List<Location> shipLocations = new ArrayList<>();
-                            for (MovecraftLocation loc : c.getHitBox()) {
-                                shipLocations.add(loc.toBukkit(c.getW()));
-                            }
-                            shipCannons = Movecraft.getInstance().getCannonsPlugin().getCannonsAPI()
-                                    .getCannons(shipLocations, c.getNotificationPlayer().getUniqueId(), true);
-                        }
-
-                        MapUpdateManager.getInstance().scheduleUpdates(task.getUpdates());
-
-
-                        sentMapUpdate = true;
-                        c.setHitBox(task.getNewHitBox());
-
-                        // rotate any cannons that were present
-                        if (Movecraft.getInstance().getCannonsPlugin() != null && shipCannons != null) {
-                            Location tloc = task.getOriginPoint().toBukkit(task.getCraft().getW());
-                            for (Cannon can : shipCannons) {
-                                if (task.getRotation() == Rotation.CLOCKWISE)
-                                    can.rotateRight(tloc.toVector());
-                                if (task.getRotation() == Rotation.ANTICLOCKWISE)
-                                    can.rotateLeft(tloc.toVector());
-                            }
-                        }
-
-                    }
-                }
             }
 
             ownershipMap.remove(poll);
@@ -343,6 +157,233 @@ public class AsyncManager extends BukkitRunnable {
                 clear(c);
             }
         }
+    }
+
+    private void processDetection(DetectionTask task){
+        Player p = task.getPlayer();
+        Player notifyP = task.getNotificationPlayer();
+        Craft pCraft = CraftManager.getInstance().getCraftByPlayer(notifyP);
+        Craft c = task.getCraft();
+        boolean failed = task.failed();
+        if (pCraft != null && p != null) {
+            // Player is already controlling a craft
+            notifyP.sendMessage(I18nSupport.getInternationalisedString("Detection - Failed - Already commanding a craft"));
+            return;
+        }
+        if (failed) {
+            notifyP.sendMessage(task.getFailMessage());
+            return;
+        }
+        Set<Craft> craftsInWorld = CraftManager.getInstance().getCraftsInWorld(c.getW());
+
+        boolean isSubcraft = false;
+
+        if (c.getType().getCruiseOnPilot() || p != null) {
+            for (Craft craft : craftsInWorld) {
+                if (craft.getHitBox().intersection(task.getHitBox()).isEmpty()) {
+                    continue;
+                }
+                if (craft.getType() == c.getType()
+                        || craft.getHitBox().size() <= task.getHitBox().size()) {
+                    notifyP.sendMessage(I18nSupport.getInternationalisedString(
+                            "Detection - Failed Craft is already being controlled"));
+                    return;
+                }
+                if (!craft.isNotProcessing()) {
+                    notifyP.sendMessage(I18nSupport.getInternationalisedString("Detection - Parent Craft is busy"));
+                    return;
+                }
+                isSubcraft = true;
+                craft.setHitBox(craft.getHitBox().difference(task.getHitBox()));
+                craft.setOrigBlockCount(craft.getOrigBlockCount() - task.getHitBox().size());
+            }
+        }
+        if (c.getType().getMustBeSubcraft() && !isSubcraft) {
+            notifyP.sendMessage(I18nSupport.getInternationalisedString("Craft must be part of another craft"));
+            return;
+        }
+        c.setHitBox(task.getHitBox());
+        c.setFluidLocations(task.getFluidBox());
+        c.setOrigBlockCount(task.getHitBox().size());
+        c.setNotificationPlayer(notifyP);
+        final int waterLine = c.getWaterLine();
+        if (!c.getType().blockedByWater() && c.getHitBox().getMinY() <= waterLine) {
+            //The subtraction of the set of coordinates in the HitBox cube and the HitBox itself
+            final BitmapHitBox invertedHitBox = new BitmapHitBox(c.getHitBox().boundingHitBox()).difference(c.getHitBox());
+
+            //A set of locations that are confirmed to be "exterior" locations
+            final BitmapHitBox confirmed = new BitmapHitBox();
+            final BitmapHitBox entireHitbox = new BitmapHitBox(c.getHitBox());
+
+            //place phased blocks
+            final Set<MovecraftLocation> overlap = new HashSet<>(c.getPhaseBlocks().keySet());
+            overlap.retainAll(c.getHitBox().asSet());
+            final int minX = c.getHitBox().getMinX();
+            final int maxX = c.getHitBox().getMaxX();
+            final int minY = c.getHitBox().getMinY();
+            final int maxY = overlap.isEmpty() ? c.getHitBox().getMaxY() : Collections.max(overlap, Comparator.comparingInt(MovecraftLocation::getY)).getY();
+            final int minZ = c.getHitBox().getMinZ();
+            final int maxZ = c.getHitBox().getMaxZ();
+            final HitBox[] surfaces = {
+                    new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(minX, maxY, maxZ)),
+                    new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(maxX, maxY, minZ)),
+                    new SolidHitBox(new MovecraftLocation(maxX, minY, maxZ), new MovecraftLocation(minX, maxY, maxZ)),
+                    new SolidHitBox(new MovecraftLocation(maxX, minY, maxZ), new MovecraftLocation(maxX, maxY, minZ)),
+                    new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(maxX, minY, maxZ))};
+            final BitmapHitBox validExterior = new BitmapHitBox();
+            for (HitBox hitBox : surfaces) {
+                validExterior.addAll(new BitmapHitBox(hitBox).difference(c.getHitBox()));
+            }
+
+            //Check to see which locations in the from set are actually outside of the craft
+            //use a modified BFS for multiple origin elements
+            BitmapHitBox visited = new BitmapHitBox();
+            Queue<MovecraftLocation> queue = Lists.newLinkedList(validExterior);
+            while (!queue.isEmpty()) {
+                MovecraftLocation node = queue.poll();
+                if (visited.contains(node))
+                    continue;
+                visited.add(node);
+                //If the node is already a valid member of the exterior of the HitBox, continued search is unitary.
+                for (MovecraftLocation neighbor : CollectionUtils.neighbors(invertedHitBox, node)) {
+                    queue.add(neighbor);
+                }
+            }
+            confirmed.addAll(visited);
+            entireHitbox.addAll(invertedHitBox.difference(confirmed));
+
+            for (MovecraftLocation location : entireHitbox) {
+                if (location.getY() <= waterLine) {
+                    c.getPhaseBlocks().put(location, new Pair<>(Material.WATER, (byte) 0));
+                }
+            }
+        }
+        final CraftDetectEvent event = new CraftDetectEvent(c);
+        Bukkit.getPluginManager().callEvent(event);
+        failed = event.isCancelled();
+        if (failed) {
+            notifyP.sendMessage(event.getFailMessage());
+            return;
+        }
+        notifyP.sendMessage(I18nSupport.getInternationalisedString("Detection - Successfully piloted craft")
+                + " Size: " + c.getHitBox().size());
+        Movecraft.getInstance().getLogger().info(String.format(
+                I18nSupport.getInternationalisedString("Detection - Success - Log Output"),
+                notifyP.getName(), c.getType().getCraftName(), c.getHitBox().size(),
+                c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
+
+        CraftManager.getInstance().addCraft(c, p);
+    }
+
+    /**
+     * Processes translation task for its corresponding craft
+     * @param task the task to process
+     * @param c the craft this task belongs to
+     * @return true if translation task succeded to process, otherwise false
+     */
+    private boolean processTranslation(@NotNull final TranslationTask task, @NotNull final Craft c) {
+        Player notifyP = c.getNotificationPlayer();
+
+        // Check that the craft hasn't been sneakily unpiloted
+
+        if (task.failed()) {
+            // The craft translation failed
+            if (notifyP != null && !c.getSinking())
+                notifyP.sendMessage(task.getFailMessage());
+
+            if (task.isCollisionExplosion()) {
+                c.setHitBox(task.getNewHitBox());
+                c.setFluidLocations(task.getNewFluidList());
+                MapUpdateManager.getInstance().scheduleUpdates(task.getUpdates());
+                CraftManager.getInstance().addReleaseTask(c);
+                return true;
+            }
+            return false;
+        }
+        // The craft is clear to move, perform the block updates
+        MapUpdateManager.getInstance().scheduleUpdates(task.getUpdates());
+        // get list of cannons before sending map updates, to avoid
+        // conflicts
+        if (Movecraft.getInstance().getCannonsPlugin() != null && c.getNotificationPlayer() != null) {
+            // convert blocklist to location list
+            List<Location> shipLocations = new ArrayList<>();
+            for (MovecraftLocation loc : c.getHitBox()) {
+                Location tloc = new Location(c.getW(), loc.getX(), loc.getY(), loc.getZ());
+                shipLocations.add(tloc);
+            }
+            HashSet<Cannon> shipCannons = Movecraft.getInstance().getCannonsPlugin().getCannonsAPI()
+                    .getCannons(shipLocations, c.getNotificationPlayer().getUniqueId(), true);
+            // move any cannons that were present
+            for (Cannon can : shipCannons) {
+                can.move(new Vector(task.getDx(), task.getDy(), task.getDz()));
+            }
+        }
+        c.setHitBox(task.getNewHitBox());
+        c.setFluidLocations(task.getNewFluidList());
+
+
+
+        return true;
+    }
+
+    /**
+     * Processes rotation task for its corresponding craft
+     * @param task the task to process
+     * @param c the craft this task belongs to
+     * @return true if translation task succeded to process, otherwise false
+     */
+    private boolean processRotation(@NotNull final RotationTask task, @NotNull final Craft c) {
+        Player notifyP = c.getNotificationPlayer();
+        // Check that the craft hasn't been sneakily unpiloted
+        if (notifyP == null && !task.getIsSubCraft())  {
+            return false;
+        }
+
+        if (task.isFailed()) {
+            // The craft translation failed, don't try to notify
+            // them if there is no pilot
+            if (notifyP != null)
+                notifyP.sendMessage(task.getFailMessage());
+            else
+                Movecraft.getInstance().getLogger().log(Level.INFO,
+                        I18nSupport.getInternationalisedString("Rotation - NULL Player Rotation Failed")+ ": " + task.getFailMessage());
+            return false;
+        }
+
+        // get list of cannons before sending map updates, to
+        // avoid conflicts
+        HashSet<Cannon> shipCannons = null;
+        if (Movecraft.getInstance().getCannonsPlugin() != null && c.getNotificationPlayer() != null) {
+            // convert blocklist to location list
+            List<Location> shipLocations = new ArrayList<>();
+            for (MovecraftLocation loc : c.getHitBox()) {
+                shipLocations.add(loc.toBukkit(c.getW()));
+            }
+            shipCannons = Movecraft.getInstance().getCannonsPlugin().getCannonsAPI()
+                    .getCannons(shipLocations, c.getNotificationPlayer().getUniqueId(), true);
+        }
+
+        MapUpdateManager.getInstance().scheduleUpdates(task.getUpdates());
+
+
+
+        c.setHitBox(task.getNewHitBox());
+        c.setFluidLocations(task.getNewFluidList());
+
+        // rotate any cannons that were present
+        if (Movecraft.getInstance().getCannonsPlugin() != null && shipCannons != null) {
+            Location tloc = task.getOriginPoint().toBukkit(task.getCraft().getW());
+            for (Cannon can : shipCannons) {
+                if (task.getRotation() == Rotation.CLOCKWISE)
+                    can.rotateRight(tloc.toVector());
+                if (task.getRotation() == Rotation.ANTICLOCKWISE)
+                    can.rotateLeft(tloc.toVector());
+            }
+        }
+
+
+
+        return true;
     }
 
     private void processCruise() {
@@ -375,6 +416,25 @@ public class AsyncManager extends BukkitRunnable {
                 tickCoolDown = pcraft.getTickCooldown();
                 cooldownCache.put(pcraft,tickCoolDown);
             }
+
+            // Account for banking and diving in speed calculations by changing the tickCoolDown
+            if(Settings.Debug) {
+                Movecraft.getInstance().getLogger().info("TickCoolDown: " + tickCoolDown);
+            }
+            if(bankLeft || bankRight) {
+                if (!dive) {
+                    tickCoolDown *= (Math.sqrt(Math.pow(1 + pcraft.getType().getCruiseSkipBlocks(), 2) + Math.pow(pcraft.getType().getCruiseSkipBlocks() >> 1, 2)) / (1 + pcraft.getType().getCruiseSkipBlocks()));
+                } else {
+                    tickCoolDown *= (Math.sqrt(Math.pow(1 + pcraft.getType().getCruiseSkipBlocks(), 2) + Math.pow(pcraft.getType().getCruiseSkipBlocks() >> 1, 2) + 1) / (1 + pcraft.getType().getCruiseSkipBlocks()));
+                }
+            } else if(dive) {
+                tickCoolDown *= (Math.sqrt(Math.pow(1 + pcraft.getType().getCruiseSkipBlocks(), 2) + 1) / (1 + pcraft.getType().getCruiseSkipBlocks()));
+            }
+            if(Settings.Debug) {
+                Movecraft.getInstance().getLogger().info("New TickCoolDown: " + tickCoolDown);
+                Movecraft.getInstance().getLogger().info("Direction:" + (bankLeft ? " Banking Left" : "") + (bankRight ? " Banking Right" : "") + (dive ? " Diving" : ""));
+            }
+
             if (Math.abs(ticksElapsed) < tickCoolDown) {
                 continue;
             }
@@ -389,21 +449,21 @@ public class AsyncManager extends BukkitRunnable {
             }
             // descend
             if (pcraft.getCruiseDirection() == 0x43) {
-                dy = 0 - 1 - pcraft.getType().getVertCruiseSkipBlocks();
+                dy = -1 - pcraft.getType().getVertCruiseSkipBlocks();
                 if (pcraft.getHitBox().getMinY() <= w.getSeaLevel()) {
                     dy = -1;
                 }
             } else if (dive) {
-                dy = 0 - ((pcraft.getType().getCruiseSkipBlocks() + 1) >> 1);
+                dy = -((pcraft.getType().getCruiseSkipBlocks() + 1) >> 1);
                 if (pcraft.getHitBox().getMinY() <= w.getSeaLevel()) {
                     dy = -1;
                 }
             }
             // ship faces west
             if (pcraft.getCruiseDirection() == 0x5) {
-                dx = 0 - 1 - pcraft.getType().getCruiseSkipBlocks();
+                dx = -1 - pcraft.getType().getCruiseSkipBlocks();
                 if (bankRight) {
-                    dz = (0 - 1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
+                    dz = (-1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
                 }
                 if (bankLeft) {
                     dz = (1 + pcraft.getType().getCruiseSkipBlocks()) >> 1;
@@ -413,7 +473,7 @@ public class AsyncManager extends BukkitRunnable {
             if (pcraft.getCruiseDirection() == 0x4) {
                 dx = 1 + pcraft.getType().getCruiseSkipBlocks();
                 if (bankLeft) {
-                    dz = (0 - 1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
+                    dz = (-1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
                 }
                 if (bankRight) {
                     dz = (1 + pcraft.getType().getCruiseSkipBlocks()) >> 1;
@@ -423,7 +483,7 @@ public class AsyncManager extends BukkitRunnable {
             if (pcraft.getCruiseDirection() == 0x2) {
                 dz = 1 + pcraft.getType().getCruiseSkipBlocks();
                 if (bankRight) {
-                    dx = (0 - 1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
+                    dx = (-1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
                 }
                 if (bankLeft) {
                     dx = (1 + pcraft.getType().getCruiseSkipBlocks()) >> 1;
@@ -431,9 +491,9 @@ public class AsyncManager extends BukkitRunnable {
             }
             // ship faces south
             if (pcraft.getCruiseDirection() == 0x3) {
-                dz = 0 - 1 - pcraft.getType().getCruiseSkipBlocks();
+                dz = -1 - pcraft.getType().getCruiseSkipBlocks();
                 if (bankLeft) {
-                    dx = (0 - 1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
+                    dx = (-1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
                 }
                 if (bankRight) {
                     dx = (1 + pcraft.getType().getCruiseSkipBlocks()) >> 1;
@@ -849,11 +909,12 @@ public class AsyncManager extends BukkitRunnable {
                 continue;
             }
             final HitBox hitBox = entry.getKey();
-            final Map<MovecraftLocation, Material> phaseBlocks = wreckPhases.get(hitBox);
+            final Map<MovecraftLocation, Pair<Material, Byte>> phaseBlocks = wreckPhases.get(hitBox);
             final World world = wreckWorlds.get(hitBox);
             ArrayList<UpdateCommand> commands = new ArrayList<>();
             for (MovecraftLocation location : hitBox){
-                commands.add(new BlockCreateCommand(world, location, phaseBlocks.getOrDefault(location, Material.AIR)));
+                Pair<Material, Byte> phaseBlock = phaseBlocks.getOrDefault(location, new Pair<>(Material.AIR, (byte) 0));
+                commands.add(new BlockCreateCommand(world, location, phaseBlock.getLeft(), phaseBlock.getRight()));
                 
             }
             MapUpdateManager.getInstance().scheduleUpdates(commands);
@@ -872,100 +933,72 @@ public class AsyncManager extends BukkitRunnable {
         long ticksElapsed = (System.currentTimeMillis() - lastContactCheck) / 50;
         if (ticksElapsed > 21) {
             for (World w : Bukkit.getWorlds()) {
-                if (w != null) {
-                    for (Craft ccraft : CraftManager.getInstance().getCraftsInWorld(w)) {
-                        if (CraftManager.getInstance().getPlayerFromCraft(ccraft) != null) {
-                            if (!recentContactTracking.containsKey(ccraft)) {
-                                recentContactTracking.put(ccraft, new HashMap<>());
-                            }
-                            for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(w)) {
-                                long cposx = ccraft.getHitBox().getMaxX() + ccraft.getHitBox().getMinX();
-                                long cposy = ccraft.getHitBox().getMaxY() + ccraft.getHitBox().getMinY();
-                                long cposz = ccraft.getHitBox().getMaxZ() + ccraft.getHitBox().getMinZ();
-                                cposx = cposx >> 1;
-                                cposy = cposy >> 1;
-                                cposz = cposz >> 1;
-                                long tposx = tcraft.getHitBox().getMaxX() + tcraft.getHitBox().getMinX();
-                                long tposy = tcraft.getHitBox().getMaxY() + tcraft.getHitBox().getMinY();
-                                long tposz = tcraft.getHitBox().getMaxZ() + tcraft.getHitBox().getMinZ();
-                                tposx = tposx >> 1;
-                                tposy = tposy >> 1;
-                                tposz = tposz >> 1;
-                                long diffx = cposx - tposx;
-                                long diffy = cposy - tposy;
-                                long diffz = cposz - tposz;
-                                long distsquared = Math.abs(diffx) * Math.abs(diffx);
-                                distsquared += Math.abs(diffy) * Math.abs(diffy);
-                                distsquared += Math.abs(diffz) * Math.abs(diffz);
-                                long detectionRange;
-                                if (tposy > 65) {
-                                    detectionRange = (long) (Math.sqrt(tcraft.getOrigBlockCount())
-                                            * tcraft.getType().getDetectionMultiplier());
-                                } else {
-                                    detectionRange = (long) (Math.sqrt(tcraft.getOrigBlockCount())
-                                            * tcraft.getType().getUnderwaterDetectionMultiplier());
-                                }
-                                if (distsquared < detectionRange * detectionRange
-                                        && tcraft.getNotificationPlayer() != ccraft.getNotificationPlayer()) {
-                                    // craft has been detected
-
-                                    // has the craft not been seen in the last
-                                    // minute, or is completely new?
-                                    if (recentContactTracking.get(ccraft).get(tcraft) == null
-                                            || System.currentTimeMillis()
-                                            - recentContactTracking.get(ccraft).get(tcraft) > 60000) {
-                                        String notification = I18nSupport.getInternationalisedString("Contact - New Contact") + ": ";
-
-                                        if (tcraft.getName().length() >= 1){
-                                            notification += tcraft.getName();
-                                            notification += " (";
-                                        }
-                                        notification += tcraft.getType().getCraftName();
-                                        if (tcraft.getName().length() >= 1){
-                                            notification += ")";
-                                        }
-                                        notification += " " + I18nSupport.getInternationalisedString("Contact - Commanded By")+" ";
-                                        if (tcraft.getNotificationPlayer() != null) {
-                                            notification += tcraft.getNotificationPlayer().getDisplayName();
-                                        } else {
-                                            notification += "NULL";
-                                        }
-                                        notification += ", " + I18nSupport.getInternationalisedString("Contact - Size") + ": ";
-                                        notification += tcraft.getOrigBlockCount();
-                                        notification += ", " + I18nSupport.getInternationalisedString("Contact - Range") + ": ";
-                                        notification += (int) Math.sqrt(distsquared);
-                                        notification += " " + I18nSupport.getInternationalisedString("Contact - To The") + " ";
-                                        if (Math.abs(diffx) > Math.abs(diffz))
-                                            if (diffx < 0)
-                                                notification += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - East");
-                                            else
-                                                notification += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - West");
-                                        else if (diffz < 0)
-                                            notification += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - South");
-                                        else
-                                            notification += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - North");
-                                        
-                                        notification += ".";
-                                        ccraft.getNotificationPlayer().sendMessage(notification);
-                                        w.playSound(ccraft.getNotificationPlayer().getLocation(),
-                                                Sound.BLOCK_ANVIL_LAND, 1.0f, 2.0f);
-/*										final World sw = w;
-                                        final Player sp = ccraft.getNotificationPlayer();
-										BukkitTask replaysound = new BukkitRunnable() {
-											@Override
-											public void run() {
-												sw.playSound(sp.getLocation(), Sound.BLOCK_ANVIL_LAND, 10.0f, 2.0f);
-											}
-										}.runTaskLater(Movecraft.getInstance(), (5));*/
-
-                                    }
-
-                                    long timestamp = System.currentTimeMillis();
-                                    recentContactTracking.get(ccraft).put(tcraft, timestamp);
-                                }
-                            }
-                        }
+                if (w == null) {
+                    continue;
+                }
+                for (Craft ccraft : CraftManager.getInstance().getCraftsInWorld(w)) {
+                    if (CraftManager.getInstance().getPlayerFromCraft(ccraft) == null) {
+                        continue;
                     }
+                    if (!recentContactTracking.containsKey(ccraft)) {
+                        recentContactTracking.put(ccraft, new HashMap<>());
+                    }
+                    for (Craft tcraft : ccraft.getContacts()) {
+                        MovecraftLocation ccenter = ccraft.getHitBox().getMidPoint();
+                        MovecraftLocation tcenter = tcraft.getHitBox().getMidPoint();
+                        int diffx = ccenter.getX() - tcenter.getX();
+                        int diffz = ccenter.getZ() - tcenter.getZ();
+                        int distsquared = ccenter.distanceSquared(tcenter);
+                        // craft has been detected
+
+                        // has the craft not been seen in the last
+                        // minute, or is completely new?
+                        if (System.currentTimeMillis() - recentContactTracking.get(ccraft).getOrDefault(tcraft, 0L) <= 60000) {
+                            continue;
+                        }
+                        String notification = I18nSupport.getInternationalisedString("Contact - New Contact") + ": ";
+
+                        if (tcraft.getName().length() >= 1){
+                            notification += tcraft.getName();
+                            notification += ChatColor.RESET;
+                            notification += " (";
+                        }
+                        notification += tcraft.getType().getCraftName();
+                        if (tcraft.getName().length() >= 1){
+                            notification += ")";
+                        }
+                        notification += " " + I18nSupport.getInternationalisedString("Contact - Commanded By")+" ";
+                        if (tcraft.getNotificationPlayer() != null) {
+                            notification += tcraft.getNotificationPlayer().getDisplayName();
+                        } else {
+                            notification += "NULL";
+                        }
+                        notification += ", " + I18nSupport.getInternationalisedString("Contact - Size") + ": ";
+                        notification += tcraft.getOrigBlockCount();
+                        notification += ", " + I18nSupport.getInternationalisedString("Contact - Range") + ": ";
+                        notification += (int) Math.sqrt(distsquared);
+                        notification += " " + I18nSupport.getInternationalisedString("Contact - To The") + " ";
+                        if (Math.abs(diffx) > Math.abs(diffz))
+                            if (diffx < 0)
+                                notification += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - East");
+                            else
+                                notification += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - West");
+                        else if (diffz < 0)
+                            notification += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - South");
+                        else
+                            notification += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - North");
+
+                        notification += ".";
+                        ccraft.getNotificationPlayer().sendMessage(notification);
+                        w.playSound(ccraft.getNotificationPlayer().getLocation(), ccraft.getType().getCollisionSound(), 1.0f, 2.0f);
+
+
+                        long timestamp = System.currentTimeMillis();
+                        recentContactTracking.get(ccraft).put(tcraft, timestamp);
+
+                    }
+
+
                 }
             }
 

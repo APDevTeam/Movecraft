@@ -14,6 +14,9 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.SignChangeEvent;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 public final class NameSign implements Listener {
     private static final String HEADER = "Name:";
     @EventHandler
@@ -29,36 +32,22 @@ public final class NameSign implements Listener {
 
         for (MovecraftLocation location : c.getHitBox()) {
             Block b = location.toBukkit(w).getBlock();
-            if (b.getType() == Material.SIGN_POST || b.getType() == Material.WALL_SIGN) {
-                Sign s = (Sign) b.getState();
-                String name = "";
-                if (s.getLine(0).equalsIgnoreCase(HEADER)) {
-                    boolean firstName = true;
-                    for (int i = 1; i <= 3; i++) {
-                        if (s.getLine(i) != "") {
-                            if (firstName) {
-                                firstName = true;
-                            } else {
-                                name += " ";
-                                //Add a space between lines for all after the first.
-                            }
-                            name += s.getLine(i);
-                        }
-                    }
-                    c.setName(name);
-                    return;
-                }
+            if (b.getType() != Material.SIGN_POST && b.getType() != Material.WALL_SIGN) {
+                continue;
+            }
+            Sign s = (Sign) b.getState();
+            if (s.getLine(0).equalsIgnoreCase(HEADER)) {
+                String name = Arrays.stream(s.getLines()).skip(1).filter(f -> f != null && !f.trim().isEmpty()).collect(Collectors.joining(" "));
+                c.setName(name);
+                return;
             }
         }
     }
     @EventHandler
     public void onSignChange(SignChangeEvent event) {
-        if (event.getLine(0).equalsIgnoreCase(HEADER)) {
-            if (Settings.RequireNamePerm && !event.getPlayer().hasPermission("movecraft.name.place")) {
-                event.getPlayer().sendMessage(ChatUtils.MOVECRAFT_COMMAND_PREFIX + "Insufficient permissions");
-                event.setCancelled(true);
-                return;
-            }
+        if (event.getLine(0).equalsIgnoreCase(HEADER) && Settings.RequireNamePerm && !event.getPlayer().hasPermission("movecraft.name.place")) {
+            event.getPlayer().sendMessage(ChatUtils.MOVECRAFT_COMMAND_PREFIX + "Insufficient permissions");
+            event.setCancelled(true);
         }
     }
 }

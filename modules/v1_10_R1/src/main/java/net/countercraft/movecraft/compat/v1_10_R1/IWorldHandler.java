@@ -11,7 +11,6 @@ import net.minecraft.server.v1_10_R1.*;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_10_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_10_R1.block.CraftBlockState;
 import org.bukkit.craftbukkit.v1_10_R1.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_10_R1.util.CraftMagicNumbers;
 import org.bukkit.entity.Player;
@@ -20,6 +19,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -89,7 +89,7 @@ public class IWorldHandler extends WorldHandler {
                 continue;
             tile.a(ROTATION[rotation.ordinal()]);
             //get the nextTick to move with the tile
-            tiles.add(new TileHolder(tile, tickProvider.getNextTick((WorldServer)nativeWorld,position), position));
+            tiles.add(new TileHolder(tile, tickProvider.getNextTick((WorldServer) nativeWorld, position), position));
         }
 
         //*******************************************
@@ -131,20 +131,15 @@ public class IWorldHandler extends WorldHandler {
             setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
         }
         //*******************************************
-        //*       Step six: Send to players       *
+        //*   Step six: Process fire spread         *
         //*******************************************
-        List<Chunk> chunks = new ArrayList<>();
-        for(BlockPosition position : rotatedPositions.values()){
-            Chunk chunk = nativeWorld.getChunkAtWorldCoords(position);
-            if(!chunks.contains(chunk)){
-                chunks.add(chunk);
+        for (BlockPosition position : rotatedPositions.values()) {
+            IBlockData type = nativeWorld.getType(position);
+            if (!(type.getBlock() instanceof BlockFire)) {
+                continue;
             }
-        }
-        for(BlockPosition position : deletePositions){
-            Chunk chunk = nativeWorld.getChunkAtWorldCoords(position);
-            if(!chunks.contains(chunk)){
-                chunks.add(chunk);
-            }
+            BlockFire fire = (BlockFire) type.getBlock();
+            fire.b(nativeWorld, position, type, nativeWorld.random);
         }
     }
 
@@ -159,12 +154,51 @@ public class IWorldHandler extends WorldHandler {
         List<BlockPosition> positions = new ArrayList<>();
         for(MovecraftLocation movecraftLocation : craft.getHitBox()) {
             positions.add(locationToPosition((movecraftLocation)).b(translateVector));
-
         }
         //*******************************************
         //*         Step two: Get the tiles         *
         //*******************************************
-        World nativeWorld = ((CraftWorld) craft.getW()).getHandle();
+        WorldServer nativeWorld = ((CraftWorld) craft.getW()).getHandle();
+        List<TileHolder> tiles = getTiles(positions, nativeWorld);
+        //*******************************************
+        //*   Step three: Translate all the blocks  *
+        //*******************************************
+        // blockedByWater=false means an ocean-going vessel
+        //TODO: Simplify
+        //TODO: go by chunks
+        //TODO: Don't move unnecessary blocks
+        //get the blocks and translate the positions
+        List<IBlockData> blockData = new ArrayList<>();
+        List<BlockPosition> newPositions = new ArrayList<>();
+        for(BlockPosition position : positions){
+            blockData.add(nativeWorld.getType(position));
+            newPositions.add(position.a(translateVector));
+        }
+        //create the new block
+        setBlocks(newPositions, blockData, nativeWorld);
+        //*******************************************
+        //*    Step four: replace all the tiles     *
+        //*******************************************
+        //TODO: go by chunks
+        processTiles(tiles, nativeWorld, translateVector);
+        //*******************************************
+        //*   Step five: Destroy the leftovers      *
+        //*******************************************
+        Collection<BlockPosition> deletePositions =  CollectionUtils.filter(positions,newPositions);
+        setAir(deletePositions, nativeWorld);
+        //*******************************************
+        //*   Step six: Process fire spread         *
+        //*******************************************
+        processFireSpread(newPositions, nativeWorld);
+    }
+
+    private void setBlocks(List<BlockPosition> newPositions, List<IBlockData> blockData, World nativeWorld){
+        for(int i = 0; i<newPositions.size(); i++) {
+            setBlockFast(nativeWorld, newPositions.get(i), blockData.get(i));
+        }
+    }
+
+    private List<TileHolder> getTiles(Iterable<BlockPosition> positions, WorldServer nativeWorld){
         List<TileHolder> tiles = new ArrayList<>();
         //get the tiles
         for(BlockPosition position : positions){
@@ -178,70 +212,42 @@ public class IWorldHandler extends WorldHandler {
 
             //nativeWorld.capturedTileEntities.remove(position);
             //nativeWorld.getChunkAtWorldCoords(position).getTileEntities().remove(position);
-            tiles.add(new TileHolder(tile, tickProvider.getNextTick((WorldServer)nativeWorld,position), position));
+            tiles.add(new TileHolder(tile, tickProvider.getNextTick(nativeWorld, position), position));
 
         }
-        //*******************************************
-        //*   Step three: Translate all the blocks  *
-        //*******************************************
-        // blockedByWater=false means an ocean-going vessel
-        //TODO: Simplify
-        //TODO: go by chunks
-        //TODO: Don't move unnecessary blocks
-        //get the blocks
-        List<IBlockData> blockData = new ArrayList<>();
-        for(BlockPosition position : positions){
-            blockData.add(nativeWorld.getType(position));
-        }
-        //translate the positions
-        List<BlockPosition> newPositions = new ArrayList<>();
-        for(BlockPosition position : positions){
-            newPositions.add(position.a(translateVector));
-        }
-        //create the new block
-        for(int i = 0; i<newPositions.size(); i++) {
-            setBlockFast(nativeWorld, newPositions.get(i), blockData.get(i));
-        }
-        //*******************************************
-        //*    Step four: replace all the tiles     *
-        //*******************************************
-        //TODO: go by chunks
+        return tiles;
+    }
+
+    private void processTiles(Iterable<TileHolder> tiles, World world, BlockPosition translateVector){
         for(TileHolder tileHolder : tiles){
-            moveTileEntity(nativeWorld, tileHolder.getTilePosition().a(translateVector),tileHolder.getTile());
+            moveTileEntity(world, tileHolder.getTilePosition().a(translateVector),tileHolder.getTile());
             if(tileHolder.getNextTick()==null)
                 continue;
-            final long currentTime = nativeWorld.worldData.getTime();
-            nativeWorld.b(tileHolder.getNextTick().a.a(translateVector), tileHolder.getNextTick().a(), (int) (tileHolder.getNextTick().b - currentTime), tileHolder.getNextTick().c);
+            final long currentTime = world.worldData.getTime();
+            world.b(tileHolder.getNextTick().a.a(translateVector), tileHolder.getNextTick().a(), (int) (tileHolder.getNextTick().b - currentTime), tileHolder.getNextTick().c);
         }
-        //*******************************************
-        //*   Step five: Destroy the leftovers      *
-        //*******************************************
-        Collection<BlockPosition> deletePositions =  CollectionUtils.filter(positions,newPositions);
-        for(BlockPosition position : deletePositions){
-            setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
-        }
-        //*******************************************
-        //*       Step six: Send to players       *
-        //*******************************************
-        List<Chunk> chunks = new ArrayList<>();
-        for(BlockPosition position : newPositions){
-            Chunk chunk = nativeWorld.getChunkAtWorldCoords(position);
-            if(!chunks.contains(chunk)){
-                chunks.add(chunk);
+    }
+
+    private void processFireSpread(Iterable<BlockPosition> positions, World world){
+        for (BlockPosition position : positions) {
+            IBlockData type = world.getType(position);
+            if (!(type.getBlock() instanceof BlockFire)) {
+                continue;
             }
+            BlockFire fire = (BlockFire) type.getBlock();
+            fire.b(world, position, type, world.random);
         }
-        for(BlockPosition position : deletePositions){
-            Chunk chunk = nativeWorld.getChunkAtWorldCoords(position);
-            if(!chunks.contains(chunk)){
-                chunks.add(chunk);
-            }
+    }
+
+    private void setAir(Iterable<BlockPosition> positions, World world){
+        for(BlockPosition position : positions){
+            setBlockFast(world, position, Blocks.AIR.getBlockData());
         }
-        //sendToPlayers(chunks.toArray(new Chunk[0]));
     }
 
     @Nullable
     private TileEntity removeTileEntity(@NotNull World world, @NotNull BlockPosition position){
-        TileEntity tile = world.getTileEntity(position);
+        TileEntity tile = world.getChunkAtWorldCoords(position).a(position, Chunk.EnumTileEntityState.IMMEDIATE);
         if(tile == null)
             return null;
         //cleanup
@@ -276,9 +282,13 @@ public class IWorldHandler extends WorldHandler {
             chunk.a(position, Blocks.GLASS.getBlockData());
             chunkSection = chunk.getSections()[position.getY() >> 4];
         }
-
+        if(chunkSection.getType(position.getX()&15, position.getY()&15, position.getZ()&15).equals(data)){
+            return;
+        }
         chunkSection.setType(position.getX()&15, position.getY()&15, position.getZ()&15, data);
         world.notify(position, data, data, 3);
+        chunk.e(); // mark dirty
+
     }
 
     @Override

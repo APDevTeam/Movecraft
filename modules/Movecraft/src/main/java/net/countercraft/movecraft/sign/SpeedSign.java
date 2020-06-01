@@ -37,7 +37,7 @@ public final class SpeedSign implements Listener{
             return;
         }
         event.setLine(1,String.format("%.2f",craft.getSpeed()) + "m/s");
-        event.setLine(2,String.format("%.2f",craft.getMeanMoveTime() * 1000) + "ms");
+        event.setLine(2,String.format("%.2f",craft.getMeanCruiseTime() * 1000) + "ms");
         event.setLine(3,craft.getTickCooldown() + "T");
     }
 }

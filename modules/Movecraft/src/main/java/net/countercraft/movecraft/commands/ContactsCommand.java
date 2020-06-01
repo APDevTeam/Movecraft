@@ -1,9 +1,12 @@
 package net.countercraft.movecraft.commands;
 
+import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.utils.BitmapHitBox;
 import net.countercraft.movecraft.utils.HashHitBox;
+import net.countercraft.movecraft.utils.HitBox;
 import net.countercraft.movecraft.utils.TopicPaginator;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -44,54 +47,43 @@ public class ContactsCommand implements CommandExecutor {
 
         TopicPaginator pageinator = new TopicPaginator(I18nSupport.getInternationalisedString("Contacts"));
         Craft ccraft = CraftManager.getInstance().getCraftByPlayer(player);
-        HashHitBox hitBox = ccraft.getHitBox();
-        long cposx = hitBox.getMaxX() + hitBox.getMinX();
-        long cposy = hitBox.getMaxY() + hitBox.getMinY();
-        long cposz = hitBox.getMaxZ() + hitBox.getMinZ();
-        cposx = cposx >> 1;
-        cposy = cposy >> 1;
-        cposz = cposz >> 1;
-        for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(ccraft.getW())) {
-            HashHitBox tHitBox = tcraft.getHitBox();
-            long tposx = tHitBox.getMaxX() + tHitBox.getMinX();
-            long tposy = tHitBox.getMaxY() + tHitBox.getMinY();
-            long tposz = tHitBox.getMaxZ() + tHitBox.getMinZ();
-            tposx = tposx >> 1;
-            tposy = tposy >> 1;
-            tposz = tposz >> 1;
-            long diffx = cposx - tposx;
-            long diffy = cposy - tposy;
-            long diffz = cposz - tposz;
-            long distsquared = diffx * diffx + diffy * diffy + diffz * diffz;
-            long detectionRangeSquared = tposy > tcraft.getType().getStaticWaterLevel() ?
-                    (long) (tcraft.getOrigBlockCount() * tcraft.getType().getDetectionMultiplier()) :
-                    (long) (tcraft.getOrigBlockCount() * tcraft.getType().getUnderwaterDetectionMultiplier());
-            if (distsquared < detectionRangeSquared && tcraft.getNotificationPlayer() != ccraft.getNotificationPlayer()) {
-                String notification = I18nSupport.getInternationalisedString("Contact");
-                notification += ": ";
-                notification += tcraft.getSinking() ? ChatColor.RED : tcraft.getDisabled() ? ChatColor.BLUE : "";
-                notification += tcraft.getName().length() >= 1 ? tcraft.getName() + " (" : "";
-                notification += tcraft.getType().getCraftName();
-                notification += tcraft.getName().length() >= 1 ? ") " : " ";
-                notification += ChatColor.RESET;
-                notification += I18nSupport.getInternationalisedString("Contacts - Commanded By") + ", ";
-                notification += tcraft.getNotificationPlayer() != null ? tcraft.getNotificationPlayer().getDisplayName() : "null";
-                notification += I18nSupport.getInternationalisedString("Contacts - Size")+ " ";
-                notification += tcraft.getOrigBlockCount();
-                notification += ", "+I18nSupport.getInternationalisedString("Contacts - Range")+" ";
-                notification += (int) Math.sqrt(distsquared);
-                notification += " "+I18nSupport.getInternationalisedString("Contacts - To The");
-                if (Math.abs(diffx) > Math.abs(diffz))
-                    if (diffx < 0)
-                        notification += " "+I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - East") + ".";
-                    else
-                        notification += " "+I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - West") + ".";
-                else if (diffz < 0)
-                    notification += " "+I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - South") + ".";
+        HitBox hitBox = ccraft.getHitBox();
+        MovecraftLocation center = hitBox.getMidPoint();
+        for (Craft tcraft : ccraft.getContacts()) {
+            HitBox tHitBox = tcraft.getHitBox();
+            if (tHitBox.isEmpty())
+                continue;
+            MovecraftLocation tCenter = tHitBox.getMidPoint();
+
+            int distsquared = center.distanceSquared(tCenter);
+            String notification = I18nSupport.getInternationalisedString("Contact");
+            notification += ": ";
+            notification += tcraft.getSinking() ? ChatColor.RED : tcraft.getDisabled() ? ChatColor.BLUE : "";
+            notification += tcraft.getName().length() >= 1 ? tcraft.getName() + " (" : "";
+            notification += tcraft.getType().getCraftName();
+            notification += tcraft.getName().length() >= 1 ? ") " : " ";
+            notification += ChatColor.RESET;
+            notification += I18nSupport.getInternationalisedString("Contact - Commanded By") + ", ";
+            notification += tcraft.getNotificationPlayer() != null ? tcraft.getNotificationPlayer().getDisplayName() : "null";
+            notification += " ";
+            notification += I18nSupport.getInternationalisedString("Contact - Size")+ " ";
+            notification += tcraft.getOrigBlockCount();
+            notification += ", "+I18nSupport.getInternationalisedString("Contact - Range")+" ";
+            notification += (int) Math.sqrt(distsquared);
+            notification += " "+I18nSupport.getInternationalisedString("Contact - To The");
+            int diffx = center.getX() - tCenter.getX();
+            int diffz = center.getZ() - tCenter.getZ();
+            if (Math.abs(diffx) > Math.abs(diffz))
+                if (diffx < 0)
+                    notification += " "+I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - East") + ".";
                 else
-                    notification += " "+I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - North") + ".";
-                pageinator.addLine(notification);
-            }
+                    notification += " "+I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - West") + ".";
+            else if (diffz < 0)
+                notification += " "+I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - South") + ".";
+            else
+                notification += " "+I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - North") + ".";
+            pageinator.addLine(notification);
+
         }
         if (pageinator.isEmpty()) {
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Contacts - None Found"));
