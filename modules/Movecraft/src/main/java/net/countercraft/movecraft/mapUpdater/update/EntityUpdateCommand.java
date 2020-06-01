@@ -83,13 +83,13 @@ public class EntityUpdateCommand extends UpdateCommand {
     @Override
     public void doUpdate() {
         Location playerLoc = entity.getLocation();
-        Location location = new Location(world, playerLoc.getX() + x, playerLoc.getY() + y, playerLoc.getZ() + z, playerLoc.getYaw() + yaw, playerLoc.getPitch() + pitch);
-        if (!(entity instanceof Player) || yaw > .01 || pitch > .01 || yaw < -.01 || pitch < -.01) {
-            entity.teleport(location);
+        if (!(entity instanceof Player) || !playerLoc.getWorld().equals(world)) {
+            entity.teleport(new Location(world, x + playerLoc.getX(),y + playerLoc.getY(),z + playerLoc.getZ(),yaw + playerLoc.getYaw(),pitch + playerLoc.getPitch()));
             return;
         }
         //Movecraft.getInstance().getWorldHandler().addPlayerLocation((Player) entity,x,y,z,yaw,pitch);
-        TeleportUtils.teleport((Player) entity, location);
+        Location location = new Location(world, playerLoc.getX() + x, playerLoc.getY() + y, playerLoc.getZ() + z);
+        TeleportUtils.teleport((Player) entity, location, yaw);
         if (sound != null) {
             ((Player) entity).playSound(location, sound, volume, 1.0f);
         }

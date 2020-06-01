@@ -86,8 +86,8 @@ public class TeleportUtils {
         return field;
     }
 
-    public static void teleport(Player player, Location location) {
-        // Use bukkit teleporting API for changing worlds
+    public static void teleport(Player player, Location location, float yawChange) {
+        // Use bukkit teleporting API for changing worlds because it won't be smooth anyway
         if (!location.getWorld().equals(player.getWorld())) {
             player.teleport(location);
             return;
@@ -98,7 +98,6 @@ public class TeleportUtils {
         double z = location.getZ();
         Object handle = getHandle(player);
         try {
-            if(activeContainer.get(handle) != defaultContainer.get(handle)) closeInventory.invoke(handle);
             position.invoke(handle, x,y,z, yaw.get(handle), pitch.get(handle));
             Object connection = connectionField.get(handle);
             justTeleportedField.set(connection, true);
@@ -111,7 +110,7 @@ public class TeleportUtils {
             teleportAwaitField.set(connection, teleportAwait);
             AField.set(connection, eField.get(connection));
 
-            Object packet = packetConstructor.newInstance(x, y, z, 0, 0, teleportFlags, teleportAwait);
+            Object packet = packetConstructor.newInstance(x, y, z, yawChange, 0, teleportFlags, teleportAwait);
             sendPacket(packet, player);
         } catch (Exception e) {
             e.printStackTrace();
