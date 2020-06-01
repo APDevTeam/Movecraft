@@ -87,7 +87,6 @@ public class TeleportUtils {
     }
 
     public static void teleport(Player player, Location location, float yawChange) {
-
         double x = location.getX();
         double y = location.getY();
         double z = location.getZ();
