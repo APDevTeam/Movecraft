@@ -87,11 +87,6 @@ public class TeleportUtils {
     }
 
     public static void teleport(Player player, Location location, float yawChange) {
-        // Use bukkit teleporting API for changing worlds because it won't be smooth anyway
-        if (!location.getWorld().equals(player.getWorld())) {
-            player.teleport(location);
-            return;
-        }
 
         double x = location.getX();
         double y = location.getY();
