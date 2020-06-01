@@ -162,7 +162,7 @@ final public class CraftType {
 
         double cruiseSpeed = doubleFromObject(data.getOrDefault("cruiseSpeed", 20.0 / tickCooldown));
         cruiseTickCooldown = (int) Math.round((1.0 + cruiseSkipBlocks) * 20.0 / cruiseSpeed);
-        double vertCruiseSpeed = doubleFromObject(data.getOrDefault("vertCruiseSpeed", 20.0 / cruiseTickCooldown));
+        double vertCruiseSpeed = doubleFromObject(data.getOrDefault("vertCruiseSpeed", cruiseSpeed));
         vertCruiseTickCooldown = (int) Math.round((1.0 + vertCruiseSkipBlocks) * 20.0 / vertCruiseSpeed);
         if(Settings.Debug) {
             Bukkit.getLogger().info("Craft: " + craftName);
