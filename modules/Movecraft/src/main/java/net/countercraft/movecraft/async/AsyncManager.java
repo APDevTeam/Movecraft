@@ -905,7 +905,7 @@ public class AsyncManager extends BukkitRunnable {
         List<HitBox> processed = new ArrayList<>();
         final WorldHandler handler = Movecraft.getInstance().getWorldHandler();
         for(Map.Entry<HitBox, Long> entry : wrecks.entrySet()){
-            if (entry.getValue() + Settings.FadeWrecksAfter <= System.currentTimeMillis()) {
+            if (Settings.FadeWrecksAfter * 1000 > System.currentTimeMillis() - entry.getValue()) {
                 continue;
             }
             final HitBox hitBox = entry.getKey();
