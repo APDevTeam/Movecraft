@@ -116,7 +116,6 @@ public class TeleportUtils {
         Object pHandle = getHandle(player);
 
         try {
-            //if(activeContainer.get(pHandle) != defaultContainer.get(pHandle)) closeInventory.invoke(pHandle);
             position.invoke(handle, x,y,z, yaw.get(handle), pitch.get(handle));
             yaw.set(handle, yaw.getFloat(handle) + yawChange);
             Object connection = connectionField.get(pHandle);

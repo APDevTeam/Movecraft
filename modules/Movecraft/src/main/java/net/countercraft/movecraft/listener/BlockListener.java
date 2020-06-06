@@ -322,13 +322,18 @@ public class BlockListener implements Listener {
     @EventHandler(priority = EventPriority.NORMAL)
     public void explodeEvent(EntityExplodeEvent e) {
         if (Settings.DurabilityOverride != null) {
-            e.blockList().removeIf(b -> Settings.DurabilityOverride.containsKey(b.getType()) &&
-                    (new Random(b.getX() + b.getY() + b.getZ() + (System.currentTimeMillis() >> 12)))
-                            .nextInt(100) < Settings.DurabilityOverride.get(b.getType()));
+
+            // Sorry for the following monster conditional statement, it is necessary to avoid spalling.
+            // Basically it runs a random number based on the XYZ of the block and the system time if the block has explosion resistance
+            // And then it also removes the block if no adjacent blocks are air (IE: the explosion skipped a block)
+            e.blockList().removeIf(b -> (Settings.DurabilityOverride.containsKey(b.getType()) &&
+                    (new Random( b.getX()*b.getY()*b.getZ()+(System.currentTimeMillis() >> 12)).nextInt(100) < Settings.DurabilityOverride.get(b.getType()))) ||
+                        !(b.getRelative(BlockFace.EAST).isEmpty() || b.getRelative(BlockFace.WEST).isEmpty() || b.getRelative(BlockFace.UP).isEmpty() ||
+                        b.getRelative(BlockFace.NORTH).isEmpty() || b.getRelative(BlockFace.SOUTH).isEmpty() || b.getRelative(BlockFace.DOWN).isEmpty()));
+//                    (new Random( new Random(b.getX()).nextInt(100)+ new Random(b.getY()).nextInt(100) + new Random(b.getZ()).nextInt(100)+
+
         }
-        if (Settings.AssaultEnable) {
-            processAssault(e);
-        }
+        processAssault(e);
         if (e.getEntity() == null)
             return;
         for (Player p : e.getEntity().getWorld().getPlayers()) {

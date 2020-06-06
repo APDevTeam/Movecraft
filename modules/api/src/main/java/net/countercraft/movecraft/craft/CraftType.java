@@ -71,6 +71,7 @@ final public class CraftType {
     private final int cruiseSkipBlocks;
     private final int vertCruiseSkipBlocks;
     private final int cruiseTickCooldown;
+    private final int vertCruiseTickCooldown;
     private final int staticWaterLevel;
     private final int sinkRateTicks;
     private final int smokeOnSink;
@@ -123,7 +124,6 @@ final public class CraftType {
             throw new TypeNotFoundException("No file found at path " + f.getAbsolutePath());
         }
 
-
         try {
             //Required craft flags
             craftName = (String) data.get("name");
@@ -175,10 +175,15 @@ final public class CraftType {
 
             double cruiseSpeed = doubleFromObject(data.getOrDefault("cruiseSpeed", 20.0 / tickCooldown));
             cruiseTickCooldown = (int) Math.round((1.0 + cruiseSkipBlocks) * 20.0 / cruiseSpeed);
+            double vertCruiseSpeed = doubleFromObject(data.getOrDefault("vertCruiseSpeed", cruiseSpeed));
+            vertCruiseTickCooldown = (int) Math.round((1.0 + vertCruiseSkipBlocks) * 20.0 / vertCruiseSpeed);
+
             if(Settings.Debug) {
                 Bukkit.getLogger().info("Craft: " + craftName);
                 Bukkit.getLogger().info("CruiseSpeed: " + cruiseSpeed);
                 Bukkit.getLogger().info("Cooldown: " + cruiseTickCooldown);
+                Bukkit.getLogger().info("VertCruiseSpeed: " + vertCruiseSpeed);
+                Bukkit.getLogger().info("VertCooldown: " + vertCruiseTickCooldown);
             }
 
             int value = Math.min(integerFromObject(data.getOrDefault("maxHeightLimit", 254)), 255);
@@ -626,6 +631,10 @@ final public class CraftType {
 
     public int getCruiseTickCooldown() {
         return cruiseTickCooldown;
+    }
+
+    public int getVertCruiseTickCooldown() {
+        return vertCruiseTickCooldown;
     }
 
     public boolean getHalfSpeedUnderwater() {
