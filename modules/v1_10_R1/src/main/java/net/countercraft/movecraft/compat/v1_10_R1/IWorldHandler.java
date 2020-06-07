@@ -247,7 +247,7 @@ public class IWorldHandler extends WorldHandler {
 
     @Nullable
     private TileEntity removeTileEntity(@NotNull World world, @NotNull BlockPosition position){
-        TileEntity tile = world.getChunkAtWorldCoords(position).a(position, Chunk.EnumTileEntityState.IMMEDIATE);
+        TileEntity tile = world.getTileEntity(position);
         if(tile == null)
             return null;
         //cleanup
@@ -274,7 +274,7 @@ public class IWorldHandler extends WorldHandler {
         return new BlockPosition(loc.getX(), loc.getY(), loc.getZ());
     }
 
-    private void setBlockFast(@NotNull World world, @NotNull BlockPosition position,@NotNull IBlockData data) {
+    private void setBlockFast(@NotNull World world, @NotNull BlockPosition position, @NotNull IBlockData data) {
         Chunk chunk = world.getChunkAtWorldCoords(position);
         ChunkSection chunkSection = chunk.getSections()[position.getY()>>4];
         if (chunkSection == null) {
@@ -283,12 +283,12 @@ public class IWorldHandler extends WorldHandler {
             chunkSection = chunk.getSections()[position.getY() >> 4];
         }
         if(chunkSection.getType(position.getX()&15, position.getY()&15, position.getZ()&15).equals(data)){
+            //Block is already of correct type and data, don't overwrite
             return;
         }
         chunkSection.setType(position.getX()&15, position.getY()&15, position.getZ()&15, data);
         world.notify(position, data, data, 3);
         chunk.e(); // mark dirty
-
     }
 
     @Override

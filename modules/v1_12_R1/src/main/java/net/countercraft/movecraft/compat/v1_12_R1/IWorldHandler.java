@@ -227,7 +227,7 @@ public class IWorldHandler extends WorldHandler {
 
     @Nullable
     private TileEntity removeTileEntity(@NotNull World world, @NotNull BlockPosition position){
-        TileEntity tile = world.getChunkAtWorldCoords(position).a(position, Chunk.EnumTileEntityState.IMMEDIATE);
+        TileEntity tile = world.getTileEntity(position);
         if(tile == null)
             return null;
         //cleanup
