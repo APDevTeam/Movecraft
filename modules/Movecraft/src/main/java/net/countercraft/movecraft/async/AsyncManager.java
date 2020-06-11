@@ -422,14 +422,16 @@ public class AsyncManager extends BukkitRunnable {
             if(Settings.Debug) {
                 Movecraft.getInstance().getLogger().info("TickCoolDown: " + tickCoolDown);
             }
-            if(bankLeft || bankRight) {
-                if (!dive) {
-                    tickCoolDown *= (Math.sqrt(Math.pow(1 + pcraft.getType().getCruiseSkipBlocks(w), 2) + Math.pow(pcraft.getType().getCruiseSkipBlocks(w) >> 1, 2)) / (1 + pcraft.getType().getCruiseSkipBlocks(w)));
-                } else {
-                    tickCoolDown *= (Math.sqrt(Math.pow(1 + pcraft.getType().getCruiseSkipBlocks(w), 2) + Math.pow(pcraft.getType().getCruiseSkipBlocks(w) >> 1, 2) + 1) / (1 + pcraft.getType().getCruiseSkipBlocks(w)));
+            if(pcraft.getCruiseDirection() != 0x42 && pcraft.getCruiseDirection() != 0x43) {
+                if (bankLeft || bankRight) {
+                    if (!dive) {
+                        tickCoolDown *= (Math.sqrt(Math.pow(1 + pcraft.getType().getCruiseSkipBlocks(w), 2) + Math.pow(pcraft.getType().getCruiseSkipBlocks(w) >> 1, 2)) / (1 + pcraft.getType().getCruiseSkipBlocks(w)));
+                    } else {
+                        tickCoolDown *= (Math.sqrt(Math.pow(1 + pcraft.getType().getCruiseSkipBlocks(w), 2) + Math.pow(pcraft.getType().getCruiseSkipBlocks(w) >> 1, 2) + 1) / (1 + pcraft.getType().getCruiseSkipBlocks(w)));
+                    }
+                } else if (dive) {
+                    tickCoolDown *= (Math.sqrt(Math.pow(1 + pcraft.getType().getCruiseSkipBlocks(w), 2) + 1) / (1 + pcraft.getType().getCruiseSkipBlocks(w)));
                 }
-            } else if(dive) {
-                tickCoolDown *= (Math.sqrt(Math.pow(1 + pcraft.getType().getCruiseSkipBlocks(w), 2) + 1) / (1 + pcraft.getType().getCruiseSkipBlocks(w)));
             }
             if(Settings.Debug) {
                 Movecraft.getInstance().getLogger().info("New TickCoolDown: " + tickCoolDown);
@@ -906,7 +908,7 @@ public class AsyncManager extends BukkitRunnable {
         List<HitBox> processed = new ArrayList<>();
         final WorldHandler handler = Movecraft.getInstance().getWorldHandler();
         for(Map.Entry<HitBox, Long> entry : wrecks.entrySet()){
-            if (entry.getValue() + Settings.FadeWrecksAfter <= System.currentTimeMillis()) {
+            if (Settings.FadeWrecksAfter * 1000 > System.currentTimeMillis() - entry.getValue()) {
                 continue;
             }
             final HitBox hitBox = entry.getKey();

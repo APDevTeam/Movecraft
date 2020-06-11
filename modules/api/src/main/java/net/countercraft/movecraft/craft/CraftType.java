@@ -72,8 +72,11 @@ final public class CraftType {
     private final int cruiseSkipBlocks;
     @NotNull private final Map<String, Integer> perWorldCruiseSkipBlocks;
     private final int vertCruiseSkipBlocks;
+    @NotNull private final Map<String, Integer> perWorldVertCruiseSkipBlocks;
     private final int cruiseTickCooldown;
     @NotNull private final Map<String, Integer> perWorldCruiseTickCooldown; // cruise speed setting
+    private final int vertCruiseTickCooldown;
+    @NotNull private final Map<String, Integer> perWorldVertCruiseTickCooldown; // cruise speed setting
     private final int staticWaterLevel;
     private final int sinkRateTicks;
     private final int smokeOnSink;
@@ -159,6 +162,7 @@ final public class CraftType {
         cruiseSkipBlocks = integerFromObject(data.getOrDefault("cruiseSkipBlocks", 0));
         perWorldCruiseSkipBlocks = stringToIntMapFromObject(data.getOrDefault("perWorldCruiseSkipBlocks", new HashMap<>()));
         vertCruiseSkipBlocks = integerFromObject(data.getOrDefault("vertCruiseSkipBlocks", cruiseSkipBlocks));
+        perWorldVertCruiseSkipBlocks = stringToIntMapFromObject(data.getOrDefault("perWorldVertCruiseSkipBlocks", new HashMap<>()));
         halfSpeedUnderwater = (boolean) data.getOrDefault("halfSpeedUnderwater", false);
         focusedExplosion = (boolean) data.getOrDefault("focusedExplosion", false);
         mustBeSubcraft = (boolean) data.getOrDefault("mustBeSubcraft", false);
@@ -194,11 +198,27 @@ final public class CraftType {
                 perWorldCruiseTickCooldown.put(world, (int) Math.round((1.0 + cruiseSkipBlocks) * 20.0 / speed));
             }
         });
-        
+
+        double vertCruiseSpeed = doubleFromObject(data.getOrDefault("vertCruiseSpeed", cruiseSpeed));
+        vertCruiseTickCooldown = (int) Math.round((1.0 + vertCruiseSkipBlocks) * 20.0 / vertCruiseSpeed);
+        perWorldVertCruiseTickCooldown = new HashMap<>();
+        Map<String, Double> vertCruiseTickCooldownMap = stringToDoubleMapFromObject(data.getOrDefault("perWorldVertCruiseSpeed", new HashMap<>()));
+        vertCruiseTickCooldownMap.forEach((world, speed) -> {
+            double worldVertCruiseSkipBlocks = perWorldVertCruiseSkipBlocks.getOrDefault(world, vertCruiseSkipBlocks);
+            perWorldVertCruiseTickCooldown.put(world, (int) Math.round((1.0 + worldVertCruiseSkipBlocks) * 20.0 / speed));
+        });
+        cruiseTickCooldownMap.forEach((world, speed) -> {
+            if (!perWorldVertCruiseTickCooldown.containsKey(world)) {
+                double worldVertCruiseSkipBlocks = perWorldVertCruiseSkipBlocks.getOrDefault(world, vertCruiseSkipBlocks);
+                perWorldVertCruiseTickCooldown.put(world, (int) Math.round((1.0 + worldVertCruiseSkipBlocks) * 20.0 / vertCruiseSpeed));
+            }
+        });
         if(Settings.Debug) {
             Bukkit.getLogger().info("Craft: " + craftName);
             Bukkit.getLogger().info("CruiseSpeed: " + cruiseSpeed);
             Bukkit.getLogger().info("Cooldown: " + cruiseTickCooldown);
+            Bukkit.getLogger().info("VertCruiseSpeed: " + vertCruiseSpeed);
+            Bukkit.getLogger().info("VertCooldown: " + vertCruiseTickCooldown);
         }
 
         int value = Math.min(integerFromObject(data.getOrDefault("maxHeightLimit", 254)), 255);
@@ -496,8 +516,13 @@ final public class CraftType {
         return perWorldCruiseSkipBlocks.getOrDefault(world.getName(), cruiseSkipBlocks);
     }
 
+    @Deprecated
     public int getVertCruiseSkipBlocks() {
         return vertCruiseSkipBlocks;
+    }
+
+    public int getVertCruiseSkipBlocks(@NotNull World world) {
+        return perWorldVertCruiseSkipBlocks.getOrDefault(world.getName(), vertCruiseSkipBlocks);
     }
 
     public boolean getCanBeNamed(){
@@ -620,8 +645,18 @@ final public class CraftType {
     public int getCruiseTickCooldown() {
         return cruiseTickCooldown;
     }
+
     public int getCruiseTickCooldown(@NotNull World world) {
         return perWorldCruiseTickCooldown.getOrDefault(world.getName(), cruiseTickCooldown);
+    }
+
+    @Deprecated
+    public int getVertCruiseTickCooldown() {
+        return vertCruiseTickCooldown;
+    }
+
+    public int getVertCruiseTickCooldown(@NotNull World world) {
+        return perWorldVertCruiseTickCooldown.getOrDefault(world.getName(), vertCruiseTickCooldown);
     }
 
     public boolean getHalfSpeedUnderwater() {

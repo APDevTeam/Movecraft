@@ -350,14 +350,10 @@ public abstract class Craft {
 
         // Ascent or Descent
         if(cruiseDirection == 0x42 || cruiseDirection == 0x43) {
-            if(Settings.Debug) {
-                Bukkit.getLogger().info("Skip: " + type.getCruiseSkipBlocks(w));
-                Bukkit.getLogger().info("Tick: " + type.getCruiseTickCooldown(w));
-                Bukkit.getLogger().info("Penalty: " + chestPenalty);
-            }
-            return type.getCruiseTickCooldown(w) + chestPenalty;
+            return type.getVertCruiseTickCooldown(w) + chestPenalty;
         }
 
+        // Dynamic Fly Block Speed
         if(type.getDynamicFlyBlockSpeedFactor() != 0){
             Material flyBlockMaterial = Material.getMaterial(type.getDynamicFlyBlock());
             double count = materials.get(flyBlockMaterial);
@@ -379,6 +375,7 @@ public abstract class Craft {
             Bukkit.getLogger().info("CruiseTime: " + getMeanCruiseTime() * 1000.0 + "ms");
         }
 
+        // Dynamic Lag Speed
         double speed = 20.0 * (type.getCruiseSkipBlocks(w) + 1.0) / (float)type.getCruiseTickCooldown(w);
         speed -= type.getDynamicLagSpeedFactor() * Math.pow(getMeanCruiseTime() * 1000.0, type.getDynamicLagPowerFactor());
         speed = Math.max(type.getDynamicLagMinSpeed(), speed);
@@ -390,8 +387,13 @@ public abstract class Craft {
      * gets the speed of a craft in blocks per second.
      * @return the speed of the craft
      */
-    public double getSpeed(){
-        return 20*(type.getCruiseSkipBlocks(w)+1)/(double)getTickCooldown();
+    public double getSpeed() {
+        if(cruiseDirection == 0x42 || cruiseDirection == 0x43) {
+            return 20 * (type.getVertCruiseSkipBlocks(w) + 1) / (double) getTickCooldown();
+        }
+        else {
+            return 20 * (type.getCruiseSkipBlocks(w) + 1) / (double) getTickCooldown();
+        }
     }
 
     public long getLastRotateTime() {
