@@ -74,7 +74,7 @@ public abstract class Craft {
     @Nullable private Player AADirector;
     private float meanCruiseTime;
     private int numMoves;
-    @NotNull private final Map<MovecraftLocation, Pair<Material, Byte>> phaseBlocks = new HashMap<>();
+    @NotNull private final Map<Location, Pair<Material, Byte>> phaseBlocks = new HashMap<>();
     @NotNull private final HashMap<UUID, Location> crewSigns = new HashMap<>();
     @NotNull private String name = "";
 
@@ -456,7 +456,7 @@ public abstract class Craft {
     }
 
     @NotNull
-    public Map<MovecraftLocation, Pair<Material, Byte>> getPhaseBlocks(){
+    public Map<Location, Pair<Material, Byte>> getPhaseBlocks(){
         return phaseBlocks;
     }
 

@@ -10,6 +10,7 @@ import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.SignTranslateEvent;
 import net.countercraft.movecraft.utils.*;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -18,6 +19,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class CraftTranslateCommand extends UpdateCommand {
     @NotNull private final Craft craft;
@@ -76,7 +78,7 @@ public class CraftTranslateCommand extends UpdateCommand {
                 Material material = b.getType();
                 byte data = b.getData();
                 if (passthroughBlocks.contains(material)) {
-                    craft.getPhaseBlocks().put(location, new Pair<>(material, data));
+                    craft.getPhaseBlocks().put(location.toBukkit(world), new Pair<>(material, data));
                 }
             }
             //The subtraction of the set of coordinates in the HitBox cube and the HitBox itself
@@ -87,12 +89,12 @@ public class CraftTranslateCommand extends UpdateCommand {
             final BitmapHitBox failed = new BitmapHitBox();
 
             //place phased blocks
-            final Set<MovecraftLocation> overlap = new HashSet<>(craft.getPhaseBlocks().keySet());
-            overlap.retainAll(craft.getHitBox().asSet());
+            final Set<Location> overlap = new HashSet<>(craft.getPhaseBlocks().keySet());
+            overlap.retainAll(craft.getHitBox().asSet().stream().map(l -> l.toBukkit(world)).collect(Collectors.toSet()));
             final int minX = craft.getHitBox().getMinX();
             final int maxX = craft.getHitBox().getMaxX();
             final int minY = craft.getHitBox().getMinY();
-            final int maxY = overlap.isEmpty() ? craft.getHitBox().getMaxY() : Collections.max(overlap, Comparator.comparingInt(MovecraftLocation::getY)).getY();
+            final int maxY = overlap.isEmpty() ? craft.getHitBox().getMaxY() : Collections.max(overlap, Comparator.comparingInt(Location::getBlockY)).getBlockY();
             final int minZ = craft.getHitBox().getMinZ();
             final int maxZ = craft.getHitBox().getMaxZ();
             final HitBox[] surfaces = {
@@ -135,7 +137,7 @@ public class CraftTranslateCommand extends UpdateCommand {
                 if (!passthroughBlocks.contains(material)) {
                     continue;
                 }
-                craft.getPhaseBlocks().put(location, new Pair<>(material, data));
+                craft.getPhaseBlocks().put(location.toBukkit(world), new Pair<>(material, data));
             }
             //translate the craft
             handler.translateCraft(craft, displacement,world);
@@ -156,31 +158,34 @@ public class CraftTranslateCommand extends UpdateCommand {
 
             //place confirmed blocks if they have been un-phased
             for (MovecraftLocation location : confirmed) {
-                if (!craft.getPhaseBlocks().containsKey(location)) {
+                Location bukkit = location.toBukkit(craft.getW());
+                if (!craft.getPhaseBlocks().containsKey(bukkit)) {
                     continue;
                 }
                 //Do not place if it is at a collapsed HitBox location
                 if (!craft.getCollapsedHitBox().isEmpty() && craft.getCollapsedHitBox().contains(location))
                     continue;
-                Pair<Material, Byte> phaseBlock = craft.getPhaseBlocks().remove(location);
-                handler.setBlockFast(location.toBukkit(craft.getW()), phaseBlock.getLeft(), phaseBlock.getRight());
-                craft.getPhaseBlocks().remove(location);
+                Pair<Material, Byte> phaseBlock = craft.getPhaseBlocks().remove(bukkit);
+                handler.setBlockFast(bukkit, phaseBlock.getLeft(), phaseBlock.getRight());
+                craft.getPhaseBlocks().remove(bukkit);
             }
 
             for(MovecraftLocation location : originalLocations){
-                if(!craft.getHitBox().contains(location) && craft.getPhaseBlocks().containsKey(location)){
-                    Pair<Material, Byte> phaseBlock = craft.getPhaseBlocks().remove(location);
-                    handler.setBlockFast(location.toBukkit(oldWorld), phaseBlock.getLeft(), phaseBlock.getRight());
+                Location bukkit = location.toBukkit(oldWorld);
+                if(!craft.getHitBox().contains(location) && craft.getPhaseBlocks().containsKey(bukkit)){
+                    Pair<Material, Byte> phaseBlock = craft.getPhaseBlocks().remove(bukkit);
+                    handler.setBlockFast(bukkit, phaseBlock.getLeft(), phaseBlock.getRight());
                 }
             }
 
             for (MovecraftLocation location : failed) {
-                Block b = location.toBukkit(oldWorld).getBlock();
+                Location bukkit = location.toBukkit(oldWorld);
+                Block b = bukkit.getBlock();
                 Material material = b.getType();
                 byte data = b.getData();
                 if (passthroughBlocks.contains(material)) {
-                    craft.getPhaseBlocks().put(location, new Pair<>(material, data));
-                    handler.setBlockFast(location.toBukkit(oldWorld), Material.AIR, (byte) 0);
+                    craft.getPhaseBlocks().put(bukkit, new Pair<>(material, data));
+                    handler.setBlockFast(bukkit, Material.AIR, (byte) 0);
 
                 }
             }

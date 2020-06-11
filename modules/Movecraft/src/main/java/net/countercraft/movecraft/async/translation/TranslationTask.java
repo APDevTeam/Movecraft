@@ -336,7 +336,7 @@ public class TranslationTask extends AsyncTask {
         if(!collisionBox.isEmpty() && craft.getType().getCruiseOnPilot()){
             CraftManager.getInstance().removeCraft(craft);
             for(MovecraftLocation location : oldHitBox){
-                Pair<Material, Byte> phaseBlock = craft.getPhaseBlocks().getOrDefault(location, new Pair<>(Material.AIR, (byte) 0));
+                Pair<Material, Byte> phaseBlock = craft.getPhaseBlocks().getOrDefault(location.toBukkit(craft.getW()), new Pair<>(Material.AIR, (byte) 0));
                 updates.add(new BlockCreateCommand(craft.getW(), location, phaseBlock.getLeft(), phaseBlock.getRight()));
             }
             newHitBox = new BitmapHitBox();
