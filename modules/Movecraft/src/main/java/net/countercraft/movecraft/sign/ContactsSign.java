@@ -4,6 +4,7 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
+import net.countercraft.movecraft.config.Settings;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -36,6 +37,9 @@ public class ContactsSign implements Listener{
         String[] lines = event.getLines();
         Craft craft = event.getCraft();
         if (!ChatColor.stripColor(lines[0]).equalsIgnoreCase("Contacts:")) {
+            return;
+        }
+        if (!Settings.AllowContactsSigns) {
             return;
         }
         int signLine=1;

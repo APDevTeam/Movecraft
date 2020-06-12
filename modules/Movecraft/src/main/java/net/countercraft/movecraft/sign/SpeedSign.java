@@ -4,6 +4,7 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
+import net.countercraft.movecraft.config.Settings;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -20,7 +21,7 @@ public final class SpeedSign implements Listener{
             Block block = location.toBukkit(world).getBlock();
             if(block.getType() == Material.WALL_SIGN || block.getType() == Material.SIGN_POST){
                 Sign sign = (Sign) block.getState();
-                if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Speed:")) {
+                if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Speed:") && Settings.AllowSpeedSigns) {
                     sign.setLine(1, "0 m/s");
                     sign.setLine(2, "0ms");
                     sign.setLine(3, "0T");

@@ -47,7 +47,11 @@ public final class CruiseSign implements Listener{
         }
         Sign sign = (Sign) event.getClickedBlock().getState();
         if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Cruise: OFF")) {
-            if (CraftManager.getInstance().getCraftByPlayer(event.getPlayer()) == null) {
+        	if(!Settings.AllowCruiseSigns) {
+                event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Sign - This Sign Not Enabled"));
+                return;
+            }
+        	if (CraftManager.getInstance().getCraftByPlayer(event.getPlayer()) == null) {
                 return;
             }
             Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
@@ -70,7 +74,11 @@ public final class CruiseSign implements Listener{
         if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Cruise: ON")
                 && CraftManager.getInstance().getCraftByPlayer(event.getPlayer()) != null
                 && CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getCanCruise()) {
-            Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
+        	if(!Settings.AllowCruiseSigns) {
+                event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Sign - This Sign Not Enabled"));
+                return;
+            }
+        	Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
             sign.setLine(0, "Cruise: OFF");
             sign.update(true);
             c.setCruising(false);

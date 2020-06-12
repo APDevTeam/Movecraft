@@ -36,7 +36,7 @@ public final class NameSign implements Listener {
                 continue;
             }
             Sign s = (Sign) b.getState();
-            if (s.getLine(0).equalsIgnoreCase(HEADER)) {
+            if (s.getLine(0).equalsIgnoreCase(HEADER) && Settings.AllowNameSigns) {
                 String name = Arrays.stream(s.getLines()).skip(1).filter(f -> f != null && !f.trim().isEmpty()).collect(Collectors.joining(" "));
                 c.setName(name);
                 return;
