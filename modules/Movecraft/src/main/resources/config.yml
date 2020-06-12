@@ -22,7 +22,21 @@ RepairTicksPerBlock: 10
 RepairMoneyPerBlock: 10
 RepairMaxPercent: 50
 SiegeTaskSeconds: 600 # Seconds per siege message, defaults to 600 (10 minutes)
+AllowContactsSigns: true
 AllowCrewSigns: true
+AllowCruiseSigns: true
+AllowCrewSigns: true
+AllowDirectorSigns: true
+AllowHelmSigns: true
+AllowMoveSigns: true
+AllowNameSigns: true
+AllowPilotSigns: true
+AllowReleaseSigns: true
+AllowRemoteSigns: true
+AllowSpeedSigns: true
+AllowStatusSigns: true
+AllowSubcraftRotateSigns: true
+AllowTeleportSigns: true
 MaxRemoteSigns: -1 # Maximum number of remote signs that can be triggered at once.  Setting to -1 allows unlimited.
 SetHomeToCrewSign: false
 AssaultEnable: false # system to damage a region, incurring money damages. If enough damage is inflicted, ownership is lost. Ownership can be restored, and the region repaired, by paying damages

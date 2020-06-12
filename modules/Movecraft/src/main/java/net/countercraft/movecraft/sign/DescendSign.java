@@ -4,6 +4,8 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.CraftDetectEvent;
+import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -42,7 +44,11 @@ public final class DescendSign implements Listener{
         }
         Sign sign = (Sign) event.getClickedBlock().getState();
         if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Descend: OFF")) {
-            if (CraftManager.getInstance().getCraftByPlayer(event.getPlayer()) == null) {
+        	if(!Settings.AllowCruiseSigns) {
+                event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Sign - This Sign Not Enabled"));
+                return;
+            }
+        	if (CraftManager.getInstance().getCraftByPlayer(event.getPlayer()) == null) {
                 return;
             }
             Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
@@ -64,7 +70,11 @@ public final class DescendSign implements Listener{
             return;
         }
         if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Descend: ON")) {
-            Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
+        	if(!Settings.AllowCruiseSigns) {
+                event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Sign - This Sign Not Enabled"));
+                return;
+            }
+        	Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
             if (c != null && c.getType().getCanCruise()) {
                 sign.setLine(0, "Descend: OFF");
                 sign.update(true);

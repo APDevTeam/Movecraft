@@ -5,6 +5,7 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.config.Settings;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -30,6 +31,10 @@ public final class CannonDirectorSign implements Listener {
         }
         Sign sign = (Sign) event.getClickedBlock().getState();
         if (!ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase(HEADER)) {
+            return;
+        }
+        if(!Settings.AllowDirectorSigns) {
+            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Sign - This Sign Not Enabled"));
             return;
         }
         Craft foundCraft = null;

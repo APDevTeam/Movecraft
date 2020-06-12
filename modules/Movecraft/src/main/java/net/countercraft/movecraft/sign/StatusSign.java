@@ -4,6 +4,7 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
+import net.countercraft.movecraft.config.Settings;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -27,7 +28,7 @@ public final class StatusSign implements Listener{
             Block block = location.toBukkit(world).getBlock();
             if(block.getType() == Material.WALL_SIGN || block.getType() == Material.SIGN_POST){
                 Sign sign = (Sign) block.getState();
-                if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Status:")) {
+                if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Status:") && Settings.AllowStatusSigns) {
                     sign.setLine(1, "");
                     sign.setLine(2, "");
                     sign.setLine(3, "");
@@ -42,6 +43,9 @@ public final class StatusSign implements Listener{
         Craft craft = event.getCraft();
         if (!ChatColor.stripColor(event.getLine(0)).equalsIgnoreCase("Status:")) {
             return;
+        }
+        if (!Settings.AllowStatusSigns) {
+        	return;
         }
         int fuel=0;
         int totalBlocks=0;

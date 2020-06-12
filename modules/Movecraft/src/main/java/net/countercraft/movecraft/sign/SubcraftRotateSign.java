@@ -10,6 +10,7 @@ import net.countercraft.movecraft.craft.ICraft;
 import net.countercraft.movecraft.events.CraftPilotEvent;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.config.Settings;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -44,6 +45,10 @@ public final class SubcraftRotateSign implements Listener {
         }
         Sign sign = (Sign) event.getClickedBlock().getState();
         if (!ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase(HEADER)) {
+            return;
+        }
+        if(!Settings.AllowSubcraftRotateSigns) {
+            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Sign - This Sign Not Enabled"));
             return;
         }
         final Location loc = event.getClickedBlock().getLocation();

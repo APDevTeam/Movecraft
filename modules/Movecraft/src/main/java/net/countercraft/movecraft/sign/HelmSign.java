@@ -5,6 +5,7 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.config.Settings;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -49,6 +50,10 @@ public final class HelmSign implements Listener {
         }
         Craft craft = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
         if (craft == null) {
+            return;
+        }
+        if(!Settings.AllowHelmSigns) {
+            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Sign - This Sign Not Enabled"));
             return;
         }
         if (!event.getPlayer().hasPermission("movecraft." + craft.getType().getCraftName() + ".rotate")) {
