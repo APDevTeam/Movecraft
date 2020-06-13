@@ -16,6 +16,7 @@ public class Siege {
     private int lastUpdate;
     private long lastPayout;
     private final boolean doubleCostPerOwnedSiegeRegion;
+    private boolean justCommenced;
     private UUID playerUUID;
 
     public Siege(
@@ -155,5 +156,13 @@ public class Siege {
 
     public String toString() {
         return name;
+    }
+
+    public boolean isJustCommenced() {
+        return justCommenced;
+    }
+
+    void setJustCommenced(boolean justCommenced) {
+        this.justCommenced = justCommenced;
     }
 }
