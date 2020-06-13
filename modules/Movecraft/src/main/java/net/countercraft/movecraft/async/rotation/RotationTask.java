@@ -99,7 +99,7 @@ public class RotationTask extends AsyncTask {
         }
 
         // check for fuel, burn some from a furnace if needed. Blocks of coal are supported, in addition to coal and charcoal
-        double fuelBurnRate = getCraft().getType().getFuelBurnRate();
+        double fuelBurnRate = getCraft().getType().getFuelBurnRate(getCraft().getW());
         if (fuelBurnRate != 0.0 && !getCraft().getSinking()) {
             if (getCraft().getBurningFuel() < fuelBurnRate) {
                 Block fuelHolder = null;
@@ -187,7 +187,7 @@ public class RotationTask extends AsyncTask {
 
             Material newMaterial = newLocation.toBukkit(w).getBlock().getType();
             if ((newMaterial == Material.AIR) || (newMaterial == Material.PISTON_EXTENSION) || craft.getType().getPassthroughBlocks().contains(newMaterial)) {
-                //getCraft().getPhaseBlocks().put(newLocation, newMaterial);
+                //getCraft().getPhaseBlocks().put(newLocation.toBukkit(w), newMaterial);
                 continue;
             }
 
@@ -473,4 +473,3 @@ public class RotationTask extends AsyncTask {
         return newFluidList;
     }
 }
-

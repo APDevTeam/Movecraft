@@ -3,6 +3,8 @@ package net.countercraft.movecraft.events;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.utils.BitmapHitBox;
 import net.countercraft.movecraft.utils.HashHitBox;
+
+import org.bukkit.World;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
@@ -17,14 +19,16 @@ public class CraftTranslateEvent extends CraftEvent implements Cancellable {
     private static final HandlerList HANDLERS = new HandlerList();
     @NotNull private final BitmapHitBox oldHitBox;
     @NotNull private final BitmapHitBox newHitBox;
+    @NotNull private final World world;
     @NotNull private String failMessage = "";
     private boolean playingFailSound = true;
     private boolean isCancelled = false;
 
-    public CraftTranslateEvent(@NotNull Craft craft, @NotNull BitmapHitBox oldHitBox, @NotNull BitmapHitBox newHitBox) {
+    public CraftTranslateEvent(@NotNull Craft craft, @NotNull BitmapHitBox oldHitBox, @NotNull BitmapHitBox newHitBox, @NotNull World world) {
         super(craft, true);
         this.oldHitBox = oldHitBox;
         this.newHitBox = newHitBox;
+        this.world = world;
     }
 
     @NotNull
@@ -35,6 +39,11 @@ public class CraftTranslateEvent extends CraftEvent implements Cancellable {
     @NotNull
     public BitmapHitBox getOldHitBox(){
         return oldHitBox;
+    }
+    
+    @NotNull
+    public World getWorld() {
+        return world;
     }
 
     @Override

@@ -76,10 +76,10 @@ public class IWorldHandler extends WorldHandler {
         for(MovecraftLocation newLocation : craft.getHitBox()){
             rotatedPositions.put(locationToPosition(MathUtils.rotateVec(counterRotation, newLocation.subtract(originPoint)).add(originPoint)),locationToPosition(newLocation));
         }
+        World nativeWorld = ((CraftWorld) craft.getW()).getHandle();
         //*******************************************
         //*         Step two: Get the tiles         *
         //*******************************************
-        World nativeWorld = ((CraftWorld) craft.getW()).getHandle();
         List<TileHolder> tiles = new ArrayList<>();
         //get the tiles
         for(BlockPosition position : rotatedPositions.keySet()){
@@ -144,7 +144,7 @@ public class IWorldHandler extends WorldHandler {
     }
 
     @Override
-    public void translateCraft(@NotNull Craft craft, @NotNull MovecraftLocation displacement) {
+    public void translateCraft(@NotNull Craft craft, @NotNull MovecraftLocation displacement, @NotNull org.bukkit.World world) {
         //TODO: Add supourt for rotations
         //A craftTranslateCommand should only occur if the craft is moving to a valid position
         //*******************************************
@@ -155,11 +155,12 @@ public class IWorldHandler extends WorldHandler {
         for(MovecraftLocation movecraftLocation : craft.getHitBox()) {
             positions.add(locationToPosition((movecraftLocation)).b(translateVector));
         }
+        WorldServer oldNativeWorld = ((CraftWorld) craft.getW()).getHandle();
+        WorldServer nativeWorld = ((CraftWorld) world).getHandle();
         //*******************************************
         //*         Step two: Get the tiles         *
         //*******************************************
-        WorldServer nativeWorld = ((CraftWorld) craft.getW()).getHandle();
-        List<TileHolder> tiles = getTiles(positions, nativeWorld);
+        List<TileHolder> tiles = getTiles(positions, oldNativeWorld);
         //*******************************************
         //*   Step three: Translate all the blocks  *
         //*******************************************
@@ -171,7 +172,7 @@ public class IWorldHandler extends WorldHandler {
         List<IBlockData> blockData = new ArrayList<>();
         List<BlockPosition> newPositions = new ArrayList<>();
         for(BlockPosition position : positions){
-            blockData.add(nativeWorld.getType(position));
+            blockData.add(oldNativeWorld.getType(position));
             newPositions.add(position.a(translateVector));
         }
         //create the new block
@@ -184,8 +185,9 @@ public class IWorldHandler extends WorldHandler {
         //*******************************************
         //*   Step five: Destroy the leftovers      *
         //*******************************************
-        Collection<BlockPosition> deletePositions =  CollectionUtils.filter(positions,newPositions);
-        setAir(deletePositions, nativeWorld);
+        Collection<BlockPosition> deletePositions = positions;
+        if (oldNativeWorld == nativeWorld) deletePositions = CollectionUtils.filter(positions,newPositions);
+        setAir(deletePositions, oldNativeWorld);
         //*******************************************
         //*   Step six: Process fire spread         *
         //*******************************************
@@ -332,6 +334,7 @@ public class IWorldHandler extends WorldHandler {
             nativeWorld.capturedTileEntities.put(newPosition, tile);
             return;
         }
+        tile.a(nativeWorld);
         tile.setPosition(newPosition);
         chunk.tileEntities.put(newPosition, tile);
     }

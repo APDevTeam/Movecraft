@@ -1,6 +1,8 @@
 package net.countercraft.movecraft.events;
 
 import net.countercraft.movecraft.craft.Craft;
+
+import org.bukkit.World;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
@@ -12,15 +14,17 @@ import org.jetbrains.annotations.NotNull;
  */
 public class CraftPreTranslateEvent extends CraftEvent implements Cancellable {
     private int dx, dy, dz;
+    @NotNull private World world;
     private boolean cancelled = false;
     @NotNull private String failMessage = "";
     private boolean playingFailSound = true;
     @NotNull private static final HandlerList HANDLERS = new HandlerList();
-    public CraftPreTranslateEvent(@NotNull Craft craft, int dx, int dy, int dz) {
+    public CraftPreTranslateEvent(@NotNull Craft craft, int dx, int dy, int dz, @NotNull World world) {
         super(craft, true);
         this.dx = dx;
         this.dy = dy;
         this.dz = dz;
+        this.world = world;
     }
 
     /**
@@ -70,6 +74,23 @@ public class CraftPreTranslateEvent extends CraftEvent implements Cancellable {
      */
     public void setDz(int dz) {
         this.dz = dz;
+    }
+    
+    /**
+     * Gets the destination world
+     * @return world to translate to
+     */
+    @NotNull
+    public World getWorld() {
+        return world;
+    }
+
+    /**
+     * Sets the destination world
+     * @param world world to translate to
+     */
+    public void setWorld(@NotNull World world) {
+        this.world = world;
     }
 
     @NotNull
