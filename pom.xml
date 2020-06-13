@@ -31,6 +31,7 @@
         <module>modules/worldedit/WE6Utils</module>
         <module>modules/worldedit/WE7Utils</module>
         <module>modules/Movecraft</module>
+        <module>modules/v1_16_R1</module>
 
 
     </modules>
