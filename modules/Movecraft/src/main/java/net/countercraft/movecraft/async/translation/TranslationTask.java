@@ -216,7 +216,7 @@ public class TranslationTask extends AsyncTask {
                 fail(String.format(I18nSupport.getInternationalisedString("Translation - Failed Craft is obstructed") + " @ %d,%d,%d,%s", newLocation.getX(), newLocation.getY(), newLocation.getZ(), newLocation.toBukkit(craft.getW()).getBlock().getType().toString()));
                 return;
             }
-            if (!withinWorldBorder(craft.getW(), newLocation)) {
+            if (!withinWorldBorder(world, newLocation)) {
                 fail(I18nSupport.getInternationalisedString("Translation - Failed Craft cannot pass world border") + String.format(" @ %d,%d,%d", newLocation.getX(), newLocation.getY(), newLocation.getZ()));
                 return;
             }
