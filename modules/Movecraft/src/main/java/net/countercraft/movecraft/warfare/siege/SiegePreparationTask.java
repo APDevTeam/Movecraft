@@ -18,6 +18,7 @@ public class SiegePreparationTask extends SiegeTask {
         int timePassed = ((int)(System.currentTimeMillis() - siege.getStartTime())); //time passed in milliseconds
         int timePassedInSeconds = timePassed / 1000;
         if (timePassedInSeconds >= siege.getDelayBeforeStart()){
+            siege.setJustCommenced(true);
             siege.setStage(SiegeStage.IN_PROGRESS);
         }
         if ((siege.getDelayBeforeStart() - timePassedInSeconds) % Settings.SiegeTaskSeconds != 0 || timePassed < 3000){

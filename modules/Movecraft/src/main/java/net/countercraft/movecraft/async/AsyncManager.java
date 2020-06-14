@@ -48,6 +48,7 @@ import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("deprecation")
 public class AsyncManager extends BukkitRunnable {
@@ -60,7 +61,7 @@ public class AsyncManager extends BukkitRunnable {
     private final HashMap<SmallFireball, Long> FireballTracking = new HashMap<>();
     private final HashMap<HitBox, Long> wrecks = new HashMap<>();
     private final HashMap<HitBox, World> wreckWorlds = new HashMap<>();
-    private final HashMap<HitBox, Map<MovecraftLocation, Pair<Material, Byte>>> wreckPhases = new HashMap<>();
+    private final HashMap<HitBox, Map<Location, Pair<Material, Byte>>> wreckPhases = new HashMap<>();
     private final Map<Craft, Integer> cooldownCache = new WeakHashMap<>();
 
     private long lastTracerUpdate = 0;
@@ -216,12 +217,12 @@ public class AsyncManager extends BukkitRunnable {
             final BitmapHitBox entireHitbox = new BitmapHitBox(c.getHitBox());
 
             //place phased blocks
-            final Set<MovecraftLocation> overlap = new HashSet<>(c.getPhaseBlocks().keySet());
-            overlap.retainAll(c.getHitBox().asSet());
+            final Set<Location> overlap = new HashSet<>(c.getPhaseBlocks().keySet());
+            overlap.retainAll(c.getHitBox().asSet().stream().map(l -> l.toBukkit(c.getW())).collect(Collectors.toSet()));
             final int minX = c.getHitBox().getMinX();
             final int maxX = c.getHitBox().getMaxX();
             final int minY = c.getHitBox().getMinY();
-            final int maxY = overlap.isEmpty() ? c.getHitBox().getMaxY() : Collections.max(overlap, Comparator.comparingInt(MovecraftLocation::getY)).getY();
+            final int maxY = overlap.isEmpty() ? c.getHitBox().getMaxY() : Collections.max(overlap, Comparator.comparingInt(Location::getBlockY)).getBlockY();
             final int minZ = c.getHitBox().getMinZ();
             final int maxZ = c.getHitBox().getMaxZ();
             final HitBox[] surfaces = {
@@ -254,7 +255,7 @@ public class AsyncManager extends BukkitRunnable {
 
             for (MovecraftLocation location : entireHitbox) {
                 if (location.getY() <= waterLine) {
-                    c.getPhaseBlocks().put(location, new Pair<>(Material.WATER, (byte) 0));
+                    c.getPhaseBlocks().put(location.toBukkit(c.getW()), new Pair<>(Material.WATER, (byte) 0));
                 }
             }
         }
@@ -421,14 +422,16 @@ public class AsyncManager extends BukkitRunnable {
             if(Settings.Debug) {
                 Movecraft.getInstance().getLogger().info("TickCoolDown: " + tickCoolDown);
             }
-            if(bankLeft || bankRight) {
-                if (!dive) {
-                    tickCoolDown *= (Math.sqrt(Math.pow(1 + pcraft.getType().getCruiseSkipBlocks(), 2) + Math.pow(pcraft.getType().getCruiseSkipBlocks() >> 1, 2)) / (1 + pcraft.getType().getCruiseSkipBlocks()));
-                } else {
-                    tickCoolDown *= (Math.sqrt(Math.pow(1 + pcraft.getType().getCruiseSkipBlocks(), 2) + Math.pow(pcraft.getType().getCruiseSkipBlocks() >> 1, 2) + 1) / (1 + pcraft.getType().getCruiseSkipBlocks()));
+            if(pcraft.getCruiseDirection() != 0x42 && pcraft.getCruiseDirection() != 0x43) {
+                if (bankLeft || bankRight) {
+                    if (!dive) {
+                        tickCoolDown *= (Math.sqrt(Math.pow(1 + pcraft.getType().getCruiseSkipBlocks(w), 2) + Math.pow(pcraft.getType().getCruiseSkipBlocks(w) >> 1, 2)) / (1 + pcraft.getType().getCruiseSkipBlocks(w)));
+                    } else {
+                        tickCoolDown *= (Math.sqrt(Math.pow(1 + pcraft.getType().getCruiseSkipBlocks(w), 2) + Math.pow(pcraft.getType().getCruiseSkipBlocks(w) >> 1, 2) + 1) / (1 + pcraft.getType().getCruiseSkipBlocks(w)));
+                    }
+                } else if (dive) {
+                    tickCoolDown *= (Math.sqrt(Math.pow(1 + pcraft.getType().getCruiseSkipBlocks(w), 2) + 1) / (1 + pcraft.getType().getCruiseSkipBlocks(w)));
                 }
-            } else if(dive) {
-                tickCoolDown *= (Math.sqrt(Math.pow(1 + pcraft.getType().getCruiseSkipBlocks(), 2) + 1) / (1 + pcraft.getType().getCruiseSkipBlocks()));
             }
             if(Settings.Debug) {
                 Movecraft.getInstance().getLogger().info("New TickCoolDown: " + tickCoolDown);
@@ -454,49 +457,49 @@ public class AsyncManager extends BukkitRunnable {
                     dy = -1;
                 }
             } else if (dive) {
-                dy = -((pcraft.getType().getCruiseSkipBlocks() + 1) >> 1);
+                dy = -((pcraft.getType().getCruiseSkipBlocks(w) + 1) >> 1);
                 if (pcraft.getHitBox().getMinY() <= w.getSeaLevel()) {
                     dy = -1;
                 }
             }
             // ship faces west
             if (pcraft.getCruiseDirection() == 0x5) {
-                dx = -1 - pcraft.getType().getCruiseSkipBlocks();
+                dx = -1 - pcraft.getType().getCruiseSkipBlocks(w);
                 if (bankRight) {
-                    dz = (-1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
+                    dz = (-1 - pcraft.getType().getCruiseSkipBlocks(w)) >> 1;
                 }
                 if (bankLeft) {
-                    dz = (1 + pcraft.getType().getCruiseSkipBlocks()) >> 1;
+                    dz = (1 + pcraft.getType().getCruiseSkipBlocks(w)) >> 1;
                 }
             }
             // ship faces east
             if (pcraft.getCruiseDirection() == 0x4) {
-                dx = 1 + pcraft.getType().getCruiseSkipBlocks();
+                dx = 1 + pcraft.getType().getCruiseSkipBlocks(w);
                 if (bankLeft) {
-                    dz = (-1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
+                    dz = (-1 - pcraft.getType().getCruiseSkipBlocks(w)) >> 1;
                 }
                 if (bankRight) {
-                    dz = (1 + pcraft.getType().getCruiseSkipBlocks()) >> 1;
+                    dz = (1 + pcraft.getType().getCruiseSkipBlocks(w)) >> 1;
                 }
             }
             // ship faces north
             if (pcraft.getCruiseDirection() == 0x2) {
-                dz = 1 + pcraft.getType().getCruiseSkipBlocks();
+                dz = 1 + pcraft.getType().getCruiseSkipBlocks(w);
                 if (bankRight) {
-                    dx = (-1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
+                    dx = (-1 - pcraft.getType().getCruiseSkipBlocks(w)) >> 1;
                 }
                 if (bankLeft) {
-                    dx = (1 + pcraft.getType().getCruiseSkipBlocks()) >> 1;
+                    dx = (1 + pcraft.getType().getCruiseSkipBlocks(w)) >> 1;
                 }
             }
             // ship faces south
             if (pcraft.getCruiseDirection() == 0x3) {
-                dz = -1 - pcraft.getType().getCruiseSkipBlocks();
+                dz = -1 - pcraft.getType().getCruiseSkipBlocks(w);
                 if (bankLeft) {
-                    dx = (-1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
+                    dx = (-1 - pcraft.getType().getCruiseSkipBlocks(w)) >> 1;
                 }
                 if (bankRight) {
-                    dx = (1 + pcraft.getType().getCruiseSkipBlocks()) >> 1;
+                    dx = (1 + pcraft.getType().getCruiseSkipBlocks(w)) >> 1;
                 }
             }
             if (pcraft.getType().getCruiseOnPilot()) {
@@ -905,15 +908,15 @@ public class AsyncManager extends BukkitRunnable {
         List<HitBox> processed = new ArrayList<>();
         final WorldHandler handler = Movecraft.getInstance().getWorldHandler();
         for(Map.Entry<HitBox, Long> entry : wrecks.entrySet()){
-            if (entry.getValue() + Settings.FadeWrecksAfter <= System.currentTimeMillis()) {
+            if (Settings.FadeWrecksAfter * 1000 > System.currentTimeMillis() - entry.getValue()) {
                 continue;
             }
             final HitBox hitBox = entry.getKey();
-            final Map<MovecraftLocation, Pair<Material, Byte>> phaseBlocks = wreckPhases.get(hitBox);
+            final Map<Location, Pair<Material, Byte>> phaseBlocks = wreckPhases.get(hitBox);
             final World world = wreckWorlds.get(hitBox);
             ArrayList<UpdateCommand> commands = new ArrayList<>();
             for (MovecraftLocation location : hitBox){
-                Pair<Material, Byte> phaseBlock = phaseBlocks.getOrDefault(location, new Pair<>(Material.AIR, (byte) 0));
+                Pair<Material, Byte> phaseBlock = phaseBlocks.getOrDefault(location.toBukkit(world), new Pair<>(Material.AIR, (byte) 0));
                 commands.add(new BlockCreateCommand(world, location, phaseBlock.getLeft(), phaseBlock.getRight()));
                 
             }
