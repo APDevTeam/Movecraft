@@ -7,6 +7,7 @@ import net.countercraft.movecraft.async.detection.DetectionTask;
 import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.localisation.I18nSupport;
+
 import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -36,8 +37,11 @@ public class ICraft extends Craft {
     }
 
     @Override
-    public void translate(int dx, int dy, int dz) {
+    public void translate(@NotNull World world, int dx, int dy, int dz) {
         // check to see if the craft is trying to move in a direction not permitted by the type
+        if (!world.equals(this.world) && !this.getType().getCanSwitchWorld() && !this.getSinking()) {
+            world = this.world;
+        }
         if (!this.getType().allowHorizontalMovement() && !this.getSinking()) {
             dx = 0;
             dz = 0;
@@ -45,7 +49,7 @@ public class ICraft extends Craft {
         if (!this.getType().allowVerticalMovement() && !this.getSinking()) {
             dy = 0;
         }
-        if (dx == 0 && dy == 0 && dz == 0) {
+        if (dx == 0 && dy == 0 && dz == 0 && world.equals(this.world)) {
             return;
         }
 
@@ -58,7 +62,8 @@ public class ICraft extends Craft {
             return;
         setTranslating(true);
 
-        Movecraft.getInstance().getAsyncManager().submitTask(new TranslationTask(this, dx, dy, dz), this);
+        Movecraft.getInstance().getAsyncManager().submitTask(new TranslationTask(this, world, dx, dy, dz), this);
+
     }
 
     @Override
@@ -90,7 +95,7 @@ public class ICraft extends Craft {
             MovecraftLocation ccenter = this.getHitBox().getMidPoint();
             MovecraftLocation tcenter = contact.getHitBox().getMidPoint();
             int distsquared = ccenter.distanceSquared(tcenter);
-            int detectionRange = (int) (contact.getOrigBlockCount() * (tcenter.getY() > 65 ? contact.getType().getDetectionMultiplier() : contact.getType().getUnderwaterDetectionMultiplier()));
+            int detectionRange = (int) (contact.getOrigBlockCount() * (tcenter.getY() > 65 ? contact.getType().getDetectionMultiplier(contact.getW()) : contact.getType().getUnderwaterDetectionMultiplier(contact.getW())));
             detectionRange = detectionRange * 10;
             int staticDetectionRange = (int) ((tcenter.getY() > 65 ? contact.getType().getStaticDetectionRange() : contact.getType().getUnderwaterStaticDetectionRange()));
             staticDetectionRange = staticDetectionRange * staticDetectionRange;

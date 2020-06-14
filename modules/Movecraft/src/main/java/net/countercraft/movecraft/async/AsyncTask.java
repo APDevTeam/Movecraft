@@ -22,6 +22,7 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 
 public abstract class AsyncTask extends BukkitRunnable {
@@ -41,7 +42,7 @@ public abstract class AsyncTask extends BukkitRunnable {
         }
     }
 
-    protected abstract void execute();
+    protected abstract void execute() throws InterruptedException, ExecutionException;
 
     protected Craft getCraft() {
         return craft;

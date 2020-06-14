@@ -69,6 +69,7 @@ public class Settings {
 
     public static Map<String, TownyWorldHeightLimits> TownProtectionHeightLimits;
     public static Map<Material, Integer> DurabilityOverride;
+    public static boolean CraftsUseNetherPortals = false;
     public static boolean IsPaper = false;
     public static boolean IsPre1_9 = false;
     public static boolean IsLegacy = true; //false if version is 1.13 or higher

@@ -12,7 +12,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Logger;
 
 public class RepairManager extends BukkitRunnable {
-    private List<Repair> repairs = new CopyOnWriteArrayList<>();
+    private final List<Repair> repairs = new CopyOnWriteArrayList<>();
     public RepairManager(){
 
     }
@@ -37,41 +37,44 @@ public class RepairManager extends BukkitRunnable {
         int repairStatesWithUnknownOwner = 0;
         int failedConversions = 0;
         File[] repairStates = repairStateDir.listFiles();
-        if (repairStateDir.exists() && (repairStates != null || repairStates.length > 0)){
-            for (File rs : repairStates){
-                List<String> similarPlayerNames = new ArrayList<>();
-                if (!rs.getName().contains(".schematic")){
-                    continue;
-                }
-                String fileName = rs.getName();
-                OfflinePlayer owner = null;
+        if (repairStates == null) {
+            return;
+        }
+        HashMap<String, OfflinePlayer> nameIDMap = new HashMap<>();
+        for(OfflinePlayer offlinePlayer : Bukkit.getOfflinePlayers()){
+            nameIDMap.put(offlinePlayer.getName(), offlinePlayer);
+        }
 
-                for (OfflinePlayer op : Bukkit.getOfflinePlayers()){
-                    if (fileName.startsWith(op.getName())){
-                        owner = op;
-                        similarPlayerNames.add(op.getName());
-                    }
-                }
-
-                if (similarPlayerNames.size() > 1) {
-                    String warning = String.join(", ", similarPlayerNames);
-                    Movecraft.getInstance().getLogger().warning(I18nSupport.getInternationalisedString("RepairStateConversion - Similar players found") + warning);
-                    confirmedSimilarPlayerNames.push(similarPlayerNames);
-                    continue;
-                } else if (similarPlayerNames.isEmpty() || owner == null){
-                    repairStatesWithUnknownOwner++;
-                    Movecraft.getInstance().getLogger().warning(String.format(I18nSupport.getInternationalisedString("Repair - Invalid Player Name"), fileName));
-                    continue;
-                }
-                if (confirmedRepairStates.containsKey(owner.getUniqueId())) {
-                    confirmedRepairStates.get(owner.getUniqueId()).add(rs);
-                } else {
-                    confirmedRepairStates.put(owner.getUniqueId(), new ArrayList<>());
-                    confirmedRepairStates.get(owner.getUniqueId()).add(rs);
-                }
-
-
+        for (File rs : repairStates){
+            String fileName = rs.getName();
+            if (!fileName.contains(".schematic")){
+                continue;
             }
+            List<String> similarPlayerNames = new ArrayList<>();
+            OfflinePlayer owner = null;
+            String possibleName = fileName.substring(0,2);
+            for(int i = 2; i < fileName.length(); i++){
+                possibleName += fileName.charAt(i);
+                if(nameIDMap.containsKey(possibleName)){
+                    owner = nameIDMap.get(possibleName);
+                    similarPlayerNames.add(possibleName);
+                }
+            }
+            if (owner == null){
+                repairStatesWithUnknownOwner++;
+                Movecraft.getInstance().getLogger().warning(String.format(I18nSupport.getInternationalisedString("Repair - Invalid Player Name"), fileName));
+                continue;
+            }
+            if (similarPlayerNames.size() > 1) {
+                String warning = String.join(", ", similarPlayerNames);
+                Movecraft.getInstance().getLogger().warning(I18nSupport.getInternationalisedString("RepairStateConversion - Similar players found") + warning);
+                confirmedSimilarPlayerNames.push(similarPlayerNames);
+                continue;
+            }
+            if (!confirmedRepairStates.containsKey(owner.getUniqueId())) {
+                confirmedRepairStates.put(owner.getUniqueId(), new ArrayList<>());
+            }
+            confirmedRepairStates.get(owner.getUniqueId()).add(rs);
         }
         File[] craftRepairStates = craftRepairStateDir.listFiles();
         if (craftRepairStateDir.exists() && (craftRepairStates != null || craftRepairStates.length > 0)){
@@ -113,11 +116,15 @@ public class RepairManager extends BukkitRunnable {
         //Move the repair states with confirmed owners to UUID dirs
         for (UUID id : confirmedRepairStates.keySet()){
             String pName = Bukkit.getOfflinePlayer(id).getName();
-            for (File file : confirmedRepairStates.get(id)) {
-                File playerDir = new File(repairStateDir, id.toString());
-                if (!playerDir.exists()) {
-                    playerDir.mkdirs();
+            File playerDir = new File(repairStateDir, id.toString());
+            if (!playerDir.exists()) {
+                if(!playerDir.mkdirs()){
+                    Movecraft.getInstance().getLogger().severe("Failed to generate folder for uuid " + id);
+                    continue;
                 }
+            }
+            for (File file : confirmedRepairStates.get(id)) {
+
                 String fileName = file.getName();
                 //Remove player name from the file
                 fileName = fileName.substring(pName.length());

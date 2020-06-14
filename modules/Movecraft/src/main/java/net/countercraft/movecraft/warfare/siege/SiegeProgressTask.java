@@ -15,6 +15,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.boss.BarColor;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -27,16 +29,15 @@ public class SiegeProgressTask extends SiegeTask {
     //every 20 ticks = 1 second
     public void run() {
         addPlayersToProgressBar();
-        int timeLeft = (siege.getDuration() - (int) ((System.currentTimeMillis() - siege.getStartTime())/1000));
+        int timeLeft = (int) (siege.getDuration() - ((System.currentTimeMillis() - siege.getStartTime()) / 1000));
         int timePassed = (siege.getDuration() - siege.getDelayBeforeStart()) - timeLeft;
         double progress = (double) timePassed / ((double) siege.getDuration() - siege.getDelayBeforeStart());
         siege.getProgressBar().setProgress(Math.min(progress, 1.0));
-        Player siegeLeader = Movecraft.getInstance().getServer().getPlayer(siege.getPlayerUUID());
-        Craft siegeCraft = CraftManager.getInstance().getCraftByPlayer(siegeLeader);
-
+        @NotNull Player siegeLeader = Movecraft.getInstance().getServer().getPlayer(siege.getPlayerUUID());
+        @Nullable Craft siegeCraft = CraftManager.getInstance().getCraftByPlayer(siegeLeader);
         BarColor bColor = leaderPilotingShip(siegeCraft) && leaderShipInRegion(siegeCraft, siegeLeader) ? BarColor.GREEN : BarColor.RED;
         siege.getProgressBar().setColor(bColor);
-        if (timeLeft % Settings.SiegeTaskSeconds != 0 && !siege.isJustCommenced()) {
+        if (!siege.isJustCommenced() && timeLeft % Settings.SiegeTaskSeconds != 0) {
             return;
         }
         siege.setJustCommenced(false);
@@ -69,7 +70,7 @@ public class SiegeProgressTask extends SiegeTask {
         }
     }
 
-    private void endSiege(Craft siegeCraft, Player siegeLeader) {
+    private void endSiege(@Nullable Craft siegeCraft, @NotNull Player siegeLeader) {
         if (leaderPilotingShip(siegeCraft)) {
             if (leaderShipInRegion(siegeCraft, siegeLeader)) {
                 Bukkit.getServer().broadcastMessage(String.format(I18nSupport.getInternationalisedString("Siege - Siege Success"),
@@ -88,6 +89,7 @@ public class SiegeProgressTask extends SiegeTask {
         siege.setStage(SiegeStage.INACTIVE);
     }
 
+
     private void winSiege(Player siegeLeader) {
         ProtectedRegion controlRegion;
         if (Settings.IsLegacy){
@@ -104,14 +106,14 @@ public class SiegeProgressTask extends SiegeTask {
         processCommands(siegeLeader, true);
     }
 
-    private void failSiege(Player siegeLeader) {
+    private void failSiege(@NotNull Player siegeLeader) {
         Bukkit.getServer().broadcastMessage(String.format(I18nSupport.getInternationalisedString("Siege - Siege Failure"),
                 siege.getName(), siegeLeader.getDisplayName()));
 
         processCommands(siegeLeader, false);
     }
 
-    private void processCommands(Player siegeLeader, boolean win) {
+    private void processCommands(@NotNull Player siegeLeader, boolean win) {
         if(win && siege.getCommandsOnWin() == null) {
             return;
         }
@@ -128,7 +130,7 @@ public class SiegeProgressTask extends SiegeTask {
         }
     }
 
-    private boolean leaderPilotingShip(Craft siegeCraft) {
+    private boolean leaderPilotingShip(@Nullable Craft siegeCraft) {
         if (siegeCraft == null) {
             return false;
         } else if (siege.getCraftsToWin().contains(siegeCraft.getType().getCraftName())){
@@ -138,7 +140,7 @@ public class SiegeProgressTask extends SiegeTask {
         }
     }
 
-    private boolean leaderShipInRegion(Craft siegeCraft, Player siegeLeader) {
+    private boolean leaderShipInRegion(@NotNull Craft siegeCraft, @NotNull Player siegeLeader) {
         MovecraftLocation mid = siegeCraft.getHitBox().getMidPoint();
         ProtectedRegion r;
         if (Settings.IsLegacy){

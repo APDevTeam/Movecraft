@@ -30,6 +30,7 @@ public class TeleportUtils {
     private static Method closeInventory;
     private static Method sendMethod;
     private static Method getBukkitEntity;
+    private static Method spawnIn;
 
     private static Field connectionField;
     private static Field justTeleportedField;
@@ -54,12 +55,14 @@ public class TeleportUtils {
         Class<?> packetClass = getNmsClass("PacketPlayOutPosition");
         Class<?> vehiclePacket = getNmsClass("PacketPlayOutVehicleMove");
         Class<?> vecClass = getNmsClass("Vec3D");
+        Class<?> worldClass = getNmsClass("World");
         try {
             sendMethod = connectionClass.getMethod("sendPacket", packet);
 
             position = entity.getDeclaredMethod("setLocation", Double.TYPE, Double.TYPE, Double.TYPE, Float.TYPE, Float.TYPE);
             closeInventory = entityPlayer.getDeclaredMethod("closeInventory");
             getBukkitEntity = entity.getDeclaredMethod("getBukkitEntity");
+            spawnIn = entity.getDeclaredMethod("spawnIn", worldClass);
 
             yaw = getField(entity, "yaw");
             pitch = getField(entity, "pitch");
@@ -101,6 +104,10 @@ public class TeleportUtils {
         Entity vehicle = entity.getVehicle();
         Object handle = getHandle(vehicle == null ? entity : vehicle);
         try {
+            if (location.getWorld() != entity.getWorld()) {
+                Method wHandle = location.getWorld().getClass().getDeclaredMethod("getHandle");
+                spawnIn.invoke(handle, wHandle.invoke(location.getWorld()));
+            }
             position.invoke(handle, x,y,z, location.getYaw(), location.getPitch());
         } catch (Exception e) {
             e.printStackTrace();
@@ -116,6 +123,10 @@ public class TeleportUtils {
         Object pHandle = getHandle(player);
 
         try {
+            if (location.getWorld() != player.getWorld()) {
+                Method wHandle = location.getWorld().getClass().getDeclaredMethod("getHandle");
+                spawnIn.invoke(handle, wHandle.invoke(location.getWorld()));
+            }
             position.invoke(handle, x,y,z, yaw.get(handle), pitch.get(handle));
             yaw.set(handle, yaw.getFloat(handle) + yawChange);
             Object connection = connectionField.get(pHandle);

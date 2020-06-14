@@ -26,6 +26,7 @@ import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import net.countercraft.movecraft.async.AsyncManager;
 import net.countercraft.movecraft.commands.*;
 import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.craft.ChunkManager;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.listener.BlockListener;
 import net.countercraft.movecraft.listener.InteractListener;
@@ -225,6 +226,7 @@ public class Movecraft extends JavaPlugin {
         Settings.AllowCrewSigns = getConfig().getBoolean("AllowCrewSigns", true);
         Settings.SetHomeToCrewSign = getConfig().getBoolean("SetHomeToCrewSign", true);
         Settings.MaxRemoteSigns = getConfig().getInt("MaxRemoteSigns", -1);
+        Settings.CraftsUseNetherPortals = getConfig().getBoolean("CraftsUseNetherPortals", false);
         Settings.RequireCreatePerm = getConfig().getBoolean("RequireCreatePerm", false);
         Settings.RequireNamePerm = getConfig().getBoolean("RequireNamePerm", false);
         Settings.TNTContactExplosives = getConfig().getBoolean("TNTContactExplosives", true);
@@ -528,6 +530,7 @@ public class Movecraft extends JavaPlugin {
             }
             getServer().getPluginManager().registerEvents(new BlockListener(), this);
             getServer().getPluginManager().registerEvents(new PlayerListener(), this);
+            getServer().getPluginManager().registerEvents(new ChunkManager(), this);
             getServer().getPluginManager().registerEvents(new AntiAircraftDirectorSign(), this);
             getServer().getPluginManager().registerEvents(new AscendSign(), this);
             getServer().getPluginManager().registerEvents(new CannonDirectorSign(), this);

@@ -143,7 +143,7 @@ public class IWorldHandler extends WorldHandler {
     }
 
     @Override
-    public void translateCraft(@NotNull Craft craft, @NotNull MovecraftLocation displacement) {
+    public void translateCraft(@NotNull Craft craft, @NotNull MovecraftLocation displacement, @NotNull org.bukkit.World world) {
         //TODO: Add supourt for rotations
         //A craftTranslateCommand should only occur if the craft is moving to a valid position
         //*******************************************
@@ -155,24 +155,25 @@ public class IWorldHandler extends WorldHandler {
             positions.add(locationToPosition((movecraftLocation)).b(translateVector));
 
         }
+        World oldNativeWorld = ((CraftWorld) craft.getW()).getHandle();
+        World nativeWorld = ((CraftWorld) world).getHandle();
         //*******************************************
         //*         Step two: Get the tiles         *
         //*******************************************
-        World nativeWorld = ((CraftWorld) craft.getWorld()).getHandle();
         List<TileHolder> tiles = new ArrayList<>();
         //get the tiles
         for(BlockPosition position : positions){
-            if(nativeWorld.getType(position) == Blocks.AIR.getBlockData())
+            if(oldNativeWorld.getType(position) == Blocks.AIR.getBlockData())
                 continue;
             //TileEntity tile = nativeWorld.removeTileEntity(position);
-            TileEntity tile = removeTileEntity(nativeWorld,position);
+            TileEntity tile = removeTileEntity(oldNativeWorld,position);
             if(tile == null)
                 continue;
             //get the nextTick to move with the tile
 
             //nativeWorld.capturedTileEntities.remove(position);
             //nativeWorld.getChunkAtWorldCoords(position).getTileEntities().remove(position);
-            tiles.add(new TileHolder(tile, tickProvider.getNextTick((WorldServer)nativeWorld,position), position));
+            tiles.add(new TileHolder(tile, tickProvider.getNextTick((WorldServer)oldNativeWorld,position), position));
 
         }
         //*******************************************
@@ -186,7 +187,7 @@ public class IWorldHandler extends WorldHandler {
         List<IBlockData> blockData = new ArrayList<>();
         List<BlockPosition> newPositions = new ArrayList<>();
         for(BlockPosition position : positions){
-            blockData.add(nativeWorld.getType(position));
+            blockData.add(oldNativeWorld.getType(position));
             newPositions.add(position.a(translateVector));
         }
         //create the new block
@@ -207,9 +208,10 @@ public class IWorldHandler extends WorldHandler {
         //*******************************************
         //*   Step five: Destroy the leftovers      *
         //*******************************************
-        Collection<BlockPosition> deletePositions =  CollectionUtils.filter(positions,newPositions);
+        Collection<BlockPosition> deletePositions = positions;
+        if (oldNativeWorld == nativeWorld) deletePositions = CollectionUtils.filter(positions,newPositions);
         for(BlockPosition position : deletePositions){
-            setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
+            setBlockFast(oldNativeWorld, position, Blocks.AIR.getBlockData());
         }
         //*******************************************
         //*   Step six: Process fire spread         *
@@ -226,7 +228,7 @@ public class IWorldHandler extends WorldHandler {
 
     @Nullable
     private TileEntity removeTileEntity(@NotNull World world, @NotNull BlockPosition position){
-        TileEntity tile = world.getChunkAtWorldCoords(position).a(position, Chunk.EnumTileEntityState.IMMEDIATE);
+        TileEntity tile = world.getTileEntity(position);
         if(tile == null)
             return null;
         //cleanup
@@ -312,6 +314,7 @@ public class IWorldHandler extends WorldHandler {
             nativeWorld.capturedTileEntities.put(newPosition, tile);
             return;
         }
+        tile.a(nativeWorld);
         tile.setPosition(newPosition);
         chunk.tileEntities.put(newPosition, tile);
     }

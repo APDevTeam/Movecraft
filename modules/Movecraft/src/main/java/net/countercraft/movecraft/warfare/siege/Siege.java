@@ -16,8 +16,8 @@ public class Siege {
     private long startTime;
     private int lastUpdate;
     private long lastPayout;
-    private boolean justCommenced;
     private final boolean doubleCostPerOwnedSiegeRegion;
+    private boolean justCommenced;
     private UUID playerUUID;
     private BossBar progressBar;
 
