@@ -86,7 +86,7 @@ final public class CraftType {
     private final int tickCooldown;
     @NotNull private final Map<String, Integer> perWorldTickCooldown; // speed setting
     private final int hoverLimit;
-    private final int dynamicFlyBlock;
+    private final Set<Material> dynamicFlyBlocks;
     private final double fuelBurnRate;
     @NotNull private final Map<String, Double> perWorldFuelBurnRate;
     private final double sinkPercent;
@@ -319,7 +319,36 @@ final public class CraftType {
         dynamicLagPowerFactor = doubleFromObject(data.getOrDefault("dynamicLagPowerFactor", 0d));
         dynamicLagMinSpeed = doubleFromObject((data.getOrDefault("dynamicLagMinSpeed", 0d)));
         dynamicFlyBlockSpeedFactor = doubleFromObject(data.getOrDefault("dynamicFlyBlockSpeedFactor", 0d));
-        dynamicFlyBlock = integerFromObject(data.getOrDefault("dynamicFlyBlock", 0));
+        dynamicFlyBlocks = new HashSet<>();
+        if (data.containsKey("dynamicFlyBlock")) {
+            Object d = data.get("dynamicFlyBlock");
+            Material type;
+            if (d instanceof Integer) {
+                type = Material.getMaterial((int) d);
+            } else {
+                type = Material.getMaterial((String) d);
+            }
+            dynamicFlyBlocks.add(type);
+        }
+        if (data.containsKey("dynamicFlyBlocks")) {
+            Object d = data.get("dynamicFlyBlocks");
+            if (d instanceof Integer) {
+                dynamicFlyBlocks.add(Material.getMaterial((int) d));
+            } else if (d instanceof String){
+                dynamicFlyBlocks.add(Material.getMaterial((String) d));
+            } else if (d instanceof List) {
+                List l = (List) d;
+                for (Object i : l) {
+                    Material type;
+                    if (i instanceof Integer) {
+                        type = Material.getMaterial((int) d);
+                    } else {
+                        type = Material.getMaterial((String) d);
+                    }
+                    dynamicFlyBlocks.add(type);
+                }
+            }
+        }
         chestPenalty = doubleFromObject(data.getOrDefault("chestPenalty", 0));
         gravityInclineDistance = integerFromObject(data.getOrDefault("gravityInclineDistance", -1));
         int dropdist = integerFromObject(data.getOrDefault("gravityDropDistance", -8));
@@ -852,8 +881,8 @@ final public class CraftType {
         return dynamicFlyBlockSpeedFactor;
     }
 
-    public int getDynamicFlyBlock() {
-        return dynamicFlyBlock;
+    public Set<Material> getDynamicFlyBlocks() {
+        return dynamicFlyBlocks;
     }
 
     public double getChestPenalty() {
@@ -906,6 +935,10 @@ final public class CraftType {
         return maxCannons;
     }
 
+    /**
+     * @deprecated
+     */
+    @Deprecated
     public double getStaticDetectionRange() {
         return staticDetectionRange;
     }
@@ -914,6 +947,10 @@ final public class CraftType {
         return perWorldStaticDetectionRange.getOrDefault(world.getName(), staticDetectionRange);
     }
 
+    /**
+     * @deprecated
+     */
+    @Deprecated
     public double getUnderwaterStaticDetectionRange() {
         return underwaterStaticDetectionRange;
     }

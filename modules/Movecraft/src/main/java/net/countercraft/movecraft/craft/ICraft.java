@@ -95,9 +95,9 @@ public class ICraft extends Craft {
             MovecraftLocation ccenter = this.getHitBox().getMidPoint();
             MovecraftLocation tcenter = contact.getHitBox().getMidPoint();
             int distsquared = ccenter.distanceSquared(tcenter);
-            int detectionRange = (int) (contact.getOrigBlockCount() * (tcenter.getY() > 65 ? contact.getType().getDetectionMultiplier(contact.getW()) : contact.getType().getUnderwaterDetectionMultiplier(contact.getW())));
+            int detectionRange = (int) (contact.getOrigBlockCount() * (tcenter.getY() > 65 ? contact.getType().getDetectionMultiplier(world) : contact.getType().getUnderwaterDetectionMultiplier(world)));
             detectionRange = detectionRange * 10;
-            int staticDetectionRange = (int) ((tcenter.getY() > 65 ? contact.getType().getStaticDetectionRange() : contact.getType().getUnderwaterStaticDetectionRange()));
+            int staticDetectionRange = (int) ((tcenter.getY() > 65 ? contact.getType().getStaticDetectionRange(world) : contact.getType().getUnderwaterStaticDetectionRange(world)));
             staticDetectionRange = staticDetectionRange * staticDetectionRange;
             if (distsquared <= staticDetectionRange)  {
                 contacts.add(contact);

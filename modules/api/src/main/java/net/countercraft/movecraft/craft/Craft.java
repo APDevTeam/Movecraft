@@ -373,11 +373,13 @@ public abstract class Craft {
         }
 
         // Dynamic Fly Block Speed
-        if(type.getDynamicFlyBlockSpeedFactor() != 0){
-            Material flyBlockMaterial = Material.getMaterial(type.getDynamicFlyBlock());
-            double count = materials.get(flyBlockMaterial);
-            double woolRatio = count / hitBox.size();
-            return Math.max((int)Math.round((20.0 * (type.getCruiseSkipBlocks(world) + 1)) / ((type.getDynamicFlyBlockSpeedFactor() * 1.5) * (woolRatio - .5) + (20.0 / type.getCruiseTickCooldown(world)) + 1)), 1);
+        if(type.getDynamicFlyBlockSpeedFactor() != 0) {
+            double count = 0.0, woolRatio = 0.0;
+            for (Material flyBlockMaterial : type.getDynamicFlyBlocks()) {
+                count += materials.get(flyBlockMaterial);
+                woolRatio += count / hitBox.size();
+            }
+            return Math.max((int) Math.round((20.0 * (type.getCruiseSkipBlocks(world) + 1)) / ((type.getDynamicFlyBlockSpeedFactor() * 1.5) * (woolRatio - .5) + (20.0 / type.getCruiseTickCooldown(world)) + 1)), 1);
         }
 
         if(type.getDynamicLagSpeedFactor() == 0.0 || type.getDynamicLagPowerFactor() == 0.0 || Math.abs(type.getDynamicLagPowerFactor()) > 1.0)

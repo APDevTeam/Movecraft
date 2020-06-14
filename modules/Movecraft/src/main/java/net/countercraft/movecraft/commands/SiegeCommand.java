@@ -163,7 +163,7 @@ public class SiegeCommand implements TabExecutor {
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Siege - Must pilot siege craft"));//
             return true;
         }
-        if (siege.getCooldown() > ((System.currentTimeMillis() - siege.getStartTime()) / 1000) + siege.getDuration()) {
+        if (siege.getCooldown() > ((System.currentTimeMillis() - siege.getStartTime()) / 1000) - siege.getDuration()) {
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Siege - Siege has recently taken place"));
             return true;
         }
