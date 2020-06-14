@@ -46,12 +46,12 @@ public class AntiAircraftDirectorSign implements Listener {
             return;
         }
 
-        if (!foundCraft.getType().allowCannonDirectorSign()) {
+        if (!foundCraft.getType().allowAADirectorSign()) {
             event.getPlayer().sendMessage(ERROR_PREFIX+I18nSupport.getInternationalisedString("AADirector - Not Allowed On Craft"));
             return;
         }
-        if(event.getAction()==Action.LEFT_CLICK_BLOCK && event.getPlayer()==foundCraft.getCannonDirector()){
-            foundCraft.setCannonDirector(null);
+        if(event.getAction()==Action.LEFT_CLICK_BLOCK && event.getPlayer()==foundCraft.getAADirector()){
+            foundCraft.setAADirector(null);
             event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("AADirector - No Longer Directing"));
             return;
         }
