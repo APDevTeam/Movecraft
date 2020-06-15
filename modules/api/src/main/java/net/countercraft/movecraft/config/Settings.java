@@ -37,19 +37,15 @@ public class Settings {
     public static boolean DelayColorChanges = false;
     public static double SinkRateTicks = 20.0;
     public static double SinkCheckTicks = 100.0;
-    public static double TracerRateTicks = 5.0;
-    public static long TracerMinDistanceSqrd = 360;
     public static boolean WorldGuardBlockMoveOnBuildPerm = false;
     public static boolean WorldGuardBlockSinkOnPVPPerm = false;
     public static boolean ProtectPilotedCrafts = false;
     public static boolean DisableSpillProtection = false;
     public static boolean RequireCreatePerm = false;
     public static boolean RequireNamePerm = false;
-    public static boolean TNTContactExplosives = true;
     public static int FadeWrecksAfter = 0;
     public static int ManOverboardTimeout = 60;
     public static double ManOverboardDistSquared = 1000000;
-    public static int FireballLifespan = 6;
     public static int CollisionPrimer = 1000;
     public static int RepairTicksPerBlock = 0;
     public static double RepairMaxPercent = 50;
@@ -67,7 +63,6 @@ public class Settings {
     public static boolean TownyBlockMoveOnSwitchPerm = false;
     public static boolean TownyBlockSinkOnNoPVP = false;
     public static Map<String, TownyWorldHeightLimits> TownProtectionHeightLimits;
-    public static Map<Integer, Integer> DurabilityOverride;
     public static boolean CraftsUseNetherPortals = false;
     public static boolean IsPaper = false;
 
