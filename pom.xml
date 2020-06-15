@@ -28,10 +28,11 @@
         <module>modules/v1_13_R2</module>
         <module>modules/v1_14_R1</module>
         <module>modules/v1_15_R1</module>
+        <module>modules/v1_16_R1</module>
         <module>modules/worldedit/WE6Utils</module>
         <module>modules/worldedit/WE7Utils</module>
         <module>modules/Movecraft</module>
-        <module>modules/v1_16_R1</module>
+
 
 
     </modules>

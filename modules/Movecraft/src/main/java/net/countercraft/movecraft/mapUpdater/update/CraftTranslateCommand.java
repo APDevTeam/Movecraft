@@ -10,15 +10,13 @@ import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.SignTranslateEvent;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.utils.*;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.logging.Logger;
@@ -28,17 +26,23 @@ public class CraftTranslateCommand extends UpdateCommand {
     @NotNull private final Craft craft;
     @NotNull private final MovecraftLocation displacement;
     @NotNull private final World world;
+    @Nullable private final Sound sound;
+    private final float volume;
 
     public CraftTranslateCommand(@NotNull Craft craft, @NotNull MovecraftLocation displacement){
         this.craft = craft;
         this.displacement = displacement;
         this.world = craft.getW();
+        sound = null;
+        volume = 0f;
     }
     
-    public CraftTranslateCommand(@NotNull Craft craft, @NotNull MovecraftLocation displacement, @NotNull World world){
+    public CraftTranslateCommand(@NotNull Craft craft, @NotNull MovecraftLocation displacement, @NotNull World world, @Nullable Sound sound, float volume){
         this.craft = craft;
         this.displacement = displacement;
         this.world = world;
+        this.sound = sound;
+        this.volume = volume;
     }
 
 
@@ -105,7 +109,7 @@ public class CraftTranslateCommand extends UpdateCommand {
                     if (playerVehicle != null && craft.getType().getOnlyMovePlayers()) {
                         playerVehicle.eject();
                     }
-                    toMove.add(new EntityUpdateCommand(entity, displacement.getX(), displacement.getY(), displacement.getZ(), 0, 0));
+                    toMove.add(new EntityUpdateCommand(entity, displacement.getX(), displacement.getY(), displacement.getZ(), 0, 0, world, sound, volume));
                 } else if (!craft.getType().getOnlyMovePlayers() || entity.getType() == EntityType.PRIMED_TNT) {
                     boolean isPlayerVehicle = false;
                     for (Entity pass : entity.getPassengers()) {
@@ -118,7 +122,7 @@ public class CraftTranslateCommand extends UpdateCommand {
                     if (vehicle != null && vehicle.getPassengers().contains(entity) || entity == playerVehicle || isPlayerVehicle) {
                         continue;
                     }
-                    toMove.add(new EntityUpdateCommand(entity, displacement.getX(), displacement.getY(), displacement.getZ(), 0, 0));
+                    toMove.add(new EntityUpdateCommand(entity, displacement.getX(), displacement.getY(), displacement.getZ(), 0, 0, world));
                 }
             }
         }

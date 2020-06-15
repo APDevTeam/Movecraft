@@ -84,8 +84,15 @@ public class EntityUpdateCommand extends UpdateCommand {
     @Override
     public void doUpdate() {
         final Location entityLoc = entity.getVehicle() != null ? entity.getVehicle().getLocation() : entity.getLocation();
-        if (!(entity instanceof Player)) {
-            TeleportUtils.teleportEntity(entity, new Location(entity.getWorld(), entityLoc.getX() + x, entityLoc.getY() + y, entityLoc.getZ() + z,yaw + entityLoc.getYaw(),pitch + entityLoc.getPitch()));
+        final Location destLoc = new Location(world, entityLoc.getX() + x, entityLoc.getY() + y, entityLoc.getZ() + z,yaw + entityLoc.getYaw(),pitch + entityLoc.getPitch());
+        if (!entity.getWorld().equals(world)) {
+            entity.teleport(destLoc);
+            if (sound != null) {
+                ((Player) entity).playSound(entityLoc, sound, volume, 1.0f);
+            }
+            return;
+        } else if (!(entity instanceof Player)) {
+            TeleportUtils.teleportEntity(entity, destLoc);
             return;
         }
         Location playerLoc = entity.getLocation();
@@ -93,9 +100,6 @@ public class EntityUpdateCommand extends UpdateCommand {
         //Movecraft.getInstance().getWorldHandler().addPlayerLocation((Player) entity,x,y,z,yaw,pitch);
         Location location = new Location(world, playerLoc.getX() + x, playerLoc.getY() + y, playerLoc.getZ() + z);
         TeleportUtils.teleport((Player) entity, location, yaw);
-        if (sound != null) {
-            ((Player) entity).playSound(location, sound, volume, 1.0f);
-        }
     }
 
     @Override

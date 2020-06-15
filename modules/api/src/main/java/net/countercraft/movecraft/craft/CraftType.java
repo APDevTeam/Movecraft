@@ -297,7 +297,10 @@ final public class CraftType {
         }
         if(!blockedByWater){
             passthroughBlocks.add(Material.WATER);
-            passthroughBlocks.add(Material.STATIONARY_WATER);
+            if (Settings.IsLegacy)
+                passthroughBlocks.add(Material.STATIONARY_WATER);
+            else
+                passthroughBlocks.add(Material.getMaterial("BUBBLE_COLUMN"));
         }
         forbiddenHoverOverBlocks = new HashSet<>();
         if (data.containsKey("forbiddenHoverOverBlocks")){

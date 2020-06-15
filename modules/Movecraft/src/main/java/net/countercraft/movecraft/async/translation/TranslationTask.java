@@ -508,7 +508,7 @@ public class TranslationTask extends AsyncTask {
             Bukkit.getServer().getPluginManager().callEvent(new CraftCollisionEvent(craft, collisionBox, world));
         }
 
-        updates.add(new CraftTranslateCommand(craft, new MovecraftLocation(dx, dy, dz), world));
+        updates.add(new CraftTranslateCommand(craft, new MovecraftLocation(dx, dy, dz), world, sound, volume));
 
         //prevents torpedo and rocket pilots
         if (craft.getType().getMoveEntities() && !(craft.getSinking() && craft.getType().getOnlyMovePlayers())) {
