@@ -41,6 +41,7 @@ public class LegacyUtils {
     public static final Material PISTON_BASE = Settings.IsLegacy ? Material.PISTON_BASE : null;
     public static final Material PISTON_EXTENSION = Settings.IsLegacy ? Material.PISTON_EXTENSION : null;
     public static final Material PISTON_STICKY_BASE = Settings.IsLegacy ? Material.PISTON_STICKY_BASE : null;
+    public static final Material PORTAL = Settings.IsLegacy ? Material.PORTAL : null;
     public static final Material RED_ROSE = Settings.IsLegacy ? Material.RED_ROSE : null;
     public static final Material REDSTONE_COMPARATOR = Settings.IsLegacy ? Material.REDSTONE_COMPARATOR : null;
     public static final Material REDSTONE_COMPARATOR_OFF = Settings.IsLegacy ? Material.REDSTONE_COMPARATOR_OFF : null;

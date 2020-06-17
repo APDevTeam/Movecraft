@@ -24,6 +24,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Furnace;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.Orientable;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
@@ -183,8 +184,8 @@ public class TranslationTask extends AsyncTask {
         final int maxY = oldHitBox.getMaxY();
 
         // proccess nether portals
-        if (Settings.CraftsUseNetherPortals && craft.getW().getEnvironment() != Environment.THE_END
-                && world.equals(craft.getW())) {
+        if (Settings.CraftsUseNetherPortals && craft.getWorld().getEnvironment() != Environment.THE_END
+                && world.equals(craft.getWorld())) {
 
             // ensure chunks are loaded for portal checking only if change in location is
             // large
@@ -197,9 +198,9 @@ public class TranslationTask extends AsyncTask {
 
             for (MovecraftLocation oldLocation : oldHitBox) {
 
-                Location location = oldLocation.translate(dx, dy, dz).toBukkit(craft.getW());
-                Block block = craft.getW().getBlockAt(location);
-                if (block.getType() == Material.NETHER_PORTAL) {
+                Location location = oldLocation.translate(dx, dy, dz).toBukkit(craft.getWorld());
+                Block block = craft.getWorld().getBlockAt(location);
+                if (block.getType() == (Settings.IsLegacy ? LegacyUtils.PORTAL : Material.NETHER_PORTAL)) {
 
                     if (processNetherPortal(block)) {
                         sound = Sound.BLOCK_PORTAL_TRAVEL;
@@ -250,12 +251,12 @@ public class TranslationTask extends AsyncTask {
             fail(I18nSupport.getInternationalisedString("Translation - Failed Craft hit minimum height limit"));
             return;
         }
-        if (craft.getType().getFuelBurnRate() > 0.0) {
+        if (craft.getType().getFuelBurnRate(world) > 0.0) {
             new BukkitRunnable() {
                 @Override
                 public void run() {
                     // check for fuel, burn some from a furnace if needed. Blocks of coal are supported, in addition to coal and charcoal
-                    double fuelBurnRate = craft.getType().getFuelBurnRate();
+                    double fuelBurnRate = craft.getType().getFuelBurnRate(world);
                     // going down doesn't require fuel
                     if (dy == -1 && dx == 0 && dz == 0)
                         fuelBurnRate = 0.0;
@@ -307,7 +308,7 @@ public class TranslationTask extends AsyncTask {
 
         }
         //Process gravity
-        if (world.equals(craft.getW()) && craft.getType().getUseGravity() && !craft.getSinking()){
+        if (world.equals(craft.getWorld()) && craft.getType().getUseGravity() && !craft.getSinking()){
             int incline = inclineCraft(oldHitBox);
             if (incline > 0){
                 boolean tooSteep = craft.getType().getGravityInclineDistance() > -1 && incline > craft.getType().getGravityInclineDistance();
@@ -651,8 +652,20 @@ public class TranslationTask extends AsyncTask {
         int portalZ = 0;
         Location portalNegCorner = new Location(block.getWorld(), 0, 0, 0);
         Location portalPosCorner = new Location(block.getWorld(), 0, 0, 0);
-        if (block.getData() == 2) portalZ = 1;
-        else portalX = 1;
+        if (Settings.IsLegacy) {
+            if (block.getData() == 2)
+                portalZ = 1;
+            else
+                portalX = 1;
+        } else {
+            final Orientable orient = (Orientable) block.getBlockData();
+            if (orient.getAxis() == Axis.X) {
+                portalX = 1;
+            } else {
+                portalZ = 1;
+            }
+        }
+
 
         Material testMaterial = null;
         int testX = block.getX();

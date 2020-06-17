@@ -14,7 +14,7 @@ public class CraftCollisionEvent extends CraftEvent{
     private boolean isCancelled = false;
 
     public CraftCollisionEvent(@NotNull Craft craft, @NotNull BitmapHitBox hitBox, @NotNull World world) {
-        super(craft);
+        super(craft, true);
         this.hitBox = hitBox;
         this.world = world;
     }
