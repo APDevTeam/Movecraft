@@ -7,13 +7,13 @@ import org.bukkit.World;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
-public class CraftCollisionEvent extends CraftEvent{
+public class CraftCollisionExplosionEvent extends CraftEvent {
     private static final HandlerList HANDLERS = new HandlerList();
     @NotNull private final BitmapHitBox hitBox;
     @NotNull private final World world;
     private boolean isCancelled = false;
 
-    public CraftCollisionEvent(@NotNull Craft craft, @NotNull BitmapHitBox hitBox, @NotNull World world) {
+    public CraftCollisionExplosionEvent(@NotNull Craft craft, @NotNull BitmapHitBox hitBox, @NotNull World world) {
         super(craft);
         this.hitBox = hitBox;
         this.world = world;
@@ -23,7 +23,7 @@ public class CraftCollisionEvent extends CraftEvent{
     public BitmapHitBox getHitBox() {
         return hitBox;
     }
-    
+
     @NotNull
     public World getWorld() {
         return world;
