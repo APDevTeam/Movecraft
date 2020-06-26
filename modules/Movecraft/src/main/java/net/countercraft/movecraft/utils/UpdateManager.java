@@ -2,6 +2,7 @@ package net.countercraft.movecraft.utils;
 
 import com.google.gson.Gson;
 import net.countercraft.movecraft.Movecraft;
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -41,6 +42,8 @@ public class UpdateManager extends BukkitRunnable implements Listener {
 
     @Override
     public void run() {
+        if (!Settings.CheckForUpdates)
+            return;
         final Logger log = Movecraft.getInstance().getLogger();
         log.info(I18nSupport.getInternationalisedString("Update - Checking for updates"));
         new BukkitRunnable() {

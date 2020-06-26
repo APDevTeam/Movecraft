@@ -23,6 +23,8 @@ import org.bukkit.Material;
 import java.util.*;
 
 public class Settings {
+
+    public static boolean CheckForUpdates = true;
     public static boolean RestrictSiBsToRegions = false;
     public static boolean IGNORE_RESET = false;
     public static boolean Debug = false;

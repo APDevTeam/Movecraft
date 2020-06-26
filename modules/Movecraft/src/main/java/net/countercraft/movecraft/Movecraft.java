@@ -227,6 +227,7 @@ public class Movecraft extends JavaPlugin {
         Settings.SetHomeToCrewSign = getConfig().getBoolean("SetHomeToCrewSign", true);
         Settings.MaxRemoteSigns = getConfig().getInt("MaxRemoteSigns", -1);
         Settings.CraftsUseNetherPortals = getConfig().getBoolean("CraftsUseNetherPortals", false);
+        Settings.CheckForUpdates = getConfig().getBoolean("CheckForUpdates", true);
         Settings.RequireCreatePerm = getConfig().getBoolean("RequireCreatePerm", false);
         Settings.RequireNamePerm = getConfig().getBoolean("RequireNamePerm", false);
         Settings.TNTContactExplosives = getConfig().getBoolean("TNTContactExplosives", true);
