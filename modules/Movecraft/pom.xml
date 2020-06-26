@@ -10,7 +10,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     <!--<version>7.0.0_beta_4</version>-->
-    <version>7.0.0_for_1.8.8-1.15.2_beta_25</version>
+    <version>7.0.0_for_1.8.8-1.16.1_beta_25</version>
     <repositories>
         <repository>
             <id>spigot-repo</id>
@@ -35,6 +35,12 @@
     </repositories>
 
     <dependencies>
+        <dependency>
+            <groupId>net.countercraft</groupId>
+            <artifactId>movecraft-v1_16_R1</artifactId>
+            <version>v1_16_R1</version>
+            <type>jar</type>
+        </dependency>
         <dependency>
             <groupId>net.countercraft</groupId>
             <artifactId>movecraft-v1_15_R1</artifactId>
@@ -332,6 +338,12 @@
                                 </filter>
                                 <filter>
                                     <artifact>net.countercraft:movecraft-v1_15_R1</artifact>
+                                    <includes>
+                                        <include>**</include>
+                                    </includes>
+                                </filter>
+                                <filter>
+                                    <artifact>net.countercraft:movecraft-v1_16_R1</artifact>
                                     <includes>
                                         <include>**</include>
                                     </includes>
