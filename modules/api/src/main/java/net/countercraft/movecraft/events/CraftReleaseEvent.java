@@ -1,6 +1,7 @@
 package net.countercraft.movecraft.events;
 
 import net.countercraft.movecraft.craft.Craft;
+import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
@@ -9,9 +10,10 @@ import org.jetbrains.annotations.NotNull;
  * @see Craft
  */
 @SuppressWarnings("unused")
-public class CraftReleaseEvent extends CraftEvent{
+public class CraftReleaseEvent extends CraftEvent implements Cancellable {
     @NotNull private final Reason reason;
     private static final HandlerList HANDLERS = new HandlerList();
+    private boolean cancelled = false;
 
     public CraftReleaseEvent(@NotNull Craft craft, @NotNull Reason reason) {
         super(craft);
@@ -25,6 +27,16 @@ public class CraftReleaseEvent extends CraftEvent{
 
     public enum Reason{
         DISCONNECT,SUB_CRAFT,PLAYER,FORCE
+    }
+
+    @Override
+    public boolean isCancelled() {
+        return this.cancelled;
+    }
+
+    @Override
+    public void setCancelled(boolean cancel) {
+        this.cancelled = cancel;
     }
 
     @Override

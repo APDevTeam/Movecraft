@@ -19,6 +19,7 @@ package net.countercraft.movecraft.craft;
 
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
+import net.countercraft.movecraft.exception.NonCancellableReleaseException;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -113,7 +114,11 @@ public class CraftManager implements Iterable<Craft>{
 
     public void removeCraft(@NotNull Craft c) {
         //TODO move this to callers
-        Bukkit.getServer().getPluginManager().callEvent(new CraftReleaseEvent(c, CraftReleaseEvent.Reason.PLAYER));
+        CraftReleaseEvent e = new CraftReleaseEvent(c, CraftReleaseEvent.Reason.PLAYER);
+        Bukkit.getServer().getPluginManager().callEvent(e);
+        if(e.isCancelled())
+            return;
+
         removeReleaseTask(c);
         Player player = getPlayerFromCraft(c);
         if (player!=null)
@@ -137,7 +142,11 @@ public class CraftManager implements Iterable<Craft>{
         this.craftList.remove(c);
         if (getPlayerFromCraft(c) != null)
             this.craftPlayerIndex.remove(getPlayerFromCraft(c));
-        Bukkit.getServer().getPluginManager().callEvent(new CraftReleaseEvent(c, CraftReleaseEvent.Reason.FORCE));
+        CraftReleaseEvent e = new CraftReleaseEvent(c, CraftReleaseEvent.Reason.FORCE);
+        Bukkit.getServer().getPluginManager().callEvent(e);
+        if(e.isCancelled()) {
+            throw new NonCancellableReleaseException();
+        }
     }
 
     @NotNull
@@ -173,15 +182,17 @@ public class CraftManager implements Iterable<Craft>{
         List<Craft> crafts = new ArrayList<>();
         for(Craft c : craftList){
             if(c.getNotificationPlayer() != null && c.getNotificationPlayer().equals(player)){
-                releaseEvents.remove(c);
+                CraftReleaseEvent e = new CraftReleaseEvent(c, CraftReleaseEvent.Reason.DISCONNECT);
+                Bukkit.getServer().getPluginManager().callEvent(e);
+                if(e.isCancelled())
+                    continue;
+
                 crafts.add(c);
+                releaseEvents.remove(c);
             }
         }
         craftPlayerIndex.remove(player);
         craftList.removeAll(crafts);
-        for(Craft c : crafts){
-            Bukkit.getServer().getPluginManager().callEvent(new CraftReleaseEvent(c, CraftReleaseEvent.Reason.DISCONNECT));
-        }
     }
 
     @Nullable
