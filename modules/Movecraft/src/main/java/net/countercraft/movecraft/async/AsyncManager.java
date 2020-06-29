@@ -61,29 +61,8 @@ public class AsyncManager extends BukkitRunnable {
 
     private long lastFadeCheck = 0;
     private long lastContactCheck = 0;
-    private final HashSet<Material> transparent;
 
-    public AsyncManager() {
-        transparent = new HashSet<>();
-        transparent.add(Material.AIR);
-        transparent.add(Material.GLASS);
-        transparent.add(Material.THIN_GLASS);
-        transparent.add(Material.STAINED_GLASS);
-        transparent.add(Material.STAINED_GLASS_PANE);
-        transparent.add(Material.IRON_FENCE);
-        transparent.add(Material.REDSTONE_WIRE);
-        transparent.add(Material.IRON_TRAPDOOR);
-        transparent.add(Material.TRAP_DOOR);
-        transparent.add(Material.NETHER_BRICK_STAIRS);
-        transparent.add(Material.LEVER);
-        transparent.add(Material.STONE_BUTTON);
-        transparent.add(Material.WOOD_BUTTON);
-        transparent.add(Material.STEP);
-        transparent.add(Material.SMOOTH_STAIRS);
-        transparent.add(Material.SIGN);
-        transparent.add(Material.SIGN_POST);
-        transparent.add(Material.WALL_SIGN);
-    }
+    public AsyncManager() {}
 
    /* public static AsyncManager getInstance() {
         return instance;
