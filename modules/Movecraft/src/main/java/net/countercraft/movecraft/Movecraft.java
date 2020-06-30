@@ -450,7 +450,6 @@ public class Movecraft extends JavaPlugin {
             }
 
             if(Settings.SiegeEnable) {
-
                 siegeManager = new SiegeManager(this);
                 logger.info("Enabling siege");
                 //load the sieges.yml file

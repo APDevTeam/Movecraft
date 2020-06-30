@@ -66,10 +66,18 @@ public class SiegeCommand implements TabExecutor {
             return infoCommand(commandSender,args);
         } else if (args[0].equalsIgnoreCase("abort")){
             return abortCommand(commandSender);
+        } else if(args[0].equalsIgnoreCase("time")){
+            return timeCommand(commandSender,args);
         }
         commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Siege - Invalid Argument"));
         return true;
 
+    }
+
+    private boolean timeCommand(CommandSender commandSender, String[] args) {
+        int militaryTime = getMilitaryTime();
+        commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + dayToString(getDayOfWeek()) + " - " + String.format("%02d", militaryTime / 100) + ":" + String.format("%02d",militaryTime % 100));
+        return true;
     }
 
     private boolean infoCommand(CommandSender commandSender, String[] args){
@@ -252,7 +260,6 @@ public class SiegeCommand implements TabExecutor {
 
     private String militaryTimeIntToString(int militaryTime) {
         return String.format("%02d", militaryTime / 100) + ":" + String.format("%02d",militaryTime % 100);
-
     }
 
     private String secondsIntToString(int seconds) {
@@ -410,6 +417,7 @@ public class SiegeCommand implements TabExecutor {
             tabCompletions.add("info");
             tabCompletions.add("abort");
             tabCompletions.add("list");
+            tabCompletions.add("time");
         } else if (strings[0].equalsIgnoreCase("info")) {
             for (Siege siege : Movecraft.getInstance().getSiegeManager().getSieges()) {
                 tabCompletions.add(siege.getName());

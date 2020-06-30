@@ -34,6 +34,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.logging.Logger;
 
 import static net.countercraft.movecraft.utils.MathUtils.withinWorldBorder;
 
@@ -280,6 +281,9 @@ public class TranslationTask extends AsyncTask {
                 }
             } else if (!isOnGround(oldHitBox)){
                 dy = dropDistance(oldHitBox);
+            }
+            if (Settings.Debug) {
+                Movecraft.getInstance().getLogger().info("dy: " + dy);
             }
         }
         //Fail the movement if the craft is too high and if the craft is not explosive
@@ -708,7 +712,6 @@ public class TranslationTask extends AsyncTask {
                 dz -= oldHitBox.getZLength() + 1;
             }
         }
-
         return true;
 
     }
@@ -812,11 +815,13 @@ public class TranslationTask extends AsyncTask {
                 final MovecraftLocation translated = ml.translate(dx, dy, dz);
                 //This has to be subtracted by one, or non-passthrough blocks will be within the y drop path
                 //obstructing the craft
-                Material testType = translated.translate(0, dropDistance , 0).toBukkit(craft.getWorld()).getBlock().getType();
+
+                MovecraftLocation dropped = translated.translate(0, dropDistance - 1 , 0);
+                Material testType = dropped.toBukkit(craft.getWorld()).getBlock().getType();
                 hitGround = testType != Material.AIR &&
                         !craft.getType().getPassthroughBlocks().contains(testType) &&
                         !(craft.getType().getHarvestBlocks().contains(testType) &&
-                        craft.getType().getHarvesterBladeBlocks().contains(ml.translate(0, 1, 0).toBukkit(craft.getW()).getBlock().getType())) ||
+                        craft.getType().getHarvesterBladeBlocks().contains(ml.toBukkit(craft.getW()).getBlock().getType())) ||
                         craft.getType().getMinHeightLimit(craft.getW()) == translated.translate(0, dropDistance + 1 , 0).getY();
 
                 if (hitGround) {
@@ -878,6 +883,11 @@ public class TranslationTask extends AsyncTask {
             }
             translatedBottomLocsInAir = false;
             break;
+        }
+        if (Settings.Debug) {
+            final Logger log = Movecraft.getInstance().getLogger();
+            log.info("Translated bottom locs in air: " + translatedBottomLocsInAir);
+            log.info("Bottom locs on ground: " + bottomLocsOnGround);
         }
         if (dy > 0){
             return bottomLocsOnGround && translatedBottomLocsInAir;
