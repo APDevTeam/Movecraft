@@ -386,7 +386,7 @@ public class IWorldHandler extends WorldHandler {
             nativeWorld.capturedTileEntities.put(newPosition, tile);
             return;
         }
-        tile.setPosition(newPosition);
+        tile.setLocation(nativeWorld, newPosition);
         chunk.tileEntities.put(newPosition, tile);
     }
 

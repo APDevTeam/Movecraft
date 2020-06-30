@@ -15,11 +15,10 @@ import net.countercraft.movecraft.events.CraftTranslateEvent;
 import net.countercraft.movecraft.events.ItemHarvestEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.update.*;
-
 import net.countercraft.movecraft.utils.*;
 import org.bukkit.*;
-import org.bukkit.block.Barrel;
 import org.bukkit.World.Environment;
+import org.bukkit.block.Barrel;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Furnace;
@@ -30,7 +29,6 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -183,6 +181,10 @@ public class TranslationTask extends AsyncTask {
         final int minY = oldHitBox.getMinY();
         final int maxY = oldHitBox.getMaxY();
 
+        if (!checkFuel()) {
+            return;
+        }
+
         // proccess nether portals
         if (Settings.CraftsUseNetherPortals && craft.getWorld().getEnvironment() != Environment.THE_END
                 && world.equals(craft.getWorld())) {
@@ -251,62 +253,10 @@ public class TranslationTask extends AsyncTask {
             fail(I18nSupport.getInternationalisedString("Translation - Failed Craft hit minimum height limit"));
             return;
         }
-        if (craft.getType().getFuelBurnRate(world) > 0.0) {
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-                    // check for fuel, burn some from a furnace if needed. Blocks of coal are supported, in addition to coal and charcoal
-                    double fuelBurnRate = craft.getType().getFuelBurnRate(world);
-                    // going down doesn't require fuel
-                    if (dy == -1 && dx == 0 && dz == 0)
-                        fuelBurnRate = 0.0;
-                    if (dy > 0)
-                        fuelBurnRate *= 2;
-                    if (fuelBurnRate == 0.0 || craft.getSinking()) {
-                        return;
-                    }
-                    if (craft.getBurningFuel() >= fuelBurnRate) {
-                        craft.setBurningFuel(craft.getBurningFuel() - fuelBurnRate);
-                        return;
-                    }
-                    Block fuelHolder = null;
-                    for (MovecraftLocation bTest : oldHitBox) {
-                        Block b = craft.getWorld().getBlockAt(bTest.getX(), bTest.getY(), bTest.getZ());
-                        //Get all fuel holders
-                        if (b.getType() == Material.FURNACE) {
-                            InventoryHolder holder = (InventoryHolder) b.getState();
-                            for (Material fuel : Settings.FuelTypes.keySet()) {
-                                if (holder.getInventory().contains(fuel)) {
-                                    fuelHolder = b;
-                                    break;
-                                }
-                            }
-                        }
-                        if (fuelHolder != null) break;
-
-                    }
-                    if (fuelHolder == null) {
-                        fail(I18nSupport.getInternationalisedString("Translation - Failed Craft out of fuel"));
-                        return;
-                    }
-                    Furnace furnace = (Furnace) fuelHolder.getState();
-                    for (Material fuel : Settings.FuelTypes.keySet()){
-                        if (furnace.getInventory().contains(fuel)){
-                            ItemStack item = furnace.getInventory().getItem(furnace.getInventory().first(fuel));
-                            int amount = item.getAmount();
-                            if (amount == 1) {
-                                furnace.getInventory().remove(item);
-                            } else {
-                                item.setAmount(amount - 1);
-                            }
-                            craft.setBurningFuel(craft.getBurningFuel() + Settings.FuelTypes.get(item.getType()));
-                        }
-                    }
-                }
-            }.runTask(Movecraft.getInstance());
 
 
-        }
+
+
         //Process gravity
         if (world.equals(craft.getWorld()) && craft.getType().getUseGravity() && !craft.getSinking()){
             int incline = inclineCraft(oldHitBox);
@@ -584,66 +534,64 @@ public class TranslationTask extends AsyncTask {
         if (harvestedBlocks.isEmpty()) {
             return;
         }
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                ArrayList<Inventory> chests = new ArrayList<>();
-                //find chests
-                for (MovecraftLocation loc : oldHitBox) {
-                    Block block = craft.getWorld().getBlockAt(loc.getX(), loc.getY(), loc.getZ());
-                    if (block.getType() == Material.CHEST || block.getType() == Material.TRAPPED_CHEST)
-                        chests.add(((InventoryHolder) (block.getState())).getInventory());
-                }
-
-                for (MovecraftLocation harvestedBlock : harvestedBlocks) {
-
-                    Block block = craft.getWorld().getBlockAt(harvestedBlock.getX(), harvestedBlock.getY(), harvestedBlock.getZ());
-                    List<ItemStack> drops = new ArrayList<>(block.getDrops());
-
-                    if (Settings.IsLegacy) {
-                        //generate seed drops
-                        if (block.getType() == LegacyUtils.CROPS) {
-                            Random rand = new Random();
-                            int amount = rand.nextInt(4);
-                            if (amount > 0) {
-                                ItemStack seeds = new ItemStack(LegacyUtils.SEEDS, amount);
-                                drops.add(seeds);
-                            }
-                        }
-                    } else {
-                        if (block.getType() == Material.WHEAT) {
-                            Random rand = new Random();
-                            int amount = rand.nextInt(4);
-                            if (amount > 0) {
-                                ItemStack seeds = new ItemStack(Material.WHEAT_SEEDS, amount);
-                                drops.add(seeds);
-                            }
-                        }
-                    }
-                    //get contents of inventories before deposting
-
-                    if (block.getState() instanceof InventoryHolder) {
-                        if (block.getState() instanceof Chest) {
-                            drops.addAll(Arrays.asList(((Chest) block.getState()).getBlockInventory().getContents()));
-                        } else if (block.getState() instanceof Barrel) {
-                            drops.addAll(Arrays.asList(((Barrel) block.getState()).getInventory().getContents()));
-                        } else {
-                            drops.addAll(Arrays.asList((((InventoryHolder) block.getState()).getInventory().getContents())));
-                        }
-                    }
-                    //call event
-                    final ItemHarvestEvent harvestEvent = new ItemHarvestEvent(craft, drops, harvestedBlock.toBukkit(craft.getWorld()));
-                    Bukkit.getServer().getPluginManager().callEvent(harvestEvent);
-                    for (ItemStack drop : drops) {
-                        ItemStack retStack = putInToChests(drop, chests);
-                        if (retStack != null)
-                            //drop items on position
-                            updates.add(new ItemDropUpdateCommand(new Location(craft.getWorld(), harvestedBlock.getX(), harvestedBlock.getY(), harvestedBlock.getZ()), retStack));
-                    }
-                }
+        Bukkit.getScheduler().callSyncMethod(Movecraft.getInstance(), () -> {
+            ArrayList<Inventory> chests = new ArrayList<>();
+            //find chests
+            for (MovecraftLocation loc : oldHitBox) {
+                Block block = craft.getWorld().getBlockAt(loc.getX(), loc.getY(), loc.getZ());
+                if (block.getType() == Material.CHEST || block.getType() == Material.TRAPPED_CHEST)
+                    chests.add(((InventoryHolder) (block.getState())).getInventory());
             }
 
-        }.runTask(Movecraft.getInstance());
+            for (MovecraftLocation harvestedBlock : harvestedBlocks) {
+
+                Block block = craft.getWorld().getBlockAt(harvestedBlock.getX(), harvestedBlock.getY(), harvestedBlock.getZ());
+                List<ItemStack> drops = new ArrayList<>(block.getDrops());
+
+                if (Settings.IsLegacy) {
+                    //generate seed drops
+                    if (block.getType() == LegacyUtils.CROPS) {
+                        Random rand = new Random();
+                        int amount = rand.nextInt(4);
+                        if (amount > 0) {
+                            ItemStack seeds = new ItemStack(LegacyUtils.SEEDS, amount);
+                            drops.add(seeds);
+                        }
+                    }
+                } else {
+                    if (block.getType() == Material.WHEAT) {
+                        Random rand = new Random();
+                        int amount = rand.nextInt(4);
+                        if (amount > 0) {
+                            ItemStack seeds = new ItemStack(Material.WHEAT_SEEDS, amount);
+                            drops.add(seeds);
+                        }
+                    }
+                }
+                //get contents of inventories before deposting
+
+                if (block.getState() instanceof InventoryHolder) {
+                    if (block.getState() instanceof Chest) {
+                        drops.addAll(Arrays.asList(((Chest) block.getState()).getBlockInventory().getContents()));
+                    } else if (block.getState() instanceof Barrel) {
+                        drops.addAll(Arrays.asList(((Barrel) block.getState()).getInventory().getContents()));
+                    } else {
+                        drops.addAll(Arrays.asList((((InventoryHolder) block.getState()).getInventory().getContents())));
+                    }
+                }
+                //call event
+                final ItemHarvestEvent harvestEvent = new ItemHarvestEvent(craft, drops, harvestedBlock.toBukkit(craft.getWorld()));
+                Bukkit.getServer().getPluginManager().callEvent(harvestEvent);
+                for (ItemStack drop : drops) {
+                    ItemStack retStack = putInToChests(drop, chests);
+                    if (retStack != null)
+                        //drop items on position
+                        updates.add(new ItemDropUpdateCommand(new Location(craft.getWorld(), harvestedBlock.getX(), harvestedBlock.getY(), harvestedBlock.getZ()), retStack));
+                }
+
+            }
+            return true;
+        });
     }
     
     private boolean processNetherPortal(@NotNull Block block) {
@@ -937,6 +885,61 @@ public class TranslationTask extends AsyncTask {
         return !translatedBottomLocsInAir;
     }
 
+    private boolean checkFuel() {
+        double fuelBurnRate = craft.getType().getFuelBurnRate(world);
+        if (fuelBurnRate <= 0.0 || (dy == -1 && dx == 0 && dz == 0) || craft.getSinking())
+            return true;
+        // check for fuel, burn some from a furnace if needed. Blocks of coal are supported, in addition to coal and charcoal
+
+        // going down doesn't require fuel
+        if (dy > 0)
+            fuelBurnRate *= 2;
+        if (craft.getBurningFuel() >= fuelBurnRate) {
+            craft.setBurningFuel(craft.getBurningFuel() - fuelBurnRate);
+            return true;
+        }
+        try {
+            return Bukkit.getScheduler().callSyncMethod(Movecraft.getInstance(), () -> {
+                Block fuelHolder = null;
+                for (MovecraftLocation bTest : oldHitBox) {
+                    Block b = craft.getWorld().getBlockAt(bTest.getX(), bTest.getY(), bTest.getZ());
+                    //Get all fuel holders
+                    if (b.getType() == Material.FURNACE) {
+                        InventoryHolder holder = (InventoryHolder) b.getState();
+                        for (Material fuel : Settings.FuelTypes.keySet()) {
+                            if (holder.getInventory().contains(fuel)) {
+                                fuelHolder = b;
+                                break;
+                            }
+                        }
+                    }
+                    if (fuelHolder != null) break;
+
+                }
+                if (fuelHolder == null) {
+                    fail(I18nSupport.getInternationalisedString("Translation - Failed Craft out of fuel"));
+                    return false;
+                }
+                Furnace furnace = (Furnace) fuelHolder.getState();
+                for (Material fuel : Settings.FuelTypes.keySet()){
+                    if (furnace.getInventory().contains(fuel)){
+                        ItemStack item = furnace.getInventory().getItem(furnace.getInventory().first(fuel));
+                        int amount = item.getAmount();
+                        if (amount == 1) {
+                            furnace.getInventory().remove(item);
+                        } else {
+                            item.setAmount(amount - 1);
+                        }
+                        craft.setBurningFuel(craft.getBurningFuel() + Settings.FuelTypes.get(item.getType()));
+                    }
+                }
+                return true;
+            }).get();
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
     public boolean failed(){
         return failed;
     }
