@@ -9,10 +9,7 @@ import net.countercraft.movecraft.craft.ChunkManager;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.CraftType;
-import net.countercraft.movecraft.events.CraftCollisionEvent;
-import net.countercraft.movecraft.events.CraftPreTranslateEvent;
-import net.countercraft.movecraft.events.CraftTranslateEvent;
-import net.countercraft.movecraft.events.ItemHarvestEvent;
+import net.countercraft.movecraft.events.*;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.update.*;
 import net.countercraft.movecraft.utils.*;
@@ -616,16 +613,23 @@ public class TranslationTask extends AsyncTask {
             return true;
         }
         if (craft.getBurningFuel() >= fuelBurnRate) {
+            double burningFuel = craft.getBurningFuel();
+            //call event
+            final FuelBurnEvent event = new FuelBurnEvent(craft, burningFuel, fuelBurnRate);
+            Bukkit.getPluginManager().callEvent(event);
             craft.setBurningFuel(craft.getBurningFuel() - fuelBurnRate);
             return true;
         }
         Block fuelHolder = null;
         for (MovecraftLocation bTest : oldHitBox) {
             Block b = craft.getW().getBlockAt(bTest.getX(), bTest.getY(), bTest.getZ());
-            if (b.getTypeId() == 61) {
+            if (b.getType() == Material.FURNACE) {
                 InventoryHolder inventoryHolder = (InventoryHolder) b.getState();
-                if (inventoryHolder.getInventory().contains(263) || inventoryHolder.getInventory().contains(173)) {
+                for (Material fuel : craft.getType().getFuelTypes().keySet()) {
+                    if (!inventoryHolder.getInventory().contains(fuel))
+                        continue;
                     fuelHolder = b;
+                    break;
                 }
             }
         }
@@ -634,25 +638,18 @@ public class TranslationTask extends AsyncTask {
             return false;
         }
         InventoryHolder inventoryHolder = (InventoryHolder) fuelHolder.getState();
-        if (inventoryHolder.getInventory().contains(263)) {
-            ItemStack iStack = inventoryHolder.getInventory().getItem(inventoryHolder.getInventory().first(263));
+        for (Material fuel : craft.getType().getFuelTypes().keySet()) {
+            if (!inventoryHolder.getInventory().contains(fuel))
+                continue;
+            ItemStack iStack = inventoryHolder.getInventory().getItem(inventoryHolder.getInventory().first(fuel));
             int amount = iStack.getAmount();
             if (amount == 1) {
                 inventoryHolder.getInventory().remove(iStack);
             } else {
                 iStack.setAmount(amount - 1);
             }
-            craft.setBurningFuel(craft.getBurningFuel() + 7.0);
-        } else {
-            ItemStack iStack = inventoryHolder.getInventory().getItem(inventoryHolder.getInventory().first(173));
-            int amount = iStack.getAmount();
-            if (amount == 1) {
-                inventoryHolder.getInventory().remove(iStack);
-            } else {
-                iStack.setAmount(amount - 1);
-            }
-            craft.setBurningFuel(craft.getBurningFuel() + 79.0);
-
+            craft.setBurningFuel(craft.getBurningFuel() + craft.getType().getFuelTypes().get(fuel));
+            break;
         }
         return true;
     }

@@ -30,7 +30,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
-import java.util.logging.Level;
 
 final public class CraftType {
     private final boolean blockedByWater;
@@ -109,6 +108,7 @@ final public class CraftType {
     @NotNull private final List<Material> harvesterBladeBlocks;
     @NotNull private final Set<Material> passthroughBlocks;
     @NotNull private final Set<Material> forbiddenHoverOverBlocks;
+    @NotNull private final Map<Material, Double> fuelTypes;
     private final int gravityDropDistance;
     private final int gravityInclineDistance;
     private final Sound collisionSound;
@@ -316,6 +316,32 @@ final public class CraftType {
         int dropdist = integerFromObject(data.getOrDefault("gravityDropDistance", -8));
         gravityDropDistance = dropdist > 0 ? -dropdist : dropdist;
         collisionSound = Sound.valueOf((String) data.getOrDefault("collisionSound", "BLOCK_ANVIL_LAND"));
+        fuelTypes = new HashMap<>();
+        Map<Object, Object> fTypes = (Map<Object, Object>) data.getOrDefault("fuelTypes", new HashMap<>());
+        if (!fTypes.isEmpty()) {
+            for (Object k : fTypes.keySet()) {
+                Material type;
+                if (k instanceof Integer) {
+                    type = Material.getMaterial((int) k);
+                } else {
+                    type = Material.getMaterial(((String) k).toUpperCase());
+                }
+                Object v = fTypes.get(k);
+                double burnRate;
+                if (v instanceof String) {
+                    burnRate = Double.parseDouble((String) v);
+                } else if (v instanceof Integer) {
+                    burnRate = ((Integer) v).doubleValue();
+                } else {
+                    burnRate = (double) v;
+                }
+                fuelTypes.put(type, burnRate);
+            }
+        } else {
+            fuelTypes.put(Material.COAL_BLOCK, 79.0);
+            fuelTypes.put(Material.COAL, 7.0);
+        }
+
     }
 
     private int integerFromObject(Object obj) {
@@ -796,6 +822,10 @@ final public class CraftType {
     @NotNull
     public Sound getCollisionSound() {
         return collisionSound;
+    }
+
+    public Map<Material, Double> getFuelTypes() {
+        return fuelTypes;
     }
 
     private class TypeNotFoundException extends RuntimeException {

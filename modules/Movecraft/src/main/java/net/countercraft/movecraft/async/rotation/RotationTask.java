@@ -30,6 +30,7 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.CraftRotateEvent;
+import net.countercraft.movecraft.events.FuelBurnEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.update.CraftRotateCommand;
 import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
@@ -105,10 +106,13 @@ public class RotationTask extends AsyncTask {
                 Block fuelHolder = null;
                 for (MovecraftLocation bTest : oldHitBox) {
                     Block b = getCraft().getW().getBlockAt(bTest.getX(), bTest.getY(), bTest.getZ());
-                    if (b.getTypeId() == 61) {
+                    if (b.getType() == Material.FURNACE) {
                         InventoryHolder inventoryHolder = (InventoryHolder) b.getState();
-                        if (inventoryHolder.getInventory().contains(263) || inventoryHolder.getInventory().contains(173)) {
+                        for (Material fuel : craft.getType().getFuelTypes().keySet()) {
+                            if (!inventoryHolder.getInventory().contains(fuel))
+                                continue;
                             fuelHolder = b;
+                            break;
                         }
                     }
                 }
@@ -375,6 +379,56 @@ public class RotationTask extends AsyncTask {
 
     public boolean getIsSubCraft() {
         return isSubCraft;
+    }
+
+    private boolean checkFuel(){
+        // check for fuel, burn some from a furnace if needed. Blocks of coal are supported, in addition to coal and charcoal
+        double fuelBurnRate = craft.getType().getFuelBurnRate(craft.getW());
+
+        if (fuelBurnRate == 0.0 || craft.getSinking()) {
+            return true;
+        }
+        if (craft.getBurningFuel() >= fuelBurnRate) {
+            double burningFuel = craft.getBurningFuel();
+            //call event
+            final FuelBurnEvent event = new FuelBurnEvent(craft, burningFuel, fuelBurnRate);
+            Bukkit.getPluginManager().callEvent(event);
+            craft.setBurningFuel(craft.getBurningFuel() - fuelBurnRate);
+            return true;
+        }
+        Block fuelHolder = null;
+        for (MovecraftLocation bTest : oldHitBox) {
+            Block b = craft.getW().getBlockAt(bTest.getX(), bTest.getY(), bTest.getZ());
+            if (b.getType() == Material.FURNACE) {
+                InventoryHolder inventoryHolder = (InventoryHolder) b.getState();
+                for (Material fuel : craft.getType().getFuelTypes().keySet()) {
+                    if (!inventoryHolder.getInventory().contains(fuel))
+                        continue;
+                    fuelHolder = b;
+                    break;
+                }
+            }
+        }
+        if (fuelHolder == null) {
+            failMessage = I18nSupport.getInternationalisedString("Translation - Failed Craft out of fuel");
+            failed = true;
+            return false;
+        }
+        InventoryHolder inventoryHolder = (InventoryHolder) fuelHolder.getState();
+        for (Material fuel : craft.getType().getFuelTypes().keySet()) {
+            if (!inventoryHolder.getInventory().contains(fuel))
+                continue;
+            ItemStack iStack = inventoryHolder.getInventory().getItem(inventoryHolder.getInventory().first(fuel));
+            int amount = iStack.getAmount();
+            if (amount == 1) {
+                inventoryHolder.getInventory().remove(iStack);
+            } else {
+                iStack.setAmount(amount - 1);
+            }
+            craft.setBurningFuel(craft.getBurningFuel() + craft.getType().getFuelTypes().get(fuel));
+            break;
+        }
+        return true;
     }
 
     private void isTownyBlock(Location plugLoc, Player craftPilot){
