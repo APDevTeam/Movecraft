@@ -375,6 +375,13 @@ public class RotationTask extends AsyncTask {
         for (Material fuel : craft.getType().getFuelTypes().keySet()) {
             if (!inventoryHolder.getInventory().contains(fuel))
                 continue;
+            double burningFuel = craft.getType().getFuelTypes().get(fuel);
+            //call event
+            final FuelBurnEvent event = new FuelBurnEvent(craft, burningFuel, fuelBurnRate);
+            Bukkit.getPluginManager().callEvent(event);
+            if (burningFuel == 0.0) {
+                continue;
+            }
             ItemStack iStack = inventoryHolder.getInventory().getItem(inventoryHolder.getInventory().first(fuel));
             int amount = iStack.getAmount();
             if (amount == 1) {
@@ -382,7 +389,7 @@ public class RotationTask extends AsyncTask {
             } else {
                 iStack.setAmount(amount - 1);
             }
-            craft.setBurningFuel(craft.getBurningFuel() + craft.getType().getFuelTypes().get(fuel));
+            craft.setBurningFuel(craft.getBurningFuel() + burningFuel);
             break;
         }
         return true;
