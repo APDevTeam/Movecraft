@@ -384,7 +384,10 @@ public class RotationTask extends AsyncTask {
             }
             ItemStack iStack = inventoryHolder.getInventory().getItem(inventoryHolder.getInventory().first(fuel));
             int amount = iStack.getAmount();
-            if (amount == 1) {
+            if (iStack.getType() == Material.LAVA_BUCKET || iStack.getType() == Material.WATER_BUCKET) {
+                //If water or lava buckets are accepted as fuel, replace with an empty bucket
+                iStack.setType(Material.BUCKET);
+            } else if (amount == 1) {
                 inventoryHolder.getInventory().remove(iStack);
             } else {
                 iStack.setAmount(amount - 1);
