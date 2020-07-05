@@ -36,7 +36,10 @@ import net.countercraft.movecraft.mapUpdater.update.CraftRotateCommand;
 import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import net.countercraft.movecraft.utils.*;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -350,7 +353,11 @@ public class RotationTask extends AsyncTask {
             //call event
             final FuelBurnEvent event = new FuelBurnEvent(craft, burningFuel, fuelBurnRate);
             Bukkit.getPluginManager().callEvent(event);
-            craft.setBurningFuel(craft.getBurningFuel() - fuelBurnRate);
+            if (event.getBurningFuel() != burningFuel)
+                burningFuel = event.getBurningFuel();
+            if (event.getFuelBurnRate() != fuelBurnRate)
+                fuelBurnRate = event.getFuelBurnRate();
+            craft.setBurningFuel(burningFuel - fuelBurnRate);
             return true;
         }
         Block fuelHolder = null;
@@ -379,8 +386,16 @@ public class RotationTask extends AsyncTask {
             //call event
             final FuelBurnEvent event = new FuelBurnEvent(craft, burningFuel, fuelBurnRate);
             Bukkit.getPluginManager().callEvent(event);
+            if (event.getBurningFuel() != burningFuel)
+                burningFuel = event.getBurningFuel();
+            if (event.getFuelBurnRate() != fuelBurnRate)
+                fuelBurnRate = event.getFuelBurnRate();
             if (burningFuel == 0.0) {
                 continue;
+            }
+            int minAmount = 1;
+            if (burningFuel < fuelBurnRate) {
+                minAmount = (int) (fuelBurnRate / fuelBurnRate);
             }
             ItemStack iStack = inventoryHolder.getInventory().getItem(inventoryHolder.getInventory().first(fuel));
             int amount = iStack.getAmount();
@@ -389,8 +404,12 @@ public class RotationTask extends AsyncTask {
                 iStack.setType(Material.BUCKET);
             } else if (amount == 1) {
                 inventoryHolder.getInventory().remove(iStack);
+            } else if (amount < minAmount) {
+                inventoryHolder.getInventory().remove(iStack);
+                final ItemStack secStack = inventoryHolder.getInventory().getItem(inventoryHolder.getInventory().first(fuel));
+                secStack.setAmount(secStack.getAmount() - (minAmount - amount));
             } else {
-                iStack.setAmount(amount - 1);
+                iStack.setAmount(amount - minAmount);
             }
             craft.setBurningFuel(craft.getBurningFuel() + burningFuel);
             break;

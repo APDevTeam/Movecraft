@@ -617,7 +617,11 @@ public class TranslationTask extends AsyncTask {
             //call event
             final FuelBurnEvent event = new FuelBurnEvent(craft, burningFuel, fuelBurnRate);
             Bukkit.getPluginManager().callEvent(event);
-            craft.setBurningFuel(craft.getBurningFuel() - fuelBurnRate);
+            if (event.getBurningFuel() != burningFuel)
+                burningFuel = event.getBurningFuel();
+            if (event.getFuelBurnRate() != fuelBurnRate)
+                fuelBurnRate = event.getFuelBurnRate();
+            craft.setBurningFuel(burningFuel - fuelBurnRate);
             return true;
         }
         Block fuelHolder = null;
@@ -645,18 +649,30 @@ public class TranslationTask extends AsyncTask {
             //call event
             final FuelBurnEvent event = new FuelBurnEvent(craft, burningFuel, fuelBurnRate);
             Bukkit.getPluginManager().callEvent(event);
+            if (event.getBurningFuel() != burningFuel)
+                burningFuel = event.getBurningFuel();
+            if (event.getFuelBurnRate() != fuelBurnRate)
+                fuelBurnRate = event.getFuelBurnRate();
             if (burningFuel == 0.0) {
                 continue;
             }
             ItemStack iStack = inventoryHolder.getInventory().getItem(inventoryHolder.getInventory().first(fuel));
             int amount = iStack.getAmount();
+            int minAmount = 1;
+            if (burningFuel < fuelBurnRate) {
+                minAmount = (int) fuelBurnRate;
+            }
             if (iStack.getType() == Material.LAVA_BUCKET || iStack.getType() == Material.WATER_BUCKET) {
                 //If water or lava buckets are accepted as fuel, replace with an empty bucket
                 iStack.setType(Material.BUCKET);
-            } else if (amount == 1) {
+            } else if (amount == minAmount) {
                 inventoryHolder.getInventory().remove(iStack);
+            } else if (amount < minAmount) {
+                inventoryHolder.getInventory().remove(iStack);
+                final ItemStack secStack = inventoryHolder.getInventory().getItem(inventoryHolder.getInventory().first(fuel));
+                secStack.setAmount(secStack.getAmount() - (minAmount - amount));
             } else {
-                iStack.setAmount(amount - 1);
+                iStack.setAmount(amount - minAmount);
             }
             craft.setBurningFuel(craft.getBurningFuel() + burningFuel);
             break;
