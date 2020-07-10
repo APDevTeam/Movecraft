@@ -191,5 +191,4 @@ $RECYCLE.BIN/
 *.lnk
 
 # dependency reduced POMs
-modules/Movecraft/dependency-reduced-pom.xml
-modules/api/dependency-reduced-pom.xml
+*dependency-reduced-pom.xml
