@@ -192,7 +192,7 @@ public class TranslationTask extends AsyncTask {
         }
 
         //TODO: Check fuel
-        if (!checkFuel()) {
+        if (!(dy < 0 && dx == 0 && dz == 0) && !checkFuel()) {
             fail(I18nSupport.getInternationalisedString("Translation - Failed Craft out of fuel"));
             return;
         }
@@ -600,84 +600,6 @@ public class TranslationTask extends AsyncTask {
 
         }
         return stack;
-    }
-
-    private boolean checkFuel(){
-        // check for fuel, burn some from a furnace if needed. Blocks of coal are supported, in addition to coal and charcoal
-        double fuelBurnRate = craft.getType().getFuelBurnRate(craft.getW());
-        // going down doesn't require fuel
-        if (dy == -1 && dx == 0 && dz == 0)
-            fuelBurnRate = 0.0;
-
-        if (fuelBurnRate == 0.0 || craft.getSinking()) {
-            return true;
-        }
-        if (craft.getBurningFuel() >= fuelBurnRate) {
-            double burningFuel = craft.getBurningFuel();
-            //call event
-            final FuelBurnEvent event = new FuelBurnEvent(craft, burningFuel, fuelBurnRate);
-            Bukkit.getPluginManager().callEvent(event);
-            if (event.getBurningFuel() != burningFuel)
-                burningFuel = event.getBurningFuel();
-            if (event.getFuelBurnRate() != fuelBurnRate)
-                fuelBurnRate = event.getFuelBurnRate();
-            craft.setBurningFuel(burningFuel - fuelBurnRate);
-            return true;
-        }
-        Block fuelHolder = null;
-        for (MovecraftLocation bTest : oldHitBox) {
-            Block b = craft.getW().getBlockAt(bTest.getX(), bTest.getY(), bTest.getZ());
-            if (b.getType() == Material.FURNACE) {
-                InventoryHolder inventoryHolder = (InventoryHolder) b.getState();
-                for (Material fuel : craft.getType().getFuelTypes().keySet()) {
-                    if (!inventoryHolder.getInventory().contains(fuel))
-                        continue;
-                    fuelHolder = b;
-                    break;
-                }
-            }
-        }
-        if (fuelHolder == null) {
-            fail(I18nSupport.getInternationalisedString("Translation - Failed Craft out of fuel"));
-            return false;
-        }
-        InventoryHolder inventoryHolder = (InventoryHolder) fuelHolder.getState();
-        for (Material fuel : craft.getType().getFuelTypes().keySet()) {
-            if (!inventoryHolder.getInventory().contains(fuel))
-                continue;
-            double burningFuel = craft.getType().getFuelTypes().get(fuel);
-            //call event
-            final FuelBurnEvent event = new FuelBurnEvent(craft, burningFuel, fuelBurnRate);
-            Bukkit.getPluginManager().callEvent(event);
-            if (event.getBurningFuel() != burningFuel)
-                burningFuel = event.getBurningFuel();
-            if (event.getFuelBurnRate() != fuelBurnRate)
-                fuelBurnRate = event.getFuelBurnRate();
-            if (burningFuel == 0.0) {
-                continue;
-            }
-            ItemStack iStack = inventoryHolder.getInventory().getItem(inventoryHolder.getInventory().first(fuel));
-            int amount = iStack.getAmount();
-            int minAmount = 1;
-            if (burningFuel < fuelBurnRate) {
-                minAmount = (int) fuelBurnRate;
-            }
-            if (iStack.getType() == Material.LAVA_BUCKET || iStack.getType() == Material.WATER_BUCKET) {
-                //If water or lava buckets are accepted as fuel, replace with an empty bucket
-                iStack.setType(Material.BUCKET);
-            } else if (amount == minAmount) {
-                inventoryHolder.getInventory().remove(iStack);
-            } else if (amount < minAmount) {
-                inventoryHolder.getInventory().remove(iStack);
-                final ItemStack secStack = inventoryHolder.getInventory().getItem(inventoryHolder.getInventory().first(fuel));
-                secStack.setAmount(secStack.getAmount() - (minAmount - amount));
-            } else {
-                iStack.setAmount(amount - minAmount);
-            }
-            craft.setBurningFuel(craft.getBurningFuel() + burningFuel);
-            break;
-        }
-        return true;
     }
 
     private MovecraftLocation surfaceLoc(MovecraftLocation ml) {

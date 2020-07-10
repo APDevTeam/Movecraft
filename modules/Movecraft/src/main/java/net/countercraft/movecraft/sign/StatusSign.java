@@ -62,19 +62,12 @@ public final class StatusSign implements Listener{
 
             if (blockID == 61) {
                 InventoryHolder inventoryHolder = (InventoryHolder) craft.getW().getBlockAt(ml.getX(), ml.getY(), ml.getZ()).getState();
-                if (inventoryHolder.getInventory().contains(263)
-                        || inventoryHolder.getInventory().contains(173)) {
-                    ItemStack[] istack=inventoryHolder.getInventory().getContents();
-                    for(ItemStack i : istack) {
-                        if(i!=null) {
-                            if(i.getTypeId()==263) {
-                                fuel+=i.getAmount()*8;
-                            }
-                            if(i.getTypeId()==173) {
-                                fuel+=i.getAmount()*80;
-                            }
-                        }
+                Map<Material, Double> fuelTypes = craft.getType().getFuelTypes();
+                for (ItemStack iStack : inventoryHolder.getInventory()) {
+                    if (iStack == null || !fuelTypes.containsKey(iStack.getType())) {
+                        continue;
                     }
+                    fuel += iStack.getAmount() * fuelTypes.get(iStack.getType());
                 }
             }
             if (blockID != 0) {
