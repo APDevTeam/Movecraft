@@ -19,7 +19,7 @@ public class WaterlogUtils {
     public static void waterlogBlocksOnCraft(Craft craft, HitBox interior) {
 
         for (MovecraftLocation ml : craft.getHitBox()) {
-            final Material phaseBlock = craft.getPhaseBlocks().getOrDefault(ml, DEFAULT_PHASE_BLOCK).getLeft();
+            final Material phaseBlock = craft.getPhaseBlocks().getOrDefault(ml.toBukkit(craft.getWorld()), DEFAULT_PHASE_BLOCK).getLeft();
             boolean waterlog = phaseBlock == Material.WATER;
             Block b = ml.toBukkit(craft.getWorld()).getBlock();
             if (!(b.getBlockData() instanceof Waterlogged)) {
