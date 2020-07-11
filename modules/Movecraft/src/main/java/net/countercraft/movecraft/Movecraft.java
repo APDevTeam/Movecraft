@@ -39,9 +39,6 @@ import net.countercraft.movecraft.sign.*;
 import net.countercraft.movecraft.towny.TownyCompatManager;
 import net.countercraft.movecraft.utils.TownyUtils;
 import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
-import net.countercraft.movecraft.warfare.assault.AssaultManager;
-import net.countercraft.movecraft.warfare.siege.Siege;
-import net.countercraft.movecraft.warfare.siege.SiegeManager;
 import net.countercraft.movecraft.worldguard.WorldGuardCompatManager;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Material;
@@ -81,8 +78,6 @@ public class Movecraft extends JavaPlugin {
 
 
     private AsyncManager asyncManager;
-    private AssaultManager assaultManager;
-    private SiegeManager siegeManager;
     private RepairManager repairManager;
 
     public static synchronized Movecraft getInstance() {
@@ -321,52 +316,7 @@ public class Movecraft extends JavaPlugin {
             asyncManager = new AsyncManager();
             asyncManager.runTaskTimer(this, 0, 1);
             MapUpdateManager.getInstance().runTaskTimer(this, 0, 1);
-            if(Settings.AssaultEnable) {
-                assaultManager = new AssaultManager(this);
-                assaultManager.runTaskTimerAsynchronously(this, 0, 20);
-            }
-
-            if(Settings.SiegeEnable) {
-
-                siegeManager = new SiegeManager(this);
-                logger.info("Enabling siege");
-                //load the sieges.yml file
-                File siegesFile = new File(Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/sieges.yml");
-                InputStream input;
-                try {
-                    input = new FileInputStream(siegesFile);
-                } catch (FileNotFoundException e) {
-                    input = null;
-                }
-                if (input != null) {
-                    Map data = new Yaml().loadAs(input, Map.class);
-                    Map<String, Map<String, ?>> siegesMap = (Map<String, Map<String, ?>>) data.get("sieges");
-                    List<Siege> sieges = siegeManager.getSieges();
-                    for (Map.Entry<String, Map<String, ?>> entry : siegesMap.entrySet()) {
-                        Map<String,Object> siegeMap = (Map<String, Object>) entry.getValue();
-                        sieges.add(new Siege(
-                                entry.getKey(),
-                                (String) siegeMap.get("RegionToControl"),
-                                (String) siegeMap.get("SiegeRegion"),
-                                (Integer) siegeMap.get("ScheduleStart"),
-                                (Integer) siegeMap.get("ScheduleEnd"),
-                                (Integer) siegeMap.getOrDefault("DelayBeforeStart", 0),
-                                (Integer) siegeMap.get("SiegeDuration"),
-                                (Integer) siegeMap.getOrDefault("DailyIncome", 0),
-                                (Integer) siegeMap.getOrDefault("CostToSiege", 0),
-                                (Boolean) siegeMap.getOrDefault("DoubleCostPerOwnedSiegeRegion", true),
-                                (List<Integer>) siegeMap.get("DaysOfTheWeek"),
-                                (List<String>) siegeMap.getOrDefault("CraftsToWin", Collections.emptyList()),
-                                (List<String>) siegeMap.getOrDefault("SiegeCommandsOnStart", Collections.emptyList()),
-                                (List<String>) siegeMap.getOrDefault("SiegeCommandsOnWin", Collections.emptyList()),
-                                (List<String>) siegeMap.getOrDefault("SiegeCommandsOnLose", Collections.emptyList())));
-                    }
-                    logger.log(Level.INFO, "Siege configuration loaded.");
-
-                }
-                siegeManager.runTaskTimerAsynchronously(this, 0, 20);
-            }
-            CraftManager.initialize();
+           CraftManager.initialize();
 
             getServer().getPluginManager().registerEvents(new InteractListener(), this);
             if (worldEditPlugin != null) {
@@ -388,12 +338,7 @@ public class Movecraft extends JavaPlugin {
             this.getCommand("contacts").setExecutor(new ContactsCommand());
             this.getCommand("scuttle").setExecutor(new ScuttleCommand());
 
-            if(Settings.SiegeEnable)
-                this.getCommand("siege").setExecutor(new SiegeCommand());
-            if(Settings.AssaultEnable) {
-                this.getCommand("assaultinfo").setExecutor(new AssaultInfoCommand());
-                this.getCommand("assault").setExecutor(new AssaultCommand());
-            }
+
             getServer().getPluginManager().registerEvents(new BlockListener(), this);
             getServer().getPluginManager().registerEvents(new PlayerListener(), this);
             getServer().getPluginManager().registerEvents(new ChunkManager(), this);
@@ -459,12 +404,6 @@ public class Movecraft extends JavaPlugin {
     public Essentials getEssentialsPlugin() {
         return essentialsPlugin;
     }
-
-    public AssaultManager getAssaultManager() {
-        return assaultManager;
-    }
-
-    public SiegeManager getSiegeManager(){return siegeManager;}
 
     public WorldHandler getWorldHandler(){
         return worldHandler;
