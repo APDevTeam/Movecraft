@@ -6,6 +6,7 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
 import net.countercraft.movecraft.utils.BlockLimitManager;
+import net.countercraft.movecraft.utils.Counter;
 import net.countercraft.movecraft.utils.SignUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -19,8 +20,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 public final class StatusSign implements Listener{
 
@@ -53,7 +52,7 @@ public final class StatusSign implements Listener{
         int signLine = 1;
         int signColumn = 0;
         final BlockLimitManager flyBlocks = craft.getType().getFlyBlocks();
-        Map<BlockLimitManager.Entry, Integer> foundFlyBlocks = new HashMap<>();
+        Counter<BlockLimitManager.Entry> foundFlyBlocks = new Counter<>();
         for (MovecraftLocation ml : craft.getHitBox()){
             Location loc = ml.toBukkit(craft.getWorld());
             Material testType = loc.getBlock().getType();
@@ -63,21 +62,9 @@ public final class StatusSign implements Listener{
             }
 
             if (flyBlocks.contains(testType)){
-                if (foundFlyBlocks.containsKey(flyBlocks.get(testType))){
-                    int count = foundFlyBlocks.get(flyBlocks.get(testType));
-                    count++;
-                    foundFlyBlocks.put(flyBlocks.get(testType), count);
-                } else {
-                    foundFlyBlocks.put(flyBlocks.get(testType), 1);
-                }
+                foundFlyBlocks.add(flyBlocks.get(testType));
             } else if (flyBlocks.contains(testType, data)){
-                if (foundFlyBlocks.containsKey(flyBlocks.get(testType, data))){
-                    int count = foundFlyBlocks.get(flyBlocks.get(testType, data));
-                    count++;
-                    foundFlyBlocks.put(flyBlocks.get(testType, data), count);
-                } else {
-                    foundFlyBlocks.put(flyBlocks.get(testType, data), 1);
-                }
+                foundFlyBlocks.get(flyBlocks.get(testType, data));
             }
 
             if (testType == Material.FURNACE) {
@@ -90,7 +77,7 @@ public final class StatusSign implements Listener{
                 }
             }
         }
-        for (BlockLimitManager.Entry entry : foundFlyBlocks.keySet()) {
+        for (BlockLimitManager.Entry entry : flyBlocks.getEntries()) {
             int amount = foundFlyBlocks.get(entry);
             double minimum = entry.getLowerLimit();
             if (minimum == 0)
@@ -127,7 +114,7 @@ public final class StatusSign implements Listener{
             signLine++;
         }
         String fuelText="";
-        int fuelRange=(int) ((fuel*(1+(craft.getType().getCruiseSkipBlocks(craft.getW())+1)))/craft.getType().getFuelBurnRate(craft.getW()));
+        int fuelRange=(int) ((fuel*(1+(craft.getType().getCruiseSkipBlocks(craft.getWorld())+1)))/craft.getType().getFuelBurnRate(craft.getW()));
         if(fuelRange>1000) {
             fuelText+=ChatColor.GREEN;
         } else if(fuelRange>100) {
