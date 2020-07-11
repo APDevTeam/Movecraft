@@ -62,7 +62,7 @@ public class ChunkManager implements Listener {
     private static void removeChunksToLoad(List<MovecraftChunk> list) {
         for (MovecraftChunk chunk : list) {
             chunks.remove(chunk);
-            if (!Settings.IsLegacy)
+            if (!Settings.IsLegacy && chunk.toBukkit().getPluginChunkTickets().contains(Movecraft.getInstance()))
                 chunk.toBukkit().removePluginChunkTicket(Movecraft.getInstance());
         }
     }
