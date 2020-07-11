@@ -30,7 +30,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
-import java.util.logging.Level;
 
 final public class CraftType {
     private final boolean blockedByWater;
@@ -109,6 +108,8 @@ final public class CraftType {
     @NotNull private final List<Material> harvesterBladeBlocks;
     @NotNull private final Set<Material> passthroughBlocks;
     @NotNull private final Set<Material> forbiddenHoverOverBlocks;
+    @NotNull private final String[] disableTeleportToWorlds;
+    private final int teleportationCooldown;
     private final int gravityDropDistance;
     private final int gravityInclineDistance;
     private final Sound collisionSound;
@@ -316,6 +317,8 @@ final public class CraftType {
         int dropdist = integerFromObject(data.getOrDefault("gravityDropDistance", -8));
         gravityDropDistance = dropdist > 0 ? -dropdist : dropdist;
         collisionSound = Sound.valueOf((String) data.getOrDefault("collisionSound", "BLOCK_ANVIL_LAND"));
+        disableTeleportToWorlds = stringListFromObject(data.getOrDefault("disableTeleportToWorlds", new ArrayList<>()));
+        teleportationCooldown = integerFromObject(data.getOrDefault("teleportationCooldown", 0));
     }
 
     private int integerFromObject(Object obj) {
@@ -796,6 +799,15 @@ final public class CraftType {
     @NotNull
     public Sound getCollisionSound() {
         return collisionSound;
+    }
+
+    @NotNull
+    public String[] getDisableTeleportToWorlds() {
+        return disableTeleportToWorlds;
+    }
+
+    public int getTeleportationCooldown() {
+        return teleportationCooldown;
     }
 
     private class TypeNotFoundException extends RuntimeException {
