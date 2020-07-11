@@ -23,6 +23,8 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +40,16 @@ public class TownyUtils {
     public static final String TOWN_ABOVE = "aboveTownSpawn";
     public static final String TOWN_UNDER = "underTownSpawn";
     public static final String TOWN_HEIGHT_LIMITS = "TownyWorldHeightLimits";
+
+    private static Method GET_CACHE_PERMISSION_NON_LEGACY;
+
+    static {
+        try {
+            GET_CACHE_PERMISSION_NON_LEGACY = PlayerCacheUtil.class.getDeclaredMethod("getCachePermission", Player.class, Location.class, Material.class, TownyPermission.ActionType.class);
+        } catch (NoSuchMethodException e) {
+            GET_CACHE_PERMISSION_NON_LEGACY = null;
+        }
+    }
 
     public static TownyWorld getTownyWorld(World w) {
         TownyWorld tw;
@@ -110,10 +122,20 @@ public class TownyUtils {
         if (player != null && !validateResident(player)) {
             return true; //probably NPC or CBWrapper Dummy player
         }
-        int id = Material.STONE_BUTTON.getId();
+        Material type = Material.STONE_BUTTON;
         byte data = 0;
 
-        boolean bSwitch = PlayerCacheUtil.getCachePermission(player, loc, id, data, TownyPermission.ActionType.SWITCH);
+        boolean bSwitch;
+        if (GET_CACHE_PERMISSION_NON_LEGACY != null) {
+            try {
+                bSwitch = (boolean) GET_CACHE_PERMISSION_NON_LEGACY.invoke(player, loc, type, TownyPermission.ActionType.SWITCH);
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                bSwitch = true;
+            }
+        } else {
+            bSwitch = PlayerCacheUtil.getCachePermission(player, loc, type.getId(), data, TownyPermission.ActionType.SWITCH);
+        }
+
 
         // Allow move if we are permitted to switch
         if (bSwitch)
