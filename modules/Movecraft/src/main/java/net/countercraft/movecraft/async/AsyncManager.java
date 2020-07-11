@@ -946,7 +946,11 @@ public class AsyncManager extends BukkitRunnable {
             final World world = wreckWorlds.get(hitBox);
             ArrayList<UpdateCommand> commands = new ArrayList<>();
             for (MovecraftLocation location : hitBox){
-                Pair<Material, Object> phaseBlock = phaseBlocks.getOrDefault(location.toBukkit(world), new Pair<>(Material.AIR, (byte) 0));
+                Pair<Material, Object> phaseBlock = phaseBlocks.getOrDefault(location.toBukkit(world), new Pair<>(Material.AIR, Settings.IsLegacy ? (byte) 0 : Bukkit.createBlockData(Material.AIR)));
+                if (Settings.IsLegacy) {
+                    commands.add(new BlockCreateCommand(world, location, phaseBlock.getLeft(),(byte) phaseBlock.getRight()));
+                    continue;
+                }
                 commands.add(new BlockCreateCommand(world, location, phaseBlock.getLeft(),(BlockData) phaseBlock.getRight()));
                 
             }
