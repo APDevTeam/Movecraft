@@ -41,7 +41,4 @@ commands:
   assault:
     description: Begins an Assault on the specified region
     usage: /assault <regionname>
-  scuttle:
-    description: Sinks piloted craft
-    usage: /scuttle
 
