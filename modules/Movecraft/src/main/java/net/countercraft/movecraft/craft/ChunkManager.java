@@ -39,10 +39,9 @@ public class ChunkManager implements Listener {
         for (MovecraftChunk chunk : list) {
             if (!chunks.contains(chunk)) {
                 chunks.add(chunk);
-                if (!Settings.IsLegacy)
-                    chunk.toBukkit().addPluginChunkTicket(Movecraft.getInstance());
                 if (!chunk.isLoaded()) {
                     chunk.toBukkit().load(true);
+                    chunk.toBukkit().setForceLoaded(true);
                 }
             }
             
@@ -62,9 +61,13 @@ public class ChunkManager implements Listener {
     private static void removeChunksToLoad(List<MovecraftChunk> list) {
         for (MovecraftChunk chunk : list) {
             chunks.remove(chunk);
-            if (!Settings.IsLegacy && chunk.toBukkit().getPluginChunkTickets().contains(Movecraft.getInstance()))
-                chunk.toBukkit().removePluginChunkTicket(Movecraft.getInstance());
         }
+        Bukkit.getScheduler().callSyncMethod(Movecraft.getInstance(), () -> {
+            for (MovecraftChunk chunk : list) {
+                chunk.toBukkit().setForceLoaded(false);
+            }
+            return true;
+        });
     }
     
     @EventHandler
