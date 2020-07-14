@@ -2,6 +2,7 @@ package net.countercraft.movecraft.commands;
 
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.events.CraftScuttleEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -45,6 +46,12 @@ public class ScuttleCommand implements CommandExecutor {
             commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Scuttle - Craft Already Sinking"));
             return true;
         }
+
+        CraftScuttleEvent e = new CraftScuttleEvent(craft, (Player) commandSender);
+        Bukkit.getServer().getPluginManager().callEvent(e);
+        if(e.isCancelled())
+            return true;
+
         craft.setCruising(false);
         craft.sink();
         CraftManager.getInstance().removePlayerFromCraft(craft);
