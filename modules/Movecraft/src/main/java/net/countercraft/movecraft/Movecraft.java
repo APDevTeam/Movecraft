@@ -159,20 +159,8 @@ public class Movecraft extends JavaPlugin {
         Settings.RequireNamePerm = getConfig().getBoolean("RequireNamePerm", true);
         Settings.FadeWrecksAfter = getConfig().getInt("FadeWrecksAfter", 0);
 
-        Settings.AssaultEnable = getConfig().getBoolean("AssaultEnable", false);
-        Settings.AssaultDamagesCapPercent = getConfig().getDouble("AssaultDamagesCapPercent", 1.0);
-        Settings.AssaultCooldownHours = getConfig().getInt("AssaultCooldownHours", 24);
-        Settings.AssaultDelay = getConfig().getInt("AssaultDelay", 1800);
-        Settings.AssaultDuration = getConfig().getInt("AssaultDuration", 1800);
-        Settings.AssaultCostPercent = getConfig().getDouble("AssaultCostPercent", 0.25);
-        Settings.AssaultDamagesPerBlock = getConfig().getInt("AssaultDamagesPerBlock", 15);
-        Settings.AssaultRequiredDefendersOnline = getConfig().getInt("AssaultRequiredDefendersOnline", 2);
-        Settings.AssaultRequiredOwnersOnline = getConfig().getInt("AssaultRequiredOwnersOnline", 1);
-        Settings.AssaultMaxBalance = getConfig().getDouble("AssaultMaxBalance", 5000000);
-        Settings.AssaultOwnerWeightPercent = getConfig().getDouble("AssaultOwnerWeightPercent", 1.0);
-        Settings.AssaultMemberWeightPercent = getConfig().getDouble("AssaultMemberWeightPercent", 1.0);
+
         Settings.CollisionPrimer = getConfig().getInt("CollisionPrimer", 1000);
-        Settings.AssaultDestroyableBlocks = new HashSet<>(getConfig().getIntegerList("AssaultDestroyableBlocks"));
         Settings.DisableShadowBlocks = new HashSet<>(getConfig().getIntegerList("DisableShadowBlocks"));  //REMOVE FOR PUBLIC VERSION
         Settings.ForbiddenRemoteSigns = new HashSet<>();
 
@@ -180,7 +168,6 @@ public class Movecraft extends JavaPlugin {
             Settings.ForbiddenRemoteSigns.add(s.toLowerCase());
         }
 
-        Settings.SiegeEnable = getConfig().getBoolean("SiegeEnable", false);
 
 
 
@@ -194,8 +181,6 @@ public class Movecraft extends JavaPlugin {
         Plugin wGPlugin = getServer().getPluginManager().getPlugin("WorldGuard");
         if (wGPlugin == null || !(wGPlugin instanceof WorldGuardPlugin)) {
             logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - WG Not Found"));
-            Settings.SiegeEnable = false;
-            Settings.AssaultEnable = false;
             Settings.RestrictSiBsToRegions = false;
         } else {
             logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - WG Found"));
@@ -210,7 +195,6 @@ public class Movecraft extends JavaPlugin {
         Plugin wEPlugin = getServer().getPluginManager().getPlugin("WorldEdit");
         if (wEPlugin == null || !(wEPlugin instanceof WorldEditPlugin)) {
             logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - WE Not Found"));
-            Settings.AssaultEnable = false;
         } else {
             logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - WE Found"));
             Settings.RepairTicksPerBlock = getConfig().getInt("RepairTicksPerBlock", 0);
@@ -291,13 +275,10 @@ public class Movecraft extends JavaPlugin {
             } else {
                 logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Vault Not Found"));
                 economy = null;
-                Settings.SiegeEnable = false;
-                Settings.AssaultEnable = false;
             }
         } else {
             logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Vault Not Found"));
             economy = null;
-            Settings.SiegeEnable = false;
         }
         
         if (shuttingDown && Settings.IGNORE_RESET) {

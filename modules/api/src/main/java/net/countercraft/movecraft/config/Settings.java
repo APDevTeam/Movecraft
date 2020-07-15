@@ -66,21 +66,7 @@ public class Settings {
     public static boolean CraftsUseNetherPortals = false;
     public static boolean IsPaper = false;
 
-    public static boolean AssaultEnable;
-    public static double AssaultDamagesCapPercent;
-    public static int AssaultCooldownHours;
-    public static int AssaultDelay;
-    public static int AssaultDuration;
-    public static int AssaultRequiredDefendersOnline;
-    public static int AssaultRequiredOwnersOnline;
-    public static double AssaultCostPercent;
-    public static double AssaultMaxBalance;
-    public static double AssaultOwnerWeightPercent;
-    public static double AssaultMemberWeightPercent;
-    public static HashSet<Integer> AssaultDestroyableBlocks;
-    public static int AssaultDamagesPerBlock;
     public static HashSet<Integer> DisableShadowBlocks;
     public static HashSet<String> ForbiddenRemoteSigns;
 
-    public static boolean SiegeEnable;
 }
