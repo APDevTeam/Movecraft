@@ -13,7 +13,6 @@ public class AssaultUtils {
 
     public static boolean areDefendersOnline(ProtectedRegion tRegion) {
         int numOnline = 0;
-
         if(Settings.AssaultRequiredOwnersOnline > 0) {
             for (UUID playerID : tRegion.getOwners().getUniqueIds()) {
                 if (Bukkit.getPlayer(playerID) != null) {
@@ -30,8 +29,7 @@ public class AssaultUtils {
             }
         }
 
-        numOnline = 0;
-        if(Settings.AssaultRequiredOwnersOnline > 0) {
+        if(Settings.AssaultRequiredDefendersOnline > 0) {
             for (UUID playerID : tRegion.getMembers().getUniqueIds()) {
                 if (Bukkit.getPlayer(playerID) != null) {
                     numOnline++;
