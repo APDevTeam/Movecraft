@@ -7,15 +7,16 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 
 import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 public class AssaultUtils {
 
     public static boolean areDefendersOnline(ProtectedRegion tRegion) {
         int numOnline = 0;
-
+        Set<UUID> owners = tRegion.getOwners().getUniqueIds();
         if(Settings.AssaultRequiredOwnersOnline > 0) {
-            for (UUID playerID : tRegion.getOwners().getUniqueIds()) {
+            for (UUID playerID : owners) {
                 if (Bukkit.getPlayer(playerID) != null) {
                     numOnline++;
 
@@ -30,10 +31,11 @@ public class AssaultUtils {
             }
         }
 
-        numOnline = 0;
-        if(Settings.AssaultRequiredOwnersOnline > 0) {
+        if(Settings.AssaultRequiredDefendersOnline > 0) {
             for (UUID playerID : tRegion.getMembers().getUniqueIds()) {
                 if (Bukkit.getPlayer(playerID) != null) {
+                    if(owners.contains(playerID))
+                        continue;
                     numOnline++;
 
                     if(numOnline > Settings.AssaultRequiredDefendersOnline) {
