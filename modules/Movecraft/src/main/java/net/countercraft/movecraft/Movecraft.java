@@ -149,14 +149,10 @@ public class Movecraft extends JavaPlugin {
 
 
         Settings.SinkCheckTicks = getConfig().getDouble("SinkCheckTicks", 100.0);
-        Settings.TracerRateTicks = getConfig().getDouble("TracerRateTicks", 5.0);
-        Settings.TracerMinDistanceSqrd = getConfig().getLong("TracerMinDistance", 60);
-        Settings.TracerMinDistanceSqrd *= Settings.TracerMinDistanceSqrd;
         Settings.ManOverboardTimeout = getConfig().getInt("ManOverboardTimeout", 30);
         Settings.ManOverboardDistSquared = Math.pow(getConfig().getDouble("ManOverboardDistance", 1000), 2);
         Settings.SilhouetteViewDistance = getConfig().getInt("SilhouetteViewDistance", 200);
         Settings.SilhouetteBlockCount = getConfig().getInt("SilhouetteBlockCount", 20);
-        Settings.FireballLifespan = getConfig().getInt("FireballLifespan", 6);
         Settings.SiegeTaskSeconds = getConfig().getInt("SiegeTaskSeconds", 600);
         Settings.FireballPenetration = getConfig().getBoolean("FireballPenetration", true);
         Settings.ProtectPilotedCrafts = getConfig().getBoolean("ProtectPilotedCrafts", false);
@@ -166,15 +162,7 @@ public class Movecraft extends JavaPlugin {
         Settings.CraftsUseNetherPortals = getConfig().getBoolean("CraftsUseNetherPortals", false);
         Settings.RequireCreatePerm = getConfig().getBoolean("RequireCreatePerm", false);
         Settings.RequireNamePerm = getConfig().getBoolean("RequireNamePerm", true);
-        Settings.TNTContactExplosives = getConfig().getBoolean("TNTContactExplosives", true);
         Settings.FadeWrecksAfter = getConfig().getInt("FadeWrecksAfter", 0);
-        if (getConfig().contains("DurabilityOverride")) {
-            Map<String, Object> temp = getConfig().getConfigurationSection("DurabilityOverride").getValues(false);
-            Settings.DurabilityOverride = new HashMap<>();
-            for (String str : temp.keySet()) {
-                Settings.DurabilityOverride.put(Integer.parseInt(str), (Integer) temp.get(str));
-            }
-        }
 
         Settings.AssaultEnable = getConfig().getBoolean("AssaultEnable", false);
         Settings.AssaultDamagesCapPercent = getConfig().getDouble("AssaultDamagesCapPercent", 1.0);
@@ -409,9 +397,7 @@ public class Movecraft extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new BlockListener(), this);
             getServer().getPluginManager().registerEvents(new PlayerListener(), this);
             getServer().getPluginManager().registerEvents(new ChunkManager(), this);
-            getServer().getPluginManager().registerEvents(new AntiAircraftDirectorSign(), this);
             getServer().getPluginManager().registerEvents(new AscendSign(), this);
-            getServer().getPluginManager().registerEvents(new CannonDirectorSign(), this);
             getServer().getPluginManager().registerEvents(new ContactsSign(), this);
             getServer().getPluginManager().registerEvents(new CraftSign(), this);
             getServer().getPluginManager().registerEvents(new CrewSign(), this);

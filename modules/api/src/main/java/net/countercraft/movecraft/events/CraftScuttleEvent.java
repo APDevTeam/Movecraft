@@ -1,32 +1,29 @@
 package net.countercraft.movecraft.events;
 
-import net.countercraft.movecraft.craft.Craft;
+import org.jetbrains.annotations.NotNull;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
-import org.jetbrains.annotations.NotNull;
+import net.countercraft.movecraft.craft.Craft;
+
 
 /**
- * Called whenever a craft is released
+ * Called whenever a craft is scuttled
  * @see Craft
  */
 @SuppressWarnings("unused")
-public class CraftReleaseEvent extends CraftEvent implements Cancellable {
-    @NotNull private final Reason reason;
+public class CraftScuttleEvent extends CraftEvent implements Cancellable {
     private static final HandlerList HANDLERS = new HandlerList();
     private boolean cancelled = false;
+    private Player cause;
 
-    public CraftReleaseEvent(@NotNull Craft craft, @NotNull Reason reason) {
+    public CraftScuttleEvent(@NotNull Craft craft, @NotNull Player cause) {
         super(craft);
-        this.reason = reason;
+        this.cause = cause;
     }
 
-    @NotNull
-    public Reason getReason() {
-        return reason;
-    }
-
-    public enum Reason{
-        DISCONNECT,SUB_CRAFT,PLAYER,FORCE
+    public Player getCause() {
+        return cause;
     }
 
     @Override

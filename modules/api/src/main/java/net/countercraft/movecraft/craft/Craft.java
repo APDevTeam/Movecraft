@@ -179,7 +179,6 @@ public abstract class Craft {
             return;
         }
         this.sinking = true;
-
     }
 
 
