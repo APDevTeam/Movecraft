@@ -8,10 +8,7 @@ import net.countercraft.movecraft.craft.ChunkManager;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.CraftType;
-import net.countercraft.movecraft.events.CraftCollisionEvent;
-import net.countercraft.movecraft.events.CraftPreTranslateEvent;
-import net.countercraft.movecraft.events.CraftTranslateEvent;
-import net.countercraft.movecraft.events.ItemHarvestEvent;
+import net.countercraft.movecraft.events.*;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.update.*;
 import net.countercraft.movecraft.utils.*;
@@ -324,6 +321,8 @@ public class TranslationTask extends AsyncTask {
                 Location oldLocation = location.translate(-dx,-dy,-dz).toBukkit(craft.getW());
                 Location newLocation = location.toBukkit(world);
                 if (!oldLocation.getBlock().getType().equals(Material.AIR)) {
+                    CraftCollisionExplosionEvent e = new CraftCollisionExplosionEvent(craft, newLocation, craft.getW());
+                    Bukkit.getServer().getPluginManager().callEvent(e);
                     updates.add(new ExplosionUpdateCommand(newLocation, explosionForce));
                     collisionExplosion = true;
                 }

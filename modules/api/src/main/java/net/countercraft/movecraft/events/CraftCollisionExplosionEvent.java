@@ -1,27 +1,39 @@
 package net.countercraft.movecraft.events;
 
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.utils.BitmapHitBox;
 
+import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
-public class CraftCollisionExplosionEvent extends CraftEvent {
+public class CraftCollisionExplosionEvent extends CraftEvent implements Cancellable {
     private static final HandlerList HANDLERS = new HandlerList();
-    @NotNull private final BitmapHitBox hitBox;
     @NotNull private final World world;
-    private boolean isCancelled = false;
+    @NotNull private final Location location;
+    private boolean cancelled;
 
-    public CraftCollisionExplosionEvent(@NotNull Craft craft, @NotNull BitmapHitBox hitBox, @NotNull World world) {
+    public CraftCollisionExplosionEvent(@NotNull Craft craft, @NotNull Location location, @NotNull World world) {
         super(craft);
-        this.hitBox = hitBox;
         this.world = world;
+        this.location = location;
+        cancelled = false;
+    }
+
+    @Override
+    public boolean isCancelled() {
+        return this.cancelled;
+    }
+
+    @Override
+    public void setCancelled(boolean cancel) {
+        this.cancelled = cancel;
     }
 
     @NotNull
-    public BitmapHitBox getHitBox() {
-        return hitBox;
+    public Location getLocation() {
+        return location;
     }
 
     @NotNull
