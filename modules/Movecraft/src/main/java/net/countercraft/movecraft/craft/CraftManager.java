@@ -18,6 +18,7 @@
 package net.countercraft.movecraft.craft;
 
 import net.countercraft.movecraft.Movecraft;
+import net.countercraft.movecraft.events.CraftPilotEvent;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.exception.NonCancellableReleaseException;
 import net.countercraft.movecraft.localisation.I18nSupport;
@@ -113,14 +114,14 @@ public class CraftManager implements Iterable<Craft>{
             this.craftPlayerIndex.put(p, c);
     }
 
-    public void removeCraft(@NotNull Craft c) {
-        //TODO move this to callers
-        CraftReleaseEvent e = new CraftReleaseEvent(c, CraftReleaseEvent.Reason.PLAYER);
+    public void removeCraft(@NotNull Craft c, @NotNull CraftReleaseEvent.Reason reason) {
+        CraftReleaseEvent e = new CraftReleaseEvent(c, reason);
         Bukkit.getServer().getPluginManager().callEvent(e);
-        if(e.isCancelled())
+        if (e.isCancelled())
             return;
 
         removeReleaseTask(c);
+
         Player player = getPlayerFromCraft(c);
         if (player!=null)
             this.craftPlayerIndex.remove(player);
@@ -228,7 +229,8 @@ public class CraftManager implements Iterable<Craft>{
         BukkitTask releaseTask = new BukkitRunnable() {
             @Override
             public void run() {
-                removeCraft(c);
+                removeCraft(c, CraftReleaseEvent.Reason.PLAYER);
+                // I'm aware this is not ideal, but you shouldn't be using this anyways.
             }
         }.runTaskLater(Movecraft.getInstance(), (20 * 15));
         releaseEvents.put(c, releaseTask);

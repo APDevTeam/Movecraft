@@ -7,6 +7,7 @@ import net.countercraft.movecraft.WorldHandler;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
 import net.countercraft.movecraft.utils.*;
 import org.bukkit.Bukkit;
@@ -46,7 +47,7 @@ public class CraftTranslateCommand extends UpdateCommand {
         final Logger logger = Movecraft.getInstance().getLogger();
         if(craft.getHitBox().isEmpty()){
             logger.warning("Attempted to move craft with empty HashHitBox!");
-            CraftManager.getInstance().removeCraft(craft);
+            CraftManager.getInstance().removeCraft(craft, CraftReleaseEvent.Reason.EMPTY);
             return;
         }
         long time = System.nanoTime();
