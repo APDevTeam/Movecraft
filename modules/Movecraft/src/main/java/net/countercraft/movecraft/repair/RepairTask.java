@@ -3,6 +3,7 @@ package net.countercraft.movecraft.repair;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import org.bukkit.Bukkit;
@@ -52,7 +53,7 @@ public class RepairTask extends BukkitRunnable {
             if (p != null && repair.getRunning().get()) {
 
                 p.sendMessage(I18nSupport.getInternationalisedString("Repair - Repairs complete"));
-                CraftManager.getInstance().removeCraft(repair.getCraft());
+                CraftManager.getInstance().removeCraft(repair.getCraft(), CraftReleaseEvent.Reason.REPAIR);
             }
             Movecraft.getInstance().getLogger().info(I18nSupport.getInternationalisedString("Repair - Repair Complete Console"));
             repair.getProgressBar().setVisible(false);

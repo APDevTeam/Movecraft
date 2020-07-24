@@ -30,6 +30,7 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.CraftDetectEvent;
+import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.mapUpdater.update.BlockCreateCommand;
@@ -612,7 +613,7 @@ public class AsyncManager extends BukkitRunnable {
                 continue;
             }
             if (craft.getHitBox().isEmpty() || craft.getHitBox().getMinY() < 5) {
-                CraftManager.getInstance().removeCraft(craft);
+                CraftManager.getInstance().removeCraft(craft, CraftReleaseEvent.Reason.SUNK);
                 continue;
             }
             long ticksElapsed = (System.currentTimeMillis() - craft.getLastCruiseUpdate()) / 50;
@@ -629,24 +630,6 @@ public class AsyncManager extends BukkitRunnable {
             craft.setLastCruiseUpdate(System.currentTimeMillis() - (craft.getLastCruiseUpdate() != -1 ? 0 : 30000));
         }
     }
-
-    private Craft fastNearestCraftToLoc(Location loc) {
-        Craft ret = null;
-        long closestDistSquared = Long.MAX_VALUE;
-        Set<Craft> craftsList = CraftManager.getInstance().getCraftsInWorld(loc.getWorld());
-        for (Craft i : craftsList) {
-            int midX = (i.getHitBox().getMaxX() + i.getHitBox().getMinX()) >> 1;
-//				int midY=(i.getMaxY()+i.getMinY())>>1; don't check Y because it is slow
-            int midZ = (i.getHitBox().getMaxZ() + i.getHitBox().getMinZ()) >> 1;
-            long distSquared = (long) (Math.pow(midX -  loc.getX(), 2) + Math.pow(midZ - (int) loc.getZ(), 2));
-            if (distSquared < closestDistSquared) {
-                closestDistSquared = distSquared;
-                ret = i;
-            }
-        }
-        return ret;
-    }
-
 
     private void processFadingBlocks() {
         if (Settings.FadeWrecksAfter == 0)
