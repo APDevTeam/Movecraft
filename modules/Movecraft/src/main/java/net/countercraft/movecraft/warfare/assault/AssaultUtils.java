@@ -11,44 +11,36 @@ import java.util.Set;
 import java.util.UUID;
 
 public class AssaultUtils {
-
-    public static boolean areDefendersOnline(ProtectedRegion tRegion) {
+    public static boolean areDefendersOnline(ProtectedRegion region) {
         int numOnline = 0;
-        Set<UUID> owners = tRegion.getOwners().getUniqueIds();
-        if(Settings.AssaultRequiredOwnersOnline > 0) {
-            for (UUID playerID : owners) {
-                if (Bukkit.getPlayer(playerID) != null) {
-                    numOnline++;
 
-                    if(numOnline > Settings.AssaultRequiredOwnersOnline) {
-                        break;
-                    }
-                }
-            }
-
-            if (numOnline < Settings.AssaultRequiredOwnersOnline) {
-                return false;
-            }
+        numOnline += ownersOnline(region);
+        if(Settings.AssaultRequiredOwnersOnline > 0 && numOnline < Settings.AssaultRequiredOwnersOnline) {
+            return false;
         }
 
-        if(Settings.AssaultRequiredDefendersOnline > 0) {
-            for (UUID playerID : tRegion.getMembers().getUniqueIds()) {
-                if (Bukkit.getPlayer(playerID) != null) {
-                    if(owners.contains(playerID))
-                        continue;
-                    numOnline++;
-
-                    if(numOnline > Settings.AssaultRequiredDefendersOnline) {
-                        return true;
-                    }
-                }
-            }
-
-            if (numOnline < Settings.AssaultRequiredDefendersOnline) {
-                return false;
-            }
-        }
+        numOnline += membersOnline(region);
         return numOnline >= Settings.AssaultRequiredDefendersOnline;
+    }
+
+    private static int ownersOnline(ProtectedRegion region) {
+        int numOnline = 0;
+        Set<UUID> owners = region.getOwners().getUniqueIds();
+        for(UUID playerID : owners) {
+            if (Bukkit.getPlayer(playerID) != null)
+                numOnline++;
+        }
+        return numOnline;
+    }
+
+    private static int membersOnline(ProtectedRegion region) {
+        int numOnline = 0;
+        Set<UUID> members = region.getMembers().getUniqueIds();
+        for(UUID playerID : members) {
+            if (Bukkit.getPlayer(playerID) != null)
+                numOnline++;
+        }
+        return numOnline;
     }
 
     public static double getCostToAssault(ProtectedRegion tRegion) {
