@@ -71,9 +71,8 @@ public final class HelmSign implements Listener {
             }
         }*/
 
-        if (!MathUtils.locationInHitBox(craft.getHitBox(), event.getPlayer().getLocation())) {
+        if(!MathUtils.locIsNearCraftFast(craft, MathUtils.bukkit2MovecraftLoc(event.getPlayer().getLocation())))
             return;
-        }
 
         if (craft.getType().rotateAtMidpoint()) {
             CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).rotate(rotation, craft.getHitBox().getMidPoint());
