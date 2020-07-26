@@ -7,9 +7,7 @@ import com.sk89q.jnbt.Tag;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.world.block.BaseBlock;
 import net.countercraft.movecraft.MovecraftLocation;
-import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.utils.Pair;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -40,9 +38,6 @@ public class WorldEdit7UpdateCommand extends UpdateCommand {
         assert baseBlock != null;
         BlockData bData = BukkitAdapter.adapt(baseBlock);
         block.setBlockData(bData, false);
-        if (Settings.Debug){
-            Bukkit.broadcastMessage(String.format("Material: %s, Location: %s",type.name().toLowerCase().replace("_", " "),location.toString()));
-        }
         Material weType = BukkitAdapter.adapt(baseBlock.getBlockType());
         if (type == Material.DISPENSER){
             Tag t = baseBlock.getNbtData().getValue().get("Items");
