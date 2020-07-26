@@ -297,6 +297,7 @@ public class Movecraft extends JavaPlugin {
             asyncManager = new AsyncManager();
             asyncManager.runTaskTimer(this, 0, 1);
             MapUpdateManager.getInstance().runTaskTimer(this, 0, 1);
+
            CraftManager.initialize();
 
             getServer().getPluginManager().registerEvents(new InteractListener(), this);
