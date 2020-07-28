@@ -35,13 +35,13 @@ import net.countercraft.movecraft.mapUpdater.update.CraftRotateCommand;
 import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import net.countercraft.movecraft.utils.*;
-import org.bukkit.*;
-import org.bukkit.block.Block;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.InventoryHolder;
-import org.bukkit.inventory.ItemStack;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -99,48 +99,10 @@ public class RotationTask extends AsyncTask {
         }
 
         // check for fuel, burn some from a furnace if needed. Blocks of coal are supported, in addition to coal and charcoal
-        double fuelBurnRate = getCraft().getType().getFuelBurnRate(getCraft().getW());
-        if (fuelBurnRate != 0.0 && !getCraft().getSinking()) {
-            if (getCraft().getBurningFuel() < fuelBurnRate) {
-                Block fuelHolder = null;
-                for (MovecraftLocation bTest : oldHitBox) {
-                    Block b = getCraft().getW().getBlockAt(bTest.getX(), bTest.getY(), bTest.getZ());
-                    if (b.getTypeId() == 61) {
-                        InventoryHolder inventoryHolder = (InventoryHolder) b.getState();
-                        if (inventoryHolder.getInventory().contains(263) || inventoryHolder.getInventory().contains(173)) {
-                            fuelHolder = b;
-                        }
-                    }
-                }
-                if (fuelHolder == null) {
-                    failed = true;
-                    failMessage = I18nSupport.getInternationalisedString("Translation - Failed Craft out of fuel");
-                } else {
-                    InventoryHolder inventoryHolder = (InventoryHolder) fuelHolder.getState();
-                    if (inventoryHolder.getInventory().contains(263)) {
-                        ItemStack iStack = inventoryHolder.getInventory().getItem(inventoryHolder.getInventory().first(263));
-                        int amount = iStack.getAmount();
-                        if (amount == 1) {
-                            inventoryHolder.getInventory().remove(iStack);
-                        } else {
-                            iStack.setAmount(amount - 1);
-                        }
-                        getCraft().setBurningFuel(getCraft().getBurningFuel() + 7.0);
-                    } else {
-                        ItemStack iStack = inventoryHolder.getInventory().getItem(inventoryHolder.getInventory().first(173));
-                        int amount = iStack.getAmount();
-                        if (amount == 1) {
-                            inventoryHolder.getInventory().remove(iStack);
-                        } else {
-                            iStack.setAmount(amount - 1);
-                        }
-                        getCraft().setBurningFuel(getCraft().getBurningFuel() + 79.0);
-
-                    }
-                }
-            } else {
-                getCraft().setBurningFuel(getCraft().getBurningFuel() - fuelBurnRate);
-            }
+        if (!checkFuel()) {
+            failMessage = I18nSupport.getInternationalisedString("Translation - Failed Craft out of fuel");
+            failed = true;
+            return;
         }
         // if a subcraft, find the parent craft. If not a subcraft, it is it's own parent
         Set<Craft> craftsInWorld = CraftManager.getInstance().getCraftsInWorld(getCraft().getW());
