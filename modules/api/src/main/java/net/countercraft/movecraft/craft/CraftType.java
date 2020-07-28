@@ -831,6 +831,7 @@ final public class CraftType {
 
     public Map<Material, Double> getFuelTypes() {
         return fuelTypes;
+    }
 
     @NotNull
     public Set<String> getDisableTeleportToWorlds() {
