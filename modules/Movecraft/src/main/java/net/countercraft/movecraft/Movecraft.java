@@ -196,25 +196,6 @@ public class Movecraft extends JavaPlugin {
         Settings.TNTContactExplosives = getConfig().getBoolean("TNTContactExplosives", true);
         Settings.FadeWrecksAfter = getConfig().getInt("FadeWrecksAfter", 0);
         Settings.RequireSneakingForDirectControl = getConfig().getBoolean("RequireSneakingForDirectControl", false);
-        if (getConfig().contains("FuelTypes")){
-            Map<String, Object> fuelTypes = getConfig().getConfigurationSection("FuelTypes").getValues(false);
-            int numFuelTypes = 0;
-            for (String fuelTypeId : fuelTypes.keySet()){
-                Settings.FuelTypes.put(Material.getMaterial(fuelTypeId), (Double) fuelTypes.get(fuelTypeId));
-                numFuelTypes++;
-            }
-            logger.info(numFuelTypes + " fuel types registered");
-        } else {
-            Settings.FuelTypes.put(Material.COAL_BLOCK, 79.0);
-            Settings.FuelTypes.put(Material.COAL, 7.0);
-            if (!Settings.IsLegacy)
-                Settings.FuelTypes.put(Material.CHARCOAL, 7.0);
-            String loggerMsg = "No fuel types specified in config. Registering default fuel types ";
-            for (Material fuel : Settings.FuelTypes.keySet()) {
-                loggerMsg += fuel.name().toLowerCase() + " with burning time " + Settings.FuelTypes.get(fuel) + ", ";
-            }
-            logger.info(loggerMsg);
-        }
         Settings.FadeTickCooldown = getConfig().getInt("FadeTickCooldown", 20);
         Settings.FadePercentageOfWreckPerCycle = getConfig().getDouble("FadePercentageOfWreckPerCycle", 10.0);
         if (getConfig().contains("ExtraFadeTimePerBlock")) {

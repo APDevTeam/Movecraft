@@ -98,7 +98,6 @@ public class Settings {
     public static HashSet<Material> AssaultDestroyableBlocks = new HashSet<>();
     public static int AssaultDamagesPerBlock;
     public static HashSet<Material> DisableShadowBlocks = new HashSet<>();
-    public static Map<Material, Double> FuelTypes = new HashMap<>();
 
     public static boolean SiegeEnable;
     public static String SiegeTimeZone;

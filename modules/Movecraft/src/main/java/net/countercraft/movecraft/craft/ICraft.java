@@ -38,13 +38,8 @@ public class ICraft extends Craft {
     @Override
     public void translate(@NotNull World world, int dx, int dy, int dz) {
         // check to see if the craft is trying to move in a direction not permitted by the type
-<<<<<<< HEAD
-        if (!world.equals(this.world) && !this.getType().getCanSwitchWorld() && !this.getSinking()) {
+        if (!world.equals(this.world) && !(this.getType().getCanSwitchWorld() || type.getDisableTeleportToWorlds().contains(world.getName())) && !this.getSinking()) {
             world = this.world;
-=======
-        if (!world.equals(w) && !(this.getType().getCanSwitchWorld() || type.getDisableTeleportToWorlds().contains(world.getName())) && !this.getSinking()) {
-            world = w;
->>>>>>> 48212d491a1d8680ccbe838c7bc74cd35a2a2614
         }
         if (!this.getType().allowHorizontalMovement() && !this.getSinking()) {
             dx = 0;
