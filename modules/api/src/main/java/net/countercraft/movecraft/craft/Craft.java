@@ -62,6 +62,7 @@ public abstract class Craft {
     private long lastBlockCheck;
     private long lastRotateTime=0;
     private long origPilotTime;
+    private long lastTeleportTime;
     private int lastDX, lastDY, lastDZ;
     private double burningFuel;
     private boolean pilotLocked;
@@ -489,5 +490,13 @@ public abstract class Craft {
 
     public void setFluidLocations(@NotNull BitmapHitBox fluidLocations) {
         this.fluidLocations = fluidLocations;
+    }
+
+    public long getLastTeleportTime() {
+        return lastTeleportTime;
+    }
+
+    public void setLastTeleportTime(long lastTeleportTime) {
+        this.lastTeleportTime = lastTeleportTime;
     }
 }

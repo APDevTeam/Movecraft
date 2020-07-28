@@ -163,6 +163,20 @@ public class Movecraft extends JavaPlugin {
         Settings.RequireCreatePerm = getConfig().getBoolean("RequireCreatePerm", false);
         Settings.RequireNamePerm = getConfig().getBoolean("RequireNamePerm", true);
         Settings.FadeWrecksAfter = getConfig().getInt("FadeWrecksAfter", 0);
+        Settings.FadeTickCooldown = getConfig().getInt("FadeTickCooldown", 20);
+        Settings.FadePercentageOfWreckPerCycle = getConfig().getDouble("FadePercentageOfWreckPerCycle", 10.0);
+        if (getConfig().contains("ExtraFadeTimePerBlock")) {
+            Map<String, Object> temp = getConfig().getConfigurationSection("ExtraFadeTimePerBlock").getValues(false);
+            for (String str : temp.keySet()) {
+                Material type;
+                try {
+                    type = Material.getMaterial(Integer.parseInt(str));
+                } catch (NumberFormatException e) {
+                    type = Material.getMaterial(str);
+                }
+                Settings.ExtraFadeTimePerBlock.put(type, (Integer) temp.get(str));
+            }
+        }
 
         Settings.AssaultEnable = getConfig().getBoolean("AssaultEnable", false);
         Settings.AssaultDamagesCapPercent = getConfig().getDouble("AssaultDamagesCapPercent", 1.0);

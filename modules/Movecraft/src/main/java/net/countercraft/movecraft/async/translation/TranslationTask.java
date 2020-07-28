@@ -192,7 +192,7 @@ public class TranslationTask extends AsyncTask {
         }
 
         //TODO: Check fuel
-        if (!checkFuel()) {
+        if (!(dy < 0 && dx == 0 && dz == 0) && !checkFuel()) {
             fail(I18nSupport.getInternationalisedString("Translation - Failed Craft out of fuel"));
             return;
         }
@@ -603,58 +603,6 @@ public class TranslationTask extends AsyncTask {
 
         }
         return stack;
-    }
-
-    private boolean checkFuel(){
-        // check for fuel, burn some from a furnace if needed. Blocks of coal are supported, in addition to coal and charcoal
-        double fuelBurnRate = craft.getType().getFuelBurnRate(craft.getW());
-        // going down doesn't require fuel
-        if (dy == -1 && dx == 0 && dz == 0)
-            fuelBurnRate = 0.0;
-
-        if (fuelBurnRate == 0.0 || craft.getSinking()) {
-            return true;
-        }
-        if (craft.getBurningFuel() >= fuelBurnRate) {
-            craft.setBurningFuel(craft.getBurningFuel() - fuelBurnRate);
-            return true;
-        }
-        Block fuelHolder = null;
-        for (MovecraftLocation bTest : oldHitBox) {
-            Block b = craft.getW().getBlockAt(bTest.getX(), bTest.getY(), bTest.getZ());
-            if (b.getTypeId() == 61) {
-                InventoryHolder inventoryHolder = (InventoryHolder) b.getState();
-                if (inventoryHolder.getInventory().contains(263) || inventoryHolder.getInventory().contains(173)) {
-                    fuelHolder = b;
-                }
-            }
-        }
-        if (fuelHolder == null) {
-            fail(I18nSupport.getInternationalisedString("Translation - Failed Craft out of fuel"));
-            return false;
-        }
-        InventoryHolder inventoryHolder = (InventoryHolder) fuelHolder.getState();
-        if (inventoryHolder.getInventory().contains(263)) {
-            ItemStack iStack = inventoryHolder.getInventory().getItem(inventoryHolder.getInventory().first(263));
-            int amount = iStack.getAmount();
-            if (amount == 1) {
-                inventoryHolder.getInventory().remove(iStack);
-            } else {
-                iStack.setAmount(amount - 1);
-            }
-            craft.setBurningFuel(craft.getBurningFuel() + 7.0);
-        } else {
-            ItemStack iStack = inventoryHolder.getInventory().getItem(inventoryHolder.getInventory().first(173));
-            int amount = iStack.getAmount();
-            if (amount == 1) {
-                inventoryHolder.getInventory().remove(iStack);
-            } else {
-                iStack.setAmount(amount - 1);
-            }
-            craft.setBurningFuel(craft.getBurningFuel() + 79.0);
-
-        }
-        return true;
     }
 
     private MovecraftLocation surfaceLoc(MovecraftLocation ml) {
