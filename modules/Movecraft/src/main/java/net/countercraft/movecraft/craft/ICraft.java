@@ -7,7 +7,6 @@ import net.countercraft.movecraft.async.detection.DetectionTask;
 import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.localisation.I18nSupport;
-
 import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -39,7 +38,7 @@ public class ICraft extends Craft {
     @Override
     public void translate(@NotNull World world, int dx, int dy, int dz) {
         // check to see if the craft is trying to move in a direction not permitted by the type
-        if (!world.equals(w) && !this.getType().getCanSwitchWorld() && !this.getSinking()) {
+        if (!world.equals(w) && !(this.getType().getCanSwitchWorld() || type.getDisableTeleportToWorlds().contains(world.getName())) && !this.getSinking()) {
             world = w;
         }
         if (!this.getType().allowHorizontalMovement() && !this.getSinking()) {
