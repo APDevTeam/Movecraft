@@ -227,7 +227,6 @@ public class SiegeCommand implements TabExecutor {
 
     private String militaryTimeIntToString(int militaryTime) {
         return String.format("%02d", militaryTime / 100) + ":" + String.format("%02d",militaryTime % 100);
-
     }
 
     private String secondsIntToString(int seconds) {
