@@ -108,7 +108,7 @@ final public class CraftType {
     @NotNull private final List<Material> harvesterBladeBlocks;
     @NotNull private final Set<Material> passthroughBlocks;
     @NotNull private final Set<Material> forbiddenHoverOverBlocks;
-    @NotNull private final String[] disableTeleportToWorlds;
+    @NotNull private final Set<String> disableTeleportToWorlds;
     private final int teleportationCooldown;
     private final int gravityDropDistance;
     private final int gravityInclineDistance;
@@ -317,7 +317,9 @@ final public class CraftType {
         int dropdist = integerFromObject(data.getOrDefault("gravityDropDistance", -8));
         gravityDropDistance = dropdist > 0 ? -dropdist : dropdist;
         collisionSound = Sound.valueOf((String) data.getOrDefault("collisionSound", "BLOCK_ANVIL_LAND"));
-        disableTeleportToWorlds = stringListFromObject(data.getOrDefault("disableTeleportToWorlds", new ArrayList<>()));
+        disableTeleportToWorlds = new HashSet<>();
+        List<String> disabledWorlds = (List<String>) data.getOrDefault("disableTeleportToWorlds", new ArrayList<>());
+        disableTeleportToWorlds.addAll(disabledWorlds);
         teleportationCooldown = integerFromObject(data.getOrDefault("teleportationCooldown", 0));
     }
 
@@ -802,7 +804,7 @@ final public class CraftType {
     }
 
     @NotNull
-    public String[] getDisableTeleportToWorlds() {
+    public Set<String> getDisableTeleportToWorlds() {
         return disableTeleportToWorlds;
     }
 
