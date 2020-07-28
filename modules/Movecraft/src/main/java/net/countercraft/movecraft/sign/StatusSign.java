@@ -13,13 +13,14 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.block.Furnace;
 import org.bukkit.block.Sign;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 public final class StatusSign implements Listener{
 
@@ -68,12 +69,13 @@ public final class StatusSign implements Listener{
             }
 
             if (testType == Material.FURNACE) {
-                Furnace furnace = (Furnace) loc.getBlock().getState();
-                for (ItemStack fuelStack : furnace.getInventory().getContents()) {
-                    if (fuelStack == null || !Settings.FuelTypes.containsKey(fuelStack.getType())) {
+                InventoryHolder inventoryHolder = (InventoryHolder) craft.getW().getBlockAt(ml.getX(), ml.getY(), ml.getZ()).getState();
+                Map<Material, Double> fuelTypes = craft.getType().getFuelTypes();
+                for (ItemStack iStack : inventoryHolder.getInventory()) {
+                    if (iStack == null || !fuelTypes.containsKey(iStack.getType())) {
                         continue;
                     }
-                    fuel += fuelStack.getAmount() * Settings.FuelTypes.get(fuelStack.getType());
+                    fuel += iStack.getAmount() * fuelTypes.get(iStack.getType());
                 }
             }
         }

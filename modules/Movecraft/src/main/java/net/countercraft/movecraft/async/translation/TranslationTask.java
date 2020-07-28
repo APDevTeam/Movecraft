@@ -21,7 +21,6 @@ import org.bukkit.World.Environment;
 import org.bukkit.block.Barrel;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
-import org.bukkit.block.Furnace;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Orientable;
 import org.bukkit.entity.Player;
@@ -182,10 +181,6 @@ public class TranslationTask extends AsyncTask {
         final int minY = oldHitBox.getMinY();
         final int maxY = oldHitBox.getMaxY();
 
-        if (!checkFuel()) {
-            return;
-        }
-
         // proccess nether portals
         if (Settings.CraftsUseNetherPortals && craft.getWorld().getEnvironment() != Environment.THE_END
                 && world.equals(craft.getWorld())) {
@@ -298,6 +293,12 @@ public class TranslationTask extends AsyncTask {
         } else if (minY + dy < craft.getType().getMinHeightLimit(world) && dy < 0 && craft.getType().getUseGravity()) {
             //if a craft using gravity hits the minimum height limit, set dy = 0 instead of failing
             dy = 0;
+        }
+
+        //TODO: Check fuel
+        if (!(dy < 0 && dx == 0 && dz == 0) && !checkFuel()) {
+            fail(I18nSupport.getInternationalisedString("Translation - Failed Craft out of fuel"));
+            return;
         }
 
 
@@ -895,61 +896,6 @@ public class TranslationTask extends AsyncTask {
         return !translatedBottomLocsInAir;
     }
 
-    private boolean checkFuel() {
-        double fuelBurnRate = craft.getType().getFuelBurnRate(world);
-        if (fuelBurnRate <= 0.0 || (dy == -1 && dx == 0 && dz == 0) || craft.getSinking())
-            return true;
-        // check for fuel, burn some from a furnace if needed. Blocks of coal are supported, in addition to coal and charcoal
-
-        // going down doesn't require fuel
-        if (dy > 0)
-            fuelBurnRate *= 2;
-        if (craft.getBurningFuel() >= fuelBurnRate) {
-            craft.setBurningFuel(craft.getBurningFuel() - fuelBurnRate);
-            return true;
-        }
-        try {
-            return Bukkit.getScheduler().callSyncMethod(Movecraft.getInstance(), () -> {
-                Block fuelHolder = null;
-                for (MovecraftLocation bTest : oldHitBox) {
-                    Block b = craft.getWorld().getBlockAt(bTest.getX(), bTest.getY(), bTest.getZ());
-                    //Get all fuel holders
-                    if (b.getType() == Material.FURNACE) {
-                        InventoryHolder holder = (InventoryHolder) b.getState();
-                        for (Material fuel : Settings.FuelTypes.keySet()) {
-                            if (holder.getInventory().contains(fuel)) {
-                                fuelHolder = b;
-                                break;
-                            }
-                        }
-                    }
-                    if (fuelHolder != null) break;
-
-                }
-                if (fuelHolder == null) {
-                    fail(I18nSupport.getInternationalisedString("Translation - Failed Craft out of fuel"));
-                    return false;
-                }
-                Furnace furnace = (Furnace) fuelHolder.getState();
-                for (Material fuel : Settings.FuelTypes.keySet()){
-                    if (furnace.getInventory().contains(fuel)){
-                        ItemStack item = furnace.getInventory().getItem(furnace.getInventory().first(fuel));
-                        int amount = item.getAmount();
-                        if (amount == 1) {
-                            furnace.getInventory().remove(item);
-                        } else {
-                            item.setAmount(amount - 1);
-                        }
-                        craft.setBurningFuel(craft.getBurningFuel() + Settings.FuelTypes.get(item.getType()));
-                    }
-                }
-                return true;
-            }).get();
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
     public boolean failed(){
         return failed;
     }

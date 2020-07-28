@@ -114,17 +114,16 @@ final public class CraftType {
     @NotNull private final List<Material> harvesterBladeBlocks;
     @NotNull private final Set<Material> passthroughBlocks;
     @NotNull private final Set<Material> forbiddenHoverOverBlocks;
+    @NotNull private final Map<Material, Double> fuelTypes;
     @NotNull private final Set<String> disableTeleportToWorlds;
     private final int teleportationCooldown;
     private final int gravityDropDistance;
     private final int gravityInclineDistance;
     private final Sound collisionSound;
-
     @NotNull private final int effectRange;
     @NotNull private final Map<PotionEffect,Integer> potionEffectsToApply;
     @NotNull private final Map<List<String>, Double> maxSignsWithString;
     @NotNull private final Map<List<String>, Double> maxCannons;
-
     @SuppressWarnings("unchecked")
     public CraftType(File f) {
         final Map data;
@@ -142,7 +141,6 @@ final public class CraftType {
         maxSize = integerFromObject(data.get("maxSize"));
         minSize = integerFromObject(data.get("minSize"));
         allowedBlocks = new BlockContainer(data.get("allowedBlocks"));
-
         forbiddenBlocks = new BlockContainer(data.get("forbiddenBlocks"));
         forbiddenSignStrings = stringListFromObject(data.get("forbiddenSignStrings"));
         tickCooldown = (int) Math.ceil(20 / (doubleFromObject(data.get("speed"))));
@@ -150,7 +148,6 @@ final public class CraftType {
         Map<String, Double> tickCooldownMap = stringToDoubleMapFromObject(data.getOrDefault("perWorldSpeed", new HashMap<>()));
         tickCooldownMap.forEach((world, speed) -> perWorldTickCooldown.put(world, (int) Math.ceil(20 / speed)));
         flyBlocks = new BlockLimitManager(data.get("flyblocks"));
-
         //Optional craft flags
         blockedByWater = (boolean) (data.containsKey("canFly") ? data.get("canFly") : data.getOrDefault("blockedByWater", true));
         requireWaterContact = (boolean) data.getOrDefault("requireWaterContact", false);
@@ -322,7 +319,6 @@ final public class CraftType {
             } else {
                 forbiddenHoverOverBlocks.add(Material.getMaterial("BUBBLE_COLUMN"));
             }
-
         }
         allowVerticalTakeoffAndLanding = (boolean) data.getOrDefault("allowVerticalTakeoffAndLanding", true);
         dynamicLagSpeedFactor = doubleFromObject(data.getOrDefault("dynamicLagSpeedFactor", 0d));
@@ -372,6 +368,34 @@ final public class CraftType {
         underwaterStaticDetectionRange = doubleFromObject(data.getOrDefault("underwaterStaticDetectionRange", 0.0));
         perWorldUnderwaterStaticDetectionRange = stringToDoubleMapFromObject(data.getOrDefault("perWorldUnderwaterStaticDetectionRange", new HashMap<>()));
         perWorldStaticDetectionRange = stringToDoubleMapFromObject(data.getOrDefault("perWorldStaticDetectionRange", new HashMap<>()));
+        fuelTypes = new HashMap<>();
+        Map<Object, Object> fTypes = (Map<Object, Object>) data.getOrDefault("fuelTypes", new HashMap<>());
+        if (!fTypes.isEmpty()) {
+            for (Object k : fTypes.keySet()) {
+                Material type;
+                if (k instanceof Integer) {
+                    type = Material.getMaterial((int) k);
+                } else {
+                    type = Material.getMaterial(((String) k).toUpperCase());
+                }
+                Object v = fTypes.get(k);
+                double burnRate;
+                if (v instanceof String) {
+                    burnRate = Double.parseDouble((String) v);
+                } else if (v instanceof Integer) {
+                    burnRate = ((Integer) v).doubleValue();
+                } else {
+                    burnRate = (double) v;
+                }
+                fuelTypes.put(type, burnRate);
+            }
+        } else {
+            fuelTypes.put(Material.COAL_BLOCK, 79.0);
+            fuelTypes.put(Material.COAL, 7.0);
+            if (!Settings.IsLegacy) {
+                fuelTypes.put(Material.getMaterial("CHARCOAL"), 7.0);
+            }
+        }
         disableTeleportToWorlds = new HashSet<>();
         List<String> disabledWorlds = (List<String>) data.getOrDefault("disableTeleportToWorlds", new ArrayList<>());
         disableTeleportToWorlds.addAll(disabledWorlds);
@@ -970,6 +994,11 @@ final public class CraftType {
 
     public double getUnderwaterStaticDetectionRange(World world) {
         return perWorldUnderwaterStaticDetectionRange.getOrDefault(world.getName(), underwaterStaticDetectionRange);
+    }
+
+    @NotNull
+    public Map<Material, Double> getFuelTypes() {
+        return fuelTypes;
     }
 
     @NotNull

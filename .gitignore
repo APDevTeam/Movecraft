@@ -194,6 +194,11 @@ $RECYCLE.BIN/
 *dependency-reduced-pom.xml
 =======
 # dependency reduced POMs
+<<<<<<< HEAD
 modules/Movecraft/dependency-reduced-pom.xml
 modules/api/dependency-reduced-pom.xml
 >>>>>>> 48212d491a1d8680ccbe838c7bc74cd35a2a2614
+=======
+*dependency-reduced-pom.xml
+
+>>>>>>> b3f05710538340bb4728ca0d6dde33934b3d5ffc
