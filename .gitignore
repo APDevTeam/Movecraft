@@ -189,3 +189,7 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+# dependency reduced POMs
+modules/Movecraft/dependency-reduced-pom.xml
+modules/api/dependency-reduced-pom.xml
