@@ -109,6 +109,8 @@ final public class CraftType {
     @NotNull private final Set<Material> passthroughBlocks;
     @NotNull private final Set<Material> forbiddenHoverOverBlocks;
     @NotNull private final Map<Material, Double> fuelTypes;
+    @NotNull private final Set<String> disableTeleportToWorlds;
+    private final int teleportationCooldown;
     private final int gravityDropDistance;
     private final int gravityInclineDistance;
     private final Sound collisionSound;
@@ -341,7 +343,10 @@ final public class CraftType {
             fuelTypes.put(Material.COAL_BLOCK, 79.0);
             fuelTypes.put(Material.COAL, 7.0);
         }
-
+        disableTeleportToWorlds = new HashSet<>();
+        List<String> disabledWorlds = (List<String>) data.getOrDefault("disableTeleportToWorlds", new ArrayList<>());
+        disableTeleportToWorlds.addAll(disabledWorlds);
+        teleportationCooldown = integerFromObject(data.getOrDefault("teleportationCooldown", 0));
     }
 
     private int integerFromObject(Object obj) {
@@ -826,6 +831,14 @@ final public class CraftType {
 
     public Map<Material, Double> getFuelTypes() {
         return fuelTypes;
+
+    @NotNull
+    public Set<String> getDisableTeleportToWorlds() {
+        return disableTeleportToWorlds;
+    }
+
+    public int getTeleportationCooldown() {
+        return teleportationCooldown;
     }
 
     private class TypeNotFoundException extends RuntimeException {
