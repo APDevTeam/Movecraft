@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.sign;
 
+import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.SignUtils;
@@ -56,11 +57,19 @@ public final class TeleportSign implements Listener {
             event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
             return;
         }
-        if (CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getCanTeleport()) {
-            int dx = tX - sign.getX();
-            int dy = tY - sign.getY();
-            int dz = tZ - sign.getZ();
-            CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).translate(world, dx, dy, dz);
+        final Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
+        if (c == null || !c.getType().getCanTeleport()) {
+            return;
         }
+        long timeSinceLastTeleport = System.currentTimeMillis() - c.getLastTeleportTime();
+        if (c.getType().getTeleportationCooldown() > 0 && timeSinceLastTeleport < c.getType().getTeleportationCooldown()) {
+            event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("Teleportation - Cooldown active"), timeSinceLastTeleport));
+            return;
+        }
+        int dx = tX - sign.getX();
+        int dy = tY - sign.getY();
+        int dz = tZ - sign.getZ();
+        c.translate(world, dx, dy, dz);
+        c.setLastTeleportTime(System.currentTimeMillis());
     }
 }

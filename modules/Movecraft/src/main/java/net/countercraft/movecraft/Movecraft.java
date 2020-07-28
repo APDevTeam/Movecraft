@@ -205,15 +205,29 @@ public class Movecraft extends JavaPlugin {
             }
             logger.info(numFuelTypes + " fuel types registered");
         } else {
-            Settings.FuelTypes.put(Material.COAL_BLOCK,79.0);
-            Settings.FuelTypes.put(Material.COAL,7.0);
+            Settings.FuelTypes.put(Material.COAL_BLOCK, 79.0);
+            Settings.FuelTypes.put(Material.COAL, 7.0);
             if (!Settings.IsLegacy)
-                Settings.FuelTypes.put(Material.CHARCOAL,7.0);
+                Settings.FuelTypes.put(Material.CHARCOAL, 7.0);
             String loggerMsg = "No fuel types specified in config. Registering default fuel types ";
-            for (Material fuel : Settings.FuelTypes.keySet()){
+            for (Material fuel : Settings.FuelTypes.keySet()) {
                 loggerMsg += fuel.name().toLowerCase() + " with burning time " + Settings.FuelTypes.get(fuel) + ", ";
             }
             logger.info(loggerMsg);
+        }
+        Settings.FadeTickCooldown = getConfig().getInt("FadeTickCooldown", 20);
+        Settings.FadePercentageOfWreckPerCycle = getConfig().getDouble("FadePercentageOfWreckPerCycle", 10.0);
+        if (getConfig().contains("ExtraFadeTimePerBlock")) {
+            Map<String, Object> temp = getConfig().getConfigurationSection("ExtraFadeTimePerBlock").getValues(false);
+            for (String str : temp.keySet()) {
+                Material type;
+                try {
+                    type = LegacyUtils.getMaterial(Integer.parseInt(str));
+                } catch (NumberFormatException e) {
+                    type = Material.getMaterial(str);
+                }
+                Settings.ExtraFadeTimePerBlock.put(type, (Integer) temp.get(str));
+            }
         }
         if (getConfig().contains("DurabilityOverride")) {
             Map<String, Object> temp = getConfig().getConfigurationSection("DurabilityOverride").getValues(false);

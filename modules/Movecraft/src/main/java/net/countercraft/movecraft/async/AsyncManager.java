@@ -62,6 +62,7 @@ public class AsyncManager extends BukkitRunnable {
     private final HashMap<HitBox, Long> wrecks = new HashMap<>();
     private final HashMap<HitBox, World> wreckWorlds = new HashMap<>();
     private final HashMap<HitBox, Map<Location, Pair<Material, Object>>> wreckPhases = new HashMap<>();
+    private final WeakHashMap<World, Set<MovecraftLocation>> processedFadeLocs = new WeakHashMap<>();
     private final Map<Craft, Integer> cooldownCache = new WeakHashMap<>();
 
     private long lastTracerUpdate = 0;
@@ -932,11 +933,10 @@ public class AsyncManager extends BukkitRunnable {
         if (Settings.FadeWrecksAfter == 0)
             return;
         long ticksElapsed = (System.currentTimeMillis() - lastFadeCheck) / 50;
-        if (ticksElapsed <= 20) {
+        if (ticksElapsed <= Settings.FadeTickCooldown) {
             return;
         }
         List<HitBox> processed = new ArrayList<>();
-        final WorldHandler handler = Movecraft.getInstance().getWorldHandler();
         for(Map.Entry<HitBox, Long> entry : wrecks.entrySet()){
             if (Settings.FadeWrecksAfter * 1000 > System.currentTimeMillis() - entry.getValue()) {
                 continue;
@@ -945,17 +945,40 @@ public class AsyncManager extends BukkitRunnable {
             final Map<Location, Pair<Material, Object>> phaseBlocks = wreckPhases.get(hitBox);
             final World world = wreckWorlds.get(hitBox);
             ArrayList<UpdateCommand> commands = new ArrayList<>();
-            for (MovecraftLocation location : hitBox){
-                Pair<Material, Object> phaseBlock = phaseBlocks.getOrDefault(location.toBukkit(world), new Pair<>(Material.AIR, Settings.IsLegacy ? (byte) 0 : Bukkit.createBlockData(Material.AIR)));
-                if (Settings.IsLegacy) {
-                    commands.add(new BlockCreateCommand(world, location, phaseBlock.getLeft(),(byte) phaseBlock.getRight()));
+            int fadedBlocks = 0;
+            if (!processedFadeLocs.containsKey(world)) {
+                processedFadeLocs.put(world, new HashSet<>());
+            }
+            int maxFadeBlocks = (int) (hitBox.size() *  (Settings.FadePercentageOfWreckPerCycle / 100.0));
+            //Iterate hitbox as a set to get more random locations
+            for (MovecraftLocation location : hitBox.asSet()){
+                if (processedFadeLocs.get(world).contains(location)) {
                     continue;
                 }
-                commands.add(new BlockCreateCommand(world, location, phaseBlock.getLeft(),(BlockData) phaseBlock.getRight()));
-                
+
+                if (fadedBlocks >= maxFadeBlocks) {
+                    break;
+                }
+                final Location bLoc = location.toBukkit(world);
+                if ((Settings.FadeWrecksAfter + Settings.ExtraFadeTimePerBlock.getOrDefault(bLoc.getBlock().getType(), 0))* 1000 > System.currentTimeMillis() - entry.getValue()) {
+                    continue;
+                }
+                fadedBlocks++;
+                processedFadeLocs.get(world).add(location);
+                Pair<Material, Object> phaseBlock = phaseBlocks.getOrDefault(bLoc, new Pair<>(Material.AIR, (byte) 0));
+                if (Settings.IsLegacy) {
+                    commands.add(new BlockCreateCommand(world, location, phaseBlock.getLeft(), (byte) phaseBlock.getRight()));
+                } else {
+                    commands.add(new BlockCreateCommand(world, location, phaseBlock.getLeft(), (BlockData) phaseBlock.getRight()));
+                }
+
             }
             MapUpdateManager.getInstance().scheduleUpdates(commands);
+            if (!processedFadeLocs.get(world).containsAll(hitBox.asSet())) {
+                continue;
+            }
             processed.add(hitBox);
+            processedFadeLocs.get(world).removeAll(hitBox.asSet());
         }
         for(HitBox hitBox : processed){
             wrecks.remove(hitBox);

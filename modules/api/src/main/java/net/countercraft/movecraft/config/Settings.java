@@ -20,7 +20,10 @@ package net.countercraft.movecraft.config;
 import net.countercraft.movecraft.utils.TownyWorldHeightLimits;
 import org.bukkit.Material;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 
 public class Settings {
 
@@ -49,6 +52,9 @@ public class Settings {
     public static boolean RequireSneakingForDirectControl = false;
     public static HashSet<String> ForbiddenRemoteSigns;
     public static int FadeWrecksAfter = 0;
+    public static int FadeTickCooldown = 20;
+    public static double FadePercentageOfWreckPerCycle = 10.0;
+    public static Map<Material, Integer> ExtraFadeTimePerBlock = new HashMap<>();
     public static int ManOverboardTimeout = 60;
     public static double ManOverboardDistSquared = 1000000;
     public static int FireballLifespan = 6;
@@ -97,6 +103,4 @@ public class Settings {
     public static boolean SiegeEnable;
     public static String SiegeTimeZone;
     public static long TracerMinDistanceSqrd;
-
-    public static Map<List<Material>, String> StatusSignMarkers = new HashMap<>();
 }

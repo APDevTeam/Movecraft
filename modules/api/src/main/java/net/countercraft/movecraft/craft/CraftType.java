@@ -114,6 +114,8 @@ final public class CraftType {
     @NotNull private final List<Material> harvesterBladeBlocks;
     @NotNull private final Set<Material> passthroughBlocks;
     @NotNull private final Set<Material> forbiddenHoverOverBlocks;
+    @NotNull private final Set<String> disableTeleportToWorlds;
+    private final int teleportationCooldown;
     private final int gravityDropDistance;
     private final int gravityInclineDistance;
     private final Sound collisionSound;
@@ -370,7 +372,10 @@ final public class CraftType {
         underwaterStaticDetectionRange = doubleFromObject(data.getOrDefault("underwaterStaticDetectionRange", 0.0));
         perWorldUnderwaterStaticDetectionRange = stringToDoubleMapFromObject(data.getOrDefault("perWorldUnderwaterStaticDetectionRange", new HashMap<>()));
         perWorldStaticDetectionRange = stringToDoubleMapFromObject(data.getOrDefault("perWorldStaticDetectionRange", new HashMap<>()));
-
+        disableTeleportToWorlds = new HashSet<>();
+        List<String> disabledWorlds = (List<String>) data.getOrDefault("disableTeleportToWorlds", new ArrayList<>());
+        disableTeleportToWorlds.addAll(disabledWorlds);
+        teleportationCooldown = integerFromObject(data.getOrDefault("teleportationCooldown", 0));
     }
 
     private int integerFromObject(Object obj) {
@@ -965,6 +970,15 @@ final public class CraftType {
 
     public double getUnderwaterStaticDetectionRange(World world) {
         return perWorldUnderwaterStaticDetectionRange.getOrDefault(world.getName(), underwaterStaticDetectionRange);
+    }
+
+    @NotNull
+    public Set<String> getDisableTeleportToWorlds() {
+        return disableTeleportToWorlds;
+    }
+
+    public int getTeleportationCooldown() {
+        return teleportationCooldown;
     }
 
     private class TypeNotFoundException extends RuntimeException {
