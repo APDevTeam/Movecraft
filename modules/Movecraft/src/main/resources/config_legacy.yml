@@ -17,6 +17,14 @@ RequireNamePerm: false
 TNTContactExplosives: true
 DisableCrates: true
 FadeWrecksAfter: 600
+FadeTickCooldown: 20 #Number of ticks between each fading cycle
+FadePercentageOfWreckPerCycle: 10.0 #Percentage of wreck to be faded in each fading cycle
+ExtraFadeTimePerBlock: #List of blocks that will take longer time to fade
+  CHEST: 600
+  TRAPPED_CHEST: 600
+  DISPENSER: 600
+  DROPPER: 600
+  FURNACE: 600
 BlockQueueChunkSize: 200000
 RepairTicksPerBlock: 10
 RepairMoneyPerBlock: 10
