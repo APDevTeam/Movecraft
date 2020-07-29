@@ -8,7 +8,7 @@ public class FuelBurnEvent extends CraftEvent{
     private static final HandlerList HANDLERS = new HandlerList();
     private double burningFuel, fuelBurnRate;
     public FuelBurnEvent(@NotNull Craft craft, double burningFuel, double fuelBurnRate) {
-        super(craft);
+        super(craft, true);
         this.burningFuel = burningFuel;
         this.fuelBurnRate = fuelBurnRate;
     }
