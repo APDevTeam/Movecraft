@@ -259,7 +259,7 @@ final public class CraftType {
             ArrayList objList = (ArrayList) data.get("harvestBlocks");
             for (Object i : objList) {
                 if (i instanceof String) {
-                    Material mat = Material.getMaterial((String) i);
+                    Material mat = Material.getMaterial(((String) i).toUpperCase());
                     harvestBlocks.add(mat);
                 } else {
                     Material mat = Material.getMaterial((Integer) i);
@@ -272,7 +272,7 @@ final public class CraftType {
             ArrayList objList = (ArrayList) data.get("harvesterBladeBlocks");
             for (Object i : objList) {
                 if (i instanceof String) {
-                    Material mat = Material.getMaterial((String) i);
+                    Material mat = Material.getMaterial(((String) i).toUpperCase());
                     harvesterBladeBlocks.add(mat);
                 } else {
                     Integer typeID = (Integer) i;
@@ -286,7 +286,7 @@ final public class CraftType {
             ArrayList objList = (ArrayList) data.get("passthroughBlocks");
             for (Object i : objList) {
                 if (i instanceof String) {
-                    Material mat = Material.getMaterial((String) i);
+                    Material mat = Material.getMaterial(((String) i).toUpperCase());
                     passthroughBlocks.add(mat);
                 } else {
                     Material mat = Material.getMaterial((Integer) i);
@@ -332,7 +332,7 @@ final public class CraftType {
             if (d instanceof Integer) {
                 type = Material.getMaterial((int) d);
             } else {
-                type = Material.getMaterial((String) d);
+                type = Material.getMaterial(((String) d).toUpperCase());
             }
             dynamicFlyBlocks.add(type);
         }
@@ -341,7 +341,7 @@ final public class CraftType {
             if (d instanceof Integer) {
                 dynamicFlyBlocks.add(Material.getMaterial((int) d));
             } else if (d instanceof String){
-                dynamicFlyBlocks.add(Material.getMaterial((String) d));
+                dynamicFlyBlocks.add(Material.getMaterial(((String) d).toUpperCase()));
             } else if (d instanceof List) {
                 List l = (List) d;
                 for (Object i : l) {
@@ -349,7 +349,7 @@ final public class CraftType {
                     if (i instanceof Integer) {
                         type = Material.getMaterial((int) d);
                     } else {
-                        type = Material.getMaterial((String) d);
+                        type = Material.getMaterial(((String) d).toUpperCase());
                     }
                     dynamicFlyBlocks.add(type);
                 }
