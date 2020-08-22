@@ -68,11 +68,16 @@ public class SiegeCommand implements TabExecutor {
     }
 
     private boolean cancelCommand(CommandSender commandSender, String[] args) {
+        if (!commandSender.hasPermission("movecraft.siege.cancel")) {
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Insufficient Permissions"));
+            return true;
+        }
+
         for(Siege siege : Movecraft.getInstance().getSiegeManager().getSieges()) {
             if(siege.getStage().get() == SiegeStage.INACTIVE) {
                 continue;
             }
-            if(args[1].toUpperCase() != siege.getName().toUpperCase()) {
+            if(!args[1].equalsIgnoreCase(siege.getName())) {
                 continue;
             }
 
