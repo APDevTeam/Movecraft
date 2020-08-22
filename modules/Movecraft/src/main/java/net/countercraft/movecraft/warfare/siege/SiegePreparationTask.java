@@ -30,7 +30,7 @@ public class SiegePreparationTask extends SiegeTask {
 
     private void broadcastSiegePreparation(Player player, String siegeName, int timeLeft){
         String playerName = "";
-        if (player != null){
+        if (player != null) {
             playerName = player.getDisplayName();
         }
 

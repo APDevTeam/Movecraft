@@ -10,6 +10,7 @@ import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.TopicPaginator;
 import net.countercraft.movecraft.warfare.siege.Siege;
 import net.countercraft.movecraft.warfare.siege.SiegeManager;
+import net.countercraft.movecraft.warfare.siege.SiegeProgressTask;
 import net.countercraft.movecraft.warfare.siege.SiegeStage;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -58,10 +59,26 @@ public class SiegeCommand implements TabExecutor {
             return infoCommand(commandSender,args);
         } else if(args[0].equalsIgnoreCase("time")){
             return timeCommand(commandSender,args);
+        } else if(args[0].equalsIgnoreCase("cancel")){
+            return timeCommand(commandSender,args);
         }
         commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Siege - Invalid Argument"));
         return true;
 
+    }
+
+    private boolean cancelCommand(CommandSender commandSender, String[] args) {
+        for(Siege siege : Movecraft.getInstance().getSiegeManager().getSieges()) {
+            if(siege.getStage().get() == SiegeStage.INACTIVE) {
+                continue;
+            }
+            if(args[1].toUpperCase() != siege.getName().toUpperCase()) {
+                continue;
+            }
+
+            cancelSiege(siege);
+        }
+        return true;
     }
 
     private boolean timeCommand(CommandSender commandSender, String[] args) {
@@ -189,6 +206,22 @@ public class SiegeCommand implements TabExecutor {
         siege.setStage(SiegeStage.PREPERATION);
     }
 
+    private void cancelSiege(Siege siege) {
+        @NotNull Player siegeLeader = Movecraft.getInstance().getServer().getPlayer(siege.getPlayerUUID());
+        Bukkit.getServer().broadcastMessage(String.format(I18nSupport.getInternationalisedString("Siege - Siege Failure"),
+                siege.getName(), siegeLeader.getDisplayName()));
+
+        siege.setStage(SiegeStage.INACTIVE);
+
+        List<String> commands = siege.getCommandsOnWin();
+        for (String command : commands) {
+            Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command
+                    .replaceAll("%r", siege.getCaptureRegion())
+                    .replaceAll("%c", "" + siege.getCost())
+                    .replaceAll("%l", siegeLeader.toString()));
+        }
+    }
+
     private int getMilitaryTime() {
         Calendar rightNow = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
         int hour = rightNow.get(Calendar.HOUR_OF_DAY);
@@ -310,8 +343,17 @@ public class SiegeCommand implements TabExecutor {
             tabCompletions.add("begin");
             tabCompletions.add("list");
             tabCompletions.add("time");
+            tabCompletions.add("cancel");
         } else if (strings[0].equalsIgnoreCase("info")) {
             for (Siege siege : Movecraft.getInstance().getSiegeManager().getSieges()) {
+                tabCompletions.add(siege.getName());
+            }
+        }
+        else if(strings[0].equalsIgnoreCase("cancel")) {
+            for (Siege siege : Movecraft.getInstance().getSiegeManager().getSieges()) {
+                if(siege.getStage().get() == SiegeStage.INACTIVE) {
+                    continue;
+                }
                 tabCompletions.add(siege.getName());
             }
         }
