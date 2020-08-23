@@ -73,7 +73,7 @@ public abstract class Craft {
     @Nullable private Player notificationPlayer;
     @Nullable private Player cannonDirector;
     @Nullable private Player AADirector;
-    private float meanCruiseTime;
+    private float meanCruiseTime = 0;
     private int numMoves;
     @NotNull private final Map<Location, Pair<Material, Byte>> phaseBlocks = new HashMap<>();
     @NotNull private final HashMap<UUID, Location> crewSigns = new HashMap<>();
@@ -363,8 +363,8 @@ public abstract class Craft {
 
         if(type.getDynamicLagSpeedFactor() == 0.0 || type.getDynamicLagPowerFactor() == 0.0 || Math.abs(type.getDynamicLagPowerFactor()) > 1.0)
             return type.getCruiseTickCooldown(w) + chestPenalty;
-        if(meanCruiseTime == 0)
-            return type.getCruiseTickCooldown(w) + chestPenalty;
+        if(meanCruiseTime == 0 || numMoves == 0)
+            return (int) Math.round(20.0 * ((type.getCruiseSkipBlocks(w) + 1.0) / type.getDynamicLagMinSpeed()));
 
         if(Settings.Debug) {
             Bukkit.getLogger().info("Skip: " + type.getCruiseSkipBlocks(w));
