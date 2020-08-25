@@ -44,4 +44,3 @@ commands:
   scuttle:
     description: Sinks piloted craft
     usage: /scuttle
-

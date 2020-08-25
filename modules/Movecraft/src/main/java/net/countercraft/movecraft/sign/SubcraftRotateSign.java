@@ -99,7 +99,7 @@ public final class SubcraftRotateSign implements Listener {
             @Override
             public void run() {
                 rotatingCrafts.remove(startPoint);
-                CraftManager.getInstance().removeCraft(subCraft);
+                CraftManager.getInstance().removeCraft(subCraft, CraftReleaseEvent.Reason.SUB_CRAFT);
             }
         }.runTaskLater(Movecraft.getInstance(), 6);
         event.setCancelled(true);

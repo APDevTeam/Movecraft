@@ -2,7 +2,6 @@ package net.countercraft.movecraft.events;
 
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.utils.BitmapHitBox;
-import net.countercraft.movecraft.utils.HashHitBox;
 
 import org.bukkit.World;
 import org.bukkit.event.HandlerList;

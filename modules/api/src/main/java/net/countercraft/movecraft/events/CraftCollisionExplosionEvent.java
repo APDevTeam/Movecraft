@@ -1,32 +1,24 @@
 package net.countercraft.movecraft.events;
 
 import net.countercraft.movecraft.craft.Craft;
+
+import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
-/**
- * Called whenever a craft is released
- * @see Craft
- */
-@SuppressWarnings("unused")
-public class CraftReleaseEvent extends CraftEvent implements Cancellable {
-    @NotNull private final Reason reason;
+public class CraftCollisionExplosionEvent extends CraftEvent implements Cancellable {
     private static final HandlerList HANDLERS = new HandlerList();
-    private boolean cancelled = false;
+    @NotNull private final World world;
+    @NotNull private final Location location;
+    private boolean cancelled;
 
-    public CraftReleaseEvent(@NotNull Craft craft, @NotNull Reason reason) {
+    public CraftCollisionExplosionEvent(@NotNull Craft craft, @NotNull Location location, @NotNull World world) {
         super(craft);
-        this.reason = reason;
-    }
-
-    @NotNull
-    public Reason getReason() {
-        return reason;
-    }
-
-    public enum Reason{
-        DISCONNECT,SUB_CRAFT,PLAYER,FORCE,EMPTY,SUNK,REPAIR,DEATH
+        this.world = world;
+        this.location = location;
+        cancelled = false;
     }
 
     @Override
@@ -37,6 +29,16 @@ public class CraftReleaseEvent extends CraftEvent implements Cancellable {
     @Override
     public void setCancelled(boolean cancel) {
         this.cancelled = cancel;
+    }
+
+    @NotNull
+    public Location getLocation() {
+        return location;
+    }
+
+    @NotNull
+    public World getWorld() {
+        return world;
     }
 
     @Override
