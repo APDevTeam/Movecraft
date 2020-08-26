@@ -525,7 +525,7 @@ public class AsyncManager extends BukkitRunnable {
                     }
                 }
 
-                if (blockID != 0) {
+                if (blockID != 0 && blockID != 51) {
                     totalNonAirBlocks++;
                 }
                 if (blockID != 0 && blockID != 8 && blockID != 9) {
