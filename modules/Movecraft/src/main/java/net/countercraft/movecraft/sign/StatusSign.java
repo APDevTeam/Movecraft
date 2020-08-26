@@ -70,7 +70,7 @@ public final class StatusSign implements Listener{
                     fuel += iStack.getAmount() * fuelTypes.get(iStack.getType());
                 }
             }
-            if (blockID != 0) {
+            if (blockID != 0 && blockID != 51) {
                 totalBlocks++;
             }
         }
