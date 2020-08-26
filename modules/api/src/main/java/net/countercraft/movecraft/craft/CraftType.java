@@ -53,8 +53,6 @@ final public class CraftType {
     private final boolean allowHorizontalMovement;
     private final boolean allowVerticalMovement;
     private final boolean allowRemoteSign;
-    private final boolean allowCannonDirectorSign;
-    private final boolean allowAADirectorSign;
     private final boolean cruiseOnPilot;
     private final boolean allowVerticalTakeoffAndLanding;
     private final boolean rotateAtMidpoint;
@@ -163,8 +161,6 @@ final public class CraftType {
         rotateAtMidpoint = (boolean) data.getOrDefault("rotateAtMidpoint", false);
         allowHorizontalMovement = (boolean) data.getOrDefault("allowHorizontalMovement", true);
         allowRemoteSign = (boolean) data.getOrDefault("allowRemoteSign", true);
-        allowCannonDirectorSign = (boolean) data.getOrDefault("allowCannonDirectorSign", true);
-        allowAADirectorSign = (boolean) data.getOrDefault("allowAADirectorSign", true);
         canStaticMove = (boolean) data.getOrDefault("canStaticMove", false);
         maxStaticMove = integerFromObject(data.getOrDefault("maxStaticMove", 10000));
         cruiseSkipBlocks = integerFromObject(data.getOrDefault("cruiseSkipBlocks", 0));
@@ -726,14 +722,6 @@ final public class CraftType {
 
     public boolean allowRemoteSign() {
         return allowRemoteSign;
-    }
-
-    public boolean allowCannonDirectorSign() {
-        return allowCannonDirectorSign;
-    }
-
-    public boolean allowAADirectorSign() {
-        return allowAADirectorSign;
     }
 
     @Deprecated

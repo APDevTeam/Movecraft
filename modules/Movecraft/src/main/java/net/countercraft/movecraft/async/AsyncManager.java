@@ -28,6 +28,7 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.CraftDetectEvent;
+import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.mapUpdater.update.BlockCreateCommand;
@@ -672,7 +673,7 @@ public class AsyncManager extends BukkitRunnable {
                 continue;
             }
             if (craft.getHitBox().isEmpty() || craft.getHitBox().getMinY() < 5) {
-                CraftManager.getInstance().removeCraft(craft);
+                CraftManager.getInstance().removeCraft(craft, CraftReleaseEvent.Reason.SUNK);
                 continue;
             }
             long ticksElapsed = (System.currentTimeMillis() - craft.getLastCruiseUpdate()) / 50;
@@ -690,148 +691,6 @@ public class AsyncManager extends BukkitRunnable {
         }
     }
 
-    private void processTracers() {
-        if (Settings.TracerRateTicks == 0)
-            return;
-        long ticksElapsed = (System.currentTimeMillis() - lastTracerUpdate) / 50;
-        if (ticksElapsed > Settings.TracerRateTicks) {
-            for (World w : Bukkit.getWorlds()) {
-                if (w != null) {
-                    for (TNTPrimed tnt : w.getEntitiesByClass(TNTPrimed.class)) {
-                        if (tnt.getVelocity().lengthSquared() > 0.25) {
-                            for (Player p : w.getPlayers()) {
-                                // is the TNT within the view distance (rendered
-                                // world) of the player?
-                                long maxDistSquared = Bukkit.getServer().getViewDistance() * 16;
-                                maxDistSquared = maxDistSquared - 16;
-                                maxDistSquared = maxDistSquared * maxDistSquared;
-
-                                if (p.getLocation().distanceSquared(tnt.getLocation()) < maxDistSquared) { // we
-                                    // use
-                                    // squared
-                                    // because
-                                    // its
-                                    // faster
-                                    final Location loc = tnt.getLocation();
-                                    final Player fp = p;
-                                    // then make a cobweb to look like smoke,
-                                    // place it a little later so it isn't right
-                                    // in the middle of the volley
-                                    new BukkitRunnable() {
-                                        @Override
-                                        public void run() {
-                                            fp.sendBlockChange(loc, Material.COBWEB, (byte) 0);
-                                        }
-                                    }.runTaskLater(Movecraft.getInstance(), 5);
-                                    // then remove it
-                                    new BukkitRunnable() {
-                                        @Override
-                                        public void run() {
-                                            // fp.sendBlockChange(loc,
-                                            // fw.getBlockAt(loc).getType(),
-                                            // fw.getBlockAt(loc).getData());
-                                            fp.sendBlockChange(loc, Material.AIR, (byte) 0);
-                                        }
-                                    }.runTaskLater(Movecraft.getInstance(), 160);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            lastTracerUpdate = System.currentTimeMillis();
-        }
-    }
-
-    private void processFireballs() {
-        long ticksElapsed = (System.currentTimeMillis() - lastFireballCheck) / 50;
-
-        if (ticksElapsed <= 3) {
-            return;
-        }
-        for (World w : Bukkit.getWorlds()) {
-            if (w == null) {
-                continue;
-            }
-            for (SmallFireball fireball : w.getEntitiesByClass(SmallFireball.class)) {
-                if (!(fireball.getShooter() instanceof org.bukkit.entity.LivingEntity)
-                        && w.getPlayers().size() > 0
-                        && !FireballTracking.containsKey(fireball)) {
-                    Craft c = fastNearestCraftToLoc(fireball.getLocation());
-                    FireballTracking.put(fireball, System.currentTimeMillis());
-                    Player p = null;
-                    if (c == null)
-                        continue;
-                    MovecraftLocation midPoint = c.getHitBox().getMidPoint();
-                    int distX = Math.abs(midPoint.getX() - fireball.getLocation().getBlockX());
-                    int distY = Math.abs(midPoint.getY() - fireball.getLocation().getBlockY());
-                    int distZ = Math.abs(midPoint.getZ() - fireball.getLocation().getBlockZ());
-                    boolean inRange = (distX < 50) && (distY < 50) && (distZ < 50);
-                    if ((c.getAADirector() != null) && inRange) {
-                        p = c.getAADirector();
-                        if (p.getItemInHand().getType() == Settings.PilotTool) {
-                            Vector fv = fireball.getVelocity();
-                            double speed = fv.length(); // store the speed to add it back in later, since all the values we will be using are "normalized", IE: have a speed of 1
-                            fv = fv.normalize(); // you normalize it for comparison with the new direction to see if we are trying to steer too far
-                            Block targetBlock = p.getTargetBlock(transparent, 120);
-                            Vector targetVector;
-                            if (targetBlock == null) { // the player is looking at nothing, shoot in that general direction
-                                targetVector = p.getLocation().getDirection();
-                            } else { // shoot directly at the block the player is looking at (IE: with convergence)
-                                targetVector = targetBlock.getLocation().toVector().subtract(fireball.getLocation().toVector());
-                                targetVector = targetVector.normalize();
-                            }
-                            if (targetVector.getX() - fv.getX() > 0.5) {
-                                fv.setX(fv.getX() + 0.5);
-                            } else if (targetVector.getX() - fv.getX() < -0.5) {
-                                fv.setX(fv.getX() - 0.5);
-                            } else {
-                                fv.setX(targetVector.getX());
-                            }
-                            if (targetVector.getY() - fv.getY() > 0.5) {
-                                fv.setY(fv.getY() + 0.5);
-                            } else if (targetVector.getY() - fv.getY() < -0.5) {
-                                fv.setY(fv.getY() - 0.5);
-                            } else {
-                                fv.setY(targetVector.getY());
-                            }
-                            if (targetVector.getZ() - fv.getZ() > 0.5) {
-                                fv.setZ(fv.getZ() + 0.5);
-                            } else if (targetVector.getZ() - fv.getZ() < -0.5) {
-                                fv.setZ(fv.getZ() - 0.5);
-                            } else {
-                                fv.setZ(targetVector.getZ());
-                            }
-                            fv = fv.multiply(speed); // put the original speed back in, but now along a different trajectory
-                            fireball.setVelocity(fv);
-                            fireball.setDirection(fv);
-                        }
-                    } else if (inRange) {
-                        p = c.getNotificationPlayer();
-                    }
-                    if (p != null)
-                        fireball.setShooter(p);
-                }
-            }
-        }
-
-        int timelimit = 20 * Settings.FireballLifespan * 50;
-        // then, removed any exploded TNT from tracking
-        Iterator<SmallFireball> fireballI = FireballTracking.keySet().iterator();
-        while (fireballI.hasNext()) {
-            SmallFireball fireball = fireballI.next();
-            if (fireball == null) {
-                continue;
-            }
-            if (System.currentTimeMillis() - FireballTracking.get(fireball) > timelimit) {
-                fireball.remove();
-                fireballI.remove();
-            }
-        }
-
-        lastFireballCheck = System.currentTimeMillis();
-    }
-
     private Craft fastNearestCraftToLoc(Location loc) {
         Craft ret = null;
         long closestDistSquared = Long.MAX_VALUE;
@@ -847,86 +706,6 @@ public class AsyncManager extends BukkitRunnable {
             }
         }
         return ret;
-    }
-
-    private void processTNTContactExplosives() {
-        long ticksElapsed = (System.currentTimeMillis() - lastTNTContactCheck) / 50;
-        if (ticksElapsed <= 0) {
-            return;
-        }
-        // see if there is any new rapid moving TNT in the worlds
-        for (World w : Bukkit.getWorlds()) {
-            if (w == null) {
-                continue;
-            }
-            for (TNTPrimed tnt : w.getEntitiesByClass(TNTPrimed.class)) {
-                if (!(tnt.getVelocity().lengthSquared() > 0.35) || TNTTracking.containsKey(tnt)) {
-                    continue;
-                }
-                Craft c = fastNearestCraftToLoc(tnt.getLocation());
-                TNTTracking.put(tnt, tnt.getVelocity().lengthSquared());
-                if (c == null) {
-                    continue;
-                }
-                MovecraftLocation midpoint = c.getHitBox().getMidPoint();
-                int distX = Math.abs(midpoint.getX() - tnt.getLocation().getBlockX());
-                int distY = Math.abs(midpoint.getY() - tnt.getLocation().getBlockY());
-                int distZ = Math.abs(midpoint.getZ() - tnt.getLocation().getBlockZ());
-                if (c.getCannonDirector() == null || distX >= 100 || distY >= 100 || distZ >= 100) {
-                    continue;
-                }
-                Player p = c.getCannonDirector();
-                if (p.getInventory().getItemInMainHand().getType() != Settings.PilotTool) {
-                    continue;
-                }
-                Vector tv = tnt.getVelocity();
-                double speed = tv.length(); // store the speed to add it back in later, since all the values we will be using are "normalized", IE: have a speed of 1
-                tv = tv.normalize(); // you normalize it for comparison with the new direction to see if we are trying to steer too far
-                Block targetBlock = p.getTargetBlock(transparent, 120);
-                Vector targetVector;
-                if (targetBlock == null) { // the player is looking at nothing, shoot in that general direction
-                    targetVector = p.getLocation().getDirection();
-                } else { // shoot directly at the block the player is looking at (IE: with convergence)
-                    targetVector = targetBlock.getLocation().toVector().subtract(tnt.getLocation().toVector());
-                    targetVector = targetVector.normalize();
-                }
-                if (targetVector.getX() - tv.getX() > 0.7) {
-                    tv.setX(tv.getX() + 0.7);
-                } else if (targetVector.getX() - tv.getX() < -0.7) {
-                    tv.setX(tv.getX() - 0.7);
-                } else {
-                    tv.setX(targetVector.getX());
-                }
-                if (targetVector.getZ() - tv.getZ() > 0.7) {
-                    tv.setZ(tv.getZ() + 0.7);
-                } else if (targetVector.getZ() - tv.getZ() < -0.7) {
-                    tv.setZ(tv.getZ() - 0.7);
-                } else {
-                    tv.setZ(targetVector.getZ());
-                }
-                tv = tv.multiply(speed); // put the original speed back in, but now along a different trajectory
-                tv.setY(tnt.getVelocity().getY()); // you leave the original Y (or vertical axis) trajectory as it was
-                tnt.setVelocity(tv);
-            }
-        }
-
-        // then, removed any exploded TNT from tracking
-        TNTTracking.keySet().removeIf(tnt -> tnt.getFuseTicks() <= 0);
-
-        // now check to see if any has abruptly changed velocity, and should
-        // explode
-        for (TNTPrimed tnt : TNTTracking.keySet()) {
-            double vel = tnt.getVelocity().lengthSquared();
-            if (vel < TNTTracking.get(tnt) / 10.0) {
-                tnt.setFuseTicks(0);
-            } else {
-                // update the tracking with the new velocity so gradual
-                // changes do not make TNT explode
-                TNTTracking.put(tnt, vel);
-            }
-        }
-
-        lastTNTContactCheck = System.currentTimeMillis();
     }
 
     private void processFadingBlocks() {
@@ -1110,9 +889,6 @@ public class AsyncManager extends BukkitRunnable {
         processCruise();
         detectSinking();
         processSinking();
-        processTracers();
-        processFireballs();
-        processTNTContactExplosives();
         processFadingBlocks();
         processDetection();
         processAlgorithmQueue();

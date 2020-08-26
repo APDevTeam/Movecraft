@@ -321,60 +321,7 @@ public class BlockListener implements Listener {
 
     @EventHandler(priority = EventPriority.NORMAL)
     public void explodeEvent(EntityExplodeEvent e) {
-        if (Settings.DurabilityOverride != null) {
-
-            // Sorry for the following monster conditional statement, it is necessary to avoid spalling.
-            // Basically it runs a random number based on the XYZ of the block and the system time if the block has explosion resistance
-            // And then it also removes the block if no adjacent blocks are air (IE: the explosion skipped a block)
-            e.blockList().removeIf(b -> (Settings.DurabilityOverride.containsKey(b.getType()) &&
-                    (new Random( b.getX()*b.getY()*b.getZ()+(System.currentTimeMillis() >> 12)).nextInt(100) < Settings.DurabilityOverride.get(b.getType()))) ||
-                        !(b.getRelative(BlockFace.EAST).isEmpty() || b.getRelative(BlockFace.WEST).isEmpty() || b.getRelative(BlockFace.UP).isEmpty() ||
-                        b.getRelative(BlockFace.NORTH).isEmpty() || b.getRelative(BlockFace.SOUTH).isEmpty() || b.getRelative(BlockFace.DOWN).isEmpty()));
-//                    (new Random( new Random(b.getX()).nextInt(100)+ new Random(b.getY()).nextInt(100) + new Random(b.getZ()).nextInt(100)+
-
-        }
         processAssault(e);
-        if (e.getEntity() == null)
-            return;
-        for (Player p : e.getEntity().getWorld().getPlayers()) {
-            Entity tnt = e.getEntity();
-
-            if (e.getEntityType() == EntityType.PRIMED_TNT && Settings.TracerRateTicks != 0) {
-                long minDistSquared = 60 * 60;
-                long maxDistSquared = Bukkit.getServer().getViewDistance() * 16;
-                maxDistSquared = maxDistSquared - 16;
-                maxDistSquared = maxDistSquared * maxDistSquared;
-                // is the TNT within the view distance (rendered world) of the player, yet further than 60 blocks?
-                if (p.getLocation().distanceSquared(tnt.getLocation()) < maxDistSquared && p.getLocation().distanceSquared(tnt.getLocation()) >= minDistSquared) {  // we use squared because its faster
-                    final Location loc = tnt.getLocation();
-                    final Player fp = p;
-                    final World fw = e.getEntity().getWorld();
-                    // then make a glowstone to look like the explosion, place it a little later so it isn't right in the middle of the volley
-                    new BukkitRunnable() {
-                        @Override
-                        public void run() {
-                            fp.sendBlockChange(loc, Material.GLOWSTONE, (byte) 0);
-                        }
-                    }.runTaskLater(Movecraft.getInstance(), 5);
-                    // then remove it
-                    new BukkitRunnable() {
-                        @Override
-                        public void run() {
-                            fp.sendBlockChange(loc, Material.AIR, (byte) 0);
-                        }
-                    }.runTaskLater(Movecraft.getInstance(), 160);
-                }
-            }
-        }
-
-        for (Block b : e.blockList()){
-            if (b.getState() instanceof Sign){
-                Sign sign = (Sign) b.getState();
-                if (sign.getLine(0).equals(ChatColor.RED + "REGION DAMAGED!")){
-
-                }
-            }
-        }
     }
 
     private void processAssault(EntityExplodeEvent e){
