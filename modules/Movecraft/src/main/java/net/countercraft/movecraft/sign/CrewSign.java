@@ -54,7 +54,7 @@ public class CrewSign implements Listener {
         for(MovecraftLocation location : event.getLocations()){
             Location bedLoc = location.toBukkit(craft.getWorld()).subtract(0,1,0);
             Material bedType = craft.getWorld().getBlockAt(bedLoc).getType();
-            if (Settings.IsLegacy ? bedType.equals(LegacyUtils.BED_BLOCK) : Arrays.binarySearch(beds, bedType) >= 0) {
+            if (Settings.IsLegacy ? bedType.equals(LegacyUtils.BED_BLOCK) : bedType.name().endsWith("_BED")) {
                 valid = bedLoc;
                 break;
             }
@@ -115,7 +115,7 @@ public class CrewSign implements Listener {
         player.sendMessage(I18nSupport.getInternationalisedString("CrewSign - Respawn"));
         Location respawnLoc = craft.getCrewSigns().get(player.getUniqueId());
         Material test = respawnLoc.getBlock().getType();
-        final boolean hasBed = Settings.IsLegacy ? test == LegacyUtils.BED_BLOCK : test.name().endsWith("BED");
+        final boolean hasBed = Settings.IsLegacy ? test == LegacyUtils.BED_BLOCK : test.name().endsWith("_BED");
         if (Settings.Debug){
             Bukkit.broadcastMessage("Has bed: " + hasBed + ". Found type at " + respawnLoc.toVector() + ": " + test.name());
         }
