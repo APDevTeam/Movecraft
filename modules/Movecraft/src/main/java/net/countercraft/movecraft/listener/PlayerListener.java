@@ -21,6 +21,7 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.MathUtils;
 import org.bukkit.Material;
@@ -103,7 +104,7 @@ public class PlayerListener implements Listener {
     public void onPlayerDeath(EntityDamageByEntityEvent e) {  // changed to death so when you shoot up an airship and hit the pilot, it still sinks
         if (e instanceof Player) {
             Player p = (Player) e;
-            CraftManager.getInstance().removeCraft(CraftManager.getInstance().getCraftByPlayer(p));
+            CraftManager.getInstance().removeCraft(CraftManager.getInstance().getCraftByPlayer(p), CraftReleaseEvent.Reason.DEATH);
         }
     }
 
@@ -122,7 +123,7 @@ public class PlayerListener implements Listener {
         }
 
         if(timeToReleaseAfter.containsKey(c) && timeToReleaseAfter.get(c) < System.currentTimeMillis()){
-            CraftManager.getInstance().removeCraft(c);
+            CraftManager.getInstance().removeCraft(c, CraftReleaseEvent.Reason.PLAYER);
             timeToReleaseAfter.remove(c);
             return;
         }

@@ -326,6 +326,8 @@ public class TranslationTask extends AsyncTask {
                 Location oldLocation = location.translate(-dx,-dy,-dz).toBukkit(craft.getW());
                 Location newLocation = location.toBukkit(world);
                 if (!oldLocation.getBlock().getType().equals(Material.AIR)) {
+                    CraftCollisionExplosionEvent e = new CraftCollisionExplosionEvent(craft, newLocation, craft.getW());
+                    Bukkit.getServer().getPluginManager().callEvent(e);
                     updates.add(new ExplosionUpdateCommand(newLocation, explosionForce));
                     collisionExplosion = true;
                 }
@@ -336,7 +338,7 @@ public class TranslationTask extends AsyncTask {
         }
 
         if(!collisionBox.isEmpty() && craft.getType().getCruiseOnPilot()){
-            CraftManager.getInstance().removeCraft(craft);
+            CraftManager.getInstance().removeCraft(craft, CraftReleaseEvent.Reason.EMPTY);
             for(MovecraftLocation location : oldHitBox){
                 Pair<Material, Byte> phaseBlock = craft.getPhaseBlocks().getOrDefault(location.toBukkit(craft.getW()), new Pair<>(Material.AIR, (byte) 0));
                 updates.add(new BlockCreateCommand(craft.getW(), location, phaseBlock.getLeft(), phaseBlock.getRight()));
@@ -570,6 +572,7 @@ public class TranslationTask extends AsyncTask {
                 dz -= oldHitBox.getZLength() + 1;
             }
         }
+
         return true;
 
     }
