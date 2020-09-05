@@ -84,13 +84,13 @@ public class SiegeCommand implements TabExecutor {
             }
             sb.append(args[i]);
         }
-        String region = sb.toString().toUpperCase();
+        String region = sb.toString();
 
         for(Siege siege : Movecraft.getInstance().getSiegeManager().getSieges()) {
             if(siege.getStage().get() == SiegeStage.INACTIVE) {
                 continue;
             }
-            if(!region.equals(siege.getName().toUpperCase())) {
+            if(!region.equalsIgnoreCase(siege.getName())) {
                 continue;
             }
 
