@@ -72,12 +72,25 @@ public class SiegeCommand implements TabExecutor {
             commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Insufficient Permissions"));
             return true;
         }
+        if(args.length <=1 ) {
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Siege - Specify Region"));
+            return true;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for(int i = 1; i < args.length; i++) {
+            if(i > 1) {
+                sb.append(" ");
+            }
+            sb.append(args[i]);
+        }
+        String region = sb.toString().toUpperCase();
 
         for(Siege siege : Movecraft.getInstance().getSiegeManager().getSieges()) {
             if(siege.getStage().get() == SiegeStage.INACTIVE) {
                 continue;
             }
-            if(!args[1].equalsIgnoreCase(siege.getName())) {
+            if(!region.equals(siege.getName().toUpperCase())) {
                 continue;
             }
 
