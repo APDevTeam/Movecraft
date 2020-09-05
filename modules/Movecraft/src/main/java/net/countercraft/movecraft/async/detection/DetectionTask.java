@@ -28,14 +28,14 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.*;
 import org.bukkit.*;
-import org.bukkit.block.BlockState;
+import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 public class DetectionTask extends AsyncTask {
     @NotNull private final MovecraftLocation startLocation;
@@ -79,7 +79,7 @@ public class DetectionTask extends AsyncTask {
     }
 
     @Override
-    public void execute() {
+    public void execute() throws ExecutionException, InterruptedException {
         long startTime = System.currentTimeMillis();
         BlockLimitManager flyBlocks = getCraft().getType().getFlyBlocks();
         dFlyBlocks = flyBlocks;
@@ -120,17 +120,19 @@ public class DetectionTask extends AsyncTask {
         }
     }
 
-    private void detectBlock(int x, int y, int z) {
+    private void detectBlock(int x, int y, int z) throws ExecutionException, InterruptedException {
 
         MovecraftLocation workingLocation = new MovecraftLocation(x, y, z);
 
         if (notVisited(workingLocation, visited)) {
 
-            Material testType = null;
-            int testData = 0;
+            Material testType;
+            int testData;
+            Block testBlock;
             try {
-                testData = world.getBlockAt(x, y, z).getData();
-                testType = world.getBlockAt(x, y, z).getType();
+                testBlock = world.getBlockAt(x, y, z);
+                testData = testBlock.getData();
+                testType = testBlock.getType();
             } catch (Exception e) {
                 fail(String.format(I18nSupport.getInternationalisedString("Detection - Craft too large"), maxSize));
                 return;
@@ -140,52 +142,46 @@ public class DetectionTask extends AsyncTask {
                 waterContact = true;
             }
             if (testType.name().endsWith("SIGN") || testType == LegacyUtils.SIGN_POST) {
-                new BukkitRunnable() {
-                    @Override
-                    public void run() {
-                        BlockState state = world.getBlockAt(x, y, z).getState();
-                        if (state instanceof Sign) {
-                            Sign s = (Sign) state;
-                            if (s.getLine(0).equalsIgnoreCase("Pilot:") && player != null) {
-                                String playerName = player.getName();
-                                boolean foundPilot = false;
-                                if (s.getLine(1).equalsIgnoreCase(playerName) || s.getLine(2).equalsIgnoreCase(playerName)
-                                        || s.getLine(3).equalsIgnoreCase(playerName)) {
-                                    foundPilot = true;
-                                }
-                                if (!foundPilot && (!player.hasPermission("movecraft.bypasslock"))) {
-                                    fail(I18nSupport.getInternationalisedString(
-                                            "Detection - Not Registered Pilot"));
-                                }
-
-                            }
-                            String previous = "";
-                            for (String line : s.getLines()) {
-                                if (line.length() == 0) {
-                                    continue;
-                                }
-                                line = ChatColor.stripColor(line);
-                                if (isForbiddenSignString(line)) {
-                                    fail(I18nSupport.getInternationalisedString("Detection - Forbidden sign string found"));
-                                    return;
-                                }
-                                if (previous.equals(line)) {
-                                    continue;
-                                }
-                                for (List<String> limitedStrings : craft.getType().getMaxSignsWithString().keySet()) {
-                                    if (!limitedStrings.contains(line.toLowerCase())) {
-                                        continue;
-                                    }
-                                    int count = signWithStringCount.getOrDefault(limitedStrings, 0);
-                                    count++;
-                                    signWithStringCount.put(limitedStrings, count);
-                                    previous = line;
-                                }
-
-                            }
-                        }
+                Sign sign = Bukkit.getScheduler().callSyncMethod(Movecraft.getInstance(), () -> (Sign) testBlock.getState()).get();
+                if (sign.getLine(0).equalsIgnoreCase("Pilot:") && player != null) {
+                    String playerName = player.getName();
+                    boolean foundPilot = false;
+                    final String[] lines = sign.getLines();
+                    for (int i = 1 ; i < lines.length ; i++) {
+                        if (!ChatColor.stripColor(lines[i]).equalsIgnoreCase(playerName))
+                            continue;
+                        foundPilot = true;
+                        break;
                     }
-                }.runTask(Movecraft.getInstance());
+                    if (!foundPilot && (!player.hasPermission("movecraft.bypasslock"))) {
+                        fail(I18nSupport.getInternationalisedString(
+                                "Detection - Not Registered Pilot"));
+                    }
+                    String previous = "";
+                    for (String line : lines) {
+                        if (line.length() == 0) {
+                            continue;
+                        }
+                        line = ChatColor.stripColor(line);
+                        if (isForbiddenSignString(line)) {
+                            fail(I18nSupport.getInternationalisedString("Detection - Forbidden sign string found"));
+                            return;
+                        }
+                        if (previous.equals(line)) {
+                            continue;
+                        }
+                        for (List<String> limitedStrings : craft.getType().getMaxSignsWithString().keySet()) {
+                            if (!limitedStrings.contains(line.toLowerCase())) {
+                                continue;
+                            }
+                            int count = signWithStringCount.getOrDefault(limitedStrings, 0);
+                            count++;
+                            signWithStringCount.put(limitedStrings, count);
+                            previous = line;
+                        }
+
+                    }
+                }
             }
             if (isForbiddenBlock(testType, testData)) {
                 fail(I18nSupport.getInternationalisedString("Detection - Forbidden block found"));
@@ -273,7 +269,7 @@ public class DetectionTask extends AsyncTask {
         blockTypeCount.put(id, count + 1);
     }
 
-    private void detectSurrounding(MovecraftLocation l) {
+    private void detectSurrounding(MovecraftLocation l) throws ExecutionException, InterruptedException {
         int x = l.getX();
         int y = l.getY();
         int z = l.getZ();
