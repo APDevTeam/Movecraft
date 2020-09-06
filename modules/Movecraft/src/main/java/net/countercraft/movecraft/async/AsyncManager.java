@@ -560,9 +560,9 @@ public class AsyncManager extends BukkitRunnable {
             if (ticksElapsed <= Settings.SinkCheckTicks) {
                 continue;
             }
-            final World w = pcraft.getW();
-            int totalNonAirBlocks = 0;
-            int totalNonAirWaterBlocks = 0;
+            final World w = pcraft.getWorld();
+            int totalNonNegligibleBlocks = 0;
+            int totalNonNegligibleWaterBlocks = 0;
             HashMap<Set<MovecraftBlock>, Integer> foundFlyBlocks = new HashMap<>();
             HashMap<Set<MovecraftBlock>, Integer> foundMoveBlocks = new HashMap<>();
             // go through each block in the blocklist, and
@@ -586,11 +586,11 @@ public class AsyncManager extends BukkitRunnable {
                 }
 
 
-                if (blockType != Material.AIR) {
-                    totalNonAirBlocks++;
+                if (blockType != Material.AIR && blockType != Material.FIRE) {
+                    totalNonNegligibleBlocks++;
                 }
-                if (blockType != Material.AIR && blockType != Material.WATER && blockType != LegacyUtils.STATIONARY_WATER) {
-                    totalNonAirWaterBlocks++;
+                if (blockType != Material.AIR && blockType != Material.FIRE && blockType != Material.WATER && blockType != LegacyUtils.STATIONARY_WATER) {
+                    totalNonNegligibleWaterBlocks++;
                 }
             }
 
@@ -604,7 +604,7 @@ public class AsyncManager extends BukkitRunnable {
                 if (foundFlyBlocks.get(i.getBlocks()) != null) {
                     numfound = foundFlyBlocks.get(i.getBlocks());
                 }
-                double percent = ((double) numfound / (double) totalNonAirBlocks) * 100.0;
+                double percent = ((double) numfound / (double) totalNonNegligibleBlocks) * 100.0;
                 double flyPercent = i.getLowerLimit();
                 double sinkPercent = flyPercent * pcraft.getType().getSinkPercent() / 100.0;
                 if (percent < sinkPercent) {
@@ -617,7 +617,7 @@ public class AsyncManager extends BukkitRunnable {
                 if (foundMoveBlocks.get(i.getBlocks()) != null) {
                     numfound = foundMoveBlocks.get(i.getBlocks());
                 }
-                double percent = ((double) numfound / (double) totalNonAirBlocks) * 100.0;
+                double percent = ((double) numfound / (double) totalNonNegligibleBlocks) * 100.0;
                 double movePercent = i.getLowerLimit();
                 double disablePercent = movePercent * pcraft.getType().getSinkPercent() / 100.0;
                 if (percent < disablePercent && !pcraft.getDisabled() && pcraft.isNotProcessing()) {
@@ -633,10 +633,10 @@ public class AsyncManager extends BukkitRunnable {
             if (pcraft.getType().getOverallSinkPercent() != 0.0) {
                 double percent;
                 if (pcraft.getType().blockedByWater()) {
-                    percent = (double) totalNonAirBlocks
+                    percent = (double) totalNonNegligibleBlocks
                             / (double) pcraft.getOrigBlockCount();
                 } else {
-                    percent = (double) totalNonAirWaterBlocks
+                    percent = (double) totalNonNegligibleWaterBlocks
                             / (double) pcraft.getOrigBlockCount();
                 }
                 if (percent * 100.0 < pcraft.getType().getOverallSinkPercent()) {
@@ -644,7 +644,7 @@ public class AsyncManager extends BukkitRunnable {
                 }
             }
 
-            if (totalNonAirBlocks == 0) {
+            if (totalNonNegligibleBlocks == 0) {
                 isSinking = true;
             }
 

@@ -385,8 +385,8 @@ public abstract class Craft {
 
         if(type.getDynamicLagSpeedFactor() == 0.0 || type.getDynamicLagPowerFactor() == 0.0 || Math.abs(type.getDynamicLagPowerFactor()) > 1.0)
             return type.getCruiseTickCooldown(world) + chestPenalty;
-        if(meanCruiseTime == 0)
-            return type.getCruiseTickCooldown(world) + chestPenalty;
+        if(numMoves == 0)
+            return (int) Math.round(20.0 * ((type.getCruiseSkipBlocks(world) + 1.0) / type.getDynamicLagMinSpeed()));
 
         if(Settings.Debug) {
             Bukkit.getLogger().info("Skip: " + type.getCruiseSkipBlocks(world));
