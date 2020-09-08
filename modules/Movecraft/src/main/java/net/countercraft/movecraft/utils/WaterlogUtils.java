@@ -2,25 +2,30 @@ package net.countercraft.movecraft.utils;
 
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.Bisected;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.Levelled;
 import org.bukkit.block.data.Waterlogged;
 import org.bukkit.block.data.type.Slab;
 import org.bukkit.block.data.type.Stairs;
 import org.bukkit.block.data.type.TrapDoor;
 
 public class WaterlogUtils {
-    private static Pair<Material, Object> DEFAULT_PHASE_BLOCK = new Pair<>(Material.AIR, 0);
+    private static Pair<Material, Object> DEFAULT_PHASE_BLOCK = new Pair<>(Material.AIR, Bukkit.createBlockData(Material.AIR));
     private WaterlogUtils(){
 
     }
     public static void waterlogBlocksOnCraft(Craft craft, HitBox interior) {
 
         for (MovecraftLocation ml : craft.getHitBox()) {
-            final Material phaseBlock = craft.getPhaseBlocks().getOrDefault(ml.toBukkit(craft.getWorld()), DEFAULT_PHASE_BLOCK).getLeft();
-            boolean waterlog = phaseBlock == Material.WATER;
+            final Pair<Material, Object> block = craft.getPhaseBlocks().getOrDefault(ml.toBukkit(craft.getWorld()), DEFAULT_PHASE_BLOCK);
+            final Material phaseBlock = block.getLeft();
+            final BlockData phaseBlockData = (BlockData) block.getRight();
+            boolean waterlog = phaseBlock == Material.WATER && phaseBlockData instanceof Levelled && ((Levelled) phaseBlockData).getLevel() == 0;
             Block b = ml.toBukkit(craft.getWorld()).getBlock();
             if (!(b.getBlockData() instanceof Waterlogged)) {
                 continue;
@@ -76,22 +81,6 @@ public class WaterlogUtils {
         }
         Waterlogged wlog = (Waterlogged) location.getBlock().getBlockData();
         return wlog.isWaterlogged();
-    }
-
-    private static boolean adjacentToWater(Location location){
-        for (MovecraftLocation shift : SHIFTS){
-            final Block test = location.add(shift.toBukkit(location.getWorld())).getBlock();
-            if (test.getType() == Material.WATER){
-                return true;
-            } else if (test.getBlockData() instanceof Waterlogged){
-                final Waterlogged wlog = (Waterlogged) test.getBlockData();
-                if (!wlog.isWaterlogged()) {
-                    continue;
-                }
-                return true;
-            }
-        }
-        return false;
     }
 
     private static final MovecraftLocation[] SHIFTS = {new MovecraftLocation(0,1,0),
