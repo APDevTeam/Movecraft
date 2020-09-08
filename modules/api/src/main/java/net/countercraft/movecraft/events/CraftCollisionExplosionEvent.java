@@ -15,7 +15,7 @@ public class CraftCollisionExplosionEvent extends CraftEvent implements Cancella
     private boolean cancelled;
 
     public CraftCollisionExplosionEvent(@NotNull Craft craft, @NotNull Location location, @NotNull World world) {
-        super(craft);
+        super(craft, true);
         this.world = world;
         this.location = location;
         cancelled = false;
