@@ -522,7 +522,8 @@ public class Movecraft extends JavaPlugin {
         Plugin wGPlugin = getServer().getPluginManager().getPlugin("WorldGuard");
         if (wGPlugin instanceof WorldGuardPlugin) {
             worldGuardPlugin = (WorldGuardPlugin) wGPlugin;
-            WorldGuardCompatManager.registerFlags();
+            if (startup)
+                WorldGuardCompatManager.registerFlags();
         }
     }
 
