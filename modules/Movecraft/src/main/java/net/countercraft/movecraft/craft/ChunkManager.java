@@ -37,14 +37,18 @@ public class ChunkManager implements Listener {
     public static void addChunksToLoad(List<MovecraftChunk> list) {
         
         for (MovecraftChunk chunk : list) {
-            if (!chunks.contains(chunk)) {
-                chunks.add(chunk);
-                if (!chunk.isLoaded()) {
-                    chunk.toBukkit().load(true);
-                    chunk.toBukkit().setForceLoaded(true);
-                }
+            if (chunks.contains(chunk)) {
+                continue;
             }
-            
+            chunks.add(chunk);
+            if (chunk.isLoaded()) {
+                continue;
+            }
+            chunk.toBukkit().load(true);
+            if (Settings.IsLegacy) {
+                continue;
+            }
+            chunk.toBukkit().setForceLoaded(true);
         }
         
         // remove chunks after 10 seconds
