@@ -119,7 +119,6 @@ public class CrewSign implements Listener {
                    if(testLoc.getBlock().getRelative(BlockFace.UP).isEmpty() && !testLoc.getBlock().getRelative(BlockFace.DOWN).isEmpty()) {
                         respawnLoc = testLoc;
                         locationFound = true;
-                        player.sendMessage("Found a spot to respawn player!");
                         break;
                    }
                }
