@@ -17,7 +17,6 @@
 
 package net.countercraft.movecraft.listener;
 
-import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.flags.DefaultFlag;
 import net.countercraft.movecraft.Movecraft;
@@ -27,40 +26,28 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.MathUtils;
-import net.countercraft.movecraft.warfare.assault.Assault;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Hopper;
 import org.bukkit.block.Sign;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.*;
-import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.material.Attachable;
 import org.bukkit.material.MaterialData;
 import org.bukkit.material.PistonBaseMaterial;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
 
 public class BlockListener implements Listener {
-
-    final int[] fragileBlocks = new int[]{26, 34, 50, 55, 63, 64, 65, 68, 69, 70, 71, 72, 75, 76, 77, 93, 94, 96, 131, 132, 143, 147, 148, 149, 150, 151, 171, 323, 324, 330, 331, 356, 404};
-    private long lastDamagesUpdate = 0;
-
     @EventHandler
     public void onBlockPlace(final BlockPlaceEvent e) {
         if (!Settings.RestrictSiBsToRegions ||
@@ -292,81 +279,6 @@ public class BlockListener implements Listener {
                 break;
             }
         }
-    }
-
-    @EventHandler(priority = EventPriority.NORMAL)
-    public void explodeEvent(EntityExplodeEvent e) {
-        processAssault(e);
-    }
-
-    //TODO: move to Warfare plugin
-    private void processAssault(EntityExplodeEvent e){
-        List<Assault> assaults = Movecraft.getInstance().getAssaultManager() != null ? Movecraft.getInstance().getAssaultManager().getAssaults() : null;
-        if (assaults == null || assaults.size() == 0) {
-            return;
-        }
-        WorldGuardPlugin worldGuard = Movecraft.getInstance().getWorldGuardPlugin();
-        for (final Assault assault : assaults) {
-            Iterator<Block> i = e.blockList().iterator();
-            while (i.hasNext()) {
-                Block b = i.next();
-                if (b.getWorld() != assault.getWorld())
-                    continue;
-                ApplicableRegionSet regions = worldGuard.getRegionManager(b.getWorld()).getApplicableRegions(b.getLocation());
-                boolean isInAssaultRegion = false;
-                for (com.sk89q.worldguard.protection.regions.ProtectedRegion tregion : regions.getRegions()) {
-                    if (assault.getRegionName().equals(tregion.getId())) {
-                        isInAssaultRegion = true;
-                    }
-                }
-                if (!isInAssaultRegion)
-                    continue;
-                // first see if it is outside the destroyable area
-                com.sk89q.worldedit.Vector min = assault.getMinPos();
-                com.sk89q.worldedit.Vector max = assault.getMaxPos();
-
-                if (b.getLocation().getBlockX() < min.getBlockX() ||
-                        b.getLocation().getBlockX() > max.getBlockX() ||
-                        b.getLocation().getBlockZ() < min.getBlockZ() ||
-                        b.getLocation().getBlockZ() > max.getBlockZ() ||
-                        !Settings.AssaultDestroyableBlocks.contains(b.getTypeId()) ||
-                        Arrays.binarySearch(fragileBlocks, b.getRelative(BlockFace.SOUTH).getTypeId()) >= 0 ||
-                        Arrays.binarySearch(fragileBlocks, b.getRelative(BlockFace.DOWN).getTypeId()) >= 0 ||
-                        Arrays.binarySearch(fragileBlocks, b.getRelative(BlockFace.UP).getTypeId()) >= 0 ||
-                        Arrays.binarySearch(fragileBlocks, b.getRelative(BlockFace.EAST).getTypeId()) >= 0 ||
-                        Arrays.binarySearch(fragileBlocks, b.getRelative(BlockFace.WEST).getTypeId()) >= 0 ||
-                        Arrays.binarySearch(fragileBlocks, b.getRelative(BlockFace.NORTH).getTypeId()) >= 0) {
-                    i.remove();
-                }
-
-
-                // whether or not you actually destroyed the block, add to damages
-                long damages = assault.getDamages() + Settings.AssaultDamagesPerBlock;
-                assault.setDamages(Math.min(damages, assault.getMaxDamages()));
-
-                // notify nearby players of the damages, do this 1 second later so all damages from this volley will be included
-                if (System.currentTimeMillis() < lastDamagesUpdate + 4000) {
-                    continue;
-                }
-                final Location floc = b.getLocation();
-                final World fworld = b.getWorld();
-                new BukkitRunnable() {
-                    @Override
-                    public void run() {
-                        long fdamages = assault.getDamages();
-                        for (Player p : fworld.getPlayers()) {
-                            if (Math.round(p.getLocation().getBlockX() / 1000.0) == Math.round(floc.getBlockX() / 1000.0) &&
-                                    Math.round(p.getLocation().getBlockZ() / 1000.0) == Math.round(floc.getBlockZ() / 1000.0)) {
-                                p.sendMessage(I18nSupport.getInternationalisedString("Damage")+": " + fdamages);
-                            }
-                        }
-                    }
-                }.runTaskLater(Movecraft.getInstance(), 20);
-                lastDamagesUpdate = System.currentTimeMillis();
-
-            }
-        }
-
     }
 
     @Nullable
