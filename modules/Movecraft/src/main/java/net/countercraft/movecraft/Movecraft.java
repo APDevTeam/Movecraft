@@ -29,9 +29,7 @@ import net.countercraft.movecraft.commands.*;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.ChunkManager;
 import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.listener.BlockListener;
-import net.countercraft.movecraft.listener.InteractListener;
-import net.countercraft.movecraft.listener.PlayerListener;
+import net.countercraft.movecraft.listener.*;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.repair.RepairManager;
@@ -382,7 +380,7 @@ public class Movecraft extends JavaPlugin {
             }
             CraftManager.initialize();
 
-            getServer().getPluginManager().registerEvents(new InteractListener(), this);
+            getServer().getPluginManager().registerEvents(new PlayerInteractListener(), this);
             if (worldEditPlugin != null) {
                 final Class clazz;
                 MovecraftRepair.initialize(this);
@@ -410,6 +408,15 @@ public class Movecraft extends JavaPlugin {
             }
             getServer().getPluginManager().registerEvents(new BlockListener(), this);
             getServer().getPluginManager().registerEvents(new PlayerListener(), this);
+
+            getServer().getPluginManager().registerEvents(new BlockBreakListener(), this);
+            getServer().getPluginManager().registerEvents(new BlockDispenseListener(), this);
+            getServer().getPluginManager().registerEvents(new BlockFromToListener(), this);
+            getServer().getPluginManager().registerEvents(new BlockIgniteListener(), this);
+            getServer().getPluginManager().registerEvents(new BlockPhysicsListener(), this);
+            getServer().getPluginManager().registerEvents(new BlockPistonListener(), this);
+            getServer().getPluginManager().registerEvents(new BlockRedstoneListener(), this);
+
             getServer().getPluginManager().registerEvents(new ChunkManager(), this);
             getServer().getPluginManager().registerEvents(new AscendSign(), this);
             getServer().getPluginManager().registerEvents(new ContactsSign(), this);
