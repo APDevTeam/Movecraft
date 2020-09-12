@@ -231,7 +231,7 @@ public class SiegeCommand implements TabExecutor {
 
         siege.setStage(SiegeStage.INACTIVE);
 
-        List<String> commands = siege.getCommandsOnWin();
+        List<String> commands = siege.getCommandsOnLose();
         for (String command : commands) {
             Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command
                     .replaceAll("%r", siege.getCaptureRegion())
