@@ -45,12 +45,8 @@ import org.bukkit.Material;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.yaml.snakeyaml.Yaml;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -148,7 +144,6 @@ public class Movecraft extends JavaPlugin {
         Settings.ManOverboardDistSquared = Math.pow(getConfig().getDouble("ManOverboardDistance", 1000), 2);
         Settings.SilhouetteViewDistance = getConfig().getInt("SilhouetteViewDistance", 200);
         Settings.SilhouetteBlockCount = getConfig().getInt("SilhouetteBlockCount", 20);
-        Settings.SiegeTaskSeconds = getConfig().getInt("SiegeTaskSeconds", 600);
         Settings.FireballPenetration = getConfig().getBoolean("FireballPenetration", true);
         Settings.ProtectPilotedCrafts = getConfig().getBoolean("ProtectPilotedCrafts", false);
         Settings.AllowCrewSigns = getConfig().getBoolean("AllowCrewSigns", true);
