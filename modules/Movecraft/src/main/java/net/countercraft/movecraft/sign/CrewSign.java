@@ -13,6 +13,7 @@ import net.countercraft.movecraft.utils.LegacyUtils;
 import net.countercraft.movecraft.utils.SignUtils;
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -122,6 +123,24 @@ public class CrewSign implements Listener {
 
         if (!hasBed){
             return;
+        }
+        //Attempt to find an empty location to spawn the player
+        boolean locationFound = false;
+        for(int i = -1; i < 2; i++) {
+           for(int j = -1; j < 2; j++) {
+               Location testLoc = new Location(craft.getW(), respawnLoc.getX()+i, respawnLoc.getY(), respawnLoc.getZ()+j);
+               if(testLoc.getBlock().getType().equals(Material.AIR)) {
+                   if(testLoc.getBlock().getRelative(BlockFace.UP).isEmpty() && !testLoc.getBlock().getRelative(BlockFace.DOWN).isEmpty()) {
+                        respawnLoc = testLoc;
+                        locationFound = true;
+                        break;
+                   }
+               }
+           }
+           if (locationFound) {
+               respawnLoc = respawnLoc.add(0.5, 0, 0.5);
+               break;
+           }
         }
         event.setRespawnLocation(respawnLoc);
     }
