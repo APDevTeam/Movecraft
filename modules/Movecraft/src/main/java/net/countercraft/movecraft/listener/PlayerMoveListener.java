@@ -1,20 +1,3 @@
-/*
- * This file is part of Movecraft.
- *
- *     Movecraft is free software: you can redistribute it and/or modify
- *     it under the terms of the GNU General Public License as published by
- *     the Free Software Foundation, either version 3 of the License, or
- *     (at your option) any later version.
- *
- *     Movecraft is distributed in the hope that it will be useful,
- *     but WITHOUT ANY WARRANTY; without even the implied warranty of
- *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *     GNU General Public License for more details.
- *
- *     You should have received a copy of the GNU General Public License
- *     along with Movecraft.  If not, see <http://www.gnu.org/licenses/>.
- */
-
 package net.countercraft.movecraft.listener;
 
 import net.countercraft.movecraft.MovecraftLocation;
@@ -29,15 +12,13 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.util.Arrays;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-public class PlayerListener implements Listener {
+public class PlayerMoveListener implements Listener {
     private final Map<Craft, Long> timeToReleaseAfter = new WeakHashMap<>();
 
     private String checkCraftBorders(Craft craft) {
@@ -93,19 +74,6 @@ public class PlayerListener implements Listener {
         }
         //Return the string representation of the merging point and alert the pilot
         return ret;
-    }
-
-    @EventHandler
-    public void onPLayerLogout(PlayerQuitEvent e) {
-        CraftManager.getInstance().removeCraftByPlayer(e.getPlayer());
-    }
-
-    @EventHandler
-    public void onPlayerDeath(EntityDamageByEntityEvent e) {  // changed to death so when you shoot up an airship and hit the pilot, it still sinks
-        if (e instanceof Player) {
-            Player p = (Player) e;
-            CraftManager.getInstance().removeCraft(CraftManager.getInstance().getCraftByPlayer(p), CraftReleaseEvent.Reason.DEATH);
-        }
     }
 
     @EventHandler

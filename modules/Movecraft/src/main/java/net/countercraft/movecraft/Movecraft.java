@@ -407,7 +407,6 @@ public class Movecraft extends JavaPlugin {
                 this.getCommand("assault").setExecutor(new AssaultCommand());
             }
             getServer().getPluginManager().registerEvents(new BlockListener(), this);
-            getServer().getPluginManager().registerEvents(new PlayerListener(), this);
 
             getServer().getPluginManager().registerEvents(new BlockBreakListener(), this);
             getServer().getPluginManager().registerEvents(new BlockDispenseListener(), this);
@@ -416,10 +415,14 @@ public class Movecraft extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new BlockPhysicsListener(), this);
             getServer().getPluginManager().registerEvents(new BlockPistonListener(), this);
             getServer().getPluginManager().registerEvents(new BlockRedstoneListener(), this);
+            getServer().getPluginManager().registerEvents(new EntityDamageEntityListener(), this);
             getServer().getPluginManager().registerEvents(new InventoryMoveItemListener(), this);
             getServer().getPluginManager().registerEvents(new ItemSpawnListener(), this);
+            getServer().getPluginManager().registerEvents(new PlayerMoveListener(), this);
+            getServer().getPluginManager().registerEvents(new PlayerQuitListener(), this);
 
             getServer().getPluginManager().registerEvents(new ChunkManager(), this);
+
             getServer().getPluginManager().registerEvents(new AscendSign(), this);
             getServer().getPluginManager().registerEvents(new ContactsSign(), this);
             getServer().getPluginManager().registerEvents(new CraftSign(), this);
