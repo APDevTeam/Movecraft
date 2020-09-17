@@ -380,7 +380,6 @@ public class Movecraft extends JavaPlugin {
             }
             CraftManager.initialize();
 
-            getServer().getPluginManager().registerEvents(new PlayerInteractListener(), this);
             if (worldEditPlugin != null) {
                 final Class clazz;
                 MovecraftRepair.initialize(this);
@@ -418,6 +417,7 @@ public class Movecraft extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new EntityDamageEntityListener(), this);
             getServer().getPluginManager().registerEvents(new InventoryMoveItemListener(), this);
             getServer().getPluginManager().registerEvents(new ItemSpawnListener(), this);
+            getServer().getPluginManager().registerEvents(new PlayerInteractListener(), this);
             getServer().getPluginManager().registerEvents(new PlayerMoveListener(), this);
             getServer().getPluginManager().registerEvents(new PlayerQuitListener(), this);
 
