@@ -416,6 +416,8 @@ public class Movecraft extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new BlockPhysicsListener(), this);
             getServer().getPluginManager().registerEvents(new BlockPistonListener(), this);
             getServer().getPluginManager().registerEvents(new BlockRedstoneListener(), this);
+            getServer().getPluginManager().registerEvents(new InventoryMoveItemListener(), this);
+            getServer().getPluginManager().registerEvents(new ItemSpawnListener(), this);
 
             getServer().getPluginManager().registerEvents(new ChunkManager(), this);
             getServer().getPluginManager().registerEvents(new AscendSign(), this);

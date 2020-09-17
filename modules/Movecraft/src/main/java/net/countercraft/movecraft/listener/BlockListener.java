@@ -20,25 +20,18 @@ package net.countercraft.movecraft.listener;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import net.countercraft.movecraft.Movecraft;
-import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
-import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.utils.MathUtils;
 import net.countercraft.movecraft.warfare.assault.Assault;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.Hopper;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.*;
 import org.bukkit.event.entity.EntityExplodeEvent;
-import org.bukkit.event.entity.ItemSpawnEvent;
-import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Arrays;
@@ -50,6 +43,7 @@ public class BlockListener implements Listener {
     final int[] fragileBlocks = new int[]{26, 34, 50, 55, 63, 64, 65, 68, 69, 70, 71, 72, 75, 76, 77, 93, 94, 96, 131, 132, 143, 147, 148, 149, 150, 151, 171, 323, 324, 330, 331, 356, 404};
     private long lastDamagesUpdate = 0;
 
+    // TODO: Remove all references from SiB in movecraft and rely on StructureBoxes
     @EventHandler
     public void onBlockPlace(final BlockPlaceEvent e) {
         if (!Settings.RestrictSiBsToRegions ||
@@ -76,43 +70,12 @@ public class BlockListener implements Listener {
         }
     }
 
-    // prevent items from dropping from moving crafts
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void onItemSpawn(final ItemSpawnEvent e) {
-        if (e.isCancelled()) {
-            return;
-        }
-        for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(e.getLocation().getWorld())) {
-            if ((!tcraft.isNotProcessing()) && MathUtils.locationInHitBox(tcraft.getHitBox(), e.getLocation())) {
-                e.setCancelled(true);
-                return;
-            }
-        }
-    }
-
-    // prevent hoppers on cruising crafts
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void onHopperEvent(InventoryMoveItemEvent event) {
-        if (!(event.getSource().getHolder() instanceof Hopper)) {
-            return;
-        }
-        Hopper block = (Hopper) event.getSource().getHolder();
-        CraftManager.getInstance().getCraftsInWorld(block.getWorld());
-        for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(block.getWorld())) {
-            MovecraftLocation mloc = new MovecraftLocation(block.getX(), block.getY(), block.getZ());
-            if (MathUtils.locIsNearCraftFast(tcraft, mloc) && tcraft.getCruising() && !tcraft.isNotProcessing()) {
-                event.setCancelled(true);
-                return;
-            }
-        }
-    }
-
+    //TODO: move to Warfare plugin
     @EventHandler(priority = EventPriority.NORMAL)
     public void explodeEvent(EntityExplodeEvent e) {
         processAssault(e);
     }
 
-    //TODO: move to Warfare plugin
     private void processAssault(EntityExplodeEvent e){
         List<Assault> assaults = Movecraft.getInstance().getAssaultManager() != null ? Movecraft.getInstance().getAssaultManager().getAssaults() : null;
         if (assaults == null || assaults.size() == 0) {
