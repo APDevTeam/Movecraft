@@ -82,8 +82,6 @@ forbiddenBlocks:
 
 canFly: true
 rotateAtMidpoint: true
-allowCannonDirectorSign: false
-allowAADirectorSign: false
 canCruise: true
 cruiseSpeed: 1.5
 cruiseSkipBlocks: 1
