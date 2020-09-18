@@ -1,0 +1,31 @@
+name: Java CI
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up JDK 1.8
+      uses: actions/setup-java@v1
+      with:
+        java-version: 1.8
+    - name: Cache Maven packages
+      uses: actions/cache@v2
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2
+    - name: Build with Maven
+      run: mvn -B package --file pom.xml
+    - name: Stage jar
+      run: mkdir staging && cp target/Movecraft*.jar staging
+    - name: Rename jar
+      run: mv staging/Movecraft*.jar staging/Movecraft_$GITHUB_SHA.jar
+    - name: Upload jar
+      uses: actions/upload-artifact@v2
+      with:
+        name: Movecraft_Dev-Build
+        path: staging/Movecraft-*.jar
