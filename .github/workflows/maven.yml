@@ -39,6 +39,7 @@ jobs:
 
     - name: Build with Maven
       run: mvn -B package --file pom.xml
+
     - name: Stage jar
       run: mkdir staging && cp target/Movecraft*.jar staging
     - name: Rename jar
