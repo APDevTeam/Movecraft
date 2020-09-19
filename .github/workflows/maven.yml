@@ -23,7 +23,7 @@ jobs:
 # Run Spigot BuildTools for NMS if required
     - name: Setup BuildTools
       if: steps.cache.outputs.cache-hit != 'true'
-      run: mkdir BuildTools
+      run: mkdir BuildTools && cd BuildTools
     - name: Download BuildTools
       if: steps.cache.outputs.cache-hit != 'true'
       run: wget -O BuildTools.jar https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
@@ -38,7 +38,7 @@ jobs:
       run: java -jar BuildTools.jar --rev 1.12.1
 
     - name: Build with Maven
-      run: mvn -B package --file pom.xml
+      run: cd .. && mvn -B package --file pom.xml
 
     - name: Stage jar
       run: mkdir staging && cp target/Movecraft*.jar staging
