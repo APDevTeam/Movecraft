@@ -48,9 +48,9 @@ jobs:
     - name: 1.14.4
       if: steps.cache.outputs.cache-hit != 'true'
       run: cd BuildTools && java -jar BuildTools.jar --rev 1.14.4
-    - name: 1.15.2
+    - name: 1.15.0
       if: steps.cache.outputs.cache-hit != 'true'
-      run: cd BuildTools && java -jar BuildTools.jar --rev 1.15.2
+      run: cd BuildTools && java -jar BuildTools.jar --rev 1.15
     - name: 1.16.1
       if: steps.cache.outputs.cache-hit != 'true'
       run: cd BuildTools && java -jar BuildTools.jar --rev 1.16.1
