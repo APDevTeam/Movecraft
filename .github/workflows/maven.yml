@@ -20,6 +20,9 @@ jobs:
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
 
+    - name: try
+      run: sh
+
 # Run Spigot BuildTools for NMS if required
     - name: 1.10.2
       if: steps.cache.outputs.cache-hit != 'true'
