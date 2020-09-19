@@ -214,7 +214,7 @@ public class TranslationTask extends AsyncTask {
         // !world.equals(craft.getW()) || Math.abs(dx) + oldHitBox.getXLength() >=
         // (Bukkit.getServer().getViewDistance() - 1) * 16 || Math.abs(dz) +
         // oldHitBox.getZLength() >= (Bukkit.getServer().getViewDistance() - 1) * 16
-        List<MovecraftChunk> chunksToLoad = ChunkManager.getChunks(oldHitBox, craft.getW());
+        List<MovecraftChunk> chunksToLoad = ChunkManager.getChunks(oldHitBox, craft.getWorld());
         chunksToLoad.addAll(ChunkManager.getChunks(oldHitBox, world, dx, dy, dz));
         MovecraftChunk.addSurroundingChunks(chunksToLoad, 1);
         ChunkManager.checkChunks(chunksToLoad);
@@ -224,9 +224,9 @@ public class TranslationTask extends AsyncTask {
 
         // Only modify dy when not switching worlds
         //Check if the craft is too high
-        if(world.equals(craft.getW()) && craft.getType().getMaxHeightLimit(craft.getW()) < craft.getHitBox().getMinY()){
+        if(world.equals(craft.getWorld()) && craft.getType().getMaxHeightLimit(craft.getWorld()) < craft.getHitBox().getMinY()){
             dy = Math.min(dy,-1);
-        }else if(world.equals(craft.getW()) && craft.getType().getMaxHeightAboveGround(craft.getW()) > 0){
+        }else if(world.equals(craft.getWorld()) && craft.getType().getMaxHeightAboveGround(craft.getW()) > 0){
             final MovecraftLocation middle = oldHitBox.getMidPoint();
             int testY = minY;
             while (testY > 0){

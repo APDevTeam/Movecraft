@@ -66,6 +66,8 @@ public class ChunkManager implements Listener {
         for (MovecraftChunk chunk : list) {
             chunks.remove(chunk);
         }
+        if (Settings.IsLegacy)
+            return;
         Bukkit.getScheduler().callSyncMethod(Movecraft.getInstance(), () -> {
             for (MovecraftChunk chunk : list) {
                 chunk.toBukkit().setForceLoaded(false);

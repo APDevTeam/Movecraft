@@ -132,7 +132,7 @@ public class CraftTranslateCommand extends UpdateCommand {
         if(passthroughBlocks.isEmpty()){
             //translate the craft
             Movecraft.getInstance().getWorldHandler().translateCraft(craft,displacement,world);
-            craft.setW(world);
+            craft.setWorld(world);
             //trigger sign events
             this.sendSignEvents();
         } else {
