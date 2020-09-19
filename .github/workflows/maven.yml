@@ -21,16 +21,16 @@ jobs:
         restore-keys: ${{ runner.os }}-m2
 
 # Run Spigot BuildTools for NMS if required
-    - name: 1.11.2
-      if: steps.cache.outputs.cache-hit != 'true'
-      uses: derongan/nmsaction@v1
-      with:
-        rev: 1.11.2
     - name: 1.10.2
       if: steps.cache.outputs.cache-hit != 'true'
       uses: derongan/nmsaction@v1
       with:
         rev: 1.10.2
+    - name: 1.11.2
+      if: steps.cache.outputs.cache-hit != 'true'
+      uses: derongan/nmsaction@v1
+      with:
+        rev: 1.11.2
     - name: 1.12.1
       if: steps.cache.outputs.cache-hit != 'true'
       uses: derongan/nmsaction@v1
