@@ -4,7 +4,6 @@ on: [push]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -13,5 +12,61 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 1.8
+    - name: Cache Maven packages
+      id: cache
+      uses: actions/cache@v2
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2
+
+# Run Spigot BuildTools for NMS if required
+    - name: Setup BuildTools
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: mkdir BuildTools
+    - name: Download BuildTools
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: wget -O BuildTools/BuildTools.jar https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
+    - name: 1.8.8
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: cd BuildTools && java -jar BuildTools.jar --rev 1.8.8
+    - name: 1.9.4
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: cd BuildTools && java -jar BuildTools.jar --rev 1.9.4
+    - name: 1.10.2
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: cd BuildTools && java -jar BuildTools.jar --rev 1.10.2
+    - name: 1.11.2
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: cd BuildTools && java -jar BuildTools.jar --rev 1.11.2
+    - name: 1.12.1
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: cd BuildTools && java -jar BuildTools.jar --rev 1.12.1
+    - name: 1.13.2
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: cd BuildTools && java -jar BuildTools.jar --rev 1.13.2
+    - name: 1.14.4
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: cd BuildTools && java -jar BuildTools.jar --rev 1.14.4
+    - name: 1.15.2
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: cd BuildTools && java -jar BuildTools.jar --rev 1.15.2
+    - name: 1.16.1
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: cd BuildTools && java -jar BuildTools.jar --rev 1.16.1
+    - name: 1.15.2
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: cd BuildTools && java -jar BuildTools.jar --rev 1.16.3
+
     - name: Build with Maven
       run: mvn -B package --file pom.xml
+
+    - name: Stage jar
+      run: mkdir staging && cp target/Movecraft.jar staging
+    - name: Rename jar
+      run: mv staging/Movecraft.jar staging/Movecraft_$GITHUB_SHA.jar
+    - name: Upload jar
+      uses: actions/upload-artifact@v2
+      with:
+        name: Movecraft_Dev-Build
+        path: staging/Movecraft_*.jar
