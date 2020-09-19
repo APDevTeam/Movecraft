@@ -2,11 +2,6 @@ name: Java CI
 
 on: [push]
 
-defaults:
-  run:
-    shell: bash
-    working-directory: scripts
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -26,18 +21,21 @@ jobs:
         restore-keys: ${{ runner.os }}-m2
 
 # Run Spigot BuildTools for NMS if required
+    - name: Setup BuildTools
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: pwd && mkdir BuildTools && ls
     - name: Download BuildTools
       if: steps.cache.outputs.cache-hit != 'true'
-      run: wget -O BuildTools.jar https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
+      run: wget -O BuildTools/BuildTools.jar https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
     - name: 1.10.2
       if: steps.cache.outputs.cache-hit != 'true'
-      run: java -jar BuildTools.jar --rev 1.10.2
+      run: cd BuildTools && java -jar BuildTools.jar --rev 1.10.2
     - name: 1.11.2
       if: steps.cache.outputs.cache-hit != 'true'
-      run: java -jar BuildTools.jar --rev 1.11.2
+      run: cd BuildTools && java -jar BuildTools.jar --rev 1.11.2
     - name: 1.12.1
       if: steps.cache.outputs.cache-hit != 'true'
-      run: java -jar BuildTools.jar --rev 1.12.1
+      run: cd BuildTools && java -jar BuildTools.jar --rev 1.12.1
 
     - name: Build with Maven
       run: mvn -B package --file pom.xml
