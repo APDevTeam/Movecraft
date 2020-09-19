@@ -47,16 +47,16 @@ jobs:
       run: cd BuildTools && java -jar BuildTools.jar --rev 1.13.2
     - name: 1.14.4
       if: steps.cache.outputs.cache-hit != 'true'
-      run: cd BuildTools && java -jar BuildTools.jar --rev 1.14.4
+      run: cd BuildTools && java -jar BuildTools.jar --rev 1.14.4 --compile craftbukkit
     - name: 1.15.0
       if: steps.cache.outputs.cache-hit != 'true'
-      run: cd BuildTools && java -jar BuildTools.jar --rev 1.15
+      run: cd BuildTools && java -jar BuildTools.jar --rev 1.15 --compile craftbukkit
     - name: 1.16.1
       if: steps.cache.outputs.cache-hit != 'true'
-      run: cd BuildTools && java -jar BuildTools.jar --rev 1.16.1
+      run: cd BuildTools && java -jar BuildTools.jar --rev 1.16.1 --compile craftbukkit
     - name: 1.16.3
       if: steps.cache.outputs.cache-hit != 'true'
-      run: cd BuildTools && java -jar BuildTools.jar --rev 1.16.3
+      run: cd BuildTools && java -jar BuildTools.jar --rev 1.16.3 --compile craftbukkit
 
     - name: Build with Maven
       run: mvn -B package --file pom.xml
