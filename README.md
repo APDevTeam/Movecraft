@@ -23,10 +23,10 @@ java -jar BuildTools.jar --rev 1.10.2
 java -jar BuildTools.jar --rev 1.11.2
 java -jar BuildTools.jar --rev 1.12.1
 java -jar BuildTools.jar --rev 1.13.2
-java -jar BuildTools.jar --rev 1.14.4
-java -jar BuildTools.jar --rev 1.15.2
-java -jar BuildTools.jar --rev 1.16.1
-java -jar BuildTools.jar --rev 1.16.3
+java -jar BuildTools.jar --rev 1.14.4 --compile craftbukkit
+java -jar BuildTools.jar --rev 1.15 --compile craftbukkit
+java -jar BuildTools.jar --rev 1.16.1 --compile craftbukkit
+java -jar BuildTools.jar --rev 1.16.2 --compile craftbukkit
 ```
 
 Then, run the following to build Movecraft through `maven`.
