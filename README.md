@@ -1,6 +1,6 @@
 Movecraft
 ======
-[![Java CI]](https://github.com/APDevTeam/Movecraft/workflows/Java%20CI/badge.svg?branch=master)
+![Java CI](https://github.com/APDevTeam/Movecraft/workflows/Java%20CI/badge.svg?branch=master)
 [![codebeat badge](https://codebeat.co/badges/77751ae4-80f7-460a-a225-0e3ae8cbbab1)](https://codebeat.co/projects/github-com-apdevteam-movecraft-master)
 [![Build Status](https://travis-ci.org/APDevTeam/Movecraft.svg?branch=master)](https://travis-ci.org/APDevTeam/Movecraft)
 
