@@ -9,8 +9,13 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+<<<<<<< HEAD
     <!--<version>7.0.0_beta_5</version>-->
     <version>7.0.0_for_1.8.8-1.16.2_beta_33</version>
+=======
+    <version>7.0.0_beta_6</version>
+
+>>>>>>> d85e113d2393a27b85a04cbe7b54210a7bab78e9
     <repositories>
         <repository>
             <id>spigot-repo</id>

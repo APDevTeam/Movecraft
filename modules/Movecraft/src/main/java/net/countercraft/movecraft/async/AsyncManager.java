@@ -431,7 +431,7 @@ public class AsyncManager extends BukkitRunnable {
             boolean bankLeft = false;
             boolean bankRight = false;
             boolean dive = false;
-            if (pcraft.getPilotLocked()) {
+            if (pcraft.getPilotLocked() && pcraft.getNotificationPlayer() != null && pcraft.getNotificationPlayer().isOnline()) {
                 if (pcraft.getNotificationPlayer().isSneaking())
                     dive = true;
                 if (pcraft.getNotificationPlayer().getInventory().getHeldItemSlot() == 3)
