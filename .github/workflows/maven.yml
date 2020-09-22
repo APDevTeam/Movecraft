@@ -22,7 +22,6 @@ jobs:
 
 # Run Spigot BuildTools for NMS if required
     - name: Setup BuildTools
-      if: steps.cache.outputs.cache-hit != 'true'
       run: mkdir BuildTools && wget -O BuildTools/BuildTools.jar https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
 
 # EXAMPLE - Copy/paste as required to add version support to CI
