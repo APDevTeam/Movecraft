@@ -28,7 +28,7 @@ jobs:
 # EXAMPLE - Copy/paste as required to add version support to CI
 #    - name: Test [version]
 #      id: [version name]
-#      run: test -f ~/.m2/repository/org/bukkit/craftbukkit/[NMS version]/craftbukkit-[NMS version].jar || echo "Failed to find [version]" && echo "::set-output name=sucess::true"
+#      run: test -f ~/.m2/repository/org/bukkit/craftbukkit/[NMS version]/craftbukkit-[NMS version].jar && echo "::set-output name=sucess::true" || echo "::set-output name=sucess::false"
 #    - name: [version]
 #      if: steps.frostburn.outputs.sucess != 'true'
 #      run: cd BuildTools && java -jar BuildTools.jar --rev [version] <if newer than 1.14:  --compile craftbukkit>
@@ -42,55 +42,55 @@ jobs:
       run: cd BuildTools && java -jar BuildTools.jar --rev 1.8.8
     - name: Test 1.9.4
       id: combat
-      run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.9.4-R0.1-SNAPSHOT/craftbukkit-1.9.4-R0.1-SNAPSHOT.jar || echo "Failed to find 1.9.4" && echo "::set-output name=sucess::true"
+      run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.9.4-R0.1-SNAPSHOT/craftbukkit-1.9.4-R0.1-SNAPSHOT.jar && echo "::set-output name=sucess::true" || echo "::set-output name=sucess::false"
     - name: 1.9.4
       if: steps.combat.outputs.sucess != 'true'
       run: cd BuildTools && java -jar BuildTools.jar --rev 1.9.4
     - name: Test 1.10.2
       id: frostburn
-      run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.10.2-R0.1-SNAPSHOT/craftbukkit-1.10.2-R0.1-SNAPSHOT.jar || echo "Failed to find 1.10.2" && echo "::set-output name=sucess::true"
+      run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.10.2-R0.1-SNAPSHOT/craftbukkit-1.10.2-R0.1-SNAPSHOT.jar && echo "::set-output name=sucess::true" || echo "::set-output name=sucess::false"
     - name: 1.10.2
       if: steps.frostburn.outputs.sucess != 'true'
       run: cd BuildTools && java -jar BuildTools.jar --rev 1.10.2
     - name: Test 1.11.2
       id: exploration
-      run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.11.2-R0.1-SNAPSHOT/craftbukkit-1.11.2-R0.1-SNAPSHOT.jar || echo "Failed to find 1.11.2" && echo "::set-output name=sucess::true"
+      run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.11.2-R0.1-SNAPSHOT/craftbukkit-1.11.2-R0.1-SNAPSHOT.jar && echo "::set-output name=sucess::true" || echo "::set-output name=sucess::false"
     - name: 1.11.2
       if: steps.exploration.outputs.sucess != 'true'
       run: cd BuildTools && java -jar BuildTools.jar --rev 1.11.2
     - name: Test 1.12.1
       id: color
-      run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.12.1-R0.1-SNAPSHOT/craftbukkit-1.12.1-R0.1-SNAPSHOT.jar || echo "Failed to find 1.12.1" && echo "::set-output name=sucess::true"
+      run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.12.1-R0.1-SNAPSHOT/craftbukkit-1.12.1-R0.1-SNAPSHOT.jar && echo "::set-output name=sucess::true" || echo "::set-output name=sucess::false"
     - name: 1.12.1
       if: steps.color.outputs.sucess != 'true'
       run: cd BuildTools && java -jar BuildTools.jar --rev 1.12.1
     - name: Test 1.13.2
       id: aquatic
-      run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.13.2-R0.1-SNAPSHOT/craftbukkit-1.13.2-R0.1-SNAPSHOT.jar || echo "Failed to find 1.13.2" && echo "::set-output name=sucess::true"
+      run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.13.2-R0.1-SNAPSHOT/craftbukkit-1.13.2-R0.1-SNAPSHOT.jar && echo "::set-output name=sucess::true" || echo "::set-output name=sucess::false"
     - name: 1.13.2
       if: steps.aquatic.outputs.sucess != 'true'
       run: cd BuildTools && java -jar BuildTools.jar --rev 1.13.2
     - name: Test 1.14.4
       id: pillage
-      run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.14.4-R0.1-SNAPSHOT/craftbukkit-1.14.4-R0.1-SNAPSHOT.jar || echo "Failed to find 1.14.4" && echo "::set-output name=sucess::true"
+      run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.14.4-R0.1-SNAPSHOT/craftbukkit-1.14.4-R0.1-SNAPSHOT.jar && echo "::set-output name=sucess::true" || echo "::set-output name=sucess::false"
     - name: 1.14.4
       if: steps.pillage.outputs.sucess != 'true'
       run: cd BuildTools && java -jar BuildTools.jar --rev 1.14.4 --compile craftbukkit
     - name: Test 1.15.0
       id: bees
-      run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.15-R0.1-SNAPSHOT/craftbukkit-1.15-R0.1-SNAPSHOT.jar || echo "Failed to find 1.15.0" && echo "::set-output name=sucess::true"
+      run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.15-R0.1-SNAPSHOT/craftbukkit-1.15-R0.1-SNAPSHOT.jar && echo "::set-output name=sucess::true" || echo "::set-output name=sucess::false"
     - name: 1.15.0
       if: steps.bees.outputs.sucess != 'true'
       run: cd BuildTools && java -jar BuildTools.jar --rev 1.15 --compile craftbukkit
     - name: Test 1.16.1
       id: nether
-      run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.16.1-R0.1-SNAPSHOT/craftbukkit-1.16.1-R0.1-SNAPSHOT.jar || echo "Failed to find 1.16.1" && echo "::set-output name=sucess::true"
+      run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.16.1-R0.1-SNAPSHOT/craftbukkit-1.16.1-R0.1-SNAPSHOT.jar && echo "::set-output name=sucess::true" || echo "::set-output name=sucess::false"
     - name: 1.16.1
       if: steps.nether.outputs.sucess != 'true'
       run: cd BuildTools && java -jar BuildTools.jar --rev 1.16.1 --compile craftbukkit
     - name: Test 1.16.3
       id: nether2
-      run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.16.3-R0.1-SNAPSHOT/craftbukkit-1.16.3-R0.1-SNAPSHOT.jar || echo "Failed to find 1.16.3" && echo "::set-output name=sucess::true"
+      run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.16.3-R0.1-SNAPSHOT/craftbukkit-1.16.3-R0.1-SNAPSHOT.jar && echo "::set-output name=sucess::true" || echo "::set-output name=sucess::false"
     - name: 1.16.3
       if: steps.nether2.outputs.sucess != 'true'
       run: cd BuildTools && java -jar BuildTools.jar --rev 1.16.3 --compile craftbukkit
