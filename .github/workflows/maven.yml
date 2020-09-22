@@ -17,24 +17,31 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ~/.m2
-        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        key: ${{ runner.os }}-m2
         restore-keys: ${{ runner.os }}-m2
 
 # Run Spigot BuildTools for NMS if required
     - name: Setup BuildTools
       if: steps.cache.outputs.cache-hit != 'true'
-      run: mkdir BuildTools
-    - name: Download BuildTools
-      if: steps.cache.outputs.cache-hit != 'true'
-      run: wget -O BuildTools/BuildTools.jar https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
+      run: mkdir BuildTools && wget -O BuildTools/BuildTools.jar https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
+
+    - name: Test 1.10.2
+      id: frostburn
+      run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.10.2-R0.1-SNAPSHOT/craftbukkit-1.10.2-R0.1-SNAPSHOT.jar && echo "::set-output name=sucess::true"
     - name: 1.10.2
-      if: steps.cache.outputs.cache-hit != 'true'
+      if: steps.frostburn.outputs.sucess != 'true'
       run: cd BuildTools && java -jar BuildTools.jar --rev 1.10.2
+    - name: Test 1.11.2
+      id: exploration
+      run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.11.2-R0.1-SNAPSHOT/craftbukkit-1.11.2-R0.1-SNAPSHOT.jar && echo "::set-output name=sucess::true"
     - name: 1.11.2
-      if: steps.cache.outputs.cache-hit != 'true'
+      if: steps.exploration.outputs.sucess != 'true'
       run: cd BuildTools && java -jar BuildTools.jar --rev 1.11.2
+    - name: Test 1.12.1
+      id: color
+      run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.12.1-R0.1-SNAPSHOT/craftbukkit-1.12.1-R0.1-SNAPSHOT.jar && echo "::set-output name=sucess::true"
     - name: 1.12.1
-      if: steps.cache.outputs.cache-hit != 'true'
+      if: steps.color.outputs.sucess != 'true'
       run: cd BuildTools && java -jar BuildTools.jar --rev 1.12.1
 
     - name: Build with Maven
