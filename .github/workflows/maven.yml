@@ -32,6 +32,7 @@ jobs:
 #    - name: [version]
 #      if: steps.frostburn.outputs.sucess != 'true'
 #      run: cd BuildTools && java -jar BuildTools.jar --rev [version] <if newer than 1.14:  --compile craftbukkit>
+    - run: ls ~/.m2/repository/org/bukkit/craftbukkit/
 
     - name: Test 1.8.8
       id: bountiful
