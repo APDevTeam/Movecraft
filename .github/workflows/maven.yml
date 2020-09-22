@@ -99,9 +99,7 @@ jobs:
       run: mvn -B package --file pom.xml
 
     - name: Stage jar
-      run: mkdir staging && cp target/Movecraft.jar staging
-    - name: Rename jar
-      run: mv staging/Movecraft.jar staging/Movecraft_$GITHUB_SHA.jar
+      run: mkdir staging && cp target/Movecraft.jar staging && mv staging/Movecraft.jar staging/Movecraft_$GITHUB_SHA.jar
     - name: Upload jar
       uses: actions/upload-artifact@v2
       with:
