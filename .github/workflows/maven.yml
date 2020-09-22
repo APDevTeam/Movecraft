@@ -79,7 +79,7 @@ jobs:
       id: bees
       run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.15-R0.1-SNAPSHOT/craftbukkit-1.15-R0.1-SNAPSHOT.jar && echo "::set-output name=sucess::true"
     - name: 1.15.0
-      if: steps.bees.outputs.sucess != 'true''
+      if: steps.bees.outputs.sucess != 'true'
       run: cd BuildTools && java -jar BuildTools.jar --rev 1.15 --compile craftbukkit
     - name: Test 1.16.1
       id: nether
