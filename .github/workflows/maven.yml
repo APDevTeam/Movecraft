@@ -90,10 +90,10 @@ jobs:
       run: cd BuildTools && java -jar BuildTools.jar --rev 1.16.1 --compile craftbukkit
     - name: Test 1.16.3
       id: nether2
-      run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.16.3-R0.1-SNAPSHOT/craftbukkit-1.16.3-R0.1-SNAPSHOT.jar && echo "::set-output name=sucess::true" || echo "::set-output name=sucess::false"
+      run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.16.2-R0.1-SNAPSHOT/craftbukkit-1.16.3-R0.1-SNAPSHOT.jar && echo "::set-output name=sucess::true" || echo "::set-output name=sucess::false"
     - name: 1.16.3
       if: steps.nether2.outputs.sucess != 'true'
-      run: cd BuildTools && java -jar BuildTools.jar --rev 1.16.3 --compile craftbukkit
+      run: cd BuildTools && java -jar BuildTools.jar --rev 1.16.2 --compile craftbukkit
 
     - name: Build with Maven
       run: mvn -B package --file pom.xml
