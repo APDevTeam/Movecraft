@@ -17,54 +17,88 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ~/.m2
-        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        key: ${{ runner.os }}-m2
         restore-keys: ${{ runner.os }}-m2
 
 # Run Spigot BuildTools for NMS if required
     - name: Setup BuildTools
-      if: steps.cache.outputs.cache-hit != 'true'
-      run: mkdir BuildTools
-    - name: Download BuildTools
-      if: steps.cache.outputs.cache-hit != 'true'
-      run: wget -O BuildTools/BuildTools.jar https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
-    - name: 1.8.8
-      if: steps.cache.outputs.cache-hit != 'true'
+      run: mkdir BuildTools && wget -O BuildTools/BuildTools.jar https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
+
+# EXAMPLE - Copy/paste as required to add version support to CI
+#    - name: Test [version]
+#      id: [version name]
+#      run: test -f ~/.m2/repository/org/bukkit/craftbukkit/[NMS version]/craftbukkit-[NMS version].jar && echo "::set-output name=sucess::true" || echo "::set-output name=sucess::false"
+#    - name: [version]
+#      if: steps.frostburn.outputs.sucess != 'true'
+#      run: cd BuildTools && java -jar BuildTools.jar --rev [version] <if newer than 1.14:  --compile craftbukkit>
+#    - run: test -d ~/.m2/repository/org/bukkit/craftbukkit/ && ls ~/.m2/repository/org/bukkit/craftbukkit/
+
+    - name: Check 1.8.8
+      id: bountiful
+      run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.8.8-R0.1-SNAPSHOT/craftbukkit-1.8.8-R0.1-SNAPSHOT.jar && echo "::set-output name=sucess::true" || echo "::set-output name=sucess::false"
+    - name: Build 1.8.8
+      if: steps.bountiful.outputs.sucess != 'true'
       run: cd BuildTools && java -jar BuildTools.jar --rev 1.8.8
-    - name: 1.9.4
-      if: steps.cache.outputs.cache-hit != 'true'
+    - name: Check 1.9.4
+      id: combat
+      run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.9.4-R0.1-SNAPSHOT/craftbukkit-1.9.4-R0.1-SNAPSHOT.jar && echo "::set-output name=sucess::true" || echo "::set-output name=sucess::false"
+    - name: Build 1.9.4
+      if: steps.combat.outputs.sucess != 'true'
       run: cd BuildTools && java -jar BuildTools.jar --rev 1.9.4
-    - name: 1.10.2
-      if: steps.cache.outputs.cache-hit != 'true'
+    - name: Check 1.10.2
+      id: frostburn
+      run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.10.2-R0.1-SNAPSHOT/craftbukkit-1.10.2-R0.1-SNAPSHOT.jar && echo "::set-output name=sucess::true" || echo "::set-output name=sucess::false"
+    - name: Build 1.10.2
+      if: steps.frostburn.outputs.sucess != 'true'
       run: cd BuildTools && java -jar BuildTools.jar --rev 1.10.2
-    - name: 1.11.2
-      if: steps.cache.outputs.cache-hit != 'true'
+    - name: Check 1.11.2
+      id: exploration
+      run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.11.2-R0.1-SNAPSHOT/craftbukkit-1.11.2-R0.1-SNAPSHOT.jar && echo "::set-output name=sucess::true" || echo "::set-output name=sucess::false"
+    - name: Build 1.11.2
+      if: steps.exploration.outputs.sucess != 'true'
       run: cd BuildTools && java -jar BuildTools.jar --rev 1.11.2
-    - name: 1.12.1
-      if: steps.cache.outputs.cache-hit != 'true'
+    - name: Check 1.12.1
+      id: color
+      run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.12.1-R0.1-SNAPSHOT/craftbukkit-1.12.1-R0.1-SNAPSHOT.jar && echo "::set-output name=sucess::true" || echo "::set-output name=sucess::false"
+    - name: Build 1.12.1
+      if: steps.color.outputs.sucess != 'true'
       run: cd BuildTools && java -jar BuildTools.jar --rev 1.12.1
-    - name: 1.13.2
-      if: steps.cache.outputs.cache-hit != 'true'
+    - name: Check 1.13.2
+      id: aquatic
+      run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.13.2-R0.1-SNAPSHOT/craftbukkit-1.13.2-R0.1-SNAPSHOT.jar && echo "::set-output name=sucess::true" || echo "::set-output name=sucess::false"
+    - name: Build 1.13.2
+      if: steps.aquatic.outputs.sucess != 'true'
       run: cd BuildTools && java -jar BuildTools.jar --rev 1.13.2
-    - name: 1.14.4
-      if: steps.cache.outputs.cache-hit != 'true'
+    - name: Check 1.14.4
+      id: pillage
+      run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.14.4-R0.1-SNAPSHOT/craftbukkit-1.14.4-R0.1-SNAPSHOT.jar && echo "::set-output name=sucess::true" || echo "::set-output name=sucess::false"
+    - name: Build 1.14.4
+      if: steps.pillage.outputs.sucess != 'true'
       run: cd BuildTools && java -jar BuildTools.jar --rev 1.14.4 --compile craftbukkit
-    - name: 1.15.0
-      if: steps.cache.outputs.cache-hit != 'true'
+    - name: Check 1.15
+      id: bees
+      run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.15-R0.1-SNAPSHOT/craftbukkit-1.15-R0.1-SNAPSHOT.jar && echo "::set-output name=sucess::true" || echo "::set-output name=sucess::false"
+    - name: Build 1.15
+      if: steps.bees.outputs.sucess != 'true'
       run: cd BuildTools && java -jar BuildTools.jar --rev 1.15 --compile craftbukkit
-    - name: 1.16.1
-      if: steps.cache.outputs.cache-hit != 'true'
+    - name: Check 1.16.1
+      id: nether
+      run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.16.1-R0.1-SNAPSHOT/craftbukkit-1.16.1-R0.1-SNAPSHOT.jar && echo "::set-output name=sucess::true" || echo "::set-output name=sucess::false"
+    - name: Build 1.16.1
+      if: steps.nether.outputs.sucess != 'true'
       run: cd BuildTools && java -jar BuildTools.jar --rev 1.16.1 --compile craftbukkit
-    - name: 1.16.3
-      if: steps.cache.outputs.cache-hit != 'true'
+    - name: Check 1.16.2
+      id: nether2
+      run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.16.2-R0.1-SNAPSHOT/craftbukkit-1.16.2-R0.1-SNAPSHOT.jar && echo "::set-output name=sucess::true" || echo "::set-output name=sucess::false"
+    - name: Build 1.16.2
+      if: steps.nether2.outputs.sucess != 'true'
       run: cd BuildTools && java -jar BuildTools.jar --rev 1.16.2 --compile craftbukkit
 
     - name: Build with Maven
       run: mvn -B package --file pom.xml
 
     - name: Stage jar
-      run: mkdir staging && cp target/Movecraft.jar staging
-    - name: Rename jar
-      run: mv staging/Movecraft.jar staging/Movecraft_$GITHUB_SHA.jar
+      run: mkdir staging && cp target/Movecraft.jar staging && mv staging/Movecraft.jar staging/Movecraft_$GITHUB_SHA.jar
     - name: Upload jar
       uses: actions/upload-artifact@v2
       with:
