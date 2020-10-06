@@ -128,7 +128,7 @@ public class CrewSign implements Listener {
         boolean locationFound = false;
         for(int i = -1; i < 2; i++) {
            for(int j = -1; j < 2; j++) {
-               Location testLoc = new Location(craft.getW(), respawnLoc.getX()+i, respawnLoc.getY(), respawnLoc.getZ()+j);
+               Location testLoc = new Location(craft.getWorld(), respawnLoc.getX()+i, respawnLoc.getY(), respawnLoc.getZ()+j);
                if(testLoc.getBlock().getType().equals(Material.AIR)) {
                    if(testLoc.getBlock().getRelative(BlockFace.UP).isEmpty() && !testLoc.getBlock().getRelative(BlockFace.DOWN).isEmpty()) {
                         respawnLoc = testLoc;

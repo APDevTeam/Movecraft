@@ -129,12 +129,23 @@ public abstract class Craft {
         return type;
     }
 
+    /**
+     * @deprecated use getWorld() instead
+     *
+     * @return the world the craft is in
+     */
     @NotNull
     @Deprecated
     public World getW() {
         return world;
     }
 
+    /**
+     *
+     * Gets the world the craft is currently in
+     *
+     * @return the world the craft is in
+     */
     @NotNull
     public World getWorld() {
         return world;

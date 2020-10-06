@@ -422,7 +422,7 @@ public class AsyncManager extends BukkitRunnable {
                 continue;
             }
             long ticksElapsed = (System.currentTimeMillis() - pcraft.getLastCruiseUpdate()) / 50;
-            World w = pcraft.getW();
+            World w = pcraft.getWorld();
             // if the craft should go slower underwater, make
             // time pass more slowly there
             if (pcraft.getType().getHalfSpeedUnderwater() && pcraft.getHitBox().getMinY() < w.getSeaLevel())
@@ -477,59 +477,59 @@ public class AsyncManager extends BukkitRunnable {
 
             // ascend
             if (pcraft.getCruiseDirection() == BlockFace.UP) {
-                dy = 1 + pcraft.getType().getVertCruiseSkipBlocks();
+                dy = 1 + pcraft.getType().getVertCruiseSkipBlocks(w);
             }
             // descend
             if (pcraft.getCruiseDirection() == BlockFace.DOWN) {
-                dy = -1 - pcraft.getType().getVertCruiseSkipBlocks();
+                dy = -1 - pcraft.getType().getVertCruiseSkipBlocks(w);
                 if (pcraft.getHitBox().getMinY() <= w.getSeaLevel()) {
                     dy = -1;
                 }
             } else if (dive) {
-                dy = -((pcraft.getType().getCruiseSkipBlocks() + 1) >> 1);
+                dy = -((pcraft.getType().getCruiseSkipBlocks(w) + 1) >> 1);
                 if (pcraft.getHitBox().getMinY() <= w.getSeaLevel()) {
                     dy = -1;
                 }
             }
             // ship faces west
             if (pcraft.getCruiseDirection() == BlockFace.WEST) {
-                dx = -1 - pcraft.getType().getCruiseSkipBlocks();
+                dx = -1 - pcraft.getType().getCruiseSkipBlocks(w);
                 if (bankRight) {
-                    dz = (-1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
+                    dz = (-1 - pcraft.getType().getCruiseSkipBlocks(w)) >> 1;
                 }
                 if (bankLeft) {
-                    dz = (1 + pcraft.getType().getCruiseSkipBlocks()) >> 1;
+                    dz = (1 + pcraft.getType().getCruiseSkipBlocks(w)) >> 1;
                 }
 
             }
             // ship faces east
             if (pcraft.getCruiseDirection() == BlockFace.EAST) {
-                dx = 1 + pcraft.getType().getCruiseSkipBlocks();
+                dx = 1 + pcraft.getType().getCruiseSkipBlocks(w);
                 if (bankLeft) {
-                    dz = (-1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
+                    dz = (-1 - pcraft.getType().getCruiseSkipBlocks(w)) >> 1;
                 }
                 if (bankRight) {
-                    dz = (1 + pcraft.getType().getCruiseSkipBlocks()) >> 1;
+                    dz = (1 + pcraft.getType().getCruiseSkipBlocks(w)) >> 1;
                 }
             }
             // ship faces north
             if (pcraft.getCruiseDirection() == BlockFace.NORTH) {
-                dz = -1 - pcraft.getType().getCruiseSkipBlocks();
+                dz = -1 - pcraft.getType().getCruiseSkipBlocks(w);
                 if (bankRight) {
-                    dx = (1 + pcraft.getType().getCruiseSkipBlocks()) >> 1;
+                    dx = (1 + pcraft.getType().getCruiseSkipBlocks(w)) >> 1;
                 }
                 if (bankLeft) {
-                    dx = (-1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
+                    dx = (-1 - pcraft.getType().getCruiseSkipBlocks(w)) >> 1;
                 }
             }
             // ship faces south
             if (pcraft.getCruiseDirection() == BlockFace.SOUTH) {
-                dz = 1 + pcraft.getType().getCruiseSkipBlocks();
+                dz = 1 + pcraft.getType().getCruiseSkipBlocks(w);
                 if (bankLeft) {
-                    dx = (1 + pcraft.getType().getCruiseSkipBlocks()) >> 1;
+                    dx = (1 + pcraft.getType().getCruiseSkipBlocks(w)) >> 1;
                 }
                 if (bankRight) {
-                    dx = (-1 - pcraft.getType().getCruiseSkipBlocks()) >> 1;
+                    dx = (-1 - pcraft.getType().getCruiseSkipBlocks(w)) >> 1;
                 }
             }
             if (pcraft.getType().getCruiseOnPilot()) {
