@@ -22,6 +22,7 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.MathUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -75,10 +76,10 @@ public final class InteractListener implements Listener {
                 return;
             }
             int currentGear = craft.getCurrentGear();
-            if (player.isSneaking()) {
+            if (player.isSneaking() && !craft.getPilotLocked()) {
                 final int gearShifts = craft.getType().getGearShifts();
                 if (gearShifts == 1) {
-                    player.sendMessage("Gearshift - Disabled for craft type");
+                    player.sendMessage(I18nSupport.getInternationalisedString("Gearshift - Disabled for craft type"));
                     return;
                 }
                 currentGear++;
@@ -124,14 +125,18 @@ public final class InteractListener implements Listener {
                 return;
             }
             // Player is onboard craft and right clicking
-            float rotation = (float) Math.PI * event.getPlayer().getLocation().getYaw() / 180f;
 
             final Vector direction = player.getLocation().getDirection();
+            float p = event.getPlayer().getLocation().getPitch();
+
+            direction.setY(-(Math.abs(p) >= 25 ? 1 : 0) * (int) Math.signum(p));
+            direction.normalize();
             direction.multiply(currentGear);
 
             int dx = (int) rint(direction.getX());
             int dz = (int) rint(direction.getZ());
             int dy = (int) rint(direction.getY());
+            Bukkit.broadcastMessage(String.format("(%d, %d, %d)", dx, dy, dz));
 
             craft.translate(dx, dy, dz);
             timeMap.put(event.getPlayer(), System.currentTimeMillis());
