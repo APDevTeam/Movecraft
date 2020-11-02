@@ -31,6 +31,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 
+import static java.lang.Math.max;
+
 final public class CraftType {
     private final boolean blockedByWater;
     private final boolean requireWaterContact;
@@ -111,6 +113,7 @@ final public class CraftType {
     private final int teleportationCooldown;
     private final int gravityDropDistance;
     private final int gravityInclineDistance;
+    private final int gearShifts;
     private final Sound collisionSound;
 
     @SuppressWarnings("unchecked")
@@ -178,10 +181,10 @@ final public class CraftType {
         smokeOnSink = integerFromObject(data.getOrDefault("smokeOnSink", 0));
         explodeOnCrash = floatFromObject(data.getOrDefault("explodeOnCrash", 0F));
         collisionExplosion = floatFromObject(data.getOrDefault("collisionExplosion", 0F));
-        minHeightLimit = Math.max(0, integerFromObject(data.getOrDefault("minHeightLimit", 0)));
+        minHeightLimit = max(0, integerFromObject(data.getOrDefault("minHeightLimit", 0)));
         perWorldMinHeightLimit = new HashMap<>();
         Map<String, Integer> minHeightMap = stringToIntMapFromObject(data.getOrDefault("perWorldMinHeightLimit", new HashMap<>()));
-        minHeightMap.forEach((world, height) -> perWorldMinHeightLimit.put(world, Math.max(0, height)));
+        minHeightMap.forEach((world, height) -> perWorldMinHeightLimit.put(world, max(0, height)));
 
         double cruiseSpeed = doubleFromObject(data.getOrDefault("cruiseSpeed", 20.0 / tickCooldown));
         cruiseTickCooldown = (int) Math.round((1.0 + cruiseSkipBlocks) * 20.0 / cruiseSpeed);
@@ -242,7 +245,7 @@ final public class CraftType {
         moveEntities = (boolean) data.getOrDefault("moveEntities", true);
         onlyMovePlayers = (boolean) data.getOrDefault("onlyMovePlayers", true);
         useGravity = (boolean) data.getOrDefault("useGravity", false);
-        hoverLimit = Math.max(0, integerFromObject(data.getOrDefault("hoverLimit", 0)));
+        hoverLimit = max(0, integerFromObject(data.getOrDefault("hoverLimit", 0)));
         harvestBlocks = new ArrayList<>();
         harvesterBladeBlocks = new ArrayList<>();
         if (data.containsKey("harvestBlocks")) {
@@ -343,6 +346,7 @@ final public class CraftType {
         List<String> disabledWorlds = (List<String>) data.getOrDefault("disableTeleportToWorlds", new ArrayList<>());
         disableTeleportToWorlds.addAll(disabledWorlds);
         teleportationCooldown = integerFromObject(data.getOrDefault("teleportationCooldown", 0));
+        gearShifts = max(integerFromObject(data.getOrDefault("gearShifts", 1)), 1);
     }
 
     private int integerFromObject(Object obj) {
@@ -828,6 +832,10 @@ final public class CraftType {
 
     public int getTeleportationCooldown() {
         return teleportationCooldown;
+    }
+
+    public int getGearShifts() {
+        return gearShifts;
     }
 
     private class TypeNotFoundException extends RuntimeException {
