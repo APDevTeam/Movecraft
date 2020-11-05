@@ -535,6 +535,10 @@ public class AsyncManager extends BukkitRunnable {
             if (pcraft.getType().getCruiseOnPilot()) {
                 dy = pcraft.getType().getCruiseOnPilotVertMove();
             }
+            final int gearshift = pcraft.getCurrentGear();
+            dx *= gearshift;
+            dy *= gearshift;
+            dz *= gearshift;
             pcraft.translate(dx, dy, dz);
             pcraft.setLastDX(dx);
             pcraft.setLastDZ(dz);

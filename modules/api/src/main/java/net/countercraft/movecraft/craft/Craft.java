@@ -42,6 +42,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static java.lang.Integer.max;
 
 
 public abstract class Craft {
@@ -80,6 +81,7 @@ public abstract class Craft {
     @NotNull private final HashMap<UUID, Location> crewSigns = new HashMap<>();
     @NotNull private String name = "";
     private boolean translating;
+    private int currentGear;
 
     public Craft(@NotNull CraftType type, @NotNull World world) {
         this.type = type;
@@ -540,4 +542,16 @@ public abstract class Craft {
     public void setLastTeleportTime(long lastTeleportTime) {
         this.lastTeleportTime = lastTeleportTime;
     }
+
+    public int getCurrentGear() {
+        return currentGear;
+    }
+
+    public void setCurrentGear(int currentGear) {
+        if (currentGear > type.getGearShifts()) {
+            this.currentGear = type.getGearShifts();
+        }
+        this.currentGear = max(currentGear, 1);
+    }
 }
+
