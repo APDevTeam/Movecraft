@@ -11,7 +11,7 @@
     </properties>
 
     <!--<version>7.0.0_beta_6</version>-->
-    <version>7.0.0_for_1.8.8-1.16.2_beta_33</version>
+    <version>7.0.0_for_1.8.8-1.16.2_beta_34</version>
          
     <repositories>
         <repository>
@@ -37,6 +37,12 @@
     </repositories>
 
     <dependencies>
+        <dependency>
+            <groupId>net.countercraft</groupId>
+            <artifactId>movecraft-v1_16_R3</artifactId>
+            <version>v1_16_R3</version>
+            <type>jar</type>
+        </dependency>
         <dependency>
             <groupId>net.countercraft</groupId>
             <artifactId>movecraft-v1_16_R2</artifactId>
@@ -358,6 +364,12 @@
                                 </filter>
                                 <filter>
                                     <artifact>net.countercraft:movecraft-v1_16_R2</artifact>
+                                    <includes>
+                                        <include>**</include>
+                                    </includes>
+                                </filter>
+                                <filter>
+                                    <artifact>net.countercraft:movecraft-v1_16_R3</artifact>
                                     <includes>
                                         <include>**</include>
                                     </includes>

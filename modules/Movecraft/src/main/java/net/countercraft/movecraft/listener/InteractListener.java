@@ -140,7 +140,7 @@ public final class InteractListener implements Listener {
             float p = event.getPlayer().getLocation().getPitch();
 
             direction.setY(-(Math.abs(p) >= 25 ? 1 : 0) * (int) Math.signum(p));
-            direction.normalize();
+            //direction.normalize();
             direction.multiply(currentGear);
 
             int dx = (int) rint(direction.getX());

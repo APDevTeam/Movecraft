@@ -81,7 +81,7 @@ public abstract class Craft {
     @NotNull private final HashMap<UUID, Location> crewSigns = new HashMap<>();
     @NotNull private String name = "";
     private boolean translating;
-    private int currentGear;
+    private int currentGear = 1;
 
     public Craft(@NotNull CraftType type, @NotNull World world) {
         this.type = type;
