@@ -117,7 +117,6 @@ public final class SubcraftRotateSign implements Listener {
         new BukkitRunnable() {
             @Override
             public void run() {
-                Bukkit.broadcastMessage(String.valueOf(subCraft.isNotProcessing()));
                 subCraft.rotate(rotation, startPoint, true);
             }
         }.runTaskLater(Movecraft.getInstance(), 1);
