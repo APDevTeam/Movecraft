@@ -100,6 +100,23 @@ public final class SubcraftRotateSign implements Listener {
         startPointMap.put(subCraft, startPoint);
         Bukkit.getServer().getPluginManager().callEvent(new CraftPilotEvent(subCraft, CraftPilotEvent.Reason.SUB_CRAFT));
         event.setCancelled(true);
+        new BukkitRunnable() {
+            /**
+             * When an object implementing interface <code>Runnable</code> is used
+             * to create a thread, starting the thread causes the object's
+             * <code>run</code> method to be called in that separately executing
+             * thread.
+             * <p>
+             * The general contract of the method <code>run</code> is that it may
+             * take any action whatsoever.
+             *
+             * @see Thread#run()
+             */
+            @Override
+            public void run() {
+                rotatingCrafts.remove(startPoint);
+            }
+        }.runTaskLaterAsynchronously(Movecraft.getInstance(), 5);
     }
 
     @EventHandler
