@@ -57,7 +57,6 @@ public class ManOverboardCommand implements CommandExecutor{
         }
 
         player.setVelocity(new Vector(0, 0, 0));
-        player.setFallDistance(0);
         player.teleport(telPoint);
         return true;
     }
