@@ -46,13 +46,13 @@ public class WorldGuardCompatManager implements Listener {
             flags = WorldGuard.getInstance().getFlagRegistry();
         }
         Movecraft.getInstance().getLogger().info("Registered custom flags");
-        if (flags.get("movecraft-move") != null)
+        if (flags.get("movecraft-move") == null)
             flags.register(FLAG_MOVE);
-        if (flags.get("movecraft-pilot") != null)
+        if (flags.get("movecraft-pilot") == null)
             flags.register(FLAG_PILOT);
-        if (flags.get("movecraft-rotate") != null)
+        if (flags.get("movecraft-rotate") == null)
             flags.register(FLAG_ROTATE);
-        if (flags.get("movecraft-sink") != null)
+        if (flags.get("movecraft-sink") == null)
             flags.register(FLAG_SINK);
     }
 

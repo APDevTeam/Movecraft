@@ -59,7 +59,7 @@ public class ChunkManager implements Listener {
                 ChunkManager.removeChunksToLoad(list);
             }
             
-        }.runTaskLaterAsynchronously(Movecraft.getInstance(), 200L);
+        }.runTaskLater(Movecraft.getInstance(), 200L);
     }
     
     private static void removeChunksToLoad(List<MovecraftChunk> list) {

@@ -20,6 +20,11 @@ public class CraftReleaseEvent extends CraftEvent implements Cancellable {
         this.reason = reason;
     }
 
+    public CraftReleaseEvent(@NotNull Craft craft, @NotNull Reason reason, boolean isAsync) {
+        super(craft, isAsync);
+        this.reason = reason;
+    }
+
     @NotNull
     public Reason getReason() {
         return reason;

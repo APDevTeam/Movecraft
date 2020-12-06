@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.compat.v1_15_R1;
 
+import net.countercraft.movecraft.MovecraftChunk;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
 import net.countercraft.movecraft.WorldHandler;
@@ -47,6 +48,12 @@ public class IWorldHandler extends WorldHandler {
         } catch (NoSuchMethodException | IllegalAccessException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void loadChunk(MovecraftChunk chunk) {
+        final WorldServer world = ((CraftWorld) chunk.getWorld()).getHandle();
+        world.getChunkProvider().getChunkAt(chunk.getX(), chunk.getZ(), ChunkStatus.FULL, true);
     }
 
     @Override

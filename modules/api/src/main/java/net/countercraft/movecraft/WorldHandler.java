@@ -22,4 +22,8 @@ public abstract class WorldHandler {
         player.teleport(tpLoc);
         player.sendBlockChange(tpLoc.subtract(0,1,0), standingOn.getType(), standingOn.getData());
     }
+
+    public void loadChunk(MovecraftChunk chunk) {
+        chunk.getWorld().loadChunk(chunk.getX(), chunk.getZ());
+    }
 }

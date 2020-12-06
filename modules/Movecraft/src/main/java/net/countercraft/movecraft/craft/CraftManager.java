@@ -47,9 +47,11 @@ public class CraftManager implements Iterable<Craft>{
     @NotNull private final ConcurrentMap<Craft, BukkitTask> releaseEvents = new ConcurrentHashMap<>();
     @NotNull private Set<CraftType> craftTypes;
     @NotNull private final WeakHashMap<Player, Long> overboards = new WeakHashMap<>();
+    private static Thread serverThread;
 
     public static void initialize(){
         ourInstance = new CraftManager();
+        serverThread = Thread.currentThread();
     }
 
     private CraftManager() {
@@ -166,7 +168,7 @@ public class CraftManager implements Iterable<Craft>{
     }
 
     public void removeCraft(@NotNull Craft c, @NotNull CraftReleaseEvent.Reason reason) {
-        CraftReleaseEvent e = new CraftReleaseEvent(c, reason);
+        CraftReleaseEvent e = new CraftReleaseEvent(c, reason, serverThread != Thread.currentThread());
         Bukkit.getServer().getPluginManager().callEvent(e);
         if (e.isCancelled())
             return;
