@@ -33,8 +33,6 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Hopper;
 import org.bukkit.block.Sign;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -231,39 +229,6 @@ public class BlockListener implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.LOW)
-    public void onBlockIgnite(BlockIgniteEvent event) {
-        if (event.isCancelled()) {
-            return;
-        }
-        final Craft adjacentCraft = adjacentCraft(event.getBlock().getLocation());
-        // replace blocks with fire occasionally, to prevent fast craft from simply ignoring fire
-        if (Settings.FireballPenetration && event.getCause() == BlockIgniteEvent.IgniteCause.FIREBALL) {
-            Block testBlock = event.getBlock().getRelative(-1, 0, 0);
-            if (!testBlock.getType().isBurnable())
-                testBlock = event.getBlock().getRelative(1, 0, 0);
-            if (!testBlock.getType().isBurnable())
-                testBlock = event.getBlock().getRelative(0, 0, -1);
-            if (!testBlock.getType().isBurnable())
-                testBlock = event.getBlock().getRelative(0, 0, 1);
-
-            if (!testBlock.getType().isBurnable()) {
-                return;
-            }
-            // check to see if fire spread is allowed, don't check if worldguard integration is not enabled
-            if (Movecraft.getInstance().getWorldGuardPlugin() != null && (Settings.WorldGuardBlockMoveOnBuildPerm || Settings.WorldGuardBlockSinkOnPVPPerm)) {
-                ApplicableRegionSet set = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(testBlock.getWorld()).getApplicableRegions(testBlock.getLocation());
-                if (!set.allows(DefaultFlag.FIRE_SPREAD)) {
-                    return;
-                }
-            }
-            testBlock.setType(org.bukkit.Material.AIR);
-        } else if (adjacentCraft != null) {
-
-            adjacentCraft.getHitBox().add(MathUtils.bukkit2MovecraftLoc(event.getBlock().getLocation()));
-        }
-
-    }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockDispense(BlockDispenseEvent e) {
