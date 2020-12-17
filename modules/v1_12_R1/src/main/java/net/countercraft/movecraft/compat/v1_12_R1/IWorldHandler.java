@@ -264,6 +264,10 @@ public class IWorldHandler extends WorldHandler {
             chunk.a(position, Blocks.GLASS.getBlockData());
             chunkSection = chunk.getSections()[position.getY() >> 4];
         }
+        if(chunkSection.getType(position.getX()&15, position.getY()&15, position.getZ()&15).equals(data)){
+            //Block is already of correct type and data, don't overwrite
+            return;
+        }
 
         chunkSection.setType(position.getX()&15, position.getY()&15, position.getZ()&15, data);
         world.notify(position, data, data, 3);
