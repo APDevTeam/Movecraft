@@ -10,7 +10,6 @@ WorldGuardBlockSinkOnPVPPerm: true
 ManOverboardTimeout: 30
 ManOverboardDistance: 1000 # maximum distance from a craft that you can manoverboard to it
 FireballLifespan: 6
-FireballPenetration: true
 ProtectPilotedCrafts: true
 DisableSpillProtection: false
 RequireCreatePerm: false # require users to have the movecract.<CraftTypeName>.create permission in order to place command signs
