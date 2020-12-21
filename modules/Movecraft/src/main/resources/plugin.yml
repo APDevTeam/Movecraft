@@ -44,3 +44,6 @@ commands:
   scuttle:
     description: Sinks piloted craft
     usage: /scuttle
+  savedstates:
+    description: Displays a player's saved states.
+    usage: /savedstates [player]

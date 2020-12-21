@@ -401,6 +401,7 @@ public class Movecraft extends JavaPlugin {
             this.getCommand("manoverboard").setExecutor(new ManOverboardCommand());
             this.getCommand("contacts").setExecutor(new ContactsCommand());
             this.getCommand("scuttle").setExecutor(new ScuttleCommand());
+            this.getCommand("savedstates").setExecutor(new SavedStatesCommand());
 
             if(Settings.SiegeEnable)
                 this.getCommand("siege").setExecutor(new SiegeCommand());
