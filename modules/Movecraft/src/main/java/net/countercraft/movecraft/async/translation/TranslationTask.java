@@ -145,7 +145,7 @@ public class TranslationTask extends AsyncTask {
                 if (craft.getW().getBlockTypeIdAt(middle.getX(),testY,middle.getZ()) != 0)
                     break;
             }
-            if (minY - testY > craft.getType().getMaxHeightAboveGround(world)) {
+            if (maxY - testY > craft.getType().getMaxHeightAboveGround(world)) {
                 dy = Math.min(dy,-1);
             }
         }
