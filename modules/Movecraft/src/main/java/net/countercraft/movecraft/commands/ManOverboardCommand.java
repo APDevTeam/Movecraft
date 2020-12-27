@@ -57,13 +57,14 @@ public class ManOverboardCommand implements CommandExecutor{
         }
 
         player.setVelocity(new Vector(0, 0, 0));
+        player.setFallDistance(0);
         player.teleport(telPoint);
         return true;
     }
 
     private Location getCraftTeleportPoint(Craft craft) {
-        double telX = (craft.getHitBox().getMinX() + craft.getHitBox().getMaxX())/2D;
-        double telZ = (craft.getHitBox().getMinZ() + craft.getHitBox().getMaxZ())/2D;
+        double telX = (craft.getHitBox().getMinX() + craft.getHitBox().getMaxX())/2D + 0.5D;
+        double telZ = (craft.getHitBox().getMinZ() + craft.getHitBox().getMaxZ())/2D + 0.5D;
         double telY = craft.getHitBox().getMaxY() + 1;
         return new Location(craft.getW(), telX, telY, telZ);
     }
