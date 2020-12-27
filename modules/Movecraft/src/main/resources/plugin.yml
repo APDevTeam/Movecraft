@@ -1,10 +1,10 @@
 name: Movecraft
-softdepend: [WorldGuard, WorldEdit, Cannons, Vault, Essentials, WGCustomFlags, Towny]
+softdepend: [WorldGuard, WorldEdit, Cannons, Vault ,Essentials, WGCustomFlags, Towny]
 version: ${project.version}
 #version: ${env.BUILD_NUMBER}
 description: The original flight and movement plugin for minecraft.
-authors: [BaccaYarro, cccm5, TylerS1066, eirik1996]
-website: https://github.com/APDevTeam/Movecraft
+authors: [BaccaYarro, cccm5]
+website: http://www.youtube.com/BaccaYarro
 main: net.countercraft.movecraft.Movecraft
 database: false
 commands:
@@ -32,6 +32,15 @@ commands:
   manoverboard:
     description: If enabled, returns you to a craft you have fallen out of
     usage: /manoverboard
+  siege:
+    description: If the region you are standing in is configured for Siege, lays siege to it
+    usage: /siege
+  assaultinfo:
+    description: Gives you information about the region(s) you are in, and if they are available for Assault
+    usage: /assaultinfo
+  assault:
+    description: Begins an Assault on the specified region
+    usage: /assault <regionname>
   scuttle:
     description: Sinks piloted craft
     usage: /scuttle
