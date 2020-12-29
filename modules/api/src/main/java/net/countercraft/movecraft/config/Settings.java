@@ -57,7 +57,6 @@ public class Settings {
     public static int BlockQueueChunkSize = 1000;
     public static int SiegeTaskSeconds = 600;
     public static double RepairMoneyPerBlock = 0.0;
-    public static boolean FireballPenetration = true;
     public static boolean AllowCrewSigns = true;
     public static boolean SetHomeToCrewSign = true;
     public static int MaxRemoteSigns = -1;

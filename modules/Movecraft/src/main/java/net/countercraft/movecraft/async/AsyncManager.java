@@ -17,7 +17,6 @@
 
 package net.countercraft.movecraft.async;
 
-import at.pavlov.cannons.cannon.Cannon;
 import com.google.common.collect.Lists;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
@@ -275,27 +274,9 @@ public class AsyncManager extends BukkitRunnable {
         }
         // The craft is clear to move, perform the block updates
         MapUpdateManager.getInstance().scheduleUpdates(task.getUpdates());
-        // get list of cannons before sending map updates, to avoid
-        // conflicts
-        if (Movecraft.getInstance().getCannonsPlugin() != null && c.getNotificationPlayer() != null) {
-            // convert blocklist to location list
-            List<Location> shipLocations = new ArrayList<>();
-            for (MovecraftLocation loc : c.getHitBox()) {
-                Location tloc = new Location(c.getW(), loc.getX(), loc.getY(), loc.getZ());
-                shipLocations.add(tloc);
-            }
-            HashSet<Cannon> shipCannons = Movecraft.getInstance().getCannonsPlugin().getCannonsAPI()
-                    .getCannons(shipLocations, c.getNotificationPlayer().getUniqueId(), true);
-            // move any cannons that were present
-            for (Cannon can : shipCannons) {
-                can.move(new Vector(task.getDx(), task.getDy(), task.getDz()));
-            }
-        }
+
         c.setHitBox(task.getNewHitBox());
         c.setFluidLocations(task.getNewFluidList());
-
-
-
         return true;
     }
 
@@ -323,39 +304,11 @@ public class AsyncManager extends BukkitRunnable {
             return false;
         }
 
-        // get list of cannons before sending map updates, to
-        // avoid conflicts
-        HashSet<Cannon> shipCannons = null;
-        if (Movecraft.getInstance().getCannonsPlugin() != null && c.getNotificationPlayer() != null) {
-            // convert blocklist to location list
-            List<Location> shipLocations = new ArrayList<>();
-            for (MovecraftLocation loc : c.getHitBox()) {
-                shipLocations.add(loc.toBukkit(c.getW()));
-            }
-            shipCannons = Movecraft.getInstance().getCannonsPlugin().getCannonsAPI()
-                    .getCannons(shipLocations, c.getNotificationPlayer().getUniqueId(), true);
-        }
 
         MapUpdateManager.getInstance().scheduleUpdates(task.getUpdates());
 
-
-
         c.setHitBox(task.getNewHitBox());
         c.setFluidLocations(task.getNewFluidList());
-
-        // rotate any cannons that were present
-        if (Movecraft.getInstance().getCannonsPlugin() != null && shipCannons != null) {
-            Location tloc = task.getOriginPoint().toBukkit(task.getCraft().getW());
-            for (Cannon can : shipCannons) {
-                if (task.getRotation() == Rotation.CLOCKWISE)
-                    can.rotateRight(tloc.toVector());
-                if (task.getRotation() == Rotation.ANTICLOCKWISE)
-                    can.rotateLeft(tloc.toVector());
-            }
-        }
-
-
-
         return true;
     }
 

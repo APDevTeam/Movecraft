@@ -12,7 +12,7 @@
         <junit.jupiter.version>5.2.0</junit.jupiter.version>
         <junit.vintage.version>${junit.jupiter.version}</junit.vintage.version>
         <junit.platform.version>1.2.0</junit.platform.version>
-        <junit.version>4.12</junit.version>
+        <junit.version>4.13.1</junit.version>
     </properties>
 
     <parent>

@@ -64,6 +64,7 @@ public final class InteractListener implements Listener {
         // if not in command of craft, don't process pilot tool clicks
         if (c == null)
             return;
+
         if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK) {
             final Player player = event.getPlayer();
             Craft craft = CraftManager.getInstance().getCraftByPlayer(player);

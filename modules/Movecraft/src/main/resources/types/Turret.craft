@@ -103,8 +103,6 @@ collisionExplosion: 0.0
 explodeOnCrash: 2.0
 allowHorizontalMovement: false
 allowVerticalMovement: false
-allowCannonDirectorSign: true
-allowAADirectorSign: true
 speed: 1.0
 tryNudge: false
 sinkPercent: 99.0
