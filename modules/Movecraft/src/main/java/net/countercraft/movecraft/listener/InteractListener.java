@@ -137,7 +137,6 @@ public final class InteractListener implements Listener {
             int dx = (int) rint(direction.getX());
             int dz = (int) rint(direction.getZ());
             int dy = (int) rint(direction.getY());
-            Bukkit.broadcastMessage(String.format("(%d, %d, %d)", dx, dy, dz));
 
             craft.translate(dx, dy, dz);
             timeMap.put(event.getPlayer(), System.currentTimeMillis());
