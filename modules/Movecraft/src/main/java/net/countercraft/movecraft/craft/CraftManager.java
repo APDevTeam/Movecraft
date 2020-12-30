@@ -106,8 +106,8 @@ public class CraftManager implements Iterable<Craft>{
     }
 
     public void initCraftTypes() {
-        Bukkit.getServer().getPluginManager().callEvent(new TypesReloadedEvent());
         this.craftTypes = loadCraftTypes();
+        Bukkit.getServer().getPluginManager().callEvent(new TypesReloadedEvent());
     }
 
     public void addCraft(@NotNull Craft c, @Nullable Player p) {
