@@ -20,6 +20,7 @@ package net.countercraft.movecraft.craft;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.events.CraftPilotEvent;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
+import net.countercraft.movecraft.events.TypesReloadedEvent;
 import net.countercraft.movecraft.exception.NonCancellableReleaseException;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.Bukkit;
@@ -105,6 +106,7 @@ public class CraftManager implements Iterable<Craft>{
     }
 
     public void initCraftTypes() {
+        Bukkit.getServer().getPluginManager().callEvent(new TypesReloadedEvent());
         this.craftTypes = loadCraftTypes();
     }
 
