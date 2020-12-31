@@ -98,7 +98,7 @@ public final class InteractListener implements Listener {
                 if (craft.getType().getHalfSpeedUnderwater() && craft.getHitBox().getMinY() < craft.getW().getSeaLevel())
                     ticksElapsed = ticksElapsed >> 1;
 
-                if (abs(ticksElapsed) < craft.getType().getTickCooldown(craft.getW())) {
+                if (abs(ticksElapsed) < craft.getType().getTickCooldown(craft.getW()) * craft.getCurrentGear()) {
                     return;
                 }
             }
@@ -118,7 +118,7 @@ public final class InteractListener implements Listener {
                 int DY = 1;
                 if (event.getPlayer().isSneaking())
                     DY = -1;
-
+                DY *= craft.getCurrentGear();
                 craft.translate(0, DY, 0);
                 timeMap.put(event.getPlayer(), System.currentTimeMillis());
                 craft.setLastCruiseUpdate(System.currentTimeMillis());

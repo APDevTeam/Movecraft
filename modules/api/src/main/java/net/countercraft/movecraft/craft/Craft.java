@@ -324,11 +324,11 @@ public abstract class Craft {
 
         int chestPenalty = (int)((materials.get(Material.CHEST) + materials.get(Material.TRAPPED_CHEST)) * type.getChestPenalty());
         if(!cruising)
-            return type.getTickCooldown(w) + chestPenalty;
+            return (type.getTickCooldown(w) * currentGear) + chestPenalty;
 
         // Ascent or Descent
         if(cruiseDirection == 0x42 || cruiseDirection == 0x43) {
-            return type.getVertCruiseTickCooldown(w) + chestPenalty;
+            return (type.getVertCruiseTickCooldown(w) * currentGear) + chestPenalty;
         }
 
         // Dynamic Fly Block Speed
@@ -336,13 +336,13 @@ public abstract class Craft {
             Material flyBlockMaterial = Material.getMaterial(type.getDynamicFlyBlock());
             double count = materials.get(flyBlockMaterial);
             double woolRatio = count / hitBox.size();
-            return max((int)Math.round((20.0 * (type.getCruiseSkipBlocks(w) + 1)) / ((type.getDynamicFlyBlockSpeedFactor() * 1.5) * (woolRatio - .5) + (20.0 / type.getCruiseTickCooldown(w)) + 1)), 1);
+            return max((int)Math.round((20.0 * (type.getCruiseSkipBlocks(w) + 1)) / ((type.getDynamicFlyBlockSpeedFactor() * 1.5) * (woolRatio - .5) + (20.0 / (type.getCruiseTickCooldown(w) * currentGear)) + 1)), 1);
         }
 
         if(type.getDynamicLagSpeedFactor() == 0.0 || type.getDynamicLagPowerFactor() == 0.0 || Math.abs(type.getDynamicLagPowerFactor()) > 1.0)
-            return type.getCruiseTickCooldown(w) + chestPenalty;
+            return (type.getCruiseTickCooldown(w) * currentGear) + chestPenalty;
         if(numMoves == 0)
-            return (int) Math.round(20.0 * ((type.getCruiseSkipBlocks(w) + 1.0) / type.getDynamicLagMinSpeed()));
+            return (int) Math.round(20.0 * ((type.getCruiseSkipBlocks(w) * currentGear + 1.0) / type.getDynamicLagMinSpeed()));
 
         if(Settings.Debug) {
             Bukkit.getLogger().info("Skip: " + type.getCruiseSkipBlocks(w));
