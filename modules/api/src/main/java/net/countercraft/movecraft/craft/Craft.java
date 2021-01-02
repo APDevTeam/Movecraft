@@ -324,11 +324,11 @@ public abstract class Craft {
 
         int chestPenalty = (int)((materials.get(Material.CHEST) + materials.get(Material.TRAPPED_CHEST)) * type.getChestPenalty());
         if(!cruising)
-            return (type.getTickCooldown(w) * currentGear) + chestPenalty;
+            return (type.getTickCooldown(w) + chestPenalty) * currentGear;
 
         // Ascent or Descent
         if(cruiseDirection == 0x42 || cruiseDirection == 0x43) {
-            return (type.getVertCruiseTickCooldown(w) * currentGear) + chestPenalty;
+            return (type.getVertCruiseTickCooldown(w) + chestPenalty) * currentGear;
         }
 
         // Dynamic Fly Block Speed
@@ -340,9 +340,9 @@ public abstract class Craft {
         }
 
         if(type.getDynamicLagSpeedFactor() == 0.0 || type.getDynamicLagPowerFactor() == 0.0 || Math.abs(type.getDynamicLagPowerFactor()) > 1.0)
-            return (type.getCruiseTickCooldown(w) * currentGear) + chestPenalty;
+            return (type.getCruiseTickCooldown(w) + chestPenalty) * currentGear;
         if(numMoves == 0)
-            return (int) Math.round(20.0 * ((type.getCruiseSkipBlocks(w) * currentGear + 1.0) / type.getDynamicLagMinSpeed()));
+            return (int) Math.round(20.0 * ((type.getCruiseSkipBlocks(w) + 1.0) / type.getDynamicLagMinSpeed()) * currentGear);
 
         if(Settings.Debug) {
             Bukkit.getLogger().info("Skip: " + type.getCruiseSkipBlocks(w));
@@ -357,7 +357,7 @@ public abstract class Craft {
         double speed = 20.0 * (type.getCruiseSkipBlocks(w) + 1.0) / (float)type.getCruiseTickCooldown(w);
         speed -= type.getDynamicLagSpeedFactor() * Math.pow(getMeanCruiseTime() * 1000.0, type.getDynamicLagPowerFactor());
         speed = max(type.getDynamicLagMinSpeed(), speed);
-        return (int)Math.round((20.0 * (type.getCruiseSkipBlocks(w) + 1.0)) / speed);
+        return (int)Math.round((20.0 * (type.getCruiseSkipBlocks(w) + 1.0)) / speed) * currentGear;
             //In theory, the chest penalty is not needed for a DynamicLag craft.
     }
 
