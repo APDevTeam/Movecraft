@@ -114,6 +114,7 @@ final public class CraftType {
     private final int gravityDropDistance;
     private final int gravityInclineDistance;
     private final int gearShifts;
+    private final boolean gearShiftsAffectTickCooldown;
     private final Sound collisionSound;
 
     @SuppressWarnings("unchecked")
@@ -347,6 +348,7 @@ final public class CraftType {
         disableTeleportToWorlds.addAll(disabledWorlds);
         teleportationCooldown = integerFromObject(data.getOrDefault("teleportationCooldown", 0));
         gearShifts = max(integerFromObject(data.getOrDefault("gearShifts", 1)), 1);
+        gearShiftsAffectTickCooldown = (boolean) data.getOrDefault("gearShiftsAffectTickCooldown", true);
     }
 
     private int integerFromObject(Object obj) {
@@ -836,6 +838,10 @@ final public class CraftType {
 
     public int getGearShifts() {
         return gearShifts;
+    }
+
+    public boolean getGearShiftsAffectTickCooldown() {
+        return gearShiftsAffectTickCooldown;
     }
 
     private class TypeNotFoundException extends RuntimeException {
