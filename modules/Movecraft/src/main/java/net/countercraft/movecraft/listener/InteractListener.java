@@ -98,7 +98,7 @@ public final class InteractListener implements Listener {
                 if (craft.getType().getHalfSpeedUnderwater() && craft.getHitBox().getMinY() < craft.getW().getSeaLevel())
                     ticksElapsed = ticksElapsed >> 1;
 
-                if (abs(ticksElapsed) < craft.getType().getTickCooldown(craft.getW()) * craft.getCurrentGear()) {
+                if (abs(ticksElapsed) < craft.getType().getTickCooldown(craft.getW()) * (craft.getType().getGearShiftsAffectTickCooldown() ? craft.getCurrentGear() : 1)) {
                     return;
                 }
             }
