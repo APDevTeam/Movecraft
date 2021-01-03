@@ -134,10 +134,13 @@ public final class InteractListener implements Listener {
             direction.normalize();
             if (craft.getType().getGearShiftsAffectDirectMovement())
                 direction.multiply(currentGear);
-
             int dx = (int) rint(direction.getX());
             int dz = (int) rint(direction.getZ());
             int dy = (int) rint(direction.getY());
+            if (Math.abs(p) >= 75) {
+                dx = 0;
+                dz = 0;
+            }
 
             craft.translate(dx, dy, dz);
             timeMap.put(event.getPlayer(), System.currentTimeMillis());
