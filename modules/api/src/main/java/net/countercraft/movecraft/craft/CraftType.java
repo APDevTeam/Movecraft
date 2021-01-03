@@ -115,6 +115,7 @@ final public class CraftType {
     private final int gravityInclineDistance;
     private final int gearShifts;
     private final boolean gearShiftsAffectTickCooldown;
+    private final boolean gearShiftsAffectDirectMovement;
     private final Sound collisionSound;
 
     @SuppressWarnings("unchecked")
@@ -349,6 +350,7 @@ final public class CraftType {
         teleportationCooldown = integerFromObject(data.getOrDefault("teleportationCooldown", 0));
         gearShifts = max(integerFromObject(data.getOrDefault("gearShifts", 1)), 1);
         gearShiftsAffectTickCooldown = (boolean) data.getOrDefault("gearShiftsAffectTickCooldown", true);
+        gearShiftsAffectDirectMovement = (boolean) data.getOrDefault("gearShiftsAffectDirectMovement", false);
     }
 
     private int integerFromObject(Object obj) {
@@ -842,6 +844,10 @@ final public class CraftType {
 
     public boolean getGearShiftsAffectTickCooldown() {
         return gearShiftsAffectTickCooldown;
+    }
+
+    public boolean getGearShiftsAffectDirectMovement() {
+        return gearShiftsAffectDirectMovement;
     }
 
     private class TypeNotFoundException extends RuntimeException {

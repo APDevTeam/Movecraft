@@ -118,7 +118,8 @@ public final class InteractListener implements Listener {
                 int DY = 1;
                 if (event.getPlayer().isSneaking())
                     DY = -1;
-                DY *= craft.getCurrentGear();
+                if (craft.getType().getGearShiftsAffectDirectMovement())
+                    DY *= craft.getCurrentGear();
                 craft.translate(0, DY, 0);
                 timeMap.put(event.getPlayer(), System.currentTimeMillis());
                 craft.setLastCruiseUpdate(System.currentTimeMillis());
@@ -131,7 +132,8 @@ public final class InteractListener implements Listener {
 
             direction.setY(-(Math.abs(p) >= 25 ? 1 : 0) * (int) Math.signum(p));
             direction.normalize();
-            direction.multiply(currentGear);
+            if (craft.getType().getGearShiftsAffectDirectMovement())
+                direction.multiply(currentGear);
 
             int dx = (int) rint(direction.getX());
             int dz = (int) rint(direction.getZ());
