@@ -20,6 +20,7 @@ package net.countercraft.movecraft.listener;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.craft.CraftType;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.MathUtils;
 import org.bukkit.Material;
@@ -75,9 +76,10 @@ public final class InteractListener implements Listener {
             if (craft == null) {
                 return;
             }
+            final CraftType type = craft.getType();
             int currentGear = craft.getCurrentGear();
             if (player.isSneaking() && !craft.getPilotLocked()) {
-                final int gearShifts = craft.getType().getGearShifts();
+                final int gearShifts = type.getGearShifts();
                 if (gearShifts == 1) {
                     player.sendMessage(I18nSupport.getInternationalisedString("Gearshift - Disabled for craft type"));
                     return;
@@ -90,6 +92,12 @@ public final class InteractListener implements Listener {
                 return;
             }
             Long time = timeMap.get(player);
+            int tickCooldown = craft.getType().getTickCooldown(craft.getW());
+            if (type.getGearShiftsAffectDirectMovement() && type.getGearShiftsAffectTickCooldown()) {
+                tickCooldown *= currentGear;
+            } else if (!type.getGearShiftsAffectDirectMovement() && type.getGearShiftsAffectTickCooldown()) {
+                tickCooldown /= currentGear;
+            }
             if (time != null) {
                 long ticksElapsed = (System.currentTimeMillis() - time) / 50;
 
@@ -98,7 +106,8 @@ public final class InteractListener implements Listener {
                 if (craft.getType().getHalfSpeedUnderwater() && craft.getHitBox().getMinY() < craft.getW().getSeaLevel())
                     ticksElapsed = ticksElapsed >> 1;
 
-                if (abs(ticksElapsed) < craft.getType().getTickCooldown(craft.getW()) * (craft.getType().getGearShiftsAffectTickCooldown() ? craft.getCurrentGear() : 1)) {
+
+                if (abs(ticksElapsed) < tickCooldown) {
                     return;
                 }
             }
@@ -119,7 +128,7 @@ public final class InteractListener implements Listener {
                 if (event.getPlayer().isSneaking())
                     DY = -1;
                 if (craft.getType().getGearShiftsAffectDirectMovement())
-                    DY *= craft.getCurrentGear();
+                    DY *= currentGear;
                 craft.translate(0, DY, 0);
                 timeMap.put(event.getPlayer(), System.currentTimeMillis());
                 craft.setLastCruiseUpdate(System.currentTimeMillis());
