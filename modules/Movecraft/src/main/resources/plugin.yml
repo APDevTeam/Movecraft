@@ -44,3 +44,6 @@ commands:
   scuttle:
     description: Sinks piloted craft
     usage: /scuttle
+  crewbed:
+    description: Displays a player's crewbed location.
+    usage: /crewbed
