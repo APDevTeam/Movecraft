@@ -1,6 +1,5 @@
 package net.countercraft.movecraft.commands;
 
-import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
