@@ -38,21 +38,14 @@ import net.countercraft.movecraft.sign.*;
 import net.countercraft.movecraft.towny.TownyCompatManager;
 import net.countercraft.movecraft.utils.TownyUtils;
 import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
-import net.countercraft.movecraft.warfare.assault.AssaultManager;
-import net.countercraft.movecraft.warfare.siege.Siege;
-import net.countercraft.movecraft.warfare.siege.SiegeManager;
 import net.countercraft.movecraft.worldguard.WorldGuardCompatManager;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Material;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.yaml.snakeyaml.Yaml;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -79,8 +72,6 @@ public class Movecraft extends JavaPlugin {
 
 
     private AsyncManager asyncManager;
-    private AssaultManager assaultManager;
-    private SiegeManager siegeManager;
     private RepairManager repairManager;
 
     public static synchronized Movecraft getInstance() {
@@ -151,7 +142,6 @@ public class Movecraft extends JavaPlugin {
         Settings.ManOverboardDistSquared = Math.pow(getConfig().getDouble("ManOverboardDistance", 1000), 2);
         Settings.SilhouetteViewDistance = getConfig().getInt("SilhouetteViewDistance", 200);
         Settings.SilhouetteBlockCount = getConfig().getInt("SilhouetteBlockCount", 20);
-        Settings.SiegeTaskSeconds = getConfig().getInt("SiegeTaskSeconds", 600);
         Settings.ProtectPilotedCrafts = getConfig().getBoolean("ProtectPilotedCrafts", false);
         Settings.AllowCrewSigns = getConfig().getBoolean("AllowCrewSigns", true);
         Settings.SetHomeToCrewSign = getConfig().getBoolean("SetHomeToCrewSign", true);
@@ -175,31 +165,13 @@ public class Movecraft extends JavaPlugin {
             }
         }
 
-        Settings.AssaultEnable = getConfig().getBoolean("AssaultEnable", false);
-        Settings.AssaultDamagesCapPercent = getConfig().getDouble("AssaultDamagesCapPercent", 1.0);
-        Settings.AssaultCooldownHours = getConfig().getInt("AssaultCooldownHours", 24);
-        Settings.AssaultDelay = getConfig().getInt("AssaultDelay", 1800);
-        Settings.AssaultDuration = getConfig().getInt("AssaultDuration", 1800);
-        Settings.AssaultCostPercent = getConfig().getDouble("AssaultCostPercent", 0.25);
-        Settings.AssaultDamagesPerBlock = getConfig().getInt("AssaultDamagesPerBlock", 15);
-        Settings.AssaultRequiredDefendersOnline = getConfig().getInt("AssaultRequiredDefendersOnline", 2);
-        Settings.AssaultRequiredOwnersOnline = getConfig().getInt("AssaultRequiredOwnersOnline", 1);
-        Settings.AssaultMaxBalance = getConfig().getDouble("AssaultMaxBalance", 5000000);
-        Settings.AssaultOwnerWeightPercent = getConfig().getDouble("AssaultOwnerWeightPercent", 1.0);
-        Settings.AssaultMemberWeightPercent = getConfig().getDouble("AssaultMemberWeightPercent", 1.0);
         Settings.CollisionPrimer = getConfig().getInt("CollisionPrimer", 1000);
-        Settings.AssaultDestroyableBlocks = new HashSet<>(getConfig().getIntegerList("AssaultDestroyableBlocks"));
         Settings.DisableShadowBlocks = new HashSet<>(getConfig().getIntegerList("DisableShadowBlocks"));  //REMOVE FOR PUBLIC VERSION
         Settings.ForbiddenRemoteSigns = new HashSet<>();
 
         for(String s : getConfig().getStringList("ForbiddenRemoteSigns")) {
             Settings.ForbiddenRemoteSigns.add(s.toLowerCase());
         }
-
-        Settings.SiegeEnable = getConfig().getBoolean("SiegeEnable", false);
-
-
-
 
         if (!Settings.CompatibilityMode) {
             for (int typ : Settings.DisableShadowBlocks) {
@@ -210,8 +182,6 @@ public class Movecraft extends JavaPlugin {
         Plugin wGPlugin = getServer().getPluginManager().getPlugin("WorldGuard");
         if (wGPlugin == null || !(wGPlugin instanceof WorldGuardPlugin)) {
             logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - WG Not Found"));
-            Settings.SiegeEnable = false;
-            Settings.AssaultEnable = false;
             Settings.RestrictSiBsToRegions = false;
         } else {
             logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - WG Found"));
@@ -226,7 +196,6 @@ public class Movecraft extends JavaPlugin {
         Plugin wEPlugin = getServer().getPluginManager().getPlugin("WorldEdit");
         if (wEPlugin == null || !(wEPlugin instanceof WorldEditPlugin)) {
             logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - WE Not Found"));
-            Settings.AssaultEnable = false;
         } else {
             logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - WE Found"));
             Settings.RepairTicksPerBlock = getConfig().getInt("RepairTicksPerBlock", 0);
@@ -300,13 +269,10 @@ public class Movecraft extends JavaPlugin {
             } else {
                 logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Vault Not Found"));
                 economy = null;
-                Settings.SiegeEnable = false;
-                Settings.AssaultEnable = false;
             }
         } else {
             logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Vault Not Found"));
             economy = null;
-            Settings.SiegeEnable = false;
         }
         
         if (shuttingDown && Settings.IGNORE_RESET) {
@@ -325,51 +291,7 @@ public class Movecraft extends JavaPlugin {
             asyncManager = new AsyncManager();
             asyncManager.runTaskTimer(this, 0, 1);
             MapUpdateManager.getInstance().runTaskTimer(this, 0, 1);
-            if(Settings.AssaultEnable) {
-                assaultManager = new AssaultManager(this);
-                assaultManager.runTaskTimerAsynchronously(this, 0, 20);
-            }
 
-            if(Settings.SiegeEnable) {
-
-                siegeManager = new SiegeManager(this);
-                logger.info("Enabling siege");
-                //load the sieges.yml file
-                File siegesFile = new File(Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/sieges.yml");
-                InputStream input;
-                try {
-                    input = new FileInputStream(siegesFile);
-                } catch (FileNotFoundException e) {
-                    input = null;
-                }
-                if (input != null) {
-                    Map data = new Yaml().loadAs(input, Map.class);
-                    Map<String, Map<String, ?>> siegesMap = (Map<String, Map<String, ?>>) data.get("sieges");
-                    List<Siege> sieges = siegeManager.getSieges();
-                    for (Map.Entry<String, Map<String, ?>> entry : siegesMap.entrySet()) {
-                        Map<String,Object> siegeMap = (Map<String, Object>) entry.getValue();
-                        sieges.add(new Siege(
-                                entry.getKey(),
-                                (String) siegeMap.get("RegionToControl"),
-                                (String) siegeMap.get("SiegeRegion"),
-                                (Integer) siegeMap.get("ScheduleStart"),
-                                (Integer) siegeMap.get("ScheduleEnd"),
-                                (Integer) siegeMap.getOrDefault("DelayBeforeStart", 0),
-                                (Integer) siegeMap.get("SiegeDuration"),
-                                (Integer) siegeMap.getOrDefault("DailyIncome", 0),
-                                (Integer) siegeMap.getOrDefault("CostToSiege", 0),
-                                (Boolean) siegeMap.getOrDefault("DoubleCostPerOwnedSiegeRegion", true),
-                                (List<Integer>) siegeMap.get("DaysOfTheWeek"),
-                                (List<String>) siegeMap.getOrDefault("CraftsToWin", Collections.emptyList()),
-                                (List<String>) siegeMap.getOrDefault("SiegeCommandsOnStart", Collections.emptyList()),
-                                (List<String>) siegeMap.getOrDefault("SiegeCommandsOnWin", Collections.emptyList()),
-                                (List<String>) siegeMap.getOrDefault("SiegeCommandsOnLose", Collections.emptyList())));
-                    }
-                    logger.log(Level.INFO, "Siege configuration loaded.");
-
-                }
-                siegeManager.runTaskTimerAsynchronously(this, 0, 20);
-            }
             CraftManager.initialize();
 
             getServer().getPluginManager().registerEvents(new InteractListener(), this);
@@ -392,12 +314,6 @@ public class Movecraft extends JavaPlugin {
             this.getCommand("contacts").setExecutor(new ContactsCommand());
             this.getCommand("scuttle").setExecutor(new ScuttleCommand());
 
-            if(Settings.SiegeEnable)
-                this.getCommand("siege").setExecutor(new SiegeCommand());
-            if(Settings.AssaultEnable) {
-                this.getCommand("assaultinfo").setExecutor(new AssaultInfoCommand());
-                this.getCommand("assault").setExecutor(new AssaultCommand());
-            }
             getServer().getPluginManager().registerEvents(new BlockListener(), this);
             getServer().getPluginManager().registerEvents(new PlayerListener(), this);
             getServer().getPluginManager().registerEvents(new ChunkManager(), this);
@@ -411,7 +327,6 @@ public class Movecraft extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new MoveSign(), this);
             getServer().getPluginManager().registerEvents(new NameSign(), this);
             getServer().getPluginManager().registerEvents(new PilotSign(), this);
-            getServer().getPluginManager().registerEvents(new RegionDamagedSign(), this);
             getServer().getPluginManager().registerEvents(new RelativeMoveSign(), this);
             getServer().getPluginManager().registerEvents(new ReleaseSign(), this);
             getServer().getPluginManager().registerEvents(new RemoteSign(), this);
@@ -459,12 +374,6 @@ public class Movecraft extends JavaPlugin {
     public Essentials getEssentialsPlugin() {
         return essentialsPlugin;
     }
-
-    public AssaultManager getAssaultManager() {
-        return assaultManager;
-    }
-
-    public SiegeManager getSiegeManager(){return siegeManager;}
 
     public WorldHandler getWorldHandler(){
         return worldHandler;
