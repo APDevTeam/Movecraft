@@ -95,8 +95,6 @@ public final class InteractListener implements Listener {
             int tickCooldown = craft.getType().getTickCooldown(craft.getW());
             if (type.getGearShiftsAffectDirectMovement() && type.getGearShiftsAffectTickCooldown()) {
                 tickCooldown *= currentGear;
-            } else if (!type.getGearShiftsAffectDirectMovement() && type.getGearShiftsAffectTickCooldown()) {
-                tickCooldown /= currentGear;
             }
             if (time != null) {
                 long ticksElapsed = (System.currentTimeMillis() - time) / 50;
