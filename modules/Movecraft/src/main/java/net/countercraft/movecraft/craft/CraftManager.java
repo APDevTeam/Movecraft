@@ -20,6 +20,7 @@ package net.countercraft.movecraft.craft;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
+import net.countercraft.movecraft.events.TypesReloadedEvent;
 import net.countercraft.movecraft.exception.NonCancellableReleaseException;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.Bukkit;
@@ -159,6 +160,7 @@ public class CraftManager implements Iterable<Craft>{
 
     public void initCraftTypes() {
         this.craftTypes = loadCraftTypes();
+        Bukkit.getServer().getPluginManager().callEvent(new TypesReloadedEvent());
     }
 
     public void addCraft(@NotNull Craft c, @Nullable Player p) {
@@ -346,6 +348,8 @@ public class CraftManager implements Iterable<Craft>{
         long closestDistSquared = Long.MAX_VALUE;
         Set<Craft> craftsList = CraftManager.getInstance().getCraftsInWorld(loc.getWorld());
         for (Craft i : craftsList) {
+            if(i.getHitBox().isEmpty())
+                continue;
             int midX = (i.getHitBox().getMaxX() + i.getHitBox().getMinX()) >> 1;
 //				int midY=(i.getMaxY()+i.getMinY())>>1; don't check Y because it is slow
             int midZ = (i.getHitBox().getMaxZ() + i.getHitBox().getMinZ()) >> 1;

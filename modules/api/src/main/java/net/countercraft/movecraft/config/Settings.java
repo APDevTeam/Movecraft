@@ -59,16 +59,10 @@ public class Settings {
     public static int RepairTicksPerBlock = 0;
     public static double RepairMaxPercent = 50;
     public static int BlockQueueChunkSize = 1000;
-    public static int SiegeTaskSeconds = 600;
     public static double RepairMoneyPerBlock = 0.0;
-    public static boolean FireballPenetration = true;
     public static boolean AllowCrewSigns = true;
     public static boolean SetHomeToCrewSign = true;
     public static int MaxRemoteSigns = -1;
-    public static boolean WGCustomFlagsUsePilotFlag = false;
-    public static boolean WGCustomFlagsUseMoveFlag = false;
-    public static boolean WGCustomFlagsUseRotateFlag = false;
-    public static boolean WGCustomFlagsUseSinkFlag = false;
     public static boolean TownyBlockMoveOnSwitchPerm = false;
     public static boolean TownyBlockSinkOnNoPVP = false;
 
@@ -79,23 +73,5 @@ public class Settings {
     public static boolean IsLegacy = true; //false if version is 1.13 or higher
     public static boolean is1_14 = false;
     public static boolean UseFAWE = false;
-
-    public static boolean AssaultEnable;
-    public static double AssaultDamagesCapPercent;
-    public static int AssaultCooldownHours;
-    public static int AssaultDelay;
-    public static int AssaultDuration;
-    public static int AssaultRequiredDefendersOnline;
-    public static int AssaultRequiredOwnersOnline;
-    public static double AssaultCostPercent;
-    public static double AssaultMaxBalance;
-    public static int AssaultOwnerWeightPercent;
-    public static int AssaultMemberWeightPercent;
-    public static HashSet<Material> AssaultDestroyableBlocks = new HashSet<>();
-    public static int AssaultDamagesPerBlock;
     public static HashSet<Material> DisableShadowBlocks = new HashSet<>();
-
-    public static boolean SiegeEnable;
-    public static String SiegeTimeZone;
-    public static long TracerMinDistanceSqrd;
 }

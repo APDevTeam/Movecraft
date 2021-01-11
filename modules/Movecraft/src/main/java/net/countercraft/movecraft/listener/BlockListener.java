@@ -20,7 +20,6 @@ package net.countercraft.movecraft.listener;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldguard.WorldGuard;
-import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
@@ -30,39 +29,27 @@ import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.LegacyUtils;
 import net.countercraft.movecraft.utils.MathUtils;
-import net.countercraft.movecraft.utils.WorldguardUtils;
-import net.countercraft.movecraft.warfare.assault.Assault;
-import org.bukkit.*;
-import org.bukkit.block.*;
-import org.bukkit.block.data.BlockData;
-import org.bukkit.block.data.Directional;
-import org.bukkit.block.data.type.Door;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
+import org.bukkit.block.Hopper;
+import org.bukkit.block.Sign;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.*;
-import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
-import org.bukkit.material.Attachable;
-import org.bukkit.material.MaterialData;
 import org.bukkit.material.PistonBaseMaterial;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
 
 public class BlockListener implements Listener {
-
-
-    private long lastDamagesUpdate;
 
     @EventHandler
     public void onBlockPlace(final BlockPlaceEvent e) {
@@ -219,77 +206,6 @@ public class BlockListener implements Listener {
         }
     }
 
-    // prevent fragile items from dropping on cruising crafts
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void onPhysics(BlockPhysicsEvent event) {
-        if (event.isCancelled()) {
-            return;
-        }
-
-        Block block = event.getBlock();
-        for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(block.getWorld())) {
-            MovecraftLocation mloc = new MovecraftLocation(block.getX(), block.getY(), block.getZ());
-            if (!MathUtils.locIsNearCraftFast(tcraft, mloc)) {
-                continue;
-            }
-
-            if (isFragileBlock(block)) {
-                BlockFace face = BlockFace.DOWN;
-                boolean faceAlwaysDown = false;
-                if (Settings.IsLegacy) {
-                    MaterialData m = block.getState().getData();
-                    if (block.getType() == LegacyUtils.REDSTONE_COMPARATOR_ON || block.getType() == LegacyUtils.REDSTONE_COMPARATOR_OFF || block.getType() == LegacyUtils.DIODE_BLOCK_ON|| block.getType() == LegacyUtils.DIODE_BLOCK_OFF)
-                        faceAlwaysDown = true;
-                    if (m instanceof Attachable && !faceAlwaysDown) {
-                        face = ((Attachable) m).getAttachedFace();
-                    }
-                } else {
-                    BlockData data = block.getBlockData();
-                    if (block.getType() == Material.REPEATER || block.getType() == Material.COMPARATOR)
-                        faceAlwaysDown = true;
-                    if (data instanceof Directional && !faceAlwaysDown && !(data instanceof Door))
-                        face = ((Directional) data).getFacing().getOppositeFace();
-                }
-                if (!event.getBlock().getRelative(face).getType().isSolid()) {
-                    event.setCancelled(true);
-                    return;
-                }
-            }
-
-        }
-    }
-
-    @EventHandler(priority = EventPriority.LOW)
-    public void onBlockIgnite(BlockIgniteEvent event) {
-        if (event.isCancelled()) {
-            return;
-        }
-        final Craft adjacentCraft = adjacentCraft(event.getBlock().getLocation());
-        // replace blocks with fire occasionally, to prevent fast craft from simply ignoring fire
-        if (Settings.FireballPenetration && event.getCause() == BlockIgniteEvent.IgniteCause.FIREBALL) {
-            Block testBlock = event.getBlock().getRelative(-1, 0, 0);
-            if (!testBlock.getType().isBurnable())
-                testBlock = event.getBlock().getRelative(1, 0, 0);
-            if (!testBlock.getType().isBurnable())
-                testBlock = event.getBlock().getRelative(0, 0, -1);
-            if (!testBlock.getType().isBurnable())
-                testBlock = event.getBlock().getRelative(0, 0, 1);
-            if (!testBlock.getType().isBurnable()) {
-                return;
-            }
-            // check to see if fire spread is allowed, don't check if worldguard integration is not enabled
-            if (Movecraft.getInstance().getWorldGuardPlugin() != null && (Settings.WorldGuardBlockMoveOnBuildPerm || Settings.WorldGuardBlockSinkOnPVPPerm) && !WorldguardUtils.allowFireSpread(testBlock.getLocation())) {
-                    return;
-
-            }
-            testBlock.setType(org.bukkit.Material.AIR);
-        } else if (adjacentCraft != null) {
-
-            adjacentCraft.getHitBox().add(MathUtils.bukkit2MovecraftLoc(event.getBlock().getLocation()));
-        }
-
-    }
-
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockDispense(BlockDispenseEvent e) {
         CraftManager.getInstance().getCraftsInWorld(e.getBlock().getWorld());
@@ -317,85 +233,6 @@ public class BlockListener implements Listener {
                 break;
             }
         }
-    }
-
-    @EventHandler(priority = EventPriority.NORMAL)
-    public void explodeEvent(EntityExplodeEvent e) {
-        processAssault(e);
-    }
-
-    private void processAssault(EntityExplodeEvent e){
-        List<Assault> assaults = Movecraft.getInstance().getAssaultManager() != null ? Movecraft.getInstance().getAssaultManager().getAssaults() : null;
-        if (assaults == null || assaults.size() == 0) {
-            return;
-        }
-        WorldGuardPlugin worldGuard = Movecraft.getInstance().getWorldGuardPlugin();
-        for (final Assault assault : assaults) {
-            Iterator<Block> i = e.blockList().iterator();
-            while (i.hasNext()) {
-                Block b = i.next();
-                if (b.getWorld() != assault.getWorld())
-                    continue;
-                ApplicableRegionSet regions = WorldguardUtils.getRegionsAt(b.getLocation());
-                boolean isInAssaultRegion = false;
-                for (com.sk89q.worldguard.protection.regions.ProtectedRegion tregion : regions.getRegions()) {
-                    if (assault.getRegionName().equals(tregion.getId())) {
-                        isInAssaultRegion = true;
-                    }
-                }
-                if (!isInAssaultRegion)
-                    continue;
-                // first see if it is outside the destroyable area
-                org.bukkit.util.Vector min = assault.getMinPos();
-                org.bukkit.util.Vector max = assault.getMaxPos();
-
-                if (b.getLocation().getBlockX() < min.getBlockX() ||
-                        b.getLocation().getBlockX() > max.getBlockX() ||
-                        b.getLocation().getBlockZ() < min.getBlockZ() ||
-                        b.getLocation().getBlockZ() > max.getBlockZ() ||
-                        !Settings.AssaultDestroyableBlocks.contains(b.getType()) ||
-                        isFragileBlock(b.getRelative(BlockFace.SOUTH)) ||
-                        isFragileBlock(b.getRelative(BlockFace.DOWN)) ||
-                        isFragileBlock(b.getRelative(BlockFace.UP)) ||
-                        isFragileBlock(b.getRelative(BlockFace.EAST)) ||
-                        isFragileBlock(b.getRelative(BlockFace.WEST)) ||
-                        isFragileBlock(b.getRelative(BlockFace.NORTH)) ) {
-                    i.remove();
-                }
-
-
-                // whether or not you actually destroyed the block, add to damages
-                long damages = assault.getDamages() + Settings.AssaultDamagesPerBlock;
-                if (damages < assault.getMaxDamages()) {
-                    assault.setDamages(damages);
-                } else {
-                    assault.setDamages(assault.getMaxDamages());
-                }
-
-                // notify nearby players of the damages, do this 1 second later so all damages from this volley will be included
-                if (System.currentTimeMillis() < lastDamagesUpdate + 4000) {
-                    continue;
-                }
-                final Location floc = b.getLocation();
-                final World fworld = b.getWorld();
-                new BukkitRunnable() {
-                    @Override
-                    public void run() {
-                        long fdamages = assault.getDamages();
-                        for (Player p : fworld.getPlayers()) {
-                            if (Math.round(p.getLocation().getBlockX() / 1000.0) == Math.round(floc.getBlockX() / 1000.0) &&
-                                    Math.round(p.getLocation().getBlockZ() / 1000.0) == Math.round(floc.getBlockZ() / 1000.0)) {
-                                p.sendMessage("Damages: " + fdamages);
-
-                            }
-                        }
-                    }
-                }.runTaskLater(Movecraft.getInstance(), 20);
-                lastDamagesUpdate = System.currentTimeMillis();
-
-            }
-        }
-
     }
 
     @Nullable
@@ -464,3 +301,4 @@ public class BlockListener implements Listener {
 
     }
 }
+

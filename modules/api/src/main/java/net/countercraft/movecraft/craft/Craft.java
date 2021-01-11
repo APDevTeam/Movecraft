@@ -73,8 +73,6 @@ public abstract class Craft {
     private int origBlockCount;
     private double pilotLockedZ;
     @Nullable private Player notificationPlayer;
-    @Nullable private Player cannonDirector;
-    @Nullable private Player AADirector;
     private float meanCruiseTime;
     private int numMoves;
     @NotNull private final Map<Location, Pair<Material, Object>> phaseBlocks = new HashMap<>();
@@ -98,8 +96,6 @@ public abstract class Craft {
         this.pilotLockedX = 0.0;
         this.pilotLockedY = 0.0;
         this.pilotLockedZ = 0.0;
-        this.cannonDirector = null;
-        this.AADirector = null;
         this.lastCruiseUpdate = System.currentTimeMillis() - 10000;
         this.cruising = false;
         this.sinking = false;
@@ -335,24 +331,6 @@ public abstract class Craft {
         this.notificationPlayer = notificationPlayer;
     }
 
-    @Nullable
-    public Player getCannonDirector() {
-        return cannonDirector;
-    }
-
-    public void setCannonDirector(@Nullable Player cannonDirector) {
-        this.cannonDirector = cannonDirector;
-    }
-
-    @Nullable
-    public Player getAADirector() {
-        return AADirector;
-    }
-
-    public void setAADirector(@Nullable Player AADirector) {
-        this.AADirector = AADirector;
-    }
-
     public long getOrigPilotTime() {
         return origPilotTime;
     }
@@ -554,4 +532,3 @@ public abstract class Craft {
         this.currentGear = max(currentGear, 1);
     }
 }
-

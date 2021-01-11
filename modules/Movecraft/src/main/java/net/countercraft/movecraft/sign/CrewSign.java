@@ -154,12 +154,13 @@ public class CrewSign implements Listener {
                 continue;
             }
             Sign sign = (Sign) block.getState();
-            if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Crew:") && Arrays.binarySearch(beds, sign.getLocation().subtract(0,1,0).getBlock().getType()) >= 0) {
-                final Player crew = Bukkit.getPlayer(sign.getLine(1));
-                if (crew == null){
-                    return;
-                }
-               event.getCraft().getCrewSigns().put(crew.getUniqueId(),block.getLocation().subtract(0,1,0));
+            Material bed = sign.getLocation().subtract(0,1,0).getBlock().getType();
+            if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Crew:") && (bed.name().equals("BED_BLOCK") || bed.name().endsWith("_BED"))) {
+               Player p = Bukkit.getPlayer(sign.getLine(1));
+               if(p == null || !p.isOnline())
+                   return;
+
+                event.getCraft().getCrewSigns().put(p.getUniqueId(), block.getLocation().subtract(0,1,0));
             }
         }
     }

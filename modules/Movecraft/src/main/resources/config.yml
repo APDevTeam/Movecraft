@@ -10,7 +10,6 @@ WorldGuardBlockSinkOnPVPPerm: true
 ManOverboardTimeout: 30
 ManOverboardDistance: 1000 # maximum distance from a craft that you can manoverboard to it
 FireballLifespan: 6
-FireballPenetration: true
 ProtectPilotedCrafts: true
 DisableSpillProtection: false
 RequireCreatePerm: false # require users to have the movecract.<CraftTypeName>.create permission in order to place command signs
@@ -30,118 +29,10 @@ BlockQueueChunkSize: 200000
 RepairTicksPerBlock: 10
 RepairMoneyPerBlock: 10
 RepairMaxPercent: 50
-SiegeTaskSeconds: 600 # Seconds per siege message, defaults to 600 (10 minutes)
 AllowCrewSigns: true
 MaxRemoteSigns: -1 # Maximum number of remote signs that can be triggered at once.  Setting to -1 allows unlimited.
 SetHomeToCrewSign: false
 CraftsUseNetherPortals: false
-CheckForUpdates: true
-AssaultEnable: false # system to damage a region, incurring money damages. If enough damage is inflicted, ownership is lost. Ownership can be restored, and the region repaired, by paying damages
-AssaultDamagesCapPercent: 1.0 # percentage of the total wealth of all members of the region which is the maximum damages that can be inflicted
-AssaultCooldownHours: 24 # time before a region owner can have one of their regions assaulted again
-AssaultDelay: 1800 # time (in seconds) between when an assault is announced, and when it happens
-AssaultDuration: 1800 # time (in seconds) for the assault
-AssaultCostPercent: 0.25 # percentage of the total wealth of all members of the region which is the cost to assault it
-AssaultDamagesPerBlock: 15 # the damages incurred for every block that would have been destroyed in an assault
-AssaultMaxBalance: 5000000 # Maximum balance of each player that will be contributed to the cost & damages (previously hard coded at 5 million)
-AssaultRequiredDefendersOnline: 2 # At least this many members or owners must be online for the region to be assaulted
-AssaultRequiredOwnersOnline: 1 # At least this many owners must be online for the region to be assaulted, set to 0 to ignore
-AssaultOwnerWeightPercent: 1.0 # Percentage of each Owner's balance (under the maximum) to include in the total cost & damages (Can be greater than 100)
-AssaultMemberWeightPercent: 1.0 # Percentage of each Member's balance (under the maximum) to include in the total cost & damages (Can be greater than 100)
-AssaultDestroyableBlocks: # these blocks will be removed if destroyed in assault. Other blocks will not be removed, but still count for damages. Don't include craft flyblocks, or blocks with metadata, or you can have issues.
-  - stone
-  - diorite
-  - polished_diorite
-  - granite
-  - polished_granite
-  - andesite
-  - polished_andesite
-  - grass_block
-  - dirt
-  - coarse_dirt
-  - podzol
-  - cobblestone
-  - sand
-  - red_sand
-  - gravel
-  - gold_ore
-  - iron_ore
-  - oak_leaves
-  - jungle_leaves
-  - birch_leaves
-  - spruce_leaves
-  - sponge
-  - wet_sponge
-  - sandstone
-  - smooth_sandstone
-  - cut_sandstone
-  - chiseled_sandstone
-  - grass
-  - fern
-  - tall_grass
-  - large_fern
-  - dandelion
-  - poppy
-  - blue_orchid
-  - allium
-  - azure_bluet
-  - red_tulip
-  - orange_tulip
-  - white_tulip
-  - pink_tulip
-  - oxeye_daisy
-  - cornflower
-  - lily_of_the_valley
-  - wither_rose
-  - sunflower
-  - lilac
-  - rose_bush
-  - peony
-  - brown_mushroom
-  - red_mushroom
-  - tnt
-  - mossy_cobblestone
-  - farmland
-  - cobblestone_stairs
-  - redstone_ore
-  - snow
-  - ice
-  - snow_block
-  - cactus
-  - stone_bricks
-  - cracked_stone_bricks
-  - mossy_stone_bricks
-  - chiseled_stone_bricks
-  - brick_stairs
-  - stone_stairs
-  - diorite_stairs
-  - polished_diorite_stairs
-  - andesite_stairs
-  - polished_andesite_stairs
-  - granite_stairs
-  - polished_granite_stairs
-  - sandstone_stairs
-  - smooth_sandstone_stairs
-  - emerald_ore
-  - dark_oak_leaves
-  - acacia_leaves
-  - acacia_log
-  - dark_oak_log
-  - acacia_stairs
-  - dark_oak_stairs
-  - prismarine
-  - prismarine_stairs
-  - dark_prismarine
-  - dark_prismarine_stairs
-  - sea_lantern
-  - packed_ice
-  - red_sandstone
-  - red_smooth_sandstone
-  - red_sandstone_stairs
-  - red_smooth_sandstone_stairs
-  - sandstone_slab
-  - ice
-SiegeEnable: true
 DisableShadowBlocks: # These blocks will not cast shadows. This improves the speed of moving ships of these blocks immensely.
   - 26
   - 35

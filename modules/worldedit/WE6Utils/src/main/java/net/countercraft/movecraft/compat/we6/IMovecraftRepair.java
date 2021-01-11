@@ -3,7 +3,6 @@ package net.countercraft.movecraft.compat.we6;
 import com.sk89q.jnbt.CompoundTag;
 import com.sk89q.jnbt.ListTag;
 import com.sk89q.jnbt.Tag;
-import com.sk89q.worldedit.MaxChangedBlocksException;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.WorldEditException;
 import com.sk89q.worldedit.blocks.BaseBlock;
@@ -17,12 +16,7 @@ import com.sk89q.worldedit.function.mask.BlockMask;
 import com.sk89q.worldedit.function.operation.ForwardExtentCopy;
 import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.regions.CuboidRegion;
-import com.sk89q.worldedit.regions.Polygonal2DRegion;
-import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.world.registry.WorldData;
-import com.sk89q.worldguard.protection.regions.ProtectedCuboidRegion;
-import com.sk89q.worldguard.protection.regions.ProtectedPolygonalRegion;
-import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.MovecraftRepair;
 import net.countercraft.movecraft.config.Settings;
@@ -42,7 +36,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 public class IMovecraftRepair extends MovecraftRepair {
     private final Plugin plugin;
@@ -100,61 +97,6 @@ public class IMovecraftRepair extends MovecraftRepair {
         }
 
 
-    }
-
-    @Override
-    public boolean saveRegionRepairState(World world, ProtectedRegion region) {
-
-        File saveDirectory = new File(plugin.getDataFolder(), "AssaultSnapshots");
-        com.sk89q.worldedit.world.World weWorld = new BukkitWorld(world);
-        WorldData worldData = weWorld.getWorldData();
-        com.sk89q.worldedit.Vector weMinPos = region.getMinimumPoint();
-        com.sk89q.worldedit.Vector weMaxPos = region.getMaximumPoint();
-        if (!saveDirectory.exists()) {
-            saveDirectory.mkdirs();
-        }
-        Set<BaseBlock> baseBlockSet = new HashSet<>();
-        Region weRegion = null;
-        if (region instanceof ProtectedCuboidRegion) {
-            weRegion = new CuboidRegion(weMinPos, weMaxPos);
-        } else if (region instanceof ProtectedPolygonalRegion) {
-            ProtectedPolygonalRegion polyReg = (ProtectedPolygonalRegion) region;
-            weRegion = new Polygonal2DRegion(weWorld, polyReg.getPoints(), polyReg.getMinimumPoint().getBlockY(), polyReg.getMaximumPoint().getBlockY());
-        }
-
-
-        File repairStateFile = new File(saveDirectory, region.getId().replaceAll("´\\s+", "_") + ".schematic");
-        for (int x = weMinPos.getBlockX(); x <= weMaxPos.getBlockX(); x++) {
-            for (int y = weMinPos.getBlockY(); y <= weMaxPos.getBlockY(); y++) {
-                for (int z = weMinPos.getBlockZ(); z <= weMaxPos.getBlockZ(); z++) {
-                    Block block = world.getBlockAt(x, y, z);
-                    if (block.getType().equals(Material.AIR)) {
-                        continue;
-                    }
-                    if (Settings.AssaultDestroyableBlocks.contains(block.getTypeId())) {
-                        baseBlockSet.add(new BaseBlock(block.getTypeId(), block.getData()));
-                    }
-                }
-            }
-        }
-        try {
-
-            BlockArrayClipboard clipboard = new BlockArrayClipboard(weRegion);
-            Extent source = WorldEdit.getInstance().getEditSessionFactory().getEditSession(weWorld, -1);
-            Extent destination = clipboard;
-            ForwardExtentCopy copy = new ForwardExtentCopy(source, weRegion, clipboard.getOrigin(), destination, weMinPos);
-            BlockMask mask = new BlockMask(source, baseBlockSet);
-            copy.setSourceMask(mask);
-            Operations.completeLegacy(copy);
-            ClipboardWriter writer = ClipboardFormat.SCHEMATIC.getWriter(new FileOutputStream(repairStateFile, false));
-            writer.write(clipboard, worldData);
-            writer.close();
-            return true;
-
-        } catch (MaxChangedBlocksException | IOException e) {
-            e.printStackTrace();
-            return false;
-        }
     }
 
     @Override

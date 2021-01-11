@@ -17,7 +17,6 @@
 
 package net.countercraft.movecraft;
 
-import at.pavlov.cannons.Cannons;
 import com.earth2me.essentials.Essentials;
 import com.mewin.WGCustomFlags.WGCustomFlagsPlugin;
 import com.palmergames.bukkit.towny.Towny;
@@ -39,10 +38,6 @@ import net.countercraft.movecraft.towny.TownyCompatManager;
 import net.countercraft.movecraft.utils.LegacyUtils;
 import net.countercraft.movecraft.utils.TownyUtils;
 import net.countercraft.movecraft.utils.UpdateManager;
-import net.countercraft.movecraft.utils.WorldguardUtils;
-import net.countercraft.movecraft.warfare.assault.AssaultManager;
-import net.countercraft.movecraft.warfare.siege.Siege;
-import net.countercraft.movecraft.warfare.siege.SiegeManager;
 import net.countercraft.movecraft.worldguard.WorldGuardCompatManager;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Material;
@@ -51,10 +46,11 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -65,7 +61,6 @@ public class Movecraft extends JavaPlugin {
     private static WorldEditPlugin worldEditPlugin;
     private static WGCustomFlagsPlugin wgCustomFlagsPlugin = null;
     private static Economy economy;
-    private static Cannons cannonsPlugin = null;
     private static Towny townyPlugin = null;
     private static Essentials essentialsPlugin = null;
     private Logger logger;
@@ -76,8 +71,6 @@ public class Movecraft extends JavaPlugin {
 
 
     private AsyncManager asyncManager;
-    private AssaultManager assaultManager;
-    private SiegeManager siegeManager;
     private RepairManager repairManager;
 
     public static synchronized Movecraft getInstance() {
@@ -179,8 +172,6 @@ public class Movecraft extends JavaPlugin {
         Settings.ManOverboardDistSquared = Math.pow(getConfig().getDouble("ManOverboardDistance", 1000), 2);
         Settings.SilhouetteViewDistance = getConfig().getInt("SilhouetteViewDistance", 200);
         Settings.SilhouetteBlockCount = getConfig().getInt("SilhouetteBlockCount", 20);
-        Settings.SiegeTaskSeconds = getConfig().getInt("SiegeTaskSeconds", 600);
-        Settings.FireballPenetration = getConfig().getBoolean("FireballPenetration", true);
         Settings.ProtectPilotedCrafts = getConfig().getBoolean("ProtectPilotedCrafts", false);
         Settings.AllowCrewSigns = getConfig().getBoolean("AllowCrewSigns", true);
         Settings.SetHomeToCrewSign = getConfig().getBoolean("SetHomeToCrewSign", true);
@@ -205,33 +196,9 @@ public class Movecraft extends JavaPlugin {
                 Settings.ExtraFadeTimePerBlock.put(type, (Integer) temp.get(str));
             }
         }
-        Settings.AssaultEnable = getConfig().getBoolean("AssaultEnable", false);
-        Settings.AssaultDamagesCapPercent = getConfig().getDouble("AssaultDamagesCapPercent", 1.0);
-        Settings.AssaultCooldownHours = getConfig().getInt("AssaultCooldownHours", 24);
-        Settings.AssaultDelay = getConfig().getInt("AssaultDelay", 1800);
-        Settings.AssaultDuration = getConfig().getInt("AssaultDuration", 1800);
-        Settings.AssaultCostPercent = getConfig().getDouble("AssaultCostPercent", 0.25);
-        Settings.AssaultDamagesPerBlock = getConfig().getInt("AssaultDamagesPerBlock", 15);
-        Settings.AssaultRequiredDefendersOnline = getConfig().getInt("AssaultRequiredDefendersOnline", 2);
-        Settings.AssaultRequiredOwnersOnline = getConfig().getInt("AssaultRequiredOwnersOnline", 1);
-        Settings.AssaultMaxBalance = getConfig().getDouble("AssaultMaxBalance", 5000000);
-        Settings.CollisionPrimer = getConfig().getInt("CollisionPrimer", 1000);
-        List<?> assaultDestroyableBlocks = getConfig().getList("AssaultDestroyableBlocks");
-        for (Object id : assaultDestroyableBlocks) {
-            final Material type;
-            if (id instanceof Integer)
-                type = LegacyUtils.getMaterial((Integer) id);
-            else
-                type = Material.getMaterial(((String) id).toUpperCase());
-            if (type == null)
-                continue;
-            Settings.AssaultDestroyableBlocks.add(type);
-        }
-        Settings.ForbiddenRemoteSigns = new HashSet<>();
 
-        for(String s : getConfig().getStringList("ForbiddenRemoteSigns")) {
-            Settings.ForbiddenRemoteSigns.add(s.toLowerCase());
-        }
+        Settings.CollisionPrimer = getConfig().getInt("CollisionPrimer", 1000);
+        Settings.ForbiddenRemoteSigns = new HashSet<>();
         List<String> disableShadowBlocks = getConfig().getStringList("DisableShadowBlocks");
         for (String typ : disableShadowBlocks){
             Material type;
@@ -247,11 +214,9 @@ public class Movecraft extends JavaPlugin {
                 Settings.DisableShadowBlocks.add(type);
             }
         }
-        Settings.RepairMaxPercent = getConfig().getDouble("RepairMaxPercent", 50.0);
-        Settings.ForbiddenRemoteSigns = new HashSet<>(getConfig().getStringList("ForbiddenRemoteSigns"));
-        Settings.SiegeEnable = getConfig().getBoolean("SiegeEnable", false);
-        Settings.SiegeTimeZone = getConfig().getString("SiegeTimeZone", "UTC");
-
+        for(String s : getConfig().getStringList("ForbiddenRemoteSigns")) {
+            Settings.ForbiddenRemoteSigns.add(s.toLowerCase());
+        }
 
         if (!Settings.CompatibilityMode) {
             for (Material typ : Settings.DisableShadowBlocks) {
@@ -261,8 +226,6 @@ public class Movecraft extends JavaPlugin {
         //load up WorldGuard if it's present
         if (worldGuardPlugin == null) {
             logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - WG Not Found"));
-            Settings.SiegeEnable = false;
-            Settings.AssaultEnable = false;
             Settings.RestrictSiBsToRegions = false;
         } else {
             logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - WG Found"));
@@ -279,7 +242,6 @@ public class Movecraft extends JavaPlugin {
 
         if (wEPlugin == null || !(wEPlugin instanceof WorldEditPlugin)) {
             logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - WE Not Found"));
-            Settings.AssaultEnable = false;
         } else {
             logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - WE Found"));
             Settings.RepairTicksPerBlock = getConfig().getInt("RepairTicksPerBlock", 0);
@@ -302,26 +264,10 @@ public class Movecraft extends JavaPlugin {
                 e.printStackTrace();
                 this.getLogger().severe("Could not find a compatible repair class. Disabling repair and assault functions");
                 Settings.RepairTicksPerBlock = 0;
-                Settings.AssaultEnable = false;
             }
             Settings.RepairMaxPercent = getConfig().getDouble("RepairMaxPercent", 50);
             worldEditPlugin = (WorldEditPlugin) wEPlugin;
         }
-
-
-
-
-
-
-        // next is Cannons
-        Plugin plug = getServer().getPluginManager().getPlugin("Cannons");
-        if (plug != null && plug instanceof Cannons) {
-            cannonsPlugin = (Cannons) plug;
-            logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Cannons Found"));
-        } else {
-        	logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Cannons Not Found"));
-        }
-        //Towny
         Plugin tempTownyPlugin = getServer().getPluginManager().getPlugin("Towny");
         if (tempTownyPlugin != null && tempTownyPlugin instanceof Towny) {
             logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Towny Found"));
@@ -361,13 +307,10 @@ public class Movecraft extends JavaPlugin {
             } else {
                 logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Vault Not Found"));
                 economy = null;
-                Settings.SiegeEnable = false;
-                Settings.AssaultEnable = false;
             }
         } else {
             logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Vault Not Found"));
             economy = null;
-            Settings.SiegeEnable = false;
         }
         
         if (shuttingDown && Settings.IGNORE_RESET) {
@@ -384,69 +327,8 @@ public class Movecraft extends JavaPlugin {
 
             // Startup procedure
             asyncManager = new AsyncManager();
-            if (startup) {
-                asyncManager.runTaskTimer(this, 0, 1);
-                MapUpdateManager.getInstance().runTaskTimer(this, 0, 1);
-            }
-            if(Settings.AssaultEnable) {
-                assaultManager = new AssaultManager(this);
-                if (startup)
-                    assaultManager.runTaskTimerAsynchronously(this, 0, 20);
-            }
-
-            if(Settings.SiegeEnable) {
-
-                siegeManager = new SiegeManager(this);
-                logger.info("Enabling siege");
-                //load the sieges.yml file
-                File siegesFile = new File(Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/sieges.yml");
-                InputStream input;
-                try {
-                    input = new FileInputStream(siegesFile);
-                } catch (FileNotFoundException e) {
-                    input = null;
-                }
-                if (input != null) {
-                    Map data = new Yaml().loadAs(input, Map.class);
-                    Map<String, Map<String, ?>> siegesMap = (Map<String, Map<String, ?>>) data.get("sieges");
-                    List<Siege> sieges = siegeManager.getSieges();
-                    for (Map.Entry<String, Map<String, ?>> entry : siegesMap.entrySet()) {
-                        Map<String,Object> siegeMap = (Map<String, Object>) entry.getValue();
-                        final String regionToControl = (String) siegeMap.get("RegionToControl");
-                        if (!WorldguardUtils.regionExists(regionToControl)) {
-                            logger.severe(String.format(I18nSupport.getInternationalisedString("Startup - Siege Invalid region name"), "RegionToControl", regionToControl));
-                            continue;
-                        }
-                        final String siegeRegion = (String) siegeMap.get("SiegeRegion");
-                        if (!WorldguardUtils.regionExists(siegeRegion)) {
-                            logger.severe(String.format(I18nSupport.getInternationalisedString("Startup - Siege Invalid region name"), "SiegeRegion", regionToControl));
-                            continue;
-                        }
-                        sieges.add(new Siege(
-                                entry.getKey(),
-                                regionToControl,
-                                siegeRegion,
-                                (Integer) siegeMap.get("ScheduleStart"),
-                                (Integer) siegeMap.get("ScheduleEnd"),
-                                (Integer) siegeMap.getOrDefault("DelayBeforeStart", 0),
-                                (Integer) siegeMap.get("SiegeDuration"),
-                                (Integer) siegeMap.getOrDefault("DailyIncome", 0),
-                                (Integer) siegeMap.getOrDefault("CostToSiege", 0),
-                                (Boolean) siegeMap.getOrDefault("DoubleCostPerOwnedSiegeRegion", true),
-                                (List<Integer>) siegeMap.get("DaysOfTheWeek"),
-                                (List<String>) siegeMap.getOrDefault("CraftsToWin", Collections.emptyList()),
-                                (List<String>) siegeMap.getOrDefault("SiegeCommandsOnStart", Collections.emptyList()),
-                                (List<String>) siegeMap.getOrDefault("SiegeCommandsOnWin", Collections.emptyList()),
-                                (List<String>) siegeMap.getOrDefault("SiegeCommandsOnLose", Collections.emptyList()),
-                                (Integer) siegeMap.getOrDefault("Cooldown", 0)));
-                    }
-                    logger.log(Level.INFO, "Siege configuration loaded.");
-
-                }
-                if (startup)
-                    siegeManager.runTaskTimerAsynchronously(this, 0, 20);
-
-            }
+            asyncManager.runTaskTimer(this, 0, 1);
+            MapUpdateManager.getInstance().runTaskTimer(this, 0, 1);
             CraftManager.initialize();
 
             getServer().getPluginManager().registerEvents(new InteractListener(), this);
@@ -468,12 +350,6 @@ public class Movecraft extends JavaPlugin {
             this.getCommand("contacts").setExecutor(new ContactsCommand());
             this.getCommand("scuttle").setExecutor(new ScuttleCommand());
 
-            if(Settings.SiegeEnable)
-                this.getCommand("siege").setExecutor(new SiegeCommand());
-            if(Settings.AssaultEnable) {
-                this.getCommand("assaultinfo").setExecutor(new AssaultInfoCommand());
-                this.getCommand("assault").setExecutor(new AssaultCommand());
-            }
             getServer().getPluginManager().registerEvents(new BlockListener(), this);
             getServer().getPluginManager().registerEvents(new PlayerListener(), this);
             getServer().getPluginManager().registerEvents(new ChunkManager(), this);
@@ -487,7 +363,6 @@ public class Movecraft extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new MoveSign(), this);
             getServer().getPluginManager().registerEvents(new NameSign(), this);
             getServer().getPluginManager().registerEvents(new PilotSign(), this);
-            getServer().getPluginManager().registerEvents(new RegionDamagedSign(), this);
             getServer().getPluginManager().registerEvents(new RelativeMoveSign(), this);
             getServer().getPluginManager().registerEvents(new ReleaseSign(), this);
             getServer().getPluginManager().registerEvents(new RemoteSign(), this);
@@ -547,23 +422,6 @@ public class Movecraft extends JavaPlugin {
         }
     }
 
-    public void reload(){
-        onDisable();
-        asyncManager.cancel();
-        if (assaultManager != null)
-            assaultManager.cancel();
-        assaultManager = null;
-        if (siegeManager != null)
-            siegeManager.cancel();
-        siegeManager = null;
-        if (repairManager != null){
-            repairManager.cancel();
-        }
-        repairManager = null;
-        onEnable();
-
-
-    }
 
     public WorldGuardPlugin getWorldGuardPlugin() {
         return worldGuardPlugin;
@@ -577,10 +435,6 @@ public class Movecraft extends JavaPlugin {
         return economy;
     }
 
-    public Cannons getCannonsPlugin() {
-        return cannonsPlugin;
-    }
-
     public WGCustomFlagsPlugin getWGCustomFlagsPlugin() {
         return wgCustomFlagsPlugin;
     }
@@ -592,12 +446,6 @@ public class Movecraft extends JavaPlugin {
     public Essentials getEssentialsPlugin() {
         return essentialsPlugin;
     }
-
-    public AssaultManager getAssaultManager() {
-        return assaultManager;
-    }
-
-    public SiegeManager getSiegeManager(){return siegeManager;}
 
     public WorldHandler getWorldHandler(){
         return worldHandler;

@@ -9,8 +9,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-
-    <!--<version>7.0.0_beta_6</version>-->
+    <!--<version>7.0.0_beta_7</version>-->
     <version>7.0.0_for_1.8.8-1.16.2_beta_36</version>
          
     <repositories>
@@ -21,10 +20,6 @@
         <repository>
             <id>sk89q-repo</id>
             <url>http://maven.sk89q.com/repo/</url>
-        </repository>
-        <repository>
-            <id>cannons-repo</id>
-            <url>https://github.com/DerPavlov/mvn-repo/raw/master/</url>
         </repository>
         <repository>
             <id>jitpack.io</id>
@@ -151,23 +146,6 @@
             <artifactId>movecraft-WE6Utils</artifactId>
             <version>WE6Utils</version>
             <type>jar</type>
-        </dependency>
-        <!--Cannons-->
-        <dependency>
-            <groupId>at.pavlov</groupId>
-            <artifactId>Cannons</artifactId>
-            <version>LATEST</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>dummypermscompat</artifactId>
-                    <groupId>com.sk89q</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>worldedit-bukkit</artifactId>
-                    <groupId>com.sk89q.worldedit</groupId>
-                </exclusion>
-            </exclusions>
-            <scope>provided</scope>
         </dependency>
         <!--SnakeYAML-->
         <dependency>
