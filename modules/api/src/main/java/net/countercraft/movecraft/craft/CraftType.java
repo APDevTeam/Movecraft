@@ -350,7 +350,7 @@ final public class CraftType {
         gearShifts = Math.max(integerFromObject(data.getOrDefault("gearShifts", 1)), 1);
         gearShiftsAffectTickCooldown = (boolean) data.getOrDefault("gearShiftsAffectTickCooldown", true);
         gearShiftsAffectDirectMovement = (boolean) data.getOrDefault("gearShiftsAffectDirectMovement", false);
-        gearShiftsAffectCruiseSkipBlocks = (boolean) data.getOrDefault("gearShiftsAffectDirectMovement", false);
+        gearShiftsAffectCruiseSkipBlocks = (boolean) data.getOrDefault("gearShiftsAffectCruiseSkipBlocks", false);
     }
 
     private int integerFromObject(Object obj) {
