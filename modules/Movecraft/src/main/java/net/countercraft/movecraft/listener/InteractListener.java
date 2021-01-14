@@ -34,9 +34,6 @@ import org.bukkit.util.Vector;
 import java.util.HashMap;
 import java.util.Map;
 
-import static java.lang.Math.abs;
-import static java.lang.Math.rint;
-
 public final class InteractListener implements Listener {
     private static final Map<Player, Long> timeMap = new HashMap<>();
 
@@ -105,7 +102,7 @@ public final class InteractListener implements Listener {
                     ticksElapsed = ticksElapsed >> 1;
 
 
-                if (abs(ticksElapsed) < tickCooldown) {
+                if (Math.abs(ticksElapsed) < tickCooldown) {
                     return;
                 }
             }
@@ -141,9 +138,9 @@ public final class InteractListener implements Listener {
             direction.normalize();
             if (craft.getType().getGearShiftsAffectDirectMovement())
                 direction.multiply(currentGear);
-            int dx = (int) rint(direction.getX());
-            int dz = (int) rint(direction.getZ());
-            int dy = (int) rint(direction.getY());
+            int dx = (int) Math.rint(direction.getX());
+            int dz = (int) Math.rint(direction.getZ());
+            int dy = (int) Math.rint(direction.getY());
             if (Math.abs(p) >= 75) {
                 dx = 0;
                 dz = 0;

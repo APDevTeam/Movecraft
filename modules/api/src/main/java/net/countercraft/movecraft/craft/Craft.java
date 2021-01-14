@@ -41,9 +41,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static java.lang.Math.max;
-
-
 public abstract class Craft {
     @NotNull protected final CraftType type;
     @NotNull protected BitmapHitBox hitBox;
@@ -336,7 +333,7 @@ public abstract class Craft {
             Material flyBlockMaterial = Material.getMaterial(type.getDynamicFlyBlock());
             double count = materials.get(flyBlockMaterial);
             double woolRatio = count / hitBox.size();
-            return max((int)Math.round((20.0 * (type.getCruiseSkipBlocks(w) + 1)) / ((type.getDynamicFlyBlockSpeedFactor() * 1.5) * (woolRatio - .5) + (20.0 / (type.getCruiseTickCooldown(w) )) + 1)) * (type.getGearShiftsAffectTickCooldown() ? currentGear : 1), 1);
+            return Math.max((int)Math.round((20.0 * (type.getCruiseSkipBlocks(w) + 1)) / ((type.getDynamicFlyBlockSpeedFactor() * 1.5) * (woolRatio - .5) + (20.0 / (type.getCruiseTickCooldown(w) )) + 1)) * (type.getGearShiftsAffectTickCooldown() ? currentGear : 1), 1);
         }
 
         if(type.getDynamicLagSpeedFactor() == 0.0 || type.getDynamicLagPowerFactor() == 0.0 || Math.abs(type.getDynamicLagPowerFactor()) > 1.0)
@@ -356,7 +353,7 @@ public abstract class Craft {
         // Dynamic Lag Speed
         double speed = 20.0 * (type.getCruiseSkipBlocks(w) + 1.0) / (float)type.getCruiseTickCooldown(w);
         speed -= type.getDynamicLagSpeedFactor() * Math.pow(getMeanCruiseTime() * 1000.0, type.getDynamicLagPowerFactor());
-        speed = max(type.getDynamicLagMinSpeed(), speed);
+        speed = Math.max(type.getDynamicLagMinSpeed(), speed);
         return (int)Math.round((20.0 * (type.getCruiseSkipBlocks(w) + 1.0)) / speed) * (type.getGearShiftsAffectTickCooldown() ? currentGear : 1);
             //In theory, the chest penalty is not needed for a DynamicLag craft.
     }
@@ -486,6 +483,6 @@ public abstract class Craft {
         if (currentGear > type.getGearShifts()) {
             this.currentGear = type.getGearShifts();
         }
-        this.currentGear = max(currentGear, 1);
+        this.currentGear = Math.max(currentGear, 1);
     }
 }
