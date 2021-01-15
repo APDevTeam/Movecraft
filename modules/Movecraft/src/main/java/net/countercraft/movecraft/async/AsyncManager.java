@@ -20,7 +20,6 @@ package net.countercraft.movecraft.async;
 import com.google.common.collect.Lists;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
-import net.countercraft.movecraft.Rotation;
 import net.countercraft.movecraft.async.detection.DetectionTask;
 import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
@@ -37,7 +36,6 @@ import net.countercraft.movecraft.utils.*;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -429,6 +427,12 @@ public class AsyncManager extends BukkitRunnable {
             }
             if (pcraft.getType().getCruiseOnPilot()) {
                 dy = pcraft.getType().getCruiseOnPilotVertMove();
+            }
+            if (pcraft.getType().getGearShiftsAffectCruiseSkipBlocks()) {
+                final int gearshift = pcraft.getCurrentGear();
+                dx *= gearshift;
+                dy *= gearshift;
+                dz *= gearshift;
             }
             pcraft.translate(dx, dy, dz);
             pcraft.setLastDX(dx);
