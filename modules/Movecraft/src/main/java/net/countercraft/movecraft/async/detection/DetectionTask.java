@@ -18,7 +18,6 @@
 package net.countercraft.movecraft.async.detection;
 
 
-import at.pavlov.cannons.cannon.Cannon;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftBlock;
 import net.countercraft.movecraft.MovecraftLocation;
@@ -113,7 +112,6 @@ public class DetectionTask extends AsyncTask {
             return;
         }
         checkMaxSignLimits();
-        checkMaxCannons();
         long endTime = System.currentTimeMillis();
         if (Settings.Debug){
             Bukkit.broadcastMessage("Detection took (ms): " + (endTime - startTime));
@@ -417,43 +415,6 @@ public class DetectionTask extends AsyncTask {
                     continue;
                 }
                 fail(I18nSupport.getInternationalisedString("Detection - Too many signs with string") + " " + String.join(", ", entry.getKey()) + ": " + count + "% > " + maxCount + "%");
-            }
-        }
-    }
-
-    private void checkMaxCannons() {
-        if (Movecraft.getInstance().getCannonsPlugin() == null) {
-            return;
-        }
-        for (Cannon can : CannonsUtils.getCannonsInHitBox(hitBox, world)) {
-
-            for (List<String> limitedCannonNames : craft.getType().getMaxCannons().keySet()) {
-                if (!limitedCannonNames.contains(can.getCannonDesign().getDesignName().toLowerCase())) {
-                    continue;
-                }
-                int count = cannonsCount.getOrDefault(limitedCannonNames, 0);
-                count++;
-                cannonsCount.put(limitedCannonNames, count);
-            }
-        }
-        if (cannonsCount.isEmpty()) {
-            return;
-        }
-        for (List<String> limitedCannonNames : craft.getType().getMaxCannons().keySet()) {
-            final double limit = craft.getType().getMaxCannons().get(limitedCannonNames);
-            int count = cannonsCount.get(limitedCannonNames);
-            if (limit >= 10000.0) {
-                int max = (int) (limit - 10000.0);
-                if (count <= max) {
-                    continue;
-                }
-                fail(I18nSupport.getInternationalisedString("Detection - Too many cannons") + " " + String.join(", ", limitedCannonNames) + ": " + count + " > " + max);
-            } else {
-                int maxCount = (int) (hitBox.size() * (limit / 100.0));
-                if (count <= maxCount) {
-                    continue;
-                }
-                fail(I18nSupport.getInternationalisedString("Detection - Too many cannons") + " " + String.join(", ", limitedCannonNames) + ": " + count + " > " + maxCount );
             }
         }
     }
