@@ -125,6 +125,9 @@ final public class CraftType {
     @NotNull private final Map<PotionEffect,Integer> potionEffectsToApply;
     @NotNull private final Map<List<String>, Double> maxSignsWithString;
     @NotNull private final Map<List<String>, Double> maxCannons;
+    private final boolean gearShiftsAffectTickCooldown;
+    private final boolean gearShiftsAffectDirectMovement;
+    private final boolean gearShiftsAffectCruiseSkipBlocks;
     @SuppressWarnings("unchecked")
     public CraftType(File f) {
         final Map data;
@@ -399,7 +402,10 @@ final public class CraftType {
         List<String> disabledWorlds = (List<String>) data.getOrDefault("disableTeleportToWorlds", new ArrayList<>());
         disableTeleportToWorlds.addAll(disabledWorlds);
         teleportationCooldown = integerFromObject(data.getOrDefault("teleportationCooldown", 0));
-        gearShifts = max(integerFromObject(data.getOrDefault("gearShifts", 1)), 1);
+        gearShifts = Math.max(integerFromObject(data.getOrDefault("gearShifts", 1)), 1);
+        gearShiftsAffectTickCooldown = (boolean) data.getOrDefault("gearShiftsAffectTickCooldown", true);
+        gearShiftsAffectDirectMovement = (boolean) data.getOrDefault("gearShiftsAffectDirectMovement", false);
+        gearShiftsAffectCruiseSkipBlocks = (boolean) data.getOrDefault("gearShiftsAffectCruiseSkipBlocks", false);
     }
 
     private int integerFromObject(Object obj) {
@@ -1004,6 +1010,18 @@ final public class CraftType {
 
     public int getGearShifts() {
         return gearShifts;
+    }
+
+    public boolean getGearShiftsAffectTickCooldown() {
+        return gearShiftsAffectTickCooldown;
+    }
+
+    public boolean getGearShiftsAffectDirectMovement() {
+        return gearShiftsAffectDirectMovement;
+    }
+
+    public boolean getGearShiftsAffectCruiseSkipBlocks() {
+        return gearShiftsAffectCruiseSkipBlocks;
     }
 
     private class TypeNotFoundException extends RuntimeException {

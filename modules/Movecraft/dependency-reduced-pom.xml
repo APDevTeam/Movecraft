@@ -4,7 +4,7 @@
   <groupId>net.countercraft</groupId>
   <artifactId>movecraft</artifactId>
   <name>Movecraft</name>
-  <version>7.0.0_for_1.8.8-1.16.2_beta_36</version>
+  <version>7.0.0_for_1.8.8-1.16.2_beta_37</version>
   <url>http://github.com/apdevteam/Movecraft</url>
   <build>
     <sourceDirectory>src/main/java</sourceDirectory>
@@ -176,10 +176,6 @@
       <url>http://maven.sk89q.com/repo/</url>
     </repository>
     <repository>
-      <id>cannons-repo</id>
-      <url>https://github.com/DerPavlov/mvn-repo/raw/master/</url>
-    </repository>
-    <repository>
       <id>jitpack.io</id>
       <url>https://jitpack.io</url>
     </repository>
@@ -218,22 +214,6 @@
       <artifactId>worldedit</artifactId>
       <version>6.0.0-SNAPSHOT</version>
       <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>at.pavlov</groupId>
-      <artifactId>Cannons</artifactId>
-      <version>LATEST</version>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <artifactId>dummypermscompat</artifactId>
-          <groupId>com.sk89q</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>worldedit-bukkit</artifactId>
-          <groupId>com.sk89q.worldedit</groupId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.yaml</groupId>
