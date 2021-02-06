@@ -25,9 +25,6 @@ ExtraFadeTimePerBlock: #List of blocks that will take longer time to fade
   DROPPER: 600
   FURNACE: 600
 BlockQueueChunkSize: 200000
-RepairTicksPerBlock: 10
-RepairMoneyPerBlock: 10
-RepairMaxPercent: 50
 AllowCrewSigns: true
 MaxRemoteSigns: -1 # Maximum number of remote signs that can be triggered at once.  Setting to -1 allows unlimited.
 SetHomeToCrewSign: false

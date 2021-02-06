@@ -249,7 +249,6 @@ public class Movecraft extends JavaPlugin {
             RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
             if (rsp != null) {
                 economy = rsp.getProvider();
-                Settings.RepairMoneyPerBlock = getConfig().getDouble("RepairMoneyPerBlock", 0.0);
                 logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Vault Found"));
             } else {
                 logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Vault Not Found"));
