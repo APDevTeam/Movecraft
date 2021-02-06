@@ -671,49 +671,50 @@ public class AsyncManager extends BukkitRunnable {
                         if (System.currentTimeMillis() - recentContactTracking.get(ccraft).getOrDefault(tcraft, 0L) <= 60000) {
                             continue;
                         }
-                        String notification = I18nSupport.getInternationalisedString("Contact - New Contact") + ": ";
 
-                        if (tcraft.getName().length() >= 1){
-                            notification += tcraft.getName();
-                            notification += ChatColor.RESET;
-                            notification += " (";
-                        }
-                        notification += tcraft.getType().getCraftName();
-                        if (tcraft.getName().length() >= 1){
-                            notification += ")";
-                        }
-                        notification += " " + I18nSupport.getInternationalisedString("Contact - Commanded By")+" ";
-                        if (tcraft.getNotificationPlayer() != null) {
-                            notification += tcraft.getNotificationPlayer().getDisplayName();
-                        } else {
-                            notification += "NULL";
-                        }
-                        notification += ", " + I18nSupport.getInternationalisedString("Contact - Size") + ": ";
-                        notification += tcraft.getOrigBlockCount();
-                        notification += ", " + I18nSupport.getInternationalisedString("Contact - Range") + ": ";
-                        notification += (int) Math.sqrt(distsquared);
-                        notification += " " + I18nSupport.getInternationalisedString("Contact - To The") + " ";
-                        if (Math.abs(diffx) > Math.abs(diffz))
-                            if (diffx < 0)
-                                notification += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - East");
+                        if(ccraft.getNotificationPlayer() != null) {
+                            String notification = I18nSupport.getInternationalisedString("Contact - New Contact") + ": ";
+
+                            if (tcraft.getName().length() >= 1){
+                                notification += tcraft.getName();
+                                notification += ChatColor.RESET;
+                                notification += " (";
+                            }
+                            notification += tcraft.getType().getCraftName();
+                            if (tcraft.getName().length() >= 1){
+                                notification += ")";
+                            }
+                            notification += " " + I18nSupport.getInternationalisedString("Contact - Commanded By")+" ";
+                            if (tcraft.getNotificationPlayer() != null) {
+                                notification += tcraft.getNotificationPlayer().getDisplayName();
+                            } else {
+                                notification += "NULL";
+                            }
+                            notification += ", " + I18nSupport.getInternationalisedString("Contact - Size") + ": ";
+                            notification += tcraft.getOrigBlockCount();
+                            notification += ", " + I18nSupport.getInternationalisedString("Contact - Range") + ": ";
+                            notification += (int) Math.sqrt(distsquared);
+                            notification += " " + I18nSupport.getInternationalisedString("Contact - To The") + " ";
+                            if (Math.abs(diffx) > Math.abs(diffz))
+                                if (diffx < 0)
+                                    notification += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - East");
+                                else
+                                    notification += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - West");
+                            else if (diffz < 0)
+                                notification += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - South");
                             else
-                                notification += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - West");
-                        else if (diffz < 0)
-                            notification += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - South");
-                        else
-                            notification += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - North");
+                                notification += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - North");
 
-                        notification += ".";
-                        ccraft.getNotificationPlayer().sendMessage(notification);
-                        w.playSound(ccraft.getNotificationPlayer().getLocation(), ccraft.getType().getCollisionSound(), 1.0f, 2.0f);
+                            notification += ".";
+
+                            ccraft.getNotificationPlayer().sendMessage(notification);
+                            w.playSound(ccraft.getNotificationPlayer().getLocation(), ccraft.getType().getCollisionSound(), 1.0f, 2.0f);
+                        }
 
 
                         long timestamp = System.currentTimeMillis();
                         recentContactTracking.get(ccraft).put(tcraft, timestamp);
-
                     }
-
-
                 }
             }
 

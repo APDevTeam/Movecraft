@@ -284,7 +284,8 @@ public class RotationTask extends AsyncTask {
                         faceMessage += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - North");
                 }
             }
-            getCraft().getNotificationPlayer().sendMessage(faceMessage);
+            if(getCraft().getNotificationPlayer() != null)
+                getCraft().getNotificationPlayer().sendMessage(faceMessage);
 
             craftsInWorld = CraftManager.getInstance().getCraftsInWorld(getCraft().getW());
             for (Craft craft : craftsInWorld) {
@@ -339,7 +340,7 @@ public class RotationTask extends AsyncTask {
         return isSubCraft;
     }
 
-    private void isTownyBlock(Location plugLoc, Player craftPilot){
+    private void isTownyBlock(Location plugLoc, Player craftPilot) {
         //towny
         Player p = craftPilot == null ? getCraft().getNotificationPlayer() : craftPilot;
         if (p == null) {

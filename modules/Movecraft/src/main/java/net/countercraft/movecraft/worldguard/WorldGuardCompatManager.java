@@ -32,7 +32,7 @@ public class WorldGuardCompatManager implements Listener {
         if(event.getCraft().getNotificationPlayer() == null)
             return;
         for(MovecraftLocation location : event.getNewHitBox()){
-            if(!Movecraft.getInstance().getWorldGuardPlugin().canBuild(event.getCraft().getNotificationPlayer(),location.toBukkit(event.getCraft().getW()))){
+            if(!Movecraft.getInstance().getWorldGuardPlugin().canBuild(event.getCraft().getNotificationPlayer(), location.toBukkit(event.getCraft().getW()))){
                 event.setCancelled(true);
                 event.setFailMessage(String.format( I18nSupport.getInternationalisedString("Rotation - WorldGuard - Not Permitted To Build" )+" @ %d,%d,%d", location.getX(), location.getY(), location.getZ()));
                 return;
