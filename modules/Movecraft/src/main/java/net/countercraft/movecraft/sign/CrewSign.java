@@ -27,7 +27,7 @@ public class CrewSign implements Listener {
 
     @EventHandler
     public final void onSignChange(SignChangeEvent event) {
-        if (!event.getLine(0).equalsIgnoreCase("Crew:")) {
+        if (event.isCancelled() || !event.getLine(0).equalsIgnoreCase("Crew:")) {
             return;
         }
         Player player = event.getPlayer();
