@@ -99,6 +99,7 @@ public class Movecraft extends JavaPlugin {
         Settings.RestrictSiBsToRegions = getConfig().getBoolean("RestrictSiBsToRegions", false);
         Settings.Debug = getConfig().getBoolean("Debug", false);
         Settings.DisableSpillProtection = getConfig().getBoolean("DisableSpillProtection", false);
+        Settings.DisableIceForm = getConfig().getBoolean("DisableIceForm", true);
         
         // moved localisation initialisation to the start so that startup messages can be localised
         String[] localisations = {"en", "cz", "nl"};
