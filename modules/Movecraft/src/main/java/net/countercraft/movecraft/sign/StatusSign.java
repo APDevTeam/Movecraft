@@ -14,6 +14,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -77,12 +78,17 @@ public final class StatusSign implements Listener{
         int signLine=1;
         int signColumn=0;
         for(List<Integer> alFlyBlockID : craft.getType().getFlyBlocks().keySet()) {
-            int flyBlockID=alFlyBlockID.get(0);
-            Double minimum=craft.getType().getFlyBlocks().get(alFlyBlockID).get(0);
-            if(foundBlocks.containsKey(flyBlockID) && minimum>0) { // if it has a minimum, it should be considered for sinking consideration
-                int amount=foundBlocks.get(flyBlockID);
+            Double minimum = craft.getType().getFlyBlocks().get(alFlyBlockID).get(0);
+            if(!Collections.disjoint(foundBlocks.keySet(), alFlyBlockID) && minimum>0) { // if it has a minimum, it should be considered for sinking consideration
+                int amount = 0;
+                for(int flyBlockID : alFlyBlockID) {
+                    if(!foundBlocks.containsKey(flyBlockID))
+                        return;
+                    amount += foundBlocks.get(flyBlockID);
+                }
+
                 Double percentPresent=(double) (amount*100/totalBlocks);
-                int deshiftedID=flyBlockID;
+                int deshiftedID=alFlyBlockID.get(0);
                 if(deshiftedID>10000) {
                     deshiftedID=(deshiftedID-10000)>>4;
                 }
