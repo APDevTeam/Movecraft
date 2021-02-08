@@ -22,6 +22,7 @@ import com.palmergames.bukkit.towny.object.TownBlock;
 import com.palmergames.bukkit.towny.object.TownyWorld;
 import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
+import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
@@ -216,39 +217,39 @@ public class RotationTask extends AsyncTask {
             if (rotation == Rotation.ANTICLOCKWISE) {
                 // ship faces west
                 switch (getCraft().getCruiseDirection()) {
-                    case 0x5:
-                        getCraft().setCruiseDirection((byte) 0x2);
+                    case WEST:
+                        getCraft().setCruiseDirection(CruiseDirection.SOUTH);
                         break;
                     // ship faces east
-                    case 0x4:
-                        getCraft().setCruiseDirection((byte) 0x3);
+                    case EAST:
+                        getCraft().setCruiseDirection(CruiseDirection.NORTH);
                         break;
                     // ship faces north
-                    case 0x2:
-                        getCraft().setCruiseDirection((byte) 0x4);
+                    case SOUTH:
+                        getCraft().setCruiseDirection(CruiseDirection.EAST);
                         break;
                     // ship faces south
-                    case 0x3:
-                        getCraft().setCruiseDirection((byte) 0x5);
+                    case NORTH:
+                        getCraft().setCruiseDirection(CruiseDirection.WEST);
                         break;
                 }
             } else if (rotation == Rotation.CLOCKWISE) {
                 // ship faces west
                 switch (getCraft().getCruiseDirection()) {
-                    case 0x5:
-                        getCraft().setCruiseDirection((byte) 0x3);
+                    case WEST:
+                        getCraft().setCruiseDirection(CruiseDirection.NORTH);
                         break;
                     // ship faces east
-                    case 0x4:
-                        getCraft().setCruiseDirection((byte) 0x2);
+                    case EAST:
+                        getCraft().setCruiseDirection(CruiseDirection.SOUTH);
                         break;
                     // ship faces north
-                    case 0x2:
-                        getCraft().setCruiseDirection((byte) 0x5);
+                    case SOUTH:
+                        getCraft().setCruiseDirection(CruiseDirection.WEST);
                         break;
                     // ship faces south
-                    case 0x3:
-                        getCraft().setCruiseDirection((byte) 0x4);
+                    case NORTH:
+                        getCraft().setCruiseDirection(CruiseDirection.EAST);
                         break;
                 }
             }

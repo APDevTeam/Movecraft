@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.sign;
 
+import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
@@ -66,7 +67,8 @@ public final class CraftSign implements Listener{
 
         if (c.getType().getCruiseOnPilot()) {
             c.detect(null, event.getPlayer(), startPoint);
-            c.setCruiseDirection(sign.getRawData());
+            org.bukkit.material.Sign materialSign = (org.bukkit.material.Sign) event.getClickedBlock().getState().getData();
+            c.setCruiseDirection(CruiseDirection.fromBlockFace(materialSign.getFacing()));
             c.setLastCruiseUpdate(System.currentTimeMillis());
             c.setCruising(true);
             new BukkitRunnable() {
