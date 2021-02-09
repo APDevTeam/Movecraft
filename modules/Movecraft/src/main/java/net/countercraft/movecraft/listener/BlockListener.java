@@ -249,11 +249,9 @@ public class BlockListener implements Listener {
             return;
         }
         MovecraftLocation loc = MathUtils.bukkit2MovecraftLoc(e.getBlock().getLocation());
-        for (Craft craft : CraftManager.getInstance().getCraftsInWorld(e.getBlock().getWorld())) {
-            if (craft.getHitBox().contains((loc))) {
-                e.setCancelled(true);
-                return;
-            }
+        Craft craft = CraftManager.getInstance().fastNearestCraftToLoc(e.getBlock().getLocation());
+        if (craft != null && craft.getHitBox().contains((loc))) {
+            e.setCancelled(true);
         }
     }
 }
