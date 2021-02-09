@@ -244,7 +244,7 @@ public class BlockListener implements Listener {
     }
 
     @EventHandler
-    public void onIceForm(BlockFormEvent e) {
+    public void onBlockForm(BlockFormEvent e) {
         if (e.isCancelled() || !Settings.DisableBlockForm) {
             return;
         }
