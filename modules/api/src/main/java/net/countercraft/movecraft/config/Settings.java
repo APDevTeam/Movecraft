@@ -43,7 +43,7 @@ public class Settings {
     public static boolean WorldGuardBlockSinkOnPVPPerm = false;
     public static boolean ProtectPilotedCrafts = false;
     public static boolean DisableSpillProtection = false;
-    public static boolean DisableBlockForm = true;
+    public static boolean DisableIceForm = true;
     public static boolean RequireCreatePerm = false;
     public static boolean RequireNamePerm = false;
     public static int FadeWrecksAfter = 0;
