@@ -17,6 +17,7 @@
 
 package net.countercraft.movecraft.craft;
 
+import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
 import net.countercraft.movecraft.config.Settings;
@@ -53,7 +54,7 @@ public abstract class Craft {
     private boolean cruising;
     private boolean sinking;
     private boolean disabled;
-    private byte cruiseDirection;
+    private CruiseDirection cruiseDirection;
     private long lastCruiseUpdate;
     private long lastBlockCheck;
     private long lastRotateTime=0;
@@ -190,11 +191,11 @@ public abstract class Craft {
         this.disabled = disabled;
     }
 
-    public byte getCruiseDirection() {
+    public CruiseDirection getCruiseDirection() {
         return cruiseDirection;
     }
 
-    public void setCruiseDirection(byte cruiseDirection) {
+    public void setCruiseDirection(CruiseDirection cruiseDirection) {
         this.cruiseDirection = cruiseDirection;
     }
 
@@ -324,7 +325,7 @@ public abstract class Craft {
             return (type.getTickCooldown(w) + chestPenalty) * (type.getGearShiftsAffectTickCooldown() ? currentGear : 1);
 
         // Ascent or Descent
-        if(cruiseDirection == 0x42 || cruiseDirection == 0x43) {
+        if(cruiseDirection == CruiseDirection.UP || cruiseDirection == CruiseDirection.DOWN) {
             return (type.getVertCruiseTickCooldown(w) + chestPenalty) * (type.getGearShiftsAffectTickCooldown() ? currentGear : 1);
         }
 
@@ -363,7 +364,7 @@ public abstract class Craft {
      * @return the speed of the craft
      */
     public double getSpeed() {
-        if(cruiseDirection == 0x42 || cruiseDirection == 0x43) {
+        if(cruiseDirection == CruiseDirection.UP || cruiseDirection == CruiseDirection.DOWN) {
             return 20 * (type.getVertCruiseSkipBlocks(w) + 1) / (double) getTickCooldown();
         }
         else {

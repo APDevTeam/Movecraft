@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.sign;
 
+import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
@@ -58,7 +59,11 @@ public final class CruiseSign implements Listener{
             sign.setLine(0, "Cruise: ON");
             sign.update(true);
 
-            c.setCruiseDirection(sign.getRawData());
+            org.bukkit.material.Sign materialSign = (org.bukkit.material.Sign) block.getState().getData();
+            if(block.getType() == Material.SIGN_POST)
+                c.setCruiseDirection(CruiseDirection.NONE);
+            else
+                c.setCruiseDirection(CruiseDirection.fromBlockFace(materialSign.getFacing()));
             c.setLastCruiseUpdate(System.currentTimeMillis());
             c.setCruising(true);
             c.resetSigns(sign);
