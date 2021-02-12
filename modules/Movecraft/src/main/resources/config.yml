@@ -12,6 +12,7 @@ ManOverboardDistance: 1000 # maximum distance from a craft that you can manoverb
 FireballLifespan: 6
 ProtectPilotedCrafts: true
 DisableSpillProtection: false
+DisableIceForm: true
 RequireCreatePerm: false # require users to have the movecract.<CraftTypeName>.create permission in order to place command signs
 TNTContactExplosives: true
 DisableCrates: true
