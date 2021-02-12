@@ -460,7 +460,10 @@ public class AsyncManager extends BukkitRunnable {
             if (ticksElapsed <= Settings.SinkCheckTicks) {
                 continue;
             }
-
+            
+            // if the craft is sinking, let the player
+            // know and release the craft. Otherwise
+            // update the time for the next check
             if (pcraft.shouldSink() && pcraft.isNotProcessing()) {
                 Player notifyP = pcraft.getNotificationPlayer();
                 if (notifyP != null) {
