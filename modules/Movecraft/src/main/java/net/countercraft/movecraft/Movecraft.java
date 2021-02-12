@@ -37,7 +37,6 @@ import net.countercraft.movecraft.towny.TownyCompatManager;
 import net.countercraft.movecraft.utils.TownyUtils;
 import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
 import net.countercraft.movecraft.worldguard.WorldGuardCompatManager;
-import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Material;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -56,7 +55,6 @@ public class Movecraft extends JavaPlugin {
     private static Movecraft instance;
     private static WorldGuardPlugin worldGuardPlugin;
     private static WGCustomFlagsPlugin wgCustomFlagsPlugin = null;
-    private static Economy economy;
     private static Towny townyPlugin = null;
     private static Essentials essentialsPlugin = null;
     /*public HashMap<MovecraftLocation, Long> blockFadeTimeMap = new HashMap<>();
@@ -243,21 +241,6 @@ public class Movecraft extends JavaPlugin {
         if (essentialsPlugin == null) {
             logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Essentials Not Found"));
         }
-
-        // and now Vault
-        if (getServer().getPluginManager().getPlugin("Vault") != null) {
-            RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
-            if (rsp != null) {
-                economy = rsp.getProvider();
-                logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Vault Found"));
-            } else {
-                logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Vault Not Found"));
-                economy = null;
-            }
-        } else {
-            logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Vault Not Found"));
-            economy = null;
-        }
         
         if (shuttingDown && Settings.IGNORE_RESET) {
             logger.log(
@@ -328,10 +311,6 @@ public class Movecraft extends JavaPlugin {
 
     public WorldGuardPlugin getWorldGuardPlugin() {
         return worldGuardPlugin;
-    }
-
-    public Economy getEconomy() {
-        return economy;
     }
 
     public WGCustomFlagsPlugin getWGCustomFlagsPlugin() {
