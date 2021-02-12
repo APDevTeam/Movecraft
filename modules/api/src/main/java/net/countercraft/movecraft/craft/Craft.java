@@ -27,19 +27,13 @@ import net.countercraft.movecraft.utils.Counter;
 import net.countercraft.movecraft.utils.Pair;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class Craft {
@@ -431,6 +425,93 @@ public abstract class Craft {
             }
         }
         return waterLine;
+    }
+
+    public boolean shouldSink() {
+        int totalNonNegligibleBlocks = 0;
+        int totalNonNegligibleWaterBlocks = 0;
+        HashMap<List<Integer>, Integer> foundFlyBlocks = new HashMap<>();
+        HashMap<List<Integer>, Integer> foundMoveBlocks = new HashMap<>();
+        // go through each block in the blocklist, and
+        // if its in the FlyBlocks, total up the number
+        // of them
+        for (MovecraftLocation l : hitBox) {
+            int blockID = w.getBlockAt(l.getX(), l.getY(), l.getZ()).getTypeId();
+            int dataID = (int) w.getBlockAt(l.getX(), l.getY(), l.getZ()).getData();
+            int shiftedID = (blockID << 4) + dataID + 10000;
+            for (List<Integer> flyBlockDef : type.getFlyBlocks().keySet()) {
+                if (flyBlockDef.contains(blockID) || flyBlockDef.contains(shiftedID)) {
+                    foundFlyBlocks.merge(flyBlockDef, 1, (a, b) -> a + b);
+                }
+            }
+            for (List<Integer> moveBlockDef : type.getMoveBlocks().keySet()) {
+                if (moveBlockDef.contains(blockID) || moveBlockDef.contains(shiftedID)) {
+                    foundMoveBlocks.merge(moveBlockDef, 1, (a, b) -> a + b);
+                }
+            }
+
+            if (blockID != 0 && blockID != 51) {
+                totalNonNegligibleBlocks++;
+            }
+            if (blockID != 0 && blockID != 51 && blockID != 8 && blockID != 9) {
+                totalNonNegligibleWaterBlocks++;
+            }
+        }
+
+        // now see if any of the resulting percentagesit
+        // are below the threshold specified in
+        // SinkPercent
+
+        for (List<Integer> i : type.getFlyBlocks().keySet()) {
+            int numfound = 0;
+            if (foundFlyBlocks.get(i) != null) {
+                numfound = foundFlyBlocks.get(i);
+            }
+            double percent = ((double) numfound / (double) totalNonNegligibleBlocks) * 100.0;
+            double flyPercent = type.getFlyBlocks().get(i).get(0);
+            double sinkPercent = flyPercent * type.getSinkPercent() / 100.0;
+            if (percent < sinkPercent) {
+                return true;
+            }
+
+        }
+        for (List<Integer> i : type.getMoveBlocks().keySet()) {
+            int numfound = 0;
+            if (foundMoveBlocks.get(i) != null) {
+                numfound = foundMoveBlocks.get(i);
+            }
+            double percent = ((double) numfound / (double) totalNonNegligibleBlocks) * 100.0;
+            double movePercent = type.getMoveBlocks().get(i).get(0);
+            double disablePercent = movePercent * type.getSinkPercent() / 100.0;
+            if (percent < disablePercent && !disabled && this.isNotProcessing()) {
+                this.setDisabled(true);
+                if (notificationPlayer != null) {
+                    Location loc = notificationPlayer.getLocation();
+                    w.playSound(loc, Sound.ENTITY_IRONGOLEM_DEATH, 5.0f, 5.0f);
+                }
+            }
+        }
+
+        // And check the overallsinkpercent
+        if (type.getOverallSinkPercent() != 0.0) {
+            double percent;
+            if (type.blockedByWater()) {
+                percent = (double) totalNonNegligibleBlocks
+                        / (double) origBlockCount;
+            } else {
+                percent = (double) totalNonNegligibleWaterBlocks
+                        / (double) origBlockCount;
+            }
+            if (percent * 100.0 < type.getOverallSinkPercent()) {
+                return true;
+            }
+        }
+
+        if (totalNonNegligibleBlocks == 0) {
+            return true;
+        }
+
+        return false;
     }
 
     @NotNull

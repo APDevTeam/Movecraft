@@ -314,6 +314,14 @@ public class TranslationTask extends AsyncTask {
                 newHitBox.removeAll(toRemove);
             }
         } else if ((craft.getType().getCollisionExplosion() != 0.0F) && System.currentTimeMillis() - craft.getOrigPilotTime() > Settings.CollisionPrimer) {
+            if(!collisionBox.isEmpty()) {
+                if(craft.shouldSink()) {
+                    this.fail ("");
+                    craft.setCruising(false);
+                    craft.sink();
+                    return;
+                }
+            }
             for(MovecraftLocation location : collisionBox) {
                 float explosionForce = craft.getType().getCollisionExplosion();
                 if (craft.getType().getFocusedExplosion()) {
