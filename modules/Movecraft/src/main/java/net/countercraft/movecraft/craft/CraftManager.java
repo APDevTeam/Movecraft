@@ -32,6 +32,7 @@ import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.yaml.snakeyaml.scanner.ScannerException;
 
 import java.io.File;
 import java.util.*;
@@ -85,7 +86,7 @@ public class CraftManager implements Iterable<Craft>{
 
         Set<CraftType> craftTypes = new HashSet<>();
         File[] files = craftsFile.listFiles();
-        if (files == null){
+        if (files == null) {
             return craftTypes;
         }
 
@@ -93,8 +94,13 @@ public class CraftManager implements Iterable<Craft>{
             if (file.isFile()) {
 
                 if (file.getName().contains(".craft")) {
-                    CraftType type = new CraftType(file);
-                    craftTypes.add(type);
+                    try {
+                        CraftType type = new CraftType(file);
+                        craftTypes.add(type);
+                    }
+                    catch (CraftType.TypeNotFoundException | ScannerException e) {
+                        Movecraft.getInstance().getLogger().log(Level.SEVERE, I18nSupport.getInternationalisedString("Startup - failure to load craft type") + " '" + file.getName() + "' " + e.getMessage());
+                    }
                 }
             }
         }

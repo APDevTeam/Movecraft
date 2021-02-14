@@ -17,8 +17,6 @@
 
 package net.countercraft.movecraft.craft;
 
-import net.countercraft.movecraft.config.Settings;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.World;
@@ -125,7 +123,8 @@ final public class CraftType {
             Yaml yaml = new Yaml();
             data = (Map) yaml.load(input);
             input.close();
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             throw new TypeNotFoundException("No file found at path " + f.getAbsolutePath());
         }
 
@@ -215,13 +214,6 @@ final public class CraftType {
                 perWorldVertCruiseTickCooldown.put(world, (int) Math.round((1.0 + worldVertCruiseSkipBlocks) * 20.0 / vertCruiseSpeed));
             }
         });
-        if(Settings.Debug) {
-            Bukkit.getLogger().info("Craft: " + craftName);
-            Bukkit.getLogger().info("CruiseSpeed: " + cruiseSpeed);
-            Bukkit.getLogger().info("Cooldown: " + cruiseTickCooldown);
-            Bukkit.getLogger().info("VertCruiseSpeed: " + vertCruiseSpeed);
-            Bukkit.getLogger().info("VertCooldown: " + vertCruiseTickCooldown);
-        }
 
         int value = Math.min(integerFromObject(data.getOrDefault("maxHeightLimit", 254)), 255);
         if (value <= minHeightLimit) {
@@ -854,7 +846,7 @@ final public class CraftType {
         return gearShiftsAffectCruiseSkipBlocks;
     }
 
-    private class TypeNotFoundException extends RuntimeException {
+    public class TypeNotFoundException extends RuntimeException {
         public TypeNotFoundException(String s) {
             super(s);
         }
