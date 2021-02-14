@@ -17,14 +17,11 @@
 
 package net.countercraft.movecraft.craft;
 
-import net.countercraft.movecraft.config.Settings;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.World;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.scanner.ScannerException;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -129,10 +126,6 @@ final public class CraftType {
         }
         catch (IOException e) {
             throw new TypeNotFoundException("No file found at path " + f.getAbsolutePath());
-        }
-        catch (ScannerException e) {
-            e.printStackTrace();
-            throw new TypeParseException("Unable to parse " + f.getAbsolutePath());
         }
 
         //Required craft flags
@@ -855,12 +848,6 @@ final public class CraftType {
 
     public class TypeNotFoundException extends RuntimeException {
         public TypeNotFoundException(String s) {
-            super(s);
-        }
-    }
-
-    public class TypeParseException extends RuntimeException {
-        public TypeParseException(String s) {
             super(s);
         }
     }
