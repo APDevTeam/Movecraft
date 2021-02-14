@@ -1,5 +1,8 @@
 package net.countercraft.movecraft.mapUpdater.update;
 
+import it.unimi.dsi.fastutil.Hash;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
@@ -185,29 +188,46 @@ public class CraftRotateCommand extends UpdateCommand {
     }
 
     private void sendSignEvents(){
-        Map<String[], List<MovecraftLocation>> signs = new HashMap<>();
+        Object2ObjectMap<String[], List<MovecraftLocation>> signs = new Object2ObjectOpenCustomHashMap<>(new Hash.Strategy<String[]>() {
+            @Override
+            public int hashCode(String[] strings) {
+                return Arrays.hashCode(strings);
+            }
+
+            @Override
+            public boolean equals(String[] a, String[] b) {
+                return Arrays.equals(a, b);
+            }
+        });
+        Map<MovecraftLocation, Sign> signStates = new HashMap<>();
+
         for (MovecraftLocation location : craft.getHitBox()) {
             Block block = location.toBukkit(craft.getW()).getBlock();
-            if (block.getType() == Material.WALL_SIGN || block.getType() == Material.SIGN_POST) {
+            Material type = block.getType();
+            if (type == Material.WALL_SIGN || type == Material.SIGN_POST) {
                 Sign sign = (Sign) block.getState();
                 if(!signs.containsKey(sign.getLines()))
                     signs.put(sign.getLines(), new ArrayList<>());
                 signs.get(sign.getLines()).add(location);
+                signStates.put(location, sign);
             }
         }
         for(Map.Entry<String[], List<MovecraftLocation>> entry : signs.entrySet()){
-            Bukkit.getServer().getPluginManager().callEvent(new SignTranslateEvent(craft, entry.getKey(), entry.getValue()));
-            for(MovecraftLocation loc : entry.getValue()){
-                Block block = loc.toBukkit(craft.getW()).getBlock();
-                Material type = block.getType();
-                if (type != Material.WALL_SIGN && type != Material.SIGN_POST) {
+            SignTranslateEvent event = new SignTranslateEvent(craft, entry.getKey(), entry.getValue());
+            Bukkit.getServer().getPluginManager().callEvent(event);
+            if(!event.isUpdated()){
+                continue;
+            }
+            for(MovecraftLocation location : entry.getValue()){
+                Block block = location.toBukkit(craft.getW()).getBlock();
+                if (block.getType() != Material.WALL_SIGN && block.getType() != Material.SIGN_POST) {
                     continue;
                 }
-                Sign sign = (Sign) block.getState();
+                Sign sign = signStates.get(location);
                 for(int i = 0; i<4; i++){
                     sign.setLine(i, entry.getKey()[i]);
                 }
-                sign.update();
+                sign.update(false, false);
             }
         }
     }

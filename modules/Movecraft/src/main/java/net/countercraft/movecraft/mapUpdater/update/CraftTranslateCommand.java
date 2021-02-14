@@ -1,6 +1,10 @@
 package net.countercraft.movecraft.mapUpdater.update;
 
 import com.google.common.collect.Lists;
+import it.unimi.dsi.fastutil.Hash;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.WorldHandler;
@@ -203,7 +207,17 @@ public class CraftTranslateCommand extends UpdateCommand {
     }
 
     private void sendSignEvents(){
-        Map<String[], List<MovecraftLocation>> signs = new HashMap<>();
+        Object2ObjectMap<String[], List<MovecraftLocation>> signs = new Object2ObjectOpenCustomHashMap<>(new Hash.Strategy<String[]>() {
+            @Override
+            public int hashCode(String[] strings) {
+                return Arrays.hashCode(strings);
+            }
+
+            @Override
+            public boolean equals(String[] a, String[] b) {
+                return Arrays.equals(a, b);
+            }
+        });
         Map<MovecraftLocation, Sign> signStates = new HashMap<>();
 
         for (MovecraftLocation location : craft.getHitBox()) {
@@ -232,7 +246,7 @@ public class CraftTranslateCommand extends UpdateCommand {
                 for(int i = 0; i<4; i++){
                     sign.setLine(i, entry.getKey()[i]);
                 }
-                sign.update();
+                sign.update(false, false);
             }
         }
     }
