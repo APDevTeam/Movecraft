@@ -204,6 +204,8 @@ public class CraftTranslateCommand extends UpdateCommand {
 
     private void sendSignEvents(){
         Map<String[], List<MovecraftLocation>> signs = new HashMap<>();
+        Map<MovecraftLocation, Sign> signStates = new HashMap<>();
+
         for (MovecraftLocation location : craft.getHitBox()) {
             Block block = location.toBukkit(craft.getW()).getBlock();
             Material type = block.getType();
@@ -212,16 +214,21 @@ public class CraftTranslateCommand extends UpdateCommand {
                 if(!signs.containsKey(sign.getLines()))
                     signs.put(sign.getLines(), new ArrayList<>());
                 signs.get(sign.getLines()).add(location);
+                signStates.put(location, sign);
             }
         }
         for(Map.Entry<String[], List<MovecraftLocation>> entry : signs.entrySet()){
-            Bukkit.getServer().getPluginManager().callEvent(new SignTranslateEvent(craft, entry.getKey(), entry.getValue()));
-            for(MovecraftLocation loc : entry.getValue()){
-                Block block = loc.toBukkit(craft.getW()).getBlock();
+            SignTranslateEvent event = new SignTranslateEvent(craft, entry.getKey(), entry.getValue());
+            Bukkit.getServer().getPluginManager().callEvent(event);
+            if(!event.isUpdated()){
+                continue;
+            }
+            for(MovecraftLocation location : entry.getValue()){
+                Block block = location.toBukkit(craft.getW()).getBlock();
                 if (block.getType() != Material.WALL_SIGN && block.getType() != Material.SIGN_POST) {
                     continue;
                 }
-                Sign sign = (Sign) block.getState();
+                Sign sign = signStates.get(location);
                 for(int i = 0; i<4; i++){
                     sign.setLine(i, entry.getKey()[i]);
                 }
