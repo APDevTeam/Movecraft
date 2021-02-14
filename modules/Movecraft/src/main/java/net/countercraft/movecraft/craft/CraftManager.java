@@ -86,7 +86,7 @@ public class CraftManager implements Iterable<Craft>{
 
         Set<CraftType> craftTypes = new HashSet<>();
         File[] files = craftsFile.listFiles();
-        if (files == null){
+        if (files == null) {
             return craftTypes;
         }
 
@@ -99,8 +99,7 @@ public class CraftManager implements Iterable<Craft>{
                         craftTypes.add(type);
                     }
                     catch (CraftType.TypeNotFoundException | ScannerException e) {
-                        Movecraft.getInstance().getLogger().log(Level.SEVERE, I18nSupport.getInternationalisedString("Startup - failure to load craft type") + " " + file.getName());
-                        e.printStackTrace();
+                        Movecraft.getInstance().getLogger().log(Level.SEVERE, I18nSupport.getInternationalisedString("Startup - failure to load craft type") + " '" + file.getName() + "' " + e.getMessage());
                     }
                 }
             }
