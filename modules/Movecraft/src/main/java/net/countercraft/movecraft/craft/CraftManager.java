@@ -24,6 +24,7 @@ import net.countercraft.movecraft.events.TypesReloadedEvent;
 import net.countercraft.movecraft.exception.NonCancellableReleaseException;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -99,7 +100,7 @@ public class CraftManager implements Iterable<Craft>{
                         craftTypes.add(type);
                     }
                     catch (CraftType.TypeNotFoundException | CraftType.TypeParseException e) {
-                        Movecraft.getInstance().getLogger().log(Level.SEVERE, ERROR_PREFIX + I18nSupport.getInternationalisedString("Startup - failure to load craft type"));
+                        Movecraft.getInstance().getLogger().log(Level.SEVERE, I18nSupport.getInternationalisedString("Startup - failure to load craft type") + " " + file.getName());
                     }
                 }
             }
