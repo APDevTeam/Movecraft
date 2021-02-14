@@ -4,6 +4,7 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
+import net.countercraft.movecraft.utils.Counter;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -45,22 +46,12 @@ public final class StatusSign implements Listener{
         }
         int fuel=0;
         int totalBlocks=0;
-        Map<Integer, Integer> foundBlocks = new HashMap<>();
+        Counter<Material> foundBlocks = new Counter<>();
         for (MovecraftLocation ml : craft.getHitBox()) {
-            Integer blockID = craft.getW().getBlockAt(ml.getX(), ml.getY(), ml.getZ()).getTypeId();
+            Material blockID = craft.getW().getBlockAt(ml.getX(), ml.getY(), ml.getZ()).getType();
+            foundBlocks.add(blockID);
 
-            if (foundBlocks.containsKey(blockID)) {
-                Integer count = foundBlocks.get(blockID);
-                if (count == null) {
-                    foundBlocks.put(blockID, 1);
-                } else {
-                    foundBlocks.put(blockID, count + 1);
-                }
-            } else {
-                foundBlocks.put(blockID, 1);
-            }
-
-            if (blockID == 61) {
+            if (blockID == Material.FURNACE) {
                 InventoryHolder inventoryHolder = (InventoryHolder) craft.getW().getBlockAt(ml.getX(), ml.getY(), ml.getZ()).getState();
                 Map<Material, Double> fuelTypes = craft.getType().getFuelTypes();
                 for (ItemStack iStack : inventoryHolder.getInventory()) {
@@ -70,18 +61,18 @@ public final class StatusSign implements Listener{
                     fuel += iStack.getAmount() * fuelTypes.get(iStack.getType());
                 }
             }
-            if (blockID != 0 && blockID != 51) {
+            if (blockID != Material.AIR && blockID != Material.FIRE) {
                 totalBlocks++;
             }
         }
         int signLine=1;
         int signColumn=0;
         for(List<Integer> alFlyBlockID : craft.getType().getFlyBlocks().keySet()) {
-            int flyBlockID=alFlyBlockID.get(0);
-            Double minimum=craft.getType().getFlyBlocks().get(alFlyBlockID).get(0);
-            if(foundBlocks.containsKey(flyBlockID) && minimum>0) { // if it has a minimum, it should be considered for sinking consideration
-                int amount=foundBlocks.get(flyBlockID);
-                Double percentPresent=(double) (amount*100/totalBlocks);
+            int flyBlockID= alFlyBlockID.get(0);
+            double minimum=craft.getType().getFlyBlocks().get(alFlyBlockID).get(0);
+            if(foundBlocks.get(Material.getMaterial(flyBlockID)) != 0 && minimum>0) { // if it has a minimum, it should be considered for sinking consideration
+                int amount=foundBlocks.get(Material.getMaterial(flyBlockID));
+                double percentPresent= (amount*100D/totalBlocks);
                 int deshiftedID=flyBlockID;
                 if(deshiftedID>10000) {
                     deshiftedID=(deshiftedID-10000)>>4;
@@ -103,9 +94,9 @@ public final class StatusSign implements Listener{
                 }
 
                 signText+=" ";
-                signText+=percentPresent.intValue();
+                signText+=  (int) percentPresent;
                 signText+="/";
-                signText+=minimum.intValue();
+                signText+= (int) minimum;
                 signText+="  ";
                 if(signColumn==0) {
                     event.setLine(signLine,signText);
