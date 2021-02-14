@@ -34,6 +34,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -93,8 +94,13 @@ public class CraftManager implements Iterable<Craft>{
             if (file.isFile()) {
 
                 if (file.getName().contains(".craft")) {
-                    CraftType type = new CraftType(file);
-                    craftTypes.add(type);
+                    try {
+                        CraftType type = new CraftType(file);
+                        craftTypes.add(type);
+                    }
+                    catch (CraftType.TypeNotFoundException | CraftType.TypeParseException e) {
+                        Movecraft.getInstance().getLogger().log(Level.SEVERE, ERROR_PREFIX + I18nSupport.getInternationalisedString("Startup - failure to load craft type"));
+                    }
                 }
             }
         }

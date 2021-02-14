@@ -24,6 +24,7 @@ import org.bukkit.Sound;
 import org.bukkit.World;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.scanner.ScannerException;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -125,8 +126,13 @@ final public class CraftType {
             Yaml yaml = new Yaml();
             data = (Map) yaml.load(input);
             input.close();
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             throw new TypeNotFoundException("No file found at path " + f.getAbsolutePath());
+        }
+        catch (ScannerException e) {
+            e.printStackTrace();
+            throw new TypeParseException("Unable to parse " + f.getAbsolutePath());
         }
 
         //Required craft flags
@@ -854,8 +860,14 @@ final public class CraftType {
         return gearShiftsAffectCruiseSkipBlocks;
     }
 
-    private class TypeNotFoundException extends RuntimeException {
+    public class TypeNotFoundException extends RuntimeException {
         public TypeNotFoundException(String s) {
+            super(s);
+        }
+    }
+
+    public class TypeParseException extends RuntimeException {
+        public TypeParseException(String s) {
             super(s);
         }
     }
