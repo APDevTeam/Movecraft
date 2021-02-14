@@ -221,13 +221,6 @@ final public class CraftType {
                 perWorldVertCruiseTickCooldown.put(world, (int) Math.round((1.0 + worldVertCruiseSkipBlocks) * 20.0 / vertCruiseSpeed));
             }
         });
-        if(Settings.Debug) {
-            Bukkit.getLogger().info("Craft: " + craftName);
-            Bukkit.getLogger().info("CruiseSpeed: " + cruiseSpeed);
-            Bukkit.getLogger().info("Cooldown: " + cruiseTickCooldown);
-            Bukkit.getLogger().info("VertCruiseSpeed: " + vertCruiseSpeed);
-            Bukkit.getLogger().info("VertCooldown: " + vertCruiseTickCooldown);
-        }
 
         int value = Math.min(integerFromObject(data.getOrDefault("maxHeightLimit", 254)), 255);
         if (value <= minHeightLimit) {
