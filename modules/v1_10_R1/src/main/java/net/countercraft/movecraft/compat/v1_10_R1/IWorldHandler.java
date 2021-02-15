@@ -3,7 +3,6 @@ package net.countercraft.movecraft.compat.v1_10_R1;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
 import net.countercraft.movecraft.WorldHandler;
-import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.utils.CollectionUtils;
 import net.countercraft.movecraft.utils.MathUtils;
@@ -19,7 +18,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -84,12 +82,12 @@ public class IWorldHandler extends WorldHandler {
         //get the tiles
         for(BlockPosition position : rotatedPositions.keySet()){
             //TileEntity tile = nativeWorld.removeTileEntity(position);
-            TileEntity tile = removeTileEntity(nativeWorld,position);
-            if(tile == null)
+            TileHolder holder = removeTileEntity(nativeWorld,position);
+            if(holder == null)
                 continue;
-            tile.a(ROTATION[rotation.ordinal()]);
+            holder.tile.a(ROTATION[rotation.ordinal()]);
             //get the nextTick to move with the tile
-            tiles.add(new TileHolder(tile, tickProvider.getNextTick((WorldServer) nativeWorld, position), position));
+            tiles.add(holder);
         }
 
         //*******************************************
@@ -115,7 +113,7 @@ public class IWorldHandler extends WorldHandler {
         //*******************************************
         //TODO: go by chunks
         for(TileHolder tileHolder : tiles){
-            moveTileEntity(nativeWorld, rotatedPositions.get(tileHolder.getTilePosition()),tileHolder.getTile());
+            moveTileEntity(nativeWorld, rotatedPositions.get(tileHolder.getTilePosition()),tileHolder.getTile(), tileHolder.isCaptured);
             if(tileHolder.getNextTick()==null)
                 continue;
             final long currentTime = nativeWorld.worldData.getTime();
@@ -206,15 +204,10 @@ public class IWorldHandler extends WorldHandler {
         for(BlockPosition position : positions){
             if(nativeWorld.getType(position) == Blocks.AIR.getBlockData())
                 continue;
-            //TileEntity tile = nativeWorld.removeTileEntity(position);
-            TileEntity tile = removeTileEntity(nativeWorld,position);
-            if(tile == null)
+            TileHolder holder = removeTileEntity(nativeWorld,position);
+            if(holder == null)
                 continue;
-            //get the nextTick to move with the tile
-
-            //nativeWorld.capturedTileEntities.remove(position);
-            //nativeWorld.getChunkAtWorldCoords(position).getTileEntities().remove(position);
-            tiles.add(new TileHolder(tile, tickProvider.getNextTick(nativeWorld, position), position));
+            tiles.add(holder);
 
         }
         return tiles;
@@ -222,11 +215,12 @@ public class IWorldHandler extends WorldHandler {
 
     private void processTiles(Iterable<TileHolder> tiles, World world, BlockPosition translateVector){
         for(TileHolder tileHolder : tiles){
-            moveTileEntity(world, tileHolder.getTilePosition().a(translateVector),tileHolder.getTile());
+            moveTileEntity(world, tileHolder.getTilePosition().a(translateVector),tileHolder.getTile(), tileHolder.isCaptured());
             if(tileHolder.getNextTick()==null)
                 continue;
             final long currentTime = world.worldData.getTime();
-            world.b(tileHolder.getNextTick().a.a(translateVector), tileHolder.getNextTick().a(), (int) (tileHolder.getNextTick().b - currentTime), tileHolder.getNextTick().c);
+            NextTickListEntry tick = tileHolder.getNextTick();
+            world.b(tick.a.a(translateVector), tick.a(), (int) (tick.b - currentTime), tick.c);
         }
     }
 
@@ -248,16 +242,13 @@ public class IWorldHandler extends WorldHandler {
     }
 
     @Nullable
-    private TileEntity removeTileEntity(@NotNull World world, @NotNull BlockPosition position){
+    private TileHolder removeTileEntity(@NotNull World world, @NotNull BlockPosition position){
         TileEntity tile = world.getTileEntity(position);
         if(tile == null)
             return null;
         //cleanup
-        world.capturedTileEntities.remove(position);
+        boolean isCaptured = world.capturedTileEntities.remove(position) != null;
         world.getChunkAtWorldCoords(position).getTileEntities().remove(position);
-        if(!Settings.IsPaper)
-            world.tileEntityList.remove(tile);
-        world.tileEntityListTick.remove(tile);
         if(!bMap.containsKey(world)){
             try {
                 Field bField = World.class.getDeclaredField("b");
@@ -267,8 +258,7 @@ public class IWorldHandler extends WorldHandler {
                 e1.printStackTrace();
             }
         }
-        bMap.get(world).remove(tile);
-        return tile;
+        return new TileHolder(tile, tickProvider.getNextTick((WorldServer) world, position), position, isCaptured);
     }
 
     @NotNull
@@ -325,7 +315,7 @@ public class IWorldHandler extends WorldHandler {
         return new MovecraftLocation(l.getBlockX(), l.getBlockY(), l.getBlockZ());
     }
 
-    private void moveTileEntity(@NotNull World nativeWorld, @NotNull BlockPosition newPosition, @NotNull TileEntity tile){
+    private void moveTileEntity(@NotNull World nativeWorld, @NotNull BlockPosition newPosition, @NotNull TileEntity tile, boolean captured){
         Chunk chunk = nativeWorld.getChunkAtWorldCoords(newPosition);
         tile.invalidateBlockCache();
         if(nativeWorld.captureBlockStates) {
@@ -334,21 +324,26 @@ public class IWorldHandler extends WorldHandler {
             nativeWorld.capturedTileEntities.put(newPosition, tile);
             return;
         }
+        if(captured){
+            nativeWorld.capturedTileEntities.put(newPosition, tile);
+        }
         tile.a(nativeWorld);
         tile.setPosition(newPosition);
         chunk.tileEntities.put(newPosition, tile);
     }
 
-    private class TileHolder{
+    private static class TileHolder{
         @NotNull private final TileEntity tile;
         @Nullable
         private final NextTickListEntry nextTick;
         @NotNull private final BlockPosition tilePosition;
+        private final boolean isCaptured;
 
-        public TileHolder(@NotNull TileEntity tile, @Nullable NextTickListEntry nextTick, @NotNull BlockPosition tilePosition){
+        public TileHolder(@NotNull TileEntity tile, @Nullable NextTickListEntry nextTick, @NotNull BlockPosition tilePosition, boolean isCaptured){
             this.tile = tile;
             this.nextTick = nextTick;
             this.tilePosition = tilePosition;
+            this.isCaptured = isCaptured;
         }
 
 
@@ -365,6 +360,10 @@ public class IWorldHandler extends WorldHandler {
         @NotNull
         public BlockPosition getTilePosition() {
             return tilePosition;
+        }
+
+        public boolean isCaptured() {
+            return isCaptured;
         }
     }
 }
