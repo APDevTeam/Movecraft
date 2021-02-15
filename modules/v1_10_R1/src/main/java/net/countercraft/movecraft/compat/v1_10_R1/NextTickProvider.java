@@ -22,8 +22,8 @@ public class NextTickProvider {
     @SuppressWarnings("ConstantConditions")
     public NextTickListEntry getNextTick(@NotNull WorldServer world,@NotNull BlockPosition position){
         StructureBoundingBox box = new StructureBoundingBox(position, position.a(1,1,1));
-        List<NextTickListEntry> entries=world.a(box, true);
-        return entries.get(0);
+        List<NextTickListEntry> entries= world.a(box, true);
+        return entries == null ? null : entries.get(0);
 
     }
 }
