@@ -8,9 +8,9 @@ This is a maintained fork of Movecraft, which aims to add legacy version support
 
 ## Download
 
-Development builds can be found on the [releases page](https://github.com/APDevTeam/Movecraft/releases).
-
 Public builds, as well as older builds (1.10 and below), are located on the [Spigot forums](https://www.spigotmc.org/resources/movecraft.31321/)
+
+Development builds can be found under the [actions tab](https://github.com/APDevTeam/Movecraft/actions?query=workflow%3A%22Java+CI%22).
 
 ## Building
 Movecraft uses multiple versions of the Spigot server software for legacy support. As such, you need to run [BuildTools](https://www.spigotmc.org/wiki/buildtools/) for several versions before building the plugin. It doesn't matter where you do this, but inside the Movecraft directory is probably a bad place.
