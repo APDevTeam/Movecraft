@@ -85,7 +85,8 @@ public class IWorldHandler extends WorldHandler {
             TileHolder holder = removeTileEntity(nativeWorld,position);
             if(holder == null)
                 continue;
-            holder.tile.a(ROTATION[rotation.ordinal()]);
+            if(holder.tile != null)
+                holder.tile.a(ROTATION[rotation.ordinal()]);
             //get the nextTick to move with the tile
             tiles.add(holder);
         }
@@ -113,7 +114,8 @@ public class IWorldHandler extends WorldHandler {
         //*******************************************
         //TODO: go by chunks
         for(TileHolder tileHolder : tiles){
-            moveTileEntity(nativeWorld, rotatedPositions.get(tileHolder.getTilePosition()),tileHolder.getTile(), tileHolder.isCaptured);
+            if(tileHolder.getTile() != null)
+                moveTileEntity(nativeWorld, rotatedPositions.get(tileHolder.getTilePosition()),tileHolder.getTile(), tileHolder.isCaptured);
             if(tileHolder.getNextTick()==null)
                 continue;
             final long currentTime = nativeWorld.worldData.getTime();
@@ -215,7 +217,8 @@ public class IWorldHandler extends WorldHandler {
 
     private void processTiles(Iterable<TileHolder> tiles, World world, BlockPosition translateVector){
         for(TileHolder tileHolder : tiles){
-            moveTileEntity(world, tileHolder.getTilePosition().a(translateVector),tileHolder.getTile(), tileHolder.isCaptured());
+            if(tileHolder.getTile() != null)
+                moveTileEntity(world, tileHolder.getTilePosition().a(translateVector),tileHolder.getTile(), tileHolder.isCaptured());
             if(tileHolder.getNextTick()==null)
                 continue;
             final long currentTime = world.worldData.getTime();
@@ -244,21 +247,13 @@ public class IWorldHandler extends WorldHandler {
     @Nullable
     private TileHolder removeTileEntity(@NotNull World world, @NotNull BlockPosition position){
         TileEntity tile = world.getTileEntity(position);
-        if(tile == null)
+        NextTickListEntry tick = tickProvider.getNextTick((WorldServer) world, position);
+        if(tile == null && tick == null){
             return null;
-        //cleanup
+        }
         boolean isCaptured = world.capturedTileEntities.remove(position) != null;
         world.getChunkAtWorldCoords(position).getTileEntities().remove(position);
-        if(!bMap.containsKey(world)){
-            try {
-                Field bField = World.class.getDeclaredField("b");
-                bField.setAccessible(true);
-                bMap.put(world, (List<TileEntity>) bField.get(world));
-            } catch (IllegalAccessException | IllegalArgumentException | NoSuchFieldException | SecurityException e1) {
-                e1.printStackTrace();
-            }
-        }
-        return new TileHolder(tile, tickProvider.getNextTick((WorldServer) world, position), position, isCaptured);
+        return new TileHolder(tile, tick, position, isCaptured);
     }
 
     @NotNull
@@ -317,13 +312,6 @@ public class IWorldHandler extends WorldHandler {
 
     private void moveTileEntity(@NotNull World nativeWorld, @NotNull BlockPosition newPosition, @NotNull TileEntity tile, boolean captured){
         Chunk chunk = nativeWorld.getChunkAtWorldCoords(newPosition);
-        tile.invalidateBlockCache();
-        if(nativeWorld.captureBlockStates) {
-            tile.a(nativeWorld);
-            tile.setPosition(newPosition);
-            nativeWorld.capturedTileEntities.put(newPosition, tile);
-            return;
-        }
         if(captured){
             nativeWorld.capturedTileEntities.put(newPosition, tile);
         }
@@ -333,13 +321,13 @@ public class IWorldHandler extends WorldHandler {
     }
 
     private static class TileHolder{
-        @NotNull private final TileEntity tile;
+        @Nullable private final TileEntity tile;
         @Nullable
         private final NextTickListEntry nextTick;
         @NotNull private final BlockPosition tilePosition;
         private final boolean isCaptured;
 
-        public TileHolder(@NotNull TileEntity tile, @Nullable NextTickListEntry nextTick, @NotNull BlockPosition tilePosition, boolean isCaptured){
+        public TileHolder(@Nullable TileEntity tile, @Nullable NextTickListEntry nextTick, @NotNull BlockPosition tilePosition, boolean isCaptured){
             this.tile = tile;
             this.nextTick = nextTick;
             this.tilePosition = tilePosition;
@@ -347,7 +335,7 @@ public class IWorldHandler extends WorldHandler {
         }
 
 
-        @NotNull
+        @Nullable
         public TileEntity getTile() {
             return tile;
         }
