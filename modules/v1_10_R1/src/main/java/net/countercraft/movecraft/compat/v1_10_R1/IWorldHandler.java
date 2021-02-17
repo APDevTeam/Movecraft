@@ -119,7 +119,7 @@ public class IWorldHandler extends WorldHandler {
             if(tileHolder.getNextTick()==null)
                 continue;
             final long currentTime = nativeWorld.worldData.getTime();
-            nativeWorld.b(rotatedPositions.get(tileHolder.getNextTick().a), tileHolder.getNextTick().a(), (int) (tileHolder.getNextTick().b - currentTime), tileHolder.getNextTick().c);
+            nativeWorld.b(rotatedPositions.get(tileHolder.getTilePosition()), tileHolder.getNextTick().a(), (int) (tileHolder.getNextTick().b - currentTime), tileHolder.getNextTick().c);
         }
 
         //*******************************************
