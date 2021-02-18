@@ -7,6 +7,7 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.utils.CollectionUtils;
 import net.countercraft.movecraft.utils.MathUtils;
 import net.minecraft.server.v1_10_R1.*;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_10_R1.CraftWorld;
@@ -74,22 +75,11 @@ public class IWorldHandler extends WorldHandler {
         for(MovecraftLocation newLocation : craft.getHitBox()){
             rotatedPositions.put(locationToPosition(MathUtils.rotateVec(counterRotation, newLocation.subtract(originPoint)).add(originPoint)),locationToPosition(newLocation));
         }
-        World nativeWorld = ((CraftWorld) craft.getW()).getHandle();
+        WorldServer nativeWorld = ((CraftWorld) craft.getW()).getHandle();
         //*******************************************
         //*         Step two: Get the tiles         *
         //*******************************************
-        List<TileHolder> tiles = new ArrayList<>();
-        //get the tiles
-        for(BlockPosition position : rotatedPositions.keySet()){
-            //TileEntity tile = nativeWorld.removeTileEntity(position);
-            TileHolder holder = removeTileEntity(nativeWorld,position);
-            if(holder == null)
-                continue;
-            if(holder.tile != null)
-                holder.tile.a(ROTATION[rotation.ordinal()]);
-            //get the nextTick to move with the tile
-            tiles.add(holder);
-        }
+        List<TileHolder> tiles = getTiles(rotatedPositions.keySet(), rotation, nativeWorld);
 
         //*******************************************
         //*   Step three: Translate all the blocks  *
@@ -119,7 +109,12 @@ public class IWorldHandler extends WorldHandler {
             if(tileHolder.getNextTick()==null)
                 continue;
             final long currentTime = nativeWorld.worldData.getTime();
-            nativeWorld.b(rotatedPositions.get(tileHolder.getTilePosition()), tileHolder.getNextTick().a(), (int) (tileHolder.getNextTick().b - currentTime), tileHolder.getNextTick().c);
+            if(!rotatedPositions.containsKey(tileHolder.getNextTick().a)){
+                nativeWorld.b(tileHolder.getNextTick().a, tileHolder.getNextTick().a(), (int) (tileHolder.getNextTick().b - currentTime), tileHolder.getNextTick().c);
+            } else {
+                nativeWorld.b(rotatedPositions.get(tileHolder.getNextTick().a), tileHolder.getNextTick().a(), (int) (tileHolder.getNextTick().b - currentTime), tileHolder.getNextTick().c);
+            }
+
         }
 
         //*******************************************
@@ -127,9 +122,7 @@ public class IWorldHandler extends WorldHandler {
         //*******************************************
         //TODO: add support for pass-through
         Collection<BlockPosition> deletePositions =  CollectionUtils.filter(rotatedPositions.keySet(),rotatedPositions.values());
-        for(BlockPosition position : deletePositions){
-            setBlockFast(nativeWorld, position, Blocks.AIR.getBlockData());
-        }
+        setAir(deletePositions, nativeWorld);
         //*******************************************
         //*   Step six: Process fire spread         *
         //*******************************************
@@ -160,7 +153,16 @@ public class IWorldHandler extends WorldHandler {
         //*******************************************
         //*         Step two: Get the tiles         *
         //*******************************************
+        Set<BlockPosition> validTickLocations = new HashSet<>(positions);
         List<TileHolder> tiles = getTiles(positions, oldNativeWorld);
+        final long currentTime = oldNativeWorld.worldData.getTime();
+        for(TileHolder tile : tiles){
+            if(tile.getNextTick() != null && !validTickLocations.contains(tile.getNextTick().a)){
+                NextTickListEntry tick = tile.getNextTick();
+                oldNativeWorld.b(tick.a, tick.a(), (int) (tick.b - currentTime), tick.c);
+                tile.nextTick = null;
+            }
+        }
         //*******************************************
         //*   Step three: Translate all the blocks  *
         //*******************************************
@@ -201,6 +203,10 @@ public class IWorldHandler extends WorldHandler {
     }
 
     private List<TileHolder> getTiles(Iterable<BlockPosition> positions, WorldServer nativeWorld){
+        return getTiles(positions, null, nativeWorld);
+    }
+
+    private List<TileHolder> getTiles(Iterable<BlockPosition> positions, Rotation rotation,  WorldServer nativeWorld){
         List<TileHolder> tiles = new ArrayList<>();
         //get the tiles
         for(BlockPosition position : positions){
@@ -209,6 +215,9 @@ public class IWorldHandler extends WorldHandler {
             TileHolder holder = removeTileEntity(nativeWorld,position);
             if(holder == null)
                 continue;
+            if(holder.tile != null && rotation != null){
+                holder.tile.a(ROTATION[rotation.ordinal()]);
+            }
             tiles.add(holder);
 
         }
@@ -323,7 +332,7 @@ public class IWorldHandler extends WorldHandler {
     private static class TileHolder{
         @Nullable private final TileEntity tile;
         @Nullable
-        private final NextTickListEntry nextTick;
+        private NextTickListEntry nextTick;
         @NotNull private final BlockPosition tilePosition;
         private final boolean isCaptured;
 
