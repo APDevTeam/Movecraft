@@ -71,7 +71,7 @@ public class ReleaseCommand implements TabExecutor {
         if (args[0].equalsIgnoreCase("-n")) {
             final List<Craft> craftsToRelease = new ArrayList<>(CraftManager.getInstance().getCraftList());
             for (Craft craft : craftsToRelease) {
-                if(craft.getNotificationPlayer() == null) {
+                if(craft.getNotificationPlayer()==null) {
                     CraftManager.getInstance().removeCraft(craft, CraftReleaseEvent.Reason.FORCE);
                 }
             }

@@ -695,15 +695,19 @@ public class AsyncManager extends BukkitRunnable {
                             notification += ", " + I18nSupport.getInternationalisedString("Contact - Range") + ": ";
                             notification += (int) Math.sqrt(distsquared);
                             notification += " " + I18nSupport.getInternationalisedString("Contact - To The") + " ";
-                            if (Math.abs(diffx) > Math.abs(diffz))
-                                if (diffx < 0)
+                            if (Math.abs(diffx) > Math.abs(diffz)) {
+                                if (diffx < 0) {
                                     notification += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - East");
-                                else
+                                } else {
                                     notification += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - West");
-                            else if (diffz < 0)
+                                }
+                            }
+                            else if (diffz < 0) {
                                 notification += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - South");
-                            else
+                            }
+                            else {
                                 notification += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - North");
+                            }
 
                             notification += ".";
 
