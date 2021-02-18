@@ -341,59 +341,6 @@ public class RotationTask extends AsyncTask {
         return isSubCraft;
     }
 
-    private void isTownyBlock(Location plugLoc, Player craftPilot) {
-        //towny
-        Player p = craftPilot == null ? getCraft().getNotificationPlayer() : craftPilot;
-        if (p == null) {
-            return;
-        }
-        if (Movecraft.getInstance().getWorldGuardPlugin() != null && Movecraft.getInstance().getWGCustomFlagsPlugin() != null && Settings.WGCustomFlagsUsePilotFlag) {
-            LocalPlayer lp = Movecraft.getInstance().getWorldGuardPlugin().wrapPlayer(p);
-            WGCustomFlagsUtils WGCFU = new WGCustomFlagsUtils();
-            if (!WGCFU.validateFlag(plugLoc, Movecraft.FLAG_ROTATE, lp)) {
-                failed = true;
-                failMessage = String.format(I18nSupport.getInternationalisedString("WGCustomFlags - Rotation Failed") + " @ %d,%d,%d", plugLoc.getX(), plugLoc.getY(), plugLoc.getZ());
-                return;
-            }
-        }
-
-        if (!townyEnabled) {
-            return;
-        }
-        TownBlock townBlock = TownyUtils.getTownBlock(plugLoc);
-        if (townBlock == null || townBlockSet.contains(townBlock)) {
-            return;
-        }
-        if (TownyUtils.validateCraftMoveEvent(p, plugLoc, townyWorld)) {
-            townBlockSet.add(townBlock);
-            return;
-        }
-        Town town = TownyUtils.getTown(townBlock);
-        if (town == null) {
-            return;
-        }
-        Location locSpawn = TownyUtils.getTownSpawn(townBlock);
-        if (locSpawn == null || !townyWorldHeightLimits.validate(newHitBox.getMaxY(), locSpawn.getBlockY())) {
-            failed = true;
-        }
-        if (failed) {
-            if (Movecraft.getInstance().getWorldGuardPlugin() != null && Movecraft.getInstance().getWGCustomFlagsPlugin() != null && Settings.WGCustomFlagsUsePilotFlag) {
-                LocalPlayer lp = Movecraft.getInstance().getWorldGuardPlugin().wrapPlayer(p);
-                ApplicableRegionSet regions = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(plugLoc.getWorld()).getApplicableRegions(plugLoc);
-                if (regions.size() != 0) {
-                    WGCustomFlagsUtils WGCFU = new WGCustomFlagsUtils();
-                    if (WGCFU.validateFlag(plugLoc, Movecraft.FLAG_ROTATE, lp)) {
-                        failed = false;
-                    }
-                }
-            }
-        }
-        if (failed) {
-            failMessage = String.format(I18nSupport.getInternationalisedString("Towny - Rotation Failed") + " %s @ %d,%d,%d", town.getName(), plugLoc.getX(), plugLoc.getY(), plugLoc.getZ());
-        }
-    }
-
-
     private boolean checkChests(Material mBlock, MovecraftLocation newLoc) {
         Material testMaterial;
         MovecraftLocation aroundNewLoc;
