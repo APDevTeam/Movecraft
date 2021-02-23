@@ -72,7 +72,6 @@
             <version>2.16.1</version>
             <scope>provided</scope>
         </dependency>
-        <!-- This doesn't have a maven repo but its own -->
         <dependency>
             <groupId>com.github.LlmDl</groupId>
             <artifactId>Towny</artifactId>
