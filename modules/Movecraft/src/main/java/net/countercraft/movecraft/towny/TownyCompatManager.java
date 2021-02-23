@@ -34,7 +34,7 @@ public class TownyCompatManager implements Listener {
             if (townBlock == null || townBlocks.contains(townBlock)) {
                 continue;
             }
-            if (TownyUtils.validateCraftMoveEvent(craft.getNotificationPlayer(), ml.toBukkit(craft.getW()), townyWorld)) {
+            if (TownyUtils.validateCraftMoveEvent(craft.getNotificationPlayer(), ml.toBukkit(craft.getW()))) {
                 townBlocks.add(townBlock);
                 continue;
             }
@@ -66,7 +66,7 @@ public class TownyCompatManager implements Listener {
             if (townBlock == null || townBlocks.contains(townBlock)) {
                 continue;
             }
-            if (TownyUtils.validateCraftMoveEvent(craft.getNotificationPlayer(), ml.toBukkit(craft.getW()), townyWorld)) {
+            if (TownyUtils.validateCraftMoveEvent(craft.getNotificationPlayer(), ml.toBukkit(craft.getW()))) {
                 townBlocks.add(townBlock);
                 continue;
             }
@@ -95,7 +95,7 @@ public class TownyCompatManager implements Listener {
             if (townBlock == null || townBlocks.contains(townBlock)) {
                 continue;
             }
-            if (TownyUtils.validateCraftMoveEvent(craft.getNotificationPlayer(), ml.toBukkit(craft.getW()), townyWorld)) {
+            if (TownyUtils.validateCraftMoveEvent(craft.getNotificationPlayer(), ml.toBukkit(craft.getW()))) {
                 townBlocks.add(townBlock);
                 continue;
             }

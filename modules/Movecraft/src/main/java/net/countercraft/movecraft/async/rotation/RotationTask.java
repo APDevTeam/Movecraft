@@ -364,7 +364,7 @@ public class RotationTask extends AsyncTask {
         if (townBlock == null || townBlockSet.contains(townBlock)) {
             return;
         }
-        if (TownyUtils.validateCraftMoveEvent(p, plugLoc, townyWorld)) {
+        if (TownyUtils.validateCraftMoveEvent(p, plugLoc)) {
             townBlockSet.add(townBlock);
             return;
         }

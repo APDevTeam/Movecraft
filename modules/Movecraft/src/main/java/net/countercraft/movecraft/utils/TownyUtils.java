@@ -1,18 +1,12 @@
 package net.countercraft.movecraft.utils;
 
+import com.palmergames.bukkit.towny.TownyUniverse;
 import com.palmergames.bukkit.towny.exceptions.NotRegisteredException;
 import com.palmergames.bukkit.towny.exceptions.TownyException;
-import com.palmergames.bukkit.towny.object.Coord;
-import com.palmergames.bukkit.towny.object.PlayerCache;
+import com.palmergames.bukkit.towny.object.*;
 import com.palmergames.bukkit.towny.object.PlayerCache.TownBlockStatus;
-import com.palmergames.bukkit.towny.object.Resident;
-import com.palmergames.bukkit.towny.object.Town;
-import com.palmergames.bukkit.towny.object.TownBlock;
-import com.palmergames.bukkit.towny.object.TownyPermission;
-import com.palmergames.bukkit.towny.object.TownyUniverse;
-import com.palmergames.bukkit.towny.object.TownyWorld;
 import com.palmergames.bukkit.towny.utils.PlayerCacheUtil;
-import com.palmergames.bukkit.towny.war.flagwar.TownyWarConfig;
+import com.palmergames.bukkit.towny.war.common.WarZoneConfig;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.localisation.I18nSupport;
@@ -42,7 +36,7 @@ public class TownyUtils {
     public static TownyWorld getTownyWorld(World w) {
         TownyWorld tw;
         try {
-            tw = TownyUniverse.getDataSource().getWorld(w.getName());
+            tw = TownyUniverse.getInstance().getDataSource().getWorld(w.getName());
             if (!tw.isUsingTowny())
                 return null;
         } catch (NotRegisteredException e) {
@@ -94,26 +88,17 @@ public class TownyUtils {
 
 
     public static boolean validateResident(Player player) {
-        Resident resident;
-        try {
-            resident = TownyUniverse.getDataSource().getResident(player.getName());
-            return true;
-        } catch (TownyException e) {
-            //System.out.print("Failed to fetch resident: " + player.getName());
-            //return TownBlockStatus.NOT_REGISTERED;
-        }
-        return false;
+        Resident resident = TownyUniverse.getInstance().getResident(player.getUniqueId());
+        return resident != null;
     }
 
-    public static boolean validateCraftMoveEvent(Player player, Location loc, TownyWorld world) {
+    public static boolean validateCraftMoveEvent(Player player, Location loc) {
         // Get switch permissions (updates if none exist)
         if (player != null && !validateResident(player)) {
             return true; //probably NPC or CBWrapper Dummy player
         }
-        int id = Material.STONE_BUTTON.getId();
-        byte data = 0;
 
-        boolean bSwitch = PlayerCacheUtil.getCachePermission(player, loc, id, data, TownyPermission.ActionType.SWITCH);
+        boolean bSwitch = PlayerCacheUtil.getCachePermission(player, loc, Material.STONE_BUTTON, TownyPermission.ActionType.SWITCH);
 
         // Allow move if we are permitted to switch
         if (bSwitch)
@@ -122,7 +107,7 @@ public class TownyUtils {
         PlayerCache cache = Movecraft.getInstance().getTownyPlugin().getCache(player);
         TownBlockStatus status = cache.getStatus();
 
-        return !cache.hasBlockErrMsg() && status == TownBlockStatus.WARZONE && TownyWarConfig.isAllowingSwitchesInWarZone();
+        return !cache.hasBlockErrMsg() && status == TownBlockStatus.WARZONE && WarZoneConfig.isAllowingSwitchesInWarZone();
 
     }
 

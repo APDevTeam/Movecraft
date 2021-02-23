@@ -74,11 +74,9 @@
         </dependency>
         <!-- This doesn't have a maven repo but its own -->
         <dependency>
-            <groupId>com.palmergames</groupId>
+            <groupId>com.github.LlmDl</groupId>
             <artifactId>Towny</artifactId>
-            <version>LATEST</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/../../libs/Towny.jar</systemPath>
+            <version>0.96.7.3</version>
         </dependency>
         <dependency>
             <groupId>com.mewin</groupId>
