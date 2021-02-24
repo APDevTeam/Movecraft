@@ -20,7 +20,7 @@ public class CraftPreTranslateEvent extends CraftEvent implements Cancellable {
     private boolean playingFailSound = true;
     @NotNull private static final HandlerList HANDLERS = new HandlerList();
     public CraftPreTranslateEvent(@NotNull Craft craft, int dx, int dy, int dz, @NotNull World world) {
-        super(craft, true);
+        super(craft);
         this.dx = dx;
         this.dy = dy;
         this.dz = dz;

@@ -17,7 +17,7 @@ public class ItemHarvestEvent extends CraftEvent {
     private static final HandlerList HANDLER_LIST = new HandlerList();
     @NotNull private final Location location;
     public ItemHarvestEvent(@NotNull Craft craft, @NotNull List<ItemStack> harvested, @NotNull Location location) {
-        super(craft, true);
+        super(craft);
         this.harvested = harvested;
         this.location = location;
     }

@@ -71,7 +71,7 @@ public class AsyncManager extends BukkitRunnable {
         if (c.isNotProcessing()) {
             c.setProcessing(true);
             ownershipMap.put(task, c);
-            task.runTaskAsynchronously(Movecraft.getInstance());
+            task.runTask(Movecraft.getInstance());
         }
     }
 

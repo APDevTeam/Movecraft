@@ -25,7 +25,7 @@ public class CraftRotateEvent extends CraftEvent implements Cancellable {
     private static final HandlerList HANDLERS = new HandlerList();
 
     public CraftRotateEvent(@NotNull Craft craft, @NotNull Rotation rotation, @NotNull MovecraftLocation originPoint, @NotNull HitBox oldHitBox, @NotNull HitBox newHitBox) {
-        super(craft, true);
+        super(craft);
         this.rotation = rotation;
         this.originPoint = originPoint;
         this.oldHitBox = oldHitBox;

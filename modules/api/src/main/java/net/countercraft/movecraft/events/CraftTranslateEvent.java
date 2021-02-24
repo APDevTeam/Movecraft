@@ -25,7 +25,7 @@ public class CraftTranslateEvent extends CraftEvent implements Cancellable {
     private boolean isCancelled = false;
 
     public CraftTranslateEvent(@NotNull Craft craft, @NotNull BitmapHitBox oldHitBox, @NotNull BitmapHitBox newHitBox, @NotNull World world) {
-        super(craft, true);
+        super(craft);
         this.oldHitBox = oldHitBox;
         this.newHitBox = newHitBox;
         this.world = world;
