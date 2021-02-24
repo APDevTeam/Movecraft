@@ -84,7 +84,7 @@ public class CruiseCommand implements TabExecutor {
             return true;
         }
         if (!craft.getType().getCanCruise()) {
-            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Cruise - Craft Cannot Cruise"));
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Cruise - Craft Type Cannot Cruise"));
             return true;
         }
 
