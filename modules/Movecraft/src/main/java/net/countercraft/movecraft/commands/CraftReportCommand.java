@@ -51,7 +51,7 @@ public class CraftReportCommand implements CommandExecutor{
                     String.format("%.2f", 1000 * craft.getMeanCruiseTime()) + "ms");
         }
         if(!paginator.isInBounds(page)){
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Paginator - Invalid page") + "\"" + args[1] + "\"");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Paginator - Invalid page") + "\"" + page + "\"");
             return true;
         }
         for(String line : paginator.getPage(page))
