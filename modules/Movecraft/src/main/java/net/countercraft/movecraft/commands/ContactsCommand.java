@@ -90,7 +90,7 @@ public class ContactsCommand implements CommandExecutor {
             return true;
         }
         if(!pageinator.isInBounds(page)){
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Paginator - Invalid page") + "\"" + args[1] + "\"");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Paginator - Invalid page") + "\"" + page + "\"");
             return true;
         }
         for(String line :pageinator.getPage(page))
