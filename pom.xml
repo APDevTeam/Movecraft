@@ -13,9 +13,6 @@
 
     <modules>
         <module>modules/api</module>
-        <module>modules/v1_10_R1</module>
-        <module>modules/v1_11_R1</module>
-        <module>modules/v1_12_R1</module>
         <module>modules/v1_16_R1</module>
         <module>modules/Movecraft</module>
     </modules>

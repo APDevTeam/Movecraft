@@ -33,24 +33,6 @@
     <dependencies>
         <dependency>
             <groupId>net.countercraft</groupId>
-            <artifactId>movecraft-v1_10_R1</artifactId>
-            <version>v1_10_R1</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>net.countercraft</groupId>
-            <artifactId>movecraft-v1_11_R1</artifactId>
-            <version>v1_11_R1</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>net.countercraft</groupId>
-            <artifactId>movecraft-v1_12_R1</artifactId>
-            <version>v1_12_R1</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>net.countercraft</groupId>
             <artifactId>movecraft-v1_16_R1</artifactId>
             <version>v1_16_R1</version>
             <type>jar</type>
@@ -182,24 +164,6 @@
                             </relocations>
                             <minimizeJar>true</minimizeJar>
                             <filters>
-                                <filter>
-                                    <artifact>net.countercraft:movecraft-v1_11_R1</artifact>
-                                    <includes>
-                                        <include>**</include>
-                                    </includes>
-                                </filter>
-                                <filter>
-                                    <artifact>net.countercraft:movecraft-v1_10_R1</artifact>
-                                    <includes>
-                                        <include>**</include>
-                                    </includes>
-                                </filter>
-                                <filter>
-                                    <artifact>net.countercraft:movecraft-v1_12_R1</artifact>
-                                    <includes>
-                                        <include>**</include>
-                                    </includes>
-                                </filter>
                                 <filter>
                                     <artifact>net.countercraft:movecraft-v1_16_R1</artifact>
                                     <includes>
