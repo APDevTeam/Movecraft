@@ -45,6 +45,7 @@ public class Settings {
     public static boolean WorldGuardBlockSinkOnPVPPerm = false;
     public static boolean ProtectPilotedCrafts = false;
     public static boolean DisableSpillProtection = false;
+    public static boolean DisableIceForm = true;
     public static boolean RequireCreatePerm = false;
     public static boolean RequireNamePerm = false;
     public static boolean RequireSneakingForDirectControl = false;
@@ -56,10 +57,6 @@ public class Settings {
     public static int ManOverboardTimeout = 60;
     public static double ManOverboardDistSquared = 1000000;
     public static int CollisionPrimer = 1000;
-    public static int RepairTicksPerBlock = 0;
-    public static double RepairMaxPercent = 50;
-    public static int BlockQueueChunkSize = 1000;
-    public static double RepairMoneyPerBlock = 0.0;
     public static boolean AllowCrewSigns = true;
     public static boolean SetHomeToCrewSign = true;
     public static int MaxRemoteSigns = -1;

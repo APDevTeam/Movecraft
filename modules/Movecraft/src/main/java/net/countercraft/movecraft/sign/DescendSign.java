@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.sign;
 
+import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
@@ -55,7 +56,7 @@ public final class DescendSign implements Listener{
             sign.setLine(0, "Descend: ON");
             sign.update(true);
 
-            c.setCruiseDirection(BlockFace.DOWN);
+            c.setCruiseDirection(CruiseDirection.DOWN);
             c.setLastCruiseUpdate(System.currentTimeMillis());
             c.setCruising(true);
             c.resetSigns(sign);

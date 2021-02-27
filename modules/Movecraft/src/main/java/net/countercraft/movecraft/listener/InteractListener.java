@@ -115,7 +115,7 @@ public final class InteractListener implements Listener {
                 if (craft.getType().getHalfSpeedUnderwater() && craft.getHitBox().getMinY() < craft.getWorld().getSeaLevel())
                     ticksElapsed = ticksElapsed >> 1;
 
-                if (Math.abs(ticksElapsed) < craft.getType().getTickCooldown(craft.getW())) {
+                if (Math.abs(ticksElapsed) < craft.getType().getTickCooldown(craft.getWorld())) {
 
                     if (Math.abs(ticksElapsed) < tickCooldown) {
                         return;
@@ -166,34 +166,43 @@ public final class InteractListener implements Listener {
                 craft.setLastCruiseUpdate(System.currentTimeMillis());
                 return;
             }
-            if (event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.LEFT_CLICK_BLOCK) {
-                if (event.getItem() == null || event.getItem().getType() != Settings.PilotTool) {
-                    return;
-                }
-                if (Settings.RequireSneakingForDirectControl && !event.getPlayer().isSneaking()) {
-                    return;
-                }
-                if (craft == null) {
-                    return;
-                }
-                if (craft.getPilotLocked()) {
-                    craft.setPilotLocked(false);
-                    event.getPlayer().sendMessage(
-                            I18nSupport.getInternationalisedString("Direct Control - Leaving"));
-                    event.setCancelled(true);
-                    return;
-                }
-                if (!event.getPlayer().hasPermission("movecraft." + craft.getType().getCraftName() + ".move")
-                        || !craft.getType().getCanDirectControl()) {
-                    event.getPlayer().sendMessage(
-                            I18nSupport.getInternationalisedString("Insufficient Permissions"));
-                    return;
-                }
-                craft.setPilotLocked(true);
-                craft.setPilotLockedX(event.getPlayer().getLocation().getBlockX() + 0.5);
-                craft.setPilotLockedY(event.getPlayer().getLocation().getY());
-                craft.setPilotLockedZ(event.getPlayer().getLocation().getBlockZ() + 0.5);
-                event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Direct Control - Entering"));
+            // Player is onboard craft and right clicking
+
+            float rotation = (float) Math.PI * event.getPlayer().getLocation().getYaw() / 180f;
+
+            float nx = -(float) Math.sin(rotation);
+            float nz = (float) Math.cos(rotation);
+
+            int dx = (Math.abs(nx) >= 0.5 ? 1 : 0) * (int) Math.signum(nx);
+            int dz = (Math.abs(nz) > 0.5 ? 1 : 0) * (int) Math.signum(nz);
+            int dy;
+
+            float p = event.getPlayer().getLocation().getPitch();
+
+            dy = -(Math.abs(p) >= 25 ? 1 : 0) * (int) Math.signum(p);
+
+            if (Math.abs(event.getPlayer().getLocation().getPitch()) >= 75) {
+                dx = 0;
+                dz = 0;
+            }
+
+            craft.translate(dx, dy, dz);
+            timeMap.put(event.getPlayer(), System.currentTimeMillis());
+            craft.setLastCruiseUpdate(System.currentTimeMillis());
+            return;
+        }
+        if (event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.LEFT_CLICK_BLOCK) {
+            if (event.getItem() == null || event.getItem().getType() != Settings.PilotTool) {
+                return;
+            }
+            Craft craft = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
+            if (craft == null) {
+                return;
+            }
+            if (craft.getPilotLocked()) {
+                craft.setPilotLocked(false);
+                event.getPlayer().sendMessage(
+                        I18nSupport.getInternationalisedString("Direct Control - Leaving"));
                 event.setCancelled(true);
             }
 

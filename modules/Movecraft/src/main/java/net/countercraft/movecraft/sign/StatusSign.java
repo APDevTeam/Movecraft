@@ -5,11 +5,11 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
+
 import net.countercraft.movecraft.utils.BlockLimitManager;
 import net.countercraft.movecraft.utils.Counter;
 import net.countercraft.movecraft.utils.SignUtils;
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -49,27 +49,14 @@ public final class StatusSign implements Listener{
             return;
         }
         int fuel = 0;
-        int totalBlocks = craft.getHitBox().size();
-        int signLine = 1;
-        int signColumn = 0;
-        final BlockLimitManager flyBlocks = craft.getType().getFlyBlocks();
-        Counter<BlockLimitManager.Entry> foundFlyBlocks = new Counter<>();
-        for (MovecraftLocation ml : craft.getHitBox()){
-            Location loc = ml.toBukkit(craft.getWorld());
-            Material testType = loc.getBlock().getType();
-            byte data = 0;
-            if (Settings.IsLegacy){
-                data = loc.getBlock().getData();
-            }
+        int totalBlocks = 0;
+        Counter<Material> foundBlocks = new Counter<>();
+        for (MovecraftLocation ml : craft.getHitBox()) {
+            Material blockID = craft.getW().getBlockAt(ml.getX(), ml.getY(), ml.getZ()).getType();
+            foundBlocks.add(blockID);
 
-            if (flyBlocks.contains(testType)){
-                foundFlyBlocks.add(flyBlocks.get(testType));
-            } else if (flyBlocks.contains(testType, data)){
-                foundFlyBlocks.get(flyBlocks.get(testType, data));
-            }
-
-            if (testType == Material.FURNACE) {
-                InventoryHolder inventoryHolder = (InventoryHolder) craft.getWorld().getBlockAt(ml.getX(), ml.getY(), ml.getZ()).getState();
+            if (blockID == Material.FURNACE) {
+                InventoryHolder inventoryHolder = (InventoryHolder) craft.getW().getBlockAt(ml.getX(), ml.getY(), ml.getZ()).getState();
                 Map<Material, Double> fuelTypes = craft.getType().getFuelTypes();
                 for (ItemStack iStack : inventoryHolder.getInventory()) {
                     if (iStack == null || !fuelTypes.containsKey(iStack.getType())) {
@@ -78,13 +65,18 @@ public final class StatusSign implements Listener{
                     fuel += iStack.getAmount() * fuelTypes.get(iStack.getType());
                 }
             }
+            if (blockID != Material.AIR && blockID != Material.FIRE) {
+                totalBlocks++;
+            }
         }
-        for (BlockLimitManager.Entry entry : flyBlocks.getEntries()) {
-            int amount = foundFlyBlocks.get(entry);
-            double minimum = entry.getLowerLimit();
-            if (minimum == 0)
-                continue;
-            double percentPresent = ((double) amount * 100 / (double) totalBlocks);
+        int signLine = 1;
+        int signColumn = 0;
+        for (BlockLimitManager.Entry alFlyBlockID : craft.getType().getFlyBlocks().getEntries()) {
+            Material flyBlockID = new ArrayList<>(alFlyBlockID.getBlocks()).get(0).getType();
+            double minimum = craft.getType().getFlyBlocks().getLowerLimit(flyBlockID);
+            if (foundBlocks.get(flyBlockID) != 0 && minimum > 0) { // if it has a minimum, it should be considered for sinking consideration
+                int amount = foundBlocks.get(flyBlockID);
+                double percentPresent = (amount * 100D / totalBlocks);
                 String signText = "";
                 if (percentPresent > minimum * 1.04) {
                     signText += ChatColor.GREEN;
@@ -93,8 +85,9 @@ public final class StatusSign implements Listener{
                 } else {
                     signText += ChatColor.RED;
                 }
-                String[] parts = new ArrayList<>(entry.getBlocks()).get(0).getType().name().split("_");
-                signText += parts[ entry.getBlocks().size() > 1 ? parts.length - 1 : 0 ].charAt(0);
+                signText += flyBlockID.name().charAt(0);
+
+
                 signText += " ";
                 signText += (int) percentPresent;
                 signText += "/";
@@ -112,20 +105,21 @@ public final class StatusSign implements Listener{
                 }
             }
 
-        if (signLine < 3 && signColumn == 1){
-            signLine++;
+            if (signLine < 3 && signColumn == 1) {
+                signLine++;
+            }
+            String fuelText = "";
+            int fuelRange = (int) ((fuel * (1 + (craft.getType().getCruiseSkipBlocks(craft.getWorld()) + 1))) / craft.getType().getFuelBurnRate(craft.getW()));
+            if (fuelRange > 1000) {
+                fuelText += ChatColor.GREEN;
+            } else if (fuelRange > 100) {
+                fuelText += ChatColor.YELLOW;
+            } else {
+                fuelText += ChatColor.RED;
+            }
+            fuelText += "Fuel range:";
+            fuelText += fuelRange;
+            event.setLine(signLine, fuelText);
         }
-        String fuelText="";
-        int fuelRange=(int) (( fuel * ( 1 + (craft.getType().getCruiseSkipBlocks(craft.getWorld())+1))) / craft.getType().getFuelBurnRate(craft.getW()));
-        if(fuelRange>1000) {
-            fuelText+=ChatColor.GREEN;
-        } else if(fuelRange>100) {
-            fuelText+=ChatColor.YELLOW;
-        } else {
-            fuelText+=ChatColor.RED;
-        }
-        fuelText+="Fuel range:";
-        fuelText+=fuelRange;
-        event.setLine(signLine,fuelText);
     }
 }

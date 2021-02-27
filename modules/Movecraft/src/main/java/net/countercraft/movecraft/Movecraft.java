@@ -20,7 +20,6 @@ package net.countercraft.movecraft;
 import com.earth2me.essentials.Essentials;
 import com.mewin.WGCustomFlags.WGCustomFlagsPlugin;
 import com.palmergames.bukkit.towny.Towny;
-import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import net.countercraft.movecraft.async.AsyncManager;
 import net.countercraft.movecraft.commands.*;
@@ -32,14 +31,12 @@ import net.countercraft.movecraft.listener.InteractListener;
 import net.countercraft.movecraft.listener.PlayerListener;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
-import net.countercraft.movecraft.repair.RepairManager;
 import net.countercraft.movecraft.sign.*;
 import net.countercraft.movecraft.towny.TownyCompatManager;
 import net.countercraft.movecraft.utils.LegacyUtils;
 import net.countercraft.movecraft.utils.TownyUtils;
 import net.countercraft.movecraft.utils.UpdateManager;
 import net.countercraft.movecraft.worldguard.WorldGuardCompatManager;
-import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -58,20 +55,16 @@ public class Movecraft extends JavaPlugin {
 
     private static Movecraft instance;
     private static WorldGuardPlugin worldGuardPlugin;
-    private static WorldEditPlugin worldEditPlugin;
     private static WGCustomFlagsPlugin wgCustomFlagsPlugin = null;
-    private static Economy economy;
     private static Towny townyPlugin = null;
     private static Essentials essentialsPlugin = null;
     private Logger logger;
     private boolean shuttingDown;
     private boolean startup = true;
     private WorldHandler worldHandler;
-    private MovecraftRepair movecraftRepair;
 
 
     private AsyncManager asyncManager;
-    private RepairManager repairManager;
 
     public static synchronized Movecraft getInstance() {
         return instance;
@@ -132,6 +125,7 @@ public class Movecraft extends JavaPlugin {
         Settings.RestrictSiBsToRegions = getConfig().getBoolean("RestrictSiBsToRegions", false);
         Settings.Debug = getConfig().getBoolean("Debug", false);
         Settings.DisableSpillProtection = getConfig().getBoolean("DisableSpillProtection", false);
+        Settings.DisableIceForm = getConfig().getBoolean("DisableIceForm", true);
         // if the PilotTool is specified in the config_legacy.yml file, use it
         Object pt = getConfig().get("PilotTool");
         final Material pilotTool;
@@ -139,6 +133,7 @@ public class Movecraft extends JavaPlugin {
             int toolID = (int) pt;
             if (!Settings.IsLegacy) {
                 throw new IllegalArgumentException("Numerical block IDs are not supported by this version");
+
             }
             pilotTool = LegacyUtils.getMaterial(toolID);
         } else if (pt instanceof String){
@@ -235,39 +230,6 @@ public class Movecraft extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new WorldGuardCompatManager(), this);
         }
 
-
-        //load up WorldEdit if it's present
-
-        Plugin wEPlugin = getServer().getPluginManager().getPlugin("WorldEdit");
-
-        if (wEPlugin == null || !(wEPlugin instanceof WorldEditPlugin)) {
-            logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - WE Not Found"));
-        } else {
-            logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - WE Found"));
-            Settings.RepairTicksPerBlock = getConfig().getInt("RepairTicksPerBlock", 0);
-            String weVersion;
-            //Now decide which WE compat should be used
-            if (!Settings.IsLegacy){
-                    weVersion = "we7";
-
-            } else {
-                weVersion = "we6";
-            }
-            //Test if a compatible MovecraftRepair is present
-            try {
-                final Class<?> clazz = Class.forName("net.countercraft.movecraft.compat." + weVersion + ".IMovecraftRepair");
-                //Check if we have a Repair class at that location
-                if (MovecraftRepair.class.isAssignableFrom(clazz)){
-                    this.movecraftRepair = (MovecraftRepair) clazz.getConstructor(Plugin.class).newInstance(this);
-                }
-            } catch (final Exception e){
-                e.printStackTrace();
-                this.getLogger().severe("Could not find a compatible repair class. Disabling repair and assault functions");
-                Settings.RepairTicksPerBlock = 0;
-            }
-            Settings.RepairMaxPercent = getConfig().getDouble("RepairMaxPercent", 50);
-            worldEditPlugin = (WorldEditPlugin) wEPlugin;
-        }
         Plugin tempTownyPlugin = getServer().getPluginManager().getPlugin("Towny");
         if (tempTownyPlugin != null && tempTownyPlugin instanceof Towny) {
             logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Towny Found"));
@@ -297,21 +259,6 @@ public class Movecraft extends JavaPlugin {
         if (essentialsPlugin == null) {
             logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Essentials Not Found"));
         }
-        // and now Vault
-        if (getServer().getPluginManager().getPlugin("Vault") != null) {
-            RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
-            if (rsp != null) {
-                economy = rsp.getProvider();
-                Settings.RepairMoneyPerBlock = getConfig().getDouble("RepairMoneyPerBlock", 0.0);
-                logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Vault Found"));
-            } else {
-                logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Vault Not Found"));
-                economy = null;
-            }
-        } else {
-            logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Vault Not Found"));
-            economy = null;
-        }
         
         if (shuttingDown && Settings.IGNORE_RESET) {
             logger.log(
@@ -332,14 +279,6 @@ public class Movecraft extends JavaPlugin {
             CraftManager.initialize();
 
             getServer().getPluginManager().registerEvents(new InteractListener(), this);
-            if (worldEditPlugin != null) {
-                if (movecraftRepair != null){
-                    repairManager = new RepairManager();
-                    if (startup)
-                        repairManager.runTaskTimerAsynchronously(this, 0, 1);
-                    repairManager.convertOldCraftRepairStates();
-                }
-            }
             this.getCommand("movecraft").setExecutor(new MovecraftCommand());
             this.getCommand("release").setExecutor(new ReleaseCommand());
             this.getCommand("pilot").setExecutor(new PilotCommand());
@@ -366,7 +305,6 @@ public class Movecraft extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new RelativeMoveSign(), this);
             getServer().getPluginManager().registerEvents(new ReleaseSign(), this);
             getServer().getPluginManager().registerEvents(new RemoteSign(), this);
-            getServer().getPluginManager().registerEvents(new RepairSign(), this);
             getServer().getPluginManager().registerEvents(new SpeedSign(), this);
             getServer().getPluginManager().registerEvents(new StatusSign(), this);
             getServer().getPluginManager().registerEvents(new SubcraftRotateSign(), this);
@@ -427,14 +365,6 @@ public class Movecraft extends JavaPlugin {
         return worldGuardPlugin;
     }
 
-    public WorldEditPlugin getWorldEditPlugin() {
-        return worldEditPlugin;
-    }
-
-    public Economy getEconomy() {
-        return economy;
-    }
-
     public WGCustomFlagsPlugin getWGCustomFlagsPlugin() {
         return wgCustomFlagsPlugin;
     }
@@ -452,12 +382,5 @@ public class Movecraft extends JavaPlugin {
     }
 
     public AsyncManager getAsyncManager(){return asyncManager;}
-
-
-    public MovecraftRepair getMovecraftRepair() {return movecraftRepair;}
-
-    public RepairManager getRepairManager() {
-        return repairManager;
-    }
 }
 

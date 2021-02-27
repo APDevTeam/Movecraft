@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.sign;
 
+import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
@@ -10,6 +11,7 @@ import net.countercraft.movecraft.craft.ICraft;
 import net.countercraft.movecraft.events.CraftPilotEvent;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.utils.LegacyUtils;
 import net.countercraft.movecraft.utils.SignUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -68,30 +70,11 @@ public final class CraftSign implements Listener{
 
         if (c.getType().getCruiseOnPilot()) {
             c.detect(null, event.getPlayer(), startPoint);
-            final BlockFace direction;
-            if (Settings.IsLegacy){
-                if (sign.getData() instanceof org.bukkit.material.Sign){
-                    org.bukkit.material.Sign signData = (org.bukkit.material.Sign) sign.getData();
-                    if (signData.isWallSign()) {
-                        direction = signData.getAttachedFace();
-                    } else {
-                        direction = signData.getFacing().getOppositeFace();
-                    }
-                }else {
-                    direction = null;
-                }
-            } else {
-                if (sign.getBlockData() instanceof org.bukkit.block.data.type.Sign){
-                    org.bukkit.block.data.type.Sign signData = (org.bukkit.block.data.type.Sign)sign.getBlockData();
-                    direction = signData.getRotation().getOppositeFace();
-                }else if (sign.getBlockData() instanceof org.bukkit.block.data.type.WallSign){
-                    WallSign signData = (WallSign)sign.getBlockData();
-                    direction = signData.getFacing().getOppositeFace();
-                } else {
-                    direction = null;
-                }
-            }
-            c.setCruiseDirection(direction);
+            org.bukkit.material.Sign materialSign = (org.bukkit.material.Sign) block.getState().getData();
+            if(block.getType().name().endsWith("SIGN") || block.getType() == LegacyUtils.SIGN_POST)
+                c.setCruiseDirection(CruiseDirection.NONE);
+            else
+                c.setCruiseDirection(CruiseDirection.fromBlockFace(materialSign.getFacing()));
             c.setLastCruiseUpdate(System.currentTimeMillis());
             c.setCruising(true);
             new BukkitRunnable() {

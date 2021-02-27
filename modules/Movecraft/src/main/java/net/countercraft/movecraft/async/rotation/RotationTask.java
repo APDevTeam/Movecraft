@@ -19,6 +19,7 @@ package net.countercraft.movecraft.async.rotation;
 
 import com.palmergames.bukkit.towny.object.TownBlock;
 import com.palmergames.bukkit.towny.object.TownyWorld;
+import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
 import net.countercraft.movecraft.async.AsyncTask;
@@ -172,44 +173,43 @@ public class RotationTask extends AsyncTask {
 
         updates.add(new CraftRotateCommand(getCraft(),originPoint, rotation));
 
-
         if (getCraft().getCruising()) {
             if (rotation == Rotation.ANTICLOCKWISE) {
                 // ship faces west
                 switch (getCraft().getCruiseDirection()) {
                     case WEST:
-                        getCraft().setCruiseDirection(BlockFace.SOUTH);
+                        getCraft().setCruiseDirection(CruiseDirection.SOUTH);
                         break;
                     // ship faces east
                     case EAST:
-                        getCraft().setCruiseDirection(BlockFace.NORTH);
+                        getCraft().setCruiseDirection(CruiseDirection.NORTH);
                         break;
                     // ship faces north
-                    case NORTH:
-                        getCraft().setCruiseDirection(BlockFace.WEST);
+                    case SOUTH:
+                        getCraft().setCruiseDirection(CruiseDirection.EAST);
                         break;
                     // ship faces south
-                    case SOUTH:
-                        getCraft().setCruiseDirection(BlockFace.EAST);
+                    case NORTH:
+                        getCraft().setCruiseDirection(CruiseDirection.WEST);
                         break;
                 }
             } else if (rotation == Rotation.CLOCKWISE) {
                 // ship faces west
                 switch (getCraft().getCruiseDirection()) {
                     case WEST:
-                        getCraft().setCruiseDirection(BlockFace.NORTH);
+                        getCraft().setCruiseDirection(CruiseDirection.NORTH);
                         break;
                     // ship faces east
                     case EAST:
-                        getCraft().setCruiseDirection(BlockFace.SOUTH);
+                        getCraft().setCruiseDirection(CruiseDirection.SOUTH);
                         break;
                     // ship faces north
-                    case NORTH:
-                        getCraft().setCruiseDirection(BlockFace.EAST);
+                    case SOUTH:
+                        getCraft().setCruiseDirection(CruiseDirection.WEST);
                         break;
                     // ship faces south
-                    case SOUTH:
-                        getCraft().setCruiseDirection(BlockFace.WEST);
+                    case NORTH:
+                        getCraft().setCruiseDirection(CruiseDirection.EAST);
                         break;
                 }
             }
@@ -245,7 +245,8 @@ public class RotationTask extends AsyncTask {
                         faceMessage += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - North");
                 }
             }
-            getCraft().getNotificationPlayer().sendMessage(faceMessage);
+            if(getCraft().getNotificationPlayer() != null)
+                getCraft().getNotificationPlayer().sendMessage(faceMessage);
 
             craftsInWorld = CraftManager.getInstance().getCraftsInWorld(getCraft().getWorld());
             for (Craft craft : craftsInWorld) {
@@ -299,7 +300,6 @@ public class RotationTask extends AsyncTask {
     public boolean getIsSubCraft() {
         return isSubCraft;
     }
-
 
     private boolean checkChests(Material mBlock, MovecraftLocation newLoc) {
         Material testMaterial;

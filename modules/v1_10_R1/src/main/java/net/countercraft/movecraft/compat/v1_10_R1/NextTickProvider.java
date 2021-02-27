@@ -79,6 +79,13 @@ public class NextTickProvider {
             public int hashCode() {
                 return position.hashCode();
             }
+            @Override
+            public boolean equals(Object other){
+                if (!(other instanceof NextTickListEntry)) {
+                    return false;
+                }
+                return position.equals(((NextTickListEntry)other).a);
+            }
         };
     }
 }

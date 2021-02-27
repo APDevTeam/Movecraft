@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.commands;
 
+import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
@@ -48,13 +49,13 @@ public class CruiseCommand implements TabExecutor {
                 yaw %= 360.0f;
             }
             if (yaw >= 45 && yaw < 135) { // west
-                craft.setCruiseDirection(BlockFace.WEST);
+                craft.setCruiseDirection(CruiseDirection.WEST);
             } else if (yaw >= 135 && yaw < 225) { // north
-                craft.setCruiseDirection(BlockFace.NORTH);
+                craft.setCruiseDirection(CruiseDirection.NORTH);
             } else if (yaw >= 225 && yaw <= 315){ // east
-                craft.setCruiseDirection(BlockFace.EAST);
+                craft.setCruiseDirection(CruiseDirection.EAST);
             } else { // default south
-                craft.setCruiseDirection(BlockFace.SOUTH);
+                craft.setCruiseDirection(CruiseDirection.SOUTH);
             }
             craft.setCruising(true);
             return true;
@@ -95,34 +96,34 @@ public class CruiseCommand implements TabExecutor {
                 yaw %= 360.0f;
             }
             if (yaw >= 45 && yaw < 135) { // west
-                craft.setCruiseDirection(BlockFace.WEST);
+                craft.setCruiseDirection(CruiseDirection.WEST);
             } else if (yaw >= 135 && yaw < 225) { // north
-                craft.setCruiseDirection(BlockFace.NORTH);
+                craft.setCruiseDirection(CruiseDirection.NORTH);
             } else if (yaw >= 225 && yaw <= 315){ // east
-                craft.setCruiseDirection(BlockFace.EAST);
+                craft.setCruiseDirection(CruiseDirection.EAST);
             } else { // default south
-                craft.setCruiseDirection(BlockFace.SOUTH);
+                craft.setCruiseDirection(CruiseDirection.SOUTH);
             }
             craft.setCruising(true);
             return true;
         }
         if (args[0].equalsIgnoreCase("north") || args[0].equalsIgnoreCase("n")) {
-            craft.setCruiseDirection(BlockFace.NORTH);
+            craft.setCruiseDirection(CruiseDirection.NORTH);
             craft.setCruising(true);
             return true;
         }
         if (args[0].equalsIgnoreCase("south") || args[0].equalsIgnoreCase("s")) {
-            craft.setCruiseDirection(BlockFace.SOUTH);
+            craft.setCruiseDirection(CruiseDirection.SOUTH);
             craft.setCruising(true);
             return true;
         }
         if (args[0].equalsIgnoreCase("east") || args[0].equalsIgnoreCase("e")) {
-            craft.setCruiseDirection(BlockFace.EAST);
+            craft.setCruiseDirection(CruiseDirection.EAST);
             craft.setCruising(true);
             return true;
         }
         if (args[0].equalsIgnoreCase("west") || args[0].equalsIgnoreCase("w")) {
-            craft.setCruiseDirection(BlockFace.WEST);
+            craft.setCruiseDirection(CruiseDirection.WEST);
             craft.setCruising(true);
             return true;
         }

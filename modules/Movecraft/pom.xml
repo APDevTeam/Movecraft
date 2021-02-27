@@ -9,7 +9,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-    <!--<version>7.0.0_beta_8-SNAPSHOT.1</version>-->
+    <!--<version>7.0.0_beta_9-SNAPSHOT.2</version>-->
     <version>7.0.0_for_1.8.8-1.16.2_beta_37</version>
 
     <repositories>
@@ -99,20 +99,11 @@
             <version>v1_12_R1</version>
             <type>jar</type>
         </dependency>
-
         <dependency>
             <groupId>net.countercraft</groupId>
             <artifactId>movecraft-api</artifactId>
             <version>API</version>
             <type>jar</type>
-        </dependency>
-
-
-        <dependency>
-            <groupId>com.sk89q.worldedit</groupId>
-            <artifactId>worldedit-bukkit</artifactId>
-            <version>7.0.1-SNAPSHOT</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.sk89q.worldguard</groupId>
@@ -130,35 +121,11 @@
             <version>6.1.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>com.sk89q</groupId>
-            <artifactId>worldedit</artifactId>
-            <version>6.0.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>net.countercraft</groupId>
-            <artifactId>movecraft-WE7Utils</artifactId>
-            <version>WE7Utils</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>net.countercraft</groupId>
-            <artifactId>movecraft-WE6Utils</artifactId>
-            <version>WE6Utils</version>
-            <type>jar</type>
-        </dependency>
         <!--SnakeYAML-->
         <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
             <version>1.10</version>
-        </dependency>
-        <!--Vault-->
-        <dependency>
-            <groupId>com.github.MilkBowl</groupId>
-            <artifactId>VaultAPI</artifactId>
-            <version>1.7</version>
-            <scope>provided</scope>
         </dependency>
         <!--Essentials-->
         <dependency>

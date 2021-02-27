@@ -32,6 +32,7 @@ import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.yaml.snakeyaml.scanner.ScannerException;
 
 import java.io.File;
 import java.util.*;
@@ -134,7 +135,7 @@ public class CraftManager implements Iterable<Craft>{
         }
         Set<CraftType> craftTypes = new HashSet<>();
         File[] files = craftsFile.listFiles();
-        if (files == null){
+        if (files == null) {
             return craftTypes;
         }
 
@@ -145,8 +146,9 @@ public class CraftManager implements Iterable<Craft>{
                     try {
                         CraftType type = new CraftType(file);
                         craftTypes.add(type);
-                    } catch (Exception e){
-                        e.printStackTrace();
+                    }
+                    catch (CraftType.TypeNotFoundException | ScannerException e) {
+                        Movecraft.getInstance().getLogger().log(Level.SEVERE, I18nSupport.getInternationalisedString("Startup - failure to load craft type") + " '" + file.getName() + "' " + e.getMessage());
                     }
                 }
             }
@@ -177,14 +179,14 @@ public class CraftManager implements Iterable<Craft>{
         removeReleaseTask(c);
 
         Player player = getPlayerFromCraft(c);
-        if (player!=null)
+        if (player != null)
             this.craftPlayerIndex.remove(player);
         // if its sinking, just remove the craft without notifying or checking
         this.craftList.remove(c);
         if(!c.getHitBox().isEmpty()) {
             if (player != null) {
                 player.sendMessage(I18nSupport.getInternationalisedString("Release - Craft has been released"));
-                Movecraft.getInstance().getLogger().log(Level.INFO, String.format(I18nSupport.getInternationalisedString("Release - Player has released a craft console"), c.getNotificationPlayer().getName(), c.getType().getCraftName(), c.getHitBox().size(), c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
+                Movecraft.getInstance().getLogger().log(Level.INFO, String.format(I18nSupport.getInternationalisedString("Release - Player has released a craft console"), player.getName(), c.getType().getCraftName(), c.getHitBox().size(), c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
             } else {
                 Movecraft.getInstance().getLogger().log(Level.INFO, String.format(I18nSupport.getInternationalisedString("Release - Null Craft Release Console"), c.getType().getCraftName(), c.getHitBox().size(), c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
             }

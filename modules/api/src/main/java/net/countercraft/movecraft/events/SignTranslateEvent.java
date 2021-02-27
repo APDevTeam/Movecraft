@@ -11,7 +11,8 @@ import java.util.List;
 public class SignTranslateEvent extends CraftEvent{
     private static final HandlerList HANDLERS = new HandlerList();
     @NotNull private final List<MovecraftLocation> locations;
-    @NotNull private String[] lines;
+    @NotNull private final String[] lines;
+    private boolean updated = false;
 
     public SignTranslateEvent(@NotNull Craft craft, @NotNull String[] lines, @NotNull List<MovecraftLocation> locations) throws IndexOutOfBoundsException{
         super(craft);
@@ -22,7 +23,9 @@ public class SignTranslateEvent extends CraftEvent{
     }
 
     @NotNull
+    @Deprecated
     public String[] getLines() {
+        this.updated = true;
         return lines;
     }
 
@@ -35,6 +38,7 @@ public class SignTranslateEvent extends CraftEvent{
     public void setLine(int index, String line){
         if(index > 3 || index < 0)
             throw new IndexOutOfBoundsException();
+        this.updated = true;
         lines[index]=line;
     }
 
@@ -51,5 +55,9 @@ public class SignTranslateEvent extends CraftEvent{
     @NotNull
     public List<MovecraftLocation> getLocations() {
         return Collections.unmodifiableList(locations);
+    }
+
+    public boolean isUpdated() {
+        return updated;
     }
 }

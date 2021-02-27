@@ -1,6 +1,10 @@
 package net.countercraft.movecraft.mapUpdater.update;
 
 import com.google.common.collect.Lists;
+import it.unimi.dsi.fastutil.Hash;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.WorldHandler;
@@ -279,7 +283,19 @@ public class CraftTranslateCommand extends UpdateCommand {
     }
 
     private void sendSignEvents(){
-        Map<String[], List<MovecraftLocation>> signs = new HashMap<>();
+        Object2ObjectMap<String[], List<MovecraftLocation>> signs = new Object2ObjectOpenCustomHashMap<>(new Hash.Strategy<String[]>() {
+            @Override
+            public int hashCode(String[] strings) {
+                return Arrays.hashCode(strings);
+            }
+
+            @Override
+            public boolean equals(String[] a, String[] b) {
+                return Arrays.equals(a, b);
+            }
+        });
+        Map<MovecraftLocation, Sign> signStates = new HashMap<>();
+
         for (MovecraftLocation location : craft.getHitBox()) {
             Block block = location.toBukkit(craft.getWorld()).getBlock();
             if (SignUtils.isSign(block)) {
@@ -287,20 +303,25 @@ public class CraftTranslateCommand extends UpdateCommand {
                 if(!signs.containsKey(sign.getLines()))
                     signs.put(sign.getLines(), new ArrayList<>());
                 signs.get(sign.getLines()).add(location);
+                signStates.put(location, sign);
             }
         }
         for(Map.Entry<String[], List<MovecraftLocation>> entry : signs.entrySet()){
-            Bukkit.getServer().getPluginManager().callEvent(new SignTranslateEvent(craft, entry.getKey(), entry.getValue()));
-            for(MovecraftLocation loc : entry.getValue()){
-                Block block = loc.toBukkit(craft.getWorld()).getBlock();
-                if (!(block.getState() instanceof Sign)) {
+            SignTranslateEvent event = new SignTranslateEvent(craft, entry.getKey(), entry.getValue());
+            Bukkit.getServer().getPluginManager().callEvent(event);
+            if(!event.isUpdated()){
+                continue;
+            }
+            for(MovecraftLocation location : entry.getValue()){
+                Block block = location.toBukkit(craft.getW()).getBlock();
+                if (!SignUtils.isSign(block)) {
                     continue;
                 }
-                Sign sign = (Sign) block.getState();
+                Sign sign = signStates.get(location);
                 for(int i = 0; i<4; i++){
                     sign.setLine(i, entry.getKey()[i]);
                 }
-                sign.update();
+                sign.update(false, false);
             }
         }
     }

@@ -12,6 +12,7 @@ ManOverboardDistance: 1000 # maximum distance from a craft that you can manoverb
 FireballLifespan: 6
 ProtectPilotedCrafts: true
 DisableSpillProtection: false
+DisableIceForm: true
 RequireCreatePerm: false # require users to have the movecract.<CraftTypeName>.create permission in order to place command signs
 RequireSneakingForDirectControl: false #Require if player should sneak in order to activate direct control
 TNTContactExplosives: true
@@ -26,9 +27,6 @@ ExtraFadeTimePerBlock: #List of blocks that will take longer time to fade
   DROPPER: 600
   FURNACE: 600
 BlockQueueChunkSize: 200000
-RepairTicksPerBlock: 10
-RepairMoneyPerBlock: 10
-RepairMaxPercent: 50
 AllowCrewSigns: true
 MaxRemoteSigns: -1 # Maximum number of remote signs that can be triggered at once.  Setting to -1 allows unlimited.
 SetHomeToCrewSign: false

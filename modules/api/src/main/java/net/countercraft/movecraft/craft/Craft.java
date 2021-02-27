@@ -17,6 +17,7 @@
 
 package net.countercraft.movecraft.craft;
 
+import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
 import net.countercraft.movecraft.config.Settings;
@@ -30,7 +31,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -42,13 +42,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static java.lang.Integer.max;
-
-
 public abstract class Craft {
     @NotNull protected final CraftType type;
-    //protected int[][][] hitBox;
-    //protected MovecraftLocation[] blockList;
     @NotNull protected BitmapHitBox hitBox;
     @NotNull protected final BitmapHitBox collapsedHitBox;
     @NotNull protected BitmapHitBox fluidLocations;
@@ -59,15 +54,17 @@ public abstract class Craft {
     private boolean cruising;
     private boolean sinking;
     private boolean disabled;
-    @NotNull private BlockFace cruiseDirection;
+    private CruiseDirection cruiseDirection;
     private long lastCruiseUpdate;
     private long lastBlockCheck;
     private long lastRotateTime=0;
-    private long origPilotTime;
+    private final long origPilotTime;
     private long lastTeleportTime;
     private int lastDX, lastDY, lastDZ;
+    private int currentGear = 1;
     private double burningFuel;
     private boolean pilotLocked;
+    private boolean translating;
     private double pilotLockedX;
     private double pilotLockedY;
     private int origBlockCount;
@@ -78,8 +75,6 @@ public abstract class Craft {
     @NotNull private final Map<Location, Pair<Material, Object>> phaseBlocks = new HashMap<>();
     @NotNull private final HashMap<UUID, Location> crewSigns = new HashMap<>();
     @NotNull private String name = "";
-    private boolean translating;
-    private int currentGear = 1;
 
     public Craft(@NotNull CraftType type, @NotNull World world) {
         this.type = type;
@@ -127,39 +122,18 @@ public abstract class Craft {
         return type;
     }
 
-    /**
-     * @deprecated use getWorld() instead
-     *
-     * @return the world the craft is in
-     */
     @NotNull
     @Deprecated
     public World getW() {
         return world;
     }
 
-    /**
-     *
-     * Gets the world the craft is currently in
-     *
-     * @return the world the craft is in
-     */
-    @NotNull
     public World getWorld() {
         return world;
     }
 
     @Deprecated
     public void setW(World world) {
-        this.world = world;
-        if (type.getMaxHeightLimit(world) > world.getMaxHeight() - 1) {
-            this.maxHeightLimit = world.getMaxHeight() - 1;
-        } else {
-            this.maxHeightLimit = type.getMaxHeightLimit(world);
-        }
-    }
-
-    public void setWorld(@NotNull World world) {
         this.world = world;
         if (type.getMaxHeightLimit(world) > world.getMaxHeight() - 1) {
             this.maxHeightLimit = world.getMaxHeight() - 1;
@@ -207,7 +181,6 @@ public abstract class Craft {
             return;
         }
         this.sinking = true;
-
     }
 
 
@@ -225,12 +198,11 @@ public abstract class Craft {
         this.disabled = disabled;
     }
 
-    @NotNull
-    public BlockFace getCruiseDirection() {
+    public CruiseDirection getCruiseDirection() {
         return cruiseDirection;
     }
 
-    public void setCruiseDirection(@NotNull BlockFace cruiseDirection) {
+    public void setCruiseDirection(CruiseDirection cruiseDirection) {
         this.cruiseDirection = cruiseDirection;
     }
 
@@ -360,15 +332,15 @@ public abstract class Craft {
             return (type.getTickCooldown(world) + chestPenalty) * (type.getGearShiftsAffectTickCooldown() ? currentGear : 1);
 
         // Ascent or Descent
-        if(cruiseDirection == BlockFace.UP || cruiseDirection == BlockFace.DOWN) {
+        if(cruiseDirection == CruiseDirection.UP || cruiseDirection == CruiseDirection.DOWN) {
             return (type.getVertCruiseTickCooldown(world) + chestPenalty) * (type.getGearShiftsAffectTickCooldown() ? currentGear : 1);
         }
 
         // Dynamic Fly Block Speed
         if(type.getDynamicFlyBlockSpeedFactor() != 0){
             double count = 0.0;
-            for (Material type : type.getDynamicFlyBlocks()) {
-                count += materials.get(type);
+            for (Material flyBlockMaterial : type.getDynamicFlyBlocks()) {
+                count += materials.get(flyBlockMaterial);
             }
             double woolRatio = count / hitBox.size();
             return Math.max((int)Math.round((20.0 * (type.getCruiseSkipBlocks(world) + 1)) / ((type.getDynamicFlyBlockSpeedFactor() * 1.5) * (woolRatio - .5) + (20.0 / (type.getCruiseTickCooldown(world) )) + 1)) * (type.getGearShiftsAffectTickCooldown() ? currentGear : 1), 1);
@@ -393,7 +365,7 @@ public abstract class Craft {
         speed -= type.getDynamicLagSpeedFactor() * Math.pow(getMeanCruiseTime() * 1000.0, type.getDynamicLagPowerFactor());
         speed = Math.max(type.getDynamicLagMinSpeed(), speed);
         return (int)Math.round((20.0 * (type.getCruiseSkipBlocks(world) + 1.0)) / speed) * (type.getGearShiftsAffectTickCooldown() ? currentGear : 1);
-        //In theory, the chest penalty is not needed for a DynamicLag craft.
+            //In theory, the chest penalty is not needed for a DynamicLag craft.
     }
 
     /**
@@ -401,7 +373,7 @@ public abstract class Craft {
      * @return the speed of the craft
      */
     public double getSpeed() {
-        if(cruiseDirection == BlockFace.UP || cruiseDirection == BlockFace.DOWN) {
+        if(cruiseDirection == CruiseDirection.UP || cruiseDirection == CruiseDirection.DOWN) {
             return 20 * (type.getVertCruiseSkipBlocks(world) + 1) / (double) getTickCooldown();
         }
         else {
@@ -433,34 +405,34 @@ public abstract class Craft {
             int posZ;
             posZ = hitBox.getMinZ() - 1;
             for (posX = hitBox.getMinX() - 1; posX <= hitBox.getMaxX() + 1; posX++) {
-                Material type = world.getBlockAt(posX, posY, posZ).getType();
-                if (type.name().endsWith("WATER"))
+                int typeID = world.getBlockAt(posX, posY, posZ).getTypeId();
+                if (typeID == 9)
                     numWater++;
-                if (type.name().endsWith("AIR"))
+                if (typeID == 0)
                     numAir++;
             }
             posZ = hitBox.getMaxZ() + 1;
             for (posX = hitBox.getMinX() - 1; posX <= hitBox.getMaxX() + 1; posX++) {
-                Material type = world.getBlockAt(posX, posY, posZ).getType();
-                if (type.name().endsWith("WATER"))
+                int typeID = world.getBlockAt(posX, posY, posZ).getTypeId();
+                if (typeID == 9)
                     numWater++;
-                if (type.name().endsWith("AIR"))
+                if (typeID == 0)
                     numAir++;
             }
             posX = hitBox.getMinX() - 1;
             for (posZ = hitBox.getMinZ(); posZ <= hitBox.getMaxZ(); posZ++) {
-                Material type = world.getBlockAt(posX, posY, posZ).getType();
-                if (type.name().endsWith("WATER"))
+                int typeID = world.getBlockAt(posX, posY, posZ).getTypeId();
+                if (typeID == 9)
                     numWater++;
-                if (type.name().endsWith("AIR"))
+                if (typeID == 0)
                     numAir++;
             }
             posX = hitBox.getMaxX() + 1;
             for (posZ = hitBox.getMinZ(); posZ <= hitBox.getMaxZ(); posZ++) {
-                Material type = world.getBlockAt(posX, posY, posZ).getType();
-                if (type.name().endsWith("WATER"))
+                int typeID = world.getBlockAt(posX, posY, posZ).getTypeId();
+                if (typeID == 9)
                     numWater++;
-                if (type.name().endsWith("AIR"))
+                if (typeID == 0)
                     numAir++;
             }
             if (numWater > numAir) {
@@ -505,14 +477,6 @@ public abstract class Craft {
         this.fluidLocations = fluidLocations;
     }
 
-    public boolean isTranslating() {
-        return translating;
-    }
-
-    public void setTranslating(boolean translating) {
-        this.translating = translating;
-    }
-
     public long getLastTeleportTime() {
         return lastTeleportTime;
     }
@@ -529,6 +493,18 @@ public abstract class Craft {
         if (currentGear > type.getGearShifts()) {
             this.currentGear = type.getGearShifts();
         }
-        this.currentGear = max(currentGear, 1);
+        this.currentGear = Math.max(currentGear, 1);
+    }
+
+    public void setWorld(World world) {
+        this.world = world;
+    }
+
+    public boolean isTranslating() {
+        return translating;
+    }
+
+    public void setTranslating(boolean translating) {
+        this.translating = translating;
     }
 }
