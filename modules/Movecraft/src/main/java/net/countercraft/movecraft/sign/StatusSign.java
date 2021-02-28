@@ -9,6 +9,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -25,9 +26,9 @@ public final class StatusSign implements Listener{
     public void onCraftDetect(CraftDetectEvent event){
         World world = event.getCraft().getW();
         for(MovecraftLocation location: event.getCraft().getHitBox()){
-            Block block = location.toBukkit(world).getBlock();
-            if(block.getType() == Material.WALL_SIGN || block.getType() == Material.SIGN_POST){
-                Sign sign = (Sign) block.getState();
+            BlockState state = location.toBukkit(world).getBlock().getState();
+            if(state instanceof Sign){
+                Sign sign = (Sign) state;
                 if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Status:")) {
                     sign.setLine(1, "");
                     sign.setLine(2, "");
@@ -67,16 +68,12 @@ public final class StatusSign implements Listener{
         }
         int signLine=1;
         int signColumn=0;
-        for(List<Integer> alFlyBlockID : craft.getType().getFlyBlocks().keySet()) {
-            int flyBlockID= alFlyBlockID.get(0);
+        for(List<Material> alFlyBlockID : craft.getType().getFlyBlocks().keySet()) {
+            Material flyBlockID= alFlyBlockID.get(0);
             double minimum=craft.getType().getFlyBlocks().get(alFlyBlockID).get(0);
-            if(foundBlocks.get(Material.getMaterial(flyBlockID)) != 0 && minimum>0) { // if it has a minimum, it should be considered for sinking consideration
-                int amount=foundBlocks.get(Material.getMaterial(flyBlockID));
+            if(foundBlocks.get(flyBlockID) != 0 && minimum>0) { // if it has a minimum, it should be considered for sinking consideration
+                int amount=foundBlocks.get((flyBlockID));
                 double percentPresent= (amount*100D/totalBlocks);
-                int deshiftedID=flyBlockID;
-                if(deshiftedID>10000) {
-                    deshiftedID=(deshiftedID-10000)>>4;
-                }
                 String signText="";
                 if(percentPresent>minimum*1.04) {
                     signText+= ChatColor.GREEN;
@@ -85,12 +82,12 @@ public final class StatusSign implements Listener{
                 } else {
                     signText+=ChatColor.RED;
                 }
-                if(deshiftedID==152) {
+                if(flyBlockID == Material.REDSTONE_BLOCK) {
                     signText+="R";
-                } else if(deshiftedID==42) {
+                } else if(flyBlockID == Material.IRON_BLOCK) {
                     signText+="I";
                 } else {
-                    signText+= Material.getMaterial(deshiftedID).toString().charAt(0);
+                    signText+= flyBlockID.toString().charAt(0);
                 }
 
                 signText+=" ";

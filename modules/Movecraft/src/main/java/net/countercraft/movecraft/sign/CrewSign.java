@@ -14,6 +14,7 @@ import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
+import org.bukkit.block.data.type.Bed;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -48,7 +49,7 @@ public class CrewSign implements Listener {
         Location valid = null;
         for(MovecraftLocation location : event.getLocations()){
             Location bedLoc = location.toBukkit(craft.getW()).subtract(0,1,0);
-            if (craft.getW().getBlockAt(bedLoc).getType().equals(Material.BED_BLOCK)) {
+            if (craft.getW().getBlockAt(bedLoc).getBlockData() instanceof Bed) {
                 valid = bedLoc;
                 break;
             }
@@ -73,7 +74,7 @@ public class CrewSign implements Listener {
         if (!sign.getLine(0).equalsIgnoreCase("Crew:")) {
             return;
         }
-        if (!sign.getBlock().getRelative(0,-1,0).getType().equals(Material.BED_BLOCK)) {
+        if (!(sign.getBlock().getRelative(0,-1,0).getBlockData() instanceof Bed)) {
             player.sendMessage(I18nSupport.getInternationalisedString("CrewSign - Need Bed Below"));
             return;
         }
@@ -107,7 +108,7 @@ public class CrewSign implements Listener {
         }
         player.sendMessage(I18nSupport.getInternationalisedString("CrewSign - Respawn"));
         Location respawnLoc = craft.getCrewSigns().get(player.getUniqueId());
-        if (!respawnLoc.getBlock().getType().equals(Material.BED_BLOCK)){
+        if (!(respawnLoc.getBlock().getBlockData() instanceof Bed)){
             return;
         }
         //Attempt to find an empty location to spawn the player
@@ -136,11 +137,11 @@ public class CrewSign implements Listener {
         World world = event.getCraft().getW();
         for(MovecraftLocation location: event.getCraft().getHitBox()){
             Block block = location.toBukkit(world).getBlock();
-            if (block.getType() != Material.WALL_SIGN && block.getType() != Material.SIGN_POST) {
+            if (block.getState() instanceof Sign) {
                 continue;
             }
             Sign sign = (Sign) block.getState();
-            if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Crew:") && sign.getLocation().subtract(0,1,0).getBlock().getType().equals(Material.BED_BLOCK)) {
+            if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Crew:") && sign.getLocation().subtract(0,1,0).getBlock().getBlockData() instanceof Bed) {
                Player p = Bukkit.getPlayer(sign.getLine(1));
                if(p == null || !p.isOnline())
                    return;

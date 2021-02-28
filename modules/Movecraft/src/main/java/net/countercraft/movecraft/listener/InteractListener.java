@@ -23,7 +23,8 @@ import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.CraftType;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.MathUtils;
-import org.bukkit.Material;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.type.Switch;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -41,15 +42,17 @@ public final class InteractListener implements Listener {
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK && event.getAction() != Action.LEFT_CLICK_BLOCK) {
             return;
         }
-        Material m = event.getClickedBlock().getType();
-        if (!m.equals(Material.WOOD_BUTTON) && !m.equals(Material.STONE_BUTTON)) {
+        BlockData data = event.getClickedBlock().getBlockData();
+        if (!(data instanceof Switch)) {
             return;
         }
         if (event.getAction() != Action.LEFT_CLICK_BLOCK) {
             return;
         } // if they left click a button which is pressed, unpress it
-        if (event.getClickedBlock().getData() >= 8) {
-            event.getClickedBlock().setData((byte) (event.getClickedBlock().getData() - 8));
+        Switch state = (Switch) data;
+        if (state.isPowered()) {
+            state.setPowered(false);
+            event.getClickedBlock().setBlockData(state);
         }
     }
 
@@ -65,7 +68,7 @@ public final class InteractListener implements Listener {
             final Player player = event.getPlayer();
             Craft craft = CraftManager.getInstance().getCraftByPlayer(player);
 
-            if (event.getItem() == null || event.getItem().getTypeId() != Settings.PilotTool) {
+            if (event.getItem() == null || event.getItem().getType() != Settings.PilotTool) {
                 return;
             }
             event.setCancelled(true);
@@ -154,7 +157,7 @@ public final class InteractListener implements Listener {
             return;
         }
         if (event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.LEFT_CLICK_BLOCK) {
-            if (event.getItem() == null || event.getItem().getTypeId() != Settings.PilotTool) {
+            if (event.getItem() == null || event.getItem().getType() != Settings.PilotTool) {
                 return;
             }
             Craft craft = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());

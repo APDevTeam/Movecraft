@@ -331,7 +331,7 @@ public abstract class Craft {
 
         // Dynamic Fly Block Speed
         if(type.getDynamicFlyBlockSpeedFactor() != 0){
-            Material flyBlockMaterial = Material.getMaterial(type.getDynamicFlyBlock());
+            Material flyBlockMaterial = type.getDynamicFlyBlock();
             double count = materials.get(flyBlockMaterial);
             double woolRatio = count / hitBox.size();
             return Math.max((int)Math.round((20.0 * (type.getCruiseSkipBlocks(w) + 1)) / ((type.getDynamicFlyBlockSpeedFactor() * 1.5) * (woolRatio - .5) + (20.0 / (type.getCruiseTickCooldown(w) )) + 1)) * (type.getGearShiftsAffectTickCooldown() ? currentGear : 1), 1);
@@ -396,34 +396,34 @@ public abstract class Craft {
             int posZ;
             posZ = hitBox.getMinZ() - 1;
             for (posX = hitBox.getMinX() - 1; posX <= hitBox.getMaxX() + 1; posX++) {
-                int typeID = w.getBlockAt(posX, posY, posZ).getTypeId();
-                if (typeID == 9)
+                Material material = w.getBlockAt(posX, posY, posZ).getType();
+                if (material == Material.WATER)
                     numWater++;
-                if (typeID == 0)
+                if (material == Material.AIR)
                     numAir++;
             }
             posZ = hitBox.getMaxZ() + 1;
             for (posX = hitBox.getMinX() - 1; posX <= hitBox.getMaxX() + 1; posX++) {
-                int typeID = w.getBlockAt(posX, posY, posZ).getTypeId();
-                if (typeID == 9)
+                Material material = w.getBlockAt(posX, posY, posZ).getType();
+                if (material == Material.WATER)
                     numWater++;
-                if (typeID == 0)
+                if (material == Material.AIR)
                     numAir++;
             }
             posX = hitBox.getMinX() - 1;
             for (posZ = hitBox.getMinZ(); posZ <= hitBox.getMaxZ(); posZ++) {
-                int typeID = w.getBlockAt(posX, posY, posZ).getTypeId();
-                if (typeID == 9)
+                Material material = w.getBlockAt(posX, posY, posZ).getType();
+                if (material == Material.WATER)
                     numWater++;
-                if (typeID == 0)
+                if (material == Material.AIR)
                     numAir++;
             }
             posX = hitBox.getMaxX() + 1;
             for (posZ = hitBox.getMinZ(); posZ <= hitBox.getMaxZ(); posZ++) {
-                int typeID = w.getBlockAt(posX, posY, posZ).getTypeId();
-                if (typeID == 9)
+                Material material = w.getBlockAt(posX, posY, posZ).getType();
+                if (material == Material.WATER)
                     numWater++;
-                if (typeID == 0)
+                if (material == Material.AIR)
                     numAir++;
             }
             if (numWater > numAir) {

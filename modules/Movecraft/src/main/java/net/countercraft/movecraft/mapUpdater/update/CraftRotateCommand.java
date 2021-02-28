@@ -16,8 +16,11 @@ import net.countercraft.movecraft.utils.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Tag;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
+import org.bukkit.block.data.BlockData;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -51,12 +54,10 @@ public class CraftRotateCommand extends UpdateCommand {
         long time = System.nanoTime();
         final Set<Material> passthroughBlocks = new HashSet<>(craft.getType().getPassthroughBlocks());
         if(craft.getSinking()){
-            passthroughBlocks.add(Material.STATIONARY_WATER);
             passthroughBlocks.add(Material.WATER);
-            passthroughBlocks.add(Material.LEAVES);
-            passthroughBlocks.add(Material.LEAVES_2);
-            passthroughBlocks.add(Material.LONG_GRASS);
-            passthroughBlocks.add(Material.DOUBLE_PLANT);
+            passthroughBlocks.addAll(Tag.LEAVES.getValues());
+            passthroughBlocks.add(Material.TALL_GRASS);
+            passthroughBlocks.add(Material.GRASS);
         }
         if (!passthroughBlocks.isEmpty()) {
             BitmapHitBox originalLocations = new BitmapHitBox();
@@ -203,8 +204,8 @@ public class CraftRotateCommand extends UpdateCommand {
 
         for (MovecraftLocation location : craft.getHitBox()) {
             Block block = location.toBukkit(craft.getW()).getBlock();
-            Material type = block.getType();
-            if (type == Material.WALL_SIGN || type == Material.SIGN_POST) {
+            BlockState state = block.getState();
+            if (state instanceof Sign) {
                 Sign sign = (Sign) block.getState();
                 if(!signs.containsKey(sign.getLines()))
                     signs.put(sign.getLines(), new ArrayList<>());
@@ -220,7 +221,8 @@ public class CraftRotateCommand extends UpdateCommand {
             }
             for(MovecraftLocation location : entry.getValue()){
                 Block block = location.toBukkit(craft.getW()).getBlock();
-                if (block.getType() != Material.WALL_SIGN && block.getType() != Material.SIGN_POST) {
+                BlockState state =  block.getState();
+                if (!(state instanceof Sign)) {
                     continue;
                 }
                 Sign sign = signStates.get(location);

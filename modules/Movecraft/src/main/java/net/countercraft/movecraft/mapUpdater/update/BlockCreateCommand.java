@@ -51,17 +51,10 @@ public class BlockCreateCommand extends UpdateCommand {
 
         //Do comperator stuff
 
-        if (type == Material.REDSTONE_COMPARATOR_OFF) { // for some reason comparators are flakey, have to do it twice sometimes
-            //Block b = updateWorld.getBlockAt(newBlockLocation.getX(), newBlockLocation.getY(), newBlockLocation.getZ());
+        if (type == Material.COMPARATOR) { // for some reason comparators are flakey, have to do it twice sometimes
             Block b = newBlockLocation.toBukkit(world).getBlock();
-            if (b.getType() != Material.REDSTONE_COMPARATOR_OFF) {
-                b.setTypeIdAndData(type.getId(), dataID, false);
-            }
-        }
-        if (type == Material.REDSTONE_COMPARATOR) { // for some reason comparators are flakey, have to do it twice sometimes
-            Block b = newBlockLocation.toBukkit(world).getBlock();
-            if (b.getType() != Material.REDSTONE_COMPARATOR) {
-                b.setTypeIdAndData(type.getId(), dataID, false);
+            if (b.getType() != Material.COMPARATOR) {
+                b.setType(type, false);
             }
         }
 

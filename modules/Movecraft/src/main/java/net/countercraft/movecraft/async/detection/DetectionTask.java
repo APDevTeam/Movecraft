@@ -27,8 +27,10 @@ import net.countercraft.movecraft.utils.HashHitBox;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -43,18 +45,18 @@ public class DetectionTask extends AsyncTask {
     @NotNull private final BitmapHitBox fluidBox = new BitmapHitBox();
     @NotNull private final BitmapHitBox hitBox = new BitmapHitBox();
     @NotNull private final HashSet<MovecraftLocation> visited = new HashSet<>();
-    @NotNull private final HashMap<List<Integer>, Integer> blockTypeCount = new HashMap<>();
+    @NotNull private final HashMap<List<Material>, Integer> blockTypeCount = new HashMap<>();
     @NotNull private final World world;
     @Nullable private final Player player;
     @NotNull private final Player notificationPlayer;
-    private final int[] allowedBlocks;
-    private final int[] forbiddenBlocks;
+    private final EnumSet<Material> allowedBlocks;
+    private final EnumSet<Material> forbiddenBlocks;
     @NotNull private final String[] forbiddenSignStrings;
     private int maxX;
     private int maxY;
     private int maxZ;
     private int minY;
-    @NotNull private Map<List<Integer>, List<Double>> dFlyBlocks = new HashMap<>();
+    @NotNull private Map<List<Material>, List<Double>> dFlyBlocks = new HashMap<>();
     private int foundDynamicFlyBlock = 0;
     private double dynamicFlyBlockSpeedMultiplier;
     private boolean failed;
@@ -76,7 +78,7 @@ public class DetectionTask extends AsyncTask {
 
     @Override
     public void execute() {
-        Map<List<Integer>, List<Double>> flyBlocks = getCraft().getType().getFlyBlocks();
+        Map<List<Material>, List<Double>> flyBlocks = getCraft().getType().getFlyBlocks();
         dFlyBlocks = flyBlocks;
 
         blockStack.push(startLocation);
@@ -90,7 +92,7 @@ public class DetectionTask extends AsyncTask {
             int totalBlocks = hitBox.size();
             double ratio = (double) foundDynamicFlyBlock / totalBlocks;
             double foundMinimum = 0.0;
-            for (List<Integer> i : flyBlocks.keySet()) {
+            for (List<Material> i : flyBlocks.keySet()) {
                 if (i.contains(getCraft().getType().getDynamicFlyBlock()))
                     foundMinimum = flyBlocks.get(i).get(0);
             }
@@ -110,19 +112,22 @@ public class DetectionTask extends AsyncTask {
 
         if (notVisited(workingLocation, visited)) {
 
-            int testID = 0;
-            int testData = 0;
+            Material testMaterial = null;
+            BlockData testData = null;
+            BlockState testState = null;
             try {
-                testData = world.getBlockAt(x, y, z).getData();
-                testID = world.getBlockTypeIdAt(x, y, z);
+                Block testBlock = world.getBlockAt(x, y, z);
+                testMaterial = testBlock.getType();
+                testData = testBlock.getBlockData();
+                testState = testBlock.getState();
             } catch (Exception e) {
                 fail(String.format(I18nSupport.getInternationalisedString("Detection - Craft too large"), maxSize));
             }
 
-            if ((testID == 8) || (testID == 9)) {
+            if (testMaterial == Material.WATER) {
                 waterContact = true;
             }
-            if (testID == 63 || testID == 68) {
+            if (testState instanceof Sign) {
                 BlockState state = world.getBlockAt(x, y, z).getState();
                 if (state instanceof Sign) {
                     Sign s = (Sign) state;
@@ -149,42 +154,22 @@ public class DetectionTask extends AsyncTask {
                     }
                 }
             }
-            if (isForbiddenBlock(testID, testData)) {
+            if (isForbiddenBlock(testMaterial)) {
                 fail(I18nSupport.getInternationalisedString("Detection - Forbidden block found"));
-            } else if (isAllowedBlock(testID, testData)) {
+            } else if (isAllowedBlock(testMaterial)) {
                 // check for double chests
-                if (testID == 54) {
+                if (testMaterial == Material.CHEST || testMaterial == Material.TRAPPED_CHEST) {
                     boolean foundDoubleChest = false;
-                    if (world.getBlockTypeIdAt(x - 1, y, z) == 54) {
+                    if (world.getBlockAt(x - 1, y, z).getType() == testMaterial) {
                         foundDoubleChest = true;
                     }
-                    if (world.getBlockTypeIdAt(x + 1, y, z) == 54) {
+                    if (world.getBlockAt(x + 1, y, z).getType() == testMaterial) {
                         foundDoubleChest = true;
                     }
-                    if (world.getBlockTypeIdAt(x, y, z - 1) == 54) {
+                    if (world.getBlockAt(x, y, z - 1).getType() == testMaterial) {
                         foundDoubleChest = true;
                     }
-                    if (world.getBlockTypeIdAt(x, y, z + 1) == 54) {
-                        foundDoubleChest = true;
-                    }
-                    if (foundDoubleChest) {
-                        fail(I18nSupport.getInternationalisedString(
-                                "Detection - ERROR: Double chest found"));
-                    }
-                }
-                // check for double trapped chests
-                if (testID == 146) {
-                    boolean foundDoubleChest = false;
-                    if (world.getBlockTypeIdAt(x - 1, y, z) == 146) {
-                        foundDoubleChest = true;
-                    }
-                    if (world.getBlockTypeIdAt(x + 1, y, z) == 146) {
-                        foundDoubleChest = true;
-                    }
-                    if (world.getBlockTypeIdAt(x, y, z - 1) == 146) {
-                        foundDoubleChest = true;
-                    }
-                    if (world.getBlockTypeIdAt(x, y, z + 1) == 146) {
+                    if (world.getBlockAt(x, y, z + 1).getType() == testMaterial) {
                         foundDoubleChest = true;
                     }
                     if (foundDoubleChest) {
@@ -203,22 +188,19 @@ public class DetectionTask extends AsyncTask {
                     p = player;
                 }
                 if (p != null) {
-                    if (testID == 8 || testID == 9 || testID == 10 || testID == 11) {
+                    if (testMaterial == Material.WATER || testMaterial == Material.LAVA) {
                         fluidBox.add(workingLocation);
                     }
                     addToBlockList(workingLocation);
-                    Integer blockID = testID;
-                    Integer dataID = testData;
-                    Integer shiftedID = (blockID << 4) + dataID + 10000;
-                    for (List<Integer> flyBlockDef : dFlyBlocks.keySet()) {
-                        if (flyBlockDef.contains(blockID) || flyBlockDef.contains(shiftedID)) {
+                    for (List<Material> flyBlockDef : dFlyBlocks.keySet()) {
+                        if (flyBlockDef.contains(testMaterial)) {
                             addToBlockCount(flyBlockDef);
                         } else {
                             addToBlockCount(null);
                         }
                     }
                     if (getCraft().getType().getDynamicFlyBlockSpeedFactor() != 0.0) {
-                        if (blockID == getCraft().getType().getDynamicFlyBlock()) {
+                        if (testMaterial == getCraft().getType().getDynamicFlyBlock()) {
                             foundDynamicFlyBlock++;
                         }
                     }
@@ -235,26 +217,12 @@ public class DetectionTask extends AsyncTask {
         }
     }
 
-    private boolean isAllowedBlock(int test, int testData) {
-
-        for (int i : allowedBlocks) {
-            if ((i == test) || (i == (test << 4) + testData + 10000)) {
-                return true;
-            }
-        }
-
-        return false;
+    private boolean isAllowedBlock(Material test) {
+        return allowedBlocks.contains(test);
     }
 
-    private boolean isForbiddenBlock(int test, int testData) {
-
-        for (int i : forbiddenBlocks) {
-            if ((i == test) || (i == (test << 4) + testData + 10000)) {
-                return true;
-            }
-        }
-
-        return false;
+    private boolean isForbiddenBlock(Material test) {
+        return forbiddenBlocks.contains(test);
     }
 
     private boolean isForbiddenSignString(String testString) {
@@ -285,7 +253,7 @@ public class DetectionTask extends AsyncTask {
         blockStack.push(l);
     }
 
-    private void addToBlockCount(List<Integer> id) {
+    private void addToBlockCount(List<Material> id) {
         Integer count = blockTypeCount.get(id);
 
         if (count == null) {
@@ -362,13 +330,13 @@ public class DetectionTask extends AsyncTask {
 
     }
 
-    private boolean confirmStructureRequirements(Map<List<Integer>, List<Double>> flyBlocks,
-                                                 Map<List<Integer>, Integer> countData) {
+    private boolean confirmStructureRequirements(Map<List<Material>, List<Double>> flyBlocks,
+                                                 Map<List<Material>, Integer> countData) {
         if (getCraft().getType().getRequireWaterContact() && !waterContact) {
             fail(I18nSupport.getInternationalisedString("Detection - Failed - Water contact required but not found"));
             return false;
         }
-        for (List<Integer> i : flyBlocks.keySet()) {
+        for (List<Material> i : flyBlocks.keySet()) {
             Integer numberOfBlocks = countData.get(i);
 
             if (numberOfBlocks == null) {
@@ -380,66 +348,35 @@ public class DetectionTask extends AsyncTask {
             Double maxPercentage = flyBlocks.get(i).get(1);
             if (minPercentage < 10000.0) {
                 if (blockPercentage < minPercentage) {
-                    if (i.get(0) < 10000) {
-                        fail(String.format(
-                                I18nSupport.getInternationalisedString("Detection - Not enough flyblock") + ": %s %.2f%% < %.2f%%",
-                                Material.getMaterial(i.get(0)).name().toLowerCase().replace("_", " "), blockPercentage,
-                                minPercentage));
-                        return false;
-                    } else {
-                        fail(String.format(
-                                I18nSupport.getInternationalisedString("Detection - Not enough flyblock") + ": %s %.2f%% < %.2f%%",
-                                Material.getMaterial((i.get(0) - 10000) >> 4).name().toLowerCase().replace("_", " "),
-                                blockPercentage, minPercentage));
-                        return false;
-                    }
+                    fail(String.format(
+                            I18nSupport.getInternationalisedString("Detection - Not enough flyblock") + ": %s %.2f%% < %.2f%%",
+                            i.get(0).name().toLowerCase().replace("_", " "), blockPercentage,
+                            minPercentage));
+                    return false;
                 }
             } else {
                 if (numberOfBlocks < flyBlocks.get(i).get(0) - 10000.0) {
-                    if (i.get(0) < 10000) {
-                        fail(String.format(
-                                I18nSupport.getInternationalisedString("Detection - Not enough flyblock") + ": %s %d < %d",
-                                Material.getMaterial(i.get(0)).name().toLowerCase().replace("_", " "), numberOfBlocks,
-                                flyBlocks.get(i).get(0).intValue() - 10000));
-                        return false;
-                    } else {
-                        fail(String.format(
-                                I18nSupport.getInternationalisedString("Detection - Not enough flyblock") + ": %s %d < %d",
-                                Material.getMaterial((i.get(0) - 10000) >> 4).name().toLowerCase().replace("_", " "),
-                                numberOfBlocks, flyBlocks.get(i).get(0).intValue() - 10000));
-                        return false;
-                    }
+                    fail(String.format(
+                            I18nSupport.getInternationalisedString("Detection - Not enough flyblock") + ": %s %d < %d",
+                            i.get(0).name().toLowerCase().replace("_", " "), numberOfBlocks,
+                            flyBlocks.get(i).get(0).intValue() - 10000));
+                    return false;
                 }
             }
             if (maxPercentage < 10000.0) {
                 if (blockPercentage > maxPercentage) {
-                    if (i.get(0) < 10000) {
-                        fail(String.format(
-                                I18nSupport.getInternationalisedString("Detection - Too much flyblock") + ": %s %.2f%% > %.2f%%",
-                                Material.getMaterial(i.get(0)).name().toLowerCase().replace("_", " "), blockPercentage,
-                                maxPercentage));
-                        return false;
-                    } else {
-                        fail(String.format(
-                                I18nSupport.getInternationalisedString("Detection - Too much flyblock") + ": %s %.2f%% > %.2f%%",
-                                Material.getMaterial((i.get(0) - 10000) >> 4).name().toLowerCase().replace("_", " "),
-                                blockPercentage, maxPercentage));
-                        return false;
-                    }
+                    fail(String.format(
+                            I18nSupport.getInternationalisedString("Detection - Too much flyblock") + ": %s %.2f%% > %.2f%%",
+                            i.get(0).name().toLowerCase().replace("_", " "), blockPercentage,
+                            maxPercentage));
+                    return false;
                 }
             } else {
                 if (numberOfBlocks > flyBlocks.get(i).get(1) - 10000.0) {
-                    if (i.get(0) < 10000) {
-                        fail(String.format(I18nSupport.getInternationalisedString("Detection - Too much flyblock") + ": %s %d > %d",
-                                Material.getMaterial(i.get(0)).name().toLowerCase().replace("_", " "), numberOfBlocks,
-                                flyBlocks.get(i).get(1).intValue() - 10000));
-                        return false;
-                    } else {
-                        fail(String.format(I18nSupport.getInternationalisedString("Detection - Too much flyblock") + ": %s %d > %d",
-                                Material.getMaterial((i.get(0) - 10000) >> 4).name().toLowerCase().replace("_", " "),
-                                numberOfBlocks, flyBlocks.get(i).get(1).intValue() - 10000));
-                        return false;
-                    }
+                    fail(String.format(I18nSupport.getInternationalisedString("Detection - Too much flyblock") + ": %s %d > %d",
+                            i.get(0).name().toLowerCase().replace("_", " "), numberOfBlocks,
+                            flyBlocks.get(i).get(1).intValue() - 10000));
+                    return false;
                 }
             }
         }
@@ -467,11 +404,11 @@ public class DetectionTask extends AsyncTask {
         return player;
     }
 
-    public int[] getAllowedBlocks() {
+    public EnumSet<Material> getAllowedBlocks() {
         return allowedBlocks;
     }
 
-    public int[] getForbiddenBlocks() {
+    public EnumSet<Material> getForbiddenBlocks() {
         return forbiddenBlocks;
     }
 

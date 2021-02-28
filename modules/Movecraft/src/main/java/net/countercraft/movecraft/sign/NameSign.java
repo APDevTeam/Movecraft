@@ -8,6 +8,7 @@ import net.countercraft.movecraft.utils.ChatUtils;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -31,13 +32,13 @@ public final class NameSign implements Listener {
         World w = c.getW();
 
         for (MovecraftLocation location : c.getHitBox()) {
-            Block b = location.toBukkit(w).getBlock();
-            if (b.getType() != Material.SIGN_POST && b.getType() != Material.WALL_SIGN) {
-                continue;
+            BlockState state = location.toBukkit(w).getBlock().getState();
+            if (!(state instanceof Sign)) {
+                return;
             }
-            Sign s = (Sign) b.getState();
-            if (s.getLine(0).equalsIgnoreCase(HEADER)) {
-                String name = Arrays.stream(s.getLines()).skip(1).filter(f -> f != null && !f.trim().isEmpty()).collect(Collectors.joining(" "));
+            Sign sign = (Sign) state;
+            if (sign.getLine(0).equalsIgnoreCase(HEADER)) {
+                String name = Arrays.stream(sign.getLines()).skip(1).filter(f -> f != null && !f.trim().isEmpty()).collect(Collectors.joining(" "));
                 c.setName(name);
                 return;
             }

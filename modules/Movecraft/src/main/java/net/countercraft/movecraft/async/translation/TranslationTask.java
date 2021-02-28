@@ -106,7 +106,7 @@ public class TranslationTask extends AsyncTask {
 
                 Location location = oldLocation.translate(dx, dy, dz).toBukkit(craft.getW());
                 Block block = craft.getW().getBlockAt(location);
-                if (block.getType() == Material.PORTAL) {
+                if (block.getType() == Material.NETHER_PORTAL) {
 
                     if (processNetherPortal(block)) {
                         sound = Sound.BLOCK_PORTAL_TRAVEL;
@@ -142,7 +142,7 @@ public class TranslationTask extends AsyncTask {
             int testY = minY;
             while (testY > 0){
                 testY--;
-                if (craft.getW().getBlockTypeIdAt(middle.getX(),testY,middle.getZ()) != 0)
+                if (craft.getW().getBlockAt(middle.getX(),testY,middle.getZ()).getType() != Material.AIR)
                     break;
             }
             if (maxY - testY > craft.getType().getMaxHeightAboveGround(world)) {
@@ -199,9 +199,9 @@ public class TranslationTask extends AsyncTask {
 
 
         //TODO: Add and handle event for towny and factions
-        final List<Material> harvestBlocks = craft.getType().getHarvestBlocks();
+        final EnumSet<Material> harvestBlocks = craft.getType().getHarvestBlocks();
         final List<MovecraftLocation> harvestedBlocks = new ArrayList<>();
-        final List<Material> harvesterBladeBlocks = craft.getType().getHarvesterBladeBlocks();
+        final EnumSet<Material> harvesterBladeBlocks = craft.getType().getHarvesterBladeBlocks();
         final BitmapHitBox collisionBox = new BitmapHitBox();
         for(MovecraftLocation oldLocation : oldHitBox){
             final MovecraftLocation newLocation = oldLocation.translate(dx,dy,dz);
@@ -400,7 +400,7 @@ public class TranslationTask extends AsyncTask {
         }
         Location location = craftPilot.getLocation();
         if (craft.getDisabled()) {
-            craft.getW().playSound(location, Sound.ENTITY_IRONGOLEM_DEATH, 5.0f, 5.0f);
+            craft.getW().playSound(location, Sound.ENTITY_IRON_GOLEM_DEATH, 5.0f, 5.0f);
             return;
         }
         if (!playSound) {
@@ -442,11 +442,11 @@ public class TranslationTask extends AsyncTask {
             Block block = craft.getW().getBlockAt(harvestedBlock.getX(), harvestedBlock.getY(), harvestedBlock.getZ());
             List<ItemStack> drops = new ArrayList<>(block.getDrops());
             //generate seed drops
-            if (block.getType() == Material.CROPS) {
+            if (block.getType() == Material.WHEAT) {
                 Random rand = new Random();
                 int amount = rand.nextInt(4);
                 if (amount > 0) {
-                    ItemStack seeds = new ItemStack(Material.SEEDS, amount);
+                    ItemStack seeds = new ItemStack(Material.WHEAT_SEEDS, amount);
                     drops.add(seeds);
                 }
             }
@@ -489,7 +489,7 @@ public class TranslationTask extends AsyncTask {
             testX -= portalX;
             testZ -= portalZ;
             testMaterial = block.getWorld().getBlockAt(testX, testY, testZ).getType();
-        } while (testMaterial == Material.PORTAL);
+        } while (testMaterial == Material.NETHER_PORTAL);
         portalNegCorner.setX(testX + portalX);
         portalNegCorner.setZ(testZ + portalZ);
 
@@ -501,7 +501,7 @@ public class TranslationTask extends AsyncTask {
             testX += portalX;
             testZ += portalZ;
             testMaterial = block.getWorld().getBlockAt(testX, testY, testZ).getType();
-        } while (testMaterial == Material.PORTAL);
+        } while (testMaterial == Material.NETHER_PORTAL);
         portalPosCorner.setX(testX - portalX);
         portalPosCorner.setZ(testZ - portalZ);
 
@@ -512,7 +512,7 @@ public class TranslationTask extends AsyncTask {
         do {
             testY -= 1;
             testMaterial = block.getWorld().getBlockAt(testX, testY, testZ).getType();
-        } while (testMaterial == Material.PORTAL);
+        } while (testMaterial == Material.NETHER_PORTAL);
         portalNegCorner.setY(testY + 1);
 
         testY = block.getY();
@@ -521,7 +521,7 @@ public class TranslationTask extends AsyncTask {
         do {
             testY += 1;
             testMaterial = block.getWorld().getBlockAt(testX, testY, testZ).getType();
-        } while (testMaterial == Material.PORTAL);
+        } while (testMaterial == Material.NETHER_PORTAL);
         portalPosCorner.setY(testY - 1);
 
         if (portalX == 1) { // if portal is on x axis fail if craft x length does not fit in portal

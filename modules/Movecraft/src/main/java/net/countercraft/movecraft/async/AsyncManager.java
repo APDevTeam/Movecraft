@@ -456,30 +456,28 @@ public class AsyncManager extends BukkitRunnable {
             final World w = pcraft.getW();
             int totalNonNegligibleBlocks = 0;
             int totalNonNegligibleWaterBlocks = 0;
-            HashMap<List<Integer>, Integer> foundFlyBlocks = new HashMap<>();
-            HashMap<List<Integer>, Integer> foundMoveBlocks = new HashMap<>();
+            HashMap<List<Material>, Integer> foundFlyBlocks = new HashMap<>();
+            HashMap<List<Material>, Integer> foundMoveBlocks = new HashMap<>();
             // go through each block in the blocklist, and
             // if its in the FlyBlocks, total up the number
             // of them
             for (MovecraftLocation l : pcraft.getHitBox()) {
-                int blockID = w.getBlockAt(l.getX(), l.getY(), l.getZ()).getTypeId();
-                int dataID = (int) w.getBlockAt(l.getX(), l.getY(), l.getZ()).getData();
-                int shiftedID = (blockID << 4) + dataID + 10000;
-                for (List<Integer> flyBlockDef : pcraft.getType().getFlyBlocks().keySet()) {
-                    if (flyBlockDef.contains(blockID) || flyBlockDef.contains(shiftedID)) {
+                Material blockID = w.getBlockAt(l.getX(), l.getY(), l.getZ()).getType();
+                for (List<Material> flyBlockDef : pcraft.getType().getFlyBlocks().keySet()) {
+                    if (flyBlockDef.contains(blockID)) {
                         foundFlyBlocks.merge(flyBlockDef, 1, (a, b) -> a + b);
                     }
                 }
-                for (List<Integer> moveBlockDef : pcraft.getType().getMoveBlocks().keySet()) {
-                    if (moveBlockDef.contains(blockID) || moveBlockDef.contains(shiftedID)) {
+                for (List<Material> moveBlockDef : pcraft.getType().getMoveBlocks().keySet()) {
+                    if (moveBlockDef.contains(blockID)) {
                         foundMoveBlocks.merge(moveBlockDef, 1, (a, b) -> a + b);
                     }
                 }
 
-                if (blockID != 0 && blockID != 51) {
+                if (blockID != Material.AIR && blockID != Material.FIRE) {
                     totalNonNegligibleBlocks++;
                 }
-                if (blockID != 0 && blockID != 51 && blockID != 8 && blockID != 9) {
+                if (blockID != Material.AIR && blockID != Material.FIRE && blockID != Material.WATER) {
                     totalNonNegligibleWaterBlocks++;
                 }
             }
@@ -489,7 +487,7 @@ public class AsyncManager extends BukkitRunnable {
             // SinkPercent
             boolean isSinking = false;
 
-            for (List<Integer> i : pcraft.getType().getFlyBlocks().keySet()) {
+            for (List<Material> i : pcraft.getType().getFlyBlocks().keySet()) {
                 int numfound = 0;
                 if (foundFlyBlocks.get(i) != null) {
                     numfound = foundFlyBlocks.get(i);
@@ -502,7 +500,7 @@ public class AsyncManager extends BukkitRunnable {
                 }
 
             }
-            for (List<Integer> i : pcraft.getType().getMoveBlocks().keySet()) {
+            for (List<Material> i : pcraft.getType().getMoveBlocks().keySet()) {
                 int numfound = 0;
                 if (foundMoveBlocks.get(i) != null) {
                     numfound = foundMoveBlocks.get(i);
@@ -514,7 +512,7 @@ public class AsyncManager extends BukkitRunnable {
                     pcraft.setDisabled(true);
                     if (pcraft.getNotificationPlayer() != null) {
                         Location loc = pcraft.getNotificationPlayer().getLocation();
-                        pcraft.getW().playSound(loc, Sound.ENTITY_IRONGOLEM_DEATH, 5.0f, 5.0f);
+                        pcraft.getW().playSound(loc, Sound.ENTITY_IRON_GOLEM_DEATH, 5.0f, 5.0f);
                     }
                 }
             }

@@ -111,7 +111,7 @@ public class Movecraft extends JavaPlugin {
         if (getConfig().getInt("PilotTool") != 0) {
             logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Recognized Pilot Tool")
                     + getConfig().getInt("PilotTool"));
-            Settings.PilotTool = getConfig().getInt("PilotTool");
+            Settings.PilotTool = Material.valueOf(getConfig().getString("PilotTool"));
         } else {
             logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - No Pilot Tool"));
         }
@@ -152,7 +152,7 @@ public class Movecraft extends JavaPlugin {
             for (String str : temp.keySet()) {
                 Material type;
                 try {
-                    type = Material.getMaterial(Integer.parseInt(str));
+                    type = Material.getMaterial(str);
                 } catch (NumberFormatException e) {
                     type = Material.getMaterial(str);
                 }
@@ -161,7 +161,11 @@ public class Movecraft extends JavaPlugin {
         }
 
         Settings.CollisionPrimer = getConfig().getInt("CollisionPrimer", 1000);
-        Settings.DisableShadowBlocks = new HashSet<>(getConfig().getIntegerList("DisableShadowBlocks"));  //REMOVE FOR PUBLIC VERSION
+        Settings.DisableShadowBlocks = EnumSet.noneOf(Material.class);  //REMOVE FOR PUBLIC VERSION
+        for(String s : getConfig().getStringList("DisableShadowBlocks")){
+            Settings.DisableShadowBlocks.add(Material.valueOf(s));
+        }
+
         Settings.ForbiddenRemoteSigns = new HashSet<>();
 
         for(String s : getConfig().getStringList("ForbiddenRemoteSigns")) {
@@ -169,8 +173,8 @@ public class Movecraft extends JavaPlugin {
         }
 
         if (!Settings.CompatibilityMode) {
-            for (int typ : Settings.DisableShadowBlocks) {
-                worldHandler.disableShadow(Material.getMaterial(typ));
+            for (Material typ : Settings.DisableShadowBlocks) {
+                worldHandler.disableShadow(typ);
             }
         }
         //load up WorldGuard if it's present

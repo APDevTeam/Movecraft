@@ -34,6 +34,7 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -42,8 +43,8 @@ public class PlayerListener implements Listener {
 
     private String checkCraftBorders(Craft craft) {
         String ret = "";
-        final int[] ALLOWED_BLOCKS = craft.getType().getAllowedBlocks();
-        final int[] FORBIDDEN_BLOCKS = craft.getType().getForbiddenBlocks();
+        final EnumSet<Material> ALLOWED_BLOCKS = craft.getType().getAllowedBlocks();
+        final EnumSet<Material> FORBIDDEN_BLOCKS = craft.getType().getForbiddenBlocks();
         final MovecraftLocation[] SHIFTS = {
                 //x
                 new MovecraftLocation(-1, 0, 0),
@@ -72,17 +73,15 @@ public class PlayerListener implements Listener {
                     continue;
                 }
                 Block testBlock = test.toBukkit(craft.getW()).getBlock();
-                int typeID = testBlock.getTypeId();
-                int metaData = testBlock.getData();
-                int shiftedID = 10000 + (typeID << 4) + metaData;
+                Material testMaterial = testBlock.getType();
                 //Break the loop if an allowed block is found adjacent to the craft's hitbox
-                if (Arrays.binarySearch(ALLOWED_BLOCKS, typeID) >= 0 || Arrays.binarySearch(ALLOWED_BLOCKS, shiftedID) >= 0){
-                    ret = "@ " + test.toString() + " " + Material.getMaterial(typeID).name();
+                if (ALLOWED_BLOCKS.contains(testMaterial)){
+                    ret = "@ " + test.toString() + " " + testMaterial.name();
                     break;
                 }
                 //Do the same if a forbidden block is found
-                else if (Arrays.binarySearch(FORBIDDEN_BLOCKS, typeID) >= 0 || Arrays.binarySearch(FORBIDDEN_BLOCKS, shiftedID) >= 0){
-                    ret = "@ " + test.toString() + " " + Material.getMaterial(typeID).name();
+                else if (FORBIDDEN_BLOCKS.contains(testMaterial)){
+                    ret = "@ " + test.toString() + " " + testMaterial.name();
                     break;
                 }
             }
