@@ -6,7 +6,7 @@
         <artifactId>movecraft-parent</artifactId>
         <groupId>net.countercraft</groupId>
         <version>parent</version>
-        <relativePath>../../</relativePath>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -38,8 +38,8 @@
                     <includes>
                         <include>net/countercraft/movecraft/compat/v1_16_R3/**</include>
                     </includes>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <source>11</source>
+                    <target>11</target>
                 </configuration>
             </plugin>
             <plugin>
