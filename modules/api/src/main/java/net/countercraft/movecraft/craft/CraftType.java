@@ -139,7 +139,7 @@ final public class CraftType {
         blockedByWater = data.getBooleanOrDefault("canFly", data.getBooleanOrDefault("blockedByWater", true));
         requireWaterContact = data.getBooleanOrDefault("requireWaterContact", false);
         tryNudge = data.getBooleanOrDefault("tryNudge", false);
-        moveBlocks = blockIDMapListFromObject(data.getData("moveblocks").getBackingData());
+        moveBlocks = blockIDMapListFromObject(data.getDataOrEmpty("moveblocks").getBackingData());
         canCruise = data.getBooleanOrDefault("canCruise", false);
         canTeleport = data.getBooleanOrDefault("canTeleport", false);
         canSwitchWorld = data.getBooleanOrDefault("canSwitchWorld", false);
@@ -153,21 +153,21 @@ final public class CraftType {
         canStaticMove = data.getBooleanOrDefault("canStaticMove", false);
         maxStaticMove = data.getIntOrDefault("maxStaticMove", 10000);
         cruiseSkipBlocks = data.getIntOrDefault("cruiseSkipBlocks", 0);
-        perWorldCruiseSkipBlocks = stringToIntMapFromObject(data.getData("perWorldCruiseSkipBlocks").getBackingData());
+        perWorldCruiseSkipBlocks = stringToIntMapFromObject(data.getDataOrEmpty("perWorldCruiseSkipBlocks").getBackingData());
         vertCruiseSkipBlocks = data.getIntOrDefault("vertCruiseSkipBlocks", cruiseSkipBlocks);
-        perWorldVertCruiseSkipBlocks = stringToIntMapFromObject(data.getData("perWorldVertCruiseSkipBlocks").getBackingData());
+        perWorldVertCruiseSkipBlocks = stringToIntMapFromObject(data.getDataOrEmpty("perWorldVertCruiseSkipBlocks").getBackingData());
         halfSpeedUnderwater = data.getBooleanOrDefault("halfSpeedUnderwater", false);
         focusedExplosion = data.getBooleanOrDefault("focusedExplosion", false);
         mustBeSubcraft = data.getBooleanOrDefault("mustBeSubcraft", false);
         staticWaterLevel = data.getIntOrDefault("staticWaterLevel", 0);
         fuelBurnRate = data.getDoubleOrDefault("fuelBurnRate", 0d);
-        perWorldFuelBurnRate = stringToDoubleMapFromObject(data.getData("perWorldFuelBurnRate").getBackingData());
+        perWorldFuelBurnRate = stringToDoubleMapFromObject(data.getDataOrEmpty("perWorldFuelBurnRate").getBackingData());
         sinkPercent = data.getDoubleOrDefault("sinkPercent", 0d);
         overallSinkPercent = data.getDoubleOrDefault("overallSinkPercent", 0d);
         detectionMultiplier = data.getDoubleOrDefault("detectionMultiplier", 0d);
-        perWorldDetectionMultiplier = stringToDoubleMapFromObject(data.getData("perWorldDetectionMultiplier").getBackingData());
+        perWorldDetectionMultiplier = stringToDoubleMapFromObject(data.getDataOrEmpty("perWorldDetectionMultiplier").getBackingData());
         underwaterDetectionMultiplier = data.getDoubleOrDefault("underwaterDetectionMultiplier", detectionMultiplier);
-        perWorldUnderwaterDetectionMultiplier = stringToDoubleMapFromObject(data.getData("perWorldUnderwaterDetectionMultiplier").getBackingData());
+        perWorldUnderwaterDetectionMultiplier = stringToDoubleMapFromObject(data.getDataOrEmpty("perWorldUnderwaterDetectionMultiplier").getBackingData());
         sinkRateTicks = data.getIntOrDefault("sinkRateTicks", (int) Math.ceil(20 / data.getDoubleOrDefault("sinkSpeed", -200))); // default becomes 0
         keepMovingOnSink = data.getBooleanOrDefault("keepMovingOnSink", false);
         smokeOnSink = data.getIntOrDefault("smokeOnSink", 0);
@@ -175,13 +175,13 @@ final public class CraftType {
         collisionExplosion = (float) data.getDoubleOrDefault("collisionExplosion", 0D);
         minHeightLimit = Math.max(0, data.getIntOrDefault("minHeightLimit", 0));
         perWorldMinHeightLimit = new HashMap<>();
-        Map<String, Integer> minHeightMap = stringToIntMapFromObject(data.getData("perWorldMinHeightLimit").getBackingData());
+        Map<String, Integer> minHeightMap = stringToIntMapFromObject(data.getDataOrEmpty("perWorldMinHeightLimit").getBackingData());
         minHeightMap.forEach((world, height) -> perWorldMinHeightLimit.put(world, Math.max(0, height)));
 
         double cruiseSpeed = data.getDoubleOrDefault("cruiseSpeed", 20.0 / tickCooldown);
         cruiseTickCooldown = (int) Math.round((1.0 + cruiseSkipBlocks) * 20.0 / cruiseSpeed);
         perWorldCruiseTickCooldown = new HashMap<>();
-        Map<String, Double> cruiseTickCooldownMap = stringToDoubleMapFromObject(data.getData("perWorldCruiseSpeed").getBackingData());
+        Map<String, Double> cruiseTickCooldownMap = stringToDoubleMapFromObject(data.getDataOrEmpty("perWorldCruiseSpeed").getBackingData());
         cruiseTickCooldownMap.forEach((world, speed) -> {
             double worldCruiseSkipBlocks = perWorldCruiseSkipBlocks.getOrDefault(world, cruiseSkipBlocks);
             perWorldCruiseTickCooldown.put(world, (int) Math.round((1.0 + worldCruiseSkipBlocks) * 20.0 / cruiseSpeed));
@@ -195,7 +195,7 @@ final public class CraftType {
         double vertCruiseSpeed = data.getDoubleOrDefault("vertCruiseSpeed", cruiseSpeed);
         vertCruiseTickCooldown = (int) Math.round((1.0 + vertCruiseSkipBlocks) * 20.0 / vertCruiseSpeed);
         perWorldVertCruiseTickCooldown = new HashMap<>();
-        Map<String, Double> vertCruiseTickCooldownMap = stringToDoubleMapFromObject(data.getData("perWorldVertCruiseSpeed").getBackingData());
+        Map<String, Double> vertCruiseTickCooldownMap = stringToDoubleMapFromObject(data.getDataOrEmpty("perWorldVertCruiseSpeed").getBackingData());
         vertCruiseTickCooldownMap.forEach((world, speed) -> {
             double worldVertCruiseSkipBlocks = perWorldVertCruiseSkipBlocks.getOrDefault(world, vertCruiseSkipBlocks);
             perWorldVertCruiseTickCooldown.put(world, (int) Math.round((1.0 + worldVertCruiseSkipBlocks) * 20.0 / speed));
@@ -214,7 +214,7 @@ final public class CraftType {
 
         maxHeightLimit = value;
         perWorldMaxHeightLimit = new HashMap<>();
-        Map<String, Integer> maxHeightMap = stringToIntMapFromObject(data.getData("perWorldMaxHeightLimit").getBackingData());
+        Map<String, Integer> maxHeightMap = stringToIntMapFromObject(data.getDataOrEmpty("perWorldMaxHeightLimit").getBackingData());
         maxHeightMap.forEach((world, height) -> {
             int worldValue = Math.min(height, 255);
             int worldMinHeight = perWorldMinHeightLimit.getOrDefault(world, minHeightLimit);
@@ -223,7 +223,7 @@ final public class CraftType {
         });
         
         maxHeightAboveGround = data.getIntOrDefault("maxHeightAboveGround", -1);
-        perWorldMaxHeightAboveGround = stringToIntMapFromObject(data.getData("perWorldMaxHeightAboveGround").getBackingData());
+        perWorldMaxHeightAboveGround = stringToIntMapFromObject(data.getDataOrEmpty("perWorldMaxHeightAboveGround").getBackingData());
         canDirectControl = data.getBooleanOrDefault("canDirectControl", true);
         canHover = data.getBooleanOrDefault("canHover", false);
         canHoverOverWater = data.getBooleanOrDefault("canHoverOverWater", true);
@@ -253,7 +253,7 @@ final public class CraftType {
         gravityDropDistance = dropdist > 0 ? -dropdist : dropdist;
         collisionSound = data.getSoundOrDefault("collisionSound",  Sound.BLOCK_ANVIL_LAND);
         fuelTypes = new HashMap<>();
-        Map<String, Object> fTypes =  data.getData("fuelTypes").getBackingData();
+        Map<String, Object> fTypes =  data.getDataOrEmpty("fuelTypes").getBackingData();
         if (!fTypes.isEmpty()) {
             for (String k : fTypes.keySet()) {
                 Material type;
