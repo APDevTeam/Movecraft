@@ -3,7 +3,12 @@ package net.countercraft.movecraft.utils;
 import net.countercraft.movecraft.MovecraftLocation;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.PriorityQueue;
+import java.util.Set;
 
 public class HeapHitBox implements MutableHitBox {
     private final Set<MovecraftLocation> locationSet = new HashSet<>();

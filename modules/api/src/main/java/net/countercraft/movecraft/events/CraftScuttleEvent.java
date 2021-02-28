@@ -1,10 +1,10 @@
 package net.countercraft.movecraft.events;
 
-import org.jetbrains.annotations.NotNull;
+import net.countercraft.movecraft.craft.Craft;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
-import net.countercraft.movecraft.craft.Craft;
+import org.jetbrains.annotations.NotNull;
 
 
 /**

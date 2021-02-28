@@ -127,12 +127,12 @@ final public class CraftType {
         minSize = data.getInt("minSize");
         allowedBlocks = data.getMaterials("allowedBlocks");
 
-        forbiddenSignStrings = Set.copyOf(data.getStringList("forbiddenSignStrings"));
+        forbiddenSignStrings = Set.copyOf(data.getStringListOrEmpty("forbiddenSignStrings"));
         tickCooldown = (int) Math.ceil(20 / (data.getDouble("speed")));
         perWorldTickCooldown = new HashMap<>();
-        Map<String, Double> tickCooldownMap = stringToDoubleMapFromObject(data.getData("perWorldSpeed").getBackingData());
+        Map<String, Double> tickCooldownMap = stringToDoubleMapFromObject(data.getDataOrEmpty("perWorldSpeed").getBackingData());
         tickCooldownMap.forEach((world, speed) -> perWorldTickCooldown.put(world, (int) Math.ceil(20 / speed)));
-        flyBlocks = blockIDMapListFromObject(data.getData("flyblocks").getBackingData());
+        flyBlocks = blockIDMapListFromObject(data.getDataOrEmpty("flyblocks").getBackingData());
 
         //Optional craft flags
         forbiddenBlocks = data.getMaterialsOrEmpty("forbiddenBlocks");

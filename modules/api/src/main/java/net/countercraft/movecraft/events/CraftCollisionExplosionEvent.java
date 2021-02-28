@@ -1,7 +1,6 @@
 package net.countercraft.movecraft.events;
 
 import net.countercraft.movecraft.craft.Craft;
-
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.event.Cancellable;

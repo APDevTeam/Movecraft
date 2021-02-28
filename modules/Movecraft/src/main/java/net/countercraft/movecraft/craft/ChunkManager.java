@@ -1,10 +1,10 @@
 package net.countercraft.movecraft.craft;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
-
+import net.countercraft.movecraft.Movecraft;
+import net.countercraft.movecraft.MovecraftChunk;
+import net.countercraft.movecraft.MovecraftLocation;
+import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.utils.BitmapHitBox;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.World;
@@ -13,11 +13,10 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import net.countercraft.movecraft.Movecraft;
-import net.countercraft.movecraft.MovecraftChunk;
-import net.countercraft.movecraft.MovecraftLocation;
-import net.countercraft.movecraft.config.Settings;
-import net.countercraft.movecraft.utils.BitmapHitBox;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 
 @Deprecated
 public class ChunkManager implements Listener {

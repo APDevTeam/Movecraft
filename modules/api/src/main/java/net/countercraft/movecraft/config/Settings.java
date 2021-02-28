@@ -20,7 +20,11 @@ package net.countercraft.movecraft.config;
 import net.countercraft.movecraft.utils.TownyWorldHeightLimits;
 import org.bukkit.Material;
 
-import java.util.*;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 
 public class Settings {
     public static boolean RestrictSiBsToRegions = false;

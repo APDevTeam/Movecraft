@@ -18,17 +18,15 @@
 package net.countercraft.movecraft.mapUpdater;
 
 import net.countercraft.movecraft.Movecraft;
-import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.config.Settings;
-import net.countercraft.movecraft.mapUpdater.update.CraftRotateCommand;
-import net.countercraft.movecraft.mapUpdater.update.CraftTranslateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Logger;
 
 public class MapUpdateManager extends BukkitRunnable {
