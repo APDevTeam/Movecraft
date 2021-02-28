@@ -23,7 +23,6 @@ import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.BitmapHitBox;
-import net.countercraft.movecraft.utils.HashHitBox;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -35,7 +34,13 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
 
 public class DetectionTask extends AsyncTask {
     @NotNull private final MovecraftLocation startLocation;
@@ -51,7 +56,7 @@ public class DetectionTask extends AsyncTask {
     @NotNull private final Player notificationPlayer;
     private final EnumSet<Material> allowedBlocks;
     private final EnumSet<Material> forbiddenBlocks;
-    @NotNull private final String[] forbiddenSignStrings;
+    @NotNull private final Set<String> forbiddenSignStrings;
     private int maxX;
     private int maxY;
     private int maxZ;
@@ -413,7 +418,7 @@ public class DetectionTask extends AsyncTask {
     }
 
     @NotNull
-    public String[] getForbiddenSignStrings() {
+    public Set<String> getForbiddenSignStrings() {
         return forbiddenSignStrings;
     }
 
