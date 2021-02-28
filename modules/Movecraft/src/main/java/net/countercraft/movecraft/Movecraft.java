@@ -162,9 +162,9 @@ public class Movecraft extends JavaPlugin {
 
         Settings.CollisionPrimer = getConfig().getInt("CollisionPrimer", 1000);
         Settings.DisableShadowBlocks = EnumSet.noneOf(Material.class);  //REMOVE FOR PUBLIC VERSION
-        for(String s : getConfig().getStringList("DisableShadowBlocks")){
-            Settings.DisableShadowBlocks.add(Material.valueOf(s));
-        }
+//        for(String s : getConfig().getStringList("DisableShadowBlocks")){
+//            Settings.DisableShadowBlocks.add(Material.valueOf(s));
+//        }
 
         Settings.ForbiddenRemoteSigns = new HashSet<>();
 

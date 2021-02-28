@@ -134,7 +134,6 @@ final public class CraftType {
         minSize = this.getInt("minSize");
         allowedBlocks = getBlockIDSet("allowedBlocks");
 
-        forbiddenBlocks = getBlockIDSet("forbiddenBlocks");
         forbiddenSignStrings = stringListFromObject(backingData.get("forbiddenSignStrings"));
         tickCooldown = (int) Math.ceil(20 / (getDouble("speed")));
         perWorldTickCooldown = new HashMap<>();
@@ -143,6 +142,7 @@ final public class CraftType {
         flyBlocks = blockIDMapListFromObject(backingData.get("flyblocks"));
 
         //Optional craft flags
+        forbiddenBlocks = getBlockIDSetOrEmpty("forbiddenBlocks");
         blockedByWater = this.getBooleanOrDefault("canFly", this.getBooleanOrDefault("blockedByWater", true));
         requireWaterContact = this.getBooleanOrDefault("requireWaterContact", false);
         tryNudge = this.getBooleanOrDefault("tryNudge", false);
@@ -253,7 +253,7 @@ final public class CraftType {
         dynamicLagPowerFactor = this.getDoubleOrDefault("dynamicLagPowerFactor", 0d);
         dynamicLagMinSpeed = this.getDoubleOrDefault("dynamicLagMinSpeed", 0d);
         dynamicFlyBlockSpeedFactor = this.getDoubleOrDefault("dynamicFlyBlockSpeedFactor", 0d);
-        dynamicFlyBlock = this.getMaterial("dynamicFlyBlock");
+        dynamicFlyBlock = this.getMaterialOrDefault("dynamicFlyBlock", null);
         chestPenalty = this.getDoubleOrDefault("chestPenalty", 0);
         gravityInclineDistance = this.getIntOrDefault("gravityInclineDistance", -1);
         int dropdist = this.getIntOrDefault("gravityDropDistance", -8);
@@ -382,6 +382,9 @@ final public class CraftType {
             throw new IllegalArgumentException("key " + key + " must be a list of materials.");
         }
         for(Object object : (ArrayList<?>) this.backingData.get(key)){
+            if (!(object instanceof String)) {
+                throw new IllegalArgumentException("Entry " + object + " must be a material for key " + key);
+            }
             String materialName = (String) object;
             returnList.add(Material.valueOf(materialName));
         }

@@ -137,7 +137,7 @@ public class CrewSign implements Listener {
         World world = event.getCraft().getW();
         for(MovecraftLocation location: event.getCraft().getHitBox()){
             Block block = location.toBukkit(world).getBlock();
-            if (block.getState() instanceof Sign) {
+            if (!(block.getState() instanceof Sign)) {
                 continue;
             }
             Sign sign = (Sign) block.getState();

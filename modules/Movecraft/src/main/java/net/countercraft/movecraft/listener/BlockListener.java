@@ -76,7 +76,7 @@ public class BlockListener implements Listener {
         if (e.isCancelled()) {
             return;
         }
-        if (e.getBlock().getType() == Material.WALL_SIGN) {
+        if (e.getBlock().getState() instanceof Sign) {
             Sign s = (Sign) e.getBlock().getState();
             if (s.getLine(0).equalsIgnoreCase(ChatColor.RED + I18nSupport.getInternationalisedString("Region Damaged"))) {
                 e.setCancelled(true);
@@ -191,7 +191,7 @@ public class BlockListener implements Listener {
         Block block = event.getBlock();
 
 //        final int[] fragileBlocks = new int[]{26, 34, 50, 55, 63, 64, 65, 68, 69, 70, 71, 72, 75, 76, 77, 93, 94, 96, 131, 132, 143, 147, 148, 149, 150, 151, 171, 193, 194, 195, 196, 197};
-        final EnumSet<Material> fragileMaterials = EnumSet.of(Material.PISTON_HEAD, Material.TORCH, Material.REDSTONE_WIRE, Material.SIGN, Material.WALL_SIGN, Material.LADDER);
+        final EnumSet<Material> fragileMaterials = EnumSet.of(Material.PISTON_HEAD, Material.TORCH, Material.REDSTONE_WIRE, Material.LADDER);
         fragileMaterials.addAll(Tag.DOORS.getValues());
         fragileMaterials.addAll(Tag.CARPETS.getValues());
         fragileMaterials.addAll(Tag.RAILS.getValues());

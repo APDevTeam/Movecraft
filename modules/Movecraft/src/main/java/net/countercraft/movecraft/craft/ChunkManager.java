@@ -19,6 +19,7 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.utils.BitmapHitBox;
 
+@Deprecated
 public class ChunkManager implements Listener {
     
     private static List<MovecraftChunk> chunks = new ArrayList<MovecraftChunk>();
@@ -56,7 +57,7 @@ public class ChunkManager implements Listener {
     public void onChunkUnload(ChunkUnloadEvent event) {
         Chunk chunk = event.getChunk();
         MovecraftChunk c = new MovecraftChunk(chunk.getX(), chunk.getZ(), chunk.getWorld());
-        if (chunks.contains(c)) event.setCancelled(true);
+//        if (chunks.contains(c)) event.setCancelled(true);
     }
     
     

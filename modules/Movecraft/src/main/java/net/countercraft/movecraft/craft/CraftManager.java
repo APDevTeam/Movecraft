@@ -98,7 +98,7 @@ public class CraftManager implements Iterable<Craft>{
                         CraftType type = new CraftType(file);
                         craftTypes.add(type);
                     }
-                    catch (CraftType.TypeNotFoundException | ScannerException e) {
+                    catch (IllegalArgumentException | CraftType.TypeNotFoundException | ScannerException e) {
                         Movecraft.getInstance().getLogger().log(Level.SEVERE, I18nSupport.getInternationalisedString("Startup - failure to load craft type") + " '" + file.getName() + "' " + e.getMessage());
                     }
                 }

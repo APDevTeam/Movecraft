@@ -20,7 +20,7 @@ public final class RelativeMoveSign implements Listener{
             return;
         }
         Block block = event.getClickedBlock();
-        if (block.getState() instanceof Sign) {
+        if (!(block.getState() instanceof Sign)) {
             return;
         }
         Sign sign = (Sign) event.getClickedBlock().getState();
