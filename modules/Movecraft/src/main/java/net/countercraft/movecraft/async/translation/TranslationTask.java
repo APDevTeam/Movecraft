@@ -23,8 +23,6 @@ import net.countercraft.movecraft.mapUpdater.update.ExplosionUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.ItemDropUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import net.countercraft.movecraft.utils.BitmapHitBox;
-import net.countercraft.movecraft.utils.HashHitBox;
-import net.countercraft.movecraft.utils.HitBox;
 import net.countercraft.movecraft.utils.MutableHitBox;
 import net.countercraft.movecraft.utils.Pair;
 import net.countercraft.movecraft.utils.SolidHitBox;
@@ -402,14 +400,6 @@ public class TranslationTask extends AsyncTask {
                 CraftManager.getInstance().addReleaseTask(craft);
         }
         captureYield(harvestedBlocks);
-    }
-
-    private static HitBox translateHitBox(HitBox hitBox, MovecraftLocation shift){
-        MutableHitBox output = new HashHitBox();
-        for(MovecraftLocation location : hitBox){
-            output.add(location.add(shift));
-        }
-        return output;
     }
 
     private void fail(@NotNull String failMessage) {

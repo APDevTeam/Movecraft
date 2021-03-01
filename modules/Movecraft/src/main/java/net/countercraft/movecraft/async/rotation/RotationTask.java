@@ -36,10 +36,7 @@ import net.countercraft.movecraft.mapUpdater.update.CraftRotateCommand;
 import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import net.countercraft.movecraft.utils.BitmapHitBox;
-import net.countercraft.movecraft.utils.HashHitBox;
-import net.countercraft.movecraft.utils.HitBox;
 import net.countercraft.movecraft.utils.MathUtils;
-import net.countercraft.movecraft.utils.MutableHitBox;
 import net.countercraft.movecraft.utils.TownyUtils;
 import net.countercraft.movecraft.utils.TownyWorldHeightLimits;
 import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
@@ -317,13 +314,6 @@ public class RotationTask extends AsyncTask {
 
     }
 
-    private static HitBox rotateHitBox(HitBox hitBox, MovecraftLocation originPoint, Rotation rotation){
-        MutableHitBox output = new HashHitBox();
-        for(MovecraftLocation location : hitBox){
-            output.add(MathUtils.rotateVec(rotation,originPoint.subtract(originPoint)).add(originPoint));
-        }
-        return output;
-    }
     public MovecraftLocation getOriginPoint() {
         return originPoint;
     }
