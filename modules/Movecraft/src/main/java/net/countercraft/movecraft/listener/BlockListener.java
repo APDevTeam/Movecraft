@@ -69,11 +69,8 @@ public class BlockListener implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onBlockBreak(final BlockBreakEvent e) {
-        if (e.isCancelled()) {
-            return;
-        }
         if (e.getBlock().getType() == Material.WALL_SIGN) {
             Sign s = (Sign) e.getBlock().getState();
             if (s.getLine(0).equalsIgnoreCase(ChatColor.RED + I18nSupport.getInternationalisedString("Region Damaged"))) {
