@@ -3,8 +3,10 @@ package net.countercraft.movecraft.commands;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.events.ManOverboardEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.MathUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -55,11 +57,12 @@ public class ManOverboardCommand implements CommandExecutor{
             return true;
         }
 
-        // TODO: Manoverboard event
+        ManOverboardEvent event = new ManOverboardEvent(craft, telPoint);
+        Bukkit.getServer().getPluginManager().callEvent(event);
 
         player.setVelocity(new Vector(0, 0, 0));
         player.setFallDistance(0);
-        player.teleport(telPoint);
+        player.teleport(event.getLocation());
         return true;
     }
 
