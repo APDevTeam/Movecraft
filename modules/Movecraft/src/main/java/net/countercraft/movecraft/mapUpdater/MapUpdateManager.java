@@ -29,6 +29,7 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Logger;
 
+@Deprecated
 public class MapUpdateManager extends BukkitRunnable {
 
     private final Queue<UpdateCommand> updates = new ConcurrentLinkedQueue<>();

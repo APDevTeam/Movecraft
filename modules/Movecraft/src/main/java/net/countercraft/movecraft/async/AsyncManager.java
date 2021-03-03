@@ -63,7 +63,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
-@SuppressWarnings("deprecation")
+@Deprecated
 public class AsyncManager extends BukkitRunnable {
     //private static AsyncManager instance = new AsyncManager();
     private final HashMap<AsyncTask, Craft> ownershipMap = new HashMap<>();
