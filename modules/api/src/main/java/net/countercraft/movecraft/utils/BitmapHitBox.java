@@ -272,11 +272,23 @@ public class BitmapHitBox implements MutableHitBox {
         return true;
     }
 
+    @Override
+    @NotNull
+    public HitBox difference(HitBox other){
+        return this.difference(new BitmapHitBox(other));
+    }
+    
     public BitmapHitBox difference(BitmapHitBox other) {
         Roaring64NavigableMap intermediary = new Roaring64NavigableMap(true);
         intermediary.or(this.backing);
         intermediary.andNot(other.backing);
         return new BitmapHitBox(intermediary);
+    }
+    
+    @NotNull
+    @Override
+    public HitBox intersection(HitBox other){
+        return this.intersection(new BitmapHitBox(other));
     }
 
     public BitmapHitBox intersection(BitmapHitBox other) {
@@ -286,6 +298,12 @@ public class BitmapHitBox implements MutableHitBox {
         return new BitmapHitBox(intermediary);
     }
 
+    @NotNull
+    @Override
+    public HitBox union(HitBox other){
+        return this.union(new BitmapHitBox(other));
+    }
+    
     public BitmapHitBox union(BitmapHitBox other) {
         Roaring64NavigableMap intermediary = new Roaring64NavigableMap(true);
         intermediary.or(this.backing);
@@ -293,7 +311,13 @@ public class BitmapHitBox implements MutableHitBox {
         return new BitmapHitBox(intermediary);
     }
 
-    public BitmapHitBox symetricDifference(BitmapHitBox other) {
+    @NotNull
+    @Override
+    public HitBox symmetricDifference(HitBox other){
+        return this.symmetricDifference(new BitmapHitBox(other));
+    }
+    
+    public BitmapHitBox symmetricDifference(BitmapHitBox other) {
         Roaring64NavigableMap intermediary = new Roaring64NavigableMap(true);
         intermediary.or(this.backing);
         intermediary.xor(other.backing);

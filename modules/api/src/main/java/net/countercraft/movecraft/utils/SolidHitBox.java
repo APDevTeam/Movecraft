@@ -138,6 +138,30 @@ final public class SolidHitBox implements HitBox{
         return true;
     }
 
+    @NotNull
+    @Override
+    public HitBox difference(HitBox other) {
+        return new BitmapHitBox(this).difference(other);
+    }
+
+    @NotNull
+    @Override
+    public HitBox intersection(HitBox other) {
+        return new BitmapHitBox(this).intersection(other);
+    }
+
+    @NotNull
+    @Override
+    public HitBox union(HitBox other) {
+        return new BitmapHitBox(this).union(other);
+    }
+
+    @NotNull
+    @Override
+    public HitBox symmetricDifference(HitBox other) {
+        return new BitmapHitBox(this).symmetricDifference(other);
+    }
+
     @Nullable
     public SolidHitBox subtract(SolidHitBox other){
         if(this.minX > other.maxX || this.maxX < other.minX || this.minY > other.minY || this.maxY < other.minY || this.minZ > other.maxZ || this.maxZ < other.minZ)

@@ -90,5 +90,17 @@ public interface HitBox extends Iterable<MovecraftLocation>{
         }
         return Collections.unmodifiableSet(output);
     }
+
+    @NotNull
+    HitBox difference(HitBox other);
+
+    @NotNull
+    HitBox intersection(HitBox other);
+
+    @NotNull
+    HitBox union(HitBox other);
+
+    @NotNull
+    HitBox symmetricDifference(HitBox other);
 }
 
