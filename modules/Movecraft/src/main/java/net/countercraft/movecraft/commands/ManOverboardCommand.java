@@ -33,7 +33,7 @@ public class ManOverboardCommand implements CommandExecutor{
             return true;
         }
 
-        Location telPoint = craft.getCrewSigns().containsKey(player.getUniqueId()) ? craft.getCrewSigns().get(player.getUniqueId()) : getCraftTeleportPoint(craft);
+        Location telPoint = getCraftTeleportPoint(craft);
         if (craft.getW() != player.getWorld()) {
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("ManOverboard - Other World"));
             return true;
@@ -54,6 +54,8 @@ public class ManOverboardCommand implements CommandExecutor{
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("ManOverboard - Disabled"));
             return true;
         }
+
+        // TODO: Manoverboard event
 
         player.setVelocity(new Vector(0, 0, 0));
         player.setFallDistance(0);
