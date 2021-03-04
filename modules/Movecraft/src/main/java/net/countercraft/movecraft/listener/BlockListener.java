@@ -17,11 +17,6 @@
 
 package net.countercraft.movecraft.listener;
 
-import com.sk89q.worldedit.bukkit.BukkitAdapter;
-import com.sk89q.worldedit.math.BlockVector3;
-import com.sk89q.worldguard.WorldGuard;
-import com.sk89q.worldguard.protection.ApplicableRegionSet;
-import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
@@ -51,42 +46,8 @@ import java.util.List;
 
 public class BlockListener implements Listener {
 
-    @EventHandler
-    public void onBlockPlace(final BlockPlaceEvent e) {
-        if (!Settings.RestrictSiBsToRegions ||
-                e.getBlockPlaced().getType() != Material.CHEST ||
-                !e.getItemInHand().hasItemMeta() ||
-                !e.getItemInHand().getItemMeta().hasLore()) {
-            return;
-        }
-        List<String> loreList = e.getItemInHand().getItemMeta().getLore();
-        for (String lore : loreList) {
-            if (!lore.contains("SiB")) {
-                continue;
-            }
-            if (lore.toLowerCase().contains("merchant") || lore.toLowerCase().contains("mm")) {
-                return;
-            }
-            Location loc = e.getBlockPlaced().getLocation();
-            ApplicableRegionSet regions;
-            if (Settings.IsLegacy){
-                regions = LegacyUtils.getApplicableRegions(LegacyUtils.getRegionManager(Movecraft.getInstance().getWorldGuardPlugin(), loc.getWorld()), loc);//.getApplicableRegions();
-            } else {
-                regions = WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(loc.getWorld())).getApplicableRegions(BlockVector3.at(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()));
-            }
-            if (regions.size() == 0) {
-                e.getPlayer().sendMessage(I18nSupport.getInternationalisedString("SIB MUST BE PLACED IN REGION"));
-                e.setCancelled(true);
-                break;
-            }
-        }
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onBlockBreak(final BlockBreakEvent e) {
-        if (e.isCancelled()) {
-            return;
-        }
         if (e.getBlock().getType().name().endsWith("WALL_SIGN")) {
             Sign s = (Sign) e.getBlock().getState();
             if (s.getLine(0).equalsIgnoreCase(ChatColor.RED + "REGION DAMAGED!")) {

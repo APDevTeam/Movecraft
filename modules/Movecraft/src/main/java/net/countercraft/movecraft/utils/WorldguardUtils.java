@@ -1,6 +1,5 @@
 package net.countercraft.movecraft.utils;
 
-import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.bukkit.BukkitWorld;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldguard.WorldGuard;
@@ -107,7 +106,7 @@ public class WorldguardUtils {
             return LegacyUtils.allows(set, DefaultFlag.FIRE_SPREAD);
 
         } else {
-            set = WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(loc.getWorld())).getApplicableRegions(BlockVector3.at(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()));
+            set = WorldGuard.getInstance().getPlatform().getRegionContainer().get(new BukkitWorld(loc.getWorld())).getApplicableRegions(BlockVector3.at(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()));
             for (ProtectedRegion region : set){
                 if (region.getFlag(Flags.FIRE_SPREAD) == StateFlag.State.DENY){
                     return false;
