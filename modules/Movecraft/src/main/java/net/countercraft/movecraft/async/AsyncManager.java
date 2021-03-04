@@ -18,7 +18,6 @@
 package net.countercraft.movecraft.async;
 
 import com.google.common.collect.Lists;
-import net.countercraft.movecraft.CraftStatus;
 import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
