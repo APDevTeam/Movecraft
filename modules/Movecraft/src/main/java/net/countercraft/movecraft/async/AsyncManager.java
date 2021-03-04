@@ -454,9 +454,9 @@ public class AsyncManager extends BukkitRunnable {
                 continue;
             }
 
-            Pair<Boolean,Boolean> Status = checkCraftStatus(pcraft);
-            boolean isSinking = Status.getLeft();
-            boolean isDisabled = Status.getRight();
+            Pair<Boolean,Boolean> status = checkCraftStatus(pcraft);
+            boolean isSinking = status.getLeft();
+            boolean isDisabled = status.getRight();
 
             //If the craft is disabled, play a sound and disable it.
             //Only do this if the craft isn't already disabled.
