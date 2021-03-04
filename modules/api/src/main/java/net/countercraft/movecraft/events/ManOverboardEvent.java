@@ -6,6 +6,7 @@ import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
 public class ManOverboardEvent extends CraftEvent {
+    private static final HandlerList HANDLERS = new HandlerList();
     private Location location;
 
     public ManOverboardEvent(@NotNull Craft c, Location location) {
@@ -15,7 +16,12 @@ public class ManOverboardEvent extends CraftEvent {
 
     @Override
     public HandlerList getHandlers() {
-        return null;
+        return HANDLERS;
+    }
+
+    @SuppressWarnings("unused")
+    public static HandlerList getHandlerList() {
+        return HANDLERS;
     }
 
     public void setLocation(Location location) {
