@@ -24,6 +24,8 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.events.CraftSinkEvent;
 import net.countercraft.movecraft.utils.BitmapHitBox;
 import net.countercraft.movecraft.utils.Counter;
+import net.countercraft.movecraft.utils.HitBox;
+import net.countercraft.movecraft.utils.MutableHitBox;
 import net.countercraft.movecraft.utils.Pair;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -44,9 +46,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class Craft {
     @NotNull protected final CraftType type;
-    @NotNull protected BitmapHitBox hitBox;
-    @NotNull protected final BitmapHitBox collapsedHitBox;
-    @NotNull protected BitmapHitBox fluidLocations;
+    @NotNull protected HitBox hitBox;
+    @NotNull protected final MutableHitBox collapsedHitBox;
+    @NotNull protected MutableHitBox fluidLocations;
     @NotNull protected final Counter<Material> materials;
     @NotNull protected World w;
     @NotNull private final AtomicBoolean processing = new AtomicBoolean();
@@ -108,11 +110,11 @@ public abstract class Craft {
     }
 
     @NotNull
-    public BitmapHitBox getHitBox() {
+    public HitBox getHitBox() {
         return hitBox;
     }
 
-    public void setHitBox(@NotNull BitmapHitBox hitBox){
+    public void setHitBox(@NotNull HitBox hitBox){
         this.hitBox = hitBox;
     }
 
@@ -453,18 +455,18 @@ public abstract class Craft {
     }
 
     @NotNull
-    public BitmapHitBox getCollapsedHitBox() {
+    public MutableHitBox getCollapsedHitBox() {
         return collapsedHitBox;
     }
 
     public abstract void resetSigns(@NotNull final Sign clicked);
 
     @NotNull
-    public BitmapHitBox getFluidLocations() {
+    public MutableHitBox getFluidLocations() {
         return fluidLocations;
     }
 
-    public void setFluidLocations(@NotNull BitmapHitBox fluidLocations) {
+    public void setFluidLocations(@NotNull MutableHitBox fluidLocations) {
         this.fluidLocations = fluidLocations;
     }
 

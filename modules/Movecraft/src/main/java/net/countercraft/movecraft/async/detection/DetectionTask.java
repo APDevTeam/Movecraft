@@ -23,6 +23,8 @@ import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.BitmapHitBox;
+import net.countercraft.movecraft.utils.HitBox;
+import net.countercraft.movecraft.utils.MutableHitBox;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -47,8 +49,8 @@ public class DetectionTask extends AsyncTask {
     private final int minSize;
     private final int maxSize;
     @NotNull private final Stack<MovecraftLocation> blockStack = new Stack<>();
-    @NotNull private final BitmapHitBox fluidBox = new BitmapHitBox();
-    @NotNull private final BitmapHitBox hitBox = new BitmapHitBox();
+    @NotNull private final MutableHitBox fluidBox = new BitmapHitBox();
+    @NotNull private final MutableHitBox hitBox = new BitmapHitBox();
     @NotNull private final HashSet<MovecraftLocation> visited = new HashSet<>();
     @NotNull private final HashMap<List<Material>, Integer> blockTypeCount = new HashMap<>();
     @NotNull private final World world;
@@ -431,12 +433,12 @@ public class DetectionTask extends AsyncTask {
     }
 
     @NotNull
-    public BitmapHitBox getHitBox() {
+    public MutableHitBox getHitBox() {
         return hitBox;
     }
 
     @NotNull
-    public BitmapHitBox getFluidBox() {
+    public MutableHitBox getFluidBox() {
         return fluidBox;
     }
 

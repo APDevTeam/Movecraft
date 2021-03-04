@@ -2,24 +2,25 @@ package net.countercraft.movecraft.events;
 
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.utils.BitmapHitBox;
+import net.countercraft.movecraft.utils.HitBox;
 import org.bukkit.World;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
 public class CraftCollisionEvent extends CraftEvent{
     private static final HandlerList HANDLERS = new HandlerList();
-    @NotNull private final BitmapHitBox hitBox;
+    @NotNull private final HitBox hitBox;
     @NotNull private final World world;
     private boolean isCancelled = false;
 
-    public CraftCollisionEvent(@NotNull Craft craft, @NotNull BitmapHitBox hitBox, @NotNull World world) {
+    public CraftCollisionEvent(@NotNull Craft craft, @NotNull HitBox hitBox, @NotNull World world) {
         super(craft);
         this.hitBox = hitBox;
         this.world = world;
     }
 
     @NotNull
-    public BitmapHitBox getHitBox() {
+    public HitBox getHitBox() {
         return hitBox;
     }
     

@@ -100,7 +100,7 @@ public class CraftTranslateCommand extends UpdateCommand {
                 }
             }
             //The subtraction of the set of coordinates in the HitBox cube and the HitBox itself
-            final BitmapHitBox invertedHitBox = new BitmapHitBox(craft.getHitBox().boundingHitBox()).difference(craft.getHitBox());
+            final HitBox invertedHitBox = new BitmapHitBox(craft.getHitBox().boundingHitBox()).difference(craft.getHitBox());
 
             //A set of locations that are confirmed to be "exterior" locations
             final BitmapHitBox confirmed = new BitmapHitBox();

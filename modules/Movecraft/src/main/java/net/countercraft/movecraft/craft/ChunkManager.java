@@ -5,6 +5,7 @@ import net.countercraft.movecraft.MovecraftChunk;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.utils.BitmapHitBox;
+import net.countercraft.movecraft.utils.HitBox;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.World;
@@ -60,7 +61,7 @@ public class ChunkManager implements Listener {
     }
     
     
-    public static List<MovecraftChunk> getChunks(BitmapHitBox hitBox, World world) {
+    public static List<MovecraftChunk> getChunks(HitBox hitBox, World world) {
         
         List<MovecraftChunk> chunks = new ArrayList<MovecraftChunk>();
         
@@ -80,7 +81,7 @@ public class ChunkManager implements Listener {
         
     }
     
-    public static List<MovecraftChunk> getChunks(BitmapHitBox oldHitBox, World world, int dx, int dy, int dz) {
+    public static List<MovecraftChunk> getChunks(HitBox oldHitBox, World world, int dx, int dy, int dz) {
         
         BitmapHitBox hitBox = new BitmapHitBox();
         for (MovecraftLocation location : oldHitBox) {
