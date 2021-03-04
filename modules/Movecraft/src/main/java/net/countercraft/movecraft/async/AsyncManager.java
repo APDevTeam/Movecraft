@@ -34,12 +34,26 @@ import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.mapUpdater.update.BlockCreateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import net.countercraft.movecraft.utils.*;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.Sound;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
@@ -454,13 +468,11 @@ public class AsyncManager extends BukkitRunnable {
                 continue;
             }
 
-            Pair<Boolean,Boolean> status = checkCraftStatus(pcraft);
-            boolean isSinking = status.getLeft();
-            boolean isDisabled = status.getRight();
+            CraftStatus status = checkCraftStatus(pcraft);
 
             //If the craft is disabled, play a sound and disable it.
             //Only do this if the craft isn't already disabled.
-            if(isDisabled && pcraft.isNotProcessing()) {
+            if(status.isDisabled() && pcraft.isNotProcessing()) {
                 if (!pcraft.getDisabled()) {
                     pcraft.setDisabled(true);
                     if (pcraft.getNotificationPlayer() != null) {
@@ -473,7 +485,7 @@ public class AsyncManager extends BukkitRunnable {
             // if the craft is sinking, let the player
             // know and release the craft. Otherwise
             // update the time for the next check
-            if (isSinking && pcraft.isNotProcessing()) {
+            if (status.isSinking() && pcraft.isNotProcessing()) {
                 Player notifyP = pcraft.getNotificationPlayer();
                 if (notifyP != null) {
                     notifyP.sendMessage(I18nSupport.getInternationalisedString("Player - Craft is sinking"));
@@ -654,7 +666,7 @@ public class AsyncManager extends BukkitRunnable {
 
     //Returns a given craft's status as a pair of booleans.
     //Left is sinking, right is disabled.
-    public Pair<Boolean, Boolean> checkCraftStatus(Craft craft) {
+    public CraftStatus checkCraftStatus(Craft craft) {
         boolean isSinking = false;
         boolean isDisabled = false;
         int totalNonNegligibleBlocks = 0;
@@ -733,7 +745,7 @@ public class AsyncManager extends BukkitRunnable {
             isSinking = true;
         }
 
-        return new Pair<>(isSinking, isDisabled);
+        return CraftStatus.fromBooleans(isSinking, isDisabled);
     }
 
     //Removed for refactor
