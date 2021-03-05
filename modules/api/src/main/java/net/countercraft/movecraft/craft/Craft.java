@@ -405,34 +405,34 @@ public abstract class Craft {
             int posZ;
             posZ = hitBox.getMinZ() - 1;
             for (posX = hitBox.getMinX() - 1; posX <= hitBox.getMaxX() + 1; posX++) {
-                int typeID = world.getBlockAt(posX, posY, posZ).getTypeId();
-                if (typeID == 9)
+                Material type = world.getBlockAt(posX, posY, posZ).getType();
+                if (type.name().endsWith("WATER"))
                     numWater++;
-                if (typeID == 0)
+                if (type.name().endsWith("AIR"))
                     numAir++;
             }
             posZ = hitBox.getMaxZ() + 1;
             for (posX = hitBox.getMinX() - 1; posX <= hitBox.getMaxX() + 1; posX++) {
-                int typeID = world.getBlockAt(posX, posY, posZ).getTypeId();
-                if (typeID == 9)
+                Material type = world.getBlockAt(posX, posY, posZ).getType();
+                if (type.name().endsWith("WATER"))
                     numWater++;
-                if (typeID == 0)
+                if (type.name().endsWith("AIR"))
                     numAir++;
             }
             posX = hitBox.getMinX() - 1;
             for (posZ = hitBox.getMinZ(); posZ <= hitBox.getMaxZ(); posZ++) {
-                int typeID = world.getBlockAt(posX, posY, posZ).getTypeId();
-                if (typeID == 9)
+                Material type = world.getBlockAt(posX, posY, posZ).getType();
+                if (type.name().endsWith("WATER"))
                     numWater++;
-                if (typeID == 0)
+                if (type.name().endsWith("AIR"))
                     numAir++;
             }
             posX = hitBox.getMaxX() + 1;
             for (posZ = hitBox.getMinZ(); posZ <= hitBox.getMaxZ(); posZ++) {
-                int typeID = world.getBlockAt(posX, posY, posZ).getTypeId();
-                if (typeID == 9)
+                Material type = world.getBlockAt(posX, posY, posZ).getType();
+                if (type.name().endsWith("WATER"))
                     numWater++;
-                if (typeID == 0)
+                if (type.name().endsWith("AIR"))
                     numAir++;
             }
             if (numWater > numAir) {
