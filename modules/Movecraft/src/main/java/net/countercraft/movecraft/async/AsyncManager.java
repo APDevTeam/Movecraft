@@ -670,6 +670,7 @@ public class AsyncManager extends BukkitRunnable {
     }
 
     //Returns a given craft's status as a CraftStatus enum.
+    @NotNull
     public CraftStatus checkCraftStatus(@NotNull Craft craft) {
         boolean isSinking = false;
         boolean isDisabled = false;
