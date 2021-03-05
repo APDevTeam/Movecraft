@@ -33,7 +33,12 @@ import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.mapUpdater.update.BlockCreateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
-import net.countercraft.movecraft.utils.*;
+import net.countercraft.movecraft.utils.BitmapHitBox;
+import net.countercraft.movecraft.utils.CollectionUtils;
+import net.countercraft.movecraft.utils.CraftStatus;
+import net.countercraft.movecraft.utils.HitBox;
+import net.countercraft.movecraft.utils.Pair;
+import net.countercraft.movecraft.utils.SolidHitBox;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -664,17 +669,16 @@ public class AsyncManager extends BukkitRunnable {
         }
     }
 
-    //Returns a given craft's status as a pair of booleans.
-    //Left is sinking, right is disabled.
-    public CraftStatus checkCraftStatus(Craft craft) {
+    //Returns a given craft's status as a CraftStatus enum.
+    public CraftStatus checkCraftStatus(@NotNull Craft craft) {
         boolean isSinking = false;
         boolean isDisabled = false;
         int totalNonNegligibleBlocks = 0;
         int totalNonNegligibleWaterBlocks = 0;
         HashMap<List<Integer>, Integer> foundFlyBlocks = new HashMap<>();
         HashMap<List<Integer>, Integer> foundMoveBlocks = new HashMap<>();
-        // go through each block in the blocklist, and
-        // if its in the FlyBlocks, total up the number
+        // go through each block in the HitBox, and
+        // if it's in the FlyBlocks, total up the number
         // of them
         for (MovecraftLocation l : craft.getHitBox()) {
             int blockID = craft.getW().getBlockAt(l.getX(), l.getY(), l.getZ()).getTypeId();
@@ -699,7 +703,7 @@ public class AsyncManager extends BukkitRunnable {
             }
         }
 
-        // now see if any of the resulting percentagesit
+        // now see if any of the resulting percentages
         // are below the threshold specified in
         // SinkPercent
 
@@ -726,7 +730,7 @@ public class AsyncManager extends BukkitRunnable {
             isDisabled = (percent < disablePercent && !craft.getDisabled() && craft.isNotProcessing());
         }
 
-        // And check the overallsinkpercent
+        // And check the OverallSinkPercent
         if (craft.getType().getOverallSinkPercent() != 0.0) {
             double percent;
             if (craft.getType().blockedByWater()) {
@@ -745,7 +749,7 @@ public class AsyncManager extends BukkitRunnable {
             isSinking = true;
         }
 
-        return CraftStatus.fromBooleans(isSinking, isDisabled);
+        return CraftStatus.of(isSinking, isDisabled);
     }
 
     //Removed for refactor
