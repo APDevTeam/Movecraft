@@ -15,7 +15,7 @@ public enum CraftStatus {
         return (this == DISABLED || this == SINKING_DISABLED);
     }
 
-    public static CraftStatus fromBooleans (boolean sinking, boolean disabled) {
+    public static CraftStatus of (boolean sinking, boolean disabled) {
         if (!sinking && !disabled) {
             return NORMAL;
         }
