@@ -123,7 +123,6 @@ final public class CraftType {
     @NotNull private final int effectRange;
     @NotNull private final Map<PotionEffect,Integer> potionEffectsToApply;
     @NotNull private final Map<List<String>, Double> maxSignsWithString;
-    @NotNull private final Map<List<String>, Double> maxCannons;
     private final boolean gearShiftsAffectTickCooldown;
     private final boolean gearShiftsAffectDirectMovement;
     private final boolean gearShiftsAffectCruiseSkipBlocks;
@@ -358,7 +357,6 @@ final public class CraftType {
         effectRange = data.containsKey("effectRange") ? integerFromObject(data.get("effectRange")) : 0;
         potionEffectsToApply = data.containsKey("potionEffectsToApply") ? effectListFromObject(data.get("potionEffectsToApply")) : Collections.emptyMap();
         maxSignsWithString = stringDoubleMapFromObject(data.getOrDefault("maxSignsWithString", new HashMap<>()));
-        maxCannons = stringDoubleMapFromObject(data.getOrDefault("maxCannons", new HashMap<>()));
         staticDetectionRange = doubleFromObject(data.getOrDefault("staticDetectionRange", 0.0));
         underwaterStaticDetectionRange = doubleFromObject(data.getOrDefault("underwaterStaticDetectionRange", 0.0));
         perWorldUnderwaterStaticDetectionRange = stringToDoubleMapFromObject(data.getOrDefault("perWorldUnderwaterStaticDetectionRange", new HashMap<>()));
@@ -956,11 +954,6 @@ final public class CraftType {
     @NotNull
     public Map<List<String>, Double> getMaxSignsWithString() {
         return maxSignsWithString;
-    }
-
-    @NotNull
-    public Map<List<String>, Double> getMaxCannons() {
-        return maxCannons;
     }
 
     /**
