@@ -57,14 +57,6 @@ WGCustomFlagsUseSinkFlag: false
 DurabilityOverride:
   end_stone: 80
   end_stone_bricks: 80
-TownyBlockMoveOnSwitchPerm: false
-TownyBlockSinkOnNoPVP: false
-TownyWorldHeightLimits:
-  world:
-    worldMin: -1
-    worldMax: -1
-    aboveTownSpawn: 96
-    underTownSpawn: 255
 ForbiddenRemoteSigns: # These strings will be ignored when searching for signs to trigger from a remote sign
   - "Mounted"
   - "Denied"

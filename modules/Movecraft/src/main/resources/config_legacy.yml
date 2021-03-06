@@ -115,11 +115,3 @@ WGCustomFlagsUseSinkFlag: false
 DurabilityOverride:
   ENDER_STONE: 80
   END_BRICKS: 80
-TownyBlockMoveOnSwitchPerm: false
-TownyBlockSinkOnNoPVP: false
-TownyWorldHeightLimits:
-  world:
-    worldMin: -1
-    worldMax: -1
-    aboveTownSpawn: 96
-    underTownSpawn: 255

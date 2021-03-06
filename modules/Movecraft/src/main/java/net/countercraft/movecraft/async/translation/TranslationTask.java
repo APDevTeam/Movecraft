@@ -299,7 +299,6 @@ public class TranslationTask extends AsyncTask {
         }
 
 
-        //TODO: Add and handle event for towny and factions
         final List<Material> harvestBlocks = craft.getType().getHarvestBlocks();
         final List<MovecraftLocation> harvestedBlocks = new ArrayList<>();
         final List<Material> harvesterBladeBlocks = craft.getType().getHarvesterBladeBlocks();
