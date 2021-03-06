@@ -17,7 +17,6 @@
 
 package net.countercraft.movecraft.config;
 
-import net.countercraft.movecraft.utils.TownyWorldHeightLimits;
 import org.bukkit.Material;
 
 import java.util.HashMap;
@@ -60,10 +59,7 @@ public class Settings {
     public static boolean AllowCrewSigns = true;
     public static boolean SetHomeToCrewSign = true;
     public static int MaxRemoteSigns = -1;
-    public static boolean TownyBlockMoveOnSwitchPerm = false;
-    public static boolean TownyBlockSinkOnNoPVP = false;
 
-    public static Map<String, TownyWorldHeightLimits> TownProtectionHeightLimits;
     public static boolean CraftsUseNetherPortals = false;
     public static boolean IsPaper = false;
     public static boolean IsPre1_9 = false;

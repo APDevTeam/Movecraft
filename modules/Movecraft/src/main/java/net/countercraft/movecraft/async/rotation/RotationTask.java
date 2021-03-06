@@ -17,8 +17,6 @@
 
 package net.countercraft.movecraft.async.rotation;
 
-import com.palmergames.bukkit.towny.object.TownBlock;
-import com.palmergames.bukkit.towny.object.TownyWorld;
 import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
@@ -54,11 +52,6 @@ public class RotationTask extends AsyncTask {
     private Set<UpdateCommand> updates = new HashSet<>();
     //private int[][][] hitbox;
     //private Integer minX, minZ;
-
-    private boolean townyEnabled;
-    private Set<TownBlock> townBlockSet;
-    private TownyWorld townyWorld;
-    private TownyWorldHeightLimits townyWorldHeightLimits;
 
     private final BitmapHitBox oldHitBox;
     private final BitmapHitBox newHitBox;
@@ -123,9 +116,7 @@ public class RotationTask extends AsyncTask {
                 break;
             }
 
-            //TODO: ADD TOWNY
             //TODO: ADD FACTIONS
-            //isTownyBlock(plugLoc,craftPilot);
             if (!withinWorldBorder(craft.getWorld(), newLocation)) {
                 failMessage = I18nSupport.getInternationalisedString("Rotation - Failed Craft cannot pass world border") + String.format(" @ %d,%d,%d", newLocation.getX(), newLocation.getY(), newLocation.getZ());
                 failed = true;

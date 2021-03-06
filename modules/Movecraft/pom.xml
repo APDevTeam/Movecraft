@@ -10,7 +10,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     <!--<version>7.0.0_beta_9-SNAPSHOT.2</version>-->
-    <version>7.0.0_for_1.8.8-1.16.2_beta_37</version>
+    <version>7.0.0_for_1.8.8-1.16.2_beta_37_TOWNY</version>
 
     <repositories>
         <repository>
@@ -143,14 +143,6 @@
             <artifactId>EssentialsX</artifactId>
             <version>2.16.1</version>
             <scope>provided</scope>
-        </dependency>
-        <!-- This doesn't have a maven repo but its own -->
-        <dependency>
-            <groupId>com.palmergames</groupId>
-            <artifactId>Towny</artifactId>
-            <version>LATEST</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/../../libs/Towny.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>com.mewin</groupId>

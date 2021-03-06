@@ -19,7 +19,6 @@ package net.countercraft.movecraft;
 
 import com.earth2me.essentials.Essentials;
 import com.mewin.WGCustomFlags.WGCustomFlagsPlugin;
-import com.palmergames.bukkit.towny.Towny;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import net.countercraft.movecraft.async.AsyncManager;
 import net.countercraft.movecraft.commands.*;
@@ -32,16 +31,13 @@ import net.countercraft.movecraft.listener.PlayerListener;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.sign.*;
-import net.countercraft.movecraft.towny.TownyCompatManager;
 import net.countercraft.movecraft.utils.LegacyUtils;
-import net.countercraft.movecraft.utils.TownyUtils;
 import net.countercraft.movecraft.utils.UpdateManager;
 import net.countercraft.movecraft.worldguard.WorldGuardCompatManager;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.*;
@@ -56,7 +52,6 @@ public class Movecraft extends JavaPlugin {
     private static Movecraft instance;
     private static WorldGuardPlugin worldGuardPlugin;
     private static WGCustomFlagsPlugin wgCustomFlagsPlugin = null;
-    private static Towny townyPlugin = null;
     private static Essentials essentialsPlugin = null;
     private Logger logger;
     private boolean shuttingDown;
@@ -230,20 +225,6 @@ public class Movecraft extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new WorldGuardCompatManager(), this);
         }
 
-        Plugin tempTownyPlugin = getServer().getPluginManager().getPlugin("Towny");
-        if (tempTownyPlugin != null && tempTownyPlugin instanceof Towny) {
-            logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Towny Found"));
-            townyPlugin = (Towny) tempTownyPlugin;
-            TownyUtils.initTownyConfig();
-            Settings.TownyBlockMoveOnSwitchPerm = getConfig().getBoolean("TownyBlockMoveOnSwitchPerm", false);
-            Settings.TownyBlockSinkOnNoPVP = getConfig().getBoolean("TownyBlockSinkOnNoPVP", false);
-            getServer().getPluginManager().registerEvents(new TownyCompatManager(), this);
-            logger.log(Level.INFO, "Settings: TownyBlockMoveOnSwitchPerm - {0}", Settings.TownyBlockMoveOnSwitchPerm);
-            logger.log(Level.INFO, "Settings: TownyBlockSinkOnNoPVP - {0}", Settings.TownyBlockSinkOnNoPVP);
-
-        } else {
-            logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Towny Not Found"));
-        }
         //Essentials
         Plugin tempEssentialsPlugin = getServer().getPluginManager().getPlugin("Essentials");
         if (tempEssentialsPlugin != null) {
@@ -367,10 +348,6 @@ public class Movecraft extends JavaPlugin {
 
     public WGCustomFlagsPlugin getWGCustomFlagsPlugin() {
         return wgCustomFlagsPlugin;
-    }
-
-    public Towny getTownyPlugin() {
-        return townyPlugin;
     }
 
     public Essentials getEssentialsPlugin() {
