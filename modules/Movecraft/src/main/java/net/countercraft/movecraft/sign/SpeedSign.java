@@ -47,7 +47,7 @@ public final class SpeedSign implements Listener{
     }
 
     @EventHandler
-    public void onSideClick(PlayerInteractEvent event) {
+    public void onSignClick(PlayerInteractEvent event) {
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
             return;
         }
