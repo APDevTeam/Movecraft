@@ -66,10 +66,10 @@ jobs:
       run: cd BuildTools && java -jar BuildTools.jar --rev 1.11.2
     - name: Check 1.12.1
       id: color
-      run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.12.1-R0.1-SNAPSHOT/craftbukkit-1.12.1-R0.1-SNAPSHOT.jar && echo "::set-output name=sucess::true" || echo "::set-output name=sucess::false"
-    - name: Build 1.12.1
+      run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.12.2-R0.1-SNAPSHOT/craftbukkit-1.12.2-R0.1-SNAPSHOT.jar && echo "::set-output name=sucess::true" || echo "::set-output name=sucess::false"
+    - name: Build 1.12.2
       if: steps.color.outputs.sucess != 'true'
-      run: cd BuildTools && java -jar BuildTools.jar --rev 1.12.1
+      run: cd BuildTools && java -jar BuildTools.jar --rev 1.12.2
     - name: Check 1.13.2
       id: aquatic
       run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.13.2-R0.1-SNAPSHOT/craftbukkit-1.13.2-R0.1-SNAPSHOT.jar && echo "::set-output name=sucess::true" || echo "::set-output name=sucess::false"
@@ -82,10 +82,10 @@ jobs:
     - name: Build 1.14.4
       if: steps.pillage.outputs.sucess != 'true'
       run: cd BuildTools && java -jar BuildTools.jar --rev 1.14.4 --compile craftbukkit
-    - name: Check 1.15
+    - name: Check 1.15.2
       id: bees
-      run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.15-R0.1-SNAPSHOT/craftbukkit-1.15-R0.1-SNAPSHOT.jar && echo "::set-output name=sucess::true" || echo "::set-output name=sucess::false"
-    - name: Build 1.15
+      run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.15.2-R0.1-SNAPSHOT/craftbukkit-1.15.2-R0.1-SNAPSHOT.jar && echo "::set-output name=sucess::true" || echo "::set-output name=sucess::false"
+    - name: Build 1.15.2
       if: steps.bees.outputs.sucess != 'true'
       run: cd BuildTools && java -jar BuildTools.jar --rev 1.15 --compile craftbukkit
     - name: Check 1.16.1
@@ -94,18 +94,18 @@ jobs:
     - name: Build 1.16.1
       if: steps.nether.outputs.sucess != 'true'
       run: cd BuildTools && java -jar BuildTools.jar --rev 1.16.1 --compile craftbukkit
-    - name: Check 1.16.2
+    - name: Check 1.16.3
       id: nether2
-      run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.16.2-R0.1-SNAPSHOT/craftbukkit-1.16.2-R0.1-SNAPSHOT.jar && echo "::set-output name=sucess::true" || echo "::set-output name=sucess::false"
-    - name: Build 1.16.2
+      run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.16.3-R0.1-SNAPSHOT/craftbukkit-1.16.3-R0.1-SNAPSHOT.jar && echo "::set-output name=sucess::true" || echo "::set-output name=sucess::false"
+    - name: Build 1.16.3
       if: steps.nether2.outputs.sucess != 'true'
-      run: cd BuildTools && java -jar BuildTools.jar --rev 1.16.2 --compile craftbukkit
-    - name: Check 1.16.4
+      run: cd BuildTools && java -jar BuildTools.jar --rev 1.16.3 --compile craftbukkit
+    - name: Check 1.16.5
       id: nether3
-      run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.16.4-R0.1-SNAPSHOT/craftbukkit-1.16.4-R0.1-SNAPSHOT.jar && echo "::set-output name=sucess::true" || echo "::set-output name=sucess::false"
-    - name: Build 1.16.4
+      run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.16.5-R0.1-SNAPSHOT/craftbukkit-1.16.5-R0.1-SNAPSHOT.jar && echo "::set-output name=sucess::true" || echo "::set-output name=sucess::false"
+    - name: Build 1.16.5
       if: steps.nether3.outputs.sucess != 'true'
-      run: cd BuildTools && java -jar BuildTools.jar --rev 1.16.4 --compile craftbukkit
+      run: cd BuildTools && java -jar BuildTools.jar --rev 1.16.5 --compile craftbukkit
 
 # EXAMPLE - Copy/paste as required to add version support to CI
 #    - name: Test [version]
@@ -117,7 +117,7 @@ jobs:
 #    - run: test -d ~/.m2/repository/org/bukkit/craftbukkit/ && ls ~/.m2/repository/org/bukkit/craftbukkit/
 
     - name: Build with Maven
-      run: mvn -B package --file pom.xml
+      run: mvn -B package -T 1C --file pom.xml
 
     - name: Stage jar
       run: mkdir staging && cp target/Movecraft.jar staging && mv staging/Movecraft.jar staging/Movecraft_$GITHUB_SHA.jar
