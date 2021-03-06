@@ -25,11 +25,6 @@
     </repositories>
     <dependencies>
         <dependency>
-            <groupId>com.sk89q</groupId>
-            <artifactId>worldedit</artifactId>
-            <version>LATEST</version>
-        </dependency>
-        <dependency>
             <groupId>net.countercraft</groupId>
             <artifactId>movecraft-api</artifactId>
             <version>API</version>
