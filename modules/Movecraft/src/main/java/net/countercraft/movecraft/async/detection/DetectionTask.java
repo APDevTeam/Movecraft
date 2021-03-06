@@ -46,7 +46,6 @@ public class DetectionTask extends AsyncTask {
     @NotNull private final HashSet<MovecraftLocation> visited = new HashSet<>();
     @NotNull private final HashMap<Set<MovecraftBlock>, Integer> blockTypeCount = new HashMap<>();
     @NotNull private final HashMap<List<String>, Integer> signWithStringCount = new HashMap<>();
-    @NotNull private final HashMap<List<String>, Integer> cannonsCount = new HashMap<>();
     @NotNull private final World world;
     @Nullable private final Player player;
     @NotNull private final Player notificationPlayer;
