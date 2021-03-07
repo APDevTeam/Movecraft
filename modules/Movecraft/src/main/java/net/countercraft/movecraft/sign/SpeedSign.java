@@ -6,6 +6,8 @@ import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -16,6 +18,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
+
 
 public final class SpeedSign implements Listener{
     @EventHandler
@@ -47,7 +50,7 @@ public final class SpeedSign implements Listener{
     }
 
     @EventHandler
-    public void onSignClick(PlayerInteractEvent event) {
+    public void onSideClick(PlayerInteractEvent event) {
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
             return;
         }
@@ -67,13 +70,13 @@ public final class SpeedSign implements Listener{
         final int gearShifts = craft.getType().getGearShifts();
         int currentGear = craft.getCurrentGear();
         if (gearShifts == 1) {
-            player.sendMessage(I18nSupport.getInternationalisedString("Gearshift - Disabled for craft type"));
+            player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(I18nSupport.getInternationalisedString("Gearshift - Disabled for craft type")));
             return;
         }
         currentGear++;
         if (currentGear > gearShifts)
             currentGear = 1;
-        player.sendMessage(I18nSupport.getInternationalisedString("Gearshift - Gear changed") + " " + currentGear + " / " + gearShifts);
+        player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(I18nSupport.getInternationalisedString("Gearshift - Gear changed") + " " + currentGear + " / " + gearShifts));
         craft.setCurrentGear(currentGear);
         return;
     }
