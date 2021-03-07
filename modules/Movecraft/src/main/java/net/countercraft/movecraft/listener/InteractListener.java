@@ -74,19 +74,6 @@ public final class InteractListener implements Listener {
             }
             final CraftType type = craft.getType();
             int currentGear = craft.getCurrentGear();
-            if (player.isSneaking() && !craft.getPilotLocked()) {
-                final int gearShifts = type.getGearShifts();
-                if (gearShifts == 1) {
-                    player.sendMessage(I18nSupport.getInternationalisedString("Gearshift - Disabled for craft type"));
-                    return;
-                }
-                currentGear++;
-                if (currentGear > gearShifts)
-                    currentGear = 1;
-                player.sendMessage(I18nSupport.getInternationalisedString("Gearshift - Gear changed") + " " + currentGear + " / " + gearShifts);
-                craft.setCurrentGear(currentGear);
-                return;
-            }
             Long time = timeMap.get(player);
             int tickCooldown = craft.getType().getTickCooldown(craft.getW());
             if (type.getGearShiftsAffectDirectMovement() && type.getGearShiftsAffectTickCooldown()) {
