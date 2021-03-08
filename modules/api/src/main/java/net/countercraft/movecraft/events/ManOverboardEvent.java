@@ -6,15 +6,15 @@ import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
 public class ManOverboardEvent extends CraftEvent {
-    private static final HandlerList HANDLERS = new HandlerList();
-    private Location location;
+    @NotNull private static final HandlerList HANDLERS = new HandlerList();
+    @NotNull private Location location;
 
-    public ManOverboardEvent(@NotNull Craft c, Location location) {
+    public ManOverboardEvent(@NotNull Craft c, @NotNull Location location) {
         super(c);
         this.location = location;
     }
 
-    @Override
+    @Override @NotNull
     public HandlerList getHandlers() {
         return HANDLERS;
     }
@@ -24,10 +24,11 @@ public class ManOverboardEvent extends CraftEvent {
         return HANDLERS;
     }
 
-    public void setLocation(Location location) {
+    public void setLocation(@NotNull Location location) {
         this.location = location;
     }
 
+    @NotNull
     public Location getLocation() {
         return location;
     }
