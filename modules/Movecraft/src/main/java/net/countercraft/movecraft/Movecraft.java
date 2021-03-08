@@ -17,7 +17,6 @@
 
 package net.countercraft.movecraft;
 
-import com.earth2me.essentials.Essentials;
 import com.mewin.WGCustomFlags.WGCustomFlagsPlugin;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.flags.StateFlag;
@@ -51,7 +50,6 @@ public class Movecraft extends JavaPlugin {
     private static Movecraft instance;
     private static WorldGuardPlugin worldGuardPlugin;
     private static WGCustomFlagsPlugin wgCustomFlagsPlugin = null;
-    private static Essentials essentialsPlugin = null;
     /*public HashMap<MovecraftLocation, Long> blockFadeTimeMap = new HashMap<>();
     public HashMap<MovecraftLocation, Integer> blockFadeTypeMap = new HashMap<>();
     public HashMap<MovecraftLocation, Boolean> blockFadeWaterMap = new HashMap<>();
@@ -133,8 +131,6 @@ public class Movecraft extends JavaPlugin {
         Settings.SilhouetteViewDistance = getConfig().getInt("SilhouetteViewDistance", 200);
         Settings.SilhouetteBlockCount = getConfig().getInt("SilhouetteBlockCount", 20);
         Settings.ProtectPilotedCrafts = getConfig().getBoolean("ProtectPilotedCrafts", false);
-        Settings.AllowCrewSigns = getConfig().getBoolean("AllowCrewSigns", true);
-        Settings.SetHomeToCrewSign = getConfig().getBoolean("SetHomeToCrewSign", true);
         Settings.MaxRemoteSigns = getConfig().getInt("MaxRemoteSigns", -1);
         Settings.CraftsUseNetherPortals = getConfig().getBoolean("CraftsUseNetherPortals", false);
         Settings.RequireCreatePerm = getConfig().getBoolean("RequireCreatePerm", false);
@@ -208,21 +204,6 @@ public class Movecraft extends JavaPlugin {
                 }
             }
         }
-
-        Plugin tempEssentialsPlugin = getServer().getPluginManager().getPlugin("Essentials");
-        if (tempEssentialsPlugin != null) {
-            if (tempEssentialsPlugin.getDescription().getName().equalsIgnoreCase("essentials")) {
-                if (tempEssentialsPlugin.getClass().getName().equals("com.earth2me.essentials.Essentials")) {
-                    if (tempEssentialsPlugin instanceof Essentials) {
-                        essentialsPlugin = (Essentials) tempEssentialsPlugin;
-                        logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Essentials Found"));
-                    }
-                }
-            }
-        }
-        if (essentialsPlugin == null) {
-            logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Essentials Not Found"));
-        }
         
         if (shuttingDown && Settings.IGNORE_RESET) {
             logger.log(
@@ -261,7 +242,6 @@ public class Movecraft extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new AscendSign(), this);
             getServer().getPluginManager().registerEvents(new ContactsSign(), this);
             getServer().getPluginManager().registerEvents(new CraftSign(), this);
-            getServer().getPluginManager().registerEvents(new CrewSign(), this);
             getServer().getPluginManager().registerEvents(new CruiseSign(), this);
             getServer().getPluginManager().registerEvents(new DescendSign(), this);
             getServer().getPluginManager().registerEvents(new HelmSign(), this);
@@ -297,10 +277,6 @@ public class Movecraft extends JavaPlugin {
 
     public WGCustomFlagsPlugin getWGCustomFlagsPlugin() {
         return wgCustomFlagsPlugin;
-    }
-
-    public Essentials getEssentialsPlugin() {
-        return essentialsPlugin;
     }
 
     public WorldHandler getWorldHandler(){

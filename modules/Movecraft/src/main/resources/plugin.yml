@@ -1,5 +1,5 @@
 name: Movecraft
-softdepend: [WorldGuard, WorldEdit, Cannons, Vault, Essentials, WGCustomFlags]
+softdepend: [WorldGuard, WGCustomFlags]
 version: ${project.version}
 #version: ${env.BUILD_NUMBER}
 description: The original flight and movement plugin for minecraft.

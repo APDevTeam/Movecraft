@@ -18,7 +18,7 @@ Movecraft uses multiple versions of the Spigot server software for legacy suppor
 ```
 java -jar BuildTools.jar --rev 1.10.2
 java -jar BuildTools.jar --rev 1.11.2
-java -jar BuildTools.jar --rev 1.12.1
+java -jar BuildTools.jar --rev 1.12.2
 ```
 
 Then, run the following to build Movecraft through `maven`.

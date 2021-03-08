@@ -43,12 +43,12 @@ jobs:
     - name: Build 1.11.2
       if: steps.exploration.outputs.sucess != 'true'
       run: cd BuildTools && java -jar BuildTools.jar --rev 1.11.2
-    - name: Check 1.12.1
+    - name: Check 1.12.2
       id: color
-      run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.12.1-R0.1-SNAPSHOT/craftbukkit-1.12.1-R0.1-SNAPSHOT.jar && echo "::set-output name=sucess::true" || echo "::set-output name=sucess::false"
-    - name: Build 1.12.1
+      run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.12.2-R0.1-SNAPSHOT/craftbukkit-1.12.2-R0.1-SNAPSHOT.jar && echo "::set-output name=sucess::true" || echo "::set-output name=sucess::false"
+    - name: Build 1.12.2
       if: steps.color.outputs.sucess != 'true'
-      run: cd BuildTools && java -jar BuildTools.jar --rev 1.12.1
+      run: cd BuildTools && java -jar BuildTools.jar --rev 1.12.2
 
 # EXAMPLE - Copy/paste as required to add version support to CI
 #    - name: Test [version]
