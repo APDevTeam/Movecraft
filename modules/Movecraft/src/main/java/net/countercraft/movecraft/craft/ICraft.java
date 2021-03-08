@@ -21,7 +21,7 @@ import java.util.UUID;
 
 import static net.countercraft.movecraft.utils.SignUtils.getFacing;
 
-public class ICraft extends Craft {
+public class ICraft extends PilotedCraft {
     private final UUID id = UUID.randomUUID();
 
     public ICraft(@NotNull CraftType type, @NotNull World world) {
