@@ -62,14 +62,6 @@
             <artifactId>snakeyaml</artifactId>
             <version>1.10</version>
         </dependency>
-        <!-- This doesn't have a maven repo but its own -->
-        <dependency>
-            <groupId>com.palmergames</groupId>
-            <artifactId>Towny</artifactId>
-            <version>LATEST</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/../../libs/Towny.jar</systemPath>
-        </dependency>
         <dependency>
             <groupId>com.mewin</groupId>
             <artifactId>WGCustomFlags</artifactId>

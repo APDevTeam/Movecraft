@@ -17,7 +17,6 @@
 
 package net.countercraft.movecraft.config;
 
-import net.countercraft.movecraft.utils.TownyWorldHeightLimits;
 import org.bukkit.Material;
 
 import java.util.HashMap;
@@ -58,9 +57,6 @@ public class Settings {
     public static boolean WGCustomFlagsUseMoveFlag = false;
     public static boolean WGCustomFlagsUseRotateFlag = false;
     public static boolean WGCustomFlagsUseSinkFlag = false;
-    public static boolean TownyBlockMoveOnSwitchPerm = false;
-    public static boolean TownyBlockSinkOnNoPVP = false;
-    public static Map<String, TownyWorldHeightLimits> TownProtectionHeightLimits;
     public static boolean CraftsUseNetherPortals = false;
     public static boolean IsPaper = false;
 
