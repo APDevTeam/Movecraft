@@ -17,8 +17,6 @@
 
 package net.countercraft.movecraft.async.rotation;
 
-import com.palmergames.bukkit.towny.object.TownBlock;
-import com.palmergames.bukkit.towny.object.TownyWorld;
 import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
@@ -34,7 +32,6 @@ import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import net.countercraft.movecraft.utils.BitmapHitBox;
 import net.countercraft.movecraft.utils.MathUtils;
-import net.countercraft.movecraft.utils.TownyWorldHeightLimits;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -58,13 +55,6 @@ public class RotationTask extends AsyncTask {
     private String failMessage;
     //private final MovecraftLocation[] blockList;    // used to be final, not sure why. Changed by Mark / Loraxe42
     private Set<UpdateCommand> updates = new HashSet<>();
-    //private int[][][] hitbox;
-    //private Integer minX, minZ;
-
-    private boolean townyEnabled;
-    private Set<TownBlock> townBlockSet;
-    private TownyWorld townyWorld;
-    private TownyWorldHeightLimits townyWorldHeightLimits;
 
     private final BitmapHitBox oldHitBox;
     private final BitmapHitBox newHitBox;
@@ -138,10 +128,6 @@ public class RotationTask extends AsyncTask {
                 failMessage = String.format(I18nSupport.getInternationalisedString("Rotation - Player is not permitted to build in this WorldGuard region") + " @ %d,%d,%d", newLocation.getX(), newLocation.getY(), newLocation.getZ());
                 break;
             }
-
-            //TODO: ADD TOWNY
-
-            //isTownyBlock(plugLoc,craftPilot);
             if (!withinWorldBorder(craft.getW(), newLocation)) {
                 failMessage = I18nSupport.getInternationalisedString("Rotation - Failed Craft cannot pass world border") + String.format(" @ %d,%d,%d", newLocation.getX(), newLocation.getY(), newLocation.getZ());
                 failed = true;

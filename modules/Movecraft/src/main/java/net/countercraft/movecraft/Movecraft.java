@@ -17,9 +17,7 @@
 
 package net.countercraft.movecraft;
 
-import com.earth2me.essentials.Essentials;
 import com.mewin.WGCustomFlags.WGCustomFlagsPlugin;
-import com.palmergames.bukkit.towny.Towny;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.flags.StateFlag;
 import net.countercraft.movecraft.async.AsyncManager;
@@ -43,7 +41,6 @@ import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.sign.AscendSign;
 import net.countercraft.movecraft.sign.ContactsSign;
 import net.countercraft.movecraft.sign.CraftSign;
-import net.countercraft.movecraft.sign.CrewSign;
 import net.countercraft.movecraft.sign.CruiseSign;
 import net.countercraft.movecraft.sign.DescendSign;
 import net.countercraft.movecraft.sign.HelmSign;
@@ -57,13 +54,13 @@ import net.countercraft.movecraft.sign.SpeedSign;
 import net.countercraft.movecraft.sign.StatusSign;
 import net.countercraft.movecraft.sign.SubcraftRotateSign;
 import net.countercraft.movecraft.sign.TeleportSign;
-import net.countercraft.movecraft.towny.TownyCompatManager;
-import net.countercraft.movecraft.utils.TownyUtils;
 import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
 import net.countercraft.movecraft.worldguard.WorldGuardCompatManager;
+import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import org.bukkit.Material;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.EnumSet;
@@ -80,26 +77,31 @@ public class Movecraft extends JavaPlugin {
     private static Movecraft instance;
     private static WorldGuardPlugin worldGuardPlugin;
     private static WGCustomFlagsPlugin wgCustomFlagsPlugin = null;
-    private static Towny townyPlugin = null;
-    private static Essentials essentialsPlugin = null;
-    /*public HashMap<MovecraftLocation, Long> blockFadeTimeMap = new HashMap<>();
-    public HashMap<MovecraftLocation, Integer> blockFadeTypeMap = new HashMap<>();
-    public HashMap<MovecraftLocation, Boolean> blockFadeWaterMap = new HashMap<>();
-    public HashMap<MovecraftLocation, World> blockFadeWorldMap = new HashMap<>();*/
+    private static BukkitAudiences adventure = null;
     private Logger logger;
     private boolean shuttingDown;
     private WorldHandler worldHandler;
-
-
     private AsyncManager asyncManager;
 
     public static synchronized Movecraft getInstance() {
         return instance;
     }
 
+    @NotNull
+    public static BukkitAudiences getAdventure(){
+        if(adventure == null) {
+            throw new IllegalStateException("Tried to access Adventure when the plugin was disabled!");
+        }
+        return adventure;
+    }
+
     @Override
     public void onDisable() {
         shuttingDown = true;
+        if(adventure != null) {
+            adventure.close();
+            adventure = null;
+        }
     }
 
     @Override
@@ -163,8 +165,6 @@ public class Movecraft extends JavaPlugin {
         Settings.SilhouetteViewDistance = getConfig().getInt("SilhouetteViewDistance", 200);
         Settings.SilhouetteBlockCount = getConfig().getInt("SilhouetteBlockCount", 20);
         Settings.ProtectPilotedCrafts = getConfig().getBoolean("ProtectPilotedCrafts", false);
-        Settings.AllowCrewSigns = getConfig().getBoolean("AllowCrewSigns", true);
-        Settings.SetHomeToCrewSign = getConfig().getBoolean("SetHomeToCrewSign", true);
         Settings.MaxRemoteSigns = getConfig().getInt("MaxRemoteSigns", -1);
         Settings.CraftsUseNetherPortals = getConfig().getBoolean("CraftsUseNetherPortals", false);
         Settings.RequireCreatePerm = getConfig().getBoolean("RequireCreatePerm", false);
@@ -242,35 +242,7 @@ public class Movecraft extends JavaPlugin {
                 }
             }
         }
-        Plugin tempTownyPlugin = getServer().getPluginManager().getPlugin("Towny");
-        if (tempTownyPlugin != null && tempTownyPlugin instanceof Towny) {
-            logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Towny Found"));
-            townyPlugin = (Towny) tempTownyPlugin;
-            TownyUtils.initTownyConfig();
-            Settings.TownyBlockMoveOnSwitchPerm = getConfig().getBoolean("TownyBlockMoveOnSwitchPerm", false);
-            Settings.TownyBlockSinkOnNoPVP = getConfig().getBoolean("TownyBlockSinkOnNoPVP", false);
-            getServer().getPluginManager().registerEvents(new TownyCompatManager(), this);
-            logger.log(Level.INFO, "Settings: TownyBlockMoveOnSwitchPerm - {0}", Settings.TownyBlockMoveOnSwitchPerm);
-            logger.log(Level.INFO, "Settings: TownyBlockSinkOnNoPVP - {0}", Settings.TownyBlockSinkOnNoPVP);
-
-        } else {
-            logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Towny Not Found"));
-        }
-
-        Plugin tempEssentialsPlugin = getServer().getPluginManager().getPlugin("Essentials");
-        if (tempEssentialsPlugin != null) {
-            if (tempEssentialsPlugin.getDescription().getName().equalsIgnoreCase("essentials")) {
-                if (tempEssentialsPlugin.getClass().getName().equals("com.earth2me.essentials.Essentials")) {
-                    if (tempEssentialsPlugin instanceof Essentials) {
-                        essentialsPlugin = (Essentials) tempEssentialsPlugin;
-                        logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Essentials Found"));
-                    }
-                }
-            }
-        }
-        if (essentialsPlugin == null) {
-            logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - Essentials Not Found"));
-        }
+        adventure = BukkitAudiences.create(this);
         
         if (shuttingDown && Settings.IGNORE_RESET) {
             logger.log(
@@ -309,7 +281,6 @@ public class Movecraft extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new AscendSign(), this);
             getServer().getPluginManager().registerEvents(new ContactsSign(), this);
             getServer().getPluginManager().registerEvents(new CraftSign(), this);
-            getServer().getPluginManager().registerEvents(new CrewSign(), this);
             getServer().getPluginManager().registerEvents(new CruiseSign(), this);
             getServer().getPluginManager().registerEvents(new DescendSign(), this);
             getServer().getPluginManager().registerEvents(new HelmSign(), this);
@@ -347,13 +318,6 @@ public class Movecraft extends JavaPlugin {
         return wgCustomFlagsPlugin;
     }
 
-    public Towny getTownyPlugin() {
-        return townyPlugin;
-    }
-
-    public Essentials getEssentialsPlugin() {
-        return essentialsPlugin;
-    }
 
     public WorldHandler getWorldHandler(){
         return worldHandler;

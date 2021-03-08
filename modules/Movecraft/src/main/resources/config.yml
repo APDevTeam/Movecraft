@@ -26,9 +26,7 @@ ExtraFadeTimePerBlock: #List of blocks that will take longer time to fade
   DROPPER: 600
   FURNACE: 600
 BlockQueueChunkSize: 200000
-AllowCrewSigns: true
 MaxRemoteSigns: -1 # Maximum number of remote signs that can be triggered at once.  Setting to -1 allows unlimited.
-SetHomeToCrewSign: false
 CraftsUseNetherPortals: false
 DisableShadowBlocks: # These blocks will not cast shadows. This improves the speed of moving ships of these blocks immensely.
   - 26
@@ -56,14 +54,6 @@ WGCustomFlagsUseSinkFlag: false
 DurabilityOverride:
   121: 80
   206: 80
-TownyBlockMoveOnSwitchPerm: false
-TownyBlockSinkOnNoPVP: false
-TownyWorldHeightLimits:
-  world:
-    worldMin: -1
-    worldMax: -1
-    aboveTownSpawn: 96
-    underTownSpawn: 255
 ForbiddenRemoteSigns: # These strings will be ignored when searching for signs to trigger from a remote sign
   - "Mounted"
   - "Denied"

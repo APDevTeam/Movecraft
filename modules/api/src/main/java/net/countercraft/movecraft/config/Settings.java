@@ -17,7 +17,6 @@
 
 package net.countercraft.movecraft.config;
 
-import net.countercraft.movecraft.utils.TownyWorldHeightLimits;
 import org.bukkit.Material;
 
 import java.util.EnumSet;
@@ -54,16 +53,11 @@ public class Settings {
     public static int ManOverboardTimeout = 60;
     public static double ManOverboardDistSquared = 1000000;
     public static int CollisionPrimer = 1000;
-    public static boolean AllowCrewSigns = true;
-    public static boolean SetHomeToCrewSign = true;
     public static int MaxRemoteSigns = -1;
     public static boolean WGCustomFlagsUsePilotFlag = false;
     public static boolean WGCustomFlagsUseMoveFlag = false;
     public static boolean WGCustomFlagsUseRotateFlag = false;
     public static boolean WGCustomFlagsUseSinkFlag = false;
-    public static boolean TownyBlockMoveOnSwitchPerm = false;
-    public static boolean TownyBlockSinkOnNoPVP = false;
-    public static Map<String, TownyWorldHeightLimits> TownProtectionHeightLimits;
     public static boolean CraftsUseNetherPortals = false;
     public static boolean IsPaper = false;
 
