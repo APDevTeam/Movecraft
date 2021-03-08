@@ -14,8 +14,8 @@ import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.HitBox;
 import net.countercraft.movecraft.utils.TownyUtils;
 import net.countercraft.movecraft.utils.TownyWorldHeightLimits;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
@@ -135,10 +135,7 @@ public class TownyCompatManager implements Listener {
                 townBlocks.add(townBlock);
                 continue;
             }
-            final Player notifyP = craft.getNotificationPlayer();
-            if (notifyP != null) {
-                notifyP.sendMessage(String.format(I18nSupport.getInternationalisedString("Towny - Sinking a craft is not allowed in this town plot") + " @ %d,%d,%d", ml.getX(), ml.getY(), ml.getZ()));
-            }
+            craft.getAudience().sendMessage(Component.text(String.format(I18nSupport.getInternationalisedString("Towny - Sinking a craft is not allowed in this town plot") + " @ %d,%d,%d", ml.getX(), ml.getY(), ml.getZ())));
             event.setCancelled(true);
             break;
         }

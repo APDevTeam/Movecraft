@@ -17,11 +17,8 @@
 
 package net.countercraft.movecraft.async.rotation;
 
-import com.palmergames.bukkit.towny.object.Town;
 import com.palmergames.bukkit.towny.object.TownBlock;
 import com.palmergames.bukkit.towny.object.TownyWorld;
-import com.sk89q.worldguard.LocalPlayer;
-import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
@@ -37,9 +34,8 @@ import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import net.countercraft.movecraft.utils.BitmapHitBox;
 import net.countercraft.movecraft.utils.MathUtils;
-import net.countercraft.movecraft.utils.TownyUtils;
 import net.countercraft.movecraft.utils.TownyWorldHeightLimits;
-import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -270,27 +266,22 @@ public class RotationTask extends AsyncTask {
                 if (Math.abs(loc.getZ() - originPoint.getZ()) > Math.abs(farthestZ))
                     farthestZ = loc.getZ() - originPoint.getZ();
             }
-            String faceMessage = I18nSupport.getInternationalisedString("Rotation - Farthest Extent Facing");
-            faceMessage += " ";
+            Component faceMessage = I18nSupport.getInternationalisedComponent("Rotation - Farthest Extent Facing")
+                    .append(Component.text(" "));
             if (Math.abs(farthestX) > Math.abs(farthestZ)) {
                 if (farthestX > 0) {
-                    if (getCraft().getNotificationPlayer() != null)
-                        faceMessage += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - East");
+                    faceMessage = faceMessage.append(I18nSupport.getInternationalisedComponent("Contact/Subcraft Rotate - East"));
                 } else {
-                    if (getCraft().getNotificationPlayer() != null)
-                        faceMessage += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - West");
+                    faceMessage = faceMessage.append(I18nSupport.getInternationalisedComponent("Contact/Subcraft Rotate - West"));
                 }
             } else {
                 if (farthestZ > 0) {
-                    if (getCraft().getNotificationPlayer() != null)
-                        faceMessage += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - South");
+                    faceMessage = faceMessage.append(I18nSupport.getInternationalisedComponent("Contact/Subcraft Rotate - South"));
                 } else {
-                    if (getCraft().getNotificationPlayer() != null)
-                        faceMessage += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - North");
+                    faceMessage = faceMessage.append(I18nSupport.getInternationalisedComponent("Contact/Subcraft Rotate - North"));
                 }
             }
-            if(getCraft().getNotificationPlayer() != null)
-                getCraft().getNotificationPlayer().sendMessage(faceMessage);
+            getCraft().getAudience().sendMessage(faceMessage);
 
             craftsInWorld = CraftManager.getInstance().getCraftsInWorld(getCraft().getW());
             for (Craft craft : craftsInWorld) {
@@ -336,59 +327,6 @@ public class RotationTask extends AsyncTask {
     public boolean getIsSubCraft() {
         return isSubCraft;
     }
-
-    private void isTownyBlock(Location plugLoc, Player craftPilot) {
-        //towny
-        Player p = craftPilot == null ? getCraft().getNotificationPlayer() : craftPilot;
-        if (p == null) {
-            return;
-        }
-        if (Movecraft.getInstance().getWorldGuardPlugin() != null && Movecraft.getInstance().getWGCustomFlagsPlugin() != null && Settings.WGCustomFlagsUsePilotFlag) {
-            LocalPlayer lp = Movecraft.getInstance().getWorldGuardPlugin().wrapPlayer(p);
-            WGCustomFlagsUtils WGCFU = new WGCustomFlagsUtils();
-            if (!WGCFU.validateFlag(plugLoc, Movecraft.FLAG_ROTATE, lp)) {
-                failed = true;
-                failMessage = String.format(I18nSupport.getInternationalisedString("WGCustomFlags - Rotation Failed") + " @ %d,%d,%d", plugLoc.getX(), plugLoc.getY(), plugLoc.getZ());
-                return;
-            }
-        }
-
-        if (!townyEnabled) {
-            return;
-        }
-        TownBlock townBlock = TownyUtils.getTownBlock(plugLoc);
-        if (townBlock == null || townBlockSet.contains(townBlock)) {
-            return;
-        }
-        if (TownyUtils.validateCraftMoveEvent(p, plugLoc, townyWorld)) {
-            townBlockSet.add(townBlock);
-            return;
-        }
-        Town town = TownyUtils.getTown(townBlock);
-        if (town == null) {
-            return;
-        }
-        Location locSpawn = TownyUtils.getTownSpawn(townBlock);
-        if (locSpawn == null || !townyWorldHeightLimits.validate(newHitBox.getMaxY(), locSpawn.getBlockY())) {
-            failed = true;
-        }
-        if (failed) {
-            if (Movecraft.getInstance().getWorldGuardPlugin() != null && Movecraft.getInstance().getWGCustomFlagsPlugin() != null && Settings.WGCustomFlagsUsePilotFlag) {
-                LocalPlayer lp = Movecraft.getInstance().getWorldGuardPlugin().wrapPlayer(p);
-                ApplicableRegionSet regions = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(plugLoc.getWorld()).getApplicableRegions(plugLoc);
-                if (regions.size() != 0) {
-                    WGCustomFlagsUtils WGCFU = new WGCustomFlagsUtils();
-                    if (WGCFU.validateFlag(plugLoc, Movecraft.FLAG_ROTATE, lp)) {
-                        failed = false;
-                    }
-                }
-            }
-        }
-        if (failed) {
-            failMessage = String.format(I18nSupport.getInternationalisedString("Towny - Rotation Failed") + " %s @ %d,%d,%d", town.getName(), plugLoc.getX(), plugLoc.getY(), plugLoc.getZ());
-        }
-    }
-
 
     private boolean checkChests(Material mBlock, MovecraftLocation newLoc) {
         Material testMaterial;

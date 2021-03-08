@@ -19,6 +19,8 @@ package net.countercraft.movecraft.localisation;
 
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -70,6 +72,10 @@ public class I18nSupport {
         } else {
             return key;
         }
+    }
+
+    public static TextComponent getInternationalisedComponent(String key){
+        return Component.text(getInternationalisedString(key));
     }
 
 }

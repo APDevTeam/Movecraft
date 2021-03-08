@@ -38,11 +38,12 @@ import net.countercraft.movecraft.utils.CollectionUtils;
 import net.countercraft.movecraft.utils.HitBox;
 import net.countercraft.movecraft.utils.Pair;
 import net.countercraft.movecraft.utils.SolidHitBox;
+import net.kyori.adventure.key.Key;
+import net.kyori.adventure.sound.Sound;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -60,7 +61,6 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 @Deprecated
@@ -271,14 +271,13 @@ public class AsyncManager extends BukkitRunnable {
      * @return true if translation task succeded to process, otherwise false
      */
     private boolean processTranslation(@NotNull final TranslationTask task, @NotNull final Craft c) {
-        Player notifyP = c.getNotificationPlayer();
 
         // Check that the craft hasn't been sneakily unpiloted
 
         if (task.failed()) {
             // The craft translation failed
-            if (notifyP != null && !c.getSinking())
-                notifyP.sendMessage(task.getFailMessage());
+            if (!c.getSinking())
+                c.getAudience().sendMessage(Component.text(task.getFailMessage()));
 
             if (task.isCollisionExplosion()) {
                 c.setHitBox(task.getNewHitBox());
@@ -304,20 +303,15 @@ public class AsyncManager extends BukkitRunnable {
      * @return true if translation task succeded to process, otherwise false
      */
     private boolean processRotation(@NotNull final RotationTask task, @NotNull final Craft c) {
-        Player notifyP = c.getNotificationPlayer();
         // Check that the craft hasn't been sneakily unpiloted
-        if (notifyP == null && !task.getIsSubCraft())  {
+        if (c.getNotificationPlayer() == null && !task.getIsSubCraft())  {
             return false;
         }
 
         if (task.isFailed()) {
             // The craft translation failed, don't try to notify
             // them if there is no pilot
-            if (notifyP != null)
-                notifyP.sendMessage(task.getFailMessage());
-            else
-                Movecraft.getInstance().getLogger().log(Level.INFO,
-                        I18nSupport.getInternationalisedString("Rotation - NULL Player Rotation Failed")+ ": " + task.getFailMessage());
+            c.getAudience().sendMessage(Component.text(task.getFailMessage()));
             return false;
         }
 
@@ -528,10 +522,7 @@ public class AsyncManager extends BukkitRunnable {
                 double disablePercent = movePercent * pcraft.getType().getSinkPercent() / 100.0;
                 if (percent < disablePercent && !pcraft.getDisabled() && pcraft.isNotProcessing()) {
                     pcraft.setDisabled(true);
-                    if (pcraft.getNotificationPlayer() != null) {
-                        Location loc = pcraft.getNotificationPlayer().getLocation();
-                        pcraft.getW().playSound(loc, Sound.ENTITY_IRON_GOLEM_DEATH, 5.0f, 5.0f);
-                    }
+                    pcraft.getAudience().playSound(Sound.sound(Key.key("entity.iron_golem.death"), Sound.Source.NEUTRAL, 5.0f, 5.0f));
                 }
             }
 
@@ -558,10 +549,7 @@ public class AsyncManager extends BukkitRunnable {
             // know and release the craft. Otherwise
             // update the time for the next check
             if (isSinking && pcraft.isNotProcessing()) {
-                Player notifyP = pcraft.getNotificationPlayer();
-                if (notifyP != null) {
-                    notifyP.sendMessage(I18nSupport.getInternationalisedString("Player - Craft is sinking"));
-                }
+                pcraft.getAudience().sendMessage(I18nSupport.getInternationalisedComponent("Player - Craft is sinking"));
                 pcraft.setCruising(false);
                 pcraft.sink();
                 CraftManager.getInstance().removePlayerFromCraft(pcraft);
@@ -682,48 +670,52 @@ public class AsyncManager extends BukkitRunnable {
                             continue;
                         }
 
-                        if(ccraft.getNotificationPlayer() != null) {
-                            String notification = I18nSupport.getInternationalisedString("Contact - New Contact") + ": ";
+                        Component notification = I18nSupport.getInternationalisedComponent("Contact - New Contact").append(Component.text( ": "));
 
-                            if (tcraft.getName().length() >= 1){
-                                notification += tcraft.getName();
-                                notification += ChatColor.RESET;
-                                notification += " (";
-                            }
-                            notification += tcraft.getType().getCraftName();
-                            if (tcraft.getName().length() >= 1){
-                                notification += ")";
-                            }
-                            notification += " " + I18nSupport.getInternationalisedString("Contact - Commanded By")+" ";
-                            if (tcraft.getNotificationPlayer() != null) {
-                                notification += tcraft.getNotificationPlayer().getDisplayName();
-                            } else {
-                                notification += "NULL";
-                            }
-                            notification += ", " + I18nSupport.getInternationalisedString("Contact - Size") + ": ";
-                            notification += tcraft.getOrigBlockCount();
-                            notification += ", " + I18nSupport.getInternationalisedString("Contact - Range") + ": ";
-                            notification += (int) Math.sqrt(distsquared);
-                            notification += " " + I18nSupport.getInternationalisedString("Contact - To The") + " ";
-                            if (Math.abs(diffx) > Math.abs(diffz)) {
-                                if (diffx < 0) {
-                                    notification += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - East");
-                                } else {
-                                    notification += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - West");
-                                }
-                            }
-                            else if (diffz < 0) {
-                                notification += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - South");
-                            }
-                            else {
-                                notification += I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - North");
-                            }
-
-                            notification += ".";
-
-                            ccraft.getNotificationPlayer().sendMessage(notification);
-                            w.playSound(ccraft.getNotificationPlayer().getLocation(), ccraft.getType().getCollisionSound(), 1.0f, 2.0f);
+                        if (tcraft.getName().length() >= 1){
+                            notification = notification.append(Component.text(tcraft.getName() + " ("));
                         }
+                        notification = notification.append(Component.text(tcraft.getType().getCraftName()));
+                        if (tcraft.getName().length() >= 1){
+                            notification = notification.append(Component.text(")"));
+                        }
+                        notification = notification.append(Component.text(" "))
+                                .append(I18nSupport.getInternationalisedComponent("Contact - Commanded By"))
+                                .append(Component.text(" "));
+                        if (tcraft.getNotificationPlayer() != null) {
+                            notification = notification.append(Component.text(tcraft.getNotificationPlayer().getDisplayName()));
+                        } else {
+                            notification = notification.append(Component.text("NULL"));
+                        }
+                        notification = notification.append(Component.text(", "))
+                                .append(I18nSupport.getInternationalisedComponent("Contact - Size"))
+                                .append(Component.text( ": "))
+                                .append(Component.text(tcraft.getOrigBlockCount()))
+                                .append(Component.text(", "))
+                                .append(I18nSupport.getInternationalisedComponent("Contact - Range"))
+                                .append(Component.text(": "))
+                                .append(Component.text((int) Math.sqrt(distsquared)))
+                                .append(Component.text(" "))
+                                .append(I18nSupport.getInternationalisedComponent("Contact - To The"))
+                                .append(Component.text(" "));
+                        if (Math.abs(diffx) > Math.abs(diffz)) {
+                            if (diffx < 0) {
+                                notification = notification.append(I18nSupport.getInternationalisedComponent("Contact/Subcraft Rotate - East"));
+                            } else {
+                                notification = notification.append(I18nSupport.getInternationalisedComponent("Contact/Subcraft Rotate - West"));
+                            }
+                        }
+                        else if (diffz < 0) {
+                            notification = notification.append(I18nSupport.getInternationalisedComponent("Contact/Subcraft Rotate - South"));
+                        }
+                        else {
+                            notification = notification.append(I18nSupport.getInternationalisedComponent("Contact/Subcraft Rotate - North"));
+                        }
+
+                        notification = notification.append(Component.text("."));
+
+                        ccraft.getAudience().sendMessage(notification);
+                        ccraft.getAudience().playSound(Sound.sound(Key.key(ccraft.getType().getCollisionSound().getKey().getKey()), Sound.Source.NEUTRAL, 1.0f, 2.0f));
 
 
                         long timestamp = System.currentTimeMillis();

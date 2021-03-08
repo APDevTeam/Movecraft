@@ -27,6 +27,8 @@ import net.countercraft.movecraft.utils.Counter;
 import net.countercraft.movecraft.utils.HitBox;
 import net.countercraft.movecraft.utils.MutableHitBox;
 import net.countercraft.movecraft.utils.Pair;
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.text.Component;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
@@ -71,6 +73,7 @@ public abstract class Craft {
     private int origBlockCount;
     private double pilotLockedZ;
     @Nullable private Player notificationPlayer;
+    @NotNull private Audience audience;
     private float meanCruiseTime;
     private int numMoves;
     @NotNull private final Map<Location, Pair<Material, Byte>> phaseBlocks = new HashMap<>();
@@ -99,6 +102,7 @@ public abstract class Craft {
         this.origPilotTime = System.currentTimeMillis();
         numMoves = 0;
         materials = new Counter<>();
+        audience = Audience.empty();
     }
 
     public boolean isNotProcessing() {
@@ -155,9 +159,7 @@ public abstract class Craft {
     }
 
     public void setCruising(boolean cruising) {
-        if(notificationPlayer!=null){
-            notificationPlayer.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent("Cruising " + (cruising ? "enabled" : "disabled")));
-        }
+        audience.sendActionBar(Component.text("Cruising " + (cruising ? "enabled" : "disabled")));
         this.cruising = cruising;
     }
 
@@ -289,11 +291,12 @@ public abstract class Craft {
         this.origBlockCount = origBlockCount;
     }
 
-    @Nullable
+    @Nullable @Deprecated
     public Player getNotificationPlayer() {
         return notificationPlayer;
     }
 
+    @Deprecated
     public void setNotificationPlayer(@Nullable Player notificationPlayer) {
         this.notificationPlayer = notificationPlayer;
     }
@@ -487,5 +490,13 @@ public abstract class Craft {
             this.currentGear = type.getGearShifts();
         }
         this.currentGear = Math.max(currentGear, 1);
+    }
+
+    public Audience getAudience(){
+        return audience;
+    }
+
+    public void setAudience(Audience audience){
+        this.audience = audience;
     }
 }
