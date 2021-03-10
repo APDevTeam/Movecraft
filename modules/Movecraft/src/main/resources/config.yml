@@ -5,8 +5,6 @@ SinkCheckTicks: 100
 TracerRateTicks: 5
 TracerMinDistance: 60 # Minimum distance for tracers to appear
 PilotTool: 280
-WorldGuardBlockMoveOnBuildPerm: true
-WorldGuardBlockSinkOnPVPPerm: true
 ManOverboardTimeout: 30
 ManOverboardDistance: 1000 # maximum distance from a craft that you can manoverboard to it
 FireballLifespan: 6
@@ -47,10 +45,6 @@ DisableShadowBlocks: # These blocks will not cast shadows. This improves the spe
   - 165
   - 173
   - 206
-WGCustomFlagsUsePilotFlag: false
-WGCustomFlagsUseMoveFlag: false
-WGCustomFlagsUseRotateFlag: false
-WGCustomFlagsUseSinkFlag: false
 DurabilityOverride:
   121: 80
   206: 80
