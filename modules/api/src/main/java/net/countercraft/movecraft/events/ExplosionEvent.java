@@ -30,6 +30,11 @@ public class ExplosionEvent extends Event implements Cancellable {
         return HANDLERS;
     }
 
+    @SuppressWarnings("unused")
+    public static HandlerList getHandlerList() {
+        return HANDLERS;
+    }
+
     @Override
     public boolean isCancelled() {
         return cancelled;
