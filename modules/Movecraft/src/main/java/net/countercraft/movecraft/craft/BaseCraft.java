@@ -244,15 +244,18 @@ public abstract class BaseCraft implements Craft{
         }
     }
 
+    @Override
     public boolean getCruising() {
         return cruising;
     }
 
+    @Override
     public void setCruising(boolean cruising) {
         audience.sendActionBar(Component.text("Cruising " + (cruising ? "enabled" : "disabled")));
         this.cruising = cruising;
     }
 
+    @Override
     public boolean getSinking() {
         return sinking;
     }
@@ -261,6 +264,7 @@ public abstract class BaseCraft implements Craft{
         this.sinking = sinking;
     }*/
 
+    @Override
     public void sink(){
         CraftSinkEvent event = new CraftSinkEvent(this);
         Bukkit.getServer().getPluginManager().callEvent(event);
@@ -270,58 +274,72 @@ public abstract class BaseCraft implements Craft{
         this.sinking = true;
     }
 
+    @Override
     public boolean getDisabled() {
         return disabled;
     }
 
+    @Override
     public void setDisabled(boolean disabled) {
         this.disabled = disabled;
     }
 
+    @Override
     public CruiseDirection getCruiseDirection() {
         return cruiseDirection;
     }
 
+    @Override
     public void setCruiseDirection(CruiseDirection cruiseDirection) {
         this.cruiseDirection = cruiseDirection;
     }
 
+    @Override
     public void setLastCruiseUpdate(long update) {
         this.lastCruiseUpdate = update;
     }
 
+    @Override
     public long getLastCruiseUpdate() {
         return lastCruiseUpdate;
     }
 
+    @Override
     public long getLastBlockCheck() {
         return lastBlockCheck;
     }
 
+    @Override
     public void setLastBlockCheck(long update) {
         this.lastBlockCheck = update;
     }
 
+    @Override
     public int getLastDX() {
         return lastDX;
     }
 
+    @Override
     public void setLastDX(int dX) {
         this.lastDX = dX;
     }
 
+    @Override
     public int getLastDY() {
         return lastDY;
     }
 
+    @Override
     public void setLastDY(int dY) {
         this.lastDY = dY;
     }
 
+    @Override
     public int getLastDZ() {
         return lastDZ;
     }
 
+    @Override
     public void setLastDZ(int dZ) {
         this.lastDZ = dZ;
     }
@@ -358,18 +376,22 @@ public abstract class BaseCraft implements Craft{
         this.pilotLockedZ = pilotLockedZ;
     }
 
+    @Override
     public double getBurningFuel() {
         return burningFuel;
     }
 
+    @Override
     public void setBurningFuel(double burningFuel) {
         this.burningFuel = burningFuel;
     }
 
+    @Override
     public int getOrigBlockCount() {
         return origBlockCount;
     }
 
+    @Override
     public void setOrigBlockCount(int origBlockCount) {
         this.origBlockCount = origBlockCount;
     }
@@ -384,18 +406,22 @@ public abstract class BaseCraft implements Craft{
         this.notificationPlayer = notificationPlayer;
     }
 
+    @Override
     public long getOrigPilotTime() {
         return origPilotTime;
     }
 
+    @Override
     public float getMeanCruiseTime() {
         return meanCruiseTime;
     }
 
+    @Override
     public void addCruiseTime(float cruiseTime){
         meanCruiseTime = (meanCruiseTime *numMoves + cruiseTime)/(++numMoves);
     }
 
+    @Override
     public int getTickCooldown() {
         if(sinking)
             return type.getSinkRateTicks();
@@ -451,6 +477,7 @@ public abstract class BaseCraft implements Craft{
      * gets the speed of a craft in blocks per second.
      * @return the speed of the craft
      */
+    @Override
     public double getSpeed() {
         if(cruiseDirection == CruiseDirection.UP || cruiseDirection == CruiseDirection.DOWN) {
             return 20 * (type.getVertCruiseSkipBlocks(w) + 1) / (double) getTickCooldown();
@@ -460,14 +487,17 @@ public abstract class BaseCraft implements Craft{
         }
     }
 
+    @Override
     public long getLastRotateTime() {
         return lastRotateTime;
     }
 
+    @Override
     public void setLastRotateTime(long lastRotateTime) {
         this.lastRotateTime = lastRotateTime;
     }
 
+    @Override
     public int getWaterLine(){
         //TODO: Remove this temporary system in favor of passthrough blocks
         // Find the waterline from the surrounding terrain or from the static level in the craft type
@@ -521,46 +551,56 @@ public abstract class BaseCraft implements Craft{
         return waterLine;
     }
 
+    @Override
     @NotNull
     public Map<Location, Pair<Material, Byte>> getPhaseBlocks(){
         return phaseBlocks;
     }
 
+    @Override
     @NotNull
     public String getName() {
         return name;
     }
 
+    @Override
     public void setName(@NotNull String name) {
         this.name = name;
     }
 
+    @Override
     @NotNull
     public MutableHitBox getCollapsedHitBox() {
         return collapsedHitBox;
     }
 
+    @Override
     @NotNull
     public MutableHitBox getFluidLocations() {
         return fluidLocations;
     }
 
+    @Override
     public void setFluidLocations(@NotNull MutableHitBox fluidLocations) {
         this.fluidLocations = fluidLocations;
     }
 
+    @Override
     public long getLastTeleportTime() {
         return lastTeleportTime;
     }
 
+    @Override
     public void setLastTeleportTime(long lastTeleportTime) {
         this.lastTeleportTime = lastTeleportTime;
     }
 
+    @Override
     public int getCurrentGear() {
         return currentGear;
     }
 
+    @Override
     public void setCurrentGear(int currentGear) {
         if (currentGear > type.getGearShifts()) {
             this.currentGear = type.getGearShifts();
@@ -568,11 +608,13 @@ public abstract class BaseCraft implements Craft{
         this.currentGear = Math.max(currentGear, 1);
     }
 
+    @Override
     @NotNull
     public Audience getAudience(){
         return audience;
     }
 
+    @Override
     public void setAudience(@NotNull Audience audience){
         this.audience = audience;
     }
