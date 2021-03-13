@@ -151,6 +151,7 @@
                                 </relocation>
                             </relocations>
                             <minimizeJar>true</minimizeJar>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
                             <filters>
                                 <filter>
                                     <artifact>net.countercraft:movecraft-v1_16_R1</artifact>
@@ -170,6 +171,8 @@
                                     <include>net.countercraft:movecraft*</include>
                                     <include>org.roaringbitmap:*</include>
                                     <include>it.unimi.dsi:fastutil*</include>
+                                    <include>net.kyori:adventure*</include>
+                                    <include>net.kyori:examination*</include>
                                 </includes>
                             </artifactSet>
                         </configuration>

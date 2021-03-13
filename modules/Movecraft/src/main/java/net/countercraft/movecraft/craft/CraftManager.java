@@ -51,10 +51,11 @@ import static net.countercraft.movecraft.utils.ChatUtils.ERROR_PREFIX;
 public class CraftManager implements Iterable<Craft>{
     private static CraftManager ourInstance;
     @NotNull private final Set<Craft> craftList = ConcurrentHashMap.newKeySet();
-    @NotNull private final ConcurrentMap<Player, Craft> craftPlayerIndex = new ConcurrentHashMap<>();
+    @NotNull private final ConcurrentMap<Player, PlayerCraft> craftPlayerIndex = new ConcurrentHashMap<>();
     @NotNull private final ConcurrentMap<Craft, BukkitTask> releaseEvents = new ConcurrentHashMap<>();
     @NotNull private Set<CraftType> craftTypes;
     @NotNull private final WeakHashMap<Player, Long> overboards = new WeakHashMap<>();
+    @NotNull private final Set<Craft> sinking = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
     public static void initialize(){
         ourInstance = new CraftManager();
@@ -122,10 +123,17 @@ public class CraftManager implements Iterable<Craft>{
         Bukkit.getServer().getPluginManager().callEvent(new TypesReloadedEvent());
     }
 
-    public void addCraft(@NotNull Craft c, @Nullable Player p) {
+    public void addCraft(@NotNull PlayerCraft c) {
         this.craftList.add(c);
-        if(p!=null)
-            this.craftPlayerIndex.put(p, c);
+        this.craftPlayerIndex.put(c.getPlayer(), c);
+    }
+
+    public void addCraft(@NotNull Craft c){
+        if(c instanceof PlayerCraft){
+            addCraft((PlayerCraft) c);
+        } else{
+            this.craftList.add(c);
+        }
     }
 
     public void removeCraft(@NotNull Craft c, @NotNull CraftReleaseEvent.Reason reason) {
@@ -169,7 +177,7 @@ public class CraftManager implements Iterable<Craft>{
     public Set<Craft> getCraftsInWorld(@NotNull World w) {
         Set<Craft> crafts = new HashSet<>();
         for(Craft c : this.craftList){
-            if(c.getW() == w)
+            if(c.getWorld() == w)
                 crafts.add(c);
         }
         return crafts;
@@ -177,14 +185,14 @@ public class CraftManager implements Iterable<Craft>{
 
     @Contract("null -> null")
     @Nullable
-    public Craft getCraftByPlayer(@Nullable Player p) {
+    public PlayerCraft getCraftByPlayer(@Nullable Player p) {
         if(p == null)
             return null;
         return craftPlayerIndex.get(p);
     }
 
 
-    public Craft getCraftByPlayerName(String name) {
+    public PlayerCraft getCraftByPlayerName(String name) {
         Set<Player> players = craftPlayerIndex.keySet();
         for (Player player : players) {
             if (player != null && player.getName().equals(name)) {
@@ -195,30 +203,29 @@ public class CraftManager implements Iterable<Craft>{
     }
 
     public void removeCraftByPlayer(Player player){
-        List<Craft> crafts = new ArrayList<>();
-        for(Craft c : craftList){
-            if(c.getNotificationPlayer() != null && c.getNotificationPlayer().equals(player)){
-                CraftReleaseEvent e = new CraftReleaseEvent(c, CraftReleaseEvent.Reason.DISCONNECT);
-                Bukkit.getServer().getPluginManager().callEvent(e);
-                if(e.isCancelled())
-                    continue;
-
-                crafts.add(c);
-                releaseEvents.remove(c);
-            }
-        }
-        craftPlayerIndex.remove(player);
-        craftList.removeAll(crafts);
+        PlayerCraft craft = craftPlayerIndex.remove(player);
+        craftList.remove(craft);
     }
 
     @Nullable
+    @Deprecated
     public Player getPlayerFromCraft(@NotNull Craft c) {
-        for (Map.Entry<Player, Craft> playerCraftEntry : craftPlayerIndex.entrySet()) {
+        for (Map.Entry<Player, PlayerCraft> playerCraftEntry : craftPlayerIndex.entrySet()) {
             if (playerCraftEntry.getValue() == c) {
                 return playerCraftEntry.getKey();
             }
         }
         return null;
+    }
+
+    @NotNull
+    public Set<PlayerCraft> getPlayerCraftsInWorld(World world){
+        Set<PlayerCraft> crafts = new HashSet<>();
+        for(PlayerCraft craft : this.craftPlayerIndex.values()){
+            if(craft.getWorld() == world)
+                crafts.add(craft);
+        }
+        return crafts;
     }
 
     public void removePlayerFromCraft(Craft c) {

@@ -1,10 +1,15 @@
 package net.countercraft.movecraft.craft;
 
 import net.countercraft.movecraft.CruiseDirection;
+import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
+import net.countercraft.movecraft.async.detection.DetectionTask;
+import net.countercraft.movecraft.async.rotation.RotationTask;
+import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.events.CraftSinkEvent;
+import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.BitmapHitBox;
 import net.countercraft.movecraft.utils.Counter;
 import net.countercraft.movecraft.utils.HitBox;
@@ -13,20 +18,25 @@ import net.countercraft.movecraft.utils.Pair;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public abstract class PilotedCraft implements Craft{
+import static net.countercraft.movecraft.utils.SignUtils.getFacing;
+
+public abstract class BaseCraft implements Craft{
     @NotNull
     protected final CraftType type;
     @NotNull protected HitBox hitBox;
@@ -61,7 +71,7 @@ public abstract class PilotedCraft implements Craft{
     @NotNull private final Map<Location, Pair<Material, Byte>> phaseBlocks = new HashMap<>();
     @NotNull private String name = "";
 
-    public PilotedCraft(@NotNull CraftType type, @NotNull World world) {
+    public BaseCraft(@NotNull CraftType type, @NotNull World world) {
         this.type = type;
         this.w = world;
         this.hitBox = new BitmapHitBox();
@@ -122,18 +132,117 @@ public abstract class PilotedCraft implements Craft{
         }
     }
 
-    public abstract void detect(Player player, Player notificationPlayer, MovecraftLocation startPoint);
-
-    public abstract void translate(World world, int dx, int dy, int dz);
+    @Override
+    public void detect(@Nullable Player player, @NotNull Player notificationPlayer, MovecraftLocation startPoint) {
+        this.setNotificationPlayer(notificationPlayer);
+        this.setAudience(Movecraft.getAdventure().player(notificationPlayer));
+        Movecraft.getInstance().getAsyncManager().submitTask(new DetectionTask(this, startPoint, player, notificationPlayer), this);
+    }
 
     @Deprecated
     public void translate(int dx, int dy, int dz) {
         translate(w, dx, dy, dz);
     }
 
-    public abstract void rotate(Rotation rotation, MovecraftLocation originPoint);
+    @Override
+    public void translate(@NotNull World world, int dx, int dy, int dz) {
+        // check to see if the craft is trying to move in a direction not permitted by the type
+        if (!world.equals(w) && !(this.getType().getCanSwitchWorld() || type.getDisableTeleportToWorlds().contains(world.getName())) && !this.getSinking()) {
+            world = w;
+        }
+        if (!this.getType().allowHorizontalMovement() && !this.getSinking()) {
+            dx = 0;
+            dz = 0;
+        }
+        if (!this.getType().allowVerticalMovement() && !this.getSinking()) {
+            dy = 0;
+        }
+        if (dx == 0 && dy == 0 && dz == 0 && world.equals(w)) {
+            return;
+        }
 
-    public abstract void rotate(Rotation rotation, MovecraftLocation originPoint, boolean isSubCraft);
+        if (!this.getType().allowVerticalTakeoffAndLanding() && dy != 0 && !this.getSinking()) {
+            if (dx == 0 && dz == 0) {
+                return;
+            }
+        }
+
+        Movecraft.getInstance().getAsyncManager().submitTask(new TranslationTask(this, world, dx, dy, dz), this);
+    }
+
+    @Override
+    public void rotate(Rotation rotation, MovecraftLocation originPoint) {
+        if(getLastRotateTime()+1e9>System.nanoTime()){
+            getAudience().sendMessage(I18nSupport.getInternationalisedComponent("Rotation - Turning Too Quickly"));
+            return;
+        }
+        setLastRotateTime(System.nanoTime());
+        Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(this, originPoint, rotation, this.getW()), this);
+    }
+
+    @Override
+    public void rotate(Rotation rotation, MovecraftLocation originPoint, boolean isSubCraft) {
+        Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(this, originPoint, rotation, this.getW(), isSubCraft), this);
+    }
+
+    /**
+     * Gets the crafts that have made contact with this craft
+     * @return a set of crafts on contact with this craft
+     */
+    @NotNull
+    @Override
+    public Set<Craft> getContacts() {
+        final Set<Craft> contacts = new HashSet<>();
+        for (Craft contact : CraftManager.getInstance().getCraftsInWorld(w)) {
+            MovecraftLocation ccenter = this.getHitBox().getMidPoint();
+            MovecraftLocation tcenter = contact.getHitBox().getMidPoint();
+            int distsquared = ccenter.distanceSquared(tcenter);
+            int detectionRange = (int) (contact.getOrigBlockCount() * (tcenter.getY() > 65 ? contact.getType().getDetectionMultiplier(contact.getW()) : contact.getType().getUnderwaterDetectionMultiplier(contact.getW())));
+            detectionRange = detectionRange * 10;
+            if (distsquared > detectionRange || contact.getNotificationPlayer() == this.getNotificationPlayer()) {
+                continue;
+            }
+            contacts.add(contact);
+        }
+        return contacts;
+    }
+
+    @Override
+    public void resetSigns(@NotNull Sign clicked) {
+        for (final MovecraftLocation ml : hitBox) {
+            final Block b = ml.toBukkit(w).getBlock();
+            if (!(b.getState() instanceof Sign)) {
+                continue;
+            }
+            final Sign sign = (Sign) b.getState();
+            if (sign.equals(clicked)) {
+                continue;
+            }
+            if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Cruise: ON")){
+                sign.setLine(0, "Cruise: OFF");
+            }
+            else if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Cruise: OFF")
+                    && ChatColor.stripColor(clicked.getLine(0)).equalsIgnoreCase("Cruise: ON")
+                    && getFacing(sign) == getFacing(clicked)) {
+                sign.setLine(0,"Cruise: ON");
+            }
+            else if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Ascend: ON")){
+                sign.setLine(0, "Ascend: OFF");
+            }
+            else if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Ascend: OFF")
+                    && ChatColor.stripColor(clicked.getLine(0)).equalsIgnoreCase("Ascend: ON")){
+                sign.setLine(0, "Ascend: ON");
+            }
+            else if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Descend: ON")){
+                sign.setLine(0, "Descend: OFF");
+            }
+            else if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Descend: OFF")
+                    && ChatColor.stripColor(clicked.getLine(0)).equalsIgnoreCase("Descend: ON")){
+                sign.setLine(0, "Descend: ON");
+            }
+            sign.update();
+        }
+    }
 
     public boolean getCruising() {
         return cruising;
@@ -160,13 +269,6 @@ public abstract class PilotedCraft implements Craft{
         }
         this.sinking = true;
     }
-
-
-    /**
-     * Gets the crafts that have made contact with this craft
-     * @return a set of crafts on contact with this craft
-     */
-    public abstract Set<Craft> getContacts();
 
     public boolean getDisabled() {
         return disabled;
@@ -438,8 +540,6 @@ public abstract class PilotedCraft implements Craft{
         return collapsedHitBox;
     }
 
-    public abstract void resetSigns(@NotNull final Sign clicked);
-
     @NotNull
     public MutableHitBox getFluidLocations() {
         return fluidLocations;
@@ -468,11 +568,12 @@ public abstract class PilotedCraft implements Craft{
         this.currentGear = Math.max(currentGear, 1);
     }
 
+    @NotNull
     public Audience getAudience(){
         return audience;
     }
 
-    public void setAudience(Audience audience){
+    public void setAudience(@NotNull Audience audience){
         this.audience = audience;
     }
 }

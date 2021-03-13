@@ -27,6 +27,7 @@ import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.craft.PlayerCraft;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
@@ -261,7 +262,7 @@ public class AsyncManager extends BukkitRunnable {
                 notifyP.getName(), c.getType().getCraftName(), c.getHitBox().size(),
                 c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
 
-        CraftManager.getInstance().addCraft(c, p);
+        CraftManager.getInstance().addCraft(c);
     }
 
     /**
@@ -338,7 +339,7 @@ public class AsyncManager extends BukkitRunnable {
             boolean bankLeft = false;
             boolean bankRight = false;
             boolean dive = false;
-            if (pcraft.getPilotLocked() && pcraft.getNotificationPlayer() != null && pcraft.getNotificationPlayer().isOnline()) {
+            if (pcraft instanceof PlayerCraft && ((PlayerCraft) pcraft).getPilotLocked() && pcraft.getNotificationPlayer() != null && pcraft.getNotificationPlayer().isOnline()) {
                 if (pcraft.getNotificationPlayer().isSneaking())
                     dive = true;
                 if (pcraft.getNotificationPlayer().getInventory().getHeldItemSlot() == 3)
@@ -649,10 +650,7 @@ public class AsyncManager extends BukkitRunnable {
                 if (w == null) {
                     continue;
                 }
-                for (Craft ccraft : CraftManager.getInstance().getCraftsInWorld(w)) {
-                    if (CraftManager.getInstance().getPlayerFromCraft(ccraft) == null) {
-                        continue;
-                    }
+                for (Craft ccraft : CraftManager.getInstance().getPlayerCraftsInWorld(w)) {
                     if (!recentContactTracking.containsKey(ccraft)) {
                         recentContactTracking.put(ccraft, new HashMap<>());
                     }
@@ -727,44 +725,6 @@ public class AsyncManager extends BukkitRunnable {
             lastContactCheck = System.currentTimeMillis();
         }
     }
-
-    //Removed for refactor
-    /*private void processScheduledBlockChanges() {
-        for (World w : Bukkit.getWorlds()) {
-            if (w != null && CraftManager.getInstance().getCraftsInWorld(w) != null) {
-                ArrayList<BlockTranslateCommand> updateCommands = new ArrayList<>();
-                for (Craft pcraft : CraftManager.getInstance().getCraftsInWorld(w)) {
-                    HashMap<BlockTranslateCommand, Long> scheduledBlockChanges = pcraft.getScheduledBlockChanges();
-                    if (scheduledBlockChanges != null) {
-                        Iterator<BlockTranslateCommand> mucI = scheduledBlockChanges.keySet().iterator();
-                        boolean madeChanges = false;
-                        while (mucI.hasNext()) {
-                            BlockTranslateCommand muc = mucI.next();
-                            if ((pcraft.getScheduledBlockChanges().get(muc) < System.currentTimeMillis()) && (pcraft.isNotProcessing())) {
-                                int cx = muc.getNewBlockLocation().getX() >> 4;
-                                int cz = muc.getNewBlockLocation().getZ() >> 4;
-                                if (!w.isChunkLoaded(cx, cz)) {
-                                    w.loadChunk(cx, cz);
-                                }
-                                if (w.getBlockAt(muc.getNewBlockLocation().getX(), muc.getNewBlockLocation().getY(), muc.getNewBlockLocation().getZ()).getType() == muc.getType()) {
-                                    // if the block you will be updating later has changed type, something went horribly wrong: it burned away, was flooded, or was destroyed. Don't update it
-                                    updateCommands.add(muc);
-                                }
-                                mucI.remove();
-                                madeChanges = true;
-                            }
-                        }
-                        if (madeChanges) {
-                            pcraft.setScheduledBlockChanges(scheduledBlockChanges);
-                        }
-                    }
-                }
-                if (updateCommands.size() > 0) {
-                    MapUpdateManager.getInstance().scheduleUpdates(updateCommands.toArray(new BlockTranslateCommand[1]));
-                }
-            }
-        }
-    }*/
 
     public void run() {
         clearAll();

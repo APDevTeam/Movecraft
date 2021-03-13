@@ -150,12 +150,15 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
                             <minimizeJar>true</minimizeJar>
                             <artifactSet>
                                 <includes>
                                     <include>net.countercraft:movecraft*</include>
                                     <include>org.roaringbitmap:*</include>
                                     <include>it.unimi.dsi:fastutil*</include>
+                                    <include>net.kyori:adventure*</include>
+                                    <include>net.kyori:examination*</include>
                                 </includes>
                             </artifactSet>
                         </configuration>

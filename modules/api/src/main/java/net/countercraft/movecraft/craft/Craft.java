@@ -49,9 +49,15 @@ public interface Craft {
     @NotNull
     CraftType getType();
 
-    @NotNull
+    @NotNull @Deprecated
     World getW();
-    
+
+    @NotNull
+    default World getWorld(){
+        return getW();
+    }
+
+    @Deprecated
     void setW(World world);
 
     void detect(Player player, Player notificationPlayer, MovecraftLocation startPoint);
@@ -108,22 +114,6 @@ public interface Craft {
 
     void setLastDZ(int dZ);
 
-    boolean getPilotLocked();
-
-    void setPilotLocked(boolean pilotLocked);
-
-    double getPilotLockedX();
-
-    void setPilotLockedX(double pilotLockedX);
-
-    double getPilotLockedY();
-
-    void setPilotLockedY(double pilotLockedY);
-
-    double getPilotLockedZ();
-
-    void setPilotLockedZ(double pilotLockedZ);
-
     double getBurningFuel();
 
     void setBurningFuel(double burningFuel);
@@ -153,6 +143,7 @@ public interface Craft {
     double getSpeed();
 
     long getLastRotateTime();
+
     void setLastRotateTime(long lastRotateTime);
 
     int getWaterLine();

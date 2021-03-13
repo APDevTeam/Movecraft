@@ -21,6 +21,7 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.CraftType;
+import net.countercraft.movecraft.craft.PlayerCraft;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.MathUtils;
 import org.bukkit.block.data.BlockData;
@@ -66,7 +67,7 @@ public final class InteractListener implements Listener {
 
         if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK) {
             final Player player = event.getPlayer();
-            Craft craft = CraftManager.getInstance().getCraftByPlayer(player);
+            PlayerCraft craft = CraftManager.getInstance().getCraftByPlayer(player);
 
             if (event.getItem() == null || event.getItem().getType() != Settings.PilotTool) {
                 return;
@@ -160,7 +161,7 @@ public final class InteractListener implements Listener {
             if (event.getItem() == null || event.getItem().getType() != Settings.PilotTool) {
                 return;
             }
-            Craft craft = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
+            PlayerCraft craft = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
             if (craft == null) {
                 return;
             }

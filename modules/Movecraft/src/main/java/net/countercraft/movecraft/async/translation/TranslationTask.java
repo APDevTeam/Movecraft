@@ -26,6 +26,7 @@ import net.countercraft.movecraft.utils.BitmapHitBox;
 import net.countercraft.movecraft.utils.MutableHitBox;
 import net.countercraft.movecraft.utils.Pair;
 import net.countercraft.movecraft.utils.SolidHitBox;
+import net.kyori.adventure.key.Key;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -408,19 +409,14 @@ public class TranslationTask extends AsyncTask {
     private void fail(@NotNull String message, boolean playSound) {
         failed=true;
         failMessage=message;
-        Player craftPilot = CraftManager.getInstance().getPlayerFromCraft(craft);
-        if (craftPilot == null) {
-            return;
-        }
-        Location location = craftPilot.getLocation();
         if (craft.getDisabled()) {
-            craft.getW().playSound(location, Sound.ENTITY_IRON_GOLEM_DEATH, 5.0f, 5.0f);
+            craft.getAudience().playSound(net.kyori.adventure.sound.Sound.sound(Key.key("entity.iron_golem.death"), net.kyori.adventure.sound.Sound.Source.NEUTRAL, 5.0f, 5.0f));
             return;
         }
         if (!playSound) {
             return;
         }
-        craft.getW().playSound(location, craft.getType().getCollisionSound(), 1.0f, 0.25f);
+        craft.getAudience().playSound(net.kyori.adventure.sound.Sound.sound(Key.key(craft.getType().getCollisionSound().getKey().getKey()), net.kyori.adventure.sound.Sound.Source.NEUTRAL, 1.0f, 2.0f));
     }
 
     private static final MovecraftLocation[] SHIFTS = {
