@@ -20,6 +20,7 @@ import net.minecraft.server.v1_16_R1.PlayerConnection;
 import net.minecraft.server.v1_16_R1.TileEntity;
 import net.minecraft.server.v1_16_R1.World;
 import net.minecraft.server.v1_16_R1.WorldServer;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_16_R1.CraftWorld;
@@ -224,7 +225,7 @@ public class IWorldHandler extends WorldHandler {
         TileEntity tile = world.getTileEntity(position);
         if(tile == null)
             return null;
-        world.removeTileEntity(position);
+        world.getChunkAtWorldCoords(position).tileEntities.remove(position);
         return tile;
     }
 
