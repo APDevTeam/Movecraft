@@ -455,66 +455,13 @@ public class AsyncManager extends BukkitRunnable {
             if (ticksElapsed <= Settings.SinkCheckTicks) {
                 continue;
             }
-            final World w = pcraft.getW();
-            int totalNonNegligibleBlocks = 0;
-            int totalNonNegligibleWaterBlocks = 0;
-            HashMap<Set<MovecraftBlock>, Integer> foundFlyBlocks = new HashMap<>();
-            HashMap<Set<MovecraftBlock>, Integer> foundMoveBlocks = new HashMap<>();
-            // go through each block in the blocklist, and
-            // if its in the FlyBlocks, total up the number
-            // of them
-            BlockLimitManager moveBlocks = pcraft.getType().getMoveBlocks();
-            BlockLimitManager flyBlocks = pcraft.getType().getFlyBlocks();
-            for (MovecraftLocation l : pcraft.getHitBox()) {
-                Material blockType = w.getBlockAt(l.getX(), l.getY(), l.getZ()).getType();
-                byte dataID = w.getBlockAt(l.getX(), l.getY(), l.getZ()).getData();
-                if (flyBlocks.contains(blockType)) {
-                    foundFlyBlocks.merge(flyBlocks.get(blockType).getBlocks(), 1, (a, b) -> a + b);
-                } else if (flyBlocks.contains(blockType, dataID)){
-                    foundFlyBlocks.merge(flyBlocks.get(blockType, dataID).getBlocks(), 1, (a, b) -> a + b);
-                }
 
-                if (moveBlocks.contains(blockType)) {
-                    foundMoveBlocks.merge(moveBlocks.get(blockType).getBlocks(), 1, (a, b) -> a + b);
-                } else if (moveBlocks.contains(blockType, dataID)){
-                    foundMoveBlocks.merge(moveBlocks.get(blockType, dataID).getBlocks(), 1, (a, b) -> a + b);
-                }
+            final CraftStatus status = checkCraftStatus(pcraft);
 
-                if (!blockType.name().endsWith("AIR") && blockType != Material.FIRE) {
-                    totalNonNegligibleBlocks++;
-                }
-                if (!blockType.name().endsWith("AIR") && blockType != Material.FIRE && blockType != Material.WATER && blockType != LegacyUtils.STATIONARY_WATER) {
-                    totalNonNegligibleWaterBlocks++;
-                }
-            }
-
-            // now see if any of the resulting percentagesit
-            // are below the threshold specified in
-            // SinkPercent
-            boolean isSinking = false;
-
-            for (BlockLimitManager.Entry i : pcraft.getType().getFlyBlocks().getEntries()) {
-                int numfound = 0;
-                if (foundFlyBlocks.get(i.getBlocks()) != null) {
-                    numfound = foundFlyBlocks.get(i.getBlocks());
-                }
-                double percent = ((double) numfound / (double) totalNonNegligibleBlocks) * 100.0;
-                double flyPercent = i.getLowerLimit();
-                double sinkPercent = flyPercent * pcraft.getType().getSinkPercent() / 100.0;
-                if (percent < sinkPercent) {
-                    isSinking = true;
-                }
-
-            }
-            for (BlockLimitManager.Entry i : pcraft.getType().getMoveBlocks().getEntries()) {
-                int numfound = 0;
-                if (foundMoveBlocks.get(i.getBlocks()) != null) {
-                    numfound = foundMoveBlocks.get(i.getBlocks());
-                }
-                double percent = ((double) numfound / (double) totalNonNegligibleBlocks) * 100.0;
-                double movePercent = i.getLowerLimit();
-                double disablePercent = movePercent * pcraft.getType().getSinkPercent() / 100.0;
-                if (percent < disablePercent && !pcraft.getDisabled() && pcraft.isNotProcessing()) {
+            //If the craft is disabled, play a sound and disable it.
+            //Only do this if the craft isn't already disabled.
+            if(status.isDisabled() && pcraft.isNotProcessing()) {
+                if (!pcraft.getDisabled()) {
                     pcraft.setDisabled(true);
                     if (pcraft.getNotificationPlayer() != null) {
                         Location loc = pcraft.getNotificationPlayer().getLocation();
@@ -523,29 +470,10 @@ public class AsyncManager extends BukkitRunnable {
                 }
             }
 
-            // And check the overallsinkpercent
-            if (pcraft.getType().getOverallSinkPercent() != 0.0) {
-                double percent;
-                if (pcraft.getType().blockedByWater()) {
-                    percent = (double) totalNonNegligibleBlocks
-                            / (double) pcraft.getOrigBlockCount();
-                } else {
-                    percent = (double) totalNonNegligibleWaterBlocks
-                            / (double) pcraft.getOrigBlockCount();
-                }
-                if (percent * 100.0 < pcraft.getType().getOverallSinkPercent()) {
-                    isSinking = true;
-                }
-            }
-
-            if (totalNonNegligibleBlocks == 0) {
-                isSinking = true;
-            }
-
             // if the craft is sinking, let the player
             // know and release the craft. Otherwise
             // update the time for the next check
-            if (isSinking && pcraft.isNotProcessing()) {
+            if (status.isSinking() && pcraft.isNotProcessing()) {
                 Player notifyP = pcraft.getNotificationPlayer();
                 if (notifyP != null) {
                     notifyP.sendMessage(I18nSupport.getInternationalisedString("Player - Craft is sinking"));
@@ -807,5 +735,95 @@ public class AsyncManager extends BukkitRunnable {
         }
 
         clearanceSet.clear();
+    }
+
+    //Returns a given craft's status as a CraftStatus enum.
+    @NotNull
+    public CraftStatus checkCraftStatus(@NotNull Craft craft) {
+        boolean isSinking = false;
+        boolean isDisabled = false;
+        int totalNonNegligibleBlocks = 0;
+        int totalNonNegligibleWaterBlocks = 0;
+        final World w = craft.getWorld();
+        HashMap<Set<MovecraftBlock>, Integer> foundFlyBlocks = new HashMap<>();
+        HashMap<Set<MovecraftBlock>, Integer> foundMoveBlocks = new HashMap<>();
+        // go through each block in the blocklist, and
+        // if its in the FlyBlocks, total up the number
+        // of them
+        BlockLimitManager moveBlocks = craft.getType().getMoveBlocks();
+        BlockLimitManager flyBlocks = craft.getType().getFlyBlocks();
+        for (MovecraftLocation l : craft.getHitBox()) {
+            Material blockType = w.getBlockAt(l.getX(), l.getY(), l.getZ()).getType();
+            byte dataID = w.getBlockAt(l.getX(), l.getY(), l.getZ()).getData();
+            if (flyBlocks.contains(blockType)) {
+                foundFlyBlocks.merge(flyBlocks.get(blockType).getBlocks(), 1, (a, b) -> a + b);
+            } else if (flyBlocks.contains(blockType, dataID)){
+                foundFlyBlocks.merge(flyBlocks.get(blockType, dataID).getBlocks(), 1, (a, b) -> a + b);
+            }
+
+            if (moveBlocks.contains(blockType)) {
+                foundMoveBlocks.merge(moveBlocks.get(blockType).getBlocks(), 1, (a, b) -> a + b);
+            } else if (moveBlocks.contains(blockType, dataID)){
+                foundMoveBlocks.merge(moveBlocks.get(blockType, dataID).getBlocks(), 1, (a, b) -> a + b);
+            }
+
+            if (!blockType.name().endsWith("AIR") && blockType != Material.FIRE) {
+                totalNonNegligibleBlocks++;
+            }
+            if (!blockType.name().endsWith("AIR") && blockType != Material.FIRE && blockType != Material.WATER && blockType != LegacyUtils.STATIONARY_WATER) {
+                totalNonNegligibleWaterBlocks++;
+            }
+        }
+
+        // now see if any of the resulting percentagesit
+        // are below the threshold specified in
+        // SinkPercent
+
+        for (BlockLimitManager.Entry i : craft.getType().getFlyBlocks().getEntries()) {
+            int numfound = 0;
+            if (foundFlyBlocks.get(i.getBlocks()) != null) {
+                numfound = foundFlyBlocks.get(i.getBlocks());
+            }
+            double percent = ((double) numfound / (double) totalNonNegligibleBlocks) * 100.0;
+            double flyPercent = i.getLowerLimit();
+            double sinkPercent = flyPercent * craft.getType().getSinkPercent() / 100.0;
+            if (percent < sinkPercent) {
+                isSinking = true;
+            }
+
+        }
+        for (BlockLimitManager.Entry i : craft.getType().getMoveBlocks().getEntries()) {
+            int numfound = 0;
+            if (foundMoveBlocks.get(i.getBlocks()) != null) {
+                numfound = foundMoveBlocks.get(i.getBlocks());
+            }
+            double percent = ((double) numfound / (double) totalNonNegligibleBlocks) * 100.0;
+            double movePercent = i.getLowerLimit();
+            double disablePercent = movePercent * craft.getType().getSinkPercent() / 100.0;
+            if (percent < disablePercent && !craft.getDisabled() && craft.isNotProcessing()) {
+                isDisabled = true;
+            }
+        }
+
+        // And check the overallsinkpercent
+        if (craft.getType().getOverallSinkPercent() != 0.0) {
+            double percent;
+            if (craft.getType().blockedByWater()) {
+                percent = (double) totalNonNegligibleBlocks
+                        / (double) craft.getOrigBlockCount();
+            } else {
+                percent = (double) totalNonNegligibleWaterBlocks
+                        / (double) craft.getOrigBlockCount();
+            }
+            if (percent * 100.0 < craft.getType().getOverallSinkPercent()) {
+                isSinking = true;
+            }
+        }
+
+        if (totalNonNegligibleBlocks == 0) {
+            isSinking = true;
+        }
+
+        return CraftStatus.of(isSinking, isDisabled);
     }
 }

@@ -435,9 +435,11 @@ public class TranslationTask extends AsyncTask {
                 if (!oldLocation.getBlock().getType().equals(Material.AIR)) {
                     CraftCollisionExplosionEvent e = new CraftCollisionExplosionEvent(craft, newLocation, craft.getW());
                     Bukkit.getServer().getPluginManager().callEvent(e);
-                    updates.add(new ExplosionUpdateCommand(newLocation, explosionForce));
-                    if (potEffRange != 0 && !potionEffects.isEmpty())
-                        updates.add(new PotionEffectsUpdateCommand(newLocation, potEffRange, potionEffects));
+
+                    if(!e.isCancelled()) {
+                        updates.add(new ExplosionUpdateCommand(newLocation, explosionForce));
+                        collisionExplosion = true;
+                    }
                 }
                 if (craft.getType().getFocusedExplosion()) { // don't handle any further collisions if it is set to focusedexplosion
                     break;

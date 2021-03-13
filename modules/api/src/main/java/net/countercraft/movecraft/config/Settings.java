@@ -56,10 +56,7 @@ public class Settings {
     public static int ManOverboardTimeout = 60;
     public static double ManOverboardDistSquared = 1000000;
     public static int CollisionPrimer = 1000;
-    public static boolean AllowCrewSigns = true;
-    public static boolean SetHomeToCrewSign = true;
     public static int MaxRemoteSigns = -1;
-
     public static boolean CraftsUseNetherPortals = false;
     public static boolean IsPaper = false;
     public static boolean IsPre1_9 = false;
