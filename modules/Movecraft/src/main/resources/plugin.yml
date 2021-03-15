@@ -1,5 +1,4 @@
 name: Movecraft
-softdepend: [WorldGuard, WGCustomFlags]
 version: ${project.version}
 api-version: 1.15
 #version: ${env.BUILD_NUMBER}

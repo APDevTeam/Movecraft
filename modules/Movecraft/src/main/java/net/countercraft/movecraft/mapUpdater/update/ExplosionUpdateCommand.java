@@ -1,7 +1,5 @@
 package net.countercraft.movecraft.mapUpdater.update;
 
-import com.sk89q.worldguard.protection.ApplicableRegionSet;
-import com.sk89q.worldguard.protection.flags.DefaultFlag;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
 import org.bukkit.Bukkit;
@@ -42,12 +40,6 @@ public class ExplosionUpdateCommand extends UpdateCommand {
     }
 
     private void createExplosion(Location loc, float explosionPower) {
-        if (Movecraft.getInstance().getWorldGuardPlugin() != null) {
-            ApplicableRegionSet set = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(loc.getWorld()).getApplicableRegions(loc);
-            if (!set.allows(DefaultFlag.OTHER_EXPLOSION)) {
-               return;
-            }
-        }
         loc.getWorld().createExplosion(loc.getX(), loc.getY(), loc.getZ(), explosionPower);
     }
 

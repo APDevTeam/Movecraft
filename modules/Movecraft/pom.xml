@@ -46,22 +46,9 @@
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>com.sk89q</groupId>
-            <artifactId>worldguard</artifactId>
-            <version>LATEST</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
             <version>1.10</version>
-        </dependency>
-        <dependency>
-            <groupId>com.mewin</groupId>
-            <artifactId>WGCustomFlags</artifactId>
-            <version>LATEST</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/../../libs/WGCustomFlags.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>org.jetbrains</groupId>

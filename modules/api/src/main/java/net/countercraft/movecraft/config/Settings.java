@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 
 public class Settings {
-    public static boolean RestrictSiBsToRegions = false;
     public static boolean IGNORE_RESET = false;
     public static boolean Debug = false;
     public static int THREAD_POOL_SIZE = 5;
@@ -39,8 +38,6 @@ public class Settings {
     public static boolean DelayColorChanges = false;
     public static double SinkRateTicks = 20.0;
     public static double SinkCheckTicks = 100.0;
-    public static boolean WorldGuardBlockMoveOnBuildPerm = false;
-    public static boolean WorldGuardBlockSinkOnPVPPerm = false;
     public static boolean ProtectPilotedCrafts = false;
     public static boolean DisableSpillProtection = false;
     public static boolean DisableIceForm = true;
@@ -54,10 +51,6 @@ public class Settings {
     public static double ManOverboardDistSquared = 1000000;
     public static int CollisionPrimer = 1000;
     public static int MaxRemoteSigns = -1;
-    public static boolean WGCustomFlagsUsePilotFlag = false;
-    public static boolean WGCustomFlagsUseMoveFlag = false;
-    public static boolean WGCustomFlagsUseRotateFlag = false;
-    public static boolean WGCustomFlagsUseSinkFlag = false;
     public static boolean CraftsUseNetherPortals = false;
     public static boolean IsPaper = false;
 

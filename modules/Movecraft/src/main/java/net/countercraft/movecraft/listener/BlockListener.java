@@ -17,8 +17,6 @@
 
 package net.countercraft.movecraft.listener;
 
-import com.sk89q.worldguard.protection.ApplicableRegionSet;
-import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
@@ -26,7 +24,6 @@ import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.MathUtils;
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Tag;
 import org.bukkit.block.Block;
@@ -43,41 +40,14 @@ import org.bukkit.event.block.BlockFormEvent;
 import org.bukkit.event.block.BlockFromToEvent;
 import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.block.BlockPistonExtendEvent;
-import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.material.Attachable;
 
 import java.util.EnumSet;
-import java.util.List;
 
 public class BlockListener implements Listener {
-    @EventHandler
-    public void onBlockPlace(final BlockPlaceEvent e) {
-        if (!Settings.RestrictSiBsToRegions ||
-                e.getBlockPlaced().getType() != Material.CHEST ||
-                !e.getItemInHand().hasItemMeta() ||
-                !e.getItemInHand().getItemMeta().hasLore()) {
-            return;
-        }
-        List<String> loreList = e.getItemInHand().getItemMeta().getLore();
-        for (String lore : loreList) {
-            if (!lore.contains("SiB")) {
-                continue;
-            }
-            if (lore.toLowerCase().contains("merchant") || lore.toLowerCase().contains("mm")) {
-                return;
-            }
-            Location loc = e.getBlockPlaced().getLocation();
-            ApplicableRegionSet regions = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(loc.getWorld()).getApplicableRegions(loc);
-            if (regions.size() == 0) {
-                e.getPlayer().sendMessage(I18nSupport.getInternationalisedString("SIB MUST BE PLACED IN REGION"));
-                e.setCancelled(true);
-                break;
-            }
-        }
-    }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockBreak(final BlockBreakEvent e) {
