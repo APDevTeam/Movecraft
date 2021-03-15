@@ -1,7 +1,11 @@
 package net.countercraft.movecraft.craft;
 
+import net.countercraft.movecraft.utils.Tags;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
+import org.bukkit.Tag;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -271,7 +275,12 @@ public final class TypeData {
                 throw new IllegalArgumentException("Entry " + object + " must be a material for key " + key);
             }
             String materialName = (String) object;
-            returnList.add(Material.valueOf(materialName));
+            var tagged = Tags.parseBlockRegistry(materialName);
+            if(tagged != null){
+                returnList.addAll(tagged);
+            } else {
+                returnList.add(Material.valueOf(materialName));
+            }
         }
         return returnList;
     }
@@ -291,7 +300,12 @@ public final class TypeData {
         }
         for(Object object : (ArrayList<?>) this.backingData.get(key)){
             String materialName = (String) object;
-            returnList.add(Material.valueOf(materialName));
+            var tagged = Tags.parseBlockRegistry(materialName);
+            if(tagged != null){
+                returnList.addAll(tagged);
+            } else {
+                returnList.add(Material.valueOf(materialName));
+            }
         }
         return returnList;
     }

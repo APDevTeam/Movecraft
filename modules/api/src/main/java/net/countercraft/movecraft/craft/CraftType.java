@@ -17,6 +17,7 @@
 
 package net.countercraft.movecraft.craft;
 
+import net.countercraft.movecraft.utils.Tags;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.World;
@@ -311,10 +312,22 @@ final public class CraftType {
             // first read in the list of the blocks that type of flyblock. It could be a single string (with or without a ":") or integer, or it could be multiple of them
             if (i instanceof ArrayList) {
                 for (Object o : (ArrayList<?>) i) {
-                    rowList.add(Material.valueOf((String) o));
+                    var string = (String) o;
+                    var tagSet = Tags.parseBlockRegistry(string);
+                    if(tagSet == null){
+                        rowList.add(Material.valueOf(string));
+                    } else {
+                        rowList.addAll(tagSet);
+                    }
                 }
             } else  {
-                rowList.add(Material.valueOf((String) i));
+                var string = (String) i;
+                var tagSet = Tags.parseBlockRegistry(string);
+                if(tagSet == null){
+                    rowList.add(Material.valueOf(string));
+                } else {
+                    rowList.addAll(tagSet);
+                }
             }
 
             // then read in the limitation values, low and high
