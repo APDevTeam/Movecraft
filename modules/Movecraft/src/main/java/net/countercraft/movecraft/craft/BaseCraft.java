@@ -251,7 +251,7 @@ public abstract class BaseCraft implements Craft{
 
     @Override
     public void setCruising(boolean cruising) {
-        audience.sendActionBar(Component.text("Cruising " + (cruising ? "enabled" : "disabled")));
+        audience.sendActionBar(Component.text().content("Cruising " + (cruising ? "enabled" : "disabled")));
         this.cruising = cruising;
     }
 
