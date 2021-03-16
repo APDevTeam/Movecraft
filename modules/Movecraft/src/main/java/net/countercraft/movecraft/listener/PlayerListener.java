@@ -23,7 +23,9 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.utils.BlockHighlight;
 import net.countercraft.movecraft.utils.MathUtils;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -33,15 +35,23 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
 import java.util.WeakHashMap;
 
 public class PlayerListener implements Listener {
     private final Map<Craft, Long> timeToReleaseAfter = new WeakHashMap<>();
+    private final Map<Craft, Queue<Integer>> highlights = new WeakHashMap<>();
 
-    private String checkCraftBorders(Craft craft) {
-        String ret = "";
+    private Set<Location> checkCraftBorders(Craft craft) {
+        Set<Location> mergePoints = new HashSet<>();
         final EnumSet<Material> ALLOWED_BLOCKS = craft.getType().getAllowedBlocks();
         final EnumSet<Material> FORBIDDEN_BLOCKS = craft.getType().getForbiddenBlocks();
         final MovecraftLocation[] SHIFTS = {
@@ -71,26 +81,20 @@ public class PlayerListener implements Listener {
                 if (craft.getHitBox().contains(test)){
                     continue;
                 }
-                Block testBlock = test.toBukkit(craft.getW()).getBlock();
+                Block testBlock = test.toBukkit(craft.getWorld()).getBlock();
                 Material testMaterial = testBlock.getType();
                 //Break the loop if an allowed block is found adjacent to the craft's hitbox
                 if (ALLOWED_BLOCKS.contains(testMaterial)){
-                    ret = "@ " + test.toString() + " " + testMaterial.name();
-                    break;
+                    mergePoints.add(testBlock.getLocation());
                 }
                 //Do the same if a forbidden block is found
                 else if (FORBIDDEN_BLOCKS.contains(testMaterial)){
-                    ret = "@ " + test.toString() + " " + testMaterial.name();
-                    break;
+                    mergePoints.add(testBlock.getLocation());
                 }
-            }
-            //When a block that can merge is found, break this loop
-            if (ret.length() > 0){
-                break;
             }
         }
         //Return the string representation of the merging point and alert the pilot
-        return ret;
+        return mergePoints;
     }
 
     @EventHandler
@@ -115,27 +119,37 @@ public class PlayerListener implements Listener {
             return;
         }
 
+        highlights.computeIfAbsent(c, (craft) -> new LinkedList<>());
+        var queue = highlights.get(c);
+
         if(MathUtils.locationNearHitBox(c.getHitBox(), p.getLocation(), 2)){
             timeToReleaseAfter.remove(c);
+            BlockHighlight.removeHighlights(queue, p);
+            queue.clear();
             return;
         }
 
         if(timeToReleaseAfter.containsKey(c) && timeToReleaseAfter.get(c) < System.currentTimeMillis()){
             CraftManager.getInstance().removeCraft(c, CraftReleaseEvent.Reason.PLAYER);
             timeToReleaseAfter.remove(c);
+            BlockHighlight.removeHighlights(queue, p);
+            queue.clear();
             return;
         }
 
         if (c.isNotProcessing() && c.getType().getMoveEntities() && !timeToReleaseAfter.containsKey(c)) {
             if (Settings.ManOverboardTimeout != 0) {
                 p.sendMessage(I18nSupport.getInternationalisedString("Manoverboard - Player has left craft"));
-                String mergePoint = checkCraftBorders(c);
-                if (mergePoint.length() > 0){
-                    p.sendMessage(I18nSupport.getInternationalisedString("Manoverboard - Craft May Merge") + " " + mergePoint);
-                }
                 CraftManager.getInstance().addOverboard(p);
             } else {
                 p.sendMessage(I18nSupport.getInternationalisedString("Release - Player has left craft"));
+            }
+            var mergePoints = checkCraftBorders(c);
+            if(!mergePoints.isEmpty()){
+                p.sendMessage(I18nSupport.getInternationalisedString("Manoverboard - Craft May Merge"));
+            }
+            for(var location : mergePoints){
+                queue.add(BlockHighlight.highlightBlockAt(location, p));
             }
             timeToReleaseAfter.put(c, System.currentTimeMillis() + 30000); //30 seconds to release TODO: config
         }

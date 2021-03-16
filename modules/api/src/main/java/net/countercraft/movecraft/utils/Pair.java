@@ -37,4 +37,9 @@ public class Pair<V,K> {
     public int hashCode() {
         return this.k.hashCode() ^ this.v.hashCode();
     }
+
+    @Override
+    public String toString() {
+        return "Pair{" + v + ", " + k + '}';
+    }
 }

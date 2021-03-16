@@ -1,7 +1,7 @@
 name: Movecraft
 version: ${project.version}
 api-version: 1.15
-#version: ${env.BUILD_NUMBER}
+depend: [ProtocolLib]
 description: The original flight and movement plugin for minecraft.
 authors: [BaccaYarro, cccm5, TylerS1066, eirik1996]
 website: https://github.com/APDevTeam/Movecraft
