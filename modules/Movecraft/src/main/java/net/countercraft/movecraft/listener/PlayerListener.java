@@ -21,6 +21,7 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.craft.PlayerCraft;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.BlockHighlight;
@@ -35,12 +36,9 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
-import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -120,20 +118,17 @@ public class PlayerListener implements Listener {
         }
 
         highlights.computeIfAbsent(c, (craft) -> new LinkedList<>());
-        var queue = highlights.get(c);
 
         if(MathUtils.locationNearHitBox(c.getHitBox(), p.getLocation(), 2)){
             timeToReleaseAfter.remove(c);
-            BlockHighlight.removeHighlights(queue, p);
-            queue.clear();
+            clearHighlights(c, p);
             return;
         }
 
         if(timeToReleaseAfter.containsKey(c) && timeToReleaseAfter.get(c) < System.currentTimeMillis()){
             CraftManager.getInstance().removeCraft(c, CraftReleaseEvent.Reason.PLAYER);
             timeToReleaseAfter.remove(c);
-            BlockHighlight.removeHighlights(queue, p);
-            queue.clear();
+            clearHighlights(c, p);
             return;
         }
 
@@ -149,9 +144,23 @@ public class PlayerListener implements Listener {
                 p.sendMessage(I18nSupport.getInternationalisedString("Manoverboard - Craft May Merge"));
             }
             for(var location : mergePoints){
-                queue.add(BlockHighlight.highlightBlockAt(location, p));
+                highlights.get(c).add(BlockHighlight.highlightBlockAt(location, p));
             }
             timeToReleaseAfter.put(c, System.currentTimeMillis() + 30000); //30 seconds to release TODO: config
         }
+    }
+
+    @EventHandler
+    public void onCraftRelease(CraftReleaseEvent event){
+        if(event.getCraft() instanceof PlayerCraft){
+            clearHighlights(event.getCraft(), ((PlayerCraft) event.getCraft()).getPlayer());
+        }
+    }
+
+    private void clearHighlights(Craft craft, Player player){
+        highlights.computeIfAbsent(craft, (c) -> new LinkedList<>());
+        var queue = highlights.get(craft);
+        BlockHighlight.removeHighlights(queue, player);
+        queue.clear();
     }
 }
