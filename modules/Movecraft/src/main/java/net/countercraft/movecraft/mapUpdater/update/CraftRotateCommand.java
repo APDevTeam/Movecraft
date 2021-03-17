@@ -84,11 +84,9 @@ public class CraftRotateCommand extends UpdateCommand {
             final HitBox to = craft.getHitBox().difference(originalLocations);
 
             for (MovecraftLocation location : to) {
-                Block b = location.toBukkit(craft.getW()).getBlock();
-                Material material = b.getType();
-                byte data = b.getData();
-                if (passthroughBlocks.contains(material)) {
-                    craft.getPhaseBlocks().put(location.toBukkit(craft.getW()), new Pair<>(material, data));
+                var data = location.toBukkit(craft.getWorld()).getBlock().getBlockData();
+                if (passthroughBlocks.contains(data.getMaterial())) {
+                    craft.getPhaseBlocks().put(location.toBukkit(craft.getWorld()), data);
                 }
             }
             //The subtraction of the set of coordinates in the HitBox cube and the HitBox itself
@@ -99,7 +97,7 @@ public class CraftRotateCommand extends UpdateCommand {
 
             //place phased blocks
             final Set<Location> overlap = new HashSet<>(craft.getPhaseBlocks().keySet());
-            overlap.retainAll(craft.getHitBox().asSet().stream().map(l -> l.toBukkit(craft.getW())).collect(Collectors.toSet()));
+            overlap.retainAll(craft.getHitBox().asSet().stream().map(l -> l.toBukkit(craft.getWorld())).collect(Collectors.toSet()));
             final int minX = craft.getHitBox().getMinX();
             final int maxX = craft.getHitBox().getMaxX();
             final int minY = craft.getHitBox().getMinY();
@@ -143,13 +141,11 @@ public class CraftRotateCommand extends UpdateCommand {
 
             final WorldHandler handler = Movecraft.getInstance().getWorldHandler();
             for (MovecraftLocation location : invertedHitBox.difference(exterior)) {
-                Block b = location.toBukkit(craft.getW()).getBlock();
-                Material material = b.getType();
-                byte data = b.getData();
-                if (!passthroughBlocks.contains(material)) {
+                var data = location.toBukkit(craft.getWorld()).getBlock().getBlockData();
+                if (!passthroughBlocks.contains(data.getMaterial())) {
                     continue;
                 }
-                craft.getPhaseBlocks().put(location.toBukkit(craft.getW()), new Pair<>(material, data));
+                craft.getPhaseBlocks().put(location.toBukkit(craft.getWorld()), data);
             }
 
             //translate the craft
@@ -160,31 +156,29 @@ public class CraftRotateCommand extends UpdateCommand {
 
             //place confirmed blocks if they have been un-phased
             for (MovecraftLocation location : exterior) {
-                Location bukkit = location.toBukkit(craft.getW());
+                Location bukkit = location.toBukkit(craft.getWorld());
                 if (!craft.getPhaseBlocks().containsKey(bukkit)) {
                     continue;
                 }
-                Pair<Material, Byte> phaseBlock = craft.getPhaseBlocks().remove(bukkit);
-                handler.setBlockFast(bukkit, phaseBlock.getLeft(), phaseBlock.getRight());
+                var phaseBlock = craft.getPhaseBlocks().remove(bukkit);
+                handler.setBlockFast(bukkit, phaseBlock);
                 craft.getPhaseBlocks().remove(bukkit);
             }
 
             for(MovecraftLocation location : originalLocations.boundingHitBox()){
-                Location bukkit = location.toBukkit(craft.getW());
+                Location bukkit = location.toBukkit(craft.getWorld());
                 if(!craft.getHitBox().inBounds(location) && craft.getPhaseBlocks().containsKey(bukkit)){
-                    Pair<Material, Byte> phaseBlock = craft.getPhaseBlocks().remove(bukkit);
-                    handler.setBlockFast(bukkit, phaseBlock.getLeft(), phaseBlock.getRight());
+                    var phaseBlock = craft.getPhaseBlocks().remove(bukkit);
+                    handler.setBlockFast(bukkit, phaseBlock);
                 }
             }
 
             for (MovecraftLocation location : interior) {
-                Location bukkit = location.toBukkit(craft.getW());
-                Block b = bukkit.getBlock();
-                Material material = b.getType();
-                byte data = b.getData();
-                if (passthroughBlocks.contains(material)) {
-                    craft.getPhaseBlocks().put(bukkit, new Pair<>(material, data));
-                    handler.setBlockFast(bukkit, Material.AIR, (byte) 0);
+                Location bukkit = location.toBukkit(craft.getWorld());
+                var data = bukkit.getBlock().getBlockData();
+                if (passthroughBlocks.contains(data.getMaterial())) {
+                    craft.getPhaseBlocks().put(bukkit, data);
+                    handler.setBlockFast(bukkit, Material.AIR.createBlockData());
 
                 }
             }
@@ -235,7 +229,7 @@ public class CraftRotateCommand extends UpdateCommand {
                 continue;
             }
             for(MovecraftLocation location : entry.getValue()){
-                Block block = location.toBukkit(craft.getW()).getBlock();
+                Block block = location.toBukkit(craft.getWorld()).getBlock();
                 BlockState state =  block.getState();
                 if (!(state instanceof Sign)) {
                     continue;

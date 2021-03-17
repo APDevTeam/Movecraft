@@ -35,6 +35,7 @@ import org.bukkit.World;
 import org.bukkit.World.Environment;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -363,8 +364,8 @@ public class TranslationTask extends AsyncTask {
         if(!collisionBox.isEmpty() && craft.getType().getCruiseOnPilot()){
             CraftManager.getInstance().removeCraft(craft, CraftReleaseEvent.Reason.EMPTY);
             for(MovecraftLocation location : oldHitBox){
-                Pair<Material, Byte> phaseBlock = craft.getPhaseBlocks().getOrDefault(location.toBukkit(craft.getW()), new Pair<>(Material.AIR, (byte) 0));
-                updates.add(new BlockCreateCommand(craft.getW(), location, phaseBlock.getLeft(), phaseBlock.getRight()));
+                BlockData phaseBlock = craft.getPhaseBlocks().getOrDefault(location.toBukkit(craft.getWorld()), Material.AIR.createBlockData());
+                updates.add(new BlockCreateCommand(craft.getWorld(), location, phaseBlock));
             }
             newHitBox = new BitmapHitBox();
         }

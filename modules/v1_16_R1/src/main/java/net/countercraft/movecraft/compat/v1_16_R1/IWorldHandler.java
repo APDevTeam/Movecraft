@@ -23,6 +23,7 @@ import net.minecraft.server.v1_16_R1.WorldServer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.v1_16_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_16_R1.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_16_R1.util.CraftMagicNumbers;
@@ -253,13 +254,13 @@ public class IWorldHandler extends WorldHandler {
     }
 
     @Override
-    public void setBlockFast(@NotNull Location location, @NotNull Material material, byte data){
-        setBlockFast(location, Rotation.NONE, material, data);
+    public void setBlockFast(@NotNull Location location, @NotNull BlockData data){
+        setBlockFast(location, Rotation.NONE, data);
     }
 
     @Override
-    public void setBlockFast(@NotNull Location location, @NotNull Rotation rotation, @NotNull Material material, byte data) {
-        IBlockData blockData =  CraftMagicNumbers.getBlock(material, data);
+    public void setBlockFast(@NotNull Location location, @NotNull Rotation rotation, @NotNull BlockData data) {
+        IBlockData blockData = (IBlockData) data;
         blockData = blockData.a(ROTATION[rotation.ordinal()]);
         World world = ((CraftWorld)(location.getWorld())).getHandle();
         BlockPosition blockPosition = locationToPosition(bukkit2MovecraftLoc(location));

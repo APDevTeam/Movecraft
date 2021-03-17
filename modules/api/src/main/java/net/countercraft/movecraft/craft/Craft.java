@@ -22,12 +22,11 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
 import net.countercraft.movecraft.utils.HitBox;
 import net.countercraft.movecraft.utils.MutableHitBox;
-import net.countercraft.movecraft.utils.Pair;
 import net.kyori.adventure.audience.Audience;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Sign;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -59,6 +58,10 @@ public interface Craft {
 
     @Deprecated
     void setW(World world);
+
+    default void setWorld(World world){
+        setW(world);
+    }
 
     void detect(Player player, Player notificationPlayer, MovecraftLocation startPoint);
 
@@ -149,7 +152,7 @@ public interface Craft {
     int getWaterLine();
 
     @NotNull
-    Map<Location, Pair<Material, Byte>> getPhaseBlocks();
+    Map<Location, BlockData> getPhaseBlocks();
 
     @NotNull
     String getName();

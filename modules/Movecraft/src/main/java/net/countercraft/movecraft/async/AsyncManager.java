@@ -46,6 +46,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.Levelled;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
@@ -73,7 +75,7 @@ public class AsyncManager extends BukkitRunnable {
     private final HashSet<Craft> clearanceSet = new HashSet<>();
     private final HashMap<HitBox, Long> wrecks = new HashMap<>();
     private final HashMap<HitBox, World> wreckWorlds = new HashMap<>();
-    private final HashMap<HitBox, Map<Location, Pair<Material, Byte>>> wreckPhases = new HashMap<>();
+    private final HashMap<HitBox, Map<Location, BlockData>> wreckPhases = new HashMap<>();
     private final WeakHashMap<World, Set<MovecraftLocation>> processedFadeLocs = new WeakHashMap<>();
     private final Map<Craft, Integer> cooldownCache = new WeakHashMap<>();
 
@@ -244,7 +246,7 @@ public class AsyncManager extends BukkitRunnable {
 
             for (MovecraftLocation location : entireHitbox) {
                 if (location.getY() <= waterLine) {
-                    c.getPhaseBlocks().put(location.toBukkit(c.getW()), new Pair<>(Material.WATER, (byte) 0));
+                    c.getPhaseBlocks().put(location.toBukkit(c.getW()), Bukkit.createBlockData(Material.WATER));
                 }
             }
         }
@@ -600,7 +602,7 @@ public class AsyncManager extends BukkitRunnable {
                 continue;
             }
             final HitBox hitBox = entry.getKey();
-            final Map<Location, Pair<Material, Byte>> phaseBlocks = wreckPhases.get(hitBox);
+            final Map<Location, BlockData> phaseBlocks = wreckPhases.get(hitBox);
             final World world = wreckWorlds.get(hitBox);
             ArrayList<UpdateCommand> commands = new ArrayList<>();
             int fadedBlocks = 0;
@@ -623,8 +625,8 @@ public class AsyncManager extends BukkitRunnable {
                 }
                 fadedBlocks++;
                 processedFadeLocs.get(world).add(location);
-                Pair<Material, Byte> phaseBlock = phaseBlocks.getOrDefault(bLoc, new Pair<>(Material.AIR, (byte) 0));
-                commands.add(new BlockCreateCommand(world, location, phaseBlock.getLeft(), phaseBlock.getRight()));
+                BlockData phaseBlock = phaseBlocks.getOrDefault(bLoc, Material.AIR.createBlockData());
+                commands.add(new BlockCreateCommand(world, location, phaseBlock));
                 
             }
             MapUpdateManager.getInstance().scheduleUpdates(commands);

@@ -6,6 +6,7 @@ import net.countercraft.movecraft.craft.Craft;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.data.BlockData;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -14,28 +15,24 @@ import java.util.Objects;
 public class BlockCreateCommand extends UpdateCommand {
 
     final private MovecraftLocation newBlockLocation;
-    final private Material type;
-    final private byte dataID;
+    final private BlockData data;
     final private World world;
 
-    public BlockCreateCommand(@NotNull MovecraftLocation newBlockLocation, @NotNull Material type, byte dataID, @NotNull Craft craft) {
+    public BlockCreateCommand(@NotNull MovecraftLocation newBlockLocation, BlockData data, @NotNull Craft craft) {
         this.newBlockLocation = newBlockLocation;
-        this.type = type;
-        this.dataID = dataID;
-        this.world = craft.getW();
+        this.data = data;
+        this.world = craft.getWorld();
     }
 
-    public BlockCreateCommand(@NotNull World world, @NotNull MovecraftLocation newBlockLocation, @NotNull Material type, byte dataID) {
+    public BlockCreateCommand(@NotNull World world, @NotNull MovecraftLocation newBlockLocation, @NotNull BlockData data) {
         this.newBlockLocation = newBlockLocation;
-        this.type = type;
-        this.dataID = dataID;
+        this.data = data;
         this.world = world;
     }
 
     public BlockCreateCommand(@NotNull World world, @NotNull MovecraftLocation newBlockLocation, @NotNull Material type) {
         this.newBlockLocation = newBlockLocation;
-        this.type = type;
-        this.dataID = (byte)0;
+        this.data = type.createBlockData();
         this.world = world;
     }
 
@@ -45,16 +42,16 @@ public class BlockCreateCommand extends UpdateCommand {
     @SuppressWarnings("deprecation")
     public void doUpdate() {
         // now do the block updates, move entities when you set the block they are on
-        Movecraft.getInstance().getWorldHandler().setBlockFast(newBlockLocation.toBukkit(world),type,dataID);
+        Movecraft.getInstance().getWorldHandler().setBlockFast(newBlockLocation.toBukkit(world), data);
         //craft.incrementBlockUpdates();
         newBlockLocation.toBukkit(world).getBlock().getState().update(false, false);
 
         //Do comperator stuff
 
-        if (type == Material.COMPARATOR) { // for some reason comparators are flakey, have to do it twice sometimes
+        if (data.getMaterial() == Material.COMPARATOR) { // for some reason comparators are flakey, have to do it twice sometimes
             Block b = newBlockLocation.toBukkit(world).getBlock();
             if (b.getType() != Material.COMPARATOR) {
-                b.setType(type, false);
+                b.setType(data.getMaterial(), false);
             }
         }
 
@@ -63,7 +60,7 @@ public class BlockCreateCommand extends UpdateCommand {
 
     @Override
     public int hashCode() {
-        return Objects.hash(newBlockLocation, type, dataID, world.getUID());
+        return Objects.hash(newBlockLocation, data, world.getUID());
     }
 
     @Override
@@ -72,9 +69,8 @@ public class BlockCreateCommand extends UpdateCommand {
             return false;
         }
         BlockCreateCommand other = (BlockCreateCommand) obj;
-        return other.newBlockLocation.equals(this.newBlockLocation) &&
-                other.type.equals(this.type) &&
-                other.dataID == this.dataID &&
+        return other.newBlockLocation.equals(this.newBlockLocation)  &&
+                other.data.equals(this.data) &&
                 other.world.equals(this.world);
     }
 }

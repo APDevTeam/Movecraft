@@ -24,6 +24,7 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -68,7 +69,7 @@ public abstract class BaseCraft implements Craft{
     @NotNull private Audience audience;
     private float meanCruiseTime;
     private int numMoves;
-    @NotNull private final Map<Location, Pair<Material, Byte>> phaseBlocks = new HashMap<>();
+    @NotNull private final Map<Location, BlockData> phaseBlocks = new HashMap<>();
     @NotNull private String name = "";
 
     public BaseCraft(@NotNull CraftType type, @NotNull World world) {
@@ -552,8 +553,7 @@ public abstract class BaseCraft implements Craft{
     }
 
     @Override
-    @NotNull
-    public Map<Location, Pair<Material, Byte>> getPhaseBlocks(){
+    public @NotNull Map<Location, BlockData> getPhaseBlocks(){
         return phaseBlocks;
     }
 
