@@ -161,7 +161,11 @@ public final class TypeData {
      */
     public double getDouble(@NotNull String key){
         requireKey(key);
-        if(backingData.get(key) instanceof Double) {
+        var data = backingData.get(key);
+        if(data instanceof Integer){
+            return (Integer) backingData.get(key);
+        }
+        if(data instanceof Double) {
             return (Double) backingData.get(key);
         }
         throw new IllegalArgumentException("Value for key " + key + " must be of type double");
@@ -180,7 +184,11 @@ public final class TypeData {
         if (!backingData.containsKey(key)) {
             return defaultValue;
         }
-        if(backingData.get(key) instanceof Integer){
+        var data = backingData.get(key);
+        if(data instanceof Integer){
+            return (Integer) backingData.get(key);
+        }
+        if(data instanceof Double){
             return (Double) backingData.get(key);
         }
         throw new IllegalArgumentException("Value for key " + key + " must be of type double");
