@@ -21,7 +21,8 @@ public class Tags {
         if(key == null){
             throw new IllegalArgumentException("Entry " + string + " is not a valid tag!");
         }
-        return EnumSet.copyOf(Bukkit.getTag(Tag.REGISTRY_BLOCKS, key, Material.class).getValues());
+        var tags = Bukkit.getTag(Tag.REGISTRY_BLOCKS, key, Material.class).getValues();
+        return tags.isEmpty() ? EnumSet.noneOf(Material.class) : EnumSet.copyOf(tags);
     }
 
     /**
