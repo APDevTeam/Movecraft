@@ -134,7 +134,7 @@ public class PlayerListener implements Listener {
 
         if (c.isNotProcessing() && c.getType().getMoveEntities() && !timeToReleaseAfter.containsKey(c)) {
             if (Settings.ManOverboardTimeout != 0) {
-                p.sendMessage(I18nSupport.getInternationalisedString("Manoverboard - Player has left craft"));
+                c.getAudience().sendActionBar(I18nSupport.getInternationalisedComponent("Manoverboard - Player has left craft"));
                 CraftManager.getInstance().addOverboard(p);
             } else {
                 p.sendMessage(I18nSupport.getInternationalisedString("Release - Player has left craft"));
