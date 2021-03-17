@@ -100,23 +100,26 @@ public final class TypeData {
 
     /**
      * Gets the requested boolean by its key.
-     * If they key is not found, or if the value is not a boolean, the default is returned.
+     * If they key is not found, the default is returned.
+     * If the key is found, but the value is not a boolean, an error ir thrown
      *
      * @param key Key of boolean to get
      * @param defaultValue The default return value to use if the provided key is not valid
      * @return The requested boolean
      */
     public boolean getBooleanOrDefault(@NotNull String key, boolean defaultValue){
-        if (containsKey(key) && backingData.get(key) instanceof Boolean) {
-            return (Boolean) backingData.get(key);
+        if (!containsKey(key) || !(backingData.get(key) instanceof Boolean)) {
+            return defaultValue;
         }
-        return defaultValue;
+        if(backingData.get(key) instanceof Boolean)
+            return (Boolean) backingData.get(key);
+        throw new IllegalArgumentException("Value for key " + key + " must be of type boolean");
     }
 
     /**
      * Gets the requested int by its key.
      * If they key is not found, an error is thrown.
-     * If the value is found, but is not a int, an error is thrown.
+     * If the key is found, but the value is not a int, an error is thrown.
      *
      * @param key Key of int to get
      * @return The requested int
@@ -131,20 +134,27 @@ public final class TypeData {
 
     /**
      * Gets the requested int by its key.
-     * If they key is not found, or if the value is not a int, the default is returned.
+     * If they key is not found, the default is returned.
+     * If the key is found, but the value is not a int, an error is thrown.
      *
      * @param key Key of int to get
      * @param defaultValue The default return value to use if the provided key is not valid
      * @return The requested int
      */
     public int getIntOrDefault(@NotNull String key, int defaultValue){
-        return (Integer) backingData.getOrDefault(key, defaultValue);
+        if (!backingData.containsKey(key)) {
+            return defaultValue;
+        }
+        if(backingData.get(key) instanceof Integer){
+            return (Integer) backingData.get(key);
+        }
+        throw new IllegalArgumentException("Value for key " + key + " must be of type int");
     }
 
     /**
      * Gets the requested double by its key.
      * If they key is not found, an error is thrown.
-     * If the value is found, but is not a double, an error is thrown.
+     * If the key is found, but the value is not a double, an error is thrown.
      *
      * @param key Key of double to get
      * @return The requested double
@@ -159,20 +169,27 @@ public final class TypeData {
 
     /**
      * Gets the requested double by its key.
-     * If they key is not found, or if the value is not a double, the default is returned.
+     * If they key is not found, the default is returned.
+     * If the key is found, but the value is not a double, an error is thrown.
      *
      * @param key Key of double to get
      * @param defaultValue The default return value to use if the provided key is not valid
      * @return The requested double
      */
     public double getDoubleOrDefault(@NotNull String key, double defaultValue){
-        return (Double) backingData.getOrDefault(key, defaultValue);
+        if (!backingData.containsKey(key)) {
+            return defaultValue;
+        }
+        if(backingData.get(key) instanceof Integer){
+            return (Double) backingData.get(key);
+        }
+        throw new IllegalArgumentException("Value for key " + key + " must be of type double");
     }
 
     /**
      * Gets the requested String by its key.
      * If they key is not found, an error is thrown.
-     * If the value is found, but is not a String, an error is thrown.
+     * If the key is found, but the value is not a String, an error is thrown.
      *
      * @param key Key of String to get
      * @return The requested String
@@ -180,12 +197,15 @@ public final class TypeData {
     @NotNull
     public String getString(@NotNull String key){
         requireKey(key);
-        return (String) backingData.get(key);
+        if(backingData.get(key) instanceof String)
+            return (String) backingData.get(key);
+        throw new IllegalArgumentException("Value for key " + key + " must be of type String");
     }
 
     /**
      * Gets the requested String by its key.
-     * If they key is not found, or if the value is not a String, the default is returned.
+     * If they key is not found, the default is returned.
+     * If the key is found, but the value is not a String, an error is thrown.
      *
      * This method will only return <code>null</code> if the defaultValue is <code>null</code>
      *
@@ -195,13 +215,19 @@ public final class TypeData {
      */
     @Contract("_, !null -> !null")
     public String getStringOrDefault(@NotNull String key, @Nullable String defaultValue){
-        return (String) backingData.getOrDefault(key, defaultValue);
+        if (!backingData.containsKey(key)) {
+            return defaultValue;
+        }
+        if(backingData.get(key) instanceof Integer){
+            return (String) backingData.get(key);
+        }
+        throw new IllegalArgumentException("Value for key " + key + " must be of type String");
     }
 
     /**
      * Gets the requested Material by its key.
      * If they key is not found, an error is thrown.
-     * If the value is found, but is not a Material, an error is thrown.
+     * If the key is found, but the value is not a Material, an error is thrown.
      *
      * @param key Key of Material to get
      * @return The requested Material
@@ -209,12 +235,20 @@ public final class TypeData {
     @NotNull
     public Material getMaterial(@NotNull String key){
         requireKey(key);
-        return Material.valueOf((String) backingData.get(key));
+        if(backingData.get(key) instanceof String) {
+            try {
+                return Material.valueOf(((String) backingData.get(key)).toUpperCase());
+            } catch (IllegalArgumentException e){
+                throw new IllegalArgumentException("Value for key " + key + " must be of type Material");
+            }
+        }
+        throw new IllegalArgumentException("Value for key " + key + " must be of type Material");
     }
 
     /**
      * Gets the requested Material by its key.
-     * If they key is not found, or if the value is not a Material, the default is returned.
+     * If they key is not found, the default is returned.
+     * If the key is found, but the value is not a Material, an error is thrown.
      *
      * This method will only return <code>null</code> if the defaultValue is <code>null</code>
      *
@@ -224,7 +258,11 @@ public final class TypeData {
      */
     @Contract("_, !null -> !null")
     public Material getMaterialOrDefault(@NotNull String key, @Nullable Material defaultValue){
-        return this.containsKey(key) ? Material.valueOf((String) backingData.get(key)) : defaultValue;
+        if (!this.containsKey(key))
+            return defaultValue;
+        if(backingData.get(key) instanceof String)
+            return Material.valueOf((String) backingData.get(key));
+        throw new IllegalArgumentException("Value for key " + key + " must be of type Material");
     }
 
     /**
@@ -237,12 +275,15 @@ public final class TypeData {
      */
     public Sound getSound(@NotNull String key){
         requireKey(key);
-        return Sound.valueOf((String) backingData.get(key));
+        if(backingData.get(key) instanceof String)
+            return Sound.valueOf((String) backingData.get(key));
+        throw new IllegalArgumentException("Value for key " + key + " must be of type Sound");
     }
 
     /**
      * Gets the requested Sound by its key.
-     * If they key is not found, or if the value is not a Sound, the default is returned.
+     * If they key is not found, the default is returned.
+     * If the key is found, but the value is not a Sound, an error is thrown.
      *
      * This method will only return <code>null</code> if the defaultValue is <code>null</code>
      *
@@ -252,7 +293,11 @@ public final class TypeData {
      */
     @Contract("_, !null -> !null")
     public Sound getSoundOrDefault(@NotNull String key, @Nullable Sound defaultValue){
-        return this.containsKey(key) ? Sound.valueOf((String) backingData.get(key)) : defaultValue;
+        if (!this.containsKey(key))
+            return defaultValue;
+        if(backingData.get(key) instanceof String)
+            return Sound.valueOf((String) backingData.get(key));
+        throw new IllegalArgumentException("Value for key " + key + " must be of type Sound");
     }
 
     /**
