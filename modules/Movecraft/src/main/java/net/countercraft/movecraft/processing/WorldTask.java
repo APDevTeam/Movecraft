@@ -2,7 +2,7 @@ package net.countercraft.movecraft.processing;
 
 public abstract class WorldTask implements Runnable{
 
-    private final MovecraftWorld world;
+    protected final MovecraftWorld world;
 
     public WorldTask(MovecraftWorld world){
 

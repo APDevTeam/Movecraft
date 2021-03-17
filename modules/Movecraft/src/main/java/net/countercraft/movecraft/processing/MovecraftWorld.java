@@ -2,6 +2,7 @@ package net.countercraft.movecraft.processing;
 
 import net.countercraft.movecraft.MovecraftLocation;
 import org.bukkit.Material;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.data.BlockData;
 
 public class MovecraftWorld {
@@ -12,4 +13,6 @@ public class MovecraftWorld {
     public BlockData getData(MovecraftLocation location){
         return null;
     }
+
+    public BlockState getState(MovecraftLocation location) {return null;}
 }
