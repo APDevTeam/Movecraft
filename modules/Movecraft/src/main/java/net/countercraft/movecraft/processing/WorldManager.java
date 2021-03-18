@@ -4,10 +4,13 @@ import net.countercraft.movecraft.MovecraftLocation;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.BlockState;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutionException;
@@ -23,7 +26,14 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class WorldManager extends BukkitRunnable {
 
     public static final WorldManager INSTANCE = new WorldManager();
-    private static final Runnable POISON = () -> {/* No-op */};
+    private static final Runnable POISON = new Runnable() {
+        @Override
+        public void run() {/* No-op */}
+        @Override
+        public String toString(){
+            return "POISON TASK";
+        }
+    };
 
     private final ConcurrentLinkedQueue<Runnable> worldChanges = new ConcurrentLinkedQueue<>();
     private final ConcurrentHashMap<ChunkLocation, ChunkSectionSnapshot> cache = new ConcurrentHashMap<>();
@@ -34,22 +44,24 @@ public class WorldManager extends BukkitRunnable {
     private WorldManager(){}
 
     private static MovecraftLocation toSectionLocation(MovecraftLocation location){
-        return new MovecraftLocation(location.getX() % 16, location.getY() % 16, location.getZ() % 16);
+        return new MovecraftLocation(location.getX() & 0x0f, location.getY() & 0x0f, location.getZ() & 0x0f);
     }
 
     private static MovecraftLocation toChunkLocation(MovecraftLocation location){
-        return new MovecraftLocation(location.getX() / 16, location.getY()/16, location.getZ()/16);
+        return new MovecraftLocation(location.getX() >> 4, location.getY() >> 4, location.getZ() >> 4);
     }
 
     @Override
     public void run() {
         if(!Bukkit.isPrimaryThread()){
-            return;
+            throw new RuntimeException("WorldManager must be executed on the main thread.");
         }
         Runnable runnable;
         int remaining = tasks.size();
+        if(tasks.isEmpty())
+            return;
         while(!tasks.isEmpty()){
-            currentTasks.add(tasks.poll());
+            threads.execute(tasks.poll());
         }
         // process pre-queued tasks and their requests to the main thread
         while(true){
@@ -64,7 +76,7 @@ public class WorldManager extends BukkitRunnable {
                     break;
                 }
             }
-            threads.execute(runnable);
+            runnable.run();
         }
         // process world updates on the main thread
         while((runnable = worldChanges.poll()) != null){
@@ -80,7 +92,25 @@ public class WorldManager extends BukkitRunnable {
 
     public Material getMaterial(MovecraftLocation location, World world){
         try {
-            return this.getChunkSnapshot(location, world).get().getMaterial(toSectionLocation(location));
+            return this.getChunkSnapshot(location, world).get().getState(toSectionLocation(location)).getBlockData().getMaterial();
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public BlockData getData(MovecraftLocation location, World world){
+        try {
+            return this.getChunkSnapshot(location, world).get().getState(toSectionLocation(location)).getBlockData();
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public BlockState getState(MovecraftLocation location, World world){
+        try {
+            return this.getChunkSnapshot(location, world).get().getState(toSectionLocation(location));
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
             return null;
@@ -94,13 +124,16 @@ public class WorldManager extends BukkitRunnable {
      */
     private Future<ChunkSectionSnapshot> getChunkSnapshot(MovecraftLocation location, World world){
         var task = new FutureTask<>(() -> cache.computeIfAbsent(ChunkLocation.from(location, world), (chunkLocation) -> {
+            if(!Bukkit.isPrimaryThread()){
+                throw new RuntimeException("chunk snapshots must be calculated on the main thread.");
+            }
             var chunk = world.getChunkAt(location.toBukkit(world));
-            var materials = new Material[16 * 16 * 16];
-            for(int x = 0; x < 16; x++){
-                for(int y = 0; y < 16; y++){
-                    for(int z = 0; z < 16; z++){
-                        var state = chunk.getBlock(chunkLocation.getX(), chunkLocation.getY(), chunkLocation.getZ()).getState();
-                        materials[ x + 16 * y + 16 * 16 * z] = state.getType();
+            var materials = new BlockState[16 * 16 * 16];
+            for (int x = 0; x < 16; x++) {
+                for (int y = 0; y < 16; y++) {
+                    for (int z = 0; z < 16; z++) {
+                        var state = chunk.getBlock(x, chunkLocation.getY()*16 + y, z).getState();
+                        materials[x + 16 * y + 16 * 16 * z] = state;
                     }
                 }
             }
@@ -152,5 +185,9 @@ public class WorldManager extends BukkitRunnable {
 
     public void poison(){
         currentTasks.add(POISON);
+    }
+
+    public void submit(WorldTask task){
+        this.tasks.add(task);
     }
 }

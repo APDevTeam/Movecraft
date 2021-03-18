@@ -35,6 +35,7 @@ import net.countercraft.movecraft.listener.InteractListener;
 import net.countercraft.movecraft.listener.PlayerListener;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
+import net.countercraft.movecraft.processing.WorldManager;
 import net.countercraft.movecraft.sign.AscendSign;
 import net.countercraft.movecraft.sign.ContactsSign;
 import net.countercraft.movecraft.sign.CraftSign;
@@ -91,6 +92,7 @@ public class Movecraft extends JavaPlugin {
             adventure.close();
             adventure = null;
         }
+        WorldManager.INSTANCE.shutdown();
     }
 
     @Override
@@ -210,6 +212,8 @@ public class Movecraft extends JavaPlugin {
             MapUpdateManager.getInstance().runTaskTimer(this, 0, 1);
 
             CraftManager.initialize();
+            WorldManager.INSTANCE.runTaskTimer(this, 0,1);
+
 
             getServer().getPluginManager().registerEvents(new InteractListener(), this);
 

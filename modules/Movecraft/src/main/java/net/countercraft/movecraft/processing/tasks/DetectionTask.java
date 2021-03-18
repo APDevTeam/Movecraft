@@ -21,9 +21,9 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 public class DetectionTask extends WorldTask {
     private final static MovecraftLocation[] SHIFTS = {
@@ -57,6 +57,7 @@ public class DetectionTask extends WorldTask {
 
     @Override
     public void compute(MovecraftWorld world) {
+        long start = System.nanoTime();
         new DetectAction(startLocation).invoke();
         //todo: validate materials
 //        if(illegal.isEmpty()){
@@ -66,6 +67,11 @@ public class DetectionTask extends WorldTask {
 //        for(var location : illegal){
 //            BlockHighlight.highlightBlockAt(location.toBukkit(craft.getWorld()), player);
 //        }
+    }
+
+    @Override
+    public String toString(){
+        return "Detection task of " + this.craft;
     }
 
     private class DetectAction extends RecursiveAction{
@@ -94,10 +100,10 @@ public class DetectionTask extends WorldTask {
                     break;
                 case PERMIT:
                     materials.computeIfAbsent(world.getMaterial(probe), Functions.forSupplier(ConcurrentLinkedDeque::new)).add(probe);
-                    Arrays.stream(SHIFTS)
+                    invokeAll(Arrays.stream(SHIFTS)
                             .map(location -> location.add(probe))
                             .map(DetectAction::new)
-                            .forEach(ForkJoinTask::fork);
+                            .collect(Collectors.toList()));
             }
         }
     }
