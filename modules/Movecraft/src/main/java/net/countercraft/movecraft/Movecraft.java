@@ -52,6 +52,7 @@ import net.countercraft.movecraft.sign.SpeedSign;
 import net.countercraft.movecraft.sign.StatusSign;
 import net.countercraft.movecraft.sign.SubcraftRotateSign;
 import net.countercraft.movecraft.sign.TeleportSign;
+import net.countercraft.movecraft.utils.BlockHighlight;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import org.bukkit.Material;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -216,6 +217,7 @@ public class Movecraft extends JavaPlugin {
 
 
             getServer().getPluginManager().registerEvents(new InteractListener(), this);
+            getServer().getPluginManager().registerEvents(new BlockHighlight(), this);
 
             this.getCommand("movecraft").setExecutor(new MovecraftCommand());
             this.getCommand("release").setExecutor(new ReleaseCommand());
