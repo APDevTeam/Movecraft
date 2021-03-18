@@ -7,16 +7,15 @@ import org.bukkit.World;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -91,40 +90,29 @@ public class WorldManager extends BukkitRunnable {
     }
 
     public Material getMaterial(MovecraftLocation location, World world){
-        try {
-            return this.getChunkSnapshot(location, world).get().getState(toSectionLocation(location)).getBlockData().getMaterial();
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-            return null;
-        }
+        return this.getChunkSnapshot(location, world).getState(toSectionLocation(location)).getBlockData().getMaterial();
     }
 
     public BlockData getData(MovecraftLocation location, World world){
-        try {
-            return this.getChunkSnapshot(location, world).get().getState(toSectionLocation(location)).getBlockData();
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-            return null;
-        }
+        return this.getChunkSnapshot(location, world).getState(toSectionLocation(location)).getBlockData();
     }
 
     public BlockState getState(MovecraftLocation location, World world){
-        try {
-            return this.getChunkSnapshot(location, world).get().getState(toSectionLocation(location));
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-            return null;
-        }
+        return this.getChunkSnapshot(location, world).getState(toSectionLocation(location));
     }
 
     /**
      * Gets a ChunkSectionSnapshot
-     * @param location the wolrd position containing the snapshot
+     * @param location the world position containing the snapshot
      * @return a snapshot of a section of a chunk
      */
-    private Future<ChunkSectionSnapshot> getChunkSnapshot(MovecraftLocation location, World world){
+    @NotNull
+    private ChunkSectionSnapshot getChunkSnapshot(MovecraftLocation location, World world){
+        if(cache.containsKey(ChunkLocation.from(location, world))){
+            return cache.get(ChunkLocation.from(location, world));
+        }
         var task = new FutureTask<>(() -> cache.computeIfAbsent(ChunkLocation.from(location, world), (chunkLocation) -> {
-            if(!Bukkit.isPrimaryThread()){
+            if (!Bukkit.isPrimaryThread()) {
                 throw new RuntimeException("chunk snapshots must be calculated on the main thread.");
             }
             var chunk = world.getChunkAt(location.toBukkit(world));
@@ -132,7 +120,7 @@ public class WorldManager extends BukkitRunnable {
             for (int x = 0; x < 16; x++) {
                 for (int y = 0; y < 16; y++) {
                     for (int z = 0; z < 16; z++) {
-                        var state = chunk.getBlock(x, chunkLocation.getY()*16 + y, z).getState();
+                        var state = chunk.getBlock(x, chunkLocation.getY() * 16 + y, z).getState();
                         materials[x + 16 * y + 16 * 16 * z] = state;
                     }
                 }
@@ -140,7 +128,11 @@ public class WorldManager extends BukkitRunnable {
             return new ChunkSectionSnapshot(materials);
         }));
         currentTasks.add(task);
-        return task;
+        try {
+            return  task.get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static class ChunkLocation {
@@ -166,6 +158,11 @@ public class WorldManager extends BukkitRunnable {
 
         public int getZ(){
             return this.location.getZ();
+        }
+
+        @Override
+        public String toString(){
+            return String.format("(%d, %d, %d @ %s)", getX(), getY(), getZ(), world);
         }
 
         @Override
