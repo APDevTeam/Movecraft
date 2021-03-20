@@ -1,6 +1,8 @@
 package net.countercraft.movecraft.utils;
 
 import net.countercraft.movecraft.MovecraftLocation;
+import net.countercraft.movecraft.utils.hitboxes.BitmapHitBox;
+import net.countercraft.movecraft.utils.hitboxes.HitBox;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 

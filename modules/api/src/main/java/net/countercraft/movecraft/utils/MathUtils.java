@@ -20,6 +20,7 @@ package net.countercraft.movecraft.utils;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
 import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.utils.hitboxes.HitBox;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.WorldBorder;

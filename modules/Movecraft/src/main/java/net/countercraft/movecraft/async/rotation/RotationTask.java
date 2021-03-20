@@ -18,7 +18,6 @@
 package net.countercraft.movecraft.async.rotation;
 
 import net.countercraft.movecraft.CruiseDirection;
-import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
 import net.countercraft.movecraft.async.AsyncTask;
@@ -30,7 +29,7 @@ import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.update.CraftRotateCommand;
 import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
-import net.countercraft.movecraft.utils.BitmapHitBox;
+import net.countercraft.movecraft.utils.hitboxes.BitmapHitBox;
 import net.countercraft.movecraft.utils.MathUtils;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;

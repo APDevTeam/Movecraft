@@ -1,7 +1,7 @@
 package net.countercraft.movecraft;
 
-import net.countercraft.movecraft.utils.HitBox;
-import net.countercraft.movecraft.utils.SolidHitBox;
+import net.countercraft.movecraft.utils.hitboxes.HitBox;
+import net.countercraft.movecraft.utils.hitboxes.SolidHitBox;
 import org.junit.Test;
 
 import java.util.ArrayList;

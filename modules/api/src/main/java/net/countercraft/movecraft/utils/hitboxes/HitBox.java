@@ -1,4 +1,4 @@
-package net.countercraft.movecraft.utils;
+package net.countercraft.movecraft.utils.hitboxes;
 
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.exception.EmptyHitBoxException;
