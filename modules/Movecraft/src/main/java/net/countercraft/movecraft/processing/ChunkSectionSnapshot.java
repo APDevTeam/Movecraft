@@ -2,7 +2,7 @@ package net.countercraft.movecraft.processing;
 
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.processing.tasks.MovecraftState;
-import net.countercraft.movecraft.utils.MathUtils;
+import net.countercraft.movecraft.util.MathUtils;
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.block.BlockState;
 

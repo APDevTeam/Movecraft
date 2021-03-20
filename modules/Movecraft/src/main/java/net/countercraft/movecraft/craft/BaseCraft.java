@@ -10,10 +10,10 @@ import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.events.CraftSinkEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.utils.hitboxes.BitmapHitBox;
-import net.countercraft.movecraft.utils.Counter;
-import net.countercraft.movecraft.utils.hitboxes.HitBox;
-import net.countercraft.movecraft.utils.hitboxes.MutableHitBox;
+import net.countercraft.movecraft.util.hitboxes.BitmapHitBox;
+import net.countercraft.movecraft.util.Counter;
+import net.countercraft.movecraft.util.hitboxes.HitBox;
+import net.countercraft.movecraft.util.hitboxes.MutableHitBox;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
@@ -34,7 +34,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static net.countercraft.movecraft.utils.SignUtils.getFacing;
+import static net.countercraft.movecraft.util.SignUtils.getFacing;
 
 public abstract class BaseCraft implements Craft{
     @NotNull

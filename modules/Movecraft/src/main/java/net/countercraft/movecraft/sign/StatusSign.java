@@ -4,7 +4,7 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
-import net.countercraft.movecraft.utils.Counter;
+import net.countercraft.movecraft.util.Counter;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.World;

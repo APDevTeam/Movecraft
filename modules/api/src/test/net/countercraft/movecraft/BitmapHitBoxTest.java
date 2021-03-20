@@ -1,6 +1,6 @@
 package net.countercraft.movecraft;
 
-import net.countercraft.movecraft.utils.hitboxes.BitmapHitBox;
+import net.countercraft.movecraft.util.hitboxes.BitmapHitBox;
 import org.junit.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

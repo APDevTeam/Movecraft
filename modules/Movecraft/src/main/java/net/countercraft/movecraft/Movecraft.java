@@ -52,7 +52,7 @@ import net.countercraft.movecraft.sign.SpeedSign;
 import net.countercraft.movecraft.sign.StatusSign;
 import net.countercraft.movecraft.sign.SubcraftRotateSign;
 import net.countercraft.movecraft.sign.TeleportSign;
-import net.countercraft.movecraft.utils.BlockHighlight;
+import net.countercraft.movecraft.util.BlockHighlight;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import org.bukkit.Material;
 import org.bukkit.plugin.java.JavaPlugin;

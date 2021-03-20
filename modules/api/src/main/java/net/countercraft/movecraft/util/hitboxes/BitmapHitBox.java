@@ -1,4 +1,4 @@
-package net.countercraft.movecraft.utils.hitboxes;
+package net.countercraft.movecraft.util.hitboxes;
 
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;

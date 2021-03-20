@@ -21,10 +21,10 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.jetbrains.annotations.NotNull;
 
-import static net.countercraft.movecraft.utils.BitMath.mask;
-import static net.countercraft.movecraft.utils.BitMath.unpackX;
-import static net.countercraft.movecraft.utils.BitMath.unpackY;
-import static net.countercraft.movecraft.utils.BitMath.unpackZ;
+import static net.countercraft.movecraft.util.BitMath.mask;
+import static net.countercraft.movecraft.util.BitMath.unpackX;
+import static net.countercraft.movecraft.util.BitMath.unpackY;
+import static net.countercraft.movecraft.util.BitMath.unpackZ;
 
 /**
  * Represents a Block aligned coordinate triplet.

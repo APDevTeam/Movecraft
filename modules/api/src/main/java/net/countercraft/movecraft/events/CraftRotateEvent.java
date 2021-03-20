@@ -3,7 +3,7 @@ package net.countercraft.movecraft.events;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.utils.hitboxes.HitBox;
+import net.countercraft.movecraft.util.hitboxes.HitBox;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;

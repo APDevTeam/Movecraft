@@ -1,4 +1,4 @@
-package net.countercraft.movecraft.utils.packets;
+package net.countercraft.movecraft.util.packets;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

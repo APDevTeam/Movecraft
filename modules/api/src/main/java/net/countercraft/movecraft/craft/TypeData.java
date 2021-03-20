@@ -1,11 +1,8 @@
 package net.countercraft.movecraft.craft;
 
-import net.countercraft.movecraft.utils.Tags;
-import org.bukkit.Bukkit;
+import net.countercraft.movecraft.util.Tags;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
-import org.bukkit.Tag;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

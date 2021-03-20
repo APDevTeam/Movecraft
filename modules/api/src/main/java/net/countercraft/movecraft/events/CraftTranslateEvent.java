@@ -1,7 +1,7 @@
 package net.countercraft.movecraft.events;
 
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.utils.hitboxes.HitBox;
+import net.countercraft.movecraft.util.hitboxes.HitBox;
 import org.bukkit.World;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;

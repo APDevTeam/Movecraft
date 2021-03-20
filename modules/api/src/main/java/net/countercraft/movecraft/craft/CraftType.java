@@ -17,7 +17,7 @@
 
 package net.countercraft.movecraft.craft;
 
-import net.countercraft.movecraft.utils.Tags;
+import net.countercraft.movecraft.util.Tags;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.World;

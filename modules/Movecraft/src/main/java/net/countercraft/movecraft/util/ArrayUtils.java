@@ -1,4 +1,4 @@
-package net.countercraft.movecraft.utils;
+package net.countercraft.movecraft.util;
 
 import java.util.ArrayList;
 import java.util.Arrays;

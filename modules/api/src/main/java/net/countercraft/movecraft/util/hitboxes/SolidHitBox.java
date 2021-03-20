@@ -1,4 +1,4 @@
-package net.countercraft.movecraft.utils.hitboxes;
+package net.countercraft.movecraft.util.hitboxes;
 
 import net.countercraft.movecraft.MovecraftLocation;
 import org.jetbrains.annotations.NotNull;

@@ -29,8 +29,8 @@ import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.update.CraftRotateCommand;
 import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
-import net.countercraft.movecraft.utils.hitboxes.BitmapHitBox;
-import net.countercraft.movecraft.utils.MathUtils;
+import net.countercraft.movecraft.util.hitboxes.BitmapHitBox;
+import net.countercraft.movecraft.util.MathUtils;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -43,7 +43,7 @@ import org.bukkit.entity.Player;
 import java.util.HashSet;
 import java.util.Set;
 
-import static net.countercraft.movecraft.utils.MathUtils.withinWorldBorder;
+import static net.countercraft.movecraft.util.MathUtils.withinWorldBorder;
 
 public class RotationTask extends AsyncTask {
     private final MovecraftLocation originPoint;

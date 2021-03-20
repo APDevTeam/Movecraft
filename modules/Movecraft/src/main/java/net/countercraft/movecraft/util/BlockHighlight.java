@@ -1,25 +1,22 @@
-package net.countercraft.movecraft.utils;
+package net.countercraft.movecraft.util;
 
 
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher.Registry;
-import com.comphenix.protocol.wrappers.WrappedDataWatcher.WrappedDataWatcherObject;
 import com.google.common.primitives.Ints;
-import net.countercraft.movecraft.utils.packets.WrapperPlayServerEntityDestroy;
-import net.countercraft.movecraft.utils.packets.WrapperPlayServerEntityMetadata;
-import net.countercraft.movecraft.utils.packets.WrapperPlayServerScoreboardTeam;
-import net.countercraft.movecraft.utils.packets.WrapperPlayServerSpawnEntityLiving;
+import net.countercraft.movecraft.util.packets.WrapperPlayServerEntityDestroy;
+import net.countercraft.movecraft.util.packets.WrapperPlayServerEntityMetadata;
+import net.countercraft.movecraft.util.packets.WrapperPlayServerScoreboardTeam;
+import net.countercraft.movecraft.util.packets.WrapperPlayServerSpawnEntityLiving;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
-import java.awt.*;
 import java.util.Collection;
 import java.util.List;
 import java.util.Random;

@@ -17,7 +17,7 @@
 
 package net.countercraft.movecraft.mapUpdater.update;
 
-import net.countercraft.movecraft.utils.TeleportUtils;
+import net.countercraft.movecraft.util.TeleportUtils;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.World;
