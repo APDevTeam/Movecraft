@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class AllowedBlockValidator implements DetectionValidator{
+public class AllowedBlockValidator implements DetectionValidator<MovecraftLocation>{
     @Override
     public Modifier validate(@NotNull MovecraftLocation location, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable Player player) {
         return type.getAllowedBlocks().contains(world.getMaterial(location)) ? Modifier.PERMIT : Modifier.NONE;

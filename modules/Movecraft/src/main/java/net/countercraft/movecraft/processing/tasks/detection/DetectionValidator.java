@@ -8,6 +8,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 @FunctionalInterface
-public interface DetectionValidator {
-    Modifier validate(@NotNull MovecraftLocation location, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable Player player);
+public interface DetectionValidator<T> {
+    Modifier validate(@NotNull T t, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable Player player);
 }

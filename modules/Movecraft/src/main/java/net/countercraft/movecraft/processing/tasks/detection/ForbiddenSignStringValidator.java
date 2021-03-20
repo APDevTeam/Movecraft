@@ -9,7 +9,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class ForbiddenSignStringValidator implements DetectionValidator {
+public class ForbiddenSignStringValidator implements DetectionValidator<MovecraftLocation> {
     @Override
     public Modifier validate(@NotNull MovecraftLocation location, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable Player player) {
         BlockState state = world.getState(location);
