@@ -15,7 +15,7 @@
         <groupId>net.countercraft</groupId>
         <artifactId>movecraft-parent</artifactId>
         <version>parent</version>
-        <relativePath>../../</relativePath>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
     <repositories>
         <repository>

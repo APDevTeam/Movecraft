@@ -18,6 +18,7 @@
 package net.countercraft.movecraft.async.rotation;
 
 import net.countercraft.movecraft.CruiseDirection;
+import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
 import net.countercraft.movecraft.async.AsyncTask;
@@ -30,9 +31,9 @@ import net.countercraft.movecraft.mapUpdater.update.CraftRotateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import net.countercraft.movecraft.utils.*;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 
 import java.util.HashSet;
@@ -116,7 +117,9 @@ public class RotationTask extends AsyncTask {
                 break;
             }
 
-            //TODO: ADD FACTIONS
+            // See if they are permitted to build in the area, if WorldGuard integration is turned on
+            Location plugLoc = newLocation.toBukkit(w);
+
             if (!withinWorldBorder(craft.getWorld(), newLocation)) {
                 failMessage = I18nSupport.getInternationalisedString("Rotation - Failed Craft cannot pass world border") + String.format(" @ %d,%d,%d", newLocation.getX(), newLocation.getY(), newLocation.getZ());
                 failed = true;

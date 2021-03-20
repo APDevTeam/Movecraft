@@ -3,8 +3,10 @@ package net.countercraft.movecraft.commands;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.events.ManOverboardEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.MathUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -32,21 +34,7 @@ public class ManOverboardCommand implements CommandExecutor{
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("ManOverboard - No Craft Found"));
             return true;
         }
-
-        Location telPoint;
-        if (craft.getCrewSigns().containsKey(player.getUniqueId())){
-            telPoint = craft.getCrewSigns().get(player.getUniqueId());
-            final Vector[] SHIFTS = {new Vector(1,0,0), new Vector(-1,0,0),new Vector(0,0,1),new Vector(0,0,-1)};
-            for (Vector shift : SHIFTS){
-                if (!telPoint.add(shift).getBlock().getType().name().endsWith("AIR")){
-                    continue;
-                }
-                telPoint = telPoint.add(shift);
-                break;
-            }
-        } else {
-            telPoint = getCraftTeleportPoint(craft);
-        }
+        Location telPoint = getCraftTeleportPoint(craft);
         if (craft.getWorld() != player.getWorld()) {
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("ManOverboard - Other World"));
             return true;
@@ -67,9 +55,12 @@ public class ManOverboardCommand implements CommandExecutor{
             return true;
         }
 
+        ManOverboardEvent event = new ManOverboardEvent(craft, telPoint);
+        Bukkit.getServer().getPluginManager().callEvent(event);
+
         player.setVelocity(new Vector(0, 0, 0));
         player.setFallDistance(0);
-        player.teleport(telPoint);
+        player.teleport(event.getLocation());
         return true;
     }
 
@@ -77,6 +68,6 @@ public class ManOverboardCommand implements CommandExecutor{
         double telX = (craft.getHitBox().getMinX() + craft.getHitBox().getMaxX())/2D + 0.5D;
         double telZ = (craft.getHitBox().getMinZ() + craft.getHitBox().getMaxZ())/2D + 0.5D;
         double telY = craft.getHitBox().getMaxY() + 1;
-        return new Location(craft.getW(), telX, telY, telZ);
+        return new Location(craft.getWorld(), telX, telY, telZ);
     }
 }
