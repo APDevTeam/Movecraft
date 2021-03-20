@@ -14,7 +14,6 @@ import net.countercraft.movecraft.utils.BitmapHitBox;
 import net.countercraft.movecraft.utils.Counter;
 import net.countercraft.movecraft.utils.HitBox;
 import net.countercraft.movecraft.utils.MutableHitBox;
-import net.countercraft.movecraft.utils.Pair;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;

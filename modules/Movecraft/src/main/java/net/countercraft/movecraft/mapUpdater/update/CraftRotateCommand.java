@@ -16,7 +16,6 @@ import net.countercraft.movecraft.utils.BitmapHitBox;
 import net.countercraft.movecraft.utils.CollectionUtils;
 import net.countercraft.movecraft.utils.HitBox;
 import net.countercraft.movecraft.utils.MathUtils;
-import net.countercraft.movecraft.utils.Pair;
 import net.countercraft.movecraft.utils.SolidHitBox;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
