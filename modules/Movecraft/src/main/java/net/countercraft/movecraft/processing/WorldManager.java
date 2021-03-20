@@ -1,14 +1,17 @@
 package net.countercraft.movecraft.processing;
 
 import net.countercraft.movecraft.MovecraftLocation;
+import net.countercraft.movecraft.utils.MathUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.Tag;
 import org.bukkit.World;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.EnumSet;
 import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,11 +46,7 @@ public class WorldManager extends BukkitRunnable {
     private WorldManager(){}
 
     private static MovecraftLocation toSectionLocation(MovecraftLocation location){
-        return new MovecraftLocation(location.getX() & 0x0f, location.getY() & 0x0f, location.getZ() & 0x0f);
-    }
-
-    private static MovecraftLocation toChunkLocation(MovecraftLocation location){
-        return new MovecraftLocation(location.getX() >> 4, location.getY() >> 4, location.getZ() >> 4);
+        return new MovecraftLocation(location.getX() & 0x0f, location.getY(), location.getZ() & 0x0f);
     }
 
     @Override
@@ -116,58 +115,49 @@ public class WorldManager extends BukkitRunnable {
                 throw new RuntimeException("chunk snapshots must be calculated on the main thread.");
             }
             var chunk = world.getChunkAt(location.toBukkit(world));
-            var materials = new BlockState[16 * 16 * 16];
-            for (int x = 0; x < 16; x++) {
-                for (int y = 0; y < 16; y++) {
-                    for (int z = 0; z < 16; z++) {
-                        var state = chunk.getBlock(x, chunkLocation.getY() * 16 + y, z).getState();
-                        materials[x + 16 * y + 16 * 16 * z] = state;
-                    }
-                }
-            }
-            return new ChunkSectionSnapshot(materials);
+            var snapshot = chunk.getChunkSnapshot(false, false, false);
+            return new ChunkSectionSnapshot(chunk.getTileEntities(), snapshot);
         }));
         currentTasks.add(task);
         try {
-            return  task.get();
+            return task.get();
         } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException(e);
         }
+
     }
 
     private static class ChunkLocation {
-        private final MovecraftLocation location;
+        private final int x;
+        private final int z;
         private final World world;
 
         public static ChunkLocation from(MovecraftLocation location, World world){
-            return new ChunkLocation(toChunkLocation(location), world);
+            return new ChunkLocation(location.getX()>>4, location.getZ()>>4, world);
         }
 
-        private ChunkLocation(MovecraftLocation location, World world){
-            this.location = location;
+        private ChunkLocation(int x, int z, World world){
+            this.x = x;
+            this.z = z;
             this.world = world;
         }
 
         public int getX(){
-            return this.location.getX();
-        }
-
-        public int getY(){
-            return this.location.getY();
+            return this.x;
         }
 
         public int getZ(){
-            return this.location.getZ();
+            return this.z;
         }
 
         @Override
         public String toString(){
-            return String.format("(%d, %d, %d @ %s)", getX(), getY(), getZ(), world);
+            return String.format("(%d, %d @ %s)", getX(), getZ(), world);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(location, world);
+            return Objects.hash(x, z, world);
         }
 
         @Override
@@ -176,7 +166,9 @@ public class WorldManager extends BukkitRunnable {
                 return false;
             }
             var otherLocation = (ChunkLocation) other;
-            return this.location.equals(otherLocation.location) && this.world.equals(otherLocation.world);
+            return this.x == otherLocation.x &&
+                    this.z == otherLocation.z &&
+                    this.world.equals(otherLocation.world);
         }
     }
 
