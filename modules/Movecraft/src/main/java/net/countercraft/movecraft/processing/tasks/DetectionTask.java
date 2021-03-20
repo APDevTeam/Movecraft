@@ -12,6 +12,8 @@ import net.countercraft.movecraft.processing.tasks.detection.ForbiddenSignString
 import net.countercraft.movecraft.processing.tasks.detection.Modifier;
 import net.countercraft.movecraft.processing.tasks.detection.NameSignValidator;
 import net.countercraft.movecraft.processing.tasks.detection.PilotSignValidator;
+import net.countercraft.movecraft.processing.tasks.detection.SizeValidator;
+import net.countercraft.movecraft.processing.tasks.detection.WaterContactValidator;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -19,7 +21,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Deque;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -53,14 +57,17 @@ public class DetectionTask extends WorldTask {
     private final AtomicInteger size = new AtomicInteger(0);
     private final ConcurrentMap<MovecraftLocation, Object> visited = new ConcurrentHashMap<>();
     private final ConcurrentLinkedDeque<MovecraftLocation> illegal = new ConcurrentLinkedDeque<>();
-    private final ConcurrentMap<Material, ConcurrentLinkedDeque<MovecraftLocation>> materials = new ConcurrentHashMap<>();
+    private final ConcurrentMap<Material, Deque<MovecraftLocation>> materials = new ConcurrentHashMap<>();
     private final ConcurrentLinkedDeque<MovecraftLocation> legal = new ConcurrentLinkedDeque<>();
-    private static final List<DetectionValidator> validators = List.of(
+    private static final List<DetectionValidator<MovecraftLocation>> validators = List.of(
             new AllowedBlockValidator(),
             new ForbiddenBlockValidator(),
             new ForbiddenSignStringValidator(),
             new NameSignValidator(),
             new PilotSignValidator());
+    private static final List<DetectionValidator<Map<Material, Deque<MovecraftLocation>>>> completionValidators = List.of(
+            new SizeValidator(),
+            new WaterContactValidator());
 
     public DetectionTask(Craft craft, @NotNull MovecraftLocation startLocation, MovecraftWorld world, Player player) {
         super(world);
@@ -71,27 +78,28 @@ public class DetectionTask extends WorldTask {
 
     @Override
     public void compute(MovecraftWorld world) {
+//        var start = System.nanoTime();
         frontier();
-        //todo: validate materials
-//        if(illegal.isEmpty()){
-//            return;
-//        }
-//        if(player == null) return;
-//        for(var location : illegal){
-//            BlockHighlight.highlightBlockAt(location.toBukkit(craft.getWorld()), player);
-//        }
+//        Bukkit.getLogger().info(String.format("Reworked detection took: %s. Found %d blocks.", (System.nanoTime() - start) / 1000000000D, size.get()));
+        if(!illegal.isEmpty()) {
+            return;
+        }
+        Modifier state = Modifier.NONE;
+        for(var validator : completionValidators){
+            state = state.merge(validator.validate(materials, craft.getType(), world, player));
+        }
+//        CraftManager.getInstance().addCraft(craft);
     }
 
     private void frontier(){
         ConcurrentLinkedQueue<MovecraftLocation> currentFrontier = new ConcurrentLinkedQueue<>();
         ConcurrentLinkedQueue<MovecraftLocation> nextFrontier = new ConcurrentLinkedQueue<>();
         currentFrontier.add(startLocation);
+        int threads = Runtime.getRuntime().availableProcessors();
         for(int i = 0; !currentFrontier.isEmpty() && size.get() < craft.getType().getMaxSize(); i++){
-//            Bukkit.getLogger().info("Depth: " + i);
+//            Bukkit.getLogger().info(String.format("Depth: %d", i));
             List<Callable<Object>> tasks = new ArrayList<>();
-            // there is maximally 4*i*i + 2 elements in each frontier,
-            // each action is linear in i in terms of elements polled from the frontier.
-            for(int j = 0; j < i + 1; j++) {
+            for(int j = 0; j < threads ; j++) {
                 tasks.add(Executors.callable(new DetectAction(currentFrontier, nextFrontier)));
             }
             ForkJoinPool.commonPool().invokeAll(tasks);
