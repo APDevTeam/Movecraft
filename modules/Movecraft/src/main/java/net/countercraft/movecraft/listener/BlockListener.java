@@ -17,7 +17,6 @@
 
 package net.countercraft.movecraft.listener;
 
-import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
@@ -43,31 +42,6 @@ import java.util.Arrays;
 import java.util.List;
 
 public class BlockListener implements Listener {
-    @EventHandler
-    public void onBlockPlace(final BlockPlaceEvent e) {
-        if (!Settings.RestrictSiBsToRegions ||
-                e.getBlockPlaced().getTypeId() != 54 ||
-                !e.getItemInHand().hasItemMeta() ||
-                !e.getItemInHand().getItemMeta().hasLore()) {
-            return;
-        }
-        List<String> loreList = e.getItemInHand().getItemMeta().getLore();
-        for (String lore : loreList) {
-            if (!lore.contains("SiB")) {
-                continue;
-            }
-            if (lore.toLowerCase().contains("merchant") || lore.toLowerCase().contains("mm")) {
-                return;
-            }
-            Location loc = e.getBlockPlaced().getLocation();
-            ApplicableRegionSet regions = Movecraft.getInstance().getWorldGuardPlugin().getRegionManager(loc.getWorld()).getApplicableRegions(loc);
-            if (regions.size() == 0) {
-                e.getPlayer().sendMessage(I18nSupport.getInternationalisedString("SIB MUST BE PLACED IN REGION"));
-                e.setCancelled(true);
-                break;
-            }
-        }
-    }
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onBlockBreak(final BlockBreakEvent e) {

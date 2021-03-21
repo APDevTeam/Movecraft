@@ -17,9 +17,6 @@
 
 package net.countercraft.movecraft;
 
-import com.mewin.WGCustomFlags.WGCustomFlagsPlugin;
-import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
-import com.sk89q.worldguard.protection.flags.StateFlag;
 import net.countercraft.movecraft.async.AsyncManager;
 import net.countercraft.movecraft.commands.*;
 import net.countercraft.movecraft.config.Settings;
@@ -31,8 +28,6 @@ import net.countercraft.movecraft.listener.PlayerListener;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.sign.*;
-import net.countercraft.movecraft.utils.WGCustomFlagsUtils;
-import net.countercraft.movecraft.worldguard.WorldGuardCompatManager;
 import org.bukkit.Material;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -43,17 +38,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Movecraft extends JavaPlugin {
-    public static StateFlag FLAG_PILOT = null; //new StateFlag("movecraft-pilot", true);
-    public static StateFlag FLAG_MOVE = null; //new StateFlag("movecraft-move", true);
-    public static StateFlag FLAG_ROTATE = null; //new StateFlag("movecraft-rotate", true);
-    public static StateFlag FLAG_SINK = null; //new StateFlag("movecraft-sink", true);
     private static Movecraft instance;
-    private static WorldGuardPlugin worldGuardPlugin;
-    private static WGCustomFlagsPlugin wgCustomFlagsPlugin = null;
-    /*public HashMap<MovecraftLocation, Long> blockFadeTimeMap = new HashMap<>();
-    public HashMap<MovecraftLocation, Integer> blockFadeTypeMap = new HashMap<>();
-    public HashMap<MovecraftLocation, Boolean> blockFadeWaterMap = new HashMap<>();
-    public HashMap<MovecraftLocation, World> blockFadeWorldMap = new HashMap<>();*/
     private Logger logger;
     private boolean shuttingDown;
     private WorldHandler worldHandler;
@@ -83,7 +68,6 @@ public class Movecraft extends JavaPlugin {
 
 
         Settings.LOCALE = getConfig().getString("Locale");
-        Settings.RestrictSiBsToRegions = getConfig().getBoolean("RestrictSiBsToRegions", false);
         Settings.Debug = getConfig().getBoolean("Debug", false);
         Settings.DisableSpillProtection = getConfig().getBoolean("DisableSpillProtection", false);
         Settings.DisableIceForm = getConfig().getBoolean("DisableIceForm", true);
@@ -164,46 +148,6 @@ public class Movecraft extends JavaPlugin {
                 worldHandler.disableShadow(Material.getMaterial(typ));
             }
         }
-        //load up WorldGuard if it's present
-        Plugin wGPlugin = getServer().getPluginManager().getPlugin("WorldGuard");
-        if (wGPlugin == null || !(wGPlugin instanceof WorldGuardPlugin)) {
-            logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - WG Not Found"));
-            Settings.RestrictSiBsToRegions = false;
-        } else {
-            logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - WG Found"));
-            Settings.WorldGuardBlockMoveOnBuildPerm = getConfig().getBoolean("WorldGuardBlockMoveOnBuildPerm", false);
-            Settings.WorldGuardBlockSinkOnPVPPerm = getConfig().getBoolean("WorldGuardBlockSinkOnPVPPerm", false);
-            logger.log(Level.INFO, "Settings: WorldGuardBlockMoveOnBuildPerm - {0}, WorldGuardBlockSinkOnPVPPerm - {1}", new Object[]{Settings.WorldGuardBlockMoveOnBuildPerm, Settings.WorldGuardBlockSinkOnPVPPerm});
-            getServer().getPluginManager().registerEvents(new WorldGuardCompatManager(), this);
-        }
-        worldGuardPlugin = (WorldGuardPlugin) wGPlugin;
-
-
-        if (worldGuardPlugin != null && worldGuardPlugin instanceof WorldGuardPlugin) {
-            if (worldGuardPlugin.isEnabled()) {
-                Plugin tempWGCustomFlagsPlugin = getServer().getPluginManager().getPlugin("WGCustomFlags");
-                if (tempWGCustomFlagsPlugin != null && tempWGCustomFlagsPlugin instanceof WGCustomFlagsPlugin) {
-                    logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - WGCF Found"));
-                    wgCustomFlagsPlugin = (WGCustomFlagsPlugin) tempWGCustomFlagsPlugin;
-                    WGCustomFlagsUtils WGCFU = new WGCustomFlagsUtils();
-                    FLAG_PILOT = WGCFU.getNewStateFlag("movecraft-pilot", true);
-                    FLAG_MOVE = WGCFU.getNewStateFlag("movecraft-move", true);
-                    FLAG_ROTATE = WGCFU.getNewStateFlag("movecraft-rotate", true);
-                    FLAG_SINK = WGCFU.getNewStateFlag("movecraft-sink", true);
-                    WGCFU.init();
-                    Settings.WGCustomFlagsUsePilotFlag = getConfig().getBoolean("WGCustomFlagsUsePilotFlag", false);
-                    Settings.WGCustomFlagsUseMoveFlag = getConfig().getBoolean("WGCustomFlagsUseMoveFlag", false);
-                    Settings.WGCustomFlagsUseRotateFlag = getConfig().getBoolean("WGCustomFlagsUseRotateFlag", false);
-                    Settings.WGCustomFlagsUseSinkFlag = getConfig().getBoolean("WGCustomFlagsUseSinkFlag", false);
-                    logger.log(Level.INFO, "Settings: WGCustomFlagsUsePilotFlag - {0}", Settings.WGCustomFlagsUsePilotFlag);
-                    logger.log(Level.INFO, "Settings: WGCustomFlagsUseMoveFlag - {0}", Settings.WGCustomFlagsUseMoveFlag);
-                    logger.log(Level.INFO, "Settings: WGCustomFlagsUseRotateFlag - {0}", Settings.WGCustomFlagsUseRotateFlag);
-                    logger.log(Level.INFO, "Settings: WGCustomFlagsUseSinkFlag - {0}", Settings.WGCustomFlagsUseSinkFlag);
-                } else {
-                    logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - WGCF Not Found"));
-                }
-            }
-        }
         
         if (shuttingDown && Settings.IGNORE_RESET) {
             logger.log(
@@ -270,14 +214,6 @@ public class Movecraft extends JavaPlugin {
     }
 
 
-
-    public WorldGuardPlugin getWorldGuardPlugin() {
-        return worldGuardPlugin;
-    }
-
-    public WGCustomFlagsPlugin getWGCustomFlagsPlugin() {
-        return wgCustomFlagsPlugin;
-    }
 
     public WorldHandler getWorldHandler(){
         return worldHandler;
