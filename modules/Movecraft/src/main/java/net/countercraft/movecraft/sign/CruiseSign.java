@@ -8,6 +8,7 @@ import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.ChatColor;
+import org.bukkit.Tag;
 import org.bukkit.World;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
@@ -26,7 +27,11 @@ public final class CruiseSign implements Listener{
     public void onCraftDetect(CraftDetectEvent event){
         World world = event.getCraft().getW();
         for(MovecraftLocation location: event.getCraft().getHitBox()){
-            BlockState state = location.toBukkit(world).getBlock().getState();
+            var block = location.toBukkit(world).getBlock();
+            if(!Tag.SIGNS.isTagged(block.getType())){
+                continue;
+            }
+            BlockState state = block.getState();
             if(state instanceof Sign){
                 Sign sign = (Sign) state;
                 if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Cruise: ON")) {

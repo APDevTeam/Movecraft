@@ -5,8 +5,10 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
 import org.bukkit.ChatColor;
+import org.bukkit.Tag;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -16,9 +18,13 @@ public final class SpeedSign implements Listener{
     public void onCraftDetect(CraftDetectEvent event){
         World world = event.getCraft().getW();
         for(MovecraftLocation location: event.getCraft().getHitBox()){
-            Block block = location.toBukkit(world).getBlock();
-            if(block.getState() instanceof Sign){
-                Sign sign = (Sign) block.getState();
+            var block = location.toBukkit(world).getBlock();
+            if(!Tag.SIGNS.isTagged(block.getType())){
+                continue;
+            }
+            BlockState state = block.getState();
+            if(state instanceof Sign){
+                Sign sign = (Sign) state;
                 if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Speed:")) {
                     sign.setLine(1, "0 m/s");
                     sign.setLine(2, "0ms");

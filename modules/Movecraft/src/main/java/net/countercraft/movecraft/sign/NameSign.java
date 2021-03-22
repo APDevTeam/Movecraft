@@ -5,6 +5,7 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.util.ChatUtils;
+import org.bukkit.Tag;
 import org.bukkit.World;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
@@ -30,7 +31,11 @@ public final class NameSign implements Listener {
         World w = c.getW();
 
         for (MovecraftLocation location : c.getHitBox()) {
-            BlockState state = location.toBukkit(w).getBlock().getState();
+            var block = location.toBukkit(w).getBlock();
+            if(!Tag.SIGNS.isTagged(block.getType())){
+                continue;
+            }
+            BlockState state = block.getState();
             if (!(state instanceof Sign)) {
                 return;
             }
