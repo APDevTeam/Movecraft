@@ -4,12 +4,14 @@ import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
-import net.countercraft.movecraft.async.detection.DetectionTask;
 import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.events.CraftSinkEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.processing.MovecraftWorld;
+import net.countercraft.movecraft.processing.WorldManager;
+import net.countercraft.movecraft.processing.tasks.DetectionTask;
 import net.countercraft.movecraft.util.hitboxes.BitmapHitBox;
 import net.countercraft.movecraft.util.Counter;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
@@ -136,7 +138,7 @@ public abstract class BaseCraft implements Craft{
     public void detect(@Nullable Player player, @NotNull Player notificationPlayer, MovecraftLocation startPoint) {
         this.setNotificationPlayer(notificationPlayer);
         this.setAudience(Movecraft.getAdventure().player(notificationPlayer));
-        Movecraft.getInstance().getAsyncManager().submitTask(new DetectionTask(this, startPoint, player, notificationPlayer), this);
+        WorldManager.INSTANCE.submit(new DetectionTask(this, startPoint, new MovecraftWorld(w), player));
     }
 
     @Deprecated

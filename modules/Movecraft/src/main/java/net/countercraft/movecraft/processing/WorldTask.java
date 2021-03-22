@@ -1,20 +1,15 @@
 package net.countercraft.movecraft.processing;
 
+@Deprecated
 public abstract class WorldTask implements Runnable{
 
-    protected final MovecraftWorld world;
-
-    public WorldTask(MovecraftWorld world){
-
-        this.world = world;
-    }
+    public WorldTask(){    }
 
     @Override
     public final void run(){
-        compute(world);
-        WorldManager.INSTANCE.poison();
+        compute();
     }
 
-    public abstract void compute(MovecraftWorld world);
+    public abstract void compute();
 
 }

@@ -40,6 +40,11 @@ public class BitmapHitBox implements MutableHitBox {
         this.addAll(hitBox);
     }
 
+    public BitmapHitBox(Collection<MovecraftLocation> locations){
+        this();
+        this.addAll(locations);
+    }
+
     public BitmapHitBox(BitmapHitBox hitBox){
         backing = new Roaring64NavigableMap(true);
         backing.or(hitBox.backing);

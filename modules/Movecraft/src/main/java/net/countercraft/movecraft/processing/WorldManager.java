@@ -1,28 +1,26 @@
 package net.countercraft.movecraft.processing;
 
 import net.countercraft.movecraft.MovecraftLocation;
+import net.countercraft.movecraft.util.CompletableFutureTask;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.function.Supplier;
 
 /**
  *
  */
-public class WorldManager extends BukkitRunnable {
+public final class WorldManager {
 
     public static final WorldManager INSTANCE = new WorldManager();
     private static final Runnable POISON = new Runnable() {
@@ -37,7 +35,6 @@ public class WorldManager extends BukkitRunnable {
     private final ConcurrentLinkedQueue<Runnable> worldChanges = new ConcurrentLinkedQueue<>();
     private final ConcurrentHashMap<ChunkLocation, ChunkSectionSnapshot> cache = new ConcurrentHashMap<>();
     private final ConcurrentLinkedQueue<Runnable> tasks = new ConcurrentLinkedQueue<>();
-    private final ExecutorService threads = Executors.newCachedThreadPool();
     private final BlockingQueue<Runnable> currentTasks = new LinkedBlockingQueue<>();
 
     private WorldManager(){}
@@ -46,7 +43,6 @@ public class WorldManager extends BukkitRunnable {
         return new MovecraftLocation(location.getX() & 0x0f, location.getY(), location.getZ() & 0x0f);
     }
 
-    @Override
     public void run() {
         if(!Bukkit.isPrimaryThread()){
             throw new RuntimeException("WorldManager must be executed on the main thread.");
@@ -56,7 +52,7 @@ public class WorldManager extends BukkitRunnable {
         if(tasks.isEmpty())
             return;
         while(!tasks.isEmpty()){
-            threads.execute(tasks.poll());
+            CompletableFuture.runAsync(tasks.poll()).thenRun(this::poison);
         }
         // process pre-queued tasks and their requests to the main thread
         while(true){
@@ -81,10 +77,6 @@ public class WorldManager extends BukkitRunnable {
         cache.clear();
     }
 
-    public void shutdown(){
-        threads.shutdown();
-    }
-
     public Material getMaterial(MovecraftLocation location, World world){
         return this.getChunkSnapshot(location, world).getState(toSectionLocation(location)).getBlockData().getMaterial();
     }
@@ -107,21 +99,20 @@ public class WorldManager extends BukkitRunnable {
         if(cache.containsKey(ChunkLocation.from(location, world))){
             return cache.get(ChunkLocation.from(location, world));
         }
-        var task = new FutureTask<>(() -> cache.computeIfAbsent(ChunkLocation.from(location, world), (chunkLocation) -> {
-            if (!Bukkit.isPrimaryThread()) {
-                throw new RuntimeException("chunk snapshots must be calculated on the main thread.");
-            }
+        return executeMain(() -> cache.computeIfAbsent(ChunkLocation.from(location, world), (chunkLocation) -> {
             var chunk = world.getChunkAt(location.toBukkit(world));
             var snapshot = chunk.getChunkSnapshot(false, false, false);
             return new ChunkSectionSnapshot(chunk.getTileEntities(), snapshot);
         }));
-        currentTasks.add(task);
-        try {
-            return task.get();
-        } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException(e);
-        }
+    }
 
+    public <T> T executeMain(Supplier<T> callable){
+        if(Bukkit.isPrimaryThread()){
+            throw new RuntimeException("Cannot schedule on main thread from the main thread");
+        }
+        var task = new CompletableFutureTask<>(callable);
+        currentTasks.add(task);
+        return task.join();
     }
 
     private static class ChunkLocation {
@@ -169,11 +160,11 @@ public class WorldManager extends BukkitRunnable {
         }
     }
 
-    public void poison(){
+    private void poison(){
         currentTasks.add(POISON);
     }
 
-    public void submit(WorldTask task){
-        this.tasks.add(task);
+    public void submit(Runnable task){
+        tasks.add(task);
     }
 }

@@ -54,6 +54,7 @@ import net.countercraft.movecraft.sign.SubcraftRotateSign;
 import net.countercraft.movecraft.sign.TeleportSign;
 import net.countercraft.movecraft.util.BlockHighlight;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
@@ -93,7 +94,6 @@ public class Movecraft extends JavaPlugin {
             adventure.close();
             adventure = null;
         }
-        WorldManager.INSTANCE.shutdown();
     }
 
     @Override
@@ -213,7 +213,7 @@ public class Movecraft extends JavaPlugin {
             MapUpdateManager.getInstance().runTaskTimer(this, 0, 1);
 
             CraftManager.initialize();
-            WorldManager.INSTANCE.runTaskTimer(this, 0,1);
+            Bukkit.getScheduler().runTaskTimer(this, WorldManager.INSTANCE::run, 0,1);
 
 
             getServer().getPluginManager().registerEvents(new InteractListener(), this);
