@@ -1,13 +1,5 @@
-<<<<<<< HEAD
 # Movecraft
 ![Java CI](https://github.com/eirikh1996/Movecraft/workflows/Java%20CI/badge.svg?branch=master)
-[![codebeat badge](https://codebeat.co/badges/77751ae4-80f7-460a-a225-0e3ae8cbbab1)](https://codebeat.co/projects/github-com-apdevteam-movecraft-master)
-[![Build Status](https://travis-ci.org/APDevTeam/Movecraft.svg?branch=master)](https://travis-ci.org/APDevTeam/Movecraft)
-=======
-Movecraft
-======
-![Java CI](https://github.com/APDevTeam/Movecraft/workflows/Java%20CI/badge.svg?branch=master)
->>>>>>> a538bb5fa41388a3e020df14e4186df46d6a6609
 
 This is a maintained fork of Movecraft, which aims to add legacy version support as well as performance fixes.
 
@@ -27,16 +19,13 @@ java -jar BuildTools.jar --rev 1.8.8
 java -jar BuildTools.jar --rev 1.9.4
 java -jar BuildTools.jar --rev 1.10.2
 java -jar BuildTools.jar --rev 1.11.2
-<<<<<<< HEAD
-java -jar BuildTools.jar --rev 1.12.1
+java -jar BuildTools.jar --rev 1.12.2
 java -jar BuildTools.jar --rev 1.13.2
 java -jar BuildTools.jar --rev 1.14.4 --compile craftbukkit
-java -jar BuildTools.jar --rev 1.15 --compile craftbukkit
+java -jar BuildTools.jar --rev 1.15.2 --compile craftbukkit
 java -jar BuildTools.jar --rev 1.16.1 --compile craftbukkit
-java -jar BuildTools.jar --rev 1.16.2 --compile craftbukkit
-=======
-java -jar BuildTools.jar --rev 1.12.2
->>>>>>> 37efee185980734d8b4849f4090937f34dfb25d3
+java -jar BuildTools.jar --rev 1.16.3 --compile craftbukkit
+java -jar BuildTools.jar --rev 1.16.5 --compile craftbukkit
 ```
 
 Then, run the following to build Movecraft through `maven`.
