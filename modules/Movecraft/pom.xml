@@ -10,7 +10,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     <!--<version>7.0.0_beta_9-SNAPSHOT.2</version>-->
-    <version>7.0.0_for_1.8.8-1.16.2_beta_37</version>
+    <version>7.0.0_for_1.8.8-1.16.5_beta_37</version>
 
     <repositories>
         <repository>
@@ -31,8 +31,8 @@
 
         <dependency>
             <groupId>org.spigotmc</groupId>
-            <artifactId>spigot</artifactId>
-            <version>1.16.4-R0.1-SNAPSHOT</version>
+            <artifactId>spigot-api</artifactId>
+            <version>1.16.5-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
