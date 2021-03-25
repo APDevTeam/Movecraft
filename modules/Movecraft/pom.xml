@@ -9,7 +9,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-    <!--<version>7.0.0_beta_9-SNAPSHOT.2</version>-->
+    <!--<version>7.0.0</version>-->
     <version>7.0.0_for_1.8.8-1.16.2_beta_37</version>
 
     <repositories>
@@ -109,35 +109,11 @@
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>com.sk89q.worldguard</groupId>
-            <artifactId>worldguard-core</artifactId>
-            <version>7.0.1-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>com.sk89q.worldguard</groupId>
-            <artifactId>worldguard-bukkit</artifactId>
-            <version>7.0.1-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>com.sk89q</groupId>
-            <artifactId>worldguard</artifactId>
-            <version>6.1.1-SNAPSHOT</version>
-            <scope>provided</scope>
-        </dependency>
-        <!--SnakeYAML-->
-        <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
             <version>1.10</version>
         </dependency>
         <!--Essentials-->
-        <dependency>
-            <groupId>com.mewin</groupId>
-            <artifactId>WGCustomFlags</artifactId>
-            <version>LATEST</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/../../libs/WGCustomFlags.jar</systemPath>
-        </dependency>
         <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations-java5</artifactId>

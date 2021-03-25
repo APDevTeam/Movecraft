@@ -4,8 +4,6 @@ SinkRateTicks: 20
 SinkCheckTicks: 100
 TracerRateTicks: 5
 PilotTool: STICK
-WorldGuardBlockMoveOnBuildPerm: true
-WorldGuardBlockSinkOnPVPPerm: true
 ManOverBoardTimeout: 30
 FireballLifespan: 6
 FireballPenetration: true
@@ -108,10 +106,6 @@ DisableShadowBlocks: # These blocks will not cast shadows. This improves the spe
   - SLIME_BLOCK
   - COAL_BLOCK
   - END_BRICKS
-WGCustomFlagsUsePilotFlag: false
-WGCustomFlagsUseMoveFlag: false
-WGCustomFlagsUseRotateFlag: false
-WGCustomFlagsUseSinkFlag: false
 DurabilityOverride:
   ENDER_STONE: 80
   END_BRICKS: 80

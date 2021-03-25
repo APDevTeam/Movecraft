@@ -1,5 +1,4 @@
 name: Movecraft
-softdepend: [WorldGuard, WorldEdit, WGCustomFlags]
 version: ${project.version}
 api-version: 1.13
 description: The original flight and movement plugin for minecraft.

@@ -26,8 +26,6 @@ import java.util.Map;
 
 public class Settings {
 
-    public static boolean CheckForUpdates = true;
-    public static boolean RestrictSiBsToRegions = false;
     public static boolean IGNORE_RESET = false;
     public static boolean Debug = false;
     public static int THREAD_POOL_SIZE = 5;
@@ -40,8 +38,6 @@ public class Settings {
     public static boolean DelayColorChanges = false;
     public static double SinkRateTicks = 20.0;
     public static double SinkCheckTicks = 100.0;
-    public static boolean WorldGuardBlockMoveOnBuildPerm = false;
-    public static boolean WorldGuardBlockSinkOnPVPPerm = false;
     public static boolean ProtectPilotedCrafts = false;
     public static boolean DisableSpillProtection = false;
     public static boolean DisableIceForm = true;
@@ -64,4 +60,5 @@ public class Settings {
     public static boolean is1_14 = false;
     public static boolean UseFAWE = false;
     public static HashSet<Material> DisableShadowBlocks = new HashSet<>();
+    public static boolean CheckForUpdates;
 }

@@ -181,6 +181,11 @@ public final class InteractListener implements Listener {
 
             dy = -(Math.abs(p) >= 25 ? 1 : 0) * (int) Math.signum(p);
 
+            if (type.getGearShiftsAffectDirectMovement()) {
+                dx *= currentGear;
+                dy *= currentGear;
+                dz *= currentGear;
+            }
             if (Math.abs(event.getPlayer().getLocation().getPitch()) >= 75) {
                 dx = 0;
                 dz = 0;

@@ -42,8 +42,6 @@ import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-
 public class BlockListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)

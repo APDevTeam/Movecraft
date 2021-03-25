@@ -117,8 +117,6 @@ public class RotationTask extends AsyncTask {
                 break;
             }
 
-            // See if they are permitted to build in the area, if WorldGuard integration is turned on
-            Location plugLoc = newLocation.toBukkit(w);
 
             if (!withinWorldBorder(craft.getWorld(), newLocation)) {
                 failMessage = I18nSupport.getInternationalisedString("Rotation - Failed Craft cannot pass world border") + String.format(" @ %d,%d,%d", newLocation.getX(), newLocation.getY(), newLocation.getZ());

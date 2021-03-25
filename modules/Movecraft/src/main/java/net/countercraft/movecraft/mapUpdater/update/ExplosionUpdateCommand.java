@@ -1,13 +1,9 @@
 package net.countercraft.movecraft.mapUpdater.update;
 
-import net.countercraft.movecraft.Movecraft;
-import net.countercraft.movecraft.utils.WorldguardUtils;
 import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.events.ExplosionEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.entity.TNTPrimed;
-import org.bukkit.event.Event;
-import org.bukkit.event.entity.EntityExplodeEvent;
 
 import java.util.Objects;
 
@@ -36,7 +32,11 @@ public class ExplosionUpdateCommand extends UpdateCommand {
     public void doUpdate() {
         //if (explosionStrength > 0) { // don't bother with tiny explosions
         //Location loc = new Lo cation(explosionLocation.getWorld(), explosionLocation.getX() + 0.5, explosionLocation.getY() + 0.5, explosionLocation.getZ());
-        if (Settings.Debug){
+        ExplosionEvent e = new ExplosionEvent(explosionLocation, explosionStrength);
+        Bukkit.getServer().getPluginManager().callEvent(e);
+        if(e.isCancelled())
+            return;
+        if (Settings.Debug) {
             Bukkit.broadcastMessage("Explosion strength: " + explosionStrength + " at " + explosionLocation.toVector().toString());
         }
         this.createExplosion(explosionLocation.add(.5,.5,.5), explosionStrength);
@@ -45,11 +45,6 @@ public class ExplosionUpdateCommand extends UpdateCommand {
     }
 
     private void createExplosion(Location loc, float explosionPower) {
-        if (Movecraft.getInstance().getWorldGuardPlugin() != null) {
-            if (!WorldguardUtils.explosionsPermitted(loc)){
-                return;
-            }
-        }
         loc.getWorld().createExplosion(loc.getX(), loc.getY(), loc.getZ(), explosionPower);
     }
 

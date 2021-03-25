@@ -17,8 +17,6 @@
 
 package net.countercraft.movecraft;
 
-import com.mewin.WGCustomFlags.WGCustomFlagsPlugin;
-import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import net.countercraft.movecraft.async.AsyncManager;
 import net.countercraft.movecraft.commands.*;
 import net.countercraft.movecraft.config.Settings;
@@ -32,7 +30,6 @@ import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.sign.*;
 import net.countercraft.movecraft.utils.LegacyUtils;
 import net.countercraft.movecraft.utils.UpdateManager;
-import net.countercraft.movecraft.worldguard.WorldGuardCompatManager;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -49,8 +46,6 @@ import java.util.logging.Logger;
 public class Movecraft extends JavaPlugin {
 
     private static Movecraft instance;
-    private static WorldGuardPlugin worldGuardPlugin;
-    private static WGCustomFlagsPlugin wgCustomFlagsPlugin = null;
     private Logger logger;
     private boolean shuttingDown;
     private boolean startup = true;
@@ -114,8 +109,6 @@ public class Movecraft extends JavaPlugin {
 
 
         Settings.LOCALE = getConfig().getString("Locale");
-        I18nSupport.init();
-        Settings.RestrictSiBsToRegions = getConfig().getBoolean("RestrictSiBsToRegions", false);
         Settings.Debug = getConfig().getBoolean("Debug", false);
         Settings.DisableSpillProtection = getConfig().getBoolean("DisableSpillProtection", false);
         Settings.DisableIceForm = getConfig().getBoolean("DisableIceForm", true);
@@ -209,17 +202,6 @@ public class Movecraft extends JavaPlugin {
                 worldHandler.disableShadow(typ);
             }
         }
-        //load up WorldGuard if it's present
-        if (worldGuardPlugin == null) {
-            logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - WG Not Found"));
-            Settings.RestrictSiBsToRegions = false;
-        } else {
-            logger.log(Level.INFO, I18nSupport.getInternationalisedString("Startup - WG Found"));
-            Settings.WorldGuardBlockMoveOnBuildPerm = getConfig().getBoolean("WorldGuardBlockMoveOnBuildPerm", false);
-            Settings.WorldGuardBlockSinkOnPVPPerm = getConfig().getBoolean("WorldGuardBlockSinkOnPVPPerm", false);
-            logger.log(Level.INFO, "Settings: WorldGuardBlockMoveOnBuildPerm - {0}, WorldGuardBlockSinkOnPVPPerm - {1}", new Object[]{Settings.WorldGuardBlockMoveOnBuildPerm, Settings.WorldGuardBlockSinkOnPVPPerm});
-            getServer().getPluginManager().registerEvents(new WorldGuardCompatManager(), this);
-        }
         
         if (shuttingDown && Settings.IGNORE_RESET) {
             logger.log(
@@ -291,13 +273,6 @@ public class Movecraft extends JavaPlugin {
         Settings.is1_14 = versionNumber >= 14;
         instance = this;
         logger = getLogger();
-        //load up WorldGuard if it's present
-        Plugin wGPlugin = getServer().getPluginManager().getPlugin("WorldGuard");
-        if (wGPlugin instanceof WorldGuardPlugin) {
-            worldGuardPlugin = (WorldGuardPlugin) wGPlugin;
-            if (startup)
-                WorldGuardCompatManager.registerFlags();
-        }
     }
 
     private void saveLegacyConfig(){
@@ -320,14 +295,6 @@ public class Movecraft extends JavaPlugin {
         }
     }
 
-
-    public WorldGuardPlugin getWorldGuardPlugin() {
-        return worldGuardPlugin;
-    }
-
-    public WGCustomFlagsPlugin getWGCustomFlagsPlugin() {
-        return wgCustomFlagsPlugin;
-    }
 
     public WorldHandler getWorldHandler(){
         return worldHandler;
