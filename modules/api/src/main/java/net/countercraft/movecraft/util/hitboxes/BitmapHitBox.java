@@ -72,11 +72,22 @@ public class BitmapHitBox implements MutableHitBox {
         return true;
     }
 
+    private void fastAdd(@NotNull MovecraftLocation location){
+        if (!invalidateBounds) {
+            checkBounds(location);
+        }
+        backing.add(location.pack());
+    }
+
     @Override
     public boolean addAll(@NotNull Collection<? extends MovecraftLocation> collection) {
         boolean update = false;
         for (MovecraftLocation location : collection) {
-            update |= add(location);
+            if(update){
+                fastAdd(location);
+            } else {
+                update = add(location);
+            }
         }
         return update;
     }
