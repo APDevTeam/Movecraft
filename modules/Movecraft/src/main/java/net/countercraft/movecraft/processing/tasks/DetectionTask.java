@@ -21,6 +21,7 @@ import net.countercraft.movecraft.processing.tasks.detection.PilotSignValidator;
 import net.countercraft.movecraft.processing.tasks.detection.SizeValidator;
 import net.countercraft.movecraft.processing.tasks.detection.WaterContactValidator;
 import net.countercraft.movecraft.util.CollectionUtils;
+import net.countercraft.movecraft.util.ConcurrentLocationSet;
 import net.countercraft.movecraft.util.hitboxes.BitmapHitBox;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
 import net.countercraft.movecraft.util.hitboxes.SolidHitBox;
@@ -69,13 +70,12 @@ public class DetectionTask implements Runnable {
             new MovecraftLocation(-1, 1, 0),
             new MovecraftLocation(-1, 0, 0),
             new MovecraftLocation(-1, -1, 0)};
-    private static final Object PRESENT = new Object();
     private final Craft craft;
     private final MovecraftLocation startLocation;
     private final MovecraftWorld world;
     private final Player player;
     private final AtomicInteger size = new AtomicInteger(0);
-    private final ConcurrentMap<MovecraftLocation, Object> visited = new ConcurrentHashMap<>();
+    private final Set<MovecraftLocation> visited;
     private final ConcurrentLinkedDeque<MovecraftLocation> illegal = new ConcurrentLinkedDeque<>();
     private final ConcurrentMap<Material, Deque<MovecraftLocation>> materials = new ConcurrentHashMap<>();
     private final ConcurrentLinkedDeque<MovecraftLocation> legal = new ConcurrentLinkedDeque<>();
@@ -95,60 +95,64 @@ public class DetectionTask implements Runnable {
         this.startLocation = startLocation;
         this.world = world;
         this.player = player;
+        visited = new ConcurrentLocationSet();
     }
 
     @Deprecated
     private void water(@NotNull Craft c){
         final int waterLine = WorldManager.INSTANCE.executeMain(c::getWaterLine);
-        if (!c.getType().blockedByWater() && c.getHitBox().getMinY() <= waterLine) {
-            //The subtraction of the set of coordinates in the HitBox cube and the HitBox itself
-            final HitBox invertedHitBox = new BitmapHitBox(c.getHitBox().boundingHitBox()).difference(c.getHitBox());
+        if (c.getType().blockedByWater() || c.getHitBox().getMinY() > waterLine) {
+            return;
+        }
+        //The subtraction of the set of coordinates in the HitBox cube and the HitBox itself
+        final HitBox invertedHitBox = new BitmapHitBox(c.getHitBox().boundingHitBox()).difference(c.getHitBox());
 
-            //A set of locations that are confirmed to be "exterior" locations
-            final BitmapHitBox confirmed = new BitmapHitBox();
-            final BitmapHitBox entireHitbox = new BitmapHitBox(c.getHitBox());
+        //A set of locations that are confirmed to be "exterior" locations
+        final BitmapHitBox confirmed = new BitmapHitBox();
+        final BitmapHitBox entireHitbox = new BitmapHitBox(c.getHitBox());
 
-            //place phased blocks
-            final Set<Location> overlap = new HashSet<>(c.getPhaseBlocks().keySet());
-            overlap.retainAll(c.getHitBox().asSet().stream().map(l -> l.toBukkit(c.getW())).collect(Collectors.toSet()));
-            final int minX = c.getHitBox().getMinX();
-            final int maxX = c.getHitBox().getMaxX();
-            final int minY = c.getHitBox().getMinY();
-            final int maxY = overlap.isEmpty() ? c.getHitBox().getMaxY() : Collections.max(overlap, Comparator.comparingInt(Location::getBlockY)).getBlockY();
-            final int minZ = c.getHitBox().getMinZ();
-            final int maxZ = c.getHitBox().getMaxZ();
-            final HitBox[] surfaces = {
-                    new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(minX, maxY, maxZ)),
-                    new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(maxX, maxY, minZ)),
-                    new SolidHitBox(new MovecraftLocation(maxX, minY, maxZ), new MovecraftLocation(minX, maxY, maxZ)),
-                    new SolidHitBox(new MovecraftLocation(maxX, minY, maxZ), new MovecraftLocation(maxX, maxY, minZ)),
-                    new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(maxX, minY, maxZ))};
-            final BitmapHitBox validExterior = new BitmapHitBox();
-            for (HitBox hitBox : surfaces) {
-                validExterior.addAll(new BitmapHitBox(hitBox).difference(c.getHitBox()));
+        //place phased blocks
+        final Set<Location> overlap = new HashSet<>(c.getPhaseBlocks().keySet());
+        overlap.retainAll(c.getHitBox().asSet().stream().map(l -> l.toBukkit(c.getW())).collect(Collectors.toSet()));
+        final int minX = c.getHitBox().getMinX();
+        final int maxX = c.getHitBox().getMaxX();
+        final int minY = c.getHitBox().getMinY();
+        final int maxY = overlap.isEmpty() ? c.getHitBox().getMaxY() : Collections.max(overlap, Comparator.comparingInt(Location::getBlockY)).getBlockY();
+        final int minZ = c.getHitBox().getMinZ();
+        final int maxZ = c.getHitBox().getMaxZ();
+        final HitBox[] surfaces = {
+                new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(minX, maxY, maxZ)),
+                new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(maxX, maxY, minZ)),
+                new SolidHitBox(new MovecraftLocation(maxX, minY, maxZ), new MovecraftLocation(minX, maxY, maxZ)),
+                new SolidHitBox(new MovecraftLocation(maxX, minY, maxZ), new MovecraftLocation(maxX, maxY, minZ)),
+                new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(maxX, minY, maxZ))};
+        final BitmapHitBox validExterior = new BitmapHitBox();
+        for (HitBox hitBox : surfaces) {
+            validExterior.addAll(new BitmapHitBox(hitBox).difference(c.getHitBox()));
+        }
+
+        //Check to see which locations in the from set are actually outside of the craft
+        //use a modified BFS for multiple origin elements
+        BitmapHitBox visited = new BitmapHitBox();
+        Queue<MovecraftLocation> queue = Lists.newLinkedList(validExterior);
+        while (!queue.isEmpty()) {
+            MovecraftLocation node = queue.poll();
+            if (visited.contains(node))
+                continue;
+            visited.add(node);
+            //If the node is already a valid member of the exterior of the HitBox, continued search is unitary.
+            for (MovecraftLocation neighbor : CollectionUtils.neighbors(invertedHitBox, node)) {
+                queue.add(neighbor);
             }
+        }
+        confirmed.addAll(visited);
+        entireHitbox.addAll(invertedHitBox.difference(confirmed));
 
-            //Check to see which locations in the from set are actually outside of the craft
-            //use a modified BFS for multiple origin elements
-            BitmapHitBox visited = new BitmapHitBox();
-            Queue<MovecraftLocation> queue = Lists.newLinkedList(validExterior);
-            while (!queue.isEmpty()) {
-                MovecraftLocation node = queue.poll();
-                if (visited.contains(node))
-                    continue;
-                visited.add(node);
-                //If the node is already a valid member of the exterior of the HitBox, continued search is unitary.
-                for (MovecraftLocation neighbor : CollectionUtils.neighbors(invertedHitBox, node)) {
-                    queue.add(neighbor);
-                }
-            }
-            confirmed.addAll(visited);
-            entireHitbox.addAll(invertedHitBox.difference(confirmed));
+        var waterData = Bukkit.createBlockData(Material.WATER);
 
-            for (MovecraftLocation location : entireHitbox) {
-                if (location.getY() <= waterLine) {
-                    c.getPhaseBlocks().put(location.toBukkit(c.getW()), Bukkit.createBlockData(Material.WATER));
-                }
+        for (MovecraftLocation location : entireHitbox) {
+            if (location.getY() <= waterLine) {
+                c.getPhaseBlocks().put(location.toBukkit(c.getW()), waterData);
             }
         }
     }
@@ -170,10 +174,10 @@ public class DetectionTask implements Runnable {
         water(craft); //TODO: Remove
         final CraftDetectEvent event = new CraftDetectEvent(craft);
 
-        WorldManager.INSTANCE.executeMain(()-> {
-             Bukkit.getPluginManager().callEvent(event);
-             return null;
-        });
+//        WorldManager.INSTANCE.executeMain(()-> {
+//             Bukkit.getPluginManager().callEvent(event);
+//             return null;
+//        });
         if (event.isCancelled()) {
             craft.getAudience().sendMessage(Component.text(event.getFailMessage()));
             return;
@@ -194,7 +198,6 @@ public class DetectionTask implements Runnable {
         currentFrontier.addAll(Arrays.stream(SHIFTS).map(startLocation::add).collect(Collectors.toList()));
         int threads = Runtime.getRuntime().availableProcessors();
         for(int i = 0; !currentFrontier.isEmpty() && size.get() < craft.getType().getMaxSize(); i++){
-//            Bukkit.getLogger().info(String.format("Depth: %d", i));
             List<Callable<Object>> tasks = new ArrayList<>();
             for(int j = 0; j < threads ; j++) {
                 tasks.add(Executors.callable(new DetectAction(currentFrontier, nextFrontier)));
@@ -222,7 +225,6 @@ public class DetectionTask implements Runnable {
         @Override
         public void run() {
             MovecraftLocation probe;
-
             while((probe = currentFrontier.poll())!=null) {
                 Modifier status = Modifier.NONE;
                 for (var validator : validators) {
@@ -237,13 +239,12 @@ public class DetectionTask implements Runnable {
                         legal.add(probe);
                         size.incrementAndGet();
                         materials.computeIfAbsent(world.getMaterial(probe), Functions.forSupplier(ConcurrentLinkedDeque::new)).add(probe);
-                        // by using putIfAbsent, we guarantee that there will only ever be one successful computation
-                        // on each location. This is as opposed to using containsKey and than using put after, which is
-                        // not atomic. and thus a race condition.
-                        nextFrontier.addAll(Arrays.stream(SHIFTS)
-                                .map(probe::add)
-                                .filter((location) -> visited.putIfAbsent(location, PRESENT) == null)
-                                .collect(Collectors.toList()));
+                        for(int i = 0; i< SHIFTS.length; i++){
+                            var shifted = probe.add(SHIFTS[i]);
+                            if(visited.add(shifted)) {
+                                nextFrontier.add(shifted);
+                            }
+                        }
                 }
             }
 
