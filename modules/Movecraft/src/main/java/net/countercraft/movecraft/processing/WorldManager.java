@@ -52,7 +52,7 @@ public final class WorldManager {
         if(tasks.isEmpty())
             return;
         while(!tasks.isEmpty()){
-            CompletableFuture.runAsync(tasks.poll()).thenRun(this::poison);
+            CompletableFuture.runAsync(tasks.poll()).whenComplete((a,b) -> poison());
         }
         // process pre-queued tasks and their requests to the main thread
         while(true){
