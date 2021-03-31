@@ -36,6 +36,7 @@ public final class WorldManager {
     private final ConcurrentHashMap<ChunkLocation, ChunkSectionSnapshot> cache = new ConcurrentHashMap<>();
     private final ConcurrentLinkedQueue<Runnable> tasks = new ConcurrentLinkedQueue<>();
     private final BlockingQueue<Runnable> currentTasks = new LinkedBlockingQueue<>();
+    private volatile boolean running = false;
 
     private WorldManager(){}
 
@@ -47,6 +48,7 @@ public final class WorldManager {
         if(!Bukkit.isPrimaryThread()){
             throw new RuntimeException("WorldManager must be executed on the main thread.");
         }
+        running = true;
         Runnable runnable;
         int remaining = tasks.size();
         if(tasks.isEmpty())
@@ -75,6 +77,7 @@ public final class WorldManager {
         }
         // Dump cache
         cache.clear();
+        running = false;
     }
 
     public Material getMaterial(MovecraftLocation location, World world){
@@ -166,5 +169,9 @@ public final class WorldManager {
 
     public void submit(Runnable task){
         tasks.add(task);
+    }
+
+    public boolean isRunning() {
+        return running;
     }
 }

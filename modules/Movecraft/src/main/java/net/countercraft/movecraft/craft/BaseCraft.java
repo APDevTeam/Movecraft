@@ -122,6 +122,9 @@ public abstract class BaseCraft implements Craft{
 
     @NotNull
     public World getW() {
+        if(WorldManager.INSTANCE.isRunning()){
+            Bukkit.getLogger().severe("Invoking most methods on worlds while the world manager is running WILL cause deadlock.");
+        }
         return w;
     }
 
