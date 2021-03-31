@@ -11,7 +11,11 @@ import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.function.Supplier;
 
-public class ConcurrentLocationSet implements Set<MovecraftLocation> {
+
+/**
+ * Implements an atomic Set of MovecraftLocations. Note that this implementation is purely incremental.
+ */
+public class AtomicLocationSet implements Set<MovecraftLocation> {
 
     private static final int LOW_MASK_LENGTH = 16;
     private static final int TREE_DEPTH = 12;

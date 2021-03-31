@@ -1,16 +1,18 @@
 package net.countercraft.movecraft.util;
 
 
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLongArray;
 
 public class AtomicBitSet {
+    private static final VarHandle BACKING = MethodHandles.arrayElementVarHandle(long[].class);
     private static final int FIELD_LENGTH = 64;
-    private final AtomicLongArray backing;
+    private final long[] backing;
 
     public AtomicBitSet(int maxSize){
-        this.backing = new AtomicLongArray((int) Math.ceil(maxSize/(double)FIELD_LENGTH));
+        this.backing = new long[(int) Math.ceil(maxSize/(double)FIELD_LENGTH)];
     }
 
     /**
@@ -19,13 +21,8 @@ public class AtomicBitSet {
      * @return the previous value of the bit with the specified index
      */
     public boolean add(int index){
-        while(true){
-            long bitField = backing.getAcquire(index/FIELD_LENGTH);
-            if(backing.weakCompareAndSetRelease(index/FIELD_LENGTH, bitField,
-                    bitField | (1L << (index & (FIELD_LENGTH - 1))))){
-                return ((bitField >>> (index & (FIELD_LENGTH - 1))) & 1L) == 1;
-            }
-        }
+        long prior = (long) BACKING.getAndBitwiseOr(backing, index/FIELD_LENGTH, (1L << (index & (FIELD_LENGTH - 1))));
+        return ((prior >>> (index & (FIELD_LENGTH - 1))) & 1L) == 1;
     }
 
     /**
@@ -34,17 +31,17 @@ public class AtomicBitSet {
      * @return the value of the bit with the specified index
      */
     public boolean get(int index){
-        return ((backing.get(index/FIELD_LENGTH) >>> (index & (FIELD_LENGTH - 1))) & 1L) == 1;
+        // Use acquire to ensure a happens before relation in external contexts
+        return (((long) BACKING.getAcquire(backing, index/FIELD_LENGTH) >>> (index & (FIELD_LENGTH - 1))) & 1L) == 1;
     }
 
     @Override
     public String toString(){
-
         List<String> values = new ArrayList<>();
-        for(int i = 0; i<backing.length(); i++){
-            for(long j = backing.get(i), k = 0; j != 0; j >>>= 1, k++){
-                if((j & 1) != 0){
-                    values.add("" + k + i* 64L);
+        for(int i = 0; i<backing.length; i++){
+            for(int j = 0; j < FIELD_LENGTH; j++){
+                if(this.get(i * FIELD_LENGTH + j)){
+                    values.add("" + j + i * FIELD_LENGTH);
                 }
             }
         }
