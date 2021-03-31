@@ -1,19 +1,9 @@
 package net.countercraft.movecraft.utils;
 
-import com.sk89q.worldguard.LocalPlayer;
-import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
-import com.sk89q.worldguard.protection.ApplicableRegionSet;
-import com.sk89q.worldguard.protection.flags.Flag;
-import com.sk89q.worldguard.protection.flags.StateFlag;
-import com.sk89q.worldguard.protection.managers.RegionManager;
-import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
-import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.entity.Player;
 
 public class LegacyUtils {
 
@@ -132,29 +122,5 @@ public class LegacyUtils {
                 break;
         }
         return color;
-    }
-
-    public static RegionManager getRegionManager(WorldGuardPlugin worldGuardPlugin, World world){
-        return worldGuardPlugin.getRegionManager(world);
-    }
-
-    public static ApplicableRegionSet getApplicableRegions(RegionManager regionManager, Location location){
-        return regionManager.getApplicableRegions(location);
-    }
-
-    public static boolean canBuild(WorldGuardPlugin worldGuardPlugin, World world, MovecraftLocation location, Player player){
-        return worldGuardPlugin.canBuild(player, location.toBukkit(world));
-    }
-
-    public static boolean allows(ApplicableRegionSet applicableRegionSet, StateFlag stateFlag){
-        return applicableRegionSet.allows(stateFlag);
-    }
-
-    public static StateFlag.State getFlag(WorldGuardPlugin wgPlugin, Location loc, Object flag, LocalPlayer lp){
-        return (StateFlag.State) wgPlugin.getRegionManager(loc.getWorld()).getApplicableRegions(loc).getFlag((Flag) flag, lp);
-    }
-
-    public static StateFlag.State getFlag(WorldGuardPlugin wgPlugin, Location loc, Object flag){
-        return (StateFlag.State) wgPlugin.getRegionManager(loc.getWorld()).getApplicableRegions(loc).getFlag((Flag) flag);
     }
 }

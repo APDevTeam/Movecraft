@@ -98,12 +98,6 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>com.sk89q</groupId>
-      <artifactId>worldguard</artifactId>
-      <version>LATEST</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
       <groupId>org.jetbrains</groupId>
       <artifactId>annotations-java5</artifactId>
       <version>RELEASE</version>

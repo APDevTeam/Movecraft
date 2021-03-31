@@ -24,6 +24,7 @@ import net.countercraft.movecraft.craft.CraftType;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.utils.LegacyUtils;
 import net.countercraft.movecraft.utils.MathUtils;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -31,7 +32,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.material.Button;
-import org.bukkit.util.Vector;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -89,7 +89,7 @@ public final class InteractListener implements Listener {
             }
             final CraftType type = craft.getType();
             int currentGear = craft.getCurrentGear();
-            /*if (player.isSneaking() && !craft.getPilotLocked()) {
+            if (player.isSneaking() && !craft.getPilotLocked() && Settings.GearshiftsWithPilotToolEnabled) {
                 final int gearShifts = type.getGearShifts();
                 if (gearShifts == 1) {
                     player.sendMessage(I18nSupport.getInternationalisedString("Gearshift - Disabled for craft type"));
@@ -101,11 +101,14 @@ public final class InteractListener implements Listener {
                 player.sendMessage(I18nSupport.getInternationalisedString("Gearshift - Gear changed") + " " + currentGear + " / " + gearShifts);
                 craft.setCurrentGear(currentGear);
                 return;
-            }*/
+            }
             Long time = timeMap.get(player);
             int tickCooldown = craft.getType().getTickCooldown(craft.getWorld());
             if (type.getGearShiftsAffectDirectMovement() && type.getGearShiftsAffectTickCooldown()) {
                 tickCooldown *= currentGear;
+            }
+            if (!MathUtils.locationNearHitBox(craft.getHitBox(), event.getPlayer().getLocation(), 2)) {
+                return;
             }
             if (time != null) {
                 long ticksElapsed = (System.currentTimeMillis() - time) / 50;
@@ -121,53 +124,26 @@ public final class InteractListener implements Listener {
                         return;
                     }
                 }
-
-                if (!MathUtils.locationNearHitBox(craft.getHitBox(), event.getPlayer().getLocation(), 2)) {
-                    return;
-                }
-
-                if (!event.getPlayer().hasPermission("movecraft." + craft.getType().getCraftName() + ".move")) {
-                    event.getPlayer().sendMessage(
-                            I18nSupport.getInternationalisedString("Insufficient Permissions"));
-                    return;
-                }
-                if (craft.getPilotLocked()) {
-                    // right click moves up or down if using direct
-                    // control
-                    int DY = 1;
-                    if (event.getPlayer().isSneaking())
-                        DY = -1;
-                    if (craft.getType().getGearShiftsAffectDirectMovement())
-                        DY *= currentGear;
-                    craft.translate(0, DY, 0);
-                    timeMap.put(event.getPlayer(), System.currentTimeMillis());
-                    craft.setLastCruiseUpdate(System.currentTimeMillis());
-                    return;
-                }
-                // Player is onboard craft and right clicking
-
-                final Vector direction = player.getLocation().getDirection();
-                float p = event.getPlayer().getLocation().getPitch();
-
-                direction.setY(-(Math.abs(p) >= 25 ? 1 : 0) * (int) Math.signum(p));
-                direction.normalize();
+            }
+            if (!event.getPlayer().hasPermission("movecraft." + craft.getType().getCraftName() + ".move")) {
+                event.getPlayer().sendMessage(
+                        I18nSupport.getInternationalisedString("Insufficient Permissions"));
+                return;
+            }
+            // Player is onboard craft and right clicking
+            if (craft.getPilotLocked()) {
+                // right click moves up or down if using direct
+                // control
+                int DY = 1;
+                if (event.getPlayer().isSneaking())
+                    DY = -1;
                 if (craft.getType().getGearShiftsAffectDirectMovement())
-                    direction.multiply(currentGear);
-                int dx = (int) Math.rint(direction.getX());
-                int dz = (int) Math.rint(direction.getZ());
-                int dy = (int) Math.rint(direction.getY());
-                if (Math.abs(p) >= 75) {
-                    dx = 0;
-                    dz = 0;
-                }
-
-                craft.translate(dx, dy, dz);
+                    DY *= currentGear;
+                craft.translate(0, DY, 0);
                 timeMap.put(event.getPlayer(), System.currentTimeMillis());
                 craft.setLastCruiseUpdate(System.currentTimeMillis());
                 return;
             }
-            // Player is onboard craft and right clicking
-
             float rotation = (float) Math.PI * event.getPlayer().getLocation().getYaw() / 180f;
 
             float nx = -(float) Math.sin(rotation);
@@ -208,9 +184,21 @@ public final class InteractListener implements Listener {
                 craft.setPilotLocked(false);
                 event.getPlayer().sendMessage(
                         I18nSupport.getInternationalisedString("Direct Control - Leaving"));
-                event.setCancelled(true);
+            } else {
+                craft.setPilotLocked(true);
+                event.getPlayer().sendMessage(
+                        I18nSupport.getInternationalisedString("Direct Control - Entering"));
+                if (craft.getType().getLockPilotAtDirectControl()) {
+                    Location pLoc = event.getPlayer().getLocation().clone();
+                    craft.setPilotLockedX(pLoc.getBlockX() + .5);
+                    craft.setPilotLockedY(pLoc.getBlockY());
+                    craft.setPilotLockedZ(pLoc.getBlockZ() + .5);
+                    pLoc.setX(craft.getPilotLockedX());
+                    pLoc.setZ(craft.getPilotLockedZ());
+                    event.getPlayer().teleport(pLoc);
+                }
             }
-
+            event.setCancelled(true);
         }
 
     }

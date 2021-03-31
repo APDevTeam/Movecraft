@@ -61,4 +61,5 @@ public class Settings {
     public static boolean UseFAWE = false;
     public static HashSet<Material> DisableShadowBlocks = new HashSet<>();
     public static boolean CheckForUpdates;
+    public static boolean GearshiftsWithPilotToolEnabled;
 }

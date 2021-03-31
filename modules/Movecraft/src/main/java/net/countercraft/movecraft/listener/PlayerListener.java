@@ -35,12 +35,15 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.util.Vector;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
 
 public class PlayerListener implements Listener {
     private final Map<Craft, Long> timeToReleaseAfter = new WeakHashMap<>();
+    private final Map<Player, Long> timeMap = new HashMap<>();
 
     private String checkCraftBorders(Craft craft) {
         String ret = "";
@@ -125,6 +128,32 @@ public class PlayerListener implements Listener {
 
         if(MathUtils.locationNearHitBox(c.getHitBox(), p.getLocation(), 2)){
             timeToReleaseAfter.remove(c);
+            if (c.getType().getLockPilotAtDirectControl() && c.getPilotLocked()) {
+                Vector from = event.getFrom().toVector();
+                Vector to = event.getTo().toVector();
+                if (to.getX() - from.getX() != 0.0 || to.getZ() - from.getZ() != 0.0) {
+                    event.setCancelled(true);
+                }
+                int dx = (int) Math.signum(Math.abs(to.getX() - from.getX()) > .07 ? to.getX() - from.getX() : 0.0);
+                int dz = (int) Math.signum(Math.abs(to.getZ() - from.getZ()) > .07 ? to.getZ() - from.getZ() : 0.0);
+                final long time = timeMap.getOrDefault(p, 0L);
+                long ticksElapsed = (System.currentTimeMillis() - time) / 50;
+                long tickCooldown = c.getTickCooldown();
+                // if the craft should go slower underwater, make time
+                // pass more slowly there
+                if (c.getType().getHalfSpeedUnderwater() && c.getHitBox().getMinY() < c.getWorld().getSeaLevel())
+                    ticksElapsed = ticksElapsed >> 1;
+
+                if (Math.abs(ticksElapsed) < c.getType().getTickCooldown(c.getWorld())) {
+
+                    if (Math.abs(ticksElapsed) < tickCooldown) {
+                        return;
+                    }
+                }
+                c.setLastCruiseUpdate(System.currentTimeMillis());
+                c.translate(dx, 0 , dz);
+
+            }
             return;
         }
 

@@ -17,6 +17,8 @@
 
 package net.countercraft.movecraft.mapUpdater.update;
 
+import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.utils.TeleportUtils;
 import org.bukkit.Location;
 import org.bukkit.Sound;
@@ -87,7 +89,7 @@ public class EntityUpdateCommand extends UpdateCommand {
         final Location destLoc = new Location(world, entityLoc.getX() + x, entityLoc.getY() + y, entityLoc.getZ() + z,yaw + entityLoc.getYaw(),pitch + entityLoc.getPitch());
         if (!entity.getWorld().equals(world)) {
             entity.teleport(destLoc);
-            if (sound != null) {
+            if (sound != null && (entity instanceof Player)) {
                 ((Player) entity).playSound(entityLoc, sound, volume, 1.0f);
             }
             return;
@@ -97,8 +99,18 @@ public class EntityUpdateCommand extends UpdateCommand {
         }
         Location playerLoc = entity.getLocation();
 
+        Player player = (Player) entity;
+        Craft craft = CraftManager.getInstance().getCraftByPlayer(player);
+        Location location;
+        if (craft != null && craft.getNotificationPlayer() == player && craft.getPilotLocked()) {
+            craft.setPilotLockedX(craft.getPilotLockedX() + x);
+            craft.setPilotLockedY(craft.getPilotLockedY() + y);
+            craft.setPilotLockedZ(craft.getPilotLockedZ() + z);
+            location = new Location(world, craft.getPilotLockedX(), craft.getPilotLockedY(), craft.getPilotLockedZ());
+        } else {
+            location = new Location(world, playerLoc.getX() + x, playerLoc.getY() + y, playerLoc.getZ() + z);
+        }
         //Movecraft.getInstance().getWorldHandler().addPlayerLocation((Player) entity,x,y,z,yaw,pitch);
-        Location location = new Location(world, playerLoc.getX() + x, playerLoc.getY() + y, playerLoc.getZ() + z);
         TeleportUtils.teleport((Player) entity, location, yaw);
     }
 

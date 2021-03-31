@@ -731,6 +731,7 @@ public class AsyncManager extends BukkitRunnable {
 
     private void clearAll() {
         for (Craft c : clearanceSet) {
+            c.setTranslating(false);
             c.setProcessing(false);
         }
 

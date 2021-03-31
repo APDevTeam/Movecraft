@@ -126,6 +126,7 @@ final public class CraftType {
     private final boolean gearShiftsAffectTickCooldown;
     private final boolean gearShiftsAffectDirectMovement;
     private final boolean gearShiftsAffectCruiseSkipBlocks;
+    private final boolean lockPilotAtDirectControl;
     @SuppressWarnings("unchecked")
     public CraftType(File f) {
         final Map data;
@@ -397,6 +398,7 @@ final public class CraftType {
         gearShiftsAffectTickCooldown = (boolean) data.getOrDefault("gearShiftsAffectTickCooldown", true);
         gearShiftsAffectDirectMovement = (boolean) data.getOrDefault("gearShiftsAffectDirectMovement", false);
         gearShiftsAffectCruiseSkipBlocks = (boolean) data.getOrDefault("gearShiftsAffectCruiseSkipBlocks", false);
+        lockPilotAtDirectControl = (boolean) data.getOrDefault("lockPilotAtDirectControl", false);
     }
 
     private int integerFromObject(Object obj) {
@@ -1008,6 +1010,10 @@ final public class CraftType {
 
     public boolean getGearShiftsAffectCruiseSkipBlocks() {
         return gearShiftsAffectCruiseSkipBlocks;
+    }
+
+    public boolean getLockPilotAtDirectControl() {
+        return lockPilotAtDirectControl;
     }
 
     public class TypeNotFoundException extends RuntimeException {

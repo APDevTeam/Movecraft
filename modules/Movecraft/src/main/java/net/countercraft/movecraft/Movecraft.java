@@ -33,7 +33,6 @@ import net.countercraft.movecraft.utils.UpdateManager;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.*;
@@ -70,11 +69,7 @@ public class Movecraft extends JavaPlugin {
         String packageName = this.getServer().getClass().getPackage().getName();
         String version = packageName.substring(packageName.lastIndexOf('.') + 1);
         // Read in config
-        if (!Settings.IsLegacy) {
-            this.saveDefaultConfig();
-        } else {
-            saveLegacyConfig();
-        }
+        saveDefaultConfig();
         try {
             Class.forName("com.destroystokyo.paper.Title");
             Settings.IsPaper = true;
@@ -109,6 +104,7 @@ public class Movecraft extends JavaPlugin {
 
 
         Settings.LOCALE = getConfig().getString("Locale");
+        I18nSupport.init();
         Settings.Debug = getConfig().getBoolean("Debug", false);
         Settings.DisableSpillProtection = getConfig().getBoolean("DisableSpillProtection", false);
         Settings.DisableIceForm = getConfig().getBoolean("DisableIceForm", true);
@@ -196,7 +192,7 @@ public class Movecraft extends JavaPlugin {
         for(String s : getConfig().getStringList("ForbiddenRemoteSigns")) {
             Settings.ForbiddenRemoteSigns.add(s.toLowerCase());
         }
-
+        Settings.GearshiftsWithPilotToolEnabled = getConfig().getBoolean("GearshiftsWithPilotToolEnabled", false);
         if (!Settings.CompatibilityMode) {
             for (Material typ : Settings.DisableShadowBlocks) {
                 worldHandler.disableShadow(typ);
@@ -273,6 +269,14 @@ public class Movecraft extends JavaPlugin {
         Settings.is1_14 = versionNumber >= 14;
         instance = this;
         logger = getLogger();
+    }
+
+    public void saveDefaultConfig() {
+        if (Settings.IsLegacy) {
+            saveLegacyConfig();
+            return;
+        }
+        super.saveDefaultConfig();
     }
 
     private void saveLegacyConfig(){

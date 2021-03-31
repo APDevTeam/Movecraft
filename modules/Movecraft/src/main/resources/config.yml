@@ -54,3 +54,4 @@ ForbiddenRemoteSigns: # These strings will be ignored when searching for signs t
   - "Denied"
   - "[private]"
 RequireNamePerm: true # Require movecraft.name.place to place Name: signs and movecraft.name.use to use Name: signs
+GearshiftsWithPilotToolEnabled: false

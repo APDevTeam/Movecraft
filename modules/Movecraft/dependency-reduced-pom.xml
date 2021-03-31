@@ -4,7 +4,7 @@
   <groupId>net.countercraft</groupId>
   <artifactId>movecraft</artifactId>
   <name>Movecraft</name>
-  <version>7.0.0_for_1.8.8-1.16.5_beta_37</version>
+  <version>7.0.0_for_1.8.8-1.16.2</version>
   <url>http://github.com/apdevteam/Movecraft</url>
   <build>
     <sourceDirectory>src/main/java</sourceDirectory>
@@ -176,24 +176,6 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>com.sk89q.worldguard</groupId>
-      <artifactId>worldguard-core</artifactId>
-      <version>7.0.1-SNAPSHOT</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.sk89q.worldguard</groupId>
-      <artifactId>worldguard-bukkit</artifactId>
-      <version>7.0.1-SNAPSHOT</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.sk89q</groupId>
-      <artifactId>worldguard</artifactId>
-      <version>6.1.1-SNAPSHOT</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
       <groupId>org.yaml</groupId>
       <artifactId>snakeyaml</artifactId>
       <version>1.10</version>
@@ -204,13 +186,6 @@
       <artifactId>annotations-java5</artifactId>
       <version>RELEASE</version>
       <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.mewin</groupId>
-      <artifactId>WGCustomFlags</artifactId>
-      <version>LATEST</version>
-      <scope>system</scope>
-      <systemPath>${project.basedir}/../../libs/WGCustomFlags.jar</systemPath>
     </dependency>
   </dependencies>
   <properties>
