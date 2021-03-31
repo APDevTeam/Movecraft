@@ -150,6 +150,10 @@ public class PlayerListener implements Listener {
                         return;
                     }
                 }
+                if (c.getType().getGearShiftsAffectDirectMovement()) {
+                    dx *= c.getCurrentGear();
+                    dz *= c.getCurrentGear();
+                }
                 c.setLastCruiseUpdate(System.currentTimeMillis());
                 c.translate(dx, 0 , dz);
 

@@ -108,7 +108,7 @@ public class UpdateManager extends BukkitRunnable implements Listener {
             }
             String baseVersion = newVersion.split("-")[0];
             baseVersion = baseVersion.replace("v", "").replace(".", "");
-            int nv = Integer.parseInt(baseVersion) * 10000;
+            int nv = Integer.parseInt(baseVersion) * betaNo > 0 ? 10000 : 1;
             nv += betaNo;
             //Then get the current version
             String currentVersion = Movecraft.getInstance().getDescription().getVersion();
