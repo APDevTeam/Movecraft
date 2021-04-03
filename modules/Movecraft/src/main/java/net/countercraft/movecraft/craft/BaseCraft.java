@@ -47,7 +47,6 @@ public abstract class BaseCraft implements Craft{
     @NotNull protected final Counter<Material> materials;
     @NotNull protected World w;
     @NotNull private final AtomicBoolean processing = new AtomicBoolean();
-    private int maxHeightLimit;
     private boolean cruising;
     private boolean sinking;
     private boolean disabled;
@@ -79,11 +78,6 @@ public abstract class BaseCraft implements Craft{
         this.hitBox = new BitmapHitBox();
         this.collapsedHitBox = new BitmapHitBox();
         this.fluidLocations = new BitmapHitBox();
-        if (type.getMaxHeightLimit(w) > w.getMaxHeight() - 1) {
-            this.maxHeightLimit = w.getMaxHeight() - 1;
-        } else {
-            this.maxHeightLimit = type.getMaxHeightLimit(w);
-        }
         this.pilotLocked = false;
         this.pilotLockedX = 0.0;
         this.pilotLockedY = 0.0;
@@ -122,7 +116,7 @@ public abstract class BaseCraft implements Craft{
 
     @NotNull
     public World getW() {
-        if(WorldManager.INSTANCE.isRunning()){
+        if(WorldManager.INSTANCE.isRunning() && !Bukkit.isPrimaryThread()){
             Bukkit.getLogger().severe("Invoking most methods on worlds while the world manager is running WILL cause deadlock.");
         }
         return w;
@@ -130,11 +124,6 @@ public abstract class BaseCraft implements Craft{
 
     public void setW(World world) {
         this.w = world;
-        if (type.getMaxHeightLimit(w) > w.getMaxHeight() - 1) {
-            this.maxHeightLimit = w.getMaxHeight() - 1;
-        } else {
-            this.maxHeightLimit = type.getMaxHeightLimit(w);
-        }
     }
 
     @Override

@@ -36,8 +36,10 @@ import java.util.Set;
 
 public interface Craft {
 
+    @Deprecated(forRemoval = true)
     boolean isNotProcessing();
 
+    @Deprecated(forRemoval = true)
     void setProcessing(boolean processing);
 
     @NotNull
@@ -162,6 +164,7 @@ public interface Craft {
     @NotNull
     MutableHitBox getCollapsedHitBox();
 
+    @Deprecated(forRemoval = true)
     void resetSigns(@NotNull final Sign clicked);
 
     @NotNull
