@@ -291,6 +291,9 @@ public class BitmapHitBox implements MutableHitBox {
     @Override
     @NotNull
     public HitBox difference(HitBox other){
+        if(other instanceof BitmapHitBox){
+            return this.difference((BitmapHitBox) other);
+        }
         return this.difference(new BitmapHitBox(other));
     }
     
