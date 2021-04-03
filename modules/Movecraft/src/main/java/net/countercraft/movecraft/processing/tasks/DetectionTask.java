@@ -20,8 +20,8 @@ import net.countercraft.movecraft.processing.tasks.detection.NameSignValidator;
 import net.countercraft.movecraft.processing.tasks.detection.PilotSignValidator;
 import net.countercraft.movecraft.processing.tasks.detection.SizeValidator;
 import net.countercraft.movecraft.processing.tasks.detection.WaterContactValidator;
+import net.countercraft.movecraft.util.AtomicLocationSet;
 import net.countercraft.movecraft.util.CollectionUtils;
-import net.countercraft.movecraft.util.ConcurrentLocationSet;
 import net.countercraft.movecraft.util.hitboxes.BitmapHitBox;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
 import net.countercraft.movecraft.util.hitboxes.SolidHitBox;
@@ -51,7 +51,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.LongAdder;
 import java.util.stream.Collectors;
 
 public class DetectionTask implements Runnable {
@@ -74,14 +74,14 @@ public class DetectionTask implements Runnable {
     private final MovecraftLocation startLocation;
     private final MovecraftWorld world;
     private final Player player;
-    private final AtomicInteger size = new AtomicInteger(0);
+    private final LongAdder size = new LongAdder();
     private final Set<MovecraftLocation> visited;
     private final ConcurrentLinkedDeque<MovecraftLocation> illegal = new ConcurrentLinkedDeque<>();
     private final ConcurrentMap<Material, Deque<MovecraftLocation>> materials = new ConcurrentHashMap<>();
     private final ConcurrentLinkedDeque<MovecraftLocation> legal = new ConcurrentLinkedDeque<>();
+    private static final AllowedBlockValidator ALLOWED_BLOCK_VALIDATOR = new AllowedBlockValidator();
+    private static final ForbiddenBlockValidator FORBIDDEN_BLOCK_VALIDATOR = new ForbiddenBlockValidator();
     private static final List<DetectionValidator<MovecraftLocation>> validators = List.of(
-            new AllowedBlockValidator(),
-            new ForbiddenBlockValidator(),
             new ForbiddenSignStringValidator(),
             new NameSignValidator(),
             new PilotSignValidator());
@@ -95,7 +95,7 @@ public class DetectionTask implements Runnable {
         this.startLocation = startLocation;
         this.world = world;
         this.player = player;
-        visited = new ConcurrentLocationSet();
+        visited = new AtomicLocationSet();
     }
 
     @Deprecated
@@ -104,6 +104,8 @@ public class DetectionTask implements Runnable {
         if (c.getType().blockedByWater() || c.getHitBox().getMinY() > waterLine) {
             return;
         }
+
+        var badWorld = c.getW();
         //The subtraction of the set of coordinates in the HitBox cube and the HitBox itself
         final HitBox invertedHitBox = new BitmapHitBox(c.getHitBox().boundingHitBox()).difference(c.getHitBox());
 
@@ -113,7 +115,7 @@ public class DetectionTask implements Runnable {
 
         //place phased blocks
         final Set<Location> overlap = new HashSet<>(c.getPhaseBlocks().keySet());
-        overlap.retainAll(c.getHitBox().asSet().stream().map(l -> l.toBukkit(c.getW())).collect(Collectors.toSet()));
+        overlap.retainAll(c.getHitBox().asSet().stream().map(l -> l.toBukkit(badWorld)).collect(Collectors.toSet()));
         final int minX = c.getHitBox().getMinX();
         final int maxX = c.getHitBox().getMaxX();
         final int minY = c.getHitBox().getMinY();
@@ -149,17 +151,15 @@ public class DetectionTask implements Runnable {
         entireHitbox.addAll(invertedHitBox.difference(confirmed));
 
         var waterData = Bukkit.createBlockData(Material.WATER);
-
         for (MovecraftLocation location : entireHitbox) {
             if (location.getY() <= waterLine) {
-                c.getPhaseBlocks().put(location.toBukkit(c.getW()), waterData);
+                c.getPhaseBlocks().put(location.toBukkit(badWorld), waterData);
             }
         }
     }
 
     @Override
     public void run() {
-        var start = System.nanoTime();
         frontier();
         if(!illegal.isEmpty()) {
             return;
@@ -188,7 +188,6 @@ public class DetectionTask implements Runnable {
                 player == null ? "null" : player.getName(), craft.getType().getCraftName(), craft.getHitBox().size(),
                 craft.getHitBox().getMinX(), craft.getHitBox().getMinZ()));
         CraftManager.getInstance().addCraft(craft);
-        Bukkit.getLogger().info(String.format("Reworked detection took: %s. Found %d blocks.", (System.nanoTime() - start) / 1000000000D, size.get()));
     }
 
     private void frontier(){
@@ -196,8 +195,11 @@ public class DetectionTask implements Runnable {
         ConcurrentLinkedQueue<MovecraftLocation> nextFrontier = new ConcurrentLinkedQueue<>();
         currentFrontier.add(startLocation);
         currentFrontier.addAll(Arrays.stream(SHIFTS).map(startLocation::add).collect(Collectors.toList()));
+        for(var location : currentFrontier){
+            visited.add(location);
+        }
         int threads = Runtime.getRuntime().availableProcessors();
-        for(int i = 0; !currentFrontier.isEmpty() && size.get() < craft.getType().getMaxSize(); i++){
+        while (!currentFrontier.isEmpty() && size.intValue() < craft.getType().getMaxSize()) {
             List<Callable<Object>> tasks = new ArrayList<>();
             for(int j = 0; j < threads ; j++) {
                 tasks.add(Executors.callable(new DetectAction(currentFrontier, nextFrontier)));
@@ -226,9 +228,15 @@ public class DetectionTask implements Runnable {
         public void run() {
             MovecraftLocation probe;
             while((probe = currentFrontier.poll())!=null) {
-                Modifier status = Modifier.NONE;
-                for (var validator : validators) {
-                    status = status.merge(validator.validate(probe, craft.getType(), world, player));
+                Modifier status = ALLOWED_BLOCK_VALIDATOR.validate(probe, craft.getType(), world, player);
+                status = status.merge(FORBIDDEN_BLOCK_VALIDATOR.validate(probe, craft.getType(), world, player));
+                if(status == Modifier.PERMIT){
+                    for (var validator : validators) {
+                        if(status == Modifier.FAIL){
+                            break;
+                        }
+                        status = status.merge(validator.validate(probe, craft.getType(), world, player));
+                    }
                 }
                 switch (status) {
                     case FAIL:
@@ -237,7 +245,7 @@ public class DetectionTask implements Runnable {
                         break;
                     case PERMIT:
                         legal.add(probe);
-                        size.incrementAndGet();
+                        size.increment();
                         materials.computeIfAbsent(world.getMaterial(probe), Functions.forSupplier(ConcurrentLinkedDeque::new)).add(probe);
                         for(int i = 0; i< SHIFTS.length; i++){
                             var shifted = probe.add(SHIFTS[i]);
