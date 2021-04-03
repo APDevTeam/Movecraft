@@ -12,6 +12,7 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
+import net.countercraft.movecraft.util.AtomicLocationSet;
 import net.countercraft.movecraft.util.hitboxes.BitmapHitBox;
 import net.countercraft.movecraft.util.CollectionUtils;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
@@ -230,7 +231,7 @@ public class CraftTranslateCommand extends UpdateCommand {
                 new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(maxX, minY, maxZ))};
         final BitmapHitBox validExterior = new BitmapHitBox();
         for (HitBox hitBox : surfaces) {
-            validExterior.addAll(new BitmapHitBox(hitBox).difference(craft.getHitBox()));
+            validExterior.addAll(hitBox.difference(craft.getHitBox()));
         }
         var shifts = new MovecraftLocation[]{new MovecraftLocation(0,-1,0),
                 new MovecraftLocation(1,0,0),
@@ -241,7 +242,7 @@ public class CraftTranslateCommand extends UpdateCommand {
         Queue<MovecraftLocation> queue = Lists.newLinkedList(validExterior);
 //        Bukkit.getLogger().info("Water start:");
 //        Bukkit.getLogger().info(queue.toString());
-        var visited = new HashSet<>();
+        var visited = new AtomicLocationSet();
         while (!queue.isEmpty()){
             var top = queue.poll();
             if(visited.contains(top)){
