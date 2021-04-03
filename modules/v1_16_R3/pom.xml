@@ -37,6 +37,7 @@
                 <configuration>
                     <includes>
                         <include>net/countercraft/movecraft/compat/v1_16_R3/**</include>
+                        <include>net/countercraft/movecraft/support/v1_16_R3/**</include>
                     </includes>
                     <source>11</source>
                     <target>11</target>
@@ -49,6 +50,7 @@
                 <configuration>
                     <includes>
                         <include>net/countercraft/movecraft/compat/v1_16_R3/**</include>
+                        <include>net/countercraft/movecraft/support/v1_16_R3/**</include>
                     </includes>
                 </configuration>
             </plugin>

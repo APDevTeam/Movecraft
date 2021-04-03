@@ -1,4 +1,4 @@
-package net.countercraft.movecraft.processing.tasks;
+package net.countercraft.movecraft.support;
 
 import net.countercraft.movecraft.MovecraftLocation;
 import org.bukkit.Chunk;

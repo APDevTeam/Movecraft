@@ -1,6 +1,7 @@
 package net.countercraft.movecraft.processing;
 
 import net.countercraft.movecraft.MovecraftLocation;
+import net.countercraft.movecraft.support.AsyncChunk;
 import net.countercraft.movecraft.util.CompletableFutureTask;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -8,6 +9,7 @@ import org.bukkit.World;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.data.BlockData;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
@@ -33,13 +35,14 @@ public final class WorldManager {
     };
 
     private final ConcurrentLinkedQueue<Runnable> worldChanges = new ConcurrentLinkedQueue<>();
-    private final ConcurrentHashMap<ChunkLocation, ChunkSectionSnapshot> cache = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<ChunkLocation, AsyncChunk<?>> chunkCache = new ConcurrentHashMap<>();
     private final ConcurrentLinkedQueue<Runnable> tasks = new ConcurrentLinkedQueue<>();
     private final BlockingQueue<Runnable> currentTasks = new LinkedBlockingQueue<>();
     private volatile boolean running = false;
 
     private WorldManager(){}
 
+    @NotNull
     private static MovecraftLocation toSectionLocation(MovecraftLocation location){
         return new MovecraftLocation(location.getX() & 0x0f, location.getY(), location.getZ() & 0x0f);
     }
@@ -76,37 +79,43 @@ public final class WorldManager {
             runnable.run();
         }
         // Dump cache
-        cache.clear();
+        chunkCache.clear();
         running = false;
     }
 
-    public Material getMaterial(MovecraftLocation location, World world){
-        return this.getChunkSnapshot(location, world).getState(toSectionLocation(location)).getBlockData().getMaterial();
+    @NotNull
+    public Material getMaterial(@NotNull MovecraftLocation location, @NotNull World world){
+        var chunkIndex = toSectionLocation(location);
+        return this.getChunk(location,world).getType(chunkIndex);
     }
 
-    public BlockData getData(MovecraftLocation location, World world){
-        return this.getChunkSnapshot(location, world).getState(toSectionLocation(location)).getBlockData();
+    @NotNull
+    public BlockData getData(@NotNull MovecraftLocation location, @NotNull World world){
+        var chunkIndex = toSectionLocation(location);
+        return this.getChunk(location,world).getData(chunkIndex);
     }
 
-    public BlockState getState(MovecraftLocation location, World world){
-        return this.getChunkSnapshot(location, world).getState(toSectionLocation(location));
+    @NotNull
+    public BlockState getState(@NotNull MovecraftLocation location, @NotNull World world){
+        var chunkIndex = toSectionLocation(location);
+        return this.getChunk(location,world).getState(chunkIndex);
     }
 
     /**
-     * Gets a ChunkSectionSnapshot
-     * @param location the world position containing the snapshot
-     * @return a snapshot of a section of a chunk
+     * Gets an AsyncChunk, loading from the main thread if necessary
+     * @param location the world position containing the chunk
+     * @return a thread safe accessor of the given chunk
      */
     @NotNull
-    private ChunkSectionSnapshot getChunkSnapshot(MovecraftLocation location, World world){
-        if(cache.containsKey(ChunkLocation.from(location, world))){
-            return cache.get(ChunkLocation.from(location, world));
+    private AsyncChunk<?> getChunk(@NotNull MovecraftLocation location, @NotNull World world){
+        AsyncChunk<?> test;
+        var chunkLocation = ChunkLocation.from(location, world);
+        if((test = chunkCache.get(chunkLocation)) != null){
+            return test;
         }
-        return executeMain(() -> cache.computeIfAbsent(ChunkLocation.from(location, world), (chunkLocation) -> {
-            var chunk = world.getChunkAt(location.toBukkit(world));
-            var snapshot = chunk.getChunkSnapshot(false, false, false);
-            return new ChunkSectionSnapshot(chunk.getTileEntities(), snapshot);
-        }));
+        test = executeMain(() -> AsyncChunk.of(world.getChunkAt(location.toBukkit(world))));
+        var previous = chunkCache.putIfAbsent(chunkLocation, test);
+        return previous == null ? test : previous;
     }
 
     public <T> T executeMain(Supplier<T> callable){
@@ -123,11 +132,12 @@ public final class WorldManager {
         private final int z;
         private final World world;
 
-        public static ChunkLocation from(MovecraftLocation location, World world){
+        @NotNull
+        public static ChunkLocation from(@NotNull MovecraftLocation location, @NotNull World world){
             return new ChunkLocation(location.getX()>>4, location.getZ()>>4, world);
         }
 
-        private ChunkLocation(int x, int z, World world){
+        private ChunkLocation(int x, int z, @NotNull World world){
             this.x = x;
             this.z = z;
             this.world = world;
@@ -141,6 +151,7 @@ public final class WorldManager {
             return this.z;
         }
 
+        @NotNull
         @Override
         public String toString(){
             return String.format("(%d, %d @ %s)", getX(), getZ(), world);
@@ -152,7 +163,7 @@ public final class WorldManager {
         }
 
         @Override
-        public boolean equals(Object other){
+        public boolean equals(@Nullable Object other){
             if(!(other instanceof ChunkLocation)){
                 return false;
             }
