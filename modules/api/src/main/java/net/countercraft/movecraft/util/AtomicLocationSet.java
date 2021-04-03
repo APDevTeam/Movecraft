@@ -71,7 +71,8 @@ public class AtomicLocationSet implements Set<MovecraftLocation> {
     @Override
     public boolean add(MovecraftLocation location) {
         long packed = location.pack();
-        boolean out = !this.getPrefixLeaf(packed).add((int)packed & LOW_MASK);
+        var leaf = this.getPrefixLeaf(packed);
+        boolean out = !leaf.add((int)packed & LOW_MASK);
         if(out){
             size.increment();
         }
@@ -179,9 +180,14 @@ public class AtomicLocationSet implements Set<MovecraftLocation> {
             if(index < 0 || index > TREE_WIDTH){
                 throw new IndexOutOfBoundsException(String.format("Index %d must be in range <0,%d>", index, TREE_WIDTH));
             }
-            var fetch = children.get(index);
-            if(fetch == null)
-                return children.updateAndGet(index, (previous) -> previous == null ? initializer.get() : previous);
+            var fetch = children.getAcquire(index);
+            if(fetch == null) {
+                var child = initializer.get();
+                fetch = children.compareAndExchangeRelease(index, null, child);
+                if(fetch == null){
+                    return child;
+                }
+            }
             return fetch;
         }
     }
