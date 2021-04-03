@@ -56,7 +56,7 @@ public final class SpeedSign implements Listener{
             return;
         }
         Block block = event.getClickedBlock();
-        if (block == null || block.getType().name().endsWith("SIGN") || block.getType().name().startsWith("SIGN_")) {
+        if (block == null || !(block.getType().name().endsWith("SIGN") || block.getType().name().startsWith("SIGN_"))) {
             return;
         }
         Sign sign = (Sign) event.getClickedBlock().getState();
