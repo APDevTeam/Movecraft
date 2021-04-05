@@ -24,6 +24,13 @@ public class LocationSet extends AbstractSet<MovecraftLocation> implements Set<M
 
     private final BitTreeNode<BitTreeNode<BitTreeNode<BitTreeNode<BitTreeNode<BitTreeNode<BitTreeNode<BitTreeNode<BitTreeNode<BitTreeNode<BitTreeNode<BitTreeNode<BitSet>>>>>>>>>>>> tree = new BitTreeNode<>(() -> new BitTreeNode<>(() -> new BitTreeNode<>(() -> new BitTreeNode<>(() -> new BitTreeNode<>(() -> new BitTreeNode<>(() -> new BitTreeNode<>(() -> new BitTreeNode<>(() -> new BitTreeNode<>(() -> new BitTreeNode<>(() -> new BitTreeNode<>(() -> new BitTreeNode<>(() -> new BitSet(LOW_MASK + 1)))))))))))));
     private int size = 0;
+    
+    public LocationSet(){}
+
+    public LocationSet(Set<MovecraftLocation> other){
+        super();
+        this.addAll(other);
+    }
 
     @Override
     public int size() {
