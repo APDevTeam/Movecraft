@@ -43,12 +43,16 @@ public interface HitBox extends Iterable<MovecraftLocation>{
     }
     public int size();
 
+    private static int average(int high, int low){
+        return (high&low) + (high^low)/2;
+    }
+
     @NotNull
     default public MovecraftLocation getMidPoint(){
         if(this.isEmpty()){
             throw new EmptyHitBoxException();
         }
-        return new MovecraftLocation((this.getMinX()+this.getMaxX())/2, (this.getMinY()+this.getMaxY())/2,(this.getMinZ()+this.getMaxZ())/2);
+        return new MovecraftLocation(average(getMaxX(), getMinX()), average(getMaxY(), getMinY()),average(getMaxZ(), getMinZ()));
     }
 
     @NotNull

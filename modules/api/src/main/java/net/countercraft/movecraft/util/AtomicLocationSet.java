@@ -45,7 +45,7 @@ public class AtomicLocationSet implements Set<MovecraftLocation> {
             if(suffix == null){
                 return false;
             }
-            return !suffix.get((int) location.pack() & LOW_MASK);
+            return suffix.get((int) (packed & LOW_MASK));
         }
         return false;
     }
@@ -95,14 +95,14 @@ public class AtomicLocationSet implements Set<MovecraftLocation> {
         if(b == null){
             return null;
         }
-        var suffix = b.getIfPresent((path >>> TREE_MASK_LENGTH) & BitTreeNode.TREE_MASK);
-        return suffix == null ? null : getPrefixLeaf(path);
+        return b.getIfPresent((path >>> TREE_MASK_LENGTH) & BitTreeNode.TREE_MASK);
     }
 
     @NotNull
     private AtomicBitSet getPrefixLeaf(long path){
+        path >>>= LOW_MASK_LENGTH - TREE_MASK_LENGTH;
         return tree
-                .get((path >>>= LOW_MASK_LENGTH) & BitTreeNode.TREE_MASK)
+                .get((path >>>= TREE_MASK_LENGTH) & BitTreeNode.TREE_MASK)
                 .get((path >>>= TREE_MASK_LENGTH) & BitTreeNode.TREE_MASK)
                 .get((path >>>= TREE_MASK_LENGTH) & BitTreeNode.TREE_MASK)
                 .get((path >>>= TREE_MASK_LENGTH) & BitTreeNode.TREE_MASK)
