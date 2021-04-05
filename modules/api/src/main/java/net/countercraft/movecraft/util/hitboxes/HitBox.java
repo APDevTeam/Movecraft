@@ -1,12 +1,13 @@
 package net.countercraft.movecraft.util.hitboxes;
 
+import com.google.common.collect.Iterators;
+import com.google.common.collect.UnmodifiableIterator;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.exception.EmptyHitBoxException;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.AbstractSet;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -88,11 +89,7 @@ public interface HitBox extends Iterable<MovecraftLocation>{
 
     @NotNull
     default Set<MovecraftLocation> asSet(){
-        Set<MovecraftLocation> output = new HashSet<>();
-        for(MovecraftLocation location : this){
-            output.add(location);
-        }
-        return Collections.unmodifiableSet(output);
+        return new HitBoxSetView(this);
     }
 
     @NotNull
@@ -106,5 +103,29 @@ public interface HitBox extends Iterable<MovecraftLocation>{
 
     @NotNull
     HitBox symmetricDifference(HitBox other);
+
+    class HitBoxSetView extends AbstractSet<MovecraftLocation> {
+        private final HitBox backing;
+
+        public HitBoxSetView(HitBox backing) {
+            this.backing = backing;
+        }
+
+        @NotNull
+        @Override
+        public UnmodifiableIterator<MovecraftLocation> iterator() {
+            return Iterators.unmodifiableIterator(backing.iterator());
+        }
+
+        @Override
+        public int size() {
+            return backing.size();
+        }
+
+        @Override
+        public boolean contains(Object location) {
+            return location instanceof MovecraftLocation && backing.contains((MovecraftLocation) location);
+        }
+    }
 }
 
