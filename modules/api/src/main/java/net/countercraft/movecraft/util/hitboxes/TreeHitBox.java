@@ -96,6 +96,16 @@ public class TreeHitBox implements MutableHitBox{
         return maxZ;
     }
 
+    public int getLocalMinY(int x, int z){
+        if(this.isEmpty()){
+            throw new EmptyHitBoxException();
+        }
+        if (invalidateBounds) {
+            validateBounds();
+        }
+        return localMinY.getOrDefault((long)x << 32 | z, -1);
+    }
+
     @Override
     public int size() {
         return locations.size();
@@ -186,7 +196,14 @@ public class TreeHitBox implements MutableHitBox{
 
     @Override
     public boolean addAll(@NotNull HitBox hitBox) {
-        return addAll(hitBox.asSet());
+        if (!invalidateBounds) {
+            hitBox.forEach(this::checkBounds);
+        }
+        boolean out = false;
+        for(var location : hitBox){
+            out |= locations.add(location);
+        }
+        return out;
     }
 
     @Override
