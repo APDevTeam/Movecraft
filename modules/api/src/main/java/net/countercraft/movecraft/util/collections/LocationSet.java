@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.util.collections;
 
+import com.google.common.collect.Iterators;
 import net.countercraft.movecraft.MovecraftLocation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -7,6 +8,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.AbstractSet;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Objects;
@@ -24,7 +26,7 @@ public class LocationSet extends AbstractSet<MovecraftLocation> implements Set<M
 
     private final BitTreeNode<BitTreeNode<BitTreeNode<BitTreeNode<BitTreeNode<BitTreeNode<BitTreeNode<BitTreeNode<BitTreeNode<BitTreeNode<BitTreeNode<BitTreeNode<BitSet>>>>>>>>>>>> tree = new BitTreeNode<>(() -> new BitTreeNode<>(() -> new BitTreeNode<>(() -> new BitTreeNode<>(() -> new BitTreeNode<>(() -> new BitTreeNode<>(() -> new BitTreeNode<>(() -> new BitTreeNode<>(() -> new BitTreeNode<>(() -> new BitTreeNode<>(() -> new BitTreeNode<>(() -> new BitTreeNode<>(() -> new BitSet(LOW_MASK + 1)))))))))))));
     private int size = 0;
-    
+
     public LocationSet(){}
 
     public LocationSet(Set<MovecraftLocation> other){
@@ -56,94 +58,84 @@ public class LocationSet extends AbstractSet<MovecraftLocation> implements Set<M
         return false;
     }
 
+    @SuppressWarnings("ConstantConditions")
     @NotNull
     @Override
     public Iterator<MovecraftLocation> iterator() {
-        //TODO: remove this unholy abomination
-        int[] indices = new int[TREE_DEPTH];
-        LinkedList<MovecraftLocation> locations = new LinkedList<>();
-        for(indices[0] = 0; indices[0] < BitTreeNode.TREE_WIDTH; indices[0]++){
-            var A = tree.getIfPresent(indices[0]);
-            if(A == null){
-                continue;
-            }
-            for(indices[1]= 0; indices[1]< BitTreeNode.TREE_WIDTH; indices[1]++){
-                var B = A.getIfPresent(indices[1]);
-                if(B == null){
-                    continue;
-                }
-                for(indices[2] = 0; indices[2] < BitTreeNode.TREE_WIDTH; indices[2]++){
-                    var C = B.getIfPresent(indices[2]);
-                    if(C == null){
-                        continue;
-                    }
-                    for(indices[3] = 0; indices[3] < BitTreeNode.TREE_WIDTH; indices[3]++){
-                        var D = C.getIfPresent(indices[3]);
-                        if(D == null){
-                            continue;
-                        }
-                        for(indices[4] = 0; indices[4] < BitTreeNode.TREE_WIDTH; indices[4]++){
-                            var E = D.getIfPresent(indices[4]);
-                            if(E == null){
-                                continue;
-                            }
-                            for(indices[5] = 0; indices[5] < BitTreeNode.TREE_WIDTH; indices[5]++){
-                                var F = E.getIfPresent(indices[5]);
-                                if(F == null){
-                                    continue;
-                                }
-                                for(indices[6] = 0; indices[6] < BitTreeNode.TREE_WIDTH; indices[6]++){
-                                    var G = F.getIfPresent(indices[6]);
-                                    if(G == null){
-                                        continue;
-                                    }
-                                    for(indices[7] = 0; indices[7] < BitTreeNode.TREE_WIDTH; indices[7]++){
-                                        var H = G.getIfPresent(indices[7]);
-                                        if(H == null){
-                                            continue;
-                                        }
-                                        for(indices[8] = 0; indices[8] < BitTreeNode.TREE_WIDTH; indices[8]++){
-                                            var I = H.getIfPresent(indices[8]);
-                                            if(I == null){
-                                                continue;
-                                            }
-                                            for(indices[9] = 0; indices[9] < BitTreeNode.TREE_WIDTH; indices[9]++){
-                                                var J = I.getIfPresent(indices[9]);
-                                                if(J == null){
-                                                    continue;
-                                                }
-                                                for(indices[10] = 0; indices[10] < BitTreeNode.TREE_WIDTH; indices[10]++){
-                                                    var K = J.getIfPresent(indices[10]);
-                                                    if(K == null){
-                                                        continue;
-                                                    }
-                                                    for(indices[11] = 0; indices[11] < BitTreeNode.TREE_WIDTH; indices[11]++){
-                                                        var bs = K.getIfPresent(indices[11]);
-                                                        if(bs == null){
-                                                            continue;
-                                                        }
-                                                        for (int index = bs.nextSetBit(0); index >= 0 && index < LOW_MASK+1; index = bs.nextSetBit(index+1)) {
-                                                            long out = 0;
-                                                            for(int depth = 0; depth < TREE_DEPTH; depth++){
-                                                                out = (out << TREE_MASK_LENGTH) ^ indices[11-depth];
-                                                            }
-                                                            out <<= LOW_MASK_LENGTH;
-                                                            out ^= index;
-                                                            locations.add(MovecraftLocation.unpack(out));
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+        if(isEmpty()){
+            return Collections.emptyIterator();
         }
-        return locations.iterator();
+        // Initialize our state and the first output
+        // Where possible we use getIfPresent as it is more efficient
+        int[] childIndex = new int[TREE_DEPTH];
+        BitTreeNode<?>[] nodeAtDepth = new BitTreeNode[TREE_DEPTH];
+        nodeAtDepth[0] = tree;
+        for(int i = 0; i < TREE_DEPTH-1; i++){
+            childIndex[i] = nodeAtDepth[i].nextSetChild(0);
+            nodeAtDepth[i+1] = (BitTreeNode<?>) nodeAtDepth[i].getIfPresent(childIndex[i]);
+        }
+        childIndex[TREE_DEPTH-1] = nodeAtDepth[TREE_DEPTH-1].nextSetChild(0);
+        final BitSet[] set = {(BitSet) nodeAtDepth[TREE_DEPTH - 1].getIfPresent(childIndex[TREE_DEPTH - 1])};
+        final int[] bitIndex = {set[0].nextSetBit(0)};
+        return new Iterator<>(){
+
+            @Override
+            public boolean hasNext() {
+                return childIndex[0] != -1;
+            }
+
+            @Override
+            public MovecraftLocation next() {
+                // Pack the previously known correct output
+                long packed = getPacked();
+                // Check if we can iterate through our leaf bitset
+                bitIndex[0] = set[0].nextSetBit(bitIndex[0] + 1);
+                if(bitIndex[0] != -1){
+                    return MovecraftLocation.unpack(packed);
+                }
+                // Ascend up the tree to find the next set node
+                int i;
+                for(i = TREE_DEPTH-1; i >= 0;) {
+                    childIndex[i] = nodeAtDepth[i].nextSetChild(childIndex[i] + 1);
+                    if (childIndex[i] == -1) {
+                        i--;
+                    } else {
+                        break;
+                    }
+                }
+                // If no such node exists, we're done
+                if(!hasNext()){
+                    return MovecraftLocation.unpack(packed);
+                }
+                // Otherwise, descend the tree and update the state to match our path
+                nodeAtDepth[i+1] = (BitTreeNode<?>) nodeAtDepth[i].getIfPresent(childIndex[i]);
+                i++;
+                for(; i < TREE_DEPTH-1; i++) {
+                    if(childIndex[i] == -1){
+                        childIndex[i] = nodeAtDepth[i].nextSetChild(0);
+                        nodeAtDepth[i+1] = (BitTreeNode<?>) nodeAtDepth[i].getIfPresent(childIndex[i]);
+                    }
+                }
+                // The leaf bitset must be calculated separately
+                if(childIndex[TREE_DEPTH-1] == -1){
+                    childIndex[TREE_DEPTH-1] = nodeAtDepth[TREE_DEPTH-1].nextSetChild(0);
+                    set[0] = (BitSet) nodeAtDepth[TREE_DEPTH-1].getIfPresent(childIndex[TREE_DEPTH-1]);
+                }
+                // Update our next index
+                bitIndex[0] = set[0].nextSetBit(0);
+                return MovecraftLocation.unpack(packed);
+            }
+
+            private long getPacked() {
+                long packed=0;
+                for(int i = 0; i < TREE_DEPTH; i++){
+                    packed |= ((long) childIndex[i]) << (TREE_MASK_LENGTH*(i));
+                }
+                packed <<= LOW_MASK_LENGTH;
+                packed ^= bitIndex[0];
+                return packed;
+            }
+        };
     }
 
     @Override
@@ -169,8 +161,25 @@ public class LocationSet extends AbstractSet<MovecraftLocation> implements Set<M
         leaf.set((int)packed & LOW_MASK, false);
         if(out){
             size -= 1;
+            if(leaf.isEmpty()){
+                this.remove(packed>>>LOW_MASK_LENGTH, 0, tree);
+            }
         }
         return out;
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    private boolean remove(long path, int depth, @NotNull BitTreeNode<?> parent){
+        int childIndex = (int) (path & BitTreeNode.TREE_MASK);
+        if(depth == TREE_DEPTH-1){
+            parent.children[childIndex] = null;
+            return parent.nextSetChild(0) == -1;
+        }
+        if(remove(path >>> TREE_MASK_LENGTH, depth+1, (BitTreeNode<?>) parent.getIfPresent(childIndex))){
+            parent.children[childIndex] = null;
+            return parent.nextSetChild(0) == -1;
+        }
+        return false;
     }
 
     @Override
@@ -180,10 +189,10 @@ public class LocationSet extends AbstractSet<MovecraftLocation> implements Set<M
 
     @Nullable
     private BitSet getPrefixLeafIfPresent(long path){
-        BitTreeNode<? extends BitTreeNode<?>> top = tree;
+        BitTreeNode<?> top = tree;
         path >>>= LOW_MASK_LENGTH;
         for(int i = 0; i < TREE_DEPTH - 2; i++) {
-            top = (BitTreeNode<? extends BitTreeNode<?>>) top.getIfPresent(path & BitTreeNode.TREE_MASK);
+            top = (BitTreeNode<?>) top.getIfPresent(path & BitTreeNode.TREE_MASK);
             if (top == null) {
                 return null;
             }
@@ -214,15 +223,25 @@ public class LocationSet extends AbstractSet<MovecraftLocation> implements Set<M
                 .get(path >>> TREE_MASK_LENGTH & BitTreeNode.TREE_MASK);
     }
 
-    private static class BitTreeNode<T> implements Iterable<T>{
+     private static class BitTreeNode<T> implements Iterable<T>{
         public static final int TREE_MASK = 0b1111;
         private static final int TREE_WIDTH = TREE_MASK + 1;
-        private final Object[] children;
+        private final T[] children;
         private final Supplier<T> initializer;
 
+        @SuppressWarnings("unchecked")
         private BitTreeNode(@NotNull Supplier<T> initializer) {
-            children = new Object[TREE_WIDTH];
+            children = (T[]) new Object[TREE_WIDTH];
             this.initializer = initializer;
+        }
+
+        public int nextSetChild(int start){
+            for(int i = start; i < TREE_WIDTH; i++){
+                if(children[i] != null){
+                    return i;
+                }
+            }
+            return -1;
         }
 
         @Nullable
@@ -235,7 +254,7 @@ public class LocationSet extends AbstractSet<MovecraftLocation> implements Set<M
             if(index < 0 || index > TREE_WIDTH){
                 throw new IndexOutOfBoundsException(String.format("Index %d must be in range <0,%d>", index, TREE_WIDTH));
             }
-            return (T) children[index];
+            return children[index];
         }
 
         @NotNull
@@ -251,18 +270,18 @@ public class LocationSet extends AbstractSet<MovecraftLocation> implements Set<M
             if(children[index] == null) {
                 children[index] = initializer.get();
             }
-            return (T) children[index];
+            return children[index];
         }
 
         @NotNull
         @Override
         public Iterator<T> iterator() {
-            return Arrays.stream(children).filter(Objects::nonNull).map((child) -> (T) child).iterator();
+            return Arrays.stream(children).filter(Objects::nonNull).iterator();
         }
 
         @NotNull
         public Stream<T> stream(){
-            return Arrays.stream(children).filter(Objects::nonNull).map((child) -> (T) child);
+            return Arrays.stream(children).filter(Objects::nonNull);
         }
     }
 }
