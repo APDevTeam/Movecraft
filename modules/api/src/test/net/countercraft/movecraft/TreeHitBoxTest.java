@@ -6,6 +6,9 @@ import net.countercraft.movecraft.util.hitboxes.TreeHitBox;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -21,6 +24,67 @@ public class TreeHitBoxTest {
             }
         }
         return out;
+    }
+
+    @Test
+    public void testRemove() {
+        TreeHitBox hitBox = createTestHitbox();
+        TreeHitBox other = createTestHitbox();
+        for(var location : hitBox){
+            other.remove(location);
+        }
+        assertTrue(other.isEmpty());
+    }
+
+    @Test
+    public void testRemoveThanIterate(){
+        TreeHitBox hitBox = createTestHitbox();
+        TreeHitBox other = createTestHitbox();
+        int size = other.size();
+        for(var location : hitBox){
+            other.remove(location);
+            size -= 1;
+            assertEquals(size, Iterators.size(other.iterator()));
+        }
+        assertTrue(other.isEmpty());
+    }
+
+    @Test
+    public void testIteratorBitPosition(){
+        long l = 1;
+        for(int i = 0; i < 64; i++){
+            long shifted = l << i;
+            MovecraftLocation unpacked = MovecraftLocation.unpack(shifted);
+            TreeHitBox box = new TreeHitBox();
+            box.add(unpacked);
+            for(var iterLoc : box){
+                assertEquals(unpacked, iterLoc);
+            }
+        }
+    }
+
+    @Test
+    public void testSinglePointIterator(){
+        for(var location : new SolidHitBox(new MovecraftLocation(-3,-3,-3), new MovecraftLocation(3,3,3))){
+            TreeHitBox box = new TreeHitBox();
+            box.add(location);
+            assertEquals(location, box.iterator().next());
+        }
+    }
+
+    @Test
+    public void testIncrementalIterator(){
+        Set<MovecraftLocation> visited = new HashSet<>();
+        TreeHitBox box = new TreeHitBox();
+        for(var location : new SolidHitBox(new MovecraftLocation(-3,-3,-3), new MovecraftLocation(3,3,3))){
+            box.add(location);
+            visited.add(location);
+            Set<MovecraftLocation> verified = new HashSet<>();
+            for (var probe : box){
+                assertTrue(visited.contains(probe), String.format("Location %s is not contained in %s, however %s are", probe, visited, verified));
+                verified.add(probe);
+            }
+        }
     }
 
     @Test
@@ -75,7 +139,7 @@ public class TreeHitBoxTest {
         }
     }
 
-    @Test @Ignore
+    @Test  @Ignore
     public void testLargeHitBox(){
         SolidHitBox solid = new SolidHitBox(new MovecraftLocation(-100,-100,-100), new MovecraftLocation(100,100,100));
         TreeHitBox hitBox = new TreeHitBox();
