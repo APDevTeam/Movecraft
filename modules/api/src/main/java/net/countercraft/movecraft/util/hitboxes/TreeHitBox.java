@@ -180,28 +180,35 @@ public class TreeHitBox implements MutableHitBox{
 
     @Override
     public boolean add(@NotNull MovecraftLocation location) {
-        if (!invalidateBounds) {
+        boolean out = locations.add(location);
+        if (out && !invalidateBounds) {
             checkBounds(location);
         }
-        return locations.add(location);
+        return out;
     }
 
     @Override
     public boolean addAll(@NotNull Collection<? extends MovecraftLocation> collection) {
-        if (!invalidateBounds) {
-            collection.forEach(this::checkBounds);
+        boolean out = false;
+        boolean test;
+        for(var location : collection){
+            if ((test = locations.add(location)) && !invalidateBounds) {
+                this.checkBounds(location);
+            }
+            out |= test;
         }
-        return locations.addAll(collection);
+        return out;
     }
 
     @Override
     public boolean addAll(@NotNull HitBox hitBox) {
-        if (!invalidateBounds) {
-            hitBox.forEach(this::checkBounds);
-        }
         boolean out = false;
+        boolean test;
         for(var location : hitBox){
-            out |= locations.add(location);
+            if ((test = locations.add(location)) && !invalidateBounds) {
+                this.checkBounds(location);
+            }
+            out |= test;
         }
         return out;
     }
