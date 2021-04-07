@@ -14,6 +14,7 @@ import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.processing.WorldManager;
 import net.countercraft.movecraft.processing.tasks.DetectionTask;
 import net.countercraft.movecraft.util.Counter;
+import net.countercraft.movecraft.util.TimingData;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
 import net.countercraft.movecraft.util.hitboxes.MutableHitBox;
 import net.countercraft.movecraft.util.hitboxes.TreeHitBox;
@@ -72,7 +73,7 @@ public abstract class BaseCraft implements Craft{
     @NotNull private Audience audience;
     @NotNull private final Map<Location, BlockData> phaseBlocks = new HashMap<>();
     @NotNull private String name = "";
-    @NotNull DoubleSummaryStatistics stats = new DoubleSummaryStatistics();
+    @NotNull TimingData stats = new TimingData();
 
     public BaseCraft(@NotNull CraftType type, @NotNull World world) {
         this.type = type;
@@ -408,7 +409,7 @@ public abstract class BaseCraft implements Craft{
 
     @Override
     public double getMeanCruiseTime() {
-        return stats.getAverage();
+        return stats.getRecentAverage();
     }
 
     @Override
