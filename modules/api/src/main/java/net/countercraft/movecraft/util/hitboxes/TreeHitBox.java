@@ -4,14 +4,14 @@ import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.exception.EmptyHitBoxException;
-import net.countercraft.movecraft.util.collections.LocationSet;
+import net.countercraft.movecraft.util.collections.LocationTrieSet;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 import java.util.Iterator;
 
 public class TreeHitBox implements MutableHitBox{
-    private final LocationSet locations = new LocationSet();
+    private final LocationTrieSet locations = new LocationTrieSet();
     private final Long2IntMap localMinY;
     private boolean invalidateBounds = false;
     private int minX = Integer.MAX_VALUE;
