@@ -1,6 +1,5 @@
 package net.countercraft.movecraft.util.collections;
 
-import com.google.common.collect.Iterators;
 import net.countercraft.movecraft.MovecraftLocation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -10,7 +9,6 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Supplier;
