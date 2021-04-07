@@ -12,11 +12,11 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
-import net.countercraft.movecraft.util.hitboxes.BitmapHitBox;
 import net.countercraft.movecraft.util.CollectionUtils;
-import net.countercraft.movecraft.util.hitboxes.HitBox;
 import net.countercraft.movecraft.util.MathUtils;
+import net.countercraft.movecraft.util.hitboxes.HitBox;
 import net.countercraft.movecraft.util.hitboxes.SolidHitBox;
+import net.countercraft.movecraft.util.hitboxes.TreeHitBox;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -74,7 +74,7 @@ public class CraftRotateCommand extends UpdateCommand {
             passthroughBlocks.add(Material.GRASS);
         }
         if (!passthroughBlocks.isEmpty()) {
-            BitmapHitBox originalLocations = new BitmapHitBox();
+            TreeHitBox originalLocations = new TreeHitBox();
             final Rotation counterRotation = rotation == Rotation.CLOCKWISE ? Rotation.ANTICLOCKWISE : Rotation.CLOCKWISE;
             for (MovecraftLocation movecraftLocation : craft.getHitBox()) {
                 originalLocations.add(MathUtils.rotateVec(counterRotation, movecraftLocation.subtract(originLocation)).add(originLocation));
@@ -89,10 +89,10 @@ public class CraftRotateCommand extends UpdateCommand {
                 }
             }
             //The subtraction of the set of coordinates in the HitBox cube and the HitBox itself
-            final HitBox invertedHitBox = new BitmapHitBox(craft.getHitBox().boundingHitBox()).difference(craft.getHitBox());
+            final HitBox invertedHitBox = new TreeHitBox(craft.getHitBox().boundingHitBox()).difference(craft.getHitBox());
             //A set of locations that are confirmed to be "exterior" locations
-            final BitmapHitBox exterior = new BitmapHitBox();
-            final BitmapHitBox interior = new BitmapHitBox();
+            final TreeHitBox exterior = new TreeHitBox();
+            final TreeHitBox interior = new TreeHitBox();
 
             //place phased blocks
             final Set<Location> overlap = new HashSet<>(craft.getPhaseBlocks().keySet());
@@ -110,9 +110,9 @@ public class CraftRotateCommand extends UpdateCommand {
                     new SolidHitBox(new MovecraftLocation(maxX, minY, maxZ), new MovecraftLocation(maxX, maxY, minZ)),
                     new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(maxX, minY, maxZ))};
             //Valid exterior starts as the 6 surface planes of the HitBox with the locations that lie in the HitBox removed
-            final BitmapHitBox validExterior = new BitmapHitBox();
+            final TreeHitBox validExterior = new TreeHitBox();
             for (HitBox hitBox : surfaces) {
-                validExterior.addAll(new BitmapHitBox(hitBox).difference(craft.getHitBox()));
+                validExterior.addAll(hitBox.difference(craft.getHitBox()));
             }
             //Check to see which locations in the from set are actually outside of the craft
             for (MovecraftLocation location :validExterior ) {
@@ -120,7 +120,7 @@ public class CraftRotateCommand extends UpdateCommand {
                     continue;
                 }
                 //use a modified BFS for multiple origin elements
-                BitmapHitBox visited = new BitmapHitBox();
+                TreeHitBox visited = new TreeHitBox();
                 Queue<MovecraftLocation> queue = new LinkedList<>();
                 queue.add(location);
                 while (!queue.isEmpty()) {

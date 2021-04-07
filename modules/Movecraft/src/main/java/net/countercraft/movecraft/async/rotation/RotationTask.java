@@ -29,8 +29,9 @@ import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.update.CraftRotateCommand;
 import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
-import net.countercraft.movecraft.util.hitboxes.BitmapHitBox;
 import net.countercraft.movecraft.util.MathUtils;
+import net.countercraft.movecraft.util.hitboxes.MutableHitBox;
+import net.countercraft.movecraft.util.hitboxes.TreeHitBox;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -55,10 +56,10 @@ public class RotationTask extends AsyncTask {
     //private final MovecraftLocation[] blockList;    // used to be final, not sure why. Changed by Mark / Loraxe42
     private Set<UpdateCommand> updates = new HashSet<>();
 
-    private final BitmapHitBox oldHitBox;
-    private final BitmapHitBox newHitBox;
-    private final BitmapHitBox oldFluidList;
-    private final BitmapHitBox newFluidList;
+    private final MutableHitBox oldHitBox;
+    private final MutableHitBox newHitBox;
+    private final MutableHitBox oldFluidList;
+    private final MutableHitBox newFluidList;
 
     public RotationTask(Craft c, MovecraftLocation originPoint, Rotation rotation, World w, boolean isSubCraft) {
         super(c);
@@ -66,10 +67,10 @@ public class RotationTask extends AsyncTask {
         this.rotation = rotation;
         this.w = w;
         this.isSubCraft = isSubCraft;
-        this.newHitBox = new BitmapHitBox();
-        this.oldHitBox = new BitmapHitBox(c.getHitBox());
-        this.oldFluidList = new BitmapHitBox(c.getFluidLocations());
-        this.newFluidList = new BitmapHitBox(c.getFluidLocations());
+        this.newHitBox = new TreeHitBox();
+        this.oldHitBox = new TreeHitBox(c.getHitBox());
+        this.oldFluidList = new TreeHitBox(c.getFluidLocations());
+        this.newFluidList = new TreeHitBox(c.getFluidLocations());
     }
 
     public RotationTask(Craft c, MovecraftLocation originPoint, Rotation rotation, World w) {
@@ -338,11 +339,11 @@ public class RotationTask extends AsyncTask {
 
 
 
-    public BitmapHitBox getNewHitBox() {
+    public MutableHitBox getNewHitBox() {
         return newHitBox;
     }
 
-    public BitmapHitBox getNewFluidList() {
+    public MutableHitBox getNewFluidList() {
         return newFluidList;
     }
 }
