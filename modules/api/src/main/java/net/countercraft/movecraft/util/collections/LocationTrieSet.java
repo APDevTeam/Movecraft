@@ -203,7 +203,7 @@ public class LocationTrieSet extends AbstractSet<MovecraftLocation> implements S
                 .get((lower >>>= TREE_MASK_LENGTH) & BitTreeNode.TREE_MASK)
                 .get((lower >>>= TREE_MASK_LENGTH) & BitTreeNode.TREE_MASK)
                 .get(lower >>> TREE_MASK_LENGTH & BitTreeNode.TREE_MASK)
-                .get((upper >>>= TREE_MASK_LENGTH) & BitTreeNode.TREE_MASK)
+                .get(upper & BitTreeNode.TREE_MASK)
                 .get((upper >>>= TREE_MASK_LENGTH) & BitTreeNode.TREE_MASK)
                 .get((upper >>>= TREE_MASK_LENGTH) & BitTreeNode.TREE_MASK)
                 .get((upper >>>= TREE_MASK_LENGTH) & BitTreeNode.TREE_MASK)
