@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.craft;
 
+import it.unimi.dsi.fastutil.doubles.DoubleArrayFIFOQueue;
 import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
@@ -12,10 +13,10 @@ import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.processing.WorldManager;
 import net.countercraft.movecraft.processing.tasks.DetectionTask;
-import net.countercraft.movecraft.util.hitboxes.BitmapHitBox;
 import net.countercraft.movecraft.util.Counter;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
 import net.countercraft.movecraft.util.hitboxes.MutableHitBox;
+import net.countercraft.movecraft.util.hitboxes.TreeHitBox;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
@@ -30,9 +31,11 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.DoubleSummaryStatistics;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -67,17 +70,16 @@ public abstract class BaseCraft implements Craft{
     @Nullable
     private Player notificationPlayer;
     @NotNull private Audience audience;
-    private float meanCruiseTime;
-    private int numMoves;
     @NotNull private final Map<Location, BlockData> phaseBlocks = new HashMap<>();
     @NotNull private String name = "";
+    @NotNull DoubleSummaryStatistics stats = new DoubleSummaryStatistics();
 
     public BaseCraft(@NotNull CraftType type, @NotNull World world) {
         this.type = type;
         this.w = world;
-        this.hitBox = new BitmapHitBox();
-        this.collapsedHitBox = new BitmapHitBox();
-        this.fluidLocations = new BitmapHitBox();
+        this.hitBox = new TreeHitBox();
+        this.collapsedHitBox = new TreeHitBox();
+        this.fluidLocations = new TreeHitBox();
         this.pilotLocked = false;
         this.pilotLockedX = 0.0;
         this.pilotLockedY = 0.0;
@@ -87,7 +89,6 @@ public abstract class BaseCraft implements Craft{
         this.sinking = false;
         this.disabled = false;
         this.origPilotTime = System.currentTimeMillis();
-        numMoves = 0;
         materials = new Counter<>();
         audience = Audience.empty();
     }
@@ -406,13 +407,13 @@ public abstract class BaseCraft implements Craft{
     }
 
     @Override
-    public float getMeanCruiseTime() {
-        return meanCruiseTime;
+    public double getMeanCruiseTime() {
+        return stats.getAverage();
     }
 
     @Override
     public void addCruiseTime(float cruiseTime){
-        meanCruiseTime = (meanCruiseTime *numMoves + cruiseTime)/(++numMoves);
+        stats.accept(cruiseTime);
     }
 
     @Override
@@ -447,7 +448,7 @@ public abstract class BaseCraft implements Craft{
 
         if(type.getDynamicLagSpeedFactor() == 0.0 || type.getDynamicLagPowerFactor() == 0.0 || Math.abs(type.getDynamicLagPowerFactor()) > 1.0)
             return (type.getCruiseTickCooldown(w) + chestPenalty) * (type.getGearShiftsAffectTickCooldown() ? currentGear : 1);
-        if(numMoves == 0)
+        if(stats.getCount() == 0)
             return (int) Math.round(20.0 * ((type.getCruiseSkipBlocks(w) + 1.0) / type.getDynamicLagMinSpeed()) * (type.getGearShiftsAffectTickCooldown() ? currentGear : 1));
 
         if(Settings.Debug) {

@@ -135,7 +135,7 @@ public interface Craft {
 
     long getOrigPilotTime();
 
-    float getMeanCruiseTime();
+    double getMeanCruiseTime();
 
     void addCruiseTime(float cruiseTime);
 
