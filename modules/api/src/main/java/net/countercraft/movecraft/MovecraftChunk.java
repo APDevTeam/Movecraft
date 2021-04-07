@@ -1,16 +1,33 @@
 package net.countercraft.movecraft;
 
+import com.google.common.primitives.Ints;
 import org.bukkit.Chunk;
 import org.bukkit.World;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
-public class MovecraftChunk {
+public class MovecraftChunk implements Comparable<MovecraftChunk>{
     
     private final int x, z;
     private final World world;
-    
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        MovecraftChunk that = (MovecraftChunk) o;
+        return x == that.x && z == that.z && world.equals(that.world);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(x, z, world);
+    }
+
     public MovecraftChunk(int x, int z, World world) {
         this.x = x;
         this.z = z;
@@ -36,34 +53,25 @@ public class MovecraftChunk {
     public Chunk toBukkit() {
         return world.getChunkAt(x, z);
     }
-    
-    @Override
-    public boolean equals(Object o) {
-        if (o instanceof MovecraftChunk) {
-            MovecraftChunk c = (MovecraftChunk) o;
-            if (c.getX() == x && c.getZ() == z && c.getWorld().equals(world)) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    
-    public static void addSurroundingChunks(List<MovecraftChunk> chunks, int radius) {
+
+    public static void addSurroundingChunks(Set<MovecraftChunk> chunks, int radius) {
         
         if (radius > 0) {
-            List<MovecraftChunk> tmp = new ArrayList<MovecraftChunk>();
-            tmp.addAll(chunks);
+            List<MovecraftChunk> tmp = new ArrayList<>(chunks);
             for (MovecraftChunk chunk : tmp) {
                 for (int x = -radius; x <= radius; x++) {
                     for (int z = -radius; z <= radius; z++) {
                         MovecraftChunk c = new MovecraftChunk(chunk.getX() + x, chunk.getZ() + z, chunk.getWorld());
-                        if (!chunks.contains(c)) chunks.add(c);
+                        chunks.add(c);
                     }
                 }
             }
         }
         
     }
-    
+
+    @Override
+    public int compareTo(@NotNull MovecraftChunk o) {
+        return this.x < o.x ? -1 : this.z < o.z ? -1 : this.world.getUID().compareTo(o.world.getUID());
+    }
 }

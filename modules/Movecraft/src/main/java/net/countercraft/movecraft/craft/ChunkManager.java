@@ -4,8 +4,6 @@ import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftChunk;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
-import net.countercraft.movecraft.util.hitboxes.BitmapHitBox;
-import net.countercraft.movecraft.util.hitboxes.HitBox;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.World;
@@ -14,21 +12,19 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Callable;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.Future;
 
 @Deprecated
 public class ChunkManager implements Listener {
     
-    private static List<MovecraftChunk> chunks = new ArrayList<MovecraftChunk>();
+    private static final Set<MovecraftChunk> chunks = new HashSet<>();
     
-    public static void addChunksToLoad(List<MovecraftChunk> list) {
+    public static void addChunksToLoad(Iterable<MovecraftChunk> list) {
         
         for (MovecraftChunk chunk : list) {
-            if (!chunks.contains(chunk)) {
-                chunks.add(chunk);
+            if (chunks.add(chunk)) {
                 if (!chunk.isLoaded()) {
                     chunk.toBukkit().load(true);
                 }
@@ -47,7 +43,7 @@ public class ChunkManager implements Listener {
         }.runTaskLaterAsynchronously(Movecraft.getInstance(), 200L);
     }
     
-    private static void removeChunksToLoad(List<MovecraftChunk> list) {
+    private static void removeChunksToLoad(Iterable<MovecraftChunk> list) {
         for (MovecraftChunk chunk : list) {
             chunks.remove(chunk);
         }
@@ -61,59 +57,40 @@ public class ChunkManager implements Listener {
     }
     
     
-    public static List<MovecraftChunk> getChunks(HitBox hitBox, World world) {
+    public static Set<MovecraftChunk> getChunks(Iterable<MovecraftLocation> hitBox, World world) {
+        return getChunks(hitBox, world, 0,0,0);
         
-        List<MovecraftChunk> chunks = new ArrayList<MovecraftChunk>();
-        
-        for (MovecraftLocation location : hitBox) {
-            
+    }
+    
+    public static Set<MovecraftChunk> getChunks(Iterable<MovecraftLocation> oldHitBox, World world, int dx, int dy, int dz) {
+        Set<MovecraftChunk> chunks = new HashSet<>();
+        for (MovecraftLocation oldLocation : oldHitBox) {
+            var location = oldLocation.translate(dx, dy, dz);
             int chunkX = location.getX() / 16;
             if (location.getX() < 0) chunkX--;
             int chunkZ = location.getZ() / 16;
             if (location.getZ() < 0) chunkZ--;
-            
+
             MovecraftChunk chunk = new MovecraftChunk(chunkX, chunkZ, world);
-            if (!chunks.contains(chunk)) chunks.add(chunk);
-            
+            chunks.add(chunk);
+
         }
-        
+
         return chunks;
+    }
+    
+    public static void checkChunks(Set<MovecraftChunk> chunks) {
+        chunks.removeIf(MovecraftChunk::isLoaded);
         
     }
     
-    public static List<MovecraftChunk> getChunks(HitBox oldHitBox, World world, int dx, int dy, int dz) {
-        
-        BitmapHitBox hitBox = new BitmapHitBox();
-        for (MovecraftLocation location : oldHitBox) {
-            hitBox.add(location.translate(dx, dy, dz));
-        }
-        
-        return getChunks(hitBox, world);
-        
-    }
-    
-    public static void checkChunks(List<MovecraftChunk> chunks) {
-        
-        List<MovecraftChunk> list = new ArrayList<MovecraftChunk>();
-        list.addAll(chunks);
-        for (MovecraftChunk chunk : list) {
-            if (chunk.isLoaded()) chunks.remove(chunk);
-        }
-        
-    }
-    
-    public static Future<Boolean> syncLoadChunks(List<MovecraftChunk> chunks) {
+    public static Future<Boolean> syncLoadChunks(Set<MovecraftChunk> chunks) {
         if (Settings.Debug)
             Movecraft.getInstance().getLogger().info("Loading " + chunks.size() + " chunks...");
         
-        return Bukkit.getScheduler().callSyncMethod(Movecraft.getInstance(), new Callable<Boolean>() {
-
-            @Override
-            public Boolean call() throws Exception {
-                ChunkManager.addChunksToLoad(chunks);
-                return true;
-            }
-            
+        return Bukkit.getScheduler().callSyncMethod(Movecraft.getInstance(), () -> {
+            ChunkManager.addChunksToLoad(chunks);
+            return true;
         });
     }
     
