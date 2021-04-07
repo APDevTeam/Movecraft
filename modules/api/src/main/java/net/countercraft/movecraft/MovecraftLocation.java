@@ -143,7 +143,7 @@ final public class MovecraftLocation implements Comparable<MovecraftLocation>{
 
     @NotNull
     public static MovecraftLocation unpack(long l){
-        return new MovecraftLocation(unpackX(l), unpackY(l), unpackZ(l));
+        return new MovecraftLocation((int) (l << 52 >> 52),(int) (l >> 52),(int) (l << 26 >> 52));
     }
 
     @Override
