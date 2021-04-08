@@ -166,18 +166,19 @@ public class IWorldHandler extends WorldHandler {
         //*******************************************
         List<TileHolder> tiles = new ArrayList<>();
         //get the tiles
-        for(BlockPosition position : positions){
-            if(oldNativeWorld.getType(position) == Blocks.AIR.getBlockData())
+        for (int i = 0, positionsSize = positions.size(); i < positionsSize; i++) {
+            BlockPosition position = positions.get(i);
+            if (oldNativeWorld.getType(position) == Blocks.AIR.getBlockData())
                 continue;
             //TileEntity tile = nativeWorld.removeTileEntity(position);
-            TileEntity tile = removeTileEntity(oldNativeWorld,position);
-            if(tile == null)
+            TileEntity tile = removeTileEntity(oldNativeWorld, position);
+            if (tile == null)
                 continue;
             //get the nextTick to move with the tile
 
             //nativeWorld.capturedTileEntities.remove(position);
             //nativeWorld.getChunkAtWorldCoords(position).getTileEntities().remove(position);
-            tiles.add(new TileHolder(tile, tickProvider.getNextTick(oldNativeWorld,position), position));
+            tiles.add(new TileHolder(tile, tickProvider.getNextTick(oldNativeWorld, position), position));
 
         }
         //*******************************************
@@ -190,21 +191,23 @@ public class IWorldHandler extends WorldHandler {
         //get the blocks and translate the positions
         List<IBlockData> blockData = new ArrayList<>();
         List<BlockPosition> newPositions = new ArrayList<>();
-        for(BlockPosition position : positions){
+        for (int i = 0, positionsSize = positions.size(); i < positionsSize; i++) {
+            BlockPosition position = positions.get(i);
             blockData.add(oldNativeWorld.getType(position));
             newPositions.add(position.a(translateVector));
         }
         //create the new block
-        for(int i = 0; i<newPositions.size(); i++) {
+        for(int i = 0, positionSize = newPositions.size(); i<positionSize; i++) {
             setBlockFast(nativeWorld, newPositions.get(i), blockData.get(i));
         }
         //*******************************************
         //*    Step four: replace all the tiles     *
         //*******************************************
         //TODO: go by chunks
-        for(TileHolder tileHolder : tiles){
-            moveTileEntity(nativeWorld, tileHolder.getTilePosition().a(translateVector),tileHolder.getTile());
-            if(tileHolder.getNextTick()==null)
+        for (int i = 0, tilesSize = tiles.size(); i < tilesSize; i++) {
+            TileHolder tileHolder = tiles.get(i);
+            moveTileEntity(nativeWorld, tileHolder.getTilePosition().a(translateVector), tileHolder.getTile());
+            if (tileHolder.getNextTick() == null)
                 continue;
             final long currentTime = nativeWorld.worldData.getTime();
             nativeWorld.getBlockTickList().a(tileHolder.getNextTick().a.a(translateVector), (Block) tileHolder.getNextTick().b(), (int) (tileHolder.getNextTick().b - currentTime), tileHolder.getNextTick().c);
@@ -212,9 +215,10 @@ public class IWorldHandler extends WorldHandler {
         //*******************************************
         //*   Step five: Destroy the leftovers      *
         //*******************************************
-        Collection<BlockPosition> deletePositions = positions;
+        List<BlockPosition> deletePositions = positions;
         if (oldNativeWorld == nativeWorld) deletePositions = CollectionUtils.filter(positions,newPositions);
-        for(BlockPosition position : deletePositions){
+        for (int i = 0, deletePositionsSize = deletePositions.size(); i < deletePositionsSize; i++) {
+            BlockPosition position = deletePositions.get(i);
             setBlockFast(oldNativeWorld, position, Blocks.AIR.getBlockData());
         }
     }

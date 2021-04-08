@@ -33,6 +33,19 @@ public class CollectionUtils {
 
     @NotNull
     @Contract(pure=true)
+    public static <E> List<E> filter(@NotNull final List<E> collection, @NotNull final Collection<E> filter){
+        final List<E> returnList = new ArrayList<>();
+        final HashSet<E> filterSet = new HashSet<>(filter);
+        for(int i = 0; i < collection.size(); i++){
+            if(!filterSet.contains(collection.get(i))){
+                returnList.add(collection.get(i));
+            }
+        }
+        return returnList;
+    }
+
+    @NotNull
+    @Contract(pure=true)
     @Deprecated
     public static Collection<MovecraftLocation> filter(@NotNull final HitBox collection, @NotNull final Collection<MovecraftLocation> filter){
         final Collection<MovecraftLocation> returnList = new HashSet<>();
