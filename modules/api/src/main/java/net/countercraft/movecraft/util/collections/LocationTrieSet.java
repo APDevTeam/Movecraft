@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Objects;
+import java.util.PrimitiveIterator;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -44,80 +45,54 @@ public class LocationTrieSet extends AbstractSet<MovecraftLocation> implements S
         if(o instanceof MovecraftLocation){
             MovecraftLocation location = (MovecraftLocation) o;
             long packed = location.pack();
-            var suffix = this.getPrefixLeafIfPresent(packed);
-            if(suffix == null){
-                return false;
-            }
-            int leafIndex = (int) (packed >>> TREE_MASK_LENGTH * (TREE_DEPTH - 1));
-            return suffix.getIfPresent(leafIndex, false);
+            return contains(packed);
         }
         return false;
     }
 
-    @SuppressWarnings("ConstantConditions")
+    boolean contains(long packed){
+        var suffix = this.getPrefixLeafIfPresent(packed);
+        if(suffix == null){
+            return false;
+        }
+        int leafIndex = (int) (packed >>> TREE_MASK_LENGTH * (TREE_DEPTH - 1));
+        return suffix.getIfPresent(leafIndex, false);
+    }
+
+    PrimitiveIterator.OfLong longIterator(){
+        if(isEmpty()){
+            return new PrimitiveIterator.OfLong(){
+                @Override
+                public boolean hasNext() {
+                    return false;
+                }
+
+                @Override
+                public long nextLong() {
+                    return 0;
+                }
+            };
+        }
+
+        return new LongTrieIterator(this);
+    }
+
     @NotNull
     @Override
     public Iterator<MovecraftLocation> iterator() {
         if(isEmpty()){
             return Collections.emptyIterator();
         }
-        // Initialize our state and the first output
-        // Where possible we use getIfPresent as it is more efficient
-        int[] childIndex = new int[TREE_DEPTH];
-        BitTreeNode<?>[] nodeAtDepth = new BitTreeNode[TREE_DEPTH];
-        nodeAtDepth[0] = tree;
-        for(int i = 0; i < TREE_DEPTH-1; i++){
-            childIndex[i] = nodeAtDepth[i].nextSetChild(0);
-            nodeAtDepth[i+1] = (BitTreeNode<?>) nodeAtDepth[i].getIfPresent(childIndex[i]);
-        }
-        childIndex[TREE_DEPTH-1] = nodeAtDepth[TREE_DEPTH-1].nextSetChild(0);
-        return new Iterator<>(){
-
+        var iter = new LongTrieIterator(this);
+        return new Iterator<>() {
             @Override
             public boolean hasNext() {
-                return childIndex[0] != -1;
+                return iter.hasNext();
             }
 
             @Override
             public MovecraftLocation next() {
-                // Pack the previously known correct output
-                long packed = getPacked();
-                // Ascend up the tree to find the next set node
-                int i;
-                for(i = TREE_DEPTH-1; i >= 0;) {
-                    childIndex[i] = nodeAtDepth[i].nextSetChild(childIndex[i] + 1);
-                    if (childIndex[i] == -1) {
-                        i--;
-                    } else {
-                        break;
-                    }
-                }
-                // If no such node exists, we're done
-                if(!hasNext()){
-                    return MovecraftLocation.unpack(packed);
-                }
-                // Otherwise, descend the tree and update the state to match our path
-                nodeAtDepth[i+1] = (BitTreeNode<?>) nodeAtDepth[i].getIfPresent(childIndex[i]);
-                i++;
-                for(; i < TREE_DEPTH-1; i++) {
-                    if(childIndex[i] == -1){
-                        childIndex[i] = nodeAtDepth[i].nextSetChild(0);
-                        nodeAtDepth[i+1] = (BitTreeNode<?>) nodeAtDepth[i].getIfPresent(childIndex[i]);
-                    }
-                }
-                // The leaf bitset must be calculated separately
-                if(childIndex[TREE_DEPTH-1] == -1){
-                    childIndex[TREE_DEPTH-1] = nodeAtDepth[TREE_DEPTH-1].nextSetChild(0);
-                }
-                return MovecraftLocation.unpack(packed);
-            }
-
-            private long getPacked() {
-                long packed=0;
-                for(int i = 0; i < TREE_DEPTH; i++){
-                    packed |= ((long) childIndex[i]) << (TREE_MASK_LENGTH*(i));
-                }
-                return packed;
+                return MovecraftLocation.unpack(iter.nextLong());
             }
         };
     }
@@ -125,6 +100,10 @@ public class LocationTrieSet extends AbstractSet<MovecraftLocation> implements S
     @Override
     public boolean add(MovecraftLocation location) {
         long packed = location.pack();
+        return add(packed);
+    }
+
+    boolean add(long packed){
         var leaf = this.getPrefixLeaf(packed);
         int leafIndex = (int) (packed >>> TREE_MASK_LENGTH * (TREE_DEPTH - 1));
         boolean out = !leaf.getIfPresent(leafIndex, false);
@@ -161,11 +140,11 @@ public class LocationTrieSet extends AbstractSet<MovecraftLocation> implements S
     private boolean remove(long path, int depth, @NotNull BitTreeNode<?> parent){
         int childIndex = (int) (path & BitTreeNode.TREE_MASK);
         if(depth == TREE_DEPTH-1){
-            parent.children[childIndex] = null;
+            parent.remove(childIndex);
             return parent.nextSetChild(0) == -1;
         }
         if(remove(path >>> TREE_MASK_LENGTH, depth+1, (BitTreeNode<?>) parent.getIfPresent(childIndex))){
-            parent.children[childIndex] = null;
+            parent.remove(childIndex);
             return parent.nextSetChild(0) == -1;
         }
         return false;
@@ -179,12 +158,22 @@ public class LocationTrieSet extends AbstractSet<MovecraftLocation> implements S
     @Nullable
     private BitTreeNode<Boolean> getPrefixLeafIfPresent(long path){
         BitTreeNode<?> top = tree;
-        for(int i = 0; i < TREE_DEPTH - 1; i++) {
-            top = (BitTreeNode<?>) top.getIfPresent(path & BitTreeNode.TREE_MASK);
+        int i;
+        int currentPath = (int) path;
+        for(i = 0; i < 8; i++) {
+            top = (BitTreeNode<?>) top.getIfPresent(currentPath & BitTreeNode.TREE_MASK);
             if (top == null) {
                 return null;
             }
-            path >>>= TREE_MASK_LENGTH;
+            currentPath >>>= TREE_MASK_LENGTH;
+        }
+        currentPath = (int) (path >>> 32);
+        for(; i < TREE_DEPTH - 1; i++) {
+            top = (BitTreeNode<?>) top.getIfPresent(currentPath & BitTreeNode.TREE_MASK);
+            if (top == null) {
+                return null;
+            }
+            currentPath >>>= TREE_MASK_LENGTH;
         }
 
         return (BitTreeNode<Boolean>) top;
@@ -213,10 +202,13 @@ public class LocationTrieSet extends AbstractSet<MovecraftLocation> implements S
     }
 
      private static class BitTreeNode<T> implements Iterable<T>{
+         // Disabled by default, checking bounds is slow and this is an internal api
+        private static final boolean ENABLE_SAFETY = false;
         public static final int TREE_MASK = 0b1111;
         private static final int TREE_WIDTH = TREE_MASK + 1;
         private final T[] children;
         private final Supplier<T> initializer;
+        private int status = 0;
 
         @SuppressWarnings("unchecked")
         private BitTreeNode(@NotNull Supplier<T> initializer) {
@@ -225,50 +217,40 @@ public class LocationTrieSet extends AbstractSet<MovecraftLocation> implements S
         }
 
         public int nextSetChild(int start){
-            for(int i = start; i < TREE_WIDTH; i++){
-                if(children[i] != null){
-                    return i;
-                }
+            int masked = status & (0xffffffff << start);
+            if(masked == 0){
+                return -1;
             }
-            return -1;
+            return Integer.numberOfTrailingZeros(masked);
         }
 
          @Contract("_, !null -> !null")
-        public T getIfPresent(long index, T defaultValue){
+        public T getIfPresent(int index, T defaultValue){
             var out = getIfPresent(index);
             return out == null ? defaultValue : out;
         }
 
         @Nullable
-        public T getIfPresent(long index){
-            return getIfPresent((int) index);
-        }
-
-        @Nullable
         public T getIfPresent(int index){
-            if(index < 0 || index > TREE_WIDTH){
-                throw new IndexOutOfBoundsException(String.format("Index %d must be in range <0,%d>", index, TREE_WIDTH));
-            }
+            if(ENABLE_SAFETY) Objects.checkIndex(index, TREE_WIDTH);
             return children[index];
         }
 
         @NotNull
         public T get(int index){
-            if(index < 0 || index > TREE_WIDTH){
-                throw new IndexOutOfBoundsException(String.format("Index %d must be in range <0,%d>", index, TREE_WIDTH));
-            }
+            if(ENABLE_SAFETY) Objects.checkIndex(index, TREE_WIDTH);
             if(children[index] == null) {
-                children[index] = initializer.get();
+                status |= 1 << index;
+                return children[index] = initializer.get();
             }
             return children[index];
         }
 
         @Nullable
         public T remove(int index){
-            if(index < 0 || index > TREE_WIDTH){
-                throw new IndexOutOfBoundsException(String.format("Index %d must be in range <0,%d>", index, TREE_WIDTH));
-            }
+            if(ENABLE_SAFETY) Objects.checkIndex(index, TREE_WIDTH);
             var out = children[index];
+            status &= ~(1 << index);
             children[index] = null;
             return out;
         }
@@ -282,6 +264,73 @@ public class LocationTrieSet extends AbstractSet<MovecraftLocation> implements S
         @NotNull
         public Stream<T> stream(){
             return Arrays.stream(children).filter(Objects::nonNull);
+        }
+    }
+
+    private static class LongTrieIterator implements PrimitiveIterator.OfLong {
+
+        private final int[] childIndex;
+        private final BitTreeNode<?>[] nodeAtDepth;
+
+        public LongTrieIterator(LocationTrieSet set) {
+            // Initialize our state and the first output
+            // Where possible we use getIfPresent as it is more efficient
+            childIndex = new int[TREE_DEPTH];
+            nodeAtDepth = new BitTreeNode[TREE_DEPTH];
+            nodeAtDepth[0] = set.tree;
+            for(int i = 0; i < TREE_DEPTH-1; i++){
+                childIndex[i] = nodeAtDepth[i].nextSetChild(0);
+                nodeAtDepth[i+1] = (BitTreeNode<?>) nodeAtDepth[i].getIfPresent(childIndex[i]);
+            }
+            childIndex[TREE_DEPTH-1] = nodeAtDepth[TREE_DEPTH-1].nextSetChild(0);
+        }
+
+        @Override
+        public boolean hasNext() {
+            return childIndex[0] != -1;
+        }
+
+        @Override
+        public long nextLong() {
+            // Pack the previously known correct output
+            long packed = getPacked();
+            // Ascend up the tree to find the next set node
+            int i;
+            for(i = TREE_DEPTH-1; i >= 0;) {
+                childIndex[i] = nodeAtDepth[i].nextSetChild(childIndex[i] + 1);
+                if (childIndex[i] == -1) {
+                    i--;
+                } else {
+                    break;
+                }
+            }
+            // If no such node exists, we're done
+            if(!hasNext()){
+                return packed;
+            }
+            // Otherwise, descend the tree and update the state to match our path
+            if(i != TREE_DEPTH - 1)
+                nodeAtDepth[i+1] = (BitTreeNode<?>) nodeAtDepth[i].getIfPresent(childIndex[i]);
+            i++;
+            for(; i < TREE_DEPTH-1; i++) {
+                if(childIndex[i] == -1){
+                    childIndex[i] = nodeAtDepth[i].nextSetChild(0);
+                    nodeAtDepth[i+1] = (BitTreeNode<?>) nodeAtDepth[i].getIfPresent(childIndex[i]);
+                }
+            }
+            // The leaf bitset must be calculated separately
+            if(childIndex[TREE_DEPTH-1] == -1){
+                childIndex[TREE_DEPTH-1] = nodeAtDepth[TREE_DEPTH-1].nextSetChild(0);
+            }
+            return packed;
+        }
+
+        private long getPacked() {
+            long packed=0;
+            for(int i = 0; i < TREE_DEPTH; i++){
+                packed |= ((long) childIndex[i]) << (TREE_MASK_LENGTH*(i));
+            }
+            return packed;
         }
     }
 }
