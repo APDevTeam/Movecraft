@@ -33,11 +33,11 @@ public class TimingData implements DoubleConsumer {
             return 0;
         }
         int bound = Math.min(data.length, count);
-        int out = 0;
+        double out = 0;
         for(int i = 0; i < bound; i++){
             out += data[i];
         }
-        return out/(double) bound;
+        return out/ bound;
     }
 
     public double getAverage(){
