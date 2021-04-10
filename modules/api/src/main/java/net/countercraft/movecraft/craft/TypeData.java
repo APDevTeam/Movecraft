@@ -322,6 +322,9 @@ public final class TypeData {
         }
         for(Object object : (ArrayList<?>) this.backingData.get(key)){
             if (!(object instanceof String)) {
+                if(object == null){
+                    throw new IllegalArgumentException("Entry " + key + " has a null value. This usually indicates you've attempted to use a tag that is not surrounded by quotes");
+                }
                 throw new IllegalArgumentException("Entry " + object + " must be a material for key " + key);
             }
             String materialName = (String) object;
