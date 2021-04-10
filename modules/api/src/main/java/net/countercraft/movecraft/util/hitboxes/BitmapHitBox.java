@@ -231,7 +231,7 @@ public class BitmapHitBox implements MutableHitBox {
         return maxZ;
     }
 
-    public int getLocalMinY(int x, int z){
+    public int getMinYAt(int x, int z){
         if(this.isEmpty()){
             throw new EmptyHitBoxException();
         }

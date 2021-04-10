@@ -34,7 +34,7 @@ public class BitmapHitBoxTest {
 
     @Test
     public void testLocalExtrema(){
-        assertEquals(0,createTestHitbox().getLocalMinY(0,0));
+        assertEquals(0,createTestHitbox().getMinYAt(0,0));
 //        assertEquals(createTestHitbox().getLocalMaxY(0,0), 2);
     }
 

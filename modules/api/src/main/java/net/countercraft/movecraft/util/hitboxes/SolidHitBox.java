@@ -162,6 +162,11 @@ final public class SolidHitBox implements HitBox{
         return new TreeHitBox(this).symmetricDifference(other);
     }
 
+    @Override
+    public int getMinYAt(int x, int z) {
+        return getMinY();
+    }
+
     @Nullable
     public SolidHitBox subtract(SolidHitBox other){
         if(this.minX > other.maxX || this.maxX < other.minX || this.minY > other.minY || this.maxY < other.minY || this.minZ > other.maxZ || this.maxZ < other.minZ)

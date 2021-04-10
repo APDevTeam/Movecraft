@@ -22,6 +22,7 @@ import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.ExplosionUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.ItemDropUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
+import net.countercraft.movecraft.util.hitboxes.HitBox;
 import net.countercraft.movecraft.util.hitboxes.MutableHitBox;
 import net.countercraft.movecraft.util.hitboxes.SolidHitBox;
 import net.countercraft.movecraft.util.hitboxes.TreeHitBox;
@@ -61,7 +62,10 @@ public class TranslationTask extends AsyncTask {
 
     private World world;
     private int dx, dy, dz;
-    private TreeHitBox newHitBox, oldHitBox, oldFluidList, newFluidList;
+    private TreeHitBox newHitBox;
+    private HitBox oldHitBox;
+    private TreeHitBox oldFluidList;
+    private TreeHitBox newFluidList;
     private boolean failed;
     private boolean collisionExplosion = false;
     private String failMessage;
@@ -76,7 +80,7 @@ public class TranslationTask extends AsyncTask {
         this.dy = dy;
         this.dz = dz;
         newHitBox = new TreeHitBox();
-        oldHitBox = new TreeHitBox(c.getHitBox());
+        oldHitBox = c.getHitBox();
         oldFluidList = new TreeHitBox(c.getFluidLocations());
         newFluidList = new TreeHitBox();
     }
@@ -185,7 +189,7 @@ public class TranslationTask extends AsyncTask {
                 dy = tooSteep ? 0 : incline;
             } else if (!isOnGround(oldHitBox) && craft.getType().getCanHover()){
                 MovecraftLocation midPoint = oldHitBox.getMidPoint();
-                int centreMinY = oldHitBox.getLocalMinY(midPoint.getX(), midPoint.getZ());
+                int centreMinY = oldHitBox.getMinYAt(midPoint.getX(), midPoint.getZ());
                 int groundY = centreMinY;
                 World w = craft.getW();
                 while (w.getBlockAt(midPoint.getX(), groundY - 1, midPoint.getZ()).getType() == Material.AIR || craft.getType().getPassthroughBlocks().contains(w.getBlockAt(midPoint.getX(), groundY - 1, midPoint.getZ()).getType())){
@@ -628,7 +632,7 @@ public class TranslationTask extends AsyncTask {
         return surfaceLoc;
     }
 
-    private int inclineCraft(TreeHitBox hitBox){
+    private int inclineCraft(HitBox hitBox){
         if (isOnGround(hitBox) && dy < 0){
             dy = 0;
         }
@@ -666,12 +670,12 @@ public class TranslationTask extends AsyncTask {
         return movedCollBox.getMinY() - hitBox.getMinY();
     }
 
-    private int dropDistance (TreeHitBox hitBox) {
+    private int dropDistance (HitBox hitBox) {
         MutableHitBox bottomLocs = new TreeHitBox();
         MovecraftLocation corner1 = new MovecraftLocation(hitBox.getMinX(), 0, hitBox.getMinZ());
         MovecraftLocation corner2 = new MovecraftLocation(hitBox.getMaxX(), 0, hitBox.getMaxZ());
         for(MovecraftLocation location : new SolidHitBox(corner1, corner2)){
-            int test = hitBox.getLocalMinY(location.getX(), location.getZ());
+            int test = hitBox.getMinYAt(location.getX(), location.getZ());
             if(test == -1){
                 continue;
             }
@@ -708,7 +712,7 @@ public class TranslationTask extends AsyncTask {
         return dropDistance;
     }
 
-    private boolean isOnGround(TreeHitBox hitBox){
+    private boolean isOnGround(HitBox hitBox){
         MutableHitBox bottomLocs = new TreeHitBox();
         MutableHitBox translatedBottomLocs = new TreeHitBox();
         if (hitBox.getMinY() <= craft.getType().getMinHeightLimit(craft.getW())) {
@@ -717,7 +721,7 @@ public class TranslationTask extends AsyncTask {
         MovecraftLocation corner1 = new MovecraftLocation(hitBox.getMinX(), 0, hitBox.getMinZ());
         MovecraftLocation corner2 = new MovecraftLocation(hitBox.getMaxX(), 0, hitBox.getMaxZ());
         for(MovecraftLocation location : new SolidHitBox(corner1, corner2)){
-            int test = hitBox.getLocalMinY(location.getX(), location.getZ());
+            int test = hitBox.getMinYAt(location.getX(), location.getZ());
             if(test == -1){
                 continue;
             }

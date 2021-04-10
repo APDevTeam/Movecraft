@@ -104,6 +104,8 @@ public interface HitBox extends Iterable<MovecraftLocation>{
     @NotNull
     HitBox symmetricDifference(HitBox other);
 
+    int getMinYAt(int x, int z);
+
     class HitBoxSetView extends AbstractSet<MovecraftLocation> {
         private final HitBox backing;
 
