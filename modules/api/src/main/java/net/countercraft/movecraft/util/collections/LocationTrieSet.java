@@ -91,17 +91,11 @@ public class LocationTrieSet extends AbstractSet<MovecraftLocation> implements S
 
         if(!this.contains(packed)){
             size += 1;
-            LeafNode next = getNext(packed);
-            LeafNode previous = next == null ? null : next.previous;
-            LeafNode addition = new LeafNode(packed, previous, next);
-            if (next != null) {
-                next.setPrevious(addition);
+            LeafNode addition = new LeafNode(packed, null, head);
+            if (head != null) {
+                head.setPrevious(addition);
             }
-            if(previous == null){
-                head = addition;
-            } else {
-                previous.setNext(addition);
-            }
+            head = addition;
 
             var leaf = this.getPrefixLeaf(packed);
             leaf.set(leafIndex, addition);
