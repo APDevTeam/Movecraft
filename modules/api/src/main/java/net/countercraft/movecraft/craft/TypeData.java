@@ -266,7 +266,7 @@ public final class TypeData {
         if (!this.containsKey(key))
             return defaultValue;
         if(backingData.get(key) instanceof String)
-            return Material.valueOf((String) backingData.get(key));
+            return Material.valueOf(((String) backingData.get(key)).toUpperCase());
         throw new IllegalArgumentException("Value for key " + key + " must be of type Material");
     }
 
@@ -329,7 +329,7 @@ public final class TypeData {
             if(tagged != null){
                 returnList.addAll(tagged);
             } else {
-                returnList.add(Material.valueOf(materialName));
+                returnList.add(Material.valueOf(materialName.toUpperCase()));
             }
         }
         return returnList;
@@ -354,7 +354,7 @@ public final class TypeData {
             if(tagged != null){
                 returnList.addAll(tagged);
             } else {
-                returnList.add(Material.valueOf(materialName));
+                returnList.add(Material.valueOf(materialName.toUpperCase()));
             }
         }
         return returnList;
