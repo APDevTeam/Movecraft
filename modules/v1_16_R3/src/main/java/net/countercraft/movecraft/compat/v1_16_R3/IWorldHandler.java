@@ -154,7 +154,7 @@ public class IWorldHandler extends WorldHandler {
         //*      Step one: Convert to Positions     *
         //*******************************************
         BlockPosition translateVector = locationToPosition(displacement);
-        List<BlockPosition> positions = new ArrayList<>();
+        List<BlockPosition> positions = new ArrayList<>(craft.getHitBox().size());
         for(MovecraftLocation movecraftLocation : craft.getHitBox()) {
             positions.add(locationToPosition((movecraftLocation)).b(translateVector));
 
