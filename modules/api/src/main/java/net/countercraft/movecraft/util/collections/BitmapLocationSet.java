@@ -21,7 +21,7 @@ public class BitmapLocationSet extends AbstractSet<MovecraftLocation> {
     @NotNull
     @Override
     public Iterator<MovecraftLocation> iterator() {
-        var iter = backing.iterator();
+        var iter = backing.getLongIterator();
         return new Iterator<>() {
             @Override
             public boolean hasNext() {
@@ -61,5 +61,13 @@ public class BitmapLocationSet extends AbstractSet<MovecraftLocation> {
         }
         return false;
 
+    }
+
+    @Override
+    public boolean contains(Object o){
+        if(o instanceof MovecraftLocation){
+            return backing.contains(((MovecraftLocation) o).pack());
+        }
+        return false;
     }
 }
