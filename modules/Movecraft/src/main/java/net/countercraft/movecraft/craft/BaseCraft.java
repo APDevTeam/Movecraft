@@ -1,6 +1,5 @@
 package net.countercraft.movecraft.craft;
 
-import it.unimi.dsi.fastutil.doubles.DoubleArrayFIFOQueue;
 import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
@@ -17,7 +16,7 @@ import net.countercraft.movecraft.util.Counter;
 import net.countercraft.movecraft.util.TimingData;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
 import net.countercraft.movecraft.util.hitboxes.MutableHitBox;
-import net.countercraft.movecraft.util.hitboxes.TreeHitBox;
+import net.countercraft.movecraft.util.hitboxes.SetHitBox;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
@@ -32,11 +31,9 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.DoubleSummaryStatistics;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -78,9 +75,9 @@ public abstract class BaseCraft implements Craft{
     public BaseCraft(@NotNull CraftType type, @NotNull World world) {
         this.type = type;
         this.w = world;
-        this.hitBox = new TreeHitBox();
-        this.collapsedHitBox = new TreeHitBox();
-        this.fluidLocations = new TreeHitBox();
+        this.hitBox = new SetHitBox();
+        this.collapsedHitBox = new SetHitBox();
+        this.fluidLocations = new SetHitBox();
         this.pilotLocked = false;
         this.pilotLockedX = 0.0;
         this.pilotLockedY = 0.0;

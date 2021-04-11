@@ -25,7 +25,7 @@ import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
 import net.countercraft.movecraft.util.hitboxes.MutableHitBox;
 import net.countercraft.movecraft.util.hitboxes.SolidHitBox;
-import net.countercraft.movecraft.util.hitboxes.TreeHitBox;
+import net.countercraft.movecraft.util.hitboxes.SetHitBox;
 import net.kyori.adventure.key.Key;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -62,10 +62,10 @@ public class TranslationTask extends AsyncTask {
 
     private World world;
     private int dx, dy, dz;
-    private TreeHitBox newHitBox;
+    private SetHitBox newHitBox;
     private HitBox oldHitBox;
-    private TreeHitBox oldFluidList;
-    private TreeHitBox newFluidList;
+    private SetHitBox oldFluidList;
+    private SetHitBox newFluidList;
     private boolean failed;
     private boolean collisionExplosion = false;
     private String failMessage;
@@ -79,10 +79,10 @@ public class TranslationTask extends AsyncTask {
         this.dx = dx;
         this.dy = dy;
         this.dz = dz;
-        newHitBox = new TreeHitBox();
+        newHitBox = new SetHitBox();
         oldHitBox = c.getHitBox();
-        oldFluidList = new TreeHitBox(c.getFluidLocations());
-        newFluidList = new TreeHitBox();
+        oldFluidList = new SetHitBox(c.getFluidLocations());
+        newFluidList = new SetHitBox();
     }
 
     @Override
@@ -229,7 +229,7 @@ public class TranslationTask extends AsyncTask {
         final EnumSet<Material> harvestBlocks = craft.getType().getHarvestBlocks();
         final List<MovecraftLocation> harvestedBlocks = new ArrayList<>();
         final EnumSet<Material> harvesterBladeBlocks = craft.getType().getHarvesterBladeBlocks();
-        final TreeHitBox collisionBox = new TreeHitBox();
+        final SetHitBox collisionBox = new SetHitBox();
         for(MovecraftLocation oldLocation : oldHitBox){
             final MovecraftLocation newLocation = oldLocation.translate(dx,dy,dz);
             //If the new location already exists in the old hitbox than this is unnecessary because a craft can't hit
@@ -331,7 +331,7 @@ public class TranslationTask extends AsyncTask {
                         collisionExplosion = true;
                     }
                 }
-                TreeHitBox toRemove = new TreeHitBox();
+                SetHitBox toRemove = new SetHitBox();
                 MovecraftLocation next = location.translate(-dx,-dy,-dz);
                 while(oldHitBox.contains(next)) {
                     toRemove.add(next);
@@ -370,7 +370,7 @@ public class TranslationTask extends AsyncTask {
                 BlockData phaseBlock = craft.getPhaseBlocks().getOrDefault(location.toBukkit(craft.getWorld()), Material.AIR.createBlockData());
                 updates.add(new BlockCreateCommand(craft.getWorld(), location, phaseBlock));
             }
-            newHitBox = new TreeHitBox();
+            newHitBox = new SetHitBox();
         }
 
         if(!collisionBox.isEmpty()){
@@ -636,7 +636,7 @@ public class TranslationTask extends AsyncTask {
         if (isOnGround(hitBox) && dy < 0){
             dy = 0;
         }
-        TreeHitBox collisionBox = new TreeHitBox();
+        SetHitBox collisionBox = new SetHitBox();
         for (MovecraftLocation ml : hitBox){
             MovecraftLocation nl = ml.translate(dx, dy, dz);
             if (hitBox.contains(nl))
@@ -662,7 +662,7 @@ public class TranslationTask extends AsyncTask {
         if (elevation == 0) {
             return 0;
         }
-        TreeHitBox movedCollBox = new TreeHitBox();
+        SetHitBox movedCollBox = new SetHitBox();
         for (MovecraftLocation ml : collisionBox) {
             movedCollBox.add(ml.translate(0, elevation, 0));
 
@@ -671,7 +671,7 @@ public class TranslationTask extends AsyncTask {
     }
 
     private int dropDistance (HitBox hitBox) {
-        MutableHitBox bottomLocs = new TreeHitBox();
+        MutableHitBox bottomLocs = new SetHitBox();
         MovecraftLocation corner1 = new MovecraftLocation(hitBox.getMinX(), 0, hitBox.getMinZ());
         MovecraftLocation corner2 = new MovecraftLocation(hitBox.getMaxX(), 0, hitBox.getMaxZ());
         for(MovecraftLocation location : new SolidHitBox(corner1, corner2)){
@@ -713,8 +713,8 @@ public class TranslationTask extends AsyncTask {
     }
 
     private boolean isOnGround(HitBox hitBox){
-        MutableHitBox bottomLocs = new TreeHitBox();
-        MutableHitBox translatedBottomLocs = new TreeHitBox();
+        MutableHitBox bottomLocs = new SetHitBox();
+        MutableHitBox translatedBottomLocs = new SetHitBox();
         if (hitBox.getMinY() <= craft.getType().getMinHeightLimit(craft.getW())) {
             return true;
         }

@@ -141,25 +141,25 @@ final public class SolidHitBox implements HitBox{
     @NotNull
     @Override
     public HitBox difference(HitBox other) {
-        return new TreeHitBox(this).difference(other);
+        return new SetHitBox(this).difference(other);
     }
 
     @NotNull
     @Override
     public HitBox intersection(HitBox other) {
-        return new TreeHitBox(this).intersection(other);
+        return new SetHitBox(this).intersection(other);
     }
 
     @NotNull
     @Override
     public HitBox union(HitBox other) {
-        return new TreeHitBox(this).union(other);
+        return new SetHitBox(this).union(other);
     }
 
     @NotNull
     @Override
     public HitBox symmetricDifference(HitBox other) {
-        return new TreeHitBox(this).symmetricDifference(other);
+        return new SetHitBox(this).symmetricDifference(other);
     }
 
     @Override

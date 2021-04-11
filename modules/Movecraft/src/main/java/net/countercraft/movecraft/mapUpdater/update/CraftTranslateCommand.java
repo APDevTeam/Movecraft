@@ -13,10 +13,10 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
-import net.countercraft.movecraft.util.collections.LocationSet;
+import net.countercraft.movecraft.util.collections.BitmapLocationSet;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
 import net.countercraft.movecraft.util.hitboxes.SolidHitBox;
-import net.countercraft.movecraft.util.hitboxes.TreeHitBox;
+import net.countercraft.movecraft.util.hitboxes.SetHitBox;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -87,7 +87,7 @@ public class CraftTranslateCommand extends UpdateCommand {
             //trigger sign events
             this.sendSignEvents();
         } else {
-            TreeHitBox originalLocations = new TreeHitBox();
+            SetHitBox originalLocations = new SetHitBox();
             for (MovecraftLocation movecraftLocation : craft.getHitBox()) {
                 originalLocations.add(movecraftLocation.subtract(displacement));
             }
@@ -103,8 +103,8 @@ public class CraftTranslateCommand extends UpdateCommand {
             final Set<MovecraftLocation> invertedHitBox = Sets.difference(craft.getHitBox().boundingHitBox().asSet(), craft.getHitBox().asSet());
 
             //A set of locations that are confirmed to be "exterior" locations
-            final LocationSet confirmed = new LocationSet();
-            final TreeHitBox failed = new TreeHitBox();
+            final Set<MovecraftLocation> confirmed = new BitmapLocationSet();
+            final SetHitBox failed = new SetHitBox();
 
             //place phased blocks
             final Set<Location> overlap = new HashSet<>(craft.getPhaseBlocks().keySet());
@@ -121,13 +121,13 @@ public class CraftTranslateCommand extends UpdateCommand {
                     new SolidHitBox(new MovecraftLocation(maxX, minY, maxZ), new MovecraftLocation(minX, maxY, maxZ)),
                     new SolidHitBox(new MovecraftLocation(maxX, minY, maxZ), new MovecraftLocation(maxX, maxY, minZ)),
                     new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(maxX, minY, maxZ))};
-            final TreeHitBox validExterior = new TreeHitBox();
+            final SetHitBox validExterior = new SetHitBox();
             for (HitBox hitBox : surfaces) {
                 validExterior.addAll(Sets.difference(hitBox.asSet(),craft.getHitBox().asSet()));
             }
 
             //Check to see which locations in the from set are actually outside of the craft
-            LocationSet visited = verifyExterior(invertedHitBox, validExterior);
+            Set<MovecraftLocation> visited = verifyExterior(invertedHitBox, validExterior);
             confirmed.addAll(visited);
 
             if(craft.getSinking()){
@@ -205,13 +205,13 @@ public class CraftTranslateCommand extends UpdateCommand {
     }
 
     @NotNull
-    private LocationSet verifyExterior(Set<MovecraftLocation> invertedHitBox, TreeHitBox validExterior) {
+    private Set<MovecraftLocation> verifyExterior(Set<MovecraftLocation> invertedHitBox, SetHitBox validExterior) {
         var shifts = new MovecraftLocation[]{new MovecraftLocation(0,-1,0),
                 new MovecraftLocation(1,0,0),
                 new MovecraftLocation(-1,0,0),
                 new MovecraftLocation(0,0,1),
                 new MovecraftLocation(0,0,-1)};
-        LocationSet visited = new LocationSet(validExterior.asSet());
+        Set<MovecraftLocation> visited = new BitmapLocationSet(validExterior.asSet());
         var iter = visited.iterator();
         Queue<MovecraftLocation> queue = new LinkedList<>();
         while (iter.hasNext() || !queue.isEmpty()) {
@@ -241,7 +241,7 @@ public class CraftTranslateCommand extends UpdateCommand {
                 new SolidHitBox(new MovecraftLocation(maxX, minY, maxZ), new MovecraftLocation(minX, maxY, maxZ)),
                 new SolidHitBox(new MovecraftLocation(maxX, minY, maxZ), new MovecraftLocation(maxX, maxY, minZ)),
                 new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(maxX, minY, maxZ))};
-        final TreeHitBox validExterior = new TreeHitBox();
+        final SetHitBox validExterior = new SetHitBox();
         for (HitBox surface : surfaces) {
             for(var location : surface){
                 if(!craft.getHitBox().contains(location)){
@@ -266,7 +266,7 @@ public class CraftTranslateCommand extends UpdateCommand {
     }
 
     @NotNull
-    private LinkedList<MovecraftLocation> hullSearch(TreeHitBox validExterior) {
+    private LinkedList<MovecraftLocation> hullSearch(SetHitBox validExterior) {
         var shifts = new MovecraftLocation[]{new MovecraftLocation(0,-1,0),
                 new MovecraftLocation(1,0,0),
                 new MovecraftLocation(-1,0,0),
@@ -275,7 +275,7 @@ public class CraftTranslateCommand extends UpdateCommand {
         var hull = new LinkedList<MovecraftLocation>();
         var craftBox = craft.getHitBox();
         Queue<MovecraftLocation> queue = Lists.newLinkedList(validExterior);
-        var visited = new TreeHitBox(validExterior);
+        var visited = new SetHitBox(validExterior);
         while (!queue.isEmpty()){
             var top = queue.poll();
             if(craftBox.contains(top)){

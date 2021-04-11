@@ -39,7 +39,7 @@ import net.countercraft.movecraft.util.CollectionUtils;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
 import net.countercraft.movecraft.util.hitboxes.MutableHitBox;
 import net.countercraft.movecraft.util.hitboxes.SolidHitBox;
-import net.countercraft.movecraft.util.hitboxes.TreeHitBox;
+import net.countercraft.movecraft.util.hitboxes.SetHitBox;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
@@ -201,11 +201,11 @@ public class AsyncManager extends BukkitRunnable {
         final int waterLine = c.getWaterLine();
         if (!c.getType().blockedByWater() && c.getHitBox().getMinY() <= waterLine) {
             //The subtraction of the set of coordinates in the HitBox cube and the HitBox itself
-            final HitBox invertedHitBox = new TreeHitBox(c.getHitBox().boundingHitBox()).difference(c.getHitBox());
+            final HitBox invertedHitBox = new SetHitBox(c.getHitBox().boundingHitBox()).difference(c.getHitBox());
 
             //A set of locations that are confirmed to be "exterior" locations
-            final MutableHitBox confirmed = new TreeHitBox();
-            final MutableHitBox entireHitbox = new TreeHitBox(c.getHitBox());
+            final MutableHitBox confirmed = new SetHitBox();
+            final MutableHitBox entireHitbox = new SetHitBox(c.getHitBox());
 
             //place phased blocks
             final Set<Location> overlap = new HashSet<>(c.getPhaseBlocks().keySet());
@@ -222,14 +222,14 @@ public class AsyncManager extends BukkitRunnable {
                     new SolidHitBox(new MovecraftLocation(maxX, minY, maxZ), new MovecraftLocation(minX, maxY, maxZ)),
                     new SolidHitBox(new MovecraftLocation(maxX, minY, maxZ), new MovecraftLocation(maxX, maxY, minZ)),
                     new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(maxX, minY, maxZ))};
-            final MutableHitBox validExterior = new TreeHitBox();
+            final MutableHitBox validExterior = new SetHitBox();
             for (HitBox hitBox : surfaces) {
                 validExterior.addAll(new BitmapHitBox(hitBox).difference(c.getHitBox()));
             }
 
             //Check to see which locations in the from set are actually outside of the craft
             //use a modified BFS for multiple origin elements
-            TreeHitBox visited = new TreeHitBox();
+            SetHitBox visited = new SetHitBox();
             Queue<MovecraftLocation> queue = Lists.newLinkedList(validExterior);
             while (!queue.isEmpty()) {
                 MovecraftLocation node = queue.poll();

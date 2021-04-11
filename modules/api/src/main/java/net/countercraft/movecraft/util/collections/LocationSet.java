@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.AbstractSet;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Objects;
@@ -27,7 +28,7 @@ public class LocationSet extends AbstractSet<MovecraftLocation> implements Set<M
 
     public LocationSet(){}
 
-    public LocationSet(Set<MovecraftLocation> other){
+    public LocationSet(Collection<MovecraftLocation> other){
         super();
         this.addAll(other);
     }

@@ -25,7 +25,7 @@ import net.countercraft.movecraft.util.CollectionUtils;
 import net.countercraft.movecraft.util.hitboxes.BitmapHitBox;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
 import net.countercraft.movecraft.util.hitboxes.SolidHitBox;
-import net.countercraft.movecraft.util.hitboxes.TreeHitBox;
+import net.countercraft.movecraft.util.hitboxes.SetHitBox;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -111,8 +111,8 @@ public class DetectionTask implements Runnable {
         final HitBox invertedHitBox = new BitmapHitBox(c.getHitBox().boundingHitBox()).difference(c.getHitBox());
 
         //A set of locations that are confirmed to be "exterior" locations
-        final TreeHitBox confirmed = new TreeHitBox();
-        final TreeHitBox entireHitbox = new TreeHitBox(c.getHitBox());
+        final SetHitBox confirmed = new SetHitBox();
+        final SetHitBox entireHitbox = new SetHitBox(c.getHitBox());
 
         //place phased blocks
         final Set<Location> overlap = new HashSet<>(c.getPhaseBlocks().keySet());
@@ -129,14 +129,14 @@ public class DetectionTask implements Runnable {
                 new SolidHitBox(new MovecraftLocation(maxX, minY, maxZ), new MovecraftLocation(minX, maxY, maxZ)),
                 new SolidHitBox(new MovecraftLocation(maxX, minY, maxZ), new MovecraftLocation(maxX, maxY, minZ)),
                 new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(maxX, minY, maxZ))};
-        final TreeHitBox validExterior = new TreeHitBox();
+        final SetHitBox validExterior = new SetHitBox();
         for (HitBox hitBox : surfaces) {
             validExterior.addAll(new BitmapHitBox(hitBox).difference(c.getHitBox()));
         }
 
         //Check to see which locations in the from set are actually outside of the craft
         //use a modified BFS for multiple origin elements
-        TreeHitBox visited = new TreeHitBox();
+        SetHitBox visited = new SetHitBox();
         Queue<MovecraftLocation> queue = Lists.newLinkedList(validExterior);
         while (!queue.isEmpty()) {
             MovecraftLocation node = queue.poll();

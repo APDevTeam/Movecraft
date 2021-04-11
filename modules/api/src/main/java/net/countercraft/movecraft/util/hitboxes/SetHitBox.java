@@ -4,14 +4,15 @@ import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.exception.EmptyHitBoxException;
-import net.countercraft.movecraft.util.collections.LocationTrieSet;
+import net.countercraft.movecraft.util.collections.BitmapLocationSet;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Set;
 
-public class TreeHitBox implements MutableHitBox{
-    private final LocationTrieSet locations = new LocationTrieSet();
+public class SetHitBox implements MutableHitBox{
+    private final Set<MovecraftLocation> locations = new BitmapLocationSet();
     private final Long2IntMap localMinY;
     private boolean invalidateBounds = false;
     private int minX = Integer.MAX_VALUE;
@@ -21,13 +22,18 @@ public class TreeHitBox implements MutableHitBox{
     private int maxY = Integer.MIN_VALUE;
     private int maxZ = Integer.MIN_VALUE;
 
-    public TreeHitBox() {
+    public SetHitBox() {
         localMinY = new Long2IntOpenHashMap();
     }
 
-    public TreeHitBox(HitBox box){
+    public SetHitBox(HitBox box){
         this();
         this.addAll(box);
+    }
+
+    public SetHitBox(Collection<MovecraftLocation> locations){
+        this();
+        this.addAll(locations);
     }
 
     @Override
@@ -130,7 +136,7 @@ public class TreeHitBox implements MutableHitBox{
     @NotNull
     @Override
     public HitBox difference(HitBox other) {
-        var out = new TreeHitBox();
+        var out = new SetHitBox();
         for(var location : this){
             if(!other.contains(location)){
                 out.add(location);
@@ -144,7 +150,7 @@ public class TreeHitBox implements MutableHitBox{
     public HitBox intersection(HitBox other) {
         var smaller = other.size() < this.size() ? other : this;
         var larger = this == smaller ? other : this;
-        var out = new TreeHitBox();
+        var out = new SetHitBox();
         for(var location : smaller){
             if(larger.contains(location)){
                 out.add(location);
@@ -156,7 +162,7 @@ public class TreeHitBox implements MutableHitBox{
     @NotNull
     @Override
     public HitBox union(HitBox other) {
-        var out = new TreeHitBox(this);
+        var out = new SetHitBox(this);
         out.addAll(other);
         return out;
     }
@@ -164,7 +170,7 @@ public class TreeHitBox implements MutableHitBox{
     @NotNull
     @Override
     public HitBox symmetricDifference(HitBox other) {
-        var out = new TreeHitBox();
+        var out = new SetHitBox();
         for(var location : this){
             if(!other.contains(location)){
                 out.add(location);

@@ -31,7 +31,7 @@ import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import net.countercraft.movecraft.util.MathUtils;
 import net.countercraft.movecraft.util.hitboxes.MutableHitBox;
-import net.countercraft.movecraft.util.hitboxes.TreeHitBox;
+import net.countercraft.movecraft.util.hitboxes.SetHitBox;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -67,10 +67,10 @@ public class RotationTask extends AsyncTask {
         this.rotation = rotation;
         this.w = w;
         this.isSubCraft = isSubCraft;
-        this.newHitBox = new TreeHitBox();
-        this.oldHitBox = new TreeHitBox(c.getHitBox());
-        this.oldFluidList = new TreeHitBox(c.getFluidLocations());
-        this.newFluidList = new TreeHitBox(c.getFluidLocations());
+        this.newHitBox = new SetHitBox();
+        this.oldHitBox = new SetHitBox(c.getHitBox());
+        this.oldFluidList = new SetHitBox(c.getFluidLocations());
+        this.newFluidList = new SetHitBox(c.getFluidLocations());
     }
 
     public RotationTask(Craft c, MovecraftLocation originPoint, Rotation rotation, World w) {
