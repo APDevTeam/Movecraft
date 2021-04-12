@@ -10,9 +10,10 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.function.Consumer;
 
 public class SetHitBox implements MutableHitBox{
-    private final Set<MovecraftLocation> locations = new BitmapLocationSet();
+    private final BitmapLocationSet locations = new BitmapLocationSet();
     private final Long2IntMap localMinY;
     private boolean invalidateBounds = false;
     private int minX = Integer.MAX_VALUE;
@@ -28,12 +29,12 @@ public class SetHitBox implements MutableHitBox{
 
     public SetHitBox(HitBox box){
         this();
-        this.addAll(box);
+        box.forEach(locations::uncheckedAdd);
     }
 
     public SetHitBox(Collection<MovecraftLocation> locations){
         this();
-        this.addAll(locations);
+        this.locations.uncheckedAddAll(locations);
     }
 
     @Override
@@ -238,6 +239,11 @@ public class SetHitBox implements MutableHitBox{
         boolean out = locations.removeAll(hitBox.asSet());
         invalidateBounds |= out;
         return out;
+    }
+
+    @Override
+    public void forEach(Consumer<? super MovecraftLocation> consumer){
+        this.locations.forEach(consumer);
     }
 
     @Override
