@@ -155,10 +155,7 @@ public class IWorldHandler extends WorldHandler {
         //*******************************************
         BlockPosition translateVector = locationToPosition(displacement);
         List<BlockPosition> positions = new ArrayList<>(craft.getHitBox().size());
-        for(MovecraftLocation movecraftLocation : craft.getHitBox()) {
-            positions.add(locationToPosition((movecraftLocation)).b(translateVector));
-
-        }
+        craft.getHitBox().forEach((movecraftLocation) -> positions.add(locationToPosition((movecraftLocation)).b(translateVector)));
         WorldServer oldNativeWorld = ((CraftWorld) craft.getW()).getHandle();
         World nativeWorld = ((CraftWorld) world).getHandle();
         //*******************************************
