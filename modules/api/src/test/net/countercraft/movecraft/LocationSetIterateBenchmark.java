@@ -1,5 +1,7 @@
 package net.countercraft.movecraft;
 
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import net.countercraft.movecraft.util.collections.BitmapLocationSet;
 import net.countercraft.movecraft.util.collections.LocationSet;
 import net.countercraft.movecraft.util.collections.LocationTrieSet;
 import net.countercraft.movecraft.util.hitboxes.BitmapHitBox;
@@ -17,9 +19,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-@Threads(Threads.MAX)
-@Warmup(iterations = 5, time = 1)
-@Measurement(iterations = 5, time = 1)
+@Threads(4)
+@Warmup(iterations = 2, time = 1)
+@Measurement(iterations = 3, time = 1)
 public class LocationSetIterateBenchmark {
     @State(Scope.Thread)
     public static class LocationState {
@@ -39,6 +41,8 @@ public class LocationSetIterateBenchmark {
         public Iterable<MovecraftLocation> locationTrieSet = new LocationTrieSet(locations);
         public Iterable<MovecraftLocation> locationSet = new LocationSet(locations);
         public Iterable<MovecraftLocation> hashSet = new HashSet<>(locations);
+        public LongOpenHashSet longSet = new LongOpenHashSet(locations.stream().mapToLong(MovecraftLocation::pack).iterator());
+        public BitmapLocationSet bitMapSet = new BitmapLocationSet(locations);
     }
 
     @Benchmark
@@ -67,6 +71,45 @@ public class LocationSetIterateBenchmark {
         for(MovecraftLocation location : state.bitMapHitBox){
             blackhole.consume(location);
         }
+    }
+
+    @Benchmark @BenchmarkMode(Mode.Throughput)
+    public void longSet(LocationState state, Blackhole blackhole){
+        for(long packed : state.longSet){
+            blackhole.consume(MovecraftLocation.unpack(packed));
+        }
+    }
+
+    @Benchmark @BenchmarkMode(Mode.Throughput)
+    public void bitMapSetForEach(LocationState state, Blackhole blackhole){
+        state.bitMapSet.forEach(blackhole::consume);
+    }
+
+    @Benchmark @BenchmarkMode(Mode.Throughput)
+    public void bitMapSetIterator(LocationState state, Blackhole blackhole){
+        for(MovecraftLocation location : state.bitMapSet){
+            blackhole.consume(location);
+        }
+    }
+
+    @Benchmark @BenchmarkMode(Mode.Throughput)
+    public void arrayListIterator(LocationState state, Blackhole blackhole){
+        for(MovecraftLocation location : state.locations){
+            blackhole.consume(location);
+        }
+    }
+
+    @Benchmark @BenchmarkMode(Mode.Throughput)
+    public void arrayListIndexed(LocationState state, Blackhole blackhole){
+        for (int i = 0, locationsSize = state.locations.size(); i < locationsSize; i++) {
+            MovecraftLocation location = state.locations.get(i);
+            blackhole.consume(location);
+        }
+    }
+
+    @Benchmark @BenchmarkMode(Mode.Throughput)
+    public void arrayListForEach(LocationState state, Blackhole blackhole){
+        state.locations.forEach(blackhole::consume);
     }
 
 }

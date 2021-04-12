@@ -1,5 +1,6 @@
 package net.countercraft.movecraft;
 
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.countercraft.movecraft.util.collections.LocationSet;
 import net.countercraft.movecraft.util.collections.LocationTrieSet;
 import net.countercraft.movecraft.util.hitboxes.BitmapHitBox;
@@ -18,9 +19,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-@Threads(Threads.MAX)
-@Warmup(iterations = 5, time = 1)
-@Measurement(iterations = 5, time = 1)
+@Threads(4)
+@Warmup(iterations = 3, time = 1)
+@Measurement(iterations = 2, time = 1)
 public class LocationSetInitializeBenchmark {
     @State(Scope.Thread)
     public static class LocationState {
@@ -60,6 +61,15 @@ public class LocationSetInitializeBenchmark {
     @Benchmark @BenchmarkMode(Mode.Throughput)
     public SetHitBox treeHitBox(LocationState state){
         return new SetHitBox(state.locations);
+    }
+
+    @Benchmark @BenchmarkMode(Mode.Throughput)
+    public LongOpenHashSet longOpenHashSet(LocationState state){
+        var out = new LongOpenHashSet();
+        for(var location : state.locations){
+            out.add(location.pack());
+        }
+        return out;
     }
 
 }
