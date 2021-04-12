@@ -29,12 +29,14 @@ public class SetHitBox implements MutableHitBox{
 
     public SetHitBox(HitBox box){
         this();
-        box.forEach(locations::uncheckedAdd);
+        Consumer<MovecraftLocation> consumer =  locations::uncheckedAdd;
+        box.forEach(consumer.andThen(this::checkBounds));
     }
 
     public SetHitBox(Collection<MovecraftLocation> locations){
         this();
-        this.locations.uncheckedAddAll(locations);
+        Consumer<MovecraftLocation> consumer =  this.locations::uncheckedAdd;
+        locations.forEach(consumer.andThen(this::checkBounds));
     }
 
     @Override
