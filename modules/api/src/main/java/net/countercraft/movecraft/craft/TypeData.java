@@ -1,8 +1,9 @@
 package net.countercraft.movecraft.craft;
 
 import net.countercraft.movecraft.util.Tags;
+import net.kyori.adventure.key.Key;
+import net.kyori.adventure.sound.Sound;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -281,7 +282,7 @@ public final class TypeData {
     public Sound getSound(@NotNull String key){
         requireKey(key);
         if(backingData.get(key) instanceof String)
-            return Sound.valueOf((String) backingData.get(key));
+            return Sound.sound(Key.key((String) backingData.get(key)), Sound.Source.NEUTRAL, 2f, 1f);
         throw new IllegalArgumentException("Value for key " + key + " must be of type Sound");
     }
 
@@ -301,7 +302,7 @@ public final class TypeData {
         if (!this.containsKey(key))
             return defaultValue;
         if(backingData.get(key) instanceof String)
-            return Sound.valueOf((String) backingData.get(key));
+            return Sound.sound(Key.key((String) backingData.get(key)), Sound.Source.NEUTRAL, 2f, 1f);
         throw new IllegalArgumentException("Value for key " + key + " must be of type Sound");
     }
 

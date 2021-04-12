@@ -18,8 +18,9 @@
 package net.countercraft.movecraft.craft;
 
 import net.countercraft.movecraft.util.Tags;
+import net.kyori.adventure.key.Key;
+import net.kyori.adventure.sound.Sound;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.World;
 import org.jetbrains.annotations.NotNull;
 
@@ -252,7 +253,7 @@ final public class CraftType {
         gravityInclineDistance = data.getIntOrDefault("gravityInclineDistance", -1);
         int dropdist = data.getIntOrDefault("gravityDropDistance", -8);
         gravityDropDistance = dropdist > 0 ? -dropdist : dropdist;
-        collisionSound = data.getSoundOrDefault("collisionSound",  Sound.BLOCK_ANVIL_LAND);
+        collisionSound = data.getSoundOrDefault("collisionSound",  Sound.sound(Key.key("block.anvil.land"), Sound.Source.NEUTRAL, 2.0f,1.0f));
         fuelTypes = new HashMap<>();
         Map<String, Object> fTypes =  data.getDataOrEmpty("fuelTypes").getBackingData();
         if (!fTypes.isEmpty()) {

@@ -420,7 +420,7 @@ public class TranslationTask extends AsyncTask {
         if (!playSound) {
             return;
         }
-        craft.getAudience().playSound(net.kyori.adventure.sound.Sound.sound(Key.key(craft.getType().getCollisionSound().getKey().getKey()), net.kyori.adventure.sound.Sound.Source.NEUTRAL, 1.0f, 2.0f));
+        craft.getAudience().playSound(craft.getType().getCollisionSound());
     }
 
     private static final MovecraftLocation[] SHIFTS = {
