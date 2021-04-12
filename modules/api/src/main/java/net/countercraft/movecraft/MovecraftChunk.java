@@ -25,7 +25,7 @@ public class MovecraftChunk implements Comparable<MovecraftChunk>{
 
     @Override
     public int hashCode() {
-        return Objects.hash(x, z, world);
+        return  x + 31* z + 31*31*world.hashCode();
     }
 
     public MovecraftChunk(int x, int z, World world) {
