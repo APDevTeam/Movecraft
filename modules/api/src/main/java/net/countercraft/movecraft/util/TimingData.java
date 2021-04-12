@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.util;
 
+import java.util.Arrays;
 import java.util.DoubleSummaryStatistics;
 import java.util.function.DoubleConsumer;
 
@@ -9,7 +10,7 @@ public class TimingData implements DoubleConsumer {
     private final double[] data;
     private final DoubleSummaryStatistics stats = new DoubleSummaryStatistics();
     public TimingData(){
-        this(5);
+        this(20);
     }
 
     private TimingData(int size){
@@ -25,19 +26,11 @@ public class TimingData implements DoubleConsumer {
     }
 
     /**
-     * Gets the average across the most recent values defined by size (default 64)
+     * averages the 20 most recent values, dropping the maximum 2 if at capacity
      * @return an average of the most recently supplied values
      */
     public double getRecentAverage(){
-        if(this.count == 0){
-            return 0;
-        }
-        int bound = Math.min(data.length, count);
-        double out = 0;
-        for(int i = 0; i < bound; i++){
-            out += data[i];
-        }
-        return out/ bound;
+        return Arrays.stream(data).sorted().limit(data.length-2).average().orElse(0);
     }
 
     public double getAverage(){
