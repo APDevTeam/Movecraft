@@ -4,7 +4,7 @@ SinkRateTicks: 20
 SinkCheckTicks: 100
 TracerRateTicks: 5
 TracerMinDistance: 60 # Minimum distance for tracers to appear
-PilotTool: 280
+PilotTool: STICK
 ManOverboardTimeout: 30
 ManOverboardDistance: 1000 # maximum distance from a craft that you can manoverboard to it
 FireballLifespan: 6
@@ -26,28 +26,6 @@ ExtraFadeTimePerBlock: #List of blocks that will take longer time to fade
 BlockQueueChunkSize: 200000
 MaxRemoteSigns: -1 # Maximum number of remote signs that can be triggered at once.  Setting to -1 allows unlimited.
 CraftsUseNetherPortals: false
-DisableShadowBlocks: # These blocks will not cast shadows. This improves the speed of moving ships of these blocks immensely.
-  - 26
-  - 35
-  - 42
-  - 43
-  - 44
-  - 55
-  - 109
-  - 112
-  - 114
-  - 121
-  - 146
-  - 152
-  - 155
-  - 156
-  - 159
-  - 165
-  - 173
-  - 206
-DurabilityOverride:
-  121: 80
-  206: 80
 ForbiddenRemoteSigns: # These strings will be ignored when searching for signs to trigger from a remote sign
   - "Mounted"
   - "Denied"
