@@ -1,8 +1,10 @@
 package net.countercraft.movecraft.util;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Keyed;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
 import org.bukkit.Tag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -23,6 +25,24 @@ public class Tags {
         }
         var tags = Bukkit.getTag(Tag.REGISTRY_BLOCKS, key, Material.class).getValues();
         return tags.isEmpty() ? EnumSet.noneOf(Material.class) : EnumSet.copyOf(tags);
+    }
+
+    @Nullable
+    public static <T extends Enum<T> & Keyed> EnumSet<T> parseRegistry(@NotNull String identifier, String registry, Class<T> clazz){
+        if(!identifier.startsWith("#")){
+            return null;
+        }
+        String nameKey = identifier.substring(1);
+        var key = keyFromString(nameKey);
+        if(key == null){
+            throw new IllegalArgumentException("Entry " + identifier + " is not a valid tag!");
+        }
+        var tag = Bukkit.getTag(registry, key, clazz);
+        if(tag == null){
+            throw new IllegalArgumentException("Entry " + identifier + " is not a valid tag!");
+        }
+        var tagged = tag.getValues();
+        return tagged.isEmpty() ? EnumSet.noneOf(clazz) : EnumSet.copyOf(tagged);
     }
 
     /**
