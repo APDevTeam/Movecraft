@@ -9,13 +9,12 @@ import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.MovecraftWorld;
+import net.countercraft.movecraft.processing.TaskPredicate;
 import net.countercraft.movecraft.processing.WorldManager;
 import net.countercraft.movecraft.processing.tasks.detection.AllowedBlockValidator;
-import net.countercraft.movecraft.processing.tasks.detection.DetectionValidator;
 import net.countercraft.movecraft.processing.tasks.detection.FlyBlockValidator;
 import net.countercraft.movecraft.processing.tasks.detection.ForbiddenBlockValidator;
 import net.countercraft.movecraft.processing.tasks.detection.ForbiddenSignStringValidator;
-import net.countercraft.movecraft.processing.tasks.detection.Modifier;
 import net.countercraft.movecraft.processing.tasks.detection.NameSignValidator;
 import net.countercraft.movecraft.processing.tasks.detection.PilotSignValidator;
 import net.countercraft.movecraft.processing.tasks.detection.SizeValidator;
@@ -42,7 +41,6 @@ import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -82,11 +80,11 @@ public class DetectionTask implements Runnable {
     private final ConcurrentLinkedDeque<MovecraftLocation> legal = new ConcurrentLinkedDeque<>();
     private static final AllowedBlockValidator ALLOWED_BLOCK_VALIDATOR = new AllowedBlockValidator();
     private static final ForbiddenBlockValidator FORBIDDEN_BLOCK_VALIDATOR = new ForbiddenBlockValidator();
-    private static final List<DetectionValidator<MovecraftLocation>> validators = List.of(
+    private static final List<TaskPredicate<MovecraftLocation>> validators = List.of(
             new ForbiddenSignStringValidator(),
             new NameSignValidator(),
             new PilotSignValidator());
-    private static final List<DetectionValidator<Map<Material, Deque<MovecraftLocation>>>> completionValidators = List.of(
+    private static final List<TaskPredicate<Map<Material, Deque<MovecraftLocation>>>> completionValidators = List.of(
             new SizeValidator(),
             new WaterContactValidator(),
             new FlyBlockValidator());
@@ -166,8 +164,9 @@ public class DetectionTask implements Runnable {
         if(!illegal.isEmpty()) {
             return;
         }
-        Optional<Modifier> state = completionValidators.parallelStream().map((validator) -> validator.validate(materials, craft.getType(), world, player)).reduce(Modifier::merge);
-        if(state.orElse(Modifier.FAIL) == Modifier.FAIL){
+        var result = completionValidators.stream().reduce(TaskPredicate::and).orElse((a,b,c,d) -> TaskPredicate.Result.fail()).validate(materials, craft.getType(), world, player);
+        if(!result.isSucess()){
+            player.sendMessage(result.getMessage());
             return;
         }
         craft.setHitBox(new BitmapHitBox(legal));
@@ -230,31 +229,27 @@ public class DetectionTask implements Runnable {
         public void run() {
             MovecraftLocation probe;
             while((probe = currentFrontier.poll())!=null) {
-                Modifier status = ALLOWED_BLOCK_VALIDATOR.validate(probe, craft.getType(), world, player);
-                status = status.merge(FORBIDDEN_BLOCK_VALIDATOR.validate(probe, craft.getType(), world, player));
-                if(status == Modifier.PERMIT){
-                    for (var validator : validators) {
-                        if(status == Modifier.FAIL){
-                            break;
-                        }
-                        status = status.merge(validator.validate(probe, craft.getType(), world, player));
-                    }
+                if(!ALLOWED_BLOCK_VALIDATOR.validate(probe, craft.getType(), world, player).isSucess()){
+                    continue;
                 }
-                switch (status) {
-                    case FAIL:
-                        illegal.add(probe);
-                    case NONE:
-                        break;
-                    case PERMIT:
-                        legal.add(probe);
-                        size.increment();
-                        materials.computeIfAbsent(world.getMaterial(probe), Functions.forSupplier(ConcurrentLinkedDeque::new)).add(probe);
-                        for(int i = 0; i< SHIFTS.length; i++){
-                            var shifted = probe.add(SHIFTS[i]);
-                            if(visited.add(shifted)) {
-                                nextFrontier.add(shifted);
-                            }
+                TaskPredicate<MovecraftLocation> chain = FORBIDDEN_BLOCK_VALIDATOR;
+                for (var validator : validators) {
+                    chain = chain.and(validator);
+                }
+                var result = chain.validate(probe, craft.getType(), world, player);
+                if(result.isSucess()){
+                    legal.add(probe);
+                    size.increment();
+                    materials.computeIfAbsent(world.getMaterial(probe), Functions.forSupplier(ConcurrentLinkedDeque::new)).add(probe);
+                    for(int i = 0; i< SHIFTS.length; i++){
+                        var shifted = probe.add(SHIFTS[i]);
+                        if(visited.add(shifted)) {
+                            nextFrontier.add(shifted);
                         }
+                    }
+                } else {
+                    illegal.add(probe);
+                    player.sendMessage(result.getMessage());
                 }
             }
 

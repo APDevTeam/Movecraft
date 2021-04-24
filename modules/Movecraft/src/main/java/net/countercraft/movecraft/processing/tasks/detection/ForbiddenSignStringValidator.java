@@ -2,26 +2,29 @@ package net.countercraft.movecraft.processing.tasks.detection;
 
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.CraftType;
+import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.MovecraftWorld;
+import net.countercraft.movecraft.processing.TaskPredicate;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
-import org.bukkit.entity.Player;
+import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class ForbiddenSignStringValidator implements DetectionValidator<MovecraftLocation> {
+public class ForbiddenSignStringValidator implements TaskPredicate<MovecraftLocation> {
     @Override
-    public Modifier validate(@NotNull MovecraftLocation location, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable Player player) {
+    public Result validate(@NotNull MovecraftLocation location, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable CommandSender player) {
         BlockState state = world.getState(location);
         if (!(state instanceof Sign)) {
-            return Modifier.NONE;
+            return Result.succeed();
         }
         Sign sign = (Sign) state;
         for(var line : sign.getLines()){
             if(type.getForbiddenSignStrings().contains(line.toLowerCase())){
-                return Modifier.FAIL;
+                return TaskPredicate.Result.failWithMessage(I18nSupport.getInternationalisedString(
+                        "Detection - Forbidden sign string found"));
             }
         }
-        return Modifier.NONE;
+        return Result.succeed();
     }
 }

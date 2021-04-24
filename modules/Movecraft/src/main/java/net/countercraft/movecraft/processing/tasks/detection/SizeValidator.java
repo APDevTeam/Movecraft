@@ -2,19 +2,27 @@ package net.countercraft.movecraft.processing.tasks.detection;
 
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.CraftType;
+import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.MovecraftWorld;
+import net.countercraft.movecraft.processing.TaskPredicate;
 import org.bukkit.Material;
-import org.bukkit.entity.Player;
+import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Deque;
 import java.util.Map;
 
-public class SizeValidator implements DetectionValidator<Map<Material, Deque<MovecraftLocation>>>{
+public class SizeValidator implements TaskPredicate<Map<Material, Deque<MovecraftLocation>>> {
     @Override
-    public Modifier validate(@NotNull Map<Material, Deque<MovecraftLocation>> materialDequeMap, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable Player player) {
+    public Result validate(@NotNull Map<Material, Deque<MovecraftLocation>> materialDequeMap, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable CommandSender player) {
         int size = materialDequeMap.values().parallelStream().map(Deque::size).reduce(Integer::sum).orElse(0);
-        return size > type.getMaxSize() || size < type.getMinSize() ? Modifier.FAIL : Modifier.NONE;
+        if(size > type.getMinSize()){
+            return Result.failWithMessage(String.format(I18nSupport.getInternationalisedString("Detection - Craft too large"), type.getMaxSize()));
+        }
+        if(size < type.getMinSize()){
+            return Result.failWithMessage(String.format(I18nSupport.getInternationalisedString("Detection - Craft too small"), type.getMinSize()));
+        }
+        return Result.succeed();
     }
 }

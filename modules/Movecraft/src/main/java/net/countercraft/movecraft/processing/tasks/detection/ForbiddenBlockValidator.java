@@ -2,14 +2,16 @@ package net.countercraft.movecraft.processing.tasks.detection;
 
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.CraftType;
+import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.MovecraftWorld;
-import org.bukkit.entity.Player;
+import net.countercraft.movecraft.processing.TaskPredicate;
+import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class ForbiddenBlockValidator implements DetectionValidator<MovecraftLocation> {
+public class ForbiddenBlockValidator implements TaskPredicate<MovecraftLocation> {
     @Override
-    public Modifier validate(@NotNull MovecraftLocation location, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable Player player) {
-        return type.getForbiddenBlocks().contains(world.getMaterial(location)) ? Modifier.FAIL : Modifier.NONE;
+    public Result validate(@NotNull MovecraftLocation location, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable CommandSender player) {
+        return type.getForbiddenBlocks().contains(world.getMaterial(location)) ? Result.failWithMessage(I18nSupport.getInternationalisedString("Detection - Craft Type Cannot Be Named")) : Result.succeed();
     }
 }
