@@ -68,9 +68,11 @@ public class BitmapLocationSet extends AbstractSet<MovecraftLocation> {
     @Override
     public boolean add(MovecraftLocation location){
         var packed = location.pack();
-        var out = !backing.contains(packed);
-        backing.addLong(location.pack());
-        return out;
+        if(!backing.contains(packed)){
+            backing.addLong(packed);
+            return true;
+        }
+        return false;
     }
 
     @Override
