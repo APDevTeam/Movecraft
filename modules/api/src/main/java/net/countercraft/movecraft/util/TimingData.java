@@ -30,7 +30,8 @@ public class TimingData implements DoubleConsumer {
      * @return an average of the most recently supplied values
      */
     public double getRecentAverage(){
-        return Arrays.stream(data).sorted().limit(data.length-2).average().orElse(0);
+        // We use exact floating point comparisons because we are specifically ignoring the initial 0 values of our array
+        return Arrays.stream(data).sorted().filter((d) -> d != 0.0).limit(data.length-2).average().orElse(0);
     }
 
     public double getAverage(){
