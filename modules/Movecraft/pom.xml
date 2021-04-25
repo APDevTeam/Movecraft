@@ -56,12 +56,6 @@
             <version>RELEASE</version>
         </dependency>
         <dependency>
-            <groupId>org.roaringbitmap</groupId>
-            <artifactId>RoaringBitmap</artifactId>
-            <version>0.8.13</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
             <groupId>it.unimi.dsi</groupId>
             <artifactId>fastutil</artifactId>
             <version>8.3.1</version>

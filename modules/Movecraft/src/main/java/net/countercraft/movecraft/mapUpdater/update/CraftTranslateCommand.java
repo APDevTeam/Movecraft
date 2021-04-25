@@ -28,6 +28,7 @@ import org.bukkit.block.Sign;
 import org.bukkit.block.data.Waterlogged;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -211,15 +212,16 @@ public class CraftTranslateCommand extends UpdateCommand {
                 new MovecraftLocation(-1,0,0),
                 new MovecraftLocation(0,0,1),
                 new MovecraftLocation(0,0,-1)};
-        Set<MovecraftLocation> visited = new BitmapLocationSet(validExterior.asSet());
+        BitmapLocationSet visited = new BitmapLocationSet(validExterior.asSet());
         var iter = visited.iterator();
-        Queue<MovecraftLocation> queue = new LinkedList<>();
+        Queue<MovecraftLocation> queue = new ArrayDeque<>();
         while (iter.hasNext() || !queue.isEmpty()) {
             MovecraftLocation node = iter.hasNext() ? iter.next() : queue.poll();
             //If the node is already a valid member of the exterior of the HitBox, continued search is unitary.
             for(var shift : shifts){
                 var shifted = node.add(shift);
-                if(visited.add(shifted) && invertedHitBox.contains(shifted)){
+                if(invertedHitBox.contains(shifted) && !visited.contains(shifted)){
+                    visited.uncheckedAdd(shifted);
                     queue.add(shifted);
                 }
             }

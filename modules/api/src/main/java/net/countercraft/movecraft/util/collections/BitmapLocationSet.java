@@ -3,6 +3,7 @@ package net.countercraft.movecraft.util.collections;
 import net.countercraft.movecraft.MovecraftLocation;
 import org.jetbrains.annotations.NotNull;
 import org.roaringbitmap.longlong.Roaring64Bitmap;
+import org.roaringbitmap.longlong.Roaring64NavigableMap;
 
 import java.util.AbstractSet;
 import java.util.Collection;
@@ -10,7 +11,7 @@ import java.util.Iterator;
 import java.util.function.Consumer;
 
 public class BitmapLocationSet extends AbstractSet<MovecraftLocation> {
-    private final Roaring64Bitmap backing = new Roaring64Bitmap();
+    private final Roaring64NavigableMap backing = new Roaring64NavigableMap();
 
     public BitmapLocationSet(){}
 
@@ -37,7 +38,7 @@ public class BitmapLocationSet extends AbstractSet<MovecraftLocation> {
             if(!out && !backing.contains(packed)){
                 out = true;
             }
-            backing.add(packed);
+            backing.addLong(packed);
         }
         return out;
     }
