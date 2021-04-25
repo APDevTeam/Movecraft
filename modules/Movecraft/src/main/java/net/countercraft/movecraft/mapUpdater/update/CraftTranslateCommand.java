@@ -124,10 +124,10 @@ public class CraftTranslateCommand extends UpdateCommand {
             }
 
             //Check to see which locations in the from set are actually outside of the craft
-            final Set<MovecraftLocation> confirmed = craft.getSinking() ? invertedHitBox : new LinkedHashSet<>(verifyExterior(invertedHitBox, validExterior));
+            final Set<MovecraftLocation> confirmed = craft.getSinking() ? invertedHitBox : verifyExterior(invertedHitBox, validExterior);
 
             //A set of locations that are confirmed to be "exterior" locations
-            final Set<MovecraftLocation> failed = Sets.difference(invertedHitBox, confirmed);
+            final Set<MovecraftLocation> failed = Sets.difference(invertedHitBox, confirmed).copyInto(new LinkedHashSet<>());
 
             final WorldHandler handler = Movecraft.getInstance().getWorldHandler();
             for (MovecraftLocation location : failed) {
@@ -205,7 +205,7 @@ public class CraftTranslateCommand extends UpdateCommand {
                 new MovecraftLocation(-1,0,0),
                 new MovecraftLocation(0,0,1),
                 new MovecraftLocation(0,0,-1)};
-        Set<MovecraftLocation> visited = new HashSet<>(validExterior.asSet());
+        Set<MovecraftLocation> visited = new LinkedHashSet<>(validExterior.asSet());
         Queue<MovecraftLocation> queue = new ArrayDeque<>();
         for(var node : validExterior){
             //If the node is already a valid member of the exterior of the HitBox, continued search is unitary.
