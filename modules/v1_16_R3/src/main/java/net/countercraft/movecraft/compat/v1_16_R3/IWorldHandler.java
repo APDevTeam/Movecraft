@@ -24,6 +24,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.v1_16_R3.CraftWorld;
+import org.bukkit.craftbukkit.v1_16_R3.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.v1_16_R3.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -255,7 +256,12 @@ public class IWorldHandler extends WorldHandler {
 
     @Override
     public void setBlockFast(@NotNull Location location, @NotNull Rotation rotation, @NotNull BlockData data) {
-        IBlockData blockData = (IBlockData) data;
+        IBlockData blockData;
+        if(data instanceof CraftBlockData){
+            blockData = ((CraftBlockData) data).getState();
+        } else {
+            blockData = (IBlockData) data;
+        }
         blockData = blockData.a(ROTATION[rotation.ordinal()]);
         World world = ((CraftWorld)(location.getWorld())).getHandle();
         BlockPosition blockPosition = locationToPosition(bukkit2MovecraftLoc(location));
