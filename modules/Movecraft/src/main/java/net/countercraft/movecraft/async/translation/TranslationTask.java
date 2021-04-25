@@ -31,6 +31,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
+import org.bukkit.Tag;
 import org.bukkit.World;
 import org.bukkit.World.Environment;
 import org.bukkit.block.Block;
@@ -58,7 +59,27 @@ import java.util.logging.Logger;
 import static net.countercraft.movecraft.util.MathUtils.withinWorldBorder;
 
 public class TranslationTask extends AsyncTask {
-    private static final int[] FALL_THROUGH_BLOCKS = {0, 8, 9, 10, 11, 31, 37, 38, 39, 40, 50, 51, 55, 59, 63, 65, 68, 69, 70, 72, 75, 76, 77, 78, 83, 85, 93, 94, 111, 141, 142, 143, 171};
+    private static final EnumSet<Material> FALL_THROUGH_BLOCKS = EnumSet.noneOf(Material.class);
+    static {
+        FALL_THROUGH_BLOCKS.add(Material.AIR);
+        FALL_THROUGH_BLOCKS.add(Material.WATER);
+        FALL_THROUGH_BLOCKS.add(Material.LAVA);
+        FALL_THROUGH_BLOCKS.add(Material.DEAD_BUSH);
+        FALL_THROUGH_BLOCKS.addAll(Tag.CORAL_PLANTS.getValues());
+        FALL_THROUGH_BLOCKS.add(Material.BROWN_MUSHROOM);
+        FALL_THROUGH_BLOCKS.add(Material.RED_MUSHROOM);
+        FALL_THROUGH_BLOCKS.add(Material.TORCH);
+        FALL_THROUGH_BLOCKS.add(Material.FIRE);
+        FALL_THROUGH_BLOCKS.add(Material.REDSTONE_WIRE);
+        FALL_THROUGH_BLOCKS.add(Material.LADDER);
+        FALL_THROUGH_BLOCKS.addAll(Tag.SIGNS.getValues());
+        FALL_THROUGH_BLOCKS.add(Material.LEVER);
+        FALL_THROUGH_BLOCKS.add(Material.STONE_BUTTON);
+        FALL_THROUGH_BLOCKS.add(Material.SNOW);
+        FALL_THROUGH_BLOCKS.add(Material.CARROT);
+        FALL_THROUGH_BLOCKS.add(Material.POTATO);
+        FALL_THROUGH_BLOCKS.addAll(Tag.FENCES.getValues());
+    }
 
     private World world;
     private int dx, dy, dz;
@@ -252,7 +273,7 @@ public class TranslationTask extends AsyncTask {
 
             boolean blockObstructed;
             if (craft.getSinking()) {
-                blockObstructed = !(Arrays.binarySearch(FALL_THROUGH_BLOCKS, testMaterial.getId()) >= 0);
+                blockObstructed = !FALL_THROUGH_BLOCKS.contains(testMaterial);
             } else {
                 blockObstructed = !craft.getType().getPassthroughBlocks().contains(testMaterial) && !testMaterial.equals(Material.AIR);
             }
