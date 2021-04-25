@@ -202,7 +202,9 @@ public class CraftManager implements Iterable<Craft>{
 
     public void removeCraftByPlayer(Player player){
         PlayerCraft craft = craftPlayerIndex.remove(player);
-        craftList.remove(craft);
+        if(craft != null){
+            craftList.remove(craft);
+        }
     }
 
     @Nullable
