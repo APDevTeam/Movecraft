@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.function.Consumer;
 
+@Deprecated
 public class BitmapLocationSet extends AbstractSet<MovecraftLocation> {
     private final Roaring64NavigableMap backing = new Roaring64NavigableMap();
 

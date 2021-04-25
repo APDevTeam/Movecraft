@@ -15,6 +15,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+@Deprecated
 public class LocationTrieSet extends AbstractSet<MovecraftLocation> implements Set<MovecraftLocation> {
 
     private static final int TREE_DEPTH = 16;

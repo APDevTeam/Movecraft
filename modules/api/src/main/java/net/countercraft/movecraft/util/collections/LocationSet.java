@@ -15,6 +15,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+@Deprecated
 public class LocationSet extends AbstractSet<MovecraftLocation> implements Set<MovecraftLocation> {
 
     private static final int LOW_MASK_LENGTH = 16;
