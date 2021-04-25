@@ -12,6 +12,6 @@ import org.jetbrains.annotations.Nullable;
 public class ForbiddenBlockValidator implements TaskPredicate<MovecraftLocation> {
     @Override
     public Result validate(@NotNull MovecraftLocation location, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable CommandSender player) {
-        return type.getForbiddenBlocks().contains(world.getMaterial(location)) ? Result.failWithMessage(I18nSupport.getInternationalisedString("Detection - Craft Type Cannot Be Named")) : Result.succeed();
+        return type.getForbiddenBlocks().contains(world.getMaterial(location)) ? Result.failWithMessage(I18nSupport.getInternationalisedString("Detection - Forbidden block found")) : Result.succeed();
     }
 }
