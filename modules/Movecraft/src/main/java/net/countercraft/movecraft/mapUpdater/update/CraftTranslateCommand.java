@@ -13,10 +13,10 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
-import net.countercraft.movecraft.util.collections.BitmapLocationSet;
+import net.countercraft.movecraft.util.MathUtils;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
-import net.countercraft.movecraft.util.hitboxes.SolidHitBox;
 import net.countercraft.movecraft.util.hitboxes.SetHitBox;
+import net.countercraft.movecraft.util.hitboxes.SolidHitBox;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -35,6 +35,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +43,6 @@ import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 public class CraftTranslateCommand extends UpdateCommand {
     @NotNull private final Craft craft;
@@ -103,13 +103,9 @@ public class CraftTranslateCommand extends UpdateCommand {
             //The subtraction of the set of coordinates in the HitBox cube and the HitBox itself
             final Set<MovecraftLocation> invertedHitBox = Sets.difference(craft.getHitBox().boundingHitBox().asSet(), craft.getHitBox().asSet());
 
-            //A set of locations that are confirmed to be "exterior" locations
-            final Set<MovecraftLocation> confirmed = new BitmapLocationSet();
-            final SetHitBox failed = new SetHitBox();
-
             //place phased blocks
             final Set<Location> overlap = new HashSet<>(craft.getPhaseBlocks().keySet());
-            overlap.retainAll(craft.getHitBox().asSet().stream().map(l -> l.toBukkit(world)).collect(Collectors.toSet()));
+            overlap.removeIf((location -> !craft.getHitBox().contains(MathUtils.bukkit2MovecraftLoc(location))));
             final int minX = craft.getHitBox().getMinX();
             final int maxX = craft.getHitBox().getMaxX();
             final int minY = craft.getHitBox().getMinY();
@@ -128,16 +124,13 @@ public class CraftTranslateCommand extends UpdateCommand {
             }
 
             //Check to see which locations in the from set are actually outside of the craft
-            Set<MovecraftLocation> visited = verifyExterior(invertedHitBox, validExterior);
-            confirmed.addAll(visited);
+            final Set<MovecraftLocation> confirmed = craft.getSinking() ? invertedHitBox : new LinkedHashSet<>(verifyExterior(invertedHitBox, validExterior));
 
-            if(craft.getSinking()){
-                confirmed.addAll(invertedHitBox);
-            }
-            failed.addAll(Sets.difference(invertedHitBox, confirmed));
+            //A set of locations that are confirmed to be "exterior" locations
+            final Set<MovecraftLocation> failed = Sets.difference(invertedHitBox, confirmed);
 
             final WorldHandler handler = Movecraft.getInstance().getWorldHandler();
-            for (MovecraftLocation location : Sets.difference(invertedHitBox, confirmed)) {
+            for (MovecraftLocation location : failed) {
                 var data = location.toBukkit(world).getBlock().getBlockData();
                 if (!passthroughBlocks.contains(data.getMaterial())) {
                     continue;
@@ -212,16 +205,23 @@ public class CraftTranslateCommand extends UpdateCommand {
                 new MovecraftLocation(-1,0,0),
                 new MovecraftLocation(0,0,1),
                 new MovecraftLocation(0,0,-1)};
-        BitmapLocationSet visited = new BitmapLocationSet(validExterior.asSet());
-        var iter = visited.iterator();
+        Set<MovecraftLocation> visited = new HashSet<>(validExterior.asSet());
         Queue<MovecraftLocation> queue = new ArrayDeque<>();
-        while (iter.hasNext() || !queue.isEmpty()) {
-            MovecraftLocation node = iter.hasNext() ? iter.next() : queue.poll();
+        for(var node : validExterior){
             //If the node is already a valid member of the exterior of the HitBox, continued search is unitary.
             for(var shift : shifts){
                 var shifted = node.add(shift);
-                if(invertedHitBox.contains(shifted) && !visited.contains(shifted)){
-                    visited.uncheckedAdd(shifted);
+                if(invertedHitBox.contains(shifted) && visited.add(shifted)){
+                    queue.add(shifted);
+                }
+            }
+        }
+        while (!queue.isEmpty()) {
+            var node = queue.poll();
+            //If the node is already a valid member of the exterior of the HitBox, continued search is unitary.
+            for(var shift : shifts){
+                var shifted = node.add(shift);
+                if(invertedHitBox.contains(shifted) && visited.add(shifted)){
                     queue.add(shifted);
                 }
             }
