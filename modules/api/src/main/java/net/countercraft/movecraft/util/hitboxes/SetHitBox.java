@@ -8,12 +8,15 @@ import net.countercraft.movecraft.util.collections.BitmapLocationSet;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.function.Consumer;
 
 public class SetHitBox implements MutableHitBox{
-    private final BitmapLocationSet locations = new BitmapLocationSet();
+    private final Set<MovecraftLocation> locations = new LinkedHashSet<>();
     private final Long2IntMap localMinY;
     private boolean invalidateBounds = false;
     private int minX = Integer.MAX_VALUE;
@@ -29,13 +32,13 @@ public class SetHitBox implements MutableHitBox{
 
     public SetHitBox(HitBox box){
         this();
-        Consumer<MovecraftLocation> consumer =  locations::uncheckedAdd;
+        Consumer<MovecraftLocation> consumer =  locations::add;
         box.forEach(consumer.andThen(this::checkBounds));
     }
 
     public SetHitBox(Collection<MovecraftLocation> locations){
         this();
-        Consumer<MovecraftLocation> consumer =  this.locations::uncheckedAdd;
+        Consumer<MovecraftLocation> consumer =  this.locations::add;
         locations.forEach(consumer.andThen(this::checkBounds));
     }
 
@@ -259,6 +262,11 @@ public class SetHitBox implements MutableHitBox{
         maxX = Integer.MIN_VALUE;
         maxY = Integer.MIN_VALUE;
         maxZ = Integer.MIN_VALUE;
+    }
+
+    @Override @NotNull
+    public Set<MovecraftLocation> asSet(){
+        return Collections.unmodifiableSet(locations);
     }
 
     private void validateBounds() {
