@@ -76,12 +76,7 @@ final public class MovecraftLocation implements Comparable<MovecraftLocation>{
 
     @Override
     public int hashCode() {
-        var hash = UnsignedInteger.valueOf(2166136261L);
-        var offset = UnsignedInteger.fromIntBits(16777619);
-        hash = UnsignedInteger.fromIntBits(hash.times(offset).intValue() ^ y);
-        hash = UnsignedInteger.fromIntBits(hash.times(offset).intValue() ^ x);
-        hash = UnsignedInteger.fromIntBits(hash.times(offset).intValue() ^ z);
-        return hash.intValue();
+        return 131 * 131 * x + 131 * z + y;
     }
 
     public MovecraftLocation add(MovecraftLocation l) {
