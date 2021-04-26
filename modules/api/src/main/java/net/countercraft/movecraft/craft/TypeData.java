@@ -331,6 +331,9 @@ public final class TypeData {
             String materialName = (String) object;
             var tagged = Tags.parseBlockRegistry(materialName);
             if(tagged != null){
+                if(tagged.isEmpty()){
+                    throw new IllegalArgumentException("Entry " + object + " describes an empty or non-existent Tag for key " + key);
+                }
                 returnList.addAll(tagged);
             } else {
                 returnList.add(Material.valueOf(materialName.toUpperCase()));
