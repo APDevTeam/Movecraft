@@ -50,8 +50,18 @@ public interface Craft {
     @NotNull
     CraftType getType();
 
+    @Deprecated @NotNull
+    default World getW(){
+        return this.getWorld();
+    }
+
     @NotNull
     World getWorld();
+
+    @Deprecated
+    default void setW(@NotNull World world){
+        this.setWorld(world);
+    }
 
     void setWorld(@NotNull World world);
 
