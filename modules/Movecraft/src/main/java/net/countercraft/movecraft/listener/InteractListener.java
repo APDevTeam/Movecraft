@@ -92,7 +92,7 @@ public final class InteractListener implements Listener {
                 return;
             }
             Long time = timeMap.get(player);
-            int tickCooldown = craft.getType().getTickCooldown(craft.getW());
+            int tickCooldown = craft.getType().getTickCooldown(craft.getWorld());
             if (type.getGearShiftsAffectDirectMovement() && type.getGearShiftsAffectTickCooldown()) {
                 tickCooldown *= currentGear;
             }
@@ -101,7 +101,7 @@ public final class InteractListener implements Listener {
 
                 // if the craft should go slower underwater, make time
                 // pass more slowly there
-                if (craft.getType().getHalfSpeedUnderwater() && craft.getHitBox().getMinY() < craft.getW().getSeaLevel())
+                if (craft.getType().getHalfSpeedUnderwater() && craft.getHitBox().getMinY() < craft.getWorld().getSeaLevel())
                     ticksElapsed = ticksElapsed >> 1;
 
 

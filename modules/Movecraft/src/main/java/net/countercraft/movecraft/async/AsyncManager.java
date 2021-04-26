@@ -94,7 +94,7 @@ public class AsyncManager extends BukkitRunnable {
             return;
         }
         wrecks.put(craft.getCollapsedHitBox(), System.currentTimeMillis());
-        wreckWorlds.put(craft.getCollapsedHitBox(), craft.getW());
+        wreckWorlds.put(craft.getCollapsedHitBox(), craft.getWorld());
         wreckPhases.put(craft.getCollapsedHitBox(), craft.getPhaseBlocks());
     }
 
@@ -198,7 +198,7 @@ public class AsyncManager extends BukkitRunnable {
                 continue;
             }
             long ticksElapsed = (System.currentTimeMillis() - pcraft.getLastCruiseUpdate()) / 50;
-            World w = pcraft.getW();
+            World w = pcraft.getWorld();
             // if the craft should go slower underwater, make
             // time pass more slowly there
             if (pcraft.getType().getHalfSpeedUnderwater() && pcraft.getHitBox().getMinY() < w.getSeaLevel())
@@ -579,7 +579,7 @@ public class AsyncManager extends BukkitRunnable {
         // if it's in the FlyBlocks, total up the number
         // of them
         for (MovecraftLocation l : craft.getHitBox()) {
-            Material type = craft.getW().getBlockAt(l.getX(), l.getY(), l.getZ()).getType();
+            Material type = craft.getWorld().getBlockAt(l.getX(), l.getY(), l.getZ()).getType();
             for (List<Material> flyBlockDef : craft.getType().getFlyBlocks().keySet()) {
                 if (flyBlockDef.contains(type)) {
                     foundFlyBlocks.merge(flyBlockDef, 1, Integer::sum);

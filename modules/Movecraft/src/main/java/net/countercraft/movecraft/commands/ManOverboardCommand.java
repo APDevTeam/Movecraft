@@ -36,7 +36,7 @@ public class ManOverboardCommand implements CommandExecutor{
         }
 
         Location telPoint = getCraftTeleportPoint(craft);
-        if (craft.getW() != player.getWorld()) {
+        if (craft.getWorld() != player.getWorld()) {
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("ManOverboard - Other World"));
             return true;
         }
@@ -70,6 +70,6 @@ public class ManOverboardCommand implements CommandExecutor{
         double telX = (craft.getHitBox().getMinX() + craft.getHitBox().getMaxX())/2D + 0.5D;
         double telZ = (craft.getHitBox().getMinZ() + craft.getHitBox().getMaxZ())/2D + 0.5D;
         double telY = craft.getHitBox().getMaxY() + 1;
-        return new Location(craft.getW(), telX, telY, telZ);
+        return new Location(craft.getWorld(), telX, telY, telZ);
     }
 }

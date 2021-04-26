@@ -25,7 +25,7 @@ public final class CruiseSign implements Listener{
 
     @EventHandler
     public void onCraftDetect(CraftDetectEvent event){
-        World world = event.getCraft().getW();
+        World world = event.getCraft().getWorld();
         for(MovecraftLocation location: event.getCraft().getHitBox()){
             var block = location.toBukkit(world).getBlock();
             if(!Tag.SIGNS.isTagged(block.getType())){

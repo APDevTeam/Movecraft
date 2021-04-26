@@ -50,20 +50,10 @@ public interface Craft {
     @NotNull
     CraftType getType();
 
-    @NotNull @Deprecated
-    World getW();
-
     @NotNull
-    default World getWorld(){
-        return getW();
-    }
+    World getWorld();
 
-    @Deprecated
-    void setW(World world);
-
-    default void setWorld(World world){
-        setW(world);
-    }
+    void setWorld(@NotNull World world);
 
     void detect(Player player, Player notificationPlayer, MovecraftLocation startPoint);
 

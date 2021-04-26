@@ -57,7 +57,7 @@ public abstract class AsyncTask extends BukkitRunnable {
 
     protected boolean checkFuel(){
         // check for fuel, burn some from a furnace if needed. Blocks of coal are supported, in addition to coal and charcoal
-        double fuelBurnRate = craft.getType().getFuelBurnRate(craft.getW());
+        double fuelBurnRate = craft.getType().getFuelBurnRate(craft.getWorld());
         if (fuelBurnRate == 0.0 || craft.getSinking()) {
             return true;
         }
@@ -75,7 +75,7 @@ public abstract class AsyncTask extends BukkitRunnable {
         }
         Block fuelHolder = null;
         for (MovecraftLocation bTest : craft.getHitBox()) {
-            Block b = craft.getW().getBlockAt(bTest.getX(), bTest.getY(), bTest.getZ());
+            Block b = craft.getWorld().getBlockAt(bTest.getX(), bTest.getY(), bTest.getZ());
             if (b.getType() == Material.FURNACE) {
                 InventoryHolder inventoryHolder = (InventoryHolder) b.getState();
                 for (ItemStack stack : inventoryHolder.getInventory()) {

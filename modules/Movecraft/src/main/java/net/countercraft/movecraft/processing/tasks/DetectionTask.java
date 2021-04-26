@@ -104,7 +104,7 @@ public class DetectionTask implements Runnable {
             return;
         }
 
-        var badWorld = c.getW();
+        var badWorld = c.getWorld();
         //The subtraction of the set of coordinates in the HitBox cube and the HitBox itself
         final HitBox invertedHitBox = new BitmapHitBox(c.getHitBox().boundingHitBox()).difference(c.getHitBox());
 

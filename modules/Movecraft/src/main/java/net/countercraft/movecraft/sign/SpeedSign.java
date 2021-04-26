@@ -7,7 +7,6 @@ import net.countercraft.movecraft.events.SignTranslateEvent;
 import org.bukkit.ChatColor;
 import org.bukkit.Tag;
 import org.bukkit.World;
-import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.event.EventHandler;
@@ -16,7 +15,7 @@ import org.bukkit.event.Listener;
 public final class SpeedSign implements Listener{
     @EventHandler
     public void onCraftDetect(CraftDetectEvent event){
-        World world = event.getCraft().getW();
+        World world = event.getCraft().getWorld();
         for(MovecraftLocation location: event.getCraft().getHitBox()){
             var block = location.toBukkit(world).getBlock();
             if(!Tag.SIGNS.isTagged(block.getType())){

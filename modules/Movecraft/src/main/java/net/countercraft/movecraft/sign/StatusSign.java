@@ -23,7 +23,7 @@ public final class StatusSign implements Listener{
 
     @EventHandler
     public void onCraftDetect(CraftDetectEvent event){
-        World world = event.getCraft().getW();
+        World world = event.getCraft().getWorld();
         for(MovecraftLocation location: event.getCraft().getHitBox()){
             var block = location.toBukkit(world).getBlock();
             if(!Tag.SIGNS.isTagged(block.getType())){
@@ -52,11 +52,11 @@ public final class StatusSign implements Listener{
         int totalBlocks=0;
         Counter<Material> foundBlocks = new Counter<>();
         for (MovecraftLocation ml : craft.getHitBox()) {
-            Material blockID = craft.getW().getBlockAt(ml.getX(), ml.getY(), ml.getZ()).getType();
+            Material blockID = craft.getWorld().getBlockAt(ml.getX(), ml.getY(), ml.getZ()).getType();
             foundBlocks.add(blockID);
 
             if (blockID == Material.FURNACE) {
-                InventoryHolder inventoryHolder = (InventoryHolder) craft.getW().getBlockAt(ml.getX(), ml.getY(), ml.getZ()).getState();
+                InventoryHolder inventoryHolder = (InventoryHolder) craft.getWorld().getBlockAt(ml.getX(), ml.getY(), ml.getZ()).getState();
                 Map<Material, Double> fuelTypes = craft.getType().getFuelTypes();
                 for (ItemStack iStack : inventoryHolder.getInventory()) {
                     if (iStack == null || !fuelTypes.containsKey(iStack.getType())) {
@@ -114,7 +114,7 @@ public final class StatusSign implements Listener{
             signLine++;
         }
         String fuelText="";
-        int fuelRange=(int) ((fuel*(1+(craft.getType().getCruiseSkipBlocks(craft.getW())+1)))/craft.getType().getFuelBurnRate(craft.getW()));
+        int fuelRange=(int) ((fuel*(1+(craft.getType().getCruiseSkipBlocks(craft.getWorld())+1)))/craft.getType().getFuelBurnRate(craft.getWorld()));
         if(fuelRange>1000) {
             fuelText+=ChatColor.GREEN;
         } else if(fuelRange>100) {

@@ -211,7 +211,7 @@ public class CraftRotateCommand extends UpdateCommand {
         Map<MovecraftLocation, Sign> signStates = new HashMap<>();
 
         for (MovecraftLocation location : craft.getHitBox()) {
-            Block block = location.toBukkit(craft.getW()).getBlock();
+            Block block = location.toBukkit(craft.getWorld()).getBlock();
             BlockState state = block.getState();
             if (state instanceof Sign) {
                 Sign sign = (Sign) block.getState();

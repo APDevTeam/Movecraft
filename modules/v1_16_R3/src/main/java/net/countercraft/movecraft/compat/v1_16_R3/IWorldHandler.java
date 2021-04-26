@@ -94,7 +94,7 @@ public class IWorldHandler extends WorldHandler {
         //*******************************************
         //*         Step two: Get the tiles         *
         //*******************************************
-        WorldServer nativeWorld = ((CraftWorld) craft.getW()).getHandle();
+        WorldServer nativeWorld = ((CraftWorld) craft.getWorld()).getHandle();
         List<TileHolder> tiles = new ArrayList<>();
         //get the tiles
         for(BlockPosition position : rotatedPositions.keySet()){
@@ -157,7 +157,7 @@ public class IWorldHandler extends WorldHandler {
         BlockPosition translateVector = locationToPosition(displacement);
         List<BlockPosition> positions = new ArrayList<>(craft.getHitBox().size());
         craft.getHitBox().forEach((movecraftLocation) -> positions.add(locationToPosition((movecraftLocation)).b(translateVector)));
-        WorldServer oldNativeWorld = ((CraftWorld) craft.getW()).getHandle();
+        WorldServer oldNativeWorld = ((CraftWorld) craft.getWorld()).getHandle();
         World nativeWorld = ((CraftWorld) world).getHandle();
         //*******************************************
         //*         Step two: Get the tiles         *

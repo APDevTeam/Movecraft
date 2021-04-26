@@ -28,7 +28,7 @@ public final class NameSign implements Listener {
             return;
         }
 
-        World w = c.getW();
+        World w = c.getWorld();
 
         for (MovecraftLocation location : c.getHitBox()) {
             var block = location.toBukkit(w).getBlock();

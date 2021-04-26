@@ -95,7 +95,7 @@ public class MathUtils {
     @Contract(pure=true)
     public static boolean locIsNearCraftFast(@NotNull final Craft craft, @NotNull final MovecraftLocation location) {
         // optimized to be as fast as possible, it checks the easy ones first, then the more computationally intensive later
-        return locationNearHitBox(craft.getHitBox(), location.toBukkit(craft.getW()), 3);
+        return locationNearHitBox(craft.getHitBox(), location.toBukkit(craft.getWorld()), 3);
     }
 
     /**

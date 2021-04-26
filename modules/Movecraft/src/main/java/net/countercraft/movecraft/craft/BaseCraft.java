@@ -114,14 +114,14 @@ public abstract class BaseCraft implements Craft{
     }
 
     @NotNull
-    public World getW() {
+    public World getWorld() {
         if(WorldManager.INSTANCE.isRunning() && !Bukkit.isPrimaryThread()){
             Bukkit.getLogger().severe("Invoking most methods on worlds while the world manager is running WILL cause deadlock.");
         }
         return w;
     }
 
-    public void setW(World world) {
+    public void setWorld(@NotNull World world) {
         this.w = world;
     }
 
@@ -170,12 +170,12 @@ public abstract class BaseCraft implements Craft{
             return;
         }
         setLastRotateTime(System.nanoTime());
-        Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(this, originPoint, rotation, this.getW()), this);
+        Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(this, originPoint, rotation, this.getWorld()), this);
     }
 
     @Override
     public void rotate(Rotation rotation, MovecraftLocation originPoint, boolean isSubCraft) {
-        Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(this, originPoint, rotation, this.getW(), isSubCraft), this);
+        Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(this, originPoint, rotation, this.getWorld(), isSubCraft), this);
     }
 
     /**
@@ -190,7 +190,7 @@ public abstract class BaseCraft implements Craft{
             MovecraftLocation ccenter = this.getHitBox().getMidPoint();
             MovecraftLocation tcenter = contact.getHitBox().getMidPoint();
             int distsquared = ccenter.distanceSquared(tcenter);
-            int detectionRange = (int) (contact.getOrigBlockCount() * (tcenter.getY() > 65 ? contact.getType().getDetectionMultiplier(contact.getW()) : contact.getType().getUnderwaterDetectionMultiplier(contact.getW())));
+            int detectionRange = (int) (contact.getOrigBlockCount() * (tcenter.getY() > 65 ? contact.getType().getDetectionMultiplier(contact.getWorld()) : contact.getType().getUnderwaterDetectionMultiplier(contact.getWorld())));
             detectionRange = detectionRange * 10;
             if (distsquared > detectionRange || contact.getNotificationPlayer() == this.getNotificationPlayer()) {
                 continue;
