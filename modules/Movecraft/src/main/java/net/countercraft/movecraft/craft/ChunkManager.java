@@ -14,6 +14,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
 @Deprecated
@@ -87,7 +88,10 @@ public class ChunkManager implements Listener {
     public static Future<Boolean> syncLoadChunks(Set<MovecraftChunk> chunks) {
         if (Settings.Debug)
             Movecraft.getInstance().getLogger().info("Loading " + chunks.size() + " chunks...");
-        
+        if(Bukkit.isPrimaryThread()){
+            ChunkManager.addChunksToLoad(chunks);
+            return CompletableFuture.completedFuture(true);
+        }
         return Bukkit.getScheduler().callSyncMethod(Movecraft.getInstance(), () -> {
             ChunkManager.addChunksToLoad(chunks);
             return true;
