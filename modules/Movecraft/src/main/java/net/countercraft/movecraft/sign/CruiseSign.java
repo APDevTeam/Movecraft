@@ -64,9 +64,8 @@ public final class CruiseSign implements Listener{
             sign.setLine(0, "Cruise: ON");
             sign.update(true);
 
-
-            if(sign.getData() instanceof WallSign) {
-                c.setCruiseDirection(CruiseDirection.fromBlockFace(((WallSign) sign.getData()).getFacing()));
+            if(sign.getBlockData() instanceof WallSign) {
+                c.setCruiseDirection(CruiseDirection.fromBlockFace(((WallSign) sign.getBlockData()).getFacing()));
             } else {
                 c.setCruiseDirection(CruiseDirection.NONE);
             }

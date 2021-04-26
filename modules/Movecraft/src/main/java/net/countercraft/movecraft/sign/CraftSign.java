@@ -67,8 +67,8 @@ public final class CraftSign implements Listener{
 
         if (c.getType().getCruiseOnPilot()) {
             c.detect(null, event.getPlayer(), startPoint);
-            if(sign.getData() instanceof WallSign) {
-                c.setCruiseDirection(CruiseDirection.fromBlockFace(((WallSign) sign.getData()).getFacing()));
+            if(sign.getBlockData() instanceof WallSign) {
+                c.setCruiseDirection(CruiseDirection.fromBlockFace(((WallSign) sign.getBlockData()).getFacing()));
             } else {
                 c.setCruiseDirection(CruiseDirection.NONE);
             }
