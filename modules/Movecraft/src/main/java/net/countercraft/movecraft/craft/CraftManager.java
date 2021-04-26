@@ -31,6 +31,7 @@ import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.yaml.snakeyaml.parser.ParserException;
 import org.yaml.snakeyaml.scanner.ScannerException;
 
 import java.io.File;
@@ -103,7 +104,7 @@ public class CraftManager implements Iterable<Craft>{
                         CraftType type = new CraftType(file);
                         craftTypes.add(type);
                     }
-                    catch (IllegalArgumentException | CraftType.TypeNotFoundException | ScannerException e) {
+                    catch (IllegalArgumentException | CraftType.TypeNotFoundException | ParserException | ScannerException e) {
                         Movecraft.getInstance().getLogger().log(Level.SEVERE, I18nSupport.getInternationalisedString("Startup - failure to load craft type") + " '" + file.getName() + "' " + e.getMessage());
                     }
                 }
