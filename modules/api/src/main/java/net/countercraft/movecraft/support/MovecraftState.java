@@ -35,6 +35,7 @@ public class MovecraftState implements BlockState {
         throw new UnsupportedOperationException();
     }
 
+    @Deprecated
     @NotNull
     @Override
     public MaterialData getData() {
@@ -104,6 +105,7 @@ public class MovecraftState implements BlockState {
         throw new UnsupportedOperationException();
     }
 
+    @Deprecated
     @Override
     public void setData(@NotNull MaterialData materialData) {
         throw new UnsupportedOperationException();

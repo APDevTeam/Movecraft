@@ -2,7 +2,8 @@ package net.countercraft.movecraft.util;
 
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
-import org.bukkit.material.MaterialData;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.type.WallSign;
 
 public class SignUtils {
     /**
@@ -10,8 +11,10 @@ public class SignUtils {
      * @return
      */
     public static BlockFace getFacing(Sign sign) {
-        MaterialData materialData = sign.getData();
-        org.bukkit.material.Sign matSign = (org.bukkit.material.Sign) materialData;
-        return matSign.getFacing();
+        BlockData blockData = sign.getBlockData();
+        if(blockData instanceof WallSign){
+            return ((WallSign) blockData).getFacing();
+        }
+        return BlockFace.SELF;
     }
 }

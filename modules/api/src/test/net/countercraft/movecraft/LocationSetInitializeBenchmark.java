@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+@SuppressWarnings("deprecation")
 @Threads(4)
 @Warmup(iterations = 3, time = 1)
 @Measurement(iterations = 2, time = 1)
