@@ -30,6 +30,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -134,14 +135,14 @@ final public class CraftType {
         perWorldTickCooldown = new HashMap<>();
         Map<String, Double> tickCooldownMap = stringToDoubleMapFromObject(data.getDataOrEmpty("perWorldSpeed").getBackingData());
         tickCooldownMap.forEach((world, speed) -> perWorldTickCooldown.put(world, (int) Math.ceil(20 / speed)));
-        flyBlocks = blockIDMapListFromObject(data.getDataOrEmpty("flyblocks").getBackingData());
+        flyBlocks = blockIDMapListFromObject("flyblocks", data.getDataOrEmpty("flyblocks").getBackingData());
 
         //Optional craft flags
         forbiddenBlocks = data.getMaterialsOrEmpty("forbiddenBlocks");
         blockedByWater = data.getBooleanOrDefault("canFly", data.getBooleanOrDefault("blockedByWater", true));
         requireWaterContact = data.getBooleanOrDefault("requireWaterContact", false);
         tryNudge = data.getBooleanOrDefault("tryNudge", false);
-        moveBlocks = blockIDMapListFromObject(data.getDataOrEmpty("moveblocks").getBackingData());
+        moveBlocks = blockIDMapListFromObject("moveblocks", data.getDataOrEmpty("moveblocks").getBackingData());
         canCruise = data.getBooleanOrDefault("canCruise", false);
         canTeleport = data.getBooleanOrDefault("canTeleport", false);
         canSwitchWorld = data.getBooleanOrDefault("canSwitchWorld", false);
@@ -305,7 +306,7 @@ final public class CraftType {
         return returnMap;
     }
 
-    private Map<List<Material>, List<Double>> blockIDMapListFromObject(Map<String, Object> objMap) {
+    private Map<List<Material>, List<Double>> blockIDMapListFromObject(String key, Map<String, Object> objMap) {
         HashMap<List<Material>, List<Double>> returnMap = new HashMap<>();
         for (Object i : objMap.keySet()) {
             ArrayList<Material> rowList = new ArrayList<>();
@@ -313,20 +314,38 @@ final public class CraftType {
             // first read in the list of the blocks that type of flyblock. It could be a single string (with or without a ":") or integer, or it could be multiple of them
             if (i instanceof ArrayList) {
                 for (Object o : (ArrayList<?>) i) {
+                    if (!(o instanceof String)) {
+                        if(o == null){
+                            throw new IllegalArgumentException("Entry " + key + " has a null value. This usually indicates you've attempted to use a tag that is not surrounded by quotes");
+                        }
+                        throw new IllegalArgumentException("Entry " + o + " must be a material for key " + key);
+                    }
                     var string = (String) o;
                     var tagSet = Tags.parseBlockRegistry(string);
                     if(tagSet == null){
-                        rowList.add(Material.valueOf(string));
+                        rowList.add(Material.valueOf(string.toUpperCase()));
                     } else {
+                        if(tagSet.isEmpty()){
+                            throw new IllegalArgumentException("Entry " + string + " describes an empty or non-existent Tag for key " + key);
+                        }
                         rowList.addAll(tagSet);
                     }
                 }
             } else  {
+                if (!(i instanceof String)) {
+                    if(i == null){
+                        throw new IllegalArgumentException("Entry " + key + " has a null value. This usually indicates you've attempted to use a tag that is not surrounded by quotes");
+                    }
+                    throw new IllegalArgumentException("Entry " + i + " must be a material for key " + key);
+                }
                 var string = (String) i;
                 var tagSet = Tags.parseBlockRegistry(string);
                 if(tagSet == null){
-                    rowList.add(Material.valueOf(string));
+                    rowList.add(Material.valueOf(string.toUpperCase()));
                 } else {
+                    if(tagSet.isEmpty()){
+                        throw new IllegalArgumentException("Entry " + string + " describes an empty or non-existent Tag for key " + key);
+                    }
                     rowList.addAll(tagSet);
                 }
             }
@@ -350,6 +369,9 @@ final public class CraftType {
                     limitList.add(ret);
                 } else
                     limitList.add((Double) limitObj);
+            }
+            if(limitList.size() != 2){
+                throw new IllegalArgumentException("Range must be a pair, but found " + limitList.size() + " entries");
             }
             returnMap.put(rowList, limitList);
         }
