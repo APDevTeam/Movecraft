@@ -60,6 +60,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Map;
@@ -99,7 +101,6 @@ public class Movecraft extends JavaPlugin {
     @Override
     public void onEnable() {
         // Read in config
-        this.saveDefaultConfig();
         try {
             Class.forName("com.destroystokyo.paper.Title");
             Settings.IsPaper = true;
@@ -253,6 +254,7 @@ public class Movecraft extends JavaPlugin {
                     I18nSupport.getInternationalisedString("Startup - Enabled message"),
                     getDescription().getVersion()));
         }
+//        initializeDatapack();
     }
 
     @Override
@@ -260,6 +262,46 @@ public class Movecraft extends JavaPlugin {
         super.onLoad();
         instance = this;
         logger = getLogger();
+        this.saveDefaultConfig();
+
+    }
+
+    private void initializeDatapack(){
+        File datapackDirectory = null;
+        for(var world : this.getServer().getWorlds()){
+            datapackDirectory = new File(world.getWorldFolder(), "datapacks");
+            if(datapackDirectory.exists()){
+                break;
+            }
+        }
+        if(datapackDirectory == null){
+            logger.severe("Failed to initialize movecraft data pack due to first time world initialization.");
+            return;
+        }
+        if(!datapackDirectory.exists()){
+            logger.info("Creating a datapack directory at " + datapackDirectory.getPath());
+            if(!datapackDirectory.mkdir()){
+                logger.severe("Failed to create datapack directory!");
+                return;
+            }
+        }
+        if(!datapackDirectory.canWrite()){
+            logger.warning("Missing permissions to write to world directory.");
+            return;
+        }
+
+        try (var stream = new FileOutputStream(new File(datapackDirectory, "movecraft-data.zip"));
+             var pack = this.getResource("movecraft-data.zip")) {
+            if(pack == null){
+                logger.warning("No internal datapack found, report this.");
+                return;
+            }
+            pack.transferTo(stream);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
+        logger.info("Saved default movecraft datapack.");
     }
 
 
