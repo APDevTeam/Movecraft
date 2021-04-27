@@ -209,6 +209,7 @@ public class Movecraft extends JavaPlugin {
         } else {
 
             // Startup procedure
+            initializeDatapack();
             asyncManager = new AsyncManager();
             asyncManager.runTaskTimer(this, 0, 1);
             MapUpdateManager.getInstance().runTaskTimer(this, 0, 1);
@@ -254,7 +255,6 @@ public class Movecraft extends JavaPlugin {
                     I18nSupport.getInternationalisedString("Startup - Enabled message"),
                     getDescription().getVersion()));
         }
-//        initializeDatapack();
     }
 
     @Override
@@ -267,6 +267,9 @@ public class Movecraft extends JavaPlugin {
     }
 
     private void initializeDatapack(){
+        if(this.getConfig().getBoolean("GeneratedDatapack")){
+            return;
+        }
         File datapackDirectory = null;
         for(var world : this.getServer().getWorlds()){
             datapackDirectory = new File(world.getWorldFolder(), "datapacks");
@@ -302,6 +305,11 @@ public class Movecraft extends JavaPlugin {
             return;
         }
         logger.info("Saved default movecraft datapack.");
+        this.getConfig().set("GeneratedDatapack", true);
+        this.saveConfig();
+        if(!Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "datapack enable \"file/movecraft-data.zip\"")){
+            logger.severe("Failed to automatically load movecraft datapack. Check if it exists.");
+        }
     }
 
 
