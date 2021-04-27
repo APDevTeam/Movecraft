@@ -287,6 +287,13 @@ public class Movecraft extends JavaPlugin {
                 logger.severe("Failed to create datapack directory!");
                 return;
             }
+        } else {
+            if(new File(datapackDirectory, "movecraft-data.zip").exists()){
+                logger.warning("Conflicting datapack already exists in " + datapackDirectory.getPath() + ". If you would like to regenerate the datapack, delete the existing one and set the GeneratedDatapack config option to false.");
+                this.getConfig().set("GeneratedDatapack", true);
+                this.saveConfig();
+                return;
+            }
         }
         if(!datapackDirectory.canWrite()){
             logger.warning("Missing permissions to write to world directory.");
