@@ -191,3 +191,5 @@ $RECYCLE.BIN/
 # dependency reduced POMs
 *dependency-reduced-pom.xml
 
+# datapack output
+/target-datapack/

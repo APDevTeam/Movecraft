@@ -35,6 +35,12 @@
         </dependency>
         <dependency>
             <groupId>net.countercraft</groupId>
+            <artifactId>movecraft-datapack</artifactId>
+            <version>datapack</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>net.countercraft</groupId>
             <artifactId>movecraft-v1_16_R3</artifactId>
             <version>v1_16_R3</version>
             <type>jar</type>
@@ -78,6 +84,15 @@
                     <include>config.yml</include>
                     <include>localisation/**</include>
                     <include>types/*.craft</include>
+                    <include>movecraft-data.zip</include>
+                </includes>
+            </resource>
+            <resource>
+                <targetPath>.</targetPath>
+                <filtering>true</filtering>
+                <directory>../../target-datapack</directory>
+                <includes>
+                    <include>movecraft-data.zip</include>
                 </includes>
             </resource>
             <resource>
@@ -142,6 +157,12 @@
                                 </filter>
                                 <filter>
                                     <artifact>net.countercraft:movecraft-v1_16_R3</artifact>
+                                    <includes>
+                                        <include>**</include>
+                                    </includes>
+                                </filter>
+                                <filter>
+                                    <artifact>net.countercraft:datapack</artifact>
                                     <includes>
                                         <include>**</include>
                                     </includes>
