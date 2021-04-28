@@ -1,11 +1,13 @@
 package net.countercraft.movecraft.sign;
 
+import io.papermc.lib.PaperLib;
 import net.countercraft.movecraft.Rotation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.util.MathUtils;
 import org.bukkit.ChatColor;
+import org.bukkit.Tag;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.event.EventHandler;
@@ -36,7 +38,10 @@ public final class HelmSign implements Listener {
         }else{
             return;
         }
-        BlockState state = event.getClickedBlock().getState();
+        if (!Tag.SIGNS.isTagged(event.getClickedBlock().getType())) {
+            return;
+        }
+        BlockState state = PaperLib.getBlockState(event.getClickedBlock(), false).getState();
         if (!(state instanceof Sign)) {
             return;
         }

@@ -2,6 +2,7 @@ package net.countercraft.movecraft.mapUpdater.update;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import io.papermc.lib.PaperLib;
 import it.unimi.dsi.fastutil.Hash;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
@@ -313,7 +314,7 @@ public class CraftTranslateCommand extends UpdateCommand {
             if(!Tag.SIGNS.isTagged(block.getType())){
                 continue;
             }
-            BlockState state = block.getState();
+            BlockState state = PaperLib.getBlockState(block, false).getState();
             if (state instanceof Sign) {
                 Sign sign = (Sign) state;
                 if(!signs.containsKey(sign.getLines()))
@@ -330,7 +331,7 @@ public class CraftTranslateCommand extends UpdateCommand {
             }
             for(MovecraftLocation location : entry.getValue()){
                 Block block = location.toBukkit(craft.getWorld()).getBlock();
-                BlockState state = block.getState();
+                BlockState state = PaperLib.getBlockState(block, false).getState();
                 if (!(state instanceof Sign)) {
                     continue;
                 }

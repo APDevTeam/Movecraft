@@ -17,6 +17,7 @@
 
 package net.countercraft.movecraft.listener;
 
+import io.papermc.lib.PaperLib;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
@@ -26,10 +27,7 @@ import net.countercraft.movecraft.util.MathUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.Tag;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
-import org.bukkit.block.Hopper;
-import org.bukkit.block.Sign;
+import org.bukkit.block.*;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -54,17 +52,19 @@ public class BlockListener implements Listener {
         if (e.isCancelled()) {
             return;
         }
-        if (e.getBlock().getState() instanceof Sign) {
-            Sign s = (Sign) e.getBlock().getState();
+        Block block = e.getBlock();
+        BlockState state = PaperLib.getBlockState(block, false).getState();
+        if (state instanceof Sign) {
+            Sign s = (Sign) state;
             if (s.getLine(0).equalsIgnoreCase(ChatColor.RED + I18nSupport.getInternationalisedString("Region Damaged"))) {
                 e.setCancelled(true);
                 return;
             }
         }
         if (Settings.ProtectPilotedCrafts) {
-            MovecraftLocation mloc = MathUtils.bukkit2MovecraftLoc(e.getBlock().getLocation());
-            CraftManager.getInstance().getCraftsInWorld(e.getBlock().getWorld());
-            for (Craft craft : CraftManager.getInstance().getCraftsInWorld(e.getBlock().getWorld())) {
+            MovecraftLocation mloc = MathUtils.bukkit2MovecraftLoc(block.getLocation());
+            CraftManager.getInstance().getCraftsInWorld(block.getWorld());
+            for (Craft craft : CraftManager.getInstance().getCraftsInWorld(block.getWorld())) {
                 if (craft == null || craft.getDisabled()) {
                     continue;
                 }

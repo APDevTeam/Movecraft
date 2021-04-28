@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.craft;
 
+import io.papermc.lib.PaperLib;
 import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
@@ -25,6 +26,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
@@ -204,10 +206,11 @@ public abstract class BaseCraft implements Craft{
     public void resetSigns(@NotNull Sign clicked) {
         for (final MovecraftLocation ml : hitBox) {
             final Block b = ml.toBukkit(w).getBlock();
-            if (!(b.getState() instanceof Sign)) {
+            BlockState state = PaperLib.getBlockState(b, false).getState();
+            if (!(state instanceof Sign)) {
                 continue;
             }
-            final Sign sign = (Sign) b.getState();
+            final Sign sign = (Sign) state;
             if (sign.equals(clicked)) {
                 continue;
             }

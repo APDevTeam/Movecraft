@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.sign;
 
+import io.papermc.lib.PaperLib;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
@@ -35,7 +36,7 @@ public final class NameSign implements Listener {
             if(!Tag.SIGNS.isTagged(block.getType())){
                 continue;
             }
-            BlockState state = block.getState();
+            BlockState state = PaperLib.getBlockState(block, false).getState();
             if (!(state instanceof Sign)) {
                 return;
             }

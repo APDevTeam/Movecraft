@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.sign;
 
+import io.papermc.lib.PaperLib;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
@@ -9,6 +10,7 @@ import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.util.MathUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Tag;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
@@ -44,7 +46,10 @@ public final class RemoteSign implements Listener{
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK && event.getAction() != Action.LEFT_CLICK_BLOCK) {
             return;
         }
-        BlockState state = event.getClickedBlock().getState();
+        if (!Tag.SIGNS.isTagged(event.getClickedBlock().getType())) {
+            return;
+        }
+        BlockState state = PaperLib.getBlockState(event.getClickedBlock(), false).getState();
         if (!(state instanceof Sign)) {
             return;
         }
@@ -86,7 +91,7 @@ public final class RemoteSign implements Listener{
         LinkedList<MovecraftLocation> foundLocations = new LinkedList<MovecraftLocation>();
         boolean firstError = true;
         for (MovecraftLocation tloc : foundCraft.getHitBox()) {
-            BlockState tstate = event.getClickedBlock().getWorld().getBlockAt(tloc.getX(), tloc.getY(), tloc.getZ()).getState();
+            BlockState tstate = PaperLib.getBlockState(event.getClickedBlock().getWorld().getBlockAt(tloc.getX(), tloc.getY(), tloc.getZ()), false).getState();
             if (!(tstate instanceof Sign)) {
                 continue;
             }

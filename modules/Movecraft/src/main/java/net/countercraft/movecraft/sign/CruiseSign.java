@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.sign;
 
+import io.papermc.lib.PaperLib;
 import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
@@ -31,7 +32,7 @@ public final class CruiseSign implements Listener{
             if(!Tag.SIGNS.isTagged(block.getType())){
                 continue;
             }
-            BlockState state = block.getState();
+            BlockState state = PaperLib.getBlockState(block, false).getState();
             if(state instanceof Sign){
                 Sign sign = (Sign) state;
                 if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Cruise: ON")) {
@@ -47,7 +48,10 @@ public final class CruiseSign implements Listener{
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
             return;
         }
-        BlockState state = event.getClickedBlock().getState();
+        if (!Tag.SIGNS.isTagged(event.getClickedBlock().getType())) {
+            return;
+        }
+        BlockState state = PaperLib.getBlockState(event.getClickedBlock(), false).getState();
         if (!(state instanceof Sign)) {
             return;
         }

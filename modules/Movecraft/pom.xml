@@ -24,6 +24,10 @@
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
         </repository>
+        <repository>
+            <id>papermc</id>
+            <url>https://papermc.io/repo/repository/maven-public/</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -67,7 +71,12 @@
             <version>8.3.1</version>
             <scope>compile</scope>
         </dependency>
-
+        <dependency>
+            <groupId>io.papermc</groupId>
+            <artifactId>paperlib</artifactId>
+            <version>1.0.6</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -156,6 +165,10 @@
                                     <pattern>it.unimi</pattern>
                                     <shadedPattern>net.countercraft.movecraft.libs.it.unimi</shadedPattern>
                                 </relocation>
+                                <relocation>
+                                    <pattern>io.papermc.lib</pattern>
+                                    <shadedPattern>net.countercraft.movecraft.libs.paperlib</shadedPattern>
+                                </relocation>
                             </relocations>
                             <minimizeJar>true</minimizeJar>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
@@ -186,6 +199,7 @@
                                     <include>it.unimi.dsi:fastutil*</include>
                                     <include>net.kyori:adventure*</include>
                                     <include>net.kyori:examination*</include>
+                                    <include>io.papermc:paperlib:jar:*</include>
                                 </includes>
                             </artifactSet>
                         </configuration>

@@ -1,10 +1,12 @@
 package net.countercraft.movecraft.sign;
 
+import io.papermc.lib.PaperLib;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Tag;
 import org.bukkit.World;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
@@ -20,7 +22,10 @@ public final class TeleportSign implements Listener {
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
             return;
         }
-        BlockState state = event.getClickedBlock().getState();
+        if (!Tag.SIGNS.isTagged(event.getClickedBlock().getType())) {
+            return;
+        }
+        BlockState state = PaperLib.getBlockState(event.getClickedBlock(), false).getState();
         if (!(state instanceof Sign)) {
             return;
         }

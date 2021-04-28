@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.sign;
 
+import io.papermc.lib.PaperLib;
 import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
@@ -14,6 +15,7 @@ import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Tag;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.type.WallSign;
@@ -46,7 +48,10 @@ public final class CraftSign implements Listener{
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
             return;
         }
-        BlockState state = event.getClickedBlock().getState();
+        if (!Tag.SIGNS.isTagged(event.getClickedBlock().getType())) {
+            return;
+        }
+        BlockState state = PaperLib.getBlockState(event.getClickedBlock(), false).getState();
         if (!(state instanceof Sign)) {
             return;
         }

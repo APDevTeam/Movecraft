@@ -17,6 +17,7 @@
 
 package net.countercraft.movecraft;
 
+import io.papermc.lib.PaperLib;
 import net.countercraft.movecraft.async.AsyncManager;
 import net.countercraft.movecraft.commands.ContactsCommand;
 import net.countercraft.movecraft.commands.CraftReportCommand;
@@ -254,6 +255,10 @@ public class Movecraft extends JavaPlugin {
             logger.log(Level.INFO, String.format(
                     I18nSupport.getInternationalisedString("Startup - Enabled message"),
                     getDescription().getVersion()));
+
+            if (PaperLib.isSpigot()) {
+                PaperLib.suggestPaper(this);
+            }
         }
     }
 
