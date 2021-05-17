@@ -1,8 +1,9 @@
-name: SubAirship
+name: Airship
 maxSize: 5000
 minSize: 1000
-allowedBlocks:
+allowedBlocks: 
     - "#planks"
+    - water
     - lava
     - "#logs"
     - "#glass"
@@ -96,28 +97,25 @@ forbiddenBlocks:
 
 canCruise: true
 rotateAtMidpoint: true
-cruiseSkipBlocks: 4
-vertCruiseSkipBlocks: 1
-cruiseSpeed: 0.5
-canFly: false
-minHeightLimit: 1
+canFly: true
 maxHeightLimit: 135
 maxHeightAboveGround: 50
-speed: 1.0
+vertCruiseSkipBlocks: 3
 collisionExplosion: 0.0
 detectionMultiplier: 10.0
 underwaterDetectionMultiplier: 1.0
+speed: 1.0
+cruiseSkipBlocks: 4
+cruiseSpeed: 0.5
 fuelBurnRate: 2.0
-tryNudge: false
-halfSpeedUnderwater: true
 sinkPercent: 99.0
 overallSinkPercent: 60.0
+tryNudge: false
+canStaticMove: true
+maxStaticMove: 2
 moveblocks:
     redstone_block: # redstone represents engines
         - 1.0
-        - 100.0
-    iron_block: # iron represents ballast tanks
-        - 10.0
         - 100.0
 flyblocks:
     "#wool": #wool represents lift
