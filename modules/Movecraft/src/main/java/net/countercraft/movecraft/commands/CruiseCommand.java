@@ -126,10 +126,20 @@ public class CruiseCommand implements TabExecutor {
             craft.setCruising(true);
             return true;
         }
+        if (args[0].equalsIgnoreCase("up") || args[0].equalsIgnoreCase("u")) {
+            craft.setCruiseDirection(CruiseDirection.UP);
+            craft.setCruising(true);
+            return true;
+        }
+        if (args[0].equalsIgnoreCase("down") || args[0].equalsIgnoreCase("d")) {
+            craft.setCruiseDirection(CruiseDirection.DOWN);
+            craft.setCruising(true);
+            return true;
+        }
         return false;
     }
 
-    private final String[] completions = {"North", "East", "South", "West", "On", "Off"};
+    private final String[] completions = {"North", "East", "South", "West", "Up", "Down", "On", "Off"};
     @Override
     public List<String> onTabComplete(CommandSender commandSender, Command command, String s, String[] strings) {
         if(strings.length !=1)
