@@ -11,14 +11,7 @@ import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.processing.TaskPredicate;
 import net.countercraft.movecraft.processing.WorldManager;
-import net.countercraft.movecraft.processing.tasks.detection.AllowedBlockValidator;
-import net.countercraft.movecraft.processing.tasks.detection.FlyBlockValidator;
-import net.countercraft.movecraft.processing.tasks.detection.ForbiddenBlockValidator;
-import net.countercraft.movecraft.processing.tasks.detection.ForbiddenSignStringValidator;
-import net.countercraft.movecraft.processing.tasks.detection.NameSignValidator;
-import net.countercraft.movecraft.processing.tasks.detection.PilotSignValidator;
-import net.countercraft.movecraft.processing.tasks.detection.SizeValidator;
-import net.countercraft.movecraft.processing.tasks.detection.WaterContactValidator;
+import net.countercraft.movecraft.processing.tasks.detection.*;
 import net.countercraft.movecraft.util.AtomicLocationSet;
 import net.countercraft.movecraft.util.CollectionUtils;
 import net.countercraft.movecraft.util.hitboxes.BitmapHitBox;
@@ -83,7 +76,8 @@ public class DetectionTask implements Runnable {
     private static final List<TaskPredicate<MovecraftLocation>> validators = List.of(
             new ForbiddenSignStringValidator(),
             new NameSignValidator(),
-            new PilotSignValidator());
+            new PilotSignValidator(),
+            new SubcraftValidator());
     private static final List<TaskPredicate<Map<Material, Deque<MovecraftLocation>>>> completionValidators = List.of(
             new SizeValidator(),
             new WaterContactValidator(),
