@@ -59,7 +59,7 @@ allowedBlocks:
     - daylight_detector
     - redstone_block
     - hopper
-    - "#rails"
+    - activator_rail
     - slime_block
     - coal_block
     - smooth_stone

@@ -54,7 +54,7 @@ allowedBlocks:
     - daylight_detector
     - redstone_block
     - hopper
-    - "#rails"
+    - activator_rail
     - dropper
     - gray_terracotta
     - light_gray_terracotta
