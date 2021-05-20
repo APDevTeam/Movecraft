@@ -1,100 +1,70 @@
 name: Turret
 maxSize: 1000
 minSize: 1
-allowedBlocks: 
-    - 8
-    - 9
-    - 10
-    - 11
-    - 17
-    - 20
-    - 23
-    - 25
-    - 26
-    - 29
-    - 33
-    - "35:8"
-    - 41
-    - 43
-    - 44
-    - 47
-    - 50
-    - 52
-    - 53
-    - 54
-    - 55
-    - 57
-    - 58
-    - 61
-    - 62
-    - 63
-    - 64
-    - 65
-    - 68
-    - 69
-    - 70
-    - 71
-    - 72
-    - 77
-    - 85
-    - 89
-    - 92
-    - 93
-    - 94
-    - 95
-    - 96
-    - 101
-    - 102
-    - 107
-    - 113
-    - 114
-    - 117
-    - 118
-    - 123
-    - 124
-    - 125
-    - 126
-    - 130
-    - 131
-    - 133
-    - 134
-    - 135
-    - 117
-    - 118
-    - 123
-    - 124
-    - 125
-    - 126
-    - 130
-    - 131
-    - 133
-    - 134
-    - 135
-    - 136
-    - 138
-    - 140
-    - 143
-    - 144
-    - 145
-    - 146
-    - 147
-    - 148
-    - 149
-    - 150
-    - 151
-    - 152
-    - 154
-    - 157
-    - 158
-    - "159:7"
-    - "159:8"
-    - "159:15"
-    - 165
-    - 171
-    - 206
-
-forbiddenBlocks:
-    - 7
+allowedBlocks:
+    - water
+    - lava
+    - "#logs"
+    - "#glass"
+    - dispenser
+    - note_block
+    - "#beds"
+    - sticky_piston
+    - piston
+    - piston_head
+    - light_gray_wool
+    - gold_block
+    - "#slabs"
+    - bookshelf
+    - torch
+    - "#wooden_stairs"
+    - nether_brick_stairs
+    - "#chests"
+    - redstone_wire
+    - diamond_block
+    - crafting_table
+    - furnace
+    - blast_furnace
+    - smoker
+    - "#signs"
+    - "#doors"
+    - ladder
+    - lever
+    - "#pressure_plates"
+    - "#buttons"
+    - "#fences"
+    - glowstone
+    - cake
+    - repeater
+    - "#wooden_trapdoors"
+    - iron_bars
+    - "#fence_gates"
+    - brewing_stand
+    - cauldron
+    - redstone_lamp
+    - ender_chest
+    - tripwire_hook
+    - tripwire
+    - emerald_block
+    - beacon
+    - flower_pot
+    - "#heads"
+    - "#anvil"
+    - comparator
+    - daylight_detector
+    - redstone_block
+    - hopper
+    - activator_rail
+    - dropper
+    - gray_terracotta
+    - light_gray_terracotta
+    - black_terracotta
+    - gray_concrete
+    - light_gray_concrete
+    - black_concrete
+    - slime_block
+    - "#carpets"
+    - end_stone_bricks
 
 canFly: true
 canCruise: false
@@ -106,7 +76,3 @@ allowVerticalMovement: false
 speed: 1.0
 tryNudge: false
 sinkPercent: 99.0
-flyblocks:
-    35:
-        - 0.0
-        - 100.0
