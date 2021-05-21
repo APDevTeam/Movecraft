@@ -6,17 +6,26 @@ import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.CraftType;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.IMovecraftWorld;
+import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.processing.TaskPredicate;
+import net.countercraft.movecraft.util.ChatUtils;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class SubcraftValidator implements TaskPredicate<MovecraftLocation> {
     @Override
-    public Result validate(@NotNull MovecraftLocation movecraftLocation, @NotNull CraftType type, @NotNull IMovecraftWorld world, @Nullable CommandSender player) {
+    public Result validate(@NotNull MovecraftLocation movecraftLocation, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable CommandSender player) {
 
         if (!type.getMustBeSubcraft()) {
             return Result.succeed();
+        }
+        IMovecraftWorld iMovecraftWorld;
+        try {
+            iMovecraftWorld = (IMovecraftWorld) world;
+        } catch (ClassCastException e) {
+            e.printStackTrace();
+            return Result.failWithMessage(ChatUtils.ERROR_PREFIX+ " An invalid world was passed to a validator!");
         }
         Craft foundCraft = null;
         long closestDistSquared = Long.MAX_VALUE;
