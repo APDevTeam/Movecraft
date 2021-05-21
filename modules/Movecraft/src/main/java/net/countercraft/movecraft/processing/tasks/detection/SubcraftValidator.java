@@ -20,34 +20,15 @@ public class SubcraftValidator implements TaskPredicate<MovecraftLocation> {
         if (!type.getMustBeSubcraft()) {
             return Result.succeed();
         }
-        IMovecraftWorld iMovecraftWorld;
-        try {
-            iMovecraftWorld = (IMovecraftWorld) world;
-        } catch (ClassCastException e) {
-            e.printStackTrace();
-            return Result.failWithMessage(ChatUtils.ERROR_PREFIX+ " An invalid world was passed to a validator!");
-        }
-        Craft foundCraft = null;
-        long closestDistSquared = Long.MAX_VALUE;
+
         for (Craft otherCraft : CraftManager.getInstance().getCraftList()) {
             if (!otherCraft.getMovecraftWorld().equals(world)) {
                 continue;
             }
-            //this code is copied from CraftManager.FastNearestCraftToLoc
-            if(otherCraft.getHitBox().isEmpty())
-                continue;
-            int midX = (otherCraft.getHitBox().getMaxX() + otherCraft.getHitBox().getMinX()) >> 1;
-            int midZ = (otherCraft.getHitBox().getMaxZ() + otherCraft.getHitBox().getMinZ()) >> 1;
-            long distSquared = (long) (Math.pow(midX -  movecraftLocation.getX(), 2) + Math.pow(midZ - movecraftLocation.getZ(), 2));
-            if (distSquared < closestDistSquared) {
-                closestDistSquared = distSquared;
-                foundCraft = otherCraft;
+            if (otherCraft.getHitBox().contains(movecraftLocation)) {
+                return Result.succeed();
             }
         }
-        if (foundCraft == null) {
-            return Result.failWithMessage("Detection - Must Be Subcraft");
-        }
-
-        return foundCraft.getHitBox().contains(movecraftLocation) ? Result.succeed() : Result.failWithMessage(I18nSupport.getInternationalisedString("Detection - Must Be Subcraft"));
+        return Result.failWithMessage(I18nSupport.getInternationalisedString("Detection - Must Be Subcraft"));
     }
 }
