@@ -10,6 +10,7 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.events.CraftSinkEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.IMovecraftWorld;
+import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.processing.WorldManager;
 import net.countercraft.movecraft.processing.tasks.DetectionTask;
 import net.countercraft.movecraft.util.Counter;
@@ -111,6 +112,11 @@ public abstract class BaseCraft implements Craft{
     @NotNull
     public CraftType getType() {
         return type;
+    }
+
+    @NotNull
+    public MovecraftWorld getMovecraftWorld(){
+        return new IMovecraftWorld(w);
     }
 
     @NotNull

@@ -20,6 +20,7 @@ package net.countercraft.movecraft.craft;
 import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.Rotation;
+import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
 import net.countercraft.movecraft.util.hitboxes.MutableHitBox;
 import net.kyori.adventure.audience.Audience;
@@ -54,6 +55,9 @@ public interface Craft {
     default World getW(){
         return this.getWorld();
     }
+
+    @NotNull
+    MovecraftWorld getMovecraftWorld();
 
     @NotNull
     World getWorld();
