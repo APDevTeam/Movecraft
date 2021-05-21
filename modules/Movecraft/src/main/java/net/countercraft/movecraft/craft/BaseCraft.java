@@ -61,11 +61,7 @@ public abstract class BaseCraft implements Craft{
     private int lastDX, lastDY, lastDZ;
     private int currentGear = 1;
     private double burningFuel;
-    private boolean pilotLocked;
-    private double pilotLockedX;
-    private double pilotLockedY;
     private int origBlockCount;
-    private double pilotLockedZ;
     @Nullable
     private Player notificationPlayer;
     @NotNull private Audience audience;
@@ -79,10 +75,6 @@ public abstract class BaseCraft implements Craft{
         this.hitBox = new SetHitBox();
         this.collapsedHitBox = new SetHitBox();
         this.fluidLocations = new SetHitBox();
-        this.pilotLocked = false;
-        this.pilotLockedX = 0.0;
-        this.pilotLockedY = 0.0;
-        this.pilotLockedZ = 0.0;
         this.lastCruiseUpdate = System.currentTimeMillis() - 10000;
         this.cruising = false;
         this.sinking = false;
@@ -341,38 +333,6 @@ public abstract class BaseCraft implements Craft{
     @Override
     public void setLastDZ(int dZ) {
         this.lastDZ = dZ;
-    }
-
-    public boolean getPilotLocked() {
-        return pilotLocked;
-    }
-
-    public void setPilotLocked(boolean pilotLocked) {
-        this.pilotLocked = pilotLocked;
-    }
-
-    public double getPilotLockedX() {
-        return pilotLockedX;
-    }
-
-    public void setPilotLockedX(double pilotLockedX) {
-        this.pilotLockedX = pilotLockedX;
-    }
-
-    public double getPilotLockedY() {
-        return pilotLockedY;
-    }
-
-    public void setPilotLockedY(double pilotLockedY) {
-        this.pilotLockedY = pilotLockedY;
-    }
-
-    public double getPilotLockedZ() {
-        return pilotLockedZ;
-    }
-
-    public void setPilotLockedZ(double pilotLockedZ) {
-        this.pilotLockedZ = pilotLockedZ;
     }
 
     @Override
