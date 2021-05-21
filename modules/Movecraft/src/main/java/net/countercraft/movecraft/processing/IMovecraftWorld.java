@@ -9,11 +9,11 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
-public class MovecraftWorld {
+public class IMovecraftWorld implements MovecraftWorld{
 
     private final World world;
 
-    public MovecraftWorld(@NotNull World world){
+    public IMovecraftWorld(@NotNull World world){
         this.world = world;
     }
 
