@@ -18,6 +18,7 @@ import net.countercraft.movecraft.processing.tasks.detection.ForbiddenSignString
 import net.countercraft.movecraft.processing.tasks.detection.NameSignValidator;
 import net.countercraft.movecraft.processing.tasks.detection.PilotSignValidator;
 import net.countercraft.movecraft.processing.tasks.detection.SizeValidator;
+import net.countercraft.movecraft.processing.tasks.detection.SubcraftValidator;
 import net.countercraft.movecraft.processing.tasks.detection.WaterContactValidator;
 import net.countercraft.movecraft.util.AtomicLocationSet;
 import net.countercraft.movecraft.util.CollectionUtils;
@@ -83,7 +84,8 @@ public class DetectionTask implements Runnable {
     private static final List<TaskPredicate<MovecraftLocation>> validators = List.of(
             new ForbiddenSignStringValidator(),
             new NameSignValidator(),
-            new PilotSignValidator());
+            new PilotSignValidator(),
+            new SubcraftValidator());
     private static final List<TaskPredicate<Map<Material, Deque<MovecraftLocation>>>> completionValidators = List.of(
             new SizeValidator(),
             new WaterContactValidator(),
