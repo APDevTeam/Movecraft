@@ -78,11 +78,11 @@ public class CraftManager implements Iterable<Craft>{
         File craftsFile = new File(Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/types");
 
         if (craftsFile.mkdirs()) {
-            Movecraft.getInstance().saveResource("types/airship.craft", false);
-            Movecraft.getInstance().saveResource("types/airskiff.craft", false);
+            Movecraft.getInstance().saveResource("types/Airship.craft", false);
+            Movecraft.getInstance().saveResource("types/Airskiff.craft", false);
             Movecraft.getInstance().saveResource("types/BigAirship.craft", false);
             Movecraft.getInstance().saveResource("types/BigSubAirship.craft", false);
-            Movecraft.getInstance().saveResource("types/elevator.craft", false);
+            Movecraft.getInstance().saveResource("types/Elevator.craft", false);
             Movecraft.getInstance().saveResource("types/LaunchTorpedo.craft", false);
             Movecraft.getInstance().saveResource("types/Ship.craft", false);
             Movecraft.getInstance().saveResource("types/SubAirship.craft", false);

@@ -1,12 +1,12 @@
-name: Ship
-maxSize: 100000
+name: elevator
+maxSize: 1000
 minSize: 10
 allowedBlocks:
     - "#planks"
+    - water
     - lava
     - "#logs"
     - "#glass"
-    - lapis_block
     - dispenser
     - note_block
     - "#beds"
@@ -15,12 +15,9 @@ allowedBlocks:
     - piston_head
     - "#wool"
     - gold_block
-    - iron_block
     - "#slabs"
-    - bricks
     - bookshelf
     - torch
-    - fire
     - "#stairs"
     - "#chests"
     - redstone_wire
@@ -29,37 +26,28 @@ allowedBlocks:
     - furnace
     - blast_furnace
     - smoker
-    - "#signs"
     - "#doors"
     - ladder
+    - "#signs"
     - lever
     - "#pressure_plates"
     - redstone_torch
-    - redstone_wall_torch
     - "#buttons"
-    - clay
     - "#fences"
-    - netherrack
-    - glowstone
     - cake
     - repeater
-    - "#trapdoors"
-    - "#stone_bricks"
+    - "#wooden_trapdoors"
     - iron_bars
     - "#fence_gates"
     - nether_brick
-    - enchanting_table
     - brewing_stand
     - cauldron
-    - end_stone
-    - dragon_egg
     - redstone_lamp
     - ender_chest
     - tripwire_hook
     - tripwire
     - emerald_block
     - beacon
-    - "#walls"
     - flower_pot
     - "#heads"
     - "#anvil"
@@ -67,18 +55,11 @@ allowedBlocks:
     - daylight_detector
     - redstone_block
     - hopper
-    - quartz_block
-    - chiseled_quartz_block
-    - quartz_pillar
-    - smooth_quartz
     - activator_rail
     - dropper
-    - "#terracotta"
-    - "#concrete"
     - slime_block
     - "#carpets"
     - coal_block
-    - end_stone_bricks
     - smooth_stone
     - bell
     - cartography_table
@@ -94,27 +75,14 @@ allowedBlocks:
 forbiddenBlocks:
     - piston_head
 
-canCruise: true
-cruiseSkipBlocks: 4
-canFly: false
-sinkPercent: 99.0
-overallSinkPercent: 60.0
-minHeightLimit: 50
-maxHeightLimit: 80
-requireWaterContact: true
-allowVerticalMovement: false
-speed: 0.5
+canFly: true
+canCruise: false
+collisionExplosion: 0.0
+allowHorizontalMovement: false
+canStaticMove: true
+maxStaticMove: 2
+detectionMultiplier: 30.0
+underwaterDetectionMultiplier: 3.0
+speed: 1.0
 tryNudge: false
-flyblocks:
-    ["#planks", "#wooden_slabs"]:
-        - 25.0
-        - 100.0
-    "#anvil": # anvils are OP armor, so limit it
-        - 0.0
-        - 1.0
-    obsidian: # so is obsidian
-        - 0.0
-        - 1.0
-    water: # so is water
-        - 0.0
-        - 1.0
+sinkPercent: 99.0
