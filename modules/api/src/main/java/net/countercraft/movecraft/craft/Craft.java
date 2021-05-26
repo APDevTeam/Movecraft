@@ -109,17 +109,33 @@ public interface Craft {
 
     void setLastBlockCheck(long update);
 
-    int getLastDX();
+    @NotNull MovecraftLocation getLastTranslation();
 
-    void setLastDX(int dX);
+    void setLastTranslation(@NotNull MovecraftLocation lastTranslation);
 
-    int getLastDY();
+    @Deprecated(forRemoval = true)
+    default int getLastDX(){
+        return getLastTranslation().getX();
+    }
 
-    void setLastDY(int dY);
+    @Deprecated(forRemoval = true)
+    default void setLastDX(int dX){}
 
-    int getLastDZ();
+    @Deprecated(forRemoval = true)
+    default int getLastDY(){
+        return getLastTranslation().getY();
+    }
 
-    void setLastDZ(int dZ);
+    @Deprecated(forRemoval = true)
+    default void setLastDY(int dY){}
+
+    @Deprecated(forRemoval = true)
+    default int getLastDZ(){
+        return getLastTranslation().getZ();
+    }
+
+    @Deprecated(forRemoval = true)
+    default void setLastDZ(int dZ){}
 
     double getBurningFuel();
 

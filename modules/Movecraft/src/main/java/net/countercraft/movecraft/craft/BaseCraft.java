@@ -68,6 +68,7 @@ public abstract class BaseCraft implements Craft{
     @NotNull private final Map<Location, BlockData> phaseBlocks = new HashMap<>();
     @NotNull private String name = "";
     @NotNull TimingData stats = new TimingData();
+    @NotNull private MovecraftLocation lastTranslation = new MovecraftLocation(0,0,0);
 
     public BaseCraft(@NotNull CraftType type, @NotNull World world) {
         this.type = type;
@@ -305,33 +306,13 @@ public abstract class BaseCraft implements Craft{
     }
 
     @Override
-    public int getLastDX() {
-        return lastDX;
+    public void setLastTranslation(@NotNull MovecraftLocation lastTranslation){
+        this.lastTranslation = lastTranslation;
     }
 
-    @Override
-    public void setLastDX(int dX) {
-        this.lastDX = dX;
-    }
-
-    @Override
-    public int getLastDY() {
-        return lastDY;
-    }
-
-    @Override
-    public void setLastDY(int dY) {
-        this.lastDY = dY;
-    }
-
-    @Override
-    public int getLastDZ() {
-        return lastDZ;
-    }
-
-    @Override
-    public void setLastDZ(int dZ) {
-        this.lastDZ = dZ;
+    @Override @NotNull
+    public MovecraftLocation getLastTranslation(){
+        return this.lastTranslation;
     }
 
     @Override
