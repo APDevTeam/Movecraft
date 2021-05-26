@@ -49,7 +49,7 @@ public class PilotCommand implements TabExecutor {
             if (oldCraft != null) {
                 CraftManager.getInstance().removeCraft(oldCraft, CraftReleaseEvent.Reason.PLAYER);
             }
-            Craft newCraft = new PilotedCraft(craftType, player.getWorld(), player);
+            PilotedCraft newCraft = new PilotedCraft(craftType, player.getWorld(), player);
             MovecraftLocation startPoint = MathUtils.bukkit2MovecraftLoc(player.getLocation());
             newCraft.detect(player, player, startPoint);
             Bukkit.getServer().getPluginManager().callEvent(new CraftPilotEvent(newCraft, CraftPilotEvent.Reason.PLAYER));

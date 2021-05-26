@@ -69,8 +69,6 @@ public interface Craft {
 
     void setWorld(@NotNull World world);
 
-    void detect(Player player, Player notificationPlayer, MovecraftLocation startPoint);
-
     void translate(World world, int dx, int dy, int dz);
 
     @Deprecated

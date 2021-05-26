@@ -84,7 +84,7 @@ public final class SubcraftRotateSign implements Listener {
                 }
             }.runTaskLater(Movecraft.getInstance(), (10));
         }
-        final Craft subCraft = new SubCraft(type, loc.getWorld());
+        final SubCraft subCraft = new SubCraft(type, loc.getWorld());
         subCraft.detect(null, event.getPlayer(), startPoint);
         rotatingCrafts.add(startPoint);
         Bukkit.getServer().getPluginManager().callEvent(new CraftPilotEvent(subCraft, CraftPilotEvent.Reason.SUB_CRAFT));

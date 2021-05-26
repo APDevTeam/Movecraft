@@ -63,7 +63,7 @@ public final class CraftSign implements Listener{
         // Attempt to run detection
         Location loc = event.getClickedBlock().getLocation();
         MovecraftLocation startPoint = new MovecraftLocation(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
-        final Craft c = new PilotedCraft(type, loc.getWorld(), event.getPlayer());
+        final PilotedCraft c = new PilotedCraft(type, loc.getWorld(), event.getPlayer());
 
         if (c.getType().getCruiseOnPilot()) {
             c.detect(null, event.getPlayer(), startPoint);

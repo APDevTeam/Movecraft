@@ -123,7 +123,6 @@ public abstract class BaseCraft implements Craft{
         this.w = world;
     }
 
-    @Override
     public void detect(@Nullable Player player, @NotNull Player notificationPlayer, MovecraftLocation startPoint) {
         this.setNotificationPlayer(notificationPlayer);
         this.setAudience(Movecraft.getAdventure().player(notificationPlayer));
