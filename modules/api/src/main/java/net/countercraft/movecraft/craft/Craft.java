@@ -83,8 +83,10 @@ public interface Craft {
 
     void setCruising(boolean cruising);
 
+    @Deprecated
     boolean getSinking();
 
+    @Deprecated
     void sink();
 
 
