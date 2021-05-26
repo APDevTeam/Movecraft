@@ -43,11 +43,24 @@ public interface Craft {
     @Deprecated
     void setProcessing(boolean processing);
 
+    /**
+     * Gets a HitBox representing the current locations that this craft controls
+     *
+     * @return the crafts current HitBox
+     */
     @NotNull
     HitBox getHitBox();
 
+    /**
+     * Sets the HitBox representing the current locations that this craft controls
+     */
     void setHitBox(@NotNull HitBox hitBox);
 
+    /**
+     * Gets the CraftType used to determine the Craft's behaviours
+     *
+     * @return the Craft's CraftType
+     */
     @NotNull
     CraftType getType();
 
@@ -56,9 +69,17 @@ public interface Craft {
         return this.getWorld();
     }
 
+    /**
+     * Gets a MovecraftWorld representing the crafts current world. This can be saftely used during processing, as opposed to {@link #getWorld()}
+     * @return The MovecraftWorld representation of the crafts current world
+     */
     @NotNull
     MovecraftWorld getMovecraftWorld();
 
+    /**
+     * Gets the World object that this craft is currently located in. When processing, instead use {@link #getMovecraftWorld()}
+     * @return The World of this craft
+     */
     @NotNull
     World getWorld();
 
@@ -67,20 +88,44 @@ public interface Craft {
         this.setWorld(world);
     }
 
+    /**
+     * Sets the current world of the craft. This notably does not physically move the craft - for this {@link #translate(World, int, int, int)} should be used instead.
+     * @param world the world the craft should now be considered in
+     */
     void setWorld(@NotNull World world);
 
+    /**
+     * Attempts to translate the blocks controlled by the craft. If a world argument is supplied, the blocks will be transformed to a different world.
+     * @param world The world to move to
+     * @param dx The amount to shift in the x axis
+     * @param dy The amount to shift in the y axis
+     * @param dz The amount to shift in the z axis
+     */
     void translate(World world, int dx, int dy, int dz);
 
     @Deprecated
     void translate(int dx, int dy, int dz);
 
+    /**
+     * Attempts to rotate the blocks controlled by the craft.
+     * @param rotation The direction to rotate the craft
+     * @param originPoint the origin point of the rotation
+     */
     void rotate(Rotation rotation, MovecraftLocation originPoint);
 
     @Deprecated
     void rotate(Rotation rotation, MovecraftLocation originPoint, boolean isSubCraft);
 
+    /**
+     * Gets the cruising state of the craft.
+     * @return The cruse state of the craft
+     */
     boolean getCruising();
 
+    /**
+     * Sets the craft to cruise or not cruise.
+     * @param cruising the desired cruise state
+     */
     void setCruising(boolean cruising);
 
     @Deprecated
@@ -96,12 +141,28 @@ public interface Craft {
      */
     Set<Craft> getContacts();
 
+    /**
+     * Gets the disabled status of the craft
+     * @return the disabled status of the craft
+     */
     boolean getDisabled();
 
+    /**
+     * Sets the craft to be disabled or not
+     * @param disabled the desired disabled state of the craft
+     */
     void setDisabled(boolean disabled);
 
+    /**
+     * Gets the direction of cruise for the craft
+     * @return The current CruiseDirection of the craft
+     */
     CruiseDirection getCruiseDirection();
 
+    /**
+     * Sets the crafts cruise direction
+     * @param cruiseDirection The desired cruise direction
+     */
     void setCruiseDirection(CruiseDirection cruiseDirection);
 
     void setLastCruiseUpdate(long update);
