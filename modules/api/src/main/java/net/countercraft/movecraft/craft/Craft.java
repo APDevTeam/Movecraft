@@ -37,10 +37,10 @@ import java.util.Set;
 
 public interface Craft {
 
-    @Deprecated(forRemoval = true)
+    @Deprecated
     boolean isNotProcessing();
 
-    @Deprecated(forRemoval = true)
+    @Deprecated
     void setProcessing(boolean processing);
 
     @NotNull
@@ -51,7 +51,7 @@ public interface Craft {
     @NotNull
     CraftType getType();
 
-    @Deprecated @NotNull
+    @Deprecated(forRemoval = true) @NotNull
     default World getW(){
         return this.getWorld();
     }
@@ -62,7 +62,7 @@ public interface Craft {
     @NotNull
     World getWorld();
 
-    @Deprecated
+    @Deprecated(forRemoval = true)
     default void setW(@NotNull World world){
         this.setWorld(world);
     }
@@ -129,7 +129,7 @@ public interface Craft {
 
     void setOrigBlockCount(int origBlockCount);
 
-    @Nullable @Deprecated
+    @Nullable @Deprecated(forRemoval = true)
     Player getNotificationPlayer();
 
     @Deprecated
