@@ -76,6 +76,7 @@ public interface Craft {
 
     void rotate(Rotation rotation, MovecraftLocation originPoint);
 
+    @Deprecated
     void rotate(Rotation rotation, MovecraftLocation originPoint, boolean isSubCraft);
 
     boolean getCruising();
