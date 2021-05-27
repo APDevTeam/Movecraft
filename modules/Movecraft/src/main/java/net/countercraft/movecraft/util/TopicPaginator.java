@@ -11,14 +11,21 @@ import static org.bukkit.util.ChatPaginator.CLOSED_CHAT_PAGE_HEIGHT;
 public class TopicPaginator {
     private String title;
     private List<String> lines = new ArrayList<>();
+    private final boolean sorted;
+
+    public TopicPaginator(String title, boolean sorted){
+        this.title = title;
+        this.sorted = sorted;
+    }
 
     public TopicPaginator(String title){
-        this.title = title;
+        this(title, true);
     }
 
     public boolean addLine(String line){
         boolean result = lines.add(line);
-        Collections.sort(lines);
+        if(sorted)
+            Collections.sort(lines);
         return result;
     }
 

@@ -74,9 +74,16 @@ public class CraftTypeCommand implements TabExecutor {
     }
 
     private void sendTypePage(@NotNull CraftType type, int page, @NotNull  CommandSender commandSender){
-        TopicPaginator paginator = new TopicPaginator("Type Info");
+        TopicPaginator paginator = new TopicPaginator("Type Info", false);
         for(var entry : type.getTypeData().getBackingData().entrySet()){
-            paginator.addLine(entry.getKey() + ": " + entry.getValue());
+            if(entry.getValue() instanceof Iterable){
+                paginator.addLine(entry.getKey() + ":");
+                for(var subvalue : (Iterable<?>) entry.getValue()){
+                    paginator.addLine("- " + subvalue);
+                }
+            } else {
+                paginator.addLine(entry.getKey() + ": " + entry.getValue());
+            }
         }
         if(!paginator.isInBounds(page)){
             commandSender.sendMessage(String.format("Page %d is out of bounds.", page));
