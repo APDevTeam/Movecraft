@@ -31,7 +31,6 @@ public class CraftTypeCommand implements TabExecutor {
             type = typeQuery.get();
             page = args.length == 0 ? 1 : tryParsePage(args[0]).getAsInt();
         } else {
-            type = CraftManager.getInstance().getCraftTypeFromString(args[0]);
             if(args.length > 1){
                 OptionalInt pageQuery = tryParsePage(args[1]);
                 if(pageQuery.isEmpty()){
@@ -42,6 +41,11 @@ public class CraftTypeCommand implements TabExecutor {
             } else {
                 page = 1;
             }
+            if(args[0].equalsIgnoreCase("list")){
+                sendTypeListPage(page, commandSender);
+                return true;
+            }
+            type = CraftManager.getInstance().getCraftTypeFromString(args[0]);
         }
         if(!commandSender.hasPermission("movecraft." + type.getCraftName() + ".pilot")){
             commandSender.sendMessage("You don't have permission for that craft type!");
@@ -60,6 +64,7 @@ public class CraftTypeCommand implements TabExecutor {
         for(CraftType type : CraftManager.getInstance().getCraftTypes())
             if(commandSender.hasPermission("movecraft." + type.getCraftName() + ".pilot"))
                 completions.add(type.getCraftName());
+        completions.add("list");
         List<String> returnValues = new ArrayList<>();
         for(String completion : completions)
             if(completion.toLowerCase().startsWith(strings[strings.length-1].toLowerCase()))
@@ -71,6 +76,19 @@ public class CraftTypeCommand implements TabExecutor {
         TopicPaginator paginator = new TopicPaginator("Type Info");
         for(var entry : type.getTypeData().getBackingData().entrySet()){
             paginator.addLine(entry.getKey() + ": " + entry.getValue());
+        }
+        if(!paginator.isInBounds(page)){
+            commandSender.sendMessage(String.format("Page %d is out of bounds.", page));
+            return;
+        }
+        for(String line : paginator.getPage(page))
+            commandSender.sendMessage(line);
+    }
+
+    private void sendTypeListPage(int page, @NotNull  CommandSender commandSender){
+        TopicPaginator paginator = new TopicPaginator("Type Info");
+        for(var entry : CraftManager.getInstance().getCraftTypes()){
+            paginator.addLine(entry.getCraftName());
         }
         if(!paginator.isInBounds(page)){
             commandSender.sendMessage(String.format("Page %d is out of bounds.", page));
