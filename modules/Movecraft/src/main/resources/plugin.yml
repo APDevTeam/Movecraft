@@ -38,3 +38,6 @@ commands:
   crafttype:
     description: Get information on a specifc craft type
     usage: /crafttype [type] [page]
+  craftinfo:
+    description: Get information on a piloted craft
+    usage: /crafttype [player] [page]
