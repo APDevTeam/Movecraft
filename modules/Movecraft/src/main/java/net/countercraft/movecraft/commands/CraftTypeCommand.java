@@ -3,6 +3,7 @@ package net.countercraft.movecraft.commands;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.CraftType;
+import net.countercraft.movecraft.util.MathUtils;
 import net.countercraft.movecraft.util.TopicPaginator;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -22,17 +23,17 @@ public class CraftTypeCommand implements TabExecutor {
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         CraftType type;
         int page;
-        if(args.length == 0 || (args.length == 1 && tryParsePage(args[0]).isPresent())){
+        if(args.length == 0 || (args.length == 1 && MathUtils.parseInt(args[0]).isPresent())){
             Optional<CraftType> typeQuery = tryGetCraftFromPlayer(commandSender);
             if(typeQuery.isEmpty()){
                 commandSender.sendMessage("You must supply a craft type!");
                 return true;
             }
             type = typeQuery.get();
-            page = args.length == 0 ? 1 : tryParsePage(args[0]).getAsInt();
+            page = args.length == 0 ? 1 : MathUtils.parseInt(args[0]).getAsInt();
         } else {
             if(args.length > 1){
-                OptionalInt pageQuery = tryParsePage(args[1]);
+                OptionalInt pageQuery = MathUtils.parseInt(args[1]);
                 if(pageQuery.isEmpty()){
                     commandSender.sendMessage("Argument " + args[1] + " must be a page number");
                     return true;
@@ -96,14 +97,6 @@ public class CraftTypeCommand implements TabExecutor {
         }
         for(String line : paginator.getPage(page))
             commandSender.sendMessage(line);
-    }
-
-    private @NotNull OptionalInt tryParsePage(@NotNull String encoded){
-        try {
-            return OptionalInt.of(Integer.parseInt(encoded));
-        }catch(NumberFormatException e){
-            return OptionalInt.empty();
-        }
     }
 
     @NotNull

@@ -27,6 +27,8 @@ import org.bukkit.WorldBorder;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.OptionalInt;
+
 public class MathUtils {
 
 
@@ -193,5 +195,14 @@ public class MathUtils {
                 location.getX() <= maxX &&
                 location.getZ() >= minZ &&
                 location.getZ() <= maxZ;
+    }
+
+    @NotNull
+    public static OptionalInt parseInt(@NotNull String encoded){
+        try {
+            return OptionalInt.of(Integer.parseInt(encoded));
+        }catch(NumberFormatException e){
+            return OptionalInt.empty();
+        }
     }
 }
