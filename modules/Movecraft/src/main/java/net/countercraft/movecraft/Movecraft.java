@@ -20,6 +20,7 @@ package net.countercraft.movecraft;
 import net.countercraft.movecraft.async.AsyncManager;
 import net.countercraft.movecraft.commands.ContactsCommand;
 import net.countercraft.movecraft.commands.CraftReportCommand;
+import net.countercraft.movecraft.commands.CraftTypeCommand;
 import net.countercraft.movecraft.commands.CruiseCommand;
 import net.countercraft.movecraft.commands.ManOverboardCommand;
 import net.countercraft.movecraft.commands.MovecraftCommand;
@@ -230,6 +231,7 @@ public class Movecraft extends JavaPlugin {
             this.getCommand("manoverboard").setExecutor(new ManOverboardCommand());
             this.getCommand("contacts").setExecutor(new ContactsCommand());
             this.getCommand("scuttle").setExecutor(new ScuttleCommand());
+            this.getCommand("crafttype").setExecutor(new CraftTypeCommand());
 
             getServer().getPluginManager().registerEvents(new BlockListener(), this);
             getServer().getPluginManager().registerEvents(new PlayerListener(), this);

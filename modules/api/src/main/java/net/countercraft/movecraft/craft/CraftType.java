@@ -729,6 +729,11 @@ final public class CraftType {
         return gearShiftsAffectCruiseSkipBlocks;
     }
 
+    @NotNull
+    public TypeData getTypeData(){
+        return data;
+    }
+
     public class TypeNotFoundException extends RuntimeException {
         public TypeNotFoundException(String s) {
             super(s);
