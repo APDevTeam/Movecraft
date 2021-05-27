@@ -81,6 +81,7 @@ final public class CraftType {
     private final int sinkRateTicks;
     private final int smokeOnSink;
     private final int tickCooldown;
+    private final int releaseTimeout;
     @NotNull private final Map<String, Integer> perWorldTickCooldown; // speed setting
     private final int hoverLimit;
     private final Material dynamicFlyBlock;
@@ -284,6 +285,7 @@ final public class CraftType {
         gearShiftsAffectTickCooldown = data.getBooleanOrDefault("gearShiftsAffectTickCooldown", true);
         gearShiftsAffectDirectMovement = data.getBooleanOrDefault("gearShiftsAffectDirectMovement", false);
         gearShiftsAffectCruiseSkipBlocks = data.getBooleanOrDefault("gearShiftsAffectCruiseSkipBlocks", false);
+        releaseTimeout = data.getIntOrDefault("releaseTimeout", 30);
     }
     
     private Map<String, Integer> stringToIntMapFromObject(Map<String, Object> objMap) {
@@ -727,6 +729,10 @@ final public class CraftType {
 
     public boolean getGearShiftsAffectCruiseSkipBlocks() {
         return gearShiftsAffectCruiseSkipBlocks;
+    }
+
+    public int getReleaseTimeout(){
+        return releaseTimeout;
     }
 
     @NotNull
