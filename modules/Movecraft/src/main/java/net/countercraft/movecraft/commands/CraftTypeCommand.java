@@ -9,16 +9,28 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
+import org.bukkit.util.ChatPaginator;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
 
 public class CraftTypeCommand implements TabExecutor {
+
+    private static final Field[] craftTypeFields;
+    static {
+        craftTypeFields = CraftType.class.getDeclaredFields();
+        for(var field : craftTypeFields){
+            field.setAccessible(true);
+        }
+    }
+
     @Override
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         CraftType type;
@@ -75,14 +87,22 @@ public class CraftTypeCommand implements TabExecutor {
 
     private void sendTypePage(@NotNull CraftType type, int page, @NotNull  CommandSender commandSender){
         TopicPaginator paginator = new TopicPaginator("Type Info", false);
-        for(var entry : type.getTypeData().getBackingData().entrySet()){
-            if(entry.getValue() instanceof Iterable){
-                paginator.addLine(entry.getKey() + ":");
-                for(var subvalue : (Iterable<?>) entry.getValue()){
-                    paginator.addLine("- " + subvalue);
-                }
+        for(var field : craftTypeFields){
+            if(field.getName().equals("data")){ // don't include the backing data object
+                continue;
+            }
+            Object value;
+            try {
+                value = field.get(type);
+            } catch (IllegalAccessException e) {
+                paginator.addLine(field.getName() + ": failed to access");
+                continue;
+            }
+            var repr = field.getName() + ": " + value;
+            if(repr.length() > ChatPaginator.GUARANTEED_NO_WRAP_CHAT_PAGE_WIDTH){
+                paginator.addLine(field.getName() + ": too long");
             } else {
-                paginator.addLine(entry.getKey() + ": " + entry.getValue());
+                paginator.addLine(field.getName() + ": " + value);
             }
         }
         if(!paginator.isInBounds(page)){
