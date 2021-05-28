@@ -86,7 +86,7 @@ public class CraftTypeCommand implements TabExecutor {
     }
 
     private void sendTypePage(@NotNull CraftType type, int page, @NotNull  CommandSender commandSender){
-        TopicPaginator paginator = new TopicPaginator("Type Info", false);
+        TopicPaginator paginator = new TopicPaginator("Type Info");
         for(var field : craftTypeFields){
             if(field.getName().equals("data")){ // don't include the backing data object
                 continue;
