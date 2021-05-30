@@ -3,7 +3,7 @@ package net.countercraft.movecraft.util;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
-public class CompletableFutureTask<T> extends CompletableFuture<T> implements Runnable  {
+public final class CompletableFutureTask<T> extends CompletableFuture<T> implements Runnable  {
 
     private final Supplier<T> function;
 
