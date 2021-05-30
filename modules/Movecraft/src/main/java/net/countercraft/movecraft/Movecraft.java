@@ -19,7 +19,9 @@ package net.countercraft.movecraft;
 
 import net.countercraft.movecraft.async.AsyncManager;
 import net.countercraft.movecraft.commands.ContactsCommand;
+import net.countercraft.movecraft.commands.CraftInfoCommand;
 import net.countercraft.movecraft.commands.CraftReportCommand;
+import net.countercraft.movecraft.commands.CraftTypeCommand;
 import net.countercraft.movecraft.commands.CruiseCommand;
 import net.countercraft.movecraft.commands.ManOverboardCommand;
 import net.countercraft.movecraft.commands.MovecraftCommand;
@@ -230,6 +232,8 @@ public class Movecraft extends JavaPlugin {
             this.getCommand("manoverboard").setExecutor(new ManOverboardCommand());
             this.getCommand("contacts").setExecutor(new ContactsCommand());
             this.getCommand("scuttle").setExecutor(new ScuttleCommand());
+            this.getCommand("crafttype").setExecutor(new CraftTypeCommand());
+            this.getCommand("craftinfo").setExecutor(new CraftInfoCommand());
 
             getServer().getPluginManager().registerEvents(new BlockListener(), this);
             getServer().getPluginManager().registerEvents(new PlayerListener(), this);
@@ -287,6 +291,11 @@ public class Movecraft extends JavaPlugin {
                 logger.severe("Failed to create datapack directory!");
                 return;
             }
+        } else if(new File(datapackDirectory, "movecraft-data.zip").exists()){
+            logger.warning("Conflicting datapack already exists in " + datapackDirectory.getPath() + ". If you would like to regenerate the datapack, delete the existing one and set the GeneratedDatapack config option to false.");
+            this.getConfig().set("GeneratedDatapack", true);
+            this.saveConfig();
+            return;
         }
         if(!datapackDirectory.canWrite()){
             logger.warning("Missing permissions to write to world directory.");

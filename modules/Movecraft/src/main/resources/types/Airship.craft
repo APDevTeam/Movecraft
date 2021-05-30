@@ -1,8 +1,9 @@
-name: Ship
-maxSize: 100000
-minSize: 10
-allowedBlocks:
+name: Airship
+maxSize: 5000
+minSize: 1000
+allowedBlocks: 
     - "#planks"
+    - water
     - lava
     - "#logs"
     - "#glass"
@@ -95,20 +96,40 @@ forbiddenBlocks:
     - piston_head
 
 canCruise: true
+rotateAtMidpoint: true
+canFly: true
+maxHeightLimit: 135
+maxHeightAboveGround: 50
+vertCruiseSkipBlocks: 3
+collisionExplosion: 0.0
+detectionMultiplier: 10.0
+underwaterDetectionMultiplier: 1.0
+speed: 1.0
 cruiseSkipBlocks: 4
-canFly: false
+cruiseSpeed: 0.5
+fuelBurnRate: 2.0
 sinkPercent: 99.0
 overallSinkPercent: 60.0
-minHeightLimit: 50
-maxHeightLimit: 80
-requireWaterContact: true
-allowVerticalMovement: false
-speed: 0.5
 tryNudge: false
-flyblocks:
-    ["#planks", "#wooden_slabs"]:
-        - 25.0
+canStaticMove: true
+maxStaticMove: 2
+moveblocks:
+    redstone_block: # redstone represents engines
+        - 1.0
         - 100.0
+flyblocks:
+    "#wool": #wool represents lift
+        - 50.0
+        - 100.0
+    "#chests": # limit chests to make big airships important for merchant missions
+        - 0.0
+        - 1.0
+    [dispenser,hopper,dropper]: # dispensers and hoppers can be used for inventory too, so limit them as well
+        - 0.0
+        - 2.0
+    furnace: # Furnaces for cargo? really guys?
+        - 0.0
+        - N50
     "#anvil": # anvils are OP armor, so limit it
         - 0.0
         - 1.0

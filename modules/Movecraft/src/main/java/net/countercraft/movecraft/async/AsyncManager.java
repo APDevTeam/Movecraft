@@ -310,8 +310,7 @@ public class AsyncManager extends BukkitRunnable {
                 dz *= gearshift;
             }
             pcraft.translate(dx, dy, dz);
-            pcraft.setLastDX(dx);
-            pcraft.setLastDZ(dz);
+            pcraft.setLastTranslation(new MovecraftLocation(dx, dy, dz));
             if (pcraft.getLastCruiseUpdate() != -1) {
                 pcraft.setLastCruiseUpdate(System.currentTimeMillis());
             } else {

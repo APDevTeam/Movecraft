@@ -1,8 +1,10 @@
 package net.countercraft.movecraft;
 
+import net.countercraft.movecraft.util.hitboxes.BitmapHitBox;
 import org.junit.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MovecraftLocationTest {
 
@@ -16,5 +18,12 @@ public class MovecraftLocationTest {
                 }
             }
         }
+    }
+
+    @Test
+    public void testSpa(){
+        MovecraftLocation location = new MovecraftLocation(1137, 96, -3068);
+        assertEquals(MovecraftLocation.unpack(location.pack()), location);
+
     }
 }

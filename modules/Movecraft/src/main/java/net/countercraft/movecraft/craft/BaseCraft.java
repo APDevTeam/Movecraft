@@ -9,6 +9,7 @@ import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.events.CraftSinkEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.processing.IMovecraftWorld;
 import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.processing.WorldManager;
 import net.countercraft.movecraft.processing.tasks.DetectionTask;
@@ -60,17 +61,14 @@ public abstract class BaseCraft implements Craft{
     private int lastDX, lastDY, lastDZ;
     private int currentGear = 1;
     private double burningFuel;
-    private boolean pilotLocked;
-    private double pilotLockedX;
-    private double pilotLockedY;
     private int origBlockCount;
-    private double pilotLockedZ;
     @Nullable
     private Player notificationPlayer;
     @NotNull private Audience audience;
     @NotNull private final Map<Location, BlockData> phaseBlocks = new HashMap<>();
     @NotNull private String name = "";
     @NotNull TimingData stats = new TimingData();
+    @NotNull private MovecraftLocation lastTranslation = new MovecraftLocation(0,0,0);
 
     public BaseCraft(@NotNull CraftType type, @NotNull World world) {
         this.type = type;
@@ -78,10 +76,6 @@ public abstract class BaseCraft implements Craft{
         this.hitBox = new SetHitBox();
         this.collapsedHitBox = new SetHitBox();
         this.fluidLocations = new SetHitBox();
-        this.pilotLocked = false;
-        this.pilotLockedX = 0.0;
-        this.pilotLockedY = 0.0;
-        this.pilotLockedZ = 0.0;
         this.lastCruiseUpdate = System.currentTimeMillis() - 10000;
         this.cruising = false;
         this.sinking = false;
@@ -114,6 +108,11 @@ public abstract class BaseCraft implements Craft{
     }
 
     @NotNull
+    public MovecraftWorld getMovecraftWorld(){
+        return new IMovecraftWorld(w);
+    }
+
+    @NotNull
     public World getWorld() {
         if(WorldManager.INSTANCE.isRunning() && !Bukkit.isPrimaryThread()){
             Bukkit.getLogger().severe("Invoking most methods on worlds while the world manager is running WILL cause deadlock.");
@@ -125,11 +124,10 @@ public abstract class BaseCraft implements Craft{
         this.w = world;
     }
 
-    @Override
     public void detect(@Nullable Player player, @NotNull Player notificationPlayer, MovecraftLocation startPoint) {
         this.setNotificationPlayer(notificationPlayer);
         this.setAudience(Movecraft.getAdventure().player(notificationPlayer));
-        WorldManager.INSTANCE.submit(new DetectionTask(this, startPoint, new MovecraftWorld(w), player));
+        WorldManager.INSTANCE.submit(new DetectionTask(this, startPoint, new IMovecraftWorld(w), player));
     }
 
     @Deprecated
@@ -308,65 +306,13 @@ public abstract class BaseCraft implements Craft{
     }
 
     @Override
-    public int getLastDX() {
-        return lastDX;
+    public void setLastTranslation(@NotNull MovecraftLocation lastTranslation){
+        this.lastTranslation = lastTranslation;
     }
 
-    @Override
-    public void setLastDX(int dX) {
-        this.lastDX = dX;
-    }
-
-    @Override
-    public int getLastDY() {
-        return lastDY;
-    }
-
-    @Override
-    public void setLastDY(int dY) {
-        this.lastDY = dY;
-    }
-
-    @Override
-    public int getLastDZ() {
-        return lastDZ;
-    }
-
-    @Override
-    public void setLastDZ(int dZ) {
-        this.lastDZ = dZ;
-    }
-
-    public boolean getPilotLocked() {
-        return pilotLocked;
-    }
-
-    public void setPilotLocked(boolean pilotLocked) {
-        this.pilotLocked = pilotLocked;
-    }
-
-    public double getPilotLockedX() {
-        return pilotLockedX;
-    }
-
-    public void setPilotLockedX(double pilotLockedX) {
-        this.pilotLockedX = pilotLockedX;
-    }
-
-    public double getPilotLockedY() {
-        return pilotLockedY;
-    }
-
-    public void setPilotLockedY(double pilotLockedY) {
-        this.pilotLockedY = pilotLockedY;
-    }
-
-    public double getPilotLockedZ() {
-        return pilotLockedZ;
-    }
-
-    public void setPilotLockedZ(double pilotLockedZ) {
-        this.pilotLockedZ = pilotLockedZ;
+    @Override @NotNull
+    public MovecraftLocation getLastTranslation(){
+        return this.lastTranslation;
     }
 
     @Override

@@ -138,7 +138,7 @@ final public class MovecraftLocation implements Comparable<MovecraftLocation>{
 
     @NotNull
     public static MovecraftLocation unpack(long l){
-        return new MovecraftLocation((int) (l << 52 >> 52),(int) (l >> 52),(int) (l << 26 >> 52));
+        return new MovecraftLocation((int) (l << 38 >> 38),(int) (l >> 52),(int) (l << 12 >> 38));
     }
 
     @Override

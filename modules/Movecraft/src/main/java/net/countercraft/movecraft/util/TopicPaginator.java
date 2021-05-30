@@ -11,14 +11,21 @@ import static org.bukkit.util.ChatPaginator.CLOSED_CHAT_PAGE_HEIGHT;
 public class TopicPaginator {
     private String title;
     private List<String> lines = new ArrayList<>();
+    private final boolean sorted;
+
+    public TopicPaginator(String title, boolean sorted){
+        this.title = title;
+        this.sorted = sorted;
+    }
 
     public TopicPaginator(String title){
-        this.title = title;
+        this(title, true);
     }
 
     public boolean addLine(String line){
         boolean result = lines.add(line);
-        Collections.sort(lines);
+        if(sorted)
+            Collections.sort(lines);
         return result;
     }
 
@@ -30,10 +37,10 @@ public class TopicPaginator {
     public String[] getPage(int pageNumber){
         if(!isInBounds(pageNumber))
             throw new IndexOutOfBoundsException(I18nSupport.getInternationalisedString("Paginator - Page Number")+ " " + pageNumber + " "+ I18nSupport.getInternationalisedString("Paginator - Exceeds Bounds") + "<1, " + getPageCount() + ">");
-        String[] tempLines = new String[pageNumber == getPageCount() ? (lines.size()%CLOSED_CHAT_PAGE_HEIGHT) + 1 : CLOSED_CHAT_PAGE_HEIGHT];
+        String[] tempLines = new String[pageNumber == getPageCount() ? (lines.size()%(CLOSED_CHAT_PAGE_HEIGHT-1)) + 1 : CLOSED_CHAT_PAGE_HEIGHT];
         tempLines[0] = "§e§l--- §r§6" + title +" §e§l-- §r§6page §c" + pageNumber + "§e/§c" + getPageCount() + " §e§l---";
-        for(int i = 0; i< tempLines.length-1; i++)
-            tempLines[i+1] = lines.get(((CLOSED_CHAT_PAGE_HEIGHT-1) * (pageNumber-1)) + i);
+        for(int i = 1; i< tempLines.length; i++)
+            tempLines[i] = lines.get(((CLOSED_CHAT_PAGE_HEIGHT-1) * (pageNumber-1)) + i - 1);
         return tempLines;
     }
 

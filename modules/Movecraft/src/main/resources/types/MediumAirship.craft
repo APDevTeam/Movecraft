@@ -1,0 +1,141 @@
+name: MediumAirship
+maxSize: 10000
+minSize: 5000
+allowedBlocks:
+  - "#planks"
+  - water
+  - lava
+  - "#logs"
+  - "#glass"
+  - lapis_block
+  - dispenser
+  - note_block
+  - "#beds"
+  - sticky_piston
+  - piston
+  - piston_head
+  - "#wool"
+  - gold_block
+  - iron_block
+  - "#slabs"
+  - bricks
+  - bookshelf
+  - torch
+  - fire
+  - "#stairs"
+  - "#chests"
+  - redstone_wire
+  - diamond_block
+  - crafting_table
+  - furnace
+  - blast_furnace
+  - smoker
+  - "#signs"
+  - "#doors"
+  - ladder
+  - lever
+  - "#pressure_plates"
+  - redstone_torch
+  - redstone_wall_torch
+  - "#buttons"
+  - clay
+  - "#fences"
+  - netherrack
+  - glowstone
+  - cake
+  - repeater
+  - "#trapdoors"
+  - "#stone_bricks"
+  - iron_bars
+  - "#fence_gates"
+  - nether_brick
+  - enchanting_table
+  - brewing_stand
+  - cauldron
+  - end_stone
+  - dragon_egg
+  - redstone_lamp
+  - ender_chest
+  - tripwire_hook
+  - tripwire
+  - emerald_block
+  - beacon
+  - "#walls"
+  - flower_pot
+  - "#heads"
+  - "#anvil"
+  - comparator
+  - daylight_detector
+  - redstone_block
+  - hopper
+  - quartz_block
+  - chiseled_quartz_block
+  - quartz_pillar
+  - smooth_quartz
+  - activator_rail
+  - dropper
+  - "#terracotta"
+  - "#concrete"
+  - slime_block
+  - "#carpets"
+  - coal_block
+  - end_stone_bricks
+  - smooth_stone
+  - bell
+  - cartography_table
+  - composter
+  - fletching_table
+  - grindstone
+  - lantern
+  - lectern
+  - loom
+  - smithing_table
+  - stonecutter
+
+forbiddenBlocks:
+  - piston_head
+
+canCruise: true
+rotateAtMidpoint: true
+canFly: true
+maxHeightLimit: 135
+maxHeightAboveGround: 50
+vertCruiseSkipBlocks: 4
+collisionExplosion: 0.0
+detectionMultiplier: 10.0
+underwaterDetectionMultiplier: 1.0
+speed: 1.0
+cruiseSkipBlocks: 8
+cruiseSpeed: 0.5
+fuelBurnRate: 2.0
+sinkPercent: 99.0
+overallSinkPercent: 60.0
+tryNudge: false
+canStaticMove: true
+maxStaticMove: 2
+moveblocks:
+  redstone_block: # redstone represents engines
+    - 1.0
+    - 100.0
+flyblocks:
+  "#wool": #wool represents lift
+    - 50.0
+    - 100.0
+  "#chests": # limit chests to make big airships important for merchant missions
+    - 0.0
+    - 1.0
+  [dispenser,hopper,dropper]: # dispensers and hoppers can be used for inventory too, so limit them as well
+  - 0.0
+  - 2.0
+  furnace: # Furnaces for cargo? really guys?
+    - 0.0
+    - N50
+  "#anvil": # anvils are OP armor, so limit it
+    - 0.0
+    - 1.0
+  obsidian: # so is obsidian
+    - 0.0
+    - 1.0
+  water: # so is water
+    - 0.0
+    - 1.0
