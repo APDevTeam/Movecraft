@@ -1,20 +1,10 @@
 package net.countercraft.movecraft.processing;
 
-import net.countercraft.movecraft.MovecraftLocation;
-import net.countercraft.movecraft.support.AsyncChunk;
 import net.countercraft.movecraft.util.CompletableFutureTask;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.World;
-import org.bukkit.block.BlockState;
-import org.bukkit.block.data.BlockData;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Supplier;
@@ -72,6 +62,7 @@ public final class WorldManager {
         while((runnable = worldChanges.poll()) != null){
             runnable.run();
         }
+        CachedMovecraftWorld.purge();
         running = false;
     }
 

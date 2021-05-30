@@ -9,7 +9,7 @@ import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.events.CraftSinkEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.processing.IMovecraftWorld;
+import net.countercraft.movecraft.processing.CachedMovecraftWorld;
 import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.processing.WorldManager;
 import net.countercraft.movecraft.processing.tasks.DetectionTask;
@@ -109,7 +109,7 @@ public abstract class BaseCraft implements Craft{
 
     @NotNull
     public MovecraftWorld getMovecraftWorld(){
-        return new IMovecraftWorld(w);
+        return CachedMovecraftWorld.of(w);
     }
 
     @NotNull
@@ -127,7 +127,7 @@ public abstract class BaseCraft implements Craft{
     public void detect(@Nullable Player player, @NotNull Player notificationPlayer, MovecraftLocation startPoint) {
         this.setNotificationPlayer(notificationPlayer);
         this.setAudience(Movecraft.getAdventure().player(notificationPlayer));
-        WorldManager.INSTANCE.submit(new DetectionTask(this, startPoint, new IMovecraftWorld(w), player));
+        WorldManager.INSTANCE.submit(new DetectionTask(this, startPoint, CachedMovecraftWorld.of(w), player));
     }
 
     @Deprecated

@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.processing;
 
+import com.google.common.collect.MapMaker;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.support.AsyncChunk;
 import org.bukkit.Material;
@@ -12,13 +13,24 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
-public final class IMovecraftWorld implements MovecraftWorld{
+public final class CachedMovecraftWorld implements MovecraftWorld{
+
+    private static final ConcurrentMap<World, MovecraftWorld> WORLDS = new MapMaker().weakKeys().makeMap();
+
+    public static MovecraftWorld of(World world){
+        return WORLDS.computeIfAbsent(world, CachedMovecraftWorld::new);
+    }
+
+    public static void purge(){
+        WORLDS.clear();
+    }
 
     private final ConcurrentHashMap<ChunkLocation, AsyncChunk<?>> chunkCache = new ConcurrentHashMap<>();
     private final World world;
 
-    public IMovecraftWorld(@NotNull World world){
+    private CachedMovecraftWorld(@NotNull World world){
         this.world = world;
     }
 
@@ -52,8 +64,8 @@ public final class IMovecraftWorld implements MovecraftWorld{
 
     @Override
     public boolean equals(Object obj) {
-        if(obj instanceof IMovecraftWorld){
-            return ((IMovecraftWorld) obj).world.equals(world);
+        if(obj instanceof CachedMovecraftWorld){
+            return ((CachedMovecraftWorld) obj).world.equals(world);
         }
         return false;
     }
