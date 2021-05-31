@@ -4,6 +4,7 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.CraftType;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.MovecraftWorld;
+import net.countercraft.movecraft.processing.Result;
 import net.countercraft.movecraft.processing.TaskPredicate;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
@@ -21,7 +22,7 @@ public class ForbiddenSignStringValidator implements TaskPredicate<MovecraftLoca
         Sign sign = (Sign) state;
         for(var line : sign.getLines()){
             if(type.getForbiddenSignStrings().contains(line.toLowerCase())){
-                return TaskPredicate.Result.failWithMessage(I18nSupport.getInternationalisedString(
+                return Result.failWithMessage(I18nSupport.getInternationalisedString(
                         "Detection - Forbidden sign string found"));
             }
         }

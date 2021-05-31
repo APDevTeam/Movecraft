@@ -9,6 +9,7 @@ import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.MovecraftWorld;
+import net.countercraft.movecraft.processing.Result;
 import net.countercraft.movecraft.processing.TaskPredicate;
 import net.countercraft.movecraft.processing.WorldManager;
 import net.countercraft.movecraft.processing.tasks.detection.AllowedBlockValidator;
@@ -166,7 +167,7 @@ public class DetectionTask implements Runnable {
         if(!illegal.isEmpty()) {
             return;
         }
-        var result = completionValidators.stream().reduce(TaskPredicate::and).orElse((a,b,c,d) -> TaskPredicate.Result.fail()).validate(materials, craft.getType(), world, player);
+        var result = completionValidators.stream().reduce(TaskPredicate::and).orElse((a,b,c,d) -> Result.fail()).validate(materials, craft.getType(), world, player);
         if(!result.isSucess()){
             player.sendMessage(result.getMessage());
             return;
