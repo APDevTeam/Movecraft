@@ -29,6 +29,12 @@
     <dependencies>
         <dependency>
             <groupId>net.countercraft</groupId>
+            <artifactId>movecraft-v1_14_R1</artifactId>
+            <version>v1_14_R1</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>net.countercraft</groupId>
             <artifactId>movecraft-v1_16_R1</artifactId>
             <version>v1_16_R1</version>
             <type>jar</type>
@@ -160,6 +166,12 @@
                             <minimizeJar>true</minimizeJar>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
                             <filters>
+                                <filter>
+                                    <artifact>net.countercraft:movecraft-v1_14_R1</artifact>
+                                    <includes>
+                                        <include>**</include>
+                                    </includes>
+                                </filter>
                                 <filter>
                                     <artifact>net.countercraft:movecraft-v1_16_R1</artifact>
                                     <includes>
