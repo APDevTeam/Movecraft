@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.commands;
 
+import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.util.MathUtils;
@@ -21,12 +22,8 @@ public class CraftInfoCommand implements TabExecutor {
         registerMultiProvider(CraftInfoCommand::allowedBlockProvider);
         registerProvider((craft -> "Craft size: " + craft.getHitBox().size()));
         registerProvider((craft -> "Craft midpoint: " + craft.getHitBox().getMidPoint()));
-        registerProvider((craft -> "Craft min x: " + craft.getHitBox().getMinX()));
-        registerProvider((craft -> "Craft min y: " + craft.getHitBox().getMinY()));
-        registerProvider((craft -> "Craft min z: " + craft.getHitBox().getMinZ()));
-        registerProvider((craft -> "Craft max x: " + craft.getHitBox().getMaxX()));
-        registerProvider((craft -> "Craft max y: " + craft.getHitBox().getMaxY()));
-        registerProvider((craft -> "Craft max z: " + craft.getHitBox().getMaxZ()));
+        registerProvider((craft -> "Craft min bound: " + new MovecraftLocation(craft.getHitBox().getMinX(), craft.getHitBox().getMinY(), craft.getHitBox().getMinZ())));
+        registerProvider((craft -> "Craft max bound: " + new MovecraftLocation(craft.getHitBox().getMaxX(), craft.getHitBox().getMaxY(), craft.getHitBox().getMaxZ())));
         registerProvider((craft -> "Craft world: " + craft.getWorld().getName()));
         registerProvider((craft -> "Craft type: " + craft.getType().getCraftName()));
         registerProvider((craft -> "Craft name: " + craft.getName()));
