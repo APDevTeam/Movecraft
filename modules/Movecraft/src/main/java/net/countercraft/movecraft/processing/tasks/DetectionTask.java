@@ -13,6 +13,8 @@ import net.countercraft.movecraft.processing.Result;
 import net.countercraft.movecraft.processing.TaskPredicate;
 import net.countercraft.movecraft.processing.WorldManager;
 import net.countercraft.movecraft.processing.tasks.detection.AllowedBlockValidator;
+import net.countercraft.movecraft.processing.tasks.detection.AlreadyControlledValidator;
+import net.countercraft.movecraft.processing.tasks.detection.AlreadyPilotingValidator;
 import net.countercraft.movecraft.processing.tasks.detection.FlyBlockValidator;
 import net.countercraft.movecraft.processing.tasks.detection.ForbiddenBlockValidator;
 import net.countercraft.movecraft.processing.tasks.detection.ForbiddenSignStringValidator;
@@ -86,11 +88,13 @@ public class DetectionTask implements Runnable {
             new ForbiddenSignStringValidator(),
             new NameSignValidator(),
             new PilotSignValidator(),
-            new SubcraftValidator());
+            new SubcraftValidator(),
+            new AlreadyControlledValidator());
     private static final List<TaskPredicate<Map<Material, Deque<MovecraftLocation>>>> completionValidators = List.of(
             new SizeValidator(),
             new WaterContactValidator(),
-            new FlyBlockValidator());
+            new FlyBlockValidator(),
+            new AlreadyPilotingValidator());
 
     public DetectionTask(@NotNull Craft craft, @NotNull MovecraftLocation startLocation, @NotNull MovecraftWorld world, @Nullable Player player) {
         this.craft = craft;
