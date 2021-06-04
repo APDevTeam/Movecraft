@@ -4,6 +4,7 @@ package net.countercraft.movecraft.util;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher.Registry;
+import com.comphenix.protocol.wrappers.WrappedDataWatcher.WrappedDataWatcherObject;
 import com.google.common.primitives.Ints;
 import net.countercraft.movecraft.util.packets.WrapperPlayServerEntityDestroy;
 import net.countercraft.movecraft.util.packets.WrapperPlayServerEntityMetadata;
@@ -39,7 +40,7 @@ public class BlockHighlight implements Listener {
         packet.setX(location.getX() + .5);
         packet.setY(location.getY());
         packet.setZ(location.getZ() + .5);
-        packet.setType(EntityType.SHULKER);
+        packet.setType(EntityType.MAGMA_CUBE);
         packet.setEntityID(id);
         packet.setUniqueId(uuid);
 
@@ -50,8 +51,8 @@ public class BlockHighlight implements Listener {
         watcher.setEntity(player); //Set the new data watcher's target
         watcher.setObject(0, Registry.get(Byte.class), (byte) (GLOWING ^ INVISIBLE)); //Set status to glowing and invisible
         watcher.setObject(MOB_INDEX, Registry.get(Byte.class), NOAI);
-//        var slimeData = new WrappedDataWatcherObject(SLIME_INDEX, Registry.get(Integer.class));
-//        watcher.setObject(slimeData, 2);
+        var slimeData = new WrappedDataWatcherObject(SLIME_INDEX, Registry.get(Integer.class));
+        watcher.setObject(slimeData, 2);
         metadata.setMetadata(watcher.getWatchableObjects());
 //        var entity = packet.getEntity(location.getWorld());
 //        entity.setGlowing(true);
