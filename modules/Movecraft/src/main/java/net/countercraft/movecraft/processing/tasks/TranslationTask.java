@@ -19,7 +19,7 @@ import java.util.List;
 
 public class TranslationTask implements Runnable {
 
-    private static List<UnaryTaskPredicate<Craft>> preTranslationValidators = new ArrayList<>();
+    private static final List<UnaryTaskPredicate<Craft>> preTranslationValidators = new ArrayList<>();
     static {
         preTranslationValidators.add((craft -> craft.getHitBox().isEmpty() ? Result.failWithMessage("Empty hitbox") : Result.succeed()));
         preTranslationValidators.add((craft -> craft.getDisabled() && !craft.getSinking() ? Result.failWithMessage(I18nSupport.getInternationalisedString("Translation - Failed Craft Is Disabled")) : Result.succeed()));
