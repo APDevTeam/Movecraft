@@ -4,7 +4,7 @@ Movecraft
 
 This is a maintained fork of Movecraft, which aims to add legacy version support as well as performance fixes.
 
-**Movecraft requires Java 11**
+**Movecraft requires Java 16**
 
 ## Download
 
@@ -16,19 +16,21 @@ Development builds can be found under the [actions tab](https://github.com/APDev
 Movecraft uses multiple versions of the Spigot server software for legacy support. As such, you need to run [BuildTools](https://www.spigotmc.org/wiki/buildtools/) for several versions before building the plugin. It doesn't matter where you do this, but inside the Movecraft directory is probably a bad place.
 
 ```
-java -jar BuildTools.jar --rev 1.16.1
-java -jar BuildTools.jar --rev 1.16.5
+java -jar BuildTools.jar --rev 1.14.4 --compile craftbukkit
+java -jar BuildTools.jar --rev 1.15.2 --compile craftbukkit
+java -jar BuildTools.jar --rev 1.16.1 --compile craftbukkit
+java -jar BuildTools.jar --rev 1.16.5 --compile craftbukkit
 ```
 
-Then, run the following to build Movecraft through `maven`.
+Once you have compiled craftbukkit, it should continue to exist in your local maven repository, and thus you should need to compile each verson at most one time. Once complete, run the following to build Movecraft through `maven`.
 ```
 mvn -T 1C clean install
 ```
-Jars are located in `/target`.
+Compiled jars can be found in the `/target` directory.
 
 ## Support
 [Github Issues](https://github.com/apdevteam/movecraft/issues)
 
 [Discord](http://bit.ly/JoinAP-Dev)
 
-The plugin is released here under the GNU General Public License V3. 
+Movecraft is released under the GNU General Public License V3. 
