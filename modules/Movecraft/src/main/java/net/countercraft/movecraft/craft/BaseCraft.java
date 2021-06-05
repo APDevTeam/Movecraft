@@ -32,11 +32,13 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 
 import static net.countercraft.movecraft.util.SignUtils.getFacing;
 
@@ -115,7 +117,8 @@ public abstract class BaseCraft implements Craft{
     @NotNull
     public World getWorld() {
         if(WorldManager.INSTANCE.isRunning() && !Bukkit.isPrimaryThread()){
-            Bukkit.getLogger().severe("Invoking most methods on worlds while the world manager is running WILL cause deadlock.");
+            var exception = new Throwable("Invoking most methods on worlds while the world manager is running WILL cause deadlock.");
+            Bukkit.getLogger().log(Level.SEVERE, exception, exception::getMessage);
         }
         return w;
     }
