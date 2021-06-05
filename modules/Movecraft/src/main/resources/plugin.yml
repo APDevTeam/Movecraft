@@ -3,7 +3,7 @@ version: ${project.version}
 api-version: 1.14
 depend: [ProtocolLib]
 description: The original flight and movement plugin for minecraft.
-authors: [BaccaYarro, cccm5, TylerS1066, eirik1996]
+authors: [cccm5, BaccaYarro, TylerS1066, eirik1996, drfiveminusmint, HumorousFool]
 website: https://github.com/APDevTeam/Movecraft
 main: net.countercraft.movecraft.Movecraft
 database: false
