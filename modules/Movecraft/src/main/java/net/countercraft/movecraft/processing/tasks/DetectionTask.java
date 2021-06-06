@@ -182,10 +182,7 @@ public class DetectionTask implements Runnable {
         water(craft); //TODO: Remove
         final CraftDetectEvent event = new CraftDetectEvent(craft);
 
-//        WorldManager.INSTANCE.executeMain(()-> {
-//             Bukkit.getPluginManager().callEvent(event);
-//             return null;
-//        });
+        WorldManager.INSTANCE.executeMain(()-> Bukkit.getPluginManager().callEvent(event));
         if (event.isCancelled()) {
             craft.getAudience().sendMessage(Component.text(event.getFailMessage()));
             return;

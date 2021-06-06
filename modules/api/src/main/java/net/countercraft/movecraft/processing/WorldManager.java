@@ -2,6 +2,7 @@ package net.countercraft.movecraft.processing;
 
 import net.countercraft.movecraft.util.CompletableFutureTask;
 import org.bukkit.Bukkit;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
@@ -71,13 +72,20 @@ public final class WorldManager {
         running = false;
     }
 
-    public <T> T executeMain(Supplier<T> callable){
+    public <T> T executeMain(@NotNull Supplier<T> callable){
         if(Bukkit.isPrimaryThread()){
             throw new RuntimeException("Cannot schedule on main thread from the main thread");
         }
         var task = new CompletableFutureTask<>(callable);
         currentTasks.add(task);
         return task.join();
+    }
+
+    public void executeMain(@NotNull Runnable runnable){
+        this.executeMain(() -> {
+            runnable.run();
+            return null;
+        });
     }
 
     private void poison(){
