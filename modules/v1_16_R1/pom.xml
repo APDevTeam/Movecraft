@@ -39,8 +39,8 @@
                     <includes>
                         <include>net/countercraft/movecraft/compat/v1_16_R1/**</include>
                     </includes>
-                    <source>16</source>
-                    <target>16</target>
+                    <source>13</source>
+                    <target>13</target>
                 </configuration>
             </plugin>
             <plugin>

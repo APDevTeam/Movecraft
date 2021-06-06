@@ -40,8 +40,8 @@
                         <include>net/countercraft/movecraft/compat/v1_15_R1/**</include>
                         <include>net/countercraft/movecraft/support/v1_15_R1/**</include>
                     </includes>
-                    <source>16</source>
-                    <target>16</target>
+                    <source>13</source>
+                    <target>13</target>
                 </configuration>
             </plugin>
             <plugin>

@@ -4,7 +4,7 @@ Movecraft
 
 This is a maintained fork of Movecraft, which aims to add legacy version support as well as performance fixes.
 
-**Movecraft requires Java 16**
+**Movecraft requires Java 13**
 
 ## Download
 
