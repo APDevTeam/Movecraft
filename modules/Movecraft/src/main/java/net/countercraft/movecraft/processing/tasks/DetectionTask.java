@@ -81,6 +81,7 @@ public class DetectionTask implements Runnable {
     private final Set<MovecraftLocation> visited;
     private final ConcurrentLinkedDeque<MovecraftLocation> illegal = new ConcurrentLinkedDeque<>();
     private final ConcurrentMap<Material, Deque<MovecraftLocation>> materials = new ConcurrentHashMap<>();
+    private final ConcurrentMap<Material, Deque<MovecraftLocation>> visitedMaterials = new ConcurrentHashMap<>();
     private final ConcurrentLinkedDeque<MovecraftLocation> legal = new ConcurrentLinkedDeque<>();
     private static final AllowedBlockValidator ALLOWED_BLOCK_VALIDATOR = new AllowedBlockValidator();
     private static final ForbiddenBlockValidator FORBIDDEN_BLOCK_VALIDATOR = new ForbiddenBlockValidator();
@@ -92,9 +93,11 @@ public class DetectionTask implements Runnable {
             new AlreadyControlledValidator());
     private static final List<TaskPredicate<Map<Material, Deque<MovecraftLocation>>>> completionValidators = List.of(
             new SizeValidator(),
-            new WaterContactValidator(),
             new FlyBlockValidator(),
             new AlreadyPilotingValidator());
+    private static final List<TaskPredicate<Map<Material, Deque<MovecraftLocation>>>> visitedValidators = List.of(
+            new WaterContactValidator()
+    );
 
     public DetectionTask(@NotNull Craft craft, @NotNull MovecraftLocation startLocation, @NotNull MovecraftWorld world, @Nullable Player player) {
         this.craft = craft;
@@ -172,6 +175,7 @@ public class DetectionTask implements Runnable {
             return;
         }
         var result = completionValidators.stream().reduce(TaskPredicate::and).orElse((a,b,c,d) -> Result.fail()).validate(materials, craft.getType(), world, player);
+        result = result.isSucess() ? visitedValidators.stream().reduce(TaskPredicate::and).orElse((a, b, c, d) -> Result.fail()).validate(visitedMaterials, craft.getType(), world, player) : result;
         if(!result.isSucess()){
             player.sendMessage(result.getMessage());
             return;
@@ -233,6 +237,7 @@ public class DetectionTask implements Runnable {
         public void run() {
             MovecraftLocation probe;
             while((probe = currentFrontier.poll())!=null) {
+                visitedMaterials.computeIfAbsent(world.getMaterial(probe), Functions.forSupplier(ConcurrentLinkedDeque::new)).add(probe);
                 if(!ALLOWED_BLOCK_VALIDATOR.validate(probe, craft.getType(), world, player).isSucess()){
                     continue;
                 }
