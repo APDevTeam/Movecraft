@@ -30,9 +30,9 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 final public class CraftType {
     private final boolean blockedByWater;
@@ -131,7 +131,7 @@ final public class CraftType {
         minSize = data.getInt("minSize");
         allowedBlocks = data.getMaterials("allowedBlocks");
 
-        forbiddenSignStrings = Set.copyOf(data.getStringListOrEmpty("forbiddenSignStrings"));
+        forbiddenSignStrings = data.getStringListOrEmpty("forbiddenSignStrings").stream().map(String::toLowerCase).collect(Collectors.toSet());
         tickCooldown = (int) Math.ceil(20 / (data.getDouble("speed")));
         perWorldTickCooldown = new HashMap<>();
         Map<String, Double> tickCooldownMap = stringToDoubleMapFromObject(data.getDataOrEmpty("perWorldSpeed").getBackingData());
