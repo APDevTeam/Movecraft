@@ -114,7 +114,7 @@ jobs:
         id: cacheGoats
         uses: actions/cache@v2
         with:
-          path: ~/.m2/repository/org/bukkit/craftbukkit/1.16.1-R0.1-SNAPSHOT/
+          path: ~/.m2/repository/org/bukkit/craftbukkit/1.17-R0.1-SNAPSHOT/
           key: ${{ runner.os }}-1.17
           restore-keys: ${{ runner.os }}-1.17
       - name: Cache Maven packages
