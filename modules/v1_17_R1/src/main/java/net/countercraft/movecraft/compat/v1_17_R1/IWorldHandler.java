@@ -6,6 +6,7 @@ import net.countercraft.movecraft.WorldHandler;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.util.CollectionUtils;
 import net.countercraft.movecraft.util.MathUtils;
+import net.countercraft.movecraft.util.UnsafeUtils;
 import net.minecraft.core.BlockPosition;
 import net.minecraft.network.protocol.game.PacketPlayOutPosition;
 import net.minecraft.server.level.EntityPlayer;
@@ -32,9 +33,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -283,11 +282,8 @@ public class IWorldHandler extends WorldHandler {
         Chunk chunk = nativeWorld.getChunkAtWorldCoords(newPosition);
         try {
             var positionField = TileEntity.class.getDeclaredField("o");
-            var modifiersField = Field.class.getDeclaredField("modifiers");
-            modifiersField.setAccessible(true);
-            modifiersField.setInt(positionField, positionField.getModifiers() & ~Modifier.FINAL);
-            positionField.set(tile, newPosition);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
+            UnsafeUtils.setField(positionField, tile, newPosition);
+        } catch (NoSuchFieldException e) {
             e.printStackTrace();
         }
         if(nativeWorld.captureBlockStates) {
