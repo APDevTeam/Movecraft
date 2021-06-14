@@ -183,6 +183,9 @@ jobs:
         key: ${{ runner.os }}-1.17
         restore-keys: ${{ runner.os }}-1.17
 
+    - run: ls ~/.m2/repository/org/bukkit/craftbukkit/
+    - run: ls ~/.m2/repository/org/bukkit/craftbukkit/1.17-R0.1-SNAPSHOT/
+
     - name: Build with Maven
       run: mvn -B package --file pom.xml
 
