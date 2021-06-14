@@ -18,7 +18,7 @@
 package net.countercraft.movecraft.util;
 
 import net.countercraft.movecraft.MovecraftLocation;
-import net.countercraft.movecraft.Rotation;
+import net.countercraft.movecraft.MovecraftRotation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
 import org.bukkit.Location;
@@ -120,9 +120,9 @@ public class MathUtils {
      */
     @NotNull
     @Contract(pure=true)
-    public static MovecraftLocation rotateVec(@NotNull final Rotation rotation, @NotNull final MovecraftLocation movecraftLocation) {
+    public static MovecraftLocation rotateVec(@NotNull final MovecraftRotation rotation, @NotNull final MovecraftLocation movecraftLocation) {
         double theta;
-        if (rotation == Rotation.CLOCKWISE) {
+        if (rotation == MovecraftRotation.CLOCKWISE) {
             theta = 0.5 * Math.PI;
         } else {
             theta = -1 * 0.5 * Math.PI;
@@ -136,9 +136,9 @@ public class MathUtils {
 
     @NotNull
     @Deprecated
-    public static double[] rotateVec(@NotNull Rotation rotation, double x, double z) {
+    public static double[] rotateVec(@NotNull MovecraftRotation rotation, double x, double z) {
         double theta;
-        if (rotation == Rotation.CLOCKWISE) {
+        if (rotation == MovecraftRotation.CLOCKWISE) {
             theta = 0.5 * Math.PI;
         } else {
             theta = -1 * 0.5 * Math.PI;
@@ -152,9 +152,9 @@ public class MathUtils {
 
     @NotNull
     @Deprecated
-    public static double[] rotateVecNoRound(@NotNull Rotation r, double x, double z) {
+    public static double[] rotateVecNoRound(@NotNull MovecraftRotation r, double x, double z) {
         double theta;
-        if (r == Rotation.CLOCKWISE) {
+        if (r == MovecraftRotation.CLOCKWISE) {
             theta = 0.5 * Math.PI;
         } else {
             theta = -1 * 0.5 * Math.PI;

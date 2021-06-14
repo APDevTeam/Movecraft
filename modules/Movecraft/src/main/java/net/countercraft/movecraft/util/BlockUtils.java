@@ -17,7 +17,7 @@
 
 package net.countercraft.movecraft.util;
 
-import net.countercraft.movecraft.Rotation;
+import net.countercraft.movecraft.MovecraftRotation;
 
 import java.util.Arrays;
 
@@ -53,7 +53,7 @@ public class BlockUtils {
         return false;
     }
 
-    public static byte rotate(byte data, int typeID, Rotation rotation) {
+    public static byte rotate(byte data, int typeID, MovecraftRotation rotation) {
         switch (typeID) {
             case 17:
             case 170:
@@ -73,7 +73,7 @@ public class BlockUtils {
                 if (!nonDirectional) {
                     switch (data) {
                         case 0x1:
-                            if (rotation == Rotation.CLOCKWISE) {
+                            if (rotation == MovecraftRotation.CLOCKWISE) {
                                 data = 0x3;
                             } else {
                                 data = 0x4;
@@ -81,7 +81,7 @@ public class BlockUtils {
                             break;
 
                         case 0x2:
-                            if (rotation == Rotation.CLOCKWISE) {
+                            if (rotation == MovecraftRotation.CLOCKWISE) {
                                 data = 0x4;
                             } else {
                                 data = 0x3;
@@ -89,7 +89,7 @@ public class BlockUtils {
                             break;
 
                         case 0x3:
-                            if (rotation == Rotation.CLOCKWISE) {
+                            if (rotation == MovecraftRotation.CLOCKWISE) {
                                 data = 0x02;
                             } else {
                                 data = 0x1;
@@ -97,7 +97,7 @@ public class BlockUtils {
                             break;
 
                         case 0x4:
-                            if (rotation == Rotation.CLOCKWISE) {
+                            if (rotation == MovecraftRotation.CLOCKWISE) {
                                 data = 0x1;
                             } else {
                                 data = 0x2;
@@ -116,7 +116,7 @@ public class BlockUtils {
 
                 byte constant = 1;
 
-                if (rotation == Rotation.ANTICLOCKWISE) {
+                if (rotation == MovecraftRotation.ANTICLOCKWISE) {
                     constant = -1;
                 }
 
@@ -136,7 +136,7 @@ public class BlockUtils {
                     switch (direction) {
                         case 0x2:
                             // North
-                            if (rotation == Rotation.CLOCKWISE) {
+                            if (rotation == MovecraftRotation.CLOCKWISE) {
                                 direction = 0x5;
                             } else {
                                 direction = 0x4;
@@ -145,7 +145,7 @@ public class BlockUtils {
 
                         case 0x3:
                             // South
-                            if (rotation == Rotation.CLOCKWISE) {
+                            if (rotation == MovecraftRotation.CLOCKWISE) {
                                 direction = 0x4;
                             } else {
                                 direction = 0x5;
@@ -154,7 +154,7 @@ public class BlockUtils {
 
                         case 0x4:
                             // West
-                            if (rotation == Rotation.CLOCKWISE) {
+                            if (rotation == MovecraftRotation.CLOCKWISE) {
                                 direction = 0x2;
                             } else {
                                 direction = 0x3;
@@ -163,7 +163,7 @@ public class BlockUtils {
 
                         case 0x5:
                             //East
-                            if (rotation == Rotation.CLOCKWISE) {
+                            if (rotation == MovecraftRotation.CLOCKWISE) {
                                 direction = 0x3;
                             } else {
                                 direction = 0x2;
@@ -196,7 +196,7 @@ public class BlockUtils {
                 switch (direction) {
                     case 0x0:
                         // East
-                        if (rotation == Rotation.CLOCKWISE) {
+                        if (rotation == MovecraftRotation.CLOCKWISE) {
                             direction = 0x2;
                         } else {
                             direction = 0x3;
@@ -205,7 +205,7 @@ public class BlockUtils {
 
                     case 0x1:
                         // West
-                        if (rotation == Rotation.CLOCKWISE) {
+                        if (rotation == MovecraftRotation.CLOCKWISE) {
                             direction = 0x3;
                         } else {
                             direction = 0x2;
@@ -214,7 +214,7 @@ public class BlockUtils {
 
                     case 0x2:
                         // South
-                        if (rotation == Rotation.CLOCKWISE) {
+                        if (rotation == MovecraftRotation.CLOCKWISE) {
                             direction = 0x1;
                         } else {
                             direction = 0x0;
@@ -223,7 +223,7 @@ public class BlockUtils {
 
                     case 0x3:
                         // North
-                        if (rotation == Rotation.CLOCKWISE) {
+                        if (rotation == MovecraftRotation.CLOCKWISE) {
                             direction = 0x0;
                         } else {
                             direction = 0x1;
@@ -237,7 +237,7 @@ public class BlockUtils {
 
                 constant = 4;
 
-                if (rotation == Rotation.ANTICLOCKWISE) {
+                if (rotation == MovecraftRotation.ANTICLOCKWISE) {
                     constant = -4;
                 }
 
@@ -257,7 +257,7 @@ public class BlockUtils {
                 if (isRealDoor) {
                     direction = (byte) (data & 0x3);
                     int newDirection;
-                    if (rotation == Rotation.CLOCKWISE)
+                    if (rotation == MovecraftRotation.CLOCKWISE)
                         newDirection = direction + 1;
                     else
                         newDirection = direction - 1;
@@ -279,7 +279,7 @@ public class BlockUtils {
 
                     constant = 1;
 
-                    if (rotation == Rotation.ANTICLOCKWISE) {
+                    if (rotation == MovecraftRotation.ANTICLOCKWISE) {
                         constant = -1;
                     }
 
@@ -293,7 +293,7 @@ public class BlockUtils {
                         // Is a corner piece
                         constant = 1;
 
-                        if (rotation == Rotation.ANTICLOCKWISE) {
+                        if (rotation == MovecraftRotation.ANTICLOCKWISE) {
                             constant = -1;
                         }
 
@@ -306,7 +306,7 @@ public class BlockUtils {
                         switch (direction) {
                             case 0x2:
                                 // East
-                                if (rotation == Rotation.CLOCKWISE) {
+                                if (rotation == MovecraftRotation.CLOCKWISE) {
                                     direction = 0x4;
                                 } else {
                                     direction = 0x5;
@@ -315,7 +315,7 @@ public class BlockUtils {
 
                             case 0x3:
                                 // West
-                                if (rotation == Rotation.CLOCKWISE) {
+                                if (rotation == MovecraftRotation.CLOCKWISE) {
                                     direction = 0x5;
                                 } else {
                                     direction = 0x4;
@@ -324,7 +324,7 @@ public class BlockUtils {
 
                             case 0x4:
                                 // South
-                                if (rotation == Rotation.CLOCKWISE) {
+                                if (rotation == MovecraftRotation.CLOCKWISE) {
                                     direction = 0x3;
                                 } else {
                                     direction = 0x2;
@@ -333,7 +333,7 @@ public class BlockUtils {
 
                             case 0x5:
                                 // North
-                                if (rotation == Rotation.CLOCKWISE) {
+                                if (rotation == MovecraftRotation.CLOCKWISE) {
                                     direction = 0x2;
                                 } else {
                                     direction = 0x3;
@@ -359,7 +359,7 @@ public class BlockUtils {
 
                     constant = 1;
 
-                    if (rotation == Rotation.ANTICLOCKWISE) {
+                    if (rotation == MovecraftRotation.ANTICLOCKWISE) {
                         constant = -1;
                     }
 
@@ -373,7 +373,7 @@ public class BlockUtils {
                     switch (direction) {
                         case 0x2:
                             // East
-                            if (rotation == Rotation.CLOCKWISE) {
+                            if (rotation == MovecraftRotation.CLOCKWISE) {
                                 direction = 0x4;
                             } else {
                                 direction = 0x5;
@@ -382,7 +382,7 @@ public class BlockUtils {
 
                         case 0x3:
                             // West
-                            if (rotation == Rotation.CLOCKWISE) {
+                            if (rotation == MovecraftRotation.CLOCKWISE) {
                                 direction = 0x5;
                             } else {
                                 direction = 0x4;
@@ -391,7 +391,7 @@ public class BlockUtils {
 
                         case 0x4:
                             // South
-                            if (rotation == Rotation.CLOCKWISE) {
+                            if (rotation == MovecraftRotation.CLOCKWISE) {
                                 direction = 0x3;
                             } else {
                                 direction = 0x2;
@@ -400,7 +400,7 @@ public class BlockUtils {
 
                         case 0x5:
                             // North
-                            if (rotation == Rotation.CLOCKWISE) {
+                            if (rotation == MovecraftRotation.CLOCKWISE) {
                                 direction = 0x2;
                             } else {
                                 direction = 0x3;
@@ -431,7 +431,7 @@ public class BlockUtils {
                 switch (direction) {
                     case 0x5:
                         // East
-                        if (rotation == Rotation.CLOCKWISE) {
+                        if (rotation == MovecraftRotation.CLOCKWISE) {
                             direction = 0x3;
                         } else {
                             direction = 0x2;
@@ -440,7 +440,7 @@ public class BlockUtils {
 
                     case 0x4:
                         // West
-                        if (rotation == Rotation.CLOCKWISE) {
+                        if (rotation == MovecraftRotation.CLOCKWISE) {
                             direction = 0x2;
                         } else {
                             direction = 0x3;
@@ -449,7 +449,7 @@ public class BlockUtils {
 
                     case 0x3:
                         // South
-                        if (rotation == Rotation.CLOCKWISE) {
+                        if (rotation == MovecraftRotation.CLOCKWISE) {
                             direction = 0x4;
                         } else {
                             direction = 0x5;
@@ -458,7 +458,7 @@ public class BlockUtils {
 
                     case 0x2:
                         // North
-                        if (rotation == Rotation.CLOCKWISE) {
+                        if (rotation == MovecraftRotation.CLOCKWISE) {
                             direction = 0x5;
                         } else {
                             direction = 0x4;
@@ -476,7 +476,7 @@ public class BlockUtils {
                     switch (direction) {
                         case 0x1:
                             // East
-                            if (rotation == Rotation.CLOCKWISE) {
+                            if (rotation == MovecraftRotation.CLOCKWISE) {
                                 direction = 0x3;
                             } else {
                                 direction = 0x4;
@@ -485,7 +485,7 @@ public class BlockUtils {
 
                         case 0x2:
                             // West
-                            if (rotation == Rotation.CLOCKWISE) {
+                            if (rotation == MovecraftRotation.CLOCKWISE) {
                                 direction = 0x4;
                             } else {
                                 direction = 0x3;
@@ -494,7 +494,7 @@ public class BlockUtils {
 
                         case 0x3:
                             // South
-                            if (rotation == Rotation.CLOCKWISE) {
+                            if (rotation == MovecraftRotation.CLOCKWISE) {
                                 direction = 0x2;
                             } else {
                                 direction = 0x1;
@@ -503,7 +503,7 @@ public class BlockUtils {
 
                         case 0x4:
                             // North
-                            if (rotation == Rotation.CLOCKWISE) {
+                            if (rotation == MovecraftRotation.CLOCKWISE) {
                                 direction = 0x1;
                             } else {
                                 direction = 0x2;
@@ -538,7 +538,7 @@ public class BlockUtils {
                 switch (direction) {
                     case 0x1:
                         // East
-                        if (rotation == Rotation.CLOCKWISE) {
+                        if (rotation == MovecraftRotation.CLOCKWISE) {
                             direction = 0x3;
                         } else {
                             direction = 0x4;
@@ -547,7 +547,7 @@ public class BlockUtils {
 
                     case 0x2:
                         // West
-                        if (rotation == Rotation.CLOCKWISE) {
+                        if (rotation == MovecraftRotation.CLOCKWISE) {
                             direction = 0x4;
                         } else {
                             direction = 0x3;
@@ -556,7 +556,7 @@ public class BlockUtils {
 
                     case 0x3:
                         // South
-                        if (rotation == Rotation.CLOCKWISE) {
+                        if (rotation == MovecraftRotation.CLOCKWISE) {
                             direction = 0x2;
                         } else {
                             direction = 0x1;
@@ -565,7 +565,7 @@ public class BlockUtils {
 
                     case 0x4:
                         // North
-                        if (rotation == Rotation.CLOCKWISE) {
+                        if (rotation == MovecraftRotation.CLOCKWISE) {
                             direction = 0x1;
                         } else {
                             direction = 0x2;
@@ -586,7 +586,7 @@ public class BlockUtils {
                 } else {
                     constant = 1;
 
-                    if (rotation == Rotation.ANTICLOCKWISE) {
+                    if (rotation == MovecraftRotation.ANTICLOCKWISE) {
                         constant = -1;
                     }
 
@@ -603,7 +603,7 @@ public class BlockUtils {
 
                 constant = 1;
 
-                if (rotation == Rotation.ANTICLOCKWISE) {
+                if (rotation == MovecraftRotation.ANTICLOCKWISE) {
                     constant = -1;
                 }
 
@@ -619,7 +619,7 @@ public class BlockUtils {
                 switch (direction) {
                     case 0x2:
                         // East
-                        if (rotation == Rotation.CLOCKWISE) {
+                        if (rotation == MovecraftRotation.CLOCKWISE) {
                             direction = 0x0;
                         } else {
                             direction = 0x1;
@@ -628,7 +628,7 @@ public class BlockUtils {
 
                     case 0x3:
                         // West
-                        if (rotation == Rotation.CLOCKWISE) {
+                        if (rotation == MovecraftRotation.CLOCKWISE) {
                             direction = 0x1;
                         } else {
                             direction = 0x0;
@@ -637,7 +637,7 @@ public class BlockUtils {
 
                     case 0x0:
                         // South
-                        if (rotation == Rotation.CLOCKWISE) {
+                        if (rotation == MovecraftRotation.CLOCKWISE) {
                             direction = 0x3;
                         } else {
                             direction = 0x2;
@@ -646,7 +646,7 @@ public class BlockUtils {
 
                     case 0x1:
                         // North
-                        if (rotation == Rotation.CLOCKWISE) {
+                        if (rotation == MovecraftRotation.CLOCKWISE) {
                             direction = 0x2;
                         } else {
                             direction = 0x3;
@@ -659,7 +659,7 @@ public class BlockUtils {
                 return data;
             case 106:
                 if (data != 0x0) {
-                    if (rotation == Rotation.CLOCKWISE) {
+                    if (rotation == MovecraftRotation.CLOCKWISE) {
                         data = (byte) (data << 1);
                     } else {
                         data = (byte) (data >> 1);
@@ -687,7 +687,7 @@ public class BlockUtils {
 
                 constant = 1;
 
-                if (rotation == Rotation.ANTICLOCKWISE) {
+                if (rotation == MovecraftRotation.ANTICLOCKWISE) {
                     constant = -1;
                 }
 
@@ -702,7 +702,7 @@ public class BlockUtils {
 
                 constant = 1;
 
-                if (rotation == Rotation.ANTICLOCKWISE) {
+                if (rotation == MovecraftRotation.ANTICLOCKWISE) {
                     constant = -1;
                 }
 
@@ -719,7 +719,7 @@ public class BlockUtils {
                         return data;
                     case 0x4:
                         // East
-                        if (rotation == Rotation.CLOCKWISE) {
+                        if (rotation == MovecraftRotation.CLOCKWISE) {
                             direction = 0x3;
                         } else {
                             direction = 0x2;
@@ -728,7 +728,7 @@ public class BlockUtils {
 
                     case 0x5:
                         // West
-                        if (rotation == Rotation.CLOCKWISE) {
+                        if (rotation == MovecraftRotation.CLOCKWISE) {
                             direction = 0x2;
                         } else {
                             direction = 0x3;
@@ -737,7 +737,7 @@ public class BlockUtils {
 
                     case 0x3:
                         // South
-                        if (rotation == Rotation.CLOCKWISE) {
+                        if (rotation == MovecraftRotation.CLOCKWISE) {
                             direction = 0x5;
                         } else {
                             direction = 0x4;
@@ -746,7 +746,7 @@ public class BlockUtils {
 
                     case 0x2:
                         // North
-                        if (rotation == Rotation.CLOCKWISE) {
+                        if (rotation == MovecraftRotation.CLOCKWISE) {
                             direction = 0x4;
                         } else {
                             direction = 0x5;
@@ -760,7 +760,7 @@ public class BlockUtils {
                 direction = (byte) (data & 0x1);
                 constant = 1;
 
-                if (rotation == Rotation.ANTICLOCKWISE) {
+                if (rotation == MovecraftRotation.ANTICLOCKWISE) {
                     constant = -1;
                 }
 
@@ -782,7 +782,7 @@ public class BlockUtils {
                         return data;
                     case 0x2:
                         //North
-                        if (rotation == Rotation.CLOCKWISE) {
+                        if (rotation == MovecraftRotation.CLOCKWISE) {
                             direction = 0x6;
                         } else {
                             direction = 0x4;
@@ -790,7 +790,7 @@ public class BlockUtils {
                         break;
                     case 0x4:
                         //East
-                        if (rotation == Rotation.CLOCKWISE) {
+                        if (rotation == MovecraftRotation.CLOCKWISE) {
                             direction = 0x2;
                         } else {
                             direction = 0x8;
@@ -798,7 +798,7 @@ public class BlockUtils {
                         break;
                     case 0x6:
                         //West
-                        if (rotation == Rotation.CLOCKWISE) {
+                        if (rotation == MovecraftRotation.CLOCKWISE) {
                             direction = 0x8;
                         } else {
                             direction = 0x2;
@@ -806,7 +806,7 @@ public class BlockUtils {
                         break;
                     case 0x8:
                         //South
-                        if (rotation == Rotation.CLOCKWISE) {
+                        if (rotation == MovecraftRotation.CLOCKWISE) {
                             direction = 0x4;
                         } else {
                             direction = 0x6;
@@ -814,7 +814,7 @@ public class BlockUtils {
                         break;
                     case 0x1:
                         //North and West
-                        if (rotation == Rotation.CLOCKWISE) {
+                        if (rotation == MovecraftRotation.CLOCKWISE) {
                             direction = 0x3;
                         } else {
                             direction = 0x7;
@@ -822,7 +822,7 @@ public class BlockUtils {
                         break;
                     case 0x3:
                         //North and East
-                        if (rotation == Rotation.CLOCKWISE) {
+                        if (rotation == MovecraftRotation.CLOCKWISE) {
                             direction = 0x9;
                         } else {
                             direction = 0x1;
@@ -830,7 +830,7 @@ public class BlockUtils {
                         break;
                     case 0x7:
                         //South and West
-                        if (rotation == Rotation.CLOCKWISE) {
+                        if (rotation == MovecraftRotation.CLOCKWISE) {
                             direction = 0x1;
                         } else {
                             direction = 0x9;
@@ -838,7 +838,7 @@ public class BlockUtils {
                         break;
                     case 0x9:
                         //South and East
-                        if (rotation == Rotation.CLOCKWISE) {
+                        if (rotation == MovecraftRotation.CLOCKWISE) {
                             direction = 0x7;
                         } else {
                             direction = 0x3;

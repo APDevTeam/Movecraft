@@ -3,7 +3,7 @@ package net.countercraft.movecraft.craft;
 import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
-import net.countercraft.movecraft.Rotation;
+import net.countercraft.movecraft.MovecraftRotation;
 import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.config.Settings;
@@ -32,7 +32,6 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -165,7 +164,7 @@ public abstract class BaseCraft implements Craft{
     }
 
     @Override
-    public void rotate(Rotation rotation, MovecraftLocation originPoint) {
+    public void rotate(MovecraftRotation rotation, MovecraftLocation originPoint) {
         if(getLastRotateTime()+1e9>System.nanoTime()){
             getAudience().sendMessage(I18nSupport.getInternationalisedComponent("Rotation - Turning Too Quickly"));
             return;
@@ -175,7 +174,7 @@ public abstract class BaseCraft implements Craft{
     }
 
     @Override
-    public void rotate(Rotation rotation, MovecraftLocation originPoint, boolean isSubCraft) {
+    public void rotate(MovecraftRotation rotation, MovecraftLocation originPoint, boolean isSubCraft) {
         Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(this, originPoint, rotation, this.getWorld(), isSubCraft), this);
     }
 

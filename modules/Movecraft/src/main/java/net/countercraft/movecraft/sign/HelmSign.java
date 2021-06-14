@@ -1,6 +1,6 @@
 package net.countercraft.movecraft.sign;
 
-import net.countercraft.movecraft.Rotation;
+import net.countercraft.movecraft.MovecraftRotation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
@@ -28,11 +28,11 @@ public final class HelmSign implements Listener {
 
     @EventHandler
     public final void onSignClick(PlayerInteractEvent event) {
-        Rotation rotation;
+        MovecraftRotation rotation;
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-            rotation = Rotation.CLOCKWISE;
+            rotation = MovecraftRotation.CLOCKWISE;
         }else if(event.getAction() == Action.LEFT_CLICK_BLOCK){
-            rotation = Rotation.ANTICLOCKWISE;
+            rotation = MovecraftRotation.ANTICLOCKWISE;
         }else{
             return;
         }

@@ -1,7 +1,7 @@
 package net.countercraft.movecraft.compat.v1_15_R1;
 
 import net.countercraft.movecraft.MovecraftLocation;
-import net.countercraft.movecraft.Rotation;
+import net.countercraft.movecraft.MovecraftRotation;
 import net.countercraft.movecraft.WorldHandler;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.util.CollectionUtils;
@@ -46,9 +46,9 @@ public class IWorldHandler extends WorldHandler {
     private static final EnumBlockRotation ROTATION[];
     static {
         ROTATION = new EnumBlockRotation[3];
-        ROTATION[Rotation.NONE.ordinal()] = EnumBlockRotation.NONE;
-        ROTATION[Rotation.CLOCKWISE.ordinal()] = EnumBlockRotation.CLOCKWISE_90;
-        ROTATION[Rotation.ANTICLOCKWISE.ordinal()] = EnumBlockRotation.COUNTERCLOCKWISE_90;
+        ROTATION[MovecraftRotation.NONE.ordinal()] = EnumBlockRotation.NONE;
+        ROTATION[MovecraftRotation.CLOCKWISE.ordinal()] = EnumBlockRotation.CLOCKWISE_90;
+        ROTATION[MovecraftRotation.ANTICLOCKWISE.ordinal()] = EnumBlockRotation.COUNTERCLOCKWISE_90;
     }
     private final NextTickProvider tickProvider = new NextTickProvider();
     private MethodHandle internalTeleportMH;
@@ -82,12 +82,12 @@ public class IWorldHandler extends WorldHandler {
     }
 
     @Override
-    public void rotateCraft(@NotNull Craft craft, @NotNull MovecraftLocation originPoint, @NotNull Rotation rotation) {
+    public void rotateCraft(@NotNull Craft craft, @NotNull MovecraftLocation originPoint, @NotNull MovecraftRotation rotation) {
         //*******************************************
         //*      Step one: Convert to Positions     *
         //*******************************************
         HashMap<BlockPosition,BlockPosition> rotatedPositions = new HashMap<>();
-        Rotation counterRotation = rotation == Rotation.CLOCKWISE ? Rotation.ANTICLOCKWISE : Rotation.CLOCKWISE;
+        MovecraftRotation counterRotation = rotation == MovecraftRotation.CLOCKWISE ? MovecraftRotation.ANTICLOCKWISE : MovecraftRotation.CLOCKWISE;
         for(MovecraftLocation newLocation : craft.getHitBox()){
             rotatedPositions.put(locationToPosition(MathUtils.rotateVec(counterRotation, newLocation.subtract(originPoint)).add(originPoint)),locationToPosition(newLocation));
         }
@@ -251,11 +251,11 @@ public class IWorldHandler extends WorldHandler {
 
     @Override
     public void setBlockFast(@NotNull Location location, @NotNull BlockData data){
-        setBlockFast(location, Rotation.NONE, data);
+        setBlockFast(location, MovecraftRotation.NONE, data);
     }
 
     @Override
-    public void setBlockFast(@NotNull Location location, @NotNull Rotation rotation, @NotNull BlockData data) {
+    public void setBlockFast(@NotNull Location location, @NotNull MovecraftRotation rotation, @NotNull BlockData data) {
         IBlockData blockData;
         if(data instanceof CraftBlockData){
             blockData = ((CraftBlockData) data).getState();

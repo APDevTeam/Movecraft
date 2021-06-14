@@ -19,7 +19,7 @@ package net.countercraft.movecraft.async.rotation;
 
 import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.MovecraftLocation;
-import net.countercraft.movecraft.Rotation;
+import net.countercraft.movecraft.MovecraftRotation;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
@@ -48,7 +48,7 @@ import static net.countercraft.movecraft.util.MathUtils.withinWorldBorder;
 
 public class RotationTask extends AsyncTask {
     private final MovecraftLocation originPoint;
-    private final Rotation rotation;
+    private final MovecraftRotation rotation;
     private final World w;
     private final boolean isSubCraft;
     private boolean failed = false;
@@ -61,7 +61,7 @@ public class RotationTask extends AsyncTask {
     private final MutableHitBox oldFluidList;
     private final MutableHitBox newFluidList;
 
-    public RotationTask(Craft c, MovecraftLocation originPoint, Rotation rotation, World w, boolean isSubCraft) {
+    public RotationTask(Craft c, MovecraftLocation originPoint, MovecraftRotation rotation, World w, boolean isSubCraft) {
         super(c);
         this.originPoint = originPoint;
         this.rotation = rotation;
@@ -73,7 +73,7 @@ public class RotationTask extends AsyncTask {
         this.newFluidList = new SetHitBox(c.getFluidLocations());
     }
 
-    public RotationTask(Craft c, MovecraftLocation originPoint, Rotation rotation, World w) {
+    public RotationTask(Craft c, MovecraftLocation originPoint, MovecraftRotation rotation, World w) {
         this(c,originPoint,rotation,w,false);
     }
 
@@ -182,7 +182,7 @@ public class RotationTask extends AsyncTask {
                     Location adjustedPLoc = entity.getLocation().subtract(tOP);
 
                     double[] rotatedCoords = MathUtils.rotateVecNoRound(rotation, adjustedPLoc.getX(), adjustedPLoc.getZ());
-                    float newYaw = rotation == Rotation.CLOCKWISE ? 90F : -90F;
+                    float newYaw = rotation == MovecraftRotation.CLOCKWISE ? 90F : -90F;
                     EntityUpdateCommand eUp = new EntityUpdateCommand(entity, rotatedCoords[0] + tOP.getX() - entity.getLocation().getX(), 0, rotatedCoords[1] + tOP.getZ() - entity.getLocation().getZ(), newYaw, 0);
                     updates.add(eUp);
                 }
@@ -190,7 +190,7 @@ public class RotationTask extends AsyncTask {
         }
 
         if (getCraft().getCruising()) {
-            if (rotation == Rotation.ANTICLOCKWISE) {
+            if (rotation == MovecraftRotation.ANTICLOCKWISE) {
                 // ship faces west
                 switch (getCraft().getCruiseDirection()) {
                     case WEST:
@@ -209,7 +209,7 @@ public class RotationTask extends AsyncTask {
                         getCraft().setCruiseDirection(CruiseDirection.WEST);
                         break;
                 }
-            } else if (rotation == Rotation.CLOCKWISE) {
+            } else if (rotation == MovecraftRotation.CLOCKWISE) {
                 // ship faces west
                 switch (getCraft().getCruiseDirection()) {
                     case WEST:
@@ -296,7 +296,7 @@ public class RotationTask extends AsyncTask {
         return updates;
     }
 
-    public Rotation getRotation() {
+    public MovecraftRotation getRotation() {
         return rotation;
     }
 

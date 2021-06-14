@@ -17,6 +17,6 @@
 
 package net.countercraft.movecraft;
 
-public enum Rotation {
+public enum MovecraftRotation {
     CLOCKWISE, NONE, ANTICLOCKWISE
 }

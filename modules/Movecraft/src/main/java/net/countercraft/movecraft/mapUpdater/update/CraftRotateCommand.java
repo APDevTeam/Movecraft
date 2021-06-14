@@ -5,7 +5,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
-import net.countercraft.movecraft.Rotation;
+import net.countercraft.movecraft.MovecraftRotation;
 import net.countercraft.movecraft.WorldHandler;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
@@ -46,12 +46,12 @@ public class CraftRotateCommand extends UpdateCommand {
     @NotNull
     private final Craft craft;
     @NotNull
-    private final Rotation rotation;
+    private final MovecraftRotation rotation;
     @NotNull
     private final MovecraftLocation originLocation;
 
 
-    public CraftRotateCommand(@NotNull final Craft craft, @NotNull final MovecraftLocation originLocation, @NotNull final Rotation rotation) {
+    public CraftRotateCommand(@NotNull final Craft craft, @NotNull final MovecraftLocation originLocation, @NotNull final MovecraftRotation rotation) {
         this.craft = craft;
         this.rotation = rotation;
         this.originLocation = originLocation;
@@ -75,7 +75,7 @@ public class CraftRotateCommand extends UpdateCommand {
         }
         if (!passthroughBlocks.isEmpty()) {
             SetHitBox originalLocations = new SetHitBox();
-            final Rotation counterRotation = rotation == Rotation.CLOCKWISE ? Rotation.ANTICLOCKWISE : Rotation.CLOCKWISE;
+            final MovecraftRotation counterRotation = rotation == MovecraftRotation.CLOCKWISE ? MovecraftRotation.ANTICLOCKWISE : MovecraftRotation.CLOCKWISE;
             for (MovecraftLocation movecraftLocation : craft.getHitBox()) {
                 originalLocations.add(MathUtils.rotateVec(counterRotation, movecraftLocation.subtract(originLocation)).add(originLocation));
             }

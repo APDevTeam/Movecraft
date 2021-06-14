@@ -1,7 +1,7 @@
 package net.countercraft.movecraft.processing.tasks;
 
 import net.countercraft.movecraft.MovecraftLocation;
-import net.countercraft.movecraft.Rotation;
+import net.countercraft.movecraft.MovecraftRotation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.events.CraftPreTranslateEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
@@ -25,12 +25,12 @@ public class TranslationTask implements Runnable {
         preTranslationValidators.add((craft -> craft.getDisabled() && !craft.getSinking() ? Result.failWithMessage(I18nSupport.getInternationalisedString("Translation - Failed Craft Is Disabled")) : Result.succeed()));
     }
 
-    private Rotation rotation;
+    private MovecraftRotation rotation;
     private final Craft craft;
     private MovecraftWorld destinationWorld;
     private MovecraftLocation translation;
 
-    public TranslationTask(@NotNull Craft craft, @NotNull MovecraftLocation translation, @NotNull MovecraftWorld destinationWorld, @NotNull Rotation rotation) {
+    public TranslationTask(@NotNull Craft craft, @NotNull MovecraftLocation translation, @NotNull MovecraftWorld destinationWorld, @NotNull MovecraftRotation rotation) {
         this.rotation = rotation;
         this.craft = craft;
         this.translation = translation;

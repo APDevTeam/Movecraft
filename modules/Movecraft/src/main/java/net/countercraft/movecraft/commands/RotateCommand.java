@@ -1,6 +1,6 @@
 package net.countercraft.movecraft.commands;
 
-import net.countercraft.movecraft.Rotation;
+import net.countercraft.movecraft.MovecraftRotation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
@@ -44,7 +44,7 @@ public class RotateCommand implements TabExecutor{
                 player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Insufficient Permissions"));
                 return true;
             }
-            CraftManager.getInstance().getCraftByPlayerName(player.getName()).rotate(Rotation.ANTICLOCKWISE, craft.getHitBox().getMidPoint());
+            CraftManager.getInstance().getCraftByPlayerName(player.getName()).rotate(MovecraftRotation.ANTICLOCKWISE, craft.getHitBox().getMidPoint());
             return true;
         }
 
@@ -62,7 +62,7 @@ public class RotateCommand implements TabExecutor{
                 player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Insufficient Permissions"));
                 return true;
             }
-            CraftManager.getInstance().getCraftByPlayerName(player.getName()).rotate(Rotation.CLOCKWISE, craft.getHitBox().getMidPoint());
+            CraftManager.getInstance().getCraftByPlayerName(player.getName()).rotate(MovecraftRotation.CLOCKWISE, craft.getHitBox().getMidPoint());
             return true;
         }
         player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Rotation - Invalid Direction"));

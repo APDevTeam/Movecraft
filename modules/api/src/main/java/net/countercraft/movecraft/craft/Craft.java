@@ -19,7 +19,7 @@ package net.countercraft.movecraft.craft;
 
 import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.MovecraftLocation;
-import net.countercraft.movecraft.Rotation;
+import net.countercraft.movecraft.MovecraftRotation;
 import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
 import net.countercraft.movecraft.util.hitboxes.MutableHitBox;
@@ -111,10 +111,10 @@ public interface Craft {
      * @param rotation The direction to rotate the craft
      * @param originPoint the origin point of the rotation
      */
-    void rotate(Rotation rotation, MovecraftLocation originPoint);
+    void rotate(MovecraftRotation rotation, MovecraftLocation originPoint);
 
     @Deprecated
-    void rotate(Rotation rotation, MovecraftLocation originPoint, boolean isSubCraft);
+    void rotate(MovecraftRotation rotation, MovecraftLocation originPoint, boolean isSubCraft);
 
     /**
      * Gets the cruising state of the craft.
