@@ -1,10 +1,10 @@
 Movecraft
 ======
-![Java CI](https://github.com/APDevTeam/Movecraft/workflows/Java%20CI/badge.svg?branch=master)
+![Java CI](https://github.com/APDevTeam/Movecraft/workflows/Java%20CI/badge.svg?branch=main)
 
 This is a maintained fork of Movecraft, which aims to add legacy version support as well as performance fixes.
 
-**Movecraft requires Java 13**
+**Movecraft requires at least Java 13**
 
 ## Download
 
@@ -18,8 +18,8 @@ Movecraft uses multiple versions of the Spigot server software for legacy suppor
 ```
 java -jar BuildTools.jar --rev 1.14.4 --compile craftbukkit
 java -jar BuildTools.jar --rev 1.15.2 --compile craftbukkit
-java -jar BuildTools.jar --rev 1.16.1 --compile craftbukkit
 java -jar BuildTools.jar --rev 1.16.5 --compile craftbukkit
+java -jar BuildTools.jar --rev 1.16.1 --remapped
 ```
 
 Once you have compiled craftbukkit, it should continue to exist in your local maven repository, and thus you should need to compile each verson at most one time. Once complete, run the following to build Movecraft through `maven`.
