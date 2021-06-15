@@ -34,6 +34,8 @@ public class BlockHighlight implements Listener {
     private static final int SLIME_INDEX = 15;
 
     public static int highlightBlockAt(Location location, Player player){
+        if(true)
+            return 0;
         var packet = new WrapperPlayServerSpawnEntityLiving();
         var id = new Random().nextInt();
         var uuid = UUID.randomUUID();
@@ -71,6 +73,8 @@ public class BlockHighlight implements Listener {
     }
 
     public static void removeHighlights(int[] ids, Player player){
+        if(true)
+            return;
         var packet = new WrapperPlayServerEntityDestroy();
         packet.setEntityIds(ids);
         packet.sendPacket(player);
@@ -99,6 +103,8 @@ public class BlockHighlight implements Listener {
 
     @EventHandler
     public void onJoinEvent(PlayerJoinEvent event){
+        if(true)
+            return;
         createTeam().sendPacket(event.getPlayer());
     }
 }

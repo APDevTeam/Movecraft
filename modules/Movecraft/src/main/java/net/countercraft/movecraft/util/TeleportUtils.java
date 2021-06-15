@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.util;
 
+import net.countercraft.movecraft.Movecraft;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
@@ -7,6 +8,7 @@ import org.bukkit.entity.Player;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
@@ -40,16 +42,18 @@ public class TeleportUtils {
     private static Field pitch;
     private static Field activeContainer;
     private static Field defaultContainer;
+    private static final boolean intialized;
 
     static {
-        Class<?> packet = getNmsClass("Packet");
-        Class<?> entity = getNmsClass("Entity");
-        Class<?> entityPlayer = getNmsClass("EntityPlayer");
-        Class<?> entityHuman = getNmsClass("EntityHuman");
-        Class<?> connectionClass = getNmsClass("PlayerConnection");
-        Class<?> packetClass = getNmsClass("PacketPlayOutPosition");
-        Class<?> vecClass = getNmsClass("Vec3D");
+        boolean sucess = false;
         try {
+            Class<?> packet = getNmsClass("Packet");
+            Class<?> entity = getNmsClass("Entity");
+            Class<?> entityPlayer = getNmsClass("EntityPlayer");
+            Class<?> entityHuman = getNmsClass("EntityHuman");
+            Class<?> connectionClass = getNmsClass("PlayerConnection");
+            Class<?> packetClass = getNmsClass("PacketPlayOutPosition");
+            Class<?> vecClass = getNmsClass("Vec3D");
             sendMethod = connectionClass.getMethod("sendPacket", packet);
 
             position = entity.getDeclaredMethod("setLocation", Double.TYPE, Double.TYPE, Double.TYPE, Float.TYPE, Float.TYPE);
@@ -65,7 +69,7 @@ public class TeleportUtils {
             vec3D = vecClass.getConstructor(Double.TYPE, Double.TYPE, Double.TYPE);
 
             Object[] enumObjects = getNmsClass("PacketPlayOutPosition$EnumPlayerTeleportFlags").getEnumConstants();
-            teleportFlags = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(enumObjects[4], enumObjects[3])));
+            teleportFlags = Set.of(enumObjects[4], enumObjects[3]);
 
             justTeleportedField = getField(connectionClass, "justTeleported");
             teleportPosField = getField(connectionClass, "teleportPos");
@@ -75,9 +79,12 @@ public class TeleportUtils {
             teleportAwaitField = getField(connectionClass, "teleportAwait");
             AField = getField(connectionClass, "A");
             eField = getField(connectionClass, "e");
-        } catch (Exception e) {
+            sucess = true;
+        } catch (ClassNotFoundException | NoSuchFieldException | NoSuchMethodException | SecurityException e) {
+            Bukkit.getLogger().warning("Failed to access intnernal teleportation handle, switching to fallback");
             e.printStackTrace();
         }
+        intialized = sucess;
     }
 
     private static Field getField(Class<?> clazz, String name) throws NoSuchFieldException {
@@ -87,12 +94,16 @@ public class TeleportUtils {
     }
 
     public static void teleport(Player player, Location location, float yawChange) {
+        if(!intialized){
+            Movecraft.getInstance().getWorldHandler().addPlayerLocation(player, location.getX(), location.getY(), location.getZ(), yawChange, 0);
+            return;
+        }
         double x = location.getX();
         double y = location.getY();
         double z = location.getZ();
         Object handle = getHandle(player);
         try {
-            position.invoke(handle, x,y,z, yaw.get(handle), pitch.get(handle));
+            position.invoke(handle, x, y, z, yaw.get(handle), pitch.get(handle));
             Object connection = connectionField.get(handle);
             justTeleportedField.set(connection, true);
             teleportPosField.set(connection, vec3D.newInstance(x, y, z));
@@ -100,13 +111,13 @@ public class TeleportUtils {
             lastPosYField.set(connection, y);
             lastPosZField.set(connection, z);
             int teleportAwait = teleportAwaitField.getInt(connection) + 1;
-            if(teleportAwait == 2147483647) teleportAwait = 0;
+            if (teleportAwait == 2147483647) teleportAwait = 0;
             teleportAwaitField.set(connection, teleportAwait);
             AField.set(connection, eField.get(connection));
 
             Object packet = packetConstructor.newInstance(x, y, z, yawChange, 0, teleportFlags, teleportAwait);
             sendPacket(packet, player);
-        } catch (Exception e) {
+        } catch (IllegalAccessException | IllegalArgumentException | InstantiationException | InvocationTargetException e) {
             e.printStackTrace();
         }
     }
@@ -130,16 +141,8 @@ public class TeleportUtils {
             return null;
         }
     }
-    private static Class<?> getNmsClass(String name) {
-        Class clazz = null;
-
-        try {
-            clazz = Class.forName("net.minecraft.server." + getVersion() + "." + name);
-        } catch (ClassNotFoundException var3) {
-            var3.printStackTrace();
-        }
-
-        return clazz;
+    private static Class<?> getNmsClass(String name) throws ClassNotFoundException {
+        return Class.forName("net.minecraft.server." + getVersion() + "." + name);
     }
 
     private static String getVersion() {

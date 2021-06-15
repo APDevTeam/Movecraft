@@ -3,8 +3,7 @@ package net.countercraft.movecraft.support.v1_17_R1;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.processing.WorldManager;
 import net.countercraft.movecraft.support.AsyncChunk;
-import net.minecraft.core.BlockPosition;
-import net.minecraft.world.level.block.state.IBlockData;
+import net.minecraft.core.BlockPos;
 import org.bukkit.Chunk;
 import org.bukkit.Material;
 import org.bukkit.block.BlockState;
@@ -36,13 +35,13 @@ public class IAsyncChunk extends AsyncChunk<CraftChunk> {
     @Override
     @NotNull
     public Material getType(@NotNull MovecraftLocation location){
-        return CraftBlockData.fromData(chunk.getHandle().getType(new BlockPosition(location.getX(), location.getY(), location.getZ()))).getMaterial();
+        return CraftBlockData.fromData(chunk.getHandle().getBlockState(new BlockPos(location.getX(), location.getY(), location.getZ()))).getMaterial();
     }
 
     @Override
     @NotNull
     public BlockData getData(@NotNull MovecraftLocation location){
-        IBlockData data = chunk.getHandle().getType(new BlockPosition(location.getX(), location.getY(), location.getZ()));
+        net.minecraft.world.level.block.state.BlockState data = chunk.getHandle().getBlockState(new BlockPos(location.getX(), location.getY(), location.getZ()));
         return CraftBlockData.fromData(data);
     }
 

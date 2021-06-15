@@ -1,19 +1,19 @@
 package net.countercraft.movecraft.compat.v1_17_R1;
 
-import net.minecraft.core.BlockPosition;
-import net.minecraft.server.level.WorldServer;
-import net.minecraft.world.level.NextTickListEntry;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.TickNextTickData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class NextTickProvider {
 
     @Nullable
-    public NextTickListEntry<?> getNextTick(@NotNull WorldServer world, @NotNull BlockPosition position){
+    public TickNextTickData<?> getNextTick(@NotNull ServerLevel world, @NotNull BlockPos position){
         return null;
     }
     @NotNull
-    public Object fakeEntry(@NotNull BlockPosition position){
+    public Object fakeEntry(@NotNull BlockPos position){
         return new Object(){
             @Override
             public int hashCode() {
@@ -21,10 +21,10 @@ public class NextTickProvider {
             }
             @Override
             public boolean equals(Object other){
-                if (!(other instanceof NextTickListEntry)) {
+                if (!(other instanceof TickNextTickData)) {
                     return false;
                 }
-                return position.equals(((NextTickListEntry<?>)other).a);
+                return position.equals(((TickNextTickData<?>)other).pos);
             }
         };
     }
