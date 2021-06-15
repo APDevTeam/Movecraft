@@ -110,11 +110,13 @@ jobs:
         with:
           distribution: 'adopt-hotspot'
           java-version: '16'
-      - name: Cache 1.17 Maven package
-        id: cacheGoats
-        uses: actions/cache@v2
-        with:
-          path: ~/.m2/repository/org/spigotmc/spigot/1.17-R0.1-SNAPSHOT/
+    - name: Cache 1.17 Maven package
+      id: cacheGoats
+      uses: actions/cache@v2
+      with:
+          path: |
+            ~/.m2/repository/org/spigotmc/spigot/1.17-R0.1-SNAPSHOT/
+            ~/.m2/repository/org/spigotmc/spigot-parent/
           key: ${{ runner.os }}-spigot-1.17.0
           restore-keys: ${{ runner.os }}-spigot-1.17.0
       - name: Cache Maven packages
@@ -185,7 +187,9 @@ jobs:
       id: cacheGoats
       uses: actions/cache@v2
       with:
-          path: ~/.m2/repository/org/spigotmc/spigot/1.17-R0.1-SNAPSHOT/
+          path: |
+            ~/.m2/repository/org/spigotmc/spigot/1.17-R0.1-SNAPSHOT/
+            ~/.m2/repository/org/spigotmc/spigot-parent/
           key: ${{ runner.os }}-spigot-1.17.0
           restore-keys: ${{ runner.os }}-spigot-1.17.0
 
