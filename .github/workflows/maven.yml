@@ -115,8 +115,8 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ~/.m2/repository/org/spigotmc/spigot/1.17-R0.1-SNAPSHOT/
-          key: ${{ runner.os }}-1.17-spigot
-          restore-keys: ${{ runner.os }}-1.17-spigot
+          key: ${{ runner.os }}_spigot_1.17
+          restore-keys: ${{ runner.os }}_spigot_1.17
       - name: Cache Maven packages
         id: cacheMain
         uses: actions/cache@v2
@@ -187,7 +187,7 @@ jobs:
       with:
           path: ~/.m2/repository/org/spigotmc/spigot/1.17-R0.1-SNAPSHOT/
           key: ${{ runner.os }}-1.17-spigot
-          restore-keys: ${{ runner.os }}-1.17-spigot
+          restore-keys: ${{ runner.os }}_spigot_1.17
 
     - name: Build with Maven
       run: mvn -B package --file pom.xml
