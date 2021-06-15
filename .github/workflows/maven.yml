@@ -114,9 +114,9 @@ jobs:
         id: cacheGoats
         uses: actions/cache@v2
         with:
-          path: ~/.m2/repository/org/bukkit/craftbukkit/1.17-R0.1-SNAPSHOT/
-          key: ${{ runner.os }}-1.17.0
-          restore-keys: ${{ runner.os }}-1.17.0
+          path: ~/.m2/repository/org/spigotmc/spigot/1.17-R0.1-SNAPSHOT/
+          key: ${{ runner.os }}-1.17-spigot
+          restore-keys: ${{ runner.os }}-1.17-spigot
       - name: Cache Maven packages
         id: cacheMain
         uses: actions/cache@v2
@@ -127,11 +127,17 @@ jobs:
 
       - name: Setup BuildTools
         run: mkdir BuildTools && wget -O BuildTools/BuildTools.jar https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
-      - name: Check 1.17
-        id: nether
-        run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.17-R0.1-SNAPSHOT/craftbukkit-1.17-R0.1-SNAPSHOT.jar && echo "::set-output name=sucess::true" || echo "::set-output name=sucess::false"
+      - name: Check 1.17 Spigot
+        id: goats
+        run: test -f ~/.m2/repository/org/spigotmc/spigot/1.17-R0.1-SNAPSHOT/spigot-1.17-R0.1-SNAPSHOT.jar && echo "::set-output name=sucess::true" || echo "::set-output name=sucess::false"
+      - name: Check 1.17 Spigot (Mojang)
+        id: goatsMojang
+        run: test -f ~/.m2/repository/org/spigotmc/spigot/1.17-R0.1-SNAPSHOT/spigot-1.17-R0.1-SNAPSHOT-remapped-mojang.jar && echo "::set-output name=sucess::true" || echo "::set-output name=sucess::false"
+      - name: Check 1.17 Spigot (Obf)
+        id: goatsObf
+        run: test -f ~/.m2/repository/org/spigotmc/spigot/1.17-R0.1-SNAPSHOT/spigot-1.17-R0.1-SNAPSHOT-remapped-obf.jar && echo "::set-output name=sucess::true" || echo "::set-output name=sucess::false"
       - name: Build 1.17
-        if: steps.nether.outputs.sucess != 'true'
+        if: steps.goats.outputs.sucess != 'true' || steps.goatsMojang.outputs.sucess != 'true' || steps.goatsObf.outputs.sucess != 'true'
         run: cd BuildTools && java -jar BuildTools.jar --rev 1.17 --compile craftbukkit --remapped
 
   # Build Movecraft
@@ -179,9 +185,9 @@ jobs:
       id: cacheGoats
       uses: actions/cache@v2
       with:
-        path: ~/.m2/repository/org/bukkit/craftbukkit/1.16.1-R0.1-SNAPSHOT/
-        key: ${{ runner.os }}-1.17.0
-        restore-keys: ${{ runner.os }}-1.17.0
+          path: ~/.m2/repository/org/spigotmc/spigot/1.17-R0.1-SNAPSHOT/
+          key: ${{ runner.os }}-1.17-spigot
+          restore-keys: ${{ runner.os }}-1.17-spigot
 
     - name: Build with Maven
       run: mvn -B package --file pom.xml
