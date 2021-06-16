@@ -117,8 +117,9 @@ jobs:
             path: |
               ~/.m2/repository/org/spigotmc/spigot/1.17-R0.1-SNAPSHOT/
               ~/.m2/repository/org/spigotmc/spigot-parent/
-            key: ${{ runner.os }}-spigot-1.17.0-parent
-            restore-keys: ${{ runner.os }}-spigot-1.17.0-parent
+              ~/.m2/repository/org/spigotmc/minecraft-server/
+            key: ${{ runner.os }}-spigot-1.17.0-all
+            restore-keys: ${{ runner.os }}-spigot-1.17.0-all
       - name: Cache Maven packages
         id: cacheMain
         uses: actions/cache@v2
@@ -190,8 +191,9 @@ jobs:
           path: |
             ~/.m2/repository/org/spigotmc/spigot/1.17-R0.1-SNAPSHOT/
             ~/.m2/repository/org/spigotmc/spigot-parent/
-          key: ${{ runner.os }}-spigot-1.17.0-parent
-          restore-keys: ${{ runner.os }}-spigot-1.17.0-parent
+            ~/.m2/repository/org/spigotmc/minecraft-server/
+          key: ${{ runner.os }}-spigot-1.17.0-all
+          restore-keys: ${{ runner.os }}-spigot-1.17.0-all
 
     - name: Build with Maven
       run: mvn -B package --file pom.xml
