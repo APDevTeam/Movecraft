@@ -40,25 +40,25 @@
     <dependencies>
         <dependency>
             <groupId>net.countercraft</groupId>
-            <artifactId>movecraft-v1_14_R1</artifactId>
+            <artifactId>movecraft-v1_14_r1</artifactId>
             <version>${revision}</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <groupId>net.countercraft</groupId>
-            <artifactId>movecraft-v1_15_R1</artifactId>
+            <artifactId>movecraft-v1_15_r1</artifactId>
             <version>${revision}</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <groupId>net.countercraft</groupId>
-            <artifactId>movecraft-v1_16_R3</artifactId>
+            <artifactId>movecraft-v1_16_r3</artifactId>
             <version>${revision}</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <groupId>net.countercraft</groupId>
-            <artifactId>movecraft-v1_17_R1</artifactId>
+            <artifactId>movecraft-v1_17_r1</artifactId>
             <version>${revision}</version>
             <type>jar</type>
         </dependency>
@@ -190,25 +190,25 @@
                             <createDependencyReducedPom>false</createDependencyReducedPom>
                             <filters>
                                 <filter>
-                                    <artifact>net.countercraft:movecraft-v1_14_R1</artifact>
+                                    <artifact>net.countercraft:movecraft-v1_14_r1</artifact>
                                     <includes>
                                         <include>**</include>
                                     </includes>
                                 </filter>
                                 <filter>
-                                    <artifact>net.countercraft:movecraft-v1_16_R1</artifact>
+                                    <artifact>net.countercraft:movecraft-v1_15_r1</artifact>
                                     <includes>
                                         <include>**</include>
                                     </includes>
                                 </filter>
                                 <filter>
-                                    <artifact>net.countercraft:movecraft-v1_16_R3</artifact>
+                                    <artifact>net.countercraft:movecraft-v1_16_r3</artifact>
                                     <includes>
                                         <include>**</include>
                                     </includes>
                                 </filter>
                                 <filter>
-                                    <artifact>net.countercraft:movecraft-v1_17_R1</artifact>
+                                    <artifact>net.countercraft:movecraft-v1_17_r1</artifact>
                                     <includes>
                                         <include>**</include>
                                     </includes>

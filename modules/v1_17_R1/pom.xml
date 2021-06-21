@@ -10,7 +10,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>movecraft-v1_17_R1</artifactId>
+    <artifactId>movecraft-v1_17_r1</artifactId>
     <name>Movecraft-v1_17_R1</name>
     <packaging>jar</packaging>
     <dependencies>
