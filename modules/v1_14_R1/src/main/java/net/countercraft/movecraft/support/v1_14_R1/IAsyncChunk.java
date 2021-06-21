@@ -1,5 +1,8 @@
 package net.countercraft.movecraft.support.v1_14_R1;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.processing.WorldManager;
 import net.countercraft.movecraft.support.AsyncChunk;
@@ -16,6 +19,15 @@ import org.jetbrains.annotations.NotNull;
 @SuppressWarnings("unused")
 public class IAsyncChunk extends AsyncChunk<CraftChunk> {
 
+    private final @NotNull
+    LoadingCache<MovecraftLocation, BlockState> stateCache = CacheBuilder.newBuilder().maximumSize(100).build(new CacheLoader<>() {
+        @Override
+        public BlockState load(@NotNull MovecraftLocation movecraftLocation) {
+            var block = chunk.getBlock(movecraftLocation.getX(), movecraftLocation.getY(), movecraftLocation.getZ());
+            return WorldManager.INSTANCE.executeMain(block::getState);
+        }
+    });
+
     public IAsyncChunk(@NotNull Chunk chunk) {
         super(chunk);
     }
@@ -29,8 +41,7 @@ public class IAsyncChunk extends AsyncChunk<CraftChunk> {
     @NotNull
     @Override
     public BlockState getState(@NotNull MovecraftLocation location) {
-        var block = chunk.getBlock(location.getX(), location.getY(), location.getZ());
-        return WorldManager.INSTANCE.executeMain(block::getState);
+        return stateCache.getUnchecked(location);
     }
 
     @Override
