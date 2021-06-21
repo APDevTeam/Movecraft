@@ -2,10 +2,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>movecraft-api</artifactId>
-    <packaging>jar</packaging>
     <name>Movecraft-API</name>
     <url>http://github.com/apdevteam/Movecraft</url>
-    <version>API</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -18,7 +16,7 @@
     <parent>
         <groupId>net.countercraft</groupId>
         <artifactId>movecraft-parent</artifactId>
-        <version>parent</version>
+        <version>${revision}</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 

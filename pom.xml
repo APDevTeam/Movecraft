@@ -4,11 +4,12 @@
     <groupId>net.countercraft</groupId>
     <artifactId>movecraft-parent</artifactId>
     <packaging>pom</packaging>
-    <version>parent</version>
+    <version>${revision}</version>
     <name>Movecraft Parent Pom</name>
     <url>http://github.com/apdevteam/Movecraft</url>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <revision>8.0.0-a.4</revision>
     </properties>
 
     <modules>
@@ -38,6 +39,31 @@
                     <source>13</source>
                     <target>13</target>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+                <version>1.2.2</version>
+                <configuration>
+                </configuration>
+                <executions>
+                    <!-- enable flattening -->
+                    <execution>
+                        <id>flatten</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>flatten</goal>
+                        </goals>
+                    </execution>
+                    <!-- ensure proper cleanup -->
+                    <execution>
+                        <id>flatten.clean</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

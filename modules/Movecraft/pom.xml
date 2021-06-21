@@ -1,7 +1,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>net.countercraft</groupId>
     <artifactId>movecraft</artifactId>
     <packaging>jar</packaging>
     <name>Movecraft</name>
@@ -9,7 +8,12 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-    <version>8.0.0-a.4</version>
+    <parent>
+        <artifactId>movecraft-parent</artifactId>
+        <groupId>net.countercraft</groupId>
+        <version>${revision}</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
 
     <pluginRepositories>
         <pluginRepository>
@@ -37,31 +41,31 @@
         <dependency>
             <groupId>net.countercraft</groupId>
             <artifactId>movecraft-v1_14_R1</artifactId>
-            <version>v1_14_R1</version>
+            <version>${revision}</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <groupId>net.countercraft</groupId>
             <artifactId>movecraft-v1_15_R1</artifactId>
-            <version>v1_15_R1</version>
+            <version>${revision}</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <groupId>net.countercraft</groupId>
             <artifactId>movecraft-v1_16_R3</artifactId>
-            <version>v1_16_R3</version>
+            <version>${revision}</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <groupId>net.countercraft</groupId>
             <artifactId>movecraft-v1_17_R1</artifactId>
-            <version>v1_17_R1</version>
+            <version>${revision}</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <groupId>net.countercraft</groupId>
             <artifactId>movecraft-api</artifactId>
-            <version>API</version>
+            <version>${revision}</version>
             <type>jar</type>
         </dependency>
         <dependency>
