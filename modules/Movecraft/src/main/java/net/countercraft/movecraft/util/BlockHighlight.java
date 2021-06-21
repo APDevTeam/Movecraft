@@ -6,11 +6,15 @@ import com.comphenix.protocol.wrappers.WrappedDataWatcher;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher.Registry;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher.WrappedDataWatcherObject;
 import com.google.common.primitives.Ints;
+import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.support.AsyncChunk;
 import net.countercraft.movecraft.util.packets.WrapperPlayServerEntityDestroy;
 import net.countercraft.movecraft.util.packets.WrapperPlayServerEntityMetadata;
 import net.countercraft.movecraft.util.packets.WrapperPlayServerScoreboardTeam;
 import net.countercraft.movecraft.util.packets.WrapperPlayServerSpawnEntityLiving;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -18,6 +22,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
+import java.lang.reflect.Constructor;
 import java.util.Collection;
 import java.util.List;
 import java.util.Random;
@@ -27,6 +32,13 @@ import java.util.UUID;
  * A set of utilities for highlighting block changes in the world
  */
 public class BlockHighlight implements Listener {
+
+    private static final boolean disabled;
+    static {
+        String packageName = Bukkit.getServer().getClass().getPackage().getName();
+        String version = packageName.substring(packageName.lastIndexOf('.') + 1);
+        disabled = Settings.CompatibilityMode || version.contains("17");
+    }
     private static final byte INVISIBLE = (byte) 0x20;
     private static final byte GLOWING = (byte) 0x40;
     private static final byte NOAI = (byte) 0x01;
@@ -34,7 +46,7 @@ public class BlockHighlight implements Listener {
     private static final int SLIME_INDEX = 15;
 
     public static int highlightBlockAt(Location location, Player player){
-        if(true)
+        if(disabled)
             return 0;
         var packet = new WrapperPlayServerSpawnEntityLiving();
         var id = new Random().nextInt();
@@ -73,7 +85,7 @@ public class BlockHighlight implements Listener {
     }
 
     public static void removeHighlights(int[] ids, Player player){
-        if(true)
+        if(disabled)
             return;
         var packet = new WrapperPlayServerEntityDestroy();
         packet.setEntityIds(ids);
@@ -103,7 +115,7 @@ public class BlockHighlight implements Listener {
 
     @EventHandler
     public void onJoinEvent(PlayerJoinEvent event){
-        if(true)
+        if(disabled)
             return;
         createTeam().sendPacket(event.getPlayer());
     }
