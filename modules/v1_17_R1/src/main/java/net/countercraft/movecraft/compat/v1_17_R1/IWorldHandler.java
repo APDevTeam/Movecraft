@@ -8,9 +8,7 @@ import net.countercraft.movecraft.util.CollectionUtils;
 import net.countercraft.movecraft.util.MathUtils;
 import net.countercraft.movecraft.util.UnsafeUtils;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.TickNextTickData;
 import net.minecraft.world.level.block.Block;
@@ -25,14 +23,11 @@ import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.v1_17_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_17_R1.block.data.CraftBlockData;
-import org.bukkit.craftbukkit.v1_17_R1.entity.CraftPlayer;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -221,7 +216,8 @@ public class IWorldHandler extends WorldHandler {
 
         LevelChunkSection.setBlockState(position.getX()&15, position.getY()&15, position.getZ()&15, data);
         world.sendBlockUpdated(position, data, data, 3);
-        chunk.invalidateAllBlockEntities();
+        world.getLightEngine().updateSectionStatus(position, true); // boolean corresponds to if chunk section empty
+        chunk.markUnsaved();
     }
 
     @Override
@@ -260,10 +256,13 @@ public class IWorldHandler extends WorldHandler {
         } catch (NoSuchFieldException e) {
             e.printStackTrace();
         }
+        tile.setLevel(nativeWorld);
+        tile.clearRemoved();
         if(nativeWorld.captureBlockStates) {
             nativeWorld.capturedTileEntities.put(newPosition, tile);
             return;
         }
+        chunk.setBlockEntity(tile);
         chunk.blockEntities.put(newPosition, tile);
     }
 
