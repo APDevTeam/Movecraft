@@ -18,8 +18,4 @@ public abstract class WorldHandler {
         Location playerLoc = player.getLocation();
         player.teleport(new Location(player.getWorld(), x + playerLoc.getX(),y + playerLoc.getY(),z + playerLoc.getZ(),yaw + playerLoc.getYaw(),pitch + playerLoc.getPitch()));
     }
-    public void addPlayerLocation(Player player, double x, double y, double z, float yaw){
-        Location playerLoc = player.getLocation();
-        player.teleport(new Location(player.getWorld(), x + playerLoc.getX(),y + playerLoc.getY(),z + playerLoc.getZ(), yaw, 0));
-    }
 }

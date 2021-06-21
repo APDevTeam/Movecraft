@@ -95,7 +95,7 @@ public class TeleportUtils {
 
     public static void teleport(Player player, Location location, float yawChange) {
         if(!intialized){
-            Movecraft.getInstance().getWorldHandler().addPlayerLocation(player, location.getX(), location.getY(), location.getZ(), yawChange, 0);
+            Movecraft.getInstance().getWorldHandler().addPlayerLocation(player, location.getX() - player.getLocation().getX(), location.getY() - player.getLocation().getY(), location.getZ() - player.getLocation().getZ(), yawChange, 0);
             return;
         }
         double x = location.getX();
