@@ -9,7 +9,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-    <version>8.0.0-a.3</version>
+    <version>8.0.0-a.4</version>
 
     <pluginRepositories>
         <pluginRepository>
