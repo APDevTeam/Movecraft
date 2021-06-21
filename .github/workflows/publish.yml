@@ -202,7 +202,7 @@ jobs:
           restore-keys: ${{ runner.os }}-spigot-1.17.0-all
 
       - name: Build with Maven
-        run: mvn -B package --file pom.xml
+        run: mvn -T 1C -B package --file pom.xml
 
       - name: Publish package
         run: mvn --batch-mode deploy
