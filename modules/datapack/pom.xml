@@ -9,9 +9,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>movecraft-datapack</artifactId>
     <packaging>jar</packaging>
-    <name>Movecraft</name>
-    <url>http://github.com/apdevteam/Movecraft</url>
-    <version>datapack</version>
+    <name>datapack</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>

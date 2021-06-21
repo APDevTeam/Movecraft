@@ -71,7 +71,7 @@
         <dependency>
             <groupId>net.countercraft</groupId>
             <artifactId>movecraft-datapack</artifactId>
-            <version>datapack</version>
+            <version>${revision}</version>
             <type>jar</type>
         </dependency>
         <dependency>
