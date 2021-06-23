@@ -9,8 +9,8 @@ import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.MovecraftWorld;
-import net.countercraft.movecraft.processing.Result;
-import net.countercraft.movecraft.processing.TaskPredicate;
+import net.countercraft.movecraft.processing.functions.Result;
+import net.countercraft.movecraft.processing.functions.TaskPredicate;
 import net.countercraft.movecraft.processing.WorldManager;
 import net.countercraft.movecraft.processing.effects.Effect;
 import net.countercraft.movecraft.processing.tasks.detection.AllowedBlockValidator;
@@ -40,7 +40,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Deque;

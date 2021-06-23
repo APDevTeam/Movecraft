@@ -1,4 +1,4 @@
-package net.countercraft.movecraft.processing;
+package net.countercraft.movecraft.processing.functions;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -24,6 +24,13 @@ import org.jetbrains.annotations.NotNull;
             }
             return other.validate(t);
         };
+    }
+
+    default <U> BiTaskPredicate<U, T> expandFirst(){
+        return (u,t) -> this.validate(t);
+    }
+    default <U> BiTaskPredicate<T, U> expandSecond(){
+        return (t, u) -> this.validate(t);
     }
 
 }

@@ -1,6 +1,7 @@
-package net.countercraft.movecraft.processing;
+package net.countercraft.movecraft.processing.functions;
 
 import net.countercraft.movecraft.craft.CraftType;
+import net.countercraft.movecraft.processing.MovecraftWorld;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

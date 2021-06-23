@@ -1,4 +1,4 @@
-package net.countercraft.movecraft.processing;
+package net.countercraft.movecraft.processing.functions;
 
 import org.jetbrains.annotations.NotNull;
 
