@@ -1,9 +1,12 @@
 package net.countercraft.movecraft.processing;
 
+import net.countercraft.movecraft.processing.effects.Effect;
 import net.countercraft.movecraft.util.CompletableFutureTask;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -25,8 +28,8 @@ public final class WorldManager {
         }
     };
 
-    private final ConcurrentLinkedQueue<Runnable> worldChanges = new ConcurrentLinkedQueue<>();
-    private final ConcurrentLinkedQueue<Runnable> tasks = new ConcurrentLinkedQueue<>();
+    private final ConcurrentLinkedQueue<Effect> worldChanges = new ConcurrentLinkedQueue<>();
+    private final ConcurrentLinkedQueue<Supplier<Collection<Effect>>> tasks = new ConcurrentLinkedQueue<>();
     private final BlockingQueue<Runnable> currentTasks = new LinkedBlockingQueue<>();
     private volatile boolean running = false;
 
@@ -42,10 +45,12 @@ public final class WorldManager {
         if(tasks.isEmpty())
             return;
         while(!tasks.isEmpty()){
-            CompletableFuture.runAsync(tasks.poll()).whenComplete((ignored,exception) -> {
+            CompletableFuture.supplyAsync(tasks.poll()).whenComplete((effects, exception) -> {
                 poison();
                 if(exception != null){
                     exception.printStackTrace();
+                } else if(effects != null) {
+                    worldChanges.addAll(effects);
                 }
             });
         }
@@ -65,8 +70,9 @@ public final class WorldManager {
             runnable.run();
         }
         // process world updates on the main thread
-        while((runnable = worldChanges.poll()) != null){
-            runnable.run();
+        Effect sideEffect;
+        while((sideEffect = worldChanges.poll()) != null){
+            sideEffect.run();
         }
         CachedMovecraftWorld.purge();
         running = false;
@@ -93,6 +99,13 @@ public final class WorldManager {
     }
 
     public void submit(Runnable task){
+        tasks.add(() -> {
+            task.run();
+            return Collections.emptyList();
+        });
+    }
+
+    public void submit(Supplier<Collection<Effect>> task){
         tasks.add(task);
     }
 
