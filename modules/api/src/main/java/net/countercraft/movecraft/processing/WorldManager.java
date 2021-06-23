@@ -29,7 +29,7 @@ public final class WorldManager {
     };
 
     private final ConcurrentLinkedQueue<Effect> worldChanges = new ConcurrentLinkedQueue<>();
-    private final ConcurrentLinkedQueue<Supplier<Collection<Effect>>> tasks = new ConcurrentLinkedQueue<>();
+    private final ConcurrentLinkedQueue<Supplier<Effect>> tasks = new ConcurrentLinkedQueue<>();
     private final BlockingQueue<Runnable> currentTasks = new LinkedBlockingQueue<>();
     private volatile boolean running = false;
 
@@ -45,12 +45,12 @@ public final class WorldManager {
         if(tasks.isEmpty())
             return;
         while(!tasks.isEmpty()){
-            CompletableFuture.supplyAsync(tasks.poll()).whenComplete((effects, exception) -> {
+            CompletableFuture.supplyAsync(tasks.poll()).whenComplete((effect, exception) -> {
                 poison();
                 if(exception != null){
                     exception.printStackTrace();
-                } else if(effects != null) {
-                    worldChanges.addAll(effects);
+                } else if(effect != null) {
+                    worldChanges.add(effect);
                 }
             });
         }
@@ -101,11 +101,11 @@ public final class WorldManager {
     public void submit(Runnable task){
         tasks.add(() -> {
             task.run();
-            return Collections.emptyList();
+            return null;
         });
     }
 
-    public void submit(Supplier<Collection<Effect>> task){
+    public void submit(Supplier<Effect> task){
         tasks.add(task);
     }
 

@@ -12,6 +12,7 @@ import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.processing.Result;
 import net.countercraft.movecraft.processing.TaskPredicate;
 import net.countercraft.movecraft.processing.WorldManager;
+import net.countercraft.movecraft.processing.effects.Effect;
 import net.countercraft.movecraft.processing.tasks.detection.AllowedBlockValidator;
 import net.countercraft.movecraft.processing.tasks.detection.AlreadyControlledValidator;
 import net.countercraft.movecraft.processing.tasks.detection.AlreadyPilotingValidator;
@@ -39,6 +40,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Deque;
@@ -55,9 +57,10 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.atomic.LongAdder;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-public class DetectionTask implements Runnable {
+public class DetectionTask implements Supplier<Effect> {
     private final static MovecraftLocation[] SHIFTS = {
             new MovecraftLocation(0, 1, 1),
             new MovecraftLocation(0, 0, 1),
@@ -108,10 +111,10 @@ public class DetectionTask implements Runnable {
     }
 
     @Deprecated
-    private void water(@NotNull Craft c){
+    private Effect water(@NotNull Craft c){
         final int waterLine = WorldManager.INSTANCE.executeMain(c::getWaterLine);
         if (c.getType().blockedByWater() || c.getHitBox().getMinY() > waterLine) {
-            return;
+            return null;
         }
 
         var badWorld = WorldManager.INSTANCE.executeMain(c::getWorld);
@@ -160,43 +163,47 @@ public class DetectionTask implements Runnable {
         entireHitbox.addAll(invertedHitBox.difference(confirmed));
 
         var waterData = Bukkit.createBlockData(Material.WATER);
-        for (MovecraftLocation location : entireHitbox) {
-            if (location.getY() <= waterLine) {
-                c.getPhaseBlocks().put(location.toBukkit(badWorld), waterData);
+        return () -> {
+            for (MovecraftLocation location : entireHitbox) {
+                if (location.getY() <= waterLine) {
+                    c.getPhaseBlocks().put(location.toBukkit(badWorld), waterData);
+                }
             }
-        }
+        };
+
     }
 
     @Override
-    public void run() {
+    public @Nullable Effect get() {
         var start = System.nanoTime();
         frontier();
         if(!illegal.isEmpty()) {
-            return;
+            return null;
         }
         var result = completionValidators.stream().reduce(TaskPredicate::and).orElse((a,b,c,d) -> Result.fail()).validate(materials, craft.getType(), world, player);
         result = result.isSucess() ? visitedValidators.stream().reduce(TaskPredicate::and).orElse((a, b, c, d) -> Result.fail()).validate(visitedMaterials, craft.getType(), world, player) : result;
         if(!result.isSucess()){
-            player.sendMessage(result.getMessage());
-            return;
+            Result finalResult = result;
+            return () -> player.sendMessage(finalResult.getMessage());
         }
         craft.setHitBox(new BitmapHitBox(legal));
         craft.setNotificationPlayer(player);
         craft.setOrigBlockCount(craft.getHitBox().size());
-        water(craft); //TODO: Remove
+        var waterEffect = water(craft); //TODO: Remove
         final CraftDetectEvent event = new CraftDetectEvent(craft);
 
         WorldManager.INSTANCE.executeMain(()-> Bukkit.getPluginManager().callEvent(event));
         if (event.isCancelled()) {
-            craft.getAudience().sendMessage(Component.text(event.getFailMessage()));
-            return;
+            return () -> craft.getAudience().sendMessage(Component.text(event.getFailMessage()));
         }
-        craft.getAudience().sendMessage(Component.text(String.format("%s Size: %s", I18nSupport.getInternationalisedString("Detection - Successfully piloted craft"), craft.getHitBox().size())));
-        Movecraft.getInstance().getLogger().info(String.format(
-                I18nSupport.getInternationalisedString("Detection - Success - Log Output"),
-                player == null ? "null" : player.getName(), craft.getType().getCraftName(), craft.getHitBox().size(),
-                craft.getHitBox().getMinX(), craft.getHitBox().getMinZ()));
-        CraftManager.getInstance().addCraft(craft);
+        return ((Effect)() -> {
+            craft.getAudience().sendMessage(Component.text(String.format("%s Size: %s", I18nSupport.getInternationalisedString("Detection - Successfully piloted craft"), craft.getHitBox().size())));
+            Movecraft.getInstance().getLogger().info(String.format(
+                    I18nSupport.getInternationalisedString("Detection - Success - Log Output"),
+                    player == null ? "null" : player.getName(), craft.getType().getCraftName(), craft.getHitBox().size(),
+                    craft.getHitBox().getMinX(), craft.getHitBox().getMinZ()));
+            CraftManager.getInstance().addCraft(craft);
+        }).andThen(waterEffect);
     }
 
     private void frontier(){
