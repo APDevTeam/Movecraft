@@ -9,7 +9,7 @@ import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
 import net.countercraft.movecraft.processing.CachedMovecraftWorld;
 import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.processing.functions.Result;
-import net.countercraft.movecraft.processing.functions.UnaryTaskPredicate;
+import net.countercraft.movecraft.processing.functions.MonadicPredicate;
 import net.countercraft.movecraft.processing.WorldManager;
 import net.countercraft.movecraft.processing.effects.Effect;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
@@ -28,7 +28,7 @@ import java.util.function.Supplier;
 
 public class TranslationTask implements Supplier<Effect> {
 
-    private static final List<UnaryTaskPredicate<Craft>> preTranslationValidators = new ArrayList<>();
+    private static final List<MonadicPredicate<Craft>> preTranslationValidators = new ArrayList<>();
     static {
         preTranslationValidators.add((craft -> craft.getHitBox().isEmpty() ? Result.failWithMessage("Empty hitbox") : Result.succeed()));
         preTranslationValidators.add((craft -> craft.getDisabled() && !craft.getSinking() ? Result.failWithMessage(I18nSupport.getInternationalisedString("Translation - Failed Craft Is Disabled")) : Result.succeed()));
@@ -48,7 +48,7 @@ public class TranslationTask implements Supplier<Effect> {
 
     @Override
     public Effect get() {
-        var preTranslationResult = preTranslationValidators.stream().reduce(UnaryTaskPredicate::and).orElseThrow().validate(craft);
+        var preTranslationResult = preTranslationValidators.stream().reduce(MonadicPredicate::and).orElseThrow().validate(craft);
         if(!preTranslationResult.isSucess()){
             return () -> craft.getAudience().sendMessage(Component.text(preTranslationResult.getMessage()));
         }

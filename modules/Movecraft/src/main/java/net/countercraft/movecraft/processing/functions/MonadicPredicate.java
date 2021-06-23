@@ -2,11 +2,11 @@ package net.countercraft.movecraft.processing.functions;
 
 import org.jetbrains.annotations.NotNull;
 
-@FunctionalInterface public interface UnaryTaskPredicate<T> {
+@FunctionalInterface public interface MonadicPredicate<T> {
 
     Result validate(@NotNull T t);
 
-    default UnaryTaskPredicate<T> or(UnaryTaskPredicate<T> other){
+    default MonadicPredicate<T> or(MonadicPredicate<T> other){
         return t -> {
             var result = this.validate(t);
             if(result.isSucess()){
@@ -16,7 +16,7 @@ import org.jetbrains.annotations.NotNull;
         };
     }
 
-    default UnaryTaskPredicate<T> and(UnaryTaskPredicate<T> other){
+    default MonadicPredicate<T> and(MonadicPredicate<T> other){
         return t -> {
             var result = this.validate(t);
             if(!result.isSucess()){
@@ -26,10 +26,10 @@ import org.jetbrains.annotations.NotNull;
         };
     }
 
-    default <U> BiTaskPredicate<U, T> expandFirst(){
+    default <U> DyadicPredicate<U, T> expandFirst(){
         return (u,t) -> this.validate(t);
     }
-    default <U> BiTaskPredicate<T, U> expandSecond(){
+    default <U> DyadicPredicate<T, U> expandSecond(){
         return (t, u) -> this.validate(t);
     }
 
