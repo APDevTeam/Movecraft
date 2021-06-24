@@ -57,6 +57,12 @@ public final class CachedMovecraftWorld implements MovecraftWorld{
         return world.getUID();
     }
 
+    @NotNull
+    @Override
+    public String getName() {
+        return world.getName();
+    }
+
     @Override
     public int hashCode() {
         return world.hashCode();

@@ -20,4 +20,7 @@ public interface MovecraftWorld {
 
     @NotNull
     public UUID getWorldUUID();
+
+    @NotNull
+    public String getName();
 }

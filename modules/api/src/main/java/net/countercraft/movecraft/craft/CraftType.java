@@ -17,6 +17,7 @@
 
 package net.countercraft.movecraft.craft;
 
+import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.util.Tags;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
@@ -597,11 +598,19 @@ final public class CraftType {
         return perWorldMaxHeightLimit.getOrDefault(world.getName(), maxHeightLimit);
     }
 
+    public int getMaxHeightLimit(@NotNull MovecraftWorld world) {
+        return perWorldMaxHeightLimit.getOrDefault(world.getName(), maxHeightLimit);
+    }
+
     @Deprecated
     public int getMinHeightLimit() {
         return minHeightLimit;
     }
     public int getMinHeightLimit(@NotNull World world) {
+        return perWorldMinHeightLimit.getOrDefault(world.getName(), minHeightLimit);
+    }
+
+    public int getMinHeightLimit(@NotNull MovecraftWorld world) {
         return perWorldMinHeightLimit.getOrDefault(world.getName(), minHeightLimit);
     }
 
