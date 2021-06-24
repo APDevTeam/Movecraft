@@ -12,7 +12,7 @@ import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.CachedMovecraftWorld;
 import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.processing.WorldManager;
-import net.countercraft.movecraft.processing.tasks.DetectionTask;
+import net.countercraft.movecraft.processing.tasks.detection.DetectionTask;
 import net.countercraft.movecraft.util.Counter;
 import net.countercraft.movecraft.util.TimingData;
 import net.countercraft.movecraft.util.hitboxes.HitBox;

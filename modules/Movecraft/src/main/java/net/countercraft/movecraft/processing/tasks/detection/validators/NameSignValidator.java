@@ -1,4 +1,4 @@
-package net.countercraft.movecraft.processing.tasks.detection;
+package net.countercraft.movecraft.processing.tasks.detection.validators;
 
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.CraftType;
@@ -12,7 +12,7 @@ import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class PilotSignValidator implements TaskPredicate<MovecraftLocation> {
+public class NameSignValidator implements TaskPredicate<MovecraftLocation> {
     @Override
     public Result validate(@NotNull MovecraftLocation location, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable CommandSender player) {
         BlockState state = world.getState(location);
@@ -20,17 +20,6 @@ public class PilotSignValidator implements TaskPredicate<MovecraftLocation> {
             return Result.succeed();
         }
         Sign s = (Sign) state;
-        if (!s.getLine(0).equalsIgnoreCase("Pilot:") || player == null) {
-            return Result.succeed();
-        }
-        String playerName = player.getName();
-        boolean foundPilot = false;
-        for(int line = 1; line<4; line++){
-            if(s.getLine(line).equalsIgnoreCase(playerName)){
-                foundPilot = true;
-                break;
-            }
-        }
-        return foundPilot || (player.hasPermission("movecraft.bypasslock")) ? Result.succeed() : Result.failWithMessage(I18nSupport.getInternationalisedString("Detection - Not Registered Pilot"));
+        return s.getLine(0).equalsIgnoreCase("Name:") && !type.getCanBeNamed() ? Result.failWithMessage(I18nSupport.getInternationalisedString("Detection - Craft Type Cannot Be Named")) : Result.succeed();
     }
 }

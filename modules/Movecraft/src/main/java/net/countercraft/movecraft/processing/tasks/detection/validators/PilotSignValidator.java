@@ -1,4 +1,4 @@
-package net.countercraft.movecraft.processing.tasks.detection;
+package net.countercraft.movecraft.processing.tasks.detection.validators;
 
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.CraftType;
@@ -12,20 +12,25 @@ import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class ForbiddenSignStringValidator implements TaskPredicate<MovecraftLocation> {
+public class PilotSignValidator implements TaskPredicate<MovecraftLocation> {
     @Override
     public Result validate(@NotNull MovecraftLocation location, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable CommandSender player) {
         BlockState state = world.getState(location);
         if (!(state instanceof Sign)) {
             return Result.succeed();
         }
-        Sign sign = (Sign) state;
-        for(var line : sign.getLines()){
-            if(type.getForbiddenSignStrings().contains(line.toLowerCase())){
-                return Result.failWithMessage(I18nSupport.getInternationalisedString(
-                        "Detection - Forbidden sign string found"));
+        Sign s = (Sign) state;
+        if (!s.getLine(0).equalsIgnoreCase("Pilot:") || player == null) {
+            return Result.succeed();
+        }
+        String playerName = player.getName();
+        boolean foundPilot = false;
+        for(int line = 1; line<4; line++){
+            if(s.getLine(line).equalsIgnoreCase(playerName)){
+                foundPilot = true;
+                break;
             }
         }
-        return Result.succeed();
+        return foundPilot || (player.hasPermission("movecraft.bypasslock")) ? Result.succeed() : Result.failWithMessage(I18nSupport.getInternationalisedString("Detection - Not Registered Pilot"));
     }
 }

@@ -1,4 +1,4 @@
-package net.countercraft.movecraft.processing.tasks.detection;
+package net.countercraft.movecraft.processing.tasks.detection.validators;
 
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.CraftType;
