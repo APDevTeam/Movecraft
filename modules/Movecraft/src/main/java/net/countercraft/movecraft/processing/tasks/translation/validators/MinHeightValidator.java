@@ -13,7 +13,7 @@ import java.util.Optional;
 
 public class MinHeightValidator implements TetradicPredicate<MovecraftLocation, MovecraftWorld, HitBox, CraftType> {
     @Override
-    public Result validate(@NotNull MovecraftLocation translation, @NotNull MovecraftWorld world, @NotNull HitBox hitBox, @NotNull CraftType type) {
+    public @NotNull Result validate(@NotNull MovecraftLocation translation, @NotNull MovecraftWorld world, @NotNull HitBox hitBox, @NotNull CraftType type) {
         boolean sinking = Optional.<Boolean>empty().get(); // TODO: sinking
         if (hitBox.getMinX() < type.getMinHeightLimit(world) && translation.getY() < 0 && !sinking && !type.getUseGravity()) {
             return Result.failWithMessage(I18nSupport.getInternationalisedString("Translation - Failed Craft hit minimum height limit"));

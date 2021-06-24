@@ -4,7 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 @FunctionalInterface public interface MonadicPredicate<T> {
 
-    Result validate(@NotNull T t);
+    @NotNull Result validate(@NotNull T t);
 
     default MonadicPredicate<T> or(MonadicPredicate<T> other){
         return t -> {

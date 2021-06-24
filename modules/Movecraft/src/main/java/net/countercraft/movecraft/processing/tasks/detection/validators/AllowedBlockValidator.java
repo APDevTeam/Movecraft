@@ -11,7 +11,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class AllowedBlockValidator implements DetectionPredicate<MovecraftLocation> {
     @Override
-    public Result validate(@NotNull MovecraftLocation location, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable CommandSender player) {
+    public @NotNull Result validate(@NotNull MovecraftLocation location, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable CommandSender player) {
         return type.getAllowedBlocks().contains(world.getMaterial(location)) ? Result.succeed() : Result.fail();
     }
 }

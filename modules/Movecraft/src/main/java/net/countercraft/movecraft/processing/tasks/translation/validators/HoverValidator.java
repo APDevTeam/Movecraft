@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class HoverValidator implements TetradicPredicate<MovecraftLocation, MovecraftWorld, HitBox, CraftType> {
     @Override
-    public Result validate(@NotNull MovecraftLocation translation, @NotNull MovecraftWorld world, @NotNull HitBox hitBox, @NotNull CraftType type) {
+    public @NotNull Result validate(@NotNull MovecraftLocation translation, @NotNull MovecraftWorld world, @NotNull HitBox hitBox, @NotNull CraftType type) {
         if (type.getForbiddenHoverOverBlocks().size() > 0){
             MovecraftLocation test = new MovecraftLocation(hitBox.getMidPoint().getX(), hitBox.getMinY(), hitBox.getMidPoint().getZ());
             test = test.translate(0, -1, 0);

@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class ForbiddenBlockValidator implements DetectionPredicate<MovecraftLocation> {
     @Override
-    public Result validate(@NotNull MovecraftLocation location, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable CommandSender player) {
+    public @NotNull Result validate(@NotNull MovecraftLocation location, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable CommandSender player) {
         return type.getForbiddenBlocks().contains(world.getMaterial(location)) ? Result.failWithMessage(I18nSupport.getInternationalisedString("Detection - Forbidden block found")) : Result.succeed();
     }
 }

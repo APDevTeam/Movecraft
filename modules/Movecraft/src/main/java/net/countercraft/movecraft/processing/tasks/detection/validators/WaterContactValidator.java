@@ -16,7 +16,7 @@ import java.util.Map;
 
 public class WaterContactValidator implements DetectionPredicate<Map<Material, Deque<MovecraftLocation>>> {
     @Override
-    public Result validate(@NotNull Map<Material, Deque<MovecraftLocation>> materialDequeMap, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable CommandSender player) {
+    public @NotNull Result validate(@NotNull Map<Material, Deque<MovecraftLocation>> materialDequeMap, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable CommandSender player) {
         return type.getRequireWaterContact() && !materialDequeMap.containsKey(Material.WATER) ? Result.failWithMessage(I18nSupport.getInternationalisedString("Detection - Failed - Water contact required but not found")) : Result.succeed();
     }
 }

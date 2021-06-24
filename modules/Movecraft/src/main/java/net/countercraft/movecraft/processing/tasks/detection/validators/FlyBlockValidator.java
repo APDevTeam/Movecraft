@@ -17,7 +17,7 @@ import java.util.Map;
 
 public class FlyBlockValidator implements DetectionPredicate<Map<Material, Deque<MovecraftLocation>>> {
     @Override
-    public Result validate(@NotNull Map<Material, Deque<MovecraftLocation>> materialDequeMap, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable CommandSender player) {
+    public @NotNull Result validate(@NotNull Map<Material, Deque<MovecraftLocation>> materialDequeMap, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable CommandSender player) {
         int total = materialDequeMap.values().stream().mapToInt(Deque::size).sum();
         var flyBlocks = type.getFlyBlocks();
         for (List<Material> i : flyBlocks.keySet()) {

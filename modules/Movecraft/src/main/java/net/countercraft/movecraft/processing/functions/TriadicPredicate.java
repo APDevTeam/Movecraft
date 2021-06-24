@@ -4,7 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 @FunctionalInterface public interface TriadicPredicate<T, U, V> {
 
-    Result validate(@NotNull T t, @NotNull U u, @NotNull V v);
+    @NotNull Result validate(@NotNull T t, @NotNull U u, @NotNull V v);
 
     default TriadicPredicate<T, U, V> or(TriadicPredicate<T, U, V> other){
         return (t, u, v) -> {

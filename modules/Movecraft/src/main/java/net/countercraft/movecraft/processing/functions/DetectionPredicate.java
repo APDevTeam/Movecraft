@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
  */
 @FunctionalInterface public interface DetectionPredicate<T> extends TetradicPredicate<T, CraftType, MovecraftWorld, CommandSender>{
 
-    Result validate(@NotNull T t, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable CommandSender player);
+    @NotNull Result validate(@NotNull T t, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable CommandSender player);
 
     default DetectionPredicate<T> or(DetectionPredicate<T> other){
         return (t, type, world, player) -> {

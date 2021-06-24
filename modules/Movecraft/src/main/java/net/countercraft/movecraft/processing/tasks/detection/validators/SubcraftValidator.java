@@ -14,7 +14,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class SubcraftValidator implements DetectionPredicate<MovecraftLocation> {
     @Override
-    public Result validate(@NotNull MovecraftLocation movecraftLocation, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable CommandSender player) {
+    public @NotNull Result validate(@NotNull MovecraftLocation movecraftLocation, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable CommandSender player) {
 
         if (!type.getMustBeSubcraft()) {
             return Result.succeed();

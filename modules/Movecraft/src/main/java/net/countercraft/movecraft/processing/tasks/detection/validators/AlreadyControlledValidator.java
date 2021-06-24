@@ -14,7 +14,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class AlreadyControlledValidator implements DetectionPredicate<MovecraftLocation> {
     @Override
-    public Result validate(@NotNull MovecraftLocation location, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable CommandSender player) {
+    public @NotNull Result validate(@NotNull MovecraftLocation location, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable CommandSender player) {
         return CraftManager.getInstance().getCraftList().stream().filter((c)->c.getMovecraftWorld().equals(world)).map(Craft::getHitBox).anyMatch((h) -> h.contains(location)) ? Result.failWithMessage(I18nSupport.getInternationalisedString("Detection - Failed Craft is already being controlled")) : Result.succeed();
     }
 }

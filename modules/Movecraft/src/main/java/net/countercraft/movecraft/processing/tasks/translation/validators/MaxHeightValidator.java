@@ -11,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class MaxHeightValidator implements TetradicPredicate<MovecraftLocation, MovecraftWorld, HitBox, CraftType> {
     @Override
-    public Result validate(@NotNull MovecraftLocation translation, @NotNull MovecraftWorld world, @NotNull HitBox hitBox, @NotNull CraftType type){
+    public @NotNull Result validate(@NotNull MovecraftLocation translation, @NotNull MovecraftWorld world, @NotNull HitBox hitBox, @NotNull CraftType type){
         if (translation.getY() > 0 && hitBox.getMaxY() > type.getMaxHeightLimit(world) && type.getCollisionExplosion() <= 0f) {
             return Result.failWithMessage(I18nSupport.getInternationalisedString("Translation - Failed Craft hit height limit"));
         }

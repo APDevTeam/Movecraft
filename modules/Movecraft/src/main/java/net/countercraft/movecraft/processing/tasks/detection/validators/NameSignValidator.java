@@ -14,7 +14,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class NameSignValidator implements DetectionPredicate<MovecraftLocation> {
     @Override
-    public Result validate(@NotNull MovecraftLocation location, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable CommandSender player) {
+    public @NotNull Result validate(@NotNull MovecraftLocation location, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable CommandSender player) {
         BlockState state = world.getState(location);
         if (!(state instanceof Sign)) {
             return Result.succeed();
