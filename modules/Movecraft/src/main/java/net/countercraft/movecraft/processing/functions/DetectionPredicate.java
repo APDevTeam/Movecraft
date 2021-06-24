@@ -10,11 +10,11 @@ import org.jetbrains.annotations.Nullable;
  * Represents a data carrying predicate, which can return a message depending on the success state of its evaluation
  * @param <T>
  */
-@FunctionalInterface public interface TaskPredicate<T> extends TetradicPredicate<T, CraftType, MovecraftWorld, CommandSender>{
+@FunctionalInterface public interface DetectionPredicate<T> extends TetradicPredicate<T, CraftType, MovecraftWorld, CommandSender>{
 
     Result validate(@NotNull T t, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable CommandSender player);
 
-    default TaskPredicate<T> or(TaskPredicate<T> other){
+    default DetectionPredicate<T> or(DetectionPredicate<T> other){
         return (t, type, world, player) -> {
             var result = this.validate(t, type, world, player);
             if(result.isSucess()){
@@ -24,7 +24,7 @@ import org.jetbrains.annotations.Nullable;
         };
     }
 
-    default TaskPredicate<T> and(TaskPredicate<T> other){
+    default DetectionPredicate<T> and(DetectionPredicate<T> other){
         return (t, type, world, player) -> {
             var result = this.validate(t, type, world, player);
             if(!result.isSucess()){

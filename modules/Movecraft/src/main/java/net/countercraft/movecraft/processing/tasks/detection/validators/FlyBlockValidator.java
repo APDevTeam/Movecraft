@@ -5,7 +5,7 @@ import net.countercraft.movecraft.craft.CraftType;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.processing.functions.Result;
-import net.countercraft.movecraft.processing.functions.TaskPredicate;
+import net.countercraft.movecraft.processing.functions.DetectionPredicate;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
@@ -15,7 +15,7 @@ import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 
-public class FlyBlockValidator implements TaskPredicate<Map<Material, Deque<MovecraftLocation>>> {
+public class FlyBlockValidator implements DetectionPredicate<Map<Material, Deque<MovecraftLocation>>> {
     @Override
     public Result validate(@NotNull Map<Material, Deque<MovecraftLocation>> materialDequeMap, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable CommandSender player) {
         int total = materialDequeMap.values().stream().mapToInt(Deque::size).sum();

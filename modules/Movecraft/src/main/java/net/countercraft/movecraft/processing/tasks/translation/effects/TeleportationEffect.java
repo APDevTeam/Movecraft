@@ -23,19 +23,20 @@ public class TeleportationEffect implements Effect {
 
     @Override
     public void run() {
-        if (craft.getType().getMoveEntities() && !(craft.getSinking() && craft.getType().getOnlyMovePlayers())) {
-            Location midpoint = craft.getHitBox().getMidPoint().toBukkit(craft.getWorld());
-            for (Entity entity : craft.getWorld().getNearbyEntities(midpoint, craft.getHitBox().getXLength() / 2.0 + 1, craft.getHitBox().getYLength() / 2.0 + 2, craft.getHitBox().getZLength() / 2.0 + 1)) {
-                if (entity.getType() == EntityType.PLAYER) {
-                    if(craft.getSinking()){
-                        continue;
-                    }
-                    EntityUpdateCommand eUp = new EntityUpdateCommand(entity, translation.getX(), translation.getY(), translation.getZ(), 0, 0, world);
-                    eUp.doUpdate();
-                } else if (!craft.getType().getOnlyMovePlayers() || entity.getType() == EntityType.PRIMED_TNT) {
-                    EntityUpdateCommand eUp = new EntityUpdateCommand(entity, translation.getX(), translation.getY(), translation.getZ(), 0, 0, world);
-                    eUp.doUpdate();
+        if (!craft.getType().getMoveEntities() || craft.getSinking() && craft.getType().getOnlyMovePlayers()) {
+            return;
+        }
+        Location midpoint = craft.getHitBox().getMidPoint().toBukkit(craft.getWorld());
+        for (Entity entity : craft.getWorld().getNearbyEntities(midpoint, craft.getHitBox().getXLength() / 2.0 + 1, craft.getHitBox().getYLength() / 2.0 + 2, craft.getHitBox().getZLength() / 2.0 + 1)) {
+            if (entity.getType() == EntityType.PLAYER) {
+                if(craft.getSinking()){
+                    continue;
                 }
+                EntityUpdateCommand eUp = new EntityUpdateCommand(entity, translation.getX(), translation.getY(), translation.getZ(), 0, 0, world);
+                eUp.doUpdate();
+            } else if (!craft.getType().getOnlyMovePlayers() || entity.getType() == EntityType.PRIMED_TNT) {
+                EntityUpdateCommand eUp = new EntityUpdateCommand(entity, translation.getX(), translation.getY(), translation.getZ(), 0, 0, world);
+                eUp.doUpdate();
             }
         }
     }

@@ -5,14 +5,14 @@ import net.countercraft.movecraft.craft.CraftType;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.processing.functions.Result;
-import net.countercraft.movecraft.processing.functions.TaskPredicate;
+import net.countercraft.movecraft.processing.functions.DetectionPredicate;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class ForbiddenSignStringValidator implements TaskPredicate<MovecraftLocation> {
+public class ForbiddenSignStringValidator implements DetectionPredicate<MovecraftLocation> {
     @Override
     public Result validate(@NotNull MovecraftLocation location, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable CommandSender player) {
         BlockState state = world.getState(location);

@@ -10,7 +10,7 @@ import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.processing.functions.Result;
-import net.countercraft.movecraft.processing.functions.TaskPredicate;
+import net.countercraft.movecraft.processing.functions.DetectionPredicate;
 import net.countercraft.movecraft.processing.WorldManager;
 import net.countercraft.movecraft.processing.effects.Effect;
 import net.countercraft.movecraft.processing.tasks.detection.validators.AllowedBlockValidator;
@@ -87,17 +87,17 @@ public class DetectionTask implements Supplier<Effect> {
     private final ConcurrentLinkedDeque<MovecraftLocation> legal = new ConcurrentLinkedDeque<>();
     private static final AllowedBlockValidator ALLOWED_BLOCK_VALIDATOR = new AllowedBlockValidator();
     private static final ForbiddenBlockValidator FORBIDDEN_BLOCK_VALIDATOR = new ForbiddenBlockValidator();
-    private static final List<TaskPredicate<MovecraftLocation>> validators = List.of(
+    private static final List<DetectionPredicate<MovecraftLocation>> validators = List.of(
             new ForbiddenSignStringValidator(),
             new NameSignValidator(),
             new PilotSignValidator(),
             new SubcraftValidator(),
             new AlreadyControlledValidator());
-    private static final List<TaskPredicate<Map<Material, Deque<MovecraftLocation>>>> completionValidators = List.of(
+    private static final List<DetectionPredicate<Map<Material, Deque<MovecraftLocation>>>> completionValidators = List.of(
             new SizeValidator(),
             new FlyBlockValidator(),
             new AlreadyPilotingValidator());
-    private static final List<TaskPredicate<Map<Material, Deque<MovecraftLocation>>>> visitedValidators = List.of(
+    private static final List<DetectionPredicate<Map<Material, Deque<MovecraftLocation>>>> visitedValidators = List.of(
             new WaterContactValidator()
     );
 
@@ -179,8 +179,8 @@ public class DetectionTask implements Supplier<Effect> {
         if(!illegal.isEmpty()) {
             return null;
         }
-        var result = completionValidators.stream().reduce(TaskPredicate::and).orElse((a,b,c,d) -> Result.fail()).validate(materials, craft.getType(), world, player);
-        result = result.isSucess() ? visitedValidators.stream().reduce(TaskPredicate::and).orElse((a, b, c, d) -> Result.fail()).validate(visitedMaterials, craft.getType(), world, player) : result;
+        var result = completionValidators.stream().reduce(DetectionPredicate::and).orElse((a, b, c, d) -> Result.fail()).validate(materials, craft.getType(), world, player);
+        result = result.isSucess() ? visitedValidators.stream().reduce(DetectionPredicate::and).orElse((a, b, c, d) -> Result.fail()).validate(visitedMaterials, craft.getType(), world, player) : result;
         if(!result.isSucess()){
             Result finalResult = result;
             return () -> player.sendMessage(finalResult.getMessage());
@@ -247,7 +247,7 @@ public class DetectionTask implements Supplier<Effect> {
                 if(!ALLOWED_BLOCK_VALIDATOR.validate(probe, craft.getType(), world, player).isSucess()){
                     continue;
                 }
-                TaskPredicate<MovecraftLocation> chain = FORBIDDEN_BLOCK_VALIDATOR;
+                DetectionPredicate<MovecraftLocation> chain = FORBIDDEN_BLOCK_VALIDATOR;
                 for (var validator : validators) {
                     chain = chain.and(validator);
                 }
