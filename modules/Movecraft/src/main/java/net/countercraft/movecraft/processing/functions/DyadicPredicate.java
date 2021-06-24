@@ -34,4 +34,15 @@ import org.jetbrains.annotations.NotNull;
         return (u) -> this.validate(t, u);
     }
 
+    default <V> TriadicPredicate<V, T, U> expandFirst(){
+        return (v, t, u) -> this.validate(t,u);
+    }
+
+    default <V> TriadicPredicate<T, V, U> expandSecond(){
+        return (t, v, u) -> this.validate(t,u);
+    }
+    default <V> TriadicPredicate<T, U, V> expandThird(){
+        return (t, u, v) -> this.validate(t,u);
+    }
+
 }

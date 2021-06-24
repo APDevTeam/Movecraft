@@ -24,4 +24,20 @@ import org.jetbrains.annotations.NotNull;
             return other.validate(t,u,v,w);
         };
     }
+
+    default TriadicPredicate<U, V, W> fixFirst(T t){
+        return (u, v, w) -> this.validate(t, u, v, w);
+    }
+
+    default TriadicPredicate<T, V, W> fixSecond(U u){
+        return (t, v, w) -> this.validate(t, u, v, w);
+    }
+
+    default TriadicPredicate<T, U, W> fixThird(V v){
+        return (t, u, w) -> this.validate(t, u, v, w);
+    }
+
+    default TriadicPredicate<T, U, V> fixFourth(W w){
+        return (t, u, v) -> this.validate(t, u, v, w);
+    }
 }
