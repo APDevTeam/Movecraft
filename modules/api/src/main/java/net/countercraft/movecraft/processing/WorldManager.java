@@ -3,14 +3,16 @@ package net.countercraft.movecraft.processing;
 import net.countercraft.movecraft.processing.effects.Effect;
 import net.countercraft.movecraft.util.CompletableFutureTask;
 import org.bukkit.Bukkit;
+import org.bukkit.scheduler.BukkitScheduler;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collection;
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 /**
@@ -39,27 +41,34 @@ public final class WorldManager {
         if(!Bukkit.isPrimaryThread()){
             throw new RuntimeException("WorldManager must be executed on the main thread.");
         }
+        if(tasks.isEmpty())
+            return;
         running = true;
         Runnable runnable;
         int remaining = tasks.size();
-        if(tasks.isEmpty())
-            return;
+        List<CompletableFuture<Effect>> inProgress = new ArrayList<>();
         while(!tasks.isEmpty()){
-            CompletableFuture.supplyAsync(tasks.poll()).whenComplete((effect, exception) -> {
+            inProgress.add(CompletableFuture.supplyAsync(tasks.poll()).whenComplete((effect, exception) -> {
                 poison();
                 if(exception != null){
                     exception.printStackTrace();
                 } else if(effect != null) {
                     worldChanges.add(effect);
                 }
-            });
+            }));
         }
         // process pre-queued tasks and their requests to the main thread
         while(true){
             try {
-                runnable = currentTasks.take();
+                runnable = currentTasks.poll(5, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 continue;
+            }
+            if(runnable == null){
+                Bukkit.getLogger().severe("WorldManager timed out on task query! Dumping " + inProgress.size() + " tasks.");
+                inProgress.forEach(task -> task.cancel(true));
+                worldChanges.clear();
+                break;
             }
             if(runnable == POISON){
                 remaining--;
