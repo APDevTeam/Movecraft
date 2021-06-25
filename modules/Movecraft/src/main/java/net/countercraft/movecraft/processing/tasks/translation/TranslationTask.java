@@ -12,6 +12,7 @@ import net.countercraft.movecraft.processing.effects.Effect;
 import net.countercraft.movecraft.processing.functions.MonadicPredicate;
 import net.countercraft.movecraft.processing.functions.Result;
 import net.countercraft.movecraft.processing.tasks.translation.effects.TeleportationEffect;
+import net.countercraft.movecraft.util.hitboxes.SetHitBox;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
@@ -59,12 +60,14 @@ public class TranslationTask implements Supplier<Effect> {
         //TODO: Portal movement
         //TODO: Gravity
 
-        //TODO: Max/Min heights
+        //DONE: Max/Min heights
         //TODO: Fuel
-        //TODO: Hover over
+        //DONE: Hover over
+        //DONE: world border
 
-        //TODO: Obstruction, harvest, world border
-        //TODO: Move fluid box
+        //TODO: Obstruction, harvest
+        //DONE: Move fluid box
+        Effect fluidBoxEffect = fluidBox();
 
         //TODO: Translation event
         //TODO: Sinking?
@@ -77,5 +80,13 @@ public class TranslationTask implements Supplier<Effect> {
 
     private Effect moveCraft(){
         return null;
+    }
+
+    private Effect fluidBox(){
+        var newFluids = new SetHitBox();
+        for(var location : craft.getFluidLocations()){
+            newFluids.add(location.add(translation));
+        }
+        return () -> craft.setFluidLocations(newFluids);
     }
 }
