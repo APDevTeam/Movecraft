@@ -50,6 +50,7 @@ import net.countercraft.movecraft.sign.PilotSign;
 import net.countercraft.movecraft.sign.RelativeMoveSign;
 import net.countercraft.movecraft.sign.ReleaseSign;
 import net.countercraft.movecraft.sign.RemoteSign;
+import net.countercraft.movecraft.sign.ScuttleSign;
 import net.countercraft.movecraft.sign.SpeedSign;
 import net.countercraft.movecraft.sign.StatusSign;
 import net.countercraft.movecraft.sign.SubcraftRotateSign;
@@ -254,6 +255,7 @@ public class Movecraft extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new StatusSign(), this);
             getServer().getPluginManager().registerEvents(new SubcraftRotateSign(), this);
             getServer().getPluginManager().registerEvents(new TeleportSign(), this);
+            getServer().getPluginManager().registerEvents(new ScuttleSign(), this);
 
             logger.log(Level.INFO, String.format(
                     I18nSupport.getInternationalisedString("Startup - Enabled message"),

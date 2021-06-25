@@ -46,6 +46,10 @@ public class ScuttleCommand implements CommandExecutor {
             commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Scuttle - Craft Already Sinking"));
             return true;
         }
+        if(!commandSender.hasPermission("movecraft."+craft.getType().getCraftName()+".scuttle")){
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Insufficient Permissions"));
+            return true;
+        }
 
         CraftScuttleEvent e = new CraftScuttleEvent(craft, (Player) commandSender);
         Bukkit.getServer().getPluginManager().callEvent(e);
