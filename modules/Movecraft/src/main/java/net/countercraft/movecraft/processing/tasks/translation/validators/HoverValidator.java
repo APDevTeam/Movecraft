@@ -9,10 +9,12 @@ import net.countercraft.movecraft.processing.functions.TetradicPredicate;
 import net.countercraft.movecraft.processing.functions.TriadicPredicate;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
 import org.bukkit.Material;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 public class HoverValidator implements TetradicPredicate<MovecraftLocation, MovecraftWorld, HitBox, CraftType> {
     @Override
+    @Contract(pure = true)
     public @NotNull Result validate(@NotNull MovecraftLocation translation, @NotNull MovecraftWorld world, @NotNull HitBox hitBox, @NotNull CraftType type) {
         if (type.getForbiddenHoverOverBlocks().size() > 0){
             MovecraftLocation test = new MovecraftLocation(hitBox.getMidPoint().getX(), hitBox.getMinY(), hitBox.getMidPoint().getZ());

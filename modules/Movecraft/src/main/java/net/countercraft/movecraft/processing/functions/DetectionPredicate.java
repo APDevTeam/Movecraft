@@ -3,6 +3,7 @@ package net.countercraft.movecraft.processing.functions;
 import net.countercraft.movecraft.craft.CraftType;
 import net.countercraft.movecraft.processing.MovecraftWorld;
 import org.bukkit.command.CommandSender;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -12,9 +13,12 @@ import org.jetbrains.annotations.Nullable;
  */
 @FunctionalInterface public interface DetectionPredicate<T> extends TetradicPredicate<T, CraftType, MovecraftWorld, CommandSender>{
 
+    @Override
+    @Contract(pure = true)
     @NotNull Result validate(@NotNull T t, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable CommandSender player);
 
-    default DetectionPredicate<T> or(DetectionPredicate<T> other){
+    @Contract(pure = true)
+    default @NotNull DetectionPredicate<T> or(@NotNull DetectionPredicate<T> other){
         return (t, type, world, player) -> {
             var result = this.validate(t, type, world, player);
             if(result.isSucess()){
@@ -24,7 +28,8 @@ import org.jetbrains.annotations.Nullable;
         };
     }
 
-    default DetectionPredicate<T> and(DetectionPredicate<T> other){
+    @Contract(pure = true)
+    default @NotNull DetectionPredicate<T> and(@NotNull DetectionPredicate<T> other){
         return (t, type, world, player) -> {
             var result = this.validate(t, type, world, player);
             if(!result.isSucess()){

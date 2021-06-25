@@ -5,6 +5,7 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.support.AsyncChunk;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.WorldBorder;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.data.BlockData;
 import org.jetbrains.annotations.NotNull;
@@ -14,6 +15,7 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 public final class CachedMovecraftWorld implements MovecraftWorld{
 
@@ -29,6 +31,7 @@ public final class CachedMovecraftWorld implements MovecraftWorld{
 
     private final ConcurrentHashMap<ChunkLocation, AsyncChunk<?>> chunkCache = new ConcurrentHashMap<>();
     private final World world;
+    private final AtomicReference<WorldBorder> border = new AtomicReference<>();
 
     private CachedMovecraftWorld(@NotNull World world){
         this.world = world;
@@ -61,6 +64,15 @@ public final class CachedMovecraftWorld implements MovecraftWorld{
     @Override
     public String getName() {
         return world.getName();
+    }
+
+    @NotNull
+    @Override
+    public WorldBorder getWorldBorder() {
+        return border.updateAndGet( (b) ->{
+            if(b != null) return b;
+            return WorldManager.INSTANCE.executeMain(world::getWorldBorder);
+        });
     }
 
     @Override

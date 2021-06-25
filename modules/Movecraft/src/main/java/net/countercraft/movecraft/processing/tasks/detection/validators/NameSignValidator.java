@@ -9,11 +9,13 @@ import net.countercraft.movecraft.processing.functions.DetectionPredicate;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.command.CommandSender;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class NameSignValidator implements DetectionPredicate<MovecraftLocation> {
     @Override
+    @Contract(pure = true)
     public @NotNull Result validate(@NotNull MovecraftLocation location, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable CommandSender player) {
         BlockState state = world.getState(location);
         if (!(state instanceof Sign)) {
