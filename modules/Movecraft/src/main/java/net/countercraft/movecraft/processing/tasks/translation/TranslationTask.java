@@ -3,19 +3,40 @@ package net.countercraft.movecraft.processing.tasks.translation;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.MovecraftRotation;
 import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.craft.CraftType;
+import net.countercraft.movecraft.events.CraftCollisionEvent;
 import net.countercraft.movecraft.events.CraftPreTranslateEvent;
+import net.countercraft.movecraft.events.CraftTranslateEvent;
+import net.countercraft.movecraft.events.FuelBurnEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.mapUpdater.update.CraftTranslateCommand;
 import net.countercraft.movecraft.processing.CachedMovecraftWorld;
 import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.processing.WorldManager;
 import net.countercraft.movecraft.processing.effects.Effect;
 import net.countercraft.movecraft.processing.functions.MonadicPredicate;
 import net.countercraft.movecraft.processing.functions.Result;
+import net.countercraft.movecraft.processing.functions.TetradicPredicate;
 import net.countercraft.movecraft.processing.tasks.translation.effects.TeleportationEffect;
+import net.countercraft.movecraft.processing.tasks.translation.validators.HoverValidator;
+import net.countercraft.movecraft.processing.tasks.translation.validators.MaxHeightValidator;
+import net.countercraft.movecraft.processing.tasks.translation.validators.MinHeightValidator;
+import net.countercraft.movecraft.processing.tasks.translation.validators.WorldBorderValidator;
+import net.countercraft.movecraft.util.Tags;
+import net.countercraft.movecraft.util.hitboxes.HitBox;
 import net.countercraft.movecraft.util.hitboxes.SetHitBox;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.Tag;
+import org.bukkit.World;
+import org.bukkit.event.Event;
+import org.bukkit.inventory.FurnaceInventory;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +48,13 @@ public class TranslationTask implements Supplier<Effect> {
     static {
         preTranslationValidators.add((craft -> craft.getHitBox().isEmpty() ? Result.failWithMessage("Empty hitbox") : Result.succeed()));
         preTranslationValidators.add((craft -> craft.getDisabled() && !craft.getSinking() ? Result.failWithMessage(I18nSupport.getInternationalisedString("Translation - Failed Craft Is Disabled")) : Result.succeed()));
+    }
+    private static final List<TetradicPredicate<MovecraftLocation, MovecraftWorld, HitBox, CraftType>> translationValidators = new ArrayList<>();
+    static {
+        var minHeightValidator = new MinHeightValidator();
+        var maxHeightValidator = new MaxHeightValidator();
+        var hoverOverValidator = new HoverValidator();
+        var worldBorderValidator = new WorldBorderValidator();
     }
 
     private MovecraftRotation rotation;
@@ -59,34 +87,137 @@ public class TranslationTask implements Supplier<Effect> {
         destinationWorld = CachedMovecraftWorld.of(preTranslateEvent.getWorld());
         //TODO: Portal movement
         //TODO: Gravity
+        var destinationLocations = new SetHitBox();
+        var collisions = new SetHitBox();
+        var phaseLocations = new SetHitBox();
+        var harvestLocations = new SetHitBox();
+        var fuelSources = new ArrayList<FurnaceInventory>();
+        for(var originLocation : craft.getHitBox()){
+            var originMaterial = craft.getMovecraftWorld().getMaterial(originLocation);
+            // Remove air from hitboxes
+            if(Tags.AIR.contains(originMaterial)){
+                continue;
+            }
+            if(originMaterial == Material.FURNACE){
+                var state = craft.getMovecraftWorld().getState(originLocation);
+                if(state instanceof FurnaceInventory) {
+                    fuelSources.add((FurnaceInventory) state);
+                }
+            }
 
-        //DONE: Max/Min heights
-        //TODO: Fuel
-        //DONE: Hover over
-        //DONE: world border
+            var destination = originLocation.add(translation);
 
-        //TODO: Obstruction, harvest
-        //DONE: Move fluid box
-        Effect fluidBoxEffect = fluidBox();
+            destinationLocations.add(destination);
+            // previous locations cannot collide
+            if(craft.getMovecraftWorld().equals(destinationWorld) && craft.getHitBox().contains(destination)){
+                continue;
+            }
+            var destinationMaterial = destinationWorld.getMaterial(destination);
+            if(craft.getType().getPassthroughBlocks().contains(destinationMaterial)){
+                phaseLocations.add(destination);
+                continue;
+            }
+            if(craft.getType().getHarvestBlocks().contains(destinationMaterial) &&
+                    craft.getType().getHarvesterBladeBlocks().contains(originMaterial)){
+                harvestLocations.add(destination);
+                continue;
+            }
+            collisions.add(destination);
+        }
+        var fuelBurnRate = craft.getType().getFuelBurnRate(preTranslateEvent.getWorld());
+        Effect fuelBurnEffect;
+        if (craft.getBurningFuel() >= fuelBurnRate) {
+            //call event
+            final FuelBurnEvent event = new FuelBurnEvent(craft, craft.getBurningFuel(), fuelBurnRate);
+            submitEvent(event);
+            fuelBurnEffect = () -> craft.setBurningFuel(event.getBurningFuel() - event.getFuelBurnRate());
+        } else {
+            var fuelSource = findFuelHolders(craft.getType(), fuelSources);
+            if(fuelSource == null){
+                return () -> craft.getAudience().sendMessage(I18nSupport.getInternationalisedComponent("Translation - Failed Craft out of fuel"));
+            }
+            callFuelEvent(craft, findFuelStack(craft.getType(), fuelSource));
+            //TODO: Take Fuel
+            fuelBurnEffect = () -> Bukkit.getLogger().info("This is where we'd take ur fuel, if we had some");
+        }
+        var translationResult = translationValidators.stream().reduce(TetradicPredicate::and).orElseThrow().validate(translation, destinationWorld, destinationLocations, craft.getType());
+        if(!translationResult.isSucess()){
+            return () -> craft.getAudience().sendMessage(Component.text(translationResult.getMessage()));
+        }
 
-        //TODO: Translation event
+
+
+        // Direct float comparison due to check for statically initialized value
+        callCollisionEvent(craft, collisions, preTranslateEvent.getWorld());
+        if(craft.getType().getCollisionExplosion() == 0.0F && !collisions.isEmpty()){
+            //TODO: collision highlights
+            return () -> craft.getAudience().sendMessage(Component.text(String.format(I18nSupport.getInternationalisedString("Translation - Failed Craft is obstructed") + " @ %d,%d,%d,%s", 0, 0, 0, "not_implemented")));
+        }
+        Effect fluidBoxEffect = fluidBox(craft, translation);
+        var  translateEvent = callTranslateEvent(craft, destinationLocations, preTranslateEvent.getWorld());
         //TODO: Sinking?
         //TODO: Collision explosion
-        //TODO: Collision event
+        //TODO: phase blocks
         Effect movementEffect = moveCraft();
-        Effect teleportEffect = new TeleportationEffect(craft, translation, preTranslateEvent.getWorld());
+        //TODO: un-phase blocks
+        Effect teleportEffect = new TeleportationEffect(craft, translation, translateEvent.getWorld());
+        return fuelBurnEffect
+                .andThen(fluidBoxEffect)
+                .andThen(movementEffect)
+                .andThen(teleportEffect);
+    }
+
+    private static void submitEvent(Event event ){
+        WorldManager.INSTANCE.executeMain(() -> Bukkit.getServer().getPluginManager().callEvent(event));
+    }
+
+    private static @NotNull Effect moveCraft(){
         return null;
     }
 
-    private Effect moveCraft(){
-        return null;
-    }
-
-    private Effect fluidBox(){
+    private static @NotNull Effect fluidBox(Craft craft, MovecraftLocation translation){
         var newFluids = new SetHitBox();
         for(var location : craft.getFluidLocations()){
             newFluids.add(location.add(translation));
         }
         return () -> craft.setFluidLocations(newFluids);
+    }
+
+    private static @NotNull CraftCollisionEvent callCollisionEvent(@NotNull Craft craft, @NotNull HitBox collided, @NotNull World destinationWorld){
+        var event = new CraftCollisionEvent(craft, collided, destinationWorld);
+        submitEvent(event);
+        return event;
+    }
+
+    private static @NotNull CraftTranslateEvent callTranslateEvent(@NotNull Craft craft, @NotNull HitBox destinationHitBox, @NotNull World destinationWorld){
+        var translateEvent = new CraftTranslateEvent(craft, craft.getHitBox(), destinationHitBox, destinationWorld);
+        submitEvent(translateEvent);
+        return translateEvent;
+    }
+
+    private static @Nullable FurnaceInventory findFuelHolders(CraftType type, List<FurnaceInventory> inventories){
+        for(var inventory : inventories){
+            var stack = findFuelStack(type, inventory);
+            if(stack != null){
+                return inventory;
+            }
+        }
+        return null;
+    }
+
+    private static @Nullable ItemStack findFuelStack(@NotNull CraftType type, @NotNull FurnaceInventory inventory){
+        for(var item : inventory){
+            if(item == null || !type.getFuelTypes().containsKey(item.getType())){
+                continue;
+            }
+            return item;
+        }
+        return null;
+    }
+
+    private static @NotNull FuelBurnEvent callFuelEvent(@NotNull Craft craft, @NotNull ItemStack burningFuel){
+        var event = new FuelBurnEvent(craft, craft.getType().getFuelTypes().get(burningFuel.getType()), craft.getType().getFuelBurnRate(craft.getWorld()));
+        submitEvent(event);
+        return event;
     }
 }

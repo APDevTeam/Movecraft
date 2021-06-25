@@ -13,6 +13,8 @@ import java.util.EnumSet;
 
 public class Tags {
 
+    public static final EnumSet<Material> AIR = EnumSet.of(Material.AIR, Material.CAVE_AIR, Material.VOID_AIR);
+
     @Nullable
     public static EnumSet<Material> parseBlockRegistry(@NotNull String string){
         if(!string.startsWith("#")){
