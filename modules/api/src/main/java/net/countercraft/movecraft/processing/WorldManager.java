@@ -3,7 +3,6 @@ package net.countercraft.movecraft.processing;
 import net.countercraft.movecraft.processing.effects.Effect;
 import net.countercraft.movecraft.util.CompletableFutureTask;
 import org.bukkit.Bukkit;
-import org.bukkit.scheduler.BukkitScheduler;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -11,14 +10,16 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 /**
  *
  */
-public final class WorldManager {
+public final class WorldManager implements Executor {
 
     public static final WorldManager INSTANCE = new WorldManager();
     private static final Runnable POISON = new Runnable() {
@@ -88,8 +89,11 @@ public final class WorldManager {
     }
 
     public <T> T executeMain(@NotNull Supplier<T> callable){
+        if(!this.isRunning()){
+            throw new RejectedExecutionException("WorldManager must be running to execute on the main thread");
+        }
         if(Bukkit.isPrimaryThread()){
-            throw new RuntimeException("Cannot schedule on main thread from the main thread");
+            throw new RejectedExecutionException("Cannot schedule on main thread from the main thread");
         }
         var task = new CompletableFutureTask<>(callable);
         currentTasks.add(task);
@@ -120,5 +124,10 @@ public final class WorldManager {
 
     public boolean isRunning() {
         return running;
+    }
+
+    @Override
+    public void execute(@NotNull Runnable command) {
+        this.executeMain(command);
     }
 }
