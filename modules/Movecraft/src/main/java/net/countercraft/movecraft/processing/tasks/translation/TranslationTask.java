@@ -51,10 +51,10 @@ public class TranslationTask implements Supplier<Effect> {
     }
     private static final List<TetradicPredicate<MovecraftLocation, MovecraftWorld, HitBox, CraftType>> translationValidators = new ArrayList<>();
     static {
-        var minHeightValidator = new MinHeightValidator();
-        var maxHeightValidator = new MaxHeightValidator();
-        var hoverOverValidator = new HoverValidator();
-        var worldBorderValidator = new WorldBorderValidator();
+        translationValidators.add(new MinHeightValidator());
+        translationValidators.add(new MaxHeightValidator());
+        translationValidators.add(new HoverValidator());
+        translationValidators.add(new WorldBorderValidator());
     }
 
     private MovecraftRotation rotation;
@@ -167,8 +167,10 @@ public class TranslationTask implements Supplier<Effect> {
                 .andThen(teleportEffect);
     }
 
-    private static void submitEvent(Event event ){
+    @Contract("_ -> param1")
+    private static <T extends Event> T submitEvent(@NotNull T event ){
         WorldManager.INSTANCE.executeMain(() -> Bukkit.getServer().getPluginManager().callEvent(event));
+        return event;
     }
 
     private static @NotNull Effect moveCraft(){
@@ -184,15 +186,11 @@ public class TranslationTask implements Supplier<Effect> {
     }
 
     private static @NotNull CraftCollisionEvent callCollisionEvent(@NotNull Craft craft, @NotNull HitBox collided, @NotNull World destinationWorld){
-        var event = new CraftCollisionEvent(craft, collided, destinationWorld);
-        submitEvent(event);
-        return event;
+        return submitEvent(new CraftCollisionEvent(craft, collided, destinationWorld));
     }
 
     private static @NotNull CraftTranslateEvent callTranslateEvent(@NotNull Craft craft, @NotNull HitBox destinationHitBox, @NotNull World destinationWorld){
-        var translateEvent = new CraftTranslateEvent(craft, craft.getHitBox(), destinationHitBox, destinationWorld);
-        submitEvent(translateEvent);
-        return translateEvent;
+        return submitEvent(new CraftTranslateEvent(craft, craft.getHitBox(), destinationHitBox, destinationWorld));
     }
 
     private static @Nullable FurnaceInventory findFuelHolders(CraftType type, List<FurnaceInventory> inventories){
@@ -216,8 +214,6 @@ public class TranslationTask implements Supplier<Effect> {
     }
 
     private static @NotNull FuelBurnEvent callFuelEvent(@NotNull Craft craft, @NotNull ItemStack burningFuel){
-        var event = new FuelBurnEvent(craft, craft.getType().getFuelTypes().get(burningFuel.getType()), craft.getType().getFuelBurnRate(craft.getWorld()));
-        submitEvent(event);
-        return event;
+        return submitEvent(new FuelBurnEvent(craft, craft.getType().getFuelTypes().get(burningFuel.getType()), craft.getType().getFuelBurnRate(craft.getWorld())));
     }
 }
