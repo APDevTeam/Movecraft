@@ -18,7 +18,7 @@ import org.jetbrains.annotations.NotNull;
 @SuppressWarnings("unused")
 public class IAsyncChunk extends AsyncChunk<CraftChunk> {
 
-    private final @NotNull LoadingCache<MovecraftLocation, BlockState> stateCache = CacheBuilder.newBuilder().maximumSize(100).build(new CacheLoader<>() {
+    private final @NotNull LoadingCache<MovecraftLocation, BlockState> stateCache = CacheBuilder.newBuilder().maximumSize(1000).build(new CacheLoader<>() {
         @Override
         public BlockState load(@NotNull MovecraftLocation movecraftLocation) {
             var block = chunk.getBlock(movecraftLocation.getX(), movecraftLocation.getY(), movecraftLocation.getZ());
