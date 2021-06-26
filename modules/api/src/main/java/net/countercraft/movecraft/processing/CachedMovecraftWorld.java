@@ -69,6 +69,8 @@ public final class CachedMovecraftWorld implements MovecraftWorld{
     @NotNull
     @Override
     public WorldBorder getWorldBorder() {
+        WorldBorder query;
+        if((query = border.get()) != null) return query;
         return border.updateAndGet( (b) ->{
             if(b != null) return b;
             return WorldManager.INSTANCE.executeMain(world::getWorldBorder);
