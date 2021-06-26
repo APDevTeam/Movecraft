@@ -9,10 +9,10 @@ import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.MovecraftWorld;
-import net.countercraft.movecraft.processing.functions.Result;
-import net.countercraft.movecraft.processing.functions.DetectionPredicate;
 import net.countercraft.movecraft.processing.WorldManager;
 import net.countercraft.movecraft.processing.effects.Effect;
+import net.countercraft.movecraft.processing.functions.DetectionPredicate;
+import net.countercraft.movecraft.processing.functions.Result;
 import net.countercraft.movecraft.processing.tasks.detection.validators.AllowedBlockValidator;
 import net.countercraft.movecraft.processing.tasks.detection.validators.AlreadyControlledValidator;
 import net.countercraft.movecraft.processing.tasks.detection.validators.AlreadyPilotingValidator;
@@ -28,8 +28,8 @@ import net.countercraft.movecraft.util.AtomicLocationSet;
 import net.countercraft.movecraft.util.CollectionUtils;
 import net.countercraft.movecraft.util.hitboxes.BitmapHitBox;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
-import net.countercraft.movecraft.util.hitboxes.SolidHitBox;
 import net.countercraft.movecraft.util.hitboxes.SetHitBox;
+import net.countercraft.movecraft.util.hitboxes.SolidHitBox;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -48,13 +48,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -215,11 +214,16 @@ public class DetectionTask implements Supplier<Effect> {
         }
         int threads = Runtime.getRuntime().availableProcessors();
         while (!currentFrontier.isEmpty() && size.intValue() < craft.getType().getMaxSize()) {
-            List<Callable<Object>> tasks = new ArrayList<>();
+            List<ForkJoinTask<?>> tasks = new ArrayList<>();
             for(int j = 0; j < threads ; j++) {
-                tasks.add(Executors.callable(new DetectAction(currentFrontier, nextFrontier)));
+                tasks.add(ForkJoinPool.commonPool().submit(new DetectAction(currentFrontier, nextFrontier)));
             }
-            ForkJoinPool.commonPool().invokeAll(tasks);
+            for(var task : tasks){
+                task.join();
+                if(task.getException() != null){
+                    task.getException().printStackTrace();
+                }
+            }
             currentFrontier = nextFrontier;
             nextFrontier = new ConcurrentLinkedQueue<>();
         }
@@ -267,7 +271,6 @@ public class DetectionTask implements Supplier<Effect> {
                     player.sendMessage(result.getMessage());
                 }
             }
-
         }
     }
 }
