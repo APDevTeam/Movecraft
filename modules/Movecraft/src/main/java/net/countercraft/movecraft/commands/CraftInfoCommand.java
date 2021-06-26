@@ -17,7 +17,7 @@ import java.util.OptionalInt;
 import java.util.function.Function;
 
 public class CraftInfoCommand implements TabExecutor {
-    private static final List<Function<@NotNull Craft, @NotNull ? extends Iterable<String>>> providers = new ArrayList<>();
+    private static final List<Function<Craft,? extends Iterable<String>>> providers = new ArrayList<>();
     static {
         registerMultiProvider(CraftInfoCommand::allowedBlockProvider);
         registerProvider((craft -> "Craft size: " + craft.getHitBox().size()));
@@ -39,11 +39,11 @@ public class CraftInfoCommand implements TabExecutor {
         return List.of();
     }
 
-    public static void registerMultiProvider(@NotNull Function<@NotNull Craft, @NotNull ? extends Iterable<String>> provider){
+    public static void registerMultiProvider(@NotNull Function<Craft, ? extends Iterable<String>> provider){
         providers.add(provider);
     }
 
-    public static void registerProvider(@NotNull Function<@NotNull Craft, @NotNull String> provider){
+    public static void registerProvider(@NotNull Function<Craft, String> provider){
         providers.add(provider.andThen(List::of));
     }
 
