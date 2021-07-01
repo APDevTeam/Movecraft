@@ -45,14 +45,13 @@ public class IAsyncChunk extends AsyncChunk<CraftChunk> {
     @Override
     @NotNull
     public Material getType(@NotNull MovecraftLocation location){
-        return CraftBlockData.fromData(chunk.getHandle().getBlockState(new BlockPos(location.getX(), location.getY(), location.getZ()))).getMaterial();
+        return this.getData(location).getMaterial();
     }
 
     @Override
     @NotNull
     public BlockData getData(@NotNull MovecraftLocation location){
-        net.minecraft.world.level.block.state.BlockState data = chunk.getHandle().getBlockState(new BlockPos(location.getX(), location.getY(), location.getZ()));
-        return CraftBlockData.fromData(data);
+        return CraftBlockData.fromData(chunk.getHandle().getBlockState(new BlockPos(location.getX(), location.getY(), location.getZ())));
     }
 
 }
