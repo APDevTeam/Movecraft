@@ -21,8 +21,13 @@ public class AtomicBitSet {
      * @return the previous value of the bit with the specified index
      */
     public boolean add(int index){
-        long prior = (long) BACKING.getAndBitwiseOr(backing, index/FIELD_LENGTH, (1L << (index & (FIELD_LENGTH - 1))));
-        return ((prior >>> (index & (FIELD_LENGTH - 1))) & 1L) == 1;
+        while(true){
+            long bitField = (long) BACKING.getAcquire(backing, index/FIELD_LENGTH);
+            if(BACKING.weakCompareAndSetRelease(backing, index/FIELD_LENGTH, bitField,
+                    bitField | (1L << (index & (FIELD_LENGTH - 1))))){
+                return ((bitField >>> (index & (FIELD_LENGTH - 1))) & 1L) == 1;
+            }
+        }
     }
 
     /**
