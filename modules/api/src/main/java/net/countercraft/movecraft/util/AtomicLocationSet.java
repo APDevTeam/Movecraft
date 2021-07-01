@@ -6,6 +6,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.concurrent.atomic.LongAdder;
@@ -177,9 +178,7 @@ public class AtomicLocationSet implements Set<MovecraftLocation> {
 
         @NotNull
         public T get(int index){
-            if(index < 0 || index > TREE_WIDTH){
-                throw new IndexOutOfBoundsException(String.format("Index %d must be in range <0,%d>", index, TREE_WIDTH));
-            }
+            Objects.checkIndex(index, TREE_WIDTH);
             var fetch = children.getAcquire(index);
             if(fetch == null) {
                 var child = initializer.get();
