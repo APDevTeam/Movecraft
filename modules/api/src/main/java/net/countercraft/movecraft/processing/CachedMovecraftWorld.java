@@ -145,7 +145,10 @@ public final class CachedMovecraftWorld implements MovecraftWorld{
 
         @Override
         public int hashCode() {
-            return Objects.hash(x, z, world);
+            int result =  31 + x;
+            result = 31 * result + z;
+            result = 31 * result + world.hashCode();
+            return result;
         }
 
         @Override
