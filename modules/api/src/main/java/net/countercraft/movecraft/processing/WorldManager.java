@@ -45,7 +45,6 @@ public final class WorldManager implements Executor {
         if(tasks.isEmpty())
             return;
         running = true;
-        Runnable runnable;
         int remaining = tasks.size();
         List<CompletableFuture<Effect>> inProgress = new ArrayList<>();
         while(!tasks.isEmpty()){
@@ -59,25 +58,29 @@ public final class WorldManager implements Executor {
             }));
         }
         // process pre-queued tasks and their requests to the main thread
-        while(true){
+        eventLoop: while(true){
+            var runningTasks = new ArrayList<Runnable>();
             try {
-                runnable = currentTasks.poll(5, TimeUnit.SECONDS);
+                runningTasks.add(currentTasks.poll(5, TimeUnit.SECONDS));
             } catch (InterruptedException e) {
                 continue;
             }
-            if(runnable == null){
+            if(runningTasks.isEmpty()){
                 Bukkit.getLogger().severe("WorldManager timed out on task query! Dumping " + inProgress.size() + " tasks.");
                 inProgress.forEach(task -> task.cancel(true));
                 worldChanges.clear();
                 break;
             }
-            if(runnable == POISON){
-                remaining--;
-                if(remaining == 0){
-                    break;
+            currentTasks.drainTo(runningTasks);
+            for(var runnable : runningTasks){
+                if(runnable == POISON){
+                    remaining--;
+                    if(remaining == 0){
+                        break eventLoop;
+                    }
                 }
+                runnable.run();
             }
-            runnable.run();
         }
         // process world updates on the main thread
         Effect sideEffect;
