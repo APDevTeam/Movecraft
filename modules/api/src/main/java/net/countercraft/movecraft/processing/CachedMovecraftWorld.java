@@ -11,7 +11,6 @@ import org.bukkit.block.data.BlockData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -103,7 +102,11 @@ public final class CachedMovecraftWorld implements MovecraftWorld{
         if((test = chunkCache.get(chunkLocation)) != null){
             return test;
         }
-        test = WorldManager.INSTANCE.executeMain(() -> AsyncChunk.of(world.getChunkAt(location.toBukkit(world))));
+        test = WorldManager.INSTANCE.executeMain(() -> {
+            AsyncChunk<?> temp;
+            if((temp = chunkCache.get(chunkLocation)) != null) return temp;
+            return AsyncChunk.of(world.getChunkAt(location.toBukkit(world)));
+        });
         var previous = chunkCache.putIfAbsent(chunkLocation, test);
         return previous == null ? test : previous;
     }
@@ -113,7 +116,7 @@ public final class CachedMovecraftWorld implements MovecraftWorld{
         return new MovecraftLocation(location.getX() & 0x0f, location.getY(), location.getZ() & 0x0f);
     }
 
-    private static class ChunkLocation {
+    private static final class ChunkLocation {
         private final int x;
         private final int z;
         private final World world;
