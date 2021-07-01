@@ -20,7 +20,7 @@ public class FlyBlockValidator implements DetectionPredicate<Map<Material, Deque
     @Override
     @Contract(pure = true)
     public @NotNull Result validate(@NotNull Map<Material, Deque<MovecraftLocation>> materialDequeMap, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable CommandSender player) {
-        int total = materialDequeMap.values().stream().mapToInt(Deque::size).sum();
+        int total = materialDequeMap.values().parallelStream().mapToInt(Deque::size).sum();
         var flyBlocks = type.getFlyBlocks();
         for (List<Material> i : flyBlocks.keySet()) {
             int numberOfBlocks = 0;
