@@ -56,12 +56,12 @@ public class AtomicBitSet {
         if (cellField != null) {
             return cellField;
         }
-        cellField = new Cell();
-
-        if(BACKING.compareAndExchangeRelease(backing, index/FIELD_LENGTH, null, cellField) == null){
-            return cellField;
+        var initialized = new Cell();
+        cellField = (Cell) BACKING.compareAndExchangeRelease(backing, index/FIELD_LENGTH, null, initialized);
+        if(cellField == null){
+            return initialized;
         }
-        return (Cell) BACKING.getAcquire(backing, index/FIELD_LENGTH);
+        return cellField;
     }
 
     @Override
