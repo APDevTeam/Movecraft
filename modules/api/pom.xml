@@ -116,6 +116,10 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.1</version>
                 <configuration>
+                    <compilerArgs>
+                        <arg>--add-exports</arg>
+                        <arg>java.base/jdk.internal.vm.annotation=ALL-UNNAMED</arg>
+                    </compilerArgs>
                     <includes>
                         <include>net/countercraft/movecraft/**</include>
                     </includes>
@@ -139,6 +143,7 @@
                 <version>2.22.0</version>
                 <configuration>
                     <trimStackTrace>false</trimStackTrace>
+                    <argLine>-XX:-RestrictContended</argLine>
                 </configuration>
                 <dependencies>
                     <dependency>
