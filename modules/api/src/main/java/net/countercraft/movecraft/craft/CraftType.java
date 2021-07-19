@@ -277,6 +277,7 @@ final public class CraftType {
         } else {
             fuelTypes.put(Material.COAL_BLOCK, 79.0);
             fuelTypes.put(Material.COAL, 7.0);
+            fuelTypes.put(Material.CHARCOAL, 7.0);
         }
         disableTeleportToWorlds = new HashSet<>();
         List<String> disabledWorlds = data.getStringListOrEmpty("disableTeleportToWorlds");
