@@ -321,6 +321,7 @@ public class Movecraft extends JavaPlugin {
         logger.info("Saved default movecraft datapack.");
         this.getConfig().set("GeneratedDatapack", true);
         this.saveConfig();
+        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "datapack list");
 
         // Fall back to vanilla mechanism if not running paper
         if(Settings.IsPaper) {
