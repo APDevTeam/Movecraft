@@ -17,8 +17,6 @@
 
 package net.countercraft.movecraft;
 
-import io.papermc.paper.datapack.Datapack;
-import io.papermc.paper.datapack.DatapackManager;
 import net.countercraft.movecraft.async.AsyncManager;
 import net.countercraft.movecraft.commands.ContactsCommand;
 import net.countercraft.movecraft.commands.CraftInfoCommand;
@@ -67,7 +65,6 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Map;
@@ -111,7 +108,7 @@ public class Movecraft extends JavaPlugin {
             Class.forName("com.destroystokyo.paper.Title");
             Settings.IsPaper = true;
         }catch (Exception e){
-            Settings.IsPaper=false;
+            Settings.IsPaper = false;
         }
 
 
@@ -321,38 +318,17 @@ public class Movecraft extends JavaPlugin {
         logger.info("Saved default movecraft datapack.");
         this.getConfig().set("GeneratedDatapack", true);
         this.saveConfig();
-        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "datapack list");
 
-        // Fall back to vanilla mechanism if not running paper
-        if(Settings.IsPaper) {
-            Collection<Datapack> datapacks = Bukkit.getDatapackManager().getPacks();
-            Datapack movecraftDatapack = null;
-            logger.info("Packs: "); // TODO: DEBUG
-            for(Datapack datapack : datapacks) {
-                logger.info(datapack.getName()); // TODO: DEBUG
-                if(datapack.getName().equals("\"file/movecraft-data.zip\"")) {
-                    movecraftDatapack = datapack;
-                    break;
-                }
-            }
-            // Fall back to vanilla mechanism if unable to find movecraft datapack
-            if(movecraftDatapack != null) {
-                movecraftDatapack.setEnabled(true);
-                datapacks = Bukkit.getDatapackManager().getEnabledPacks();
-                logger.info("Enabled packs: "); // TODO: DEBUG
-                for(Datapack datapack : datapacks) {
-                    logger.info(datapack.getName()); // TODO: DEBUG
-                    if(datapack.getName().equals("\"file/movecraft-data.zip\"")) {
-                        return; // Pack enabled properly
-                    }
-                }
-                // Fall back to vanilla mechanism if unable to enable datapack
-            }
-        }
+        logger.info("It is expected that your crafts fail to load at first, they will be loaded post startup on first boot.");
 
-        if (!Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "datapack enable \"file/movecraft-data.zip\"")) {
-            logger.severe("Failed to automatically load movecraft datapack. Check if it exists.");
-        }
+        getServer().getScheduler().scheduleSyncDelayedTask(this, () -> {
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "datapack list");
+
+            if (!Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "datapack enable \"file/movecraft-data.zip\"")) {
+                logger.severe("Failed to automatically load movecraft datapack. Check if it exists.");
+            }
+            CraftManager.getInstance().initCraftTypes();
+        });
     }
 
 
