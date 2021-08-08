@@ -71,4 +71,16 @@ public class Tags {
             return null;
         }
     }
+
+    @NotNull
+    public static EnumSet<Material> getMaterialsFromString(@NotNull String materialName) {
+        EnumSet<Material> returnList = EnumSet.noneOf(Material.class);
+        var tagged = parseBlockRegistry(materialName);
+        if(tagged != null){
+            returnList.addAll(tagged);
+        } else {
+            returnList.add(Material.valueOf(materialName.toUpperCase()));
+        }
+        return returnList;
+    }
 }

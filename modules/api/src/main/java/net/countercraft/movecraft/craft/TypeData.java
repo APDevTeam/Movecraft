@@ -329,15 +329,11 @@ public final class TypeData {
                 throw new IllegalArgumentException("Entry " + object + " must be a material for key " + key);
             }
             String materialName = (String) object;
-            var tagged = Tags.parseBlockRegistry(materialName);
-            if(tagged != null){
-                if(tagged.isEmpty()){
-                    throw new IllegalArgumentException("Entry " + object + " describes an empty or non-existent Tag for key " + key);
-                }
-                returnList.addAll(tagged);
-            } else {
-                returnList.add(Material.valueOf(materialName.toUpperCase()));
+            EnumSet<Material> materials = Tags.getMaterialsFromString(materialName);
+            if(materials.isEmpty()){
+                throw new IllegalArgumentException("Entry " + object + " describes an empty or non-existent Tag for key " + key);
             }
+            returnList.addAll(materials);
         }
         return returnList;
     }
@@ -357,12 +353,7 @@ public final class TypeData {
         }
         for(Object object : (ArrayList<?>) this.backingData.get(key)){
             String materialName = (String) object;
-            var tagged = Tags.parseBlockRegistry(materialName);
-            if(tagged != null){
-                returnList.addAll(tagged);
-            } else {
-                returnList.add(Material.valueOf(materialName.toUpperCase()));
-            }
+            returnList.addAll(Tags.getMaterialsFromString(materialName));
         }
         return returnList;
     }
