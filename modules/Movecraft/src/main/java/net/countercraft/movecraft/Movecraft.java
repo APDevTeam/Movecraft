@@ -324,13 +324,14 @@ public class Movecraft extends JavaPlugin {
 
         logger.info(I18nSupport.getInternationalisedString("Startup - Datapack First Boot"));
 
-        getServer().getScheduler().scheduleSyncDelayedTask(this, () -> {
+        this.getServer().getScheduler().scheduleSyncDelayedTask(this, () -> {
             logger.info(I18nSupport.getInternationalisedString("Startup - Datapack Enabling"));
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "datapack list"); // required for some reason
             if (!Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "datapack enable \"file/movecraft-data.zip\"")) {
                 logger.severe(I18nSupport.getInternationalisedString("Startup - Datapack Enable Error"));
             }
             CraftManager.getInstance().initCraftTypes();
-        });
+        }, 200); // Wait 10 seconds before reloading.  Needed to prevent Paper from running this during startup.
     }
 
 
