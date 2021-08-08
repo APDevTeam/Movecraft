@@ -212,12 +212,12 @@ public class Movecraft extends JavaPlugin {
         } else {
 
             // Startup procedure
-            initializeDatapack();
+            boolean datapackInitialized = initializeDatapack();
             asyncManager = new AsyncManager();
             asyncManager.runTaskTimer(this, 0, 1);
             MapUpdateManager.getInstance().runTaskTimer(this, 0, 1);
 
-            CraftManager.initialize();
+            CraftManager.initialize(datapackInitialized);
             Bukkit.getScheduler().runTaskTimer(this, WorldManager.INSTANCE::run, 0,1);
 
 
@@ -272,9 +272,9 @@ public class Movecraft extends JavaPlugin {
 
     }
 
-    private void initializeDatapack(){
+    private boolean initializeDatapack(){
         if(this.getConfig().getBoolean("GeneratedDatapack")){
-            return;
+            return true;
         }
         File datapackDirectory = null;
         for(var world : this.getServer().getWorlds()){
@@ -284,14 +284,14 @@ public class Movecraft extends JavaPlugin {
             }
         }
         if(datapackDirectory == null){
-            logger.severe("Failed to initialize movecraft data pack due to first time world initialization.");
-            return;
+            logger.severe(I18nSupport.getInternationalisedString("Startup - Datapack World Error"));
+            return false;
         }
         if(!datapackDirectory.exists()){
             logger.info(I18nSupport.getInternationalisedString("Startup - Datapack Directory") + datapackDirectory.getPath());
             if(!datapackDirectory.mkdir()){
                 logger.severe(I18nSupport.getInternationalisedString("Startup - Datapack Directory Error"));
-                return;
+                return false;
             }
         } else if(new File(datapackDirectory, "movecraft-data.zip").exists()){
             logger.warning(String.format(
@@ -300,23 +300,23 @@ public class Movecraft extends JavaPlugin {
             );
             this.getConfig().set("GeneratedDatapack", true);
             this.saveConfig();
-            return;
+            return false;
         }
         if(!datapackDirectory.canWrite()){
             logger.warning("Missing permissions to write to world directory.");
-            return;
+            return false;
         }
 
         try (var stream = new FileOutputStream(new File(datapackDirectory, "movecraft-data.zip"));
              var pack = this.getResource("movecraft-data.zip")) {
             if(pack == null){
                 logger.warning("No internal datapack found, report this.");
-                return;
+                return false;
             }
             pack.transferTo(stream);
         } catch (IOException e) {
             e.printStackTrace();
-            return;
+            return false;
         }
         logger.info(I18nSupport.getInternationalisedString("Startup - Datapack Saved"));
         this.getConfig().set("GeneratedDatapack", true);
@@ -332,6 +332,7 @@ public class Movecraft extends JavaPlugin {
             }
             CraftManager.getInstance().initCraftTypes();
         }, 200); // Wait 10 seconds before reloading.  Needed to prevent Paper from running this during startup.
+        return false;
     }
 
 
