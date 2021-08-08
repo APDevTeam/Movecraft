@@ -288,13 +288,16 @@ public class Movecraft extends JavaPlugin {
             return;
         }
         if(!datapackDirectory.exists()){
-            logger.info("Creating a datapack directory at " + datapackDirectory.getPath());
+            logger.info(I18nSupport.getInternationalisedString("Startup - Datapack Directory") + datapackDirectory.getPath());
             if(!datapackDirectory.mkdir()){
-                logger.severe("Failed to create datapack directory!");
+                logger.severe(I18nSupport.getInternationalisedString("Startup - Datapack Directory Error"));
                 return;
             }
         } else if(new File(datapackDirectory, "movecraft-data.zip").exists()){
-            logger.warning("Conflicting datapack already exists in " + datapackDirectory.getPath() + ". If you would like to regenerate the datapack, delete the existing one and set the GeneratedDatapack config option to false.");
+            logger.warning(String.format(
+                    I18nSupport.getInternationalisedString("Startup - Datapack Conflict"),
+                    datapackDirectory.getPath())
+            );
             this.getConfig().set("GeneratedDatapack", true);
             this.saveConfig();
             return;
@@ -315,17 +318,16 @@ public class Movecraft extends JavaPlugin {
             e.printStackTrace();
             return;
         }
-        logger.info("Saved default movecraft datapack.");
+        logger.info(I18nSupport.getInternationalisedString("Startup - Datapack Saved"));
         this.getConfig().set("GeneratedDatapack", true);
         this.saveConfig();
 
-        logger.info("It is expected that your crafts fail to load at first, they will be loaded post startup on first boot.");
+        logger.info(I18nSupport.getInternationalisedString("Startup - Datapack First Boot"));
 
         getServer().getScheduler().scheduleSyncDelayedTask(this, () -> {
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "datapack list");
-
+            logger.info(I18nSupport.getInternationalisedString("Startup - Datapack Enabling"));
             if (!Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "datapack enable \"file/movecraft-data.zip\"")) {
-                logger.severe("Failed to automatically load movecraft datapack. Check if it exists.");
+                logger.severe(I18nSupport.getInternationalisedString("Startup - Datapack Enable Error"));
             }
             CraftManager.getInstance().initCraftTypes();
         });
