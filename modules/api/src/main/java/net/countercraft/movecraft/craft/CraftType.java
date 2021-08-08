@@ -85,7 +85,7 @@ final public class CraftType {
     private final int releaseTimeout;
     @NotNull private final Map<String, Integer> perWorldTickCooldown; // speed setting
     private final int hoverLimit;
-    private final Material dynamicFlyBlock;
+    private final EnumSet<Material> dynamicFlyBlocks;
     private final double fuelBurnRate;
     @NotNull private final Map<String, Double> perWorldFuelBurnRate;
     private final double sinkPercent;
@@ -251,7 +251,7 @@ final public class CraftType {
         dynamicLagPowerFactor = data.getDoubleOrDefault("dynamicLagPowerFactor", 0d);
         dynamicLagMinSpeed = data.getDoubleOrDefault("dynamicLagMinSpeed", 0d);
         dynamicFlyBlockSpeedFactor = data.getDoubleOrDefault("dynamicFlyBlockSpeedFactor", 0d);
-        dynamicFlyBlock = data.getMaterialOrDefault("dynamicFlyBlock", null);
+        dynamicFlyBlocks = data.getMaterialsOrEmpty("dynamicFlyBlock");
         chestPenalty = data.getDoubleOrDefault("chestPenalty", 0);
         gravityInclineDistance = data.getIntOrDefault("gravityInclineDistance", -1);
         int dropdist = data.getIntOrDefault("gravityDropDistance", -8);
@@ -677,8 +677,8 @@ final public class CraftType {
         return dynamicFlyBlockSpeedFactor;
     }
 
-    public Material getDynamicFlyBlock() {
-        return dynamicFlyBlock;
+    public EnumSet<Material> getDynamicFlyBlocks() {
+        return dynamicFlyBlocks;
     }
 
     public double getChestPenalty() {
