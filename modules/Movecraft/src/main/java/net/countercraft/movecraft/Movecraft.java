@@ -17,6 +17,8 @@
 
 package net.countercraft.movecraft;
 
+import io.papermc.paper.datapack.Datapack;
+import io.papermc.paper.datapack.DatapackManager;
 import net.countercraft.movecraft.async.AsyncManager;
 import net.countercraft.movecraft.commands.ContactsCommand;
 import net.countercraft.movecraft.commands.CraftInfoCommand;
@@ -65,6 +67,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Map;
@@ -318,7 +321,35 @@ public class Movecraft extends JavaPlugin {
         logger.info("Saved default movecraft datapack.");
         this.getConfig().set("GeneratedDatapack", true);
         this.saveConfig();
-        if(!Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "datapack enable \"file/movecraft-data.zip\"")){
+
+        // Fall back to vanilla mechanism if not running paper
+        if(Settings.IsPaper) {
+            Collection<Datapack> datapacks = Bukkit.getDatapackManager().getPacks();
+            Datapack movecraftDatapack = null;
+            logger.info("Packs: "); // TODO: DEBUG
+            for(Datapack datapack : datapacks) {
+                logger.info(datapack.getName()); // TODO: DEBUG
+                if(datapack.getName().equals("\"file/movecraft-data.zip\"")) {
+                    movecraftDatapack = datapack;
+                    break;
+                }
+            }
+            // Fall back to vanilla mechanism if unable to find movecraft datapack
+            if(movecraftDatapack != null) {
+                movecraftDatapack.setEnabled(true);
+                datapacks = Bukkit.getDatapackManager().getEnabledPacks();
+                logger.info("Enabled packs: "); // TODO: DEBUG
+                for(Datapack datapack : datapacks) {
+                    logger.info(datapack.getName()); // TODO: DEBUG
+                    if(datapack.getName().equals("\"file/movecraft-data.zip\"")) {
+                        return; // Pack enabled properly
+                    }
+                }
+                // Fall back to vanilla mechanism if unable to enable datapack
+            }
+        }
+
+        if (!Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "datapack enable \"file/movecraft-data.zip\"")) {
             logger.severe("Failed to automatically load movecraft datapack. Check if it exists.");
         }
     }
