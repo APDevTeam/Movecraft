@@ -73,8 +73,7 @@ public class Tags {
     }
 
     /**
-     * Gets a set of materials from the specific string
-     * This is intended to be used to parse material names or tags from a config file
+     * This method searches for a tag which matches the provided materialName.  Failing that, it attempts to load a matching material directly.
      * @param materialName Material name or tag
      * @return the set of materials the tag/material resolves to
      */
