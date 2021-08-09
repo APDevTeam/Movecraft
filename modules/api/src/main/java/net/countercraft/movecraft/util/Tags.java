@@ -73,7 +73,7 @@ public class Tags {
     }
 
     /**
-     * This method searches for a tag which matches the provided materialName.  Failing that, it attempts to load a matching material directly.
+     * Searches for a tag which matches the provided materialName.  Failing that, it attempts to load a matching singular Material directly.
      * @param materialName Material name or tag
      * @return the set of materials the tag/material resolves to
      */
