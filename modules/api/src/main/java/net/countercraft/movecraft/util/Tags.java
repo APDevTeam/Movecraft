@@ -72,15 +72,21 @@ public class Tags {
         }
     }
 
+    /**
+     * Gets a set of materials from the specific string
+     * This is intended to be used to parse material names or tags from a config file
+     * @param materialName Material name or tag
+     * @return the set of materials the tag/material resolves to
+     */
     @NotNull
-    public static EnumSet<Material> getMaterialsFromString(@NotNull String materialName) {
-        EnumSet<Material> returnList = EnumSet.noneOf(Material.class);
+    public static EnumSet<Material> parseMaterials(@NotNull String materialName) {
+        EnumSet<Material> returnSet = EnumSet.noneOf(Material.class);
         var tagged = parseBlockRegistry(materialName);
         if(tagged != null){
-            returnList.addAll(tagged);
+            returnSet.addAll(tagged);
         } else {
-            returnList.add(Material.valueOf(materialName.toUpperCase()));
+            returnSet.add(Material.valueOf(materialName.toUpperCase()));
         }
-        return returnList;
+        return returnSet;
     }
 }
