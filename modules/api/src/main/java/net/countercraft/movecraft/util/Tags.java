@@ -71,4 +71,21 @@ public class Tags {
             return null;
         }
     }
+
+    /**
+     * Searches for a tag which matches the provided materialName.  Failing that, it attempts to load a matching singular Material directly.
+     * @param materialName Material name or tag
+     * @return the set of materials the tag/material resolves to
+     */
+    @NotNull
+    public static EnumSet<Material> parseMaterials(@NotNull String materialName) {
+        EnumSet<Material> returnSet = EnumSet.noneOf(Material.class);
+        var tagged = parseBlockRegistry(materialName);
+        if(tagged != null){
+            returnSet.addAll(tagged);
+        } else {
+            returnSet.add(Material.valueOf(materialName.toUpperCase()));
+        }
+        return returnSet;
+    }
 }
