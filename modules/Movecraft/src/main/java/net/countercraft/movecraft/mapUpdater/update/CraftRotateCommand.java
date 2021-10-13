@@ -24,6 +24,7 @@ import org.bukkit.Tag;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
+import org.bukkit.block.data.BlockData;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -172,12 +173,13 @@ public class CraftRotateCommand extends UpdateCommand {
                 }
             }
 
+            BlockData airBlockData = Material.AIR.createBlockData();
             for (MovecraftLocation location : interior) {
                 Location bukkit = location.toBukkit(craft.getWorld());
                 var data = bukkit.getBlock().getBlockData();
                 if (passthroughBlocks.contains(data.getMaterial())) {
                     craft.getPhaseBlocks().put(bukkit, data);
-                    handler.setBlockFast(bukkit, Material.AIR.createBlockData());
+                    handler.setBlockFast(bukkit, airBlockData);
 
                 }
             }

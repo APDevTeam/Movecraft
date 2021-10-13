@@ -25,6 +25,7 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Waterlogged;
 import org.jetbrains.annotations.NotNull;
 
@@ -176,12 +177,13 @@ public class CraftTranslateCommand extends UpdateCommand {
                 }
             }
 
+            BlockData airBlockData = Material.AIR.createBlockData();
             for (MovecraftLocation location : failed) {
                 Location bukkit = location.toBukkit(oldWorld);
                 var data = bukkit.getBlock().getBlockData();
                 if (passthroughBlocks.contains(data.getMaterial())) {
                     craft.getPhaseBlocks().put(bukkit, data);
-                    handler.setBlockFast(bukkit, Material.AIR.createBlockData());
+                    handler.setBlockFast(bukkit, airBlockData);
 
                 }
             }

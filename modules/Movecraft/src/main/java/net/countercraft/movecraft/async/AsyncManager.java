@@ -392,6 +392,7 @@ public class AsyncManager extends BukkitRunnable {
             return;
         }
         List<HitBox> processed = new ArrayList<>();
+        BlockData airBlockData = Material.AIR.createBlockData();
         for(Map.Entry<HitBox, Long> entry : wrecks.entrySet()){
             if (Settings.FadeWrecksAfter * 1000 > System.currentTimeMillis() - entry.getValue()) {
                 continue;
@@ -420,7 +421,7 @@ public class AsyncManager extends BukkitRunnable {
                 }
                 fadedBlocks++;
                 processedFadeLocs.get(world).add(location);
-                BlockData phaseBlock = phaseBlocks.getOrDefault(bLoc, Material.AIR.createBlockData());
+                BlockData phaseBlock = phaseBlocks.getOrDefault(bLoc, airBlockData);
                 commands.add(new BlockCreateCommand(world, location, phaseBlock));
                 
             }
