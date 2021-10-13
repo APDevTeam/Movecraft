@@ -471,7 +471,7 @@ public class TranslationTask extends AsyncTask {
         //find chests
         for (MovecraftLocation loc : oldHitBox) {
             Block block = craft.getWorld().getBlockAt(loc.getX(), loc.getY(), loc.getZ());
-            if (block.getType() == Material.CHEST || block.getType() == Material.TRAPPED_CHEST)
+            if (block.getType() == Material.CHEST || block.getType() == Material.TRAPPED_CHEST || block.getType() == Material.BARREL)
                 chests.add(((InventoryHolder) (block.getState())).getInventory());
         }
 
