@@ -58,12 +58,17 @@ public class CraftManager implements Iterable<Craft>{
     @NotNull private final WeakHashMap<Player, Long> overboards = new WeakHashMap<>();
     @NotNull private final Set<Craft> sinking = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
-    public static void initialize(){
-        ourInstance = new CraftManager();
+    public static void initialize(boolean loadCraftTypes) {
+        ourInstance = new CraftManager(loadCraftTypes);
     }
 
-    private CraftManager() {
-        this.craftTypes = loadCraftTypes();
+    private CraftManager(boolean loadCraftTypes) {
+        if(loadCraftTypes) {
+            this.craftTypes = loadCraftTypes();
+        }
+        else {
+            this.craftTypes = new HashSet<>();
+        }
     }
 
     public static CraftManager getInstance() {

@@ -108,7 +108,7 @@ public class Movecraft extends JavaPlugin {
             Class.forName("com.destroystokyo.paper.Title");
             Settings.IsPaper = true;
         }catch (Exception e){
-            Settings.IsPaper=false;
+            Settings.IsPaper = false;
         }
 
 
@@ -212,12 +212,12 @@ public class Movecraft extends JavaPlugin {
         } else {
 
             // Startup procedure
-            initializeDatapack();
+            boolean datapackInitialized = initializeDatapack();
             asyncManager = new AsyncManager();
             asyncManager.runTaskTimer(this, 0, 1);
             MapUpdateManager.getInstance().runTaskTimer(this, 0, 1);
 
-            CraftManager.initialize();
+            CraftManager.initialize(datapackInitialized);
             Bukkit.getScheduler().runTaskTimer(this, WorldManager.INSTANCE::run, 0,1);
 
 
@@ -272,9 +272,9 @@ public class Movecraft extends JavaPlugin {
 
     }
 
-    private void initializeDatapack(){
+    private boolean initializeDatapack(){
         if(this.getConfig().getBoolean("GeneratedDatapack")){
-            return;
+            return true;
         }
         File datapackDirectory = null;
         for(var world : this.getServer().getWorlds()){
@@ -284,43 +284,55 @@ public class Movecraft extends JavaPlugin {
             }
         }
         if(datapackDirectory == null){
-            logger.severe("Failed to initialize movecraft data pack due to first time world initialization.");
-            return;
+            logger.severe(I18nSupport.getInternationalisedString("Startup - Datapack World Error"));
+            return false;
         }
         if(!datapackDirectory.exists()){
-            logger.info("Creating a datapack directory at " + datapackDirectory.getPath());
+            logger.info(I18nSupport.getInternationalisedString("Startup - Datapack Directory") + datapackDirectory.getPath());
             if(!datapackDirectory.mkdir()){
-                logger.severe("Failed to create datapack directory!");
-                return;
+                logger.severe(I18nSupport.getInternationalisedString("Startup - Datapack Directory Error"));
+                return false;
             }
         } else if(new File(datapackDirectory, "movecraft-data.zip").exists()){
-            logger.warning("Conflicting datapack already exists in " + datapackDirectory.getPath() + ". If you would like to regenerate the datapack, delete the existing one and set the GeneratedDatapack config option to false.");
+            logger.warning(String.format(
+                    I18nSupport.getInternationalisedString("Startup - Datapack Conflict"),
+                    datapackDirectory.getPath())
+            );
             this.getConfig().set("GeneratedDatapack", true);
             this.saveConfig();
-            return;
+            return false;
         }
         if(!datapackDirectory.canWrite()){
             logger.warning("Missing permissions to write to world directory.");
-            return;
+            return false;
         }
 
         try (var stream = new FileOutputStream(new File(datapackDirectory, "movecraft-data.zip"));
              var pack = this.getResource("movecraft-data.zip")) {
             if(pack == null){
                 logger.warning("No internal datapack found, report this.");
-                return;
+                return false;
             }
             pack.transferTo(stream);
         } catch (IOException e) {
             e.printStackTrace();
-            return;
+            return false;
         }
-        logger.info("Saved default movecraft datapack.");
+        logger.info(I18nSupport.getInternationalisedString("Startup - Datapack Saved"));
         this.getConfig().set("GeneratedDatapack", true);
         this.saveConfig();
-        if(!Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "datapack enable \"file/movecraft-data.zip\"")){
-            logger.severe("Failed to automatically load movecraft datapack. Check if it exists.");
-        }
+
+        logger.info(I18nSupport.getInternationalisedString("Startup - Datapack First Boot"));
+
+        this.getServer().getScheduler().scheduleSyncDelayedTask(this, () -> {
+            logger.info(I18nSupport.getInternationalisedString("Startup - Datapack Enabling"));
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "datapack list"); // required for some reason
+            if (!Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "datapack enable \"file/movecraft-data.zip\"")) {
+                logger.severe(I18nSupport.getInternationalisedString("Startup - Datapack Enable Error"));
+            }
+            CraftManager.getInstance().initCraftTypes();
+        }, 200); // Wait 10 seconds before reloading.  Needed to prevent Paper from running this during startup.
+        return false;
     }
 
 
