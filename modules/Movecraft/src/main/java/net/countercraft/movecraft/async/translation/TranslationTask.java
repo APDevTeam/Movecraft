@@ -717,9 +717,9 @@ public class TranslationTask extends AsyncTask {
                 Material testType = dropped.toBukkit(craft.getWorld()).getBlock().getType();
                 hitGround = !testType.isAir(); // Not air
                 hitGround &= !craft.getType().getPassthroughBlocks().contains(testType); // Not a passthrough block
-                hitGround &= !craft.getType().getHarvestBlocks().contains(testType); // Not a harvest block
-                hitGround &= craft.getType().getHarvesterBladeBlocks().contains(ml.toBukkit(craft.getWorld()).getBlock().getType()); // Not a harvest blade block
                 hitGround &= !hitBox.contains(dropped); // Not part of the craft
+                if(craft.getType().getHarvestBlocks().contains(testType) && craft.getType().getHarvesterBladeBlocks().contains(ml.toBukkit(craft.getWorld()).getBlock().getType()))
+                    hitGround = false; // Allow gravity to harvest blocks on the way down
                 if(craft.getType().getMinHeightLimit(craft.getWorld()) == translated.translate(0, dropDistance + 1 , 0).getY())
                     hitGround = true; // Don't let the craft fall below the min height limit
 
