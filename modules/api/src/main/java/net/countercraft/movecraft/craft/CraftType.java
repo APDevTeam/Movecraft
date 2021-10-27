@@ -38,7 +38,19 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 final public class CraftType {
+
+
     private static final List<IntegerProperty> intProperties = new ArrayList<>();
+
+    /**
+     * Register an integer property with Movecraft
+     *
+     * @param integerProperty property to register
+     */
+    public static void registerIntegerProperty(IntegerProperty integerProperty) {
+        intProperties.add(integerProperty);
+    }
+
     static {
         intProperties.add(new IntegerProperty("maxSize"));
         intProperties.add(new IntegerProperty("minSize"));
@@ -58,7 +70,22 @@ final public class CraftType {
         intProperties.add(new IntegerProperty("gearShifts", type -> 1));
     }
 
+    private final Map<String, Integer> intPropertyMap;
+
+
+
     public static final List<Pair<Predicate<CraftType>, String>> validators = new ArrayList<>();
+
+    /**
+     * Register a craft type validator
+     *
+     * @param validator validator to parse the craft type
+     * @param errorMessage message to throw on failure
+     */
+    public static void registerTypeValidator(Predicate<CraftType> validator, String errorMessage) {
+        validators.add(new Pair<>(validator, errorMessage));
+    }
+
     static {
         validators.add(new Pair<>(
                 type -> type.getIntProperty("minHeightLimit") < type.getIntProperty("maxHeightLimit"),
@@ -82,7 +109,7 @@ final public class CraftType {
         ));
     }
 
-    private final Map<String, Integer> intPropertyMap;
+
 
     // problem child integer properties
     private final int cruiseTickCooldown;
