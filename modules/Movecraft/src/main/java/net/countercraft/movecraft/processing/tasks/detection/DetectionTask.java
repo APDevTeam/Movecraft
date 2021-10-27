@@ -213,7 +213,7 @@ public class DetectionTask implements Supplier<Effect> {
             visited.add(location);
         }
         int threads = Runtime.getRuntime().availableProcessors();
-        while (!currentFrontier.isEmpty() && size.intValue() < craft.getType().getMaxSize()) {
+        while (!currentFrontier.isEmpty() && size.intValue() < craft.getType().getIntProperty("maxSize")) {
             List<ForkJoinTask<?>> tasks = new ArrayList<>();
             for(int j = 0; j < threads ; j++) {
                 tasks.add(ForkJoinPool.commonPool().submit(new DetectAction(currentFrontier, nextFrontier)));

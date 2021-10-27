@@ -20,8 +20,8 @@ public class SizeValidator implements DetectionPredicate<Map<Material, Deque<Mov
     @Contract(pure = true)
     public @NotNull Result validate(@NotNull Map<Material, Deque<MovecraftLocation>> materialDequeMap, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable CommandSender player) {
         int size = materialDequeMap.values().parallelStream().mapToInt(Deque::size).sum();
-        if(size > type.getMaxSize()){
-            return Result.failWithMessage(String.format(I18nSupport.getInternationalisedString("Detection - Craft too large"), type.getMaxSize()));
+        if(size > type.getIntProperty("maxSize")) {
+            return Result.failWithMessage(String.format(I18nSupport.getInternationalisedString("Detection - Craft too large"), type.getIntProperty("maxSize")));
         }
         if(size < type.getMinSize()){
             return Result.failWithMessage(String.format(I18nSupport.getInternationalisedString("Detection - Craft too small"), type.getMinSize()));

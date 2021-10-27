@@ -24,6 +24,7 @@ import net.kyori.adventure.sound.Sound;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -36,6 +37,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 final public class CraftType {
+    private static final Set<IntProperty> intProperties = new HashSet<>();
+    static {
+        intProperties.add(new IntProperty("maxSize"));
+    }
+
     private final boolean blockedByWater;
     private final boolean requireWaterContact;
     private final boolean tryNudge;
@@ -60,7 +66,6 @@ final public class CraftType {
     private final boolean focusedExplosion;
     private final boolean mustBeSubcraft;
     private final boolean keepMovingOnSink;
-    private final int maxSize;
     private final int minSize;
     private final int minHeightLimit;
     @NotNull private final Map<String, Integer> perWorldMinHeightLimit;
@@ -123,12 +128,13 @@ final public class CraftType {
     private final boolean gearShiftsAffectCruiseSkipBlocks;
     private final TypeData data;
 
+    private final Map<String, Integer> intPropertyMap;
+
     public CraftType(File f) {
         data = TypeData.loadConfiguration(f);
 
         //Required craft flags
         craftName = data.getString("name");
-        maxSize = data.getInt("maxSize");
         minSize = data.getInt("minSize");
         allowedBlocks = data.getMaterials("allowedBlocks");
 
@@ -288,6 +294,17 @@ final public class CraftType {
         gearShiftsAffectDirectMovement = data.getBooleanOrDefault("gearShiftsAffectDirectMovement", false);
         gearShiftsAffectCruiseSkipBlocks = data.getBooleanOrDefault("gearShiftsAffectCruiseSkipBlocks", false);
         releaseTimeout = data.getIntOrDefault("releaseTimeout", 30);
+
+        intPropertyMap = new HashMap<>();
+        for(IntProperty i : intProperties) {
+            Integer val = i.load(data);
+            if(val != null)
+                intPropertyMap.put(i.getKey(), val);
+        }
+    }
+
+    public int getIntProperty(String key) {
+        return intPropertyMap.get(key);
     }
     
     private Map<String, Integer> stringToIntMapFromObject(Map<String, Object> objMap) {
@@ -385,10 +402,6 @@ final public class CraftType {
     @NotNull
     public String getCraftName() {
         return craftName;
-    }
-
-    public int getMaxSize() {
-        return maxSize;
     }
 
     public int getMinSize() {

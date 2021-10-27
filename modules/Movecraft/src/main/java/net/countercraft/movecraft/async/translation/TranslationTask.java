@@ -365,7 +365,7 @@ public class TranslationTask extends AsyncTask {
             for(MovecraftLocation location : collisionBox) {
                 float explosionForce = craft.getType().getCollisionExplosion();
                 if (craft.getType().getFocusedExplosion()) {
-                    explosionForce *= Math.min(oldHitBox.size(), craft.getType().getMaxSize());
+                    explosionForce *= Math.min(oldHitBox.size(), craft.getType().getIntProperty("maxSize"));
                 }
                 //TODO: Account for underwater explosions
                 /*if (location.getY() < waterLine) { // underwater explosions require more force to do anything
