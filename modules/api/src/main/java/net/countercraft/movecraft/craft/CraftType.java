@@ -18,13 +18,13 @@
 package net.countercraft.movecraft.craft;
 
 import net.countercraft.movecraft.processing.MovecraftWorld;
+import net.countercraft.movecraft.util.Pair;
 import net.countercraft.movecraft.util.Tags;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -34,12 +34,23 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 final public class CraftType {
-    private static final Set<IntProperty> intProperties = new HashSet<>();
+    private static final Set<IntegerProperty> intProperties = new HashSet<>();
     static {
-        intProperties.add(new IntProperty("maxSize"));
+        intProperties.add(new IntegerProperty("maxSize"));
+        intProperties.add(new IntegerProperty("minSize"));
+        intProperties.add(new IntegerProperty("minHeightLimit", value -> value >= 0 && value <= 255, 0));
+        intProperties.add(new IntegerProperty("maxHeightLimit", value -> value >= 0 && value <= 255, 255));
+    }
+    public static final Set<Pair<Predicate<CraftType>, String>> validators = new HashSet<>();
+    static {
+        validators.add(new Pair<>(
+                type -> type.getIntProperty("minHeightLimit") < type.getIntProperty("maxHeightLimit"),
+                "minHeightLimit must be less than maxHeightLimit"
+        ));
     }
 
     private final boolean blockedByWater;
@@ -66,10 +77,7 @@ final public class CraftType {
     private final boolean focusedExplosion;
     private final boolean mustBeSubcraft;
     private final boolean keepMovingOnSink;
-    private final int minSize;
-    private final int minHeightLimit;
     @NotNull private final Map<String, Integer> perWorldMinHeightLimit;
-    private final int maxHeightLimit;
     @NotNull private final Map<String, Integer> perWorldMaxHeightLimit;
     private final int maxHeightAboveGround;
     @NotNull private final Map<String, Integer> perWorldMaxHeightAboveGround;
@@ -126,16 +134,14 @@ final public class CraftType {
     private final boolean gearShiftsAffectDirectMovement;
     private final Sound collisionSound;
     private final boolean gearShiftsAffectCruiseSkipBlocks;
-    private final TypeData data;
 
     private final Map<String, Integer> intPropertyMap;
 
     public CraftType(File f) {
-        data = TypeData.loadConfiguration(f);
+        TypeData data = TypeData.loadConfiguration(f);
 
         //Required craft flags
         craftName = data.getString("name");
-        minSize = data.getInt("minSize");
         allowedBlocks = data.getMaterials("allowedBlocks");
 
         forbiddenSignStrings = data.getStringListOrEmpty("forbiddenSignStrings").stream().map(String::toLowerCase).collect(Collectors.toSet());
@@ -184,7 +190,6 @@ final public class CraftType {
         smokeOnSink = data.getIntOrDefault("smokeOnSink", 0);
         explodeOnCrash = (float) data.getDoubleOrDefault("explodeOnCrash", 0D);
         collisionExplosion = (float) data.getDoubleOrDefault("collisionExplosion", 0D);
-        minHeightLimit = Math.max(0, data.getIntOrDefault("minHeightLimit", 0));
         perWorldMinHeightLimit = new HashMap<>();
         Map<String, Integer> minHeightMap = stringToIntMapFromObject(data.getDataOrEmpty("perWorldMinHeightLimit").getBackingData());
         minHeightMap.forEach((world, height) -> perWorldMinHeightLimit.put(world, Math.max(0, height)));
@@ -218,17 +223,11 @@ final public class CraftType {
             }
         });
 
-        int value = Math.min(data.getIntOrDefault("maxHeightLimit", 254), 255);
-        if (value <= minHeightLimit) {
-            value = 255;
-        }
-
-        maxHeightLimit = value;
         perWorldMaxHeightLimit = new HashMap<>();
         Map<String, Integer> maxHeightMap = stringToIntMapFromObject(data.getDataOrEmpty("perWorldMaxHeightLimit").getBackingData());
         maxHeightMap.forEach((world, height) -> {
             int worldValue = Math.min(height, 255);
-            int worldMinHeight = perWorldMinHeightLimit.getOrDefault(world, minHeightLimit);
+            int worldMinHeight = perWorldMinHeightLimit.getOrDefault(world, getIntProperty("minHeightLimit"));
             if (worldValue <= worldMinHeight) worldValue = 255;
             perWorldMaxHeightLimit.put(world, worldValue);
         });
@@ -295,11 +294,18 @@ final public class CraftType {
         gearShiftsAffectCruiseSkipBlocks = data.getBooleanOrDefault("gearShiftsAffectCruiseSkipBlocks", false);
         releaseTimeout = data.getIntOrDefault("releaseTimeout", 30);
 
+        // Load integer properties
         intPropertyMap = new HashMap<>();
-        for(IntProperty i : intProperties) {
+        for(IntegerProperty i : intProperties) {
             Integer val = i.load(data);
             if(val != null)
                 intPropertyMap.put(i.getKey(), val);
+        }
+
+        // Validate craft type
+        for(var i : validators) {
+            if(!i.getLeft().test(this))
+                throw new IllegalArgumentException(i.getRight());
         }
     }
 
@@ -402,10 +408,6 @@ final public class CraftType {
     @NotNull
     public String getCraftName() {
         return craftName;
-    }
-
-    public int getMinSize() {
-        return minSize;
     }
 
     @NotNull
@@ -604,28 +606,20 @@ final public class CraftType {
         return moveBlocks;
     }
 
-    @Deprecated
-    public int getMaxHeightLimit() {
-        return maxHeightLimit;
-    }
     public int getMaxHeightLimit(@NotNull World world) {
-        return perWorldMaxHeightLimit.getOrDefault(world.getName(), maxHeightLimit);
+        return perWorldMaxHeightLimit.getOrDefault(world.getName(), getIntProperty("maxHeightLimit"));
     }
 
     public int getMaxHeightLimit(@NotNull MovecraftWorld world) {
-        return perWorldMaxHeightLimit.getOrDefault(world.getName(), maxHeightLimit);
+        return perWorldMaxHeightLimit.getOrDefault(world.getName(), getIntProperty("maxHeightLimit"));
     }
 
-    @Deprecated
-    public int getMinHeightLimit() {
-        return minHeightLimit;
-    }
     public int getMinHeightLimit(@NotNull World world) {
-        return perWorldMinHeightLimit.getOrDefault(world.getName(), minHeightLimit);
+        return perWorldMinHeightLimit.getOrDefault(world.getName(), getIntProperty("minHeightLimit"));
     }
 
     public int getMinHeightLimit(@NotNull MovecraftWorld world) {
-        return perWorldMinHeightLimit.getOrDefault(world.getName(), minHeightLimit);
+        return perWorldMinHeightLimit.getOrDefault(world.getName(), getIntProperty("minHeightLimit"));
     }
 
     @Deprecated
@@ -758,12 +752,7 @@ final public class CraftType {
         return releaseTimeout;
     }
 
-    @NotNull
-    public TypeData getTypeData(){
-        return data;
-    }
-
-    public class TypeNotFoundException extends RuntimeException {
+    public static class TypeNotFoundException extends RuntimeException {
         public TypeNotFoundException(String s) {
             super(s);
         }

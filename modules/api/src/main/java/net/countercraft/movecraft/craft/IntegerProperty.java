@@ -5,7 +5,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Predicate;
 
-public class IntProperty {
+public class IntegerProperty {
     private final String key;
     private final Predicate<Integer> validator;
     private final boolean hasDefault;
@@ -16,7 +16,7 @@ public class IntProperty {
      *
      * @param key the key for this property
      */
-    IntProperty(@NotNull String key) {
+    IntegerProperty(@NotNull String key) {
         this.key = key;
         this.validator = null;
         this.hasDefault = false;
@@ -29,7 +29,7 @@ public class IntProperty {
      * @param key the key for this property
      * @param defaultValue the default value for this property
      */
-    IntProperty(@NotNull String key, int defaultValue) {
+    IntegerProperty(@NotNull String key, int defaultValue) {
         this.key = key;
         this.validator = null;
         this.defaultValue = defaultValue;
@@ -42,7 +42,7 @@ public class IntProperty {
      * @param key the key for this property
      * @param validator a validator for the value of this property
      */
-    IntProperty(@NotNull String key, @Nullable Predicate<Integer> validator) {
+    IntegerProperty(@NotNull String key, @Nullable Predicate<Integer> validator) {
         this.key = key;
         this.validator = validator;
         this.hasDefault = false;
@@ -56,7 +56,7 @@ public class IntProperty {
      * @param validator a validator for the value of this property
      * @param defaultValue the default value for this property
      */
-    IntProperty(@NotNull String key, @Nullable Predicate<Integer> validator, int defaultValue) {
+    IntegerProperty(@NotNull String key, @Nullable Predicate<Integer> validator, int defaultValue) {
         this.key = key;
         this.validator = validator;
         this.defaultValue = defaultValue;

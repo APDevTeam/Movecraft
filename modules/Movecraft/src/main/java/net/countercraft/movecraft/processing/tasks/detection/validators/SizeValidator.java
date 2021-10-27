@@ -23,8 +23,8 @@ public class SizeValidator implements DetectionPredicate<Map<Material, Deque<Mov
         if(size > type.getIntProperty("maxSize")) {
             return Result.failWithMessage(String.format(I18nSupport.getInternationalisedString("Detection - Craft too large"), type.getIntProperty("maxSize")));
         }
-        if(size < type.getMinSize()){
-            return Result.failWithMessage(String.format(I18nSupport.getInternationalisedString("Detection - Craft too small"), type.getMinSize()));
+        if(size < type.getIntProperty("minSize")) {
+            return Result.failWithMessage(String.format(I18nSupport.getInternationalisedString("Detection - Craft too small"), type.getIntProperty("minSize")));
         }
         return Result.succeed();
     }
