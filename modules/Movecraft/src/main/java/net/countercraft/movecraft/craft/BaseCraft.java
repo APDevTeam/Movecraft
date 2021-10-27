@@ -546,10 +546,7 @@ public abstract class BaseCraft implements Craft{
 
     @Override
     public void setCurrentGear(int currentGear) {
-        if (currentGear > type.getGearShifts()) {
-            this.currentGear = type.getGearShifts();
-        }
-        this.currentGear = Math.max(currentGear, 1);
+        this.currentGear = Math.min(Math.max(currentGear, 1), type.getIntProperty("gearShifts"));
     }
 
     @Override

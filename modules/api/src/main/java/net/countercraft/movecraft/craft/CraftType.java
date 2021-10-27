@@ -53,7 +53,11 @@ final public class CraftType {
         intProperties.add(new IntegerProperty("smokeOnSink", type -> 0));
         intProperties.add(new IntegerProperty("releaseTimeout", type -> 30));
         intProperties.add(new IntegerProperty("hoverLimit", type -> 0));
+        intProperties.add(new IntegerProperty("teleportationCooldown", type -> 0));
+        intProperties.add(new IntegerProperty("gravityInclineDistance", type -> -1));
+        intProperties.add(new IntegerProperty("gearShifts", type -> 1));
     }
+
     public static final List<Pair<Predicate<CraftType>, String>> validators = new ArrayList<>();
     static {
         validators.add(new Pair<>(
@@ -72,7 +76,20 @@ final public class CraftType {
                 type -> type.getIntProperty("hoverLimit") <= 0,
                 "hoverLimit must be greater than or equal to zero"
         ));
+        validators.add(new Pair<>(
+                type -> type.getIntProperty("gearShifts") <= 1,
+                "gearShifts must be greater than or equal to one"
+        ));
     }
+
+    private final Map<String, Integer> intPropertyMap;
+
+    // problem child integer properties
+    private final int cruiseTickCooldown;
+    private final int vertCruiseTickCooldown;
+    private final int sinkRateTicks;
+    private final int tickCooldown;
+    private final int gravityDropDistance;
 
     private final boolean blockedByWater;
     private final boolean requireWaterContact;
@@ -103,12 +120,8 @@ final public class CraftType {
     @NotNull private final Map<String, Integer> perWorldMaxHeightAboveGround;
     @NotNull private final Map<String, Integer> perWorldCruiseSkipBlocks;
     @NotNull private final Map<String, Integer> perWorldVertCruiseSkipBlocks;
-    private final int cruiseTickCooldown;
     @NotNull private final Map<String, Integer> perWorldCruiseTickCooldown; // cruise speed setting
-    private final int vertCruiseTickCooldown;
     @NotNull private final Map<String, Integer> perWorldVertCruiseTickCooldown; // cruise speed setting
-    private final int sinkRateTicks;
-    private final int tickCooldown;
     @NotNull private final Map<String, Integer> perWorldTickCooldown; // speed setting
     private final EnumSet<Material> dynamicFlyBlocks;
     private final double fuelBurnRate;
@@ -138,16 +151,10 @@ final public class CraftType {
     @NotNull private final EnumSet<Material> forbiddenHoverOverBlocks;
     @NotNull private final Map<Material, Double> fuelTypes;
     @NotNull private final Set<String> disableTeleportToWorlds;
-    private final int teleportationCooldown;
-    private final int gravityDropDistance;
-    private final int gravityInclineDistance;
-    private final int gearShifts;
     private final boolean gearShiftsAffectTickCooldown;
     private final boolean gearShiftsAffectDirectMovement;
     private final Sound collisionSound;
     private final boolean gearShiftsAffectCruiseSkipBlocks;
-
-    private final Map<String, Integer> intPropertyMap;
 
     public CraftType(File f) {
         TypeData data = TypeData.loadConfiguration(f);
@@ -278,7 +285,6 @@ final public class CraftType {
         dynamicFlyBlockSpeedFactor = data.getDoubleOrDefault("dynamicFlyBlockSpeedFactor", 0d);
         dynamicFlyBlocks = data.getMaterialsOrEmpty("dynamicFlyBlock");
         chestPenalty = data.getDoubleOrDefault("chestPenalty", 0);
-        gravityInclineDistance = data.getIntOrDefault("gravityInclineDistance", -1);
         int dropdist = data.getIntOrDefault("gravityDropDistance", -8);
         gravityDropDistance = dropdist > 0 ? -dropdist : dropdist;
         collisionSound = data.getSoundOrDefault("collisionSound",  Sound.sound(Key.key("block.anvil.land"), Sound.Source.NEUTRAL, 2.0f,1.0f));
@@ -307,8 +313,6 @@ final public class CraftType {
         disableTeleportToWorlds = new HashSet<>();
         List<String> disabledWorlds = data.getStringListOrEmpty("disableTeleportToWorlds");
         disableTeleportToWorlds.addAll(disabledWorlds);
-        teleportationCooldown = data.getIntOrDefault("teleportationCooldown", 0);
-        gearShifts = Math.max(data.getIntOrDefault("gearShifts", 1), 1);
         gearShiftsAffectTickCooldown = data.getBooleanOrDefault("gearShiftsAffectTickCooldown", true);
         gearShiftsAffectDirectMovement = data.getBooleanOrDefault("gearShiftsAffectDirectMovement", false);
         gearShiftsAffectCruiseSkipBlocks = data.getBooleanOrDefault("gearShiftsAffectCruiseSkipBlocks", false);
@@ -682,15 +686,12 @@ final public class CraftType {
         return gravityDropDistance;
     }
 
-    public int getGravityInclineDistance() {
-        return gravityInclineDistance;
-    }
-
     @NotNull
     public Sound getCollisionSound() {
         return collisionSound;
     }
 
+    @NotNull
     public Map<Material, Double> getFuelTypes() {
         return fuelTypes;
     }
@@ -698,14 +699,6 @@ final public class CraftType {
     @NotNull
     public Set<String> getDisableTeleportToWorlds() {
         return disableTeleportToWorlds;
-    }
-
-    public int getTeleportationCooldown() {
-        return teleportationCooldown;
-    }
-
-    public int getGearShifts() {
-        return gearShifts;
     }
 
     public boolean getGearShiftsAffectTickCooldown() {

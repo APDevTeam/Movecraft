@@ -60,7 +60,7 @@ public final class TeleportSign implements Listener {
             return;
         }
         long timeSinceLastTeleport = System.currentTimeMillis() - c.getLastTeleportTime();
-        if (c.getType().getTeleportationCooldown() > 0 && timeSinceLastTeleport < c.getType().getTeleportationCooldown()) {
+        if (c.getType().getIntProperty("teleportationCooldown") > 0 && timeSinceLastTeleport < c.getType().getIntProperty("teleportationCooldown")) {
             event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("Teleportation - Cooldown active"), timeSinceLastTeleport));
             return;
         }
