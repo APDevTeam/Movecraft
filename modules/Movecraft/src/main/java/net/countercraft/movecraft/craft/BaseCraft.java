@@ -447,8 +447,8 @@ public abstract class BaseCraft implements Craft{
         //TODO: Remove this temporary system in favor of passthrough blocks
         // Find the waterline from the surrounding terrain or from the static level in the craft type
         int waterLine = 0;
-        if (type.getStaticWaterLevel() != 0 || hitBox.isEmpty()) {
-            return type.getStaticWaterLevel();
+        if (type.getIntProperty("staticWaterLevel") != 0 || hitBox.isEmpty()) {
+            return type.getIntProperty("staticWaterLevel");
         }
 
         // figure out the water level by examining blocks next to the outer boundaries of the craft

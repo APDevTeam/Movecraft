@@ -246,11 +246,11 @@ public class AsyncManager extends BukkitRunnable {
 
             // ascend
             if (pcraft.getCruiseDirection() == CruiseDirection.UP) {
-                dy = 1 + pcraft.getType().getVertCruiseSkipBlocks();
+                dy = 1 + pcraft.getType().getIntProperty("vertCruiseSkipBlocks");
             }
             // descend
             if (pcraft.getCruiseDirection() == CruiseDirection.DOWN) {
-                dy = -1 - pcraft.getType().getVertCruiseSkipBlocks();
+                dy = -1 - pcraft.getType().getIntProperty("vertCruiseSkipBlocks");
                 if (pcraft.getHitBox().getMinY() <= w.getSeaLevel()) {
                     dy = -1;
                 }
@@ -301,7 +301,7 @@ public class AsyncManager extends BukkitRunnable {
                 }
             }
             if (pcraft.getType().getCruiseOnPilot()) {
-                dy = pcraft.getType().getCruiseOnPilotVertMove();
+                dy = pcraft.getType().getIntProperty("cruiseOnPilotVertMove");
             }
             if (pcraft.getType().getGearShiftsAffectCruiseSkipBlocks()) {
                 final int gearshift = pcraft.getCurrentGear();

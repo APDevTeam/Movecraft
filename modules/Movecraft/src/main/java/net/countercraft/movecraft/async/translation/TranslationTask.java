@@ -216,7 +216,7 @@ public class TranslationTask extends AsyncTask {
                 while (w.getBlockAt(midPoint.getX(), groundY - 1, midPoint.getZ()).getType() == Material.AIR || craft.getType().getPassthroughBlocks().contains(w.getBlockAt(midPoint.getX(), groundY - 1, midPoint.getZ()).getType())){
                     groundY--;
                 }
-                if (centreMinY - groundY > craft.getType().getHoverLimit()){
+                if (centreMinY - groundY > craft.getType().getIntProperty("hoverLimit")){
                     dy = -1;
                 }
             } else if (!isOnGround(oldHitBox)){

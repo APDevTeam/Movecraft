@@ -56,7 +56,7 @@ public final class RelativeMoveSign implements Listener{
         // positive
         // =
         // forwards
-        int maxMove = CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().maxStaticMove();
+        int maxMove = CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getIntProperty("maxStaticMove");
 
         if (dLeftRight > maxMove)
             dLeftRight = maxMove;

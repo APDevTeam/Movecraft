@@ -38,18 +38,39 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 final public class CraftType {
-    private static final Set<IntegerProperty> intProperties = new HashSet<>();
+    private static final List<IntegerProperty> intProperties = new ArrayList<>();
     static {
         intProperties.add(new IntegerProperty("maxSize"));
         intProperties.add(new IntegerProperty("minSize"));
-        intProperties.add(new IntegerProperty("minHeightLimit", value -> value >= 0 && value <= 255, 0));
-        intProperties.add(new IntegerProperty("maxHeightLimit", value -> value >= 0 && value <= 255, 255));
+        intProperties.add(new IntegerProperty("minHeightLimit", type -> 0));
+        intProperties.add(new IntegerProperty("maxHeightLimit", type -> 255));
+        intProperties.add(new IntegerProperty("cruiseOnPilotVertMove", type -> 0));
+        intProperties.add(new IntegerProperty("maxHeightAboveGround", type -> -1));
+        intProperties.add(new IntegerProperty("maxStaticMove", type -> 10000));
+        intProperties.add(new IntegerProperty("cruiseSkipBlocks", type -> 0));
+        intProperties.add(new IntegerProperty("vertCruiseSkipBlocks", type -> type.getIntProperty("cruiseSkipBlocks")));
+        intProperties.add(new IntegerProperty("staticWaterLevel", type -> 0));
+        intProperties.add(new IntegerProperty("smokeOnSink", type -> 0));
+        intProperties.add(new IntegerProperty("releaseTimeout", type -> 30));
+        intProperties.add(new IntegerProperty("hoverLimit", type -> 0));
     }
-    public static final Set<Pair<Predicate<CraftType>, String>> validators = new HashSet<>();
+    public static final List<Pair<Predicate<CraftType>, String>> validators = new ArrayList<>();
     static {
         validators.add(new Pair<>(
                 type -> type.getIntProperty("minHeightLimit") < type.getIntProperty("maxHeightLimit"),
                 "minHeightLimit must be less than maxHeightLimit"
+        ));
+        validators.add(new Pair<>(
+                type -> type.getIntProperty("minHeightLimit") >= 0 && type.getIntProperty("minHeightLimit") <= 255,
+                "minHeightLimit must be between 0 and 255"
+        ));
+        validators.add(new Pair<>(
+                type -> type.getIntProperty("maxHeightLimit") >= 0 && type.getIntProperty("maxHeightLimit") <= 255,
+                "maxHeightLimit must be between 0 and 255"
+        ));
+        validators.add(new Pair<>(
+                type -> type.getIntProperty("hoverLimit") <= 0,
+                "hoverLimit must be greater than or equal to zero"
         ));
     }
 
@@ -79,25 +100,16 @@ final public class CraftType {
     private final boolean keepMovingOnSink;
     @NotNull private final Map<String, Integer> perWorldMinHeightLimit;
     @NotNull private final Map<String, Integer> perWorldMaxHeightLimit;
-    private final int maxHeightAboveGround;
     @NotNull private final Map<String, Integer> perWorldMaxHeightAboveGround;
-    private final int cruiseOnPilotVertMove;
-    private final int maxStaticMove;
-    private final int cruiseSkipBlocks;
     @NotNull private final Map<String, Integer> perWorldCruiseSkipBlocks;
-    private final int vertCruiseSkipBlocks;
     @NotNull private final Map<String, Integer> perWorldVertCruiseSkipBlocks;
     private final int cruiseTickCooldown;
     @NotNull private final Map<String, Integer> perWorldCruiseTickCooldown; // cruise speed setting
     private final int vertCruiseTickCooldown;
     @NotNull private final Map<String, Integer> perWorldVertCruiseTickCooldown; // cruise speed setting
-    private final int staticWaterLevel;
     private final int sinkRateTicks;
-    private final int smokeOnSink;
     private final int tickCooldown;
-    private final int releaseTimeout;
     @NotNull private final Map<String, Integer> perWorldTickCooldown; // speed setting
-    private final int hoverLimit;
     private final EnumSet<Material> dynamicFlyBlocks;
     private final double fuelBurnRate;
     @NotNull private final Map<String, Double> perWorldFuelBurnRate;
@@ -140,6 +152,22 @@ final public class CraftType {
     public CraftType(File f) {
         TypeData data = TypeData.loadConfiguration(f);
 
+
+        // Load integer properties
+        intPropertyMap = new HashMap<>();
+        for(IntegerProperty i : intProperties) {
+            Integer value = i.load(data, this);
+            if(value != null)
+                intPropertyMap.put(i.getKey(), value);
+        }
+
+        // Validate craft type
+        for(var i : validators) {
+            if(!i.getLeft().test(this))
+                throw new IllegalArgumentException(i.getRight());
+        }
+
+
         //Required craft flags
         craftName = data.getString("name");
         allowedBlocks = data.getMaterials("allowedBlocks");
@@ -162,21 +190,16 @@ final public class CraftType {
         canSwitchWorld = data.getBooleanOrDefault("canSwitchWorld", false);
         canBeNamed = data.getBooleanOrDefault("canBeNamed", true);
         cruiseOnPilot = data.getBooleanOrDefault("cruiseOnPilot", false);
-        cruiseOnPilotVertMove = data.getIntOrDefault("cruiseOnPilotVertMove", 0);
         allowVerticalMovement = data.getBooleanOrDefault("allowVerticalMovement", true);
         rotateAtMidpoint = data.getBooleanOrDefault("rotateAtMidpoint", false);
         allowHorizontalMovement = data.getBooleanOrDefault("allowHorizontalMovement", true);
         allowRemoteSign = data.getBooleanOrDefault("allowRemoteSign", true);
         canStaticMove = data.getBooleanOrDefault("canStaticMove", false);
-        maxStaticMove = data.getIntOrDefault("maxStaticMove", 10000);
-        cruiseSkipBlocks = data.getIntOrDefault("cruiseSkipBlocks", 0);
         perWorldCruiseSkipBlocks = stringToIntMapFromObject(data.getDataOrEmpty("perWorldCruiseSkipBlocks").getBackingData());
-        vertCruiseSkipBlocks = data.getIntOrDefault("vertCruiseSkipBlocks", cruiseSkipBlocks);
         perWorldVertCruiseSkipBlocks = stringToIntMapFromObject(data.getDataOrEmpty("perWorldVertCruiseSkipBlocks").getBackingData());
         halfSpeedUnderwater = data.getBooleanOrDefault("halfSpeedUnderwater", false);
         focusedExplosion = data.getBooleanOrDefault("focusedExplosion", false);
         mustBeSubcraft = data.getBooleanOrDefault("mustBeSubcraft", false);
-        staticWaterLevel = data.getIntOrDefault("staticWaterLevel", 0);
         fuelBurnRate = data.getDoubleOrDefault("fuelBurnRate", 0d);
         perWorldFuelBurnRate = stringToDoubleMapFromObject(data.getDataOrEmpty("perWorldFuelBurnRate").getBackingData());
         sinkPercent = data.getDoubleOrDefault("sinkPercent", 0d);
@@ -187,7 +210,6 @@ final public class CraftType {
         perWorldUnderwaterDetectionMultiplier = stringToDoubleMapFromObject(data.getDataOrEmpty("perWorldUnderwaterDetectionMultiplier").getBackingData());
         sinkRateTicks = data.getIntOrDefault("sinkRateTicks", (int) Math.ceil(20 / data.getDoubleOrDefault("sinkSpeed", -200))); // default becomes 0
         keepMovingOnSink = data.getBooleanOrDefault("keepMovingOnSink", false);
-        smokeOnSink = data.getIntOrDefault("smokeOnSink", 0);
         explodeOnCrash = (float) data.getDoubleOrDefault("explodeOnCrash", 0D);
         collisionExplosion = (float) data.getDoubleOrDefault("collisionExplosion", 0D);
         perWorldMinHeightLimit = new HashMap<>();
@@ -195,30 +217,30 @@ final public class CraftType {
         minHeightMap.forEach((world, height) -> perWorldMinHeightLimit.put(world, Math.max(0, height)));
 
         double cruiseSpeed = data.getDoubleOrDefault("cruiseSpeed", 20.0 / tickCooldown);
-        cruiseTickCooldown = (int) Math.round((1.0 + cruiseSkipBlocks) * 20.0 / cruiseSpeed);
+        cruiseTickCooldown = (int) Math.round((1.0 + getIntProperty("cruiseSkipBlocks")) * 20.0 / cruiseSpeed);
         perWorldCruiseTickCooldown = new HashMap<>();
         Map<String, Double> cruiseTickCooldownMap = stringToDoubleMapFromObject(data.getDataOrEmpty("perWorldCruiseSpeed").getBackingData());
         cruiseTickCooldownMap.forEach((world, speed) -> {
-            double worldCruiseSkipBlocks = perWorldCruiseSkipBlocks.getOrDefault(world, cruiseSkipBlocks);
+            double worldCruiseSkipBlocks = perWorldCruiseSkipBlocks.getOrDefault(world, getIntProperty("cruiseSkipBlocks"));
             perWorldCruiseTickCooldown.put(world, (int) Math.round((1.0 + worldCruiseSkipBlocks) * 20.0 / cruiseSpeed));
         });
         tickCooldownMap.forEach((world, speed) -> {
             if (!perWorldCruiseTickCooldown.containsKey(world)) {
-                perWorldCruiseTickCooldown.put(world, (int) Math.round((1.0 + cruiseSkipBlocks) * 20.0 / speed));
+                perWorldCruiseTickCooldown.put(world, (int) Math.round((1.0 + getIntProperty("cruiseSkipBlocks")) * 20.0 / speed));
             }
         });
 
         double vertCruiseSpeed = data.getDoubleOrDefault("vertCruiseSpeed", cruiseSpeed);
-        vertCruiseTickCooldown = (int) Math.round((1.0 + vertCruiseSkipBlocks) * 20.0 / vertCruiseSpeed);
+        vertCruiseTickCooldown = (int) Math.round((1.0 + getIntProperty("vertCruiseSkipBlocks")) * 20.0 / vertCruiseSpeed);
         perWorldVertCruiseTickCooldown = new HashMap<>();
         Map<String, Double> vertCruiseTickCooldownMap = stringToDoubleMapFromObject(data.getDataOrEmpty("perWorldVertCruiseSpeed").getBackingData());
         vertCruiseTickCooldownMap.forEach((world, speed) -> {
-            double worldVertCruiseSkipBlocks = perWorldVertCruiseSkipBlocks.getOrDefault(world, vertCruiseSkipBlocks);
+            double worldVertCruiseSkipBlocks = perWorldVertCruiseSkipBlocks.getOrDefault(world, getIntProperty("vertCruiseSkipBlocks"));
             perWorldVertCruiseTickCooldown.put(world, (int) Math.round((1.0 + worldVertCruiseSkipBlocks) * 20.0 / speed));
         });
         cruiseTickCooldownMap.forEach((world, speed) -> {
             if (!perWorldVertCruiseTickCooldown.containsKey(world)) {
-                double worldVertCruiseSkipBlocks = perWorldVertCruiseSkipBlocks.getOrDefault(world, vertCruiseSkipBlocks);
+                double worldVertCruiseSkipBlocks = perWorldVertCruiseSkipBlocks.getOrDefault(world, getIntProperty("vertCruiseSkipBlocks"));
                 perWorldVertCruiseTickCooldown.put(world, (int) Math.round((1.0 + worldVertCruiseSkipBlocks) * 20.0 / vertCruiseSpeed));
             }
         });
@@ -232,7 +254,6 @@ final public class CraftType {
             perWorldMaxHeightLimit.put(world, worldValue);
         });
         
-        maxHeightAboveGround = data.getIntOrDefault("maxHeightAboveGround", -1);
         perWorldMaxHeightAboveGround = stringToIntMapFromObject(data.getDataOrEmpty("perWorldMaxHeightAboveGround").getBackingData());
         canDirectControl = data.getBooleanOrDefault("canDirectControl", true);
         canHover = data.getBooleanOrDefault("canHover", false);
@@ -240,7 +261,6 @@ final public class CraftType {
         moveEntities = data.getBooleanOrDefault("moveEntities", true);
         onlyMovePlayers = data.getBooleanOrDefault("onlyMovePlayers", true);
         useGravity = data.getBooleanOrDefault("useGravity", false);
-        hoverLimit = Math.max(0, data.getIntOrDefault("hoverLimit", 0));
         harvestBlocks = data.getMaterialsOrEmpty("harvestBlocks");
         harvesterBladeBlocks = data.getMaterialsOrEmpty("harvesterBladeBlocks");
         passthroughBlocks = data.getMaterialsOrEmpty("passthroughBlocks");
@@ -292,21 +312,6 @@ final public class CraftType {
         gearShiftsAffectTickCooldown = data.getBooleanOrDefault("gearShiftsAffectTickCooldown", true);
         gearShiftsAffectDirectMovement = data.getBooleanOrDefault("gearShiftsAffectDirectMovement", false);
         gearShiftsAffectCruiseSkipBlocks = data.getBooleanOrDefault("gearShiftsAffectCruiseSkipBlocks", false);
-        releaseTimeout = data.getIntOrDefault("releaseTimeout", 30);
-
-        // Load integer properties
-        intPropertyMap = new HashMap<>();
-        for(IntegerProperty i : intProperties) {
-            Integer val = i.load(data);
-            if(val != null)
-                intPropertyMap.put(i.getKey(), val);
-        }
-
-        // Validate craft type
-        for(var i : validators) {
-            if(!i.getLeft().test(this))
-                throw new IllegalArgumentException(i.getRight());
-        }
     }
 
     public int getIntProperty(String key) {
@@ -437,33 +442,16 @@ final public class CraftType {
         return canCruise;
     }
 
-    @Deprecated
-    public int getCruiseSkipBlocks() {
-        return cruiseSkipBlocks;
-    }
     public int getCruiseSkipBlocks(@NotNull World world) {
-        return perWorldCruiseSkipBlocks.getOrDefault(world.getName(), cruiseSkipBlocks);
-    }
-
-    @Deprecated
-    public int getVertCruiseSkipBlocks() {
-        return vertCruiseSkipBlocks;
+        return perWorldCruiseSkipBlocks.getOrDefault(world.getName(), getIntProperty("cruiseSkipBlocks"));
     }
 
     public int getVertCruiseSkipBlocks(@NotNull World world) {
-        return perWorldVertCruiseSkipBlocks.getOrDefault(world.getName(), vertCruiseSkipBlocks);
+        return perWorldVertCruiseSkipBlocks.getOrDefault(world.getName(), getIntProperty("vertCruiseSkipBlocks"));
     }
 
     public boolean getCanBeNamed(){
         return canBeNamed;
-    }
-
-    public int maxStaticMove() {
-        return maxStaticMove;
-    }
-
-    public int getStaticWaterLevel() {
-        return staticWaterLevel;
     }
 
     public boolean getCanTeleport() {
@@ -480,10 +468,6 @@ final public class CraftType {
 
     public boolean getCruiseOnPilot() {
         return cruiseOnPilot;
-    }
-
-    public int getCruiseOnPilotVertMove() {
-        return cruiseOnPilotVertMove;
     }
 
     public boolean allowVerticalMovement() {
@@ -544,10 +528,6 @@ final public class CraftType {
 
     public float getExplodeOnCrash() {
         return explodeOnCrash;
-    }
-
-    public int getSmokeOnSink() {
-        return smokeOnSink;
     }
 
     public float getCollisionExplosion() {
@@ -622,12 +602,8 @@ final public class CraftType {
         return perWorldMinHeightLimit.getOrDefault(world.getName(), getIntProperty("minHeightLimit"));
     }
 
-    @Deprecated
-    public int getMaxHeightAboveGround() {
-        return maxHeightAboveGround;
-    }
     public int getMaxHeightAboveGround(@NotNull World world) {
-        return perWorldMaxHeightAboveGround.getOrDefault(world.getName(), maxHeightAboveGround);
+        return perWorldMaxHeightAboveGround.getOrDefault(world.getName(), getIntProperty("maxHeightAboveGround"));
     }
 
     public boolean getCanHover() {
@@ -636,10 +612,6 @@ final public class CraftType {
 
     public boolean getCanDirectControl() {
         return canDirectControl;
-    }
-
-    public int getHoverLimit() {
-        return hoverLimit;
     }
 
     @NotNull
@@ -746,10 +718,6 @@ final public class CraftType {
 
     public boolean getGearShiftsAffectCruiseSkipBlocks() {
         return gearShiftsAffectCruiseSkipBlocks;
-    }
-
-    public int getReleaseTimeout(){
-        return releaseTimeout;
     }
 
     public static class TypeNotFoundException extends RuntimeException {

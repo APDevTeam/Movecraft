@@ -146,7 +146,7 @@ public class PlayerListener implements Listener {
             for(var location : mergePoints){
                 highlights.get(c).add(BlockHighlight.highlightBlockAt(location, p));
             }
-            timeToReleaseAfter.put(c, System.currentTimeMillis() + c.getType().getReleaseTimeout() * 1000);
+            timeToReleaseAfter.put(c, System.currentTimeMillis() + c.getType().getIntProperty("releaseTimeout") * 1000L);
         }
     }
 
