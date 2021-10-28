@@ -729,7 +729,7 @@ public class TranslationTask extends AsyncTask {
             }
             dropDistance--;
 
-        } while (dropDistance > craft.getType().getGravityDropDistance());
+        } while (dropDistance > craft.getType().getIntProperty("gravityDropDistance"));
 
         return dropDistance;
     }

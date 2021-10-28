@@ -366,7 +366,7 @@ public abstract class BaseCraft implements Craft{
     @Override
     public int getTickCooldown() {
         if(sinking)
-            return type.getSinkRateTicks();
+            return type.getIntProperty("sinkRateTicks");
 
 //        Counter<Material> counter = new Counter<>();
 //        Map<Material, Integer> counter = new HashMap<>();

@@ -370,7 +370,7 @@ public class AsyncManager extends BukkitRunnable {
                 continue;
             }
             long ticksElapsed = (System.currentTimeMillis() - craft.getLastCruiseUpdate()) / 50;
-            if (Math.abs(ticksElapsed) < craft.getType().getSinkRateTicks()) {
+            if (Math.abs(ticksElapsed) < craft.getType().getIntProperty("SinkRateTicks")) {
                 continue;
             }
             int dx = 0;
@@ -628,7 +628,7 @@ public class AsyncManager extends BukkitRunnable {
         // And check the OverallSinkPercent
         if (craft.getType().getDoubleProperty("overallSinkPercent") != 0.0) {
             double percent;
-            if (craft.getType().blockedByWater()) {
+            if (craft.getType().getBoolProperty("blockedByWater")) {
                 percent = (double) totalNonNegligibleBlocks
                         / (double) craft.getOrigBlockCount();
             } else {

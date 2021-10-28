@@ -111,7 +111,7 @@ public class DetectionTask implements Supplier<Effect> {
     @Deprecated
     private Effect water(@NotNull Craft c){
         final int waterLine = WorldManager.INSTANCE.executeMain(c::getWaterLine);
-        if (c.getType().blockedByWater() || c.getHitBox().getMinY() > waterLine) {
+        if (c.getType().getBoolProperty("blockedByWater") || c.getHitBox().getMinY() > waterLine) {
             return null;
         }
 

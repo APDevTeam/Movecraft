@@ -250,15 +250,6 @@ final public class CraftType {
 
 
 
-    // problem child properties
-    private final int cruiseTickCooldown;
-    private final int vertCruiseTickCooldown;
-    private final int sinkRateTicks;
-    private final int tickCooldown;
-    private final int gravityDropDistance;
-    private final boolean blockedByWater;
-
-
     private final EnumSet<Material> dynamicFlyBlocks;
     @NotNull private final EnumSet<Material> allowedBlocks;
     @NotNull private final EnumSet<Material> forbiddenBlocks;
@@ -327,33 +318,39 @@ final public class CraftType {
         }
 
 
-        //Required craft flags
+        // Required craft flags
+        intPropertyMap.put("tickCooldown", (int) Math.ceil(20 / (data.getDouble("speed"))));
+
         craftName = data.getString("name");
         allowedBlocks = data.getMaterials("allowedBlocks");
 
         forbiddenSignStrings = data.getStringListOrEmpty("forbiddenSignStrings").stream().map(String::toLowerCase).collect(Collectors.toSet());
-        tickCooldown = (int) Math.ceil(20 / (data.getDouble("speed")));
         perWorldTickCooldown = new HashMap<>();
         Map<String, Double> tickCooldownMap = stringToDoubleMapFromObject(data.getDataOrEmpty("perWorldSpeed").getBackingData());
         tickCooldownMap.forEach((world, speed) -> perWorldTickCooldown.put(world, (int) Math.ceil(20 / speed)));
         flyBlocks = blockIDMapListFromObject("flyblocks", data.getDataOrEmpty("flyblocks").getBackingData());
 
-        //Optional craft flags
+        // Optional craft flags
+        boolPropertyMap.put("blockedByWater", data.getBooleanOrDefault("canFly", data.getBooleanOrDefault("blockedByWater", true)));
+        intPropertyMap.put("sinkRateTicks", data.getIntOrDefault("sinkRateTicks", (int) Math.ceil(20 / data.getDoubleOrDefault("sinkSpeed", -200)))); // default becomes 0
+        double cruiseSpeed = data.getDoubleOrDefault("cruiseSpeed", 20.0 / getIntProperty("tickCooldown"));
+        intPropertyMap.put("cruiseTickCooldown", (int) Math.round((1.0 + getIntProperty("cruiseSkipBlocks")) * 20.0 / cruiseSpeed));
+        double vertCruiseSpeed = data.getDoubleOrDefault("vertCruiseSpeed", cruiseSpeed);
+        intPropertyMap.put("vertCruiseTickCooldown", (int) Math.round((1.0 + getIntProperty("vertCruiseSkipBlocks")) * 20.0 / vertCruiseSpeed));
+        int dropdist = data.getIntOrDefault("gravityDropDistance", -8);
+        intPropertyMap.put("gravityDropDistance", dropdist > 0 ? -dropdist : dropdist);
+
         forbiddenBlocks = data.getMaterialsOrEmpty("forbiddenBlocks");
-        blockedByWater = data.getBooleanOrDefault("canFly", data.getBooleanOrDefault("blockedByWater", true));
         moveBlocks = blockIDMapListFromObject("moveblocks", data.getDataOrEmpty("moveblocks").getBackingData());
         perWorldCruiseSkipBlocks = stringToIntMapFromObject(data.getDataOrEmpty("perWorldCruiseSkipBlocks").getBackingData());
         perWorldVertCruiseSkipBlocks = stringToIntMapFromObject(data.getDataOrEmpty("perWorldVertCruiseSkipBlocks").getBackingData());
         perWorldFuelBurnRate = stringToDoubleMapFromObject(data.getDataOrEmpty("perWorldFuelBurnRate").getBackingData());
         perWorldDetectionMultiplier = stringToDoubleMapFromObject(data.getDataOrEmpty("perWorldDetectionMultiplier").getBackingData());
         perWorldUnderwaterDetectionMultiplier = stringToDoubleMapFromObject(data.getDataOrEmpty("perWorldUnderwaterDetectionMultiplier").getBackingData());
-        sinkRateTicks = data.getIntOrDefault("sinkRateTicks", (int) Math.ceil(20 / data.getDoubleOrDefault("sinkSpeed", -200))); // default becomes 0
         perWorldMinHeightLimit = new HashMap<>();
         Map<String, Integer> minHeightMap = stringToIntMapFromObject(data.getDataOrEmpty("perWorldMinHeightLimit").getBackingData());
         minHeightMap.forEach((world, height) -> perWorldMinHeightLimit.put(world, Math.max(0, height)));
 
-        double cruiseSpeed = data.getDoubleOrDefault("cruiseSpeed", 20.0 / tickCooldown);
-        cruiseTickCooldown = (int) Math.round((1.0 + getIntProperty("cruiseSkipBlocks")) * 20.0 / cruiseSpeed);
         perWorldCruiseTickCooldown = new HashMap<>();
         Map<String, Double> cruiseTickCooldownMap = stringToDoubleMapFromObject(data.getDataOrEmpty("perWorldCruiseSpeed").getBackingData());
         cruiseTickCooldownMap.forEach((world, speed) -> {
@@ -366,8 +363,6 @@ final public class CraftType {
             }
         });
 
-        double vertCruiseSpeed = data.getDoubleOrDefault("vertCruiseSpeed", cruiseSpeed);
-        vertCruiseTickCooldown = (int) Math.round((1.0 + getIntProperty("vertCruiseSkipBlocks")) * 20.0 / vertCruiseSpeed);
         perWorldVertCruiseTickCooldown = new HashMap<>();
         Map<String, Double> vertCruiseTickCooldownMap = stringToDoubleMapFromObject(data.getDataOrEmpty("perWorldVertCruiseSpeed").getBackingData());
         vertCruiseTickCooldownMap.forEach((world, speed) -> {
@@ -394,7 +389,7 @@ final public class CraftType {
         harvestBlocks = data.getMaterialsOrEmpty("harvestBlocks");
         harvesterBladeBlocks = data.getMaterialsOrEmpty("harvesterBladeBlocks");
         passthroughBlocks = data.getMaterialsOrEmpty("passthroughBlocks");
-        if(!blockedByWater){
+        if(!getBoolProperty("blockedByWater")){
             passthroughBlocks.add(Material.WATER);
         }
         forbiddenHoverOverBlocks = data.getMaterialsOrEmpty("forbiddenHoverOverBlocks");
@@ -402,8 +397,6 @@ final public class CraftType {
             forbiddenHoverOverBlocks.add(Material.WATER);
         }
         dynamicFlyBlocks = data.getMaterialsOrEmpty("dynamicFlyBlock");
-        int dropdist = data.getIntOrDefault("gravityDropDistance", -8);
-        gravityDropDistance = dropdist > 0 ? -dropdist : dropdist;
         collisionSound = data.getSoundOrDefault("collisionSound",  Sound.sound(Key.key("block.anvil.land"), Sound.Source.NEUTRAL, 2.0f,1.0f));
         fuelTypes = new HashMap<>();
         Map<String, Object> fTypes =  data.getDataOrEmpty("fuelTypes").getBackingData();
@@ -422,7 +415,8 @@ final public class CraftType {
                 }
                 fuelTypes.put(type, burnRate);
             }
-        } else {
+        }
+        else {
             fuelTypes.put(Material.COAL_BLOCK, 79.0);
             fuelTypes.put(Material.COAL, 7.0);
             fuelTypes.put(Material.CHARCOAL, 7.0);
@@ -544,10 +538,6 @@ final public class CraftType {
         return forbiddenSignStrings;
     }
 
-    public boolean blockedByWater() {
-        return blockedByWater;
-    }
-
     public int getCruiseSkipBlocks(@NotNull World world) {
         return perWorldCruiseSkipBlocks.getOrDefault(world.getName(), getIntProperty("cruiseSkipBlocks"));
     }
@@ -568,34 +558,16 @@ final public class CraftType {
         return perWorldUnderwaterDetectionMultiplier.getOrDefault(world.getName(), getDoubleProperty("underwaterDetectionMultiplier"));
     }
 
-    public int getSinkRateTicks() {
-        return sinkRateTicks;
-    }
-
-    @Deprecated
-    public int getTickCooldown() {
-        return tickCooldown;
-    }
     public int getTickCooldown(@NotNull World world) {
-        return perWorldTickCooldown.getOrDefault(world.getName(), tickCooldown);
-    }
-
-    @Deprecated
-    public int getCruiseTickCooldown() {
-        return cruiseTickCooldown;
+        return perWorldTickCooldown.getOrDefault(world.getName(), getIntProperty("tickCooldown"));
     }
 
     public int getCruiseTickCooldown(@NotNull World world) {
-        return perWorldCruiseTickCooldown.getOrDefault(world.getName(), cruiseTickCooldown);
-    }
-
-    @Deprecated
-    public int getVertCruiseTickCooldown() {
-        return vertCruiseTickCooldown;
+        return perWorldCruiseTickCooldown.getOrDefault(world.getName(), getIntProperty("cruiseTickCooldown"));
     }
 
     public int getVertCruiseTickCooldown(@NotNull World world) {
-        return perWorldVertCruiseTickCooldown.getOrDefault(world.getName(), vertCruiseTickCooldown);
+        return perWorldVertCruiseTickCooldown.getOrDefault(world.getName(), getIntProperty("vertCruiseTickCooldown"));
     }
 
     @NotNull
@@ -650,10 +622,6 @@ final public class CraftType {
     @NotNull
     public Set<Material> getForbiddenHoverOverBlocks() {
         return forbiddenHoverOverBlocks;
-    }
-
-    public int getGravityDropDistance() {
-        return gravityDropDistance;
     }
 
     @NotNull
