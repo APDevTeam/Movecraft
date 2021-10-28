@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
 
 final public class CraftType {
     // TODO: The current implementation will mask all loading problems if there is a default defined for that property.
-    //  Instead we want to only mask errors of no valid key, rather than invalid type.
+    //  Instead we want to only mask errors of no valid key, rather than invalid type/value/etc.
 
     private static final List<IntegerProperty> intProperties = new ArrayList<>();
 
@@ -51,28 +51,6 @@ final public class CraftType {
      */
     public static void registerIntProperty(IntegerProperty integerProperty) {
         intProperties.add(integerProperty);
-    }
-
-    static {
-        // Required properties
-        intProperties.add(new IntegerProperty("maxSize"));
-        intProperties.add(new IntegerProperty("minSize"));
-
-        // Optional properties
-        intProperties.add(new IntegerProperty("minHeightLimit", type -> 0));
-        intProperties.add(new IntegerProperty("maxHeightLimit", type -> 255));
-        intProperties.add(new IntegerProperty("cruiseOnPilotVertMove", type -> 0));
-        intProperties.add(new IntegerProperty("maxHeightAboveGround", type -> -1));
-        intProperties.add(new IntegerProperty("maxStaticMove", type -> 10000));
-        intProperties.add(new IntegerProperty("cruiseSkipBlocks", type -> 0));
-        intProperties.add(new IntegerProperty("vertCruiseSkipBlocks", type -> type.getIntProperty("cruiseSkipBlocks")));
-        intProperties.add(new IntegerProperty("staticWaterLevel", type -> 0));
-        intProperties.add(new IntegerProperty("smokeOnSink", type -> 0));
-        intProperties.add(new IntegerProperty("releaseTimeout", type -> 30));
-        intProperties.add(new IntegerProperty("hoverLimit", type -> 0));
-        intProperties.add(new IntegerProperty("teleportationCooldown", type -> 0));
-        intProperties.add(new IntegerProperty("gravityInclineDistance", type -> -1));
-        intProperties.add(new IntegerProperty("gearShifts", type -> 1));
     }
 
     private final Map<String, Integer> intPropertyMap;
@@ -100,36 +78,6 @@ final public class CraftType {
         boolProperties.add(booleanProperty);
     }
 
-    static {
-        // Optional properties
-        boolProperties.add(new BooleanProperty("requireWaterContact", type -> false));
-        boolProperties.add(new BooleanProperty("tryNudge", type -> false));
-        boolProperties.add(new BooleanProperty("canCruise", type -> false));
-        boolProperties.add(new BooleanProperty("canTeleport", type -> false));
-        boolProperties.add(new BooleanProperty("canBeNamed", type -> true));
-        boolProperties.add(new BooleanProperty("canSwitchWorld", type -> false));
-        boolProperties.add(new BooleanProperty("canStaticMove", type -> false));
-        boolProperties.add(new BooleanProperty("canHover", type -> false));
-        boolProperties.add(new BooleanProperty("canDirectControl", type -> true));
-        boolProperties.add(new BooleanProperty("useGravity", type -> false));
-        boolProperties.add(new BooleanProperty("canHoverOverWater", type -> true));
-        boolProperties.add(new BooleanProperty("moveEntities", type -> true));
-        boolProperties.add(new BooleanProperty("onlyMovePlayers", type -> true));
-        boolProperties.add(new BooleanProperty("allowHorizontalMovement", type -> true));
-        boolProperties.add(new BooleanProperty("allowVerticalMovement", type -> true));
-        boolProperties.add(new BooleanProperty("allowRemoteSign", type -> true));
-        boolProperties.add(new BooleanProperty("cruiseOnPilot", type -> false));
-        boolProperties.add(new BooleanProperty("allowVerticalTakeoffAndLanding", type -> true));
-        boolProperties.add(new BooleanProperty("rotateAtMidpoint", type -> false));
-        boolProperties.add(new BooleanProperty("halfSpeedUnderwater", type -> false));
-        boolProperties.add(new BooleanProperty("focusedExplosion", type -> false));
-        boolProperties.add(new BooleanProperty("mustBeSubcraft", type -> false));
-        boolProperties.add(new BooleanProperty("keepMovingOnSink", type -> false));
-        boolProperties.add(new BooleanProperty("gearShiftsAffectTickCooldown", type -> true));
-        boolProperties.add(new BooleanProperty("gearShiftsAffectDirectMovement", type -> false));
-        boolProperties.add(new BooleanProperty("gearShiftsAffectCruiseSkipBlocks", type -> false));
-    }
-
     private final Map<String, Boolean> boolPropertyMap;
 
     /**
@@ -155,12 +103,6 @@ final public class CraftType {
         floatProperties.add(floatProperty);
     }
 
-    static {
-        // Optional Properties
-        floatProperties.add(new FloatProperty("explodeOnCrash", type -> 0F));
-        floatProperties.add(new FloatProperty("collisionExplosion", type -> 0F));
-    }
-
     private final Map<String, Float> floatPropertyMap;
 
     /**
@@ -184,20 +126,6 @@ final public class CraftType {
      */
     public static void registerDoubleProperty(DoubleProperty doubleProperty) {
         doubleProperties.add(doubleProperty);
-    }
-
-    static {
-        // Optional Properties
-        doubleProperties.add(new DoubleProperty("fuelBurnRate", type -> 0D));
-        doubleProperties.add(new DoubleProperty("sinkPercent", type -> 0D));
-        doubleProperties.add(new DoubleProperty("overallSinkPercent", type -> 0D));
-        doubleProperties.add(new DoubleProperty("detectionMultiplier", type -> 0D));
-        doubleProperties.add(new DoubleProperty("underwaterDetectionMultiplier", type-> type.getDoubleProperty("detectionMultplier")));
-        doubleProperties.add(new DoubleProperty("dynamicLagSpeedFactor", type -> 0D));
-        doubleProperties.add(new DoubleProperty("dynamicLagPowerFactor", type -> 0D));
-        doubleProperties.add(new DoubleProperty("dynamicLagMinSpeed", type -> 0D));
-        doubleProperties.add(new DoubleProperty("dynamicFlyBlockSpeedFactor", type -> 0D));
-        doubleProperties.add(new DoubleProperty("chestPenalty", type -> 0D));
     }
 
     private final Map<String, Double> doublePropertyMap;
@@ -244,11 +172,6 @@ final public class CraftType {
 
     private static final List<StringProperty> stringProperties = new ArrayList<>();
 
-    static {
-        // Required properties
-        stringProperties.add(new StringProperty("name"));
-    }
-
     /**
      * Register a string property with Movecraft
      *
@@ -273,17 +196,6 @@ final public class CraftType {
 
 
     private static final List<MaterialSetProperty> materialSetProperties = new ArrayList<>();
-
-    static {
-        // Required properties
-        materialSetProperties.add(new MaterialSetProperty("allowedBlocks"));
-
-        // Optional properties
-        materialSetProperties.add(new MaterialSetProperty("forbiddenBlocks", type -> EnumSet.noneOf(Material.class)));
-        materialSetProperties.add(new MaterialSetProperty("dynamicFlyBlocks", type -> EnumSet.noneOf(Material.class)));
-        materialSetProperties.add(new MaterialSetProperty("harvestBlocks", type -> EnumSet.noneOf(Material.class)));
-        materialSetProperties.add(new MaterialSetProperty("harvesterBladeBlocks", type -> EnumSet.noneOf(Material.class)));
-    }
 
     /**
      * Register a material set property with Movecraft
@@ -320,27 +232,94 @@ final public class CraftType {
         validators.add(new Pair<>(validator, errorMessage));
     }
 
+
+
     static {
-        validators.add(new Pair<>(
+        // Required properties
+        registerStringProperty(new StringProperty("name"));
+        registerIntProperty(new IntegerProperty("maxSize"));
+        registerIntProperty(new IntegerProperty("minSize"));
+        registerMaterialSetProperty(new MaterialSetProperty("allowedBlocks"));
+
+        // Optional properties
+        registerIntProperty(new IntegerProperty("minHeightLimit", type -> 0));
+        registerIntProperty(new IntegerProperty("maxHeightLimit", type -> 255));
+        registerIntProperty(new IntegerProperty("cruiseOnPilotVertMove", type -> 0));
+        registerIntProperty(new IntegerProperty("maxHeightAboveGround", type -> -1));
+        registerIntProperty(new IntegerProperty("maxStaticMove", type -> 10000));
+        registerIntProperty(new IntegerProperty("cruiseSkipBlocks", type -> 0));
+        registerIntProperty(new IntegerProperty("vertCruiseSkipBlocks", type -> type.getIntProperty("cruiseSkipBlocks")));
+        registerIntProperty(new IntegerProperty("staticWaterLevel", type -> 0));
+        registerIntProperty(new IntegerProperty("smokeOnSink", type -> 0));
+        registerIntProperty(new IntegerProperty("releaseTimeout", type -> 30));
+        registerIntProperty(new IntegerProperty("hoverLimit", type -> 0));
+        registerIntProperty(new IntegerProperty("teleportationCooldown", type -> 0));
+        registerIntProperty(new IntegerProperty("gravityInclineDistance", type -> -1));
+        registerIntProperty(new IntegerProperty("gearShifts", type -> 1));
+        registerBoolProperty(new BooleanProperty("requireWaterContact", type -> false));
+        registerBoolProperty(new BooleanProperty("tryNudge", type -> false));
+        registerBoolProperty(new BooleanProperty("canCruise", type -> false));
+        registerBoolProperty(new BooleanProperty("canTeleport", type -> false));
+        registerBoolProperty(new BooleanProperty("canBeNamed", type -> true));
+        registerBoolProperty(new BooleanProperty("canSwitchWorld", type -> false));
+        registerBoolProperty(new BooleanProperty("canStaticMove", type -> false));
+        registerBoolProperty(new BooleanProperty("canHover", type -> false));
+        registerBoolProperty(new BooleanProperty("canDirectControl", type -> true));
+        registerBoolProperty(new BooleanProperty("useGravity", type -> false));
+        registerBoolProperty(new BooleanProperty("canHoverOverWater", type -> true));
+        registerBoolProperty(new BooleanProperty("moveEntities", type -> true));
+        registerBoolProperty(new BooleanProperty("onlyMovePlayers", type -> true));
+        registerBoolProperty(new BooleanProperty("allowHorizontalMovement", type -> true));
+        registerBoolProperty(new BooleanProperty("allowVerticalMovement", type -> true));
+        registerBoolProperty(new BooleanProperty("allowRemoteSign", type -> true));
+        registerBoolProperty(new BooleanProperty("cruiseOnPilot", type -> false));
+        registerBoolProperty(new BooleanProperty("allowVerticalTakeoffAndLanding", type -> true));
+        registerBoolProperty(new BooleanProperty("rotateAtMidpoint", type -> false));
+        registerBoolProperty(new BooleanProperty("halfSpeedUnderwater", type -> false));
+        registerBoolProperty(new BooleanProperty("focusedExplosion", type -> false));
+        registerBoolProperty(new BooleanProperty("mustBeSubcraft", type -> false));
+        registerBoolProperty(new BooleanProperty("keepMovingOnSink", type -> false));
+        registerBoolProperty(new BooleanProperty("gearShiftsAffectTickCooldown", type -> true));
+        registerBoolProperty(new BooleanProperty("gearShiftsAffectDirectMovement", type -> false));
+        registerBoolProperty(new BooleanProperty("gearShiftsAffectCruiseSkipBlocks", type -> false));
+        registerFloatProperty(new FloatProperty("explodeOnCrash", type -> 0F));
+        registerFloatProperty(new FloatProperty("collisionExplosion", type -> 0F));
+        registerDoubleProperty(new DoubleProperty("fuelBurnRate", type -> 0D));
+        registerDoubleProperty(new DoubleProperty("sinkPercent", type -> 0D));
+        registerDoubleProperty(new DoubleProperty("overallSinkPercent", type -> 0D));
+        registerDoubleProperty(new DoubleProperty("detectionMultiplier", type -> 0D));
+        registerDoubleProperty(new DoubleProperty("underwaterDetectionMultiplier", type-> type.getDoubleProperty("detectionMultplier")));
+        registerDoubleProperty(new DoubleProperty("dynamicLagSpeedFactor", type -> 0D));
+        registerDoubleProperty(new DoubleProperty("dynamicLagPowerFactor", type -> 0D));
+        registerDoubleProperty(new DoubleProperty("dynamicLagMinSpeed", type -> 0D));
+        registerDoubleProperty(new DoubleProperty("dynamicFlyBlockSpeedFactor", type -> 0D));
+        registerDoubleProperty(new DoubleProperty("chestPenalty", type -> 0D));
+        registerMaterialSetProperty(new MaterialSetProperty("forbiddenBlocks", type -> EnumSet.noneOf(Material.class)));
+        registerMaterialSetProperty(new MaterialSetProperty("dynamicFlyBlocks", type -> EnumSet.noneOf(Material.class)));
+        registerMaterialSetProperty(new MaterialSetProperty("harvestBlocks", type -> EnumSet.noneOf(Material.class)));
+        registerMaterialSetProperty(new MaterialSetProperty("harvesterBladeBlocks", type -> EnumSet.noneOf(Material.class)));
+
+        // Craft type validators
+        registerTypeValidator(
                 type -> type.getIntProperty("minHeightLimit") <= type.getIntProperty("maxHeightLimit"),
                 "minHeightLimit must be less than or equal to maxHeightLimit"
-        ));
-        validators.add(new Pair<>(
+        );
+        registerTypeValidator(
                 type -> type.getIntProperty("minHeightLimit") >= 0 && type.getIntProperty("minHeightLimit") <= 255,
                 "minHeightLimit must be between 0 and 255"
-        ));
-        validators.add(new Pair<>(
+        );
+        registerTypeValidator(
                 type -> type.getIntProperty("maxHeightLimit") >= 0 && type.getIntProperty("maxHeightLimit") <= 255,
                 "maxHeightLimit must be between 0 and 255"
-        ));
-        validators.add(new Pair<>(
+        );
+        registerTypeValidator(
                 type -> type.getIntProperty("hoverLimit") <= 0,
                 "hoverLimit must be greater than or equal to zero"
-        ));
-        validators.add(new Pair<>(
+        );
+        registerTypeValidator(
                 type -> type.getIntProperty("gearShifts") <= 1,
                 "gearShifts must be greater than or equal to one"
-        ));
+        );
     }
 
 
@@ -367,6 +346,14 @@ final public class CraftType {
 
     public CraftType(File f) {
         TypeData data = TypeData.loadConfiguration(f);
+
+        // Load string properties
+        stringPropertyMap = new HashMap<>();
+        for(StringProperty i : stringProperties) {
+            String value = i.load(data, this);
+            if(value != null)
+                stringPropertyMap.put(i.getKey(), value);
+        }
 
         // Load integer properties
         intPropertyMap = new HashMap<>();
@@ -406,14 +393,6 @@ final public class CraftType {
             Object value = i.load(data, this);
             if(value != null)
                 objectPropertyMap.put(i.getKey(), value);
-        }
-
-        // Load string properties
-        stringPropertyMap = new HashMap<>();
-        for(StringProperty i : stringProperties) {
-            String value = i.load(data, this);
-            if(value != null)
-                stringPropertyMap.put(i.getKey(), value);
         }
 
         // Load material set properties
