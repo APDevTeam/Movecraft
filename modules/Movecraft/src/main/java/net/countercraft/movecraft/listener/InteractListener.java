@@ -114,7 +114,7 @@ public final class InteractListener implements Listener {
                 return;
             }
 
-            if (!event.getPlayer().hasPermission("movecraft." + craft.getType().getCraftName() + ".move")) {
+            if (!event.getPlayer().hasPermission("movecraft." + craft.getType().getStringProperty("craftName") + ".move")) {
                 event.getPlayer().sendMessage(
                         I18nSupport.getInternationalisedString("Insufficient Permissions"));
                 return;
@@ -172,7 +172,7 @@ public final class InteractListener implements Listener {
                 event.setCancelled(true);
                 return;
             }
-            if (!event.getPlayer().hasPermission("movecraft." + craft.getType().getCraftName() + ".move")
+            if (!event.getPlayer().hasPermission("movecraft." + craft.getType().getStringProperty("craftName") + ".move")
                     || !craft.getType().getBoolProperty("canDirectControl")) {
                         event.getPlayer().sendMessage(
                                 I18nSupport.getInternationalisedString("Insufficient Permissions"));

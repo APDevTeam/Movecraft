@@ -50,7 +50,7 @@ public final class HelmSign implements Listener {
         if (craft == null) {
             return;
         }
-        if (!event.getPlayer().hasPermission("movecraft." + craft.getType().getCraftName() + ".rotate")) {
+        if (!event.getPlayer().hasPermission("movecraft." + craft.getType().getStringProperty("craftName") + ".rotate")) {
             event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
             return;
         }

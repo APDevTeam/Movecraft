@@ -46,7 +46,7 @@ public class ScuttleCommand implements CommandExecutor {
             commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Scuttle - Craft Already Sinking"));
             return true;
         }
-        if(!commandSender.hasPermission("movecraft."+craft.getType().getCraftName()+".scuttle")){
+        if(!commandSender.hasPermission("movecraft."+craft.getType().getStringProperty("craftName")+".scuttle")){
             commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Insufficient Permissions"));
             return true;
         }

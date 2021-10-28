@@ -48,7 +48,7 @@ public class ContactsSign implements Listener{
             MovecraftLocation tcenter = tcraft.getHitBox().getMidPoint();
             int distsquared= center.distanceSquared(tcenter);
             // craft has been detected
-            String notification = ChatColor.BLUE + tcraft.getType().getCraftName();
+            String notification = ChatColor.BLUE + tcraft.getType().getStringProperty("craftName");
             if(notification.length()>9) {
                 notification = notification.substring(0, 7);
             }

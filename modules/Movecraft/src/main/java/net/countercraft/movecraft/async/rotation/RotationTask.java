@@ -265,12 +265,12 @@ public class RotationTask extends AsyncTask {
                     //newHitBox.addAll(CollectionUtils.filter(craft.getHitBox(),newHitBox));
                     //craft.setHitBox(newHitBox);
                     if (Settings.Debug) {
-                        Bukkit.broadcastMessage(String.format("Size of %s hitbox: %d, Size of %s hitbox: %d", this.craft.getType().getCraftName(), newHitBox.size(), craft.getType().getCraftName(), craft.getHitBox().size()));
+                        Bukkit.broadcastMessage(String.format("Size of %s hitbox: %d, Size of %s hitbox: %d", this.craft.getType().getStringProperty("craftName"), newHitBox.size(), craft.getType().getStringProperty("craftName"), craft.getHitBox().size()));
                     }
                     craft.setHitBox(craft.getHitBox().difference(oldHitBox).union(newHitBox));
                     if (Settings.Debug){
-                        Bukkit.broadcastMessage(String.format("Hitbox of craft %s intersects hitbox of craft %s", this.craft.getType().getCraftName(), craft.getType().getCraftName()));
-                        Bukkit.broadcastMessage(String.format("Size of %s hitbox: %d, Size of %s hitbox: %d", this.craft.getType().getCraftName(), newHitBox.size(), craft.getType().getCraftName(), craft.getHitBox().size()));
+                        Bukkit.broadcastMessage(String.format("Hitbox of craft %s intersects hitbox of craft %s", this.craft.getType().getStringProperty("craftName"), craft.getType().getStringProperty("craftName")));
+                        Bukkit.broadcastMessage(String.format("Size of %s hitbox: %d, Size of %s hitbox: %d", this.craft.getType().getStringProperty("craftName"), newHitBox.size(), craft.getType().getStringProperty("craftName"), craft.getHitBox().size()));
                     }
                     break;
                 }

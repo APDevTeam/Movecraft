@@ -41,7 +41,7 @@ public class CraftReportCommand implements CommandExecutor{
         for (Craft craft : CraftManager.getInstance()) {
             HitBox hitBox = craft.getHitBox();
             paginator.addLine((craft.getSinking() ? ChatColor.RED : craft.getDisabled() ? ChatColor.BLUE : "") +
-                    craft.getType().getCraftName() + " " +
+                    craft.getType().getStringProperty("craftName") + " " +
                     ChatColor.RESET +
                     (craft instanceof PlayerCraft ? ((PlayerCraft) craft).getPlayer().getName() + " " : I18nSupport.getInternationalisedString("None") +" ")+
                     hitBox.size() + " @ " +

@@ -241,6 +241,35 @@ final public class CraftType {
 
 
 
+    private static final List<StringProperty> stringProperties = new ArrayList<>();
+
+    static {
+        stringProperties.add(new StringProperty("name"));
+    }
+
+    /**
+     * Register a string property with Movecraft
+     *
+     * @param stringProperty property to register
+     */
+    public static void registerStringProperty(StringProperty stringProperty) {
+        stringProperties.add(stringProperty);
+    }
+
+    private final Map<String, String> stringPropertyMap;
+
+    /**
+     * Get a string property of this CraftType
+     *
+     * @param key Key of the string property
+     * @return value of the string property
+     */
+    public String getStringProperty(String key) {
+        return stringPropertyMap.get(key);
+    }
+
+
+
     private static final List<Pair<Predicate<CraftType>, String>> validators = new ArrayList<>();
 
     /**
@@ -296,7 +325,6 @@ final public class CraftType {
     @NotNull private final Map<String, Double> perWorldFuelBurnRate;
     @NotNull private final Map<String, Double> perWorldDetectionMultiplier;
     @NotNull private final Map<String, Double> perWorldUnderwaterDetectionMultiplier;
-    @NotNull private final String craftName;
     @NotNull private final Set<String> forbiddenSignStrings;
     @NotNull private final Map<List<Material>, List<Double>> flyBlocks;
     @NotNull private final Map<List<Material>, List<Double>> moveBlocks;
@@ -347,6 +375,14 @@ final public class CraftType {
                 objectPropertyMap.put(i.getKey(), value);
         }
 
+        // Load string properties
+        stringPropertyMap = new HashMap<>();
+        for(StringProperty i : stringProperties) {
+            String value = i.load(data, this);
+            if(value != null)
+                stringPropertyMap.put(i.getKey(), value);
+        }
+
         // Validate craft type
         for(var i : validators) {
             if(!i.getLeft().test(this))
@@ -357,7 +393,6 @@ final public class CraftType {
         // Required craft flags
         intPropertyMap.put("tickCooldown", (int) Math.ceil(20 / (data.getDouble("speed"))));
 
-        craftName = data.getString("name");
         allowedBlocks = data.getMaterials("allowedBlocks");
 
         forbiddenSignStrings = data.getStringListOrEmpty("forbiddenSignStrings").stream().map(String::toLowerCase).collect(Collectors.toSet());
@@ -552,11 +587,6 @@ final public class CraftType {
             returnMap.put(rowList, limitList);
         }
         return returnMap;
-    }
-
-    @NotNull
-    public String getCraftName() {
-        return craftName;
     }
 
     @NotNull

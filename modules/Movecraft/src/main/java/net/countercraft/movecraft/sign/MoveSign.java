@@ -62,7 +62,7 @@ public final class MoveSign implements Listener{
         if (dz < 0 - maxMove)
             dz = 0 - maxMove;
 
-        if (!event.getPlayer().hasPermission("movecraft." + CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getCraftName() + ".move")) {
+        if (!event.getPlayer().hasPermission("movecraft." + CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getStringProperty("craftName") + ".move")) {
             event.getPlayer().sendMessage(
                     I18nSupport.getInternationalisedString("Insufficient Permissions"));
             return;

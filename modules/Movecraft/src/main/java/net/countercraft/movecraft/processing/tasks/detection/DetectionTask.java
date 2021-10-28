@@ -198,7 +198,7 @@ public class DetectionTask implements Supplier<Effect> {
             craft.getAudience().sendMessage(Component.text(String.format("%s Size: %s", I18nSupport.getInternationalisedString("Detection - Successfully piloted craft"), craft.getHitBox().size())));
             Movecraft.getInstance().getLogger().info(String.format(
                     I18nSupport.getInternationalisedString("Detection - Success - Log Output"),
-                    player == null ? "null" : player.getName(), craft.getType().getCraftName(), craft.getHitBox().size(),
+                    player == null ? "null" : player.getName(), craft.getType().getStringProperty("craftName"), craft.getHitBox().size(),
                     craft.getHitBox().getMinX(), craft.getHitBox().getMinZ()));
             CraftManager.getInstance().addCraft(craft);
         }).andThen(waterEffect);

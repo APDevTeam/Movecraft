@@ -25,7 +25,7 @@ public class CraftInfoCommand implements TabExecutor {
         registerProvider((craft -> "Craft min bound: " + new MovecraftLocation(craft.getHitBox().getMinX(), craft.getHitBox().getMinY(), craft.getHitBox().getMinZ())));
         registerProvider((craft -> "Craft max bound: " + new MovecraftLocation(craft.getHitBox().getMaxX(), craft.getHitBox().getMaxY(), craft.getHitBox().getMaxZ())));
         registerProvider((craft -> "Craft world: " + craft.getWorld().getName()));
-        registerProvider((craft -> "Craft type: " + craft.getType().getCraftName()));
+        registerProvider((craft -> "Craft type: " + craft.getType().getStringProperty("craftName")));
         registerProvider((craft -> "Craft name: " + craft.getName()));
         registerProvider((craft -> "Is cruising: " + craft.getCruising()));
         registerProvider((craft -> "Cruise direction: " + craft.getCruiseDirection()));

@@ -40,7 +40,7 @@ public class RotateCommand implements TabExecutor{
                 player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("You must be piloting a craft"));
                 return true;
             }
-            if (!player.hasPermission("movecraft." + craft.getType().getCraftName() + ".rotate")) {
+            if (!player.hasPermission("movecraft." + craft.getType().getStringProperty("craftName") + ".rotate")) {
                 player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Insufficient Permissions"));
                 return true;
             }
@@ -58,7 +58,7 @@ public class RotateCommand implements TabExecutor{
                 player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("You must be piloting a craft"));
                 return true;
             }
-            if (!player.hasPermission("movecraft." + craft.getType().getCraftName() + ".rotate")) {
+            if (!player.hasPermission("movecraft." + craft.getType().getStringProperty("craftName") + ".rotate")) {
                 player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Insufficient Permissions"));
                 return true;
             }

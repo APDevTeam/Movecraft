@@ -59,7 +59,7 @@ public class ContactsCommand implements CommandExecutor {
             notification += ": ";
             notification += tcraft.getSinking() ? ChatColor.RED : tcraft.getDisabled() ? ChatColor.BLUE : "";
             notification += tcraft.getName().length() >= 1 ? tcraft.getName() + " (" : "";
-            notification += tcraft.getType().getCraftName();
+            notification += tcraft.getType().getStringProperty("craftName");
             notification += tcraft.getName().length() >= 1 ? ") " : " ";
             notification += ChatColor.RESET;
             notification += I18nSupport.getInternationalisedString("Contact - Commanded By") + ", ";

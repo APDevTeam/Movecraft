@@ -79,7 +79,7 @@ public class CruiseCommand implements TabExecutor {
             return true;
         }
 
-        if (!player.hasPermission("movecraft." + craft.getType().getCraftName() + ".move")) {
+        if (!player.hasPermission("movecraft." + craft.getType().getStringProperty("craftName") + ".move")) {
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Insufficient Permissions"));
             return true;
         }

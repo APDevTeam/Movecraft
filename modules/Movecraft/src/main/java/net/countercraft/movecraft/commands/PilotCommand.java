@@ -65,8 +65,8 @@ public class PilotCommand implements TabExecutor {
             return Collections.emptyList();
         List<String> completions = new ArrayList<>();
         for(CraftType type : CraftManager.getInstance().getCraftTypes())
-            if(commandSender.hasPermission("movecraft." + type.getCraftName() + ".pilot"))
-                completions.add(type.getCraftName());
+            if(commandSender.hasPermission("movecraft." + type.getStringProperty("craftName") + ".pilot"))
+                completions.add(type.getStringProperty("craftName"));
         List<String> returnValues = new ArrayList<>();
         for(String completion : completions)
             if(completion.toLowerCase().startsWith(strings[strings.length-1].toLowerCase()))

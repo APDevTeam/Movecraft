@@ -470,7 +470,7 @@ public class AsyncManager extends BukkitRunnable {
                         if (tcraft.getName().length() >= 1){
                             notification = notification.append(Component.text(tcraft.getName() + " ("));
                         }
-                        notification = notification.append(Component.text(tcraft.getType().getCraftName()));
+                        notification = notification.append(Component.text(tcraft.getType().getStringProperty("craftName")));
                         if (tcraft.getName().length() >= 1){
                             notification = notification.append(Component.text(")"));
                         }

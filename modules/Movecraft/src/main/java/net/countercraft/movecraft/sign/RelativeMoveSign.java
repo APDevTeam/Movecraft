@@ -95,7 +95,7 @@ public final class RelativeMoveSign implements Listener{
                 break;
         }
 
-        if (!event.getPlayer().hasPermission("movecraft." + CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getCraftName() + ".move")) {
+        if (!event.getPlayer().hasPermission("movecraft." + CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getStringProperty("craftName") + ".move")) {
             event.getPlayer().sendMessage(
                     I18nSupport.getInternationalisedString("Insufficient Permissions"));
             return;
