@@ -213,6 +213,34 @@ final public class CraftType {
 
 
 
+    private static final List<ObjectProperty> objectProperties = new ArrayList<>();
+
+    /**
+     * Register an object property with Movecraft
+     * Note: Object properties have no type safety, it is expected that the addon developer handle type safety
+     *
+     * @param objectProperty property to register
+     */
+    public static void registerObjectProperty(ObjectProperty objectProperty) {
+        objectProperties.add(objectProperty);
+    }
+
+    private final Map<String, Object> objectPropertyMap;
+
+    /**
+     * Get an object property of this CraftType
+     * Note: Object properties have no type safety, it is expected that the addon developer handle type safety
+     *
+     * @param key Key of the object property
+     * @return value of the object property
+     */
+    @Nullable
+    public Object getObjectProperty(String key) {
+        return objectPropertyMap.get(key);
+    }
+
+
+
     private static final List<Pair<Predicate<CraftType>, String>> validators = new ArrayList<>();
 
     /**
@@ -227,8 +255,8 @@ final public class CraftType {
 
     static {
         validators.add(new Pair<>(
-                type -> type.getIntProperty("minHeightLimit") < type.getIntProperty("maxHeightLimit"),
-                "minHeightLimit must be less than maxHeightLimit"
+                type -> type.getIntProperty("minHeightLimit") <= type.getIntProperty("maxHeightLimit"),
+                "minHeightLimit must be less than or equal to maxHeightLimit"
         ));
         validators.add(new Pair<>(
                 type -> type.getIntProperty("minHeightLimit") >= 0 && type.getIntProperty("minHeightLimit") <= 255,
@@ -309,6 +337,14 @@ final public class CraftType {
             Double value = i.load(data, this);
             if(value != null)
                 doublePropertyMap.put(i.getKey(), value);
+        }
+
+        // Load object properties
+        objectPropertyMap = new HashMap<>();
+        for(ObjectProperty i : objectProperties) {
+            Object value = i.load(data, this);
+            if(value != null)
+                objectPropertyMap.put(i.getKey(), value);
         }
 
         // Validate craft type
