@@ -1,4 +1,4 @@
-package net.countercraft.movecraft.craft;
+package net.countercraft.movecraft.craft.type;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

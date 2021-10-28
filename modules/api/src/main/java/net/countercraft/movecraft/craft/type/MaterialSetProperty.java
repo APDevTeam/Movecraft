@@ -1,29 +1,32 @@
-package net.countercraft.movecraft.craft;
+package net.countercraft.movecraft.craft.type;
 
+import org.bukkit.Material;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class BooleanProperty {
+import java.util.EnumSet;
+
+public class MaterialSetProperty {
     private final String key;
-    private final DefaultProvider<Boolean> defaultProvider;
+    private final DefaultProvider<EnumSet<Material>> defaultProvider;
 
     /**
-     * Construct a BooleanProperty
+     * Construct a MaterialSetProperty
      *
      * @param key the key for this property
      */
-    public BooleanProperty(@NotNull String key) {
+    public MaterialSetProperty(@NotNull String key) {
         this.key = key;
         this.defaultProvider = null;
     }
 
     /**
-     * Construct a BooleanProperty
+     * Construct a MaterialSetProperty
      *
      * @param key the key for this property
      * @param defaultProvider the provider for the default value of this property
      */
-    public BooleanProperty(@NotNull String key, @NotNull DefaultProvider<Boolean> defaultProvider) {
+    public MaterialSetProperty(@NotNull String key, @NotNull DefaultProvider<EnumSet<Material>> defaultProvider) {
         this.key = key;
         this.defaultProvider = defaultProvider;
     }
@@ -36,9 +39,9 @@ public class BooleanProperty {
      * @return the value
      */
     @Nullable
-    public Boolean load(@NotNull TypeData data, @NotNull CraftType type) {
+    public EnumSet<Material> load(@NotNull TypeData data, @NotNull CraftType type) {
         try {
-            return data.getBoolean(key);
+            return data.getMaterials(key);
         }
         catch (IllegalArgumentException e) {
             if(defaultProvider == null)

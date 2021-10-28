@@ -1,29 +1,29 @@
-package net.countercraft.movecraft.craft;
+package net.countercraft.movecraft.craft.type;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class FloatProperty {
+public class ObjectProperty {
     private final String key;
-    private final DefaultProvider<Float> defaultProvider;
+    private final DefaultProvider<Object> defaultProvider;
 
     /**
-     * Construct a FloatProperty
+     * Construct an ObjectProperty
      *
      * @param key the key for this property
      */
-    public FloatProperty(@NotNull String key) {
+    public ObjectProperty(@NotNull String key) {
         this.key = key;
         this.defaultProvider = null;
     }
 
     /**
-     * Construct a FloatProperty
+     * Construct an ObjectProperty
      *
      * @param key the key for this property
      * @param defaultProvider the provider for the default value of this property
      */
-    public FloatProperty(@NotNull String key, @NotNull DefaultProvider<Float> defaultProvider) {
+    public ObjectProperty(@NotNull String key, @NotNull DefaultProvider<Object> defaultProvider) {
         this.key = key;
         this.defaultProvider = defaultProvider;
     }
@@ -36,9 +36,13 @@ public class FloatProperty {
      * @return the value
      */
     @Nullable
-    public Float load(@NotNull TypeData data, @NotNull CraftType type) {
+    public Object load(@NotNull TypeData data, @NotNull CraftType type) {
         try {
-            return (float) data.getDouble(key);
+            var backing = data.getBackingData();
+            if(!backing.containsKey(key))
+                throw new IllegalArgumentException("No key found for " + key);
+
+            return backing.get(key);
         }
         catch (IllegalArgumentException e) {
             if(defaultProvider == null)

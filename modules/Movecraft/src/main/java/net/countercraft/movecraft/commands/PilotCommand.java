@@ -3,7 +3,7 @@ package net.countercraft.movecraft.commands;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.craft.CraftType;
+import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.craft.PilotedCraft;
 import net.countercraft.movecraft.events.CraftPilotEvent;
 import net.countercraft.movecraft.events.CraftReleaseEvent;

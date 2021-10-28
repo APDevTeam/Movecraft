@@ -1,31 +1,29 @@
-package net.countercraft.movecraft.craft;
+package net.countercraft.movecraft.craft.type;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.function.Predicate;
-
-public class IntegerProperty {
+public class FloatProperty {
     private final String key;
-    private final DefaultProvider<Integer> defaultProvider;
+    private final DefaultProvider<Float> defaultProvider;
 
     /**
-     * Construct an IntegerProperty
+     * Construct a FloatProperty
      *
      * @param key the key for this property
      */
-    public IntegerProperty(@NotNull String key) {
+    public FloatProperty(@NotNull String key) {
         this.key = key;
         this.defaultProvider = null;
     }
 
     /**
-     * Construct an IntegerProperty
+     * Construct a FloatProperty
      *
      * @param key the key for this property
      * @param defaultProvider the provider for the default value of this property
      */
-    public IntegerProperty(@NotNull String key, @NotNull DefaultProvider<Integer> defaultProvider) {
+    public FloatProperty(@NotNull String key, @NotNull DefaultProvider<Float> defaultProvider) {
         this.key = key;
         this.defaultProvider = defaultProvider;
     }
@@ -38,9 +36,9 @@ public class IntegerProperty {
      * @return the value
      */
     @Nullable
-    public Integer load(@NotNull TypeData data, @NotNull CraftType type) {
+    public Float load(@NotNull TypeData data, @NotNull CraftType type) {
         try {
-            return data.getInt(key);
+            return (float) data.getDouble(key);
         }
         catch (IllegalArgumentException e) {
             if(defaultProvider == null)

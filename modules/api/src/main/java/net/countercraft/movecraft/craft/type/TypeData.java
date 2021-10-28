@@ -1,4 +1,4 @@
-package net.countercraft.movecraft.craft;
+package net.countercraft.movecraft.craft.type;
 
 import net.countercraft.movecraft.util.Tags;
 import net.kyori.adventure.key.Key;

@@ -7,7 +7,7 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.BaseCraft;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.craft.CraftType;
+import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.craft.CruiseOnPilotCraft;
 import net.countercraft.movecraft.craft.PilotedCraft;
 import net.countercraft.movecraft.events.CraftPilotEvent;

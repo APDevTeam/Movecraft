@@ -1,29 +1,29 @@
-package net.countercraft.movecraft.craft;
+package net.countercraft.movecraft.craft.type;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class ObjectProperty {
+public class IntegerProperty {
     private final String key;
-    private final DefaultProvider<Object> defaultProvider;
+    private final DefaultProvider<Integer> defaultProvider;
 
     /**
-     * Construct an ObjectProperty
+     * Construct an IntegerProperty
      *
      * @param key the key for this property
      */
-    public ObjectProperty(@NotNull String key) {
+    public IntegerProperty(@NotNull String key) {
         this.key = key;
         this.defaultProvider = null;
     }
 
     /**
-     * Construct an ObjectProperty
+     * Construct an IntegerProperty
      *
      * @param key the key for this property
      * @param defaultProvider the provider for the default value of this property
      */
-    public ObjectProperty(@NotNull String key, @NotNull DefaultProvider<Object> defaultProvider) {
+    public IntegerProperty(@NotNull String key, @NotNull DefaultProvider<Integer> defaultProvider) {
         this.key = key;
         this.defaultProvider = defaultProvider;
     }
@@ -36,13 +36,9 @@ public class ObjectProperty {
      * @return the value
      */
     @Nullable
-    public Object load(@NotNull TypeData data, @NotNull CraftType type) {
+    public Integer load(@NotNull TypeData data, @NotNull CraftType type) {
         try {
-            var backing = data.getBackingData();
-            if(!backing.containsKey(key))
-                throw new IllegalArgumentException("No key found for " + key);
-
-            return backing.get(key);
+            return data.getInt(key);
         }
         catch (IllegalArgumentException e) {
             if(defaultProvider == null)

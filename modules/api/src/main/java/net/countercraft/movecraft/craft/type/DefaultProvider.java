@@ -1,4 +1,4 @@
-package net.countercraft.movecraft.craft;
+package net.countercraft.movecraft.craft.type;
 
 @FunctionalInterface
 public interface DefaultProvider<Type> {
