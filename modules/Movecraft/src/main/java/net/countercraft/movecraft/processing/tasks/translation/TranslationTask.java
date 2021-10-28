@@ -117,8 +117,8 @@ public class TranslationTask implements Supplier<Effect> {
                 phaseLocations.add(destination);
                 continue;
             }
-            if(craft.getType().getHarvestBlocks().contains(destinationMaterial) &&
-                    craft.getType().getHarvesterBladeBlocks().contains(originMaterial)){
+            if(craft.getType().getMaterialSetProperty("harvestBlocks").contains(destinationMaterial) &&
+                    craft.getType().getMaterialSetProperty("harvesterBladeBlocks").contains(originMaterial)){
                 harvestLocations.add(destination);
                 continue;
             }

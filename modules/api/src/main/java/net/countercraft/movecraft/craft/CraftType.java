@@ -39,7 +39,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 final public class CraftType {
-
+    // TODO: The current implementation will mask all loading problems if there is a default defined for that property.
+    //  Instead we want to only mask errors of no valid key, rather than invalid type.
 
     private static final List<IntegerProperty> intProperties = new ArrayList<>();
 
@@ -244,6 +245,7 @@ final public class CraftType {
     private static final List<StringProperty> stringProperties = new ArrayList<>();
 
     static {
+        // Required properties
         stringProperties.add(new StringProperty("name"));
     }
 
@@ -266,6 +268,42 @@ final public class CraftType {
      */
     public String getStringProperty(String key) {
         return stringPropertyMap.get(key);
+    }
+
+
+
+    private static final List<MaterialSetProperty> materialSetProperties = new ArrayList<>();
+
+    static {
+        // Required properties
+        materialSetProperties.add(new MaterialSetProperty("allowedBlocks"));
+
+        // Optional properties
+        materialSetProperties.add(new MaterialSetProperty("forbiddenBlocks", type -> EnumSet.noneOf(Material.class)));
+        materialSetProperties.add(new MaterialSetProperty("dynamicFlyBlocks", type -> EnumSet.noneOf(Material.class)));
+        materialSetProperties.add(new MaterialSetProperty("harvestBlocks", type -> EnumSet.noneOf(Material.class)));
+        materialSetProperties.add(new MaterialSetProperty("harvesterBladeBlocks", type -> EnumSet.noneOf(Material.class)));
+    }
+
+    /**
+     * Register a material set property with Movecraft
+     *
+     * @param materialSetProperty property to register
+     */
+    public static void registerMaterialSetProperty(MaterialSetProperty materialSetProperty) {
+        materialSetProperties.add(materialSetProperty);
+    }
+
+    private final Map<String, EnumSet<Material>> materialSetPropertyMap;
+
+    /**
+     * Get a material set property of this CraftType
+     *
+     * @param key Key of the string property
+     * @return value of the string property
+     */
+    public EnumSet<Material> getMaterialSetProperty(String key) {
+        return materialSetPropertyMap.get(key);
     }
 
 
@@ -307,11 +345,6 @@ final public class CraftType {
 
 
 
-    private final EnumSet<Material> dynamicFlyBlocks;
-    @NotNull private final EnumSet<Material> allowedBlocks;
-    @NotNull private final EnumSet<Material> forbiddenBlocks;
-    @NotNull private final EnumSet<Material> harvestBlocks;
-    @NotNull private final EnumSet<Material> harvesterBladeBlocks;
     @NotNull private final EnumSet<Material> passthroughBlocks;
     @NotNull private final EnumSet<Material> forbiddenHoverOverBlocks;
     @NotNull private final Map<String, Integer> perWorldMinHeightLimit;
@@ -383,6 +416,14 @@ final public class CraftType {
                 stringPropertyMap.put(i.getKey(), value);
         }
 
+        // Load material set properties
+        materialSetPropertyMap = new HashMap<>();
+        for(MaterialSetProperty i : materialSetProperties) {
+            EnumSet<Material> value = i.load(data, this);
+            if(value != null)
+                materialSetPropertyMap.put(i.getKey(), value);
+        }
+
         // Validate craft type
         for(var i : validators) {
             if(!i.getLeft().test(this))
@@ -392,8 +433,6 @@ final public class CraftType {
 
         // Required craft flags
         intPropertyMap.put("tickCooldown", (int) Math.ceil(20 / (data.getDouble("speed"))));
-
-        allowedBlocks = data.getMaterials("allowedBlocks");
 
         forbiddenSignStrings = data.getStringListOrEmpty("forbiddenSignStrings").stream().map(String::toLowerCase).collect(Collectors.toSet());
         perWorldTickCooldown = new HashMap<>();
@@ -411,7 +450,6 @@ final public class CraftType {
         int dropdist = data.getIntOrDefault("gravityDropDistance", -8);
         intPropertyMap.put("gravityDropDistance", dropdist > 0 ? -dropdist : dropdist);
 
-        forbiddenBlocks = data.getMaterialsOrEmpty("forbiddenBlocks");
         moveBlocks = blockIDMapListFromObject("moveblocks", data.getDataOrEmpty("moveblocks").getBackingData());
         perWorldCruiseSkipBlocks = stringToIntMapFromObject(data.getDataOrEmpty("perWorldCruiseSkipBlocks").getBackingData());
         perWorldVertCruiseSkipBlocks = stringToIntMapFromObject(data.getDataOrEmpty("perWorldVertCruiseSkipBlocks").getBackingData());
@@ -457,8 +495,6 @@ final public class CraftType {
         });
         
         perWorldMaxHeightAboveGround = stringToIntMapFromObject(data.getDataOrEmpty("perWorldMaxHeightAboveGround").getBackingData());
-        harvestBlocks = data.getMaterialsOrEmpty("harvestBlocks");
-        harvesterBladeBlocks = data.getMaterialsOrEmpty("harvesterBladeBlocks");
         passthroughBlocks = data.getMaterialsOrEmpty("passthroughBlocks");
         if(!getBoolProperty("blockedByWater")){
             passthroughBlocks.add(Material.WATER);
@@ -467,7 +503,6 @@ final public class CraftType {
         if (!getBoolProperty("canHoverOverWater")){
             forbiddenHoverOverBlocks.add(Material.WATER);
         }
-        dynamicFlyBlocks = data.getMaterialsOrEmpty("dynamicFlyBlock");
         collisionSound = data.getSoundOrDefault("collisionSound",  Sound.sound(Key.key("block.anvil.land"), Sound.Source.NEUTRAL, 2.0f,1.0f));
         fuelTypes = new HashMap<>();
         Map<String, Object> fTypes =  data.getDataOrEmpty("fuelTypes").getBackingData();
@@ -590,16 +625,6 @@ final public class CraftType {
     }
 
     @NotNull
-    public EnumSet<Material> getAllowedBlocks() {
-        return allowedBlocks;
-    }
-
-    @NotNull
-    public EnumSet<Material> getForbiddenBlocks() {
-        return forbiddenBlocks;
-    }
-
-    @NotNull
     public Set<String> getForbiddenSignStrings() {
         return forbiddenSignStrings;
     }
@@ -664,20 +689,6 @@ final public class CraftType {
 
     public int getMaxHeightAboveGround(@NotNull World world) {
         return perWorldMaxHeightAboveGround.getOrDefault(world.getName(), getIntProperty("maxHeightAboveGround"));
-    }
-
-    @NotNull
-    public EnumSet<Material> getHarvestBlocks() {
-        return harvestBlocks;
-    }
-
-    @NotNull
-    public EnumSet<Material> getHarvesterBladeBlocks() {
-        return harvesterBladeBlocks;
-    }
-
-    public EnumSet<Material> getDynamicFlyBlocks() {
-        return dynamicFlyBlocks;
     }
 
     @NotNull

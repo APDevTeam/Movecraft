@@ -387,7 +387,7 @@ public abstract class BaseCraft implements Craft{
 
         // Dynamic Fly Block Speed
         if(type.getDoubleProperty("dynamicFlyBlockSpeedFactor") != 0){
-            EnumSet<Material> flyBlockMaterials = type.getDynamicFlyBlocks();
+            EnumSet<Material> flyBlockMaterials = type.getMaterialSetProperty("dynamicFlyBlocks");
             double count = 0;
             for(Material m : flyBlockMaterials) {
                 count += materials.get(m);

@@ -14,6 +14,6 @@ public class AllowedBlockValidator implements DetectionPredicate<MovecraftLocati
     @Override
     @Contract(pure = true)
     public @NotNull Result validate(@NotNull MovecraftLocation location, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable CommandSender player) {
-        return type.getAllowedBlocks().contains(world.getMaterial(location)) ? Result.succeed() : Result.fail();
+        return type.getMaterialSetProperty("allowedBlocks").contains(world.getMaterial(location)) ? Result.succeed() : Result.fail();
     }
 }

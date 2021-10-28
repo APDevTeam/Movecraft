@@ -50,8 +50,8 @@ public class PlayerListener implements Listener {
 
     private Set<Location> checkCraftBorders(Craft craft) {
         Set<Location> mergePoints = new HashSet<>();
-        final EnumSet<Material> ALLOWED_BLOCKS = craft.getType().getAllowedBlocks();
-        final EnumSet<Material> FORBIDDEN_BLOCKS = craft.getType().getForbiddenBlocks();
+        final EnumSet<Material> ALLOWED_BLOCKS = craft.getType().getMaterialSetProperty("allowedBlocks");
+        final EnumSet<Material> FORBIDDEN_BLOCKS = craft.getType().getMaterialSetProperty("forbiddenBlocks");
         final MovecraftLocation[] SHIFTS = {
                 //x
                 new MovecraftLocation(-1, 0, 0),
