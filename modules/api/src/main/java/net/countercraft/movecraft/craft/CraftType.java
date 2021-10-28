@@ -174,6 +174,44 @@ final public class CraftType {
 
 
 
+    public static final List<DoubleProperty> doubleProperties = new ArrayList<>();
+
+    /**
+     * Register a double property with Movecraft
+     *
+     * @param doubleProperty property to register
+     */
+    public static void registerDoubleProperty(DoubleProperty doubleProperty) {
+        doubleProperties.add(doubleProperty);
+    }
+
+    static {
+        // Optional Properties
+        doubleProperties.add(new DoubleProperty("fuelBurnRate", type -> 0D));
+        doubleProperties.add(new DoubleProperty("sinkPercent", type -> 0D));
+        doubleProperties.add(new DoubleProperty("overallSinkPercent", type -> 0D));
+        doubleProperties.add(new DoubleProperty("detectionMultiplier", type -> 0D));
+        doubleProperties.add(new DoubleProperty("underwaterDetectionMultiplier", type-> type.getDoubleProperty("detectionMultplier")));
+        doubleProperties.add(new DoubleProperty("dynamicLagSpeedFactor", type -> 0D));
+        doubleProperties.add(new DoubleProperty("dynamicLagPowerFactor", type -> 0D));
+        doubleProperties.add(new DoubleProperty("dynamicLagMinSpeed", type -> 0D));
+        doubleProperties.add(new DoubleProperty("dynamicFlyBlockSpeedFactor", type -> 0D));
+        doubleProperties.add(new DoubleProperty("chestPenalty", type -> 0D));
+    }
+
+    private final Map<String, Double> doublePropertyMap;
+
+    /**
+     * Get a double property of this CraftType
+     *
+     * @param key Key of the double property
+     * @return value of the double property
+     */
+    public double getDoubleProperty(String key) {
+        return doublePropertyMap.get(key);
+    }
+
+
 
     public static final List<Pair<Predicate<CraftType>, String>> validators = new ArrayList<>();
 
@@ -219,17 +257,15 @@ final public class CraftType {
     private final int tickCooldown;
     private final int gravityDropDistance;
     private final boolean blockedByWater;
-    private final double fuelBurnRate;
-    private final double sinkPercent;
-    private final double overallSinkPercent;
-    private final double detectionMultiplier;
-    private final double underwaterDetectionMultiplier;
-    private final double dynamicLagSpeedFactor;
-    private final double dynamicLagPowerFactor;
-    private final double dynamicLagMinSpeed;
-    private final double dynamicFlyBlockSpeedFactor;
-    private final double chestPenalty;
 
+
+    private final EnumSet<Material> dynamicFlyBlocks;
+    @NotNull private final EnumSet<Material> allowedBlocks;
+    @NotNull private final EnumSet<Material> forbiddenBlocks;
+    @NotNull private final EnumSet<Material> harvestBlocks;
+    @NotNull private final EnumSet<Material> harvesterBladeBlocks;
+    @NotNull private final EnumSet<Material> passthroughBlocks;
+    @NotNull private final EnumSet<Material> forbiddenHoverOverBlocks;
     @NotNull private final Map<String, Integer> perWorldMinHeightLimit;
     @NotNull private final Map<String, Integer> perWorldMaxHeightLimit;
     @NotNull private final Map<String, Integer> perWorldMaxHeightAboveGround;
@@ -238,20 +274,13 @@ final public class CraftType {
     @NotNull private final Map<String, Integer> perWorldCruiseTickCooldown; // cruise speed setting
     @NotNull private final Map<String, Integer> perWorldVertCruiseTickCooldown; // cruise speed setting
     @NotNull private final Map<String, Integer> perWorldTickCooldown; // speed setting
-    private final EnumSet<Material> dynamicFlyBlocks;
     @NotNull private final Map<String, Double> perWorldFuelBurnRate;
     @NotNull private final Map<String, Double> perWorldDetectionMultiplier;
     @NotNull private final Map<String, Double> perWorldUnderwaterDetectionMultiplier;
     @NotNull private final String craftName;
-    @NotNull private final EnumSet<Material> allowedBlocks;
-    @NotNull private final EnumSet<Material> forbiddenBlocks;
     @NotNull private final Set<String> forbiddenSignStrings;
     @NotNull private final Map<List<Material>, List<Double>> flyBlocks;
     @NotNull private final Map<List<Material>, List<Double>> moveBlocks;
-    @NotNull private final EnumSet<Material> harvestBlocks;
-    @NotNull private final EnumSet<Material> harvesterBladeBlocks;
-    @NotNull private final EnumSet<Material> passthroughBlocks;
-    @NotNull private final EnumSet<Material> forbiddenHoverOverBlocks;
     @NotNull private final Map<Material, Double> fuelTypes;
     @NotNull private final Set<String> disableTeleportToWorlds;
     private final Sound collisionSound;
@@ -283,6 +312,14 @@ final public class CraftType {
                 floatPropertyMap.put(i.getKey(), value);
         }
 
+        // Load double properties
+        doublePropertyMap = new HashMap<>();
+        for(DoubleProperty i : doubleProperties) {
+            Double value = i.load(data, this);
+            if(value != null)
+                doublePropertyMap.put(i.getKey(), value);
+        }
+
         // Validate craft type
         for(var i : validators) {
             if(!i.getLeft().test(this))
@@ -307,13 +344,8 @@ final public class CraftType {
         moveBlocks = blockIDMapListFromObject("moveblocks", data.getDataOrEmpty("moveblocks").getBackingData());
         perWorldCruiseSkipBlocks = stringToIntMapFromObject(data.getDataOrEmpty("perWorldCruiseSkipBlocks").getBackingData());
         perWorldVertCruiseSkipBlocks = stringToIntMapFromObject(data.getDataOrEmpty("perWorldVertCruiseSkipBlocks").getBackingData());
-        fuelBurnRate = data.getDoubleOrDefault("fuelBurnRate", 0d);
         perWorldFuelBurnRate = stringToDoubleMapFromObject(data.getDataOrEmpty("perWorldFuelBurnRate").getBackingData());
-        sinkPercent = data.getDoubleOrDefault("sinkPercent", 0d);
-        overallSinkPercent = data.getDoubleOrDefault("overallSinkPercent", 0d);
-        detectionMultiplier = data.getDoubleOrDefault("detectionMultiplier", 0d);
         perWorldDetectionMultiplier = stringToDoubleMapFromObject(data.getDataOrEmpty("perWorldDetectionMultiplier").getBackingData());
-        underwaterDetectionMultiplier = data.getDoubleOrDefault("underwaterDetectionMultiplier", detectionMultiplier);
         perWorldUnderwaterDetectionMultiplier = stringToDoubleMapFromObject(data.getDataOrEmpty("perWorldUnderwaterDetectionMultiplier").getBackingData());
         sinkRateTicks = data.getIntOrDefault("sinkRateTicks", (int) Math.ceil(20 / data.getDoubleOrDefault("sinkSpeed", -200))); // default becomes 0
         perWorldMinHeightLimit = new HashMap<>();
@@ -369,12 +401,7 @@ final public class CraftType {
         if (!getBoolProperty("canHoverOverWater")){
             forbiddenHoverOverBlocks.add(Material.WATER);
         }
-        dynamicLagSpeedFactor = data.getDoubleOrDefault("dynamicLagSpeedFactor", 0d);
-        dynamicLagPowerFactor = data.getDoubleOrDefault("dynamicLagPowerFactor", 0d);
-        dynamicLagMinSpeed = data.getDoubleOrDefault("dynamicLagMinSpeed", 0d);
-        dynamicFlyBlockSpeedFactor = data.getDoubleOrDefault("dynamicFlyBlockSpeedFactor", 0d);
         dynamicFlyBlocks = data.getMaterialsOrEmpty("dynamicFlyBlock");
-        chestPenalty = data.getDoubleOrDefault("chestPenalty", 0);
         int dropdist = data.getIntOrDefault("gravityDropDistance", -8);
         gravityDropDistance = dropdist > 0 ? -dropdist : dropdist;
         collisionSound = data.getSoundOrDefault("collisionSound",  Sound.sound(Key.key("block.anvil.land"), Sound.Source.NEUTRAL, 2.0f,1.0f));
@@ -529,36 +556,16 @@ final public class CraftType {
         return perWorldVertCruiseSkipBlocks.getOrDefault(world.getName(), getIntProperty("vertCruiseSkipBlocks"));
     }
 
-    @Deprecated
-    public double getFuelBurnRate() {
-        return fuelBurnRate;
-    }
     public double getFuelBurnRate(@NotNull World world) {
-        return perWorldFuelBurnRate.getOrDefault(world.getName(), fuelBurnRate);
+        return perWorldFuelBurnRate.getOrDefault(world.getName(), getDoubleProperty("fuelBurnRate"));
     }
 
-    public double getSinkPercent() {
-        return sinkPercent;
-    }
-
-    public double getOverallSinkPercent() {
-        return overallSinkPercent;
-    }
-
-    @Deprecated
-    public double getDetectionMultiplier() {
-        return detectionMultiplier;
-    }
     public double getDetectionMultiplier(@NotNull World world) {
-        return perWorldDetectionMultiplier.getOrDefault(world.getName(), detectionMultiplier);
+        return perWorldDetectionMultiplier.getOrDefault(world.getName(), getDoubleProperty("detectionMultiplier"));
     }
 
-    @Deprecated
-    public double getUnderwaterDetectionMultiplier() {
-        return underwaterDetectionMultiplier;
-    }
     public double getUnderwaterDetectionMultiplier(@NotNull World world) {
-        return perWorldUnderwaterDetectionMultiplier.getOrDefault(world.getName(), underwaterDetectionMultiplier);
+        return perWorldUnderwaterDetectionMultiplier.getOrDefault(world.getName(), getDoubleProperty("underwaterDetectionMultiplier"));
     }
 
     public int getSinkRateTicks() {
@@ -631,28 +638,8 @@ final public class CraftType {
         return harvesterBladeBlocks;
     }
 
-    public double getDynamicLagSpeedFactor() {
-        return dynamicLagSpeedFactor;
-    }
-
-    public double getDynamicLagPowerFactor() {
-        return dynamicLagPowerFactor;
-    }
-
-    public double getDynamicLagMinSpeed() {
-        return dynamicLagMinSpeed;
-    }
-
-    public double getDynamicFlyBlockSpeedFactor() {
-        return dynamicFlyBlockSpeedFactor;
-    }
-
     public EnumSet<Material> getDynamicFlyBlocks() {
         return dynamicFlyBlocks;
-    }
-
-    public double getChestPenalty() {
-        return chestPenalty;
     }
 
     @NotNull

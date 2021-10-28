@@ -325,7 +325,7 @@ public class AsyncManager extends BukkitRunnable {
             if (pcraft.getSinking()) {
                 continue;
             }
-            if (pcraft.getType().getSinkPercent() == 0.0 || !pcraft.isNotProcessing()) {
+            if (pcraft.getType().getDoubleProperty("sinkPercent") == 0.0 || !pcraft.isNotProcessing()) {
                 continue;
             }
             long ticksElapsed = (System.currentTimeMillis() - pcraft.getLastBlockCheck()) / 50;
@@ -609,7 +609,7 @@ public class AsyncManager extends BukkitRunnable {
             }
             double percent = ((double) numfound / (double) totalNonNegligibleBlocks) * 100.0;
             double flyPercent = craft.getType().getFlyBlocks().get(i).get(0);
-            double sinkPercent = flyPercent * craft.getType().getSinkPercent() / 100.0;
+            double sinkPercent = flyPercent * craft.getType().getDoubleProperty("sinkPercent") / 100.0;
             if (percent < sinkPercent) {
                 isSinking = true;
             }
@@ -621,12 +621,12 @@ public class AsyncManager extends BukkitRunnable {
             }
             double percent = ((double) numfound / (double) totalNonNegligibleBlocks) * 100.0;
             double movePercent = craft.getType().getMoveBlocks().get(i).get(0);
-            double disablePercent = movePercent * craft.getType().getSinkPercent() / 100.0;
+            double disablePercent = movePercent * craft.getType().getDoubleProperty("sinkPercent") / 100.0;
             isDisabled = (percent < disablePercent && !craft.getDisabled() && craft.isNotProcessing());
         }
 
         // And check the OverallSinkPercent
-        if (craft.getType().getOverallSinkPercent() != 0.0) {
+        if (craft.getType().getDoubleProperty("overallSinkPercent") != 0.0) {
             double percent;
             if (craft.getType().blockedByWater()) {
                 percent = (double) totalNonNegligibleBlocks
@@ -635,7 +635,7 @@ public class AsyncManager extends BukkitRunnable {
                 percent = (double) totalNonNegligibleWaterBlocks
                         / (double) craft.getOrigBlockCount();
             }
-            if (percent * 100.0 < craft.getType().getOverallSinkPercent()) {
+            if (percent * 100.0 < craft.getType().getDoubleProperty("overallSinkPercent")) {
                 isSinking = true;
             }
         }

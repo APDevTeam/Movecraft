@@ -376,7 +376,7 @@ public abstract class BaseCraft implements Craft{
             }
         }
 
-        int chestPenalty = (int)((materials.get(Material.CHEST) + materials.get(Material.TRAPPED_CHEST)) * type.getChestPenalty());
+        int chestPenalty = (int)((materials.get(Material.CHEST) + materials.get(Material.TRAPPED_CHEST)) * type.getDoubleProperty("chestPenalty"));
         if(!cruising)
             return (type.getTickCooldown(w) + chestPenalty) * (type.getBoolProperty("earShiftsAffectTickCooldown") ? currentGear : 1);
 
@@ -386,34 +386,34 @@ public abstract class BaseCraft implements Craft{
         }
 
         // Dynamic Fly Block Speed
-        if(type.getDynamicFlyBlockSpeedFactor() != 0){
+        if(type.getDoubleProperty("dynamicFlyBlockSpeedFactor") != 0){
             EnumSet<Material> flyBlockMaterials = type.getDynamicFlyBlocks();
             double count = 0;
             for(Material m : flyBlockMaterials) {
                 count += materials.get(m);
             }
             double ratio = count / hitBox.size();
-            return Math.max((int)Math.round((20.0 * (type.getCruiseSkipBlocks(w) + 1)) / ((type.getDynamicFlyBlockSpeedFactor() * 1.5) * (ratio - .5) + (20.0 / (type.getCruiseTickCooldown(w) )) + 1)) * (type.getBoolProperty("earShiftsAffectTickCooldown") ? currentGear : 1), 1);
+            return Math.max((int)Math.round((20.0 * (type.getCruiseSkipBlocks(w) + 1)) / ((type.getDoubleProperty("dynamicFlyBlockSpeedFactor") * 1.5) * (ratio - .5) + (20.0 / (type.getCruiseTickCooldown(w) )) + 1)) * (type.getBoolProperty("earShiftsAffectTickCooldown") ? currentGear : 1), 1);
         }
 
-        if(type.getDynamicLagSpeedFactor() == 0.0 || type.getDynamicLagPowerFactor() == 0.0 || Math.abs(type.getDynamicLagPowerFactor()) > 1.0)
+        if(type.getDoubleProperty("dynamicLagSpeedFactor") == 0.0 || type.getDoubleProperty("getDynamicLagPowerFactor") == 0.0 || Math.abs(type.getDoubleProperty("getDynamicLagPowerFactor")) > 1.0)
             return (type.getCruiseTickCooldown(w) + chestPenalty) * (type.getBoolProperty("earShiftsAffectTickCooldown") ? currentGear : 1);
         if(stats.getCount() == 0)
-            return (int) Math.round(20.0 * ((type.getCruiseSkipBlocks(w) + 1.0) / type.getDynamicLagMinSpeed()) * (type.getBoolProperty("earShiftsAffectTickCooldown") ? currentGear : 1));
+            return (int) Math.round(20.0 * ((type.getCruiseSkipBlocks(w) + 1.0) / type.getDoubleProperty("getDynamicLagMinSpeed")) * (type.getBoolProperty("earShiftsAffectTickCooldown") ? currentGear : 1));
 
         if(Settings.Debug) {
             Bukkit.getLogger().info("Skip: " + type.getCruiseSkipBlocks(w));
             Bukkit.getLogger().info("Tick: " + type.getCruiseTickCooldown(w));
-            Bukkit.getLogger().info("SpeedFactor: " + type.getDynamicLagSpeedFactor());
-            Bukkit.getLogger().info("PowerFactor: " + type.getDynamicLagPowerFactor());
-            Bukkit.getLogger().info("MinSpeed: " + type.getDynamicLagMinSpeed());
+            Bukkit.getLogger().info("SpeedFactor: " + type.getDoubleProperty("dynamicLagSpeedFactor"));
+            Bukkit.getLogger().info("PowerFactor: " + type.getDoubleProperty("getDynamicLagPowerFactor"));
+            Bukkit.getLogger().info("MinSpeed: " + type.getDoubleProperty("getDynamicLagMinSpeed"));
             Bukkit.getLogger().info("CruiseTime: " + getMeanCruiseTime() * 1000.0 + "ms");
         }
 
         // Dynamic Lag Speed
         double speed = 20.0 * (type.getCruiseSkipBlocks(w) + 1.0) / (float)type.getCruiseTickCooldown(w);
-        speed -= type.getDynamicLagSpeedFactor() * Math.pow(getMeanCruiseTime() * 1000.0, type.getDynamicLagPowerFactor());
-        speed = Math.max(type.getDynamicLagMinSpeed(), speed);
+        speed -= type.getDoubleProperty("dynamicLagSpeedFactor") * Math.pow(getMeanCruiseTime() * 1000.0, type.getDoubleProperty("getDynamicLagPowerFactor"));
+        speed = Math.max(type.getDoubleProperty("getDynamicLagMinSpeed"), speed);
         return (int)Math.round((20.0 * (type.getCruiseSkipBlocks(w) + 1.0)) / speed) * (type.getBoolProperty("earShiftsAffectTickCooldown") ? currentGear : 1);
         //In theory, the chest penalty is not needed for a DynamicLag craft.
     }
