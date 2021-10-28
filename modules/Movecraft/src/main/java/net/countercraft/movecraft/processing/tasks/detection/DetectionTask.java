@@ -84,6 +84,7 @@ public class DetectionTask implements Supplier<Effect> {
     private final ConcurrentMap<Material, Deque<MovecraftLocation>> materials = new ConcurrentHashMap<>();
     private final ConcurrentMap<Material, Deque<MovecraftLocation>> visitedMaterials = new ConcurrentHashMap<>();
     private final ConcurrentLinkedDeque<MovecraftLocation> legal = new ConcurrentLinkedDeque<>();
+    private final ConcurrentLinkedDeque<MovecraftLocation> fluid = new ConcurrentLinkedDeque<>();
     private static final AllowedBlockValidator ALLOWED_BLOCK_VALIDATOR = new AllowedBlockValidator();
     private static final ForbiddenBlockValidator FORBIDDEN_BLOCK_VALIDATOR = new ForbiddenBlockValidator();
     private static final List<DetectionPredicate<MovecraftLocation>> validators = List.of(
@@ -185,6 +186,7 @@ public class DetectionTask implements Supplier<Effect> {
             return () -> player.sendMessage(finalResult.getMessage());
         }
         craft.setHitBox(new BitmapHitBox(legal));
+        craft.setFluidLocations(new BitmapHitBox(fluid));
         craft.setNotificationPlayer(player);
         craft.setOrigBlockCount(craft.getHitBox().size());
         var waterEffect = water(craft); //TODO: Remove
@@ -258,6 +260,10 @@ public class DetectionTask implements Supplier<Effect> {
                 var result = chain.validate(probe, craft.getType(), world, player);
                 if(result.isSucess()){
                     legal.add(probe);
+                    Material fluidTestMaterial = world.getMaterial(probe);
+                    if (fluidTestMaterial.equals(Material.WATER) || fluidTestMaterial.equals(Material.LAVA)) {
+                        fluid.add(probe);
+                    }
                     size.increment();
                     materials.computeIfAbsent(world.getMaterial(probe), Functions.forSupplier(ConcurrentLinkedDeque::new)).add(probe);
                     for(int i = 0; i< SHIFTS.length; i++){
