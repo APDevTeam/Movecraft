@@ -3,27 +3,27 @@ package net.countercraft.movecraft.craft;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class BooleanProperty {
+public class FloatProperty {
     private final String key;
-    private final DefaultProvider<Boolean> defaultProvider;
+    private final DefaultProvider<Float> defaultProvider;
 
     /**
-     * Construct a BooleanProperty
+     * Construct a FloatProperty
      *
      * @param key the key for this property
      */
-    BooleanProperty(@NotNull String key) {
+    FloatProperty(@NotNull String key) {
         this.key = key;
         this.defaultProvider = null;
     }
 
     /**
-     * Construct a BooleanProperty
+     * Construct a FloatProperty
      *
      * @param key the key for this property
      * @param defaultProvider the provider for the default value of this property
      */
-    BooleanProperty(@NotNull String key, @NotNull DefaultProvider<Boolean> defaultProvider) {
+    FloatProperty(@NotNull String key, @NotNull DefaultProvider<Float> defaultProvider) {
         this.key = key;
         this.defaultProvider = defaultProvider;
     }
@@ -35,9 +35,9 @@ public class BooleanProperty {
      * @param type CrafType to provide to defaultProvider
      * @return the value
      */
-    @Nullable Boolean load(@NotNull TypeData data, @NotNull CraftType type) {
+    @Nullable Float load(@NotNull TypeData data, @NotNull CraftType type) {
         try {
-            return data.getBoolean(key);
+            return (float) data.getDouble(key);
         }
         catch (IllegalArgumentException e) {
             if(defaultProvider == null)

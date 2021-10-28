@@ -203,7 +203,7 @@ public class TranslationTask extends AsyncTask {
             int incline = inclineCraft(oldHitBox);
             if (incline > 0){
                 boolean tooSteep = craft.getType().getIntProperty("gravityInclineDistance") > -1 && incline > craft.getType().getIntProperty("gravityInclineDistance");
-                if (tooSteep && craft.getType().getCollisionExplosion() <= 0f) {
+                if (tooSteep && craft.getType().getFloatProperty("collisionExplosion") <= 0F) {
                     fail(I18nSupport.getInternationalisedString("Translation - Failed Incline too steep"));
                     return;
                 }
@@ -227,7 +227,7 @@ public class TranslationTask extends AsyncTask {
             }
         }
         //Fail the movement if the craft is too high and if the craft is not explosive
-        if (dy>0 && maxY + dy > craft.getType().getMaxHeightLimit(world) && craft.getType().getCollisionExplosion() <= 0f) {
+        if(dy > 0 && maxY + dy > craft.getType().getMaxHeightLimit(world) && craft.getType().getFloatProperty("collisionExplosion") <= 0F) {
             fail(I18nSupport.getInternationalisedString("Translation - Failed Craft hit height limit"));
             return;
         } else if (dy>0 && maxY + dy > craft.getType().getMaxHeightLimit(world)) { //If explosive and too high, set dy to 0
@@ -240,7 +240,6 @@ public class TranslationTask extends AsyncTask {
             dy = 0;
         }
 
-        //TODO: Check fuel
         if (!(dy < 0 && dx == 0 && dz == 0) && !checkFuel()) {
             fail(I18nSupport.getInternationalisedString("Translation - Failed Craft out of fuel"));
             return;
@@ -295,7 +294,7 @@ public class TranslationTask extends AsyncTask {
 
 
             if (blockObstructed) {
-                if (!craft.getSinking() && craft.getType().getCollisionExplosion() == 0.0F) {
+                if (!craft.getSinking() && craft.getType().getFloatProperty("collisionExplosion") <= 0F) {
                     fail(String.format(I18nSupport.getInternationalisedString("Translation - Failed Craft is obstructed") + " @ %d,%d,%d,%s", newLocation.getX(), newLocation.getY(), newLocation.getZ(), testMaterial.toString()));
                     return;
                 }
@@ -342,13 +341,13 @@ public class TranslationTask extends AsyncTask {
             }
             newHitBox.removeAll(air);
             for(MovecraftLocation location : collisionBox){
-                if (craft.getType().getExplodeOnCrash() > 0.0F) {
+                if (craft.getType().getFloatProperty("explodeOnCrash") > 0F) {
                     if (System.currentTimeMillis() - craft.getOrigPilotTime() <= 1000) {
                         continue;
                     }
                     Location loc = location.toBukkit(craft.getWorld());
                     if (!loc.getBlock().getType().equals(Material.AIR)  && ThreadLocalRandom.current().nextDouble(1) < .05) {
-                        updates.add(new ExplosionUpdateCommand( loc, craft.getType().getExplodeOnCrash()));
+                        updates.add(new ExplosionUpdateCommand( loc, craft.getType().getFloatProperty("explodeOnCrash")));
                         collisionExplosion = true;
                     }
                 }
@@ -361,9 +360,9 @@ public class TranslationTask extends AsyncTask {
                 craft.getCollapsedHitBox().addAll(toRemove);
                 newHitBox.removeAll(toRemove);
             }
-        } else if ((craft.getType().getCollisionExplosion() != 0.0F) && System.currentTimeMillis() - craft.getOrigPilotTime() > Settings.CollisionPrimer) {
+        } else if ((craft.getType().getFloatProperty("collisionExplosion") > 0F) && System.currentTimeMillis() - craft.getOrigPilotTime() > Settings.CollisionPrimer) {
             for(MovecraftLocation location : collisionBox) {
-                float explosionForce = craft.getType().getCollisionExplosion();
+                float explosionForce = craft.getType().getFloatProperty("collisionExplosion");
                 if (craft.getType().getBoolProperty("focusedExplosion")) {
                     explosionForce *= Math.min(oldHitBox.size(), craft.getType().getIntProperty("maxSize"));
                 }

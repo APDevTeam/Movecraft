@@ -34,6 +34,7 @@ public class IntegerProperty {
      * Load and validate the property from data
      *
      * @param data TypeData to read the property from
+     * @param type CrafType to provide to defaultProvider
      * @return the value
      */
     @Nullable Integer load(@NotNull TypeData data, @NotNull CraftType type) {

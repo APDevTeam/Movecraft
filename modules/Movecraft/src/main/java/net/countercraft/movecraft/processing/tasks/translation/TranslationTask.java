@@ -149,7 +149,7 @@ public class TranslationTask implements Supplier<Effect> {
 
         // Direct float comparison due to check for statically initialized value
         callCollisionEvent(craft, collisions, preTranslateEvent.getWorld());
-        if(craft.getType().getCollisionExplosion() == 0.0F && !collisions.isEmpty()){
+        if(craft.getType().getFloatProperty("collisionExplosion") <= 0F && !collisions.isEmpty()){
             //TODO: collision highlights
             return () -> craft.getAudience().sendMessage(Component.text(String.format(I18nSupport.getInternationalisedString("Translation - Failed Craft is obstructed") + " @ %d,%d,%d,%s", 0, 0, 0, "not_implemented")));
         }

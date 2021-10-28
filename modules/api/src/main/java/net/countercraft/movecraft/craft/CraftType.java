@@ -143,6 +143,38 @@ final public class CraftType {
 
 
 
+    public static final List<FloatProperty> floatProperties = new ArrayList<>();
+
+    /**
+     * Register a float property with Movecraft
+     *
+     * @param floatProperty property to register
+     */
+    public static void registerFloatProperty(FloatProperty floatProperty) {
+        floatProperties.add(floatProperty);
+    }
+
+    static {
+        // Optional Properties
+        floatProperties.add(new FloatProperty("explodeOnCrash", type -> 0F));
+        floatProperties.add(new FloatProperty("collisionExplosion", type -> 0F));
+    }
+
+    private final Map<String, Float> floatPropertyMap;
+
+    /**
+     * Get a float property of this CraftType
+     *
+     * @param key Key of the float property
+     * @return value of the float property
+     */
+    public float getFloatProperty(String key) {
+        return floatPropertyMap.get(key);
+    }
+
+
+
+
     public static final List<Pair<Predicate<CraftType>, String>> validators = new ArrayList<>();
 
     /**
@@ -187,6 +219,16 @@ final public class CraftType {
     private final int tickCooldown;
     private final int gravityDropDistance;
     private final boolean blockedByWater;
+    private final double fuelBurnRate;
+    private final double sinkPercent;
+    private final double overallSinkPercent;
+    private final double detectionMultiplier;
+    private final double underwaterDetectionMultiplier;
+    private final double dynamicLagSpeedFactor;
+    private final double dynamicLagPowerFactor;
+    private final double dynamicLagMinSpeed;
+    private final double dynamicFlyBlockSpeedFactor;
+    private final double chestPenalty;
 
     @NotNull private final Map<String, Integer> perWorldMinHeightLimit;
     @NotNull private final Map<String, Integer> perWorldMaxHeightLimit;
@@ -197,21 +239,9 @@ final public class CraftType {
     @NotNull private final Map<String, Integer> perWorldVertCruiseTickCooldown; // cruise speed setting
     @NotNull private final Map<String, Integer> perWorldTickCooldown; // speed setting
     private final EnumSet<Material> dynamicFlyBlocks;
-    private final double fuelBurnRate;
     @NotNull private final Map<String, Double> perWorldFuelBurnRate;
-    private final double sinkPercent;
-    private final double overallSinkPercent;
-    private final double detectionMultiplier;
     @NotNull private final Map<String, Double> perWorldDetectionMultiplier;
-    private final double underwaterDetectionMultiplier;
     @NotNull private final Map<String, Double> perWorldUnderwaterDetectionMultiplier;
-    private final double dynamicLagSpeedFactor;
-    private final double dynamicLagPowerFactor;
-    private final double dynamicLagMinSpeed;
-    private final double dynamicFlyBlockSpeedFactor;
-    private final double chestPenalty;
-    private final float explodeOnCrash;
-    private final float collisionExplosion;
     @NotNull private final String craftName;
     @NotNull private final EnumSet<Material> allowedBlocks;
     @NotNull private final EnumSet<Material> forbiddenBlocks;
@@ -243,6 +273,14 @@ final public class CraftType {
             Boolean value = i.load(data, this);
             if(value != null)
                 boolPropertyMap.put(i.getKey(), value);
+        }
+
+        // Load float properties
+        floatPropertyMap = new HashMap<>();
+        for(FloatProperty i : floatProperties) {
+            Float value = i.load(data, this);
+            if(value != null)
+                floatPropertyMap.put(i.getKey(), value);
         }
 
         // Validate craft type
@@ -278,8 +316,6 @@ final public class CraftType {
         underwaterDetectionMultiplier = data.getDoubleOrDefault("underwaterDetectionMultiplier", detectionMultiplier);
         perWorldUnderwaterDetectionMultiplier = stringToDoubleMapFromObject(data.getDataOrEmpty("perWorldUnderwaterDetectionMultiplier").getBackingData());
         sinkRateTicks = data.getIntOrDefault("sinkRateTicks", (int) Math.ceil(20 / data.getDoubleOrDefault("sinkSpeed", -200))); // default becomes 0
-        explodeOnCrash = (float) data.getDoubleOrDefault("explodeOnCrash", 0D);
-        collisionExplosion = (float) data.getDoubleOrDefault("collisionExplosion", 0D);
         perWorldMinHeightLimit = new HashMap<>();
         Map<String, Integer> minHeightMap = stringToIntMapFromObject(data.getDataOrEmpty("perWorldMinHeightLimit").getBackingData());
         minHeightMap.forEach((world, height) -> perWorldMinHeightLimit.put(world, Math.max(0, height)));
@@ -527,14 +563,6 @@ final public class CraftType {
 
     public int getSinkRateTicks() {
         return sinkRateTicks;
-    }
-
-    public float getExplodeOnCrash() {
-        return explodeOnCrash;
-    }
-
-    public float getCollisionExplosion() {
-        return collisionExplosion;
     }
 
     @Deprecated
