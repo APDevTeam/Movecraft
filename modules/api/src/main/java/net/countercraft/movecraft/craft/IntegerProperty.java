@@ -14,7 +14,7 @@ public class IntegerProperty {
      *
      * @param key the key for this property
      */
-    IntegerProperty(@NotNull String key) {
+    public IntegerProperty(@NotNull String key) {
         this.key = key;
         this.defaultProvider = null;
     }
@@ -25,7 +25,7 @@ public class IntegerProperty {
      * @param key the key for this property
      * @param defaultProvider the provider for the default value of this property
      */
-    IntegerProperty(@NotNull String key, @NotNull DefaultProvider<Integer> defaultProvider) {
+    public IntegerProperty(@NotNull String key, @NotNull DefaultProvider<Integer> defaultProvider) {
         this.key = key;
         this.defaultProvider = defaultProvider;
     }
@@ -37,7 +37,8 @@ public class IntegerProperty {
      * @param type CrafType to provide to defaultProvider
      * @return the value
      */
-    @Nullable Integer load(@NotNull TypeData data, @NotNull CraftType type) {
+    @Nullable
+    public Integer load(@NotNull TypeData data, @NotNull CraftType type) {
         try {
             return data.getInt(key);
         }
@@ -54,7 +55,8 @@ public class IntegerProperty {
      *
      * @return the key
      */
-    @NotNull String getKey() {
+    @NotNull
+    public String getKey() {
         return key;
     }
 }

@@ -143,7 +143,7 @@ final public class CraftType {
 
 
 
-    public static final List<FloatProperty> floatProperties = new ArrayList<>();
+    private static final List<FloatProperty> floatProperties = new ArrayList<>();
 
     /**
      * Register a float property with Movecraft
@@ -174,7 +174,7 @@ final public class CraftType {
 
 
 
-    public static final List<DoubleProperty> doubleProperties = new ArrayList<>();
+    private static final List<DoubleProperty> doubleProperties = new ArrayList<>();
 
     /**
      * Register a double property with Movecraft
@@ -213,7 +213,7 @@ final public class CraftType {
 
 
 
-    public static final List<Pair<Predicate<CraftType>, String>> validators = new ArrayList<>();
+    private static final List<Pair<Predicate<CraftType>, String>> validators = new ArrayList<>();
 
     /**
      * Register a craft type validator

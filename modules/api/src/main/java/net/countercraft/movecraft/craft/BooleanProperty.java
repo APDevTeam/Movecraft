@@ -12,7 +12,7 @@ public class BooleanProperty {
      *
      * @param key the key for this property
      */
-    BooleanProperty(@NotNull String key) {
+    public BooleanProperty(@NotNull String key) {
         this.key = key;
         this.defaultProvider = null;
     }
@@ -23,7 +23,7 @@ public class BooleanProperty {
      * @param key the key for this property
      * @param defaultProvider the provider for the default value of this property
      */
-    BooleanProperty(@NotNull String key, @NotNull DefaultProvider<Boolean> defaultProvider) {
+    public BooleanProperty(@NotNull String key, @NotNull DefaultProvider<Boolean> defaultProvider) {
         this.key = key;
         this.defaultProvider = defaultProvider;
     }
@@ -35,7 +35,8 @@ public class BooleanProperty {
      * @param type CrafType to provide to defaultProvider
      * @return the value
      */
-    @Nullable Boolean load(@NotNull TypeData data, @NotNull CraftType type) {
+    @Nullable
+    public Boolean load(@NotNull TypeData data, @NotNull CraftType type) {
         try {
             return data.getBoolean(key);
         }
@@ -52,7 +53,8 @@ public class BooleanProperty {
      *
      * @return the key
      */
-    @NotNull String getKey() {
+    @NotNull
+    public String getKey() {
         return key;
     }
 }

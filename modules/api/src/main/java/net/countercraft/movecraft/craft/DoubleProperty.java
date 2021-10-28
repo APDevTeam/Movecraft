@@ -12,7 +12,7 @@ public class DoubleProperty {
      *
      * @param key the key for this property
      */
-    DoubleProperty(@NotNull String key) {
+    public DoubleProperty(@NotNull String key) {
         this.key = key;
         this.defaultProvider = null;
     }
@@ -23,7 +23,7 @@ public class DoubleProperty {
      * @param key the key for this property
      * @param defaultProvider the provider for the default value of this property
      */
-    DoubleProperty(@NotNull String key, @NotNull DefaultProvider<Double> defaultProvider) {
+    public DoubleProperty(@NotNull String key, @NotNull DefaultProvider<Double> defaultProvider) {
         this.key = key;
         this.defaultProvider = defaultProvider;
     }
@@ -35,7 +35,8 @@ public class DoubleProperty {
      * @param type CrafType to provide to defaultProvider
      * @return the value
      */
-    @Nullable Double load(@NotNull TypeData data, @NotNull CraftType type) {
+    @Nullable
+    public Double load(@NotNull TypeData data, @NotNull CraftType type) {
         try {
             return data.getDouble(key);
         }
@@ -52,7 +53,8 @@ public class DoubleProperty {
      *
      * @return the key
      */
-    @NotNull String getKey() {
+    @NotNull
+    public String getKey() {
         return key;
     }
 }

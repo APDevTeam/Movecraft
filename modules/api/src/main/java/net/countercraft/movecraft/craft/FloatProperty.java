@@ -12,7 +12,7 @@ public class FloatProperty {
      *
      * @param key the key for this property
      */
-    FloatProperty(@NotNull String key) {
+    public FloatProperty(@NotNull String key) {
         this.key = key;
         this.defaultProvider = null;
     }
@@ -23,7 +23,7 @@ public class FloatProperty {
      * @param key the key for this property
      * @param defaultProvider the provider for the default value of this property
      */
-    FloatProperty(@NotNull String key, @NotNull DefaultProvider<Float> defaultProvider) {
+    public FloatProperty(@NotNull String key, @NotNull DefaultProvider<Float> defaultProvider) {
         this.key = key;
         this.defaultProvider = defaultProvider;
     }
@@ -35,7 +35,8 @@ public class FloatProperty {
      * @param type CrafType to provide to defaultProvider
      * @return the value
      */
-    @Nullable Float load(@NotNull TypeData data, @NotNull CraftType type) {
+    @Nullable
+    public Float load(@NotNull TypeData data, @NotNull CraftType type) {
         try {
             return (float) data.getDouble(key);
         }
@@ -52,7 +53,8 @@ public class FloatProperty {
      *
      * @return the key
      */
-    @NotNull String getKey() {
+    @NotNull
+    public String getKey() {
         return key;
     }
 }
