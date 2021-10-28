@@ -67,7 +67,7 @@ public final class RemoteSign implements Listener{
             return;
         }
 
-        if (!foundCraft.getType().allowRemoteSign()) {
+        if (!foundCraft.getType().getBoolProperty("allowRemoteSign")) {
             event.getPlayer().sendMessage(ERROR_PREFIX + I18nSupport.getInternationalisedString("Remote Sign - Not allowed on this craft"));
             return;
         }

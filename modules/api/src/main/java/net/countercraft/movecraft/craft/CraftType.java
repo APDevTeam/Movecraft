@@ -25,6 +25,7 @@ import net.kyori.adventure.sound.Sound;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -47,13 +48,16 @@ final public class CraftType {
      *
      * @param integerProperty property to register
      */
-    public static void registerIntegerProperty(IntegerProperty integerProperty) {
+    public static void registerIntProperty(IntegerProperty integerProperty) {
         intProperties.add(integerProperty);
     }
 
     static {
+        // Required properties
         intProperties.add(new IntegerProperty("maxSize"));
         intProperties.add(new IntegerProperty("minSize"));
+
+        // Optional properties
         intProperties.add(new IntegerProperty("minHeightLimit", type -> 0));
         intProperties.add(new IntegerProperty("maxHeightLimit", type -> 255));
         intProperties.add(new IntegerProperty("cruiseOnPilotVertMove", type -> 0));
@@ -71,6 +75,71 @@ final public class CraftType {
     }
 
     private final Map<String, Integer> intPropertyMap;
+
+    /**
+     * Get an integer property of this CraftType
+     *
+     * @param key Key of the integer property
+     * @return value of the integer property
+     */
+    public int getIntProperty(String key) {
+        return intPropertyMap.get(key);
+    }
+
+
+
+    private static final List<BooleanProperty> boolProperties = new ArrayList<>();
+
+    /**
+     * Register a boolean property with Movecraft
+     *
+     * @param booleanProperty property to register
+     */
+    public static void registerBoolProperty(BooleanProperty booleanProperty) {
+        boolProperties.add(booleanProperty);
+    }
+
+    static {
+        // Optional properties
+        boolProperties.add(new BooleanProperty("requireWaterContact", type -> false));
+        boolProperties.add(new BooleanProperty("tryNudge", type -> false));
+        boolProperties.add(new BooleanProperty("canCruise", type -> false));
+        boolProperties.add(new BooleanProperty("canTeleport", type -> false));
+        boolProperties.add(new BooleanProperty("canBeNamed", type -> true));
+        boolProperties.add(new BooleanProperty("canSwitchWorld", type -> false));
+        boolProperties.add(new BooleanProperty("canStaticMove", type -> false));
+        boolProperties.add(new BooleanProperty("canHover", type -> false));
+        boolProperties.add(new BooleanProperty("canDirectControl", type -> true));
+        boolProperties.add(new BooleanProperty("useGravity", type -> false));
+        boolProperties.add(new BooleanProperty("canHoverOverWater", type -> true));
+        boolProperties.add(new BooleanProperty("moveEntities", type -> true));
+        boolProperties.add(new BooleanProperty("onlyMovePlayers", type -> true));
+        boolProperties.add(new BooleanProperty("allowHorizontalMovement", type -> true));
+        boolProperties.add(new BooleanProperty("allowVerticalMovement", type -> true));
+        boolProperties.add(new BooleanProperty("allowRemoteSign", type -> true));
+        boolProperties.add(new BooleanProperty("cruiseOnPilot", type -> false));
+        boolProperties.add(new BooleanProperty("allowVerticalTakeoffAndLanding", type -> true));
+        boolProperties.add(new BooleanProperty("rotateAtMidpoint", type -> false));
+        boolProperties.add(new BooleanProperty("halfSpeedUnderwater", type -> false));
+        boolProperties.add(new BooleanProperty("focusedExplosion", type -> false));
+        boolProperties.add(new BooleanProperty("mustBeSubcraft", type -> false));
+        boolProperties.add(new BooleanProperty("keepMovingOnSink", type -> false));
+        boolProperties.add(new BooleanProperty("gearShiftsAffectTickCooldown", type -> true));
+        boolProperties.add(new BooleanProperty("gearShiftsAffectDirectMovement", type -> false));
+        boolProperties.add(new BooleanProperty("gearShiftsAffectCruiseSkipBlocks", type -> false));
+    }
+
+    private final Map<String, Boolean> boolPropertyMap;
+
+    /**
+     * Get a boolean property of this CraftType
+     *
+     * @param key Key of the boolean property
+     * @return value of the boolean property
+     */
+    public boolean getBoolProperty(String key) {
+        return boolPropertyMap.get(key);
+    }
 
 
 
@@ -111,37 +180,14 @@ final public class CraftType {
 
 
 
-    // problem child integer properties
+    // problem child properties
     private final int cruiseTickCooldown;
     private final int vertCruiseTickCooldown;
     private final int sinkRateTicks;
     private final int tickCooldown;
     private final int gravityDropDistance;
-
     private final boolean blockedByWater;
-    private final boolean requireWaterContact;
-    private final boolean tryNudge;
-    private final boolean canBeNamed;
-    private final boolean canCruise;
-    private final boolean canTeleport;
-    private final boolean canSwitchWorld;
-    private final boolean canStaticMove;
-    private final boolean canHover;
-    private final boolean canDirectControl;
-    private final boolean useGravity;
-    private final boolean canHoverOverWater;
-    private final boolean moveEntities;
-    private final boolean onlyMovePlayers;
-    private final boolean allowHorizontalMovement;
-    private final boolean allowVerticalMovement;
-    private final boolean allowRemoteSign;
-    private final boolean cruiseOnPilot;
-    private final boolean allowVerticalTakeoffAndLanding;
-    private final boolean rotateAtMidpoint;
-    private final boolean halfSpeedUnderwater;
-    private final boolean focusedExplosion;
-    private final boolean mustBeSubcraft;
-    private final boolean keepMovingOnSink;
+
     @NotNull private final Map<String, Integer> perWorldMinHeightLimit;
     @NotNull private final Map<String, Integer> perWorldMaxHeightLimit;
     @NotNull private final Map<String, Integer> perWorldMaxHeightAboveGround;
@@ -178,14 +224,10 @@ final public class CraftType {
     @NotNull private final EnumSet<Material> forbiddenHoverOverBlocks;
     @NotNull private final Map<Material, Double> fuelTypes;
     @NotNull private final Set<String> disableTeleportToWorlds;
-    private final boolean gearShiftsAffectTickCooldown;
-    private final boolean gearShiftsAffectDirectMovement;
     private final Sound collisionSound;
-    private final boolean gearShiftsAffectCruiseSkipBlocks;
 
     public CraftType(File f) {
         TypeData data = TypeData.loadConfiguration(f);
-
 
         // Load integer properties
         intPropertyMap = new HashMap<>();
@@ -193,6 +235,14 @@ final public class CraftType {
             Integer value = i.load(data, this);
             if(value != null)
                 intPropertyMap.put(i.getKey(), value);
+        }
+
+        // Load boolean properties
+        boolPropertyMap = new HashMap<>();
+        for(BooleanProperty i : boolProperties) {
+            Boolean value = i.load(data, this);
+            if(value != null)
+                boolPropertyMap.put(i.getKey(), value);
         }
 
         // Validate craft type
@@ -216,24 +266,9 @@ final public class CraftType {
         //Optional craft flags
         forbiddenBlocks = data.getMaterialsOrEmpty("forbiddenBlocks");
         blockedByWater = data.getBooleanOrDefault("canFly", data.getBooleanOrDefault("blockedByWater", true));
-        requireWaterContact = data.getBooleanOrDefault("requireWaterContact", false);
-        tryNudge = data.getBooleanOrDefault("tryNudge", false);
         moveBlocks = blockIDMapListFromObject("moveblocks", data.getDataOrEmpty("moveblocks").getBackingData());
-        canCruise = data.getBooleanOrDefault("canCruise", false);
-        canTeleport = data.getBooleanOrDefault("canTeleport", false);
-        canSwitchWorld = data.getBooleanOrDefault("canSwitchWorld", false);
-        canBeNamed = data.getBooleanOrDefault("canBeNamed", true);
-        cruiseOnPilot = data.getBooleanOrDefault("cruiseOnPilot", false);
-        allowVerticalMovement = data.getBooleanOrDefault("allowVerticalMovement", true);
-        rotateAtMidpoint = data.getBooleanOrDefault("rotateAtMidpoint", false);
-        allowHorizontalMovement = data.getBooleanOrDefault("allowHorizontalMovement", true);
-        allowRemoteSign = data.getBooleanOrDefault("allowRemoteSign", true);
-        canStaticMove = data.getBooleanOrDefault("canStaticMove", false);
         perWorldCruiseSkipBlocks = stringToIntMapFromObject(data.getDataOrEmpty("perWorldCruiseSkipBlocks").getBackingData());
         perWorldVertCruiseSkipBlocks = stringToIntMapFromObject(data.getDataOrEmpty("perWorldVertCruiseSkipBlocks").getBackingData());
-        halfSpeedUnderwater = data.getBooleanOrDefault("halfSpeedUnderwater", false);
-        focusedExplosion = data.getBooleanOrDefault("focusedExplosion", false);
-        mustBeSubcraft = data.getBooleanOrDefault("mustBeSubcraft", false);
         fuelBurnRate = data.getDoubleOrDefault("fuelBurnRate", 0d);
         perWorldFuelBurnRate = stringToDoubleMapFromObject(data.getDataOrEmpty("perWorldFuelBurnRate").getBackingData());
         sinkPercent = data.getDoubleOrDefault("sinkPercent", 0d);
@@ -243,7 +278,6 @@ final public class CraftType {
         underwaterDetectionMultiplier = data.getDoubleOrDefault("underwaterDetectionMultiplier", detectionMultiplier);
         perWorldUnderwaterDetectionMultiplier = stringToDoubleMapFromObject(data.getDataOrEmpty("perWorldUnderwaterDetectionMultiplier").getBackingData());
         sinkRateTicks = data.getIntOrDefault("sinkRateTicks", (int) Math.ceil(20 / data.getDoubleOrDefault("sinkSpeed", -200))); // default becomes 0
-        keepMovingOnSink = data.getBooleanOrDefault("keepMovingOnSink", false);
         explodeOnCrash = (float) data.getDoubleOrDefault("explodeOnCrash", 0D);
         collisionExplosion = (float) data.getDoubleOrDefault("collisionExplosion", 0D);
         perWorldMinHeightLimit = new HashMap<>();
@@ -289,12 +323,6 @@ final public class CraftType {
         });
         
         perWorldMaxHeightAboveGround = stringToIntMapFromObject(data.getDataOrEmpty("perWorldMaxHeightAboveGround").getBackingData());
-        canDirectControl = data.getBooleanOrDefault("canDirectControl", true);
-        canHover = data.getBooleanOrDefault("canHover", false);
-        canHoverOverWater = data.getBooleanOrDefault("canHoverOverWater", true);
-        moveEntities = data.getBooleanOrDefault("moveEntities", true);
-        onlyMovePlayers = data.getBooleanOrDefault("onlyMovePlayers", true);
-        useGravity = data.getBooleanOrDefault("useGravity", false);
         harvestBlocks = data.getMaterialsOrEmpty("harvestBlocks");
         harvesterBladeBlocks = data.getMaterialsOrEmpty("harvesterBladeBlocks");
         passthroughBlocks = data.getMaterialsOrEmpty("passthroughBlocks");
@@ -302,10 +330,9 @@ final public class CraftType {
             passthroughBlocks.add(Material.WATER);
         }
         forbiddenHoverOverBlocks = data.getMaterialsOrEmpty("forbiddenHoverOverBlocks");
-        if (!canHoverOverWater){
+        if (!getBoolProperty("canHoverOverWater")){
             forbiddenHoverOverBlocks.add(Material.WATER);
         }
-        allowVerticalTakeoffAndLanding = data.getBooleanOrDefault("allowVerticalTakeoffAndLanding", true);
         dynamicLagSpeedFactor = data.getDoubleOrDefault("dynamicLagSpeedFactor", 0d);
         dynamicLagPowerFactor = data.getDoubleOrDefault("dynamicLagPowerFactor", 0d);
         dynamicLagMinSpeed = data.getDoubleOrDefault("dynamicLagMinSpeed", 0d);
@@ -340,15 +367,8 @@ final public class CraftType {
         disableTeleportToWorlds = new HashSet<>();
         List<String> disabledWorlds = data.getStringListOrEmpty("disableTeleportToWorlds");
         disableTeleportToWorlds.addAll(disabledWorlds);
-        gearShiftsAffectTickCooldown = data.getBooleanOrDefault("gearShiftsAffectTickCooldown", true);
-        gearShiftsAffectDirectMovement = data.getBooleanOrDefault("gearShiftsAffectDirectMovement", false);
-        gearShiftsAffectCruiseSkipBlocks = data.getBooleanOrDefault("gearShiftsAffectCruiseSkipBlocks", false);
     }
 
-    public int getIntProperty(String key) {
-        return intPropertyMap.get(key);
-    }
-    
     private Map<String, Integer> stringToIntMapFromObject(Map<String, Object> objMap) {
         HashMap<String, Integer> returnMap = new HashMap<>();
         for (Object key : objMap.keySet()) {
@@ -465,56 +485,12 @@ final public class CraftType {
         return blockedByWater;
     }
 
-    public boolean getRequireWaterContact() {
-        return requireWaterContact;
-    }
-
-    public boolean getCanCruise() {
-        return canCruise;
-    }
-
     public int getCruiseSkipBlocks(@NotNull World world) {
         return perWorldCruiseSkipBlocks.getOrDefault(world.getName(), getIntProperty("cruiseSkipBlocks"));
     }
 
     public int getVertCruiseSkipBlocks(@NotNull World world) {
         return perWorldVertCruiseSkipBlocks.getOrDefault(world.getName(), getIntProperty("vertCruiseSkipBlocks"));
-    }
-
-    public boolean getCanBeNamed(){
-        return canBeNamed;
-    }
-
-    public boolean getCanTeleport() {
-        return canTeleport;
-    }
-    
-    public boolean getCanSwitchWorld() {
-        return canSwitchWorld;
-    }
-
-    public boolean getCanStaticMove() {
-        return canStaticMove;
-    }
-
-    public boolean getCruiseOnPilot() {
-        return cruiseOnPilot;
-    }
-
-    public boolean allowVerticalMovement() {
-        return allowVerticalMovement;
-    }
-
-    public boolean rotateAtMidpoint() {
-        return rotateAtMidpoint;
-    }
-
-    public boolean allowHorizontalMovement() {
-        return allowHorizontalMovement;
-    }
-
-    public boolean allowRemoteSign() {
-        return allowRemoteSign;
     }
 
     @Deprecated
@@ -553,10 +529,6 @@ final public class CraftType {
         return sinkRateTicks;
     }
 
-    public boolean getKeepMovingOnSink() {
-        return keepMovingOnSink;
-    }
-
     public float getExplodeOnCrash() {
         return explodeOnCrash;
     }
@@ -591,22 +563,6 @@ final public class CraftType {
         return perWorldVertCruiseTickCooldown.getOrDefault(world.getName(), vertCruiseTickCooldown);
     }
 
-    public boolean getHalfSpeedUnderwater() {
-        return halfSpeedUnderwater;
-    }
-
-    public boolean getFocusedExplosion() {
-        return focusedExplosion;
-    }
-
-    public boolean getMustBeSubcraft() {
-        return mustBeSubcraft;
-    }
-
-    public boolean isTryNudge() {
-        return tryNudge;
-    }
-
     @NotNull
     public Map<List<Material>, List<Double>> getFlyBlocks() {
         return flyBlocks;
@@ -637,14 +593,6 @@ final public class CraftType {
         return perWorldMaxHeightAboveGround.getOrDefault(world.getName(), getIntProperty("maxHeightAboveGround"));
     }
 
-    public boolean getCanHover() {
-        return canHover;
-    }
-
-    public boolean getCanDirectControl() {
-        return canDirectControl;
-    }
-
     @NotNull
     public EnumSet<Material> getHarvestBlocks() {
         return harvestBlocks;
@@ -653,22 +601,6 @@ final public class CraftType {
     @NotNull
     public EnumSet<Material> getHarvesterBladeBlocks() {
         return harvesterBladeBlocks;
-    }
-
-    public boolean getCanHoverOverWater() {
-        return canHoverOverWater;
-    }
-
-    public boolean getMoveEntities() {
-        return moveEntities;
-    }
-
-    public boolean getUseGravity() {
-        return useGravity;
-    }
-
-    public boolean allowVerticalTakeoffAndLanding() {
-        return allowVerticalTakeoffAndLanding;
     }
 
     public double getDynamicLagSpeedFactor() {
@@ -700,10 +632,6 @@ final public class CraftType {
         return passthroughBlocks;
     }
 
-    public boolean getOnlyMovePlayers() {
-        return onlyMovePlayers;
-    }
-
     @NotNull
     public Set<Material> getForbiddenHoverOverBlocks() {
         return forbiddenHoverOverBlocks;
@@ -726,18 +654,6 @@ final public class CraftType {
     @NotNull
     public Set<String> getDisableTeleportToWorlds() {
         return disableTeleportToWorlds;
-    }
-
-    public boolean getGearShiftsAffectTickCooldown() {
-        return gearShiftsAffectTickCooldown;
-    }
-
-    public boolean getGearShiftsAffectDirectMovement() {
-        return gearShiftsAffectDirectMovement;
-    }
-
-    public boolean getGearShiftsAffectCruiseSkipBlocks() {
-        return gearShiftsAffectCruiseSkipBlocks;
     }
 
     public static class TypeNotFoundException extends RuntimeException {

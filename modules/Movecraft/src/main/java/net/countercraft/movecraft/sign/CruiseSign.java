@@ -57,7 +57,7 @@ public final class CruiseSign implements Listener{
                 return;
             }
             Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
-            if (!c.getType().getCanCruise()) {
+            if (!c.getType().getBoolProperty("canCruise")) {
                 return;
             }
             //c.resetSigns(false, true, true);
@@ -72,14 +72,14 @@ public final class CruiseSign implements Listener{
             c.setLastCruiseUpdate(System.currentTimeMillis());
             c.setCruising(true);
             c.resetSigns(sign);
-            if (!c.getType().getMoveEntities()) {
+            if (!c.getType().getBoolProperty("moveEntities")) {
                 CraftManager.getInstance().addReleaseTask(c);
             }
             return;
         }
         if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Cruise: ON")
                 && CraftManager.getInstance().getCraftByPlayer(event.getPlayer()) != null
-                && CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getCanCruise()) {
+                && CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getBoolProperty("canCruise")) {
             Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
             sign.setLine(0, "Cruise: OFF");
             sign.update(true);

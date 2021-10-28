@@ -56,7 +56,7 @@ public final class TeleportSign implements Listener {
             return;
         }
         final Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
-        if (c == null || !c.getType().getCanTeleport()) {
+        if (c == null || !c.getType().getBoolProperty("canTeleport")) {
             return;
         }
         long timeSinceLastTeleport = System.currentTimeMillis() - c.getLastTeleportTime();

@@ -93,7 +93,7 @@ public final class InteractListener implements Listener {
             }
             Long time = timeMap.get(player);
             int tickCooldown = craft.getType().getTickCooldown(craft.getWorld());
-            if (type.getGearShiftsAffectDirectMovement() && type.getGearShiftsAffectTickCooldown()) {
+            if (type.getBoolProperty("gearShiftsAffectDirectMovement") && type.getBoolProperty("gearShiftsAffectTickCooldown")) {
                 tickCooldown *= currentGear;
             }
             if (time != null) {
@@ -101,8 +101,8 @@ public final class InteractListener implements Listener {
 
                 // if the craft should go slower underwater, make time
                 // pass more slowly there
-                if (craft.getType().getHalfSpeedUnderwater() && craft.getHitBox().getMinY() < craft.getWorld().getSeaLevel())
-                    ticksElapsed = ticksElapsed >> 1;
+                if (craft.getType().getBoolProperty("halfSpeedUnderwater") && craft.getHitBox().getMinY() < craft.getWorld().getSeaLevel())
+                    ticksElapsed /= 2;
 
 
                 if (Math.abs(ticksElapsed) < tickCooldown) {
@@ -125,7 +125,7 @@ public final class InteractListener implements Listener {
                 int DY = 1;
                 if (event.getPlayer().isSneaking())
                     DY = -1;
-                if (craft.getType().getGearShiftsAffectDirectMovement())
+                if (craft.getType().getBoolProperty("gearShiftsAffectDirectMovement"))
                     DY *= currentGear;
                 craft.translate(0, DY, 0);
                 timeMap.put(event.getPlayer(), System.currentTimeMillis());
@@ -173,7 +173,7 @@ public final class InteractListener implements Listener {
                 return;
             }
             if (!event.getPlayer().hasPermission("movecraft." + craft.getType().getCraftName() + ".move")
-                    || !craft.getType().getCanDirectControl()) {
+                    || !craft.getType().getBoolProperty("canDirectControl")) {
                         event.getPlayer().sendMessage(
                                 I18nSupport.getInternationalisedString("Insufficient Permissions"));
                         return;

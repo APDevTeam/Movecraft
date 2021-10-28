@@ -23,7 +23,7 @@ public class TeleportationEffect implements Effect {
 
     @Override
     public void run() {
-        if (!craft.getType().getMoveEntities() || craft.getSinking() && craft.getType().getOnlyMovePlayers()) {
+        if (!craft.getType().getBoolProperty("moveEntities") || craft.getSinking() && craft.getType().getBoolProperty("onlyMovePlayers")) {
             return;
         }
         Location midpoint = craft.getHitBox().getMidPoint().toBukkit(craft.getWorld());
@@ -34,7 +34,7 @@ public class TeleportationEffect implements Effect {
                 }
                 EntityUpdateCommand eUp = new EntityUpdateCommand(entity, translation.getX(), translation.getY(), translation.getZ(), 0, 0, world);
                 eUp.doUpdate();
-            } else if (!craft.getType().getOnlyMovePlayers() || entity.getType() == EntityType.PRIMED_TNT) {
+            } else if (!craft.getType().getBoolProperty("onlyMovePlayers") || entity.getType() == EntityType.PRIMED_TNT) {
                 EntityUpdateCommand eUp = new EntityUpdateCommand(entity, translation.getX(), translation.getY(), translation.getZ(), 0, 0, world);
                 eUp.doUpdate();
             }

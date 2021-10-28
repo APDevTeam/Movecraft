@@ -67,7 +67,7 @@ public final class MoveSign implements Listener{
                     I18nSupport.getInternationalisedString("Insufficient Permissions"));
             return;
         }
-        if (CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getCanStaticMove()) {
+        if (CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getBoolProperty("canStaticMove")) {
             CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).translate(dx, dy, dz);
             //timeMap.put(event.getPlayer(), System.currentTimeMillis());
             CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setLastCruiseUpdate(System.currentTimeMillis());

@@ -83,7 +83,7 @@ public class CruiseCommand implements TabExecutor {
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Insufficient Permissions"));
             return true;
         }
-        if (!craft.getType().getCanCruise()) {
+        if (!craft.getType().getBoolProperty("canCruise")) {
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Cruise - Craft Cannot Cruise"));
             return true;
         }

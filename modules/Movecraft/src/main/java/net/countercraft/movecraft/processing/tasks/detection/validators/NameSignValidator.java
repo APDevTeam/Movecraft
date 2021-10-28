@@ -26,6 +26,6 @@ public class NameSignValidator implements DetectionPredicate<MovecraftLocation> 
             return Result.succeed();
         }
         Sign s = (Sign) state;
-        return s.getLine(0).equalsIgnoreCase("Name:") && !type.getCanBeNamed() ? Result.failWithMessage(I18nSupport.getInternationalisedString("Detection - Craft Type Cannot Be Named")) : Result.succeed();
+        return s.getLine(0).equalsIgnoreCase("Name:") && !type.getBoolProperty("canBeNamed") ? Result.failWithMessage(I18nSupport.getInternationalisedString("Detection - Craft Type Cannot Be Named")) : Result.succeed();
     }
 }

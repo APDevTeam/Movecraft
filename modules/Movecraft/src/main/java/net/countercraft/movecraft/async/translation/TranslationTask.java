@@ -199,7 +199,7 @@ public class TranslationTask extends AsyncTask {
             }
         }
         //Process gravity
-        if (world.equals(craft.getWorld()) && craft.getType().getUseGravity() && !craft.getSinking()){
+        if (world.equals(craft.getWorld()) && craft.getType().getBoolProperty("useGravity") && !craft.getSinking()) {
             int incline = inclineCraft(oldHitBox);
             if (incline > 0){
                 boolean tooSteep = craft.getType().getIntProperty("gravityInclineDistance") > -1 && incline > craft.getType().getIntProperty("gravityInclineDistance");
@@ -208,7 +208,7 @@ public class TranslationTask extends AsyncTask {
                     return;
                 }
                 dy = tooSteep ? 0 : incline;
-            } else if (!isOnGround(oldHitBox) && craft.getType().getCanHover()){
+            } else if (!isOnGround(oldHitBox) && craft.getType().getBoolProperty("canHover")) {
                 MovecraftLocation midPoint = oldHitBox.getMidPoint();
                 int centreMinY = oldHitBox.getMinYAt(midPoint.getX(), midPoint.getZ());
                 int groundY = centreMinY;
@@ -232,10 +232,10 @@ public class TranslationTask extends AsyncTask {
             return;
         } else if (dy>0 && maxY + dy > craft.getType().getMaxHeightLimit(world)) { //If explosive and too high, set dy to 0
             dy = 0;
-        } else if (minY + dy < craft.getType().getMinHeightLimit(world) && dy < 0 && !craft.getSinking() && !craft.getType().getUseGravity()) {
+        } else if (minY + dy < craft.getType().getMinHeightLimit(world) && dy < 0 && !craft.getSinking() && !craft.getType().getBoolProperty("useGravity")) {
             fail(I18nSupport.getInternationalisedString("Translation - Failed Craft hit minimum height limit"));
             return;
-        } else if (minY + dy < craft.getType().getMinHeightLimit(world) && dy < 0 && craft.getType().getUseGravity()) {
+        } else if (minY + dy < craft.getType().getMinHeightLimit(world) && dy < 0 && craft.getType().getBoolProperty("useGravity")) {
             //if a craft using gravity hits the minimum height limit, set dy = 0 instead of failing
             dy = 0;
         }
@@ -364,7 +364,7 @@ public class TranslationTask extends AsyncTask {
         } else if ((craft.getType().getCollisionExplosion() != 0.0F) && System.currentTimeMillis() - craft.getOrigPilotTime() > Settings.CollisionPrimer) {
             for(MovecraftLocation location : collisionBox) {
                 float explosionForce = craft.getType().getCollisionExplosion();
-                if (craft.getType().getFocusedExplosion()) {
+                if (craft.getType().getBoolProperty("focusedExplosion")) {
                     explosionForce *= Math.min(oldHitBox.size(), craft.getType().getIntProperty("maxSize"));
                 }
                 //TODO: Account for underwater explosions
@@ -381,13 +381,13 @@ public class TranslationTask extends AsyncTask {
                         collisionExplosion = true;
                     }
                 }
-                if (craft.getType().getFocusedExplosion()) { // don't handle any further collisions if it is set to focusedexplosion
+                if (craft.getType().getBoolProperty("focusedExplosion")) { // don't handle any further collisions if it is set to focusedexplosion
                     break;
                 }
             }
         }
 
-        if(!collisionBox.isEmpty() && craft.getType().getCruiseOnPilot()){
+        if(!collisionBox.isEmpty() && craft.getType().getBoolProperty("cruiseOnPilot")){
             CraftManager.getInstance().removeCraft(craft, CraftReleaseEvent.Reason.EMPTY);
             for(MovecraftLocation location : oldHitBox){
                 BlockData phaseBlock = craft.getPhaseBlocks().getOrDefault(location.toBukkit(craft.getWorld()), Material.AIR.createBlockData());
@@ -403,7 +403,7 @@ public class TranslationTask extends AsyncTask {
         updates.add(new CraftTranslateCommand(craft, new MovecraftLocation(dx, dy, dz), world));
 
         //prevents torpedo and rocket pilots
-        if (craft.getType().getMoveEntities() && !(craft.getSinking() && craft.getType().getOnlyMovePlayers())) {
+        if (craft.getType().getBoolProperty("moveEntities") && !(craft.getSinking() && craft.getType().getBoolProperty("onlyMovePlayers"))) {
             Location midpoint = new Location(
                     craft.getWorld(),
                     (oldHitBox.getMaxX() + oldHitBox.getMinX())/2.0,
@@ -416,14 +416,14 @@ public class TranslationTask extends AsyncTask {
                     }
                     EntityUpdateCommand eUp = new EntityUpdateCommand(entity, dx, dy, dz, 0, 0, world, sound, volume);
                     updates.add(eUp);
-                } else if (!craft.getType().getOnlyMovePlayers() || entity.getType() == EntityType.PRIMED_TNT) {
+                } else if (!craft.getType().getBoolProperty("onlyMovePlayers") || entity.getType() == EntityType.PRIMED_TNT) {
                     EntityUpdateCommand eUp = new EntityUpdateCommand(entity, dx, dy, dz, 0, 0, world);
                     updates.add(eUp);
                 }
             }
         } else {
             //add releaseTask without playermove to manager
-            if (!craft.getType().getCruiseOnPilot() && !craft.getSinking())  // not necessary to release cruiseonpilot crafts, because they will already be released
+            if (!craft.getType().getBoolProperty("cruiseOnPilot") && !craft.getSinking())  // not necessary to release cruiseonpilot crafts, because they will already be released
                 CraftManager.getInstance().addReleaseTask(craft);
         }
         captureYield(harvestedBlocks);

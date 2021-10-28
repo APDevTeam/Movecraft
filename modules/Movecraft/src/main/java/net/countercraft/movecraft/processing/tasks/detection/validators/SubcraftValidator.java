@@ -18,7 +18,7 @@ public class SubcraftValidator implements DetectionPredicate<MovecraftLocation> 
     @Contract(pure = true)
     public @NotNull Result validate(@NotNull MovecraftLocation movecraftLocation, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable CommandSender player) {
 
-        if (!type.getMustBeSubcraft()) {
+        if (!type.getBoolProperty("mustBeSubcraft")) {
             return Result.succeed();
         }
 

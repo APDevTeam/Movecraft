@@ -201,7 +201,7 @@ public class AsyncManager extends BukkitRunnable {
             World w = pcraft.getWorld();
             // if the craft should go slower underwater, make
             // time pass more slowly there
-            if (pcraft.getType().getHalfSpeedUnderwater() && pcraft.getHitBox().getMinY() < w.getSeaLevel())
+            if (pcraft.getType().getBoolProperty("halfSpeedUnderwater") && pcraft.getHitBox().getMinY() < w.getSeaLevel())
                 ticksElapsed >>= 1;
             // check direct controls to modify movement
             boolean bankLeft = false;
@@ -300,10 +300,10 @@ public class AsyncManager extends BukkitRunnable {
                     dx = (1 + pcraft.getType().getCruiseSkipBlocks(w)) >> 1;
                 }
             }
-            if (pcraft.getType().getCruiseOnPilot()) {
+            if (pcraft.getType().getBoolProperty("cruiseOnPilot")) {
                 dy = pcraft.getType().getIntProperty("cruiseOnPilotVertMove");
             }
-            if (pcraft.getType().getGearShiftsAffectCruiseSkipBlocks()) {
+            if (pcraft.getType().getBoolProperty("gearShiftsAffectCruiseSkipBlocks")) {
                 final int gearshift = pcraft.getCurrentGear();
                 dx *= gearshift;
                 dy *= gearshift;
@@ -375,7 +375,7 @@ public class AsyncManager extends BukkitRunnable {
             }
             int dx = 0;
             int dz = 0;
-            if (craft.getType().getKeepMovingOnSink()) {
+            if (craft.getType().getBoolProperty("keepMovingOnSink")) {
                 dx = craft.getLastDX();
                 dz = craft.getLastDZ();
             }

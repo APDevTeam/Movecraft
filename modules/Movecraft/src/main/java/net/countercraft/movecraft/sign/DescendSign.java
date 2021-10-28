@@ -51,7 +51,7 @@ public final class DescendSign implements Listener{
                 return;
             }
             Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
-            if (!c.getType().getCanCruise()) {
+            if (!c.getType().getBoolProperty("canCruise")) {
                 return;
             }
             //c.resetSigns(true, true, false);
@@ -63,14 +63,14 @@ public final class DescendSign implements Listener{
             c.setCruising(true);
             c.resetSigns(sign);
 
-            if (!c.getType().getMoveEntities()) {
+            if (!c.getType().getBoolProperty("moveEntities")) {
                 CraftManager.getInstance().addReleaseTask(c);
             }
             return;
         }
         if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Descend: ON")) {
             Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
-            if (c != null && c.getType().getCanCruise()) {
+            if (c != null && c.getType().getBoolProperty("canCruise")) {
                 sign.setLine(0, "Descend: OFF");
                 sign.update(true);
                 c.setCruising(false);

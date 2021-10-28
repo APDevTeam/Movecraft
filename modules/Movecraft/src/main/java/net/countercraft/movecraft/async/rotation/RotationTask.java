@@ -169,14 +169,14 @@ public class RotationTask extends AsyncTask {
         tOP.setX(tOP.getBlockX() + 0.5);
         tOP.setZ(tOP.getBlockZ() + 0.5);
 
-        if (craft.getType().getMoveEntities() && !(craft.getSinking() && craft.getType().getOnlyMovePlayers())) {
+        if (craft.getType().getBoolProperty("moveEntities") && !(craft.getSinking() && craft.getType().getBoolProperty("onlyMovePlayers"))) {
             Location midpoint = new Location(
                     craft.getWorld(),
                     (oldHitBox.getMaxX() + oldHitBox.getMinX())/2.0,
                     (oldHitBox.getMaxY() + oldHitBox.getMinY())/2.0,
                     (oldHitBox.getMaxZ() + oldHitBox.getMinZ())/2.0);
             for(Entity entity : craft.getWorld().getNearbyEntities(midpoint, oldHitBox.getXLength()/2.0 + 1, oldHitBox.getYLength()/2.0 + 2, oldHitBox.getZLength()/2.0 + 1)){
-                if (((entity.getType() == EntityType.PLAYER || entity.getType() == EntityType.PRIMED_TNT) && !craft.getSinking()) || !craft.getType().getOnlyMovePlayers()) {
+                if (((entity.getType() == EntityType.PLAYER || entity.getType() == EntityType.PRIMED_TNT) && !craft.getSinking()) || !craft.getType().getBoolProperty("onlyMovePlayers")) {
                     // Player is onboard this craft
 
                     Location adjustedPLoc = entity.getLocation().subtract(tOP);

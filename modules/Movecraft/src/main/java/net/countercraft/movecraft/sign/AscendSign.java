@@ -53,7 +53,7 @@ public class AscendSign implements Listener {
                 return;
             }
             Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
-            if (!c.getType().getCanCruise()) {
+            if (!c.getType().getBoolProperty("canCruise")) {
                 return;
             }
             //c.resetSigns(true, false, true);
@@ -65,7 +65,7 @@ public class AscendSign implements Listener {
             c.setCruising(true);
             c.resetSigns(sign);
 
-            if (!c.getType().getMoveEntities()) {
+            if (!c.getType().getBoolProperty("moveEntities")) {
                 CraftManager.getInstance().addReleaseTask(c);
             }
             return;
@@ -74,7 +74,7 @@ public class AscendSign implements Listener {
             return;
         }
         Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
-        if (c == null || !c.getType().getCanCruise()) {
+        if (c == null || !c.getType().getBoolProperty("canCruise")) {
             return;
         }
         sign.setLine(0, "Ascend: OFF");

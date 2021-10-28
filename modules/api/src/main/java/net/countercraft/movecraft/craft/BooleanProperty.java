@@ -3,29 +3,27 @@ package net.countercraft.movecraft.craft;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.function.Predicate;
-
-public class IntegerProperty {
+public class BooleanProperty {
     private final String key;
-    private final DefaultProvider<Integer> defaultProvider;
+    private final DefaultProvider<Boolean> defaultProvider;
 
     /**
-     * Construct an IntegerProperty
+     * Construct a BooleanProperty
      *
      * @param key the key for this property
      */
-    IntegerProperty(@NotNull String key) {
+    BooleanProperty(@NotNull String key) {
         this.key = key;
         this.defaultProvider = null;
     }
 
     /**
-     * Construct an IntegerProperty
+     * Construct a BooleanProperty
      *
      * @param key the key for this property
      * @param defaultProvider the provider for the default value of this property
      */
-    IntegerProperty(@NotNull String key, @NotNull DefaultProvider<Integer> defaultProvider) {
+    BooleanProperty(@NotNull String key, @NotNull DefaultProvider<Boolean> defaultProvider) {
         this.key = key;
         this.defaultProvider = defaultProvider;
     }
@@ -36,9 +34,9 @@ public class IntegerProperty {
      * @param data TypeData to read the property from
      * @return the value
      */
-    @Nullable Integer load(@NotNull TypeData data, @NotNull CraftType type) {
+    @Nullable Boolean load(@NotNull TypeData data, @NotNull CraftType type) {
         try {
-            return data.getInt(key);
+            return data.getBoolean(key);
         }
         catch (IllegalArgumentException e) {
             if(defaultProvider == null)
