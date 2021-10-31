@@ -17,7 +17,6 @@
 
 package net.countercraft.movecraft.craft.type;
 
-import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.type.property.BooleanProperty;
 import net.countercraft.movecraft.craft.type.property.DoubleProperty;
 import net.countercraft.movecraft.craft.type.property.FloatProperty;
@@ -88,6 +87,7 @@ final public class CraftType {
     public static final NamespacedKey CAN_STATIC_MOVE = buildKey("can_static_move");
     public static final NamespacedKey MAX_STATIC_MOVE = buildKey("max_static_move");
     public static final NamespacedKey CRUISE_SKIP_BLOCKS = buildKey("cruise_skip_blocks");
+    public static final NamespacedKey PER_WORLD_CRUISE_SKIP_BLOCKS = buildKey("per_world_cruise_skip_blocks");
     public static final NamespacedKey VERT_CRUISE_SKIP_BLOCKS = buildKey("vert_cruise_skip_blocks");
     public static final NamespacedKey HALF_SPEED_UNDERWATER = buildKey("half_speed_underwater");
     public static final NamespacedKey FOCUSED_EXPLOSION = buildKey("focused_explosion");
@@ -324,7 +324,7 @@ final public class CraftType {
 
         // Optional properties
         // TODO: forbiddenSignStrings
-        registerProperty(new PerWorldProperty<Double>("perWorldSpeed", PER_WORLD_SPEED, craftType -> Collections.emptyMap()));
+        registerProperty(new PerWorldProperty<Double>("perWorldSpeed", PER_WORLD_SPEED, type -> Collections.emptyMap()));
         // TODO: flyBlocks
         registerProperty(new MaterialSetProperty("forbiddenBlocks", FORBIDDEN_BLOCKS, type -> EnumSet.noneOf(Material.class)));
         registerProperty(new BooleanProperty("blockedByWater", BLOCKED_BY_WATER, type -> true));
@@ -345,6 +345,7 @@ final public class CraftType {
         registerProperty(new BooleanProperty("canStaticMove", CAN_STATIC_MOVE, type -> false));
         registerProperty(new IntegerProperty("maxStaticMove", MAX_STATIC_MOVE, type -> 10000));
         registerProperty(new IntegerProperty("cruiseSkipBlocks", CRUISE_SKIP_BLOCKS, type -> 0));
+        registerProperty(new PerWorldProperty<IntegerProperty>("perWorldCruiseSkipBlocks", PER_WORLD_CRUISE_SKIP_BLOCKS, type -> Collections.emptyMap()));
         // TODO: perWorldCruiseSkipBlocks
         registerProperty(new IntegerProperty("vertCruiseSkipBlocks", VERT_CRUISE_SKIP_BLOCKS, type -> type.getIntProperty(CRUISE_SKIP_BLOCKS)));
         // TODO: perWorldVertCruiseSkipBlocks
@@ -500,7 +501,6 @@ final public class CraftType {
     @NotNull private final Map<String, Integer> perWorldMinHeightLimit;
     @NotNull private final Map<String, Integer> perWorldMaxHeightLimit;
     @NotNull private final Map<String, Integer> perWorldMaxHeightAboveGround;
-    @NotNull private final Map<String, Integer> perWorldCruiseSkipBlocks;
     @NotNull private final Map<String, Integer> perWorldVertCruiseSkipBlocks;
     @NotNull private final Map<String, Integer> perWorldCruiseTickCooldown; // cruise speed setting
     @NotNull private final Map<String, Integer> perWorldVertCruiseTickCooldown; // cruise speed setting
@@ -594,7 +594,6 @@ final public class CraftType {
 
         // Optional craft flags
         moveBlocks = blockIDMapListFromObject("moveblocks", data.getDataOrEmpty("moveblocks").getBackingData());
-        perWorldCruiseSkipBlocks = stringToIntMapFromObject(data.getDataOrEmpty("perWorldCruiseSkipBlocks").getBackingData());
         perWorldVertCruiseSkipBlocks = stringToIntMapFromObject(data.getDataOrEmpty("perWorldVertCruiseSkipBlocks").getBackingData());
         perWorldFuelBurnRate = stringToDoubleMapFromObject(data.getDataOrEmpty("perWorldFuelBurnRate").getBackingData());
         perWorldDetectionMultiplier = stringToDoubleMapFromObject(data.getDataOrEmpty("perWorldDetectionMultiplier").getBackingData());
@@ -606,7 +605,8 @@ final public class CraftType {
         perWorldCruiseTickCooldown = new HashMap<>();
         Map<String, Double> cruiseTickCooldownMap = stringToDoubleMapFromObject(data.getDataOrEmpty("perWorldCruiseSpeed").getBackingData());
         cruiseTickCooldownMap.forEach((world, speed) -> {
-            double worldCruiseSkipBlocks = perWorldCruiseSkipBlocks.getOrDefault(world, getIntProperty(CRUISE_SKIP_BLOCKS));
+            var perWorldCruiseSkipBlocks = perWorldPropertyMap.get(PER_WORLD_CRUISE_SKIP_BLOCKS).getLeft();
+            double worldCruiseSkipBlocks = (double) perWorldCruiseSkipBlocks.getOrDefault(world, getIntProperty(CRUISE_SKIP_BLOCKS));
             perWorldCruiseTickCooldown.put(world, (int) Math.round((1.0 + worldCruiseSkipBlocks) * 20.0 / getDoubleProperty(CRUISE_SPEED)));
         });
         var tickCooldownMap = perWorldPropertyMap.get(PER_WORLD_TICK_COOLDOWN).getLeft();
@@ -768,7 +768,7 @@ final public class CraftType {
     }
 
     public int getCruiseSkipBlocks(@NotNull World world) {
-        return perWorldCruiseSkipBlocks.getOrDefault(world.getName(), getIntProperty(CRUISE_SKIP_BLOCKS));
+        return (int) getPerWorldProperty(PER_WORLD_CRUISE_SKIP_BLOCKS, world);
     }
 
     public int getVertCruiseSkipBlocks(@NotNull World world) {
