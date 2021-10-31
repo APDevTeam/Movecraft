@@ -1,29 +1,34 @@
-package net.countercraft.movecraft.craft.type;
+package net.countercraft.movecraft.craft.type.property;
 
+import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.TypeData;
+import org.bukkit.Material;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class StringProperty {
+import java.util.EnumSet;
+
+public class MaterialSetProperty {
     private final String key;
-    private final DefaultProvider<String> defaultProvider;
+    private final DefaultProvider<EnumSet<Material>> defaultProvider;
 
     /**
-     * Construct a StringProperty
+     * Construct a MaterialSetProperty
      *
      * @param key the key for this property
      */
-    public StringProperty(@NotNull String key) {
+    public MaterialSetProperty(@NotNull String key) {
         this.key = key;
         this.defaultProvider = null;
     }
 
     /**
-     * Construct a StringProperty
+     * Construct a MaterialSetProperty
      *
      * @param key the key for this property
      * @param defaultProvider the provider for the default value of this property
      */
-    public StringProperty(@NotNull String key, @NotNull DefaultProvider<String> defaultProvider) {
+    public MaterialSetProperty(@NotNull String key, @NotNull DefaultProvider<EnumSet<Material>> defaultProvider) {
         this.key = key;
         this.defaultProvider = defaultProvider;
     }
@@ -36,9 +41,9 @@ public class StringProperty {
      * @return the value
      */
     @Nullable
-    public String load(@NotNull TypeData data, @NotNull CraftType type) {
+    public EnumSet<Material> load(@NotNull TypeData data, @NotNull CraftType type) {
         try {
-            return data.getString(key);
+            return data.getMaterials(key);
         }
         catch (IllegalArgumentException e) {
             if(defaultProvider == null)

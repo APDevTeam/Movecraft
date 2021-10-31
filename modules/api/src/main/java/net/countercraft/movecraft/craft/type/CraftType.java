@@ -17,6 +17,13 @@
 
 package net.countercraft.movecraft.craft.type;
 
+import net.countercraft.movecraft.craft.type.property.BooleanProperty;
+import net.countercraft.movecraft.craft.type.property.DoubleProperty;
+import net.countercraft.movecraft.craft.type.property.FloatProperty;
+import net.countercraft.movecraft.craft.type.property.ObjectProperty;
+import net.countercraft.movecraft.craft.type.property.IntegerProperty;
+import net.countercraft.movecraft.craft.type.property.MaterialSetProperty;
+import net.countercraft.movecraft.craft.type.property.StringProperty;
 import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.util.Pair;
 import net.countercraft.movecraft.util.Tags;
@@ -42,7 +49,32 @@ final public class CraftType {
     // TODO: The current implementation will mask all loading problems if there is a default defined for that property.
     //  Instead we want to only mask errors of no valid key, rather than invalid type/value/etc.
 
-    private static final List<IntegerProperty> intProperties = new ArrayList<>();
+    static final List<StringProperty> stringProperties = new ArrayList<>();
+
+    /**
+     * Register a string property with Movecraft
+     *
+     * @param stringProperty property to register
+     */
+    public static void registerStringProperty(StringProperty stringProperty) {
+        stringProperties.add(stringProperty);
+    }
+
+    private final Map<String, String> stringPropertyMap;
+
+    /**
+     * Get a string property of this CraftType
+     *
+     * @param key Key of the string property
+     * @return value of the string property
+     */
+    public String getStringProperty(String key) {
+        return stringPropertyMap.get(key);
+    }
+
+
+
+    static final List<IntegerProperty> intProperties = new ArrayList<>();
 
     /**
      * Register an integer property with Movecraft
@@ -67,7 +99,7 @@ final public class CraftType {
 
 
 
-    private static final List<BooleanProperty> boolProperties = new ArrayList<>();
+    static final List<BooleanProperty> boolProperties = new ArrayList<>();
 
     /**
      * Register a boolean property with Movecraft
@@ -92,7 +124,7 @@ final public class CraftType {
 
 
 
-    private static final List<FloatProperty> floatProperties = new ArrayList<>();
+    static final List<FloatProperty> floatProperties = new ArrayList<>();
 
     /**
      * Register a float property with Movecraft
@@ -117,7 +149,7 @@ final public class CraftType {
 
 
 
-    private static final List<DoubleProperty> doubleProperties = new ArrayList<>();
+    static final List<DoubleProperty> doubleProperties = new ArrayList<>();
 
     /**
      * Register a double property with Movecraft
@@ -142,7 +174,7 @@ final public class CraftType {
 
 
 
-    private static final List<ObjectProperty> objectProperties = new ArrayList<>();
+    static final List<ObjectProperty> objectProperties = new ArrayList<>();
 
     /**
      * Register an object property with Movecraft
@@ -170,32 +202,7 @@ final public class CraftType {
 
 
 
-    private static final List<StringProperty> stringProperties = new ArrayList<>();
-
-    /**
-     * Register a string property with Movecraft
-     *
-     * @param stringProperty property to register
-     */
-    public static void registerStringProperty(StringProperty stringProperty) {
-        stringProperties.add(stringProperty);
-    }
-
-    private final Map<String, String> stringPropertyMap;
-
-    /**
-     * Get a string property of this CraftType
-     *
-     * @param key Key of the string property
-     * @return value of the string property
-     */
-    public String getStringProperty(String key) {
-        return stringPropertyMap.get(key);
-    }
-
-
-
-    private static final List<MaterialSetProperty> materialSetProperties = new ArrayList<>();
+    static final List<MaterialSetProperty> materialSetProperties = new ArrayList<>();
 
     /**
      * Register a material set property with Movecraft
@@ -217,6 +224,17 @@ final public class CraftType {
     public EnumSet<Material> getMaterialSetProperty(String key) {
         return materialSetPropertyMap.get(key);
     }
+
+
+
+    //  TODO: Transforms
+    /*
+     * Required transform features/options:
+     *      take one key and make a new one of a new type
+     *      take one key and make a new one of the same type
+     *      take one key and modify its value
+     *      take one key and delete it
+     */
 
 
 

@@ -1,29 +1,31 @@
-package net.countercraft.movecraft.craft.type;
+package net.countercraft.movecraft.craft.type.property;
 
+import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.TypeData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class BooleanProperty {
+public class DoubleProperty {
     private final String key;
-    private final DefaultProvider<Boolean> defaultProvider;
+    private final DefaultProvider<Double> defaultProvider;
 
     /**
-     * Construct a BooleanProperty
+     * Construct a DoubleProperty
      *
      * @param key the key for this property
      */
-    public BooleanProperty(@NotNull String key) {
+    public DoubleProperty(@NotNull String key) {
         this.key = key;
         this.defaultProvider = null;
     }
 
     /**
-     * Construct a BooleanProperty
+     * Construct a DoubleProperty
      *
      * @param key the key for this property
      * @param defaultProvider the provider for the default value of this property
      */
-    public BooleanProperty(@NotNull String key, @NotNull DefaultProvider<Boolean> defaultProvider) {
+    public DoubleProperty(@NotNull String key, @NotNull DefaultProvider<Double> defaultProvider) {
         this.key = key;
         this.defaultProvider = defaultProvider;
     }
@@ -36,9 +38,9 @@ public class BooleanProperty {
      * @return the value
      */
     @Nullable
-    public Boolean load(@NotNull TypeData data, @NotNull CraftType type) {
+    public Double load(@NotNull TypeData data, @NotNull CraftType type) {
         try {
-            return data.getBoolean(key);
+            return data.getDouble(key);
         }
         catch (IllegalArgumentException e) {
             if(defaultProvider == null)

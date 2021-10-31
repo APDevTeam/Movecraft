@@ -1,29 +1,31 @@
-package net.countercraft.movecraft.craft.type;
+package net.countercraft.movecraft.craft.type.property;
 
+import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.TypeData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class ObjectProperty {
+public class StringProperty {
     private final String key;
-    private final DefaultProvider<Object> defaultProvider;
+    private final DefaultProvider<String> defaultProvider;
 
     /**
-     * Construct an ObjectProperty
+     * Construct a StringProperty
      *
      * @param key the key for this property
      */
-    public ObjectProperty(@NotNull String key) {
+    public StringProperty(@NotNull String key) {
         this.key = key;
         this.defaultProvider = null;
     }
 
     /**
-     * Construct an ObjectProperty
+     * Construct a StringProperty
      *
      * @param key the key for this property
      * @param defaultProvider the provider for the default value of this property
      */
-    public ObjectProperty(@NotNull String key, @NotNull DefaultProvider<Object> defaultProvider) {
+    public StringProperty(@NotNull String key, @NotNull DefaultProvider<String> defaultProvider) {
         this.key = key;
         this.defaultProvider = defaultProvider;
     }
@@ -36,13 +38,9 @@ public class ObjectProperty {
      * @return the value
      */
     @Nullable
-    public Object load(@NotNull TypeData data, @NotNull CraftType type) {
+    public String load(@NotNull TypeData data, @NotNull CraftType type) {
         try {
-            var backing = data.getBackingData();
-            if(!backing.containsKey(key))
-                throw new IllegalArgumentException("No key found for " + key);
-
-            return backing.get(key);
+            return data.getString(key);
         }
         catch (IllegalArgumentException e) {
             if(defaultProvider == null)

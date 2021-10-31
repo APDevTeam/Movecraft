@@ -1,29 +1,31 @@
-package net.countercraft.movecraft.craft.type;
+package net.countercraft.movecraft.craft.type.property;
 
+import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.TypeData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class DoubleProperty {
+public class FloatProperty {
     private final String key;
-    private final DefaultProvider<Double> defaultProvider;
+    private final DefaultProvider<Float> defaultProvider;
 
     /**
-     * Construct a DoubleProperty
+     * Construct a FloatProperty
      *
      * @param key the key for this property
      */
-    public DoubleProperty(@NotNull String key) {
+    public FloatProperty(@NotNull String key) {
         this.key = key;
         this.defaultProvider = null;
     }
 
     /**
-     * Construct a DoubleProperty
+     * Construct a FloatProperty
      *
      * @param key the key for this property
      * @param defaultProvider the provider for the default value of this property
      */
-    public DoubleProperty(@NotNull String key, @NotNull DefaultProvider<Double> defaultProvider) {
+    public FloatProperty(@NotNull String key, @NotNull DefaultProvider<Float> defaultProvider) {
         this.key = key;
         this.defaultProvider = defaultProvider;
     }
@@ -36,9 +38,9 @@ public class DoubleProperty {
      * @return the value
      */
     @Nullable
-    public Double load(@NotNull TypeData data, @NotNull CraftType type) {
+    public Float load(@NotNull TypeData data, @NotNull CraftType type) {
         try {
-            return data.getDouble(key);
+            return (float) data.getDouble(key);
         }
         catch (IllegalArgumentException e) {
             if(defaultProvider == null)
