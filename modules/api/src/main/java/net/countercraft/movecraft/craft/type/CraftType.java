@@ -181,66 +181,89 @@ final public class CraftType {
         registerProperty(new StringProperty("name"));
         registerProperty(new IntegerProperty("maxSize"));
         registerProperty(new IntegerProperty("minSize"));
-        registerProperty(new DoubleProperty("speed"));
         registerProperty(new MaterialSetProperty("allowedBlocks"));
+        registerProperty(new DoubleProperty("speed"));
 
         // Optional properties
-        registerProperty(new IntegerProperty("minHeightLimit", type -> 0));
-        registerProperty(new IntegerProperty("maxHeightLimit", type -> 255));
-        registerProperty(new IntegerProperty("cruiseOnPilotVertMove", type -> 0));
-        registerProperty(new IntegerProperty("maxHeightAboveGround", type -> -1));
-        registerProperty(new IntegerProperty("maxStaticMove", type -> 10000));
-        registerProperty(new IntegerProperty("cruiseSkipBlocks", type -> 0));
-        registerProperty(new IntegerProperty("vertCruiseSkipBlocks", type -> type.getIntProperty("cruiseSkipBlocks")));
-        registerProperty(new IntegerProperty("staticWaterLevel", type -> 0));
-        registerProperty(new IntegerProperty("smokeOnSink", type -> 0));
-        registerProperty(new IntegerProperty("releaseTimeout", type -> 30));
-        registerProperty(new IntegerProperty("hoverLimit", type -> 0));
-        registerProperty(new IntegerProperty("teleportationCooldown", type -> 0));
-        registerProperty(new IntegerProperty("gravityInclineDistance", type -> -1));
-        registerProperty(new IntegerProperty("gearShifts", type -> 1));
+        // TODO: forbiddenSignStrings
+        // TODO: perWorldSpeed -> perWorldTickCooldown
+        // TODO: flyBlocks
+        registerProperty(new MaterialSetProperty("forbiddenBlocks", type -> EnumSet.noneOf(Material.class)));
+        // TODO: canFly / blockedByWater
         registerProperty(new BooleanProperty("requireWaterContact", type -> false));
         registerProperty(new BooleanProperty("tryNudge", type -> false));
+        // TODO: moveblocks
         registerProperty(new BooleanProperty("canCruise", type -> false));
         registerProperty(new BooleanProperty("canTeleport", type -> false));
-        registerProperty(new BooleanProperty("canBeNamed", type -> true));
         registerProperty(new BooleanProperty("canSwitchWorld", type -> false));
-        registerProperty(new BooleanProperty("canStaticMove", type -> false));
-        registerProperty(new BooleanProperty("canHover", type -> false));
-        registerProperty(new BooleanProperty("canDirectControl", type -> true));
-        registerProperty(new BooleanProperty("useGravity", type -> false));
-        registerProperty(new BooleanProperty("canHoverOverWater", type -> true));
-        registerProperty(new BooleanProperty("moveEntities", type -> true));
-        registerProperty(new BooleanProperty("onlyMovePlayers", type -> true));
-        registerProperty(new BooleanProperty("allowHorizontalMovement", type -> true));
-        registerProperty(new BooleanProperty("allowVerticalMovement", type -> true));
-        registerProperty(new BooleanProperty("allowRemoteSign", type -> true));
+        registerProperty(new BooleanProperty("canBeNamed", type -> true));
         registerProperty(new BooleanProperty("cruiseOnPilot", type -> false));
-        registerProperty(new BooleanProperty("allowVerticalTakeoffAndLanding", type -> true));
+        registerProperty(new IntegerProperty("cruiseOnPilotVertMove", type -> 0));
+        registerProperty(new BooleanProperty("allowVerticalMovement", type -> true));
         registerProperty(new BooleanProperty("rotateAtMidpoint", type -> false));
+        registerProperty(new BooleanProperty("allowHorizontalMovement", type -> true));
+        registerProperty(new BooleanProperty("allowRemoteSign", type -> true));
+        registerProperty(new BooleanProperty("canStaticMove", type -> false));
+        registerProperty(new IntegerProperty("maxStaticMove", type -> 10000));
+        registerProperty(new IntegerProperty("cruiseSkipBlocks", type -> 0));
+        // TODO: perWorldCruiseSkipBlocks
+        registerProperty(new IntegerProperty("vertCruiseSkipBlocks", type -> type.getIntProperty("cruiseSkipBlocks")));
+        // TODO: perWorldVertCruiseSkipBlocks
         registerProperty(new BooleanProperty("halfSpeedUnderwater", type -> false));
         registerProperty(new BooleanProperty("focusedExplosion", type -> false));
         registerProperty(new BooleanProperty("mustBeSubcraft", type -> false));
-        registerProperty(new BooleanProperty("keepMovingOnSink", type -> false));
-        registerProperty(new BooleanProperty("gearShiftsAffectTickCooldown", type -> true));
-        registerProperty(new BooleanProperty("gearShiftsAffectDirectMovement", type -> false));
-        registerProperty(new BooleanProperty("gearShiftsAffectCruiseSkipBlocks", type -> false));
-        registerProperty(new FloatProperty("explodeOnCrash", type -> 0F));
-        registerProperty(new FloatProperty("collisionExplosion", type -> 0F));
+        registerProperty(new IntegerProperty("staticWaterLevel", type -> 0));
         registerProperty(new DoubleProperty("fuelBurnRate", type -> 0D));
+        // TODO: perWorldFuelBurnRate
         registerProperty(new DoubleProperty("sinkPercent", type -> 0D));
         registerProperty(new DoubleProperty("overallSinkPercent", type -> 0D));
         registerProperty(new DoubleProperty("detectionMultiplier", type -> 0D));
+        // TODO: perWorldDetectionMultiplier
         registerProperty(new DoubleProperty("underwaterDetectionMultiplier", type-> type.getDoubleProperty("detectionMultplier")));
+        // TODO: sinkSpeed -> sinkRateTicks
+        registerProperty(new BooleanProperty("keepMovingOnSink", type -> false));
+        registerProperty(new IntegerProperty("smokeOnSink", type -> 0));
+        registerProperty(new FloatProperty("explodeOnCrash", type -> 0F));
+        registerProperty(new FloatProperty("collisionExplosion", type -> 0F));
+        registerProperty(new IntegerProperty("minHeightLimit", type -> 0));
+        // TODO: perWorldMinHeightLimit
+        // TODO: cruiseSpeed -> cruiseTickCooldown
+        // TODO: perWorldCruiseSpeed -> perWorldCruiseTickCooldown
+        // TODO: vertCruiseSpeed -> vertCruiseTickCooldown
+        // TODO: perWorldVertCruiseSpeed -> perWorldVertCruiseTickCooldown
+        registerProperty(new IntegerProperty("maxHeightLimit", type -> 255));
+        // TODO: perWorldMaxHeightLimit
+        registerProperty(new IntegerProperty("maxHeightAboveGround", type -> -1));
+        // TODO: perWorldMaxHeightAboveGround
+        registerProperty(new BooleanProperty("canDirectControl", type -> true));
+        registerProperty(new BooleanProperty("canHover", type -> false));
+        registerProperty(new BooleanProperty("canHoverOverWater", type -> true));
+        registerProperty(new BooleanProperty("moveEntities", type -> true));
+        registerProperty(new BooleanProperty("onlyMovePlayers", type -> true));
+        registerProperty(new BooleanProperty("useGravity", type -> false));
+        registerProperty(new IntegerProperty("hoverLimit", type -> 0));
+        registerProperty(new MaterialSetProperty("harvestBlocks", type -> EnumSet.noneOf(Material.class)));
+        registerProperty(new MaterialSetProperty("harvesterBladeBlocks", type -> EnumSet.noneOf(Material.class)));
+        // TODO: passthroughBlocks
+        // TODO: forbiddenHoverOverBlocks
+        registerProperty(new BooleanProperty("allowVerticalTakeoffAndLanding", type -> true));
         registerProperty(new DoubleProperty("dynamicLagSpeedFactor", type -> 0D));
         registerProperty(new DoubleProperty("dynamicLagPowerFactor", type -> 0D));
         registerProperty(new DoubleProperty("dynamicLagMinSpeed", type -> 0D));
         registerProperty(new DoubleProperty("dynamicFlyBlockSpeedFactor", type -> 0D));
+        registerProperty(new MaterialSetProperty("dynamicFlyBlock", type -> EnumSet.noneOf(Material.class)));
         registerProperty(new DoubleProperty("chestPenalty", type -> 0D));
-        registerProperty(new MaterialSetProperty("forbiddenBlocks", type -> EnumSet.noneOf(Material.class)));
-        registerProperty(new MaterialSetProperty("dynamicFlyBlocks", type -> EnumSet.noneOf(Material.class)));
-        registerProperty(new MaterialSetProperty("harvestBlocks", type -> EnumSet.noneOf(Material.class)));
-        registerProperty(new MaterialSetProperty("harvesterBladeBlocks", type -> EnumSet.noneOf(Material.class)));
+        registerProperty(new IntegerProperty("gravityInclineDistance", type -> -1));
+        // TODO: gravityDropDistance
+        // TODO: collisionSound
+        // TODO: fuelTypes
+        // TODO: disableTeleportToWorlds
+        registerProperty(new IntegerProperty("teleportationCooldown", type -> 0));
+        registerProperty(new IntegerProperty("gearShifts", type -> 1));
+        registerProperty(new BooleanProperty("gearShiftsAffectTickCooldown", type -> true));
+        registerProperty(new BooleanProperty("gearShiftsAffectDirectMovement", type -> false));
+        registerProperty(new BooleanProperty("gearShiftsAffectCruiseSkipBlocks", type -> false));
+        registerProperty(new IntegerProperty("releaseTimeout", type -> 30));
 
         // Craft type transforms
         registerTypeTransform((IntegerTransform) (data, type) -> {
