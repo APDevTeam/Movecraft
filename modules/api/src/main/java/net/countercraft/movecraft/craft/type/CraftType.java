@@ -17,12 +17,14 @@
 
 package net.countercraft.movecraft.craft.type;
 
+import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.type.property.BooleanProperty;
 import net.countercraft.movecraft.craft.type.property.DoubleProperty;
 import net.countercraft.movecraft.craft.type.property.FloatProperty;
 import net.countercraft.movecraft.craft.type.property.ObjectProperty;
 import net.countercraft.movecraft.craft.type.property.IntegerProperty;
 import net.countercraft.movecraft.craft.type.property.MaterialSetProperty;
+import net.countercraft.movecraft.craft.type.property.PerWorldProperty;
 import net.countercraft.movecraft.craft.type.property.Property;
 import net.countercraft.movecraft.craft.type.property.StringProperty;
 import net.countercraft.movecraft.craft.type.transform.BooleanTransform;
@@ -31,6 +33,7 @@ import net.countercraft.movecraft.craft.type.transform.FloatTransform;
 import net.countercraft.movecraft.craft.type.transform.IntegerTransform;
 import net.countercraft.movecraft.craft.type.transform.MaterialSetTransform;
 import net.countercraft.movecraft.craft.type.transform.ObjectTransform;
+import net.countercraft.movecraft.craft.type.transform.PerWorldTransform;
 import net.countercraft.movecraft.craft.type.transform.StringTransform;
 import net.countercraft.movecraft.craft.type.transform.Transform;
 import net.countercraft.movecraft.processing.MovecraftWorld;
@@ -47,12 +50,14 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -63,6 +68,8 @@ final public class CraftType {
     public static final NamespacedKey ALLOWED_BLOCKS = buildKey("allowed_blocks");
     private static final NamespacedKey SPEED = buildKey("speed"); // Private key used to calculate TICK_COOLDOWN
     public static final NamespacedKey TICK_COOLDOWN = buildKey("tick_cooldown");
+    private static final NamespacedKey PER_WORLD_SPEED = buildKey("per_world_speed"); // Private key used to calculate PER_WORLD_TICK_COOLDOWN
+    public static final NamespacedKey PER_WORLD_TICK_COOLDOWN = buildKey("per_world_tick_cooldown");
     public static final NamespacedKey FORBIDDEN_BLOCKS = buildKey("forbidden_blocks");
     public static final NamespacedKey BLOCKED_BY_WATER = buildKey("blocked_by_water");
     private static final NamespacedKey CAN_FLY = buildKey("can_fly"); // Private key used to calculate BLOCKED_BY_WATER
@@ -244,6 +251,40 @@ final public class CraftType {
         return materialSetPropertyMap.get(key);
     }
 
+    private Map<NamespacedKey, Pair<Map<String, Object>, Function<CraftType, Object>>> perWorldPropertyMap = new HashMap<>();
+    private Object getPerWorldProperty(NamespacedKey key, String worldName) {
+        if(!perWorldPropertyMap.containsKey(key))
+            throw new IllegalStateException("Per world property " + key + " not found.");
+        var pair =  perWorldPropertyMap.get(key);
+        var map = pair.getLeft();
+        var defaultProvider = pair.getRight();
+
+        if(!map.containsKey(worldName))
+            return defaultProvider.apply(this);
+
+        return map.get(worldName);
+    }
+    /**
+     * Get a per world property of this CraftType
+     *
+     * @param key Key of the string property
+     * @param world the world to check
+     * @return value of the string property
+     */
+    public Object getPerWorldProperty(NamespacedKey key, @NotNull World world) {
+        return getPerWorldProperty(key, world.getName());
+    }
+    /**
+     * Get a per world property of this CraftType
+     *
+     * @param key Key of the string property
+     * @param world the world to check
+     * @return value of the string property
+     */
+    public Object getPerWorldProperty(NamespacedKey key, @NotNull MovecraftWorld world) {
+        return getPerWorldProperty(key, world.getName());
+    }
+
 
 
     static final List<Transform<?>> transforms = new ArrayList<>();
@@ -283,7 +324,7 @@ final public class CraftType {
 
         // Optional properties
         // TODO: forbiddenSignStrings
-        // TODO: perWorldSpeed -> perWorldTickCooldown
+        registerProperty(new PerWorldProperty<Double>("perWorldSpeed", PER_WORLD_SPEED, craftType -> Collections.emptyMap()));
         // TODO: flyBlocks
         registerProperty(new MaterialSetProperty("forbiddenBlocks", FORBIDDEN_BLOCKS, type -> EnumSet.noneOf(Material.class)));
         registerProperty(new BooleanProperty("blockedByWater", BLOCKED_BY_WATER, type -> true));
@@ -414,7 +455,24 @@ final public class CraftType {
             data.put(FORBIDDEN_HOVER_OVER_BLOCKS, forbiddenHoverOverBlocks);
             return data;
         });
-        // TODO: remove cruiseSpeed, vertCruiseSpeed
+        registerTypeTransform((PerWorldTransform) (data, type) -> {
+            var map = data.get(PER_WORLD_SPEED).getLeft();
+            Map<String, Object> resultMap = new HashMap<>();
+            for(var i : map.entrySet()) {
+                var value = i.getValue();
+                if(!(value instanceof Double))
+                    throw new IllegalStateException("PER_WORLD_SPEED must be of type Double");
+                resultMap.put(i.getKey(), (int) Math.ceil(20 / (double) value));
+            }
+            var defaultProvider = (Function<CraftType, Object>) craftType -> craftType.getIntProperty(TICK_COOLDOWN);
+            data.put(PER_WORLD_TICK_COOLDOWN, new Pair<>(resultMap, defaultProvider));
+            return data;
+        });
+        registerTypeTransform((PerWorldTransform) (data, type) -> {
+            data.remove(PER_WORLD_SPEED);
+            return data;
+        });
+        // TODO: remove cruiseSpeed, vertCruiseSpeed, perWorldSpeed
 
         // Craft type validators
         registerTypeValidator(
@@ -446,7 +504,6 @@ final public class CraftType {
     @NotNull private final Map<String, Integer> perWorldVertCruiseSkipBlocks;
     @NotNull private final Map<String, Integer> perWorldCruiseTickCooldown; // cruise speed setting
     @NotNull private final Map<String, Integer> perWorldVertCruiseTickCooldown; // cruise speed setting
-    @NotNull private final Map<String, Integer> perWorldTickCooldown; // speed setting
     @NotNull private final Map<String, Double> perWorldFuelBurnRate;
     @NotNull private final Map<String, Double> perWorldDetectionMultiplier;
     @NotNull private final Map<String, Double> perWorldUnderwaterDetectionMultiplier;
@@ -533,9 +590,6 @@ final public class CraftType {
 
         // Required craft flags
         forbiddenSignStrings = data.getStringListOrEmpty("forbiddenSignStrings").stream().map(String::toLowerCase).collect(Collectors.toSet());
-        perWorldTickCooldown = new HashMap<>();
-        Map<String, Double> tickCooldownMap = stringToDoubleMapFromObject(data.getDataOrEmpty("perWorldSpeed").getBackingData());
-        tickCooldownMap.forEach((world, speed) -> perWorldTickCooldown.put(world, (int) Math.ceil(20 / speed)));
         flyBlocks = blockIDMapListFromObject("flyblocks", data.getDataOrEmpty("flyblocks").getBackingData());
 
         // Optional craft flags
@@ -555,9 +609,12 @@ final public class CraftType {
             double worldCruiseSkipBlocks = perWorldCruiseSkipBlocks.getOrDefault(world, getIntProperty(CRUISE_SKIP_BLOCKS));
             perWorldCruiseTickCooldown.put(world, (int) Math.round((1.0 + worldCruiseSkipBlocks) * 20.0 / getDoubleProperty(CRUISE_SPEED)));
         });
+        var tickCooldownMap = perWorldPropertyMap.get(PER_WORLD_TICK_COOLDOWN).getLeft();
         tickCooldownMap.forEach((world, speed) -> {
             if (!perWorldCruiseTickCooldown.containsKey(world)) {
-                perWorldCruiseTickCooldown.put(world, (int) Math.round((1.0 + getIntProperty(CRUISE_SKIP_BLOCKS)) * 20.0 / speed));
+                if(!(speed instanceof Integer))
+                    throw new IllegalStateException("PER_WORLD_TICK_COOLDOWN must be of type int");
+                perWorldCruiseTickCooldown.put(world, (int) Math.round((1.0 + getIntProperty(CRUISE_SKIP_BLOCKS)) * 20.0 / (int) speed));
             }
         });
 
@@ -622,7 +679,7 @@ final public class CraftType {
         }
         return returnMap;
     }
-    
+
     private Map<String, Double> stringToDoubleMapFromObject(Map<String, Object> objMap) {
         HashMap<String, Double> returnMap = new HashMap<>();
         for (Object key : objMap.keySet()) {
@@ -731,7 +788,7 @@ final public class CraftType {
     }
 
     public int getTickCooldown(@NotNull World world) {
-        return perWorldTickCooldown.getOrDefault(world.getName(), getIntProperty(TICK_COOLDOWN));
+        return (int) getPerWorldProperty(PER_WORLD_TICK_COOLDOWN, world);
     }
 
     public int getCruiseTickCooldown(@NotNull World world) {
