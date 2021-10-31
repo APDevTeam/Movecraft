@@ -221,16 +221,15 @@ final public class CraftType {
         registerProperty(new DoubleProperty("detectionMultiplier", type -> 0D));
         // TODO: perWorldDetectionMultiplier
         registerProperty(new DoubleProperty("underwaterDetectionMultiplier", type-> type.getDoubleProperty("detectionMultplier")));
-        // TODO: sinkSpeed -> sinkRateTicks
+        registerProperty(new DoubleProperty("sinkSpeed", type -> 1D));
+        registerProperty(new IntegerProperty("sinkRateTicks", type -> (int) Math.ceil(20 / type.getDoubleProperty("sinkSpeed"))));
         registerProperty(new BooleanProperty("keepMovingOnSink", type -> false));
         registerProperty(new IntegerProperty("smokeOnSink", type -> 0));
         registerProperty(new FloatProperty("explodeOnCrash", type -> 0F));
         registerProperty(new FloatProperty("collisionExplosion", type -> 0F));
         registerProperty(new IntegerProperty("minHeightLimit", type -> 0));
         // TODO: perWorldMinHeightLimit
-        registerProperty(new DoubleProperty("sinkSpeed", type -> 1D));
-        registerProperty(new IntegerProperty("sinkRateTicks", type -> (int) Math.ceil(20 / type.getDoubleProperty("sinkSpeed"))));
-        // TODO: cruiseSpeed -> cruiseTickCooldown
+        registerProperty(new DoubleProperty("cruiseSpeed", type -> 20.0 / type.getIntProperty("tickCooldown")));
         // TODO: perWorldCruiseSpeed -> perWorldCruiseTickCooldown
         // TODO: vertCruiseSpeed -> vertCruiseTickCooldown
         // TODO: perWorldVertCruiseSpeed -> perWorldVertCruiseTickCooldown
@@ -287,6 +286,11 @@ final public class CraftType {
             data.remove("sinkSpeed");
             return data;
         });
+        registerTypeTransform((IntegerTransform) (data, type) -> {
+            data.put("cruiseTickCooldown", (int) Math.round((1.0 + type.getIntProperty("cruiseSkipBlocks")) * 20.0 / type.getDoubleProperty("cruiseSpeed")));
+            return data;
+        });
+        // TODO: remove cruiseSpeed
 
         // Craft type validators
         registerTypeValidator(
@@ -415,9 +419,7 @@ final public class CraftType {
         flyBlocks = blockIDMapListFromObject("flyblocks", data.getDataOrEmpty("flyblocks").getBackingData());
 
         // Optional craft flags
-        double cruiseSpeed = data.getDoubleOrDefault("cruiseSpeed", 20.0 / getIntProperty("tickCooldown"));
-        intPropertyMap.put("cruiseTickCooldown", (int) Math.round((1.0 + getIntProperty("cruiseSkipBlocks")) * 20.0 / cruiseSpeed));
-        double vertCruiseSpeed = data.getDoubleOrDefault("vertCruiseSpeed", cruiseSpeed);
+        double vertCruiseSpeed = data.getDoubleOrDefault("vertCruiseSpeed", getDoubleProperty("cruiseSpeed"));
         intPropertyMap.put("vertCruiseTickCooldown", (int) Math.round((1.0 + getIntProperty("vertCruiseSkipBlocks")) * 20.0 / vertCruiseSpeed));
         int dropdist = data.getIntOrDefault("gravityDropDistance", -8);
         intPropertyMap.put("gravityDropDistance", dropdist > 0 ? -dropdist : dropdist);
@@ -436,7 +438,7 @@ final public class CraftType {
         Map<String, Double> cruiseTickCooldownMap = stringToDoubleMapFromObject(data.getDataOrEmpty("perWorldCruiseSpeed").getBackingData());
         cruiseTickCooldownMap.forEach((world, speed) -> {
             double worldCruiseSkipBlocks = perWorldCruiseSkipBlocks.getOrDefault(world, getIntProperty("cruiseSkipBlocks"));
-            perWorldCruiseTickCooldown.put(world, (int) Math.round((1.0 + worldCruiseSkipBlocks) * 20.0 / cruiseSpeed));
+            perWorldCruiseTickCooldown.put(world, (int) Math.round((1.0 + worldCruiseSkipBlocks) * 20.0 / getDoubleProperty("cruiseSpeed")));
         });
         tickCooldownMap.forEach((world, speed) -> {
             if (!perWorldCruiseTickCooldown.containsKey(world)) {
