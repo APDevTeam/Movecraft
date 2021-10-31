@@ -5,7 +5,7 @@ import net.countercraft.movecraft.craft.type.TypeData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class FloatProperty {
+public class FloatProperty implements Property<Float> {
     private final String key;
     private final DefaultProvider<Float> defaultProvider;
 

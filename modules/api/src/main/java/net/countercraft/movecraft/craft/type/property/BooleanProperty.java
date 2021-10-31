@@ -5,7 +5,7 @@ import net.countercraft.movecraft.craft.type.TypeData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class BooleanProperty {
+public class BooleanProperty implements Property<Boolean> {
     private final String key;
     private final DefaultProvider<Boolean> defaultProvider;
 

@@ -8,7 +8,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumSet;
 
-public class MaterialSetProperty {
+public class MaterialSetProperty implements Property<EnumSet<Material>> {
     private final String key;
     private final DefaultProvider<EnumSet<Material>> defaultProvider;
 

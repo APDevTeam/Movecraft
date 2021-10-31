@@ -5,9 +5,9 @@ import net.countercraft.movecraft.craft.type.TypeData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public interface ObjectProperty extends Property<Object> {
+public interface Property<Type> {
     @Nullable
-    Object load(@NotNull TypeData data, @NotNull CraftType type);
+    Type load(@NotNull TypeData data, @NotNull CraftType type);
 
     @NotNull
     String getKey();

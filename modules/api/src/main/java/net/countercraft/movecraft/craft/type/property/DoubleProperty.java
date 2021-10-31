@@ -5,7 +5,7 @@ import net.countercraft.movecraft.craft.type.TypeData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class DoubleProperty {
+public class DoubleProperty implements Property<Double> {
     private final String key;
     private final DefaultProvider<Double> defaultProvider;
 

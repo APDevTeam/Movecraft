@@ -5,7 +5,7 @@ import net.countercraft.movecraft.craft.type.TypeData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class IntegerProperty {
+public class IntegerProperty implements Property<Integer> {
     private final String key;
     private final DefaultProvider<Integer> defaultProvider;
 
