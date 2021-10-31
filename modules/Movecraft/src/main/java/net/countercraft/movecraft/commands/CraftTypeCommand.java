@@ -59,7 +59,7 @@ public class CraftTypeCommand implements TabExecutor {
             }
             type = CraftManager.getInstance().getCraftTypeFromString(args[0]);
         }
-        if(!commandSender.hasPermission("movecraft." + type.getStringProperty("craftName") + ".pilot")){
+        if(!commandSender.hasPermission("movecraft." + type.getStringProperty(CraftType.NAME) + ".pilot")){
             commandSender.sendMessage("You don't have permission for that craft type!");
             return true;
         }
@@ -74,8 +74,8 @@ public class CraftTypeCommand implements TabExecutor {
             return Collections.emptyList();
         List<String> completions = new ArrayList<>();
         for(CraftType type : CraftManager.getInstance().getCraftTypes())
-            if(commandSender.hasPermission("movecraft." + type.getStringProperty("craftName") + ".pilot"))
-                completions.add(type.getStringProperty("craftName"));
+            if(commandSender.hasPermission("movecraft." + type.getStringProperty(CraftType.NAME) + ".pilot"))
+                completions.add(type.getStringProperty(CraftType.NAME));
         completions.add("list");
         List<String> returnValues = new ArrayList<>();
         for(String completion : completions)
@@ -115,7 +115,7 @@ public class CraftTypeCommand implements TabExecutor {
     private void sendTypeListPage(int page, @NotNull  CommandSender commandSender){
         TopicPaginator paginator = new TopicPaginator("Type Info");
         for(var entry : CraftManager.getInstance().getCraftTypes()){
-            paginator.addLine(entry.getStringProperty("craftName"));
+            paginator.addLine(entry.getStringProperty(CraftType.NAME));
         }
         if(!paginator.isInBounds(page)){
             commandSender.sendMessage(String.format("Page %d is out of bounds.", page));

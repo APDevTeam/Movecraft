@@ -6,6 +6,7 @@ import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.MovecraftWorld;
@@ -111,7 +112,7 @@ public class DetectionTask implements Supplier<Effect> {
     @Deprecated
     private Effect water(@NotNull Craft c){
         final int waterLine = WorldManager.INSTANCE.executeMain(c::getWaterLine);
-        if (c.getType().getBoolProperty("blockedByWater") || c.getHitBox().getMinY() > waterLine) {
+        if (c.getType().getBoolProperty(CraftType.BLOCKED_BY_WATER) || c.getHitBox().getMinY() > waterLine) {
             return null;
         }
 
@@ -198,7 +199,7 @@ public class DetectionTask implements Supplier<Effect> {
             craft.getAudience().sendMessage(Component.text(String.format("%s Size: %s", I18nSupport.getInternationalisedString("Detection - Successfully piloted craft"), craft.getHitBox().size())));
             Movecraft.getInstance().getLogger().info(String.format(
                     I18nSupport.getInternationalisedString("Detection - Success - Log Output"),
-                    player == null ? "null" : player.getName(), craft.getType().getStringProperty("craftName"), craft.getHitBox().size(),
+                    player == null ? "null" : player.getName(), craft.getType().getStringProperty(CraftType.NAME), craft.getHitBox().size(),
                     craft.getHitBox().getMinX(), craft.getHitBox().getMinZ()));
             CraftManager.getInstance().addCraft(craft);
         }).andThen(waterEffect);
@@ -213,7 +214,7 @@ public class DetectionTask implements Supplier<Effect> {
             visited.add(location);
         }
         int threads = Runtime.getRuntime().availableProcessors();
-        while (!currentFrontier.isEmpty() && size.intValue() < craft.getType().getIntProperty("maxSize")) {
+        while (!currentFrontier.isEmpty() && size.intValue() < craft.getType().getIntProperty(CraftType.MAX_SIZE)) {
             List<ForkJoinTask<?>> tasks = new ArrayList<>();
             for(int j = 0; j < threads ; j++) {
                 tasks.add(ForkJoinPool.commonPool().submit(new DetectAction(currentFrontier, nextFrontier)));

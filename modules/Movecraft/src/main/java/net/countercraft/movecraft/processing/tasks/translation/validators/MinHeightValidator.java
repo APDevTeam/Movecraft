@@ -17,7 +17,7 @@ public class MinHeightValidator implements TetradicPredicate<MovecraftLocation, 
     @Contract(pure = true)
     public @NotNull Result validate(@NotNull MovecraftLocation translation, @NotNull MovecraftWorld world, @NotNull HitBox hitBox, @NotNull CraftType type) {
         boolean sinking = Optional.<Boolean>empty().get(); // TODO: sinking
-        if (hitBox.getMinX() < type.getMinHeightLimit(world) && translation.getY() < 0 && !sinking && !type.getBoolProperty("useGravity")) {
+        if (hitBox.getMinX() < type.getMinHeightLimit(world) && translation.getY() < 0 && !sinking && !type.getBoolProperty(CraftType.USE_GRAVITY)) {
             return Result.failWithMessage(I18nSupport.getInternationalisedString("Translation - Failed Craft hit minimum height limit"));
         }
         return Result.succeed();

@@ -3,6 +3,7 @@ package net.countercraft.movecraft.sign;
 import net.countercraft.movecraft.MovecraftRotation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.util.MathUtils;
 import org.bukkit.ChatColor;
@@ -50,7 +51,7 @@ public final class HelmSign implements Listener {
         if (craft == null) {
             return;
         }
-        if (!event.getPlayer().hasPermission("movecraft." + craft.getType().getStringProperty("craftName") + ".rotate")) {
+        if (!event.getPlayer().hasPermission("movecraft." + craft.getType().getStringProperty(CraftType.NAME) + ".rotate")) {
             event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
             return;
         }
@@ -73,7 +74,7 @@ public final class HelmSign implements Listener {
         if(!MathUtils.locIsNearCraftFast(craft, MathUtils.bukkit2MovecraftLoc(event.getPlayer().getLocation())))
             return;
 
-        if (craft.getType().getBoolProperty("rotateAtMidpoint")) {
+        if (craft.getType().getBoolProperty(CraftType.ROTATE_AT_MIDPOINT)) {
             CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).rotate(rotation, craft.getHitBox().getMidPoint());
         } else {
             CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).rotate(rotation, MathUtils.bukkit2MovecraftLoc(sign.getLocation()));

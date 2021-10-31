@@ -28,6 +28,7 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.CraftStatus;
 import net.countercraft.movecraft.craft.PlayerCraft;
+import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
@@ -201,7 +202,7 @@ public class AsyncManager extends BukkitRunnable {
             World w = pcraft.getWorld();
             // if the craft should go slower underwater, make
             // time pass more slowly there
-            if (pcraft.getType().getBoolProperty("halfSpeedUnderwater") && pcraft.getHitBox().getMinY() < w.getSeaLevel())
+            if (pcraft.getType().getBoolProperty(CraftType.HALF_SPEED_UNDERWATER) && pcraft.getHitBox().getMinY() < w.getSeaLevel())
                 ticksElapsed >>= 1;
             // check direct controls to modify movement
             boolean bankLeft = false;
@@ -246,11 +247,11 @@ public class AsyncManager extends BukkitRunnable {
 
             // ascend
             if (pcraft.getCruiseDirection() == CruiseDirection.UP) {
-                dy = 1 + pcraft.getType().getIntProperty("vertCruiseSkipBlocks");
+                dy = 1 + pcraft.getType().getIntProperty(CraftType.VERT_CRUISE_SKIP_BLOCKS);
             }
             // descend
             if (pcraft.getCruiseDirection() == CruiseDirection.DOWN) {
-                dy = -1 - pcraft.getType().getIntProperty("vertCruiseSkipBlocks");
+                dy = -1 - pcraft.getType().getIntProperty(CraftType.VERT_CRUISE_SKIP_BLOCKS);
                 if (pcraft.getHitBox().getMinY() <= w.getSeaLevel()) {
                     dy = -1;
                 }
@@ -300,10 +301,10 @@ public class AsyncManager extends BukkitRunnable {
                     dx = (1 + pcraft.getType().getCruiseSkipBlocks(w)) >> 1;
                 }
             }
-            if (pcraft.getType().getBoolProperty("cruiseOnPilot")) {
-                dy = pcraft.getType().getIntProperty("cruiseOnPilotVertMove");
+            if (pcraft.getType().getBoolProperty(CraftType.CRUISE_ON_PILOT)) {
+                dy = pcraft.getType().getIntProperty(CraftType.CRUISE_ON_PILOT_VERT_MOVE);
             }
-            if (pcraft.getType().getBoolProperty("gearShiftsAffectCruiseSkipBlocks")) {
+            if (pcraft.getType().getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_CRUISE_SKIP_BLOCKS)) {
                 final int gearshift = pcraft.getCurrentGear();
                 dx *= gearshift;
                 dy *= gearshift;
@@ -325,7 +326,7 @@ public class AsyncManager extends BukkitRunnable {
             if (pcraft.getSinking()) {
                 continue;
             }
-            if (pcraft.getType().getDoubleProperty("sinkPercent") == 0.0 || !pcraft.isNotProcessing()) {
+            if (pcraft.getType().getDoubleProperty(CraftType.SINK_PERCENT) == 0.0 || !pcraft.isNotProcessing()) {
                 continue;
             }
             long ticksElapsed = (System.currentTimeMillis() - pcraft.getLastBlockCheck()) / 50;
@@ -370,12 +371,12 @@ public class AsyncManager extends BukkitRunnable {
                 continue;
             }
             long ticksElapsed = (System.currentTimeMillis() - craft.getLastCruiseUpdate()) / 50;
-            if (Math.abs(ticksElapsed) < craft.getType().getIntProperty("SinkRateTicks")) {
+            if (Math.abs(ticksElapsed) < craft.getType().getIntProperty(CraftType.SINK_RATE_TICKS)) {
                 continue;
             }
             int dx = 0;
             int dz = 0;
-            if (craft.getType().getBoolProperty("keepMovingOnSink")) {
+            if (craft.getType().getBoolProperty(CraftType.KEEP_MOVING_ON_SINK)) {
                 dx = craft.getLastDX();
                 dz = craft.getLastDZ();
             }
@@ -470,7 +471,7 @@ public class AsyncManager extends BukkitRunnable {
                         if (tcraft.getName().length() >= 1){
                             notification = notification.append(Component.text(tcraft.getName() + " ("));
                         }
-                        notification = notification.append(Component.text(tcraft.getType().getStringProperty("craftName")));
+                        notification = notification.append(Component.text(tcraft.getType().getStringProperty(CraftType.NAME)));
                         if (tcraft.getName().length() >= 1){
                             notification = notification.append(Component.text(")"));
                         }
@@ -609,7 +610,7 @@ public class AsyncManager extends BukkitRunnable {
             }
             double percent = ((double) numfound / (double) totalNonNegligibleBlocks) * 100.0;
             double flyPercent = craft.getType().getFlyBlocks().get(i).get(0);
-            double sinkPercent = flyPercent * craft.getType().getDoubleProperty("sinkPercent") / 100.0;
+            double sinkPercent = flyPercent * craft.getType().getDoubleProperty(CraftType.SINK_PERCENT) / 100.0;
             if (percent < sinkPercent) {
                 isSinking = true;
             }
@@ -621,21 +622,21 @@ public class AsyncManager extends BukkitRunnable {
             }
             double percent = ((double) numfound / (double) totalNonNegligibleBlocks) * 100.0;
             double movePercent = craft.getType().getMoveBlocks().get(i).get(0);
-            double disablePercent = movePercent * craft.getType().getDoubleProperty("sinkPercent") / 100.0;
+            double disablePercent = movePercent * craft.getType().getDoubleProperty(CraftType.SINK_PERCENT) / 100.0;
             isDisabled = (percent < disablePercent && !craft.getDisabled() && craft.isNotProcessing());
         }
 
         // And check the OverallSinkPercent
-        if (craft.getType().getDoubleProperty("overallSinkPercent") != 0.0) {
+        if (craft.getType().getDoubleProperty(CraftType.OVERALL_SINK_PERCENT) != 0.0) {
             double percent;
-            if (craft.getType().getBoolProperty("blockedByWater")) {
+            if (craft.getType().getBoolProperty(CraftType.BLOCKED_BY_WATER)) {
                 percent = (double) totalNonNegligibleBlocks
                         / (double) craft.getOrigBlockCount();
             } else {
                 percent = (double) totalNonNegligibleWaterBlocks
                         / (double) craft.getOrigBlockCount();
             }
-            if (percent * 100.0 < craft.getType().getDoubleProperty("overallSinkPercent")) {
+            if (percent * 100.0 < craft.getType().getDoubleProperty(CraftType.OVERALL_SINK_PERCENT)) {
                 isSinking = true;
             }
         }

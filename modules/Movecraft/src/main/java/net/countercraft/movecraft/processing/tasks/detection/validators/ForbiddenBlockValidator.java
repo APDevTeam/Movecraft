@@ -15,6 +15,6 @@ public class ForbiddenBlockValidator implements DetectionPredicate<MovecraftLoca
     @Override
     @Contract(pure = true)
     public @NotNull Result validate(@NotNull MovecraftLocation location, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable CommandSender player) {
-        return type.getMaterialSetProperty("forbiddenBlocks").contains(world.getMaterial(location)) ? Result.failWithMessage(I18nSupport.getInternationalisedString("Detection - Forbidden block found")) : Result.succeed();
+        return type.getMaterialSetProperty(CraftType.FORBIDDEN_BLOCKS).contains(world.getMaterial(location)) ? Result.failWithMessage(I18nSupport.getInternationalisedString("Detection - Forbidden block found")) : Result.succeed();
     }
 }

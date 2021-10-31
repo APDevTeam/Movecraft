@@ -110,12 +110,12 @@ public class TranslationTask implements Supplier<Effect> {
                 continue;
             }
             var destinationMaterial = destinationWorld.getMaterial(destination);
-            if(craft.getType().getMaterialSetProperty("passthroughBlocks").contains(destinationMaterial)){
+            if(craft.getType().getMaterialSetProperty(CraftType.PASSTHROUGH_BLOCKS).contains(destinationMaterial)){
                 phaseLocations.add(destination);
                 continue;
             }
-            if(craft.getType().getMaterialSetProperty("harvestBlocks").contains(destinationMaterial) &&
-                    craft.getType().getMaterialSetProperty("harvesterBladeBlocks").contains(originMaterial)){
+            if(craft.getType().getMaterialSetProperty(CraftType.HARVEST_BLOCKS).contains(destinationMaterial) &&
+                    craft.getType().getMaterialSetProperty(CraftType.HARVESTER_BLADE_BLOCKS).contains(originMaterial)){
                 harvestLocations.add(destination);
                 continue;
             }
@@ -146,7 +146,7 @@ public class TranslationTask implements Supplier<Effect> {
 
         // Direct float comparison due to check for statically initialized value
         callCollisionEvent(craft, collisions, preTranslateEvent.getWorld());
-        if(craft.getType().getFloatProperty("collisionExplosion") <= 0F && !collisions.isEmpty()){
+        if(craft.getType().getFloatProperty(CraftType.COLLISION_EXPLOSION) <= 0F && !collisions.isEmpty()){
             //TODO: collision highlights
             return () -> craft.getAudience().sendMessage(Component.text(String.format(I18nSupport.getInternationalisedString("Translation - Failed Craft is obstructed") + " @ %d,%d,%d,%s", 0, 0, 0, "not_implemented")));
         }

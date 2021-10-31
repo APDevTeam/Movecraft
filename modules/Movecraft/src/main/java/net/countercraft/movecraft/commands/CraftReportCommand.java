@@ -3,6 +3,7 @@ package net.countercraft.movecraft.commands;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.PlayerCraft;
+import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
 import net.countercraft.movecraft.util.TopicPaginator;
@@ -41,7 +42,7 @@ public class CraftReportCommand implements CommandExecutor{
         for (Craft craft : CraftManager.getInstance()) {
             HitBox hitBox = craft.getHitBox();
             paginator.addLine((craft.getSinking() ? ChatColor.RED : craft.getDisabled() ? ChatColor.BLUE : "") +
-                    craft.getType().getStringProperty("craftName") + " " +
+                    craft.getType().getStringProperty(CraftType.NAME) + " " +
                     ChatColor.RESET +
                     (craft instanceof PlayerCraft ? ((PlayerCraft) craft).getPlayer().getName() + " " : I18nSupport.getInternationalisedString("None") +" ")+
                     hitBox.size() + " @ " +

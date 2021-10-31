@@ -1,6 +1,7 @@
 package net.countercraft.movecraft.sign;
 
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.ChatColor;
 import org.bukkit.block.BlockState;
@@ -47,7 +48,7 @@ public final class MoveSign implements Listener{
         int dx = Integer.parseInt(numbers[0]);
         int dy = Integer.parseInt(numbers[1]);
         int dz = Integer.parseInt(numbers[2]);
-        int maxMove = CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getIntProperty("maxStaticMove");
+        int maxMove = CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getIntProperty(CraftType.MAX_STATIC_MOVE);
 
         if (dx > maxMove)
             dx = maxMove;
@@ -62,12 +63,12 @@ public final class MoveSign implements Listener{
         if (dz < 0 - maxMove)
             dz = 0 - maxMove;
 
-        if (!event.getPlayer().hasPermission("movecraft." + CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getStringProperty("craftName") + ".move")) {
+        if (!event.getPlayer().hasPermission("movecraft." + CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getStringProperty(CraftType.NAME) + ".move")) {
             event.getPlayer().sendMessage(
                     I18nSupport.getInternationalisedString("Insufficient Permissions"));
             return;
         }
-        if (CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getBoolProperty("canStaticMove")) {
+        if (CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getBoolProperty(CraftType.CAN_STATIC_MOVE)) {
             CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).translate(dx, dy, dz);
             //timeMap.put(event.getPlayer(), System.currentTimeMillis());
             CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setLastCruiseUpdate(System.currentTimeMillis());
