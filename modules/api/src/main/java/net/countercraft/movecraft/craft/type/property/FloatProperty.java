@@ -42,7 +42,7 @@ public class FloatProperty {
         try {
             return (float) data.getDouble(key);
         }
-        catch (IllegalArgumentException e) {
+        catch (TypeData.KeyNotFoundException e) {
             if(defaultProvider == null)
                 throw e;
 

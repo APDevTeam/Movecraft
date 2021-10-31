@@ -42,11 +42,11 @@ public class ObjectPropertyImpl implements ObjectProperty {
         try {
             var backing = data.getBackingData();
             if(!backing.containsKey(key))
-                throw new IllegalArgumentException("No key found for " + key);
+                throw new TypeData.KeyNotFoundException("No key found for " + key);
 
             return backing.get(key);
         }
-        catch (IllegalArgumentException e) {
+        catch (TypeData.KeyNotFoundException e) {
             if(defaultProvider == null)
                 throw e;
 

@@ -42,7 +42,7 @@ public class IntegerProperty {
         try {
             return data.getInt(key);
         }
-        catch (IllegalArgumentException e) {
+        catch (TypeData.KeyNotFoundException e) {
             if(defaultProvider == null)
                 throw e;
 

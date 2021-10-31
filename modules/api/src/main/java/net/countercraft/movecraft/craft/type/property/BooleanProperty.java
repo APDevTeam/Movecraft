@@ -42,7 +42,7 @@ public class BooleanProperty {
         try {
             return data.getBoolean(key);
         }
-        catch (IllegalArgumentException e) {
+        catch (TypeData.KeyNotFoundException e) {
             if(defaultProvider == null)
                 throw e;
 

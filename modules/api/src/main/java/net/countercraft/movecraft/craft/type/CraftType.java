@@ -46,9 +46,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 final public class CraftType {
-    // TODO: The current implementation will mask all loading problems if there is a default defined for that property.
-    //  Instead we want to only mask errors of no valid key, rather than invalid type/value/etc.
-
     static final List<StringProperty> stringProperties = new ArrayList<>();
 
     /**

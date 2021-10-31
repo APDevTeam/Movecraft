@@ -45,7 +45,7 @@ public class MaterialSetProperty {
         try {
             return data.getMaterials(key);
         }
-        catch (IllegalArgumentException e) {
+        catch (TypeData.KeyNotFoundException e) {
             if(defaultProvider == null)
                 throw e;
 
