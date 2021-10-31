@@ -10,5 +10,5 @@ public interface ObjectProperty extends Property<Object> {
     Object load(@NotNull TypeData data, @NotNull CraftType type);
 
     @NotNull
-    String getKey();
+    String getFileKey();
 }

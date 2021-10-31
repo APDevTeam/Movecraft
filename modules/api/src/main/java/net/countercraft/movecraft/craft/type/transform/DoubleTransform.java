@@ -1,10 +1,11 @@
 package net.countercraft.movecraft.craft.type.transform;
 
 import net.countercraft.movecraft.craft.type.CraftType;
+import org.bukkit.NamespacedKey;
 
 import java.util.Map;
 
 @FunctionalInterface
 public interface DoubleTransform extends Transform<Double> {
-    Map<String, Double> transform(Map<String, Double> data, CraftType type);
+    Map<NamespacedKey, Double> transform(Map<NamespacedKey, Double> data, CraftType type);
 }

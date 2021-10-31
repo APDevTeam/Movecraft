@@ -62,7 +62,7 @@ public class ObjectPropertyImpl implements ObjectProperty {
      * @return the key
      */
     @NotNull
-    public String getKey() {
+    public String getFileKey() {
         return key;
     }
 }

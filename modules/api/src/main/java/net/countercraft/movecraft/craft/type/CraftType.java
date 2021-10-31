@@ -56,6 +56,16 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 final public class CraftType {
+    public static final NamespacedKey NAME = getKey("name");
+    public static final NamespacedKey MIN_SIZE = getKey("min_size");
+
+    private static NamespacedKey getKey(String key) {
+        return new NamespacedKey("movecraft", key);
+    }
+
+
+
+
     static final List<Property<?>> properties = new ArrayList<>();
 
     /**
@@ -69,62 +79,62 @@ final public class CraftType {
 
 
 
-    private Map<String, String> stringPropertyMap;
+    private Map<NamespacedKey, String> stringPropertyMap;
     /**
      * Get a string property of this CraftType
      *
      * @param key Key of the string property
      * @return value of the string property
      */
-    public String getStringProperty(String key) {
+    public String getStringProperty(NamespacedKey key) {
         return stringPropertyMap.get(key);
     }
 
-    private Map<String, Integer> intPropertyMap;
+    private Map<NamespacedKey, Integer> intPropertyMap;
     /**
      * Get an integer property of this CraftType
      *
      * @param key Key of the integer property
      * @return value of the integer property
      */
-    public int getIntProperty(String key) {
+    public int getIntProperty(NamespacedKey key) {
         return intPropertyMap.get(key);
     }
 
-    private Map<String, Boolean> boolPropertyMap;
+    private Map<NamespacedKey, Boolean> boolPropertyMap;
     /**
      * Get a boolean property of this CraftType
      *
      * @param key Key of the boolean property
      * @return value of the boolean property
      */
-    public boolean getBoolProperty(String key) {
+    public boolean getBoolProperty(NamespacedKey key) {
         return boolPropertyMap.get(key);
     }
 
-    private Map<String, Float> floatPropertyMap;
+    private Map<NamespacedKey, Float> floatPropertyMap;
     /**
      * Get a float property of this CraftType
      *
      * @param key Key of the float property
      * @return value of the float property
      */
-    public float getFloatProperty(String key) {
+    public float getFloatProperty(NamespacedKey key) {
         return floatPropertyMap.get(key);
     }
 
-    private Map<String, Double> doublePropertyMap;
+    private Map<NamespacedKey, Double> doublePropertyMap;
     /**
      * Get a double property of this CraftType
      *
      * @param key Key of the double property
      * @return value of the double property
      */
-    public double getDoubleProperty(String key) {
+    public double getDoubleProperty(NamespacedKey key) {
         return doublePropertyMap.get(key);
     }
 
-    private Map<String, Object> objectPropertyMap;
+    private Map<NamespacedKey, Object> objectPropertyMap;
     /**
      * Get an object property of this CraftType
      * Note: Object properties have no type safety, it is expected that the addon developer handle type safety
@@ -133,18 +143,18 @@ final public class CraftType {
      * @return value of the object property
      */
     @Nullable
-    public Object getObjectProperty(String key) {
+    public Object getObjectProperty(NamespacedKey key) {
         return objectPropertyMap.get(key);
     }
 
-    private Map<String, EnumSet<Material>> materialSetPropertyMap;
+    private Map<NamespacedKey, EnumSet<Material>> materialSetPropertyMap;
     /**
      * Get a material set property of this CraftType
      *
      * @param key Key of the string property
      * @return value of the string property
      */
-    public EnumSet<Material> getMaterialSetProperty(String key) {
+    public EnumSet<Material> getMaterialSetProperty(NamespacedKey key) {
         return materialSetPropertyMap.get(key);
     }
 
@@ -376,37 +386,37 @@ final public class CraftType {
             if(i instanceof StringProperty) {
                 String value = ((StringProperty) i).load(data, this);
                 if (value != null)
-                    stringPropertyMap.put(i.getKey(), value);
+                    stringPropertyMap.put(i.getNamespacedKey(), value);
             }
             else if(i instanceof IntegerProperty) {
                 Integer value = ((IntegerProperty) i).load(data, this);
                 if (value != null)
-                    intPropertyMap.put(i.getKey(), value);
+                    intPropertyMap.put(i.getNamespacedKey(), value);
             }
             else if(i instanceof BooleanProperty) {
                 Boolean value = ((BooleanProperty) i).load(data, this);
                 if(value != null)
-                    boolPropertyMap.put(i.getKey(), value);
+                    boolPropertyMap.put(i.getNamespacedKey(), value);
             }
             else if(i instanceof FloatProperty) {
                 Float value = ((FloatProperty) i).load(data, this);
                 if(value != null)
-                    floatPropertyMap.put(i.getKey(), value);
+                    floatPropertyMap.put(i.getNamespacedKey(), value);
             }
             else if(i instanceof DoubleProperty) {
                 Double value = ((DoubleProperty) i).load(data, this);
                 if(value != null)
-                    doublePropertyMap.put(i.getKey(), value);
+                    doublePropertyMap.put(i.getNamespacedKey(), value);
             }
             else if(i instanceof ObjectProperty) {
                 Object value = ((ObjectProperty) i).load(data, this);
                 if(value != null)
-                    objectPropertyMap.put(i.getKey(), value);
+                    objectPropertyMap.put(i.getNamespacedKey(), value);
             }
             else if(i instanceof MaterialSetProperty) {
                 EnumSet<Material> value = ((MaterialSetProperty) i).load(data, this);
                 if(value != null)
-                    materialSetPropertyMap.put(i.getKey(), value);
+                    materialSetPropertyMap.put(i.getNamespacedKey(), value);
             }
         }
 

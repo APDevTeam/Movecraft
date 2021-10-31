@@ -58,7 +58,7 @@ public class IntegerProperty implements Property<Integer> {
      * @return the key
      */
     @NotNull
-    public String getKey() {
+    public String getFileKey() {
         return key;
     }
 }

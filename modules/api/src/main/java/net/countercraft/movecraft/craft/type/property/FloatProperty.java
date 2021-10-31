@@ -58,7 +58,7 @@ public class FloatProperty implements Property<Float> {
      * @return the key
      */
     @NotNull
-    public String getKey() {
+    public String getFileKey() {
         return key;
     }
 }

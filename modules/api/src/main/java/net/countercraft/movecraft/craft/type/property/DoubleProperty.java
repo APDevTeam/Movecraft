@@ -58,7 +58,7 @@ public class DoubleProperty implements Property<Double> {
      * @return the key
      */
     @NotNull
-    public String getKey() {
+    public String getFileKey() {
         return key;
     }
 }
