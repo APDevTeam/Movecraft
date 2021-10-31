@@ -256,7 +256,7 @@ final public class CraftType {
         registerProperty(new MaterialSetProperty("dynamicFlyBlock", type -> EnumSet.noneOf(Material.class)));
         registerProperty(new DoubleProperty("chestPenalty", type -> 0D));
         registerProperty(new IntegerProperty("gravityInclineDistance", type -> -1));
-        // TODO: gravityDropDistance
+        registerProperty(new IntegerProperty("gravityDropDistance", type -> -8));
         // TODO: collisionSound
         // TODO: fuelTypes
         // TODO: disableTeleportToWorlds
@@ -287,11 +287,16 @@ final public class CraftType {
             return data;
         });
         registerTypeTransform((IntegerTransform) (data, type) -> {
-            data.put("cruiseTickCooldown", (int) Math.round((1.0 + type.getIntProperty("cruiseSkipBlocks")) * 20.0 / type.getDoubleProperty("cruiseSpeed")));
+            data.put("cruiseTickCooldown", (int) Math.round((1.0 + data.get("cruiseSkipBlocks")) * 20.0 / type.getDoubleProperty("cruiseSpeed")));
             return data;
         });
         registerTypeTransform((IntegerTransform) (data, type) -> {
-            data.put("vertCruiseTickCooldown", (int) Math.round((1.0 + type.getIntProperty("vertCruiseSkipBlocks")) * 20.0 / type.getDoubleProperty("vertCruiseSpeed")));
+            data.put("vertCruiseTickCooldown", (int) Math.round((1.0 + data.get("vertCruiseSkipBlocks")) * 20.0 / type.getDoubleProperty("vertCruiseSpeed")));
+            return data;
+        });
+        registerTypeTransform((IntegerTransform) (data, type) -> {
+            int dropDist = data.get("gravityDropDistance");
+            data.put("gravityDropDistance", dropDist > 0 ? -dropDist : dropDist);
             return data;
         });
         // TODO: remove cruiseSpeed, vertCruiseSpeed
@@ -423,9 +428,6 @@ final public class CraftType {
         flyBlocks = blockIDMapListFromObject("flyblocks", data.getDataOrEmpty("flyblocks").getBackingData());
 
         // Optional craft flags
-        int dropdist = data.getIntOrDefault("gravityDropDistance", -8);
-        intPropertyMap.put("gravityDropDistance", dropdist > 0 ? -dropdist : dropdist);
-
         moveBlocks = blockIDMapListFromObject("moveblocks", data.getDataOrEmpty("moveblocks").getBackingData());
         perWorldCruiseSkipBlocks = stringToIntMapFromObject(data.getDataOrEmpty("perWorldCruiseSkipBlocks").getBackingData());
         perWorldVertCruiseSkipBlocks = stringToIntMapFromObject(data.getDataOrEmpty("perWorldVertCruiseSkipBlocks").getBackingData());
