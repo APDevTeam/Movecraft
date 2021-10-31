@@ -5,9 +5,11 @@ import net.countercraft.movecraft.craft.type.TypeData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.function.Function;
+
 public class IntegerProperty implements Property<Integer> {
     private final String key;
-    private final DefaultProvider<Integer> defaultProvider;
+    private final Function<CraftType, Integer> defaultProvider;
 
     /**
      * Construct an IntegerProperty
@@ -25,7 +27,7 @@ public class IntegerProperty implements Property<Integer> {
      * @param key the key for this property
      * @param defaultProvider the provider for the default value of this property
      */
-    public IntegerProperty(@NotNull String key, @NotNull DefaultProvider<Integer> defaultProvider) {
+    public IntegerProperty(@NotNull String key, @NotNull Function<CraftType, Integer> defaultProvider) {
         this.key = key;
         this.defaultProvider = defaultProvider;
     }
@@ -46,7 +48,7 @@ public class IntegerProperty implements Property<Integer> {
             if(defaultProvider == null)
                 throw e;
 
-            return defaultProvider.process(type);
+            return defaultProvider.apply(type);
         }
     }
 

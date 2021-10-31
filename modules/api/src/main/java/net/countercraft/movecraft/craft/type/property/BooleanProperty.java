@@ -5,9 +5,11 @@ import net.countercraft.movecraft.craft.type.TypeData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.function.Function;
+
 public class BooleanProperty implements Property<Boolean> {
     private final String key;
-    private final DefaultProvider<Boolean> defaultProvider;
+    private final Function<CraftType, Boolean> defaultProvider;
 
     /**
      * Construct a BooleanProperty
@@ -25,7 +27,7 @@ public class BooleanProperty implements Property<Boolean> {
      * @param key the key for this property
      * @param defaultProvider the provider for the default value of this property
      */
-    public BooleanProperty(@NotNull String key, @NotNull DefaultProvider<Boolean> defaultProvider) {
+    public BooleanProperty(@NotNull String key, @NotNull Function<CraftType, Boolean> defaultProvider) {
         this.key = key;
         this.defaultProvider = defaultProvider;
     }
@@ -46,7 +48,7 @@ public class BooleanProperty implements Property<Boolean> {
             if(defaultProvider == null)
                 throw e;
 
-            return defaultProvider.process(type);
+            return defaultProvider.apply(type);
         }
     }
 

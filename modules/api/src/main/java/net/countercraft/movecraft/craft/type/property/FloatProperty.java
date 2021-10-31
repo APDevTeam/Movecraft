@@ -5,9 +5,11 @@ import net.countercraft.movecraft.craft.type.TypeData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.function.Function;
+
 public class FloatProperty implements Property<Float> {
     private final String key;
-    private final DefaultProvider<Float> defaultProvider;
+    private final Function<CraftType, Float> defaultProvider;
 
     /**
      * Construct a FloatProperty
@@ -25,7 +27,7 @@ public class FloatProperty implements Property<Float> {
      * @param key the key for this property
      * @param defaultProvider the provider for the default value of this property
      */
-    public FloatProperty(@NotNull String key, @NotNull DefaultProvider<Float> defaultProvider) {
+    public FloatProperty(@NotNull String key, @NotNull Function<CraftType, Float> defaultProvider) {
         this.key = key;
         this.defaultProvider = defaultProvider;
     }
@@ -46,7 +48,7 @@ public class FloatProperty implements Property<Float> {
             if(defaultProvider == null)
                 throw e;
 
-            return defaultProvider.process(type);
+            return defaultProvider.apply(type);
         }
     }
 

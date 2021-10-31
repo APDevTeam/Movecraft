@@ -7,10 +7,11 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumSet;
+import java.util.function.Function;
 
 public class MaterialSetProperty implements Property<EnumSet<Material>> {
     private final String key;
-    private final DefaultProvider<EnumSet<Material>> defaultProvider;
+    private final Function<CraftType, EnumSet<Material>> defaultProvider;
 
     /**
      * Construct a MaterialSetProperty
@@ -28,7 +29,7 @@ public class MaterialSetProperty implements Property<EnumSet<Material>> {
      * @param key the key for this property
      * @param defaultProvider the provider for the default value of this property
      */
-    public MaterialSetProperty(@NotNull String key, @NotNull DefaultProvider<EnumSet<Material>> defaultProvider) {
+    public MaterialSetProperty(@NotNull String key, @NotNull Function<CraftType, EnumSet<Material>> defaultProvider) {
         this.key = key;
         this.defaultProvider = defaultProvider;
     }
@@ -49,7 +50,7 @@ public class MaterialSetProperty implements Property<EnumSet<Material>> {
             if(defaultProvider == null)
                 throw e;
 
-            return defaultProvider.process(type);
+            return defaultProvider.apply(type);
         }
     }
 
