@@ -246,7 +246,7 @@ final public class CraftType {
         registerProperty(new IntegerProperty("hoverLimit", type -> 0));
         registerProperty(new MaterialSetProperty("harvestBlocks", type -> EnumSet.noneOf(Material.class)));
         registerProperty(new MaterialSetProperty("harvesterBladeBlocks", type -> EnumSet.noneOf(Material.class)));
-        // TODO: passthroughBlocks
+        registerProperty(new MaterialSetProperty("passthroughBlocks", type -> EnumSet.noneOf(Material.class)));
         // TODO: forbiddenHoverOverBlocks
         registerProperty(new BooleanProperty("allowVerticalTakeoffAndLanding", type -> true));
         registerProperty(new DoubleProperty("dynamicLagSpeedFactor", type -> 0D));
@@ -297,6 +297,15 @@ final public class CraftType {
         registerTypeTransform((IntegerTransform) (data, type) -> {
             int dropDist = data.get("gravityDropDistance");
             data.put("gravityDropDistance", dropDist > 0 ? -dropDist : dropDist);
+            return data;
+        });
+        registerTypeTransform((MaterialSetTransform) (data, type) -> {
+            if(type.getBoolProperty("blockedByWater"))
+                return data;
+
+            var v = data.get("passthroughBlocks");
+            v.add(Material.WATER);
+            data.put("passthroughBlocks", v);
             return data;
         });
         // TODO: remove cruiseSpeed, vertCruiseSpeed
@@ -473,10 +482,6 @@ final public class CraftType {
         });
         
         perWorldMaxHeightAboveGround = stringToIntMapFromObject(data.getDataOrEmpty("perWorldMaxHeightAboveGround").getBackingData());
-        passthroughBlocks = data.getMaterialsOrEmpty("passthroughBlocks");
-        if(!getBoolProperty("blockedByWater")){
-            passthroughBlocks.add(Material.WATER);
-        }
         forbiddenHoverOverBlocks = data.getMaterialsOrEmpty("forbiddenHoverOverBlocks");
         if (!getBoolProperty("canHoverOverWater")){
             forbiddenHoverOverBlocks.add(Material.WATER);
