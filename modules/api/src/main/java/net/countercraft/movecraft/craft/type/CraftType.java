@@ -189,7 +189,8 @@ final public class CraftType {
         // TODO: perWorldSpeed -> perWorldTickCooldown
         // TODO: flyBlocks
         registerProperty(new MaterialSetProperty("forbiddenBlocks", type -> EnumSet.noneOf(Material.class)));
-        // TODO: canFly / blockedByWater
+        registerProperty(new BooleanProperty("blockedByWater", type -> true));
+        registerProperty(new BooleanProperty("canFly", type -> type.getBoolProperty("blockedByWater")));
         registerProperty(new BooleanProperty("requireWaterContact", type -> false));
         registerProperty(new BooleanProperty("tryNudge", type -> false));
         // TODO: moveblocks
@@ -273,6 +274,11 @@ final public class CraftType {
         });
         registerTypeTransform((DoubleTransform) (data, type) -> {
             data.remove("speed");
+            return data;
+        });
+        registerTypeTransform((BooleanTransform) (data, type) -> {
+            data.put("blockedByWater", data.get("canFly"));
+            data.remove("canFly");
             return data;
         });
 
@@ -403,7 +409,6 @@ final public class CraftType {
         flyBlocks = blockIDMapListFromObject("flyblocks", data.getDataOrEmpty("flyblocks").getBackingData());
 
         // Optional craft flags
-        boolPropertyMap.put("blockedByWater", data.getBooleanOrDefault("canFly", data.getBooleanOrDefault("blockedByWater", true)));
         intPropertyMap.put("sinkRateTicks", data.getIntOrDefault("sinkRateTicks", (int) Math.ceil(20 / data.getDoubleOrDefault("sinkSpeed", -200)))); // default becomes 0
         double cruiseSpeed = data.getDoubleOrDefault("cruiseSpeed", 20.0 / getIntProperty("tickCooldown"));
         intPropertyMap.put("cruiseTickCooldown", (int) Math.round((1.0 + getIntProperty("cruiseSkipBlocks")) * 20.0 / cruiseSpeed));
