@@ -231,7 +231,7 @@ final public class CraftType {
         // TODO: perWorldMinHeightLimit
         registerProperty(new DoubleProperty("cruiseSpeed", type -> 20.0 / type.getIntProperty("tickCooldown")));
         // TODO: perWorldCruiseSpeed -> perWorldCruiseTickCooldown
-        // TODO: vertCruiseSpeed -> vertCruiseTickCooldown
+        registerProperty(new DoubleProperty("vertCruiseSpeed", type -> type.getDoubleProperty("cruiseSpeed")));
         // TODO: perWorldVertCruiseSpeed -> perWorldVertCruiseTickCooldown
         registerProperty(new IntegerProperty("maxHeightLimit", type -> 255));
         // TODO: perWorldMaxHeightLimit
@@ -290,7 +290,11 @@ final public class CraftType {
             data.put("cruiseTickCooldown", (int) Math.round((1.0 + type.getIntProperty("cruiseSkipBlocks")) * 20.0 / type.getDoubleProperty("cruiseSpeed")));
             return data;
         });
-        // TODO: remove cruiseSpeed
+        registerTypeTransform((IntegerTransform) (data, type) -> {
+            data.put("vertCruiseTickCooldown", (int) Math.round((1.0 + type.getIntProperty("vertCruiseSkipBlocks")) * 20.0 / type.getDoubleProperty("vertCruiseSpeed")));
+            return data;
+        });
+        // TODO: remove cruiseSpeed, vertCruiseSpeed
 
         // Craft type validators
         registerTypeValidator(
@@ -419,8 +423,6 @@ final public class CraftType {
         flyBlocks = blockIDMapListFromObject("flyblocks", data.getDataOrEmpty("flyblocks").getBackingData());
 
         // Optional craft flags
-        double vertCruiseSpeed = data.getDoubleOrDefault("vertCruiseSpeed", getDoubleProperty("cruiseSpeed"));
-        intPropertyMap.put("vertCruiseTickCooldown", (int) Math.round((1.0 + getIntProperty("vertCruiseSkipBlocks")) * 20.0 / vertCruiseSpeed));
         int dropdist = data.getIntOrDefault("gravityDropDistance", -8);
         intPropertyMap.put("gravityDropDistance", dropdist > 0 ? -dropdist : dropdist);
 
@@ -455,7 +457,7 @@ final public class CraftType {
         cruiseTickCooldownMap.forEach((world, speed) -> {
             if (!perWorldVertCruiseTickCooldown.containsKey(world)) {
                 double worldVertCruiseSkipBlocks = perWorldVertCruiseSkipBlocks.getOrDefault(world, getIntProperty("vertCruiseSkipBlocks"));
-                perWorldVertCruiseTickCooldown.put(world, (int) Math.round((1.0 + worldVertCruiseSkipBlocks) * 20.0 / vertCruiseSpeed));
+                perWorldVertCruiseTickCooldown.put(world, (int) Math.round((1.0 + worldVertCruiseSkipBlocks) * 20.0 / getDoubleProperty("vertCruiseSpeed")));
             }
         });
 
