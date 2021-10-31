@@ -228,6 +228,8 @@ final public class CraftType {
         registerProperty(new FloatProperty("collisionExplosion", type -> 0F));
         registerProperty(new IntegerProperty("minHeightLimit", type -> 0));
         // TODO: perWorldMinHeightLimit
+        registerProperty(new DoubleProperty("sinkSpeed", type -> 1D));
+        registerProperty(new IntegerProperty("sinkRateTicks", type -> (int) Math.ceil(20 / type.getDoubleProperty("sinkSpeed"))));
         // TODO: cruiseSpeed -> cruiseTickCooldown
         // TODO: perWorldCruiseSpeed -> perWorldCruiseTickCooldown
         // TODO: vertCruiseSpeed -> vertCruiseTickCooldown
@@ -409,7 +411,6 @@ final public class CraftType {
         flyBlocks = blockIDMapListFromObject("flyblocks", data.getDataOrEmpty("flyblocks").getBackingData());
 
         // Optional craft flags
-        intPropertyMap.put("sinkRateTicks", data.getIntOrDefault("sinkRateTicks", (int) Math.ceil(20 / data.getDoubleOrDefault("sinkSpeed", -200)))); // default becomes 0
         double cruiseSpeed = data.getDoubleOrDefault("cruiseSpeed", 20.0 / getIntProperty("tickCooldown"));
         intPropertyMap.put("cruiseTickCooldown", (int) Math.round((1.0 + getIntProperty("cruiseSkipBlocks")) * 20.0 / cruiseSpeed));
         double vertCruiseSpeed = data.getDoubleOrDefault("vertCruiseSpeed", cruiseSpeed);
