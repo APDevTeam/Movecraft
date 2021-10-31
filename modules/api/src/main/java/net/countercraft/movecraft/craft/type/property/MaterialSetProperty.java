@@ -3,6 +3,7 @@ package net.countercraft.movecraft.craft.type.property;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.craft.type.TypeData;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -10,27 +11,33 @@ import java.util.EnumSet;
 import java.util.function.Function;
 
 public class MaterialSetProperty implements Property<EnumSet<Material>> {
-    private final String key;
+    private final String fileKey;
+    private final NamespacedKey namespacedKey;
     private final Function<CraftType, EnumSet<Material>> defaultProvider;
 
     /**
      * Construct a MaterialSetProperty
+     * <p>Note: this constructor makes this a required property.
      *
-     * @param key the key for this property
+     * @param fileKey the key for this property
+     * @param namespacedKey the namespaced key for this property
      */
-    public MaterialSetProperty(@NotNull String key) {
-        this.key = key;
+    public MaterialSetProperty(@NotNull String fileKey, @NotNull NamespacedKey namespacedKey) {
+        this.fileKey = fileKey;
+        this.namespacedKey = namespacedKey;
         this.defaultProvider = null;
     }
 
     /**
      * Construct a MaterialSetProperty
      *
-     * @param key the key for this property
+     * @param fileKey the key for this property
+     * @param namespacedKey the namespaced key for this property
      * @param defaultProvider the provider for the default value of this property
      */
-    public MaterialSetProperty(@NotNull String key, @NotNull Function<CraftType, EnumSet<Material>> defaultProvider) {
-        this.key = key;
+    public MaterialSetProperty(@NotNull String fileKey, @NotNull NamespacedKey namespacedKey, @NotNull Function<CraftType, EnumSet<Material>> defaultProvider) {
+        this.fileKey = fileKey;
+        this.namespacedKey = namespacedKey;
         this.defaultProvider = defaultProvider;
     }
 
@@ -44,7 +51,7 @@ public class MaterialSetProperty implements Property<EnumSet<Material>> {
     @Nullable
     public EnumSet<Material> load(@NotNull TypeData data, @NotNull CraftType type) {
         try {
-            return data.getMaterials(key);
+            return data.getMaterials(fileKey);
         }
         catch (TypeData.KeyNotFoundException e) {
             if(defaultProvider == null)
@@ -55,12 +62,22 @@ public class MaterialSetProperty implements Property<EnumSet<Material>> {
     }
 
     /**
-     * Get the string key for this property
+     * Get the file key for this property
      *
-     * @return the key
+     * @return the file key
      */
     @NotNull
     public String getFileKey() {
-        return key;
+        return fileKey;
+    }
+
+    /**
+     * Get the NamespacedKey for this property
+     *
+     * @return the NamespacedKey
+     */
+    @NotNull
+    public NamespacedKey getNamespacedKey() {
+        return namespacedKey;
     }
 }

@@ -2,33 +2,40 @@ package net.countercraft.movecraft.craft.type.property;
 
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.craft.type.TypeData;
+import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Function;
 
 public class DoubleProperty implements Property<Double> {
-    private final String key;
+    private final String fileKey;
+    private final NamespacedKey namespacedKey;
     private final Function<CraftType, Double> defaultProvider;
 
     /**
      * Construct a DoubleProperty
+     * <p>Note: this constructor makes this a required property.
      *
-     * @param key the key for this property
+     * @param fileKey the key for this property
+     * @param namespacedKey the namespaced key for this property
      */
-    public DoubleProperty(@NotNull String key) {
-        this.key = key;
+    public DoubleProperty(@NotNull String fileKey, @NotNull NamespacedKey namespacedKey) {
+        this.fileKey = fileKey;
+        this.namespacedKey = namespacedKey;
         this.defaultProvider = null;
     }
 
     /**
      * Construct a DoubleProperty
      *
-     * @param key the key for this property
+     * @param fileKey the key for this property
+     * @param namespacedKey the namespaced key for this property
      * @param defaultProvider the provider for the default value of this property
      */
-    public DoubleProperty(@NotNull String key, @NotNull Function<CraftType, Double> defaultProvider) {
-        this.key = key;
+    public DoubleProperty(@NotNull String fileKey, @NotNull NamespacedKey namespacedKey, @NotNull Function<CraftType, Double> defaultProvider) {
+        this.fileKey = fileKey;
+        this.namespacedKey = namespacedKey;
         this.defaultProvider = defaultProvider;
     }
 
@@ -42,7 +49,7 @@ public class DoubleProperty implements Property<Double> {
     @Nullable
     public Double load(@NotNull TypeData data, @NotNull CraftType type) {
         try {
-            return data.getDouble(key);
+            return data.getDouble(fileKey);
         }
         catch (TypeData.KeyNotFoundException e) {
             if(defaultProvider == null)
@@ -53,12 +60,22 @@ public class DoubleProperty implements Property<Double> {
     }
 
     /**
-     * Get the string key for this property
+     * Get the file key for this property
      *
-     * @return the key
+     * @return the file key
      */
     @NotNull
     public String getFileKey() {
-        return key;
+        return fileKey;
+    }
+
+    /**
+     * Get the NamespacedKey for this property
+     *
+     * @return the NamespacedKey
+     */
+    @NotNull
+    public NamespacedKey getNamespacedKey() {
+        return namespacedKey;
     }
 }
