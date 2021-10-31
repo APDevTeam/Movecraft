@@ -74,7 +74,7 @@ public class CraftTranslateCommand extends UpdateCommand {
         }
         long time = System.nanoTime();
         World oldWorld = craft.getWorld();
-        final Set<Material> passthroughBlocks = new HashSet<>(craft.getType().getPassthroughBlocks());
+        final Set<Material> passthroughBlocks = new HashSet<>(craft.getType().getMaterialSetProperty("passthroughBlocks"));
         if(craft.getSinking()){
             passthroughBlocks.add(Material.WATER);
             passthroughBlocks.addAll(Tag.LEAVES.getValues());

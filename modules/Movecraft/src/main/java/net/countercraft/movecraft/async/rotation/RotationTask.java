@@ -125,7 +125,7 @@ public class RotationTask extends AsyncTask {
             }
 
             Material newMaterial = newLocation.toBukkit(w).getBlock().getType();
-            if ((newMaterial == Material.AIR) || (newMaterial == Material.PISTON_HEAD) || craft.getType().getPassthroughBlocks().contains(newMaterial)) {
+            if ((newMaterial == Material.AIR) || (newMaterial == Material.PISTON_HEAD) || craft.getType().getMaterialSetProperty("passthroughBlocks").contains(newMaterial)) {
                 //getCraft().getPhaseBlocks().put(newLocation.toBukkit(w), newMaterial);
                 continue;
             }

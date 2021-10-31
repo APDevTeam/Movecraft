@@ -110,7 +110,7 @@ public class TranslationTask implements Supplier<Effect> {
                 continue;
             }
             var destinationMaterial = destinationWorld.getMaterial(destination);
-            if(craft.getType().getPassthroughBlocks().contains(destinationMaterial)){
+            if(craft.getType().getMaterialSetProperty("passthroughBlocks").contains(destinationMaterial)){
                 phaseLocations.add(destination);
                 continue;
             }

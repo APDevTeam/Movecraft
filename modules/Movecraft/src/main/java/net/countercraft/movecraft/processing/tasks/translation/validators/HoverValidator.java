@@ -15,14 +15,14 @@ public class HoverValidator implements TetradicPredicate<MovecraftLocation, Move
     @Override
     @Contract(pure = true)
     public @NotNull Result validate(@NotNull MovecraftLocation translation, @NotNull MovecraftWorld world, @NotNull HitBox hitBox, @NotNull CraftType type) {
-        if (type.getForbiddenHoverOverBlocks().size() > 0){
+        if (type.getMaterialSetProperty("forbiddenHoverOverBlocks").size() > 0){
             MovecraftLocation test = new MovecraftLocation(hitBox.getMidPoint().getX(), hitBox.getMinY(), hitBox.getMidPoint().getZ());
             test = test.translate(0, -1, 0);
             while (world.getMaterial(test) == Material.AIR){
                 test = test.translate(0, -1, 0);
             }
             Material testType = world.getMaterial(test);
-            if (type.getForbiddenHoverOverBlocks().contains(testType)){
+            if (type.getMaterialSetProperty("forbiddenHoverOverBlocks").contains(testType)){
                 return Result.failWithMessage(String.format(I18nSupport.getInternationalisedString("Translation - Failed Craft over block"), testType.name().toLowerCase().replace("_", " ")));
             }
         }

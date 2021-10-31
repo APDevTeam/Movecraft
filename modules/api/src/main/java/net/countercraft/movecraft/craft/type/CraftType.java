@@ -39,6 +39,7 @@ import net.countercraft.movecraft.util.Tags;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -247,7 +248,7 @@ final public class CraftType {
         registerProperty(new MaterialSetProperty("harvestBlocks", type -> EnumSet.noneOf(Material.class)));
         registerProperty(new MaterialSetProperty("harvesterBladeBlocks", type -> EnumSet.noneOf(Material.class)));
         registerProperty(new MaterialSetProperty("passthroughBlocks", type -> EnumSet.noneOf(Material.class)));
-        // TODO: forbiddenHoverOverBlocks
+        registerProperty(new MaterialSetProperty("forbiddenHoverOverBlocks", type -> EnumSet.noneOf(Material.class)));
         registerProperty(new BooleanProperty("allowVerticalTakeoffAndLanding", type -> true));
         registerProperty(new DoubleProperty("dynamicLagSpeedFactor", type -> 0D));
         registerProperty(new DoubleProperty("dynamicLagPowerFactor", type -> 0D));
@@ -303,9 +304,18 @@ final public class CraftType {
             if(type.getBoolProperty("blockedByWater"))
                 return data;
 
-            var v = data.get("passthroughBlocks");
-            v.add(Material.WATER);
-            data.put("passthroughBlocks", v);
+            var passthroughBlocks = data.get("passthroughBlocks");
+            passthroughBlocks.add(Material.WATER);
+            data.put("passthroughBlocks", passthroughBlocks);
+            return data;
+        });
+        registerTypeTransform((MaterialSetTransform) (data, type) -> {
+            if(type.getBoolProperty("canHoverOverWater"))
+                return data;
+
+            var forbiddenHoverOverBlocks = data.get("forbiddenHoverOverBlocks");
+            forbiddenHoverOverBlocks.add(Material.WATER);
+            data.put("forbiddenHoverOverBlocks", forbiddenHoverOverBlocks);
             return data;
         });
         // TODO: remove cruiseSpeed, vertCruiseSpeed
@@ -333,10 +343,6 @@ final public class CraftType {
         );
     }
 
-
-
-    @NotNull private final EnumSet<Material> passthroughBlocks;
-    @NotNull private final EnumSet<Material> forbiddenHoverOverBlocks;
     @NotNull private final Map<String, Integer> perWorldMinHeightLimit;
     @NotNull private final Map<String, Integer> perWorldMaxHeightLimit;
     @NotNull private final Map<String, Integer> perWorldMaxHeightAboveGround;
@@ -482,10 +488,6 @@ final public class CraftType {
         });
         
         perWorldMaxHeightAboveGround = stringToIntMapFromObject(data.getDataOrEmpty("perWorldMaxHeightAboveGround").getBackingData());
-        forbiddenHoverOverBlocks = data.getMaterialsOrEmpty("forbiddenHoverOverBlocks");
-        if (!getBoolProperty("canHoverOverWater")){
-            forbiddenHoverOverBlocks.add(Material.WATER);
-        }
         collisionSound = data.getSoundOrDefault("collisionSound",  Sound.sound(Key.key("block.anvil.land"), Sound.Source.NEUTRAL, 2.0f,1.0f));
         fuelTypes = new HashMap<>();
         Map<String, Object> fTypes =  data.getDataOrEmpty("fuelTypes").getBackingData();
@@ -672,16 +674,6 @@ final public class CraftType {
 
     public int getMaxHeightAboveGround(@NotNull World world) {
         return perWorldMaxHeightAboveGround.getOrDefault(world.getName(), getIntProperty("maxHeightAboveGround"));
-    }
-
-    @NotNull
-    public Set<Material> getPassthroughBlocks() {
-        return passthroughBlocks;
-    }
-
-    @NotNull
-    public Set<Material> getForbiddenHoverOverBlocks() {
-        return forbiddenHoverOverBlocks;
     }
 
     @NotNull

@@ -213,7 +213,7 @@ public class TranslationTask extends AsyncTask {
                 int centreMinY = oldHitBox.getMinYAt(midPoint.getX(), midPoint.getZ());
                 int groundY = centreMinY;
                 World w = craft.getWorld();
-                while (w.getBlockAt(midPoint.getX(), groundY - 1, midPoint.getZ()).getType() == Material.AIR || craft.getType().getPassthroughBlocks().contains(w.getBlockAt(midPoint.getX(), groundY - 1, midPoint.getZ()).getType())){
+                while (w.getBlockAt(midPoint.getX(), groundY - 1, midPoint.getZ()).getType() == Material.AIR || craft.getType().getMaterialSetProperty("passthroughBlocks").contains(w.getBlockAt(midPoint.getX(), groundY - 1, midPoint.getZ()).getType())){
                     groundY--;
                 }
                 if (centreMinY - groundY > craft.getType().getIntProperty("hoverLimit")){
@@ -274,7 +274,7 @@ public class TranslationTask extends AsyncTask {
             if (craft.getSinking()) {
                 blockObstructed = !FALL_THROUGH_BLOCKS.contains(testMaterial);
             } else {
-                blockObstructed = !craft.getType().getPassthroughBlocks().contains(testMaterial) && !testMaterial.equals(Material.AIR);
+                blockObstructed = !craft.getType().getMaterialSetProperty("passthroughBlocks").contains(testMaterial) && !testMaterial.equals(Material.AIR);
             }
 
             boolean ignoreBlock = false;
@@ -312,14 +312,14 @@ public class TranslationTask extends AsyncTask {
             }
         }
 
-        if (craft.getType().getForbiddenHoverOverBlocks().size() > 0){
+        if (craft.getType().getMaterialSetProperty("forbiddenHoverOverBlocks").size() > 0){
             MovecraftLocation test = new MovecraftLocation(newHitBox.getMidPoint().getX(), newHitBox.getMinY(), newHitBox.getMidPoint().getZ());
             test = test.translate(0, -1, 0);
             while (test.toBukkit(world).getBlock().getType() == Material.AIR){
                 test = test.translate(0, -1, 0);
             }
             Material testType = test.toBukkit(world).getBlock().getType();
-            if (craft.getType().getForbiddenHoverOverBlocks().contains(testType)){
+            if (craft.getType().getMaterialSetProperty("forbiddenHoverOverBlocks").contains(testType)){
                 fail(String.format(I18nSupport.getInternationalisedString("Translation - Failed Craft over block"), testType.name().toLowerCase().replace("_", " ")));
             }
         }
@@ -648,7 +648,7 @@ public class TranslationTask extends AsyncTask {
             surfaceLoc = surfaceLoc.translate(0, 1, 0);
             testType = surfaceLoc.toBukkit(craft.getWorld()).getBlock().getType();
         } while ((testType != Material.AIR &&
-                !craft.getType().getPassthroughBlocks().contains(testType) &&
+                !craft.getType().getMaterialSetProperty("passthroughBlocks").contains(testType) &&
                 !oldHitBox.contains(surfaceLoc)) &&
                 surfaceLoc.getY() + 1 > craft.getType().getMaxHeightLimit(craft.getWorld()));
         return surfaceLoc;
@@ -670,7 +670,7 @@ public class TranslationTask extends AsyncTask {
         for (MovecraftLocation ml : collisionBox){
             Material testType = ml.toBukkit(craft.getWorld()).getBlock().getType();
             if (testType == Material.AIR ||
-                    craft.getType().getPassthroughBlocks().contains(testType) ||
+                    craft.getType().getMaterialSetProperty("passthroughBlocks").contains(testType) ||
                     (craft.getType().getMaterialSetProperty("harvestBlocks").contains(testType) &&
                             craft.getType().getMaterialSetProperty("harvesterBladeBlocks").contains(ml.translate(-dx, -dy, -dz).toBukkit(craft.getWorld()).getBlock().getType()))) {
                 continue;
@@ -715,7 +715,7 @@ public class TranslationTask extends AsyncTask {
                 MovecraftLocation dropped = translated.translate(0, dropDistance - 1 , 0);
                 Material testType = dropped.toBukkit(craft.getWorld()).getBlock().getType();
                 hitGround = testType != Material.AIR &&
-                        !craft.getType().getPassthroughBlocks().contains(testType) &&
+                        !craft.getType().getMaterialSetProperty("passthroughBlocks").contains(testType) &&
                         !(craft.getType().getMaterialSetProperty("harvestBlocks").contains(testType) &&
                         craft.getType().getMaterialSetProperty("harvesterBladeBlocks").contains(ml.toBukkit(craft.getWorld()).getBlock().getType())) ||
                         craft.getType().getMinHeightLimit(craft.getWorld()) == translated.translate(0, dropDistance + 1 , 0).getY();
@@ -757,7 +757,7 @@ public class TranslationTask extends AsyncTask {
             //If the lowest part of the bottom locs touch the ground, return true anyways
             if (testType == Material.AIR){
                 continue;
-            } else if (craft.getType().getPassthroughBlocks().contains(testType)) {
+            } else if (craft.getType().getMaterialSetProperty("passthroughBlocks").contains(testType)) {
                 continue;
             } else if (craft.getType().getMaterialSetProperty("harvestBlocks").contains(testType) && craft.getType().getMaterialSetProperty("harvesterBladeBlocks").contains(bottomLoc.toBukkit(craft.getWorld()).getBlock().getType())) {
                 continue;
@@ -773,7 +773,7 @@ public class TranslationTask extends AsyncTask {
             if (hitBox.contains(beneath) ||
                     bottomLocs.contains(beneath) ||
                     testType == Material.AIR ||
-                    type.getPassthroughBlocks().contains(testType) ||
+                    type.getMaterialSetProperty("passthroughBlocks").contains(testType) ||
                     (type.getMaterialSetProperty("harvestBlocks").contains(testType) && type.getMaterialSetProperty("harvesterBladeBlocks").contains(translatedBottomLoc.translate(-dx, -dy, -dz).toBukkit(craft.getWorld()).getBlock().getType()))){
                 continue;
             }
