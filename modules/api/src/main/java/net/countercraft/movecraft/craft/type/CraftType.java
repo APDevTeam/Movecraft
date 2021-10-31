@@ -283,6 +283,10 @@ final public class CraftType {
             data.remove("canFly");
             return data;
         });
+        registerTypeTransform((DoubleTransform) (data, type) -> {
+            data.remove("sinkSpeed");
+            return data;
+        });
 
         // Craft type validators
         registerTypeValidator(
