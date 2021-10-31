@@ -24,6 +24,14 @@ import net.countercraft.movecraft.craft.type.property.ObjectProperty;
 import net.countercraft.movecraft.craft.type.property.IntegerProperty;
 import net.countercraft.movecraft.craft.type.property.MaterialSetProperty;
 import net.countercraft.movecraft.craft.type.property.StringProperty;
+import net.countercraft.movecraft.craft.type.transform.BooleanTransform;
+import net.countercraft.movecraft.craft.type.transform.DoubleTransform;
+import net.countercraft.movecraft.craft.type.transform.FloatTransform;
+import net.countercraft.movecraft.craft.type.transform.IntegerTransform;
+import net.countercraft.movecraft.craft.type.transform.MaterialSetTransform;
+import net.countercraft.movecraft.craft.type.transform.ObjectTransform;
+import net.countercraft.movecraft.craft.type.transform.StringTransform;
+import net.countercraft.movecraft.craft.type.transform.Transform;
 import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.util.Pair;
 import net.countercraft.movecraft.util.Tags;
@@ -57,7 +65,7 @@ final public class CraftType {
         stringProperties.add(stringProperty);
     }
 
-    private final Map<String, String> stringPropertyMap;
+    private Map<String, String> stringPropertyMap;
 
     /**
      * Get a string property of this CraftType
@@ -82,7 +90,7 @@ final public class CraftType {
         intProperties.add(integerProperty);
     }
 
-    private final Map<String, Integer> intPropertyMap;
+    private Map<String, Integer> intPropertyMap;
 
     /**
      * Get an integer property of this CraftType
@@ -107,7 +115,7 @@ final public class CraftType {
         boolProperties.add(booleanProperty);
     }
 
-    private final Map<String, Boolean> boolPropertyMap;
+    private Map<String, Boolean> boolPropertyMap;
 
     /**
      * Get a boolean property of this CraftType
@@ -132,7 +140,7 @@ final public class CraftType {
         floatProperties.add(floatProperty);
     }
 
-    private final Map<String, Float> floatPropertyMap;
+    private Map<String, Float> floatPropertyMap;
 
     /**
      * Get a float property of this CraftType
@@ -157,7 +165,7 @@ final public class CraftType {
         doubleProperties.add(doubleProperty);
     }
 
-    private final Map<String, Double> doublePropertyMap;
+    private Map<String, Double> doublePropertyMap;
 
     /**
      * Get a double property of this CraftType
@@ -183,7 +191,7 @@ final public class CraftType {
         objectProperties.add(objectProperty);
     }
 
-    private final Map<String, Object> objectPropertyMap;
+    private Map<String, Object> objectPropertyMap;
 
     /**
      * Get an object property of this CraftType
@@ -210,7 +218,7 @@ final public class CraftType {
         materialSetProperties.add(materialSetProperty);
     }
 
-    private final Map<String, EnumSet<Material>> materialSetPropertyMap;
+    private Map<String, EnumSet<Material>> materialSetPropertyMap;
 
     /**
      * Get a material set property of this CraftType
@@ -224,14 +232,16 @@ final public class CraftType {
 
 
 
-    //  TODO: Transforms
-    /*
-     * Required transform features/options:
-     *      take one key and make a new one of a new type
-     *      take one key and make a new one of the same type
-     *      take one key and modify its value
-     *      take one key and delete it
+    static final List<Transform<?>> transforms = new ArrayList<>();
+
+    /**
+     * Register a craft type transform
+     *
+     * @param transform transform to modify the craft type
      */
+    public static void registerTypeTransform(Transform<?> transform) {
+        transforms.add(transform);
+    }
 
 
 
@@ -254,6 +264,7 @@ final public class CraftType {
         registerStringProperty(new StringProperty("name"));
         registerIntProperty(new IntegerProperty("maxSize"));
         registerIntProperty(new IntegerProperty("minSize"));
+        registerDoubleProperty(new DoubleProperty("speed"));
         registerMaterialSetProperty(new MaterialSetProperty("allowedBlocks"));
 
         // Optional properties
@@ -313,6 +324,17 @@ final public class CraftType {
         registerMaterialSetProperty(new MaterialSetProperty("dynamicFlyBlocks", type -> EnumSet.noneOf(Material.class)));
         registerMaterialSetProperty(new MaterialSetProperty("harvestBlocks", type -> EnumSet.noneOf(Material.class)));
         registerMaterialSetProperty(new MaterialSetProperty("harvesterBladeBlocks", type -> EnumSet.noneOf(Material.class)));
+
+        // Craft type transforms
+        registerTypeTransform((IntegerTransform) (data, type) -> {
+            int tickCooldown = (int) Math.ceil(20 / type.getDoubleProperty("speed"));
+            data.put("tickCooldown", tickCooldown);
+            return data;
+        });
+        registerTypeTransform((DoubleTransform) (data, type) -> {
+            data.remove("speed");
+            return data;
+        });
 
         // Craft type validators
         registerTypeValidator(
@@ -418,6 +440,24 @@ final public class CraftType {
                 materialSetPropertyMap.put(i.getKey(), value);
         }
 
+        // Transform craft type
+        for(var i : transforms) {
+            if(i instanceof StringTransform)
+                stringPropertyMap = ((StringTransform) i).transform(stringPropertyMap, this);
+            else if(i instanceof IntegerTransform)
+                intPropertyMap = ((IntegerTransform) i).transform(intPropertyMap, this);
+            else if(i instanceof BooleanTransform)
+                boolPropertyMap = ((BooleanTransform) i).transform(boolPropertyMap, this);
+            else if(i instanceof FloatTransform)
+                floatPropertyMap = ((FloatTransform) i).transform(floatPropertyMap, this);
+            else if(i instanceof DoubleTransform)
+                doublePropertyMap = ((DoubleTransform) i).transform(doublePropertyMap, this);
+            else if(i instanceof ObjectTransform)
+                objectPropertyMap = ((ObjectTransform) i).transform(objectPropertyMap, this);
+            else if(i instanceof MaterialSetTransform)
+                materialSetPropertyMap = ((MaterialSetTransform) i).transform(materialSetPropertyMap, this);
+        }
+
         // Validate craft type
         for(var i : validators) {
             if(!i.getLeft().test(this))
@@ -426,8 +466,6 @@ final public class CraftType {
 
 
         // Required craft flags
-        intPropertyMap.put("tickCooldown", (int) Math.ceil(20 / (data.getDouble("speed"))));
-
         forbiddenSignStrings = data.getStringListOrEmpty("forbiddenSignStrings").stream().map(String::toLowerCase).collect(Collectors.toSet());
         perWorldTickCooldown = new HashMap<>();
         Map<String, Double> tickCooldownMap = stringToDoubleMapFromObject(data.getDataOrEmpty("perWorldSpeed").getBackingData());
