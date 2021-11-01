@@ -6,6 +6,7 @@ import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -13,20 +14,7 @@ import java.util.function.Function;
 public class PerWorldProperty<Type> implements Property<Map<String, Type>> {
     private final String fileKey;
     private final NamespacedKey namespacedKey;
-    private final Function<CraftType, Map<String, Type>> defaultProvider;
-
-    /**
-     * Construct a PerWorldProperty
-     * <p>Note: this constructor makes this a required property.
-     *
-     * @param fileKey the key for this property
-     * @param namespacedKey the namespaced key for this property
-     */
-    public PerWorldProperty(@NotNull String fileKey, @NotNull NamespacedKey namespacedKey) {
-        this.fileKey = fileKey;
-        this.namespacedKey = namespacedKey;
-        this.defaultProvider = null;
-    }
+    private final Function<CraftType, Type> defaultProvider;
 
     /**
      * Construct a PerWorldProperty
@@ -35,7 +23,7 @@ public class PerWorldProperty<Type> implements Property<Map<String, Type>> {
      * @param namespacedKey the namespaced key for this property
      * @param defaultProvider the provider for the default value of this property
      */
-    public PerWorldProperty(@NotNull String fileKey, @NotNull NamespacedKey namespacedKey, @NotNull Function<CraftType, Map<String, Type>> defaultProvider) {
+    public PerWorldProperty(@NotNull String fileKey, @NotNull NamespacedKey namespacedKey, @NotNull Function<CraftType, Type> defaultProvider) {
         this.fileKey = fileKey;
         this.namespacedKey = namespacedKey;
         this.defaultProvider = defaultProvider;
@@ -57,7 +45,7 @@ public class PerWorldProperty<Type> implements Property<Map<String, Type>> {
             if(defaultProvider == null)
                 throw e;
 
-            return defaultProvider.apply(type);
+            return Collections.emptyMap();
         }
     }
 
@@ -94,5 +82,10 @@ public class PerWorldProperty<Type> implements Property<Map<String, Type>> {
     @NotNull
     public NamespacedKey getNamespacedKey() {
         return namespacedKey;
+    }
+
+    @NotNull
+    public Function<CraftType, Type> getDefaultProvider() {
+        return defaultProvider;
     }
 }
