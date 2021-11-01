@@ -381,10 +381,10 @@ final public class CraftType {
         registerProperty(new FloatProperty("collisionExplosion", COLLISION_EXPLOSION, type -> 0F));
         registerProperty(new IntegerProperty("minHeightLimit", MIN_HEIGHT_LIMIT, type -> 0));
         registerProperty(new PerWorldProperty<>("perWorldMinHeightLimit", PER_WORLD_MIN_HEIGHT_LIMIT, type -> type.getIntProperty(MIN_HEIGHT_LIMIT)));
-        registerProperty(new DoubleProperty("cruiseSpeed", CRUISE_SPEED, type -> 20.0 / type.getIntProperty(TICK_COOLDOWN)));
-        // TODO: perWorldCruiseSpeed -> perWorldCruiseTickCooldown
+        registerProperty(new DoubleProperty("cruiseSpeed", CRUISE_SPEED, type -> type.getDoubleProperty(SPEED)));
+        registerProperty(new PerWorldProperty<>("perWorldCruiseSpeed", PER_WORLD_CRUISE_SPEED, type -> type.getDoubleProperty(CRUISE_SPEED)));
         registerProperty(new DoubleProperty("vertCruiseSpeed", VERT_CRUISE_SPEED, type -> type.getDoubleProperty(CRUISE_SPEED)));
-        // TODO: perWorldVertCruiseSpeed -> perWorldVertCruiseTickCooldown
+        registerProperty(new PerWorldProperty<>("perWorldVertCruiseSpeed", PER_WORLD_VERT_CRUISE_SPEED, type -> type.getDoubleProperty(VERT_CRUISE_SPEED)));
         registerProperty(new IntegerProperty("maxHeightLimit", MAX_HEIGHT_LIMIT, type -> 255));
         registerProperty(new PerWorldProperty<>("perWorldMaxHeightLimit", PER_WORLD_MAX_HEIGHT_LIMIT, type -> type.getIntProperty(MAX_HEIGHT_LIMIT)));
         registerProperty(new IntegerProperty("maxHeightAboveGround", MAX_HEIGHT_ABOVE_GROUND, type -> -1));
@@ -482,7 +482,53 @@ final public class CraftType {
             data.put(PER_WORLD_TICK_COOLDOWN, new Pair<>(resultMap, defaultProvider));
             return data;
         });
-        // TODO: remove speed, sinkSpeed, cruiseSpeed, vertCruiseSpeed, perWorldSpeed
+        // Convert perWorldCruiseSpeed to PER_WORLD_CRUISE_TICK_COOLDOWN
+        registerTypeTransform((PerWorldTransform) (data, type) -> {
+            var map = data.get(PER_WORLD_CRUISE_SPEED).getLeft();
+            Map<String, Object> resultMap = new HashMap<>();
+            for(var i : map.entrySet()) {
+                var value = i.getValue();
+                if(!(value instanceof Double))
+                    throw new IllegalStateException("PER_WORLD_CRUISE_SPEED must be of type Double");
+                var world = i.getKey();
+                var skip = type.getPerWorldProperty(PER_WORLD_CRUISE_SKIP_BLOCKS, world);
+                if(!(skip instanceof Integer))
+                    throw new IllegalStateException("PER_WORLD_CRUISE_SKIP_BLOCKS must be of type Integer");
+                resultMap.put(world, (int) Math.round((1.0 + (int) skip) * 20.0 / (double) value));
+            }
+            var defaultProvider = (Function<CraftType, Object>) craftType -> craftType.getIntProperty(CRUISE_TICK_COOLDOWN);
+            data.put(PER_WORLD_CRUISE_TICK_COOLDOWN, new Pair<>(resultMap, defaultProvider));
+            return data;
+        });
+        // Convert perWorldVertCruiseSpeed to PER_WORLD_VERT_CRUISE_TICK_COOLDOWN
+        registerTypeTransform((PerWorldTransform) (data, type) -> {
+            var map = data.get(PER_WORLD_VERT_CRUISE_SPEED).getLeft();
+            Map<String, Object> resultMap = new HashMap<>();
+            for(var i : map.entrySet()) {
+                var value = i.getValue();
+                if(!(value instanceof Double))
+                    throw new IllegalStateException("PER_WORLD_VERT_CRUISE_SPEED must be of type Double");
+                var world = i.getKey();
+                var skip = type.getPerWorldProperty(PER_WORLD_VERT_CRUISE_SKIP_BLOCKS, world);
+                if(!(skip instanceof Integer))
+                    throw new IllegalStateException("PER_WORLD_VERT_CRUISE_SKIP_BLOCKS must be of type Integer");
+                resultMap.put(world, (int) Math.round((1.0 + (int) skip) * 20.0 / (double) value));
+            }
+            var defaultProvider = (Function<CraftType, Object>) craftType -> craftType.getIntProperty(VERT_CRUISE_TICK_COOLDOWN);
+            data.put(PER_WORLD_VERT_CRUISE_TICK_COOLDOWN, new Pair<>(resultMap, defaultProvider));
+            return data;
+        });
+        // Remove speed, sinkSpeed, cruiseSpeed, vertCruiseSpeed, perWorldSpeed, perWorldCruiseSpeed, and perWorldVertCruiseSpeed
+        registerTypeTransform((DoubleTransform) (data, type) -> {
+            data.remove(SPEED);
+            data.remove(PER_WORLD_SPEED);
+            data.remove(SINK_SPEED);
+            data.remove(CRUISE_SPEED);
+            data.remove(PER_WORLD_CRUISE_SPEED);
+            data.remove(VERT_CRUISE_SPEED);
+            data.remove(PER_WORLD_VERT_CRUISE_SPEED);
+            return data;
+        });
 
         /* Craft type validators */
         registerTypeValidator(
@@ -562,8 +608,6 @@ final public class CraftType {
 
 
     // TODO: Remaining legacy style properties
-    @NotNull private final Map<String, Integer> perWorldCruiseTickCooldown; // cruise speed setting
-    @NotNull private final Map<String, Integer> perWorldVertCruiseTickCooldown; // cruise speed setting
     @NotNull private final Set<String> forbiddenSignStrings;
     @NotNull private final Map<List<Material>, List<Double>> flyBlocks;
     @NotNull private final Map<List<Material>, List<Double>> moveBlocks;
@@ -583,45 +627,45 @@ final public class CraftType {
         objectPropertyMap = new HashMap<>();
         materialSetPropertyMap = new HashMap<>();
         perWorldPropertyMap = new HashMap<>();
-        for(var i : properties) {
-            if(i instanceof StringProperty) {
-                String value = ((StringProperty) i).load(data, this);
+        for(var property : properties) {
+            if(property instanceof StringProperty) {
+                String value = ((StringProperty) property).load(data, this);
                 if (value != null)
-                    stringPropertyMap.put(i.getNamespacedKey(), value);
+                    stringPropertyMap.put(property.getNamespacedKey(), value);
             }
-            else if(i instanceof IntegerProperty) {
-                Integer value = ((IntegerProperty) i).load(data, this);
+            else if(property instanceof IntegerProperty) {
+                Integer value = ((IntegerProperty) property).load(data, this);
                 if (value != null)
-                    intPropertyMap.put(i.getNamespacedKey(), value);
+                    intPropertyMap.put(property.getNamespacedKey(), value);
             }
-            else if(i instanceof BooleanProperty) {
-                Boolean value = ((BooleanProperty) i).load(data, this);
+            else if(property instanceof BooleanProperty) {
+                Boolean value = ((BooleanProperty) property).load(data, this);
                 if(value != null)
-                    boolPropertyMap.put(i.getNamespacedKey(), value);
+                    boolPropertyMap.put(property.getNamespacedKey(), value);
             }
-            else if(i instanceof FloatProperty) {
-                Float value = ((FloatProperty) i).load(data, this);
+            else if(property instanceof FloatProperty) {
+                Float value = ((FloatProperty) property).load(data, this);
                 if(value != null)
-                    floatPropertyMap.put(i.getNamespacedKey(), value);
+                    floatPropertyMap.put(property.getNamespacedKey(), value);
             }
-            else if(i instanceof DoubleProperty) {
-                Double value = ((DoubleProperty) i).load(data, this);
+            else if(property instanceof DoubleProperty) {
+                Double value = ((DoubleProperty) property).load(data, this);
                 if(value != null)
-                    doublePropertyMap.put(i.getNamespacedKey(), value);
+                    doublePropertyMap.put(property.getNamespacedKey(), value);
             }
-            else if(i instanceof ObjectProperty) {
-                Object value = ((ObjectProperty) i).load(data, this);
+            else if(property instanceof ObjectProperty) {
+                Object value = ((ObjectProperty) property).load(data, this);
                 if(value != null)
-                    objectPropertyMap.put(i.getNamespacedKey(), value);
+                    objectPropertyMap.put(property.getNamespacedKey(), value);
             }
-            else if(i instanceof MaterialSetProperty) {
-                EnumSet<Material> value = ((MaterialSetProperty) i).load(data, this);
+            else if(property instanceof MaterialSetProperty) {
+                EnumSet<Material> value = ((MaterialSetProperty) property).load(data, this);
                 if(value != null)
-                    materialSetPropertyMap.put(i.getNamespacedKey(), value);
+                    materialSetPropertyMap.put(property.getNamespacedKey(), value);
             }
-            else if(i instanceof PerWorldProperty<?>) {
-                var property = (PerWorldProperty<?>) i;
-                var map = property.load(data, this);
+            else if(property instanceof PerWorldProperty<?>) {
+                var perWorldProperty = (PerWorldProperty<?>) property;
+                var map = perWorldProperty.load(data, this);
                 if(map != null) {
                     // Conversion of the map is simple, copy it to one of the right type.
                     Map<String, Object> resultMap = new HashMap<>(map);
@@ -630,39 +674,39 @@ final public class CraftType {
                         Function<CraftType, Object>.  We can create a Function<CraftType, Object> by chaining an
                         identity Function<Object, Object> on the end.
                      */
-                    var defaultProvider = property.getDefaultProvider().andThen(
+                    var defaultProvider = perWorldProperty.getDefaultProvider().andThen(
                             (Function<Object, Object>) o -> o
                     );
                     var pair = new Pair<>(resultMap, defaultProvider);
-                    perWorldPropertyMap.put(i.getNamespacedKey(), pair);
+                    perWorldPropertyMap.put(perWorldProperty.getNamespacedKey(), pair);
                 }
             }
         }
 
         // Transform craft type
-        for(var i : transforms) {
-            if(i instanceof StringTransform)
-                stringPropertyMap = ((StringTransform) i).transform(stringPropertyMap, this);
-            else if(i instanceof IntegerTransform)
-                intPropertyMap = ((IntegerTransform) i).transform(intPropertyMap, this);
-            else if(i instanceof BooleanTransform)
-                boolPropertyMap = ((BooleanTransform) i).transform(boolPropertyMap, this);
-            else if(i instanceof FloatTransform)
-                floatPropertyMap = ((FloatTransform) i).transform(floatPropertyMap, this);
-            else if(i instanceof DoubleTransform)
-                doublePropertyMap = ((DoubleTransform) i).transform(doublePropertyMap, this);
-            else if(i instanceof ObjectTransform)
-                objectPropertyMap = ((ObjectTransform) i).transform(objectPropertyMap, this);
-            else if(i instanceof MaterialSetTransform)
-                materialSetPropertyMap = ((MaterialSetTransform) i).transform(materialSetPropertyMap, this);
-            else if(i instanceof PerWorldTransform)
-                perWorldPropertyMap = ((PerWorldTransform) i).transform(perWorldPropertyMap, this);
+        for(var transform : transforms) {
+            if(transform instanceof StringTransform)
+                stringPropertyMap = ((StringTransform) transform).transform(stringPropertyMap, this);
+            else if(transform instanceof IntegerTransform)
+                intPropertyMap = ((IntegerTransform) transform).transform(intPropertyMap, this);
+            else if(transform instanceof BooleanTransform)
+                boolPropertyMap = ((BooleanTransform) transform).transform(boolPropertyMap, this);
+            else if(transform instanceof FloatTransform)
+                floatPropertyMap = ((FloatTransform) transform).transform(floatPropertyMap, this);
+            else if(transform instanceof DoubleTransform)
+                doublePropertyMap = ((DoubleTransform) transform).transform(doublePropertyMap, this);
+            else if(transform instanceof ObjectTransform)
+                objectPropertyMap = ((ObjectTransform) transform).transform(objectPropertyMap, this);
+            else if(transform instanceof MaterialSetTransform)
+                materialSetPropertyMap = ((MaterialSetTransform) transform).transform(materialSetPropertyMap, this);
+            else if(transform instanceof PerWorldTransform)
+                perWorldPropertyMap = ((PerWorldTransform) transform).transform(perWorldPropertyMap, this);
         }
 
         // Validate craft type
-        for(var i : validators) {
-            if(!i.getLeft().test(this))
-                throw new IllegalArgumentException(i.getRight());
+        for(var validator : validators) {
+            if(!validator.getLeft().test(this))
+                throw new IllegalArgumentException(validator.getRight());
         }
 
 
@@ -672,37 +716,6 @@ final public class CraftType {
 
         // Optional craft flags
         moveBlocks = blockIDMapListFromObject("moveblocks", data.getDataOrEmpty("moveblocks").getBackingData());
-
-        perWorldCruiseTickCooldown = new HashMap<>();
-        Map<String, Double> cruiseTickCooldownMap = stringToDoubleMapFromObject(data.getDataOrEmpty("perWorldCruiseSpeed").getBackingData());
-        cruiseTickCooldownMap.forEach((world, speed) -> {
-            var perWorldCruiseSkipBlocks = perWorldPropertyMap.get(PER_WORLD_CRUISE_SKIP_BLOCKS).getLeft();
-            double worldCruiseSkipBlocks = (double) perWorldCruiseSkipBlocks.getOrDefault(world, getIntProperty(CRUISE_SKIP_BLOCKS));
-            perWorldCruiseTickCooldown.put(world, (int) Math.round((1.0 + worldCruiseSkipBlocks) * 20.0 / getDoubleProperty(CRUISE_SPEED)));
-        });
-        var tickCooldownMap = perWorldPropertyMap.get(PER_WORLD_TICK_COOLDOWN).getLeft();
-        tickCooldownMap.forEach((world, speed) -> {
-            if (!perWorldCruiseTickCooldown.containsKey(world)) {
-                if(!(speed instanceof Integer))
-                    throw new IllegalStateException("PER_WORLD_TICK_COOLDOWN must be of type int");
-                perWorldCruiseTickCooldown.put(world, (int) Math.round((1.0 + getIntProperty(CRUISE_SKIP_BLOCKS)) * 20.0 / (int) speed));
-            }
-        });
-
-        perWorldVertCruiseTickCooldown = new HashMap<>();
-        Map<String, Double> vertCruiseTickCooldownMap = stringToDoubleMapFromObject(data.getDataOrEmpty("perWorldVertCruiseSpeed").getBackingData());
-        vertCruiseTickCooldownMap.forEach((world, speed) -> {
-            var perWorldVertCruiseSkipBlocks = perWorldPropertyMap.get(PER_WORLD_VERT_CRUISE_SKIP_BLOCKS).getLeft();
-            double worldVertCruiseSkipBlocks = (double) perWorldVertCruiseSkipBlocks.getOrDefault(world, getIntProperty(VERT_CRUISE_SKIP_BLOCKS));
-            perWorldVertCruiseTickCooldown.put(world, (int) Math.round((1.0 + worldVertCruiseSkipBlocks) * 20.0 / speed));
-        });
-        cruiseTickCooldownMap.forEach((world, speed) -> {
-            if (!perWorldVertCruiseTickCooldown.containsKey(world)) {
-                var perWorldVertCruiseSkipBlocks = perWorldPropertyMap.get(PER_WORLD_VERT_CRUISE_SKIP_BLOCKS).getLeft();
-                double worldVertCruiseSkipBlocks = (double) perWorldVertCruiseSkipBlocks.getOrDefault(world, getIntProperty(VERT_CRUISE_SKIP_BLOCKS));
-                perWorldVertCruiseTickCooldown.put(world, (int) Math.round((1.0 + worldVertCruiseSkipBlocks) * 20.0 / getDoubleProperty(VERT_CRUISE_SPEED)));
-            }
-        });
 
         collisionSound = data.getSoundOrDefault("collisionSound",  Sound.sound(Key.key("block.anvil.land"), Sound.Source.NEUTRAL, 2.0f,1.0f));
         fuelTypes = new HashMap<>();
@@ -731,26 +744,6 @@ final public class CraftType {
         disableTeleportToWorlds = new HashSet<>();
         List<String> disabledWorlds = data.getStringListOrEmpty("disableTeleportToWorlds");
         disableTeleportToWorlds.addAll(disabledWorlds);
-    }
-
-    private Map<String, Integer> stringToIntMapFromObject(Map<String, Object> objMap) {
-        HashMap<String, Integer> returnMap = new HashMap<>();
-        for (Object key : objMap.keySet()) {
-            String str = (String) key;
-            Integer i = (Integer) objMap.get(key);
-            returnMap.put(str, i);
-        }
-        return returnMap;
-    }
-
-    private Map<String, Double> stringToDoubleMapFromObject(Map<String, Object> objMap) {
-        HashMap<String, Double> returnMap = new HashMap<>();
-        for (Object key : objMap.keySet()) {
-            String str = (String) key;
-            Double d = (Double) objMap.get(key);
-            returnMap.put(str, d);
-        }
-        return returnMap;
     }
 
     private Map<List<Material>, List<Double>> blockIDMapListFromObject(String key, Map<String, Object> objMap) {
@@ -855,11 +848,11 @@ final public class CraftType {
     }
 
     public int getCruiseTickCooldown(@NotNull World world) {
-        return perWorldCruiseTickCooldown.getOrDefault(world.getName(), getIntProperty(CRUISE_TICK_COOLDOWN));
+        return (int) getPerWorldProperty(PER_WORLD_CRUISE_TICK_COOLDOWN, world);
     }
 
     public int getVertCruiseTickCooldown(@NotNull World world) {
-        return perWorldVertCruiseTickCooldown.getOrDefault(world.getName(), getIntProperty(VERT_CRUISE_TICK_COOLDOWN));
+        return (int) getPerWorldProperty(PER_WORLD_VERT_CRUISE_TICK_COOLDOWN, world);
     }
 
     @NotNull
