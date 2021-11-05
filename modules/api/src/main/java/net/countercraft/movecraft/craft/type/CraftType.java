@@ -426,10 +426,9 @@ final public class CraftType {
                         throw new TypeData.InvalidValueException("Value for " + fileKey + " must not be an empty map");
 
                     Map<Material, Double> fuelTypes = new HashMap<>();
-                    for(String key : map.keySet()) {
-                        EnumSet<Material> materials;
-                        materials = Tags.parseMaterials(key);
-                        Object o = map.get(key);
+                    for(var i : map.entrySet()) {
+                        EnumSet<Material> materials = Tags.parseMaterials(i.getKey());
+                        Object o = i.getValue();
                         double burnRate;
                         if (o instanceof String)
                             burnRate = Double.parseDouble((String) o);
