@@ -514,7 +514,10 @@ public class AsyncManager extends BukkitRunnable {
                         notification = notification.append(Component.text("."));
 
                         ccraft.getAudience().sendMessage(notification);
-                        ccraft.getAudience().playSound(ccraft.getType().getCollisionSound());
+                        var object = ccraft.getType().getObjectProperty(CraftType.COLLISION_SOUND);
+                        if(!(object instanceof Sound))
+                            throw new IllegalStateException("COLLISION_SOUND must be of type Sound");
+                        ccraft.getAudience().playSound((Sound) object);
 
 
                         long timestamp = System.currentTimeMillis();

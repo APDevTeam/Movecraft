@@ -415,7 +415,10 @@ final public class CraftType {
         registerProperty(new DoubleProperty("chestPenalty", CHEST_PENALTY, type -> 0D));
         registerProperty(new IntegerProperty("gravityInclineDistance", GRAVITY_INCLINE_DISTANCE, type -> -1));
         registerProperty(new IntegerProperty("gravityDropDistance", GRAVITY_DROP_DISTANCE, type -> -8));
-        // TODO: collisionSound
+        registerProperty(new ObjectPropertyImpl("collisionSound", COLLISION_SOUND,
+                (data, type, fileKey, namespacedKey) -> data.getSound(fileKey),
+                type -> Sound.sound(Key.key("block.anvil.land"), Sound.Source.NEUTRAL, 2.0f,1.0f)
+        ));
         // TODO: fuelTypes
         registerProperty(new ObjectPropertyImpl("disableTeleportToWorlds", DISABLE_TELEPORT_TO_WORLDS,
                 (data, type, fileKey, namespacedKey) -> data.getStringList(fileKey),
@@ -620,7 +623,6 @@ final public class CraftType {
     @NotNull private final Map<List<Material>, List<Double>> flyBlocks;
     @NotNull private final Map<List<Material>, List<Double>> moveBlocks;
     @NotNull private final Map<Material, Double> fuelTypes;
-    private final Sound collisionSound;
 
     public CraftType(File f) {
         TypeData data = TypeData.loadConfiguration(f);
@@ -723,7 +725,6 @@ final public class CraftType {
         // Optional craft flags
         moveBlocks = blockIDMapListFromObject("moveblocks", data.getDataOrEmpty("moveblocks").getBackingData());
 
-        collisionSound = data.getSoundOrDefault("collisionSound",  Sound.sound(Key.key("block.anvil.land"), Sound.Source.NEUTRAL, 2.0f,1.0f));
         fuelTypes = new HashMap<>();
         Map<String, Object> fTypes =  data.getDataOrEmpty("fuelTypes").getBackingData();
         if (!fTypes.isEmpty()) {
@@ -829,11 +830,6 @@ final public class CraftType {
     @NotNull
     public Map<List<Material>, List<Double>> getMoveBlocks() {
         return moveBlocks;
-    }
-
-    @NotNull
-    public Sound getCollisionSound() {
-        return collisionSound;
     }
 
     @NotNull
