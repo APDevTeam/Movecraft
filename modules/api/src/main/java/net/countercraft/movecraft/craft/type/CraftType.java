@@ -419,7 +419,38 @@ final public class CraftType {
                 (data, type, fileKey, namespacedKey) -> data.getSound(fileKey),
                 type -> Sound.sound(Key.key("block.anvil.land"), Sound.Source.NEUTRAL, 2.0f,1.0f)
         ));
-        // TODO: fuelTypes
+        registerProperty(new ObjectPropertyImpl("fuelTypes", FUEL_TYPES,
+                (data, type, fileKey, namespacedKey) -> {
+                    var map = data.getData(fileKey).getBackingData();
+                    if(map.isEmpty())
+                        throw new TypeData.InvalidValueException("Value for " + fileKey + " must not be an empty map");
+
+                    Map<Material, Double> fuelTypes = new HashMap<>();
+                    for(String key : map.keySet()) {
+                        EnumSet<Material> materials;
+                        materials = Tags.parseMaterials(key);
+                        Object o = map.get(key);
+                        double burnRate;
+                        if (o instanceof String)
+                            burnRate = Double.parseDouble((String) o);
+                        else if (o instanceof Integer)
+                            burnRate = ((Integer) o).doubleValue();
+                        else
+                            burnRate = (double) o;
+                        for(Material m : materials) {
+                            fuelTypes.put(m, burnRate);
+                        }
+                    }
+                    return fuelTypes;
+                },
+                type -> {
+                    Map<Material, Double> fuelTypes = new HashMap<>();
+                    fuelTypes.put(Material.COAL_BLOCK, 80.0);
+                    fuelTypes.put(Material.COAL, 8.0);
+                    fuelTypes.put(Material.CHARCOAL, 8.0);
+                    return fuelTypes;
+                }
+        ));
         registerProperty(new ObjectPropertyImpl("disableTeleportToWorlds", DISABLE_TELEPORT_TO_WORLDS,
                 (data, type, fileKey, namespacedKey) -> data.getStringList(fileKey),
                 type -> new ArrayList<>()
@@ -622,7 +653,6 @@ final public class CraftType {
     // TODO: Remaining legacy style properties
     @NotNull private final Map<List<Material>, List<Double>> flyBlocks;
     @NotNull private final Map<List<Material>, List<Double>> moveBlocks;
-    @NotNull private final Map<Material, Double> fuelTypes;
 
     public CraftType(File f) {
         TypeData data = TypeData.loadConfiguration(f);
@@ -724,30 +754,6 @@ final public class CraftType {
 
         // Optional craft flags
         moveBlocks = blockIDMapListFromObject("moveblocks", data.getDataOrEmpty("moveblocks").getBackingData());
-
-        fuelTypes = new HashMap<>();
-        Map<String, Object> fTypes =  data.getDataOrEmpty("fuelTypes").getBackingData();
-        if (!fTypes.isEmpty()) {
-            for (String k : fTypes.keySet()) {
-                Material type;
-                type = Material.getMaterial(k.toUpperCase());
-                Object v = fTypes.get(k);
-                double burnRate;
-                if (v instanceof String) {
-                    burnRate = Double.parseDouble((String) v);
-                } else if (v instanceof Integer) {
-                    burnRate = ((Integer) v).doubleValue();
-                } else {
-                    burnRate = (double) v;
-                }
-                fuelTypes.put(type, burnRate);
-            }
-        }
-        else {
-            fuelTypes.put(Material.COAL_BLOCK, 79.0);
-            fuelTypes.put(Material.COAL, 7.0);
-            fuelTypes.put(Material.CHARCOAL, 7.0);
-        }
     }
 
     private Map<List<Material>, List<Double>> blockIDMapListFromObject(String key, Map<String, Object> objMap) {
@@ -830,11 +836,6 @@ final public class CraftType {
     @NotNull
     public Map<List<Material>, List<Double>> getMoveBlocks() {
         return moveBlocks;
-    }
-
-    @NotNull
-    public Map<Material, Double> getFuelTypes() {
-        return fuelTypes;
     }
 
     public static class TypeNotFoundException extends RuntimeException {

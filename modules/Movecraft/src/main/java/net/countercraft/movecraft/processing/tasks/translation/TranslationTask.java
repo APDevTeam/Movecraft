@@ -37,6 +37,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 public class TranslationTask implements Supplier<Effect> {
@@ -201,8 +202,19 @@ public class TranslationTask implements Supplier<Effect> {
     }
 
     private static @Nullable ItemStack findFuelStack(@NotNull CraftType type, @NotNull FurnaceInventory inventory){
-        for(var item : inventory){
-            if(item == null || !type.getFuelTypes().containsKey(item.getType())){
+        var v = type.getObjectProperty(CraftType.FUEL_TYPES);
+        if(!(v instanceof Map<?, ?>))
+            throw new IllegalStateException("FUEL_TYPES must be of type Map");
+        var fuelTypes = (Map<?, ?>) v;
+        for(var e : fuelTypes.entrySet()) {
+            if(!(e.getKey() instanceof Material))
+                throw new IllegalStateException("Keys in FUEL_TYPES must be of type Material");
+            if(!(e.getValue() instanceof Double))
+                throw new IllegalStateException("Values in FUEL_TYPES must be of type Double");
+        }
+
+        for(var item : inventory) {
+            if(item == null || !fuelTypes.containsKey(item.getType())){
                 continue;
             }
             return item;
@@ -210,8 +222,19 @@ public class TranslationTask implements Supplier<Effect> {
         return null;
     }
 
-    private static @NotNull FuelBurnEvent callFuelEvent(@NotNull Craft craft, @NotNull ItemStack burningFuel){
+    private static @NotNull FuelBurnEvent callFuelEvent(@NotNull Craft craft, @NotNull ItemStack burningFuel) {
+        var v = craft.getType().getObjectProperty(CraftType.FUEL_TYPES);
+        if(!(v instanceof Map<?, ?>))
+            throw new IllegalStateException("FUEL_TYPES must be of type Map");
+        var fuelTypes = (Map<?, ?>) v;
+        for(var e : fuelTypes.entrySet()) {
+            if(!(e.getKey() instanceof Material))
+                throw new IllegalStateException("Keys in FUEL_TYPES must be of type Material");
+            if(!(e.getValue() instanceof Double))
+                throw new IllegalStateException("Values in FUEL_TYPES must be of type Double");
+        }
+
         double fuelBurnRate = (double) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_FUEL_BURN_RATE, craft.getWorld());
-        return submitEvent(new FuelBurnEvent(craft, craft.getType().getFuelTypes().get(burningFuel.getType()), fuelBurnRate));
+        return submitEvent(new FuelBurnEvent(craft, (double) fuelTypes.get(burningFuel.getType()), fuelBurnRate));
     }
 }

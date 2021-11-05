@@ -52,18 +52,29 @@ public final class StatusSign implements Listener{
         int fuel=0;
         int totalBlocks=0;
         Counter<Material> foundBlocks = new Counter<>();
+
+        var v = craft.getType().getObjectProperty(CraftType.FUEL_TYPES);
+        if(!(v instanceof Map<?, ?>))
+            throw new IllegalStateException("FUEL_TYPES must be of type Map");
+        var fuelTypes = (Map<?, ?>) v;
+        for(var e : fuelTypes.entrySet()) {
+            if(!(e.getKey() instanceof Material))
+                throw new IllegalStateException("Keys in FUEL_TYPES must be of type Material");
+            if(!(e.getValue() instanceof Double))
+                throw new IllegalStateException("Values in FUEL_TYPES must be of type Double");
+        }
+
         for (MovecraftLocation ml : craft.getHitBox()) {
             Material blockID = craft.getWorld().getBlockAt(ml.getX(), ml.getY(), ml.getZ()).getType();
             foundBlocks.add(blockID);
 
             if (blockID == Material.FURNACE) {
                 InventoryHolder inventoryHolder = (InventoryHolder) craft.getWorld().getBlockAt(ml.getX(), ml.getY(), ml.getZ()).getState();
-                Map<Material, Double> fuelTypes = craft.getType().getFuelTypes();
                 for (ItemStack iStack : inventoryHolder.getInventory()) {
                     if (iStack == null || !fuelTypes.containsKey(iStack.getType())) {
                         continue;
                     }
-                    fuel += iStack.getAmount() * fuelTypes.get(iStack.getType());
+                    fuel += iStack.getAmount() * (double) fuelTypes.get(iStack.getType());
                 }
             }
             if (blockID != Material.AIR && blockID != Material.FIRE) {

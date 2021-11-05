@@ -30,6 +30,7 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 
@@ -56,7 +57,7 @@ public abstract class AsyncTask extends BukkitRunnable {
         return craft;
     }
 
-    protected boolean checkFuel(){
+    protected boolean checkFuel() {
         // check for fuel, burn some from a furnace if needed. Blocks of coal are supported, in addition to coal and charcoal
         double fuelBurnRate = (double) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_FUEL_BURN_RATE, craft.getWorld());
         if (fuelBurnRate == 0.0 || craft.getSinking()) {
@@ -75,12 +76,24 @@ public abstract class AsyncTask extends BukkitRunnable {
             return true;
         }
         Block fuelHolder = null;
+
+        var v = craft.getType().getObjectProperty(CraftType.FUEL_TYPES);
+        if(!(v instanceof Map<?, ?>))
+            throw new IllegalStateException("FUEL_TYPES must be of type Map");
+        var fuelTypes = (Map<?, ?>) v;
+        for(var e : fuelTypes.entrySet()) {
+            if(!(e.getKey() instanceof Material))
+                throw new IllegalStateException("Keys in FUEL_TYPES must be of type Material");
+            if(!(e.getValue() instanceof Double))
+                throw new IllegalStateException("Values in FUEL_TYPES must be of type Double");
+        }
+
         for (MovecraftLocation bTest : craft.getHitBox()) {
             Block b = craft.getWorld().getBlockAt(bTest.getX(), bTest.getY(), bTest.getZ());
             if (b.getType() == Material.FURNACE) {
                 InventoryHolder inventoryHolder = (InventoryHolder) b.getState();
                 for (ItemStack stack : inventoryHolder.getInventory()) {
-                    if (stack == null || !craft.getType().getFuelTypes().containsKey(stack.getType()))
+                    if (stack == null || !fuelTypes.containsKey(stack.getType()))
                         continue;
                     fuelHolder = b;
                     break;
@@ -94,9 +107,9 @@ public abstract class AsyncTask extends BukkitRunnable {
         for (ItemStack iStack : inventoryHolder.getInventory()) {
             if (iStack == null)
                 continue;
-            if (!craft.getType().getFuelTypes().containsKey(iStack.getType()))
+            if (!fuelTypes.containsKey(iStack.getType()))
                 continue;
-            double burningFuel = craft.getType().getFuelTypes().get(iStack.getType());
+            double burningFuel = (double) fuelTypes.get(iStack.getType());
             //call event
             final FuelBurnEvent event = new FuelBurnEvent(craft, burningFuel, fuelBurnRate);
             Bukkit.getPluginManager().callEvent(event);
