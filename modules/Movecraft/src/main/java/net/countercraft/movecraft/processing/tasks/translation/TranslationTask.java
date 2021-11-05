@@ -121,7 +121,7 @@ public class TranslationTask implements Supplier<Effect> {
             }
             collisions.add(destination);
         }
-        var fuelBurnRate = craft.getType().getFuelBurnRate(preTranslateEvent.getWorld());
+        double fuelBurnRate = (double) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_FUEL_BURN_RATE, preTranslateEvent.getWorld());
         Effect fuelBurnEffect;
         if (craft.getBurningFuel() >= fuelBurnRate) {
             //call event
@@ -211,6 +211,7 @@ public class TranslationTask implements Supplier<Effect> {
     }
 
     private static @NotNull FuelBurnEvent callFuelEvent(@NotNull Craft craft, @NotNull ItemStack burningFuel){
-        return submitEvent(new FuelBurnEvent(craft, craft.getType().getFuelTypes().get(burningFuel.getType()), craft.getType().getFuelBurnRate(craft.getWorld())));
+        double fuelBurnRate = (double) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_FUEL_BURN_RATE, craft.getWorld());
+        return submitEvent(new FuelBurnEvent(craft, craft.getType().getFuelTypes().get(burningFuel.getType()), fuelBurnRate));
     }
 }

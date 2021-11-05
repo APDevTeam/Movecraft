@@ -20,6 +20,7 @@ package net.countercraft.movecraft.async;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.FuelBurnEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.Bukkit;
@@ -57,7 +58,7 @@ public abstract class AsyncTask extends BukkitRunnable {
 
     protected boolean checkFuel(){
         // check for fuel, burn some from a furnace if needed. Blocks of coal are supported, in addition to coal and charcoal
-        double fuelBurnRate = craft.getType().getFuelBurnRate(craft.getWorld());
+        double fuelBurnRate = (double) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_FUEL_BURN_RATE, craft.getWorld());
         if (fuelBurnRate == 0.0 || craft.getSinking()) {
             return true;
         }

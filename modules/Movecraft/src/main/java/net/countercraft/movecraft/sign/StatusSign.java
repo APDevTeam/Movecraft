@@ -2,6 +2,7 @@ package net.countercraft.movecraft.sign;
 
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
 import net.countercraft.movecraft.util.Counter;
@@ -114,7 +115,10 @@ public final class StatusSign implements Listener{
             signLine++;
         }
         String fuelText="";
-        int fuelRange=(int) ((fuel*(1+(craft.getType().getCruiseSkipBlocks(craft.getWorld())+1)))/craft.getType().getFuelBurnRate(craft.getWorld()));
+        int cruiseSkipBlocks = (int) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_CRUISE_SKIP_BLOCKS, craft.getWorld());
+        cruiseSkipBlocks++;
+        double fuelBurnRate = (double) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_FUEL_BURN_RATE, craft.getWorld());
+        int fuelRange= (int) Math.round((fuel * (1 + cruiseSkipBlocks)) / fuelBurnRate);
         if(fuelRange>1000) {
             fuelText+=ChatColor.GREEN;
         } else if(fuelRange>100) {

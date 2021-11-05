@@ -14,7 +14,8 @@ public class MaxHeightValidator implements TetradicPredicate<MovecraftLocation, 
     @Override
     @Contract(pure = true)
     public @NotNull Result validate(@NotNull MovecraftLocation translation, @NotNull MovecraftWorld world, @NotNull HitBox hitBox, @NotNull CraftType type){
-        if (translation.getY() > 0 && hitBox.getMaxY() > type.getMaxHeightLimit(world) && type.getFloatProperty(CraftType.COLLISION_EXPLOSION) <= 0F) {
+        int maxHeightLimit = (int) type.getPerWorldProperty(CraftType.PER_WORLD_MAX_HEIGHT_LIMIT, world);
+        if (translation.getY() > 0 && hitBox.getMaxY() > maxHeightLimit && type.getFloatProperty(CraftType.COLLISION_EXPLOSION) <= 0F) {
             return Result.failWithMessage(I18nSupport.getInternationalisedString("Translation - Failed Craft hit height limit"));
         }
         return Result.succeed();

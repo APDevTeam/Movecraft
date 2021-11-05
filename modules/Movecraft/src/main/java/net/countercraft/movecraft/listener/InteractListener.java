@@ -92,7 +92,7 @@ public final class InteractListener implements Listener {
                 return;
             }
             Long time = timeMap.get(player);
-            int tickCooldown = craft.getType().getTickCooldown(craft.getWorld());
+            int tickCooldown = (int) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_TICK_COOLDOWN, craft.getWorld());
             if (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_DIRECT_MOVEMENT) && type.getBoolProperty(CraftType.TICK_COOLDOWN)) {
                 tickCooldown *= currentGear;
             }

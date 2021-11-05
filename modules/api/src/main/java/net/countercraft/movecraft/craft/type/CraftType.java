@@ -823,38 +823,6 @@ final public class CraftType {
         return forbiddenSignStrings;
     }
 
-    public int getCruiseSkipBlocks(@NotNull World world) {
-        return (int) getPerWorldProperty(PER_WORLD_CRUISE_SKIP_BLOCKS, world);
-    }
-
-    public int getVertCruiseSkipBlocks(@NotNull World world) {
-        return (int) getPerWorldProperty(PER_WORLD_VERT_CRUISE_SKIP_BLOCKS, world);
-    }
-
-    public double getFuelBurnRate(@NotNull World world) {
-        return (double) getPerWorldProperty(PER_WORLD_FUEL_BURN_RATE, world);
-    }
-
-    public double getDetectionMultiplier(@NotNull World world) {
-        return (double) getPerWorldProperty(PER_WORLD_DETECTION_MULTIPLIER, world);
-    }
-
-    public double getUnderwaterDetectionMultiplier(@NotNull World world) {
-        return (double) getPerWorldProperty(PER_WORLD_UNDERWATER_DETECTION_MULTIPLIER, world);
-    }
-
-    public int getTickCooldown(@NotNull World world) {
-        return (int) getPerWorldProperty(PER_WORLD_TICK_COOLDOWN, world);
-    }
-
-    public int getCruiseTickCooldown(@NotNull World world) {
-        return (int) getPerWorldProperty(PER_WORLD_CRUISE_TICK_COOLDOWN, world);
-    }
-
-    public int getVertCruiseTickCooldown(@NotNull World world) {
-        return (int) getPerWorldProperty(PER_WORLD_VERT_CRUISE_TICK_COOLDOWN, world);
-    }
-
     @NotNull
     public Map<List<Material>, List<Double>> getFlyBlocks() {
         return flyBlocks;
@@ -863,26 +831,6 @@ final public class CraftType {
     @NotNull
     public Map<List<Material>, List<Double>> getMoveBlocks() {
         return moveBlocks;
-    }
-
-    public int getMaxHeightLimit(@NotNull World world) {
-        return (int) getPerWorldProperty(PER_WORLD_MAX_HEIGHT_LIMIT, world);
-    }
-
-    public int getMaxHeightLimit(@NotNull MovecraftWorld world) {
-        return (int) getPerWorldProperty(PER_WORLD_MAX_HEIGHT_LIMIT, world);
-    }
-
-    public int getMinHeightLimit(@NotNull World world) {
-        return (int) getPerWorldProperty(PER_WORLD_MIN_HEIGHT_LIMIT, world);
-    }
-
-    public int getMinHeightLimit(@NotNull MovecraftWorld world) {
-        return (int) getPerWorldProperty(PER_WORLD_MAX_HEIGHT_LIMIT, world);
-    }
-
-    public int getMaxHeightAboveGround(@NotNull World world) {
-        return (int) getPerWorldProperty(PER_WORLD_MAX_HEIGHT_ABOVE_GROUND, world);
     }
 
     @NotNull
