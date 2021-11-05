@@ -404,7 +404,7 @@ public abstract class BaseCraft implements Craft{
         }
 
         if(type.getDoubleProperty(CraftType.DYNAMIC_FLY_BLOCK_SPEED_FACTOR) == 0.0 || type.getDoubleProperty(CraftType.DYNAMIC_LAG_POWER_FACTOR) == 0.0 || Math.abs(type.getDoubleProperty(CraftType.DYNAMIC_LAG_POWER_FACTOR)) > 1.0)
-            return (cruiseTickCooldown + chestPenalty) * (type.getBoolProperty(CraftType.TICK_COOLDOWN) ? currentGear : 1);
+            return (cruiseTickCooldown + chestPenalty) * (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1);
         if(stats.getCount() == 0)
             return (int) Math.round(20.0 * ((cruiseTickCooldown + 1.0) / type.getDoubleProperty(CraftType.DYNAMIC_LAG_MIN_SPEED)) * (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1));
 

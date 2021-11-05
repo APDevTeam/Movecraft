@@ -246,13 +246,15 @@ public class AsyncManager extends BukkitRunnable {
             int dz = 0;
             int dy = 0;
 
+            int vertCruiseSkipBlocks = (int) pcraft.getType().getPerWorldProperty(CraftType.PER_WORLD_VERT_CRUISE_SKIP_BLOCKS, pcraft.getWorld());
+
             // ascend
             if (pcraft.getCruiseDirection() == CruiseDirection.UP) {
-                dy = 1 + pcraft.getType().getIntProperty(CraftType.VERT_CRUISE_SKIP_BLOCKS);
+                dy = 1 + vertCruiseSkipBlocks;
             }
             // descend
             if (pcraft.getCruiseDirection() == CruiseDirection.DOWN) {
-                dy = -1 - pcraft.getType().getIntProperty(CraftType.VERT_CRUISE_SKIP_BLOCKS);
+                dy = -1 - vertCruiseSkipBlocks;
                 if (pcraft.getHitBox().getMinY() <= w.getSeaLevel()) {
                     dy = -1;
                 }
