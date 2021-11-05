@@ -23,6 +23,7 @@ import net.countercraft.movecraft.craft.type.property.FloatProperty;
 import net.countercraft.movecraft.craft.type.property.ObjectProperty;
 import net.countercraft.movecraft.craft.type.property.IntegerProperty;
 import net.countercraft.movecraft.craft.type.property.MaterialSetProperty;
+import net.countercraft.movecraft.craft.type.property.ObjectPropertyImpl;
 import net.countercraft.movecraft.craft.type.property.PerWorldProperty;
 import net.countercraft.movecraft.craft.type.property.Property;
 import net.countercraft.movecraft.craft.type.property.StringProperty;
@@ -54,7 +55,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -144,6 +144,9 @@ final public class CraftType {
     public static final NamespacedKey CHEST_PENALTY = buildKey("chest_penalty");
     public static final NamespacedKey GRAVITY_INCLINE_DISTANCE = buildKey("gravity_incline_distance");
     public static final NamespacedKey GRAVITY_DROP_DISTANCE = buildKey("gravity_drop_distance");
+    public static final NamespacedKey COLLISION_SOUND = buildKey("collision_sound");
+    public static final NamespacedKey FUEL_TYPES = buildKey("fuel_types");
+    public static final NamespacedKey DISABLE_TELEPORT_TO_WORLDS = buildKey("disable_teleport_to_worlds");
     public static final NamespacedKey TELEPORTATION_COOLDOWN = buildKey("teleportation_cooldown");
     public static final NamespacedKey GEAR_SHIFTS = buildKey("gear_shifts");
     public static final NamespacedKey GEAR_SHIFTS_AFFECT_TICK_COOLDOWN = buildKey("gear_shifts_affect_tick_cooldown");
@@ -336,7 +339,10 @@ final public class CraftType {
         registerProperty(new DoubleProperty("speed", SPEED));
 
         /* Optional properties */
-        // TODO: forbiddenSignStrings
+        registerProperty(new ObjectPropertyImpl("forbiddenSignStrings", FORBIDDEN_SIGN_STRINGS,
+                (data, type, fileKey, namespacedKey) -> data.getStringListOrEmpty(fileKey).stream().map(String::toLowerCase).collect(Collectors.toSet()),
+                craftType -> new HashSet<>()
+        ));
         registerProperty(new PerWorldProperty<>("perWorldSpeed", PER_WORLD_SPEED, type -> type.getDoubleProperty(SPEED)));
         // TODO: flyBlocks
         registerProperty(new MaterialSetProperty("forbiddenBlocks", FORBIDDEN_BLOCKS, type -> EnumSet.noneOf(Material.class)));
@@ -411,7 +417,10 @@ final public class CraftType {
         registerProperty(new IntegerProperty("gravityDropDistance", GRAVITY_DROP_DISTANCE, type -> -8));
         // TODO: collisionSound
         // TODO: fuelTypes
-        // TODO: disableTeleportToWorlds
+        registerProperty(new ObjectPropertyImpl("disableTeleportToWorlds", DISABLE_TELEPORT_TO_WORLDS,
+                (data, type, fileKey, namespacedKey) -> data.getStringList(fileKey),
+                type -> new ArrayList<>()
+        ));
         registerProperty(new IntegerProperty("teleportationCooldown", TELEPORTATION_COOLDOWN, type -> 0));
         registerProperty(new IntegerProperty("gearShifts", GEAR_SHIFTS, type -> 1));
         registerProperty(new BooleanProperty("gearShiftsAffectTickCooldown", GEAR_SHIFTS_AFFECT_TICK_COOLDOWN, type -> true));
@@ -608,11 +617,9 @@ final public class CraftType {
 
 
     // TODO: Remaining legacy style properties
-    @NotNull private final Set<String> forbiddenSignStrings;
     @NotNull private final Map<List<Material>, List<Double>> flyBlocks;
     @NotNull private final Map<List<Material>, List<Double>> moveBlocks;
     @NotNull private final Map<Material, Double> fuelTypes;
-    @NotNull private final Set<String> disableTeleportToWorlds;
     private final Sound collisionSound;
 
     public CraftType(File f) {
@@ -711,7 +718,6 @@ final public class CraftType {
 
 
         // Required craft flags
-        forbiddenSignStrings = data.getStringListOrEmpty("forbiddenSignStrings").stream().map(String::toLowerCase).collect(Collectors.toSet());
         flyBlocks = blockIDMapListFromObject("flyblocks", data.getDataOrEmpty("flyblocks").getBackingData());
 
         // Optional craft flags
@@ -741,9 +747,6 @@ final public class CraftType {
             fuelTypes.put(Material.COAL, 7.0);
             fuelTypes.put(Material.CHARCOAL, 7.0);
         }
-        disableTeleportToWorlds = new HashSet<>();
-        List<String> disabledWorlds = data.getStringListOrEmpty("disableTeleportToWorlds");
-        disableTeleportToWorlds.addAll(disabledWorlds);
     }
 
     private Map<List<Material>, List<Double>> blockIDMapListFromObject(String key, Map<String, Object> objMap) {
@@ -819,11 +822,6 @@ final public class CraftType {
     }
 
     @NotNull
-    public Set<String> getForbiddenSignStrings() {
-        return forbiddenSignStrings;
-    }
-
-    @NotNull
     public Map<List<Material>, List<Double>> getFlyBlocks() {
         return flyBlocks;
     }
@@ -841,11 +839,6 @@ final public class CraftType {
     @NotNull
     public Map<Material, Double> getFuelTypes() {
         return fuelTypes;
-    }
-
-    @NotNull
-    public Set<String> getDisableTeleportToWorlds() {
-        return disableTeleportToWorlds;
     }
 
     public static class TypeNotFoundException extends RuntimeException {

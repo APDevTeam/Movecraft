@@ -14,6 +14,8 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
+
 public class ForbiddenSignStringValidator implements DetectionPredicate<MovecraftLocation> {
     @Override
     @Contract(pure = true)
@@ -26,8 +28,18 @@ public class ForbiddenSignStringValidator implements DetectionPredicate<Movecraf
             return Result.succeed();
         }
         Sign sign = (Sign) state;
+
+        var object = type.getObjectProperty(CraftType.FORBIDDEN_SIGN_STRINGS);
+        if(!(object instanceof Collection<?>))
+            throw new IllegalStateException("FORBIDDEN_SIGN_STRINGS must be of type Collection");
+        var collection = ((Collection<?>) object);
+        collection.forEach(i -> {
+            if(!(i instanceof String))
+                throw new IllegalStateException("Values in FORBIDDEN_SIGN_STRINGS must be of type String");
+        });
+
         for(var line : sign.getLines()){
-            if(type.getForbiddenSignStrings().contains(line.toLowerCase())){
+            if(collection.contains(line.toLowerCase())){
                 return Result.failWithMessage(I18nSupport.getInternationalisedString(
                         "Detection - Forbidden sign string found"));
             }

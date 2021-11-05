@@ -33,6 +33,8 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -141,8 +143,17 @@ public abstract class BaseCraft implements Craft{
 
     @Override
     public void translate(@NotNull World world, int dx, int dy, int dz) {
+        var v = type.getObjectProperty(CraftType.DISABLE_TELEPORT_TO_WORLDS);
+        if(!(v instanceof Collection<?>))
+            throw new IllegalStateException("DISABLE_TELEPORT_TO_WORLDS must be of type Collection");
+        var disableTeleportToWorlds = ((Collection<?>) v);
+        disableTeleportToWorlds.forEach(i -> {
+            if(!(i instanceof String))
+                throw new IllegalStateException("Values in DISABLE_TELEPORT_TO_WORLDS must be of type String");
+        });
+
         // check to see if the craft is trying to move in a direction not permitted by the type
-        if (!world.equals(w) && !(this.getType().getBoolProperty(CraftType.CAN_SWITCH_WORLD) || type.getDisableTeleportToWorlds().contains(world.getName())) && !this.getSinking()) {
+        if (!world.equals(w) && !(this.getType().getBoolProperty(CraftType.CAN_SWITCH_WORLD) || disableTeleportToWorlds.contains(world.getName())) && !this.getSinking()) {
             world = w;
         }
         if (!this.getType().getBoolProperty(CraftType.ALLOW_HORIZONTAL_MOVEMENT) && !this.getSinking()) {
