@@ -60,6 +60,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 final public class CraftType {
+    //region Property Keys
     public static final NamespacedKey NAME = buildKey("name");
     public static final NamespacedKey MAX_SIZE = buildKey("max_size");
     public static final NamespacedKey MIN_SIZE = buildKey("min_size");
@@ -153,6 +154,7 @@ final public class CraftType {
     public static final NamespacedKey GEAR_SHIFTS_AFFECT_DIRECT_MOVEMENT = buildKey("gear_shifts_affect_direct_movement");
     public static final NamespacedKey GEAR_SHIFTS_AFFECT_CRUISE_SKIP_BLOCKS = buildKey("gear_shifts_affect_cruise_skip_blocks");
     public static final NamespacedKey RELEASE_TIMEOUT = buildKey("release_timeout");
+    //endregion
 
     @Contract("_ -> new")
     private static @NotNull NamespacedKey buildKey(String key) {
