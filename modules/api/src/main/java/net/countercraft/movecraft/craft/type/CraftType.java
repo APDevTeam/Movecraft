@@ -590,7 +590,7 @@ final public class CraftType {
                 "hoverLimit must be greater than or equal to zero"
         );
         registerTypeValidator(
-                type -> type.getIntProperty(GEAR_SHIFTS) <= 1,
+                type -> type.getIntProperty(GEAR_SHIFTS) >= 1,
                 "gearShifts must be greater than or equal to one"
         );
         registerTypeValidator(
