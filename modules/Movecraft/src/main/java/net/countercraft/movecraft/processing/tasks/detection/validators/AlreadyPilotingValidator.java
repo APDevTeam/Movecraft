@@ -21,6 +21,12 @@ public class AlreadyPilotingValidator implements DetectionPredicate<Map<Material
     @Override
     @Contract(pure = true)
     public @NotNull Result validate(@NotNull Map<Material, Deque<MovecraftLocation>> ignored, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable CommandSender player) {
-        return player instanceof Player && CraftManager.getInstance().getCraftByPlayer((Player) player) != null ? Result.failWithMessage(I18nSupport.getInternationalisedString("Detection - Failed - Already commanding a craft")) : Result.succeed();
+        if(type.getBoolProperty(CraftType.MUST_BE_SUBCRAFT)) // MUST_BE_SUBCRAFTs will always be already piloted
+            return Result.succeed();
+
+        if(player instanceof Player && CraftManager.getInstance().getCraftByPlayer((Player) player) != null)
+            return Result.failWithMessage(I18nSupport.getInternationalisedString("Detection - Failed - Already commanding a craft"));
+
+        return Result.succeed();
     }
 }
