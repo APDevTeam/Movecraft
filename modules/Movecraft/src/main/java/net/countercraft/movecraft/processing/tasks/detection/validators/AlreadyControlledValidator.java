@@ -16,13 +16,15 @@ public class AlreadyControlledValidator implements DetectionPredicate<MovecraftL
     @Override
     @Contract(pure = true)
     public @NotNull Result validate(@NotNull MovecraftLocation location, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable CommandSender player) {
-        for(var craft : CraftManager.getInstance()){
-            if(!craft.getMovecraftWorld().equals(world)){
+        if(type.getBoolProperty(CraftType.MUST_BE_SUBCRAFT)) // MUST_BE_SUBCRAFTs will always be in the hitbox
+            return Result.succeed();
+
+        for(var craft : CraftManager.getInstance()) {
+            if(!craft.getMovecraftWorld().equals(world))
                 continue;
-            }
-            if(craft.getHitBox().contains(location)){
+
+            if(craft.getHitBox().contains(location))
                 return Result.failWithMessage(I18nSupport.getInternationalisedString("Detection - Failed Craft is already being controlled"));
-            }
         }
         return Result.succeed();
     }
