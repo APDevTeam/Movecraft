@@ -47,6 +47,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -579,19 +580,19 @@ public class AsyncManager extends BukkitRunnable {
 
         int totalNonNegligibleBlocks = 0;
         int totalNonNegligibleWaterBlocks = 0;
-        HashMap<List<Material>, Integer> foundFlyBlocks = new HashMap<>();
-        HashMap<List<Material>, Integer> foundMoveBlocks = new HashMap<>();
+        HashMap<EnumSet<Material>, Integer> foundFlyBlocks = new HashMap<>();
+        HashMap<EnumSet<Material>, Integer> foundMoveBlocks = new HashMap<>();
         // go through each block in the HitBox, and
         // if it's in the FlyBlocks, total up the number
         // of them
         for (MovecraftLocation l : craft.getHitBox()) {
             Material type = craft.getWorld().getBlockAt(l.getX(), l.getY(), l.getZ()).getType();
-            for (List<Material> flyBlockDef : craft.getType().getFlyBlocks().keySet()) {
+            for (EnumSet<Material> flyBlockDef : craft.getType().getFlyBlocks().keySet()) {
                 if (flyBlockDef.contains(type)) {
                     foundFlyBlocks.merge(flyBlockDef, 1, Integer::sum);
                 }
             }
-            for (List<Material> moveBlockDef : craft.getType().getMoveBlocks().keySet()) {
+            for (EnumSet<Material> moveBlockDef : craft.getType().getMoveBlocks().keySet()) {
                 if (moveBlockDef.contains(type)) {
                     foundMoveBlocks.merge(moveBlockDef, 1, Integer::sum);
                 }
@@ -609,7 +610,7 @@ public class AsyncManager extends BukkitRunnable {
         // are below the threshold specified in
         // SinkPercent
 
-        for (List<Material> i : craft.getType().getFlyBlocks().keySet()) {
+        for (EnumSet<Material> i : craft.getType().getFlyBlocks().keySet()) {
             int numfound = 0;
             if (foundFlyBlocks.get(i) != null) {
                 numfound = foundFlyBlocks.get(i);
@@ -621,7 +622,7 @@ public class AsyncManager extends BukkitRunnable {
                 isSinking = true;
             }
         }
-        for (List<Material> i : craft.getType().getMoveBlocks().keySet()) {
+        for (EnumSet<Material> i : craft.getType().getMoveBlocks().keySet()) {
             int numfound = 0;
             if (foundMoveBlocks.get(i) != null) {
                 numfound = foundMoveBlocks.get(i);

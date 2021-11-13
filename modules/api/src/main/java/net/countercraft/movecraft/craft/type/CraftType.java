@@ -652,8 +652,9 @@ final public class CraftType {
 
 
     // TODO: Remaining legacy style properties
-    @NotNull private final Map<List<Material>, List<Double>> flyBlocks;
-    @NotNull private final Map<List<Material>, List<Double>> moveBlocks;
+    //@NotNull private final Map<List<Material>, List<Double>> flyBlocks;
+    @NotNull private final Map<EnumSet<Material>, RequiredBlockEntry> flyBlocks;
+    @NotNull private final Map<EnumSet<Material>, RequiredBlockEntry> moveBlocks;
 
     public CraftType(File f) {
         TypeData data = TypeData.loadConfiguration(f);
@@ -751,91 +752,54 @@ final public class CraftType {
 
 
         // Required craft flags
-        flyBlocks = blockIDMapListFromObject("flyblocks", data.getDataOrEmpty("flyblocks").getBackingData());
+        flyBlocks = requiredBlocks("flyblocks", data.getDataOrEmpty("flyblocks").getBackingData());
 
         // Optional craft flags
-        moveBlocks = blockIDMapListFromObject("moveblocks", data.getDataOrEmpty("moveblocks").getBackingData());
-    }
-
-    private Map<List<Material>, List<Double>> blockIDMapListFromObject(String key, Map<String, Object> objMap) {
-        HashMap<List<Material>, List<Double>> returnMap = new HashMap<>();
-        for (Object i : objMap.keySet()) {
-            ArrayList<Material> rowList = new ArrayList<>();
-
-            // first read in the list of the blocks that type of flyblock. It could be a single string (with or without a ":") or integer, or it could be multiple of them
-            if (i instanceof ArrayList) {
-                for (Object o : (ArrayList<?>) i) {
-                    if (!(o instanceof String)) {
-                        if(o == null){
-                            throw new IllegalArgumentException("Entry " + key + " has a null value. This usually indicates you've attempted to use a tag that is not surrounded by quotes");
-                        }
-                        throw new IllegalArgumentException("Entry " + o + " must be a material for key " + key);
-                    }
-                    var string = (String) o;
-                    var tagSet = Tags.parseBlockRegistry(string);
-                    if(tagSet == null){
-                        rowList.add(Material.valueOf(string.toUpperCase()));
-                    } else {
-                        if(tagSet.isEmpty()){
-                            throw new IllegalArgumentException("Entry " + string + " describes an empty or non-existent Tag for key " + key);
-                        }
-                        rowList.addAll(tagSet);
-                    }
-                }
-            } else  {
-                if (!(i instanceof String)) {
-                    if(i == null){
-                        throw new IllegalArgumentException("Entry " + key + " has a null value. This usually indicates you've attempted to use a tag that is not surrounded by quotes");
-                    }
-                    throw new IllegalArgumentException("Entry " + i + " must be a material for key " + key);
-                }
-                var string = (String) i;
-                var tagSet = Tags.parseBlockRegistry(string);
-                if(tagSet == null){
-                    rowList.add(Material.valueOf(string.toUpperCase()));
-                } else {
-                    if(tagSet.isEmpty()){
-                        throw new IllegalArgumentException("Entry " + string + " describes an empty or non-existent Tag for key " + key);
-                    }
-                    rowList.addAll(tagSet);
-                }
-            }
-
-            // then read in the limitation values, low and high
-            ArrayList<?> objList = (ArrayList<?>) objMap.get(i);
-            ArrayList<Double> limitList = new ArrayList<>();
-            for (Object limitObj : objList) {
-                if (limitObj instanceof String) {
-                    String str = (String) limitObj;
-                    if (str.contains("N")) { // a # indicates a specific quantity, IE: #2 for exactly 2 of the block
-                        String[] parts = str.split("N");
-                        Double val = Double.valueOf(parts[1]);
-                        limitList.add(10000d + val);  // limit greater than 10000 indicates an specific quantity (not a ratio)
-                    } else {
-                        Double val = Double.valueOf(str);
-                        limitList.add(val);
-                    }
-                } else if (limitObj instanceof Integer) {
-                    Double ret = ((Integer) limitObj).doubleValue();
-                    limitList.add(ret);
-                } else
-                    limitList.add((Double) limitObj);
-            }
-            if(limitList.size() != 2){
-                throw new IllegalArgumentException("Range must be a pair, but found " + limitList.size() + " entries");
-            }
-            returnMap.put(rowList, limitList);
-        }
-        return returnMap;
+        moveBlocks = requiredBlocks("moveblocks", data.getDataOrEmpty("moveblocks").getBackingData());
     }
 
     @NotNull
-    public Map<List<Material>, List<Double>> getFlyBlocks() {
+    private Map<EnumSet<Material>, RequiredBlockEntry> requiredBlocks(String key, @NotNull Map<String, Object> input) {
+        Map<EnumSet<Material>, RequiredBlockEntry> result = new HashMap<>();
+        for(Object i : input.keySet()) {
+            EnumSet<Material> entry = EnumSet.noneOf(Material.class);
+            if(i instanceof ArrayList) {
+                // List, load each as a tag/material
+                for(Object o : (ArrayList<?>) i) {
+                    if (!(o instanceof String)) {
+                        if(o == null)
+                            throw new IllegalArgumentException("Entry " + key + " has a null value. This usually indicates you've attempted to use a tag that is not surrounded by quotes");
+                        throw new IllegalArgumentException("Entry " + o + " must be a material for key " + key);
+                    }
+                    String string = (String) o;
+                    entry.addAll(Tags.parseMaterials(string));
+                }
+            }
+            else if(i instanceof String) {
+                // Single entry, load as a tag/material
+                String string = (String) i;
+                entry.addAll(Tags.parseMaterials(string));
+            }
+            else {
+                // Invalid entry, throw an error
+                if(i == null)
+                    throw new IllegalArgumentException("Entry " + key + " has a null value. This usually indicates you've attempted to use a tag that is not surrounded by quotes");
+                throw new IllegalArgumentException("Entry " + i + " must be a material for key " + key);
+            }
+
+            ArrayList<?> value = (ArrayList<?>) input.get(i);
+            result.put(entry, RequiredBlockEntry.of(value));
+        }
+        return result;
+    }
+
+    @NotNull
+    public Map<EnumSet<Material>, RequiredBlockEntry> getFlyBlocks() {
         return flyBlocks;
     }
 
     @NotNull
-    public Map<List<Material>, List<Double>> getMoveBlocks() {
+    public Map<EnumSet<Material>, RequiredBlockEntry> getMoveBlocks() {
         return moveBlocks;
     }
 

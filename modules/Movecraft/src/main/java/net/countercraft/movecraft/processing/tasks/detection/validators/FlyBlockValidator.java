@@ -13,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Deque;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 
@@ -22,7 +23,7 @@ public class FlyBlockValidator implements DetectionPredicate<Map<Material, Deque
     public @NotNull Result validate(@NotNull Map<Material, Deque<MovecraftLocation>> materialDequeMap, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable CommandSender player) {
         int total = materialDequeMap.values().parallelStream().mapToInt(Deque::size).sum();
         var flyBlocks = type.getFlyBlocks();
-        for (List<Material> i : flyBlocks.keySet()) {
+        for (EnumSet<Material> i : flyBlocks.keySet()) {
             int numberOfBlocks = 0;
             for(Material material : i){
                 if(!materialDequeMap.containsKey(material)){
