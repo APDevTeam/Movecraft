@@ -367,7 +367,7 @@ final public class CraftType {
         registerProperty(new BooleanProperty("canFly", CAN_FLY, type -> type.getBoolProperty(BLOCKED_BY_WATER)));
         registerProperty(new BooleanProperty("requireWaterContact", REQUIRE_WATER_CONTACT, type -> false));
         registerProperty(new BooleanProperty("tryNudge", TRY_NUDGE, type -> false));
-        registerProperty(new RequiredBlockProperty("moveblocks", FLY_BLOCKS, type -> new HashSet<>()));
+        registerProperty(new RequiredBlockProperty("moveblocks", MOVE_BLOCKS, type -> new HashSet<>()));
         registerProperty(new BooleanProperty("canCruise", CAN_CRUISE, type -> false));
         registerProperty(new BooleanProperty("canTeleport", CAN_TELEPORT, type -> false));
         registerProperty(new BooleanProperty("canSwitchWorld", CAN_SWITCH_WORLD, type -> false));
