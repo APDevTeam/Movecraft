@@ -15,7 +15,7 @@ public class RequiredBlockEntry {
     private static final String NUMERIC_PREFIX = "N"; // an N indicates a specific quantity, IE: N2 for exactly 2 of the block
 
     @NotNull
-    private static Pair<Boolean, Number> parseLimit(@NotNull Object input) {
+    private static Pair<Boolean, ? extends Number> parseLimit(@NotNull Object input) {
         if (input instanceof String) {
             String str = (String) input;
             if (str.contains(NUMERIC_PREFIX)) {
@@ -34,7 +34,7 @@ public class RequiredBlockEntry {
     }
 
     @NotNull
-    private static Pair<Pair<Boolean, Number>, Pair<Boolean, Number>> parseRange(@NotNull ArrayList<?> limits) {
+    private static Pair<Pair<Boolean, ? extends Number>, Pair<Boolean, ? extends Number>> parseRange(@NotNull ArrayList<?> limits) {
         if(limits.size() != 2)
             throw new IllegalArgumentException("Range must be a pair, but found " + limits.size() + " entries");
 
@@ -79,7 +79,7 @@ public class RequiredBlockEntry {
 
         var min = range.getLeft();
         var max = range.getRight();
-        return new RequiredBlockEntry(materials, (double) min.getRight(), min.getLeft(), (double) max.getRight(), max.getLeft());
+        return new RequiredBlockEntry(materials, min.getRight().doubleValue(), min.getLeft(), max.getRight().doubleValue(), max.getLeft());
     }
 
 
