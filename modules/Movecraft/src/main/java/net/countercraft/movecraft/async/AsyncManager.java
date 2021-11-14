@@ -581,9 +581,9 @@ public class AsyncManager extends BukkitRunnable {
 
         // Create counters and populate with required block entries
         Counter<RequiredBlockEntry> flyBlocks = new Counter<>();
-        flyBlocks.putAll(craft.getType().getFlyBlocks());
+        flyBlocks.putAll(craft.getType().getRequiredBlockProperty(CraftType.FLY_BLOCKS));
         Counter<RequiredBlockEntry> moveBlocks = new Counter<>();
-        moveBlocks.putAll(craft.getType().getMoveBlocks());
+        moveBlocks.putAll(craft.getType().getRequiredBlockProperty(CraftType.MOVE_BLOCKS));
 
         // go through each block in the HitBox, and if it's in the FlyBlocks or MoveBlocks, increment the counter
         int totalNonNegligibleBlocks = 0;
