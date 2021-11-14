@@ -17,6 +17,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 
@@ -83,7 +84,8 @@ public final class StatusSign implements Listener{
         }
         int signLine=1;
         int signColumn=0;
-        for(List<Material> alFlyBlockID : craft.getType().getFlyBlocks().keySet()) {
+        /*  TODO: Implement new system for flyblocks on status signs
+        for(EnumSet<Material> alFlyBlockID : craft.getType().getFlyBlocks().keySet()) {
             Material flyBlockID= alFlyBlockID.get(0);
             double minimum=craft.getType().getFlyBlocks().get(alFlyBlockID).get(0);
             if(foundBlocks.get(flyBlockID) != 0 && minimum>0) { // if it has a minimum, it should be considered for sinking consideration
@@ -125,6 +127,7 @@ public final class StatusSign implements Listener{
         if (signLine < 3 && signColumn == 1){
             signLine++;
         }
+        */
         String fuelText="";
         int cruiseSkipBlocks = (int) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_CRUISE_SKIP_BLOCKS, craft.getWorld());
         cruiseSkipBlocks++;

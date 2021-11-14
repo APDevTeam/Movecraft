@@ -29,11 +29,13 @@ import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.CraftStatus;
 import net.countercraft.movecraft.craft.PlayerCraft;
 import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.RequiredBlockEntry;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.mapUpdater.update.BlockCreateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
+import net.countercraft.movecraft.util.Counter;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
@@ -577,24 +579,24 @@ public class AsyncManager extends BukkitRunnable {
         boolean isSinking = false;
         boolean isDisabled = false;
 
+        // Create counters and populate with required block entries
+        Counter<RequiredBlockEntry> flyBlocks = new Counter<>();
+        flyBlocks.putAll(craft.getType().getRequiredBlockProperty(CraftType.FLY_BLOCKS));
+        Counter<RequiredBlockEntry> moveBlocks = new Counter<>();
+        moveBlocks.putAll(craft.getType().getRequiredBlockProperty(CraftType.MOVE_BLOCKS));
+
+        // go through each block in the HitBox, and if it's in the FlyBlocks or MoveBlocks, increment the counter
         int totalNonNegligibleBlocks = 0;
         int totalNonNegligibleWaterBlocks = 0;
-        HashMap<List<Material>, Integer> foundFlyBlocks = new HashMap<>();
-        HashMap<List<Material>, Integer> foundMoveBlocks = new HashMap<>();
-        // go through each block in the HitBox, and
-        // if it's in the FlyBlocks, total up the number
-        // of them
         for (MovecraftLocation l : craft.getHitBox()) {
             Material type = craft.getWorld().getBlockAt(l.getX(), l.getY(), l.getZ()).getType();
-            for (List<Material> flyBlockDef : craft.getType().getFlyBlocks().keySet()) {
-                if (flyBlockDef.contains(type)) {
-                    foundFlyBlocks.merge(flyBlockDef, 1, Integer::sum);
-                }
+            for(RequiredBlockEntry entry : flyBlocks.getKeySet()) {
+                if(entry.contains(type))
+                    flyBlocks.add(entry);
             }
-            for (List<Material> moveBlockDef : craft.getType().getMoveBlocks().keySet()) {
-                if (moveBlockDef.contains(type)) {
-                    foundMoveBlocks.merge(moveBlockDef, 1, Integer::sum);
-                }
+            for(RequiredBlockEntry entry : moveBlocks.getKeySet()) {
+                if(entry.contains(type))
+                    moveBlocks.add(entry);
             }
 
             if (type != Material.FIRE && type != Material.AIR && type != Material.CAVE_AIR && type != Material.VOID_AIR) {
@@ -606,30 +608,15 @@ public class AsyncManager extends BukkitRunnable {
         }
 
         // now see if any of the resulting percentages
-        // are below the threshold specified in
-        // SinkPercent
-
-        for (List<Material> i : craft.getType().getFlyBlocks().keySet()) {
-            int numfound = 0;
-            if (foundFlyBlocks.get(i) != null) {
-                numfound = foundFlyBlocks.get(i);
-            }
-            double percent = ((double) numfound / (double) totalNonNegligibleBlocks) * 100.0;
-            double flyPercent = craft.getType().getFlyBlocks().get(i).get(0);
-            double sinkPercent = flyPercent * craft.getType().getDoubleProperty(CraftType.SINK_PERCENT) / 100.0;
-            if (percent < sinkPercent) {
+        // are below the threshold specified in sinkPercent
+        double sinkPercent = craft.getType().getDoubleProperty(CraftType.SINK_PERCENT) / 100.0;
+        for(RequiredBlockEntry entry : flyBlocks.getKeySet()) {
+            if(!entry.check(flyBlocks.get(entry), totalNonNegligibleBlocks, sinkPercent))
                 isSinking = true;
-            }
         }
-        for (List<Material> i : craft.getType().getMoveBlocks().keySet()) {
-            int numfound = 0;
-            if (foundMoveBlocks.get(i) != null) {
-                numfound = foundMoveBlocks.get(i);
-            }
-            double percent = ((double) numfound / (double) totalNonNegligibleBlocks) * 100.0;
-            double movePercent = craft.getType().getMoveBlocks().get(i).get(0);
-            double disablePercent = movePercent * craft.getType().getDoubleProperty(CraftType.SINK_PERCENT) / 100.0;
-            isDisabled = (percent < disablePercent && !craft.getDisabled() && craft.isNotProcessing());
+        for(RequiredBlockEntry entry : moveBlocks.getKeySet()) {
+            if(!entry.check(moveBlocks.get(entry), totalNonNegligibleBlocks, sinkPercent))
+                isDisabled = !craft.getDisabled() && craft.isNotProcessing();
         }
 
         // And check the OverallSinkPercent
@@ -638,18 +625,17 @@ public class AsyncManager extends BukkitRunnable {
             if (craft.getType().getBoolProperty(CraftType.BLOCKED_BY_WATER)) {
                 percent = (double) totalNonNegligibleBlocks
                         / (double) craft.getOrigBlockCount();
-            } else {
+            }
+            else {
                 percent = (double) totalNonNegligibleWaterBlocks
                         / (double) craft.getOrigBlockCount();
             }
-            if (percent * 100.0 < craft.getType().getDoubleProperty(CraftType.OVERALL_SINK_PERCENT)) {
+            if (percent * 100.0 < craft.getType().getDoubleProperty(CraftType.OVERALL_SINK_PERCENT))
                 isSinking = true;
-            }
         }
 
-        if (totalNonNegligibleBlocks == 0) {
+        if (totalNonNegligibleBlocks == 0)
             isSinking = true;
-        }
 
         return CraftStatus.of(isSinking, isDisabled);
     }

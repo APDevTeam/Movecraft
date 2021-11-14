@@ -26,6 +26,7 @@ import net.countercraft.movecraft.craft.type.property.MaterialSetProperty;
 import net.countercraft.movecraft.craft.type.property.ObjectPropertyImpl;
 import net.countercraft.movecraft.craft.type.property.PerWorldProperty;
 import net.countercraft.movecraft.craft.type.property.Property;
+import net.countercraft.movecraft.craft.type.property.RequiredBlockProperty;
 import net.countercraft.movecraft.craft.type.property.StringProperty;
 import net.countercraft.movecraft.craft.type.transform.BooleanTransform;
 import net.countercraft.movecraft.craft.type.transform.DoubleTransform;
@@ -55,6 +56,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -66,11 +68,11 @@ final public class CraftType {
     public static final NamespacedKey MIN_SIZE = buildKey("min_size");
     public static final NamespacedKey ALLOWED_BLOCKS = buildKey("allowed_blocks");
     private static final NamespacedKey SPEED = buildKey("speed"); // Private key used to calculate TICK_COOLDOWN
+    public static final NamespacedKey FLY_BLOCKS = buildKey("fly_blocks");
     private static final NamespacedKey TICK_COOLDOWN = buildKey("tick_cooldown"); // Private key used as default for PER_WORLD_TICK_COOLDOWN
     public static final NamespacedKey FORBIDDEN_SIGN_STRINGS = buildKey("forbidden_sign_strings");
     private static final NamespacedKey PER_WORLD_SPEED = buildKey("per_world_speed"); // Private key used to calculate PER_WORLD_TICK_COOLDOWN
     public static final NamespacedKey PER_WORLD_TICK_COOLDOWN = buildKey("per_world_tick_cooldown");
-    public static final NamespacedKey FLY_BLOCKS = buildKey("fly_blocks");
     public static final NamespacedKey FORBIDDEN_BLOCKS = buildKey("forbidden_blocks");
     public static final NamespacedKey BLOCKED_BY_WATER = buildKey("blocked_by_water");
     private static final NamespacedKey CAN_FLY = buildKey("can_fly"); // Private key used to calculate BLOCKED_BY_WATER
@@ -163,7 +165,7 @@ final public class CraftType {
 
 
 
-    static final List<Property<?>> properties = new ArrayList<>();
+    private static final List<Property<?>> properties = new ArrayList<>();
 
     /**
      * Register a property with Movecraft
@@ -260,8 +262,8 @@ final public class CraftType {
     /**
      * Get a material set property of this CraftType
      *
-     * @param key Key of the string property
-     * @return value of the string property
+     * @param key Key of the material set property
+     * @return value of the material set property
      */
     public EnumSet<Material> getMaterialSetProperty(NamespacedKey key) {
         if(!materialSetPropertyMap.containsKey(key))
@@ -285,9 +287,9 @@ final public class CraftType {
     /**
      * Get a per world property of this CraftType
      *
-     * @param key Key of the string property
+     * @param key Key of the per world property
      * @param world the world to check
-     * @return value of the string property
+     * @return value of the per world property
      */
     public Object getPerWorldProperty(NamespacedKey key, @NotNull World world) {
         return getPerWorldProperty(key, world.getName());
@@ -295,17 +297,30 @@ final public class CraftType {
     /**
      * Get a per world property of this CraftType
      *
-     * @param key Key of the string property
+     * @param key Key of the per world property
      * @param world the world to check
-     * @return value of the string property
+     * @return value of the per world property
      */
     public Object getPerWorldProperty(NamespacedKey key, @NotNull MovecraftWorld world) {
         return getPerWorldProperty(key, world.getName());
     }
 
+    private Map<NamespacedKey, Set<RequiredBlockEntry>> requiredBlockPropertyMap;
+    /**
+     * Get a required block property of this CraftType
+     *
+     * @param key Key of the required block property
+     * @return value of the required block property
+     */
+    public Set<RequiredBlockEntry> getRequiredBlockProperty(NamespacedKey key) {
+        if(!requiredBlockPropertyMap.containsKey(key))
+            throw new IllegalStateException("Required block property " + key + " not found.");
+        return requiredBlockPropertyMap.get(key);
+    }
 
 
-    static final List<Transform<?>> transforms = new ArrayList<>();
+
+    private static final List<Transform<?>> transforms = new ArrayList<>();
 
     /**
      * Register a craft type transform
@@ -339,6 +354,7 @@ final public class CraftType {
         registerProperty(new IntegerProperty("minSize", MIN_SIZE));
         registerProperty(new MaterialSetProperty("allowedBlocks", ALLOWED_BLOCKS));
         registerProperty(new DoubleProperty("speed", SPEED));
+        registerProperty(new RequiredBlockProperty("flyblocks", FLY_BLOCKS));
 
         /* Optional properties */
         registerProperty(new ObjectPropertyImpl("forbiddenSignStrings", FORBIDDEN_SIGN_STRINGS,
@@ -346,13 +362,12 @@ final public class CraftType {
                 craftType -> new HashSet<>()
         ));
         registerProperty(new PerWorldProperty<>("perWorldSpeed", PER_WORLD_SPEED, type -> type.getDoubleProperty(SPEED)));
-        // TODO: flyBlocks
         registerProperty(new MaterialSetProperty("forbiddenBlocks", FORBIDDEN_BLOCKS, type -> EnumSet.noneOf(Material.class)));
         registerProperty(new BooleanProperty("blockedByWater", BLOCKED_BY_WATER, type -> true));
         registerProperty(new BooleanProperty("canFly", CAN_FLY, type -> type.getBoolProperty(BLOCKED_BY_WATER)));
         registerProperty(new BooleanProperty("requireWaterContact", REQUIRE_WATER_CONTACT, type -> false));
         registerProperty(new BooleanProperty("tryNudge", TRY_NUDGE, type -> false));
-        // TODO: moveblocks
+        registerProperty(new RequiredBlockProperty("moveblocks", MOVE_BLOCKS, type -> new HashSet<>()));
         registerProperty(new BooleanProperty("canCruise", CAN_CRUISE, type -> false));
         registerProperty(new BooleanProperty("canTeleport", CAN_TELEPORT, type -> false));
         registerProperty(new BooleanProperty("canSwitchWorld", CAN_SWITCH_WORLD, type -> false));
@@ -651,10 +666,6 @@ final public class CraftType {
 
 
 
-    // TODO: Remaining legacy style properties
-    @NotNull private final Map<List<Material>, List<Double>> flyBlocks;
-    @NotNull private final Map<List<Material>, List<Double>> moveBlocks;
-
     public CraftType(File f) {
         TypeData data = TypeData.loadConfiguration(f);
 
@@ -667,6 +678,7 @@ final public class CraftType {
         objectPropertyMap = new HashMap<>();
         materialSetPropertyMap = new HashMap<>();
         perWorldPropertyMap = new HashMap<>();
+        requiredBlockPropertyMap = new HashMap<>();
         for(var property : properties) {
             if(property instanceof StringProperty) {
                 String value = ((StringProperty) property).load(data, this);
@@ -721,6 +733,11 @@ final public class CraftType {
                     perWorldPropertyMap.put(perWorldProperty.getNamespacedKey(), pair);
                 }
             }
+            else if(property instanceof RequiredBlockProperty) {
+                Set<RequiredBlockEntry> value = ((RequiredBlockProperty) property).load(data, this);
+                if(value != null)
+                    requiredBlockPropertyMap.put(property.getNamespacedKey(), value);
+            }
         }
 
         // Transform craft type
@@ -748,95 +765,6 @@ final public class CraftType {
             if(!validator.getLeft().test(this))
                 throw new IllegalArgumentException(validator.getRight());
         }
-
-
-        // Required craft flags
-        flyBlocks = blockIDMapListFromObject("flyblocks", data.getDataOrEmpty("flyblocks").getBackingData());
-
-        // Optional craft flags
-        moveBlocks = blockIDMapListFromObject("moveblocks", data.getDataOrEmpty("moveblocks").getBackingData());
-    }
-
-    private Map<List<Material>, List<Double>> blockIDMapListFromObject(String key, Map<String, Object> objMap) {
-        HashMap<List<Material>, List<Double>> returnMap = new HashMap<>();
-        for (Object i : objMap.keySet()) {
-            ArrayList<Material> rowList = new ArrayList<>();
-
-            // first read in the list of the blocks that type of flyblock. It could be a single string (with or without a ":") or integer, or it could be multiple of them
-            if (i instanceof ArrayList) {
-                for (Object o : (ArrayList<?>) i) {
-                    if (!(o instanceof String)) {
-                        if(o == null){
-                            throw new IllegalArgumentException("Entry " + key + " has a null value. This usually indicates you've attempted to use a tag that is not surrounded by quotes");
-                        }
-                        throw new IllegalArgumentException("Entry " + o + " must be a material for key " + key);
-                    }
-                    var string = (String) o;
-                    var tagSet = Tags.parseBlockRegistry(string);
-                    if(tagSet == null){
-                        rowList.add(Material.valueOf(string.toUpperCase()));
-                    } else {
-                        if(tagSet.isEmpty()){
-                            throw new IllegalArgumentException("Entry " + string + " describes an empty or non-existent Tag for key " + key);
-                        }
-                        rowList.addAll(tagSet);
-                    }
-                }
-            } else  {
-                if (!(i instanceof String)) {
-                    if(i == null){
-                        throw new IllegalArgumentException("Entry " + key + " has a null value. This usually indicates you've attempted to use a tag that is not surrounded by quotes");
-                    }
-                    throw new IllegalArgumentException("Entry " + i + " must be a material for key " + key);
-                }
-                var string = (String) i;
-                var tagSet = Tags.parseBlockRegistry(string);
-                if(tagSet == null){
-                    rowList.add(Material.valueOf(string.toUpperCase()));
-                } else {
-                    if(tagSet.isEmpty()){
-                        throw new IllegalArgumentException("Entry " + string + " describes an empty or non-existent Tag for key " + key);
-                    }
-                    rowList.addAll(tagSet);
-                }
-            }
-
-            // then read in the limitation values, low and high
-            ArrayList<?> objList = (ArrayList<?>) objMap.get(i);
-            ArrayList<Double> limitList = new ArrayList<>();
-            for (Object limitObj : objList) {
-                if (limitObj instanceof String) {
-                    String str = (String) limitObj;
-                    if (str.contains("N")) { // a # indicates a specific quantity, IE: #2 for exactly 2 of the block
-                        String[] parts = str.split("N");
-                        Double val = Double.valueOf(parts[1]);
-                        limitList.add(10000d + val);  // limit greater than 10000 indicates an specific quantity (not a ratio)
-                    } else {
-                        Double val = Double.valueOf(str);
-                        limitList.add(val);
-                    }
-                } else if (limitObj instanceof Integer) {
-                    Double ret = ((Integer) limitObj).doubleValue();
-                    limitList.add(ret);
-                } else
-                    limitList.add((Double) limitObj);
-            }
-            if(limitList.size() != 2){
-                throw new IllegalArgumentException("Range must be a pair, but found " + limitList.size() + " entries");
-            }
-            returnMap.put(rowList, limitList);
-        }
-        return returnMap;
-    }
-
-    @NotNull
-    public Map<List<Material>, List<Double>> getFlyBlocks() {
-        return flyBlocks;
-    }
-
-    @NotNull
-    public Map<List<Material>, List<Double>> getMoveBlocks() {
-        return moveBlocks;
     }
 
     public static class TypeNotFoundException extends RuntimeException {
