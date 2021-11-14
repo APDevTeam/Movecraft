@@ -84,6 +84,7 @@ public final class StatusSign implements Listener{
         }
         int signLine=1;
         int signColumn=0;
+        /*  TODO: Implement new system for flyblocks on status signs
         for(EnumSet<Material> alFlyBlockID : craft.getType().getFlyBlocks().keySet()) {
             Material flyBlockID= alFlyBlockID.get(0);
             double minimum=craft.getType().getFlyBlocks().get(alFlyBlockID).get(0);
@@ -126,6 +127,7 @@ public final class StatusSign implements Listener{
         if (signLine < 3 && signColumn == 1){
             signLine++;
         }
+        */
         String fuelText="";
         int cruiseSkipBlocks = (int) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_CRUISE_SKIP_BLOCKS, craft.getWorld());
         cruiseSkipBlocks++;
