@@ -26,6 +26,7 @@ import net.countercraft.movecraft.processing.tasks.detection.validators.Subcraft
 import net.countercraft.movecraft.processing.tasks.detection.validators.WaterContactValidator;
 import net.countercraft.movecraft.util.AtomicLocationSet;
 import net.countercraft.movecraft.util.CollectionUtils;
+import net.countercraft.movecraft.util.Tags;
 import net.countercraft.movecraft.util.hitboxes.BitmapHitBox;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
 import net.countercraft.movecraft.util.hitboxes.SetHitBox;
@@ -260,8 +261,7 @@ public class DetectionTask implements Supplier<Effect> {
                 var result = chain.validate(probe, craft.getType(), world, player);
                 if(result.isSucess()){
                     legal.add(probe);
-                    Material fluidTestMaterial = world.getMaterial(probe);
-                    if (fluidTestMaterial.equals(Material.WATER) || fluidTestMaterial.equals(Material.LAVA)) {
+                    if (Tags.FLUID.contains(world.getMaterial(probe))) {
                         fluid.add(probe);
                     }
                     size.increment();
