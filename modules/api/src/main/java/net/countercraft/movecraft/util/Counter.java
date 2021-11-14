@@ -2,6 +2,10 @@ package net.countercraft.movecraft.util;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Collection;
+import java.util.Set;
 
 public class Counter<T> {
     private final Object2IntMap<T> counter = new Object2IntOpenHashMap<>();
@@ -28,5 +32,13 @@ public class Counter<T> {
 
     public boolean isEmpty(){
         return counter.isEmpty();
+    }
+
+    public Set<T> getKeySet() {
+        return counter.keySet();
+    }
+
+    public void putAll(@NotNull Collection<T> items) {
+        items.forEach(item -> counter.put(item, 0));
     }
 }

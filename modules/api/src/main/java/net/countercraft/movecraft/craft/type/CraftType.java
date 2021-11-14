@@ -55,6 +55,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -653,8 +654,8 @@ final public class CraftType {
 
     // TODO: Remaining legacy style properties
     //@NotNull private final Map<List<Material>, List<Double>> flyBlocks;
-    @NotNull private final Map<EnumSet<Material>, RequiredBlockEntry> flyBlocks;
-    @NotNull private final Map<EnumSet<Material>, RequiredBlockEntry> moveBlocks;
+    @NotNull private final Set<RequiredBlockEntry> flyBlocks;
+    @NotNull private final Set<RequiredBlockEntry> moveBlocks;
 
     public CraftType(File f) {
         TypeData data = TypeData.loadConfiguration(f);
@@ -759,47 +760,21 @@ final public class CraftType {
     }
 
     @NotNull
-    private Map<EnumSet<Material>, RequiredBlockEntry> requiredBlocks(String key, @NotNull Map<String, Object> input) {
-        Map<EnumSet<Material>, RequiredBlockEntry> result = new HashMap<>();
-        for(Object i : input.keySet()) {
-            EnumSet<Material> entry = EnumSet.noneOf(Material.class);
-            if(i instanceof ArrayList) {
-                // List, load each as a tag/material
-                for(Object o : (ArrayList<?>) i) {
-                    if (!(o instanceof String)) {
-                        if(o == null)
-                            throw new IllegalArgumentException("Entry " + key + " has a null value. This usually indicates you've attempted to use a tag that is not surrounded by quotes");
-                        throw new IllegalArgumentException("Entry " + o + " must be a material for key " + key);
-                    }
-                    String string = (String) o;
-                    entry.addAll(Tags.parseMaterials(string));
-                }
-            }
-            else if(i instanceof String) {
-                // Single entry, load as a tag/material
-                String string = (String) i;
-                entry.addAll(Tags.parseMaterials(string));
-            }
-            else {
-                // Invalid entry, throw an error
-                if(i == null)
-                    throw new IllegalArgumentException("Entry " + key + " has a null value. This usually indicates you've attempted to use a tag that is not surrounded by quotes");
-                throw new IllegalArgumentException("Entry " + i + " must be a material for key " + key);
-            }
-
-            ArrayList<?> value = (ArrayList<?>) input.get(i);
-            result.put(entry, RequiredBlockEntry.of(value));
+    private Set<RequiredBlockEntry> requiredBlocks(String key, @NotNull Map<String, Object> input) {
+        Set<RequiredBlockEntry> result = new HashSet<>();
+        for(var entry : input.entrySet()) {
+            result.add(RequiredBlockEntry.of(key, entry.getKey(), entry.getValue()));
         }
         return result;
     }
 
     @NotNull
-    public Map<EnumSet<Material>, RequiredBlockEntry> getFlyBlocks() {
+    public Set<RequiredBlockEntry> getFlyBlocks() {
         return flyBlocks;
     }
 
     @NotNull
-    public Map<EnumSet<Material>, RequiredBlockEntry> getMoveBlocks() {
+    public Set<RequiredBlockEntry> getMoveBlocks() {
         return moveBlocks;
     }
 
