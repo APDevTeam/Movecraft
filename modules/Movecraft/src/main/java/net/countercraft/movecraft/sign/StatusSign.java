@@ -5,10 +5,7 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
 import net.countercraft.movecraft.util.Counter;
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
-import org.bukkit.Tag;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.event.EventHandler;
@@ -72,11 +69,13 @@ public final class StatusSign implements Listener{
         int signLine=1;
         int signColumn=0;
         for(List<Material> alFlyBlockID : craft.getType().getFlyBlocks().keySet()) {
-            Material flyBlockID= alFlyBlockID.get(0);
             double minimum=craft.getType().getFlyBlocks().get(alFlyBlockID).get(0);
-            if(foundBlocks.get(flyBlockID) != 0 && minimum>0) { // if it has a minimum, it should be considered for sinking consideration
-                int amount=foundBlocks.get((flyBlockID));
-                double percentPresent= (amount*100D/totalBlocks);
+            int foundAmount = 0;
+            for (Material flyBlock: alFlyBlockID) {
+                foundAmount += foundBlocks.get(flyBlock);
+            }
+            if(foundAmount != 0 && minimum>0) { // if it has a minimum, it should be considered for sinking consideration
+                double percentPresent= (foundAmount*100D/totalBlocks);
                 String signText="";
                 if(percentPresent>minimum*1.04) {
                     signText+= ChatColor.GREEN;
@@ -85,12 +84,12 @@ public final class StatusSign implements Listener{
                 } else {
                     signText+=ChatColor.RED;
                 }
-                if(flyBlockID == Material.REDSTONE_BLOCK) {
+                if(alFlyBlockID.contains(Material.REDSTONE_BLOCK)) {
                     signText+="R";
-                } else if(flyBlockID == Material.IRON_BLOCK) {
+                } else if(alFlyBlockID.contains(Material.IRON_BLOCK)) {
                     signText+="I";
                 } else {
-                    signText+= flyBlockID.toString().charAt(0);
+                    signText+= alFlyBlockID.get(0).toString().charAt(0);
                 }
 
                 signText+=" ";
