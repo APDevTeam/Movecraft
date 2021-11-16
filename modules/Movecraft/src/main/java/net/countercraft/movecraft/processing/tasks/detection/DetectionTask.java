@@ -27,6 +27,7 @@ import net.countercraft.movecraft.processing.tasks.detection.validators.Subcraft
 import net.countercraft.movecraft.processing.tasks.detection.validators.WaterContactValidator;
 import net.countercraft.movecraft.util.AtomicLocationSet;
 import net.countercraft.movecraft.util.CollectionUtils;
+import net.countercraft.movecraft.util.Tags;
 import net.countercraft.movecraft.util.hitboxes.BitmapHitBox;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
 import net.countercraft.movecraft.util.hitboxes.SetHitBox;
@@ -85,6 +86,7 @@ public class DetectionTask implements Supplier<Effect> {
     private final ConcurrentMap<Material, Deque<MovecraftLocation>> materials = new ConcurrentHashMap<>();
     private final ConcurrentMap<Material, Deque<MovecraftLocation>> visitedMaterials = new ConcurrentHashMap<>();
     private final ConcurrentLinkedDeque<MovecraftLocation> legal = new ConcurrentLinkedDeque<>();
+    private final ConcurrentLinkedDeque<MovecraftLocation> fluid = new ConcurrentLinkedDeque<>();
     private static final AllowedBlockValidator ALLOWED_BLOCK_VALIDATOR = new AllowedBlockValidator();
     private static final ForbiddenBlockValidator FORBIDDEN_BLOCK_VALIDATOR = new ForbiddenBlockValidator();
     private static final List<DetectionPredicate<MovecraftLocation>> validators = List.of(
@@ -186,6 +188,7 @@ public class DetectionTask implements Supplier<Effect> {
             return () -> player.sendMessage(finalResult.getMessage());
         }
         craft.setHitBox(new BitmapHitBox(legal));
+        craft.setFluidLocations(new BitmapHitBox(fluid));
         craft.setNotificationPlayer(player);
         craft.setOrigBlockCount(craft.getHitBox().size());
         var waterEffect = water(craft); //TODO: Remove
@@ -259,6 +262,9 @@ public class DetectionTask implements Supplier<Effect> {
                 var result = chain.validate(probe, craft.getType(), world, player);
                 if(result.isSucess()){
                     legal.add(probe);
+                    if (Tags.FLUID.contains(world.getMaterial(probe))) {
+                        fluid.add(probe);
+                    }
                     size.increment();
                     materials.computeIfAbsent(world.getMaterial(probe), Functions.forSupplier(ConcurrentLinkedDeque::new)).add(probe);
                     for(int i = 0; i< SHIFTS.length; i++){

@@ -14,6 +14,7 @@ import java.util.EnumSet;
 public class Tags {
 
     public static final EnumSet<Material> AIR = EnumSet.of(Material.AIR, Material.CAVE_AIR, Material.VOID_AIR);
+    public static final EnumSet<Material> FLUID = EnumSet.of(Material.WATER, Material.LAVA);
 
     @Nullable
     public static EnumSet<Material> parseBlockRegistry(@NotNull String string){

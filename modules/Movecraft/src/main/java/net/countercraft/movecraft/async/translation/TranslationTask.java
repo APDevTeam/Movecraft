@@ -719,11 +719,13 @@ public class TranslationTask extends AsyncTask {
                 //obstructing the craft
                 MovecraftLocation dropped = translated.translate(0, dropDistance - 1 , 0);
                 Material testType = dropped.toBukkit(craft.getWorld()).getBlock().getType();
-                hitGround = testType != Material.AIR &&
-                        !craft.getType().getMaterialSetProperty(CraftType.PASSTHROUGH_BLOCKS).contains(testType) &&
-                        !(craft.getType().getMaterialSetProperty(CraftType.HARVEST_BLOCKS).contains(testType) &&
-                        craft.getType().getMaterialSetProperty(CraftType.HARVESTER_BLADE_BLOCKS).contains(ml.toBukkit(craft.getWorld()).getBlock().getType())) ||
-                        (int) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_MIN_HEIGHT_LIMIT, craft.getWorld()) == translated.translate(0, dropDistance + 1 , 0).getY();
+                hitGround = !testType.isAir(); // Not air
+                hitGround &= !craft.getType().getMaterialSetProperty(CraftType.PASSTHROUGH_BLOCKS).contains(testType); // Not a passthrough block
+                hitGround &= !hitBox.contains(dropped); // Not part of the craft
+                if(craft.getType().getMaterialSetProperty(CraftType.HARVEST_BLOCKS).contains(testType) && craft.getType().getMaterialSetProperty(CraftType.HARVESTER_BLADE_BLOCKS).contains(ml.toBukkit(craft.getWorld()).getBlock().getType()))
+                    hitGround = false; // Allow gravity to harvest blocks on the way down
+                if(craft.getType().getPerWorldProperty(CraftType.PER_WORLD_MIN_HEIGHT_LIMIT, craft.getWorld()) == translated.translate(0, dropDistance + 1 , 0).getY())
+                    hitGround = true; // Don't let the craft fall below the min height limit
 
                 if (hitGround) {
                     break;
