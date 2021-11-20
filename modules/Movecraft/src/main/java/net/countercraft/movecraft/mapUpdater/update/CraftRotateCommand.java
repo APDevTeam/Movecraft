@@ -10,6 +10,7 @@ import net.countercraft.movecraft.WorldHandler;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
 import net.countercraft.movecraft.util.CollectionUtils;
@@ -66,7 +67,7 @@ public class CraftRotateCommand extends UpdateCommand {
             return;
         }
         long time = System.nanoTime();
-        final Set<Material> passthroughBlocks = new HashSet<>(craft.getType().getPassthroughBlocks());
+        final Set<Material> passthroughBlocks = new HashSet<>(craft.getType().getMaterialSetProperty(CraftType.PASSTHROUGH_BLOCKS));
         if(craft.getSinking()){
             passthroughBlocks.add(Material.WATER);
             passthroughBlocks.addAll(Tag.LEAVES.getValues());

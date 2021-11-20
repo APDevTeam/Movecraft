@@ -2,7 +2,7 @@ package net.countercraft.movecraft.commands;
 
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.craft.CraftType;
+import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.util.MathUtils;
 import net.countercraft.movecraft.util.TopicPaginator;
 import org.bukkit.command.Command;
@@ -15,7 +15,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -60,7 +59,7 @@ public class CraftTypeCommand implements TabExecutor {
             }
             type = CraftManager.getInstance().getCraftTypeFromString(args[0]);
         }
-        if(!commandSender.hasPermission("movecraft." + type.getCraftName() + ".pilot")){
+        if(!commandSender.hasPermission("movecraft." + type.getStringProperty(CraftType.NAME) + ".pilot")){
             commandSender.sendMessage("You don't have permission for that craft type!");
             return true;
         }
@@ -75,8 +74,8 @@ public class CraftTypeCommand implements TabExecutor {
             return Collections.emptyList();
         List<String> completions = new ArrayList<>();
         for(CraftType type : CraftManager.getInstance().getCraftTypes())
-            if(commandSender.hasPermission("movecraft." + type.getCraftName() + ".pilot"))
-                completions.add(type.getCraftName());
+            if(commandSender.hasPermission("movecraft." + type.getStringProperty(CraftType.NAME) + ".pilot"))
+                completions.add(type.getStringProperty(CraftType.NAME));
         completions.add("list");
         List<String> returnValues = new ArrayList<>();
         for(String completion : completions)
@@ -116,7 +115,7 @@ public class CraftTypeCommand implements TabExecutor {
     private void sendTypeListPage(int page, @NotNull  CommandSender commandSender){
         TopicPaginator paginator = new TopicPaginator("Type Info");
         for(var entry : CraftManager.getInstance().getCraftTypes()){
-            paginator.addLine(entry.getCraftName());
+            paginator.addLine(entry.getStringProperty(CraftType.NAME));
         }
         if(!paginator.isInBounds(page)){
             commandSender.sendMessage(String.format("Page %d is out of bounds.", page));

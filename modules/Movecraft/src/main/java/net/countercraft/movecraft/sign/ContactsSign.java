@@ -2,6 +2,7 @@ package net.countercraft.movecraft.sign;
 
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
 import org.bukkit.ChatColor;
@@ -48,7 +49,7 @@ public class ContactsSign implements Listener{
             MovecraftLocation tcenter = tcraft.getHitBox().getMidPoint();
             int distsquared= center.distanceSquared(tcenter);
             // craft has been detected
-            String notification = ChatColor.BLUE + tcraft.getType().getCraftName();
+            String notification = ChatColor.BLUE + tcraft.getType().getStringProperty(CraftType.NAME);
             if(notification.length()>9) {
                 notification = notification.substring(0, 7);
             }

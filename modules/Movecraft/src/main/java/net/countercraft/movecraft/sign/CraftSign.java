@@ -7,7 +7,7 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.BaseCraft;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.craft.CraftType;
+import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.craft.CruiseOnPilotCraft;
 import net.countercraft.movecraft.craft.PilotedCraft;
 import net.countercraft.movecraft.events.CraftPilotEvent;
@@ -66,7 +66,7 @@ public final class CraftSign implements Listener{
         Location loc = event.getClickedBlock().getLocation();
         MovecraftLocation startPoint = new MovecraftLocation(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
         final BaseCraft c;
-        if (type.getCruiseOnPilot()) {
+        if (type.getBoolProperty(CraftType.CRUISE_ON_PILOT)) {
             c = new CruiseOnPilotCraft(type, loc.getWorld());
             c.detect(event.getPlayer(), event.getPlayer(), startPoint);
             if(sign.getBlockData() instanceof WallSign) {

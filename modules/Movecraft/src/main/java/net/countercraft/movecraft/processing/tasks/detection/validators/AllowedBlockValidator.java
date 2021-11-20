@@ -1,7 +1,7 @@
 package net.countercraft.movecraft.processing.tasks.detection.validators;
 
 import net.countercraft.movecraft.MovecraftLocation;
-import net.countercraft.movecraft.craft.CraftType;
+import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.processing.functions.Result;
 import net.countercraft.movecraft.processing.functions.DetectionPredicate;
@@ -14,6 +14,6 @@ public class AllowedBlockValidator implements DetectionPredicate<MovecraftLocati
     @Override
     @Contract(pure = true)
     public @NotNull Result validate(@NotNull MovecraftLocation location, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable CommandSender player) {
-        return type.getAllowedBlocks().contains(world.getMaterial(location)) ? Result.succeed() : Result.fail();
+        return type.getMaterialSetProperty(CraftType.ALLOWED_BLOCKS).contains(world.getMaterial(location)) ? Result.succeed() : Result.fail();
     }
 }

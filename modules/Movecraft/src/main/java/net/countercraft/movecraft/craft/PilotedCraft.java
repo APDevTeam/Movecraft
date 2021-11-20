@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.craft;
 
+import net.countercraft.movecraft.craft.type.CraftType;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;

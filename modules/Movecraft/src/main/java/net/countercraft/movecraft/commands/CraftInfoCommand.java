@@ -3,6 +3,7 @@ package net.countercraft.movecraft.commands;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.util.MathUtils;
 import net.countercraft.movecraft.util.TopicPaginator;
 import org.bukkit.command.Command;
@@ -25,7 +26,7 @@ public class CraftInfoCommand implements TabExecutor {
         registerProvider((craft -> "Craft min bound: " + new MovecraftLocation(craft.getHitBox().getMinX(), craft.getHitBox().getMinY(), craft.getHitBox().getMinZ())));
         registerProvider((craft -> "Craft max bound: " + new MovecraftLocation(craft.getHitBox().getMaxX(), craft.getHitBox().getMaxY(), craft.getHitBox().getMaxZ())));
         registerProvider((craft -> "Craft world: " + craft.getWorld().getName()));
-        registerProvider((craft -> "Craft type: " + craft.getType().getCraftName()));
+        registerProvider((craft -> "Craft type: " + craft.getType().getStringProperty(CraftType.NAME)));
         registerProvider((craft -> "Craft name: " + craft.getName()));
         registerProvider((craft -> "Is cruising: " + craft.getCruising()));
         registerProvider((craft -> "Cruise direction: " + craft.getCruiseDirection()));

@@ -4,6 +4,7 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.PlayerCraft;
+import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
 import net.countercraft.movecraft.util.TopicPaginator;
@@ -59,7 +60,7 @@ public class ContactsCommand implements CommandExecutor {
             notification += ": ";
             notification += tcraft.getSinking() ? ChatColor.RED : tcraft.getDisabled() ? ChatColor.BLUE : "";
             notification += tcraft.getName().length() >= 1 ? tcraft.getName() + " (" : "";
-            notification += tcraft.getType().getCraftName();
+            notification += tcraft.getType().getStringProperty(CraftType.NAME);
             notification += tcraft.getName().length() >= 1 ? ") " : " ";
             notification += ChatColor.RESET;
             notification += I18nSupport.getInternationalisedString("Contact - Commanded By") + ", ";

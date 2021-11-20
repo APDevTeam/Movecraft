@@ -1,7 +1,7 @@
 package net.countercraft.movecraft.processing.tasks.detection.validators;
 
 import net.countercraft.movecraft.MovecraftLocation;
-import net.countercraft.movecraft.craft.CraftType;
+import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.processing.functions.Result;
@@ -26,6 +26,6 @@ public class NameSignValidator implements DetectionPredicate<MovecraftLocation> 
             return Result.succeed();
         }
         Sign s = (Sign) state;
-        return s.getLine(0).equalsIgnoreCase("Name:") && !type.getCanBeNamed() ? Result.failWithMessage(I18nSupport.getInternationalisedString("Detection - Craft Type Cannot Be Named")) : Result.succeed();
+        return s.getLine(0).equalsIgnoreCase("Name:") && !type.getBoolProperty(CraftType.CAN_BE_NAMED) ? Result.failWithMessage(I18nSupport.getInternationalisedString("Detection - Craft Type Cannot Be Named")) : Result.succeed();
     }
 }

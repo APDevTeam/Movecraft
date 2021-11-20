@@ -1,5 +1,6 @@
-package net.countercraft.movecraft.craft;
+package net.countercraft.movecraft.craft.type;
 
+import net.countercraft.movecraft.util.Pair;
 import net.countercraft.movecraft.util.Tags;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
@@ -18,8 +19,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -30,7 +33,7 @@ public final class TypeData {
 
     private final @NotNull Map<String, Object> backingData;
 
-    private TypeData(Map<String, Object> data){
+    private TypeData(Map<String, Object> data) {
         this.backingData = Collections.unmodifiableMap(data);
     }
 
@@ -47,37 +50,36 @@ public final class TypeData {
         final InputStream input;
         try {
             input = new FileInputStream(file);
-        } catch (FileNotFoundException e) {
+        }
+        catch (FileNotFoundException e) {
             e.printStackTrace();
             return EMPTY;
         }
-        try(input){
-
+        try(input) {
             Yaml yaml = new Yaml();
             return new TypeData(yaml.load(input));
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             e.printStackTrace();
             return EMPTY;
         }
     }
 
-    private boolean containsKey(@NotNull String key){
+    private boolean containsKey(@NotNull String key) {
         return this.backingData.containsKey(key);
     }
 
-    private void requireOneOf(@NotNull String... keys){
-        for(String key : keys){
-            if(this.containsKey(key)){
+    private void requireOneOf(@NotNull String... keys) {
+        for(String key : keys) {
+            if(this.containsKey(key))
                 return;
-            }
         }
-        throw new IllegalArgumentException("No keys found for " + Arrays.toString(keys));
+        throw new KeyNotFoundException("No keys found for " + Arrays.toString(keys));
     }
 
-    private void requireKey(@NotNull String key){
-        if(!this.containsKey(key)){
-            throw new IllegalArgumentException("No key found for " + key);
-        }
+    private void requireKey(@NotNull String key) {
+        if(!this.containsKey(key))
+            throw new KeyNotFoundException("No key found for " + key);
     }
 
     /**
@@ -88,12 +90,11 @@ public final class TypeData {
      * @param key Key of boolean to get
      * @return The requested boolean
      */
-    public boolean getBoolean(@NotNull String key){
+    public boolean getBoolean(@NotNull String key) {
         requireKey(key);
-        if (backingData.get(key) instanceof Boolean) {
+        if (backingData.get(key) instanceof Boolean)
             return (Boolean) backingData.get(key);
-        }
-        throw new IllegalArgumentException("Value for key " + key + " must be of type boolean");
+        throw new InvalidValueException("Value for key " + key + " must be of type boolean");
     }
 
     /**
@@ -105,13 +106,12 @@ public final class TypeData {
      * @param defaultValue The default return value to use if the provided key is not valid
      * @return The requested boolean
      */
-    public boolean getBooleanOrDefault(@NotNull String key, boolean defaultValue){
-        if (!containsKey(key) || !(backingData.get(key) instanceof Boolean)) {
+    public boolean getBooleanOrDefault(@NotNull String key, boolean defaultValue) {
+        if (!containsKey(key) || !(backingData.get(key) instanceof Boolean))
             return defaultValue;
-        }
         if(backingData.get(key) instanceof Boolean)
             return (Boolean) backingData.get(key);
-        throw new IllegalArgumentException("Value for key " + key + " must be of type boolean");
+        throw new InvalidValueException("Value for key " + key + " must be of type boolean");
     }
 
     /**
@@ -122,12 +122,11 @@ public final class TypeData {
      * @param key Key of int to get
      * @return The requested int
      */
-    public int getInt(@NotNull String key){
+    public int getInt(@NotNull String key) {
         requireKey(key);
-        if(backingData.get(key) instanceof Integer) {
+        if(backingData.get(key) instanceof Integer)
             return (Integer) backingData.get(key);
-        }
-        throw new IllegalArgumentException("Value for key " + key + " must be of type int");
+        throw new InvalidValueException("Value for key " + key + " must be of type int");
     }
 
     /**
@@ -139,14 +138,12 @@ public final class TypeData {
      * @param defaultValue The default return value to use if the provided key is not valid
      * @return The requested int
      */
-    public int getIntOrDefault(@NotNull String key, int defaultValue){
-        if (!backingData.containsKey(key)) {
+    public int getIntOrDefault(@NotNull String key, int defaultValue) {
+        if (!backingData.containsKey(key))
             return defaultValue;
-        }
-        if(backingData.get(key) instanceof Integer){
+        if(backingData.get(key) instanceof Integer)
             return (Integer) backingData.get(key);
-        }
-        throw new IllegalArgumentException("Value for key " + key + " must be of type int");
+        throw new InvalidValueException("Value for key " + key + " must be of type int");
     }
 
     /**
@@ -157,16 +154,14 @@ public final class TypeData {
      * @param key Key of double to get
      * @return The requested double
      */
-    public double getDouble(@NotNull String key){
+    public double getDouble(@NotNull String key) {
         requireKey(key);
         var data = backingData.get(key);
-        if(data instanceof Integer){
+        if(data instanceof Integer)
             return (Integer) backingData.get(key);
-        }
-        if(data instanceof Double) {
+        if(data instanceof Double)
             return (Double) backingData.get(key);
-        }
-        throw new IllegalArgumentException("Value for key " + key + " must be of type double");
+        throw new InvalidValueException("Value for key " + key + " must be of type double");
     }
 
     /**
@@ -178,18 +173,15 @@ public final class TypeData {
      * @param defaultValue The default return value to use if the provided key is not valid
      * @return The requested double
      */
-    public double getDoubleOrDefault(@NotNull String key, double defaultValue){
-        if (!backingData.containsKey(key)) {
+    public double getDoubleOrDefault(@NotNull String key, double defaultValue) {
+        if (!backingData.containsKey(key))
             return defaultValue;
-        }
         var data = backingData.get(key);
-        if(data instanceof Integer){
+        if(data instanceof Integer)
             return (Integer) backingData.get(key);
-        }
-        if(data instanceof Double){
+        if(data instanceof Double)
             return (Double) backingData.get(key);
-        }
-        throw new IllegalArgumentException("Value for key " + key + " must be of type double");
+        throw new InvalidValueException("Value for key " + key + " must be of type double");
     }
 
     /**
@@ -201,11 +193,11 @@ public final class TypeData {
      * @return The requested String
      */
     @NotNull
-    public String getString(@NotNull String key){
+    public String getString(@NotNull String key) {
         requireKey(key);
         if(backingData.get(key) instanceof String)
             return (String) backingData.get(key);
-        throw new IllegalArgumentException("Value for key " + key + " must be of type String");
+        throw new InvalidValueException("Value for key " + key + " must be of type String");
     }
 
     /**
@@ -220,14 +212,12 @@ public final class TypeData {
      * @return The requested String
      */
     @Contract("_, !null -> !null")
-    public String getStringOrDefault(@NotNull String key, @Nullable String defaultValue){
-        if (!backingData.containsKey(key)) {
+    public String getStringOrDefault(@NotNull String key, @Nullable String defaultValue) {
+        if (!backingData.containsKey(key))
             return defaultValue;
-        }
-        if(backingData.get(key) instanceof Integer){
+        if(backingData.get(key) instanceof Integer)
             return (String) backingData.get(key);
-        }
-        throw new IllegalArgumentException("Value for key " + key + " must be of type String");
+        throw new InvalidValueException("Value for key " + key + " must be of type String");
     }
 
     /**
@@ -239,16 +229,17 @@ public final class TypeData {
      * @return The requested Material
      */
     @NotNull
-    public Material getMaterial(@NotNull String key){
+    public Material getMaterial(@NotNull String key) {
         requireKey(key);
         if(backingData.get(key) instanceof String) {
             try {
                 return Material.valueOf(((String) backingData.get(key)).toUpperCase());
-            } catch (IllegalArgumentException e){
-                throw new IllegalArgumentException("Value for key " + key + " must be of type Material");
+            }
+            catch (IllegalArgumentException e){
+                throw new InvalidValueException("Value for key " + key + " must be of type Material");
             }
         }
-        throw new IllegalArgumentException("Value for key " + key + " must be of type Material");
+        throw new InvalidValueException("Value for key " + key + " must be of type Material");
     }
 
     /**
@@ -263,12 +254,12 @@ public final class TypeData {
      * @return The requested Material
      */
     @Contract("_, !null -> !null")
-    public Material getMaterialOrDefault(@NotNull String key, @Nullable Material defaultValue){
+    public Material getMaterialOrDefault(@NotNull String key, @Nullable Material defaultValue) {
         if (!this.containsKey(key))
             return defaultValue;
         if(backingData.get(key) instanceof String)
             return Material.valueOf(((String) backingData.get(key)).toUpperCase());
-        throw new IllegalArgumentException("Value for key " + key + " must be of type Material");
+        throw new InvalidValueException("Value for key " + key + " must be of type Material");
     }
 
     /**
@@ -279,11 +270,11 @@ public final class TypeData {
      * @param key Key of Sound to get
      * @return The requested Sound
      */
-    public Sound getSound(@NotNull String key){
+    public Sound getSound(@NotNull String key) {
         requireKey(key);
         if(backingData.get(key) instanceof String)
             return Sound.sound(Key.key((String) backingData.get(key)), Sound.Source.NEUTRAL, 2f, 1f);
-        throw new IllegalArgumentException("Value for key " + key + " must be of type Sound");
+        throw new InvalidValueException("Value for key " + key + " must be of type Sound");
     }
 
     /**
@@ -298,12 +289,12 @@ public final class TypeData {
      * @return The requested Sound
      */
     @Contract("_, !null -> !null")
-    public Sound getSoundOrDefault(@NotNull String key, @Nullable Sound defaultValue){
+    public Sound getSoundOrDefault(@NotNull String key, @Nullable Sound defaultValue) {
         if (!this.containsKey(key))
             return defaultValue;
         if(backingData.get(key) instanceof String)
             return Sound.sound(Key.key((String) backingData.get(key)), Sound.Source.NEUTRAL, 2f, 1f);
-        throw new IllegalArgumentException("Value for key " + key + " must be of type Sound");
+        throw new InvalidValueException("Value for key " + key + " must be of type Sound");
     }
 
     /**
@@ -315,24 +306,21 @@ public final class TypeData {
      * @return The requested Materials
      */
     @NotNull
-    public EnumSet<Material> getMaterials(@NotNull String key){
+    public EnumSet<Material> getMaterials(@NotNull String key) {
         EnumSet<Material> returnList = EnumSet.noneOf(Material.class);
         requireKey(key);
-        if(!(this.backingData.get(key) instanceof ArrayList)){
-            throw new IllegalArgumentException("key " + key + " must be a list of materials.");
-        }
+        if(!(this.backingData.get(key) instanceof ArrayList))
+            throw new InvalidValueException("key " + key + " must be a list of materials.");
         for(Object object : (ArrayList<?>) this.backingData.get(key)){
             if (!(object instanceof String)) {
-                if(object == null){
-                    throw new IllegalArgumentException("Entry " + key + " has a null value. This usually indicates you've attempted to use a tag that is not surrounded by quotes");
-                }
-                throw new IllegalArgumentException("Entry " + object + " must be a material for key " + key);
+                if(object == null)
+                    throw new InvalidValueException("Entry " + key + " has a null value. This usually indicates you've attempted to use a tag that is not surrounded by quotes");
+                throw new InvalidValueException("Entry " + object + " must be a material for key " + key);
             }
             String materialName = (String) object;
             EnumSet<Material> materials = Tags.parseMaterials(materialName);
-            if(materials.isEmpty()){
-                throw new IllegalArgumentException("Entry " + object + " describes an empty or non-existent Tag for key " + key);
-            }
+            if(materials.isEmpty())
+                throw new InvalidValueException("Entry " + object + " describes an empty or non-existent Tag for key " + key);
             returnList.addAll(materials);
         }
         return returnList;
@@ -346,11 +334,10 @@ public final class TypeData {
      * @return The requested Materials, or an empty set
      */
     @NotNull
-    public EnumSet<Material> getMaterialsOrEmpty(@NotNull String key){
+    public EnumSet<Material> getMaterialsOrEmpty(@NotNull String key) {
         EnumSet<Material> returnList = EnumSet.noneOf(Material.class);
-        if(!(this.backingData.get(key) instanceof ArrayList)){
+        if(!(this.backingData.get(key) instanceof ArrayList))
             return returnList;
-        }
         for(Object object : (ArrayList<?>) this.backingData.get(key)){
             String materialName = (String) object;
             returnList.addAll(Tags.parseMaterials(materialName));
@@ -367,11 +354,10 @@ public final class TypeData {
      */
     @SuppressWarnings("unchecked")
     @NotNull
-    public TypeData getData(@NotNull String key){
+    public TypeData getData(@NotNull String key) {
         requireKey(key);
-        if(!(backingData.get(key) instanceof Map)){
-            throw new IllegalArgumentException("Value for " + key + " must be a map");
-        }
+        if(!(backingData.get(key) instanceof Map))
+            throw new InvalidValueException("Value for " + key + " must be a map");
         return new TypeData((Map<String, Object>) backingData.get(key));
     }
 
@@ -384,10 +370,9 @@ public final class TypeData {
      */
     @SuppressWarnings("unchecked")
     @NotNull
-    public TypeData getDataOrEmpty(@NotNull String key){
-        if(containsKey(key) && backingData.get(key) instanceof Map){
+    public TypeData getDataOrEmpty(@NotNull String key) {
+        if(containsKey(key) && backingData.get(key) instanceof Map)
             return new TypeData((Map<String, Object>) backingData.get(key));
-        }
         return EMPTY;
     }
 
@@ -400,11 +385,10 @@ public final class TypeData {
      * @return The requested List
      */
     @NotNull
-    public List<?> getList(@NotNull String key){
+    public List<?> getList(@NotNull String key) {
         requireKey(key);
-        if(!(backingData.get(key) instanceof List)){
-            throw new IllegalArgumentException("Value for key " + key + " must be a list");
-        }
+        if(!(backingData.get(key) instanceof List))
+            throw new InvalidValueException("Value for key " + key + " must be a list");
         return (List<?>) backingData.get(key);
     }
 
@@ -416,10 +400,9 @@ public final class TypeData {
      * @return The requested List
      */
     @NotNull
-    public List<?> getListOrEmpty(@NotNull String key){
-        if(!containsKey(key) || !(backingData.get(key) instanceof List)){
+    public List<?> getListOrEmpty(@NotNull String key) {
+        if(!containsKey(key) || !(backingData.get(key) instanceof List))
             return Collections.emptyList();
-        }
         return (List<?>) backingData.get(key);
     }
 
@@ -432,13 +415,12 @@ public final class TypeData {
      * @return The requested List of Strings
      */
     @NotNull
-    public List<String> getStringList(@NotNull String key){
+    public List<String> getStringList(@NotNull String key) {
         var list = getList(key);
         var out = new ArrayList<String>();
         for(Object object : list){
-            if(!(object instanceof String)){
-                throw new IllegalArgumentException("Values in list under key " + key + " must be strings");
-            }
+            if(!(object instanceof String))
+                throw new InvalidValueException("Values in list under key " + key + " must be strings");
             out.add((String) object);
         }
         return out;
@@ -454,9 +436,103 @@ public final class TypeData {
      * @return The requested List of Strings
      */
     @NotNull
-    public List<String> getStringListOrEmpty(@NotNull String key){
+    public List<String> getStringListOrEmpty(@NotNull String key) {
         var list = getListOrEmpty(key);
         return list.stream().filter(object -> object instanceof String).map(object -> (String) object).collect(Collectors.toCollection(ArrayList::new));
+    }
+
+
+
+    private static final String NUMERIC_PREFIX = "N"; // an N indicates a specific quantity, IE: N2 for exactly 2 of the block
+
+    @NotNull
+    private static Pair<Boolean, ? extends Number> parseLimit(@NotNull Object input) {
+        if (input instanceof String) {
+            String str = (String) input;
+            if (str.contains(NUMERIC_PREFIX)) {
+                String[] parts = str.split(NUMERIC_PREFIX);
+                int val = Integer.parseInt(parts[1]);
+                return new Pair<>(true, val);
+            }
+            else
+                return new Pair<>(false, Double.valueOf(str));
+        }
+        else if (input instanceof Integer) {
+            return new Pair<>(false, (double) input);
+        }
+        else
+            return new Pair<>(false, (double) input);
+    }
+
+    @NotNull
+    private static EnumSet<Material> parseMaterials(String key, Object materials) {
+        EnumSet<Material> result = EnumSet.noneOf(Material.class);
+        if(materials instanceof ArrayList) {
+            // List, load each as a tag/material
+            for(Object o : (ArrayList<?>) materials) {
+                if (!(o instanceof String)) {
+                    if(o == null)
+                        throw new IllegalArgumentException("Entry in " + key + " has a null value. This usually indicates you've attempted to use a tag that is not surrounded by quotes");
+                    throw new IllegalArgumentException("Entry " + o + " must be a material for key " + key);
+                }
+                String string = (String) o;
+                result.addAll(Tags.parseMaterials(string));
+            }
+        }
+        else if(materials instanceof String) {
+            // Single entry, load as a tag/material
+            String string = (String) materials;
+            result.addAll(Tags.parseMaterials(string));
+        }
+        else {
+            // Invalid entry, throw an error
+            if(materials == null)
+                throw new IllegalArgumentException("Entry in " + key + " has a null value. This usually indicates you've attempted to use a tag that is not surrounded by quotes");
+            throw new IllegalArgumentException("Entry in " + materials + " must be a material for key " + key);
+        }
+        return result;
+    }
+
+    /**
+     * Gets the requested Set of <code>RequiredBlockEntry</code>s by its key.
+     * If the key is not found, an error is thrown.
+     * If the value is found, but is not a Set of <code>RequiredBlockEntry</code>s, an error is thrown.
+     *
+     * @param key - Key of the Set of <code>RequiredBlockEntry</code>s to get
+     * @return The requested Set of <code>RequiredBlockEntry</code>s
+     */
+    @NotNull
+    public Set<RequiredBlockEntry> getRequiredBlockEntrySet(@NotNull String key) {
+        var data = getData(key).getBackingData();
+        Set<RequiredBlockEntry> out = new HashSet<>();
+        for(var entry : data.entrySet()) {
+            EnumSet<Material> materials = parseMaterials(key, entry.getKey());
+
+            var limits = (ArrayList<?>) entry.getValue();
+            if(limits.size() != 2)
+                throw new IllegalArgumentException("Block entry range for key " + key + " and value '" + entry.getKey()
+                        + "' must be a pair, but found " + limits.size() + " entries");
+            var min = parseLimit(limits.get(0));
+            var max = parseLimit(limits.get(1));
+
+            out.add(new RequiredBlockEntry(materials, min, max));
+        }
+        return out;
+    }
+
+    /**
+     * Gets the requested Set of <code>RequiredBlockEntry</code>s by its key.
+     * If the key is not found, an empty Set is returned.
+     * If the value is found, but is not a Set of <code>RequiredBlockEntry</code>s, an error is thrown.
+     *
+     * @param key - Key of the Set of <code>RequiredBlockEntry</code>s to get
+     * @return The requested Set of <code>RequiredBlockEntry</code>s
+     */
+    @NotNull
+    public Set<RequiredBlockEntry> getRequiredBlockEntrySetOrEmpty(@NotNull String key) {
+        if(!containsKey(key))
+            return new HashSet<>();
+        return getRequiredBlockEntrySet(key);
     }
 
     /**
@@ -465,7 +541,22 @@ public final class TypeData {
      * @return the data represented by this TypeData
      */
     @NotNull
-    public Map<String, Object> getBackingData(){
+    public Map<String, Object> getBackingData() {
         return backingData;
+    }
+
+
+    public static class KeyNotFoundException extends IllegalArgumentException {
+
+        public KeyNotFoundException(String s) {
+            super(s);
+        }
+    }
+
+    public static class InvalidValueException extends IllegalArgumentException {
+
+        public InvalidValueException(String s) {
+            super(s);
+        }
     }
 }

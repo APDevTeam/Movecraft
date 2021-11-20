@@ -18,6 +18,7 @@
 package net.countercraft.movecraft.craft;
 
 import net.countercraft.movecraft.Movecraft;
+import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.events.TypesReloadedEvent;
 import net.countercraft.movecraft.exception.NonCancellableReleaseException;
@@ -158,9 +159,9 @@ public class CraftManager implements Iterable<Craft>{
         if(!c.getHitBox().isEmpty()) {
             if (player != null) {
                 player.sendMessage(I18nSupport.getInternationalisedString("Release - Craft has been released"));
-                Movecraft.getInstance().getLogger().log(Level.INFO, String.format(I18nSupport.getInternationalisedString("Release - Player has released a craft console"), player.getName(), c.getType().getCraftName(), c.getHitBox().size(), c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
+                Movecraft.getInstance().getLogger().log(Level.INFO, String.format(I18nSupport.getInternationalisedString("Release - Player has released a craft console"), player.getName(), c.getType().getStringProperty(CraftType.NAME), c.getHitBox().size(), c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
             } else {
-                Movecraft.getInstance().getLogger().log(Level.INFO, String.format(I18nSupport.getInternationalisedString("Release - Null Craft Release Console"), c.getType().getCraftName(), c.getHitBox().size(), c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
+                Movecraft.getInstance().getLogger().log(Level.INFO, String.format(I18nSupport.getInternationalisedString("Release - Null Craft Release Console"), c.getType().getStringProperty(CraftType.NAME), c.getHitBox().size(), c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
             }
         }else{
             Movecraft.getInstance().getLogger().warning(I18nSupport.getInternationalisedString("Release - Empty Craft Release Console"));
@@ -243,7 +244,7 @@ public class CraftManager implements Iterable<Craft>{
         removeReleaseTask(c);
         Player p = getPlayerFromCraft(c);
         p.sendMessage(I18nSupport.getInternationalisedString("Release - Craft has been released message"));
-        Movecraft.getInstance().getLogger().info(String.format(I18nSupport.getInternationalisedString("Release - Player has released a craft console"), p.getName(), c.getType().getCraftName(), c.getHitBox().size(), c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
+        Movecraft.getInstance().getLogger().info(String.format(I18nSupport.getInternationalisedString("Release - Player has released a craft console"), p.getName(), c.getType().getStringProperty(CraftType.NAME), c.getHitBox().size(), c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
         c.setNotificationPlayer(null);
         craftPlayerIndex.remove(p);
     }
@@ -291,7 +292,7 @@ public class CraftManager implements Iterable<Craft>{
 
     public CraftType getCraftTypeFromString(String s) {
         for (CraftType t : craftTypes) {
-            if (s.equalsIgnoreCase(t.getCraftName())) {
+            if (s.equalsIgnoreCase(t.getStringProperty(CraftType.NAME))) {
                 return t;
             }
         }

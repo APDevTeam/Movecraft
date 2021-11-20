@@ -22,6 +22,7 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.PlayerCraft;
+import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.util.BlockHighlight;
@@ -50,8 +51,8 @@ public class PlayerListener implements Listener {
 
     private Set<Location> checkCraftBorders(Craft craft) {
         Set<Location> mergePoints = new HashSet<>();
-        final EnumSet<Material> ALLOWED_BLOCKS = craft.getType().getAllowedBlocks();
-        final EnumSet<Material> FORBIDDEN_BLOCKS = craft.getType().getForbiddenBlocks();
+        final EnumSet<Material> ALLOWED_BLOCKS = craft.getType().getMaterialSetProperty(CraftType.ALLOWED_BLOCKS);
+        final EnumSet<Material> FORBIDDEN_BLOCKS = craft.getType().getMaterialSetProperty(CraftType.FORBIDDEN_BLOCKS);
         final MovecraftLocation[] SHIFTS = {
                 //x
                 new MovecraftLocation(-1, 0, 0),
@@ -132,7 +133,7 @@ public class PlayerListener implements Listener {
             return;
         }
 
-        if (c.isNotProcessing() && c.getType().getMoveEntities() && !timeToReleaseAfter.containsKey(c)) {
+        if (c.isNotProcessing() && c.getType().getBoolProperty(CraftType.MOVE_ENTITIES) && !timeToReleaseAfter.containsKey(c)) {
             if (Settings.ManOverboardTimeout != 0) {
                 c.getAudience().sendActionBar(I18nSupport.getInternationalisedComponent("Manoverboard - Player has left craft"));
                 CraftManager.getInstance().addOverboard(p);
@@ -146,7 +147,7 @@ public class PlayerListener implements Listener {
             for(var location : mergePoints){
                 highlights.get(c).add(BlockHighlight.highlightBlockAt(location, p));
             }
-            timeToReleaseAfter.put(c, System.currentTimeMillis() + c.getType().getReleaseTimeout() * 1000);
+            timeToReleaseAfter.put(c, System.currentTimeMillis() + c.getType().getIntProperty(CraftType.RELEASE_TIMEOUT) * 1000L);
         }
     }
 

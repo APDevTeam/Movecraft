@@ -3,13 +3,12 @@ package net.countercraft.movecraft.processing.tasks.translation;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.MovecraftRotation;
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.craft.CraftType;
+import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftCollisionEvent;
 import net.countercraft.movecraft.events.CraftPreTranslateEvent;
 import net.countercraft.movecraft.events.CraftTranslateEvent;
 import net.countercraft.movecraft.events.FuelBurnEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.mapUpdater.update.CraftTranslateCommand;
 import net.countercraft.movecraft.processing.CachedMovecraftWorld;
 import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.processing.WorldManager;
@@ -28,11 +27,9 @@ import net.countercraft.movecraft.util.hitboxes.SetHitBox;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.Tag;
 import org.bukkit.World;
 import org.bukkit.event.Event;
 import org.bukkit.inventory.FurnaceInventory;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -40,6 +37,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 public class TranslationTask implements Supplier<Effect> {
@@ -113,18 +111,18 @@ public class TranslationTask implements Supplier<Effect> {
                 continue;
             }
             var destinationMaterial = destinationWorld.getMaterial(destination);
-            if(craft.getType().getPassthroughBlocks().contains(destinationMaterial)){
+            if(craft.getType().getMaterialSetProperty(CraftType.PASSTHROUGH_BLOCKS).contains(destinationMaterial)){
                 phaseLocations.add(destination);
                 continue;
             }
-            if(craft.getType().getHarvestBlocks().contains(destinationMaterial) &&
-                    craft.getType().getHarvesterBladeBlocks().contains(originMaterial)){
+            if(craft.getType().getMaterialSetProperty(CraftType.HARVEST_BLOCKS).contains(destinationMaterial) &&
+                    craft.getType().getMaterialSetProperty(CraftType.HARVESTER_BLADE_BLOCKS).contains(originMaterial)){
                 harvestLocations.add(destination);
                 continue;
             }
             collisions.add(destination);
         }
-        var fuelBurnRate = craft.getType().getFuelBurnRate(preTranslateEvent.getWorld());
+        double fuelBurnRate = (double) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_FUEL_BURN_RATE, preTranslateEvent.getWorld());
         Effect fuelBurnEffect;
         if (craft.getBurningFuel() >= fuelBurnRate) {
             //call event
@@ -149,7 +147,7 @@ public class TranslationTask implements Supplier<Effect> {
 
         // Direct float comparison due to check for statically initialized value
         callCollisionEvent(craft, collisions, preTranslateEvent.getWorld());
-        if(craft.getType().getCollisionExplosion() == 0.0F && !collisions.isEmpty()){
+        if(craft.getType().getFloatProperty(CraftType.COLLISION_EXPLOSION) <= 0F && !collisions.isEmpty()){
             //TODO: collision highlights
             return () -> craft.getAudience().sendMessage(Component.text(String.format(I18nSupport.getInternationalisedString("Translation - Failed Craft is obstructed") + " @ %d,%d,%d,%s", 0, 0, 0, "not_implemented")));
         }
@@ -204,8 +202,19 @@ public class TranslationTask implements Supplier<Effect> {
     }
 
     private static @Nullable ItemStack findFuelStack(@NotNull CraftType type, @NotNull FurnaceInventory inventory){
-        for(var item : inventory){
-            if(item == null || !type.getFuelTypes().containsKey(item.getType())){
+        var v = type.getObjectProperty(CraftType.FUEL_TYPES);
+        if(!(v instanceof Map<?, ?>))
+            throw new IllegalStateException("FUEL_TYPES must be of type Map");
+        var fuelTypes = (Map<?, ?>) v;
+        for(var e : fuelTypes.entrySet()) {
+            if(!(e.getKey() instanceof Material))
+                throw new IllegalStateException("Keys in FUEL_TYPES must be of type Material");
+            if(!(e.getValue() instanceof Double))
+                throw new IllegalStateException("Values in FUEL_TYPES must be of type Double");
+        }
+
+        for(var item : inventory) {
+            if(item == null || !fuelTypes.containsKey(item.getType())){
                 continue;
             }
             return item;
@@ -213,7 +222,19 @@ public class TranslationTask implements Supplier<Effect> {
         return null;
     }
 
-    private static @NotNull FuelBurnEvent callFuelEvent(@NotNull Craft craft, @NotNull ItemStack burningFuel){
-        return submitEvent(new FuelBurnEvent(craft, craft.getType().getFuelTypes().get(burningFuel.getType()), craft.getType().getFuelBurnRate(craft.getWorld())));
+    private static @NotNull FuelBurnEvent callFuelEvent(@NotNull Craft craft, @NotNull ItemStack burningFuel) {
+        var v = craft.getType().getObjectProperty(CraftType.FUEL_TYPES);
+        if(!(v instanceof Map<?, ?>))
+            throw new IllegalStateException("FUEL_TYPES must be of type Map");
+        var fuelTypes = (Map<?, ?>) v;
+        for(var e : fuelTypes.entrySet()) {
+            if(!(e.getKey() instanceof Material))
+                throw new IllegalStateException("Keys in FUEL_TYPES must be of type Material");
+            if(!(e.getValue() instanceof Double))
+                throw new IllegalStateException("Values in FUEL_TYPES must be of type Double");
+        }
+
+        double fuelBurnRate = (double) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_FUEL_BURN_RATE, craft.getWorld());
+        return submitEvent(new FuelBurnEvent(craft, (double) fuelTypes.get(burningFuel.getType()), fuelBurnRate));
     }
 }

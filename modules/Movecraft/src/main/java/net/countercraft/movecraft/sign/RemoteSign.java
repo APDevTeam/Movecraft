@@ -5,6 +5,7 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.PlayerCraft;
+import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.util.MathUtils;
 import org.bukkit.Bukkit;
@@ -67,7 +68,7 @@ public final class RemoteSign implements Listener{
             return;
         }
 
-        if (!foundCraft.getType().allowRemoteSign()) {
+        if (!foundCraft.getType().getBoolProperty(CraftType.ALLOW_REMOTE_SIGN)) {
             event.getPlayer().sendMessage(ERROR_PREFIX + I18nSupport.getInternationalisedString("Remote Sign - Not allowed on this craft"));
             return;
         }

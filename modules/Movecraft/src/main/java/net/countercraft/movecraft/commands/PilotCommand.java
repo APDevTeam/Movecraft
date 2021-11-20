@@ -3,7 +3,7 @@ package net.countercraft.movecraft.commands;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.craft.CraftType;
+import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.craft.PilotedCraft;
 import net.countercraft.movecraft.events.CraftPilotEvent;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
@@ -65,8 +65,8 @@ public class PilotCommand implements TabExecutor {
             return Collections.emptyList();
         List<String> completions = new ArrayList<>();
         for(CraftType type : CraftManager.getInstance().getCraftTypes())
-            if(commandSender.hasPermission("movecraft." + type.getCraftName() + ".pilot"))
-                completions.add(type.getCraftName());
+            if(commandSender.hasPermission("movecraft." + type.getStringProperty(CraftType.NAME) + ".pilot"))
+                completions.add(type.getStringProperty(CraftType.NAME));
         List<String> returnValues = new ArrayList<>();
         for(String completion : completions)
             if(completion.toLowerCase().startsWith(strings[strings.length-1].toLowerCase()))

@@ -2,6 +2,7 @@ package net.countercraft.movecraft.sign;
 
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -51,16 +52,16 @@ public final class TeleportSign implements Listener {
         World world = Bukkit.getWorld(w);
         if (world == null) world = sign.getWorld();
 
-        if (!event.getPlayer().hasPermission("movecraft." + CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getCraftName() + ".move")) {
+        if (!event.getPlayer().hasPermission("movecraft." + CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getStringProperty(CraftType.NAME) + ".move")) {
             event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
             return;
         }
         final Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
-        if (c == null || !c.getType().getCanTeleport()) {
+        if (c == null || !c.getType().getBoolProperty(CraftType.CAN_TELEPORT)) {
             return;
         }
         long timeSinceLastTeleport = System.currentTimeMillis() - c.getLastTeleportTime();
-        if (c.getType().getTeleportationCooldown() > 0 && timeSinceLastTeleport < c.getType().getTeleportationCooldown()) {
+        if (c.getType().getIntProperty(CraftType.TELEPORTATION_COOLDOWN) > 0 && timeSinceLastTeleport < c.getType().getIntProperty(CraftType.TELEPORTATION_COOLDOWN)) {
             event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("Teleportation - Cooldown active"), timeSinceLastTeleport));
             return;
         }

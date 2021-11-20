@@ -20,7 +20,7 @@ package net.countercraft.movecraft.listener;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.craft.CraftType;
+import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.craft.PlayerCraft;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.util.MathUtils;
@@ -79,7 +79,7 @@ public final class InteractListener implements Listener {
             final CraftType type = craft.getType();
             int currentGear = craft.getCurrentGear();
             if (player.isSneaking() && !craft.getPilotLocked()) {
-                final int gearShifts = type.getGearShifts();
+                final int gearShifts = type.getIntProperty(CraftType.GEAR_SHIFTS);
                 if (gearShifts == 1) {
                     player.sendMessage(I18nSupport.getInternationalisedString("Gearshift - Disabled for craft type"));
                     return;
@@ -92,8 +92,8 @@ public final class InteractListener implements Listener {
                 return;
             }
             Long time = timeMap.get(player);
-            int tickCooldown = craft.getType().getTickCooldown(craft.getWorld());
-            if (type.getGearShiftsAffectDirectMovement() && type.getGearShiftsAffectTickCooldown()) {
+            int tickCooldown = (int) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_TICK_COOLDOWN, craft.getWorld());
+            if (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_DIRECT_MOVEMENT) && type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN)) {
                 tickCooldown *= currentGear;
             }
             if (time != null) {
@@ -101,8 +101,8 @@ public final class InteractListener implements Listener {
 
                 // if the craft should go slower underwater, make time
                 // pass more slowly there
-                if (craft.getType().getHalfSpeedUnderwater() && craft.getHitBox().getMinY() < craft.getWorld().getSeaLevel())
-                    ticksElapsed = ticksElapsed >> 1;
+                if (craft.getType().getBoolProperty(CraftType.HALF_SPEED_UNDERWATER) && craft.getHitBox().getMinY() < craft.getWorld().getSeaLevel())
+                    ticksElapsed /= 2;
 
 
                 if (Math.abs(ticksElapsed) < tickCooldown) {
@@ -114,7 +114,7 @@ public final class InteractListener implements Listener {
                 return;
             }
 
-            if (!event.getPlayer().hasPermission("movecraft." + craft.getType().getCraftName() + ".move")) {
+            if (!event.getPlayer().hasPermission("movecraft." + craft.getType().getStringProperty(CraftType.NAME) + ".move")) {
                 event.getPlayer().sendMessage(
                         I18nSupport.getInternationalisedString("Insufficient Permissions"));
                 return;
@@ -125,7 +125,7 @@ public final class InteractListener implements Listener {
                 int DY = 1;
                 if (event.getPlayer().isSneaking())
                     DY = -1;
-                if (craft.getType().getGearShiftsAffectDirectMovement())
+                if (craft.getType().getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_DIRECT_MOVEMENT))
                     DY *= currentGear;
                 craft.translate(0, DY, 0);
                 timeMap.put(event.getPlayer(), System.currentTimeMillis());
@@ -172,8 +172,8 @@ public final class InteractListener implements Listener {
                 event.setCancelled(true);
                 return;
             }
-            if (!event.getPlayer().hasPermission("movecraft." + craft.getType().getCraftName() + ".move")
-                    || !craft.getType().getCanDirectControl()) {
+            if (!event.getPlayer().hasPermission("movecraft." + craft.getType().getStringProperty(CraftType.NAME) + ".move")
+                    || !craft.getType().getBoolProperty(CraftType.CAN_DIRECT_CONTROL)) {
                         event.getPlayer().sendMessage(
                                 I18nSupport.getInternationalisedString("Insufficient Permissions"));
                         return;
