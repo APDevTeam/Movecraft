@@ -238,7 +238,7 @@ public class DetectionTask implements Supplier<Effect> {
         return String.format("DetectionTask{%s}", this.craft);
     }
 
-    private class DetectAction implements Runnable{
+    private class DetectAction implements Runnable {
         private final ConcurrentLinkedQueue<MovecraftLocation> currentFrontier;
         private final ConcurrentLinkedQueue<MovecraftLocation> nextFrontier;
 
@@ -250,30 +250,30 @@ public class DetectionTask implements Supplier<Effect> {
         @Override
         public void run() {
             MovecraftLocation probe;
-            while((probe = currentFrontier.poll())!=null) {
+            while((probe = currentFrontier.poll()) != null) {
                 visitedMaterials.computeIfAbsent(world.getMaterial(probe), Functions.forSupplier(ConcurrentLinkedDeque::new)).add(probe);
-                if(!ALLOWED_BLOCK_VALIDATOR.validate(probe, craft.getType(), world, player).isSucess()){
+                if(!ALLOWED_BLOCK_VALIDATOR.validate(probe, craft.getType(), world, player).isSucess())
                     continue;
-                }
+
                 DetectionPredicate<MovecraftLocation> chain = FORBIDDEN_BLOCK_VALIDATOR;
                 for (var validator : validators) {
                     chain = chain.and(validator);
                 }
                 var result = chain.validate(probe, craft.getType(), world, player);
-                if(result.isSucess()){
+                if(result.isSucess()) {
                     legal.add(probe);
-                    if (Tags.FLUID.contains(world.getMaterial(probe))) {
+                    if (Tags.FLUID.contains(world.getMaterial(probe)))
                         fluid.add(probe);
-                    }
+
                     size.increment();
                     materials.computeIfAbsent(world.getMaterial(probe), Functions.forSupplier(ConcurrentLinkedDeque::new)).add(probe);
-                    for(int i = 0; i< SHIFTS.length; i++){
-                        var shifted = probe.add(SHIFTS[i]);
-                        if(visited.add(shifted)) {
+                    for(MovecraftLocation shift : SHIFTS) {
+                        var shifted = probe.add(shift);
+                        if(visited.add(shifted))
                             nextFrontier.add(shifted);
-                        }
                     }
-                } else {
+                }
+                else {
                     illegal.add(probe);
                     player.sendMessage(result.getMessage());
                 }
