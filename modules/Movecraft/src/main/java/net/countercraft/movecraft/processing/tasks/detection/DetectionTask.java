@@ -176,7 +176,6 @@ public class DetectionTask implements Supplier<Effect> {
 
     @Override
     public @Nullable Effect get() {
-        var start = System.nanoTime();
         frontier();
         if(!illegal.isEmpty()) {
             return null;
@@ -185,7 +184,7 @@ public class DetectionTask implements Supplier<Effect> {
         result = result.isSucess() ? visitedValidators.stream().reduce(DetectionPredicate::and).orElse((a, b, c, d) -> Result.fail()).validate(visitedMaterials, craft.getType(), world, player) : result;
         if(!result.isSucess()){
             Result finalResult = result;
-            return () -> player.sendMessage(finalResult.getMessage());
+            return () -> craft.getAudience().sendMessage(Component.text(finalResult.getMessage()));
         }
         craft.setHitBox(new BitmapHitBox(legal));
         craft.setFluidLocations(new BitmapHitBox(fluid));
@@ -275,7 +274,7 @@ public class DetectionTask implements Supplier<Effect> {
                 }
                 else {
                     illegal.add(probe);
-                    player.sendMessage(result.getMessage());
+                    craft.getAudience().sendMessage(Component.text(result.getMessage()));
                 }
             }
         }
