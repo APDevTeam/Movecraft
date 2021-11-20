@@ -72,22 +72,17 @@ public class RequiredBlockEntry {
 
     public Pair<DetectionResult, String> detect(int count, int size) {
         double blockPercent = 100D * count / size;
-        if(numericMin) {
-            if(count < min)
-                return new Pair<>(DetectionResult.NOT_ENOUGH, String.format("%d < %d", count, (int) min));
-        }
-        else {
-            if(blockPercent < min)
-                return new Pair<>(DetectionResult.NOT_ENOUGH, String.format("%.2f%% < %.2f%%", blockPercent, min));
-        }
-        if(numericMax) {
-            if(count > max)
-                return new Pair<>(DetectionResult.TOO_MUCH, String.format("%d > %d", count, (int) max));
-        }
-        else {
-            if(blockPercent > max)
-                return new Pair<>(DetectionResult.TOO_MUCH, String.format("%.2f%% > %.2f%%", blockPercent, max));
-        }
+
+        if(numericMin && count < min)
+            return new Pair<>(DetectionResult.NOT_ENOUGH, String.format("%d < %d", count, (int) min));
+        else if(!numericMin && blockPercent < min)
+            return new Pair<>(DetectionResult.NOT_ENOUGH, String.format("%.2f%% < %.2f%%", blockPercent, min));
+
+        if(numericMax && count > max)
+            return new Pair<>(DetectionResult.TOO_MUCH, String.format("%d > %d", count, (int) max));
+        else if(!numericMax && blockPercent > max)
+            return new Pair<>(DetectionResult.TOO_MUCH, String.format("%.2f%% > %.2f%%", blockPercent, max));
+
         return new Pair<>(DetectionResult.SUCCESS, "");
     }
 }
