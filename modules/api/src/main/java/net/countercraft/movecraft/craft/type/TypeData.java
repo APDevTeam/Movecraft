@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.craft.type;
 
+import net.countercraft.movecraft.util.Pair;
 import net.countercraft.movecraft.util.Tags;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
@@ -18,8 +19,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -436,6 +439,100 @@ public final class TypeData {
     public List<String> getStringListOrEmpty(@NotNull String key) {
         var list = getListOrEmpty(key);
         return list.stream().filter(object -> object instanceof String).map(object -> (String) object).collect(Collectors.toCollection(ArrayList::new));
+    }
+
+
+
+    private static final String NUMERIC_PREFIX = "N"; // an N indicates a specific quantity, IE: N2 for exactly 2 of the block
+
+    @NotNull
+    private static Pair<Boolean, ? extends Number> parseLimit(@NotNull Object input) {
+        if (input instanceof String) {
+            String str = (String) input;
+            if (str.contains(NUMERIC_PREFIX)) {
+                String[] parts = str.split(NUMERIC_PREFIX);
+                int val = Integer.parseInt(parts[1]);
+                return new Pair<>(true, val);
+            }
+            else
+                return new Pair<>(false, Double.valueOf(str));
+        }
+        else if (input instanceof Integer) {
+            return new Pair<>(false, (double) input);
+        }
+        else
+            return new Pair<>(false, (double) input);
+    }
+
+    @NotNull
+    private static EnumSet<Material> parseMaterials(String key, Object materials) {
+        EnumSet<Material> result = EnumSet.noneOf(Material.class);
+        if(materials instanceof ArrayList) {
+            // List, load each as a tag/material
+            for(Object o : (ArrayList<?>) materials) {
+                if (!(o instanceof String)) {
+                    if(o == null)
+                        throw new IllegalArgumentException("Entry in " + key + " has a null value. This usually indicates you've attempted to use a tag that is not surrounded by quotes");
+                    throw new IllegalArgumentException("Entry " + o + " must be a material for key " + key);
+                }
+                String string = (String) o;
+                result.addAll(Tags.parseMaterials(string));
+            }
+        }
+        else if(materials instanceof String) {
+            // Single entry, load as a tag/material
+            String string = (String) materials;
+            result.addAll(Tags.parseMaterials(string));
+        }
+        else {
+            // Invalid entry, throw an error
+            if(materials == null)
+                throw new IllegalArgumentException("Entry in " + key + " has a null value. This usually indicates you've attempted to use a tag that is not surrounded by quotes");
+            throw new IllegalArgumentException("Entry in " + materials + " must be a material for key " + key);
+        }
+        return result;
+    }
+
+    /**
+     * Gets the requested Set of <code>RequiredBlockEntry</code>s by its key.
+     * If the key is not found, an error is thrown.
+     * If the value is found, but is not a Set of <code>RequiredBlockEntry</code>s, an error is thrown.
+     *
+     * @param key - Key of the Set of <code>RequiredBlockEntry</code>s to get
+     * @return The requested Set of <code>RequiredBlockEntry</code>s
+     */
+    @NotNull
+    public Set<RequiredBlockEntry> getRequiredBlockEntrySet(@NotNull String key) {
+        var data = getData(key).getBackingData();
+        Set<RequiredBlockEntry> out = new HashSet<>();
+        for(var entry : data.entrySet()) {
+            EnumSet<Material> materials = parseMaterials(key, entry.getKey());
+
+            var limits = (ArrayList<?>) entry.getValue();
+            if(limits.size() != 2)
+                throw new IllegalArgumentException("Block entry range for key " + key + " and value '" + entry.getKey()
+                        + "' must be a pair, but found " + limits.size() + " entries");
+            var min = parseLimit(limits.get(0));
+            var max = parseLimit(limits.get(1));
+
+            out.add(new RequiredBlockEntry(materials, min, max));
+        }
+        return out;
+    }
+
+    /**
+     * Gets the requested Set of <code>RequiredBlockEntry</code>s by its key.
+     * If the key is not found, an empty Set is returned.
+     * If the value is found, but is not a Set of <code>RequiredBlockEntry</code>s, an error is thrown.
+     *
+     * @param key - Key of the Set of <code>RequiredBlockEntry</code>s to get
+     * @return The requested Set of <code>RequiredBlockEntry</code>s
+     */
+    @NotNull
+    public Set<RequiredBlockEntry> getRequiredBlockEntrySetOrEmpty(@NotNull String key) {
+        if(!containsKey(key))
+            return new HashSet<>();
+        return getRequiredBlockEntrySet(key);
     }
 
     /**

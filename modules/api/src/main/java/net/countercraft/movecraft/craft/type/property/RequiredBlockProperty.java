@@ -52,12 +52,7 @@ public class RequiredBlockProperty implements Property<Set<RequiredBlockEntry>> 
     @Nullable
     public Set<RequiredBlockEntry> load(@NotNull TypeData data, @NotNull CraftType type) {
         try {
-            var input = data.getDataOrEmpty(fileKey).getBackingData();
-            Set<RequiredBlockEntry> result = new HashSet<>();
-            for(var entry : input.entrySet()) {
-                result.add(RequiredBlockEntry.of(fileKey, entry.getKey(), entry.getValue()));
-            }
-            return result;
+            return data.getRequiredBlockEntrySet(fileKey);
         }
         catch (TypeData.KeyNotFoundException e) {
             if(defaultProvider == null)
