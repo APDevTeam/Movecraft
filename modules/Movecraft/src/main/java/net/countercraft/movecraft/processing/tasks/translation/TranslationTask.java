@@ -93,14 +93,12 @@ public class TranslationTask implements Supplier<Effect> {
         for(var originLocation : craft.getHitBox()){
             var originMaterial = craft.getMovecraftWorld().getMaterial(originLocation);
             // Remove air from hitboxes
-            if(Tags.AIR.contains(originMaterial)){
+            if(originMaterial.isAir())
                 continue;
-            }
-            if(originMaterial == Material.FURNACE){
+            if(Tags.FURNACES.contains(originMaterial)) {
                 var state = craft.getMovecraftWorld().getState(originLocation);
-                if(state instanceof FurnaceInventory) {
+                if(state instanceof FurnaceInventory)
                     fuelSources.add((FurnaceInventory) state);
-                }
             }
 
             var destination = originLocation.add(translation);

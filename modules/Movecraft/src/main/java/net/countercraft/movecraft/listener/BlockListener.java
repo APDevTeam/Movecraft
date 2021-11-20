@@ -23,6 +23,7 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.util.MathUtils;
+import net.countercraft.movecraft.util.Tags;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.Tag;
@@ -168,29 +169,19 @@ public class BlockListener implements Listener {
 
         Block block = event.getBlock();
 
-//        final int[] fragileBlocks = new int[]{26, 34, 50, 55, 63, 64, 65, 68, 69, 70, 71, 72, 75, 76, 77, 93, 94, 96, 131, 132, 143, 147, 148, 149, 150, 151, 171, 193, 194, 195, 196, 197};
-        final EnumSet<Material> fragileMaterials = EnumSet.of(Material.PISTON_HEAD, Material.TORCH, Material.REDSTONE_WIRE, Material.LADDER);
-        fragileMaterials.addAll(Tag.DOORS.getValues());
-        fragileMaterials.addAll(Tag.CARPETS.getValues());
-        fragileMaterials.addAll(Tag.RAILS.getValues());
-        fragileMaterials.addAll(Tag.WOODEN_PRESSURE_PLATES.getValues());
         CraftManager.getInstance().getCraftsInWorld(block.getWorld());
         for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(block.getWorld())) {
             MovecraftLocation mloc = new MovecraftLocation(block.getX(), block.getY(), block.getZ());
             if (!MathUtils.locIsNearCraftFast(tcraft, mloc)) {
                 continue;
             }
-            if (fragileMaterials.contains(event.getBlock().getType())) {
+            if(Tags.FRAGILE_MATERIALS.contains(event.getBlock().getType())) {
                 BlockData m = block.getBlockData();
                 BlockFace face = BlockFace.DOWN;
-                boolean faceAlwaysDown = false;
-                if (block.getType() == Material.COMPARATOR || block.getType() == Material.REPEATER)
-                    faceAlwaysDown = true;
-                if (m instanceof Attachable && !faceAlwaysDown) {
+                boolean faceAlwaysDown = block.getType() == Material.COMPARATOR || block.getType() == Material.REPEATER;
+                if (m instanceof Attachable && !faceAlwaysDown)
                     face = ((Attachable) m).getAttachedFace();
-                }
                 if (!event.getBlock().getRelative(face).getType().isSolid()) {
-//						if(event.getEventName().equals("BlockPhysicsEvent")) {
                     event.setCancelled(true);
                     return;
                 }
