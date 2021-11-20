@@ -680,64 +680,36 @@ final public class CraftType {
         perWorldPropertyMap = new HashMap<>();
         requiredBlockPropertyMap = new HashMap<>();
         for(var property : properties) {
-            if(property instanceof StringProperty) {
-                String value = ((StringProperty) property).load(data, this);
-                if (value != null)
-                    stringPropertyMap.put(property.getNamespacedKey(), value);
-            }
-            else if(property instanceof IntegerProperty) {
-                Integer value = ((IntegerProperty) property).load(data, this);
-                if (value != null)
-                    intPropertyMap.put(property.getNamespacedKey(), value);
-            }
-            else if(property instanceof BooleanProperty) {
-                Boolean value = ((BooleanProperty) property).load(data, this);
-                if(value != null)
-                    boolPropertyMap.put(property.getNamespacedKey(), value);
-            }
-            else if(property instanceof FloatProperty) {
-                Float value = ((FloatProperty) property).load(data, this);
-                if(value != null)
-                    floatPropertyMap.put(property.getNamespacedKey(), value);
-            }
-            else if(property instanceof DoubleProperty) {
-                Double value = ((DoubleProperty) property).load(data, this);
-                if(value != null)
-                    doublePropertyMap.put(property.getNamespacedKey(), value);
-            }
-            else if(property instanceof ObjectProperty) {
-                Object value = ((ObjectProperty) property).load(data, this);
-                if(value != null)
-                    objectPropertyMap.put(property.getNamespacedKey(), value);
-            }
-            else if(property instanceof MaterialSetProperty) {
-                EnumSet<Material> value = ((MaterialSetProperty) property).load(data, this);
-                if(value != null)
-                    materialSetPropertyMap.put(property.getNamespacedKey(), value);
-            }
+            if(property instanceof StringProperty)
+                stringPropertyMap.put(property.getNamespacedKey(), ((StringProperty) property).load(data, this));
+            else if(property instanceof IntegerProperty)
+                intPropertyMap.put(property.getNamespacedKey(), ((IntegerProperty) property).load(data, this));
+            else if(property instanceof BooleanProperty)
+                boolPropertyMap.put(property.getNamespacedKey(), ((BooleanProperty) property).load(data, this));
+            else if(property instanceof FloatProperty)
+                floatPropertyMap.put(property.getNamespacedKey(), ((FloatProperty) property).load(data, this));
+            else if(property instanceof DoubleProperty)
+                doublePropertyMap.put(property.getNamespacedKey(), ((DoubleProperty) property).load(data, this));
+            else if(property instanceof ObjectProperty)
+                objectPropertyMap.put(property.getNamespacedKey(), ((ObjectProperty) property).load(data, this));
+            else if(property instanceof MaterialSetProperty)
+                materialSetPropertyMap.put(property.getNamespacedKey(), ((MaterialSetProperty) property).load(data, this));
             else if(property instanceof PerWorldProperty<?>) {
                 var perWorldProperty = (PerWorldProperty<?>) property;
                 var map = perWorldProperty.load(data, this);
-                if(map != null) {
-                    // Conversion of the map is simple, copy it to one of the right type.
-                    Map<String, Object> resultMap = new HashMap<>(map);
-                    /*
-                        The defaultProvider is of type Function<CraftType, ?> which can not be cast to
-                        Function<CraftType, Object>.  We can create a Function<CraftType, Object> by chaining an
-                        identity Function<Object, Object> on the end.
-                     */
-                    var defaultProvider = perWorldProperty.getDefaultProvider().andThen(
-                            (Function<Object, Object>) o -> o
-                    );
-                    var pair = new Pair<>(resultMap, defaultProvider);
-                    perWorldPropertyMap.put(perWorldProperty.getNamespacedKey(), pair);
-                }
+                if(map == null)
+                    continue;
+
+                // Conversion of the map is simple, copy it to one of the right type.
+                Map<String, Object> resultMap = new HashMap<>(map);
+                // The defaultProvider is of type Function<CraftType, ?> which can not be cast to Function<CraftType, Object>.
+                // We can create a Function<CraftType, Object> by chaining an identity Function<Object, Object> on the end.
+                var defaultProvider = perWorldProperty.getDefaultProvider().andThen((Function<Object, Object>) o -> o);
+                var pair = new Pair<>(resultMap, defaultProvider);
+                perWorldPropertyMap.put(perWorldProperty.getNamespacedKey(), pair);
             }
-            else if(property instanceof RequiredBlockProperty) {
-                Set<RequiredBlockEntry> value = ((RequiredBlockProperty) property).load(data, this);
-                if(value != null)
-                    requiredBlockPropertyMap.put(property.getNamespacedKey(), value);
-            }
+            else if(property instanceof RequiredBlockProperty)
+                requiredBlockPropertyMap.put(property.getNamespacedKey(), ((RequiredBlockProperty) property).load(data, this));
         }
 
         // Transform craft type
