@@ -68,8 +68,8 @@ final public class CraftType {
     public static final NamespacedKey MIN_SIZE = buildKey("min_size");
     public static final NamespacedKey ALLOWED_BLOCKS = buildKey("allowed_blocks");
     private static final NamespacedKey SPEED = buildKey("speed"); // Private key used to calculate TICK_COOLDOWN
-    public static final NamespacedKey FLY_BLOCKS = buildKey("fly_blocks");
     private static final NamespacedKey TICK_COOLDOWN = buildKey("tick_cooldown"); // Private key used as default for PER_WORLD_TICK_COOLDOWN
+    public static final NamespacedKey FLY_BLOCKS = buildKey("fly_blocks");
     public static final NamespacedKey FORBIDDEN_SIGN_STRINGS = buildKey("forbidden_sign_strings");
     private static final NamespacedKey PER_WORLD_SPEED = buildKey("per_world_speed"); // Private key used to calculate PER_WORLD_TICK_COOLDOWN
     public static final NamespacedKey PER_WORLD_TICK_COOLDOWN = buildKey("per_world_tick_cooldown");
@@ -354,9 +354,9 @@ final public class CraftType {
         registerProperty(new IntegerProperty("minSize", MIN_SIZE));
         registerProperty(new MaterialSetProperty("allowedBlocks", ALLOWED_BLOCKS));
         registerProperty(new DoubleProperty("speed", SPEED));
-        registerProperty(new RequiredBlockProperty("flyblocks", FLY_BLOCKS));
 
         /* Optional properties */
+        registerProperty(new RequiredBlockProperty("flyblocks", FLY_BLOCKS, type -> new HashSet<>()));
         registerProperty(new ObjectPropertyImpl("forbiddenSignStrings", FORBIDDEN_SIGN_STRINGS,
                 (data, type, fileKey, namespacedKey) -> data.getStringListOrEmpty(fileKey).stream().map(String::toLowerCase).collect(Collectors.toSet()),
                 craftType -> new HashSet<>()
