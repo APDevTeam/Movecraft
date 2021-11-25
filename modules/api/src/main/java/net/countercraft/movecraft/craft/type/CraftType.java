@@ -35,6 +35,7 @@ import net.countercraft.movecraft.craft.type.transform.IntegerTransform;
 import net.countercraft.movecraft.craft.type.transform.MaterialSetTransform;
 import net.countercraft.movecraft.craft.type.transform.ObjectTransform;
 import net.countercraft.movecraft.craft.type.transform.PerWorldTransform;
+import net.countercraft.movecraft.craft.type.transform.RequiredBlockTransform;
 import net.countercraft.movecraft.craft.type.transform.StringTransform;
 import net.countercraft.movecraft.craft.type.transform.Transform;
 import net.countercraft.movecraft.processing.MovecraftWorld;
@@ -730,6 +731,8 @@ final public class CraftType {
                 materialSetPropertyMap = ((MaterialSetTransform) transform).transform(materialSetPropertyMap, this);
             else if(transform instanceof PerWorldTransform)
                 perWorldPropertyMap = ((PerWorldTransform) transform).transform(perWorldPropertyMap, this);
+            else if(transform instanceof RequiredBlockTransform)
+                requiredBlockPropertyMap = ((RequiredBlockTransform) transform).transform(requiredBlockPropertyMap, this);
         }
 
         // Validate craft type
