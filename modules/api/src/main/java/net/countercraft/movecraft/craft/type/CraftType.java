@@ -540,7 +540,7 @@ final public class CraftType {
                     throw new IllegalStateException("PER_WORLD_SPEED must be of type Double");
                 resultMap.put(i.getKey(), (int) Math.ceil(20 / (double) value));
             }
-            var defaultProvider = (Function<CraftType, Object>) craftType -> craftType.getIntProperty(TICK_COOLDOWN);
+            var defaultProvider = (BiFunction<CraftType, String, Object>) (craftType, worldName) -> craftType.getIntProperty(TICK_COOLDOWN);
             data.put(PER_WORLD_TICK_COOLDOWN, new Pair<>(resultMap, defaultProvider));
             return data;
         });
@@ -558,7 +558,7 @@ final public class CraftType {
                     throw new IllegalStateException("PER_WORLD_CRUISE_SKIP_BLOCKS must be of type Integer");
                 resultMap.put(world, (int) Math.round((1.0 + (int) skip) * 20.0 / (double) value));
             }
-            var defaultProvider = (Function<CraftType, Object>) craftType -> craftType.getIntProperty(CRUISE_TICK_COOLDOWN);
+            var defaultProvider = (BiFunction<CraftType, String, Object>) (craftType, worldName) -> craftType.getIntProperty(CRUISE_TICK_COOLDOWN);
             data.put(PER_WORLD_CRUISE_TICK_COOLDOWN, new Pair<>(resultMap, defaultProvider));
             return data;
         });
@@ -576,7 +576,7 @@ final public class CraftType {
                     throw new IllegalStateException("PER_WORLD_VERT_CRUISE_SKIP_BLOCKS must be of type Integer");
                 resultMap.put(world, (int) Math.round((1.0 + (int) skip) * 20.0 / (double) value));
             }
-            var defaultProvider = (Function<CraftType, Object>) craftType -> craftType.getIntProperty(VERT_CRUISE_TICK_COOLDOWN);
+            var defaultProvider = (BiFunction<CraftType, String, Object>) (craftType, worldName) -> craftType.getIntProperty(VERT_CRUISE_TICK_COOLDOWN);
             data.put(PER_WORLD_VERT_CRUISE_TICK_COOLDOWN, new Pair<>(resultMap, defaultProvider));
             return data;
         });
