@@ -23,6 +23,7 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.FuelBurnEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.util.Tags;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -90,7 +91,7 @@ public abstract class AsyncTask extends BukkitRunnable {
 
         for (MovecraftLocation bTest : craft.getHitBox()) {
             Block b = craft.getWorld().getBlockAt(bTest.getX(), bTest.getY(), bTest.getZ());
-            if (b.getType() == Material.FURNACE) {
+            if (Tags.FURNACES.contains(b.getType())) {
                 InventoryHolder inventoryHolder = (InventoryHolder) b.getState();
                 for (ItemStack stack : inventoryHolder.getInventory()) {
                     if (stack == null || !fuelTypes.containsKey(stack.getType()))
@@ -125,8 +126,8 @@ public abstract class AsyncTask extends BukkitRunnable {
             if (burningFuel < fuelBurnRate) {
                 minAmount = (int) fuelBurnRate;
             }
-            if (iStack.getType() == Material.LAVA_BUCKET || iStack.getType() == Material.WATER_BUCKET || iStack.getType() == Material.MILK_BUCKET) {
-                //If water, lava or milk buckets are accepted as fuel, replace with an empty bucket
+            if (Tags.BUCKETS.contains(iStack.getType())) {
+                //If buckets are accepted as fuel, replace with an empty bucket
                 iStack.setType(Material.BUCKET);
             } else if (amount == minAmount) {
                 inventoryHolder.getInventory().remove(iStack);

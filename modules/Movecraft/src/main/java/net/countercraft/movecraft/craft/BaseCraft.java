@@ -15,6 +15,7 @@ import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.processing.WorldManager;
 import net.countercraft.movecraft.processing.tasks.detection.DetectionTask;
 import net.countercraft.movecraft.util.Counter;
+import net.countercraft.movecraft.util.Tags;
 import net.countercraft.movecraft.util.TimingData;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
 import net.countercraft.movecraft.util.hitboxes.MutableHitBox;
@@ -393,7 +394,11 @@ public abstract class BaseCraft implements Craft{
             }
         }
 
-        int chestPenalty = (int)((materials.get(Material.CHEST) + materials.get(Material.TRAPPED_CHEST)) * type.getDoubleProperty(CraftType.CHEST_PENALTY));
+        int chestPenalty = 0;
+        for(Material m : Tags.CHESTS) {
+            chestPenalty += materials.get(m);
+        }
+        chestPenalty *= type.getDoubleProperty(CraftType.CHEST_PENALTY);
         if(!cruising)
             return ((int) type.getPerWorldProperty(CraftType.PER_WORLD_TICK_COOLDOWN, w) + chestPenalty) * (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1);
 
@@ -481,7 +486,7 @@ public abstract class BaseCraft implements Craft{
                 Material material = w.getBlockAt(posX, posY, posZ).getType();
                 if (material == Material.WATER)
                     numWater++;
-                if (material == Material.AIR)
+                if (material.isAir())
                     numAir++;
             }
             posZ = hitBox.getMaxZ() + 1;
@@ -489,7 +494,7 @@ public abstract class BaseCraft implements Craft{
                 Material material = w.getBlockAt(posX, posY, posZ).getType();
                 if (material == Material.WATER)
                     numWater++;
-                if (material == Material.AIR)
+                if (material.isAir())
                     numAir++;
             }
             posX = hitBox.getMinX() - 1;
@@ -497,7 +502,7 @@ public abstract class BaseCraft implements Craft{
                 Material material = w.getBlockAt(posX, posY, posZ).getType();
                 if (material == Material.WATER)
                     numWater++;
-                if (material == Material.AIR)
+                if (material.isAir())
                     numAir++;
             }
             posX = hitBox.getMaxX() + 1;
@@ -505,7 +510,7 @@ public abstract class BaseCraft implements Craft{
                 Material material = w.getBlockAt(posX, posY, posZ).getType();
                 if (material == Material.WATER)
                     numWater++;
-                if (material == Material.AIR)
+                if (material.isAir())
                     numAir++;
             }
             if (numWater > numAir) {

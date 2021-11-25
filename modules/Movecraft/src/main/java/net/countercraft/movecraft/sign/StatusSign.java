@@ -6,6 +6,7 @@ import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
 import net.countercraft.movecraft.util.Counter;
+import net.countercraft.movecraft.util.Tags;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.Tag;
@@ -66,19 +67,18 @@ public final class StatusSign implements Listener{
         }
 
         for (MovecraftLocation ml : craft.getHitBox()) {
-            Material blockID = craft.getWorld().getBlockAt(ml.getX(), ml.getY(), ml.getZ()).getType();
-            foundBlocks.add(blockID);
+            Material material = craft.getWorld().getBlockAt(ml.getX(), ml.getY(), ml.getZ()).getType();
+            foundBlocks.add(material);
 
-            if (blockID == Material.FURNACE) {
+            if(Tags.FURNACES.contains(material)) {
                 InventoryHolder inventoryHolder = (InventoryHolder) craft.getWorld().getBlockAt(ml.getX(), ml.getY(), ml.getZ()).getState();
                 for (ItemStack iStack : inventoryHolder.getInventory()) {
-                    if (iStack == null || !fuelTypes.containsKey(iStack.getType())) {
+                    if (iStack == null || !fuelTypes.containsKey(iStack.getType()))
                         continue;
-                    }
                     fuel += iStack.getAmount() * (double) fuelTypes.get(iStack.getType());
                 }
             }
-            if (blockID != Material.AIR && blockID != Material.FIRE) {
+            if(!material.isAir() && material != Material.FIRE) {
                 totalBlocks++;
             }
         }

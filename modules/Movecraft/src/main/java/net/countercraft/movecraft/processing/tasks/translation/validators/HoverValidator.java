@@ -18,7 +18,7 @@ public class HoverValidator implements TetradicPredicate<MovecraftLocation, Move
         if (type.getMaterialSetProperty(CraftType.FORBIDDEN_HOVER_OVER_BLOCKS).size() > 0){
             MovecraftLocation test = new MovecraftLocation(hitBox.getMidPoint().getX(), hitBox.getMinY(), hitBox.getMidPoint().getZ());
             test = test.translate(0, -1, 0);
-            while (world.getMaterial(test) == Material.AIR){
+            while (world.getMaterial(test).isAir()) {
                 test = test.translate(0, -1, 0);
             }
             Material testType = world.getMaterial(test);
