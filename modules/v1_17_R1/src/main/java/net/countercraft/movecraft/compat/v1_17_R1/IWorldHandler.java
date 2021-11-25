@@ -213,7 +213,6 @@ public class IWorldHandler extends WorldHandler {
             //Block is already of correct type and data, don't overwrite
             return;
         }
-
         LevelChunkSection.setBlockState(position.getX()&15, position.getY()&15, position.getZ()&15, data);
         world.sendBlockUpdated(position, data, data, 3);
         world.getLightEngine().checkBlock(position); // boolean corresponds to if chunk section empty
@@ -235,17 +234,13 @@ public class IWorldHandler extends WorldHandler {
         }
         blockData = blockData.rotate(ROTATION[rotation.ordinal()]);
         Level world = ((CraftWorld)(location.getWorld())).getHandle();
-        BlockPos BlockPos = locationToPosition(bukkit2MovecraftLoc(location));
+        BlockPos BlockPos = locationToPosition(MathUtils.bukkit2MovecraftLoc(location));
         setBlockFast(world,BlockPos,blockData);
     }
 
     @Override
     public void disableShadow(@NotNull Material type) {
         // Disabled
-    }
-
-    private static MovecraftLocation bukkit2MovecraftLoc(Location l) {
-        return new MovecraftLocation(l.getBlockX(), l.getBlockY(), l.getBlockZ());
     }
 
     private void moveBlockEntity(@NotNull Level nativeWorld, @NotNull BlockPos newPosition, @NotNull BlockEntity tile){
@@ -266,7 +261,7 @@ public class IWorldHandler extends WorldHandler {
         chunk.blockEntities.put(newPosition, tile);
     }
 
-    private class TileHolder{
+    private static class TileHolder{
         @NotNull private final BlockEntity tile;
         @Nullable
         private final TickNextTickData<?> nextTick;
