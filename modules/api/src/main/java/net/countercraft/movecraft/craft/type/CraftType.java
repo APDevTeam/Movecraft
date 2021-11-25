@@ -41,6 +41,7 @@ import net.countercraft.movecraft.craft.type.transform.Transform;
 import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.util.Pair;
 import net.countercraft.movecraft.util.Tags;
+import net.countercraft.movecraft.util.WorldUtils;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import org.bukkit.Bukkit;
@@ -412,9 +413,19 @@ final public class CraftType {
         registerProperty(new DoubleProperty("vertCruiseSpeed", VERT_CRUISE_SPEED, type -> type.getDoubleProperty(CRUISE_SPEED)));
         registerProperty(new PerWorldProperty<>("perWorldVertCruiseSpeed", PER_WORLD_VERT_CRUISE_SPEED, (type, worldName) -> type.getDoubleProperty(VERT_CRUISE_SPEED)));
         registerProperty(new IntegerProperty("maxHeightLimit", MAX_HEIGHT_LIMIT, type -> Integer.MAX_VALUE));
-        registerProperty(new PerWorldProperty<>("perWorldMaxHeightLimit", PER_WORLD_MAX_HEIGHT_LIMIT, (type, worldName) -> type.getIntProperty(MAX_HEIGHT_LIMIT)));
+        registerProperty(new PerWorldProperty<>("perWorldMaxHeightLimit", PER_WORLD_MAX_HEIGHT_LIMIT, (type, worldName) -> {
+            var w = Bukkit.getWorld(worldName);
+            if(w == null)
+                return type.getIntProperty(MAX_HEIGHT_LIMIT);
+            return Math.min(type.getIntProperty(MAX_HEIGHT_LIMIT), w.getMaxHeight());
+        }));
         registerProperty(new IntegerProperty("maxHeightAboveGround", MAX_HEIGHT_ABOVE_GROUND, type -> -1));
-        registerProperty(new PerWorldProperty<>("perWorldMaxHeightAboveGround", PER_WORLD_MAX_HEIGHT_ABOVE_GROUND, (type, worldName) -> type.getIntProperty(MAX_HEIGHT_ABOVE_GROUND)));
+        registerProperty(new PerWorldProperty<>("perWorldMaxHeightAboveGround", PER_WORLD_MAX_HEIGHT_ABOVE_GROUND, (type, worldName) -> {
+            var w = Bukkit.getWorld(worldName);
+            if(w == null)
+                return type.getIntProperty(MAX_HEIGHT_ABOVE_GROUND);
+            return Math.max(type.getIntProperty(MAX_HEIGHT_LIMIT), WorldUtils.getWorldMinHeightLimit(w));
+        }));
         registerProperty(new BooleanProperty("canDirectControl", CAN_DIRECT_CONTROL, type -> true));
         registerProperty(new BooleanProperty("canHover", CAN_HOVER, type -> false));
         registerProperty(new BooleanProperty("canHoverOverWater", CAN_HOVER_OVER_WATER, type -> true));
@@ -609,35 +620,42 @@ final public class CraftType {
                 type -> {
                     for (var i : type.perWorldPropertyMap.get(PER_WORLD_MIN_HEIGHT_LIMIT).getLeft().entrySet()) {
                         var a = i.getValue();
-                        if (!(a instanceof Integer))
+                        if(!(a instanceof Integer))
                             throw new IllegalStateException("PER_WORLD_MIN_HEIGHT_LIMIT must have values of type Integer");
-                        var b = (int) a;
-                        if (b < 0 || b > 255)
+                        int value = (int) a;
+                        var w = Bukkit.getWorld(i.getKey());
+                        if(w == null)
+                            throw new IllegalArgumentException("World '" + i.getKey() + "' does not exist.");
+                        if(value < WorldUtils.getWorldMinHeightLimit(w) || value > w.getMaxHeight())
                             return false;
                     }
                     return true;
                 },
-                "perWorldMinHeightLimit must be within the vanilla world height limits"
+                "perWorldMinHeightLimit must be within the world height limits"
         );
         registerTypeValidator(
                 type -> {
                     for (var i : type.perWorldPropertyMap.get(PER_WORLD_MAX_HEIGHT_LIMIT).getLeft().entrySet()) {
                         var a = i.getValue();
-                        if (!(a instanceof Integer))
+                        if(!(a instanceof Integer))
                             throw new IllegalStateException("PER_WORLD_MAX_HEIGHT_LIMIT must have values of type Integer");
-                        var b = (int) a;
-                        if (b < 0 || b > 255)
+                        var value = (int) a;
+                        var w = Bukkit.getWorld(i.getKey());
+                        if(w == null)
+                            throw new IllegalArgumentException("World '" + i.getKey() + "' does not exist.");
+                        if(value < WorldUtils.getWorldMinHeightLimit(w) || value > w.getMaxHeight())
                             return false;
                     }
                     return true;
                 },
-                "perWorldMaxHeightLimit must be within the vanilla world height limits"
+                "perWorldMaxHeightLimit must be within the world height limits"
         );
         registerTypeValidator(
                 type -> {
                     var max = type.perWorldPropertyMap.get(PER_WORLD_MAX_HEIGHT_LIMIT).getLeft();
                     var min = type.perWorldPropertyMap.get(PER_WORLD_MIN_HEIGHT_LIMIT).getLeft();
-                    var worlds = max.keySet();
+                    var worlds = new HashSet<String>();
+                    worlds.addAll(max.keySet());
                     worlds.addAll(min.keySet());
                     for (var world : worlds) {
                         if(!max.containsKey(world) || !min.containsKey(world))
@@ -650,12 +668,12 @@ final public class CraftType {
 
                         int worldMaxInt = (int) worldMax;
                         int worldMinInt = (int) worldMin;
-                        if (worldMaxInt > worldMinInt)
+                        if (worldMaxInt < worldMinInt)
                             return false;
                     }
                     return true;
                 },
-                "perWorldMaxHeightLimit must be between 0 and 255"
+                "perWorldMaxHeightLimit must be more than perWorldMinHeightLimit"
         );
     }
 
