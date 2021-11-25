@@ -25,6 +25,7 @@ import org.bukkit.Tag;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
+import org.bukkit.block.data.BlockData;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -230,7 +231,8 @@ public class CraftRotateCommand extends UpdateCommand {
             }
             for(MovecraftLocation location : entry.getValue()){
                 Block block = location.toBukkit(craft.getWorld()).getBlock();
-                BlockState state =  block.getState();
+                BlockState state = block.getState();
+                BlockData data = block.getBlockData();
                 if (!(state instanceof Sign)) {
                     continue;
                 }
@@ -239,6 +241,7 @@ public class CraftRotateCommand extends UpdateCommand {
                     sign.setLine(i, entry.getKey()[i]);
                 }
                 sign.update(false, false);
+                block.setBlockData(data);
             }
         }
     }
