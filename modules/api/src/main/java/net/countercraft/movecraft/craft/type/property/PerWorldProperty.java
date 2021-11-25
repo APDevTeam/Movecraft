@@ -43,9 +43,6 @@ public class PerWorldProperty<Type> implements Property<Map<String, Type>> {
             return stringToMapFromObject(data.getDataOrEmpty(fileKey).getBackingData());
         }
         catch (TypeData.KeyNotFoundException e) {
-            if(defaultProvider == null)
-                throw e;
-
             return Collections.emptyMap();
         }
     }
