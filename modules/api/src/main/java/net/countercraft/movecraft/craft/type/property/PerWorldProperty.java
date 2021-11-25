@@ -9,12 +9,13 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class PerWorldProperty<Type> implements Property<Map<String, Type>> {
     private final String fileKey;
     private final NamespacedKey namespacedKey;
-    private final Function<CraftType, Type> defaultProvider;
+    private final BiFunction<CraftType, String, Type> defaultProvider;
 
     /**
      * Construct a PerWorldProperty
@@ -23,7 +24,7 @@ public class PerWorldProperty<Type> implements Property<Map<String, Type>> {
      * @param namespacedKey the namespaced key for this property
      * @param defaultProvider the provider for the default value of this property
      */
-    public PerWorldProperty(@NotNull String fileKey, @NotNull NamespacedKey namespacedKey, @NotNull Function<CraftType, Type> defaultProvider) {
+    public PerWorldProperty(@NotNull String fileKey, @NotNull NamespacedKey namespacedKey, @NotNull BiFunction<CraftType, String, Type> defaultProvider) {
         this.fileKey = fileKey;
         this.namespacedKey = namespacedKey;
         this.defaultProvider = defaultProvider;
@@ -85,7 +86,7 @@ public class PerWorldProperty<Type> implements Property<Map<String, Type>> {
     }
 
     @NotNull
-    public Function<CraftType, Type> getDefaultProvider() {
+    public BiFunction<CraftType, String, Type> getDefaultProvider() {
         return defaultProvider;
     }
 }
