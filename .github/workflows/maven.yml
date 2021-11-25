@@ -1,6 +1,6 @@
 name: Java CI
 
-on: [push, pull_request]
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
   # Build 1.14.4 NMS
@@ -111,7 +111,7 @@ jobs:
         with:
           distribution: 'adopt-hotspot'
           java-version: '16'
-      - name: Cache 1.17 Maven package
+      - name: Cache 1.17.1 Maven package
         id: cacheGoats
         uses: actions/cache@v2
         with:
@@ -185,12 +185,12 @@ jobs:
         path: ~/.m2/repository/org/bukkit/craftbukkit/1.16.5-R0.1-SNAPSHOT/
         key: ${{ runner.os }}-1.16.5
         restore-keys: ${{ runner.os }}-1.16.5
-    - name: Cache 1.17 Maven package
+    - name: Cache 1.17.1 Maven package
       id: cacheGoats
       uses: actions/cache@v2
       with:
           path: |
-            ~/.m2/repository/org/spigotmc/spigot/1.17-R0.1-SNAPSHOT/
+            ~/.m2/repository/org/spigotmc/spigot/1.17.1-R0.1-SNAPSHOT/
             ~/.m2/repository/org/spigotmc/spigot-parent/
             ~/.m2/repository/org/spigotmc/minecraft-server/
           key: ${{ runner.os }}-spigot-1.17.1-all
