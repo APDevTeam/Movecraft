@@ -4,12 +4,12 @@ import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
-import net.countercraft.movecraft.craft.BaseCraft;
+import net.countercraft.movecraft.craft.ICraft;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.craft.CruiseOnPilotCraft;
-import net.countercraft.movecraft.craft.PilotedCraft;
+import net.countercraft.movecraft.craft.IPlayerCraft;
 import net.countercraft.movecraft.events.CraftPilotEvent;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
@@ -65,9 +65,9 @@ public final class CraftSign implements Listener{
         // Attempt to run detection
         Location loc = event.getClickedBlock().getLocation();
         MovecraftLocation startPoint = new MovecraftLocation(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
-        final BaseCraft c;
+        final ICraft c;
         if (type.getBoolProperty(CraftType.CRUISE_ON_PILOT)) {
-            c = new CruiseOnPilotCraft(type, loc.getWorld());
+            c = new CruiseOnPilotCraft(type, loc.getWorld(), event.getPlayer());
             c.detect(event.getPlayer(), event.getPlayer(), startPoint);
             if(sign.getBlockData() instanceof WallSign) {
                 c.setCruiseDirection(CruiseDirection.fromBlockFace(((WallSign) sign.getBlockData()).getFacing()));
@@ -85,7 +85,7 @@ public final class CraftSign implements Listener{
                 }
             }.runTaskLater(Movecraft.getInstance(), (20 * 15));
         } else {
-            c = new PilotedCraft(type, loc.getWorld(), event.getPlayer());
+            c = new IPlayerCraft(type, loc.getWorld(), event.getPlayer());
             if (CraftManager.getInstance().getCraftByPlayer(event.getPlayer()) == null) {
                 c.detect(event.getPlayer(), event.getPlayer(), startPoint);
             } else {
