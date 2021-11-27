@@ -23,6 +23,7 @@ import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.events.TypesReloadedEvent;
 import net.countercraft.movecraft.exception.NonCancellableReleaseException;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -40,7 +41,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
@@ -132,13 +132,13 @@ public class CraftManager implements Iterable<Craft>{
 
     public void addCraft(@NotNull PlayerCraft c) {
         this.craftList.add(c);
-        this.craftPlayerIndex.put(c.getPlayer(), c);
+        this.craftPlayerIndex.put(c.getPilot(), c);
     }
 
     public void addCraft(@NotNull Craft c){
         if(c instanceof PlayerCraft){
             addCraft((PlayerCraft) c);
-        } else{
+        } else {
             this.craftList.add(c);
         }
     }
@@ -151,28 +151,26 @@ public class CraftManager implements Iterable<Craft>{
 
         removeReleaseTask(c);
 
-        Player player = getPlayerFromCraft(c);
-        if (player != null)
-            this.craftPlayerIndex.remove(player);
-        // if its sinking, just remove the craft without notifying or checking
         this.craftList.remove(c);
-        if(!c.getHitBox().isEmpty()) {
-            if (player != null) {
-                player.sendMessage(I18nSupport.getInternationalisedString("Release - Craft has been released"));
-                Movecraft.getInstance().getLogger().log(Level.INFO, String.format(I18nSupport.getInternationalisedString("Release - Player has released a craft console"), player.getName(), c.getType().getStringProperty(CraftType.NAME), c.getHitBox().size(), c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
-            } else {
-                Movecraft.getInstance().getLogger().log(Level.INFO, String.format(I18nSupport.getInternationalisedString("Release - Null Craft Release Console"), c.getType().getStringProperty(CraftType.NAME), c.getHitBox().size(), c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
-            }
-        }else{
+        if(c instanceof PlayerCraft)
+            this.craftPlayerIndex.remove(((PlayerCraft) c).getPilot());
+        // if its sinking, just remove the craft without notifying or checking
+        if(c.getHitBox().isEmpty())
             Movecraft.getInstance().getLogger().warning(I18nSupport.getInternationalisedString("Release - Empty Craft Release Console"));
+        else {
+            c.getAudience().sendMessage(Component.text(I18nSupport.getInternationalisedString("Release - Craft has been released")));
+            if (c instanceof PilotedCraft)
+                Movecraft.getInstance().getLogger().info(String.format(I18nSupport.getInternationalisedString("Release - Player has released a craft console"), ((PilotedCraft) c).getPilot().getName(), c.getType().getStringProperty(CraftType.NAME), c.getHitBox().size(), c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
+            else
+                Movecraft.getInstance().getLogger().info(String.format(I18nSupport.getInternationalisedString("Release - Null Craft Release Console"), c.getType().getStringProperty(CraftType.NAME), c.getHitBox().size(), c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
         }
         Movecraft.getInstance().getAsyncManager().addWreck(c);
     }
 
     public void forceRemoveCraft(@NotNull Craft c) {
         this.craftList.remove(c);
-        if (getPlayerFromCraft(c) != null)
-            this.craftPlayerIndex.remove(getPlayerFromCraft(c));
+        if(c instanceof PlayerCraft)
+            this.craftPlayerIndex.remove(((PlayerCraft) c).getPilot());
         CraftReleaseEvent e = new CraftReleaseEvent(c, CraftReleaseEvent.Reason.FORCE);
         Bukkit.getServer().getPluginManager().callEvent(e);
         if(e.isCancelled()) {
@@ -200,17 +198,15 @@ public class CraftManager implements Iterable<Craft>{
 
 
     public PlayerCraft getCraftByPlayerName(String name) {
-        Set<Player> players = craftPlayerIndex.keySet();
-        for (Player player : players) {
-            if (player != null && player.getName().equals(name)) {
-                return this.craftPlayerIndex.get(player);
-            }
+        for(var entry : craftPlayerIndex.entrySet()) {
+            if(entry.getKey() != null && entry.getKey().getName().equals(name))
+                return entry.getValue();
         }
         return null;
     }
 
     public void removeCraftByPlayer(Player player){
-        PlayerCraft craft = craftPlayerIndex.remove(player);
+        PilotedCraft craft = craftPlayerIndex.remove(player);
         if(craft != null){
             craftList.remove(craft);
         }
@@ -219,10 +215,9 @@ public class CraftManager implements Iterable<Craft>{
     @Nullable
     @Deprecated
     public Player getPlayerFromCraft(@NotNull Craft c) {
-        for (Map.Entry<Player, PlayerCraft> playerCraftEntry : craftPlayerIndex.entrySet()) {
-            if (playerCraftEntry.getValue() == c) {
-                return playerCraftEntry.getKey();
-            }
+        for (var entry : craftPlayerIndex.entrySet()) {
+            if (entry.getValue() == c)
+                return entry.getKey();
         }
         return null;
     }
@@ -238,11 +233,11 @@ public class CraftManager implements Iterable<Craft>{
     }
 
     public void removePlayerFromCraft(Craft c) {
-        if (getPlayerFromCraft(c) == null) {
+        if (!(c instanceof PlayerCraft)) {
             return;
         }
         removeReleaseTask(c);
-        Player p = getPlayerFromCraft(c);
+        Player p = ((PlayerCraft) c).getPilot();
         p.sendMessage(I18nSupport.getInternationalisedString("Release - Craft has been released message"));
         Movecraft.getInstance().getLogger().info(String.format(I18nSupport.getInternationalisedString("Release - Player has released a craft console"), p.getName(), c.getType().getStringProperty(CraftType.NAME), c.getHitBox().size(), c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
         c.setNotificationPlayer(null);
