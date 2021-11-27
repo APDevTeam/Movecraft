@@ -6,7 +6,7 @@ import net.countercraft.movecraft.MovecraftRotation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.type.CraftType;
-import net.countercraft.movecraft.craft.SubCraft;
+import net.countercraft.movecraft.craft.ISubCraft;
 import net.countercraft.movecraft.events.CraftPilotEvent;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
@@ -84,7 +84,7 @@ public final class SubcraftRotateSign implements Listener {
                 }
             }.runTaskLater(Movecraft.getInstance(), (10));
         }
-        final SubCraft subCraft = new SubCraft(type, loc.getWorld());
+        final ISubCraft subCraft = new ISubCraft(type, loc.getWorld());
         subCraft.detect(null, event.getPlayer(), startPoint);
         rotatingCrafts.add(startPoint);
         Bukkit.getServer().getPluginManager().callEvent(new CraftPilotEvent(subCraft, CraftPilotEvent.Reason.SUB_CRAFT));
