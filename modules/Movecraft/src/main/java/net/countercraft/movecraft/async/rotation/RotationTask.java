@@ -83,7 +83,6 @@ public class RotationTask extends AsyncTask {
 
         if(oldHitBox.isEmpty())
             return;
-        Player craftPilot = CraftManager.getInstance().getPlayerFromCraft(getCraft());
 
         if (getCraft().getDisabled() && (!getCraft().getSinking())) {
             failed = true;
