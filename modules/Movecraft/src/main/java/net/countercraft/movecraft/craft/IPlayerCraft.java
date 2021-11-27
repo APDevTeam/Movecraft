@@ -7,16 +7,16 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
-public class PilotedCraft extends BaseCraft implements PlayerCraft{
+public class IPlayerCraft extends ICraft implements PlayerCraft {
     private final UUID id = UUID.randomUUID();
     private final Player pilot;
     private boolean pilotLocked;
     private double pilotLockedX;
     private double pilotLockedY;
     private double pilotLockedZ;
-    public PilotedCraft(@NotNull CraftType type, @NotNull World world, @NotNull Player player) {
+    public IPlayerCraft(@NotNull CraftType type, @NotNull World world, @NotNull Player pilot) {
         super(type, world);
-        this.pilot = player;
+        this.pilot = pilot;
         this.pilotLocked = false;
         this.pilotLockedX = 0.0;
         this.pilotLockedY = 0.0;
@@ -25,10 +25,10 @@ public class PilotedCraft extends BaseCraft implements PlayerCraft{
 
     @Override
     public boolean equals(Object obj) {
-        if(!(obj instanceof PilotedCraft)){
+        if(!(obj instanceof IPlayerCraft)){
             return false;
         }
-        return this.id.equals(((PilotedCraft)obj).id);
+        return this.id.equals(((IPlayerCraft)obj).id);
     }
 
     @Override
@@ -38,7 +38,7 @@ public class PilotedCraft extends BaseCraft implements PlayerCraft{
 
     @NotNull
     @Override
-    public Player getPlayer() {
+    public Player getPilot() {
         return pilot;
     }
 
