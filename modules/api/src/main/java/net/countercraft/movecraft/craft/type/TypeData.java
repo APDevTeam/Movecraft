@@ -443,7 +443,7 @@ public final class TypeData {
 
 
 
-    private static final String NUMERIC_PREFIX = "N"; // an N indicates a specific quantity, IE: N2 for exactly 2 of the block
+    public static final String NUMERIC_PREFIX = "N"; // an N indicates a specific quantity, IE: N2 for exactly 2 of the block
 
     @NotNull
     private static Pair<Boolean, ? extends Number> parseLimit(@NotNull Object input) {
