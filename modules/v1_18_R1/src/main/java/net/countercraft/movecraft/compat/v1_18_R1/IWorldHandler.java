@@ -1,4 +1,4 @@
-package net.countercraft.movecraft.compat.v1_17_R1;
+package net.countercraft.movecraft.compat.v1_18_R1;
 
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.MovecraftRotation;
@@ -21,8 +21,8 @@ import net.minecraft.world.level.chunk.LevelChunkSection;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.craftbukkit.v1_17_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_17_R1.block.data.CraftBlockData;
+import org.bukkit.craftbukkit.v1_18_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_18_R1.block.data.CraftBlockData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -103,7 +103,7 @@ public class IWorldHandler extends WorldHandler {
             moveBlockEntity(nativeWorld, rotatedPositions.get(tileHolder.getTilePosition()),tileHolder.getTile());
             if(tileHolder.getNextTick()==null)
                 continue;
-            final long currentTime = nativeWorld.E.getGameTime();
+            final long currentTime = nativeWorld.getGameTime();
             nativeWorld.getBlockTickList().scheduleTick(rotatedPositions.get(tileHolder.getNextTick().pos), (Block)tileHolder.getNextTick().getType(), (int) (tileHolder.getNextTick().triggerTick - currentTime), tileHolder.getNextTick().priority);
         }
 
@@ -162,7 +162,7 @@ public class IWorldHandler extends WorldHandler {
         for (int i = 0, positionsSize = positions.size(); i < positionsSize; i++) {
             BlockPos position = positions.get(i);
             blockData.add(oldNativeWorld.getBlockState(position));
-            newPositions.add(position.f(translateVector));
+            newPositions.add(position.offset(translateVector));
         }
         //create the new block
         for(int i = 0, positionSize = newPositions.size(); i<positionSize; i++) {
@@ -174,11 +174,11 @@ public class IWorldHandler extends WorldHandler {
         //TODO: go by chunks
         for (int i = 0, tilesSize = tiles.size(); i < tilesSize; i++) {
             TileHolder tileHolder = tiles.get(i);
-            moveBlockEntity(nativeWorld, tileHolder.getTilePosition().f(translateVector), tileHolder.getTile());
+            moveBlockEntity(nativeWorld, tileHolder.getTilePosition().offset(translateVector), tileHolder.getTile());
             if (tileHolder.getNextTick() == null)
                 continue;
-            final long currentTime = nativeWorld.E.getGameTime();
-            nativeWorld.getBlockTickList().scheduleTick(tileHolder.getNextTick().pos.f(translateVector), (Block) tileHolder.getNextTick().getType(), (int) (tileHolder.getNextTick().triggerTick - currentTime), tileHolder.getNextTick().priority);
+            final long currentTime = nativeWorld.getGameTime();
+            nativeWorld.getBlockTicks().schedule(tileHolder.getNextTick().pos.offset(translateVector), (Block) tileHolder.getNextTick().getType(), (int) (tileHolder.getNextTick().triggerTick - currentTime), tileHolder.getNextTick().priority);
         }
         //*******************************************
         //*   Step five: Destroy the leftovers      *
@@ -216,7 +216,7 @@ public class IWorldHandler extends WorldHandler {
         LevelChunkSection.setBlockState(position.getX()&15, position.getY()&15, position.getZ()&15, data);
         world.sendBlockUpdated(position, data, data, 3);
         world.getLightEngine().checkBlock(position); // boolean corresponds to if chunk section empty
-        chunk.markUnsaved();
+        chunk.setUnsaved(true);
     }
 
     @Override
