@@ -35,13 +35,16 @@ import net.countercraft.movecraft.craft.type.transform.IntegerTransform;
 import net.countercraft.movecraft.craft.type.transform.MaterialSetTransform;
 import net.countercraft.movecraft.craft.type.transform.ObjectTransform;
 import net.countercraft.movecraft.craft.type.transform.PerWorldTransform;
+import net.countercraft.movecraft.craft.type.transform.RequiredBlockTransform;
 import net.countercraft.movecraft.craft.type.transform.StringTransform;
 import net.countercraft.movecraft.craft.type.transform.Transform;
 import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.util.Pair;
 import net.countercraft.movecraft.util.Tags;
+import net.countercraft.movecraft.util.WorldUtils;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
@@ -57,6 +60,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -271,7 +275,7 @@ final public class CraftType {
         return materialSetPropertyMap.get(key);
     }
 
-    private Map<NamespacedKey, Pair<Map<String, Object>, Function<CraftType, Object>>> perWorldPropertyMap;
+    private Map<NamespacedKey, Pair<Map<String, Object>, BiFunction<CraftType, String, Object>>> perWorldPropertyMap;
     private Object getPerWorldProperty(NamespacedKey key, String worldName) {
         if(!perWorldPropertyMap.containsKey(key))
             throw new IllegalStateException("Per world property " + key + " not found.");
@@ -280,7 +284,7 @@ final public class CraftType {
         var defaultProvider = pair.getRight();
 
         if(!map.containsKey(worldName))
-            return defaultProvider.apply(this);
+            return defaultProvider.apply(this, worldName);
 
         return map.get(worldName);
     }
@@ -361,7 +365,7 @@ final public class CraftType {
                 (data, type, fileKey, namespacedKey) -> data.getStringListOrEmpty(fileKey).stream().map(String::toLowerCase).collect(Collectors.toSet()),
                 craftType -> new HashSet<>()
         ));
-        registerProperty(new PerWorldProperty<>("perWorldSpeed", PER_WORLD_SPEED, type -> type.getDoubleProperty(SPEED)));
+        registerProperty(new PerWorldProperty<>("perWorldSpeed", PER_WORLD_SPEED, (type, worldName) -> type.getDoubleProperty(SPEED)));
         registerProperty(new MaterialSetProperty("forbiddenBlocks", FORBIDDEN_BLOCKS, type -> EnumSet.noneOf(Material.class)));
         registerProperty(new BooleanProperty("blockedByWater", BLOCKED_BY_WATER, type -> true));
         registerProperty(new BooleanProperty("canFly", CAN_FLY, type -> type.getBoolProperty(BLOCKED_BY_WATER)));
@@ -381,37 +385,47 @@ final public class CraftType {
         registerProperty(new BooleanProperty("canStaticMove", CAN_STATIC_MOVE, type -> false));
         registerProperty(new IntegerProperty("maxStaticMove", MAX_STATIC_MOVE, type -> 10000));
         registerProperty(new IntegerProperty("cruiseSkipBlocks", CRUISE_SKIP_BLOCKS, type -> 0));
-        registerProperty(new PerWorldProperty<>("perWorldCruiseSkipBlocks", PER_WORLD_CRUISE_SKIP_BLOCKS, type -> type.getIntProperty(CRUISE_SKIP_BLOCKS)));
+        registerProperty(new PerWorldProperty<>("perWorldCruiseSkipBlocks", PER_WORLD_CRUISE_SKIP_BLOCKS, (type, worldName) -> type.getIntProperty(CRUISE_SKIP_BLOCKS)));
         registerProperty(new IntegerProperty("vertCruiseSkipBlocks", VERT_CRUISE_SKIP_BLOCKS, type -> type.getIntProperty(CRUISE_SKIP_BLOCKS)));
-        registerProperty(new PerWorldProperty<>("perWorldVertCruiseSkipBlocks", PER_WORLD_VERT_CRUISE_SKIP_BLOCKS, type -> type.getIntProperty(VERT_CRUISE_SKIP_BLOCKS)));
+        registerProperty(new PerWorldProperty<>("perWorldVertCruiseSkipBlocks", PER_WORLD_VERT_CRUISE_SKIP_BLOCKS, (type, worldName) -> type.getIntProperty(VERT_CRUISE_SKIP_BLOCKS)));
         registerProperty(new BooleanProperty("halfSpeedUnderwater", HALF_SPEED_UNDERWATER, type -> false));
         registerProperty(new BooleanProperty("focusedExplosion", FOCUSED_EXPLOSION, type -> false));
         registerProperty(new BooleanProperty("mustBeSubcraft", MUST_BE_SUBCRAFT, type -> false));
         registerProperty(new IntegerProperty("staticWaterLevel", STATIC_WATER_LEVEL, type -> 0));
         registerProperty(new DoubleProperty("fuelBurnRate", FUEL_BURN_RATE, type -> 0D));
-        registerProperty(new PerWorldProperty<>("perWorldFuelBurnRate", PER_WORLD_FUEL_BURN_RATE, type -> type.getDoubleProperty(FUEL_BURN_RATE)));
+        registerProperty(new PerWorldProperty<>("perWorldFuelBurnRate", PER_WORLD_FUEL_BURN_RATE, (type, worldName) -> type.getDoubleProperty(FUEL_BURN_RATE)));
         registerProperty(new DoubleProperty("sinkPercent", SINK_PERCENT, type -> 0D));
         registerProperty(new DoubleProperty("overallSinkPercent", OVERALL_SINK_PERCENT, type -> 0D));
         registerProperty(new DoubleProperty("detectionMultiplier", DETECTION_MULTIPLIER, type -> 0D));
-        registerProperty(new PerWorldProperty<>("perWorldDetectionMultiplier", PER_WORLD_DETECTION_MULTIPLIER, type -> type.getDoubleProperty(DETECTION_MULTIPLIER)));
+        registerProperty(new PerWorldProperty<>("perWorldDetectionMultiplier", PER_WORLD_DETECTION_MULTIPLIER, (type, worldName) -> type.getDoubleProperty(DETECTION_MULTIPLIER)));
         registerProperty(new DoubleProperty("underwaterDetectionMultiplier", UNDERWATER_DETECTION_MULTIPLIER, type-> type.getDoubleProperty(DETECTION_MULTIPLIER)));
-        registerProperty(new PerWorldProperty<>("perWorldUnderWaterDetectionMultiplier", PER_WORLD_UNDERWATER_DETECTION_MULTIPLIER, type -> type.getDoubleProperty(UNDERWATER_DETECTION_MULTIPLIER)));
+        registerProperty(new PerWorldProperty<>("perWorldUnderWaterDetectionMultiplier", PER_WORLD_UNDERWATER_DETECTION_MULTIPLIER, (type, worldName) -> type.getDoubleProperty(UNDERWATER_DETECTION_MULTIPLIER)));
         registerProperty(new DoubleProperty("sinkSpeed", SINK_SPEED, type -> 1D));
         registerProperty(new IntegerProperty("sinkRateTicks", SINK_RATE_TICKS, type -> (int) Math.ceil(20 / type.getDoubleProperty(SINK_SPEED))));
         registerProperty(new BooleanProperty("keepMovingOnSink", KEEP_MOVING_ON_SINK, type -> false));
         registerProperty(new IntegerProperty("smokeOnSink", SMOKE_ON_SINK, type -> 0));
         registerProperty(new FloatProperty("explodeOnCrash", EXPLODE_ON_CRASH, type -> 0F));
         registerProperty(new FloatProperty("collisionExplosion", COLLISION_EXPLOSION, type -> 0F));
-        registerProperty(new IntegerProperty("minHeightLimit", MIN_HEIGHT_LIMIT, type -> 0));
-        registerProperty(new PerWorldProperty<>("perWorldMinHeightLimit", PER_WORLD_MIN_HEIGHT_LIMIT, type -> type.getIntProperty(MIN_HEIGHT_LIMIT)));
+        registerProperty(new IntegerProperty("minHeightLimit", MIN_HEIGHT_LIMIT, type -> Integer.MIN_VALUE));
+        registerProperty(new PerWorldProperty<>("perWorldMinHeightLimit", PER_WORLD_MIN_HEIGHT_LIMIT, (type, worldName) -> type.getIntProperty(MIN_HEIGHT_LIMIT)));
         registerProperty(new DoubleProperty("cruiseSpeed", CRUISE_SPEED, type -> type.getDoubleProperty(SPEED)));
-        registerProperty(new PerWorldProperty<>("perWorldCruiseSpeed", PER_WORLD_CRUISE_SPEED, type -> type.getDoubleProperty(CRUISE_SPEED)));
+        registerProperty(new PerWorldProperty<>("perWorldCruiseSpeed", PER_WORLD_CRUISE_SPEED, (type, worldName) -> type.getDoubleProperty(CRUISE_SPEED)));
         registerProperty(new DoubleProperty("vertCruiseSpeed", VERT_CRUISE_SPEED, type -> type.getDoubleProperty(CRUISE_SPEED)));
-        registerProperty(new PerWorldProperty<>("perWorldVertCruiseSpeed", PER_WORLD_VERT_CRUISE_SPEED, type -> type.getDoubleProperty(VERT_CRUISE_SPEED)));
-        registerProperty(new IntegerProperty("maxHeightLimit", MAX_HEIGHT_LIMIT, type -> 255));
-        registerProperty(new PerWorldProperty<>("perWorldMaxHeightLimit", PER_WORLD_MAX_HEIGHT_LIMIT, type -> type.getIntProperty(MAX_HEIGHT_LIMIT)));
+        registerProperty(new PerWorldProperty<>("perWorldVertCruiseSpeed", PER_WORLD_VERT_CRUISE_SPEED, (type, worldName) -> type.getDoubleProperty(VERT_CRUISE_SPEED)));
+        registerProperty(new IntegerProperty("maxHeightLimit", MAX_HEIGHT_LIMIT, type -> Integer.MAX_VALUE));
+        registerProperty(new PerWorldProperty<>("perWorldMaxHeightLimit", PER_WORLD_MAX_HEIGHT_LIMIT, (type, worldName) -> {
+            var w = Bukkit.getWorld(worldName);
+            if(w == null)
+                return type.getIntProperty(MAX_HEIGHT_LIMIT);
+            return Math.min(type.getIntProperty(MAX_HEIGHT_LIMIT), w.getMaxHeight());
+        }));
         registerProperty(new IntegerProperty("maxHeightAboveGround", MAX_HEIGHT_ABOVE_GROUND, type -> -1));
-        registerProperty(new PerWorldProperty<>("perWorldMaxHeightAboveGround", PER_WORLD_MAX_HEIGHT_ABOVE_GROUND, type -> type.getIntProperty(MAX_HEIGHT_ABOVE_GROUND)));
+        registerProperty(new PerWorldProperty<>("perWorldMaxHeightAboveGround", PER_WORLD_MAX_HEIGHT_ABOVE_GROUND, (type, worldName) -> {
+            var w = Bukkit.getWorld(worldName);
+            if(w == null)
+                return type.getIntProperty(MAX_HEIGHT_ABOVE_GROUND);
+            return Math.max(type.getIntProperty(MAX_HEIGHT_LIMIT), WorldUtils.getWorldMinHeightLimit(w));
+        }));
         registerProperty(new BooleanProperty("canDirectControl", CAN_DIRECT_CONTROL, type -> true));
         registerProperty(new BooleanProperty("canHover", CAN_HOVER, type -> false));
         registerProperty(new BooleanProperty("canHoverOverWater", CAN_HOVER_OVER_WATER, type -> true));
@@ -537,7 +551,7 @@ final public class CraftType {
                     throw new IllegalStateException("PER_WORLD_SPEED must be of type Double");
                 resultMap.put(i.getKey(), (int) Math.ceil(20 / (double) value));
             }
-            var defaultProvider = (Function<CraftType, Object>) craftType -> craftType.getIntProperty(TICK_COOLDOWN);
+            var defaultProvider = (BiFunction<CraftType, String, Object>) (craftType, worldName) -> craftType.getIntProperty(TICK_COOLDOWN);
             data.put(PER_WORLD_TICK_COOLDOWN, new Pair<>(resultMap, defaultProvider));
             return data;
         });
@@ -555,7 +569,7 @@ final public class CraftType {
                     throw new IllegalStateException("PER_WORLD_CRUISE_SKIP_BLOCKS must be of type Integer");
                 resultMap.put(world, (int) Math.round((1.0 + (int) skip) * 20.0 / (double) value));
             }
-            var defaultProvider = (Function<CraftType, Object>) craftType -> craftType.getIntProperty(CRUISE_TICK_COOLDOWN);
+            var defaultProvider = (BiFunction<CraftType, String, Object>) (craftType, worldName) -> craftType.getIntProperty(CRUISE_TICK_COOLDOWN);
             data.put(PER_WORLD_CRUISE_TICK_COOLDOWN, new Pair<>(resultMap, defaultProvider));
             return data;
         });
@@ -573,7 +587,7 @@ final public class CraftType {
                     throw new IllegalStateException("PER_WORLD_VERT_CRUISE_SKIP_BLOCKS must be of type Integer");
                 resultMap.put(world, (int) Math.round((1.0 + (int) skip) * 20.0 / (double) value));
             }
-            var defaultProvider = (Function<CraftType, Object>) craftType -> craftType.getIntProperty(VERT_CRUISE_TICK_COOLDOWN);
+            var defaultProvider = (BiFunction<CraftType, String, Object>) (craftType, worldName) -> craftType.getIntProperty(VERT_CRUISE_TICK_COOLDOWN);
             data.put(PER_WORLD_VERT_CRUISE_TICK_COOLDOWN, new Pair<>(resultMap, defaultProvider));
             return data;
         });
@@ -595,14 +609,6 @@ final public class CraftType {
                 "minHeightLimit must be less than or equal to maxHeightLimit"
         );
         registerTypeValidator(
-                type -> type.getIntProperty(MIN_HEIGHT_LIMIT) >= 0 && type.getIntProperty(MIN_HEIGHT_LIMIT) <= 255,
-                "minHeightLimit must be between 0 and 255"
-        );
-        registerTypeValidator(
-                type -> type.getIntProperty(MAX_HEIGHT_LIMIT) >= 0 && type.getIntProperty(MAX_HEIGHT_LIMIT) <= 255,
-                "maxHeightLimit must be between 0 and 255"
-        );
-        registerTypeValidator(
                 type -> type.getIntProperty(HOVER_LIMIT) <= 0,
                 "hoverLimit must be greater than or equal to zero"
         );
@@ -614,35 +620,42 @@ final public class CraftType {
                 type -> {
                     for (var i : type.perWorldPropertyMap.get(PER_WORLD_MIN_HEIGHT_LIMIT).getLeft().entrySet()) {
                         var a = i.getValue();
-                        if (!(a instanceof Integer))
+                        if(!(a instanceof Integer))
                             throw new IllegalStateException("PER_WORLD_MIN_HEIGHT_LIMIT must have values of type Integer");
-                        var b = (int) a;
-                        if (b < 0 || b > 255)
+                        int value = (int) a;
+                        var w = Bukkit.getWorld(i.getKey());
+                        if(w == null)
+                            throw new IllegalArgumentException("World '" + i.getKey() + "' does not exist.");
+                        if(value < WorldUtils.getWorldMinHeightLimit(w) || value > w.getMaxHeight())
                             return false;
                     }
                     return true;
                 },
-                "perWorldMinHeightLimit must be between 0 and 255"
+                "perWorldMinHeightLimit must be within the world height limits"
         );
         registerTypeValidator(
                 type -> {
                     for (var i : type.perWorldPropertyMap.get(PER_WORLD_MAX_HEIGHT_LIMIT).getLeft().entrySet()) {
                         var a = i.getValue();
-                        if (!(a instanceof Integer))
+                        if(!(a instanceof Integer))
                             throw new IllegalStateException("PER_WORLD_MAX_HEIGHT_LIMIT must have values of type Integer");
-                        var b = (int) a;
-                        if (b < 0 || b > 255)
+                        var value = (int) a;
+                        var w = Bukkit.getWorld(i.getKey());
+                        if(w == null)
+                            throw new IllegalArgumentException("World '" + i.getKey() + "' does not exist.");
+                        if(value < WorldUtils.getWorldMinHeightLimit(w) || value > w.getMaxHeight())
                             return false;
                     }
                     return true;
                 },
-                "perWorldMaxHeightLimit must be between 0 and 255"
+                "perWorldMaxHeightLimit must be within the world height limits"
         );
         registerTypeValidator(
                 type -> {
                     var max = type.perWorldPropertyMap.get(PER_WORLD_MAX_HEIGHT_LIMIT).getLeft();
                     var min = type.perWorldPropertyMap.get(PER_WORLD_MIN_HEIGHT_LIMIT).getLeft();
-                    var worlds = max.keySet();
+                    var worlds = new HashSet<String>();
+                    worlds.addAll(max.keySet());
                     worlds.addAll(min.keySet());
                     for (var world : worlds) {
                         if(!max.containsKey(world) || !min.containsKey(world))
@@ -655,12 +668,12 @@ final public class CraftType {
 
                         int worldMaxInt = (int) worldMax;
                         int worldMinInt = (int) worldMin;
-                        if (worldMaxInt > worldMinInt)
+                        if (worldMaxInt < worldMinInt)
                             return false;
                     }
                     return true;
                 },
-                "perWorldMaxHeightLimit must be between 0 and 255"
+                "perWorldMaxHeightLimit must be more than perWorldMinHeightLimit"
         );
     }
 
@@ -730,6 +743,8 @@ final public class CraftType {
                 materialSetPropertyMap = ((MaterialSetTransform) transform).transform(materialSetPropertyMap, this);
             else if(transform instanceof PerWorldTransform)
                 perWorldPropertyMap = ((PerWorldTransform) transform).transform(perWorldPropertyMap, this);
+            else if(transform instanceof RequiredBlockTransform)
+                requiredBlockPropertyMap = ((RequiredBlockTransform) transform).transform(requiredBlockPropertyMap, this);
         }
 
         // Validate craft type
