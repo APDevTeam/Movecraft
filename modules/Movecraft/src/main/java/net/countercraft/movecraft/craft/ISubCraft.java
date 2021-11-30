@@ -5,15 +5,20 @@ import org.bukkit.World;
 import org.jetbrains.annotations.NotNull;
 
 public class ISubCraft extends ICraft implements SubCraft {
-    private final Craft parent;
+    private Craft parent;
 
-    public ISubCraft(@NotNull CraftType type, @NotNull World world, @NotNull Craft parent) {
+    public ISubCraft(@NotNull CraftType type, @NotNull World world) {
         super(type, world);
-        this.parent = parent;
     }
 
     @Override
-    public @NotNull Craft getParent() {
+    @NotNull
+    public Craft getParent() {
         return parent;
+    }
+
+    @Override
+    public void setParent(@NotNull Craft parent) {
+        this.parent = parent;
     }
 }
