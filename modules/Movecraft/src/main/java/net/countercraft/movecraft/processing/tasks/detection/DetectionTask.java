@@ -6,6 +6,7 @@ import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.craft.SubCraft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
@@ -89,16 +90,18 @@ public class DetectionTask implements Supplier<Effect> {
     private final ConcurrentLinkedDeque<MovecraftLocation> fluid = new ConcurrentLinkedDeque<>();
     private static final AllowedBlockValidator ALLOWED_BLOCK_VALIDATOR = new AllowedBlockValidator();
     private static final ForbiddenBlockValidator FORBIDDEN_BLOCK_VALIDATOR = new ForbiddenBlockValidator();
+    private static final SubcraftValidator SUBCRAFT_VALIDATOR = new SubcraftValidator();
+    private static final AlreadyControlledValidator ALREADY_CONTROLLED_VALIDATOR = new AlreadyControlledValidator();
+    private static final AlreadyPilotingValidator ALREADY_PILOTING_VALIDATOR = new AlreadyPilotingValidator();
     private static final List<DetectionPredicate<MovecraftLocation>> validators = List.of(
             new ForbiddenSignStringValidator(),
             new NameSignValidator(),
-            new PilotSignValidator(),
-            new SubcraftValidator(),
-            new AlreadyControlledValidator());
+            new PilotSignValidator()
+    );
     private static final List<DetectionPredicate<Map<Material, Deque<MovecraftLocation>>>> completionValidators = List.of(
             new SizeValidator(),
-            new FlyBlockValidator(),
-            new AlreadyPilotingValidator());
+            new FlyBlockValidator()
+    );
     private static final List<DetectionPredicate<Map<Material, Deque<MovecraftLocation>>>> visitedValidators = List.of(
             new WaterContactValidator()
     );
@@ -177,20 +180,27 @@ public class DetectionTask implements Supplier<Effect> {
     @Override
     public @Nullable Effect get() {
         frontier();
-        if(!illegal.isEmpty()) {
+        if(!illegal.isEmpty())
             return null;
-        }
+
         var result = completionValidators.stream().reduce(DetectionPredicate::and).orElse((a, b, c, d) -> Result.fail()).validate(materials, craft.getType(), world, player);
+        // If the craft is not a subcraft, must not be a subcraft, and is not a cruise on pilot, run the already piloting validator
+        if(!(craft instanceof SubCraft) && !craft.getType().getBoolProperty(CraftType.MUST_BE_SUBCRAFT) && !craft.getType().getBoolProperty(CraftType.CRUISE_ON_PILOT))
+            result = result.isSucess() ? ALREADY_PILOTING_VALIDATOR.validate(materials, craft.getType(), world, player) : result;
+
         result = result.isSucess() ? visitedValidators.stream().reduce(DetectionPredicate::and).orElse((a, b, c, d) -> Result.fail()).validate(visitedMaterials, craft.getType(), world, player) : result;
-        if(!result.isSucess()){
+        if(!result.isSucess()) {
             Result finalResult = result;
             return () -> craft.getAudience().sendMessage(Component.text(finalResult.getMessage()));
         }
+
         craft.setHitBox(new BitmapHitBox(legal));
         craft.setFluidLocations(new BitmapHitBox(fluid));
         craft.setNotificationPlayer(player);
         craft.setOrigBlockCount(craft.getHitBox().size());
-        var waterEffect = water(craft); //TODO: Remove
+
+        var effect = water(craft); //TODO: Remove
+
         final CraftDetectEvent event = new CraftDetectEvent(craft);
 
         WorldManager.INSTANCE.executeMain(()-> Bukkit.getPluginManager().callEvent(event));
@@ -204,7 +214,7 @@ public class DetectionTask implements Supplier<Effect> {
                     player == null ? "null" : player.getName(), craft.getType().getStringProperty(CraftType.NAME), craft.getHitBox().size(),
                     craft.getHitBox().getMinX(), craft.getHitBox().getMinZ()));
             CraftManager.getInstance().addCraft(craft);
-        }).andThen(waterEffect);
+        }).andThen(effect);
     }
 
     private void frontier(){
@@ -258,6 +268,13 @@ public class DetectionTask implements Supplier<Effect> {
                 for (var validator : validators) {
                     chain = chain.and(validator);
                 }
+                // If a craft is piloted as a subcraft or must be a subcraft, run the subcraft validator
+                if(craft instanceof SubCraft || craft.getType().getBoolProperty(CraftType.MUST_BE_SUBCRAFT))
+                    chain = chain.and(SUBCRAFT_VALIDATOR);
+                // If the craft is not a subcraft or cruise on pilot, run the already controlled validator
+                else if(!craft.getType().getBoolProperty(CraftType.CRUISE_ON_PILOT))
+                    chain = chain.and(ALREADY_CONTROLLED_VALIDATOR);
+
                 var result = chain.validate(probe, craft.getType(), world, player);
                 if(result.isSucess()) {
                     legal.add(probe);
