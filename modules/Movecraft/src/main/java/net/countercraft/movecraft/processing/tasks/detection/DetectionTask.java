@@ -6,6 +6,7 @@ import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.craft.CruiseOnPilotCraft;
 import net.countercraft.movecraft.craft.SubCraft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftDetectEvent;
@@ -115,29 +116,28 @@ public class DetectionTask implements Supplier<Effect> {
     }
 
     @Deprecated
-    private Effect water(@NotNull Craft c){
-        final int waterLine = WorldManager.INSTANCE.executeMain(c::getWaterLine);
-        if (c.getType().getBoolProperty(CraftType.BLOCKED_BY_WATER) || c.getHitBox().getMinY() > waterLine) {
+    private Effect water() {
+        final int waterLine = WorldManager.INSTANCE.executeMain(craft::getWaterLine);
+        if (craft.getType().getBoolProperty(CraftType.BLOCKED_BY_WATER) || craft.getHitBox().getMinY() > waterLine)
             return null;
-        }
 
-        var badWorld = WorldManager.INSTANCE.executeMain(c::getWorld);
+        var badWorld = WorldManager.INSTANCE.executeMain(craft::getWorld);
         //The subtraction of the set of coordinates in the HitBox cube and the HitBox itself
-        final HitBox invertedHitBox = new BitmapHitBox(c.getHitBox().boundingHitBox()).difference(c.getHitBox());
+        final HitBox invertedHitBox = new BitmapHitBox(craft.getHitBox().boundingHitBox()).difference(craft.getHitBox());
 
         //A set of locations that are confirmed to be "exterior" locations
         final SetHitBox confirmed = new SetHitBox();
-        final SetHitBox entireHitbox = new SetHitBox(c.getHitBox());
+        final SetHitBox entireHitbox = new SetHitBox(craft.getHitBox());
 
         //place phased blocks
-        final Set<Location> overlap = new HashSet<>(c.getPhaseBlocks().keySet());
-        overlap.retainAll(c.getHitBox().asSet().stream().map(l -> l.toBukkit(badWorld)).collect(Collectors.toSet()));
-        final int minX = c.getHitBox().getMinX();
-        final int maxX = c.getHitBox().getMaxX();
-        final int minY = c.getHitBox().getMinY();
-        final int maxY = overlap.isEmpty() ? c.getHitBox().getMaxY() : Collections.max(overlap, Comparator.comparingInt(Location::getBlockY)).getBlockY();
-        final int minZ = c.getHitBox().getMinZ();
-        final int maxZ = c.getHitBox().getMaxZ();
+        final Set<Location> overlap = new HashSet<>(craft.getPhaseBlocks().keySet());
+        overlap.retainAll(craft.getHitBox().asSet().stream().map(l -> l.toBukkit(badWorld)).collect(Collectors.toSet()));
+        final int minX = craft.getHitBox().getMinX();
+        final int maxX = craft.getHitBox().getMaxX();
+        final int minY = craft.getHitBox().getMinY();
+        final int maxY = overlap.isEmpty() ? craft.getHitBox().getMaxY() : Collections.max(overlap, Comparator.comparingInt(Location::getBlockY)).getBlockY();
+        final int minZ = craft.getHitBox().getMinZ();
+        final int maxZ = craft.getHitBox().getMaxZ();
         final HitBox[] surfaces = {
                 new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(minX, maxY, maxZ)),
                 new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(maxX, maxY, minZ)),
@@ -146,7 +146,7 @@ public class DetectionTask implements Supplier<Effect> {
                 new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(maxX, minY, maxZ))};
         final SetHitBox validExterior = new SetHitBox();
         for (HitBox hitBox : surfaces) {
-            validExterior.addAll(new BitmapHitBox(hitBox).difference(c.getHitBox()));
+            validExterior.addAll(new BitmapHitBox(hitBox).difference(craft.getHitBox()));
         }
 
         //Check to see which locations in the from set are actually outside of the craft
@@ -170,11 +170,40 @@ public class DetectionTask implements Supplier<Effect> {
         return () -> {
             for (MovecraftLocation location : entireHitbox) {
                 if (location.getY() <= waterLine) {
-                    c.getPhaseBlocks().put(location.toBukkit(badWorld), waterData);
+                    craft.getPhaseBlocks().put(location.toBukkit(badWorld), waterData);
                 }
             }
         };
 
+    }
+
+    private @NotNull Effect subcraft() {
+        if(!(craft instanceof SubCraft) && !(craft instanceof CruiseOnPilotCraft))
+            return () -> {}; // Return no-op for non-subcraft and non-cruise on pilots
+
+        Craft parent = null;
+        for(MovecraftLocation loc : craft.getHitBox()) {
+            for(var otherCraft : CraftManager.getInstance()) {
+                if(!otherCraft.getMovecraftWorld().equals(world))
+                    continue;
+
+                if(otherCraft.getHitBox().contains(loc))
+                    parent = otherCraft;
+            }
+        }
+        if(parent == null)
+            throw new IllegalStateException("Subcrafts should always have a parent");
+
+        if(craft instanceof SubCraft)
+            ((SubCraft) craft).setParent(parent);
+
+        // Subtract the subcraft from the hitbox of the parent.
+        Craft finalParent = parent;
+        return () -> {
+            var parentHitBox = finalParent.getHitBox();
+            parentHitBox = parentHitBox.difference(craft.getHitBox());
+            finalParent.setHitBox(parentHitBox);
+        };
     }
 
     @Override
@@ -199,7 +228,8 @@ public class DetectionTask implements Supplier<Effect> {
         craft.setNotificationPlayer(player);
         craft.setOrigBlockCount(craft.getHitBox().size());
 
-        var effect = water(craft); //TODO: Remove
+        var effect = subcraft();
+        effect = effect.andThen(water()); //TODO: Remove
 
         final CraftDetectEvent event = new CraftDetectEvent(craft);
 
