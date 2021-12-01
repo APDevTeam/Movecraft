@@ -25,7 +25,7 @@ public class NextTickProvider {
         }
         Queue<ScheduledTick<?>> toRunThisTick;
         try {
-            Field toRunThisTickField = LevelTicks.class.getField("g");
+            Field toRunThisTickField = LevelTicks.class.getDeclaredField("toRunThisTick");
             toRunThisTickField.setAccessible(true);
             toRunThisTick = (Queue<ScheduledTick<?>>) toRunThisTickField.get(tickList);
         } catch (NoSuchFieldException | IllegalAccessException e) {
