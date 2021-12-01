@@ -224,6 +224,12 @@
                                     </includes>
                                 </filter>
                                 <filter>
+                                    <artifact>net.countercraft:movecraft-v1_18_r1</artifact>
+                                    <includes>
+                                        <include>**</include>
+                                    </includes>
+                                </filter>
+                                <filter>
                                     <artifact>net.countercraft:datapack</artifact>
                                     <includes>
                                         <include>**</include>
