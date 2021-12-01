@@ -12,7 +12,6 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Queue;
-import java.util.logging.Logger;
 
 public class NextTickProvider {
 
@@ -25,7 +24,7 @@ public class NextTickProvider {
         }
         Queue<ScheduledTick<?>> toRunThisTick;
         try {
-            Field toRunThisTickField = LevelTicks.class.getDeclaredField("toRunThisTick");
+            Field toRunThisTickField = LevelTicks.class.getDeclaredField("g");
             toRunThisTickField.setAccessible(true);
             toRunThisTick = (Queue<ScheduledTick<?>>) toRunThisTickField.get(tickList);
         } catch (NoSuchFieldException | IllegalAccessException e) {
