@@ -10,7 +10,6 @@ import net.countercraft.movecraft.util.UnsafeUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.TickNextTickData;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
@@ -18,6 +17,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
+import net.minecraft.world.ticks.ScheduledTick;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
@@ -103,8 +103,8 @@ public class IWorldHandler extends WorldHandler {
             moveBlockEntity(nativeWorld, rotatedPositions.get(tileHolder.getTilePosition()),tileHolder.getTile());
             if(tileHolder.getNextTick()==null)
                 continue;
-            final long currentTime = nativeWorld.getGameTime();
-            nativeWorld.getBlockTickList().scheduleTick(rotatedPositions.get(tileHolder.getNextTick().pos), (Block)tileHolder.getNextTick().getType(), (int) (tileHolder.getNextTick().triggerTick - currentTime), tileHolder.getNextTick().priority);
+            final long currentTime = nativeWorld.N.getGameTime();
+            nativeWorld.getBlockTicks().schedule( new ScheduledTick<>((Block) tileHolder.getNextTick().type(), rotatedPositions.get(tileHolder.getNextTick().pos()), tileHolder.getNextTick().triggerTick() - currentTime, tileHolder.getNextTick().priority(), tileHolder.getNextTick().subTickOrder()));
         }
 
         //*******************************************
@@ -126,7 +126,7 @@ public class IWorldHandler extends WorldHandler {
         //*******************************************
         BlockPos translateVector = locationToPosition(displacement);
         List<BlockPos> positions = new ArrayList<>(craft.getHitBox().size());
-        craft.getHitBox().forEach((movecraftLocation) -> positions.add(locationToPosition((movecraftLocation)).e(translateVector)));
+        craft.getHitBox().forEach((movecraftLocation) -> positions.add(locationToPosition((movecraftLocation)).subtract(translateVector)));
         ServerLevel oldNativeWorld = ((CraftWorld) craft.getWorld()).getHandle();
         ServerLevel nativeWorld = ((CraftWorld) world).getHandle();
         //*******************************************
@@ -178,7 +178,7 @@ public class IWorldHandler extends WorldHandler {
             if (tileHolder.getNextTick() == null)
                 continue;
             final long currentTime = nativeWorld.getGameTime();
-            nativeWorld.getBlockTicks().schedule(tileHolder.getNextTick().pos.offset(translateVector), (Block) tileHolder.getNextTick().getType(), (int) (tileHolder.getNextTick().triggerTick - currentTime), tileHolder.getNextTick().priority);
+            nativeWorld.getBlockTicks().schedule( new ScheduledTick<>((Block) tileHolder.getNextTick().type(), tileHolder.getTilePosition().offset(translateVector), tileHolder.getNextTick().triggerTick() - currentTime, tileHolder.getNextTick().priority(), tileHolder.getNextTick().subTickOrder()));
         }
         //*******************************************
         //*   Step five: Destroy the leftovers      *
@@ -264,10 +264,10 @@ public class IWorldHandler extends WorldHandler {
     private static class TileHolder{
         @NotNull private final BlockEntity tile;
         @Nullable
-        private final TickNextTickData<?> nextTick;
+        private final ScheduledTick<?> nextTick;
         @NotNull private final BlockPos tilePosition;
 
-        public TileHolder(@NotNull BlockEntity tile, @Nullable TickNextTickData<?> nextTick, @NotNull BlockPos tilePosition){
+        public TileHolder(@NotNull BlockEntity tile, @Nullable ScheduledTick<?> nextTick, @NotNull BlockPos tilePosition){
             this.tile = tile;
             this.nextTick = nextTick;
             this.tilePosition = tilePosition;
@@ -280,7 +280,7 @@ public class IWorldHandler extends WorldHandler {
         }
 
         @Nullable
-        public TickNextTickData<?> getNextTick() {
+        public ScheduledTick<?> getNextTick() {
             return nextTick;
         }
 
