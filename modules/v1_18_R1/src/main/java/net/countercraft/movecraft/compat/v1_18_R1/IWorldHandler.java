@@ -202,14 +202,12 @@ public class IWorldHandler extends WorldHandler {
     }
 
     private void setBlockFast(@NotNull Level world, @NotNull BlockPos position,@NotNull BlockState data) {
-        world.setBlockAndUpdate(position, data);
-        /*
         LevelChunk chunk = world.getChunkAt(position);
-        LevelChunkSection LevelChunkSection = chunk.getSections()[position.getY()>>4];
+        LevelChunkSection LevelChunkSection = chunk.getSections()[(position.getY() >> 4) - chunk.getMinSection()];
         if (LevelChunkSection == null) {
             // Put a GLASS block to initialize the section. It will be replaced next with the real block.
             chunk.setBlockState(position, Blocks.GLASS.defaultBlockState(), false);
-            LevelChunkSection = chunk.getSections()[position.getY() >> 4];
+            LevelChunkSection = chunk.getSections()[(position.getY() >> 4) - chunk.getMinSection()];
         }
         if(LevelChunkSection.getBlockState(position.getX()&15, position.getY()&15, position.getZ()&15).equals(data)){
             //Block is already of correct type and data, don't overwrite
@@ -219,7 +217,6 @@ public class IWorldHandler extends WorldHandler {
         world.sendBlockUpdated(position, data, data, 3);
         world.getLightEngine().checkBlock(position); // boolean corresponds to if chunk section empty
         chunk.setUnsaved(true);
-        */
     }
 
     @Override
