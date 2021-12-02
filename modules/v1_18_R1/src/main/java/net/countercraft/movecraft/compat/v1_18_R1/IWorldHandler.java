@@ -202,6 +202,8 @@ public class IWorldHandler extends WorldHandler {
     }
 
     private void setBlockFast(@NotNull Level world, @NotNull BlockPos position,@NotNull BlockState data) {
+        world.setBlockAndUpdate(position, data);
+        /*
         LevelChunk chunk = world.getChunkAt(position);
         LevelChunkSection LevelChunkSection = chunk.getSections()[position.getY()>>4];
         if (LevelChunkSection == null) {
@@ -217,6 +219,7 @@ public class IWorldHandler extends WorldHandler {
         world.sendBlockUpdated(position, data, data, 3);
         world.getLightEngine().checkBlock(position); // boolean corresponds to if chunk section empty
         chunk.setUnsaved(true);
+        */
     }
 
     @Override
