@@ -82,7 +82,8 @@ public class TeleportUtils {
             sucess = true;
         } catch (ClassNotFoundException | NoSuchFieldException | NoSuchMethodException | SecurityException e) {
             Bukkit.getLogger().warning("Failed to access intnernal teleportation handle, switching to fallback");
-            e.printStackTrace();
+            Bukkit.getLogger().info("This is expected for 1.17 and 1.18."); // TODO: Figure this out
+            //e.printStackTrace();
         }
         intialized = sucess;
     }
