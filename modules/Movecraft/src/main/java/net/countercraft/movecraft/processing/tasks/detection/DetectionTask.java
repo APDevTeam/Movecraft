@@ -177,9 +177,9 @@ public class DetectionTask implements Supplier<Effect> {
 
     }
 
-    private @NotNull Effect subcraft() {
+    private void subcraft() {
         if(!(craft instanceof SubCraft) && !(craft instanceof CruiseOnPilotCraft))
-            return () -> {}; // Return no-op for non-subcraft and non-cruise on pilots
+            return; // Return no-op for non-subcraft and non-cruise on pilots
 
         Craft parent = null;
         for(MovecraftLocation loc : craft.getHitBox()) {
@@ -198,12 +198,9 @@ public class DetectionTask implements Supplier<Effect> {
             ((SubCraft) craft).setParent(parent);
 
         // Subtract the subcraft from the hitbox of the parent.
-        Craft finalParent = parent;
-        return () -> {
-            var parentHitBox = finalParent.getHitBox();
-            parentHitBox = parentHitBox.difference(craft.getHitBox());
-            finalParent.setHitBox(parentHitBox);
-        };
+        var parentHitBox = parent.getHitBox();
+        parentHitBox = parentHitBox.difference(craft.getHitBox());
+        parent.setHitBox(parentHitBox);
     }
 
     @Override
@@ -228,8 +225,7 @@ public class DetectionTask implements Supplier<Effect> {
         craft.setNotificationPlayer(player);
         craft.setOrigBlockCount(craft.getHitBox().size());
 
-        var effect = subcraft();
-        effect = effect.andThen(water()); //TODO: Remove
+        var effect = water(); //TODO: Remove
 
         final CraftDetectEvent event = new CraftDetectEvent(craft);
 
