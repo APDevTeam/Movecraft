@@ -298,8 +298,8 @@ public class DetectionTask implements Supplier<Effect> {
                 for (var validator : validators) {
                     chain = chain.and(validator);
                 }
-                // If a craft is piloted as a subcraft or must be a subcraft, run the subcraft validator
-                if(craft instanceof SubCraft || craft.getType().getBoolProperty(CraftType.MUST_BE_SUBCRAFT))
+                // If a craft is piloted as a subcraft, run the subcraft validator
+                if(craft instanceof SubCraft)
                     chain = chain.and(SUBCRAFT_VALIDATOR);
                 // If the craft is not a subcraft or cruise on pilot, run the already controlled validator
                 else if(!craft.getType().getBoolProperty(CraftType.CRUISE_ON_PILOT))
