@@ -225,6 +225,7 @@ public class DetectionTask implements Supplier<Effect> {
         craft.setNotificationPlayer(player);
         craft.setOrigBlockCount(craft.getHitBox().size());
 
+        subcraft();
         var effect = water(); //TODO: Remove
 
         final CraftDetectEvent event = new CraftDetectEvent(craft);
