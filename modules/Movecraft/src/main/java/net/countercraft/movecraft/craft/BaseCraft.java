@@ -45,9 +45,8 @@ import java.util.logging.Level;
 
 import static net.countercraft.movecraft.util.SignUtils.getFacing;
 
-public abstract class ICraft implements Craft{
-    @NotNull
-    protected final CraftType type;
+public abstract class BaseCraft implements Craft {
+    @NotNull protected final CraftType type;
     @NotNull protected HitBox hitBox;
     @NotNull protected final MutableHitBox collapsedHitBox;
     @NotNull protected MutableHitBox fluidLocations;
@@ -67,15 +66,14 @@ public abstract class ICraft implements Craft{
     private int currentGear = 1;
     private double burningFuel;
     private int origBlockCount;
-    @Nullable
-    private Player notificationPlayer;
+    @Nullable private Player notificationPlayer;
     @NotNull private Audience audience;
     @NotNull private final Map<Location, BlockData> phaseBlocks = new HashMap<>();
     @NotNull private String name = "";
     @NotNull TimingData stats = new TimingData();
     @NotNull private MovecraftLocation lastTranslation = new MovecraftLocation(0,0,0);
 
-    public ICraft(@NotNull CraftType type, @NotNull World world) {
+    public BaseCraft(@NotNull CraftType type, @NotNull World world) {
         this.type = type;
         this.w = world;
         this.hitBox = new SetHitBox();

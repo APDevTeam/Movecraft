@@ -5,7 +5,7 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.MovecraftRotation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.craft.ICraft;
+import net.countercraft.movecraft.craft.BaseCraft;
 import net.countercraft.movecraft.craft.SubCraft;
 import net.countercraft.movecraft.craft.SubcraftRotateCraft;
 import net.countercraft.movecraft.craft.type.CraftType;
@@ -90,7 +90,7 @@ public final class SubcraftRotateSign implements Listener {
 
         rotatingCrafts.add(startPoint);
 
-        final ICraft craft;
+        final BaseCraft craft;
         if(type.getBoolProperty(CraftType.MUST_BE_SUBCRAFT))
             craft = new ISubCraft(type, loc.getWorld());
         else

@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
-public class IPlayerCraft extends ICraft implements PlayerCraft {
+public class IPlayerCraft extends BaseCraft implements PlayerCraft {
     private final UUID id = UUID.randomUUID();
     private final Player pilot;
     private boolean pilotLocked;
