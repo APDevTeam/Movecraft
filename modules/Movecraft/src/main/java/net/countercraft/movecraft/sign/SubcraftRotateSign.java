@@ -30,7 +30,6 @@ public final class SubcraftRotateSign implements Listener {
 
     @EventHandler
     public void onSignClick(PlayerInteractEvent event) {
-        Movecraft.getInstance().getLogger().info("Rotating for " + event.getPlayer().getName());
         MovecraftRotation rotation;
         if(event.getAction() == Action.RIGHT_CLICK_BLOCK)
             rotation = MovecraftRotation.CLOCKWISE;
@@ -92,8 +91,6 @@ public final class SubcraftRotateSign implements Listener {
             event.getPlayer().sendMessage("This feature is not implemented yet.");
             return;
         }
-
-        Movecraft.getInstance().getLogger().info("Detecting for " + event.getPlayer().getName());
 
         final ISubCraft craft = new ISubCraft(type, loc.getWorld());
         craft.detect(null, event.getPlayer(), startPoint);
