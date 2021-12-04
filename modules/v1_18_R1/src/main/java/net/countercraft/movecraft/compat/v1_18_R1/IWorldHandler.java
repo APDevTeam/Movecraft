@@ -203,17 +203,18 @@ public class IWorldHandler extends WorldHandler {
 
     private void setBlockFast(@NotNull Level world, @NotNull BlockPos position,@NotNull BlockState data) {
         LevelChunk chunk = world.getChunkAt(position);
-        LevelChunkSection LevelChunkSection = chunk.getSections()[(position.getY() >> 4) - chunk.getMinSection()];
-        if (LevelChunkSection == null) {
+        int chunkSection = (position.getY() >> 4) - chunk.getMinSection();
+        LevelChunkSection section = chunk.getSections()[chunkSection];
+        if (section == null) {
             // Put a GLASS block to initialize the section. It will be replaced next with the real block.
             chunk.setBlockState(position, Blocks.GLASS.defaultBlockState(), false);
-            LevelChunkSection = chunk.getSections()[(position.getY() >> 4) - chunk.getMinSection()];
+            section = chunk.getSections()[chunkSection];
         }
-        if(LevelChunkSection.getBlockState(position.getX()&15, position.getY()&15, position.getZ()&15).equals(data)){
+        if(section.getBlockState(position.getX()&15, position.getY()&15, position.getZ()&15).equals(data)){
             //Block is already of correct type and data, don't overwrite
             return;
         }
-        LevelChunkSection.setBlockState(position.getX()&15, position.getY()&15, position.getZ()&15, data);
+        section.setBlockState(position.getX()&15, position.getY()&15, position.getZ()&15, data);
         world.sendBlockUpdated(position, data, data, 3);
         world.getLightEngine().checkBlock(position); // boolean corresponds to if chunk section empty
         chunk.setUnsaved(true);
