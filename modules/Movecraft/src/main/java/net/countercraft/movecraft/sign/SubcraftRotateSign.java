@@ -5,6 +5,9 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.MovecraftRotation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.craft.ICraft;
+import net.countercraft.movecraft.craft.SubCraft;
+import net.countercraft.movecraft.craft.SubcraftRotateCraft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.craft.ISubCraft;
 import net.countercraft.movecraft.events.CraftPilotEvent;
@@ -87,12 +90,12 @@ public final class SubcraftRotateSign implements Listener {
 
         rotatingCrafts.add(startPoint);
 
-        if(!type.getBoolProperty(CraftType.MUST_BE_SUBCRAFT)) {
-            event.getPlayer().sendMessage("This feature is not implemented yet.");
-            return;
-        }
+        final ICraft craft;
+        if(type.getBoolProperty(CraftType.MUST_BE_SUBCRAFT))
+            craft = new ISubCraft(type, loc.getWorld());
+        else
+            craft = new SubcraftRotateCraft(type, loc.getWorld(), event.getPlayer());
 
-        final ISubCraft craft = new ISubCraft(type, loc.getWorld());
         craft.detect(null, event.getPlayer(), startPoint);
 
         Bukkit.getServer().getPluginManager().callEvent(new CraftPilotEvent(craft, CraftPilotEvent.Reason.SUB_CRAFT));
@@ -101,9 +104,12 @@ public final class SubcraftRotateSign implements Listener {
             @Override
             public void run() {
                 craft.rotate(rotation, startPoint, true);
-                var newHitbox = craft.getParent().getHitBox().union(craft.getHitBox());
-                craft.getParent().setHitBox(newHitbox);
                 rotatingCrafts.remove(startPoint);
+                if(craft instanceof SubCraft) {
+                    SubCraft subcraft = (ISubCraft) craft;
+                    var newHitbox = subcraft.getParent().getHitBox().union(craft.getHitBox());
+                    subcraft.getParent().setHitBox(newHitbox);
+                }
                 CraftManager.getInstance().removeCraft(craft, CraftReleaseEvent.Reason.SUB_CRAFT);
             }
         }.runTaskLater(Movecraft.getInstance(), 3);
