@@ -4,7 +4,7 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.type.CraftType;
-import net.countercraft.movecraft.craft.PilotedCraft;
+import net.countercraft.movecraft.craft.PlayerCraftImpl;
 import net.countercraft.movecraft.events.CraftPilotEvent;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
@@ -49,7 +49,7 @@ public class PilotCommand implements TabExecutor {
             if (oldCraft != null) {
                 CraftManager.getInstance().removeCraft(oldCraft, CraftReleaseEvent.Reason.PLAYER);
             }
-            PilotedCraft newCraft = new PilotedCraft(craftType, player.getWorld(), player);
+            PlayerCraftImpl newCraft = new PlayerCraftImpl(craftType, player.getWorld(), player);
             MovecraftLocation startPoint = MathUtils.bukkit2MovecraftLoc(player.getLocation());
             newCraft.detect(player, player, startPoint);
             Bukkit.getServer().getPluginManager().callEvent(new CraftPilotEvent(newCraft, CraftPilotEvent.Reason.PLAYER));

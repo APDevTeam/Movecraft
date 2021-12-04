@@ -5,10 +5,10 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-public class CruiseOnPilotCraft extends BaseCraft implements PilotedCraft {
+public class SubcraftRotateCraft extends BaseCraft implements PilotedCraft {
     private final Player pilot;
 
-    public CruiseOnPilotCraft(@NotNull CraftType type, @NotNull World world, @NotNull Player pilot) {
+    public SubcraftRotateCraft(@NotNull CraftType type, @NotNull World world, @NotNull Player pilot) {
         super(type, world);
         this.pilot = pilot;
     }

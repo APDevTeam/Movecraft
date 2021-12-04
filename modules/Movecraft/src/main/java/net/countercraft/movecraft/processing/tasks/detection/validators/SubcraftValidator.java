@@ -17,18 +17,12 @@ public class SubcraftValidator implements DetectionPredicate<MovecraftLocation> 
     @Override
     @Contract(pure = true)
     public @NotNull Result validate(@NotNull MovecraftLocation movecraftLocation, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable CommandSender player) {
-
-        if (!type.getBoolProperty(CraftType.MUST_BE_SUBCRAFT)) {
-            return Result.succeed();
-        }
-
-        for (Craft otherCraft : CraftManager.getInstance().getCraftList()) {
-            if (!otherCraft.getMovecraftWorld().equals(world)) {
+        for(var otherCraft : CraftManager.getInstance()) {
+            if(!otherCraft.getMovecraftWorld().equals(world))
                 continue;
-            }
-            if (otherCraft.getHitBox().contains(movecraftLocation)) {
+
+            if(otherCraft.getHitBox().contains(movecraftLocation))
                 return Result.succeed();
-            }
         }
         return Result.failWithMessage(I18nSupport.getInternationalisedString("Detection - Must Be Subcraft"));
     }

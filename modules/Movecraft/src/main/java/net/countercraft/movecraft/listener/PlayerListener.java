@@ -154,7 +154,7 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void onCraftRelease(CraftReleaseEvent event){
         if(event.getCraft() instanceof PlayerCraft){
-            clearHighlights(event.getCraft(), ((PlayerCraft) event.getCraft()).getPlayer());
+            clearHighlights(event.getCraft(), ((PlayerCraft) event.getCraft()).getPilot());
         }
     }
 

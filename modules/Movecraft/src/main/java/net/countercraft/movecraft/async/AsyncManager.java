@@ -27,6 +27,7 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.CraftStatus;
+import net.countercraft.movecraft.craft.PilotedCraft;
 import net.countercraft.movecraft.craft.PlayerCraft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.craft.type.RequiredBlockEntry;
@@ -547,7 +548,7 @@ public class AsyncManager extends BukkitRunnable {
 
         // now cleanup craft that are bugged and have not moved in the past 60 seconds, but have no pilot or are still processing
         for (Craft pcraft : CraftManager.getInstance()) {
-            if (CraftManager.getInstance().getPlayerFromCraft(pcraft) == null) {
+            if (!(pcraft instanceof PilotedCraft)) {
                 if (pcraft.getLastCruiseUpdate() < System.currentTimeMillis() - 60000) {
                     CraftManager.getInstance().forceRemoveCraft(pcraft);
                 }

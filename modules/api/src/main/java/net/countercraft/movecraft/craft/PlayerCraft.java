@@ -1,12 +1,6 @@
 package net.countercraft.movecraft.craft;
 
-import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
-
-public interface PlayerCraft extends Craft{
-
-    @NotNull
-    Player getPlayer();
+public interface PlayerCraft extends PilotedCraft {
 
     boolean getPilotLocked();
 
