@@ -17,9 +17,6 @@ public class SubcraftValidator implements DetectionPredicate<MovecraftLocation> 
     @Override
     @Contract(pure = true)
     public @NotNull Result validate(@NotNull MovecraftLocation movecraftLocation, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable CommandSender player) {
-        if(!type.getBoolProperty(CraftType.MUST_BE_SUBCRAFT))
-            return Result.succeed(); // Not MUST_BE_SUBCRAFTs must not be in the hitbox, see AlreadyControlledValidator
-
         for(var otherCraft : CraftManager.getInstance()) {
             if(!otherCraft.getMovecraftWorld().equals(world))
                 continue;
