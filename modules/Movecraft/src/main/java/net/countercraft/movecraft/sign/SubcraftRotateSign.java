@@ -9,7 +9,7 @@ import net.countercraft.movecraft.craft.BaseCraft;
 import net.countercraft.movecraft.craft.SubCraft;
 import net.countercraft.movecraft.craft.SubcraftRotateCraft;
 import net.countercraft.movecraft.craft.type.CraftType;
-import net.countercraft.movecraft.craft.ISubCraft;
+import net.countercraft.movecraft.craft.SubCraftImpl;
 import net.countercraft.movecraft.events.CraftPilotEvent;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
@@ -92,7 +92,7 @@ public final class SubcraftRotateSign implements Listener {
 
         final BaseCraft craft;
         if(type.getBoolProperty(CraftType.MUST_BE_SUBCRAFT))
-            craft = new ISubCraft(type, loc.getWorld());
+            craft = new SubCraftImpl(type, loc.getWorld());
         else
             craft = new SubcraftRotateCraft(type, loc.getWorld(), event.getPlayer());
 
@@ -106,7 +106,7 @@ public final class SubcraftRotateSign implements Listener {
                 craft.rotate(rotation, startPoint, true);
                 rotatingCrafts.remove(startPoint);
                 if(craft instanceof SubCraft) {
-                    SubCraft subcraft = (ISubCraft) craft;
+                    SubCraft subcraft = (SubCraftImpl) craft;
                     var newHitbox = subcraft.getParent().getHitBox().union(craft.getHitBox());
                     subcraft.getParent().setHitBox(newHitbox);
                 }

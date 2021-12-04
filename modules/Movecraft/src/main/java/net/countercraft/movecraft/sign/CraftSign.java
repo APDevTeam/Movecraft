@@ -9,7 +9,7 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.craft.CruiseOnPilotCraft;
-import net.countercraft.movecraft.craft.IPlayerCraft;
+import net.countercraft.movecraft.craft.PlayerCraftImpl;
 import net.countercraft.movecraft.events.CraftPilotEvent;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
@@ -69,11 +69,11 @@ public final class CraftSign implements Listener{
         if (type.getBoolProperty(CraftType.CRUISE_ON_PILOT)) {
             c = new CruiseOnPilotCraft(type, loc.getWorld(), event.getPlayer());
             c.detect(event.getPlayer(), event.getPlayer(), startPoint);
-            if(sign.getBlockData() instanceof WallSign) {
+            if(sign.getBlockData() instanceof WallSign)
                 c.setCruiseDirection(CruiseDirection.fromBlockFace(((WallSign) sign.getBlockData()).getFacing()));
-            } else {
+            else
                 c.setCruiseDirection(CruiseDirection.NONE);
-            }
+            
             c.setLastCruiseUpdate(System.currentTimeMillis());
             c.setCruising(true);
             new BukkitRunnable() {
@@ -85,10 +85,11 @@ public final class CraftSign implements Listener{
                 }
             }.runTaskLater(Movecraft.getInstance(), (20 * 15));
         } else {
-            c = new IPlayerCraft(type, loc.getWorld(), event.getPlayer());
+            c = new PlayerCraftImpl(type, loc.getWorld(), event.getPlayer());
             if (CraftManager.getInstance().getCraftByPlayer(event.getPlayer()) == null) {
                 c.detect(event.getPlayer(), event.getPlayer(), startPoint);
-            } else {
+            }
+            else {
                 Craft oldCraft = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
                 if (oldCraft.isNotProcessing()) {
                     CraftManager.getInstance().removeCraft(oldCraft, CraftReleaseEvent.Reason.PLAYER);
