@@ -37,7 +37,7 @@ public class BlockHighlight implements Listener {
     static {
         String packageName = Bukkit.getServer().getClass().getPackage().getName();
         String version = packageName.substring(packageName.lastIndexOf('.') + 1);
-        disabled = Settings.CompatibilityMode || version.contains("17");
+        disabled = Settings.CompatibilityMode || version.contains("17") || version.contains("18"); // TODO: Fix support for 1.17 & 1.18
     }
     private static final byte INVISIBLE = (byte) 0x20;
     private static final byte GLOWING = (byte) 0x40;
