@@ -27,86 +27,90 @@ import java.util.Set;
 public final class SubcraftRotateSign implements Listener {
     private static final String HEADER = "Subcraft Rotate";
     private final Set<MovecraftLocation> rotatingCrafts = new HashSet<>();
+
     @EventHandler
-    public final void onSignClick(PlayerInteractEvent event) {
+    public void onSignClick(PlayerInteractEvent event) {
+        Movecraft.getInstance().getLogger().info("Rotating for " + event.getPlayer().getName());
         MovecraftRotation rotation;
-        if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+        if(event.getAction() == Action.RIGHT_CLICK_BLOCK)
             rotation = MovecraftRotation.CLOCKWISE;
-        }else if(event.getAction() == Action.LEFT_CLICK_BLOCK){
+        else if(event.getAction() == Action.LEFT_CLICK_BLOCK)
             rotation = MovecraftRotation.ANTICLOCKWISE;
-        }else{
+        else
             return;
-        }
+
         BlockState state = event.getClickedBlock().getState();
-        if (!(state instanceof Sign)) {
+        if (!(state instanceof Sign))
             return;
-        }
         Sign sign = (Sign) state;
-        if (!ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase(HEADER)) {
+        if (!ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase(HEADER))
             return;
-        }
+
         final Location loc = event.getClickedBlock().getLocation();
         final MovecraftLocation startPoint = new MovecraftLocation(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
-        if(rotatingCrafts.contains(startPoint)){
+        if(rotatingCrafts.contains(startPoint)) {
             event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Rotation - Already Rotating"));
             event.setCancelled(true);
             return;
         }
+
         // rotate subcraft
         String craftTypeStr = ChatColor.stripColor(sign.getLine(1));
         CraftType type = CraftManager.getInstance().getCraftTypeFromString(craftTypeStr);
-        if (type == null) {
+        if(type == null)
             return;
-        }
-        if (ChatColor.stripColor(sign.getLine(2)).equals("")
+        if(ChatColor.stripColor(sign.getLine(2)).equals("")
                 && ChatColor.stripColor(sign.getLine(3)).equals("")) {
             sign.setLine(2, "_\\ /_");
             sign.setLine(3, "/ \\");
             sign.update(false, false);
         }
 
-        if (!event.getPlayer().hasPermission("movecraft." + craftTypeStr + ".pilot") || !event.getPlayer().hasPermission("movecraft." + craftTypeStr + ".rotate")) {
+        if(!event.getPlayer().hasPermission("movecraft." + craftTypeStr + ".pilot") || !event.getPlayer().hasPermission("movecraft." + craftTypeStr + ".rotate")) {
             event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
             return;
         }
 
-        final Craft craft = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
-        if(craft!=null) {
-            if (!craft.isNotProcessing()) {
+        final Craft playerCraft = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
+        if(playerCraft != null) {
+            if (!playerCraft.isNotProcessing()) {
                 event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Detection - Parent Craft is busy"));
                 return;
             }
-            craft.setProcessing(true); // prevent the parent craft from moving or updating until the subcraft is done
+            playerCraft.setProcessing(true); // prevent the parent craft from moving or updating until the subcraft is done
             new BukkitRunnable() {
                 @Override
                 public void run() {
-                    craft.setProcessing(false);
+                    playerCraft.setProcessing(false);
                 }
             }.runTaskLater(Movecraft.getInstance(), (10));
         }
-        final ISubCraft subCraft = new ISubCraft(type, loc.getWorld());
-        subCraft.detect(null, event.getPlayer(), startPoint);
+
         rotatingCrafts.add(startPoint);
-        Bukkit.getServer().getPluginManager().callEvent(new CraftPilotEvent(subCraft, CraftPilotEvent.Reason.SUB_CRAFT));
+
+        if(!type.getBoolProperty(CraftType.MUST_BE_SUBCRAFT)) {
+            event.getPlayer().sendMessage("This feature is not implemented yet.");
+            return;
+        }
+
+        Movecraft.getInstance().getLogger().info("Detecting for " + event.getPlayer().getName());
+
+        final ISubCraft craft = new ISubCraft(type, loc.getWorld());
+        craft.detect(null, event.getPlayer(), startPoint);
+
+        Bukkit.getServer().getPluginManager().callEvent(new CraftPilotEvent(craft, CraftPilotEvent.Reason.SUB_CRAFT));
+
         new BukkitRunnable() {
             @Override
             public void run() {
-                subCraft.rotate(rotation, startPoint, true);
+                craft.rotate(rotation, startPoint, true);
+                var newHitbox = craft.getParent().getHitBox().union(craft.getHitBox());
+                craft.getParent().setHitBox(newHitbox);
+                rotatingCrafts.remove(startPoint);
+                CraftManager.getInstance().removeCraft(craft, CraftReleaseEvent.Reason.SUB_CRAFT);
             }
         }.runTaskLater(Movecraft.getInstance(), 3);
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                rotatingCrafts.remove(startPoint);
-                CraftManager.getInstance().removeCraft(subCraft, CraftReleaseEvent.Reason.SUB_CRAFT);
-            }
-        }.runTaskLater(Movecraft.getInstance(), 6);
+
         event.setCancelled(true);
     }
-
-    @EventHandler
-    public void onCraftRelease(CraftReleaseEvent event){
-        rotatingCrafts.removeAll(event.getCraft().getHitBox().asSet());
-    }
-
 }
