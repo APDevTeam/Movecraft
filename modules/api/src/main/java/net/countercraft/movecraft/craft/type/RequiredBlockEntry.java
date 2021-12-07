@@ -47,7 +47,7 @@ public class RequiredBlockEntry {
     }
 
     public boolean check(int count, int size, double sinkPercent) {
-        double blockPercent = 100D * count / size;
+        double blockPercent = 100D * (double) count / size;
         if(numericMin) {
             if(count < min)
                 return false;
@@ -71,7 +71,7 @@ public class RequiredBlockEntry {
     }
 
     public Pair<DetectionResult, String> detect(int count, int size) {
-        double blockPercent = 100D * count / size;
+        double blockPercent = 100D * (double) count / size;
 
         if(numericMin && count < min)
             return new Pair<>(DetectionResult.NOT_ENOUGH, String.format("%d < %d", count, (int) min));
