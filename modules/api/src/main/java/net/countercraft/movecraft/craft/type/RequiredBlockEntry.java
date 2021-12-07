@@ -53,7 +53,7 @@ public class RequiredBlockEntry {
                 return false;
         }
         else {
-            if(blockPercent * sinkPercent < min)
+            if(blockPercent < min * sinkPercent)
                 return false;
         }
         if(numericMax) {
