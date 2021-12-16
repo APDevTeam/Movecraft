@@ -85,4 +85,20 @@ public class RequiredBlockEntry {
 
         return new Pair<>(DetectionResult.SUCCESS, "");
     }
+
+    public double getMax() {
+        return max;
+    }
+
+    public boolean isNumericMax() {
+        return numericMax;
+    }
+
+    public double getMin() {
+        return min;
+    }
+
+    public boolean isNumericMin() {
+        return numericMin;
+    }
 }
