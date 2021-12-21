@@ -52,7 +52,6 @@ public class Settings {
     public static int CollisionPrimer = 1000;
     public static int MaxRemoteSigns = -1;
     public static boolean CraftsUseNetherPortals = false;
-    public static boolean IsPaper = false;
 
     public static EnumSet<Material> DisableShadowBlocks;
     public static HashSet<String> ForbiddenRemoteSigns;
