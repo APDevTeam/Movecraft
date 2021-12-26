@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.events;
 
+import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
@@ -9,10 +10,13 @@ public class CraftDetectEvent extends CraftEvent implements Cancellable {
 
     private static final HandlerList HANDLERS = new HandlerList();
     private boolean cancelled;
+    @NotNull
+    private final MovecraftLocation startLocation;
     private String failMessage = "";
 
-    public CraftDetectEvent(@NotNull Craft craft) {
+    public CraftDetectEvent(@NotNull Craft craft, @NotNull MovecraftLocation startLocation) {
         super(craft);
+        this.startLocation = startLocation;
     }
 
     @Override
@@ -41,5 +45,10 @@ public class CraftDetectEvent extends CraftEvent implements Cancellable {
 
     public void setFailMessage(String failMessage) {
         this.failMessage = failMessage;
+    }
+
+    @NotNull
+    public MovecraftLocation getStartLocation() {
+        return startLocation;
     }
 }
