@@ -82,7 +82,7 @@ public class CraftManager implements Iterable<Craft>{
     }
 
     @NotNull
-    private Set<CraftType> loadCraftTypes(){
+    private Set<CraftType> loadCraftTypes() {
         File craftsFile = new File(Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/types");
 
         if (craftsFile.mkdirs()) {
@@ -131,14 +131,15 @@ public class CraftManager implements Iterable<Craft>{
     }
 
     public void addCraft(@NotNull PlayerCraft c) {
-        this.craftList.add(c);
-        this.craftPlayerIndex.put(c.getPilot(), c);
+        craftList.add(c);
+        craftPlayerIndex.put(c.getPilot(), c);
     }
 
-    public void addCraft(@NotNull Craft c){
+    public void addCraft(@NotNull Craft c) {
         if(c instanceof PlayerCraft){
             addCraft((PlayerCraft) c);
-        } else {
+        }
+        else {
             this.craftList.add(c);
         }
     }
@@ -151,7 +152,7 @@ public class CraftManager implements Iterable<Craft>{
 
         removeReleaseTask(c);
 
-        this.craftList.remove(c);
+        craftList.remove(c);
         if(c instanceof PlayerCraft)
             this.craftPlayerIndex.remove(((PlayerCraft) c).getPilot());
         // if its sinking, just remove the craft without notifying or checking
@@ -170,7 +171,7 @@ public class CraftManager implements Iterable<Craft>{
     public void forceRemoveCraft(@NotNull Craft c) {
         this.craftList.remove(c);
         if(c instanceof PlayerCraft)
-            this.craftPlayerIndex.remove(((PlayerCraft) c).getPilot());
+            craftPlayerIndex.remove(((PlayerCraft) c).getPilot());
         CraftReleaseEvent e = new CraftReleaseEvent(c, CraftReleaseEvent.Reason.FORCE);
         Bukkit.getServer().getPluginManager().callEvent(e);
         if(e.isCancelled()) {
@@ -181,8 +182,8 @@ public class CraftManager implements Iterable<Craft>{
     @NotNull
     public Set<Craft> getCraftsInWorld(@NotNull World w) {
         Set<Craft> crafts = new HashSet<>();
-        for(Craft c : this.craftList){
-            if(c.getWorld() == w)
+        for (Craft c : craftList) {
+            if (c.getWorld() == w)
                 crafts.add(c);
         }
         return crafts;
@@ -198,16 +199,16 @@ public class CraftManager implements Iterable<Craft>{
 
 
     public PlayerCraft getCraftByPlayerName(String name) {
-        for(var entry : craftPlayerIndex.entrySet()) {
-            if(entry.getKey() != null && entry.getKey().getName().equals(name))
+        for (var entry : craftPlayerIndex.entrySet()) {
+            if (entry.getKey() != null && entry.getKey().getName().equals(name))
                 return entry.getValue();
         }
         return null;
     }
 
-    public void removeCraftByPlayer(Player player){
+    public void removeCraftByPlayer(Player player) {
         PilotedCraft craft = craftPlayerIndex.remove(player);
-        if(craft != null){
+        if (craft != null) {
             craftList.remove(craft);
         }
     }
@@ -223,15 +224,16 @@ public class CraftManager implements Iterable<Craft>{
     }
 
     @NotNull
-    public Set<PlayerCraft> getPlayerCraftsInWorld(World world){
+    public Set<PlayerCraft> getPlayerCraftsInWorld(World world) {
         Set<PlayerCraft> crafts = new HashSet<>();
-        for(PlayerCraft craft : this.craftPlayerIndex.values()){
-            if(craft.getWorld() == world)
+        for (PlayerCraft craft : craftPlayerIndex.values()) {
+            if (craft.getWorld() == world)
                 crafts.add(craft);
         }
         return crafts;
     }
 
+    @Deprecated
     public void removePlayerFromCraft(Craft c) {
         if (!(c instanceof PlayerCraft)) {
             return;
@@ -248,7 +250,7 @@ public class CraftManager implements Iterable<Craft>{
     @Deprecated
     public final void addReleaseTask(final Craft c) {
         Player p = getPlayerFromCraft(c);
-        if (p!=null) {
+        if (p != null) {
             p.sendMessage(I18nSupport.getInternationalisedString("Release - Player has left craft"));
         }
         BukkitTask releaseTask = new BukkitRunnable() {
@@ -275,13 +277,13 @@ public class CraftManager implements Iterable<Craft>{
     }
 
     @Deprecated
-    public boolean isReleasing(final Craft craft){
+    public boolean isReleasing(final Craft craft) {
         return releaseEvents.containsKey(craft);
     }
 
     @NotNull
     @Deprecated
-    public Set<Craft> getCraftList(){
+    public Set<Craft> getCraftList() {
         return Collections.unmodifiableSet(craftList);
     }
 
@@ -294,14 +296,14 @@ public class CraftManager implements Iterable<Craft>{
         return null;
     }
 
-    public boolean isEmpty(){
-        return this.craftList.isEmpty();
+    public boolean isEmpty() {
+        return craftList.isEmpty();
     }
 
     @NotNull
     @Override
     public Iterator<Craft> iterator() {
-        return Collections.unmodifiableSet(this.craftList).iterator();
+        return Collections.unmodifiableSet(craftList).iterator();
     }
 
     public void addOverboard(Player player) {
@@ -319,7 +321,7 @@ public class CraftManager implements Iterable<Craft>{
         long closestDistSquared = Long.MAX_VALUE;
         Set<Craft> craftsList = CraftManager.getInstance().getCraftsInWorld(loc.getWorld());
         for (Craft i : craftsList) {
-            if(i.getHitBox().isEmpty())
+            if (i.getHitBox().isEmpty())
                 continue;
             int midX = (i.getHitBox().getMaxX() + i.getHitBox().getMinX()) >> 1;
 //				int midY=(i.getMaxY()+i.getMinY())>>1; don't check Y because it is slow
