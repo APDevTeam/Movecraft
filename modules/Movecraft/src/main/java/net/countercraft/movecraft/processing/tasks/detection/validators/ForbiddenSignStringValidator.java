@@ -4,12 +4,12 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.MovecraftWorld;
-import net.countercraft.movecraft.processing.functions.Result;
 import net.countercraft.movecraft.processing.functions.DetectionPredicate;
+import net.countercraft.movecraft.processing.functions.Result;
 import org.bukkit.Tag;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
-import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -19,11 +19,11 @@ import java.util.Collection;
 public class ForbiddenSignStringValidator implements DetectionPredicate<MovecraftLocation> {
     @Override
     @Contract(pure = true)
-    public @NotNull Result validate(@NotNull MovecraftLocation location, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable CommandSender player) {
-        if(!Tag.SIGNS.isTagged(world.getMaterial(location))){
+    public @NotNull Result validate(@NotNull MovecraftLocation movecraftLocation, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable Player player) {
+        if(!Tag.SIGNS.isTagged(world.getMaterial(movecraftLocation))){
             return Result.succeed();
         }
-        BlockState state = world.getState(location);
+        BlockState state = world.getState(movecraftLocation);
         if (!(state instanceof Sign)) {
             return Result.succeed();
         }
@@ -46,4 +46,5 @@ public class ForbiddenSignStringValidator implements DetectionPredicate<Movecraf
         }
         return Result.succeed();
     }
+
 }
