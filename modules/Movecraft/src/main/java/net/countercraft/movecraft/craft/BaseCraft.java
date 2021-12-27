@@ -129,13 +129,6 @@ public abstract class BaseCraft implements Craft {
         this.w = world;
     }
 
-    @Deprecated(forRemoval = true)
-    public void detect(@Nullable Player player, @NotNull Player notificationPlayer, MovecraftLocation startPoint) {
-        setNotificationPlayer(notificationPlayer);
-        setAudience(Movecraft.getAdventure().player(notificationPlayer));
-        WorldManager.INSTANCE.submit(new DetectionTask(startPoint, CachedMovecraftWorld.of(w), type, player, Movecraft.getAdventure().player(player)));
-    }
-
     @Deprecated
     public void translate(int dx, int dy, int dz) {
         translate(w, dx, dy, dz);
