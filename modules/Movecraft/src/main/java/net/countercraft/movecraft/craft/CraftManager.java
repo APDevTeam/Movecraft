@@ -18,15 +18,21 @@
 package net.countercraft.movecraft.craft;
 
 import net.countercraft.movecraft.Movecraft;
+import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.events.TypesReloadedEvent;
 import net.countercraft.movecraft.exception.NonCancellableReleaseException;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.processing.CachedMovecraftWorld;
+import net.countercraft.movecraft.processing.WorldManager;
+import net.countercraft.movecraft.processing.tasks.detection.DetectionTask;
+import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -177,6 +183,10 @@ public class CraftManager implements Iterable<Craft>{
         if(e.isCancelled()) {
             throw new NonCancellableReleaseException();
         }
+    }
+
+    public void detect(@NotNull MovecraftLocation startPoint, @NotNull World w, @NotNull CraftType type, @NotNull Player player, @NotNull Audience audience) {
+        WorldManager.INSTANCE.submit(new DetectionTask(startPoint, CachedMovecraftWorld.of(w), type, player, audience));
     }
 
     @NotNull
