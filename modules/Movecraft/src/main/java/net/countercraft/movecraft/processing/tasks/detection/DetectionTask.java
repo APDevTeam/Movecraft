@@ -257,23 +257,30 @@ public class DetectionTask implements Supplier<Effect> {
         craft.setFluidLocations(new BitmapHitBox(fluid));
         craft.setOrigBlockCount(craft.getHitBox().size());
 
-        var effect = water(craft); //TODO: Remove
         final CraftDetectEvent event = new CraftDetectEvent(craft, startLocation);
-        effect = effect.andThen(postDetection.apply(craft));
 
         WorldManager.INSTANCE.executeMain(() -> Bukkit.getPluginManager().callEvent(event));
         if (event.isCancelled())
             return () -> craft.getAudience().sendMessage(Component.text(event.getFailMessage()));
 
         return ((Effect) () -> {
+            // Notify player and console
             craft.getAudience().sendMessage(Component.text(String.format("%s Size: %s", I18nSupport.getInternationalisedString("Detection - Successfully piloted craft"), craft.getHitBox().size())));
             Movecraft.getInstance().getLogger().info(String.format(
                     I18nSupport.getInternationalisedString("Detection - Success - Log Output"),
                     player.getName(), craft.getType().getStringProperty(CraftType.NAME), craft.getHitBox().size(),
                     craft.getHitBox().getMinX(), craft.getHitBox().getMinZ()
             ));
-            CraftManager.getInstance().addCraft(craft);
-        }).andThen(effect);
+        }).andThen(
+                // Apply water effect
+                water(craft) //TODO: Remove
+        ).andThen(
+                // Apply post detection effect (includes CraftPilotEvent)
+                postDetection.apply(craft)
+        ).andThen(
+                // Add craft to CraftManager
+                () -> CraftManager.getInstance().addCraft(craft)
+        );
     }
 
     private void frontier() {
