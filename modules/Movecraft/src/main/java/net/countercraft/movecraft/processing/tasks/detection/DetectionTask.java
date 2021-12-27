@@ -14,6 +14,7 @@ import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.processing.WorldManager;
 import net.countercraft.movecraft.processing.effects.Effect;
+import net.countercraft.movecraft.processing.functions.CraftSupplier;
 import net.countercraft.movecraft.processing.functions.DetectionPredicate;
 import net.countercraft.movecraft.processing.functions.Result;
 import net.countercraft.movecraft.processing.tasks.detection.validators.AllowedBlockValidator;
@@ -36,6 +37,7 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -97,7 +99,9 @@ public class DetectionTask implements Supplier<Effect> {
     private final MovecraftLocation startLocation;
     private final MovecraftWorld movecraftWorld;
     private final CraftType type;
+    private final CraftSupplier supplier;
 
+    private final World world;
     private final Player player;
     private final Audience audience;
 
@@ -110,11 +114,21 @@ public class DetectionTask implements Supplier<Effect> {
     private final ConcurrentLinkedDeque<MovecraftLocation> legal = new ConcurrentLinkedDeque<>();
 
 
-    public DetectionTask(@NotNull MovecraftLocation startLocation, @NotNull MovecraftWorld movecraftWorld, @NotNull CraftType type, @Nullable Player player, @NotNull Audience audience) {
+    public DetectionTask(
+            @NotNull MovecraftLocation startLocation,
+            @NotNull MovecraftWorld movecraftWorld,
+            @NotNull CraftType type,
+            @NotNull CraftSupplier supplier,
+            @NotNull World world,
+            @NotNull Player player,
+            @NotNull Audience audience
+    ) {
         this.startLocation = startLocation;
         this.movecraftWorld = movecraftWorld;
         this.type = type;
+        this.supplier = supplier;
 
+        this.world = world;
         this.player = player;
         this.audience = audience;
     }
@@ -183,32 +197,6 @@ public class DetectionTask implements Supplier<Effect> {
 
     }
 
-    private void subcraft() {
-        if(!type.getBoolProperty(CraftType.MUST_BE_SUBCRAFT))
-            return; // Return no-op for non-subcraft and non-cruise on pilots
-
-        Craft parent = null;
-        for(MovecraftLocation loc : craft.getHitBox()) {
-            for(var otherCraft : CraftManager.getInstance()) {
-                if(!otherCraft.getMovecraftWorld().equals(movecraftWorld))
-                    continue;
-
-                if(otherCraft.getHitBox().contains(loc))
-                    parent = otherCraft;
-            }
-        }
-        if(parent == null)
-            throw new IllegalStateException("Subcrafts should always have a parent");
-
-        if(craft instanceof SubCraft)
-            ((SubCraft) craft).setParent(parent);
-
-        // Subtract the subcraft from the hitbox of the parent.
-        var parentHitBox = parent.getHitBox();
-        parentHitBox = parentHitBox.difference(craft.getHitBox());
-        parent.setHitBox(parentHitBox);
-    }
-
     @Override
     public Effect get() {
         frontier();
@@ -222,19 +210,25 @@ public class DetectionTask implements Supplier<Effect> {
                 (a, b, c, d) -> Result.fail()
         ).validate(visitedMaterials, type, movecraftWorld, player) : result;
         if(!result.isSucess()) {
-            Result finalResult = result;
-            return () -> audience.sendMessage(Component.text(finalResult.getMessage()));
+            String message = result.getMessage();
+            return () -> audience.sendMessage(Component.text(message));
         }
 
-        Craft craft = new PlayerCraftImpl(type, movecraftWorld, player);
+        // TODO: Find parent crafts
+
+        var supplied = supplier.apply(type, world, player, null);
+        if(!supplied.getLeft().isSucess()) {
+            String message = supplied.getLeft().getMessage();
+            return () -> audience.sendMessage(Component.text(message));
+        }
+
+        Craft craft = supplied.getRight();
         craft.setHitBox(new BitmapHitBox(legal));
         craft.setFluidLocations(new BitmapHitBox(fluid));
-        craft.setNotificationPlayer(player);
         craft.setOrigBlockCount(craft.getHitBox().size());
 
-        subcraft();
         var effect = water(craft); //TODO: Remove
-        final CraftDetectEvent event = new CraftDetectEvent(craft);
+        final CraftDetectEvent event = new CraftDetectEvent(craft, startLocation);
 
         WorldManager.INSTANCE.executeMain(() -> Bukkit.getPluginManager().callEvent(event));
         if (event.isCancelled())
@@ -276,7 +270,7 @@ public class DetectionTask implements Supplier<Effect> {
 
     @Override
     public String toString(){
-        return String.format("DetectionTask{%s}", this.craft);
+        return String.format("DetectionTask{%s:%s:%s}", player, type, startLocation);
     }
 
     private class DetectAction implements Runnable {
