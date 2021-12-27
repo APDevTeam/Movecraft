@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.sign;
 
+import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.MovecraftRotation;
@@ -13,19 +14,35 @@ import net.countercraft.movecraft.craft.SubCraftImpl;
 import net.countercraft.movecraft.events.CraftPilotEvent;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.processing.MovecraftWorld;
+import net.countercraft.movecraft.processing.effects.Effect;
+import net.countercraft.movecraft.processing.functions.CraftSupplier;
+import net.countercraft.movecraft.processing.functions.Result;
+import net.countercraft.movecraft.util.Pair;
+import net.countercraft.movecraft.util.hitboxes.HitBox;
+import net.countercraft.movecraft.util.hitboxes.MutableHitBox;
+import net.kyori.adventure.audience.Audience;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
 public final class SubcraftRotateSign implements Listener {
     private static final String HEADER = "Subcraft Rotate";
@@ -58,8 +75,8 @@ public final class SubcraftRotateSign implements Listener {
 
         // rotate subcraft
         String craftTypeStr = ChatColor.stripColor(sign.getLine(1));
-        CraftType type = CraftManager.getInstance().getCraftTypeFromString(craftTypeStr);
-        if(type == null)
+        CraftType craftType = CraftManager.getInstance().getCraftTypeFromString(craftTypeStr);
+        if(craftType == null)
             return;
         if(ChatColor.stripColor(sign.getLine(2)).equals("")
                 && ChatColor.stripColor(sign.getLine(3)).equals("")) {
@@ -90,30 +107,40 @@ public final class SubcraftRotateSign implements Listener {
 
         rotatingCrafts.add(startPoint);
 
-        final BaseCraft craft;
-        if(type.getBoolProperty(CraftType.MUST_BE_SUBCRAFT))
-            craft = new SubCraftImpl(type, loc.getWorld());
-        else
-            craft = new SubcraftRotateCraft(type, loc.getWorld(), event.getPlayer());
+        final Player player = event.getPlayer();
+        final World world = event.getClickedBlock().getWorld();
+        CraftManager.getInstance().detect(
+                startPoint,
+                craftType, (type, w, p, parents) -> {
+                    if(parents.size() > 1)
+                        return new Pair<>(Result.failWithMessage(I18nSupport.getInternationalisedString(
+                                "Detection - Failed - Already commanding a craft")), null);
+                    if(parents.size() < 1)
+                        return new Pair<>(Result.succeed(), new SubcraftRotateCraft(type, w, p));
 
-        craft.detect(null, event.getPlayer(), startPoint);
+                    Craft parent = parents.iterator().next();
+                    return new Pair<>(Result.succeed(), new SubCraftImpl(type, w, parent));
+                },
+                world, player,
+                Movecraft.getAdventure().player(player),
+                craft -> () -> {
+                    Bukkit.getServer().getPluginManager().callEvent(new CraftPilotEvent(craft, CraftPilotEvent.Reason.SUB_CRAFT));
 
-        Bukkit.getServer().getPluginManager().callEvent(new CraftPilotEvent(craft, CraftPilotEvent.Reason.SUB_CRAFT));
-
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                craft.rotate(rotation, startPoint, true);
-                rotatingCrafts.remove(startPoint);
-                if(craft instanceof SubCraft) {
-                    SubCraft subcraft = (SubCraftImpl) craft;
-                    var newHitbox = subcraft.getParent().getHitBox().union(craft.getHitBox());
-                    subcraft.getParent().setHitBox(newHitbox);
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            craft.rotate(rotation, startPoint, true);
+                            rotatingCrafts.remove(startPoint);
+                            if (craft instanceof SubCraft) {
+                                SubCraft subcraft = (SubCraft) craft;
+                                var newHitbox = subcraft.getParent().getHitBox().union(craft.getHitBox());
+                                subcraft.getParent().setHitBox(newHitbox);
+                            }
+                            CraftManager.getInstance().removeCraft(craft, CraftReleaseEvent.Reason.SUB_CRAFT);
+                        }
+                    }.runTaskLater(Movecraft.getInstance(), 3);
                 }
-                CraftManager.getInstance().removeCraft(craft, CraftReleaseEvent.Reason.SUB_CRAFT);
-            }
-        }.runTaskLater(Movecraft.getInstance(), 3);
-
+        );
         event.setCancelled(true);
     }
 }
