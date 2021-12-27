@@ -59,6 +59,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.atomic.LongAdder;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -100,10 +101,10 @@ public class DetectionTask implements Supplier<Effect> {
     private final MovecraftWorld movecraftWorld;
     private final CraftType type;
     private final CraftSupplier supplier;
-
     private final World world;
     private final Player player;
     private final Audience audience;
+    private final Function<Craft, Effect> postDetection;
 
     private final LongAdder size = new LongAdder();
     private final Set<MovecraftLocation> visited = new AtomicLocationSet();
@@ -114,15 +115,11 @@ public class DetectionTask implements Supplier<Effect> {
     private final ConcurrentLinkedDeque<MovecraftLocation> legal = new ConcurrentLinkedDeque<>();
 
 
-    public DetectionTask(
-            @NotNull MovecraftLocation startLocation,
-            @NotNull MovecraftWorld movecraftWorld,
-            @NotNull CraftType type,
-            @NotNull CraftSupplier supplier,
-            @NotNull World world,
-            @NotNull Player player,
-            @NotNull Audience audience
-    ) {
+    public DetectionTask(@NotNull MovecraftLocation startLocation, @NotNull MovecraftWorld movecraftWorld,
+                            @NotNull CraftType type, @NotNull CraftSupplier supplier,
+                            @NotNull World world, @NotNull Player player,
+                            @NotNull Audience audience,
+                            @NotNull Function<Craft, Effect> postDetection) {
         this.startLocation = startLocation;
         this.movecraftWorld = movecraftWorld;
         this.type = type;
@@ -131,14 +128,15 @@ public class DetectionTask implements Supplier<Effect> {
         this.world = world;
         this.player = player;
         this.audience = audience;
+        this.postDetection = postDetection;
     }
 
     @Deprecated
-    @Nullable
+    @NotNull
     private Effect water(@NotNull Craft craft) {
         final int waterLine = WorldManager.INSTANCE.executeMain(craft::getWaterLine);
         if (craft.getType().getBoolProperty(CraftType.BLOCKED_BY_WATER) || craft.getHitBox().getMinY() > waterLine)
-            return null;
+            return () -> {};
 
         var badWorld = WorldManager.INSTANCE.executeMain(craft::getWorld);
         //The subtraction of the set of coordinates in the HitBox cube and the HitBox itself
@@ -235,6 +233,7 @@ public class DetectionTask implements Supplier<Effect> {
 
         var effect = water(craft); //TODO: Remove
         final CraftDetectEvent event = new CraftDetectEvent(craft, startLocation);
+        effect = effect.andThen(postDetection.apply(craft));
 
         WorldManager.INSTANCE.executeMain(() -> Bukkit.getPluginManager().callEvent(event));
         if (event.isCancelled())

@@ -197,7 +197,8 @@ public class CraftManager implements Iterable<Craft>{
                 startPoint, CachedMovecraftWorld.of(world),
                 type, supplier,
                 world, player,
-                audience
+                audience,
+                postDetection
         ));
     }
 
