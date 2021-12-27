@@ -7,98 +7,139 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.BaseCraft;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.craft.CruiseOnPilotSubCraft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.craft.CruiseOnPilotCraft;
 import net.countercraft.movecraft.craft.PlayerCraftImpl;
 import net.countercraft.movecraft.events.CraftPilotEvent;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.processing.effects.Effect;
+import net.countercraft.movecraft.processing.functions.CraftSupplier;
+import net.countercraft.movecraft.processing.functions.Result;
+import net.countercraft.movecraft.util.Pair;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.type.WallSign;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.Set;
+import java.util.function.Function;
 
 public final class CraftSign implements Listener{
-
-    @EventHandler
-    public void onSignChange(SignChangeEvent event){
-
-        if (CraftManager.getInstance().getCraftTypeFromString(event.getLine(0)) == null) {
+    @EventHandler(ignoreCancelled = true)
+    public void onSignChange(@NotNull SignChangeEvent event){
+        if (CraftManager.getInstance().getCraftTypeFromString(event.getLine(0)) == null)
             return;
-        }
-        if (!Settings.RequireCreatePerm) {
+
+        if (!Settings.RequireCreatePerm)
             return;
-        }
+
         if (!event.getPlayer().hasPermission("movecraft." + ChatColor.stripColor(event.getLine(0)) + ".create")) {
             event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
             event.setCancelled(true);
         }
     }
 
-    @EventHandler
-    public final void onSignClick(PlayerInteractEvent event) {
-        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
+    @EventHandler(ignoreCancelled = true)
+    public void onSignClick(@NotNull PlayerInteractEvent event) {
+        if(event.getAction() != Action.RIGHT_CLICK_BLOCK || event.getClickedBlock() == null)
             return;
-        }
+
         BlockState state = event.getClickedBlock().getState();
-        if (!(state instanceof Sign)) {
+        if (!(state instanceof Sign))
             return;
-        }
+
         Sign sign = (Sign) state;
-        CraftType type = CraftManager.getInstance().getCraftTypeFromString(ChatColor.stripColor(sign.getLine(0)));
-        if (type == null) {
+        CraftType craftType = CraftManager.getInstance().getCraftTypeFromString(ChatColor.stripColor(sign.getLine(0)));
+        if (craftType == null)
             return;
-        }
+
         // Valid sign prompt for ship command.
-        if (!event.getPlayer().hasPermission("movecraft." + ChatColor.stripColor(sign.getLine(0)) + ".pilot")) {
-            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
+        final Player player = event.getPlayer();
+        if (!player.hasPermission("movecraft." + ChatColor.stripColor(sign.getLine(0)) + ".pilot")) {
+            player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
             return;
         }
+
         // Attempt to run detection
         Location loc = event.getClickedBlock().getLocation();
+        final World world = event.getClickedBlock().getWorld();
         MovecraftLocation startPoint = new MovecraftLocation(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
-        final BaseCraft c;
-        if (type.getBoolProperty(CraftType.CRUISE_ON_PILOT)) {
-            c = new CruiseOnPilotCraft(type, loc.getWorld(), event.getPlayer());
-            c.detect(event.getPlayer(), event.getPlayer(), startPoint);
-            if(sign.getBlockData() instanceof WallSign)
-                c.setCruiseDirection(CruiseDirection.fromBlockFace(((WallSign) sign.getBlockData()).getFacing()));
-            else
-                c.setCruiseDirection(CruiseDirection.NONE);
-            
-            c.setLastCruiseUpdate(System.currentTimeMillis());
-            c.setCruising(true);
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-                    c.setCruising(false);
-                    c.sink();
-                    CraftManager.getInstance().removePlayerFromCraft(c);
-                }
-            }.runTaskLater(Movecraft.getInstance(), (20 * 15));
-        } else {
-            c = new PlayerCraftImpl(type, loc.getWorld(), event.getPlayer());
-            if (CraftManager.getInstance().getCraftByPlayer(event.getPlayer()) == null) {
-                c.detect(event.getPlayer(), event.getPlayer(), startPoint);
-            }
-            else {
-                Craft oldCraft = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
-                if (oldCraft.isNotProcessing()) {
-                    CraftManager.getInstance().removeCraft(oldCraft, CraftReleaseEvent.Reason.PLAYER);
-                    c.detect(event.getPlayer(), event.getPlayer(), startPoint);
-                }
-            }
-        }
-        Bukkit.getServer().getPluginManager().callEvent(new CraftPilotEvent(c, CraftPilotEvent.Reason.PLAYER));
-        event.setCancelled(true);
 
+        CraftManager.getInstance().detect(
+                startPoint,
+                craftType, new CraftSupplier() {
+                    @Override
+                    public @NotNull Pair<@NotNull Result, @Nullable Craft> apply(@NotNull CraftType type, @NotNull World w, @NotNull Player p, @NotNull Set<Craft> parents) {
+                        if(type.getBoolProperty(CraftType.CRUISE_ON_PILOT)) {
+                            // handle subcrafts
+                            if(parents.size() > 1)
+                                return new Pair<>(Result.failWithMessage(I18nSupport.getInternationalisedString(
+                                        "Detection - Failed - Already commanding a craft")), null);
+                            if(parents.size() == 1) {
+                                Craft parent = parents.iterator().next();
+                                return new Pair<>(Result.succeed(),
+                                        new CruiseOnPilotSubCraft(type, world, p, parent));
+                            }
+
+                            return new Pair<>(Result.succeed(),
+                                    new CruiseOnPilotCraft(type, world, p));
+                        }
+                        else {
+                            if(parents.size() > 0)
+                                return new Pair<>(Result.failWithMessage(I18nSupport.getInternationalisedString(
+                                        "Detection - Failed - Already commanding a craft")), null);
+
+                            return new Pair<>(Result.succeed(),
+                                    new PlayerCraftImpl(type, w, p));
+                        }
+                    }
+                },
+                world, player,
+                Movecraft.getAdventure().player(player),
+                craft -> () -> {
+                    Bukkit.getServer().getPluginManager().callEvent(new CraftPilotEvent(craft, CraftPilotEvent.Reason.PLAYER));
+                    if(craft.getType().getBoolProperty(CraftType.CRUISE_ON_PILOT)) {
+                        // Setup cruise direction
+                        if(sign.getBlockData() instanceof WallSign)
+                            craft.setCruiseDirection(CruiseDirection.fromBlockFace(((WallSign) sign.getBlockData()).getFacing()));
+                        else
+                            craft.setCruiseDirection(CruiseDirection.NONE);
+
+                        // Start craft cruising
+                        craft.setLastCruiseUpdate(System.currentTimeMillis());
+                        craft.setCruising(true);
+
+                        // Stop craft cruising and sink it in 15 seconds
+                        new BukkitRunnable() {
+                            @Override
+                            public void run() {
+                                craft.setCruising(false);
+                                craft.sink();
+                            }
+                        }.runTaskLater(Movecraft.getInstance(), (20 * 15));
+                    }
+                    else {
+                        // Release old craft if it exists
+                        Craft oldCraft = CraftManager.getInstance().getCraftByPlayer(player);
+                        if(oldCraft != null)
+                            CraftManager.getInstance().removeCraft(oldCraft, CraftReleaseEvent.Reason.PLAYER);
+                    }
+                }
+        );
+        event.setCancelled(true);
     }
 }
