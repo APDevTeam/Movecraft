@@ -18,6 +18,7 @@ public class PlayerCraftImpl extends BaseCraft implements PlayerCraft {
     public PlayerCraftImpl(@NotNull CraftType type, @NotNull World world, @NotNull Player pilot) {
         super(type, world);
         this.pilot = pilot;
+        setNotificationPlayer(pilot);
         this.pilotLocked = false;
         this.pilotLockedX = 0.0;
         this.pilotLockedY = 0.0;
