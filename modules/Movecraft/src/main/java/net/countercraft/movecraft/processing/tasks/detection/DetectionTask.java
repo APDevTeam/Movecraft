@@ -6,7 +6,6 @@ import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.craft.PlayerCraftImpl;
 import net.countercraft.movecraft.craft.SubCraft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftDetectEvent;
@@ -40,7 +39,6 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -195,10 +193,37 @@ public class DetectionTask implements Supplier<Effect> {
 
     }
 
+    @NotNull
+    private Set<Craft> findParents(@NotNull HitBox hitBox) {
+        SolidHitBox solidHitBox = hitBox.boundingHitBox();
+        Set<Craft> nearby = new HashSet<>();
+        for(Craft c : CraftManager.getInstance()) {
+            // Add the craft to nearby if their bounding boxes intersect
+            SolidHitBox otherSolidBox = c.getHitBox().boundingHitBox();
+            if(solidHitBox.intersects(otherSolidBox))
+                nearby.add(c);
+        }
+
+        Set<Craft> parents = new HashSet<>();
+        for(var loc : hitBox) {
+            if(nearby.size() == 0)
+                break;
+
+            for(Craft c : nearby) {
+                if(c.getHitBox().contains(loc)) {
+                    parents.add(c);
+                }
+            }
+            // Clear out crafts from nearby as they get added to parents
+            nearby.removeAll(parents);
+        }
+        return parents;
+    }
+
     @Override
     public Effect get() {
         frontier();
-        if(!illegal.isEmpty())
+        if (!illegal.isEmpty())
             return null;
 
         var result = COMPLETION_VALIDATORS.stream().reduce(DetectionPredicate::and).orElse(
@@ -207,27 +232,28 @@ public class DetectionTask implements Supplier<Effect> {
         result = result.isSucess() ? VISITED_VALIDATORS.stream().reduce(DetectionPredicate::and).orElse(
                 (a, b, c, d) -> Result.fail()
         ).validate(visitedMaterials, type, movecraftWorld, player) : result;
-        if(!result.isSucess()) {
+        if (!result.isSucess()) {
             String message = result.getMessage();
             return () -> audience.sendMessage(Component.text(message));
         }
 
-        // TODO: Find parent crafts
+        var hitbox = new BitmapHitBox(legal);
+        var parents = findParents(hitbox);
 
-        var supplied = supplier.apply(type, world, player, null);
+        var supplied = supplier.apply(type, world, player, parents);
         result = supplied.getLeft();
         Craft craft = supplied.getRight();
 
-        if(type.getBoolProperty(CraftType.MUST_BE_SUBCRAFT) && !(craft instanceof SubCraft)) {
+        if (type.getBoolProperty(CraftType.MUST_BE_SUBCRAFT) && !(craft instanceof SubCraft)) {
             result = Result.failWithMessage(I18nSupport.getInternationalisedString("Detection - Must Be Subcraft"));
         }
 
-        if(!result.isSucess()) {
+        if (!result.isSucess()) {
             String message = result.getMessage();
             return () -> audience.sendMessage(Component.text(message));
         }
 
-        craft.setHitBox(new BitmapHitBox(legal));
+        craft.setHitBox(hitbox);
         craft.setFluidLocations(new BitmapHitBox(fluid));
         craft.setOrigBlockCount(craft.getHitBox().size());
 
