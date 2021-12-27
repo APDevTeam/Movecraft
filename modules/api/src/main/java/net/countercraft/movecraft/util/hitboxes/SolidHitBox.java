@@ -168,19 +168,27 @@ final public class SolidHitBox implements HitBox{
     }
 
     @Nullable
-    public SolidHitBox subtract(SolidHitBox other){
-        if(this.minX > other.maxX || this.maxX < other.minX || this.minY > other.minY || this.maxY < other.minY || this.minZ > other.maxZ || this.maxZ < other.minZ)
+    public SolidHitBox subtract(@NotNull SolidHitBox other) {
+        if(minX > other.maxX || maxX < other.minX
+                || minY > other.maxY || maxY < other.minY
+                || minZ > other.maxZ || maxZ < other.minZ)
             return null;
 
         return new SolidHitBox(
                 new MovecraftLocation(
-                        Math.max(other.getMinX(), this.getMinX()),
-                        Math.max(other.getMinY(), this.getMinY()),
-                        Math.max(other.getMinZ(),this.getMinZ())),
+                        Math.max(other.getMinX(), minX),
+                        Math.max(other.getMinY(), minY),
+                        Math.max(other.getMinZ(), minZ)),
                 new MovecraftLocation(
-                        Math.min(other.getMaxX(), this.getMaxX()),
-                        Math.min(other.getMaxY(), this.getMaxY()),
-                        Math.min(other.getMaxZ(), this.getMaxZ()))
+                        Math.min(other.getMaxX(), maxX),
+                        Math.min(other.getMaxY(), maxY),
+                        Math.min(other.getMaxZ(), maxZ))
                 );
+    }
+
+    public boolean intersects(@NotNull SolidHitBox other) {
+        return minX <= other.maxX && maxX >= other.minX
+                && minY <= other.maxY && maxY >= other.minY
+                && minZ <= other.maxZ && maxZ >= other.minZ;
     }
 }
