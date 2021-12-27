@@ -217,12 +217,18 @@ public class DetectionTask implements Supplier<Effect> {
         // TODO: Find parent crafts
 
         var supplied = supplier.apply(type, world, player, null);
-        if(!supplied.getLeft().isSucess()) {
-            String message = supplied.getLeft().getMessage();
+        result = supplied.getLeft();
+        Craft craft = supplied.getRight();
+
+        if(type.getBoolProperty(CraftType.MUST_BE_SUBCRAFT) && !(craft instanceof SubCraft)) {
+            result = Result.failWithMessage(I18nSupport.getInternationalisedString("Detection - Must Be Subcraft"));
+        }
+
+        if(!result.isSucess()) {
+            String message = result.getMessage();
             return () -> audience.sendMessage(Component.text(message));
         }
 
-        Craft craft = supplied.getRight();
         craft.setHitBox(new BitmapHitBox(legal));
         craft.setFluidLocations(new BitmapHitBox(fluid));
         craft.setOrigBlockCount(craft.getHitBox().size());
