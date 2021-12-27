@@ -81,31 +81,27 @@ public final class CraftSign implements Listener{
 
         CraftManager.getInstance().detect(
                 startPoint,
-                craftType, new CraftSupplier() {
-                    @Override
-                    public @NotNull Pair<@NotNull Result, @Nullable Craft> apply(@NotNull CraftType type, @NotNull World w, @NotNull Player p, @NotNull Set<Craft> parents) {
-                        if(type.getBoolProperty(CraftType.CRUISE_ON_PILOT)) {
-                            // handle subcrafts
-                            if(parents.size() > 1)
-                                return new Pair<>(Result.failWithMessage(I18nSupport.getInternationalisedString(
-                                        "Detection - Failed - Already commanding a craft")), null);
-                            if(parents.size() == 1) {
-                                Craft parent = parents.iterator().next();
-                                return new Pair<>(Result.succeed(),
-                                        new CruiseOnPilotSubCraft(type, world, p, parent));
-                            }
-
+                craftType, (type, w, p, parents) -> {
+                    if(type.getBoolProperty(CraftType.CRUISE_ON_PILOT)) {
+                        if(parents.size() > 1)
+                            return new Pair<>(Result.failWithMessage(I18nSupport.getInternationalisedString(
+                                    "Detection - Failed - Already commanding a craft")), null);
+                        if(parents.size() == 1) {
+                            Craft parent = parents.iterator().next();
                             return new Pair<>(Result.succeed(),
-                                    new CruiseOnPilotCraft(type, world, p));
+                                    new CruiseOnPilotSubCraft(type, world, p, parent));
                         }
-                        else {
-                            if(parents.size() > 0)
-                                return new Pair<>(Result.failWithMessage(I18nSupport.getInternationalisedString(
-                                        "Detection - Failed - Already commanding a craft")), null);
 
-                            return new Pair<>(Result.succeed(),
-                                    new PlayerCraftImpl(type, w, p));
-                        }
+                        return new Pair<>(Result.succeed(),
+                                new CruiseOnPilotCraft(type, world, p));
+                    }
+                    else {
+                        if(parents.size() > 0)
+                            return new Pair<>(Result.failWithMessage(I18nSupport.getInternationalisedString(
+                                    "Detection - Failed - Already commanding a craft")), null);
+
+                        return new Pair<>(Result.succeed(),
+                                new PlayerCraftImpl(type, w, p));
                     }
                 },
                 world, player,
