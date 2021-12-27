@@ -26,6 +26,7 @@ import net.countercraft.movecraft.exception.NonCancellableReleaseException;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.CachedMovecraftWorld;
 import net.countercraft.movecraft.processing.WorldManager;
+import net.countercraft.movecraft.processing.effects.Effect;
 import net.countercraft.movecraft.processing.functions.CraftSupplier;
 import net.countercraft.movecraft.processing.tasks.detection.DetectionTask;
 import net.kyori.adventure.audience.Audience;
@@ -53,6 +54,7 @@ import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.function.Function;
 import java.util.logging.Level;
 
 import static net.countercraft.movecraft.util.ChatUtils.ERROR_PREFIX;
@@ -189,7 +191,8 @@ public class CraftManager implements Iterable<Craft>{
     public void detect(@NotNull MovecraftLocation startPoint,
                         @NotNull CraftType type, @NotNull CraftSupplier supplier,
                         @NotNull World world, @NotNull Player player,
-                        @NotNull Audience audience) {
+                        @NotNull Audience audience,
+                        @NotNull Function<Craft, Effect> postDetection) {
         WorldManager.INSTANCE.submit(new DetectionTask(
                 startPoint, CachedMovecraftWorld.of(world),
                 type, supplier,
