@@ -26,6 +26,7 @@ import net.countercraft.movecraft.exception.NonCancellableReleaseException;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.CachedMovecraftWorld;
 import net.countercraft.movecraft.processing.WorldManager;
+import net.countercraft.movecraft.processing.functions.CraftSupplier;
 import net.countercraft.movecraft.processing.tasks.detection.DetectionTask;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
@@ -185,8 +186,16 @@ public class CraftManager implements Iterable<Craft>{
         }
     }
 
-    public void detect(@NotNull MovecraftLocation startPoint, @NotNull World w, @NotNull CraftType type, @NotNull Player player, @NotNull Audience audience) {
-        WorldManager.INSTANCE.submit(new DetectionTask(startPoint, CachedMovecraftWorld.of(w), type, player, audience));
+    public void detect(@NotNull MovecraftLocation startPoint,
+                        @NotNull CraftType type, @NotNull CraftSupplier supplier,
+                        @NotNull World world, @NotNull Player player,
+                        @NotNull Audience audience) {
+        WorldManager.INSTANCE.submit(new DetectionTask(
+                startPoint, CachedMovecraftWorld.of(world),
+                type, supplier,
+                world, player,
+                audience
+        ));
     }
 
     @NotNull
