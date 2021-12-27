@@ -253,6 +253,7 @@ public class DetectionTask implements Supplier<Effect> {
             return () -> audience.sendMessage(Component.text(message));
         }
 
+        craft.setAudience(audience);
         craft.setHitBox(hitbox);
         craft.setFluidLocations(new BitmapHitBox(fluid));
         craft.setOrigBlockCount(craft.getHitBox().size());
