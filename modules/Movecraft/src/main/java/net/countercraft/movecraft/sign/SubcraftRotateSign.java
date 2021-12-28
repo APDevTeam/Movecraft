@@ -142,5 +142,11 @@ public final class SubcraftRotateSign implements Listener {
                 }
         );
         event.setCancelled(true);
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                rotatingCrafts.remove(startPoint);
+            }
+        }.runTaskLater(Movecraft.getInstance(), 4);
     }
 }
