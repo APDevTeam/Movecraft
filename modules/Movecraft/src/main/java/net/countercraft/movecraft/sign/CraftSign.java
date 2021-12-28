@@ -4,18 +4,16 @@ import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
-import net.countercraft.movecraft.craft.BaseCraft;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.craft.CruiseOnPilotSubCraft;
-import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.craft.CruiseOnPilotCraft;
+import net.countercraft.movecraft.craft.CruiseOnPilotSubCraft;
 import net.countercraft.movecraft.craft.PlayerCraftImpl;
+import net.countercraft.movecraft.craft.SubCraft;
+import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftPilotEvent;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.processing.effects.Effect;
-import net.countercraft.movecraft.processing.functions.CraftSupplier;
 import net.countercraft.movecraft.processing.functions.Result;
 import net.countercraft.movecraft.util.Pair;
 import org.bukkit.Bukkit;
@@ -27,20 +25,22 @@ import org.bukkit.block.Sign;
 import org.bukkit.block.data.type.WallSign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+import java.util.HashSet;
 import java.util.Set;
-import java.util.function.Function;
 
-public final class CraftSign implements Listener{
-    @EventHandler(ignoreCancelled = true)
-    public void onSignChange(@NotNull SignChangeEvent event){
+public final class CraftSign implements Listener {
+    private final Set<MovecraftLocation> piloting = new HashSet<>();
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.NORMAL)
+    public void onSignChange(@NotNull SignChangeEvent event) {
         if (CraftManager.getInstance().getCraftTypeFromString(event.getLine(0)) == null)
             return;
 
@@ -53,7 +53,7 @@ public final class CraftSign implements Listener{
         }
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
     public void onSignClick(@NotNull PlayerInteractEvent event) {
         if(event.getAction() != Action.RIGHT_CLICK_BLOCK || event.getClickedBlock() == null)
             return;
@@ -68,16 +68,21 @@ public final class CraftSign implements Listener{
             return;
 
         // Valid sign prompt for ship command.
-        final Player player = event.getPlayer();
+        Player player = event.getPlayer();
         if (!player.hasPermission("movecraft." + ChatColor.stripColor(sign.getLine(0)) + ".pilot")) {
             player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
             return;
         }
 
-        // Attempt to run detection
         Location loc = event.getClickedBlock().getLocation();
-        final World world = event.getClickedBlock().getWorld();
         MovecraftLocation startPoint = new MovecraftLocation(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+        if (piloting.contains(startPoint)) {
+            event.setCancelled(true);
+            return;
+        }
+
+        // Attempt to run detection
+        World world = event.getClickedBlock().getWorld();
 
         CraftManager.getInstance().detect(
                 startPoint,
@@ -137,5 +142,11 @@ public final class CraftSign implements Listener{
                 }
         );
         event.setCancelled(true);
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                piloting.remove(startPoint);
+            }
+        }.runTaskLater(Movecraft.getInstance(), 4);
     }
 }
