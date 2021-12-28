@@ -67,7 +67,7 @@ public class PilotCommand implements TabExecutor {
         CraftManager.getInstance().detect(
                 startPoint,
                 craftType, (type, w, p, parents) -> {
-                    if(parents.size() > 0)
+                    if (parents.size() > 0)
                         return new Pair<>(Result.failWithMessage(I18nSupport.getInternationalisedString(
                                 "Detection - Failed - Already commanding a craft")), null);
 
@@ -89,16 +89,20 @@ public class PilotCommand implements TabExecutor {
 
     @Override
     public List<String> onTabComplete(CommandSender commandSender, Command command, String s, String[] strings) {
-        if(strings.length !=1 || !commandSender.hasPermission("movecraft.commands") || !commandSender.hasPermission("movecraft.commands.pilot"))
+        if (strings.length != 1 || !commandSender.hasPermission("movecraft.commands")
+                || !commandSender.hasPermission("movecraft.commands.pilot"))
             return Collections.emptyList();
+
         List<String> completions = new ArrayList<>();
-        for(CraftType type : CraftManager.getInstance().getCraftTypes())
-            if(commandSender.hasPermission("movecraft." + type.getStringProperty(CraftType.NAME) + ".pilot"))
+        for (CraftType type : CraftManager.getInstance().getCraftTypes())
+            if (commandSender.hasPermission("movecraft." + type.getStringProperty(CraftType.NAME) + ".pilot"))
                 completions.add(type.getStringProperty(CraftType.NAME));
+
         List<String> returnValues = new ArrayList<>();
-        for(String completion : completions)
-            if(completion.toLowerCase().startsWith(strings[strings.length-1].toLowerCase()))
+        for (String completion : completions)
+            if (completion.toLowerCase().startsWith(strings[strings.length-1].toLowerCase()))
                 returnValues.add(completion);
+
         return returnValues;
     }
 }

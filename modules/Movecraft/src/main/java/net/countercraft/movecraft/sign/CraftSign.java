@@ -55,7 +55,7 @@ public final class CraftSign implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
     public void onSignClick(@NotNull PlayerInteractEvent event) {
-        if(event.getAction() != Action.RIGHT_CLICK_BLOCK || event.getClickedBlock() == null)
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK || event.getClickedBlock() == null)
             return;
 
         BlockState state = event.getClickedBlock().getState();
@@ -87,11 +87,11 @@ public final class CraftSign implements Listener {
         CraftManager.getInstance().detect(
                 startPoint,
                 craftType, (type, w, p, parents) -> {
-                    if(type.getBoolProperty(CraftType.CRUISE_ON_PILOT)) {
-                        if(parents.size() > 1)
+                    if (type.getBoolProperty(CraftType.CRUISE_ON_PILOT)) {
+                        if (parents.size() > 1)
                             return new Pair<>(Result.failWithMessage(I18nSupport.getInternationalisedString(
                                     "Detection - Failed - Already commanding a craft")), null);
-                        if(parents.size() == 1) {
+                        if (parents.size() == 1) {
                             Craft parent = parents.iterator().next();
                             return new Pair<>(Result.succeed(),
                                     new CruiseOnPilotSubCraft(type, world, p, parent));
@@ -101,7 +101,7 @@ public final class CraftSign implements Listener {
                                 new CruiseOnPilotCraft(type, world, p));
                     }
                     else {
-                        if(parents.size() > 0)
+                        if (parents.size() > 0)
                             return new Pair<>(Result.failWithMessage(I18nSupport.getInternationalisedString(
                                     "Detection - Failed - Already commanding a craft")), null);
 
@@ -113,9 +113,9 @@ public final class CraftSign implements Listener {
                 Movecraft.getAdventure().player(player),
                 craft -> () -> {
                     Bukkit.getServer().getPluginManager().callEvent(new CraftPilotEvent(craft, CraftPilotEvent.Reason.PLAYER));
-                    if(craft.getType().getBoolProperty(CraftType.CRUISE_ON_PILOT)) {
+                    if (craft.getType().getBoolProperty(CraftType.CRUISE_ON_PILOT)) {
                         // Setup cruise direction
-                        if(sign.getBlockData() instanceof WallSign)
+                        if (sign.getBlockData() instanceof WallSign)
                             craft.setCruiseDirection(CruiseDirection.fromBlockFace(((WallSign) sign.getBlockData()).getFacing()));
                         else
                             craft.setCruiseDirection(CruiseDirection.NONE);
@@ -136,7 +136,7 @@ public final class CraftSign implements Listener {
                     else {
                         // Release old craft if it exists
                         Craft oldCraft = CraftManager.getInstance().getCraftByPlayer(player);
-                        if(oldCraft != null)
+                        if (oldCraft != null)
                             CraftManager.getInstance().removeCraft(oldCraft, CraftReleaseEvent.Reason.PLAYER);
                     }
                 }
