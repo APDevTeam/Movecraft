@@ -77,14 +77,14 @@ public abstract class BaseCraft implements Craft {
     public BaseCraft(@NotNull CraftType type, @NotNull World world) {
         this.type = type;
         this.w = world;
-        this.hitBox = new SetHitBox();
-        this.collapsedHitBox = new SetHitBox();
-        this.fluidLocations = new SetHitBox();
-        this.lastCruiseUpdate = System.currentTimeMillis() - 10000;
-        this.cruising = false;
-        this.sinking = false;
-        this.disabled = false;
-        this.origPilotTime = System.currentTimeMillis();
+        hitBox = new SetHitBox();
+        collapsedHitBox = new SetHitBox();
+        fluidLocations = new SetHitBox();
+        lastCruiseUpdate = System.currentTimeMillis() - 10000;
+        cruising = false;
+        sinking = false;
+        disabled = false;
+        origPilotTime = System.currentTimeMillis();
         materials = new Counter<>();
         audience = Audience.empty();
     }
@@ -129,12 +129,6 @@ public abstract class BaseCraft implements Craft {
         this.w = world;
     }
 
-    public void detect(@Nullable Player player, @NotNull Player notificationPlayer, MovecraftLocation startPoint) {
-        this.setNotificationPlayer(notificationPlayer);
-        this.setAudience(Movecraft.getAdventure().player(notificationPlayer));
-        WorldManager.INSTANCE.submit(new DetectionTask(this, startPoint, CachedMovecraftWorld.of(w), player));
-    }
-
     @Deprecated
     public void translate(int dx, int dy, int dz) {
         translate(w, dx, dy, dz);
@@ -152,21 +146,21 @@ public abstract class BaseCraft implements Craft {
         });
 
         // check to see if the craft is trying to move in a direction not permitted by the type
-        if (!world.equals(w) && !(this.getType().getBoolProperty(CraftType.CAN_SWITCH_WORLD) || disableTeleportToWorlds.contains(world.getName())) && !this.getSinking()) {
+        if (!world.equals(w) && !(getType().getBoolProperty(CraftType.CAN_SWITCH_WORLD) || disableTeleportToWorlds.contains(world.getName())) && !this.getSinking()) {
             world = w;
         }
-        if (!this.getType().getBoolProperty(CraftType.ALLOW_HORIZONTAL_MOVEMENT) && !this.getSinking()) {
+        if (!getType().getBoolProperty(CraftType.ALLOW_HORIZONTAL_MOVEMENT) && !getSinking()) {
             dx = 0;
             dz = 0;
         }
-        if (!this.getType().getBoolProperty(CraftType.ALLOW_VERTICAL_MOVEMENT) && !this.getSinking()) {
+        if (!getType().getBoolProperty(CraftType.ALLOW_VERTICAL_MOVEMENT) && !getSinking()) {
             dy = 0;
         }
         if (dx == 0 && dy == 0 && dz == 0 && world.equals(w)) {
             return;
         }
 
-        if (!this.getType().getBoolProperty(CraftType.ALLOW_VERTICAL_TAKEOFF_AND_LANDING) && dy != 0 && !this.getSinking()) {
+        if (!getType().getBoolProperty(CraftType.ALLOW_VERTICAL_TAKEOFF_AND_LANDING) && dy != 0 && !getSinking()) {
             if (dx == 0 && dz == 0) {
                 return;
             }
@@ -182,12 +176,12 @@ public abstract class BaseCraft implements Craft {
             return;
         }
         setLastRotateTime(System.nanoTime());
-        Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(this, originPoint, rotation, this.getWorld()), this);
+        Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(this, originPoint, rotation, getWorld()), this);
     }
 
     @Override
     public void rotate(MovecraftRotation rotation, MovecraftLocation originPoint, boolean isSubCraft) {
-        Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(this, originPoint, rotation, this.getWorld(), isSubCraft), this);
+        Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(this, originPoint, rotation, getWorld(), isSubCraft), this);
     }
 
     /**
@@ -199,7 +193,7 @@ public abstract class BaseCraft implements Craft {
     public Set<Craft> getContacts() {
         final Set<Craft> contacts = new HashSet<>();
         for (Craft contact : CraftManager.getInstance().getCraftsInWorld(w)) {
-            MovecraftLocation ccenter = this.getHitBox().getMidPoint();
+            MovecraftLocation ccenter = getHitBox().getMidPoint();
             MovecraftLocation tcenter = contact.getHitBox().getMidPoint();
             int distsquared = ccenter.distanceSquared(tcenter);
             double detectionMultiplier;
@@ -209,7 +203,7 @@ public abstract class BaseCraft implements Craft {
                 detectionMultiplier = (double) contact.getType().getPerWorldProperty(CraftType.PER_WORLD_UNDERWATER_DETECTION_MULTIPLIER, contact.getWorld());
             int detectionRange = (int) (contact.getOrigBlockCount() * detectionMultiplier);
             detectionRange = detectionRange * 10;
-            if (distsquared > detectionRange || contact.getNotificationPlayer() == this.getNotificationPlayer()) {
+            if (distsquared > detectionRange || contact.getNotificationPlayer() == getNotificationPlayer()) {
                 continue;
             }
             contacts.add(contact);
@@ -270,18 +264,14 @@ public abstract class BaseCraft implements Craft {
         return sinking;
     }
 
-    /*public void setSinking(boolean sinking) {
-        this.sinking = sinking;
-    }*/
-
     @Override
-    public void sink(){
+    public void sink() {
         CraftSinkEvent event = new CraftSinkEvent(this);
         Bukkit.getServer().getPluginManager().callEvent(event);
         if(event.isCancelled()){
             return;
         }
-        this.sinking = true;
+        sinking = true;
     }
 
     @Override
