@@ -140,6 +140,9 @@ public class CraftManager implements Iterable<Craft>{
     }
 
     public void addCraft(@NotNull PlayerCraft c) {
+        if(craftPlayerIndex.containsKey(c.getPilot()))
+            throw new IllegalStateException("Players may only have one PlayerCraft associated with them!");
+
         craftList.add(c);
         craftPlayerIndex.put(c.getPilot(), c);
     }
