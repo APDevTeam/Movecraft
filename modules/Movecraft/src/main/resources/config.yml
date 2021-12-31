@@ -1,34 +1,30 @@
 Locale: en
-CompatibilityMode: false
-SinkRateTicks: 20
-SinkCheckTicks: 100
-TracerRateTicks: 5
-TracerMinDistance: 60 # Minimum distance for tracers to appear
 PilotTool: STICK
-ManOverboardTimeout: 30
-ManOverboardDistance: 1000 # maximum distance from a craft that you can manoverboard to it
-FireballLifespan: 6
-ProtectPilotedCrafts: true
 DisableSpillProtection: false
 DisableIceForm: true
+SinkCheckTicks: 100
+ManOverboardTimeout: 30
+ManOverboardDistance: 1000 # maximum distance from a craft that you can manoverboard to it
+SilhouetteViewDistance: 200
+SilhouetteBlockCount: 20
+ProtectPilotedCrafts: true
+MaxRemoteSigns: -1 # Maximum number of remote signs that can be triggered at once.  Setting to -1 allows unlimited.
+CraftsUseNetherPortals: false
 RequireCreatePerm: false # require users to have the movecract.<CraftTypeName>.create permission in order to place command signs
-TNTContactExplosives: true
-DisableCrates: true
-FadeWrecksAfter: 600 #Time in seconds after which a craft wreck will start to fade after being sunk
-FadeTickCooldown: 20 #Number of ticks between each fading cycle
-FadePercentageOfWreckPerCycle: 10.0 #Percentage of wreck to be faded in each fading cycle
-ExtraFadeTimePerBlock: #List of blocks that will take longer time to fade
+RequireNamePerm: true # Require movecraft.name.place to place Name: signs and movecraft.name.use to use Name: signs
+FadeWrecksAfter: 600 #T ime in seconds after which a craft wreck will start to fade after being sunk
+FadeTickCooldown: 20 # Number of ticks between each fading cycle
+FadePercentageOfWreckPerCycle: 10.0 # Percentage of wreck to be faded in each fading cycle
+ExtraFadeTimePerBlock: # List of blocks that will take longer time to fade
   CHEST: 600
   TRAPPED_CHEST: 600
   DISPENSER: 600
   DROPPER: 600
   FURNACE: 600
-BlockQueueChunkSize: 200000
-MaxRemoteSigns: -1 # Maximum number of remote signs that can be triggered at once.  Setting to -1 allows unlimited.
-CraftsUseNetherPortals: false
+CollisionPrimer: 1000
 ForbiddenRemoteSigns: # These strings will be ignored when searching for signs to trigger from a remote sign
   - "Mounted"
   - "Denied"
   - "[private]"
-RequireNamePerm: true # Require movecraft.name.place to place Name: signs and movecraft.name.use to use Name: signs
+CompatibilityMode: false
 GeneratedDatapack: false # Set to false to re-generate datapack on startup
