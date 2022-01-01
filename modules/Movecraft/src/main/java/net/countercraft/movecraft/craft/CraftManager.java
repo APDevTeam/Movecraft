@@ -314,6 +314,7 @@ public class CraftManager implements Iterable<Craft>{
         return Collections.unmodifiableSet(craftList);
     }
 
+    @Nullable
     public CraftType getCraftTypeFromString(String s) {
         for (CraftType t : craftTypes) {
             if (s.equalsIgnoreCase(t.getStringProperty(CraftType.NAME))) {
