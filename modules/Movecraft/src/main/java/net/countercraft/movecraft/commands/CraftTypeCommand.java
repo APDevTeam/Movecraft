@@ -34,7 +34,7 @@ public class CraftTypeCommand implements TabExecutor {
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         CraftType type;
         int page;
-        if(args.length == 0 || (args.length == 1 && MathUtils.parseInt(args[0]).isPresent())){
+        if(args.length == 0 || (args.length == 1 && MathUtils.parseInt(args[0]).isPresent())) {
             Optional<CraftType> typeQuery = tryGetCraftFromPlayer(commandSender);
             if(typeQuery.isEmpty()){
                 commandSender.sendMessage("You must supply a craft type!");
@@ -42,24 +42,30 @@ public class CraftTypeCommand implements TabExecutor {
             }
             type = typeQuery.get();
             page = args.length == 0 ? 1 : MathUtils.parseInt(args[0]).getAsInt();
-        } else {
-            if(args.length > 1){
+        }
+        else {
+            if(args.length > 1) {
                 OptionalInt pageQuery = MathUtils.parseInt(args[1]);
                 if(pageQuery.isEmpty()){
                     commandSender.sendMessage("Argument " + args[1] + " must be a page number");
                     return true;
                 }
                 page = pageQuery.getAsInt();
-            } else {
+            }
+            else {
                 page = 1;
             }
-            if(args[0].equalsIgnoreCase("list")){
+            if(args[0].equalsIgnoreCase("list")) {
                 sendTypeListPage(page, commandSender);
                 return true;
             }
             type = CraftManager.getInstance().getCraftTypeFromString(args[0]);
         }
-        if(!commandSender.hasPermission("movecraft." + type.getStringProperty(CraftType.NAME) + ".pilot")){
+        if(type == null) {
+            commandSender.sendMessage("You must supply a craft type!");
+            return true;
+        }
+        if(!commandSender.hasPermission("movecraft." + type.getStringProperty(CraftType.NAME) + ".pilot")) {
             commandSender.sendMessage("You don't have permission for that craft type!");
             return true;
         }
