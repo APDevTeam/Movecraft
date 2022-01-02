@@ -26,7 +26,6 @@ import net.countercraft.movecraft.util.MathUtils;
 import net.countercraft.movecraft.util.Tags;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.Tag;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Hopper;
@@ -45,16 +44,11 @@ import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.material.Attachable;
-
-import java.util.EnumSet;
+import org.jetbrains.annotations.NotNull;
 
 public class BlockListener implements Listener {
-
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void onBlockBreak(final BlockBreakEvent e) {
-        if (e.isCancelled()) {
-            return;
-        }
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onBlockBreak(@NotNull BlockBreakEvent e) {
         if (e.getBlock().getState() instanceof Sign) {
             Sign s = (Sign) e.getBlock().getState();
             if (s.getLine(0).equalsIgnoreCase(ChatColor.RED + I18nSupport.getInternationalisedString("Region Damaged"))) {
@@ -64,11 +58,12 @@ public class BlockListener implements Listener {
         }
         if (Settings.ProtectPilotedCrafts) {
             MovecraftLocation mloc = MathUtils.bukkit2MovecraftLoc(e.getBlock().getLocation());
-            CraftManager.getInstance().getCraftsInWorld(e.getBlock().getWorld());
+            if (e.getBlock().getType() == Material.FIRE)
+                return; // allow players to punch out fire
             for (Craft craft : CraftManager.getInstance().getCraftsInWorld(e.getBlock().getWorld())) {
-                if (craft == null || craft.getDisabled()) {
+                if (craft == null || craft.getDisabled())
                     continue;
-                }
+
                 for (MovecraftLocation tloc : craft.getHitBox()) {
                     if (tloc.equals(mloc)) {
                         e.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Player - Block part of piloted craft"));
