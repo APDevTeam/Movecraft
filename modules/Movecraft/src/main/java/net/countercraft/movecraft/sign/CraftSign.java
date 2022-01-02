@@ -16,6 +16,7 @@ import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.functions.Result;
 import net.countercraft.movecraft.util.Pair;
+import net.countercraft.movecraft.util.hitboxes.MutableHitBox;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -113,6 +114,14 @@ public final class CraftSign implements Listener {
                 Movecraft.getAdventure().player(player),
                 craft -> () -> {
                     Bukkit.getServer().getPluginManager().callEvent(new CraftPilotEvent(craft, CraftPilotEvent.Reason.PLAYER));
+                    if (craft instanceof SubCraft) { // Subtract craft from the parent
+                        Craft parent = ((SubCraft) craft).getParent();
+                        MutableHitBox parentBox = (MutableHitBox) parent.getHitBox();
+                        for (var location : craft.getHitBox()) {
+                            parentBox.remove(location);
+                        }
+                        parent.setOrigBlockCount(parent.getOrigBlockCount() - craft.getHitBox().size());
+                    }
                     if (craft.getType().getBoolProperty(CraftType.CRUISE_ON_PILOT)) {
                         // Setup cruise direction
                         if (sign.getBlockData() instanceof WallSign)
