@@ -116,12 +116,11 @@ public final class CraftSign implements Listener {
                     Bukkit.getServer().getPluginManager().callEvent(new CraftPilotEvent(craft, CraftPilotEvent.Reason.PLAYER));
                     if (craft instanceof SubCraft) { // Subtract craft from the parent
                         Craft parent = ((SubCraft) craft).getParent();
-                        MutableHitBox parentBox = (MutableHitBox) parent.getHitBox();
-                        for (var location : craft.getHitBox()) {
-                            parentBox.remove(location);
-                        }
+                        var newHitbox = parent.getHitBox().difference(craft.getHitBox());;
+                        parent.setHitBox(newHitbox);
                         parent.setOrigBlockCount(parent.getOrigBlockCount() - craft.getHitBox().size());
                     }
+
                     if (craft.getType().getBoolProperty(CraftType.CRUISE_ON_PILOT)) {
                         // Setup cruise direction
                         if (sign.getBlockData() instanceof WallSign)

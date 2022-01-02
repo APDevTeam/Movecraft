@@ -14,6 +14,7 @@ import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.functions.Result;
 import net.countercraft.movecraft.util.Pair;
+import net.countercraft.movecraft.util.hitboxes.MutableHitBox;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -113,15 +114,20 @@ public final class SubcraftRotateSign implements Listener {
                 Movecraft.getAdventure().player(player),
                 craft -> () -> {
                     Bukkit.getServer().getPluginManager().callEvent(new CraftPilotEvent(craft, CraftPilotEvent.Reason.SUB_CRAFT));
+                    if (craft instanceof SubCraft) { // Subtract craft from the parent
+                        Craft parent = ((SubCraft) craft).getParent();
+                        var newHitbox = parent.getHitBox().difference(craft.getHitBox());;
+                        parent.setHitBox(newHitbox);
+                    }
 
                     new BukkitRunnable() {
                         @Override
                         public void run() {
                             craft.rotate(rotation, startPoint, true);
                             if (craft instanceof SubCraft) {
-                                SubCraft subcraft = (SubCraft) craft;
-                                var newHitbox = subcraft.getParent().getHitBox().union(craft.getHitBox());
-                                subcraft.getParent().setHitBox(newHitbox);
+                                Craft parent = ((SubCraft) craft).getParent();
+                                var newHitbox = parent.getHitBox().union(craft.getHitBox());
+                                parent.setHitBox(newHitbox);
                             }
                             CraftManager.getInstance().removeCraft(craft, CraftReleaseEvent.Reason.SUB_CRAFT);
                         }
