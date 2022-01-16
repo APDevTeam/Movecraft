@@ -24,6 +24,7 @@ import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.util.MathUtils;
 import net.countercraft.movecraft.util.Tags;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -49,29 +50,24 @@ import org.jetbrains.annotations.NotNull;
 public class BlockListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onBlockBreak(@NotNull BlockBreakEvent e) {
-        if (e.getBlock().getState() instanceof Sign) {
-            Sign s = (Sign) e.getBlock().getState();
-            if (s.getLine(0).equalsIgnoreCase(ChatColor.RED + I18nSupport.getInternationalisedString("Region Damaged"))) {
+        if(!Settings.ProtectPilotedCrafts)
+            return;
+
+        if (e.getBlock().getType() == Material.FIRE)
+            return; // allow players to punch out fire
+
+        MovecraftLocation movecraftLocation = MathUtils.bukkit2MovecraftLoc(e.getBlock().getLocation());
+        Bukkit.getLogger().info("BlockBreakEvent: " + movecraftLocation);
+        for (Craft craft : CraftManager.getInstance().getCraftsInWorld(e.getBlock().getWorld())) {
+            if (craft == null || craft.getDisabled())
+                continue;
+
+            if(craft.getHitBox().contains(movecraftLocation)) {
+                e.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Player - Block part of piloted craft"));
                 e.setCancelled(true);
                 return;
             }
-        }
-        if (Settings.ProtectPilotedCrafts) {
-            MovecraftLocation mloc = MathUtils.bukkit2MovecraftLoc(e.getBlock().getLocation());
-            if (e.getBlock().getType() == Material.FIRE)
-                return; // allow players to punch out fire
-            for (Craft craft : CraftManager.getInstance().getCraftsInWorld(e.getBlock().getWorld())) {
-                if (craft == null || craft.getDisabled())
-                    continue;
-
-                for (MovecraftLocation tloc : craft.getHitBox()) {
-                    if (tloc.equals(mloc)) {
-                        e.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Player - Block part of piloted craft"));
-                        e.setCancelled(true);
-                        return;
-                    }
-                }
-            }
+            Bukkit.getLogger().info("BlockBreakEvent: Craft " + craft + " is not intersecting, ignoring");
         }
     }
 
