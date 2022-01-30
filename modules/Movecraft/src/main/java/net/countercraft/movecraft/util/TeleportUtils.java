@@ -81,7 +81,7 @@ public class TeleportUtils {
             eField = getField(connectionClass, "e");
             sucess = true;
         } catch (ClassNotFoundException | NoSuchFieldException | NoSuchMethodException | SecurityException e) {
-            Bukkit.getLogger().warning("Failed to access intnernal teleportation handle, switching to fallback");
+            Bukkit.getLogger().warning("Failed to access internal teleportation handle, switching to fallback");
             Bukkit.getLogger().info("This is expected for 1.17 and 1.18."); // TODO: Figure this out
             //e.printStackTrace();
         }
