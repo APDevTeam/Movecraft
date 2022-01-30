@@ -67,6 +67,11 @@ public class BlockListener implements Listener {
                 e.setCancelled(true);
                 return;
             }
+            for (MovecraftLocation ml : craft.getHitBox()) {
+                if (ml.equals(movecraftLocation)) {
+                    Bukkit.getLogger().info("BAD! " + ml);
+                }
+            }
             Bukkit.getLogger().info("BlockBreakEvent: Craft " + craft + " is not intersecting, ignoring");
         }
     }
