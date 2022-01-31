@@ -25,12 +25,10 @@ import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.util.MathUtils;
 import net.countercraft.movecraft.util.Tags;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Hopper;
-import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -50,29 +48,22 @@ import org.jetbrains.annotations.NotNull;
 public class BlockListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onBlockBreak(@NotNull BlockBreakEvent e) {
-        if(!Settings.ProtectPilotedCrafts)
+        if (!Settings.ProtectPilotedCrafts)
             return;
 
         if (e.getBlock().getType() == Material.FIRE)
             return; // allow players to punch out fire
 
         MovecraftLocation movecraftLocation = MathUtils.bukkit2MovecraftLoc(e.getBlock().getLocation());
-        Bukkit.getLogger().info("BlockBreakEvent: " + movecraftLocation);
         for (Craft craft : CraftManager.getInstance().getCraftsInWorld(e.getBlock().getWorld())) {
             if (craft == null || craft.getDisabled())
                 continue;
 
-            if(craft.getHitBox().contains(movecraftLocation)) {
-                e.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Player - Block part of piloted craft"));
+            if (craft.getHitBox().contains(movecraftLocation)) {
+                // TODO: for some reason before when this check runs the location is no longer in the hitbox
                 e.setCancelled(true);
                 return;
             }
-            for (MovecraftLocation ml : craft.getHitBox()) {
-                if (ml.equals(movecraftLocation)) {
-                    Bukkit.getLogger().info("BAD! " + ml);
-                }
-            }
-            Bukkit.getLogger().info("BlockBreakEvent: Craft " + craft + " is not intersecting, ignoring");
         }
     }
 
