@@ -193,8 +193,9 @@ public class TranslationTask extends AsyncTask {
                 int centreMinY = oldHitBox.getMinYAt(midPoint.getX(), midPoint.getZ());
                 int groundY = centreMinY;
                 World w = craft.getWorld();
-                int minimumHeight = WorldUtils.getWorldMinHeightLimit(w);
-                while (groundY - 1 >= minimumHeight && w.getBlockAt(midPoint.getX(), groundY - 1, midPoint.getZ()).getType().isAir() || craft.getType().getMaterialSetProperty(CraftType.PASSTHROUGH_BLOCKS).contains(w.getBlockAt(midPoint.getX(), groundY - 1, midPoint.getZ()).getType())){
+                while (groundY - 1 >= WorldUtils.getWorldMinHeightLimit(w)
+                        && (w.getBlockAt(midPoint.getX(), groundY - 1, midPoint.getZ()).getType().isAir()
+                        || craft.getType().getMaterialSetProperty(CraftType.PASSTHROUGH_BLOCKS).contains(w.getBlockAt(midPoint.getX(), groundY - 1, midPoint.getZ()).getType()))) {
                     groundY--;
                 }
                 if (centreMinY - groundY > craft.getType().getIntProperty(CraftType.HOVER_LIMIT)){
