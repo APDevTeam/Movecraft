@@ -21,12 +21,13 @@ Steps to reproduce the behavior:
 A clear and concise description of what you expected to happen.
 
 **Screenshots**
-If applicable, add screenshots to help explain your problem.
+If applicable, add screenshots (or videos) to help explain your problem.
 
 **Versions (please complete the following information):**
- - Movecraft: [e.g. 7.0.0 prerelease 6]
- - Java [e.g. JDK 8.0.1]
- - Minecraft [e.g. 1.10.2]
+ - Movecraft: [e.g. 8.0.0 alpha 6]
+ - Addons: [e.g. Movecraft-Combat v1.0.0, Movecraft-Repair v1.0.0, etc]
+ - Java [e.g. Adoptium JDK 13]
+ - Minecraft [e.g. 1.16.5]
 
 **Additional context**
 Add any other context about the problem here.
