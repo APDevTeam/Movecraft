@@ -23,6 +23,7 @@ import net.countercraft.movecraft.mapUpdater.update.ExplosionUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.ItemDropUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import net.countercraft.movecraft.util.Tags;
+import net.countercraft.movecraft.util.WorldUtils;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
 import net.countercraft.movecraft.util.hitboxes.MutableHitBox;
 import net.countercraft.movecraft.util.hitboxes.SolidHitBox;
@@ -192,7 +193,9 @@ public class TranslationTask extends AsyncTask {
                 int centreMinY = oldHitBox.getMinYAt(midPoint.getX(), midPoint.getZ());
                 int groundY = centreMinY;
                 World w = craft.getWorld();
-                while (w.getBlockAt(midPoint.getX(), groundY - 1, midPoint.getZ()).getType().isAir() || craft.getType().getMaterialSetProperty(CraftType.PASSTHROUGH_BLOCKS).contains(w.getBlockAt(midPoint.getX(), groundY - 1, midPoint.getZ()).getType())){
+                while (groundY - 1 >= WorldUtils.getWorldMinHeightLimit(w)
+                        && (w.getBlockAt(midPoint.getX(), groundY - 1, midPoint.getZ()).getType().isAir()
+                        || craft.getType().getMaterialSetProperty(CraftType.PASSTHROUGH_BLOCKS).contains(w.getBlockAt(midPoint.getX(), groundY - 1, midPoint.getZ()).getType()))) {
                     groundY--;
                 }
                 if (centreMinY - groundY > craft.getType().getIntProperty(CraftType.HOVER_LIMIT)){
