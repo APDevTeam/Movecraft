@@ -10,15 +10,17 @@ import org.bukkit.ChatColor;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.jetbrains.annotations.NotNull;
 
 public final class HelmSign implements Listener {
 
     @EventHandler
-    public final void onSignChange(SignChangeEvent event){
+    public void onSignChange(SignChangeEvent event){
         if (!ChatColor.stripColor(event.getLine(0)).equalsIgnoreCase("[helm]")) {
             return;
         }
@@ -27,8 +29,8 @@ public final class HelmSign implements Listener {
         event.setLine(2, "/  ||  \\");
     }
 
-    @EventHandler
-    public final void onSignClick(PlayerInteractEvent event) {
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    public void onSignClick(@NotNull PlayerInteractEvent event) {
         MovecraftRotation rotation;
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
             rotation = MovecraftRotation.CLOCKWISE;
