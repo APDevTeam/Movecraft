@@ -39,55 +39,58 @@ import java.util.WeakHashMap;
 public final class InteractListener implements Listener {
     private final Map<Player, Long> timeMap = new WeakHashMap<>();
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerInteract(@NotNull PlayerInteractEvent e) {
         if (e.getAction() == Action.LEFT_CLICK_BLOCK || e.getAction() == Action.LEFT_CLICK_AIR) {
-            e.setCancelled(true);
-
             if (e.getItem() != null && e.getItem().getType() == Settings.PilotTool) {
                 // Handle pilot tool left clicks
+                e.setCancelled(true);
+
                 Player p = e.getPlayer();
                 PlayerCraft craft = CraftManager.getInstance().getCraftByPlayer(p);
-                if (craft != null) {
-                    if (craft.getPilotLocked()) {
-                        // Allow all players to leave direct control mode
-                        craft.setPilotLocked(false);
-                        p.sendMessage(I18nSupport.getInternationalisedString("Direct Control - Leaving"));
-                    }
-                    else if (!p.hasPermission("movecraft." + craft.getType().getStringProperty(CraftType.NAME) + ".move")
-                                || !craft.getType().getBoolProperty(CraftType.CAN_DIRECT_CONTROL)) {
-                        // Deny players from entering direct control mode
-                        p.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
-                    }
-                    else {
-                        // Enter direct control mode
-                        craft.setPilotLocked(true);
-                        craft.setPilotLockedX(p.getLocation().getBlockX() + 0.5);
-                        craft.setPilotLockedY(p.getLocation().getY());
-                        craft.setPilotLockedZ(p.getLocation().getBlockZ() + 0.5);
-                        p.sendMessage(I18nSupport.getInternationalisedString("Direct Control - Entering"));
-                    }
+                if (craft == null)
+                    return;
+
+                if (craft.getPilotLocked()) {
+                    // Allow all players to leave direct control mode
+                    craft.setPilotLocked(false);
+                    p.sendMessage(I18nSupport.getInternationalisedString("Direct Control - Leaving"));
+                }
+                else if (!p.hasPermission(
+                        "movecraft." + craft.getType().getStringProperty(CraftType.NAME) + ".move")
+                        || !craft.getType().getBoolProperty(CraftType.CAN_DIRECT_CONTROL)) {
+                    // Deny players from entering direct control mode
+                    p.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
+                }
+                else {
+                    // Enter direct control mode
+                    craft.setPilotLocked(true);
+                    craft.setPilotLockedX(p.getLocation().getBlockX() + 0.5);
+                    craft.setPilotLockedY(p.getLocation().getY());
+                    craft.setPilotLockedZ(p.getLocation().getBlockZ() + 0.5);
+                    p.sendMessage(I18nSupport.getInternationalisedString("Direct Control - Entering"));
                 }
             }
             else if (e.getAction() == Action.LEFT_CLICK_BLOCK) {
                 // Handle button left clicks
                 BlockState state = e.getClickedBlock().getState();
-                if (state instanceof Switch) {
+                if (!(state instanceof Switch))
+                    return;
+
+                Switch data = (Switch) state.getBlockData();
+                if (data.isPowered()) {
+                    // Depower the button
+                    data.setPowered(false);
+                    e.getClickedBlock().setBlockData(data);
                     e.setCancelled(true);
-                    Switch data = (Switch) state.getBlockData();
-                    if (data.isPowered()) {
-                        // Depower the button
-                        data.setPowered(false);
-                        e.getClickedBlock().setBlockData(data);
-                    }
                 }
             }
         }
         else if (e.getAction() == Action.RIGHT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_AIR) {
-            e.setCancelled(true);
-
-            if (e.getItem() == null && e.getItem().getType() != Settings.PilotTool)
+            if (e.getItem() == null || e.getItem().getType() != Settings.PilotTool)
                 return;
+
+            e.setCancelled(true);
 
             Player p = e.getPlayer();
             PlayerCraft craft = CraftManager.getInstance().getCraftByPlayer(p);
@@ -113,13 +116,12 @@ public final class InteractListener implements Listener {
                 return;
             }
 
-            Long lastTime = timeMap.get(p);
             int tickCooldown = (int) craft.getType().getPerWorldProperty(
                     CraftType.PER_WORLD_TICK_COOLDOWN, craft.getWorld());
             if (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_DIRECT_MOVEMENT)
                     && type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN))
                 tickCooldown *= currentGear; // Account for gear shifts
-
+            Long lastTime = timeMap.get(p);
             if (lastTime != null) {
                 long ticksElapsed = (System.currentTimeMillis() - lastTime) / 50;
 
@@ -128,7 +130,7 @@ public final class InteractListener implements Listener {
                         && craft.getHitBox().getMinY() < craft.getWorld().getSeaLevel())
                     ticksElapsed /= 2;
 
-                if (Math.abs(ticksElapsed) < tickCooldown)
+                if (ticksElapsed < tickCooldown)
                     return; // Not enough time has passed, so don't do anything
             }
 
@@ -137,11 +139,11 @@ public final class InteractListener implements Listener {
                 return; // Player doesn't have permission to move this craft, so don't do anything
             }
 
-            if (!MathUtils.locationNearHitBox(craft.getHitBox(), p.getLocation(),2))
+            if (!MathUtils.locationNearHitBox(craft.getHitBox(), p.getLocation(), 2))
                 return; // Player is not near the craft, so don't do anything
 
             if (craft.getPilotLocked()) {
-                // Direct control mode allows vertical movements when right clicking
+                // Direct control mode allows vertical movements when right-clicking
                 int dy = 1; // Default to up
                 if (p.isSneaking())
                     dy = -1; // Down if sneaking
