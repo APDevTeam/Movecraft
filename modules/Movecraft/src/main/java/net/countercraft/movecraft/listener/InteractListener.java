@@ -39,7 +39,7 @@ import java.util.WeakHashMap;
 public final class InteractListener implements Listener {
     private final Map<Player, Long> timeMap = new WeakHashMap<>();
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.LOWEST) // LOWEST so that it runs before the other events
     public void onPlayerInteract(@NotNull PlayerInteractEvent e) {
         if (e.getAction() == Action.LEFT_CLICK_BLOCK || e.getAction() == Action.LEFT_CLICK_AIR) {
             if (e.getItem() != null && e.getItem().getType() == Settings.PilotTool) {
