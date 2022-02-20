@@ -90,6 +90,7 @@ public final class InteractListener implements Listener {
             if (e.getItem() == null || e.getItem().getType() != Settings.PilotTool)
                 return;
 
+            // Handle pilot tool right clicks
             e.setCancelled(true);
 
             Player p = e.getPlayer();
@@ -104,7 +105,6 @@ public final class InteractListener implements Listener {
                 int gearShifts = type.getIntProperty(CraftType.GEAR_SHIFTS);
                 if (gearShifts == 1) {
                     p.sendMessage(I18nSupport.getInternationalisedString("Gearshift - Disabled for craft type"));
-                    e.setCancelled(true);
                     return;
                 }
                 currentGear++;
@@ -156,16 +156,15 @@ public final class InteractListener implements Listener {
                 return;
             }
 
-            // TODO: Redo this math to be more readable
-            double rotation = Math.PI * p.getLocation().getYaw() / 180f;
+            double rotation = p.getLocation().getYaw() * Math.PI / 180.0;
             float nx = -(float) Math.sin(rotation);
             float nz = (float) Math.cos(rotation);
             int dx = (Math.abs(nx) >= 0.5 ? 1 : 0) * (int) Math.signum(nx);
             int dz = (Math.abs(nz) > 0.5 ? 1 : 0) * (int) Math.signum(nz);
-            int dy;
-            float px = p.getLocation().getPitch();
-            dy = -(Math.abs(px) >= 25 ? 1 : 0) * (int) Math.signum(px);
-            if (Math.abs(p.getLocation().getPitch()) >= 75) {
+
+            float pitch = p.getLocation().getPitch();
+            int dy = -(Math.abs(pitch) >= 25 ? 1 : 0) * (int) Math.signum(pitch);
+            if (Math.abs(pitch) >= 75) {
                 dx = 0;
                 dz = 0;
             }
