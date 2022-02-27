@@ -17,7 +17,6 @@ Movecraft uses multiple versions of the Spigot server software for legacy suppor
 
 ```
 java -jar BuildTools.jar --rev 1.14.4 --compile craftbukkit
-java -jar BuildTools.jar --rev 1.15.2 --compile craftbukkit
 java -jar BuildTools.jar --rev 1.16.5 --compile craftbukkit
 java -jar BuildTools.jar --rev 1.17.1 --remapped
 java -jar BuildTools.jar --rev 1.18.1 --remapped
