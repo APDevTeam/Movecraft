@@ -40,7 +40,7 @@ import java.util.Set;
 public final class CraftSign implements Listener {
     private final Set<MovecraftLocation> piloting = new HashSet<>();
 
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.NORMAL)
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onSignChange(@NotNull SignChangeEvent event) {
         if (CraftManager.getInstance().getCraftTypeFromString(event.getLine(0)) == null)
             return;
@@ -54,7 +54,7 @@ public final class CraftSign implements Listener {
         }
     }
 
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
+    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onSignClick(@NotNull PlayerInteractEvent event) {
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK || event.getClickedBlock() == null)
             return;

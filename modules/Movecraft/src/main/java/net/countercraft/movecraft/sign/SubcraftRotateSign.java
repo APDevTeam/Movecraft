@@ -37,7 +37,7 @@ public final class SubcraftRotateSign implements Listener {
     private static final String HEADER = "Subcraft Rotate";
     private final Set<MovecraftLocation> rotating = new HashSet<>();
 
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
+    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onSignClick(@NotNull PlayerInteractEvent event) {
         MovecraftRotation rotation;
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK)
