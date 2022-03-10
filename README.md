@@ -19,7 +19,7 @@ Movecraft uses multiple versions of the Spigot server software for legacy suppor
 java -jar BuildTools.jar --rev 1.14.4 --compile craftbukkit
 java -jar BuildTools.jar --rev 1.16.5 --compile craftbukkit
 java -jar BuildTools.jar --rev 1.17.1 --remapped
-java -jar BuildTools.jar --rev 1.18.1 --remapped
+java -jar BuildTools.jar --rev 1.18.2 --remapped
 ```
 
 Once you have compiled craftbukkit, it should continue to exist in your local maven repository, and thus you should need to compile each verson at most one time. Once complete, run the following to build Movecraft through `maven`.
