@@ -9,6 +9,7 @@ import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.SubCraft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftDetectEvent;
+import net.countercraft.movecraft.events.CraftPilotEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.processing.WorldManager;
@@ -39,6 +40,7 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -115,7 +117,7 @@ public class DetectionTask implements Supplier<Effect> {
 
     public DetectionTask(@NotNull MovecraftLocation startLocation, @NotNull MovecraftWorld movecraftWorld,
                             @NotNull CraftType type, @NotNull CraftSupplier supplier,
-                            @NotNull World world, @NotNull Player player,
+                            @NotNull World world, @Nullable Player player,
                             @NotNull Audience audience,
                             @NotNull Function<Craft, Effect> postDetection) {
         this.startLocation = startLocation;
@@ -266,17 +268,28 @@ public class DetectionTask implements Supplier<Effect> {
 
         return ((Effect) () -> {
             // Notify player and console
-            craft.getAudience().sendMessage(Component.text(String.format("%s Size: %s", I18nSupport.getInternationalisedString("Detection - Successfully piloted craft"), craft.getHitBox().size())));
+            craft.getAudience().sendMessage(Component.text(String.format(
+                    "%s Size: %s",
+                    I18nSupport.getInternationalisedString("Detection - Successfully piloted craft"),
+                    craft.getHitBox().size()
+            )));
             Movecraft.getInstance().getLogger().info(String.format(
                     I18nSupport.getInternationalisedString("Detection - Success - Log Output"),
-                    player.getName(), craft.getType().getStringProperty(CraftType.NAME), craft.getHitBox().size(),
-                    craft.getHitBox().getMinX(), craft.getHitBox().getMinZ()
+                    player == null ? "null" : player.getName(),
+                    craft.getType().getStringProperty(CraftType.NAME),
+                    craft.getHitBox().size(),
+                    craft.getHitBox().getMinX(),
+                    craft.getHitBox().getMinZ()
             ));
         }).andThen(
                 // Apply water effect
                 water(craft) //TODO: Remove
         ).andThen(
-                // Apply post detection effect (includes CraftPilotEvent)
+                // Fire off pilot event
+                () -> Bukkit.getServer().getPluginManager().callEvent(
+                        new CraftPilotEvent(craft, CraftPilotEvent.Reason.PLAYER))
+        ).andThen(
+                // Apply post detection effect
                 postDetection.apply(craft)
         ).andThen(
                 // Add craft to CraftManager

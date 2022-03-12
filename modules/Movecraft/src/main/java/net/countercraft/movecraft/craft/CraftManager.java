@@ -192,9 +192,25 @@ public class CraftManager implements Iterable<Craft>{
         }
     }
 
+    /**
+     * Detect a craft and add it to the craft manager
+     *
+     * @param startPoint the starting point of the detection process
+     * @param type the type of craft to detect
+     * @param supplier the supplier run post-detection to create the craft.
+     *   Note: This is where you can construct a custom Craft object if you want to, or tailor the detection process.
+     * @param world the world to detect in
+     * @param player the player who is causing the detection
+     *   Note: This is only used for logging and forwarded to the supplier.
+     *   - It is highly encouraged to pass in a non-null value if a player is causing the detection.
+     *   - If player is null, this will bypass protections like pilot signs and the like.
+     * @param audience the audience to send detection messages to
+     * @param postDetection the function run post-supplying to perform post-detection actions.
+     *   Note: This is where you can perform any post-detection actions, such as starting a torpedo cruising.
+     */
     public void detect(@NotNull MovecraftLocation startPoint,
                         @NotNull CraftType type, @NotNull CraftSupplier supplier,
-                        @NotNull World world, @NotNull Player player,
+                        @NotNull World world, @Nullable Player player,
                         @NotNull Audience audience,
                         @NotNull Function<Craft, Effect> postDetection) {
         WorldManager.INSTANCE.submit(new DetectionTask(

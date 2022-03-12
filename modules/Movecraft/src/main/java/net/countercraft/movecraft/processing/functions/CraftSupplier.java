@@ -22,10 +22,10 @@ public interface CraftSupplier extends QuadFunction<CraftType, World, Player, Se
      *
      * @param type The type of the craft
      * @param w The world of the craft
-     * @param player The player of the craft
+     * @param player The player supplied to the detection task (may or may not become the pilot, may also be null)
      * @param parents The parent crafts of the craft
-     * @return the result of construction and a possibly craft
+     * @return the result of construction and possibly a craft
      */
     @NotNull
-    Pair<@NotNull Result, @Nullable Craft> apply(@NotNull CraftType type, @NotNull World w, @NotNull Player player, @NotNull Set<Craft> parents);
+    Pair<@NotNull Result, @Nullable Craft> apply(@NotNull CraftType type, @NotNull World w, @Nullable Player player, @NotNull Set<Craft> parents);
 }

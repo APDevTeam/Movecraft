@@ -67,6 +67,7 @@ public class PilotCommand implements TabExecutor {
         CraftManager.getInstance().detect(
                 startPoint,
                 craftType, (type, w, p, parents) -> {
+                    assert p != null; // Note: This only passes in a non-null player.
                     if (parents.size() > 0)
                         return new Pair<>(Result.failWithMessage(I18nSupport.getInternationalisedString(
                                 "Detection - Failed - Already commanding a craft")), null);
@@ -77,7 +78,6 @@ public class PilotCommand implements TabExecutor {
                 world, player,
                 Movecraft.getAdventure().player(player),
                 craft -> () -> {
-                    Bukkit.getServer().getPluginManager().callEvent(new CraftPilotEvent(craft, CraftPilotEvent.Reason.PLAYER));
                     // Release old craft if it exists
                     Craft oldCraft = CraftManager.getInstance().getCraftByPlayer(player);
                     if(oldCraft != null)

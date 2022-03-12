@@ -88,6 +88,7 @@ public final class CraftSign implements Listener {
         CraftManager.getInstance().detect(
                 startPoint,
                 craftType, (type, w, p, parents) -> {
+                    assert p != null; // Note: This only passes in a non-null player.
                     if (type.getBoolProperty(CraftType.CRUISE_ON_PILOT)) {
                         if (parents.size() > 1)
                             return new Pair<>(Result.failWithMessage(I18nSupport.getInternationalisedString(
@@ -110,7 +111,8 @@ public final class CraftSign implements Listener {
                                 new PlayerCraftImpl(type, w, p));
                     }
                 },
-                world, player,
+                world,
+                player,
                 Movecraft.getAdventure().player(player),
                 craft -> () -> {
                     Bukkit.getServer().getPluginManager().callEvent(new CraftPilotEvent(craft, CraftPilotEvent.Reason.PLAYER));
