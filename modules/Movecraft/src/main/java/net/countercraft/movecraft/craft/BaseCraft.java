@@ -64,14 +64,12 @@ public abstract class BaseCraft implements Craft {
     protected World w;
     @NotNull TimingData stats = new TimingData();
     private boolean cruising;
-    private boolean sinking;
     private boolean disabled;
     private CruiseDirection cruiseDirection;
     private long lastCruiseUpdate;
     private long lastBlockCheck;
     private long lastRotateTime = 0;
     private long lastTeleportTime;
-    private int lastDX, lastDY, lastDZ;
     private int currentGear = 1;
     private double burningFuel;
     private int origBlockCount;
@@ -92,7 +90,6 @@ public abstract class BaseCraft implements Craft {
         fluidLocations = new SetHitBox();
         lastCruiseUpdate = System.currentTimeMillis() - 10000;
         cruising = false;
-        sinking = false;
         disabled = false;
         origPilotTime = System.currentTimeMillis();
         materials = new Counter<>();
@@ -156,24 +153,25 @@ public abstract class BaseCraft implements Craft {
         });
 
         // check to see if the craft is trying to move in a direction not permitted by the type
-        if (!world.equals(w) && !(getType().getBoolProperty(CraftType.CAN_SWITCH_WORLD) || disableTeleportToWorlds.contains(world.getName())) && !this.getSinking()) {
-            world = w;
-        }
-        if (!getType().getBoolProperty(CraftType.ALLOW_HORIZONTAL_MOVEMENT) && !getSinking()) {
-            dx = 0;
-            dz = 0;
-        }
-        if (!getType().getBoolProperty(CraftType.ALLOW_VERTICAL_MOVEMENT) && !getSinking()) {
-            dy = 0;
-        }
-        if (dx == 0 && dy == 0 && dz == 0 && world.equals(w)) {
-            return;
-        }
-
-        if (!getType().getBoolProperty(CraftType.ALLOW_VERTICAL_TAKEOFF_AND_LANDING) && dy != 0 && !getSinking()) {
-            if (dx == 0 && dz == 0) {
-                return;
+        if (!(this instanceof SinkingCraft)) { // sinking crafts can move in any direction
+            if (!world.equals(w)
+                    && !(getType().getBoolProperty(CraftType.CAN_SWITCH_WORLD)
+                            || disableTeleportToWorlds.contains(world.getName())))
+                world = w;
+            if (!getType().getBoolProperty(CraftType.ALLOW_HORIZONTAL_MOVEMENT)) {
+                dx = 0;
+                dz = 0;
             }
+            if (!getType().getBoolProperty(CraftType.ALLOW_VERTICAL_MOVEMENT))
+                dy = 0;
+        }
+        if (dx == 0 && dy == 0 && dz == 0 && world.equals(w))
+            return;
+
+        if (!getType().getBoolProperty(CraftType.ALLOW_VERTICAL_TAKEOFF_AND_LANDING) && dy != 0
+                && !(this instanceof SinkingCraft)) {
+            if (dx == 0 && dz == 0)
+                return;
         }
 
         Movecraft.getInstance().getAsyncManager().submitTask(new TranslationTask(this, world, dx, dy, dz), this);
@@ -268,21 +266,6 @@ public abstract class BaseCraft implements Craft {
     public void setCruising(boolean cruising) {
         audience.sendActionBar(Component.text().content("Cruising " + (cruising ? "enabled" : "disabled")));
         this.cruising = cruising;
-    }
-
-    @Override
-    public boolean getSinking() {
-        return sinking;
-    }
-
-    @Override
-    public void sink() {
-        CraftSinkEvent event = new CraftSinkEvent(this);
-        Bukkit.getServer().getPluginManager().callEvent(event);
-        if (event.isCancelled()) {
-            return;
-        }
-        sinking = true;
     }
 
     @Override
@@ -384,11 +367,9 @@ public abstract class BaseCraft implements Craft {
 
     @Override
     public int getTickCooldown() {
-        if (sinking)
+        if (this instanceof SinkingCraft)
             return type.getIntProperty(CraftType.SINK_RATE_TICKS);
 
-//        Counter<Material> counter = new Counter<>();
-//        Map<Material, Integer> counter = new HashMap<>();
         if (materials.isEmpty()) {
             for (MovecraftLocation location : hitBox) {
                 materials.add(location.toBukkit(w).getBlock().getType());
