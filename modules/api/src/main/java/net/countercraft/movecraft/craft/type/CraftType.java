@@ -470,7 +470,8 @@ final public class CraftType {
                     var w = Bukkit.getWorld(worldName);
                     if(w == null)
                         return type.getIntProperty(MAX_HEIGHT_ABOVE_GROUND);
-                    return Math.max(type.getIntProperty(MAX_HEIGHT_ABOVE_GROUND),
+
+                    return Math.min(type.getIntProperty(MAX_HEIGHT_ABOVE_GROUND),
                             w.getMaxHeight() - WorldUtils.getWorldMinHeightLimit(w));
                 }
         ));
