@@ -29,6 +29,7 @@ import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.CraftStatus;
 import net.countercraft.movecraft.craft.PilotedCraft;
 import net.countercraft.movecraft.craft.PlayerCraft;
+import net.countercraft.movecraft.craft.SinkingCraft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.craft.type.RequiredBlockEntry;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
@@ -149,7 +150,7 @@ public class AsyncManager extends BukkitRunnable {
 
         if (task.failed()) {
             // The craft translation failed
-            if (!c.getSinking())
+            if (!(c instanceof SinkingCraft))
                 c.getAudience().sendMessage(Component.text(task.getFailMessage()));
 
             if (task.isCollisionExplosion()) {
@@ -329,7 +330,7 @@ public class AsyncManager extends BukkitRunnable {
     private void detectSinking(){
         List<Craft> crafts = Lists.newArrayList(CraftManager.getInstance());
         for(Craft pcraft : crafts) {
-            if (pcraft.getSinking()) {
+            if (pcraft instanceof SinkingCraft) {
                 continue;
             }
             if (pcraft.getType().getDoubleProperty(CraftType.SINK_PERCENT) == 0.0 || !pcraft.isNotProcessing()) {
@@ -368,10 +369,10 @@ public class AsyncManager extends BukkitRunnable {
     private void processSinking() {
         //copy the crafts before iteration to prevent concurrent modifications
         List<Craft> crafts = Lists.newArrayList(CraftManager.getInstance());
-        for(Craft craft : crafts){
-            if (craft == null || !craft.getSinking()) {
+        for (Craft craft : crafts) {
+            if (craft instanceof SinkingCraft)
                 continue;
-            }
+
             if (craft.getHitBox().isEmpty() || craft.getHitBox().getMinY() < 5) {
                 CraftManager.getInstance().removeCraft(craft, CraftReleaseEvent.Reason.SUNK);
                 continue;

@@ -4,6 +4,7 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.PilotedCraft;
+import net.countercraft.movecraft.craft.SinkingCraft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
@@ -58,7 +59,7 @@ public class ContactsCommand implements CommandExecutor {
             int distsquared = center.distanceSquared(tCenter);
             String notification = I18nSupport.getInternationalisedString("Contact");
             notification += ": ";
-            notification += tcraft.getSinking() ? ChatColor.RED : tcraft.getDisabled() ? ChatColor.BLUE : "";
+            notification += tcraft instanceof SinkingCraft ? ChatColor.RED : tcraft.getDisabled() ? ChatColor.BLUE : "";
             notification += tcraft.getName().length() >= 1 ? tcraft.getName() + " (" : "";
             notification += tcraft.getType().getStringProperty(CraftType.NAME);
             notification += tcraft.getName().length() >= 1 ? ") " : " ";

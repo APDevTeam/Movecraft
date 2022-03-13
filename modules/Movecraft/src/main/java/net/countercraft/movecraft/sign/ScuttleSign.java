@@ -2,6 +2,7 @@ package net.countercraft.movecraft.sign;
 
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.craft.SinkingCraft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftScuttleEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
@@ -26,12 +27,11 @@ public class ScuttleSign implements Listener {
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onSignClick(@NotNull PlayerInteractEvent event) {
-        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK)
             return;
-        }
-        if(event.getClickedBlock() == null){
+        if(event.getClickedBlock() == null)
             return;
-        }
+
         BlockState state = event.getClickedBlock().getState();
         if (!(state instanceof Sign)) {
             return;
@@ -42,25 +42,28 @@ public class ScuttleSign implements Listener {
         }
         Craft craft = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
         if (craft == null) {
-            if(!event.getPlayer().hasPermission("movecraft.commands.scuttle.others")){
-                event.getPlayer().sendMessage(MOVECRAFT_COMMAND_PREFIX +  I18nSupport.getInternationalisedString("You must be piloting a craft"));
+            if (!event.getPlayer().hasPermission("movecraft.commands.scuttle.others")) {
+                event.getPlayer().sendMessage(MOVECRAFT_COMMAND_PREFIX
+                        + I18nSupport.getInternationalisedString("You must be piloting a craft"));
                 return;
             }
             craft = CraftManager.getInstance().fastNearestCraftToLoc(event.getClickedBlock().getLocation());
-            if(craft == null){
+            if (craft == null)
                 return;
-            }
         }
         scuttle(craft, event.getPlayer());
     }
 
     private void scuttle(Craft craft, CommandSender commandSender){
-        if(craft.getSinking()){
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Scuttle - Craft Already Sinking"));
+        if(craft instanceof SinkingCraft) {
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX
+                    + I18nSupport.getInternationalisedString("Scuttle - Craft Already Sinking"));
             return;
         }
-        if(!commandSender.hasPermission("movecraft."+craft.getType().getStringProperty(CraftType.NAME)+".scuttle")){
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Insufficient Permissions"));
+        if(!commandSender.hasPermission("movecraft." + craft.getType().getStringProperty(CraftType.NAME)
+                + ".scuttle")) {
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX
+                    + I18nSupport.getInternationalisedString("Insufficient Permissions"));
             return;
         }
 
@@ -72,6 +75,7 @@ public class ScuttleSign implements Listener {
         craft.setCruising(false);
         craft.sink();
         CraftManager.getInstance().removePlayerFromCraft(craft);
-        commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Scuttle - Scuttle Activated"));
+        commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX
+                + I18nSupport.getInternationalisedString("Scuttle - Scuttle Activated"));
     }
 }
