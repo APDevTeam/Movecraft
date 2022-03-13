@@ -168,11 +168,10 @@ public abstract class BaseCraft implements Craft {
         if (dx == 0 && dy == 0 && dz == 0 && world.equals(w))
             return;
 
-        if (!getType().getBoolProperty(CraftType.ALLOW_VERTICAL_TAKEOFF_AND_LANDING) && dy != 0
-                && !(this instanceof SinkingCraft)) {
-            if (dx == 0 && dz == 0)
-                return;
-        }
+        if (!getType().getBoolProperty(CraftType.ALLOW_VERTICAL_TAKEOFF_AND_LANDING)
+                && dy != 0 && dx == 0 && dz == 0
+                && !(this instanceof SinkingCraft))
+            return;
 
         Movecraft.getInstance().getAsyncManager().submitTask(new TranslationTask(this, world, dx, dy, dz), this);
     }
