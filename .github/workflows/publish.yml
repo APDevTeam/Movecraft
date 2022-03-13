@@ -39,39 +39,6 @@ jobs:
         if: steps.pillage.outputs.sucess != 'true'
         run: cd BuildTools && java -jar BuildTools.jar --rev 1.14.4 --compile craftbukkit
 
-  # Build 1.15.2 NMS
-  bees_1_15_2:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Set up JDK 14 # 1.15.2 can be built with Java 8 to Java 14
-        uses: actions/setup-java@v2
-        with:
-          distribution: 'adopt-hotspot'
-          java-version: '14'
-      - name: Cache 1.15.2 Maven package
-        id: cacheBees
-        uses: actions/cache@v2
-        with:
-          path: ~/.m2/repository/org/bukkit/craftbukkit/1.15.2-R0.1-SNAPSHOT/
-          key: ${{ runner.os }}-1.15.2
-          restore-keys: ${{ runner.os }}-1.15.2
-      - name: Cache Maven packages
-        id: cacheMain
-        uses: actions/cache@v2
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2_1.15.2
-          restore-keys: ${{ runner.os }}-m2_1.15.2
-
-      - name: Setup BuildTools
-        run: mkdir BuildTools && wget -O BuildTools/BuildTools.jar https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
-      - name: Check 1.15.2
-        id: bees
-        run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.15.2-R0.1-SNAPSHOT/craftbukkit-1.15.2-R0.1-SNAPSHOT.jar && echo "::set-output name=sucess::true" || echo "::set-output name=sucess::false"
-      - name: Build 1.15.2
-        if: steps.bees.outputs.sucess != 'true'
-        run: cd BuildTools && java -jar BuildTools.jar --rev 1.15.2 --compile craftbukkit
-
   # Build 1.16.5 NMS
   nether_1_16_5:
     runs-on: ubuntu-latest
@@ -99,10 +66,10 @@ jobs:
       - name: Setup BuildTools
         run: mkdir BuildTools && wget -O BuildTools/BuildTools.jar https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
       - name: Check 1.16.5
-        id: nether3
+        id: nether
         run: test -f ~/.m2/repository/org/bukkit/craftbukkit/1.16.5-R0.1-SNAPSHOT/craftbukkit-1.16.5-R0.1-SNAPSHOT.jar && echo "::set-output name=sucess::true" || echo "::set-output name=sucess::false"
       - name: Build 1.16.5
-        if: steps.nether3.outputs.sucess != 'true'
+        if: steps.nether.outputs.sucess != 'true'
         run: cd BuildTools && java -jar BuildTools.jar --rev 1.16.5 --compile craftbukkit
 
   # Build 1.17.1 NMS
@@ -192,7 +159,7 @@ jobs:
   # Build Movecraft
   publish:
     runs-on: ubuntu-latest
-    needs: [pillage_1_14_4, bees_1_15_2, nether_1_16_5, goats_1_17_1, caves_1_18_2]
+    needs: [pillage_1_14_4, nether_1_16_5, goats_1_17_1, caves_1_18_2]
     permissions:
       contents: read
       packages: write
@@ -219,13 +186,6 @@ jobs:
           path: ~/.m2/repository/org/bukkit/craftbukkit/1.14.4-R0.1-SNAPSHOT/
           key: ${{ runner.os }}-1.14.4
           restore-keys: ${{ runner.os }}-1.14.4
-      - name: Cache 1.15.2 Maven package
-        id: cacheBees
-        uses: actions/cache@v2
-        with:
-          path: ~/.m2/repository/org/bukkit/craftbukkit/1.15.2-R0.1-SNAPSHOT/
-          key: ${{ runner.os }}-1.15.2
-          restore-keys: ${{ runner.os }}-1.15.2
       - name: Cache 1.16.5 Maven package
         id: cacheNether3
         uses: actions/cache@v2
