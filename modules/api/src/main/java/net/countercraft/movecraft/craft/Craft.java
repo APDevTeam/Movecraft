@@ -129,13 +129,6 @@ public interface Craft {
      */
     void setCruising(boolean cruising);
 
-    @Deprecated
-    boolean getSinking();
-
-    @Deprecated
-    void sink();
-
-
     /**
      * Gets the crafts that have made contact with this craft
      * @return a set of crafts on contact with this craft
