@@ -209,7 +209,7 @@ public class MathUtils {
     }
 
     @Nullable
-    public Craft fastNearestCraftToLoc(@NotNull Set<Craft> crafts, @NotNull Location loc) {
+    public static Craft fastNearestCraftToLoc(@NotNull Set<Craft> crafts, @NotNull Location loc) {
         Craft result = null;
         long closestDistSquared = Long.MAX_VALUE;
 
