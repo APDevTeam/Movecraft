@@ -3,11 +3,11 @@ package net.countercraft.movecraft.craft;
 import org.jetbrains.annotations.NotNull;
 
 public class SinkingCraftImpl extends BaseCraft implements SinkingCraft {
-    public SinkingCraftImpl(@NotNull BaseCraft original) {
-        super(original.type, original.w);
-        hitBox = original.hitBox;
-        collapsedHitBox.addAll(original.collapsedHitBox);
-        fluidLocations = original.fluidLocations;
+    public SinkingCraftImpl(@NotNull Craft original) {
+        super(original.getType(), original.getWorld());
+        hitBox = original.getHitBox();
+        collapsedHitBox.addAll(original.getCollapsedHitBox());
+        fluidLocations = original.getFluidLocations();
         setAudience(original.getAudience());
     }
 }
