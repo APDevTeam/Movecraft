@@ -60,7 +60,7 @@ public class ReleaseCommand implements TabExecutor {
         }
 
         if (args[0].equalsIgnoreCase("-a")) {
-            final List<Craft> craftsToRelease = new ArrayList<>(CraftManager.getInstance().getCraftList());
+            final List<Craft> craftsToRelease = new ArrayList<>(CraftManager.getInstance().getCrafts());
             for (Craft craft : craftsToRelease) {
                 CraftManager.getInstance().removeCraft(craft, CraftReleaseEvent.Reason.FORCE);
             }
@@ -69,7 +69,7 @@ public class ReleaseCommand implements TabExecutor {
         }
 
         if (args[0].equalsIgnoreCase("-n")) {
-            final List<Craft> craftsToRelease = new ArrayList<>(CraftManager.getInstance().getCraftList());
+            final List<Craft> craftsToRelease = new ArrayList<>(CraftManager.getInstance().getCrafts());
             for (Craft craft : craftsToRelease) {
                 if(craft.getNotificationPlayer()==null) {
                     CraftManager.getInstance().removeCraft(craft, CraftReleaseEvent.Reason.FORCE);

@@ -68,7 +68,6 @@ import java.io.IOException;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Movecraft extends JavaPlugin {
@@ -324,7 +323,7 @@ public class Movecraft extends JavaPlugin {
             if (!Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "datapack enable \"file/movecraft-data.zip\""))
                 logger.severe(I18nSupport.getInternationalisedString("Startup - Datapack Enable Error"));
 
-            CraftManager.getInstance().initCraftTypes();
+            CraftManager.getInstance().reloadCraftTypes();
         }, 200); // Wait 10 seconds before reloading.  Needed to prevent Paper from running this during startup.
         return false;
     }
