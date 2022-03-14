@@ -21,6 +21,7 @@ import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
+import net.countercraft.movecraft.events.CraftSinkEvent;
 import net.countercraft.movecraft.events.TypesReloadedEvent;
 import net.countercraft.movecraft.exception.NonCancellableReleaseException;
 import net.countercraft.movecraft.localisation.I18nSupport;
@@ -176,7 +177,16 @@ public class CraftManager implements Iterable<Craft>{
     }
 
     public void sink(@NotNull Craft craft) {
-        // TODO
+        CraftSinkEvent event = new CraftSinkEvent(craft);
+        Bukkit.getServer().getPluginManager().callEvent(event);
+        if (event.isCancelled())
+            return;
+
+        crafts.remove(craft);
+        if (craft instanceof PlayerCraft)
+            playerCrafts.remove(((PlayerCraft) craft).getPilot());
+
+        crafts.add(new SinkingCraftImpl(craft));
     }
 
     public void release(@NotNull Craft craft) {
