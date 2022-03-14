@@ -3,6 +3,7 @@ package net.countercraft.movecraft.sign;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.craft.PilotedCraft;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.util.ChatUtils;
 import org.bukkit.Tag;
@@ -23,9 +24,10 @@ public final class NameSign implements Listener {
     public void onCraftDetect(@NotNull CraftDetectEvent event) {
         Craft c = event.getCraft();
 
-        if(c.getNotificationPlayer() == null || (Settings.RequireNamePerm && !c.getNotificationPlayer().hasPermission("movecraft.name.use"))) {
-            //Player is null or does not have permission (when required)
-            return;
+        if (c instanceof PilotedCraft) {
+            PilotedCraft pilotedCraft = (PilotedCraft) c;
+            if (Settings.RequireNamePerm && !pilotedCraft.getPilot().hasPermission("movecraft.name.place"))
+                return;
         }
 
         World w = c.getWorld();
@@ -41,15 +43,18 @@ public final class NameSign implements Listener {
             }
             Sign sign = (Sign) state;
             if (sign.getLine(0).equalsIgnoreCase(HEADER)) {
-                String name = Arrays.stream(sign.getLines()).skip(1).filter(f -> f != null && !f.trim().isEmpty()).collect(Collectors.joining(" "));
+                String name = Arrays.stream(sign.getLines()).skip(1).filter(f -> f != null
+                        && !f.trim().isEmpty()).collect(Collectors.joining(" "));
                 c.setName(name);
                 return;
             }
         }
     }
+
     @EventHandler
-    public void onSignChange(SignChangeEvent event) {
-        if (event.getLine(0).equalsIgnoreCase(HEADER) && Settings.RequireNamePerm && !event.getPlayer().hasPermission("movecraft.name.place")) {
+    public void onSignChange(@NotNull SignChangeEvent event) {
+        if (HEADER.equalsIgnoreCase(event.getLine(0))
+                && Settings.RequireNamePerm && !event.getPlayer().hasPermission("movecraft.name.place")) {
             event.getPlayer().sendMessage(ChatUtils.MOVECRAFT_COMMAND_PREFIX + "Insufficient permissions");
             event.setCancelled(true);
         }
