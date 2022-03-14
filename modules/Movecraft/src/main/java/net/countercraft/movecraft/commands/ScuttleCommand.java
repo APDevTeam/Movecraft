@@ -66,8 +66,7 @@ public class ScuttleCommand implements CommandExecutor {
             return true;
 
         craft.setCruising(false);
-        craft.sink();
-        CraftManager.getInstance().removePlayerFromCraft(craft);
+        CraftManager.getInstance().sink(craft);
         commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX
                 + I18nSupport.getInternationalisedString("Scuttle - Scuttle Activated"));
         return true;

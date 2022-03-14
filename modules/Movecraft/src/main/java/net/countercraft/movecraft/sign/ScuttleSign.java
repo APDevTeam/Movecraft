@@ -6,6 +6,7 @@ import net.countercraft.movecraft.craft.SinkingCraft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftScuttleEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.util.MathUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.block.BlockState;
@@ -47,7 +48,8 @@ public class ScuttleSign implements Listener {
                         + I18nSupport.getInternationalisedString("You must be piloting a craft"));
                 return;
             }
-            craft = CraftManager.getInstance().fastNearestCraftToLoc(event.getClickedBlock().getLocation());
+            craft = MathUtils.fastNearestCraftToLoc(CraftManager.getInstance().getCrafts(),
+                    event.getClickedBlock().getLocation());
             if (craft == null)
                 return;
         }
@@ -73,8 +75,7 @@ public class ScuttleSign implements Listener {
             return;
 
         craft.setCruising(false);
-        craft.sink();
-        CraftManager.getInstance().removePlayerFromCraft(craft);
+        CraftManager.getInstance().sink(craft);
         commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX
                 + I18nSupport.getInternationalisedString("Scuttle - Scuttle Activated"));
     }

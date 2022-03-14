@@ -357,9 +357,9 @@ public class AsyncManager extends BukkitRunnable {
             if (status.isSinking() && pcraft.isNotProcessing()) {
                 pcraft.getAudience().sendMessage(I18nSupport.getInternationalisedComponent("Player - Craft is sinking"));
                 pcraft.setCruising(false);
-                pcraft.sink();
-                CraftManager.getInstance().removePlayerFromCraft(pcraft);
-            } else {
+                CraftManager.getInstance().sink(pcraft);
+            }
+            else {
                 pcraft.setLastBlockCheck(System.currentTimeMillis());
             }
         }
@@ -401,7 +401,7 @@ public class AsyncManager extends BukkitRunnable {
         }
         List<HitBox> processed = new ArrayList<>();
         for(Map.Entry<HitBox, Long> entry : wrecks.entrySet()){
-            if (Settings.FadeWrecksAfter * 1000 > System.currentTimeMillis() - entry.getValue()) {
+            if (Settings.FadeWrecksAfter * 1000L > System.currentTimeMillis() - entry.getValue()) {
                 continue;
             }
             final HitBox hitBox = entry.getKey();

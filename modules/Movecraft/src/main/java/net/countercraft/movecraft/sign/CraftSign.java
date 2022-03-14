@@ -139,7 +139,7 @@ public final class CraftSign implements Listener {
                             @Override
                             public void run() {
                                 craft.setCruising(false);
-                                craft.sink();
+                                CraftManager.getInstance().sink(craft);
                             }
                         }.runTaskLater(Movecraft.getInstance(), (20 * 15));
                     }

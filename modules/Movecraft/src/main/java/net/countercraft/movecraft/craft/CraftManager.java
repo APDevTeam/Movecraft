@@ -331,7 +331,6 @@ public class CraftManager implements Iterable<Craft>{
 
     //region Craft set management
     @NotNull
-    @Deprecated
     public Set<Craft> getCrafts() {
         return Collections.unmodifiableSet(crafts);
     }
