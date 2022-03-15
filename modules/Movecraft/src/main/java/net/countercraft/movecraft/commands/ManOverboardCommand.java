@@ -3,6 +3,7 @@ package net.countercraft.movecraft.commands;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.craft.PilotedCraft;
 import net.countercraft.movecraft.craft.SinkingCraft;
 import net.countercraft.movecraft.events.ManOverboardEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
@@ -59,8 +60,7 @@ public class ManOverboardCommand implements CommandExecutor{
             return true;
         }
 
-        if (craft.getDisabled() || craft instanceof SinkingCraft
-                || CraftManager.getInstance().getPlayerFromCraft(craft) == null) {
+        if (craft.getDisabled() || craft instanceof SinkingCraft) {
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX
                     + I18nSupport.getInternationalisedString("ManOverboard - Disabled"));
             return true;

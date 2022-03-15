@@ -176,6 +176,17 @@ public class CraftManager implements Iterable<Craft>{
         ));
     }
 
+    public void add(@NotNull Craft c) {
+        if (c instanceof PlayerCraft) {
+            if (playerCrafts.containsKey(((PlayerCraft) c).getPilot()))
+                throw new IllegalStateException("Players may only have one PlayerCraft associated with them!");
+
+            playerCrafts.put(((PlayerCraft) c).getPilot(), (PlayerCraft) c);
+        }
+
+        crafts.add(c);
+    }
+
     public void sink(@NotNull Craft craft) {
         CraftSinkEvent event = new CraftSinkEvent(craft);
         Bukkit.getServer().getPluginManager().callEvent(event);
@@ -189,71 +200,53 @@ public class CraftManager implements Iterable<Craft>{
         crafts.add(new SinkingCraftImpl(craft));
     }
 
-    public void release(@NotNull Craft craft) {
-        // TODO
+    public void release(@NotNull Craft craft, @NotNull CraftReleaseEvent.Reason reason) {
+        release(craft, reason, false);
+    }
+
+    public void release(@NotNull Craft craft, @NotNull CraftReleaseEvent.Reason reason, boolean force) {
+        CraftReleaseEvent e = new CraftReleaseEvent(craft, reason);
+        Bukkit.getServer().getPluginManager().callEvent(e);
+        if (e.isCancelled()) {
+            if (force)
+                throw new NonCancellableReleaseException();
+            else
+                return;
+        }
+
+        crafts.remove(craft);
+        if(craft instanceof PlayerCraft)
+            playerCrafts.remove(((PlayerCraft) craft).getPilot());
+
+        if(craft.getHitBox().isEmpty())
+            Movecraft.getInstance().getLogger().warning(I18nSupport.getInternationalisedString(
+                    "Release - Empty Craft Release Console"));
+        else {
+            if (craft instanceof PlayerCraft)
+                craft.getAudience().sendMessage(Component.text(I18nSupport.getInternationalisedString(
+                        "Release - Craft has been released")));
+            if (craft instanceof PilotedCraft)
+                Movecraft.getInstance().getLogger().info(String.format(I18nSupport.getInternationalisedString(
+                        "Release - Player has released a craft console"),
+                        ((PilotedCraft) craft).getPilot().getName(),
+                        craft.getType().getStringProperty(CraftType.NAME),
+                        craft.getHitBox().size(),
+                        craft.getHitBox().getMinX(),
+                        craft.getHitBox().getMinZ())
+                );
+            else
+                Movecraft.getInstance().getLogger().info(String.format(I18nSupport.getInternationalisedString(
+                        "Release - Null Craft Release Console"),
+                        craft.getType().getStringProperty(CraftType.NAME),
+                        craft.getHitBox().size(),
+                        craft.getHitBox().getMinX(),
+                        craft.getHitBox().getMinZ())
+                );
+        }
+        Movecraft.getInstance().getAsyncManager().addWreck(craft);
     }
 
     //region Craft management
-    public void removeCraftByPlayer(Player player) {
-        PilotedCraft craft = playerCrafts.remove(player);
-        if (craft != null) {
-            crafts.remove(craft);
-        }
-    }
-
-    public void addCraft(@NotNull PlayerCraft c) {
-        if(playerCrafts.containsKey(c.getPilot()))
-            throw new IllegalStateException("Players may only have one PlayerCraft associated with them!");
-
-        crafts.add(c);
-        playerCrafts.put(c.getPilot(), c);
-    }
-
-    public void addCraft(@NotNull Craft c) {
-        if(c instanceof PlayerCraft){
-            addCraft((PlayerCraft) c);
-        }
-        else {
-            this.crafts.add(c);
-        }
-    }
-
-    public void removeCraft(@NotNull Craft c, @NotNull CraftReleaseEvent.Reason reason) {
-        CraftReleaseEvent e = new CraftReleaseEvent(c, reason);
-        Bukkit.getServer().getPluginManager().callEvent(e);
-        if (e.isCancelled())
-            return;
-
-        removeReleaseTask(c);
-
-        crafts.remove(c);
-        if(c instanceof PlayerCraft)
-            this.playerCrafts.remove(((PlayerCraft) c).getPilot());
-        // if its sinking, just remove the craft without notifying or checking
-        if(c.getHitBox().isEmpty())
-            Movecraft.getInstance().getLogger().warning(I18nSupport.getInternationalisedString("Release - Empty Craft Release Console"));
-        else {
-            if (c instanceof PlayerCraft)
-                c.getAudience().sendMessage(Component.text(I18nSupport.getInternationalisedString("Release - Craft has been released")));
-            if (c instanceof PilotedCraft)
-                Movecraft.getInstance().getLogger().info(String.format(I18nSupport.getInternationalisedString("Release - Player has released a craft console"), ((PilotedCraft) c).getPilot().getName(), c.getType().getStringProperty(CraftType.NAME), c.getHitBox().size(), c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
-            else
-                Movecraft.getInstance().getLogger().info(String.format(I18nSupport.getInternationalisedString("Release - Null Craft Release Console"), c.getType().getStringProperty(CraftType.NAME), c.getHitBox().size(), c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
-        }
-        Movecraft.getInstance().getAsyncManager().addWreck(c);
-    }
-
-    public void forceRemoveCraft(@NotNull Craft c) {
-        this.crafts.remove(c);
-        if(c instanceof PlayerCraft)
-            playerCrafts.remove(((PlayerCraft) c).getPilot());
-        CraftReleaseEvent e = new CraftReleaseEvent(c, CraftReleaseEvent.Reason.FORCE);
-        Bukkit.getServer().getPluginManager().callEvent(e);
-        if(e.isCancelled()) {
-            throw new NonCancellableReleaseException();
-        }
-    }
-
     @Nullable
     @Deprecated
     public Player getPlayerFromCraft(@NotNull Craft c) {
@@ -273,7 +266,7 @@ public class CraftManager implements Iterable<Craft>{
         BukkitTask releaseTask = new BukkitRunnable() {
             @Override
             public void run() {
-                removeCraft(c, CraftReleaseEvent.Reason.PLAYER);
+                release(c, CraftReleaseEvent.Reason.PLAYER);
                 // I'm aware this is not ideal, but you shouldn't be using this anyways.
             }
         }.runTaskLater(Movecraft.getInstance(), (20 * 15));
