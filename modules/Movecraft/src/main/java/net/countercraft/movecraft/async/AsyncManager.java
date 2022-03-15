@@ -47,6 +47,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
@@ -178,9 +179,8 @@ public class AsyncManager extends BukkitRunnable {
      */
     private boolean processRotation(@NotNull final RotationTask task, @NotNull final Craft c) {
         // Check that the craft hasn't been sneakily unpiloted
-        if (c.getNotificationPlayer() == null && !task.getIsSubCraft())  {
+        if (!(c instanceof PilotedCraft) && !task.getIsSubCraft())
             return false;
-        }
 
         if (task.isFailed()) {
             // The craft translation failed, don't try to notify
@@ -199,9 +199,9 @@ public class AsyncManager extends BukkitRunnable {
 
     private void processCruise() {
         for (Craft pcraft : CraftManager.getInstance()) {
-            if (pcraft == null || !pcraft.isNotProcessing() || !pcraft.getCruising()) {
+            if (pcraft == null || !pcraft.isNotProcessing() || !pcraft.getCruising())
                 continue;
-            }
+
             long ticksElapsed = (System.currentTimeMillis() - pcraft.getLastCruiseUpdate()) / 50;
             World w = pcraft.getWorld();
             // if the craft should go slower underwater, make
@@ -212,39 +212,47 @@ public class AsyncManager extends BukkitRunnable {
             boolean bankLeft = false;
             boolean bankRight = false;
             boolean dive = false;
-            if (pcraft instanceof PlayerCraft && ((PlayerCraft) pcraft).getPilotLocked() && pcraft.getNotificationPlayer() != null && pcraft.getNotificationPlayer().isOnline()) {
-                if (pcraft.getNotificationPlayer().isSneaking())
+            if (pcraft instanceof PlayerCraft) {
+                Player pilot = ((PlayerCraft) pcraft).getPilot();
+                if (pilot.isSneaking())
                     dive = true;
-                if (pcraft.getNotificationPlayer().getInventory().getHeldItemSlot() == 3)
+                if (pilot.getInventory().getHeldItemSlot() == 3)
                     bankLeft = true;
-                if (pcraft.getNotificationPlayer().getInventory().getHeldItemSlot() == 5)
+                if (pilot.getInventory().getHeldItemSlot() == 5)
                     bankRight = true;
             }
             int tickCoolDown;
-            if(cooldownCache.containsKey(pcraft)){
+            if (cooldownCache.containsKey(pcraft)) {
                 tickCoolDown = cooldownCache.get(pcraft);
-            } else {
+            }
+            else {
                 tickCoolDown = pcraft.getTickCooldown();
                 cooldownCache.put(pcraft,tickCoolDown);
             }
 
             // Account for banking and diving in speed calculations by changing the tickCoolDown
-            int cruiseSkipBlocks = (int) pcraft.getType().getPerWorldProperty(CraftType.PER_WORLD_CRUISE_SKIP_BLOCKS, w);
-            if(pcraft.getCruiseDirection() != CruiseDirection.UP && pcraft.getCruiseDirection() != CruiseDirection.DOWN) {
+            int cruiseSkipBlocks = (int) pcraft.getType().getPerWorldProperty(
+                    CraftType.PER_WORLD_CRUISE_SKIP_BLOCKS, w);
+            if (pcraft.getCruiseDirection() != CruiseDirection.UP
+                    && pcraft.getCruiseDirection() != CruiseDirection.DOWN) {
                 if (bankLeft || bankRight) {
                     if (!dive) {
-                        tickCoolDown *= (Math.sqrt(Math.pow(1 + cruiseSkipBlocks, 2) + Math.pow(cruiseSkipBlocks >> 1, 2)) / (1 + cruiseSkipBlocks));
-                    } else {
-                        tickCoolDown *= (Math.sqrt(Math.pow(1 + cruiseSkipBlocks, 2) + Math.pow(cruiseSkipBlocks >> 1, 2) + 1) / (1 + cruiseSkipBlocks));
+                        tickCoolDown *= (Math.sqrt(Math.pow(1 + cruiseSkipBlocks, 2)
+                                + Math.pow(cruiseSkipBlocks >> 1, 2)) / (1 + cruiseSkipBlocks));
                     }
-                } else if (dive) {
+                    else {
+                        tickCoolDown *= (Math.sqrt(Math.pow(1 + cruiseSkipBlocks, 2)
+                                + Math.pow(cruiseSkipBlocks >> 1, 2) + 1) / (1 + cruiseSkipBlocks));
+                    }
+                }
+                else if (dive) {
                     tickCoolDown *= (Math.sqrt(Math.pow(1 + cruiseSkipBlocks, 2) + 1) / (1 + cruiseSkipBlocks));
                 }
             }
 
-            if (Math.abs(ticksElapsed) < tickCoolDown) {
+            if (Math.abs(ticksElapsed) < tickCoolDown)
                 continue;
-            }
+
             cooldownCache.remove(pcraft);
             int dx = 0;
             int dz = 0;
@@ -253,60 +261,50 @@ public class AsyncManager extends BukkitRunnable {
             int vertCruiseSkipBlocks = (int) pcraft.getType().getPerWorldProperty(CraftType.PER_WORLD_VERT_CRUISE_SKIP_BLOCKS, pcraft.getWorld());
 
             // ascend
-            if (pcraft.getCruiseDirection() == CruiseDirection.UP) {
+            if (pcraft.getCruiseDirection() == CruiseDirection.UP)
                 dy = 1 + vertCruiseSkipBlocks;
-            }
             // descend
             if (pcraft.getCruiseDirection() == CruiseDirection.DOWN) {
                 dy = -1 - vertCruiseSkipBlocks;
-                if (pcraft.getHitBox().getMinY() <= w.getSeaLevel()) {
+                if (pcraft.getHitBox().getMinY() <= w.getSeaLevel())
                     dy = -1;
-                }
-            } else if (dive) {
+            }
+            else if (dive) {
                 dy = -((cruiseSkipBlocks + 1) >> 1);
-                if (pcraft.getHitBox().getMinY() <= w.getSeaLevel()) {
+                if (pcraft.getHitBox().getMinY() <= w.getSeaLevel())
                     dy = -1;
-                }
             }
             // ship faces west
             if (pcraft.getCruiseDirection() == CruiseDirection.WEST) {
                 dx = -1 - cruiseSkipBlocks;
-                if (bankRight) {
+                if (bankRight)
                     dz = (-1 - cruiseSkipBlocks) >> 1;
-                }
-                if (bankLeft) {
+                if (bankLeft)
                     dz = (1 + cruiseSkipBlocks) >> 1;
-                }
             }
             // ship faces east
             if (pcraft.getCruiseDirection() == CruiseDirection.EAST) {
                 dx = 1 + cruiseSkipBlocks;
-                if (bankLeft) {
+                if (bankLeft)
                     dz = (-1 - cruiseSkipBlocks) >> 1;
-                }
-                if (bankRight) {
+                if (bankRight)
                     dz = (1 + cruiseSkipBlocks) >> 1;
-                }
             }
             // ship faces north
             if (pcraft.getCruiseDirection() == CruiseDirection.SOUTH) {
                 dz = 1 + cruiseSkipBlocks;
-                if (bankRight) {
+                if (bankRight)
                     dx = (-1 - cruiseSkipBlocks) >> 1;
-                }
-                if (bankLeft) {
+                if (bankLeft)
                     dx = (1 + cruiseSkipBlocks) >> 1;
-                }
             }
             // ship faces south
             if (pcraft.getCruiseDirection() == CruiseDirection.NORTH) {
                 dz = -1 - cruiseSkipBlocks;
-                if (bankLeft) {
+                if (bankLeft)
                     dx = (-1 - cruiseSkipBlocks) >> 1;
-                }
-                if (bankRight) {
+                if (bankRight)
                     dx = (1 + cruiseSkipBlocks) >> 1;
-                }
             }
             if (pcraft.getType().getBoolProperty(CraftType.CRUISE_ON_PILOT)) {
                 dy = pcraft.getType().getIntProperty(CraftType.CRUISE_ON_PILOT_VERT_MOVE);
@@ -319,11 +317,7 @@ public class AsyncManager extends BukkitRunnable {
             }
             pcraft.translate(dx, dy, dz);
             pcraft.setLastTranslation(new MovecraftLocation(dx, dy, dz));
-            if (pcraft.getLastCruiseUpdate() != -1) {
-                pcraft.setLastCruiseUpdate(System.currentTimeMillis());
-            } else {
-                pcraft.setLastCruiseUpdate(System.currentTimeMillis() - 30000);
-            }
+            pcraft.setLastCruiseUpdate(System.currentTimeMillis());
         }
     }
 

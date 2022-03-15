@@ -88,7 +88,7 @@ public abstract class BaseCraft implements Craft {
         hitBox = new SetHitBox();
         collapsedHitBox = new SetHitBox();
         fluidLocations = new SetHitBox();
-        lastCruiseUpdate = System.currentTimeMillis() - 10000;
+        lastCruiseUpdate = System.currentTimeMillis();
         cruising = false;
         disabled = false;
         origPilotTime = System.currentTimeMillis();
@@ -300,7 +300,7 @@ public abstract class BaseCraft implements Craft {
 
     @Override
     public void setLastCruiseUpdate(long update) {
-        this.lastCruiseUpdate = update;
+        lastCruiseUpdate = update;
     }
 
     @Override
