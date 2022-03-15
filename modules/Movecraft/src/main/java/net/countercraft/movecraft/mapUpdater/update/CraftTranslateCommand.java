@@ -72,7 +72,7 @@ public class CraftTranslateCommand extends UpdateCommand {
         final Logger logger = Movecraft.getInstance().getLogger();
         if(craft.getHitBox().isEmpty()){
             logger.warning("Attempted to move craft with empty HashHitBox!");
-            CraftManager.getInstance().removeCraft(craft, CraftReleaseEvent.Reason.EMPTY);
+            CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.EMPTY);
             return;
         }
         long time = System.nanoTime();

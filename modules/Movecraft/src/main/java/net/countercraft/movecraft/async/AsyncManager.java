@@ -364,7 +364,7 @@ public class AsyncManager extends BukkitRunnable {
                 continue;
 
             if (craft.getHitBox().isEmpty() || craft.getHitBox().getMinY() < 5) {
-                CraftManager.getInstance().removeCraft(craft, CraftReleaseEvent.Reason.SUNK);
+                CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.SUNK);
                 continue;
             }
             long ticksElapsed = (System.currentTimeMillis() - craft.getLastCruiseUpdate()) / 50;
@@ -538,11 +538,12 @@ public class AsyncManager extends BukkitRunnable {
 //		if(Settings.CompatibilityMode==false)
 //			FastBlockChanger.getInstance().run();
 
-        // now cleanup craft that are bugged and have not moved in the past 60 seconds, but have no pilot or are still processing
+        // now cleanup craft that are bugged and have not moved in the past 60 seconds,
+        //  but have no pilot or are still processing
         for (Craft craft : CraftManager.getInstance()) {
             if (!(craft instanceof PilotedCraft)) {
                 if (craft.getLastCruiseUpdate() < System.currentTimeMillis() - 60000)
-                    CraftManager.getInstance().forceRemoveCraft(craft);
+                    CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.INACTIVE, true);
             }
             if (!craft.isNotProcessing()) {
                 if (craft.getCruising()) {

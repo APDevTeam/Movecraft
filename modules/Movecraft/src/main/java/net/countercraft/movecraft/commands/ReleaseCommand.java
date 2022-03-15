@@ -45,7 +45,7 @@ public class ReleaseCommand implements TabExecutor {
                                 "Player- Error - You do not have a craft to release!"));
                 return true;
             }
-            CraftManager.getInstance().removeCraft(pCraft, CraftReleaseEvent.Reason.PLAYER);
+            CraftManager.getInstance().release(pCraft, CraftReleaseEvent.Reason.PLAYER);
             return true;
         }
         if (!commandSender.hasPermission("movecraft.commands.release.others")) {
@@ -58,7 +58,7 @@ public class ReleaseCommand implements TabExecutor {
                 String name = p.getName();
                 final Craft pCraft = CraftManager.getInstance().getCraftByPlayerName(name);
                 if (pCraft != null)
-                    CraftManager.getInstance().removeCraft(pCraft, CraftReleaseEvent.Reason.FORCE);
+                    CraftManager.getInstance().release(pCraft, CraftReleaseEvent.Reason.FORCE);
             }
             commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX
                     + I18nSupport.getInternationalisedString("Release - Released All Player Crafts"));
@@ -68,7 +68,7 @@ public class ReleaseCommand implements TabExecutor {
         if (args[0].equalsIgnoreCase("-a")) {
             final List<Craft> craftsToRelease = new ArrayList<>(CraftManager.getInstance().getCrafts());
             for (Craft craft : craftsToRelease) {
-                CraftManager.getInstance().removeCraft(craft, CraftReleaseEvent.Reason.FORCE);
+                CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.FORCE);
             }
             commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX
                     + I18nSupport.getInternationalisedString("Release - Released All Crafts"));
@@ -79,7 +79,7 @@ public class ReleaseCommand implements TabExecutor {
             final List<Craft> craftsToRelease = new ArrayList<>(CraftManager.getInstance().getCrafts());
             for (Craft craft : craftsToRelease) {
                 if (!(craft instanceof PilotedCraft))
-                    CraftManager.getInstance().removeCraft(craft, CraftReleaseEvent.Reason.FORCE);
+                    CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.FORCE);
             }
             commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX
                     + I18nSupport.getInternationalisedString("Release - Released All Null Crafts"));
@@ -94,7 +94,7 @@ public class ReleaseCommand implements TabExecutor {
         }
         final Craft pCraft = CraftManager.getInstance().getCraftByPlayerName(args[0]);
         if (pCraft != null) {
-            CraftManager.getInstance().removeCraft(pCraft, CraftReleaseEvent.Reason.FORCE);
+            CraftManager.getInstance().release(pCraft, CraftReleaseEvent.Reason.FORCE);
             commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX
                     + I18nSupport.getInternationalisedString("Release - Successful Force Release"));
             return true;
