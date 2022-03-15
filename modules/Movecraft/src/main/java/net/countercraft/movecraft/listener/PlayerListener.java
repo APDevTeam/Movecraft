@@ -104,11 +104,17 @@ public class PlayerListener implements Listener {
     }
 
     @EventHandler
-    public void onPlayerDeath(EntityDamageByEntityEvent e) {  // changed to death so when you shoot up an airship and hit the pilot, it still sinks
-        if (e instanceof Player) {
-            Player p = (Player) e;
-            CraftManager.getInstance().removeCraft(CraftManager.getInstance().getCraftByPlayer(p), CraftReleaseEvent.Reason.DEATH);
-        }
+    public void onPlayerDeath(EntityDamageByEntityEvent e) {
+        // changed to death so when you shoot up an airship and hit the pilot, it still sinks
+        if (!(e instanceof Player))
+            return;
+
+        Player p = (Player) e;
+        Craft craft = CraftManager.getInstance().getCraftByPlayer(p);
+        if (craft == null)
+            return;
+
+        CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.DEATH);
     }
 
     @EventHandler
@@ -129,7 +135,7 @@ public class PlayerListener implements Listener {
         }
 
         if(timeToReleaseAfter.containsKey(c) && timeToReleaseAfter.get(c) < System.currentTimeMillis()){
-            CraftManager.getInstance().removeCraft(c, CraftReleaseEvent.Reason.PLAYER);
+            CraftManager.getInstance().release(c, CraftReleaseEvent.Reason.PLAYER);
             timeToReleaseAfter.remove(c);
             clearHighlights(c, p);
             return;
