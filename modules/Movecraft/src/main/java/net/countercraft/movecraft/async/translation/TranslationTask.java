@@ -379,7 +379,7 @@ public class TranslationTask extends AsyncTask {
         }
 
         if (!collisionBox.isEmpty() && craft.getType().getBoolProperty(CraftType.CRUISE_ON_PILOT)){
-            CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.EMPTY);
+            CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.EMPTY, false);
             for (MovecraftLocation location : oldHitBox){
                 BlockData phaseBlock = craft.getPhaseBlocks().getOrDefault(location.toBukkit(craft.getWorld()),
                         Material.AIR.createBlockData());

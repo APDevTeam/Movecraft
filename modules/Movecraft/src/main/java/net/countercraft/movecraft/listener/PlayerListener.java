@@ -100,7 +100,7 @@ public class PlayerListener implements Listener {
     public void onPlayerLogout(PlayerQuitEvent e) {
         Craft craft = CraftManager.getInstance().getCraftByPlayer(e.getPlayer());
         if (craft != null)
-            CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.DISCONNECT);
+            CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.DISCONNECT, false);
     }
 
     @EventHandler
@@ -114,7 +114,7 @@ public class PlayerListener implements Listener {
         if (craft == null)
             return;
 
-        CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.DEATH);
+        CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.DEATH, false);
     }
 
     @EventHandler
@@ -135,24 +135,25 @@ public class PlayerListener implements Listener {
         }
 
         if(timeToReleaseAfter.containsKey(c) && timeToReleaseAfter.get(c) < System.currentTimeMillis()){
-            CraftManager.getInstance().release(c, CraftReleaseEvent.Reason.PLAYER);
+            CraftManager.getInstance().release(c, CraftReleaseEvent.Reason.PLAYER, false);
             timeToReleaseAfter.remove(c);
             clearHighlights(c, p);
             return;
         }
 
-        if (c.isNotProcessing() && c.getType().getBoolProperty(CraftType.MOVE_ENTITIES) && !timeToReleaseAfter.containsKey(c)) {
+        if (c.isNotProcessing() && c.getType().getBoolProperty(CraftType.MOVE_ENTITIES)
+                && !timeToReleaseAfter.containsKey(c)) {
             if (Settings.ManOverboardTimeout != 0) {
                 c.getAudience().sendActionBar(I18nSupport.getInternationalisedComponent("Manoverboard - Player has left craft"));
                 CraftManager.getInstance().addOverboard(p);
-            } else {
+            }
+            else {
                 p.sendMessage(I18nSupport.getInternationalisedString("Release - Player has left craft"));
             }
             var mergePoints = checkCraftBorders(c);
-            if(!mergePoints.isEmpty()){
+            if (!mergePoints.isEmpty())
                 p.sendMessage(I18nSupport.getInternationalisedString("Manoverboard - Craft May Merge"));
-            }
-            for(var location : mergePoints){
+            for (var location : mergePoints){
                 highlights.get(c).add(BlockHighlight.highlightBlockAt(location, p));
             }
             timeToReleaseAfter.put(c, System.currentTimeMillis() + c.getType().getIntProperty(CraftType.RELEASE_TIMEOUT) * 1000L);
@@ -160,13 +161,12 @@ public class PlayerListener implements Listener {
     }
 
     @EventHandler
-    public void onCraftRelease(CraftReleaseEvent event){
-        if(event.getCraft() instanceof PlayerCraft){
+    public void onCraftRelease(CraftReleaseEvent event) {
+        if(event.getCraft() instanceof PlayerCraft)
             clearHighlights(event.getCraft(), ((PlayerCraft) event.getCraft()).getPilot());
-        }
     }
 
-    private void clearHighlights(Craft craft, Player player){
+    private void clearHighlights(Craft craft, Player player) {
         highlights.computeIfAbsent(craft, (c) -> new LinkedList<>());
         var queue = highlights.get(craft);
         BlockHighlight.removeHighlights(queue, player);

@@ -364,7 +364,7 @@ public class AsyncManager extends BukkitRunnable {
                 continue;
 
             if (craft.getHitBox().isEmpty() || craft.getHitBox().getMinY() < 5) {
-                CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.SUNK);
+                CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.SUNK, false);
                 continue;
             }
             long ticksElapsed = (System.currentTimeMillis() - craft.getLastCruiseUpdate()) / 50;

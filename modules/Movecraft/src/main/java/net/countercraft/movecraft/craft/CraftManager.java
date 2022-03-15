@@ -200,10 +200,6 @@ public class CraftManager implements Iterable<Craft>{
         crafts.add(new SinkingCraftImpl(craft));
     }
 
-    public void release(@NotNull Craft craft, @NotNull CraftReleaseEvent.Reason reason) {
-        release(craft, reason, false);
-    }
-
     public void release(@NotNull Craft craft, @NotNull CraftReleaseEvent.Reason reason, boolean force) {
         CraftReleaseEvent e = new CraftReleaseEvent(craft, reason);
         Bukkit.getServer().getPluginManager().callEvent(e);
@@ -266,7 +262,7 @@ public class CraftManager implements Iterable<Craft>{
         BukkitTask releaseTask = new BukkitRunnable() {
             @Override
             public void run() {
-                release(c, CraftReleaseEvent.Reason.PLAYER);
+                release(c, CraftReleaseEvent.Reason.PLAYER, false);
                 // I'm aware this is not ideal, but you shouldn't be using this anyways.
             }
         }.runTaskLater(Movecraft.getInstance(), (20 * 15));

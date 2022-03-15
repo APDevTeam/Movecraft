@@ -33,6 +33,6 @@ public final class ReleaseSign implements Listener{
         if (craft == null) {
             return;
         }
-        CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.PLAYER);
+        CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.PLAYER, false);
     }
 }
