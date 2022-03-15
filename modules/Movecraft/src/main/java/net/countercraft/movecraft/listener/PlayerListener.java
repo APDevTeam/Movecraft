@@ -97,7 +97,7 @@ public class PlayerListener implements Listener {
     }
 
     @EventHandler
-    public void onPLayerLogout(PlayerQuitEvent e) {
+    public void onPlayerLogout(PlayerQuitEvent e) {
         CraftManager.getInstance().removeCraftByPlayer(e.getPlayer());
     }
 
