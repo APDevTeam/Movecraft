@@ -194,26 +194,32 @@ public abstract class BaseCraft implements Craft {
     /**
      * Gets the crafts that have made contact with this craft
      *
-     * @return a set of crafts on contact with this craft
+     * @return a set of crafts in contact with this craft
      */
     @NotNull
     @Override
     public Set<Craft> getContacts() {
         final Set<Craft> contacts = new HashSet<>();
         for (Craft contact : CraftManager.getInstance().getCraftsInWorld(w)) {
+            if (contact instanceof PilotedCraft && this instanceof PilotedCraft
+                    && ((PilotedCraft) contact).getPilot() == ((PilotedCraft) this).getPilot())
+                continue;
+
             MovecraftLocation ccenter = getHitBox().getMidPoint();
             MovecraftLocation tcenter = contact.getHitBox().getMidPoint();
             int distsquared = ccenter.distanceSquared(tcenter);
             double detectionMultiplier;
             if (tcenter.getY() > 65) // TODO: fix the water line
-                detectionMultiplier = (double) contact.getType().getPerWorldProperty(CraftType.PER_WORLD_DETECTION_MULTIPLIER, contact.getWorld());
+                detectionMultiplier = (double) contact.getType().getPerWorldProperty(
+                        CraftType.PER_WORLD_DETECTION_MULTIPLIER, contact.getWorld());
             else
-                detectionMultiplier = (double) contact.getType().getPerWorldProperty(CraftType.PER_WORLD_UNDERWATER_DETECTION_MULTIPLIER, contact.getWorld());
+                detectionMultiplier = (double) contact.getType().getPerWorldProperty(
+                        CraftType.PER_WORLD_UNDERWATER_DETECTION_MULTIPLIER, contact.getWorld());
             int detectionRange = (int) (contact.getOrigBlockCount() * detectionMultiplier);
             detectionRange = detectionRange * 10;
-            if (distsquared > detectionRange || contact.getNotificationPlayer() == getNotificationPlayer()) {
+            if (distsquared > detectionRange)
                 continue;
-            }
+
             contacts.add(contact);
         }
         return contacts;
