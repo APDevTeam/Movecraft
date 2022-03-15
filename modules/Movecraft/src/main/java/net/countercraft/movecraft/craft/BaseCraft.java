@@ -8,7 +8,6 @@ import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.type.CraftType;
-import net.countercraft.movecraft.events.CraftSinkEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.CachedMovecraftWorld;
 import net.countercraft.movecraft.processing.MovecraftWorld;
@@ -29,9 +28,7 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.EnumSet;
@@ -73,8 +70,6 @@ public abstract class BaseCraft implements Craft {
     private int currentGear = 1;
     private double burningFuel;
     private int origBlockCount;
-    @Nullable
-    private Player notificationPlayer;
     @NotNull
     private Audience audience;
     @NotNull
@@ -342,17 +337,6 @@ public abstract class BaseCraft implements Craft {
     @Override
     public void setOrigBlockCount(int origBlockCount) {
         this.origBlockCount = origBlockCount;
-    }
-
-    @Nullable
-    @Deprecated
-    public Player getNotificationPlayer() {
-        return notificationPlayer;
-    }
-
-    @Deprecated
-    public void setNotificationPlayer(@Nullable Player notificationPlayer) {
-        this.notificationPlayer = notificationPlayer;
     }
 
     @Override

@@ -203,12 +203,6 @@ public interface Craft {
 
     void setOrigBlockCount(int origBlockCount);
 
-    @Nullable @Deprecated(forRemoval = true)
-    Player getNotificationPlayer();
-
-    @Deprecated
-    void setNotificationPlayer(@Nullable Player notificationPlayer);
-
     long getOrigPilotTime();
 
     double getMeanCruiseTime();

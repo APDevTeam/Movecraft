@@ -265,19 +265,6 @@ public class CraftManager implements Iterable<Craft>{
     }
 
     @Deprecated
-    public void removePlayerFromCraft(Craft c) {
-        if (!(c instanceof PlayerCraft)) {
-            return;
-        }
-        removeReleaseTask(c);
-        Player p = ((PlayerCraft) c).getPilot();
-        p.sendMessage(I18nSupport.getInternationalisedString("Release - Craft has been released message"));
-        Movecraft.getInstance().getLogger().info(String.format(I18nSupport.getInternationalisedString("Release - Player has released a craft console"), p.getName(), c.getType().getStringProperty(CraftType.NAME), c.getHitBox().size(), c.getHitBox().getMinX(), c.getHitBox().getMinZ()));
-        c.setNotificationPlayer(null);
-        playerCrafts.remove(p);
-    }
-
-    @Deprecated
     public final void addReleaseTask(final Craft c) {
         Player p = getPlayerFromCraft(c);
         if (p != null) {

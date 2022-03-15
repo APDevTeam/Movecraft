@@ -198,22 +198,22 @@ public class AsyncManager extends BukkitRunnable {
     }
 
     private void processCruise() {
-        for (Craft pcraft : CraftManager.getInstance()) {
-            if (pcraft == null || !pcraft.isNotProcessing() || !pcraft.getCruising())
+        for (Craft craft : CraftManager.getInstance()) {
+            if (craft == null || !craft.isNotProcessing() || !craft.getCruising())
                 continue;
 
-            long ticksElapsed = (System.currentTimeMillis() - pcraft.getLastCruiseUpdate()) / 50;
-            World w = pcraft.getWorld();
+            long ticksElapsed = (System.currentTimeMillis() - craft.getLastCruiseUpdate()) / 50;
+            World w = craft.getWorld();
             // if the craft should go slower underwater, make
             // time pass more slowly there
-            if (pcraft.getType().getBoolProperty(CraftType.HALF_SPEED_UNDERWATER) && pcraft.getHitBox().getMinY() < w.getSeaLevel())
+            if (craft.getType().getBoolProperty(CraftType.HALF_SPEED_UNDERWATER) && craft.getHitBox().getMinY() < w.getSeaLevel())
                 ticksElapsed >>= 1;
             // check direct controls to modify movement
             boolean bankLeft = false;
             boolean bankRight = false;
             boolean dive = false;
-            if (pcraft instanceof PlayerCraft) {
-                Player pilot = ((PlayerCraft) pcraft).getPilot();
+            if (craft instanceof PlayerCraft) {
+                Player pilot = ((PlayerCraft) craft).getPilot();
                 if (pilot.isSneaking())
                     dive = true;
                 if (pilot.getInventory().getHeldItemSlot() == 3)
@@ -222,19 +222,19 @@ public class AsyncManager extends BukkitRunnable {
                     bankRight = true;
             }
             int tickCoolDown;
-            if (cooldownCache.containsKey(pcraft)) {
-                tickCoolDown = cooldownCache.get(pcraft);
+            if (cooldownCache.containsKey(craft)) {
+                tickCoolDown = cooldownCache.get(craft);
             }
             else {
-                tickCoolDown = pcraft.getTickCooldown();
-                cooldownCache.put(pcraft,tickCoolDown);
+                tickCoolDown = craft.getTickCooldown();
+                cooldownCache.put(craft,tickCoolDown);
             }
 
             // Account for banking and diving in speed calculations by changing the tickCoolDown
-            int cruiseSkipBlocks = (int) pcraft.getType().getPerWorldProperty(
+            int cruiseSkipBlocks = (int) craft.getType().getPerWorldProperty(
                     CraftType.PER_WORLD_CRUISE_SKIP_BLOCKS, w);
-            if (pcraft.getCruiseDirection() != CruiseDirection.UP
-                    && pcraft.getCruiseDirection() != CruiseDirection.DOWN) {
+            if (craft.getCruiseDirection() != CruiseDirection.UP
+                    && craft.getCruiseDirection() != CruiseDirection.DOWN) {
                 if (bankLeft || bankRight) {
                     if (!dive) {
                         tickCoolDown *= (Math.sqrt(Math.pow(1 + cruiseSkipBlocks, 2)
@@ -253,29 +253,29 @@ public class AsyncManager extends BukkitRunnable {
             if (Math.abs(ticksElapsed) < tickCoolDown)
                 continue;
 
-            cooldownCache.remove(pcraft);
+            cooldownCache.remove(craft);
             int dx = 0;
             int dz = 0;
             int dy = 0;
 
-            int vertCruiseSkipBlocks = (int) pcraft.getType().getPerWorldProperty(CraftType.PER_WORLD_VERT_CRUISE_SKIP_BLOCKS, pcraft.getWorld());
+            int vertCruiseSkipBlocks = (int) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_VERT_CRUISE_SKIP_BLOCKS, craft.getWorld());
 
             // ascend
-            if (pcraft.getCruiseDirection() == CruiseDirection.UP)
+            if (craft.getCruiseDirection() == CruiseDirection.UP)
                 dy = 1 + vertCruiseSkipBlocks;
             // descend
-            if (pcraft.getCruiseDirection() == CruiseDirection.DOWN) {
+            if (craft.getCruiseDirection() == CruiseDirection.DOWN) {
                 dy = -1 - vertCruiseSkipBlocks;
-                if (pcraft.getHitBox().getMinY() <= w.getSeaLevel())
+                if (craft.getHitBox().getMinY() <= w.getSeaLevel())
                     dy = -1;
             }
             else if (dive) {
                 dy = -((cruiseSkipBlocks + 1) >> 1);
-                if (pcraft.getHitBox().getMinY() <= w.getSeaLevel())
+                if (craft.getHitBox().getMinY() <= w.getSeaLevel())
                     dy = -1;
             }
             // ship faces west
-            if (pcraft.getCruiseDirection() == CruiseDirection.WEST) {
+            if (craft.getCruiseDirection() == CruiseDirection.WEST) {
                 dx = -1 - cruiseSkipBlocks;
                 if (bankRight)
                     dz = (-1 - cruiseSkipBlocks) >> 1;
@@ -283,7 +283,7 @@ public class AsyncManager extends BukkitRunnable {
                     dz = (1 + cruiseSkipBlocks) >> 1;
             }
             // ship faces east
-            if (pcraft.getCruiseDirection() == CruiseDirection.EAST) {
+            if (craft.getCruiseDirection() == CruiseDirection.EAST) {
                 dx = 1 + cruiseSkipBlocks;
                 if (bankLeft)
                     dz = (-1 - cruiseSkipBlocks) >> 1;
@@ -291,7 +291,7 @@ public class AsyncManager extends BukkitRunnable {
                     dz = (1 + cruiseSkipBlocks) >> 1;
             }
             // ship faces north
-            if (pcraft.getCruiseDirection() == CruiseDirection.SOUTH) {
+            if (craft.getCruiseDirection() == CruiseDirection.SOUTH) {
                 dz = 1 + cruiseSkipBlocks;
                 if (bankRight)
                     dx = (-1 - cruiseSkipBlocks) >> 1;
@@ -299,62 +299,58 @@ public class AsyncManager extends BukkitRunnable {
                     dx = (1 + cruiseSkipBlocks) >> 1;
             }
             // ship faces south
-            if (pcraft.getCruiseDirection() == CruiseDirection.NORTH) {
+            if (craft.getCruiseDirection() == CruiseDirection.NORTH) {
                 dz = -1 - cruiseSkipBlocks;
                 if (bankLeft)
                     dx = (-1 - cruiseSkipBlocks) >> 1;
                 if (bankRight)
                     dx = (1 + cruiseSkipBlocks) >> 1;
             }
-            if (pcraft.getType().getBoolProperty(CraftType.CRUISE_ON_PILOT)) {
-                dy = pcraft.getType().getIntProperty(CraftType.CRUISE_ON_PILOT_VERT_MOVE);
+            if (craft.getType().getBoolProperty(CraftType.CRUISE_ON_PILOT)) {
+                dy = craft.getType().getIntProperty(CraftType.CRUISE_ON_PILOT_VERT_MOVE);
             }
-            if (pcraft.getType().getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_CRUISE_SKIP_BLOCKS)) {
-                final int gearshift = pcraft.getCurrentGear();
+            if (craft.getType().getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_CRUISE_SKIP_BLOCKS)) {
+                final int gearshift = craft.getCurrentGear();
                 dx *= gearshift;
                 dy *= gearshift;
                 dz *= gearshift;
             }
-            pcraft.translate(dx, dy, dz);
-            pcraft.setLastTranslation(new MovecraftLocation(dx, dy, dz));
-            pcraft.setLastCruiseUpdate(System.currentTimeMillis());
+            craft.translate(dx, dy, dz);
+            craft.setLastTranslation(new MovecraftLocation(dx, dy, dz));
+            craft.setLastCruiseUpdate(System.currentTimeMillis());
         }
     }
 
     private void detectSinking(){
-        List<Craft> crafts = Lists.newArrayList(CraftManager.getInstance());
-        for(Craft pcraft : crafts) {
-            if (pcraft instanceof SinkingCraft) {
+        for(Craft craft : CraftManager.getInstance()) {
+            if (craft instanceof SinkingCraft)
                 continue;
-            }
-            if (pcraft.getType().getDoubleProperty(CraftType.SINK_PERCENT) == 0.0 || !pcraft.isNotProcessing()) {
+            if (craft.getType().getDoubleProperty(CraftType.SINK_PERCENT) == 0.0 || !craft.isNotProcessing())
                 continue;
-            }
-            long ticksElapsed = (System.currentTimeMillis() - pcraft.getLastBlockCheck()) / 50;
+            long ticksElapsed = (System.currentTimeMillis() - craft.getLastBlockCheck()) / 50;
 
-            if (ticksElapsed <= Settings.SinkCheckTicks) {
+            if (ticksElapsed <= Settings.SinkCheckTicks)
                 continue;
-            }
 
-            CraftStatus status = checkCraftStatus(pcraft);
+            CraftStatus status = checkCraftStatus(craft);
             //If the craft is disabled, play a sound and disable it.
             //Only do this if the craft isn't already disabled.
-            if (status.isDisabled() && pcraft.isNotProcessing() && !pcraft.getDisabled()) {
-                pcraft.setDisabled(true);
-                pcraft.getAudience().playSound(Sound.sound(Key.key("entity.iron_golem.death"), Sound.Source.NEUTRAL, 5.0f, 5.0f));
+            if (status.isDisabled() && craft.isNotProcessing() && !craft.getDisabled()) {
+                craft.setDisabled(true);
+                craft.getAudience().playSound(Sound.sound(Key.key("entity.iron_golem.death"), Sound.Source.NEUTRAL, 5.0f, 5.0f));
             }
 
 
             // if the craft is sinking, let the player
             // know and release the craft. Otherwise
             // update the time for the next check
-            if (status.isSinking() && pcraft.isNotProcessing()) {
-                pcraft.getAudience().sendMessage(I18nSupport.getInternationalisedComponent("Player - Craft is sinking"));
-                pcraft.setCruising(false);
-                CraftManager.getInstance().sink(pcraft);
+            if (status.isSinking() && craft.isNotProcessing()) {
+                craft.getAudience().sendMessage(I18nSupport.getInternationalisedComponent("Player - Craft is sinking"));
+                craft.setCruising(false);
+                CraftManager.getInstance().sink(craft);
             }
             else {
-                pcraft.setLastBlockCheck(System.currentTimeMillis());
+                craft.setLastBlockCheck(System.currentTimeMillis());
             }
         }
     }
@@ -446,48 +442,48 @@ public class AsyncManager extends BukkitRunnable {
         long ticksElapsed = (System.currentTimeMillis() - lastContactCheck) / 50;
         if (ticksElapsed > 21) {
             for (World w : Bukkit.getWorlds()) {
-                if (w == null) {
+                if (w == null)
                     continue;
-                }
-                for (Craft ccraft : CraftManager.getInstance().getPlayerCraftsInWorld(w)) {
-                    if (!recentContactTracking.containsKey(ccraft)) {
-                        recentContactTracking.put(ccraft, new HashMap<>());
-                    }
-                    for (Craft tcraft : ccraft.getContacts()) {
-                        MovecraftLocation ccenter = ccraft.getHitBox().getMidPoint();
-                        MovecraftLocation tcenter = tcraft.getHitBox().getMidPoint();
-                        int diffx = ccenter.getX() - tcenter.getX();
-                        int diffz = ccenter.getZ() - tcenter.getZ();
-                        int distsquared = ccenter.distanceSquared(tcenter);
+
+                for (Craft craft : CraftManager.getInstance().getPlayerCraftsInWorld(w)) {
+                    if (!recentContactTracking.containsKey(craft))
+                        recentContactTracking.put(craft, new HashMap<>());
+                    for (Craft target : craft.getContacts()) {
+                        MovecraftLocation craftCenter = craft.getHitBox().getMidPoint();
+                        MovecraftLocation targetCenter = target.getHitBox().getMidPoint();
+                        int diffx = craftCenter.getX() - targetCenter.getX();
+                        int diffz = craftCenter.getZ() - targetCenter.getZ();
+                        int distsquared = craftCenter.distanceSquared(targetCenter);
                         // craft has been detected
 
                         // has the craft not been seen in the last
                         // minute, or is completely new?
-                        if (System.currentTimeMillis() - recentContactTracking.get(ccraft).getOrDefault(tcraft, 0L) <= 60000) {
+                        if (System.currentTimeMillis()
+                                - recentContactTracking.get(craft).getOrDefault(target, 0L) <= 60000)
                             continue;
-                        }
 
-                        Component notification = I18nSupport.getInternationalisedComponent("Contact - New Contact").append(Component.text( ": "));
 
-                        if (tcraft.getName().length() >= 1){
-                            notification = notification.append(Component.text(tcraft.getName() + " ("));
-                        }
-                        notification = notification.append(Component.text(tcraft.getType().getStringProperty(CraftType.NAME)));
-                        if (tcraft.getName().length() >= 1){
+                        Component notification = I18nSupport.getInternationalisedComponent(
+                                "Contact - New Contact").append(Component.text( ": "));
+
+                        if (target.getName().length() >= 1)
+                            notification = notification.append(Component.text(target.getName() + " ("));
+                        notification = notification.append(Component.text(
+                                target.getType().getStringProperty(CraftType.NAME)));
+                        if (target.getName().length() >= 1)
                             notification = notification.append(Component.text(")"));
-                        }
                         notification = notification.append(Component.text(" "))
                                 .append(I18nSupport.getInternationalisedComponent("Contact - Commanded By"))
                                 .append(Component.text(" "));
-                        if (tcraft.getNotificationPlayer() != null) {
-                            notification = notification.append(Component.text(tcraft.getNotificationPlayer().getDisplayName()));
-                        } else {
+                        if (target instanceof PilotedCraft)
+                            notification = notification.append(Component.text(
+                                    ((PilotedCraft) target).getPilot().getDisplayName()));
+                        else
                             notification = notification.append(Component.text("NULL"));
-                        }
                         notification = notification.append(Component.text(", "))
                                 .append(I18nSupport.getInternationalisedComponent("Contact - Size"))
                                 .append(Component.text( ": "))
-                                .append(Component.text(tcraft.getOrigBlockCount()))
+                                .append(Component.text(target.getOrigBlockCount()))
                                 .append(Component.text(", "))
                                 .append(I18nSupport.getInternationalisedComponent("Contact - Range"))
                                 .append(Component.text(": "))
@@ -496,30 +492,31 @@ public class AsyncManager extends BukkitRunnable {
                                 .append(I18nSupport.getInternationalisedComponent("Contact - To The"))
                                 .append(Component.text(" "));
                         if (Math.abs(diffx) > Math.abs(diffz)) {
-                            if (diffx < 0) {
-                                notification = notification.append(I18nSupport.getInternationalisedComponent("Contact/Subcraft Rotate - East"));
-                            } else {
-                                notification = notification.append(I18nSupport.getInternationalisedComponent("Contact/Subcraft Rotate - West"));
-                            }
+                            if (diffx < 0)
+                                notification = notification.append(I18nSupport.getInternationalisedComponent(
+                                        "Contact/Subcraft Rotate - East"));
+                            else
+                                notification = notification.append(I18nSupport.getInternationalisedComponent(
+                                        "Contact/Subcraft Rotate - West"));
                         }
-                        else if (diffz < 0) {
-                            notification = notification.append(I18nSupport.getInternationalisedComponent("Contact/Subcraft Rotate - South"));
-                        }
-                        else {
-                            notification = notification.append(I18nSupport.getInternationalisedComponent("Contact/Subcraft Rotate - North"));
-                        }
+                        else if (diffz < 0)
+                            notification = notification.append(I18nSupport.getInternationalisedComponent(
+                                    "Contact/Subcraft Rotate - South"));
+                        else
+                            notification = notification.append(I18nSupport.getInternationalisedComponent(
+                                    "Contact/Subcraft Rotate - North"));
 
                         notification = notification.append(Component.text("."));
 
-                        ccraft.getAudience().sendMessage(notification);
-                        var object = ccraft.getType().getObjectProperty(CraftType.COLLISION_SOUND);
+                        craft.getAudience().sendMessage(notification);
+                        var object = craft.getType().getObjectProperty(CraftType.COLLISION_SOUND);
                         if(!(object instanceof Sound))
                             throw new IllegalStateException("COLLISION_SOUND must be of type Sound");
-                        ccraft.getAudience().playSound((Sound) object);
 
+                        craft.getAudience().playSound((Sound) object);
 
                         long timestamp = System.currentTimeMillis();
-                        recentContactTracking.get(ccraft).put(tcraft, timestamp);
+                        recentContactTracking.get(craft).put(target, timestamp);
                     }
                 }
             }
@@ -542,21 +539,18 @@ public class AsyncManager extends BukkitRunnable {
 //			FastBlockChanger.getInstance().run();
 
         // now cleanup craft that are bugged and have not moved in the past 60 seconds, but have no pilot or are still processing
-        for (Craft pcraft : CraftManager.getInstance()) {
-            if (!(pcraft instanceof PilotedCraft)) {
-                if (pcraft.getLastCruiseUpdate() < System.currentTimeMillis() - 60000) {
-                    CraftManager.getInstance().forceRemoveCraft(pcraft);
-                }
+        for (Craft craft : CraftManager.getInstance()) {
+            if (!(craft instanceof PilotedCraft)) {
+                if (craft.getLastCruiseUpdate() < System.currentTimeMillis() - 60000)
+                    CraftManager.getInstance().forceRemoveCraft(craft);
             }
-            if (!pcraft.isNotProcessing()) {
-                if (pcraft.getCruising()) {
-                    if (pcraft.getLastCruiseUpdate() < System.currentTimeMillis() - 5000) {
-                        pcraft.setProcessing(false);
-                    }
+            if (!craft.isNotProcessing()) {
+                if (craft.getCruising()) {
+                    if (craft.getLastCruiseUpdate() < System.currentTimeMillis() - 5000)
+                        craft.setProcessing(false);
                 }
             }
         }
-
     }
 
     private void clear(Craft c) {
