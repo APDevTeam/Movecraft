@@ -24,6 +24,7 @@ import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.craft.SinkingCraft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftRotateEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
@@ -85,7 +86,7 @@ public class RotationTask extends AsyncTask {
         if(oldHitBox.isEmpty())
             return;
 
-        if (getCraft().getDisabled() && (!getCraft().getSinking())) {
+        if (getCraft().getDisabled() && !(craft instanceof SinkingCraft)) {
             failed = true;
             failMessage = I18nSupport.getInternationalisedString("Translation - Failed Craft Is Disabled");
         }
@@ -167,21 +168,35 @@ public class RotationTask extends AsyncTask {
         tOP.setX(tOP.getBlockX() + 0.5);
         tOP.setZ(tOP.getBlockZ() + 0.5);
 
-        if (craft.getType().getBoolProperty(CraftType.MOVE_ENTITIES) && !(craft.getSinking() && craft.getType().getBoolProperty(CraftType.ONLY_MOVE_PLAYERS))) {
+        if (!(craft instanceof SinkingCraft && craft.getType().getBoolProperty(CraftType.ONLY_MOVE_PLAYERS))
+                && craft.getType().getBoolProperty(CraftType.MOVE_ENTITIES)) {
             Location midpoint = new Location(
                     craft.getWorld(),
                     (oldHitBox.getMaxX() + oldHitBox.getMinX())/2.0,
                     (oldHitBox.getMaxY() + oldHitBox.getMinY())/2.0,
                     (oldHitBox.getMaxZ() + oldHitBox.getMinZ())/2.0);
-            for(Entity entity : craft.getWorld().getNearbyEntities(midpoint, oldHitBox.getXLength()/2.0 + 1, oldHitBox.getYLength()/2.0 + 2, oldHitBox.getZLength()/2.0 + 1)){
-                if (((entity.getType() == EntityType.PLAYER || entity.getType() == EntityType.PRIMED_TNT) && !craft.getSinking()) || !craft.getType().getBoolProperty(CraftType.ONLY_MOVE_PLAYERS)) {
+            for(Entity entity : craft.getWorld().getNearbyEntities(midpoint,
+                    oldHitBox.getXLength() / 2.0 + 1,
+                    oldHitBox.getYLength() / 2.0 + 2,
+                    oldHitBox.getZLength() / 2.0 + 1)) {
+                if (!craft.getType().getBoolProperty(CraftType.ONLY_MOVE_PLAYERS) || (
+                        (entity.getType() == EntityType.PLAYER || entity.getType() == EntityType.PRIMED_TNT)
+                                && !(craft instanceof SinkingCraft)
+                )) {
                     // Player is onboard this craft
 
                     Location adjustedPLoc = entity.getLocation().subtract(tOP);
 
-                    double[] rotatedCoords = MathUtils.rotateVecNoRound(rotation, adjustedPLoc.getX(), adjustedPLoc.getZ());
+                    double[] rotatedCoords = MathUtils.rotateVecNoRound(rotation,
+                            adjustedPLoc.getX(), adjustedPLoc.getZ());
                     float newYaw = rotation == MovecraftRotation.CLOCKWISE ? 90F : -90F;
-                    EntityUpdateCommand eUp = new EntityUpdateCommand(entity, rotatedCoords[0] + tOP.getX() - entity.getLocation().getX(), 0, rotatedCoords[1] + tOP.getZ() - entity.getLocation().getZ(), newYaw, 0);
+                    EntityUpdateCommand eUp = new EntityUpdateCommand(entity,
+                            rotatedCoords[0] + tOP.getX() - entity.getLocation().getX(),
+                            0,
+                            rotatedCoords[1] + tOP.getZ() - entity.getLocation().getZ(),
+                            newYaw,
+                            0
+                    );
                     updates.add(eUp);
                 }
             }

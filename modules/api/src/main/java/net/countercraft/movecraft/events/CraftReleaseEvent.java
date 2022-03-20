@@ -26,7 +26,7 @@ public class CraftReleaseEvent extends CraftEvent implements Cancellable {
     }
 
     public enum Reason{
-        DISCONNECT,SUB_CRAFT,PLAYER,FORCE,EMPTY,SUNK,REPAIR,DEATH
+        DISCONNECT,SUB_CRAFT,PLAYER,FORCE,EMPTY,SUNK,REPAIR,DEATH,INACTIVE
     }
 
     @Override

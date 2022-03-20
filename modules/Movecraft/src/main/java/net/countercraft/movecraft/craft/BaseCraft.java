@@ -8,7 +8,6 @@ import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.type.CraftType;
-import net.countercraft.movecraft.events.CraftSinkEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.CachedMovecraftWorld;
 import net.countercraft.movecraft.processing.MovecraftWorld;
@@ -29,9 +28,7 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.EnumSet;
@@ -64,19 +61,15 @@ public abstract class BaseCraft implements Craft {
     protected World w;
     @NotNull TimingData stats = new TimingData();
     private boolean cruising;
-    private boolean sinking;
     private boolean disabled;
     private CruiseDirection cruiseDirection;
     private long lastCruiseUpdate;
     private long lastBlockCheck;
     private long lastRotateTime = 0;
     private long lastTeleportTime;
-    private int lastDX, lastDY, lastDZ;
     private int currentGear = 1;
     private double burningFuel;
     private int origBlockCount;
-    @Nullable
-    private Player notificationPlayer;
     @NotNull
     private Audience audience;
     @NotNull
@@ -90,9 +83,8 @@ public abstract class BaseCraft implements Craft {
         hitBox = new SetHitBox();
         collapsedHitBox = new SetHitBox();
         fluidLocations = new SetHitBox();
-        lastCruiseUpdate = System.currentTimeMillis() - 10000;
+        lastCruiseUpdate = System.currentTimeMillis();
         cruising = false;
-        sinking = false;
         disabled = false;
         origPilotTime = System.currentTimeMillis();
         materials = new Counter<>();
@@ -156,25 +148,25 @@ public abstract class BaseCraft implements Craft {
         });
 
         // check to see if the craft is trying to move in a direction not permitted by the type
-        if (!world.equals(w) && !(getType().getBoolProperty(CraftType.CAN_SWITCH_WORLD) || disableTeleportToWorlds.contains(world.getName())) && !this.getSinking()) {
-            world = w;
-        }
-        if (!getType().getBoolProperty(CraftType.ALLOW_HORIZONTAL_MOVEMENT) && !getSinking()) {
-            dx = 0;
-            dz = 0;
-        }
-        if (!getType().getBoolProperty(CraftType.ALLOW_VERTICAL_MOVEMENT) && !getSinking()) {
-            dy = 0;
-        }
-        if (dx == 0 && dy == 0 && dz == 0 && world.equals(w)) {
-            return;
-        }
-
-        if (!getType().getBoolProperty(CraftType.ALLOW_VERTICAL_TAKEOFF_AND_LANDING) && dy != 0 && !getSinking()) {
-            if (dx == 0 && dz == 0) {
-                return;
+        if (!(this instanceof SinkingCraft)) { // sinking crafts can move in any direction
+            if (!world.equals(w)
+                    && !(getType().getBoolProperty(CraftType.CAN_SWITCH_WORLD)
+                            || disableTeleportToWorlds.contains(world.getName())))
+                world = w;
+            if (!getType().getBoolProperty(CraftType.ALLOW_HORIZONTAL_MOVEMENT)) {
+                dx = 0;
+                dz = 0;
             }
+            if (!getType().getBoolProperty(CraftType.ALLOW_VERTICAL_MOVEMENT))
+                dy = 0;
         }
+        if (dx == 0 && dy == 0 && dz == 0 && world.equals(w))
+            return;
+
+        if (!getType().getBoolProperty(CraftType.ALLOW_VERTICAL_TAKEOFF_AND_LANDING)
+                && dy != 0 && dx == 0 && dz == 0
+                && !(this instanceof SinkingCraft))
+            return;
 
         Movecraft.getInstance().getAsyncManager().submitTask(new TranslationTask(this, world, dx, dy, dz), this);
     }
@@ -197,26 +189,32 @@ public abstract class BaseCraft implements Craft {
     /**
      * Gets the crafts that have made contact with this craft
      *
-     * @return a set of crafts on contact with this craft
+     * @return a set of crafts in contact with this craft
      */
     @NotNull
     @Override
     public Set<Craft> getContacts() {
         final Set<Craft> contacts = new HashSet<>();
         for (Craft contact : CraftManager.getInstance().getCraftsInWorld(w)) {
+            if (contact instanceof PilotedCraft && this instanceof PilotedCraft
+                    && ((PilotedCraft) contact).getPilot() == ((PilotedCraft) this).getPilot())
+                continue;
+
             MovecraftLocation ccenter = getHitBox().getMidPoint();
             MovecraftLocation tcenter = contact.getHitBox().getMidPoint();
             int distsquared = ccenter.distanceSquared(tcenter);
             double detectionMultiplier;
             if (tcenter.getY() > 65) // TODO: fix the water line
-                detectionMultiplier = (double) contact.getType().getPerWorldProperty(CraftType.PER_WORLD_DETECTION_MULTIPLIER, contact.getWorld());
+                detectionMultiplier = (double) contact.getType().getPerWorldProperty(
+                        CraftType.PER_WORLD_DETECTION_MULTIPLIER, contact.getWorld());
             else
-                detectionMultiplier = (double) contact.getType().getPerWorldProperty(CraftType.PER_WORLD_UNDERWATER_DETECTION_MULTIPLIER, contact.getWorld());
+                detectionMultiplier = (double) contact.getType().getPerWorldProperty(
+                        CraftType.PER_WORLD_UNDERWATER_DETECTION_MULTIPLIER, contact.getWorld());
             int detectionRange = (int) (contact.getOrigBlockCount() * detectionMultiplier);
             detectionRange = detectionRange * 10;
-            if (distsquared > detectionRange || contact.getNotificationPlayer() == getNotificationPlayer()) {
+            if (distsquared > detectionRange)
                 continue;
-            }
+
             contacts.add(contact);
         }
         return contacts;
@@ -271,21 +269,6 @@ public abstract class BaseCraft implements Craft {
     }
 
     @Override
-    public boolean getSinking() {
-        return sinking;
-    }
-
-    @Override
-    public void sink() {
-        CraftSinkEvent event = new CraftSinkEvent(this);
-        Bukkit.getServer().getPluginManager().callEvent(event);
-        if (event.isCancelled()) {
-            return;
-        }
-        sinking = true;
-    }
-
-    @Override
     public boolean getDisabled() {
         return disabled;
     }
@@ -312,7 +295,7 @@ public abstract class BaseCraft implements Craft {
 
     @Override
     public void setLastCruiseUpdate(long update) {
-        this.lastCruiseUpdate = update;
+        lastCruiseUpdate = update;
     }
 
     @Override
@@ -356,17 +339,6 @@ public abstract class BaseCraft implements Craft {
         this.origBlockCount = origBlockCount;
     }
 
-    @Nullable
-    @Deprecated
-    public Player getNotificationPlayer() {
-        return notificationPlayer;
-    }
-
-    @Deprecated
-    public void setNotificationPlayer(@Nullable Player notificationPlayer) {
-        this.notificationPlayer = notificationPlayer;
-    }
-
     @Override
     public long getOrigPilotTime() {
         return origPilotTime;
@@ -384,11 +356,9 @@ public abstract class BaseCraft implements Craft {
 
     @Override
     public int getTickCooldown() {
-        if (sinking)
+        if (this instanceof SinkingCraft)
             return type.getIntProperty(CraftType.SINK_RATE_TICKS);
 
-//        Counter<Material> counter = new Counter<>();
-//        Map<Material, Integer> counter = new HashMap<>();
         if (materials.isEmpty()) {
             for (MovecraftLocation location : hitBox) {
                 materials.add(location.toBukkit(w).getBlock().getType());

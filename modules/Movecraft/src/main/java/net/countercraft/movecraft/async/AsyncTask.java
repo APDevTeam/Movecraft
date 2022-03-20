@@ -20,6 +20,7 @@ package net.countercraft.movecraft.async;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.craft.SinkingCraft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.FuelBurnEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
@@ -61,12 +62,12 @@ public abstract class AsyncTask extends BukkitRunnable {
     protected boolean checkFuel() {
         // check for fuel, burn some from a furnace if needed. Blocks of coal are supported, in addition to coal and charcoal
         double fuelBurnRate = (double) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_FUEL_BURN_RATE, craft.getWorld());
-        if (fuelBurnRate == 0.0 || craft.getSinking()) {
+        if (fuelBurnRate == 0.0 || craft instanceof SinkingCraft)
             return true;
-        }
+
         if (craft.getBurningFuel() >= fuelBurnRate) {
             double burningFuel = craft.getBurningFuel();
-            //call event
+            // call event
             final FuelBurnEvent event = new FuelBurnEvent(craft, burningFuel, fuelBurnRate);
             Bukkit.getPluginManager().callEvent(event);
             if (event.getBurningFuel() != burningFuel)
@@ -79,13 +80,13 @@ public abstract class AsyncTask extends BukkitRunnable {
         Block fuelHolder = null;
 
         var v = craft.getType().getObjectProperty(CraftType.FUEL_TYPES);
-        if(!(v instanceof Map<?, ?>))
+        if (!(v instanceof Map<?, ?>))
             throw new IllegalStateException("FUEL_TYPES must be of type Map");
         var fuelTypes = (Map<?, ?>) v;
-        for(var e : fuelTypes.entrySet()) {
-            if(!(e.getKey() instanceof Material))
+        for (var e : fuelTypes.entrySet()) {
+            if (!(e.getKey() instanceof Material))
                 throw new IllegalStateException("Keys in FUEL_TYPES must be of type Material");
-            if(!(e.getValue() instanceof Double))
+            if (!(e.getValue() instanceof Double))
                 throw new IllegalStateException("Values in FUEL_TYPES must be of type Double");
         }
 

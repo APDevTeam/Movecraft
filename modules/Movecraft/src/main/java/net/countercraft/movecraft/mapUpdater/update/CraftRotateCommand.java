@@ -10,6 +10,7 @@ import net.countercraft.movecraft.WorldHandler;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.craft.SinkingCraft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
@@ -17,8 +18,8 @@ import net.countercraft.movecraft.util.CollectionUtils;
 import net.countercraft.movecraft.util.MathUtils;
 import net.countercraft.movecraft.util.Tags;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
-import net.countercraft.movecraft.util.hitboxes.SolidHitBox;
 import net.countercraft.movecraft.util.hitboxes.SetHitBox;
+import net.countercraft.movecraft.util.hitboxes.SolidHitBox;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -65,12 +66,12 @@ public class CraftRotateCommand extends UpdateCommand {
         final Logger logger = Movecraft.getInstance().getLogger();
         if (craft.getHitBox().isEmpty()) {
             logger.warning("Attempted to move craft with empty HashHitBox!");
-            CraftManager.getInstance().removeCraft(craft, CraftReleaseEvent.Reason.EMPTY);
+            CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.EMPTY, false);
             return;
         }
         long time = System.nanoTime();
         final Set<Material> passthroughBlocks = new HashSet<>(craft.getType().getMaterialSetProperty(CraftType.PASSTHROUGH_BLOCKS));
-        if(craft.getSinking()){
+        if (craft instanceof SinkingCraft) {
             passthroughBlocks.addAll(Tags.FLUID);
             passthroughBlocks.addAll(Tag.LEAVES.getValues());
             passthroughBlocks.addAll(Tags.SINKING_PASSTHROUGH);

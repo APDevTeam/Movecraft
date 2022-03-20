@@ -26,8 +26,10 @@ import org.bukkit.World;
 import org.bukkit.WorldBorder;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.OptionalInt;
+import java.util.Set;
 
 public class MathUtils {
 
@@ -204,5 +206,26 @@ public class MathUtils {
         }catch(NumberFormatException e){
             return OptionalInt.empty();
         }
+    }
+
+    @Nullable
+    public static Craft fastNearestCraftToLoc(@NotNull Set<Craft> crafts, @NotNull Location loc) {
+        Craft result = null;
+        long closestDistSquared = Long.MAX_VALUE;
+
+        for (Craft i : crafts) {
+            if (i.getHitBox().isEmpty())
+                continue;
+
+            int midX = (i.getHitBox().getMaxX() + i.getHitBox().getMinX()) >> 1;
+            // don't check Y because it is slow
+            int midZ = (i.getHitBox().getMaxZ() + i.getHitBox().getMinZ()) >> 1;
+            long distSquared = (long) (Math.pow(midX -  loc.getX(), 2) + Math.pow(midZ - (int) loc.getZ(), 2));
+            if (distSquared < closestDistSquared) {
+                closestDistSquared = distSquared;
+                result = i;
+            }
+        }
+        return result;
     }
 }

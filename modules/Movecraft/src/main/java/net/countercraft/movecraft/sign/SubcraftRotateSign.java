@@ -129,7 +129,7 @@ public final class SubcraftRotateSign implements Listener {
                                 var newHitbox = parent.getHitBox().union(craft.getHitBox());
                                 parent.setHitBox(newHitbox);
                             }
-                            CraftManager.getInstance().removeCraft(craft, CraftReleaseEvent.Reason.SUB_CRAFT);
+                            CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.SUB_CRAFT, false);
                         }
                     }.runTaskLater(Movecraft.getInstance(), 3);
                 }

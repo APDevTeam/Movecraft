@@ -139,7 +139,7 @@ public final class CraftSign implements Listener {
                             @Override
                             public void run() {
                                 craft.setCruising(false);
-                                craft.sink();
+                                CraftManager.getInstance().sink(craft);
                             }
                         }.runTaskLater(Movecraft.getInstance(), (20 * 15));
                     }
@@ -147,7 +147,7 @@ public final class CraftSign implements Listener {
                         // Release old craft if it exists
                         Craft oldCraft = CraftManager.getInstance().getCraftByPlayer(player);
                         if (oldCraft != null)
-                            CraftManager.getInstance().removeCraft(oldCraft, CraftReleaseEvent.Reason.PLAYER);
+                            CraftManager.getInstance().release(oldCraft, CraftReleaseEvent.Reason.PLAYER, false);
                     }
                 }
         );
