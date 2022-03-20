@@ -206,13 +206,14 @@ public class AsyncManager extends BukkitRunnable {
             World w = craft.getWorld();
             // if the craft should go slower underwater, make
             // time pass more slowly there
-            if (craft.getType().getBoolProperty(CraftType.HALF_SPEED_UNDERWATER) && craft.getHitBox().getMinY() < w.getSeaLevel())
+            if (craft.getType().getBoolProperty(CraftType.HALF_SPEED_UNDERWATER)
+                    && craft.getHitBox().getMinY() < w.getSeaLevel())
                 ticksElapsed >>= 1;
             // check direct controls to modify movement
             boolean bankLeft = false;
             boolean bankRight = false;
             boolean dive = false;
-            if (craft instanceof PlayerCraft) {
+            if (craft instanceof PlayerCraft && ((PlayerCraft) craft).getPilotLocked()) {
                 Player pilot = ((PlayerCraft) craft).getPilot();
                 if (pilot.isSneaking())
                     dive = true;
@@ -360,7 +361,7 @@ public class AsyncManager extends BukkitRunnable {
         //copy the crafts before iteration to prevent concurrent modifications
         List<Craft> crafts = Lists.newArrayList(CraftManager.getInstance());
         for (Craft craft : crafts) {
-            if (craft instanceof SinkingCraft)
+            if (!(craft instanceof SinkingCraft))
                 continue;
 
             if (craft.getHitBox().isEmpty() || craft.getHitBox().getMinY() < 5) {
@@ -368,17 +369,17 @@ public class AsyncManager extends BukkitRunnable {
                 continue;
             }
             long ticksElapsed = (System.currentTimeMillis() - craft.getLastCruiseUpdate()) / 50;
-            if (Math.abs(ticksElapsed) < craft.getType().getIntProperty(CraftType.SINK_RATE_TICKS)) {
+            if (Math.abs(ticksElapsed) < craft.getType().getIntProperty(CraftType.SINK_RATE_TICKS))
                 continue;
-            }
+
             int dx = 0;
             int dz = 0;
             if (craft.getType().getBoolProperty(CraftType.KEEP_MOVING_ON_SINK)) {
-                dx = craft.getLastDX();
-                dz = craft.getLastDZ();
+                dx = craft.getLastTranslation().getX();
+                dz = craft.getLastTranslation().getZ();
             }
             craft.translate(dx, -1, dz);
-            craft.setLastCruiseUpdate(System.currentTimeMillis() - (craft.getLastCruiseUpdate() != -1 ? 0 : 30000));
+            craft.setLastCruiseUpdate(System.currentTimeMillis());
         }
     }
 
@@ -386,50 +387,50 @@ public class AsyncManager extends BukkitRunnable {
         if (Settings.FadeWrecksAfter == 0)
             return;
         long ticksElapsed = (System.currentTimeMillis() - lastFadeCheck) / 50;
-        if (ticksElapsed <= Settings.FadeTickCooldown) {
+        if (ticksElapsed <= Settings.FadeTickCooldown)
             return;
-        }
+
         List<HitBox> processed = new ArrayList<>();
         for(Map.Entry<HitBox, Long> entry : wrecks.entrySet()){
-            if (Settings.FadeWrecksAfter * 1000L > System.currentTimeMillis() - entry.getValue()) {
+            if (Settings.FadeWrecksAfter * 1000L > System.currentTimeMillis() - entry.getValue())
                 continue;
-            }
+
             final HitBox hitBox = entry.getKey();
             final Map<Location, BlockData> phaseBlocks = wreckPhases.get(hitBox);
             final World world = wreckWorlds.get(hitBox);
-            ArrayList<UpdateCommand> commands = new ArrayList<>();
+            List<UpdateCommand> commands = new ArrayList<>();
             int fadedBlocks = 0;
-            if (!processedFadeLocs.containsKey(world)) {
+            if (!processedFadeLocs.containsKey(world))
                 processedFadeLocs.put(world, new HashSet<>());
-            }
+
             int maxFadeBlocks = (int) (hitBox.size() *  (Settings.FadePercentageOfWreckPerCycle / 100.0));
             //Iterate hitbox as a set to get more random locations
             for (MovecraftLocation location : hitBox.asSet()){
-                if (processedFadeLocs.get(world).contains(location)) {
+                if (processedFadeLocs.get(world).contains(location))
                     continue;
-                }
 
-                if (fadedBlocks >= maxFadeBlocks) {
+                if (fadedBlocks >= maxFadeBlocks)
                     break;
-                }
+
                 final Location bLoc = location.toBukkit(world);
-                if ((Settings.FadeWrecksAfter + Settings.ExtraFadeTimePerBlock.getOrDefault(bLoc.getBlock().getType(), 0))* 1000 > System.currentTimeMillis() - entry.getValue()) {
+                if ((Settings.FadeWrecksAfter
+                        + Settings.ExtraFadeTimePerBlock.getOrDefault(bLoc.getBlock().getType(), 0))
+                        * 1000L > System.currentTimeMillis() - entry.getValue())
                     continue;
-                }
+
                 fadedBlocks++;
                 processedFadeLocs.get(world).add(location);
                 BlockData phaseBlock = phaseBlocks.getOrDefault(bLoc, Material.AIR.createBlockData());
                 commands.add(new BlockCreateCommand(world, location, phaseBlock));
-                
             }
             MapUpdateManager.getInstance().scheduleUpdates(commands);
-            if (!processedFadeLocs.get(world).containsAll(hitBox.asSet())) {
+            if (!processedFadeLocs.get(world).containsAll(hitBox.asSet()))
                 continue;
-            }
+
             processed.add(hitBox);
             processedFadeLocs.get(world).removeAll(hitBox.asSet());
         }
-        for(HitBox hitBox : processed){
+        for(HitBox hitBox : processed) {
             wrecks.remove(hitBox);
             wreckPhases.remove(hitBox);
             wreckWorlds.remove(hitBox);
@@ -510,7 +511,7 @@ public class AsyncManager extends BukkitRunnable {
 
                         craft.getAudience().sendMessage(notification);
                         var object = craft.getType().getObjectProperty(CraftType.COLLISION_SOUND);
-                        if(!(object instanceof Sound))
+                        if (!(object instanceof Sound))
                             throw new IllegalStateException("COLLISION_SOUND must be of type Sound");
 
                         craft.getAudience().playSound((Sound) object);
