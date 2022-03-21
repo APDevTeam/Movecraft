@@ -14,6 +14,7 @@ import net.countercraft.movecraft.events.CraftCollisionEvent;
 import net.countercraft.movecraft.events.CraftCollisionExplosionEvent;
 import net.countercraft.movecraft.events.CraftPreTranslateEvent;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
+import net.countercraft.movecraft.events.CraftTeleportEntityEvent;
 import net.countercraft.movecraft.events.CraftTranslateEvent;
 import net.countercraft.movecraft.events.ItemHarvestEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
@@ -314,7 +315,7 @@ public class TranslationTask extends AsyncTask {
         CraftTranslateEvent translateEvent = new CraftTranslateEvent(craft, oldHitBox, newHitBox, world);
         Bukkit.getServer().getPluginManager().callEvent(translateEvent);
         if (translateEvent.isCancelled()){
-            this.fail(translateEvent.getFailMessage(), translateEvent.isPlayingFailSound());
+            fail(translateEvent.getFailMessage(), translateEvent.isPlayingFailSound());
             return;
         }
 
@@ -402,16 +403,28 @@ public class TranslationTask extends AsyncTask {
                     (oldHitBox.getMaxX() + oldHitBox.getMinX())/2.0,
                     (oldHitBox.getMaxY() + oldHitBox.getMinY())/2.0,
                     (oldHitBox.getMaxZ() + oldHitBox.getMinZ())/2.0);
-            for (Entity entity : craft.getWorld().getNearbyEntities(midpoint, oldHitBox.getXLength() / 2.0 + 1, oldHitBox.getYLength() / 2.0 + 2, oldHitBox.getZLength() / 2.0 + 1)) {
-                if (entity.getType() == EntityType.PLAYER) {
-                    if (craft instanceof SinkingCraft)
+            for (Entity entity : craft.getWorld().getNearbyEntities(midpoint,
+                    oldHitBox.getXLength() / 2.0 + 1,
+                    oldHitBox.getYLength() / 2.0 + 2,
+                    oldHitBox.getZLength() / 2.0 + 1
+            )) {
+                if ((entity.getType() == EntityType.PLAYER && !(craft instanceof SinkingCraft))) {
+                    CraftTeleportEntityEvent e = new CraftTeleportEntityEvent(craft, entity);
+                    Bukkit.getServer().getPluginManager().callEvent(e);
+                    if (e.isCancelled())
                         continue;
 
-                    EntityUpdateCommand eUp = new EntityUpdateCommand(entity, dx, dy, dz, 0, 0, world, sound, volume);
+                    EntityUpdateCommand eUp = new EntityUpdateCommand(entity, dx, dy, dz, 0, 0,
+                            world, sound, volume);
                     updates.add(eUp);
                 }
                 else if (!craft.getType().getBoolProperty(CraftType.ONLY_MOVE_PLAYERS)
                         || entity.getType() == EntityType.PRIMED_TNT) {
+                    CraftTeleportEntityEvent e = new CraftTeleportEntityEvent(craft, entity);
+                    Bukkit.getServer().getPluginManager().callEvent(e);
+                    if (e.isCancelled())
+                        continue;
+
                     EntityUpdateCommand eUp = new EntityUpdateCommand(entity, dx, dy, dz, 0, 0, world);
                     updates.add(eUp);
                 }

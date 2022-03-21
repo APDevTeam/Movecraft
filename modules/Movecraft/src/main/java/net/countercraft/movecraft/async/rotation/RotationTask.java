@@ -27,6 +27,7 @@ import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.SinkingCraft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftRotateEvent;
+import net.countercraft.movecraft.events.CraftTeleportEntityEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.update.CraftRotateCommand;
 import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
@@ -190,6 +191,12 @@ public class RotationTask extends AsyncTask {
                     double[] rotatedCoords = MathUtils.rotateVecNoRound(rotation,
                             adjustedPLoc.getX(), adjustedPLoc.getZ());
                     float newYaw = rotation == MovecraftRotation.CLOCKWISE ? 90F : -90F;
+
+                    CraftTeleportEntityEvent e = new CraftTeleportEntityEvent(craft, entity);
+                    Bukkit.getServer().getPluginManager().callEvent(e);
+                    if (e.isCancelled())
+                        continue;
+
                     EntityUpdateCommand eUp = new EntityUpdateCommand(entity,
                             rotatedCoords[0] + tOP.getX() - entity.getLocation().getX(),
                             0,
