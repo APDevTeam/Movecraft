@@ -100,22 +100,6 @@ public final class InteractListener implements Listener {
 
             CraftType type = craft.getType();
             int currentGear = craft.getCurrentGear();
-            if (p.isSneaking() && !craft.getPilotLocked()) {
-                // Handle shift right clicks (when not in direct control mode)
-                int gearShifts = type.getIntProperty(CraftType.GEAR_SHIFTS);
-                if (gearShifts == 1) {
-                    p.sendMessage(I18nSupport.getInternationalisedString("Gearshift - Disabled for craft type"));
-                    return;
-                }
-                currentGear++;
-                if (currentGear > gearShifts)
-                    currentGear = 1;
-                p.sendMessage(I18nSupport.getInternationalisedString("Gearshift - Gear changed")
-                        + " " + currentGear + " / " + gearShifts);
-                craft.setCurrentGear(currentGear);
-                return;
-            }
-
             int tickCooldown = (int) craft.getType().getPerWorldProperty(
                     CraftType.PER_WORLD_TICK_COOLDOWN, craft.getWorld());
             if (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_DIRECT_MOVEMENT)
