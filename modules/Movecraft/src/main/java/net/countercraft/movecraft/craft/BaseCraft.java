@@ -396,17 +396,28 @@ public abstract class BaseCraft implements Craft {
                 || type.getDoubleProperty(CraftType.DYNAMIC_LAG_POWER_FACTOR) == 0.0
                 || Math.abs(type.getDoubleProperty(CraftType.DYNAMIC_LAG_POWER_FACTOR)) > 1.0)
             return (cruiseTickCooldown + chestPenalty) * (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1);
-        if (stats.getCount() == 0)
-            return (int) Math.round(20.0 * ((cruiseTickCooldown + 1.0) / type.getDoubleProperty(CraftType.DYNAMIC_LAG_MIN_SPEED)) * (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1));
 
         int cruiseSkipBlocks = (int) type.getPerWorldProperty(CraftType.PER_WORLD_CRUISE_SKIP_BLOCKS, w);
+        if (stats.getCount() == 0) {
+            if (Settings.Debug) {
+                Bukkit.getLogger().info("First cruise: ");
+                Bukkit.getLogger().info("\t- Skip: " + cruiseSkipBlocks);
+                Bukkit.getLogger().info("\t- Tick: " + cruiseTickCooldown);
+                Bukkit.getLogger().info("\t- MinSpeed: " + type.getDoubleProperty(CraftType.DYNAMIC_LAG_MIN_SPEED));
+                Bukkit.getLogger().info("\t- Gearshifts: " + (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1));
+                Bukkit.getLogger().info("\t- Cooldown: " + (int) Math.round(20.0 * ((cruiseSkipBlocks + 1.0) / type.getDoubleProperty(CraftType.DYNAMIC_LAG_MIN_SPEED)) * (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1)));
+            }
+            return (int) Math.round(20.0 * ((cruiseSkipBlocks + 1.0) / type.getDoubleProperty(CraftType.DYNAMIC_LAG_MIN_SPEED)) * (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1));
+        }
+
         if (Settings.Debug) {
-            Bukkit.getLogger().info("Skip: " + cruiseSkipBlocks);
-            Bukkit.getLogger().info("Tick: " + cruiseTickCooldown);
-            Bukkit.getLogger().info("SpeedFactor: " + type.getDoubleProperty(CraftType.DYNAMIC_LAG_SPEED_FACTOR));
-            Bukkit.getLogger().info("PowerFactor: " + type.getDoubleProperty(CraftType.DYNAMIC_LAG_POWER_FACTOR));
-            Bukkit.getLogger().info("MinSpeed: " + type.getDoubleProperty(CraftType.DYNAMIC_LAG_MIN_SPEED));
-            Bukkit.getLogger().info("CruiseTime: " + getMeanCruiseTime() * 1000.0 + "ms");
+            Bukkit.getLogger().info("Cruise: ");
+            Bukkit.getLogger().info("\t- Skip: " + cruiseSkipBlocks);
+            Bukkit.getLogger().info("\t- Tick: " + cruiseTickCooldown);
+            Bukkit.getLogger().info("\t- SpeedFactor: " + type.getDoubleProperty(CraftType.DYNAMIC_LAG_SPEED_FACTOR));
+            Bukkit.getLogger().info("\t- PowerFactor: " + type.getDoubleProperty(CraftType.DYNAMIC_LAG_POWER_FACTOR));
+            Bukkit.getLogger().info("\t- MinSpeed: " + type.getDoubleProperty(CraftType.DYNAMIC_LAG_MIN_SPEED));
+            Bukkit.getLogger().info("\t- CruiseTime: " + getMeanCruiseTime() * 1000.0 + "ms");
         }
 
         // Dynamic Lag Speed
