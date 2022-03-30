@@ -33,6 +33,7 @@ import net.countercraft.movecraft.craft.SinkingCraft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.craft.type.RequiredBlockEntry;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
+import net.countercraft.movecraft.exception.EmptyHitBoxException;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.mapUpdater.update.BlockCreateCommand;
@@ -447,11 +448,23 @@ public class AsyncManager extends BukkitRunnable {
                     continue;
 
                 for (Craft craft : CraftManager.getInstance().getPlayerCraftsInWorld(w)) {
+                    MovecraftLocation craftCenter;
+                    try {
+                        craftCenter = craft.getHitBox().getMidPoint();
+                    }
+                    catch (EmptyHitBoxException e) {
+                        continue;
+                    }
                     if (!recentContactTracking.containsKey(craft))
                         recentContactTracking.put(craft, new HashMap<>());
                     for (Craft target : craft.getContacts()) {
-                        MovecraftLocation craftCenter = craft.getHitBox().getMidPoint();
-                        MovecraftLocation targetCenter = target.getHitBox().getMidPoint();
+                        MovecraftLocation targetCenter;
+                        try {
+                            targetCenter = target.getHitBox().getMidPoint();
+                        }
+                        catch (EmptyHitBoxException e) {
+                            continue;
+                        }
                         int diffx = craftCenter.getX() - targetCenter.getX();
                         int diffz = craftCenter.getZ() - targetCenter.getZ();
                         int distsquared = craftCenter.distanceSquared(targetCenter);
