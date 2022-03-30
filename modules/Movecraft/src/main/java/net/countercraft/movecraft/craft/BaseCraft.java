@@ -8,6 +8,7 @@ import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.exception.EmptyHitBoxException;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.CachedMovecraftWorld;
 import net.countercraft.movecraft.processing.MovecraftWorld;
@@ -200,8 +201,15 @@ public abstract class BaseCraft implements Craft {
                     && ((PilotedCraft) contact).getPilot() == ((PilotedCraft) this).getPilot())
                 continue;
 
-            MovecraftLocation ccenter = getHitBox().getMidPoint();
-            MovecraftLocation tcenter = contact.getHitBox().getMidPoint();
+            MovecraftLocation ccenter;
+            MovecraftLocation tcenter;
+            try {
+                ccenter = getHitBox().getMidPoint();
+                tcenter = contact.getHitBox().getMidPoint();
+            }
+            catch (EmptyHitBoxException e) {
+                continue;
+            }
             int distsquared = ccenter.distanceSquared(tcenter);
             double detectionMultiplier;
             if (tcenter.getY() > 65) // TODO: fix the water line
