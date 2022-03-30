@@ -76,6 +76,7 @@ final public class CraftType {
     private static final NamespacedKey TICK_COOLDOWN = buildKey("tick_cooldown");
         // Private key used as default for PER_WORLD_TICK_COOLDOWN
     public static final NamespacedKey FLY_BLOCKS = buildKey("fly_blocks");
+    public static final NamespacedKey DETECTION_BLOCKS = buildKey("detection_blocks");
     public static final NamespacedKey FORBIDDEN_SIGN_STRINGS = buildKey("forbidden_sign_strings");
     private static final NamespacedKey PER_WORLD_SPEED = buildKey("per_world_speed");
         // Private key used to calculate PER_WORLD_TICK_COOLDOWN
@@ -385,6 +386,7 @@ final public class CraftType {
 
         /* Optional properties */
         registerProperty(new RequiredBlockProperty("flyblocks", FLY_BLOCKS, type -> new HashSet<>()));
+        registerProperty(new RequiredBlockProperty("detectionblocks", DETECTION_BLOCKS, type -> new HashSet<>()));
         registerProperty(new ObjectPropertyImpl("forbiddenSignStrings", FORBIDDEN_SIGN_STRINGS,
                 (data, type, fileKey, namespacedKey) -> data.getStringListOrEmpty(fileKey).stream().map(
                         String::toLowerCase).collect(Collectors.toSet()),
