@@ -3,6 +3,7 @@ package net.countercraft.movecraft.sign;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.RequiredBlockEntry;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
 import net.countercraft.movecraft.util.Counter;
@@ -84,50 +85,105 @@ public final class StatusSign implements Listener{
         }
         int signLine=1;
         int signColumn=0;
-        /*  TODO: Implement new system for flyblocks on status signs
-        for(EnumSet<Material> alFlyBlockID : craft.getType().getFlyBlocks().keySet()) {
-            Material flyBlockID= alFlyBlockID.get(0);
-            double minimum=craft.getType().getFlyBlocks().get(alFlyBlockID).get(0);
-            if(foundBlocks.get(flyBlockID) != 0 && minimum>0) { // if it has a minimum, it should be considered for sinking consideration
-                int amount=foundBlocks.get((flyBlockID));
-                double percentPresent= (amount*100D/totalBlocks);
-                String signText="";
-                if(percentPresent>minimum*1.04) {
-                    signText+= ChatColor.GREEN;
-                } else if(percentPresent>minimum*1.02) {
-                    signText+=ChatColor.YELLOW;
-                } else {
-                    signText+=ChatColor.RED;
-                }
-                if(flyBlockID == Material.REDSTONE_BLOCK) {
-                    signText+="R";
-                } else if(flyBlockID == Material.IRON_BLOCK) {
-                    signText+="I";
-                } else {
-                    signText+= flyBlockID.toString().charAt(0);
-                }
+        //The following code is cannibalized from AsyncManager but I'm not sure of a better way to do it
+        // Create counters and populate with required block entries
+        Counter<RequiredBlockEntry> flyBlocks = new Counter<>();
+        flyBlocks.putAll(craft.getType().getRequiredBlockProperty(CraftType.FLY_BLOCKS));
+        Counter<RequiredBlockEntry> moveBlocks = new Counter<>();
+        moveBlocks.putAll(craft.getType().getRequiredBlockProperty(CraftType.MOVE_BLOCKS));
 
-                signText+=" ";
-                signText+=  (int) percentPresent;
-                signText+="/";
-                signText+= (int) minimum;
-                signText+="  ";
-                if(signColumn==0) {
-                    event.setLine(signLine,signText);
-                    signColumn++;
-                } else if(signLine<3) {
-                    String existingLine = event.getLine(signLine);
-                    existingLine += signText;
-                    event.setLine(signLine, existingLine);
-                    signLine++;
-                    signColumn=0;
-                }
+        // go through each block in the HitBox, and if it's in the FlyBlocks or MoveBlocks, increment the counter
+        int totalNonNegligibleBlocks = 0;
+        int totalNonNegligibleWaterBlocks = 0;
+        for (MovecraftLocation l : craft.getHitBox()) {
+            Material type = craft.getWorld().getBlockAt(l.getX(), l.getY(), l.getZ()).getType();
+            for(RequiredBlockEntry entry : flyBlocks.getKeySet()) {
+                if(entry.contains(type))
+                    flyBlocks.add(entry);
+            }
+            for(RequiredBlockEntry entry : moveBlocks.getKeySet()) {
+                if(entry.contains(type))
+                    moveBlocks.add(entry);
+            }
+
+            if (type != Material.FIRE && !type.isAir()) {
+                totalNonNegligibleBlocks++;
+            }
+            if (type != Material.FIRE && !type.isAir() && type != Material.WATER) {
+                totalNonNegligibleWaterBlocks++;
             }
         }
-        if (signLine < 3 && signColumn == 1){
-            signLine++;
+
+        double sinkPercent = craft.getType().getDoubleProperty(CraftType.SINK_PERCENT) / 100.0;
+        for (RequiredBlockEntry entry : flyBlocks.getKeySet()) {
+            if (entry.getMin() == 0.0)
+                continue;
+            double percentPresent = (flyBlocks.get(entry)*100D);
+            if (craft.getType().getBoolProperty(CraftType.BLOCKED_BY_WATER)) {
+                percentPresent /= totalNonNegligibleBlocks;
+            } else {
+                percentPresent /= totalNonNegligibleWaterBlocks;
+            }
+            String signText="";
+            if(percentPresent>entry.getMin()*1.04) {
+                signText+= ChatColor.GREEN;
+            } else if(percentPresent>entry.getMin()*1.02) {
+                signText+=ChatColor.YELLOW;
+            } else {
+                signText+=ChatColor.RED;
+            }
+            signText += entry.materialsToString().toUpperCase().charAt(0);
+            signText+=" ";
+            signText+=  (int) percentPresent;
+            signText+="/";
+            signText+= (int) entry.getMin();
+            signText+="  ";
+            if(signColumn==0) {
+                event.setLine(signLine,signText);
+                signColumn++;
+            } else if(signLine<3) {
+                String existingLine = event.getLine(signLine);
+                existingLine += signText;
+                event.setLine(signLine, existingLine);
+                signLine++;
+                signColumn=0;
+            }
         }
-        */
+        for (RequiredBlockEntry entry : moveBlocks.getKeySet()) {
+            if (entry.getMin() == 0.0)
+                continue;
+            double percentPresent = (moveBlocks.get(entry)*100D);
+            if (craft.getType().getBoolProperty(CraftType.BLOCKED_BY_WATER)) {
+                percentPresent /= totalNonNegligibleBlocks;
+            } else {
+                percentPresent /= totalNonNegligibleWaterBlocks;
+            }
+            String signText="";
+            if(percentPresent>entry.getMin()*1.04) {
+                signText+= ChatColor.GREEN;
+            } else if(percentPresent>entry.getMin()*1.02) {
+                signText+=ChatColor.YELLOW;
+            } else {
+                signText+=ChatColor.RED;
+            }
+            signText += entry.materialsToString().toUpperCase().charAt(0);
+            signText+=" ";
+            signText+=  (int) percentPresent;
+            signText+="/";
+            signText+= (int) entry.getMin();
+            signText+="  ";
+            if(signColumn==0) {
+                event.setLine(signLine,signText);
+                signColumn++;
+            } else if(signLine<3) {
+                String existingLine = event.getLine(signLine);
+                existingLine += signText;
+                event.setLine(signLine, existingLine);
+                signLine++;
+                signColumn=0;
+            }
+        }
+
         String fuelText="";
         int cruiseSkipBlocks = (int) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_CRUISE_SKIP_BLOCKS, craft.getWorld());
         cruiseSkipBlocks++;
