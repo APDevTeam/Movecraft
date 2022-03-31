@@ -64,9 +64,6 @@ public class RequiredBlockEntry {
      * @return A string representation of the materials contained in this
      */
     public String materialsToString() {
-        if (name != null)
-            return name;
-
         Set<String> names = new HashSet<>();
         for(Material m : materials) {
             names.add(m.name().toLowerCase().replace("_", " "));
@@ -179,4 +176,11 @@ public class RequiredBlockEntry {
     public boolean isNumericMin() {
         return numericMin;
     }
+
+    /**
+     * Gets a simplified name for this RequiredBlockEntry.
+     * This is the name of the tag or material if it is defined a single tag or material,
+     * or the first tag/material in the ArrayList if it is an ArrayList.
+     */
+    public String getName() { return name; }
 }
