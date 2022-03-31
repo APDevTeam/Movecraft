@@ -132,7 +132,9 @@ public final class StatusSign implements Listener{
             } else {
                 signText+=ChatColor.RED;
             }
-            signText += entry.materialsToString().toUpperCase().charAt(0);
+            if (entry.getName() != null) {
+                signText += entry.getName().toUpperCase().charAt(0);
+            }
             signText+=" ";
             signText+=  (int) percentPresent;
             signText+="/";
@@ -166,7 +168,9 @@ public final class StatusSign implements Listener{
             } else {
                 signText+=ChatColor.RED;
             }
-            signText += entry.materialsToString().toUpperCase().charAt(0);
+            if (entry.getName() != null) {
+                signText += entry.materialsToString().toUpperCase().charAt(0);
+            }
             signText+=" ";
             signText+=  (int) percentPresent;
             signText+="/";
