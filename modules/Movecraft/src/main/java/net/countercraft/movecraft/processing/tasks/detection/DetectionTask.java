@@ -18,6 +18,7 @@ import net.countercraft.movecraft.processing.functions.CraftSupplier;
 import net.countercraft.movecraft.processing.functions.DetectionPredicate;
 import net.countercraft.movecraft.processing.functions.Result;
 import net.countercraft.movecraft.processing.tasks.detection.validators.AllowedBlockValidator;
+import net.countercraft.movecraft.processing.tasks.detection.validators.DetectionBlockValidator;
 import net.countercraft.movecraft.processing.tasks.detection.validators.FlyBlockValidator;
 import net.countercraft.movecraft.processing.tasks.detection.validators.ForbiddenBlockValidator;
 import net.countercraft.movecraft.processing.tasks.detection.validators.ForbiddenSignStringValidator;
@@ -89,7 +90,8 @@ public class DetectionTask implements Supplier<Effect> {
     );
     private static final List<DetectionPredicate<Map<Material, Deque<MovecraftLocation>>>> COMPLETION_VALIDATORS = List.of(
             new SizeValidator(),
-            new FlyBlockValidator()
+            new FlyBlockValidator(),
+            new DetectionBlockValidator()
     );
     private static final List<DetectionPredicate<Map<Material, Deque<MovecraftLocation>>>> VISITED_VALIDATORS = List.of(
             new WaterContactValidator()

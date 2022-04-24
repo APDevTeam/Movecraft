@@ -16,13 +16,13 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Deque;
 import java.util.Map;
 
-public class FlyBlockValidator implements DetectionPredicate<Map<Material, Deque<MovecraftLocation>>> {
+public class DetectionBlockValidator implements DetectionPredicate<Map<Material, Deque<MovecraftLocation>>> {
     @Override
     @Contract(pure = true)
     public @NotNull Result validate(@NotNull Map<Material, Deque<MovecraftLocation>> materialDequeMap,
                                     @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable Player player) {
         int total = materialDequeMap.values().parallelStream().mapToInt(Deque::size).sum();
-        for (RequiredBlockEntry entry : type.getRequiredBlockProperty(CraftType.FLY_BLOCKS)) {
+        for (RequiredBlockEntry entry : type.getRequiredBlockProperty(CraftType.DETECTION_BLOCKS)) {
             int count = 0;
             for (Material material : entry.getMaterials()) {
                 if (!materialDequeMap.containsKey(material))
@@ -38,10 +38,10 @@ public class FlyBlockValidator implements DetectionPredicate<Map<Material, Deque
             String failMessage = "";
             switch (result.getLeft()) {
                 case NOT_ENOUGH:
-                    failMessage += I18nSupport.getInternationalisedString("Detection - Not enough flyblock");
+                    failMessage += I18nSupport.getInternationalisedString("Detection - Not enough detectionblock");
                     break;
                 case TOO_MUCH:
-                    failMessage += I18nSupport.getInternationalisedString("Detection - Too much flyblock");
+                    failMessage += I18nSupport.getInternationalisedString("Detection - Too much detectionblock");
                     break;
                 default:
                     break;
