@@ -121,21 +121,25 @@ public class CraftManager implements Iterable<Craft>{
         }
 
         for (File file : files) {
-            if (file.isFile()) {
+            if (!file.isFile())
+                continue;
+            if (!file.getName().contains(".craft"))
+                continue;
 
-                if (file.getName().contains(".craft")) {
-                    try {
-                        CraftType type = new CraftType(file);
-                        craftTypes.add(type);
-                    }
-                    catch (IllegalArgumentException | CraftType.TypeNotFoundException | ParserException | ScannerException e) {
-                        Movecraft.getInstance().getLogger().log(Level.SEVERE, I18nSupport.getInternationalisedString("Startup - failure to load craft type") + " '" + file.getName() + "' " + e.getMessage());
-                    }
-                }
+            try {
+                CraftType type = new CraftType(file);
+                craftTypes.add(type);
+            }
+            catch (IllegalArgumentException | CraftType.TypeNotFoundException | ParserException | ScannerException e) {
+                Movecraft.getInstance().getLogger().log(Level.SEVERE, "ERROR PARSING CRAFT FILE: '" + file.getName() + "': " + e.getMessage());
+            }
+            catch (Exception e) {
+                Movecraft.getInstance().getLogger().log(Level.SEVERE, "UNHANDLED EXCEPTION PARSING CRAFT FILE: '" + file.getName() + "': " + e.getMessage());
             }
         }
         if (craftTypes.isEmpty()) {
             Movecraft.getInstance().getLogger().log(Level.SEVERE, ERROR_PREFIX + I18nSupport.getInternationalisedString("Startup - No Crafts Found"));
+            return craftTypes;
         }
         Movecraft.getInstance().getLogger().log(Level.INFO, String.format(I18nSupport.getInternationalisedString("Startup - Number of craft files loaded"), craftTypes.size()));
         return craftTypes;
