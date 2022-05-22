@@ -10,8 +10,8 @@ focusedExplosion: true
 mustBeSubcraft: true
 cruiseSkipBlocks: 1
 canFly: false
-minHeightLimit: 65
-maxHeightLimit: 65
+minHeightLimit: 0
+maxHeightLimit: 255
 detectionMultiplier: 40.0
 underwaterDetectionMultiplier: 4.0
 collisionExplosion: 3.0
