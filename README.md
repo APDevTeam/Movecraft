@@ -15,13 +15,14 @@ Preliminary builds (including 1.14+ support), can be found on the [releases tab]
 Development builds can be found under the [actions tab](https://github.com/APDevTeam/Movecraft/actions?query=workflow%3A%22Java+CI%22).
 
 ## Building
-Movecraft uses multiple versions of the Spigot server software for legacy support. As such, you need to run [BuildTools](https://www.spigotmc.org/wiki/buildtools/) for several versions before building the plugin. It doesn't matter where you do this, but inside the Movecraft directory is probably a bad place.  Note: Spigot will require Java 13 to build 1.14.4 & 1.16.5 and Java 17 to build 1.17.1 & 1.18.2.
+Movecraft uses multiple versions of the Spigot server software for legacy support. As such, you need to run [BuildTools](https://www.spigotmc.org/wiki/buildtools/) for several versions before building the plugin. It doesn't matter where you do this, but inside the Movecraft directory is probably a bad place.  Note: Spigot will require Java 13 to build 1.14.4 & 1.16.5 and Java 17 to build 1.17.1, 1.18.2 and 1.19.
 
 ```
 java -jar BuildTools.jar --rev 1.14.4 --compile craftbukkit
 java -jar BuildTools.jar --rev 1.16.5 --compile craftbukkit
 java -jar BuildTools.jar --rev 1.17.1 --remapped
 java -jar BuildTools.jar --rev 1.18.2 --remapped
+java -jar BuildTools.jar --rev 1.19 --remapped
 ```
 
 Once you have compiled CraftBukkit, it should continue to exist in your local maven repository, and thus you should need to compile each version at most one time. Once complete, run the following to build Movecraft through `maven`.
