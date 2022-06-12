@@ -32,7 +32,8 @@
 				"eamodio.gitlens",
 				"SonarSource.sonarlint-vscode",
 				"redhat.vscode-xml",
-				"qwtel.sqlite-viewer"
+				"qwtel.sqlite-viewer",
+				"redhat.fabric8-analytics"
 			]
 		}
 	},
