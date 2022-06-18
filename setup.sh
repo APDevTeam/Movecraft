@@ -1,3 +1,7 @@
+# Save git information
+git_name=$(git config user.name)
+git_email=$(git config user.email)
+
 # Setup Java 11
 if [ -f /usr/lib/jvm/temurin-11-jdk-amd64/bin/java ]; then
     echo "Java 11 already installed"
@@ -56,3 +60,7 @@ if [ -f ~/.m2/repository/org/spigotmc/spigot/1.19-R0.1-SNAPSHOT/spigot-1.19-R0.1
 else
     java -jar BuildTools.jar --rev 1.19 --remapped
 fi
+
+# Restore git information
+git config --global user.name "$git_name"
+git config --global user.email "$git_email"
