@@ -37,4 +37,4 @@ mvn -T 1C clean install
 ```
 Compiled jars can be found in the `/target` directory.
 
-##### Movecraft is released under the GNU General Public License V3. 
+#### Movecraft is released under the GNU General Public License V3. 
