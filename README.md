@@ -17,6 +17,8 @@ Development builds can be found under the [actions tab](https://github.com/APDev
 Legacy builds as old as v0.7.1 (for 1.0.0) can be found on the original [Bukkit page](https://dev.bukkit.org/projects/movecraft).
 
 ## Support
+Please check the [Wiki](https://github.com/APDevTeam/Movecraft/wiki) and [FAQ](https://github.com/APDevTeam/Movecraft/wiki/Frequently-Asked-Questions) pages before asking for help!
+
 [Github Issues](https://github.com/apdevteam/movecraft/issues)
 
 [Discord](http://bit.ly/JoinAP-Dev)
