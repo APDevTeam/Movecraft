@@ -58,7 +58,7 @@ allowedBlocks:
     - activator_rail
     - dropper
     - slime_block
-    - "#carpets"
+    - "#wool_carpets"
     - coal_block
     - smooth_stone
     - bell
