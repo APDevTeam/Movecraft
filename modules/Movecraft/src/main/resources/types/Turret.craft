@@ -63,7 +63,7 @@ allowedBlocks:
     - light_gray_concrete
     - black_concrete
     - slime_block
-    - "#wool_carpets"
+    - "#carpets"
     - end_stone_bricks
 
 canFly: true

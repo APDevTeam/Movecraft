@@ -76,7 +76,7 @@ allowedBlocks:
   - "#terracotta"
   - "#concrete"
   - slime_block
-  - "#wool_carpets"
+  - "#carpets"
   - coal_block
   - end_stone_bricks
   - smooth_stone
