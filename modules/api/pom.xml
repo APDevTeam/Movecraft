@@ -99,12 +99,6 @@
             <artifactId>adventure-platform-bukkit</artifactId>
             <version>4.1.0</version>
         </dependency>
-        <dependency>
-            <groupId>com.comphenix.protocol</groupId>
-            <artifactId>ProtocolLib</artifactId>
-            <version>4.8.0</version>
-            <scope>provided</scope>
-        </dependency>
     </dependencies>
 
     <build>

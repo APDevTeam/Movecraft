@@ -25,7 +25,6 @@ import net.countercraft.movecraft.craft.PlayerCraft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.util.BlockHighlight;
 import net.countercraft.movecraft.util.MathUtils;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -47,7 +46,6 @@ import java.util.WeakHashMap;
 
 public class PlayerListener implements Listener {
     private final Map<Craft, Long> timeToReleaseAfter = new WeakHashMap<>();
-    private final Map<Craft, Queue<Integer>> highlights = new WeakHashMap<>();
 
     private Set<Location> checkCraftBorders(Craft craft) {
         Set<Location> mergePoints = new HashSet<>();
@@ -126,18 +124,14 @@ public class PlayerListener implements Listener {
             return;
         }
 
-        highlights.computeIfAbsent(c, (craft) -> new LinkedList<>());
-
         if(MathUtils.locationNearHitBox(c.getHitBox(), p.getLocation(), 2)){
             timeToReleaseAfter.remove(c);
-            clearHighlights(c, p);
             return;
         }
 
         if(timeToReleaseAfter.containsKey(c) && timeToReleaseAfter.get(c) < System.currentTimeMillis()){
             CraftManager.getInstance().release(c, CraftReleaseEvent.Reason.PLAYER, false);
             timeToReleaseAfter.remove(c);
-            clearHighlights(c, p);
             return;
         }
 
@@ -153,23 +147,7 @@ public class PlayerListener implements Listener {
             var mergePoints = checkCraftBorders(c);
             if (!mergePoints.isEmpty())
                 p.sendMessage(I18nSupport.getInternationalisedString("Manoverboard - Craft May Merge"));
-            for (var location : mergePoints){
-                highlights.get(c).add(BlockHighlight.highlightBlockAt(location, p));
-            }
             timeToReleaseAfter.put(c, System.currentTimeMillis() + c.getType().getIntProperty(CraftType.RELEASE_TIMEOUT) * 1000L);
         }
-    }
-
-    @EventHandler
-    public void onCraftRelease(CraftReleaseEvent event) {
-        if(event.getCraft() instanceof PlayerCraft)
-            clearHighlights(event.getCraft(), ((PlayerCraft) event.getCraft()).getPilot());
-    }
-
-    private void clearHighlights(Craft craft, Player player) {
-        highlights.computeIfAbsent(craft, (c) -> new LinkedList<>());
-        var queue = highlights.get(craft);
-        BlockHighlight.removeHighlights(queue, player);
-        queue.clear();
     }
 }
