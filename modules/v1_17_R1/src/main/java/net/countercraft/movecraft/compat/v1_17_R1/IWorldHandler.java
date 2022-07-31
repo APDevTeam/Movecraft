@@ -42,14 +42,35 @@ public class IWorldHandler extends WorldHandler {
         ROTATION[MovecraftRotation.ANTICLOCKWISE.ordinal()] = Rotation.COUNTERCLOCKWISE_90;
     }
     private final NextTickProvider tickProvider = new NextTickProvider();
+    private MethodHandle internalTeleportMH;
 
-    public IWorldHandler() {}
+    public IWorldHandler() {
+        MethodHandles.Lookup lookup = MethodHandles.lookup();
+        Method teleport = null;
+        try {
+            teleport = PlayerConnection.class.getDeclaredMethod("sendPacket", double.class, double.class, double.class, float.class, float.class, Set.class);
+            teleport.sentAccessible(true);
+            internalTeleportMH = lookup.unreflect(teleport);
+        } catch (NoSuchMethodException e | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+    }
 
-//    @Override
-//    public void addPlayerLocation(Player player, double x, double y, double z, float yaw, float pitch){
-//        ServerPlayer ePlayer = ((CraftPlayer) player).getHandle();
-//        ePlayer.connection.teleport(x, y, z, yaw, pitch, EnumSet.allOf(ClientboundPlayerPositionPacket.RelativeArgument.class));
-//    }
+    @Override
+    public void addPlayerLocation(Player player, double x, double y, double z, float yaw, float pitch) {
+        EntityPlayer entityPlayer = ((CraftPlayer) player).getHandle();
+        if (internalTeleportMH == null) {
+            super.addPlayerLocation(player, x, y, z, yaw, pitch);
+            return;
+        }
+
+        try {
+            internalTeleportMH.invoke(entityPlayer.playerConnection, x, y, z, yaw, pitch, EnumSet.allOf(PacketPlayOutPosition.EnumPlayerTeleportFlags.class));
+        }
+        catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+    }
 
     @Override
     public void rotateCraft(@NotNull Craft craft, @NotNull MovecraftLocation originPoint, @NotNull MovecraftRotation rotation) {
