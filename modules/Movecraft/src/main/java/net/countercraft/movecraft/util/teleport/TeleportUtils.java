@@ -42,8 +42,9 @@ public class TeleportUtils {
         UNINITIALIZED,
         FALLBACK,
         SPIGOT_MAPPED,
-        MOJANG_CLASSES_SPIGOT_FIELDS_MAPPED,
-        MOJANG_CLASSES_OBF_FIELDS_MAPPED
+        V1_17,
+        V1_18,
+        V1_19
     }
 
     private static Mode mode = Mode.UNINITIALIZED;
@@ -53,11 +54,14 @@ public class TeleportUtils {
         if (version < 17 && SpigotMappedTeleport.initialize()) {
             mode = Mode.SPIGOT_MAPPED;
         }
-        else if (version <= 17 && MojangClassesSpigotFieldsMappedTeleport.initialize()) {
-            mode = Mode.MOJANG_CLASSES_SPIGOT_FIELDS_MAPPED;
+        else if (version <= 17 && V1_17Teleport.initialize()) {
+            mode = Mode.V1_17;
         }
-        else if (version <= 18 && MojangClassesObfFieldsMappedTeleport.initialize()) {
-            mode = Mode.MOJANG_CLASSES_OBF_FIELDS_MAPPED;
+        else if (version <= 18 && V1_18Teleport.initialize()) {
+            mode = Mode.V1_18;
+        }
+        else if (version <= 19 && V1_19Teleport.initialize()) {
+            mode = Mode.V1_19;
         }
         else {
             Bukkit.getLogger().warning("Failed to access internal teleportation handle, switching to fallback");
@@ -73,11 +77,14 @@ public class TeleportUtils {
             case SPIGOT_MAPPED:
                 SpigotMappedTeleport.teleport(player, location, yawChange, pitchChange);
                 break;
-            case MOJANG_CLASSES_SPIGOT_FIELDS_MAPPED:
-                MojangClassesSpigotFieldsMappedTeleport.teleport(player, location, yawChange, pitchChange);
+            case V1_17:
+                V1_17Teleport.teleport(player, location, yawChange, pitchChange);
                 break;
-            case MOJANG_CLASSES_OBF_FIELDS_MAPPED:
-                MojangClassesObfFieldsMappedTeleport.teleport(player, location, yawChange, pitchChange);
+            case V1_18:
+                V1_18Teleport.teleport(player, location, yawChange, pitchChange);
+                break;
+            case V1_19:
+                V1_19Teleport.teleport(player, location, yawChange, pitchChange);
                 break;
             case FALLBACK:
                 Movecraft.getInstance().getWorldHandler().addPlayerLocation(player,

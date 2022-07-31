@@ -11,11 +11,11 @@ import java.lang.reflect.Method;
 import java.util.Set;
 
 /**
- * Code taken with permission from MicleBrick
+ * Code derived from code taken with permission from MicleBrick
  * https://www.spigotmc.org/threads/teleport-player-smoothly.317416/
  * Used for 1.18.2
  */
-public class MojangClassesObfFieldsMappedTeleport extends AbstractTeleport {
+public class V1_18Teleport extends AbstractTeleport {
     private static Set<Object> teleportFlags;
 
     private static Method positionMethod;
