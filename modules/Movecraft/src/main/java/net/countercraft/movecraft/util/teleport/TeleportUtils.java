@@ -52,7 +52,7 @@ public class TeleportUtils {
         if (version < 17 && SpigotMappedTeleport.initialize()) {
             mode = Mode.SPIGOT_MAPPED;
         }
-        else if (MojangMappedTeleport.initialize()) {
+        else if (MixedMappedTeleport.initialize()) {
             mode = Mode.MOJANG_MAPPED;
         }
         else {
@@ -70,7 +70,7 @@ public class TeleportUtils {
                 SpigotMappedTeleport.teleport(player, location, yawChange, pitchChange);
                 break;
             case MOJANG_MAPPED:
-                MojangMappedTeleport.teleport(player, location, yawChange, pitchChange);
+                MixedMappedTeleport.teleport(player, location, yawChange, pitchChange);
                 break;
             case FALLBACK:
                 Movecraft.getInstance().getWorldHandler().addPlayerLocation(player,
