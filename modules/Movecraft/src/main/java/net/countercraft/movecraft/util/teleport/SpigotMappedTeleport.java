@@ -52,7 +52,7 @@ public class SpigotMappedTeleport extends AbstractTeleport {
     }
 
     public static boolean initialize() {
-        boolean sucess = false;
+        boolean success = false;
         try {
             Class<?> packet = getNmsClass("Packet");
             Class<?> entity = getNmsClass("Entity");
@@ -82,12 +82,12 @@ public class SpigotMappedTeleport extends AbstractTeleport {
             teleportAwaitField = TeleportUtils.getField(connectionClass, "teleportAwait");
             AField = TeleportUtils.getField(connectionClass, "A");
             eField = TeleportUtils.getField(connectionClass, "e");
-            sucess = true;
+            success = true;
         }
         catch (ClassNotFoundException | NoSuchFieldException | NoSuchMethodException | SecurityException e) {
             e.printStackTrace();
         }
-        return sucess;
+        return success;
     }
 
     public static void teleport(Player player, @NotNull Location location, float yawChange, float pitchChange) {
