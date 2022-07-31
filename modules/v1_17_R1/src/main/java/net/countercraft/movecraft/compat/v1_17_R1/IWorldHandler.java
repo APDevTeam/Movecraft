@@ -8,9 +8,7 @@ import net.countercraft.movecraft.util.CollectionUtils;
 import net.countercraft.movecraft.util.MathUtils;
 import net.countercraft.movecraft.util.UnsafeUtils;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.TickNextTickData;
 import net.minecraft.world.level.block.Block;
@@ -25,22 +23,15 @@ import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.v1_17_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_17_R1.block.data.CraftBlockData;
-import org.bukkit.craftbukkit.v1_17_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 @SuppressWarnings("unused")
 public class IWorldHandler extends WorldHandler {
@@ -52,48 +43,8 @@ public class IWorldHandler extends WorldHandler {
         ROTATION[MovecraftRotation.ANTICLOCKWISE.ordinal()] = Rotation.COUNTERCLOCKWISE_90;
     }
     private final NextTickProvider tickProvider = new NextTickProvider();
-    private MethodHandle internalTeleportMH;
-    private final Set<ClientboundPlayerPositionPacket.RelativeArgument> TELEPORT_FLAGS = Collections.unmodifiableSet(EnumSet.of(
-            ClientboundPlayerPositionPacket.RelativeArgument.Y_ROT,
-            ClientboundPlayerPositionPacket.RelativeArgument.X_ROT
-    ));
 
-    public IWorldHandler() {
-        Class clazz = null;
-        try {
-            clazz = Class.forName("net.minecraft.server.network.PlayerConnection");
-        }
-        catch (ClassNotFoundException e) {
-            e.printStackTrace();
-            return;
-        }
-        try {
-            MethodHandles.Lookup lookup = MethodHandles.lookup();
-            Method teleport = null;
-            teleport = clazz.getDeclaredMethod("a", double.class, double.class, double.class, float.class, float.class, Set.class);
-            teleport.setAccessible(true);
-            internalTeleportMH = lookup.unreflect(teleport);
-        }
-        catch (NoSuchMethodException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public void addPlayerLocation(Player player, double x, double y, double z, float yaw, float pitch) {
-        ServerPlayer entityPlayer = ((CraftPlayer) player).getHandle();
-        if (internalTeleportMH == null) {
-            super.addPlayerLocation(player, x, y, z, yaw, pitch);
-            return;
-        }
-
-        try {
-            internalTeleportMH.invoke(entityPlayer.connection, x, y, z, yaw, pitch, TELEPORT_FLAGS);
-        }
-        catch (Throwable throwable) {
-            throwable.printStackTrace();
-        }
-    }
+    public IWorldHandler() {}
 
     @Override
     public void rotateCraft(@NotNull Craft craft, @NotNull MovecraftLocation originPoint, @NotNull MovecraftRotation rotation) {
