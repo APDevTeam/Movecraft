@@ -42,8 +42,8 @@ public class TeleportUtils {
         UNINITIALIZED,
         FALLBACK,
         SPIGOT_MAPPED,
-        MIXED_MAPPED,
-        MOJANG_MAPPED
+        MOJANG_CLASSES_SPIGOT_FIELDS_MAPPED,
+        MOJANG_CLASSES_OBF_FIELDS_MAPPED
     }
 
     private static Mode mode = Mode.UNINITIALIZED;
@@ -53,11 +53,11 @@ public class TeleportUtils {
         if (version < 17 && SpigotMappedTeleport.initialize()) {
             mode = Mode.SPIGOT_MAPPED;
         }
-        else if (version <= 17 && MixedMappedTeleport.initialize()) {
-            mode = Mode.MIXED_MAPPED;
+        else if (version <= 17 && MojangClassesSpigotFieldsMappedTeleport.initialize()) {
+            mode = Mode.MOJANG_CLASSES_SPIGOT_FIELDS_MAPPED;
         }
-        else if (version <= 18 && MojangMappedTeleport.initialize()) {
-            mode = Mode.MOJANG_MAPPED;
+        else if (version <= 18 && MojangClassesObfFieldsMappedTeleport.initialize()) {
+            mode = Mode.MOJANG_CLASSES_OBF_FIELDS_MAPPED;
         }
         else {
             Bukkit.getLogger().warning("Failed to access internal teleportation handle, switching to fallback");
@@ -73,11 +73,11 @@ public class TeleportUtils {
             case SPIGOT_MAPPED:
                 SpigotMappedTeleport.teleport(player, location, yawChange, pitchChange);
                 break;
-            case MIXED_MAPPED:
-                MixedMappedTeleport.teleport(player, location, yawChange, pitchChange);
+            case MOJANG_CLASSES_SPIGOT_FIELDS_MAPPED:
+                MojangClassesSpigotFieldsMappedTeleport.teleport(player, location, yawChange, pitchChange);
                 break;
-            case MOJANG_MAPPED:
-                MojangMappedTeleport.teleport(player, location, yawChange, pitchChange);
+            case MOJANG_CLASSES_OBF_FIELDS_MAPPED:
+                MojangClassesObfFieldsMappedTeleport.teleport(player, location, yawChange, pitchChange);
                 break;
             case FALLBACK:
                 Movecraft.getInstance().getWorldHandler().addPlayerLocation(player,

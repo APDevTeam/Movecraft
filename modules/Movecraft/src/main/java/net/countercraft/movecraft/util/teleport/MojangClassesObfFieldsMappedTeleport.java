@@ -13,9 +13,9 @@ import java.util.Set;
 /**
  * Code taken with permission from MicleBrick
  * https://www.spigotmc.org/threads/teleport-player-smoothly.317416/
- * Used for 1.17.1
+ * Used for 1.18.2
  */
-public class MixedMappedTeleport extends AbstractTeleport {
+public class MojangClassesObfFieldsMappedTeleport extends AbstractTeleport {
     private static Set<Object> teleportFlags;
 
     private static Method positionMethod;
@@ -64,23 +64,23 @@ public class MixedMappedTeleport extends AbstractTeleport {
             Object[] flags = getNmClass("network.protocol.game.PacketPlayOutPosition$EnumPlayerTeleportFlags").getEnumConstants(); // $RelativeArgument
             teleportFlags = Set.of(flags[4], flags[3]); // X_ROT, Y_ROT
 
-            positionMethod = entityClass.getDeclaredMethod("setLocation", Double.TYPE, Double.TYPE, Double.TYPE, Float.TYPE, Float.TYPE); // absMoveTo
-            sendMethod = connectionClass.getMethod("sendPacket", packetClass); // send
+            positionMethod = entityClass.getDeclaredMethod("a", Double.TYPE, Double.TYPE, Double.TYPE, Float.TYPE, Float.TYPE); // absMoveTo
+            sendMethod = connectionClass.getMethod("a", packetClass); // send
 
             vec3Constructor = vectorClass.getConstructor(Double.TYPE, Double.TYPE, Double.TYPE);
             packetConstructor = positionPacketClass.getConstructor(Double.TYPE, Double.TYPE, Double.TYPE, Float.TYPE, Float.TYPE, Set.class, Integer.TYPE, Boolean.TYPE);
 
             connectionField = TeleportUtils.getField(playerClass, "b"); // connection
-            //justTeleportedField = TeleportUtils.getField(connectionClass, "justTeleported");
+            //justTeleportedField = TeleportUtils.getField(connectionClass, "justTeleported"); // justTeleported
             teleportPosField = TeleportUtils.getField(connectionClass, "y"); // awaitingPositionFromClient
-            //lastPosXField = TeleportUtils.getField(connectionClass, "lastPosX");
-            //lastPosYField = TeleportUtils.getField(connectionClass, "lastPosY");
-            //lastPosZField = TeleportUtils.getField(connectionClass, "lastPosZ");
+            //lastPosXField = TeleportUtils.getField(connectionClass, "lastPosX"); // lastPosX
+            //lastPosYField = TeleportUtils.getField(connectionClass, "lastPosY"); // lastPosY
+            //lastPosZField = TeleportUtils.getField(connectionClass, "lastPosZ"); // lastPosZ
             teleportAwaitField = TeleportUtils.getField(connectionClass, "z"); // awaitingTeleport
             awaitingTeleportTimeField = TeleportUtils.getField(connectionClass, "A"); // awaitingTeleportTime
             tickCountField = TeleportUtils.getField(connectionClass, "f"); // tickCount
-            yawField = TeleportUtils.getField(entityClass, "az"); // xRot
-            pitchField = TeleportUtils.getField(entityClass, "ay"); // yRot
+            yawField = TeleportUtils.getField(entityClass, "aB"); // xRot
+            pitchField = TeleportUtils.getField(entityClass, "aA"); // yRot
             success = true;
         }
         catch (ClassNotFoundException | NoSuchFieldException | NoSuchMethodException e) {
