@@ -8,6 +8,7 @@ import net.countercraft.movecraft.craft.SinkingCraft;
 import net.countercraft.movecraft.events.ManOverboardEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.util.MathUtils;
+import net.countercraft.movecraft.util.teleport.TeleportUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
@@ -15,10 +16,11 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
 
 import static net.countercraft.movecraft.util.ChatUtils.MOVECRAFT_COMMAND_PREFIX;
 
-public class ManOverboardCommand implements CommandExecutor{
+public class ManOverboardCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
@@ -71,13 +73,13 @@ public class ManOverboardCommand implements CommandExecutor{
 
         player.setVelocity(new Vector(0, 0, 0));
         player.setFallDistance(0);
-        player.teleport(telPoint);
+        TeleportUtils.teleport(player, telPoint, 0, 0);
         return true;
     }
 
-    private Location getCraftTeleportPoint(Craft craft) {
-        double telX = (craft.getHitBox().getMinX() + craft.getHitBox().getMaxX())/2D + 0.5D;
-        double telZ = (craft.getHitBox().getMinZ() + craft.getHitBox().getMaxZ())/2D + 0.5D;
+    private @NotNull Location getCraftTeleportPoint(@NotNull Craft craft) {
+        double telX = ((craft.getHitBox().getMinX() + craft.getHitBox().getMaxX()) / 2D) + 0.5D;
+        double telZ = ((craft.getHitBox().getMinZ() + craft.getHitBox().getMaxZ()) / 2D) + 0.5D;
         double telY = craft.getHitBox().getMaxY() + 1;
         return new Location(craft.getWorld(), telX, telY, telZ);
     }
