@@ -37,24 +37,40 @@ public class TeleportUtils {
         return Bukkit.getServer().getClass().getPackage().getName().substring(23);
     }
 
+
     private enum Mode {
         UNINITIALIZED,
         FALLBACK,
         SPIGOT_MAPPED,
         MOJANG_MAPPED
     }
+
     private static Mode mode = Mode.UNINITIALIZED;
 
-    public static void teleport(Player player, @NotNull Location location, float yawChange, float pitchChange) {
-        if (mode == Mode.UNINITIALIZED) {
-            // initialize
+    private static void initialize() {
+        int version = Integer.parseInt(getVersion().split("_")[1]);
+        if (version < 17 && SpigotMappedTeleport.initialize()) {
+            mode = Mode.SPIGOT_MAPPED;
         }
+        else if (MojangMappedTeleport.initialize()) {
+            mode = Mode.MOJANG_MAPPED;
+        }
+        else {
+            Bukkit.getLogger().warning("Failed to access internal teleportation handle, switching to fallback");
+            mode = Mode.FALLBACK;
+        }
+    }
+
+    public static void teleport(Player player, @NotNull Location location, float yawChange, float pitchChange) {
+        if (mode == Mode.UNINITIALIZED)
+            initialize();
+
         switch (mode) {
             case SPIGOT_MAPPED:
-                teleportSpigotMapped(player, location, yawChange, pitchChange);
+                SpigotMappedTeleport.teleport(player, location, yawChange, pitchChange);
                 break;
             case MOJANG_MAPPED:
-                teleportMojangMapped(player, location, yawChange, pitchChange);
+                MojangMappedTeleport.teleport(player, location, yawChange, pitchChange);
                 break;
             case FALLBACK:
                 Movecraft.getInstance().getWorldHandler().addPlayerLocation(player,
