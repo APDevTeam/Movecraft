@@ -42,6 +42,7 @@ public class TeleportUtils {
         UNINITIALIZED,
         FALLBACK,
         SPIGOT_MAPPED,
+        MIXED_MAPPED,
         MOJANG_MAPPED
     }
 
@@ -52,7 +53,10 @@ public class TeleportUtils {
         if (version < 17 && SpigotMappedTeleport.initialize()) {
             mode = Mode.SPIGOT_MAPPED;
         }
-        else if (MixedMappedTeleport.initialize()) {
+        else if (version <= 17 && MixedMappedTeleport.initialize()) {
+            mode = Mode.MIXED_MAPPED;
+        }
+        else if (version <= 18 && MojangMappedTeleport.initialize()) {
             mode = Mode.MOJANG_MAPPED;
         }
         else {
@@ -69,8 +73,11 @@ public class TeleportUtils {
             case SPIGOT_MAPPED:
                 SpigotMappedTeleport.teleport(player, location, yawChange, pitchChange);
                 break;
-            case MOJANG_MAPPED:
+            case MIXED_MAPPED:
                 MixedMappedTeleport.teleport(player, location, yawChange, pitchChange);
+                break;
+            case MOJANG_MAPPED:
+                MojangMappedTeleport.teleport(player, location, yawChange, pitchChange);
                 break;
             case FALLBACK:
                 Movecraft.getInstance().getWorldHandler().addPlayerLocation(player,
