@@ -82,12 +82,12 @@ jobs:
         id: cacheGoats
         uses: actions/cache@v2
         with:
-            path: |
-              ~/.m2/repository/org/spigotmc/spigot/1.17.1-R0.1-SNAPSHOT/
-              ~/.m2/repository/org/spigotmc/spigot-parent/
-              ~/.m2/repository/org/spigotmc/minecraft-server/
-            key: ${{ runner.os }}-spigot-1.17.1-all
-            restore-keys: ${{ runner.os }}-spigot-1.17.1-all
+          path: |
+            ~/.m2/repository/org/spigotmc/spigot/1.17.1-R0.1-SNAPSHOT/
+            ~/.m2/repository/org/spigotmc/spigot-parent/
+            ~/.m2/repository/org/spigotmc/minecraft-server/
+          key: ${{ runner.os }}-spigot-1.17.1-all
+          restore-keys: ${{ runner.os }}-spigot-1.17.1-all
       - name: Cache Maven packages
         id: cacheMain
         uses: actions/cache@v2
@@ -233,12 +233,12 @@ jobs:
       id: cacheGoats
       uses: actions/cache@v2
       with:
-          path: |
-            ~/.m2/repository/org/spigotmc/spigot/1.17.1-R0.1-SNAPSHOT/
-            ~/.m2/repository/org/spigotmc/spigot-parent/
-            ~/.m2/repository/org/spigotmc/minecraft-server/
-          key: ${{ runner.os }}-spigot-1.17.1-all
-          restore-keys: ${{ runner.os }}-spigot-1.17.1-all
+        path: |
+          ~/.m2/repository/org/spigotmc/spigot/1.17.1-R0.1-SNAPSHOT/
+          ~/.m2/repository/org/spigotmc/spigot-parent/
+          ~/.m2/repository/org/spigotmc/minecraft-server/
+        key: ${{ runner.os }}-spigot-1.17.1-all
+        restore-keys: ${{ runner.os }}-spigot-1.17.1-all
     - name: Cache 1.18.2 Maven package
       id: cacheCaves
       uses: actions/cache@v2
@@ -249,7 +249,7 @@ jobs:
           ~/.m2/repository/org/spigotmc/minecraft-server/
         key: ${{ runner.os }}-spigot-1.18.2-all
         restore-keys: ${{ runner.os }}-spigot-1.18.2-all
-    - name: Cache 1.19 Maven package
+    - name: Cache 1.19.1 Maven package
       id: cacheWild
       uses: actions/cache@v2
       with:
