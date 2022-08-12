@@ -48,7 +48,7 @@ public class IWorldHandler extends WorldHandler {
 
     public IWorldHandler() {
         String mappings = ((CraftMagicNumbers) CraftMagicNumbers.INSTANCE).getMappingsVersion();
-        if (!mappings.equals("4cc0cc97cac491651bff3af8b124a214"))
+        if (!mappings.equals("69c84c88aeb92ce9fa9525438b93f4fe"))
             throw new IllegalStateException("Movecraft is not compatible with this version of Minecraft 1.19: " + mappings);
     }
 
