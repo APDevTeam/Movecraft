@@ -24,12 +24,7 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.config.Settings;
-import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.craft.CraftStatus;
-import net.countercraft.movecraft.craft.PilotedCraft;
-import net.countercraft.movecraft.craft.PlayerCraft;
-import net.countercraft.movecraft.craft.SinkingCraft;
+import net.countercraft.movecraft.craft.*;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.craft.type.RequiredBlockEntry;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
@@ -39,6 +34,7 @@ import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.mapUpdater.update.BlockCreateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import net.countercraft.movecraft.util.Counter;
+import net.countercraft.movecraft.util.Tags;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
@@ -49,6 +45,8 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
@@ -590,9 +588,22 @@ public class AsyncManager extends BukkitRunnable {
         Counter<RequiredBlockEntry> moveBlocks = new Counter<>();
         moveBlocks.putAll(craft.getType().getRequiredBlockProperty(CraftType.MOVE_BLOCKS));
 
+        Counter<Material> materials = new Counter<>();
+        var v = craft.getType().getObjectProperty(CraftType.FUEL_TYPES);
+        if(!(v instanceof Map<?, ?>))
+            throw new IllegalStateException("FUEL_TYPES must be of type Map");
+        var fuelTypes = (Map<?, ?>) v;
+        for(var e : fuelTypes.entrySet()) {
+            if(!(e.getKey() instanceof Material))
+                throw new IllegalStateException("Keys in FUEL_TYPES must be of type Material");
+            if(!(e.getValue() instanceof Double))
+                throw new IllegalStateException("Values in FUEL_TYPES must be of type Double");
+        }
+
         // go through each block in the HitBox, and if it's in the FlyBlocks or MoveBlocks, increment the counter
         int totalNonNegligibleBlocks = 0;
         int totalNonNegligibleWaterBlocks = 0;
+        double fuel = 0;
         for (MovecraftLocation l : craft.getHitBox()) {
             Material type = craft.getWorld().getBlockAt(l.getX(), l.getY(), l.getZ()).getType();
             for(RequiredBlockEntry entry : flyBlocks.getKeySet()) {
@@ -603,12 +614,22 @@ public class AsyncManager extends BukkitRunnable {
                 if(entry.contains(type))
                     moveBlocks.add(entry);
             }
+            materials.add(type);
 
             if (type != Material.FIRE && !type.isAir()) {
                 totalNonNegligibleBlocks++;
             }
             if (type != Material.FIRE && !type.isAir() && type != Material.WATER) {
                 totalNonNegligibleWaterBlocks++;
+            }
+
+            if(Tags.FURNACES.contains(type)) {
+                InventoryHolder inventoryHolder = (InventoryHolder) craft.getWorld().getBlockAt(l.getX(), l.getY(), l.getZ()).getState();
+                for (ItemStack iStack : inventoryHolder.getInventory()) {
+                    if (iStack == null || !fuelTypes.containsKey(iStack.getType()))
+                        continue;
+                    fuel += iStack.getAmount() * (double) fuelTypes.get(iStack.getType());
+                }
             }
         }
 
@@ -641,6 +662,12 @@ public class AsyncManager extends BukkitRunnable {
 
         if (totalNonNegligibleBlocks == 0)
             isSinking = true;
+
+        if (craft instanceof BaseCraft) {
+            BaseCraft b = ((BaseCraft) craft);
+            b.updateMaterials(materials);
+            b.setTotalFuel(fuel);
+        }
 
         return CraftStatus.of(isSinking, isDisabled);
     }
