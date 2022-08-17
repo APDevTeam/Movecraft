@@ -103,6 +103,7 @@ requireWaterContact: true
 allowVerticalMovement: true
 fuelBurnRate: 1.0
 tryNudge: false
+mergePistonExtensions: true
 flyblocks:
     ["#planks", "#wooden_slabs"]:
         - 25.0

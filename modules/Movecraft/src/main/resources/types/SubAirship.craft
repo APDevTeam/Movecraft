@@ -112,6 +112,7 @@ tryNudge: false
 halfSpeedUnderwater: true
 sinkPercent: 99.0
 overallSinkPercent: 60.0
+mergePistonExtensions: true
 moveblocks:
     redstone_block: # redstone represents engines
         - 1.0
