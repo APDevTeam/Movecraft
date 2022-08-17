@@ -115,8 +115,10 @@ public final class StatusSign implements Listener{
             } else {
                 signText+=ChatColor.RED;
             }
-            if (entry.getName() != null) {
+            if (entry.getName() == null) {
                 signText += entry.materialsToString().toUpperCase().charAt(0);
+            } else {
+                signText += entry.getName().toUpperCase().charAt(0);
             }
             signText+=" ";
             signText+=  (int) percentPresent;

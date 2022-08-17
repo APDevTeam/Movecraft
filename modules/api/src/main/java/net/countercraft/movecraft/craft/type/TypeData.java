@@ -521,8 +521,8 @@ public final class TypeData {
             if (entryKey instanceof ArrayList) {
                 //name for array list
                 ArrayList<?> list = (ArrayList<?>) entryKey;
-                if (list.get(1) instanceof String) {
-                    s = (String)list.get(1);
+                if (list.get(0) instanceof String) {
+                    s = (String)list.get(0);
                 }
             } else if (entryKey instanceof String) {
                 s = (String)entryKey;
