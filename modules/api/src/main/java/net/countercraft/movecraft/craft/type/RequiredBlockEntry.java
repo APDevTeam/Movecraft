@@ -30,7 +30,7 @@ public class RequiredBlockEntry {
     private final boolean numericMin;
 
 
-    public RequiredBlockEntry(EnumSet<Material> materials, @NotNull Pair<Boolean, ? extends Number> min, @NotNull Pair<Boolean, ? extends Number> max, String name) {
+    public RequiredBlockEntry(EnumSet<Material> materials, @NotNull Pair<Boolean, ? extends Number> min, @NotNull Pair<Boolean, ? extends Number> max, @NotNull String name) {
         this.materials = materials;
         this.min = min.getRight().doubleValue();
         this.numericMin = min.getLeft();
@@ -177,10 +177,7 @@ public class RequiredBlockEntry {
         return numericMin;
     }
 
-    /**
-     * Gets a simplified name for this RequiredBlockEntry.
-     * This is the name of the tag or material if it is defined a single tag or material,
-     * or the first tag/material in the ArrayList if it is an ArrayList.
-     */
-    public String getName() { return name; }
+    public String getName () {
+        return name;
+    }
 }

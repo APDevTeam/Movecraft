@@ -19,19 +19,20 @@ import java.util.Map;
 public class FlyBlockValidator implements DetectionPredicate<Map<Material, Deque<MovecraftLocation>>> {
     @Override
     @Contract(pure = true)
-    public @NotNull Result validate(@NotNull Map<Material, Deque<MovecraftLocation>> materialDequeMap, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable Player player) {
+    public @NotNull Result validate(@NotNull Map<Material, Deque<MovecraftLocation>> materialDequeMap,
+                                    @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable Player player) {
         int total = materialDequeMap.values().parallelStream().mapToInt(Deque::size).sum();
         for (RequiredBlockEntry entry : type.getRequiredBlockProperty(CraftType.FLY_BLOCKS)) {
             int count = 0;
-            for(Material material : entry.getMaterials()) {
-                if(!materialDequeMap.containsKey(material)) {
+            for (Material material : entry.getMaterials()) {
+                if (!materialDequeMap.containsKey(material))
                     continue;
-                }
+
                 count += materialDequeMap.get(material).size();
             }
 
             var result = entry.detect(count, total);
-            if(result.getLeft() == RequiredBlockEntry.DetectionResult.SUCCESS)
+            if (result.getLeft() == RequiredBlockEntry.DetectionResult.SUCCESS)
                 continue;
 
             String failMessage = "";
@@ -50,5 +51,4 @@ public class FlyBlockValidator implements DetectionPredicate<Map<Material, Deque
         }
         return Result.succeed();
     }
-
 }

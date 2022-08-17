@@ -1,6 +1,10 @@
 package net.countercraft.movecraft.sign;
 
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
+import net.countercraft.movecraft.craft.BaseCraft;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.craft.type.RequiredBlockEntry;
@@ -20,8 +24,10 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 
 public final class StatusSign implements Listener{
 
@@ -52,109 +58,50 @@ public final class StatusSign implements Listener{
         if (!ChatColor.stripColor(event.getLine(0)).equalsIgnoreCase("Status:")) {
             return;
         }
-        int fuel=0;
-        int totalBlocks=0;
-        Counter<Material> foundBlocks = new Counter<>();
+        double fuel = craft.getTotalFuel();
 
-        var v = craft.getType().getObjectProperty(CraftType.FUEL_TYPES);
-        if(!(v instanceof Map<?, ?>))
-            throw new IllegalStateException("FUEL_TYPES must be of type Map");
-        var fuelTypes = (Map<?, ?>) v;
-        for(var e : fuelTypes.entrySet()) {
-            if(!(e.getKey() instanceof Material))
-                throw new IllegalStateException("Keys in FUEL_TYPES must be of type Material");
-            if(!(e.getValue() instanceof Double))
-                throw new IllegalStateException("Values in FUEL_TYPES must be of type Double");
+        int totalNonNegligibleBlocks = 0;
+        int totalNonNegligibleWaterBlocks = 0;
+        Counter<Material> materials = craft.getMaterials();
+        if (materials.isEmpty()) {
+            return;
         }
-
-        for (MovecraftLocation ml : craft.getHitBox()) {
-            Material material = craft.getWorld().getBlockAt(ml.getX(), ml.getY(), ml.getZ()).getType();
-            foundBlocks.add(material);
-
-            if(Tags.FURNACES.contains(material)) {
-                InventoryHolder inventoryHolder = (InventoryHolder) craft.getWorld().getBlockAt(ml.getX(), ml.getY(), ml.getZ()).getState();
-                for (ItemStack iStack : inventoryHolder.getInventory()) {
-                    if (iStack == null || !fuelTypes.containsKey(iStack.getType()))
-                        continue;
-                    fuel += iStack.getAmount() * (double) fuelTypes.get(iStack.getType());
+        for (Material material : materials.getKeySet()) {
+            if (material.equals(Material.FIRE) || material.equals(Material.AIR)) {
+                continue;
+            }
+            int add = materials.get(material);
+            totalNonNegligibleBlocks += add;
+            if (!material.equals(Material.WATER)) {
+                totalNonNegligibleWaterBlocks += add;
+            }
+        }
+        Object2IntMap<RequiredBlockEntry> displayBlocks = new Object2IntOpenHashMap<>();
+        for (RequiredBlockEntry entry : craft.getType().getRequiredBlockProperty(CraftType.FLY_BLOCKS)) {
+            int total = 0;
+            for (Material material : entry.getMaterials()) {
+                if (materials.getKeySet().contains(material)) {
+                    total += materials.get(material);
                 }
             }
-            if(!material.isAir() && material != Material.FIRE) {
-                totalBlocks++;
+            displayBlocks.putIfAbsent(entry,total);
+        }
+        for (RequiredBlockEntry entry : craft.getType().getRequiredBlockProperty(CraftType.MOVE_BLOCKS)) {
+            int total = 0;
+            for (Material material : entry.getMaterials()) {
+                if (materials.getKeySet().contains(material)) {
+                    total += materials.get(material);
+                }
             }
+            displayBlocks.putIfAbsent(entry,total);
         }
         int signLine=1;
         int signColumn=0;
-        //The following code is cannibalized from AsyncManager but I'm not sure of a better way to do it
-        // Create counters and populate with required block entries
-        Counter<RequiredBlockEntry> flyBlocks = new Counter<>();
-        flyBlocks.putAll(craft.getType().getRequiredBlockProperty(CraftType.FLY_BLOCKS));
-        Counter<RequiredBlockEntry> moveBlocks = new Counter<>();
-        moveBlocks.putAll(craft.getType().getRequiredBlockProperty(CraftType.MOVE_BLOCKS));
-
-        // go through each block in the HitBox, and if it's in the FlyBlocks or MoveBlocks, increment the counter
-        int totalNonNegligibleBlocks = 0;
-        int totalNonNegligibleWaterBlocks = 0;
-        for (MovecraftLocation l : craft.getHitBox()) {
-            Material type = craft.getWorld().getBlockAt(l.getX(), l.getY(), l.getZ()).getType();
-            for(RequiredBlockEntry entry : flyBlocks.getKeySet()) {
-                if(entry.contains(type))
-                    flyBlocks.add(entry);
-            }
-            for(RequiredBlockEntry entry : moveBlocks.getKeySet()) {
-                if(entry.contains(type))
-                    moveBlocks.add(entry);
-            }
-
-            if (type != Material.FIRE && !type.isAir()) {
-                totalNonNegligibleBlocks++;
-            }
-            if (type != Material.FIRE && !type.isAir() && type != Material.WATER) {
-                totalNonNegligibleWaterBlocks++;
-            }
-        }
-
-        double sinkPercent = craft.getType().getDoubleProperty(CraftType.SINK_PERCENT) / 100.0;
-        for (RequiredBlockEntry entry : flyBlocks.getKeySet()) {
-            if (entry.getMin() == 0.0)
+        for (RequiredBlockEntry entry : displayBlocks.keySet()) {
+            if (entry.getMin() == 0.0) {
                 continue;
-            double percentPresent = (flyBlocks.get(entry)*100D);
-            if (craft.getType().getBoolProperty(CraftType.BLOCKED_BY_WATER)) {
-                percentPresent /= totalNonNegligibleBlocks;
-            } else {
-                percentPresent /= totalNonNegligibleWaterBlocks;
             }
-            String signText="";
-            if(percentPresent>entry.getMin()*1.04) {
-                signText+= ChatColor.GREEN;
-            } else if(percentPresent>entry.getMin()*1.02) {
-                signText+=ChatColor.YELLOW;
-            } else {
-                signText+=ChatColor.RED;
-            }
-            if (entry.getName() != null) {
-                signText += entry.getName().toUpperCase().charAt(0);
-            }
-            signText+=" ";
-            signText+=  (int) percentPresent;
-            signText+="/";
-            signText+= (int) entry.getMin();
-            signText+="  ";
-            if(signColumn==0) {
-                event.setLine(signLine,signText);
-                signColumn++;
-            } else if(signLine<3) {
-                String existingLine = event.getLine(signLine);
-                existingLine += signText;
-                event.setLine(signLine, existingLine);
-                signLine++;
-                signColumn=0;
-            }
-        }
-        for (RequiredBlockEntry entry : moveBlocks.getKeySet()) {
-            if (entry.getMin() == 0.0)
-                continue;
-            double percentPresent = (moveBlocks.get(entry)*100D);
+            double percentPresent = (displayBlocks.get(entry)*100D);
             if (craft.getType().getBoolProperty(CraftType.BLOCKED_BY_WATER)) {
                 percentPresent /= totalNonNegligibleBlocks;
             } else {

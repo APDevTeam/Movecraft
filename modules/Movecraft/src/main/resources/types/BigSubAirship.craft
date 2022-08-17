@@ -142,3 +142,9 @@ flyblocks:
     water: # so is water
         - 0.0
         - 1.0
+passthroughBlocks:
+    - kelp_plant
+    - seagrass
+    - kelp
+    - tall_seagrass
+    - bubble_column

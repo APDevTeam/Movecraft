@@ -45,12 +45,6 @@ public class IWorldHandler extends WorldHandler {
 
     public IWorldHandler() {}
 
-//    @Override
-//    public void addPlayerLocation(Player player, double x, double y, double z, float yaw, float pitch){
-//        ServerPlayer ePlayer = ((CraftPlayer) player).getHandle();
-//        ePlayer.connection.teleport(x, y, z, yaw, pitch, EnumSet.allOf(ClientboundPlayerPositionPacket.RelativeArgument.class));
-//    }
-
     @Override
     public void rotateCraft(@NotNull Craft craft, @NotNull MovecraftLocation originPoint, @NotNull MovecraftRotation rotation) {
         //*******************************************

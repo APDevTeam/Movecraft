@@ -22,10 +22,12 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.MovecraftRotation;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.processing.MovecraftWorld;
+import net.countercraft.movecraft.util.Counter;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
 import net.countercraft.movecraft.util.hitboxes.MutableHitBox;
 import net.kyori.adventure.audience.Audience;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
@@ -253,4 +255,12 @@ public interface Craft {
     Audience getAudience();
 
     void setAudience(Audience audience);
+
+    Counter<Material> getMaterials ();
+
+    void updateMaterials (Counter<Material> materials);
+
+    double getTotalFuel ();
+
+    void setTotalFuel (double fuel);
 }

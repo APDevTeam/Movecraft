@@ -55,15 +55,19 @@ public class Tags {
 
     @Nullable
     public static EnumSet<Material> parseBlockRegistry(@NotNull String string) {
-        if(!string.startsWith("#")){
+        if (!string.startsWith("#"))
             return null;
-        }
+
         String nameKey = string.substring(1);
         var key = keyFromString(nameKey);
-        if(key == null){
+        if (key == null)
+            throw new IllegalArgumentException("Entry " + string + " is not a valid namespace key!");
+
+        var tag = Bukkit.getTag(Tag.REGISTRY_BLOCKS, key, Material.class);
+        if (tag == null)
             throw new IllegalArgumentException("Entry " + string + " is not a valid tag!");
-        }
-        var tags = Bukkit.getTag(Tag.REGISTRY_BLOCKS, key, Material.class).getValues();
+
+        var tags = tag.getValues();
         return tags.isEmpty() ? EnumSet.noneOf(Material.class) : EnumSet.copyOf(tags);
     }
 
@@ -94,18 +98,20 @@ public class Tags {
     @SuppressWarnings("deprecation")
     @Nullable
     public static NamespacedKey keyFromString(@NotNull String string) {
-        try{
-            if(string.contains(":")){
+        try {
+            if (string.contains(":")) {
                 int index = string.indexOf(':');
-                String namespace = string.substring(0,index);
-                String key = string.substring(index+1);
+                String namespace = string.substring(0, index);
+                String key = string.substring(index + 1);
                 // While a string based constructor is not supposed to be used,
                 // their does not exist any other method for doing this in < 1.16
                 return new NamespacedKey(namespace, key);
-            } else {
+            }
+            else {
                 return NamespacedKey.minecraft(string);
             }
-        }catch(IllegalArgumentException e){
+        }
+        catch (IllegalArgumentException e) {
             return null;
         }
     }

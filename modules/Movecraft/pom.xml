@@ -64,6 +64,12 @@
         </dependency>
         <dependency>
             <groupId>net.countercraft</groupId>
+            <artifactId>movecraft-v1_19_r1</artifactId>
+            <version>${revision}</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>net.countercraft</groupId>
             <artifactId>movecraft-api</artifactId>
             <version>${revision}</version>
             <type>jar</type>
@@ -90,13 +96,6 @@
             <version>8.5.8</version>
             <scope>compile</scope>
         </dependency>
-        <dependency>
-            <groupId>com.comphenix.protocol</groupId>
-            <artifactId>ProtocolLib</artifactId>
-            <version>4.7.0</version>
-            <scope>provided</scope>
-        </dependency>
-
     </dependencies>
 
     <build>
@@ -172,7 +171,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.3.0-SNAPSHOT</version>
+                <version>3.3.0</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -213,6 +212,12 @@
                                 </filter>
                                 <filter>
                                     <artifact>net.countercraft:movecraft-v1_18_r2</artifact>
+                                    <includes>
+                                        <include>**</include>
+                                    </includes>
+                                </filter>
+                                <filter>
+                                    <artifact>net.countercraft:movecraft-v1_19_r1</artifact>
                                     <includes>
                                         <include>**</include>
                                     </includes>
