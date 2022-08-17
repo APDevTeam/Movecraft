@@ -105,7 +105,6 @@ requireWaterContact: true
 allowVerticalMovement: false
 speed: 0.5
 tryNudge: false
-mergePistonExtensions: true
 flyblocks:
     ["#planks", "#wooden_slabs"]:
         - 25.0

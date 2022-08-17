@@ -559,7 +559,7 @@ final public class CraftType {
                 type -> false
         ));
         registerProperty(new IntegerProperty("releaseTimeout", RELEASE_TIMEOUT, type -> 30));
-        registerProperty(new BooleanProperty("mergePistonExtensions", MERGE_PISTON_EXTENSIONS, type -> false));
+        registerProperty(new BooleanProperty("mergePistonExtensions", MERGE_PISTON_EXTENSIONS, type -> true));
 
         /* Craft type transforms */
         // Convert speed to TICK_COOLDOWN

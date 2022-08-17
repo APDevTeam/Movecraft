@@ -113,7 +113,6 @@ tryNudge: false
 canStaticMove: true
 maxStaticMove: 2
 halfSpeedUnderwater: true
-mergePistonExtensions: true
 moveblocks:
   redstone_block: # redstone represents engines
     - 1.0

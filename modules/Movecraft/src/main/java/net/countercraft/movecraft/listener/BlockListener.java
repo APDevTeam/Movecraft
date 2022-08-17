@@ -24,8 +24,7 @@ import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.util.MathUtils;
 import net.countercraft.movecraft.util.Tags;
-import net.countercraft.movecraft.util.hitboxes.HitBox;
-import net.countercraft.movecraft.util.hitboxes.SetHitBox;
+import net.countercraft.movecraft.util.hitboxes.BitmapHitBox;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -34,7 +33,13 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.*;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockDispenseEvent;
+import org.bukkit.event.block.BlockFormEvent;
+import org.bukkit.event.block.BlockFromToEvent;
+import org.bukkit.event.block.BlockPhysicsEvent;
+import org.bukkit.event.block.BlockPistonExtendEvent;
+import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.material.Attachable;
@@ -118,21 +123,19 @@ public class BlockListener implements Listener {
         Block block = event.getBlock();
         CraftManager.getInstance().getCraftsInWorld(block.getWorld());
         for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(block.getWorld())) {
-            if(tcraft == null) continue;
+            if(tcraft == null || !MathUtils.locationInHitBox(tcraft.getHitBox(), block.getLocation()))
+                continue;
 
-            if (MathUtils.locationInHitBox(tcraft.getHitBox(), block.getLocation())) {
-                if (tcraft.getCruising() && !tcraft.isNotProcessing()) {
-                    event.setCancelled(true);
+            if (tcraft.getCruising() && !tcraft.isNotProcessing()) {
+                event.setCancelled(true);
+            }
+            else if(tcraft.getType().getBoolProperty(CraftType.MERGE_PISTON_EXTENSIONS)){
+                BitmapHitBox hitBox = new BitmapHitBox();
+                for (Block b : event.getBlocks()) {
+                    Vector dir = event.getDirection().getDirection();
+                    hitBox.add(new MovecraftLocation(b.getX() + dir.getBlockX(), b.getY() + dir.getBlockY(), b.getZ() + dir.getBlockZ()));
                 }
-                else if(tcraft.getType().getBoolProperty(CraftType.MERGE_PISTON_EXTENSIONS)){
-                    SetHitBox hitBox = new SetHitBox();
-                    for (Block b : event.getBlocks()) {
-                        Vector dir = event.getDirection().getDirection();
-                        hitBox.add(new MovecraftLocation(b.getX() + dir.getBlockX(), b.getY() + dir.getBlockY(), b.getZ() + dir.getBlockZ()));
-                    }
-                    HitBox test = tcraft.getHitBox().union(hitBox);
-                    tcraft.setHitBox(test);
-                }
+                tcraft.setHitBox(tcraft.getHitBox().union(hitBox));
                 return;
             }
         }

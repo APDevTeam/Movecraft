@@ -114,7 +114,6 @@ overallSinkPercent: 60.0
 tryNudge: false
 canStaticMove: true
 maxStaticMove: 2
-mergePistonExtensions: true
 moveblocks:
     redstone_block: # redstone represents engines
         - 1.0
