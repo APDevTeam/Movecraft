@@ -77,10 +77,12 @@ public abstract class BaseCraft implements Craft {
     private String name = "";
     @NotNull
     private MovecraftLocation lastTranslation = new MovecraftLocation(0, 0, 0);
+    public Map<String, Object> dataTags;
 
     public BaseCraft(@NotNull CraftType type, @NotNull World world) {
         this.type = type;
         this.w = world;
+        this.dataTags = new HashMap<>();
         hitBox = new SetHitBox();
         collapsedHitBox = new SetHitBox();
         fluidLocations = new SetHitBox();
@@ -91,7 +93,27 @@ public abstract class BaseCraft implements Craft {
         materials = new Counter<>();
         audience = Audience.empty();
     }
-
+    //Start of Adding Craft Datatag System
+    public void setDataTag(String key, Object data) {
+      this.dataTags.put(key, data);
+    }
+    public void removeDataTag(String key) {
+      this.dataTags.remove(key);
+    }
+    public Object getDataTag(String key) {
+      return this.dataTags.getOrDefault(key, "null");
+    }
+    public Collection<Object> getAllTagValues() {
+      return this.dataTags.values();
+    }
+    public boolean hasDataKey(String key) {
+      return this.dataTags.containsKey(key);
+    }
+    public boolean hasDataValue(Object value) {
+      return this.dataTags.containsValue(value);
+    }    
+    //End of Added Craft Datatag System
+    
     public boolean isNotProcessing() {
         return !processing.get();
     }
