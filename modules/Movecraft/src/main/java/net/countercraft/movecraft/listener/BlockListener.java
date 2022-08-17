@@ -26,7 +26,6 @@ import net.countercraft.movecraft.util.MathUtils;
 import net.countercraft.movecraft.util.Tags;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
 import net.countercraft.movecraft.util.hitboxes.SetHitBox;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -126,16 +125,13 @@ public class BlockListener implements Listener {
                     event.setCancelled(true);
                 }
                 else if(tcraft.getType().getBoolProperty(CraftType.MERGE_PISTON_EXTENSIONS)){
-                    Bukkit.broadcastMessage("before " + tcraft.getHitBox().size());
                     SetHitBox hitBox = new SetHitBox();
                     for (Block b : event.getBlocks()) {
                         Vector dir = event.getDirection().getDirection();
-                        Bukkit.broadcastMessage(dir.toString());
                         hitBox.add(new MovecraftLocation(b.getX() + dir.getBlockX(), b.getY() + dir.getBlockY(), b.getZ() + dir.getBlockZ()));
                     }
                     HitBox test = tcraft.getHitBox().union(hitBox);
                     tcraft.setHitBox(test);
-                    Bukkit.broadcastMessage("after " + test.size());
                 }
                 return;
             }
