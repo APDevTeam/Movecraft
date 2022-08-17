@@ -114,6 +114,39 @@ public abstract class BaseCraft implements Craft {
     }    
     //End of Added Craft Datatag System
     
+    //Start of Simple Mechanism for getting Blocks
+    public Set<Block> getBlockData(BlockData bkd){
+       Set<Block> blocks = new HashSet<>();
+       for (MovecraftLocation mloc : this.getHitBox()){
+          if (mloc.toBukkit(this.getWorld()).getBlock().getBlockData() == bkd) {
+             blocks.add(mloc.toBukkit(this.getWorld()).getBlock());
+
+          }
+       }
+       return blocks;
+    }
+    public Set<Block> getBlockName(String s){
+       Set<Block> blocks = new HashSet<>();
+
+       for (MovecraftLocation l : (this.getHitBox())){
+          if (l.toBukkit(this.getWorld()).getBlock().getType().toString().toLowerCase().contains(s.toLowerCase())) {
+             blocks.add(l.toBukkit(this.getWorld()).getBlock());
+
+          }
+       }
+       return blocks;
+    }
+    public Set<Block> getBlockType(Material mat){
+       Set<Block> blocks = new HashSet<>();
+       for (MovecraftLocation mloc : this.getHitBox()){
+          if (mloc.toBukkit(this.getWorld()).getBlock().getType() == mat) {
+             blocks.add(mloc.toBukkit(this.getWorld()).getBlock());
+
+          }
+       }
+       return blocks;
+    }
+    //End of Simple Mechanism for getting Blocks
     public boolean isNotProcessing() {
         return !processing.get();
     }
