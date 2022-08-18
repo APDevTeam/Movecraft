@@ -33,7 +33,7 @@ public class ReleaseCommand implements TabExecutor {
             if(!(commandSender instanceof Player)) {
                 commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX
                         + I18nSupport.getInternationalisedString(
-                                "Player- Error - You do not have a craft to release!"));
+                                "Player - Error - You do not have a craft to release!"));
                 return true;
             }
             Player player = (Player) commandSender;
@@ -42,7 +42,7 @@ public class ReleaseCommand implements TabExecutor {
             if (pCraft == null) {
                 player.sendMessage(MOVECRAFT_COMMAND_PREFIX
                         + I18nSupport.getInternationalisedString(
-                                "Player- Error - You do not have a craft to release!"));
+                                "Player - Error - You do not have a craft to release!"));
                 return true;
             }
             CraftManager.getInstance().release(pCraft, CraftReleaseEvent.Reason.PLAYER, false);
