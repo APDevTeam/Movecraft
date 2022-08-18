@@ -24,7 +24,12 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.config.Settings;
-import net.countercraft.movecraft.craft.*;
+import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.craft.CraftStatus;
+import net.countercraft.movecraft.craft.PilotedCraft;
+import net.countercraft.movecraft.craft.PlayerCraft;
+import net.countercraft.movecraft.craft.SinkingCraft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.craft.type.RequiredBlockEntry;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
@@ -663,11 +668,8 @@ public class AsyncManager extends BukkitRunnable {
         if (totalNonNegligibleBlocks == 0)
             isSinking = true;
 
-        if (craft instanceof BaseCraft) {
-            BaseCraft b = ((BaseCraft) craft);
-            b.updateMaterials(materials);
-            b.setTotalFuel(fuel);
-        }
+        craft.updateMaterials(materials);
+        craft.setTotalFuel(fuel);
 
         return CraftStatus.of(isSinking, isDisabled);
     }

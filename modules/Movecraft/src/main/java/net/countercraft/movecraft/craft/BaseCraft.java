@@ -369,10 +369,9 @@ public abstract class BaseCraft implements Craft {
             return type.getIntProperty(CraftType.SINK_RATE_TICKS);
 
         if (materials.isEmpty()) {
-            //for (MovecraftLocation location : hitBox) {
-            //    materials.add(location.toBukkit(w).getBlock().getType());
-            //}
-            return 20;
+            for (MovecraftLocation location : hitBox) {
+                materials.add(location.toBukkit(w).getBlock().getType());
+            }
         }
 
         int chestPenalty = 0;
