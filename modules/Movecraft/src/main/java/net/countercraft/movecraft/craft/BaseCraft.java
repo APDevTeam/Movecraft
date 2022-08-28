@@ -48,7 +48,7 @@ public abstract class BaseCraft implements Craft {
     @NotNull
     protected final MutableHitBox collapsedHitBox;
     @NotNull
-    protected final Counter<Material> materials;
+    protected Counter<Material> materials;
     @NotNull
     private final AtomicBoolean processing = new AtomicBoolean();
     private final long origPilotTime;
@@ -71,6 +71,7 @@ public abstract class BaseCraft implements Craft {
     private int currentGear = 1;
     private double burningFuel;
     private int origBlockCount;
+    private double totalFuel = 0;
     @NotNull
     private Audience audience;
     @NotNull
@@ -577,5 +578,24 @@ public abstract class BaseCraft implements Craft {
     @Override
     public void setAudience(@NotNull Audience audience) {
         this.audience = audience;
+    }
+
+    public void updateMaterials (Counter<Material> counter) {
+        materials = counter;
+    }
+
+    @Override
+    public Counter<Material> getMaterials() {
+        return materials;
+    }
+
+    @Override
+    public void setTotalFuel(double fuel) {
+        totalFuel = fuel;
+    }
+
+    @Override
+    public double getTotalFuel() {
+        return totalFuel;
     }
 }
