@@ -58,7 +58,7 @@ public class IWorldHandler extends WorldHandler {
 
     public IWorldHandler() {
         String mappings = ((CraftMagicNumbers) CraftMagicNumbers.INSTANCE).getMappingsVersion();
-        if (!mappings.equals("54e89c47309b53737f894f1bf1b0edbe"))
+        if (!mappings.equals("d4b392244df170796f8779ef0fc1f2e9"))
             throw new IllegalStateException("Movecraft is not compatible with this version of Minecraft 1.16: " + mappings);
 
         MethodHandles.Lookup lookup = MethodHandles.lookup();
