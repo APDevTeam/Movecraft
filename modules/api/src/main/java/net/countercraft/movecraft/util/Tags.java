@@ -14,8 +14,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class Tags {
-
-    public static final EnumSet<Material> FLUID = EnumSet.of(Material.WATER, Material.LAVA);
+    public static final EnumSet<Material> WATER = EnumSet.of(Material.WATER, Material.BUBBLE_COLUMN);
+    public static final EnumSet<Material> FLUID = EnumSet.of(Material.WATER, Material.BUBBLE_COLUMN, Material.LAVA);
     public static final EnumSet<Material> CHESTS = EnumSet.of(Material.CHEST, Material.TRAPPED_CHEST, Material.BARREL);
     public static final EnumSet<Material> FURNACES = EnumSet.of(Material.FURNACE, Material.BLAST_FURNACE, Material.SMOKER);
     public static final EnumSet<Material> SINKING_PASSTHROUGH = EnumSet.of(Material.TALL_GRASS, Material.GRASS);
@@ -34,8 +34,6 @@ public class Tags {
         FRAGILE_MATERIALS.addAll(Tag.WOODEN_PRESSURE_PLATES.getValues());
 
         FALL_THROUGH_BLOCKS.add(Material.AIR);
-        FALL_THROUGH_BLOCKS.add(Material.WATER);
-        FALL_THROUGH_BLOCKS.add(Material.LAVA);
         FALL_THROUGH_BLOCKS.add(Material.DEAD_BUSH);
         FALL_THROUGH_BLOCKS.addAll(Tag.CORAL_PLANTS.getValues());
         FALL_THROUGH_BLOCKS.add(Material.BROWN_MUSHROOM);
@@ -51,6 +49,7 @@ public class Tags {
         FALL_THROUGH_BLOCKS.add(Material.CARROT);
         FALL_THROUGH_BLOCKS.add(Material.POTATO);
         FALL_THROUGH_BLOCKS.addAll(Tag.FENCES.getValues());
+        FALL_THROUGH_BLOCKS.addAll(FLUID);
     }
 
     @Nullable

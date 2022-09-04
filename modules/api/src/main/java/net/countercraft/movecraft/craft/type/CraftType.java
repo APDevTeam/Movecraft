@@ -600,7 +600,7 @@ final public class CraftType {
                 return data;
 
             var passthroughBlocks = data.get(PASSTHROUGH_BLOCKS);
-            passthroughBlocks.add(Material.WATER);
+            passthroughBlocks.addAll(Tags.WATER);
             data.put(PASSTHROUGH_BLOCKS, passthroughBlocks);
             return data;
         });
@@ -610,7 +610,7 @@ final public class CraftType {
                 return data;
 
             var forbiddenHoverOverBlocks = data.get(FORBIDDEN_HOVER_OVER_BLOCKS);
-            forbiddenHoverOverBlocks.add(Material.WATER);
+            forbiddenHoverOverBlocks.addAll(Tags.WATER);
             data.put(FORBIDDEN_HOVER_OVER_BLOCKS, forbiddenHoverOverBlocks);
             return data;
         });

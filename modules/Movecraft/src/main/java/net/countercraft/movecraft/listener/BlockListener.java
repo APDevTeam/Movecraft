@@ -84,15 +84,16 @@ public class BlockListener implements Listener {
     // prevent water and lava from spreading on moving crafts
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockFromTo(BlockFromToEvent e) {
-        if (e.isCancelled()) {
+        if (e.isCancelled())
             return;
-        }
+
         Block block = e.getToBlock();
-        if (block.getType() != Material.WATER && block.getType() != Material.LAVA) {
+        if (!Tags.FLUID.contains(block.getType()))
             return;
-        }
+
+        MovecraftLocation location = MathUtils.bukkit2MovecraftLoc(block.getLocation());
         for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(block.getWorld())) {
-            if ((!tcraft.isNotProcessing()) && MathUtils.locIsNearCraftFast(tcraft, MathUtils.bukkit2MovecraftLoc(block.getLocation()))) {
+            if ((!tcraft.isNotProcessing()) && MathUtils.locIsNearCraftFast(tcraft, location)) {
                 e.setCancelled(true);
                 return;
             }
@@ -162,7 +163,7 @@ public class BlockListener implements Listener {
             if (!MathUtils.locIsNearCraftFast(tcraft, mloc)) {
                 continue;
             }
-            if(Tags.FRAGILE_MATERIALS.contains(event.getBlock().getType())) {
+            if (Tags.FRAGILE_MATERIALS.contains(event.getBlock().getType())) {
                 BlockData m = block.getBlockData();
                 BlockFace face = BlockFace.DOWN;
                 boolean faceAlwaysDown = block.getType() == Material.COMPARATOR || block.getType() == Material.REPEATER;
@@ -191,15 +192,15 @@ public class BlockListener implements Listener {
     }
 
     @EventHandler
-    public void onFlow(BlockFromToEvent e){
-        if(Settings.DisableSpillProtection)
+    public void onFlow(BlockFromToEvent e) {
+        if (Settings.DisableSpillProtection)
             return;
-        if(!e.getBlock().isLiquid())
+        if (!e.getBlock().isLiquid())
             return;
         MovecraftLocation loc = MathUtils.bukkit2MovecraftLoc(e.getBlock().getLocation());
         MovecraftLocation toLoc = MathUtils.bukkit2MovecraftLoc(e.getToBlock().getLocation());
-        for(Craft craft : CraftManager.getInstance().getCraftsInWorld(e.getBlock().getWorld())){
-            if(craft.getHitBox().contains((loc)) && !craft.getFluidLocations().contains(toLoc)) {
+        for (Craft craft : CraftManager.getInstance().getCraftsInWorld(e.getBlock().getWorld())) {
+            if (craft.getHitBox().contains((loc)) && !craft.getFluidLocations().contains(toLoc)) {
                 e.setCancelled(true);
                 break;
             }
@@ -210,7 +211,7 @@ public class BlockListener implements Listener {
     public void onIceForm(BlockFormEvent e) {
         if (e.isCancelled() || !Settings.DisableIceForm)
             return;
-        if(e.getBlock().getType() != Material.WATER)
+        if (Tags.WATER.contains(e.getBlock().getType()))
             return;
 
         MovecraftLocation loc = MathUtils.bukkit2MovecraftLoc(e.getBlock().getLocation());

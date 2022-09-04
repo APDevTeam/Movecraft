@@ -72,7 +72,7 @@ public final class StatusSign implements Listener{
             }
             int add = materials.get(material);
             totalNonNegligibleBlocks += add;
-            if (!material.equals(Material.WATER)) {
+            if (!Tags.WATER.contains(material)) {
                 totalNonNegligibleWaterBlocks += add;
             }
         }

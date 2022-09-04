@@ -624,7 +624,7 @@ public class AsyncManager extends BukkitRunnable {
             if (type != Material.FIRE && !type.isAir()) {
                 totalNonNegligibleBlocks++;
             }
-            if (type != Material.FIRE && !type.isAir() && type != Material.WATER) {
+            if (type != Material.FIRE && !type.isAir() && !Tags.FLUID.contains(type)) {
                 totalNonNegligibleWaterBlocks++;
             }
 
