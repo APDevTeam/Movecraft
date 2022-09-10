@@ -41,4 +41,8 @@ public class Counter<T> {
     public void putAll(@NotNull Collection<T> items) {
         items.forEach(item -> counter.put(item, 0));
     }
+
+    public void add(@NotNull Counter<T> other) {
+        other.getKeySet().forEach(key -> counter.put(key, other.get(key)));
+    }
 }
