@@ -10,27 +10,31 @@ import java.util.Set;
 public class Counter<T> {
     private final Object2IntMap<T> counter = new Object2IntOpenHashMap<>();
 
-    public Counter(){
+    public Counter() {
         counter.defaultReturnValue(0);
     }
 
-    public int get(T item){
+    public int get(T item) {
         return counter.getInt(item);
     }
 
-    public void add(T item){
-        counter.put(item, counter.getInt(item) + 1);
+    public void add(T item, int count) {
+        counter.put(item, counter.getInt(item) + count);
     }
 
-    public void clear(){
+    public void add(T item) {
+        add(item, 1);
+    }
+
+    public void clear() {
         counter.clear();
     }
 
-    public int size(){
+    public int size() {
         return counter.size();
     }
 
-    public boolean isEmpty(){
+    public boolean isEmpty() {
         return counter.isEmpty();
     }
 
