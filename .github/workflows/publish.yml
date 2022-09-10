@@ -7,7 +7,7 @@ on:
 
 jobs:
   # Build 1.14.4 NMS
-  pillage_1_14_4:
+  pillage_1_14:
     runs-on: ubuntu-latest
     steps:
       - name: Set up JDK 13 # 1.14.4 can be built with Java 8 to Java 13
@@ -40,7 +40,7 @@ jobs:
         run: cd BuildTools && java -jar BuildTools.jar --rev 1.14.4 --compile craftbukkit
 
   # Build 1.16.5 NMS
-  nether_1_16_5:
+  nether_1_16:
     runs-on: ubuntu-latest
     steps:
       - name: Set up JDK 16 # 1.16.5 can be built with Java 8 to Java 16
@@ -73,7 +73,7 @@ jobs:
         run: cd BuildTools && java -jar BuildTools.jar --rev 1.16.5 --compile craftbukkit
 
   # Build 1.17.1 NMS
-  goats_1_17_1:
+  goats_1_17:
     runs-on: ubuntu-latest
     steps:
       - name: Set up JDK 17 # 1.17.1 can be built with Java 16 to Java 17
@@ -115,7 +115,7 @@ jobs:
         run: cd BuildTools && java -jar BuildTools.jar --rev 1.17.1 --remapped
 
   # Build 1.18.2 NMS
-  caves_1_18_2:
+  caves_1_18:
     runs-on: ubuntu-latest
     steps:
       - name: Set up JDK 17 # 1.18.2 can only be built with Java 17
@@ -157,7 +157,7 @@ jobs:
         run: cd BuildTools && java -jar BuildTools.jar --rev 1.18.2 --remapped
 
   # Build 1.19.2 NMS
-  wild_1_19_1:
+  wild_1_19:
     runs-on: ubuntu-latest
     steps:
       - name: Set up JDK 17 # 1.19.2 can only be built with Java 17
@@ -201,7 +201,7 @@ jobs:
   # Build Movecraft
   publish:
     runs-on: ubuntu-latest
-    needs: [pillage_1_14_4, nether_1_16_5, goats_1_17_1, caves_1_18_2, wild_1_19_1]
+    needs: [pillage_1_14, nether_1_16, goats_1_17, caves_1_18, wild_1_19]
     permissions:
       contents: read
       packages: write
