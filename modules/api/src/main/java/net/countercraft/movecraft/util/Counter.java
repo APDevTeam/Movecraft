@@ -14,6 +14,10 @@ public class Counter<T> {
         counter.defaultReturnValue(0);
     }
 
+    public Counter(@NotNull Counter<T> other) {
+        this.counter.putAll(other.counter);
+    }
+
     public int get(T item) {
         return counter.getInt(item);
     }
