@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.TreeSet;
 
 public class NextTickProvider {
-
+    
     private Map<WorldServer,ImmutablePair<WeakReference<TreeSet<NextTickListEntry>>,WeakReference<List<NextTickListEntry>>>> tickMap = new HashMap<>();
 
     @Nullable
