@@ -6,6 +6,7 @@ import net.countercraft.movecraft.WorldHandler;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.util.CollectionUtils;
 import net.countercraft.movecraft.util.MathUtils;
+import net.countercraft.movecraft.util.hitboxes.HitBox;
 import net.minecraft.server.v1_16_R3.Block;
 import net.minecraft.server.v1_16_R3.BlockPosition;
 import net.minecraft.server.v1_16_R3.Blocks;
@@ -17,6 +18,7 @@ import net.minecraft.server.v1_16_R3.IBlockData;
 import net.minecraft.server.v1_16_R3.NextTickListEntry;
 import net.minecraft.server.v1_16_R3.PacketPlayOutPosition;
 import net.minecraft.server.v1_16_R3.PlayerConnection;
+import net.minecraft.server.v1_16_R3.StructureBoundingBox;
 import net.minecraft.server.v1_16_R3.TileEntity;
 import net.minecraft.server.v1_16_R3.World;
 import net.minecraft.server.v1_16_R3.WorldServer;
@@ -104,16 +106,29 @@ public class IWorldHandler extends WorldHandler {
         //*         Step two: Get the tiles         *
         //*******************************************
         WorldServer nativeWorld = ((CraftWorld) craft.getWorld()).getHandle();
-        List<TileHolder> tiles = new ArrayList<>();
+        List<TileEntity> tiles = new ArrayList<>();
+        List<NextTickListEntry> tileTicks = new ArrayList<>();
+        HitBox testBox = craft.getHitBox();
+        BlockPosition position1 = new BlockPosition(testBox.getMidPoint().getX() - testBox.getZLength()/2 - 2, 0, testBox.getMidPoint().getZ() - testBox.getXLength()/2 - 2);
+        BlockPosition position2 = new BlockPosition(testBox.getMidPoint().getX() + testBox.getZLength()/2 + 2, 0, testBox.getMidPoint().getZ() + testBox.getXLength()/2 + 2);
+        List<NextTickListEntry<Block>> capturedTicks = nativeWorld.getBlockTickList().a(new StructureBoundingBox(position1, position2), true, true);
         //get the tiles
         for (BlockPosition position : rotatedPositions.keySet()) {
-            //TileEntity tile = nativeWorld.removeTileEntity(position);
-            TileEntity tile = removeTileEntity(nativeWorld, position);
-            if (tile == null)
+            if (nativeWorld.getType(position) == Blocks.AIR.getBlockData())
                 continue;
-            tile.a(ROTATION[rotation.ordinal()]);
-            //get the nextTick to move with the tile
-            tiles.add(new TileHolder(tile, tickProvider.getNextTick(nativeWorld, position), position));
+            //Find the ticks associated with this location
+            for (NextTickListEntry entry : capturedTicks) {
+                if (entry.a.equals(position)) {
+                    tileTicks.add(entry);
+                }
+            }
+
+            //Remove the old tile and add it to the list
+            TileEntity tile = removeTileEntity(nativeWorld, position);
+            if (tile != null) {
+                tile.a(ROTATION[rotation.ordinal()]);
+                tiles.add(tile);
+            }
         }
 
         //*******************************************
@@ -138,12 +153,12 @@ public class IWorldHandler extends WorldHandler {
         //*    Step four: replace all the tiles     *
         //*******************************************
         //TODO: go by chunks
-        for (TileHolder tileHolder : tiles) {
-            moveTileEntity(nativeWorld, rotatedPositions.get(tileHolder.getTilePosition()), tileHolder.getTile());
-            if (tileHolder.getNextTick() == null)
-                continue;
+        for (TileEntity tile : tiles) {
+            moveTileEntity(nativeWorld, rotatedPositions.get(tile.getPosition()), tile);
+        }
+        for (NextTickListEntry entry : tileTicks) {
             final long currentTime = nativeWorld.worldData.getTime();
-            nativeWorld.getBlockTickList().a(rotatedPositions.get(tileHolder.getNextTick().a), (Block) tileHolder.getNextTick().b(), (int) (tileHolder.getNextTick().b - currentTime), tileHolder.getNextTick().c);
+            nativeWorld.getBlockTickList().a(rotatedPositions.get(entry.a), (Block) entry.b(), (int) (entry.b - currentTime), entry.c);
         }
 
         //*******************************************
@@ -171,22 +186,33 @@ public class IWorldHandler extends WorldHandler {
         //*******************************************
         //*         Step two: Get the tiles         *
         //*******************************************
-        List<TileHolder> tiles = new ArrayList<>();
+        List<TileEntity> tiles = new ArrayList<>();
+        List<NextTickListEntry> tileTicks = new ArrayList<>();
+
+        //Get all ticks within the craft's bounding box
+        //The function to search for ticks ignores Y position, so we simply set it to 0
+        BlockPosition position1 = new BlockPosition(craft.getHitBox().getMinX(), 0, craft.getHitBox().getMinZ());
+        BlockPosition position2 = new BlockPosition(craft.getHitBox().getMaxX() + 1, 0, craft.getHitBox().getMaxZ() + 1);
+        List<NextTickListEntry<Block>> capturedTicks = oldNativeWorld.getBlockTickList().a(new StructureBoundingBox(position1, position2), true, true);
+
         //get the tiles
         for (int i = 0, positionsSize = positions.size(); i < positionsSize; i++) {
             BlockPosition position = positions.get(i);
             if (oldNativeWorld.getType(position) == Blocks.AIR.getBlockData())
                 continue;
-            //TileEntity tile = nativeWorld.removeTileEntity(position);
+
+            //Find the ticks associated with this location
+            for (NextTickListEntry entry : capturedTicks) {
+                if (entry.a.equals(position)) {
+                    tileTicks.add(entry);
+                }
+            }
+
+            //Remove the old tile and add it to the list
             TileEntity tile = removeTileEntity(oldNativeWorld, position);
-            if (tile == null)
-                continue;
-            //get the nextTick to move with the tile
-
-            //nativeWorld.capturedTileEntities.remove(position);
-            //nativeWorld.getChunkAtWorldCoords(position).getTileEntities().remove(position);
-            tiles.add(new TileHolder(tile, tickProvider.getNextTick(oldNativeWorld, position), position));
-
+            if (tile != null) {
+                tiles.add(tile);
+            }
         }
         //*******************************************
         //*   Step three: Translate all the blocks  *
@@ -212,12 +238,12 @@ public class IWorldHandler extends WorldHandler {
         //*******************************************
         //TODO: go by chunks
         for (int i = 0, tilesSize = tiles.size(); i < tilesSize; i++) {
-            TileHolder tileHolder = tiles.get(i);
-            moveTileEntity(nativeWorld, tileHolder.getTilePosition().a(translateVector), tileHolder.getTile());
-            if (tileHolder.getNextTick() == null)
-                continue;
+            TileEntity tile = tiles.get(i);
+            moveTileEntity(nativeWorld, tile.getPosition().a(translateVector), tile);
+        }
+        for (NextTickListEntry entry : tileTicks) {
             final long currentTime = nativeWorld.worldData.getTime();
-            nativeWorld.getBlockTickList().a(tileHolder.getNextTick().a.a(translateVector), (Block) tileHolder.getNextTick().b(), (int) (tileHolder.getNextTick().b - currentTime), tileHolder.getNextTick().c);
+            nativeWorld.getBlockTickList().a(entry.a.a(translateVector), (Block) entry.b(), (int) (entry.b - currentTime), entry.c);
         }
         //*******************************************
         //*   Step five: Destroy the leftovers      *
@@ -301,36 +327,5 @@ public class IWorldHandler extends WorldHandler {
             return;
         }
         chunk.tileEntities.put(newPosition, tile);
-    }
-
-    private class TileHolder {
-        @NotNull
-        private final TileEntity tile;
-        @Nullable
-        private final NextTickListEntry<?> nextTick;
-        @NotNull
-        private final BlockPosition tilePosition;
-
-        public TileHolder(@NotNull TileEntity tile, @Nullable NextTickListEntry<?> nextTick, @NotNull BlockPosition tilePosition) {
-            this.tile = tile;
-            this.nextTick = nextTick;
-            this.tilePosition = tilePosition;
-        }
-
-
-        @NotNull
-        public TileEntity getTile() {
-            return tile;
-        }
-
-        @Nullable
-        public NextTickListEntry<?> getNextTick() {
-            return nextTick;
-        }
-
-        @NotNull
-        public BlockPosition getTilePosition() {
-            return tilePosition;
-        }
     }
 }
