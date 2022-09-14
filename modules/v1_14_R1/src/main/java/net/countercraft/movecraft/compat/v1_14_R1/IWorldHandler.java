@@ -130,6 +130,13 @@ public class IWorldHandler extends WorldHandler {
             }
         }
 
+        //Put back all the ticks we didn't move
+        capturedTicks.removeAll(tileTicks);
+        for (NextTickListEntry entry : capturedTicks) {
+            final long currentTime = nativeWorld.worldData.getTime();
+            nativeWorld.getBlockTickList().a(rotatedPositions.get(entry.a), (Block) entry.b(), (int) (entry.b - currentTime), entry.c);
+        }
+
         //*******************************************
         //*   Step three: Translate all the blocks  *
         //*******************************************
@@ -210,6 +217,12 @@ public class IWorldHandler extends WorldHandler {
             if (tile != null) {
                 tiles.add(tile);
             }
+        }
+        //Put back the ticks we didn't move
+        capturedTicks.removeAll(tileTicks);
+        for (NextTickListEntry entry : capturedTicks) {
+            final long currentTime = nativeWorld.worldData.getTime();
+            nativeWorld.getBlockTickList().a(entry.a, (Block) entry.b(), (int) (entry.b - currentTime), entry.c);
         }
         //*******************************************
         //*   Step three: Translate all the blocks  *
