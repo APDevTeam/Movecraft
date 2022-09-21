@@ -96,9 +96,13 @@ forbiddenBlocks:
 
 canCruise: true
 cruiseSkipBlocks: 4
+fuelBurnRate: 0.0
+cruiseSpeed: 1.0
 canFly: false
 sinkPercent: 99.0
 overallSinkPercent: 60.0
+explodeOnCrash: 0.0
+sinkSpeed: 3.0
 minHeightLimit: 50
 maxHeightLimit: 80
 requireWaterContact: true
