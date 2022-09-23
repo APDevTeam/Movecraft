@@ -106,8 +106,8 @@ public class Movecraft extends JavaPlugin {
         Settings.Debug = getConfig().getBoolean("Debug", false);
         Settings.DisableSpillProtection = getConfig().getBoolean("DisableSpillProtection", false);
         Settings.DisableIceForm = getConfig().getBoolean("DisableIceForm", true);
-        
-        String[] localisations = {"en", "cz", "nl"};
+
+        String[] localisations = {"en", "cz", "nl", "fr"};
         for(String s : localisations) {
             if(!new File(getDataFolder()
                     + "/localisation/movecraftlang_" + s + ".properties").exists()) {
