@@ -34,6 +34,10 @@ public class Counter<T> {
         counter.clear();
     }
 
+    public void clear(T item) {
+        counter.removeInt(item);
+    }
+
     public int size() {
         return counter.size();
     }
