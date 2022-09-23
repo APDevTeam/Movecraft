@@ -22,6 +22,10 @@ public class Counter<T> {
         return counter.getInt(item);
     }
 
+    public void set(T item, int count) {
+        counter.put(item, count);
+    }
+
     public void add(T item, int count) {
         counter.put(item, counter.getInt(item) + count);
     }
