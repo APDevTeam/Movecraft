@@ -107,17 +107,17 @@ public class IWorldHandler extends WorldHandler {
         //*******************************************
         WorldServer nativeWorld = ((CraftWorld) craft.getWorld()).getHandle();
         List<TileEntity> tiles = new ArrayList<>();
-        List<NextTickListEntry> tileTicks = new ArrayList<>();
+        List<NextTickListEntry<?>> tileTicks = new ArrayList<>();
         HitBox testBox = craft.getHitBox();
         BlockPosition position1 = new BlockPosition(testBox.getMidPoint().getX() - testBox.getZLength()/2 - 2, 0, testBox.getMidPoint().getZ() - testBox.getXLength()/2 - 2);
-        BlockPosition position2 = new BlockPosition(testBox.getMidPoint().getX() + testBox.getZLength()/2 + 2, 0, testBox.getMidPoint().getZ() + testBox.getXLength()/2 + 2);
+        BlockPosition position2 = new BlockPosition(testBox.getMidPoint().getX() + testBox.getZLength()/2 + 3, 0, testBox.getMidPoint().getZ() + testBox.getXLength()/2 + 3);
         List<NextTickListEntry<Block>> capturedTicks = nativeWorld.getBlockTickList().a(new StructureBoundingBox(position1, position2), true, true);
         //get the tiles
         for (BlockPosition position : rotatedPositions.keySet()) {
             if (nativeWorld.getType(position) == Blocks.AIR.getBlockData())
                 continue;
             //Find the ticks associated with this location
-            for (NextTickListEntry entry : capturedTicks) {
+            for (NextTickListEntry<?> entry : capturedTicks) {
                 if (entry.a.equals(position)) {
                     tileTicks.add(entry);
                 }
@@ -132,7 +132,7 @@ public class IWorldHandler extends WorldHandler {
         }
         //Put all the ticks we didn't move back
         capturedTicks.removeAll(tileTicks);
-        for (NextTickListEntry tick : capturedTicks) {
+        for (NextTickListEntry<?> tick : capturedTicks) {
             nativeWorld.getBlockTickList().a(tick.a, (Block)tick.b(), (int) (tick.b - nativeWorld.worldData.getTime()), tick.c);
         }
         //*******************************************
@@ -160,7 +160,7 @@ public class IWorldHandler extends WorldHandler {
         for (TileEntity tile : tiles) {
             moveTileEntity(nativeWorld, rotatedPositions.get(tile.getPosition()), tile);
         }
-        for (NextTickListEntry entry : tileTicks) {
+        for (NextTickListEntry<?> entry : tileTicks) {
             final long currentTime = nativeWorld.worldData.getTime();
             nativeWorld.getBlockTickList().a(rotatedPositions.get(entry.a), (Block) entry.b(), (int) (entry.b - currentTime), entry.c);
         }
@@ -191,22 +191,20 @@ public class IWorldHandler extends WorldHandler {
         //*         Step two: Get the tiles         *
         //*******************************************
         List<TileEntity> tiles = new ArrayList<>();
-        List<NextTickListEntry> tileTicks = new ArrayList<>();
+        List<NextTickListEntry<?>> tileTicks = new ArrayList<>();
 
         //Get all ticks within the craft's bounding box
         //The function to search for ticks ignores Y position, so we simply set it to 0
-        BlockPosition position1 = new BlockPosition(craft.getHitBox().getMinX(), 0, craft.getHitBox().getMinZ());
-        BlockPosition position2 = new BlockPosition(craft.getHitBox().getMaxX() + 1, 0, craft.getHitBox().getMaxZ() + 1);
-        List<NextTickListEntry<Block>> capturedTicks = oldNativeWorld.getBlockTickList().a(new StructureBoundingBox(position1, position2), true, true);
+        HitBox testBox = craft.getHitBox();
+        List<NextTickListEntry<Block>> capturedTicks = oldNativeWorld.getBlockTickList().a(new StructureBoundingBox(testBox.getMinX() - 1, testBox.getMinZ() - 1, testBox.getMaxX() + 2, testBox.getMaxZ() + 2), true, true);
 
         //get the tiles
-        for (int i = 0, positionsSize = positions.size(); i < positionsSize; i++) {
-            BlockPosition position = positions.get(i);
+        for (BlockPosition position : positions) {
             if (oldNativeWorld.getType(position) == Blocks.AIR.getBlockData())
                 continue;
 
             //Find the ticks associated with this location
-            for (NextTickListEntry entry : capturedTicks) {
+            for (NextTickListEntry<?> entry : capturedTicks) {
                 if (entry.a.equals(position)) {
                     tileTicks.add(entry);
                 }
@@ -220,7 +218,7 @@ public class IWorldHandler extends WorldHandler {
         }
         //Put back the ticks we didn't move
         capturedTicks.removeAll(tileTicks);
-        for (NextTickListEntry tick : capturedTicks) {
+        for (NextTickListEntry<?> tick : capturedTicks) {
             oldNativeWorld.getBlockTickList().a(tick.a, (Block)tick.b(), (int) (tick.b - nativeWorld.worldData.getTime()), tick.c);
         }
         //*******************************************
@@ -233,8 +231,7 @@ public class IWorldHandler extends WorldHandler {
         //get the blocks and translate the positions
         List<IBlockData> blockData = new ArrayList<>();
         List<BlockPosition> newPositions = new ArrayList<>();
-        for (int i = 0, positionsSize = positions.size(); i < positionsSize; i++) {
-            BlockPosition position = positions.get(i);
+        for (BlockPosition position : positions) {
             blockData.add(oldNativeWorld.getType(position));
             newPositions.add(position.a(translateVector));
         }
@@ -246,11 +243,10 @@ public class IWorldHandler extends WorldHandler {
         //*    Step four: replace all the tiles     *
         //*******************************************
         //TODO: go by chunks
-        for (int i = 0, tilesSize = tiles.size(); i < tilesSize; i++) {
-            TileEntity tile = tiles.get(i);
+        for (TileEntity tile : tiles) {
             moveTileEntity(nativeWorld, tile.getPosition().a(translateVector), tile);
         }
-        for (NextTickListEntry entry : tileTicks) {
+        for (NextTickListEntry<?> entry : tileTicks) {
             final long currentTime = nativeWorld.worldData.getTime();
             nativeWorld.getBlockTickList().a(entry.a.a(translateVector), (Block) entry.b(), (int) (entry.b - currentTime), entry.c);
         }
@@ -260,8 +256,7 @@ public class IWorldHandler extends WorldHandler {
         List<BlockPosition> deletePositions = positions;
         if (oldNativeWorld == nativeWorld)
             deletePositions = CollectionUtils.filter(positions, newPositions);
-        for (int i = 0, deletePositionsSize = deletePositions.size(); i < deletePositionsSize; i++) {
-            BlockPosition position = deletePositions.get(i);
+        for (BlockPosition position : deletePositions) {
             setBlockFast(oldNativeWorld, position, Blocks.AIR.getBlockData());
         }
     }
