@@ -55,7 +55,6 @@ public class IWorldHandler extends WorldHandler {
         ROTATION[MovecraftRotation.ANTICLOCKWISE.ordinal()] = EnumBlockRotation.COUNTERCLOCKWISE_90;
     }
 
-    private final NextTickProvider tickProvider = new NextTickProvider();
     private MethodHandle internalTeleportMH;
 
     public IWorldHandler() {
