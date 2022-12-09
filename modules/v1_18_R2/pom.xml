@@ -20,6 +20,7 @@
             <version>1.18.2-R0.1-SNAPSHOT</version>
             <classifier>remapped-mojang</classifier>
             <scope>provided</scope>
+            <!-- Mappings: https://launcher.mojang.com/v1/objects/e562f588fea155d96291267465dc3323bfe1551b/server.txt -->
         </dependency>
         <dependency>
             <groupId>net.countercraft</groupId>

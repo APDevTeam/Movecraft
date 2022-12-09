@@ -48,7 +48,7 @@ public class IWorldHandler extends WorldHandler {
 
     public IWorldHandler() {
         String mappings = ((CraftMagicNumbers) CraftMagicNumbers.INSTANCE).getMappingsVersion();
-        if (!mappings.equals("69c84c88aeb92ce9fa9525438b93f4fe"))
+        if (!mappings.equals("1afe2ffe8a9d7fc510442a168b3d4338"))
             throw new IllegalStateException("Movecraft is not compatible with this version of Minecraft 1.19: " + mappings);
     }
 
@@ -110,7 +110,7 @@ public class IWorldHandler extends WorldHandler {
             moveBlockEntity(nativeWorld, rotatedPositions.get(tileHolder.getTilePosition()), tileHolder.getTile());
             if (tileHolder.getNextTick() == null)
                 continue;
-            final long currentTime = nativeWorld.N.getGameTime();
+            final long currentTime = nativeWorld.N.getGameTime(); // N is obfuscated serverLevelData
             nativeWorld.getBlockTicks().schedule(new ScheduledTick<>((Block) tileHolder.getNextTick().type(), rotatedPositions.get(tileHolder.getNextTick().pos()), tileHolder.getNextTick().triggerTick() - currentTime, tileHolder.getNextTick().priority(), tileHolder.getNextTick().subTickOrder()));
         }
 
