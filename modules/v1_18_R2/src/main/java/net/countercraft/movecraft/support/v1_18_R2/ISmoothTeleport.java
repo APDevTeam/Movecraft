@@ -1,5 +1,7 @@
-package net.countercraft.movecraft.util.teleport;
+package net.countercraft.movecraft.support.v1_18_R2;
 
+import net.countercraft.movecraft.SmoothTeleport;
+import net.countercraft.movecraft.util.ReflectUtils;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -15,34 +17,30 @@ import java.util.Set;
  * https://www.spigotmc.org/threads/teleport-player-smoothly.317416/
  * Used for 1.18.2
  */
-public class V1_18Teleport extends AbstractTeleport {
-    private static Set<Object> teleportFlags;
+public class ISmoothTeleport extends SmoothTeleport {
+    private Set<Object> teleportFlags;
 
-    private static Method positionMethod;
-    private static Method sendMethod;
+    private Method positionMethod;
+    private Method sendMethod;
 
-    private static Constructor<?> vec3Constructor;
-    private static Constructor<?> packetConstructor;
+    private Constructor<?> vec3Constructor;
+    private Constructor<?> packetConstructor;
 
-    private static Field connectionField;
-    //private static Field justTeleportedField;
-    private static Field teleportPosField;
-    //private static Field lastPosXField;
-    //private static Field lastPosYField;
-    //private static Field lastPosZField;
-    private static Field teleportAwaitField;
-    private static Field awaitingTeleportTimeField;
-    private static Field tickCountField;
-    private static Field yawField;
-    private static Field pitchField;
+    private Field connectionField;
+    private Field teleportPosField;
+    private Field teleportAwaitField;
+    private Field awaitingTeleportTimeField;
+    private Field tickCountField;
+    private Field yawField;
+    private Field pitchField;
 
     private static @NotNull Class<?> getNmClass(String name) throws ClassNotFoundException {
         return Class.forName("net.minecraft." + name);
     }
 
-    private static void sendPacket(Object packet, Player p) {
+    private void sendPacket(Object packet, Player p) {
         try {
-            Object handle = TeleportUtils.getHandle(p);
+            Object handle = ReflectUtils.getHandle(p);
             Object pConnection = connectionField.get(handle);
             sendMethod.invoke(pConnection, packet);
         }
@@ -51,7 +49,7 @@ public class V1_18Teleport extends AbstractTeleport {
         }
     }
 
-    public static boolean initialize() {
+    public boolean initialize() {
         boolean success = false;
         try {
             Class<?> packetClass = getNmClass("network.protocol.Packet");
@@ -70,17 +68,13 @@ public class V1_18Teleport extends AbstractTeleport {
             vec3Constructor = vectorClass.getConstructor(Double.TYPE, Double.TYPE, Double.TYPE);
             packetConstructor = positionPacketClass.getConstructor(Double.TYPE, Double.TYPE, Double.TYPE, Float.TYPE, Float.TYPE, Set.class, Integer.TYPE, Boolean.TYPE);
 
-            connectionField = TeleportUtils.getField(playerClass, "b"); // connection
-            //justTeleportedField = TeleportUtils.getField(connectionClass, "justTeleported"); // justTeleported
-            teleportPosField = TeleportUtils.getField(connectionClass, "y"); // awaitingPositionFromClient
-            //lastPosXField = TeleportUtils.getField(connectionClass, "lastPosX"); // lastPosX
-            //lastPosYField = TeleportUtils.getField(connectionClass, "lastPosY"); // lastPosY
-            //lastPosZField = TeleportUtils.getField(connectionClass, "lastPosZ"); // lastPosZ
-            teleportAwaitField = TeleportUtils.getField(connectionClass, "z"); // awaitingTeleport
-            awaitingTeleportTimeField = TeleportUtils.getField(connectionClass, "A"); // awaitingTeleportTime
-            tickCountField = TeleportUtils.getField(connectionClass, "f"); // tickCount
-            yawField = TeleportUtils.getField(entityClass, "aB"); // xRot
-            pitchField = TeleportUtils.getField(entityClass, "aA"); // yRot
+            connectionField = ReflectUtils.getField(playerClass, "b"); // connection
+            teleportPosField = ReflectUtils.getField(connectionClass, "y"); // awaitingPositionFromClient
+            teleportAwaitField = ReflectUtils.getField(connectionClass, "z"); // awaitingTeleport
+            awaitingTeleportTimeField = ReflectUtils.getField(connectionClass, "A"); // awaitingTeleportTime
+            tickCountField = ReflectUtils.getField(connectionClass, "f"); // tickCount
+            yawField = ReflectUtils.getField(entityClass, "aB"); // xRot
+            pitchField = ReflectUtils.getField(entityClass, "aA"); // yRot
             success = true;
         }
         catch (ClassNotFoundException | NoSuchFieldException | NoSuchMethodException e) {
@@ -89,19 +83,15 @@ public class V1_18Teleport extends AbstractTeleport {
         return success;
     }
 
-    public static void teleport(Player player, @NotNull Location location, float yawChange, float pitchChange) {
+    public void teleport(Player player, @NotNull Location location, float yawChange, float pitchChange) {
         double x = location.getX();
         double y = location.getY();
         double z = location.getZ();
-        Object handle = TeleportUtils.getHandle(player);
+        Object handle = ReflectUtils.getHandle(player);
         try {
             positionMethod.invoke(handle, x, y, z, yawField.get(handle), pitchField.get(handle));
             Object connection = connectionField.get(handle);
-            //justTeleportedField.set(connection, true);
             teleportPosField.set(connection, vec3Constructor.newInstance(x, y, z));
-            //lastPosXField.set(connection, x);
-            //lastPosYField.set(connection, y);
-            //lastPosZField.set(connection, z);
             int teleportAwait = teleportAwaitField.getInt(connection) + 1;
             if (teleportAwait == Integer.MAX_VALUE)
                 teleportAwait = 0;
