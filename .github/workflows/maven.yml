@@ -69,47 +69,47 @@ jobs:
         if: steps.nether.outputs.sucess != 'true'
         run: cd BuildTools && java -jar BuildTools.jar --rev 1.16.5 --compile craftbukkit
 
-    # Build 1.17.1 NMS
-    goats_1_17:
-      runs-on: ubuntu-latest
-      steps:
-        - name: Set up JDK 17 # 1.17.1 can be built with Java 16 to Java 17
-          uses: actions/setup-java@v2
-          with:
-            distribution: 'temurin'
-            java-version: '17'
-        - name: Cache 1.17.1 Maven package
-          id: cacheGoats
-          uses: actions/cache@v2
-          with:
-            path: |
-              ~/.m2/repository/org/spigotmc/spigot/1.17.1-R0.1-SNAPSHOT/
-              ~/.m2/repository/org/spigotmc/spigot-parent/
-              ~/.m2/repository/org/spigotmc/minecraft-server/
-            key: ${{ runner.os }}-spigot-1.17.1-all
-            restore-keys: ${{ runner.os }}-spigot-1.17.1-all
-        - name: Cache Maven packages
-          id: cacheMain
-          uses: actions/cache@v2
-          with:
-            path: ~/.m2
-            key: ${{ runner.os }}-m2_1.17.1
-            restore-keys: ${{ runner.os }}-m2_1.17.1
+  # Build 1.17.1 NMS
+  goats_1_17:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up JDK 17 # 1.17.1 can be built with Java 16 to Java 17
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - name: Cache 1.17.1 Maven package
+        id: cacheGoats
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.m2/repository/org/spigotmc/spigot/1.17.1-R0.1-SNAPSHOT/
+            ~/.m2/repository/org/spigotmc/spigot-parent/
+            ~/.m2/repository/org/spigotmc/minecraft-server/
+          key: ${{ runner.os }}-spigot-1.17.1-all
+          restore-keys: ${{ runner.os }}-spigot-1.17.1-all
+      - name: Cache Maven packages
+        id: cacheMain
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2_1.17.1
+          restore-keys: ${{ runner.os }}-m2_1.17.1
 
-        - name: Setup BuildTools
-          run: mkdir BuildTools && wget -O BuildTools/BuildTools.jar https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
-        - name: Check 1.17.1 Spigot
-          id: goats
-          run: test -f ~/.m2/repository/org/spigotmc/spigot/1.17.1-R0.1-SNAPSHOT/spigot-1.17.1-R0.1-SNAPSHOT.jar && echo "::set-output name=sucess::true" || echo "::set-output name=sucess::false"
-        - name: Check 1.17.1 Spigot (Mojang)
-          id: goatsMojang
-          run: test -f ~/.m2/repository/org/spigotmc/spigot/1.17.1-R0.1-SNAPSHOT/spigot-1.17.1-R0.1-SNAPSHOT-remapped-mojang.jar && echo "::set-output name=sucess::true" || echo "::set-output name=sucess::false"
-        - name: Check 1.17.1 Spigot (Obf)
-          id: goatsObf
-          run: test -f ~/.m2/repository/org/spigotmc/spigot/1.17.1-R0.1-SNAPSHOT/spigot-1.17.1-R0.1-SNAPSHOT-remapped-obf.jar && echo "::set-output name=sucess::true" || echo "::set-output name=sucess::false"
-        - name: Build 1.17.1
-          if: steps.goats.outputs.sucess != 'true' || steps.goatsMojang.outputs.sucess != 'true' || steps.goatsObf.outputs.sucess != 'true'
-          run: cd BuildTools && java -jar BuildTools.jar --rev 1.17.1 --remapped
+      - name: Setup BuildTools
+        run: mkdir BuildTools && wget -O BuildTools/BuildTools.jar https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
+      - name: Check 1.17.1 Spigot
+        id: goats
+        run: test -f ~/.m2/repository/org/spigotmc/spigot/1.17.1-R0.1-SNAPSHOT/spigot-1.17.1-R0.1-SNAPSHOT.jar && echo "::set-output name=sucess::true" || echo "::set-output name=sucess::false"
+      - name: Check 1.17.1 Spigot (Mojang)
+        id: goatsMojang
+        run: test -f ~/.m2/repository/org/spigotmc/spigot/1.17.1-R0.1-SNAPSHOT/spigot-1.17.1-R0.1-SNAPSHOT-remapped-mojang.jar && echo "::set-output name=sucess::true" || echo "::set-output name=sucess::false"
+      - name: Check 1.17.1 Spigot (Obf)
+        id: goatsObf
+        run: test -f ~/.m2/repository/org/spigotmc/spigot/1.17.1-R0.1-SNAPSHOT/spigot-1.17.1-R0.1-SNAPSHOT-remapped-obf.jar && echo "::set-output name=sucess::true" || echo "::set-output name=sucess::false"
+      - name: Build 1.17.1
+        if: steps.goats.outputs.sucess != 'true' || steps.goatsMojang.outputs.sucess != 'true' || steps.goatsObf.outputs.sucess != 'true'
+        run: cd BuildTools && java -jar BuildTools.jar --rev 1.17.1 --remapped
 
   # Build 1.18.2 NMS
   caves_1_18:
