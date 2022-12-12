@@ -166,7 +166,7 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
       - name: Cache 1.19.2 Maven package
-        id: cacheWild
+        id: cacheWild_r1
         uses: actions/cache@v2
         with:
           path: |
@@ -208,7 +208,7 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
       - name: Cache 1.19.3 Maven package
-        id: cacheWild
+        id: cacheWild_r2
         uses: actions/cache@v2
         with:
           path: |
@@ -298,7 +298,7 @@ jobs:
         key: ${{ runner.os }}-spigot-1.18.2-all
         restore-keys: ${{ runner.os }}-spigot-1.18.2-all
     - name: Cache 1.19.2 Maven package
-      id: cacheWild
+      id: cacheWild_r1
       uses: actions/cache@v2
       with:
         path: |
@@ -308,7 +308,7 @@ jobs:
         key: ${{ runner.os }}-spigot-1.19.2-all
         restore-keys: ${{ runner.os }}-spigot-1.19.2-all
     - name: Cache 1.19.3 Maven package
-      id: cacheWild
+      id: cacheWild_r2
       uses: actions/cache@v2
       with:
         path: |
