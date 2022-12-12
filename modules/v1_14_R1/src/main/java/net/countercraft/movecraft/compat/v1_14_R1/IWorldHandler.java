@@ -55,39 +55,10 @@ public class IWorldHandler extends WorldHandler {
         ROTATION[MovecraftRotation.ANTICLOCKWISE.ordinal()] = EnumBlockRotation.COUNTERCLOCKWISE_90;
     }
 
-    private MethodHandle internalTeleportMH;
-
     public IWorldHandler() {
         String mappings = ((CraftMagicNumbers) CraftMagicNumbers.INSTANCE).getMappingsVersion();
         if (!mappings.equals("11ae498d9cf909730659b6357e7c2afa"))
             throw new IllegalStateException("Movecraft is not compatible with this version of Minecraft 1.14: " + mappings);
-
-        MethodHandles.Lookup lookup = MethodHandles.lookup();
-        Method teleport;
-        try {
-            teleport = PlayerConnection.class.getDeclaredMethod("a", double.class, double.class, double.class, float.class, float.class, Set.class);
-            teleport.setAccessible(true);
-            internalTeleportMH = lookup.unreflect(teleport);
-        }
-        catch (NoSuchMethodException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public void addPlayerLocation(Player player, double x, double y, double z, float yaw, float pitch) {
-        EntityPlayer ePlayer = ((CraftPlayer) player).getHandle();
-        if (internalTeleportMH == null) {
-            //something went wrong
-            super.addPlayerLocation(player, x, y, z, yaw, pitch);
-            return;
-        }
-        try {
-            internalTeleportMH.invoke(ePlayer.playerConnection, x, y, z, yaw, pitch, EnumSet.allOf(PacketPlayOutPosition.EnumPlayerTeleportFlags.class));
-        }
-        catch (Throwable throwable) {
-            throwable.printStackTrace();
-        }
     }
 
     @Override

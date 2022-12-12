@@ -52,12 +52,6 @@ public class IWorldHandler extends WorldHandler {
             throw new IllegalStateException("Movecraft is not compatible with this version of Minecraft 1.18: " + mappings);
     }
 
-//    @Override
-//    public void addPlayerLocation(Player player, double x, double y, double z, float yaw, float pitch){
-//        ServerPlayer ePlayer = ((CraftPlayer) player).getHandle();
-//        ePlayer.connection.teleport(x, y, z, yaw, pitch, EnumSet.allOf(ClientboundPlayerPositionPacket.RelativeArgument.class));
-//    }
-
     @Override
     public void rotateCraft(@NotNull Craft craft, @NotNull MovecraftLocation originPoint, @NotNull MovecraftRotation rotation) {
         //*******************************************
