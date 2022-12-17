@@ -18,25 +18,25 @@ import java.util.Set;
  * Used for 1.14.4 to 1.16.5
  */
 public class ISmoothTeleport extends SmoothTeleport {
-    private Set<Object> teleportFlags;
+    private final Set<Object> teleportFlags;
 
-    private Constructor packetConstructor;
-    private Constructor vec3D;
+    private final Constructor packetConstructor;
+    private final Constructor vec3D;
 
-    private Method position;
-    private Method sendMethod;
+    private final Method position;
+    private final Method sendMethod;
 
-    private Field connectionField;
-    private Field justTeleportedField;
-    private Field teleportPosField;
-    private Field lastPosXField;
-    private Field lastPosYField;
-    private Field lastPosZField;
-    private Field teleportAwaitField;
-    private Field AField;
-    private Field eField;
-    private Field yaw;
-    private Field pitch;
+    private final Field connectionField;
+    private final Field justTeleportedField;
+    private final Field teleportPosField;
+    private final Field lastPosXField;
+    private final Field lastPosYField;
+    private final Field lastPosZField;
+    private final Field teleportAwaitField;
+    private final Field AField;
+    private final Field eField;
+    private final Field yaw;
+    private final Field pitch;
 
     private static @NotNull Class<?> getNmsClass(String name) throws ClassNotFoundException {
         return Class.forName("net.minecraft.server." + ReflectUtils.getVersion() + "." + name);
@@ -53,43 +53,35 @@ public class ISmoothTeleport extends SmoothTeleport {
         }
     }
 
-    public boolean initialize() {
-        boolean success = false;
-        try {
-            Class<?> packet = getNmsClass("Packet");
-            Class<?> entity = getNmsClass("Entity");
-            Class<?> entityPlayer = getNmsClass("EntityPlayer");
-            Class<?> connectionClass = getNmsClass("PlayerConnection");
-            Class<?> packetClass = getNmsClass("PacketPlayOutPosition");
-            Class<?> vecClass = getNmsClass("Vec3D");
-            sendMethod = connectionClass.getMethod("sendPacket", packet);
+    public ISmoothTeleport() throws ClassNotFoundException, NoSuchMethodException, NoSuchFieldException {
+        Class<?> packet = getNmsClass("Packet");
+        Class<?> entity = getNmsClass("Entity");
+        Class<?> entityPlayer = getNmsClass("EntityPlayer");
+        Class<?> connectionClass = getNmsClass("PlayerConnection");
+        Class<?> packetClass = getNmsClass("PacketPlayOutPosition");
+        Class<?> vecClass = getNmsClass("Vec3D");
+        sendMethod = connectionClass.getMethod("sendPacket", packet);
 
-            position = entity.getDeclaredMethod("setLocation", Double.TYPE, Double.TYPE, Double.TYPE, Float.TYPE, Float.TYPE);
+        position = entity.getDeclaredMethod("setLocation", Double.TYPE, Double.TYPE, Double.TYPE, Float.TYPE, Float.TYPE);
 
-            yaw = ReflectUtils.getField(entity, "yaw");
-            pitch = ReflectUtils.getField(entity, "pitch");
-            connectionField = ReflectUtils.getField(entityPlayer, "playerConnection");
+        yaw = ReflectUtils.getField(entity, "yaw");
+        pitch = ReflectUtils.getField(entity, "pitch");
+        connectionField = ReflectUtils.getField(entityPlayer, "playerConnection");
 
-            packetConstructor = packetClass.getConstructor(Double.TYPE, Double.TYPE, Double.TYPE, Float.TYPE, Float.TYPE, Set.class, Integer.TYPE);
-            vec3D = vecClass.getConstructor(Double.TYPE, Double.TYPE, Double.TYPE);
+        packetConstructor = packetClass.getConstructor(Double.TYPE, Double.TYPE, Double.TYPE, Float.TYPE, Float.TYPE, Set.class, Integer.TYPE);
+        vec3D = vecClass.getConstructor(Double.TYPE, Double.TYPE, Double.TYPE);
 
-            Object[] enumObjects = getNmsClass("PacketPlayOutPosition$EnumPlayerTeleportFlags").getEnumConstants();
-            teleportFlags = Set.of(enumObjects[4], enumObjects[3]);
+        Object[] enumObjects = getNmsClass("PacketPlayOutPosition$EnumPlayerTeleportFlags").getEnumConstants();
+        teleportFlags = Set.of(enumObjects[4], enumObjects[3]);
 
-            justTeleportedField = ReflectUtils.getField(connectionClass, "justTeleported");
-            teleportPosField = ReflectUtils.getField(connectionClass, "teleportPos");
-            lastPosXField = ReflectUtils.getField(connectionClass, "lastPosX");
-            lastPosYField = ReflectUtils.getField(connectionClass, "lastPosY");
-            lastPosZField = ReflectUtils.getField(connectionClass, "lastPosZ");
-            teleportAwaitField = ReflectUtils.getField(connectionClass, "teleportAwait");
-            AField = ReflectUtils.getField(connectionClass, "A");
-            eField = ReflectUtils.getField(connectionClass, "e");
-            success = true;
-        }
-        catch (ClassNotFoundException | NoSuchFieldException | NoSuchMethodException | SecurityException e) {
-            e.printStackTrace();
-        }
-        return success;
+        justTeleportedField = ReflectUtils.getField(connectionClass, "justTeleported");
+        teleportPosField = ReflectUtils.getField(connectionClass, "teleportPos");
+        lastPosXField = ReflectUtils.getField(connectionClass, "lastPosX");
+        lastPosYField = ReflectUtils.getField(connectionClass, "lastPosY");
+        lastPosZField = ReflectUtils.getField(connectionClass, "lastPosZ");
+        teleportAwaitField = ReflectUtils.getField(connectionClass, "teleportAwait");
+        AField = ReflectUtils.getField(connectionClass, "A");
+        eField = ReflectUtils.getField(connectionClass, "e");
     }
 
     public void teleport(Player player, @NotNull Location location, float yawChange, float pitchChange) {

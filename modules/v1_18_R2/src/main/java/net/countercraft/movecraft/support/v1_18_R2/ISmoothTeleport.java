@@ -18,21 +18,21 @@ import java.util.Set;
  * Used for 1.18.2
  */
 public class ISmoothTeleport extends SmoothTeleport {
-    private Set<Object> teleportFlags;
+    private final Set<Object> teleportFlags;
 
-    private Method positionMethod;
-    private Method sendMethod;
+    private final Method positionMethod;
+    private final Method sendMethod;
 
-    private Constructor<?> vec3Constructor;
-    private Constructor<?> packetConstructor;
+    private final Constructor<?> vec3Constructor;
+    private final Constructor<?> packetConstructor;
 
-    private Field connectionField;
-    private Field teleportPosField;
-    private Field teleportAwaitField;
-    private Field awaitingTeleportTimeField;
-    private Field tickCountField;
-    private Field yawField;
-    private Field pitchField;
+    private final Field connectionField;
+    private final Field teleportPosField;
+    private final Field teleportAwaitField;
+    private final Field awaitingTeleportTimeField;
+    private final Field tickCountField;
+    private final Field yawField;
+    private final Field pitchField;
 
     private static @NotNull Class<?> getNmClass(String name) throws ClassNotFoundException {
         return Class.forName("net.minecraft." + name);
@@ -49,38 +49,30 @@ public class ISmoothTeleport extends SmoothTeleport {
         }
     }
 
-    public boolean initialize() {
-        boolean success = false;
-        try {
-            Class<?> packetClass = getNmClass("network.protocol.Packet");
-            Class<?> positionPacketClass = getNmClass("network.protocol.game.PacketPlayOutPosition"); // ClientboundPlayerPositionPacket
-            Class<?> entityClass = getNmClass("world.entity.Entity");
-            Class<?> playerClass = getNmClass("server.level.EntityPlayer"); // ServerPlayer
-            Class<?> connectionClass = getNmClass("server.network.PlayerConnection"); // ServerGamePacketListenerImpl
-            Class<?> vectorClass = getNmClass("world.phys.Vec3D"); // Vec3
+    public ISmoothTeleport() throws ClassNotFoundException, NoSuchMethodException, NoSuchFieldException {
+        Class<?> packetClass = getNmClass("network.protocol.Packet");
+        Class<?> positionPacketClass = getNmClass("network.protocol.game.PacketPlayOutPosition"); // ClientboundPlayerPositionPacket
+        Class<?> entityClass = getNmClass("world.entity.Entity");
+        Class<?> playerClass = getNmClass("server.level.EntityPlayer"); // ServerPlayer
+        Class<?> connectionClass = getNmClass("server.network.PlayerConnection"); // ServerGamePacketListenerImpl
+        Class<?> vectorClass = getNmClass("world.phys.Vec3D"); // Vec3
 
-            Object[] flags = getNmClass("network.protocol.game.PacketPlayOutPosition$EnumPlayerTeleportFlags").getEnumConstants(); // $RelativeArgument
-            teleportFlags = Set.of(flags[4], flags[3]); // X_ROT, Y_ROT
+        Object[] flags = getNmClass("network.protocol.game.PacketPlayOutPosition$EnumPlayerTeleportFlags").getEnumConstants(); // $RelativeArgument
+        teleportFlags = Set.of(flags[4], flags[3]); // X_ROT, Y_ROT
 
-            positionMethod = entityClass.getDeclaredMethod("a", Double.TYPE, Double.TYPE, Double.TYPE, Float.TYPE, Float.TYPE); // absMoveTo
-            sendMethod = connectionClass.getMethod("a", packetClass); // send
+        positionMethod = entityClass.getDeclaredMethod("a", Double.TYPE, Double.TYPE, Double.TYPE, Float.TYPE, Float.TYPE); // absMoveTo
+        sendMethod = connectionClass.getMethod("a", packetClass); // send
 
-            vec3Constructor = vectorClass.getConstructor(Double.TYPE, Double.TYPE, Double.TYPE);
-            packetConstructor = positionPacketClass.getConstructor(Double.TYPE, Double.TYPE, Double.TYPE, Float.TYPE, Float.TYPE, Set.class, Integer.TYPE, Boolean.TYPE);
+        vec3Constructor = vectorClass.getConstructor(Double.TYPE, Double.TYPE, Double.TYPE);
+        packetConstructor = positionPacketClass.getConstructor(Double.TYPE, Double.TYPE, Double.TYPE, Float.TYPE, Float.TYPE, Set.class, Integer.TYPE, Boolean.TYPE);
 
-            connectionField = ReflectUtils.getField(playerClass, "b"); // connection
-            teleportPosField = ReflectUtils.getField(connectionClass, "y"); // awaitingPositionFromClient
-            teleportAwaitField = ReflectUtils.getField(connectionClass, "z"); // awaitingTeleport
-            awaitingTeleportTimeField = ReflectUtils.getField(connectionClass, "A"); // awaitingTeleportTime
-            tickCountField = ReflectUtils.getField(connectionClass, "f"); // tickCount
-            yawField = ReflectUtils.getField(entityClass, "aB"); // xRot
-            pitchField = ReflectUtils.getField(entityClass, "aA"); // yRot
-            success = true;
-        }
-        catch (ClassNotFoundException | NoSuchFieldException | NoSuchMethodException e) {
-            e.printStackTrace();
-        }
-        return success;
+        connectionField = ReflectUtils.getField(playerClass, "b"); // connection
+        teleportPosField = ReflectUtils.getField(connectionClass, "y"); // awaitingPositionFromClient
+        teleportAwaitField = ReflectUtils.getField(connectionClass, "z"); // awaitingTeleport
+        awaitingTeleportTimeField = ReflectUtils.getField(connectionClass, "A"); // awaitingTeleportTime
+        tickCountField = ReflectUtils.getField(connectionClass, "f"); // tickCount
+        yawField = ReflectUtils.getField(entityClass, "aB"); // xRot
+        pitchField = ReflectUtils.getField(entityClass, "aA"); // yRot
     }
 
     public void teleport(Player player, @NotNull Location location, float yawChange, float pitchChange) {

@@ -157,7 +157,7 @@ public class Movecraft extends JavaPlugin {
                         getLogger().warning("Falling back to bukkit teleportation provider.");
                     }
                 }
-                catch (ClassNotFoundException ignored) {
+                catch (ReflectiveOperationException ignored) {
                     smoothTeleport = new BukkitTeleport(); // Fall back to bukkit teleportation
                     getLogger().warning("Falling back to bukkit teleportation provider.");
                 }
