@@ -204,6 +204,12 @@
                                     </includes>
                                 </filter>
                                 <filter>
+                                    <artifact>net.countercraft:movecraft-v1_17_r1</artifact>
+                                    <includes>
+                                        <include>**</include>
+                                    </includes>
+                                </filter>
+                                <filter>
                                     <artifact>net.countercraft:movecraft-v1_18_r2</artifact>
                                     <includes>
                                         <include>**</include>
