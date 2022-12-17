@@ -147,12 +147,19 @@ public class Movecraft extends JavaPlugin {
                 worldHandler = (WorldHandler) worldHandlerClazz.getConstructor().newInstance(); // Set our handler
 
                 // Try to setup the smooth teleport handler
-                final Class<?> smoothTeleportClazz = Class.forName("net.countercraft.movecraft.support." + version + ".ISmoothTeleport");
-                if (SmoothTeleport.class.isAssignableFrom(smoothTeleportClazz)) {
-                    smoothTeleport = (SmoothTeleport) smoothTeleportClazz.getConstructor().newInstance();
+                try {
+                    final Class<?> smoothTeleportClazz = Class.forName("net.countercraft.movecraft.support." + version + ".ISmoothTeleport");
+                    if (SmoothTeleport.class.isAssignableFrom(smoothTeleportClazz)) {
+                        smoothTeleport = (SmoothTeleport) smoothTeleportClazz.getConstructor().newInstance();
+                    }
+                    else {
+                        smoothTeleport = new BukkitTeleport(); // Fall back to bukkit teleportation
+                        getLogger().warning("Falling back to bukkit teleportation provider.");
+                    }
                 }
-                else {
+                catch (ClassNotFoundException ignored) {
                     smoothTeleport = new BukkitTeleport(); // Fall back to bukkit teleportation
+                    getLogger().warning("Falling back to bukkit teleportation provider.");
                 }
             }
         }
