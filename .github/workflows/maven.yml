@@ -14,14 +14,14 @@ jobs:
           java-version: '13'
       - name: Cache 1.14.4 Maven package
         id: cachePillage
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.m2/repository/org/bukkit/craftbukkit/1.14.4-R0.1-SNAPSHOT/
           key: ${{ runner.os }}-v1_14_R1
           restore-keys: ${{ runner.os }}-v1_14_R1
       - name: Cache Maven packages
         id: cacheMain
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.m2
           key: ${{ runner.os }}-m2_v1_14_R1
@@ -47,14 +47,14 @@ jobs:
           java-version: '16'
       - name: Cache 1.16.5 Maven package
         id: cacheNether
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.m2/repository/org/bukkit/craftbukkit/1.16.5-R0.1-SNAPSHOT/
           key: ${{ runner.os }}-v1_16_R3
           restore-keys: ${{ runner.os }}-v1_16_R3
       - name: Cache Maven packages
         id: cacheMain
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.m2
           key: ${{ runner.os }}-m2-v1_16_R3
@@ -80,7 +80,7 @@ jobs:
           java-version: '17'
       - name: Cache 1.17.1 Maven package
         id: cacheGoats
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ~/.m2/repository/org/spigotmc/spigot/1.17.1-R0.1-SNAPSHOT/
@@ -90,7 +90,7 @@ jobs:
           restore-keys: ${{ runner.os }}-v1_17_R1
       - name: Cache Maven packages
         id: cacheMain
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.m2
           key: ${{ runner.os }}-m2-v1_17_R1
@@ -122,7 +122,7 @@ jobs:
           java-version: '17'
       - name: Cache 1.18.2 Maven package
         id: cacheCaves
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ~/.m2/repository/org/spigotmc/spigot/1.18.2-R0.1-SNAPSHOT/
@@ -132,7 +132,7 @@ jobs:
           restore-keys: ${{ runner.os }}-v1_18_R2
       - name: Cache Maven packages
         id: cacheMain
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.m2
           key: ${{ runner.os }}-m2-v1_18_R2
@@ -164,7 +164,7 @@ jobs:
           java-version: '17'
       - name: Cache 1.19.2 Maven package
         id: cacheWild_r1
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ~/.m2/repository/org/spigotmc/spigot/1.19.2-R0.1-SNAPSHOT/
@@ -174,7 +174,7 @@ jobs:
           restore-keys: ${{ runner.os }}-v1_19_R1
       - name: Cache Maven packages
         id: cacheMain
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.m2
           key: ${{ runner.os }}-m2-v1_19_R1
@@ -206,7 +206,7 @@ jobs:
           java-version: '17'
       - name: Cache 1.19.3 Maven package
         id: cacheWild_r2
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ~/.m2/repository/org/spigotmc/spigot/1.19.3-R0.1-SNAPSHOT/
@@ -216,7 +216,7 @@ jobs:
           restore-keys: ${{ runner.os }}-v1_19_R2
       - name: Cache Maven packages
         id: cacheMain
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.m2
           key: ${{ runner.os }}-m2-v1_19_R2
@@ -251,25 +251,25 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
       - name: Cache Maven packages
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.m2
           key: ${{ runner.os }}-m2
           restore-keys: ${{ runner.os }}-m2
       - name: Cache 1.14.4 Maven package
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.m2/repository/org/bukkit/craftbukkit/1.14.4-R0.1-SNAPSHOT/
           key: ${{ runner.os }}-v1_14_R1
           restore-keys: ${{ runner.os }}-v1_14_R1
       - name: Cache 1.16.5 Maven package
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.m2/repository/org/bukkit/craftbukkit/1.16.5-R0.1-SNAPSHOT/
           key: ${{ runner.os }}-v1_16_R3
           restore-keys: ${{ runner.os }}-v1_16_R3
       - name: Cache 1.17.1 Maven package
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ~/.m2/repository/org/spigotmc/spigot/1.17.1-R0.1-SNAPSHOT/
@@ -278,7 +278,7 @@ jobs:
           key: ${{ runner.os }}-v1_17_R1
           restore-keys: ${{ runner.os }}-v1_17_R1
       - name: Cache 1.18.2 Maven package
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ~/.m2/repository/org/spigotmc/spigot/1.18.2-R0.1-SNAPSHOT/
@@ -287,7 +287,7 @@ jobs:
           key: ${{ runner.os }}-v1_18_R2
           restore-keys: ${{ runner.os }}-v1_18_R2
       - name: Cache 1.19.2 Maven package
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ~/.m2/repository/org/spigotmc/spigot/1.19.2-R0.1-SNAPSHOT/
@@ -296,7 +296,7 @@ jobs:
           key: ${{ runner.os }}-v1_19_R1
           restore-keys: ${{ runner.os }}-v1_19_R1
       - name: Cache 1.19.3 Maven package
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ~/.m2/repository/org/spigotmc/spigot/1.19.3-R0.1-SNAPSHOT/
