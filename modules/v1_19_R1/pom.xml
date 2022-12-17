@@ -20,6 +20,7 @@
             <version>1.19.2-R0.1-SNAPSHOT</version>
             <classifier>remapped-mojang</classifier>
             <scope>provided</scope>
+            <!-- Mappings: https://piston-data.mojang.com/v1/objects/ed5e6e8334ad67f5af0150beed0f3d156d74bd57/server.txt -->
         </dependency>
         <dependency>
             <groupId>net.countercraft</groupId>

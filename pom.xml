@@ -9,7 +9,7 @@
     <url>http://github.com/apdevteam/Movecraft</url>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <revision>8.0.0-a.9</revision>
+        <revision>8.0.0-a.10-dev</revision>
     </properties>
 
     <modules>
@@ -19,6 +19,7 @@
         <module>modules/v1_17_R1</module>
         <module>modules/v1_18_R2</module>
         <module>modules/v1_19_R1</module>
+        <module>modules/v1_19_R2</module>
         <module>modules/datapack</module>
         <module>modules/Movecraft</module>
     </modules>

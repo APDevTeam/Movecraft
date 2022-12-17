@@ -55,6 +55,8 @@ import net.countercraft.movecraft.sign.SpeedSign;
 import net.countercraft.movecraft.sign.StatusSign;
 import net.countercraft.movecraft.sign.SubcraftRotateSign;
 import net.countercraft.movecraft.sign.TeleportSign;
+import net.countercraft.movecraft.util.BukkitTeleport;
+import net.countercraft.movecraft.util.Tags;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -67,6 +69,7 @@ import java.io.IOException;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 public class Movecraft extends JavaPlugin {
@@ -76,6 +79,7 @@ public class Movecraft extends JavaPlugin {
     private Logger logger;
     private boolean shuttingDown;
     private WorldHandler worldHandler;
+    private SmoothTeleport smoothTeleport;
     private AsyncManager asyncManager;
 
     public static synchronized Movecraft getInstance() {
@@ -84,7 +88,7 @@ public class Movecraft extends JavaPlugin {
 
     @NotNull
     public static BukkitAudiences getAdventure() {
-        if(adventure == null)
+        if (adventure == null)
             throw new IllegalStateException("Tried to access Adventure when the plugin was disabled!");
 
         return adventure;
@@ -93,7 +97,7 @@ public class Movecraft extends JavaPlugin {
     @Override
     public void onDisable() {
         shuttingDown = true;
-        if(adventure != null) {
+        if (adventure != null) {
             adventure.close();
             adventure = null;
         }
@@ -108,39 +112,58 @@ public class Movecraft extends JavaPlugin {
         Settings.DisableIceForm = getConfig().getBoolean("DisableIceForm", true);
 
         String[] localisations = {"en", "cz", "nl", "fr"};
-        for(String s : localisations) {
-            if(!new File(getDataFolder()
+        for (String s : localisations) {
+            if (!new File(getDataFolder()
                     + "/localisation/movecraftlang_" + s + ".properties").exists()) {
                 saveResource("localisation/movecraftlang_" + s + ".properties", false);
             }
         }
         I18nSupport.init();
-        
-        
+
+
         // if the PilotTool is specified in the config.yml file, use it
         String pilotTool = getConfig().getString("PilotTool");
-        if(pilotTool != null) {
+        if (pilotTool != null) {
             Material material = Material.getMaterial(pilotTool);
-            if(material != null) {
+            if (material != null) {
                 logger.info(I18nSupport.getInternationalisedString("Startup - Recognized Pilot Tool")
                         + pilotTool);
                 Settings.PilotTool = material;
             }
-            else
+            else {
                 logger.info(I18nSupport.getInternationalisedString("Startup - No Pilot Tool"));
+            }
         }
-        else
+        else {
             logger.info(I18nSupport.getInternationalisedString("Startup - No Pilot Tool"));
+        }
 
         String packageName = getServer().getClass().getPackage().getName();
         String version = packageName.substring(packageName.lastIndexOf('.') + 1);
         try {
-            final Class<?> clazz = Class.forName("net.countercraft.movecraft.compat." + version + ".IWorldHandler");
+            final Class<?> worldHandlerClazz = Class.forName("net.countercraft.movecraft.compat." + version + ".IWorldHandler");
             // Check if we have a NMSHandler class at that location.
-            if (WorldHandler.class.isAssignableFrom(clazz)) // Make sure it actually implements NMS
-                worldHandler = (WorldHandler) clazz.getConstructor().newInstance(); // Set our handler
+            if (WorldHandler.class.isAssignableFrom(worldHandlerClazz)) { // Make sure it actually implements NMS
+                worldHandler = (WorldHandler) worldHandlerClazz.getConstructor().newInstance(); // Set our handler
+
+                // Try to setup the smooth teleport handler
+                try {
+                    final Class<?> smoothTeleportClazz = Class.forName("net.countercraft.movecraft.support." + version + ".ISmoothTeleport");
+                    if (SmoothTeleport.class.isAssignableFrom(smoothTeleportClazz)) {
+                        smoothTeleport = (SmoothTeleport) smoothTeleportClazz.getConstructor().newInstance();
+                    }
+                    else {
+                        smoothTeleport = new BukkitTeleport(); // Fall back to bukkit teleportation
+                        getLogger().warning("Falling back to bukkit teleportation provider.");
+                    }
+                }
+                catch (ReflectiveOperationException ignored) {
+                    smoothTeleport = new BukkitTeleport(); // Fall back to bukkit teleportation
+                    getLogger().warning("Falling back to bukkit teleportation provider.");
+                }
+            }
         }
-        catch(final Exception e) {
+        catch (final Exception e) {
             e.printStackTrace();
             getLogger().severe(I18nSupport.getInternationalisedString("Startup - Version Not Supported"));
             setEnabled(false);
@@ -162,17 +185,13 @@ public class Movecraft extends JavaPlugin {
         Settings.FadeWrecksAfter = getConfig().getInt("FadeWrecksAfter", 0);
         Settings.FadeTickCooldown = getConfig().getInt("FadeTickCooldown", 20);
         Settings.FadePercentageOfWreckPerCycle = getConfig().getDouble("FadePercentageOfWreckPerCycle", 10.0);
-        if(getConfig().contains("ExtraFadeTimePerBlock")) {
+        if (getConfig().contains("ExtraFadeTimePerBlock")) {
             Map<String, Object> temp = getConfig().getConfigurationSection("ExtraFadeTimePerBlock").getValues(false);
-            for(String str : temp.keySet()) {
-                Material type;
-                try {
-                    type = Material.getMaterial(str);
+            for (String str : temp.keySet()) {
+                Set<Material> materials = Tags.parseMaterials(str);
+                for (Material m : materials) {
+                    Settings.ExtraFadeTimePerBlock.put(m, (Integer) temp.get(str));
                 }
-                catch(NumberFormatException e) {
-                    type = Material.getMaterial(str);
-                }
-                Settings.ExtraFadeTimePerBlock.put(type, (Integer) temp.get(str));
             }
         }
 
@@ -331,6 +350,9 @@ public class Movecraft extends JavaPlugin {
         return worldHandler;
     }
 
+    public SmoothTeleport getSmoothTeleport() {
+        return smoothTeleport;
+    }
+
     public AsyncManager getAsyncManager(){return asyncManager;}
 }
-
