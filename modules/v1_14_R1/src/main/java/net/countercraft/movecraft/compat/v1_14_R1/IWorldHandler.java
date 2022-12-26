@@ -12,12 +12,9 @@ import net.minecraft.server.v1_14_R1.BlockPosition;
 import net.minecraft.server.v1_14_R1.Blocks;
 import net.minecraft.server.v1_14_R1.Chunk;
 import net.minecraft.server.v1_14_R1.ChunkSection;
-import net.minecraft.server.v1_14_R1.EntityPlayer;
 import net.minecraft.server.v1_14_R1.EnumBlockRotation;
 import net.minecraft.server.v1_14_R1.IBlockData;
 import net.minecraft.server.v1_14_R1.NextTickListEntry;
-import net.minecraft.server.v1_14_R1.PacketPlayOutPosition;
-import net.minecraft.server.v1_14_R1.PlayerConnection;
 import net.minecraft.server.v1_14_R1.StructureBoundingBox;
 import net.minecraft.server.v1_14_R1.TileEntity;
 import net.minecraft.server.v1_14_R1.World;
@@ -27,22 +24,15 @@ import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.v1_14_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_14_R1.block.data.CraftBlockData;
-import org.bukkit.craftbukkit.v1_14_R1.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_14_R1.util.CraftMagicNumbers;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 @SuppressWarnings("unused")
 public class IWorldHandler extends WorldHandler {
@@ -104,7 +94,7 @@ public class IWorldHandler extends WorldHandler {
         capturedTicks.removeAll(tileTicks);
         for (NextTickListEntry<?> entry : capturedTicks) {
             final long currentTime = nativeWorld.worldData.getTime();
-            nativeWorld.getBlockTickList().a(rotatedPositions.get(entry.a), (Block) entry.b(), (int) (entry.b - currentTime), entry.c);
+            nativeWorld.getBlockTickList().a(entry.a, (Block) entry.b(), (int) (entry.b - currentTime), entry.c);
         }
 
         //*******************************************
