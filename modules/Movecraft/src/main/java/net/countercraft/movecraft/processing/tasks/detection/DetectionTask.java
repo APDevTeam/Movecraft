@@ -73,6 +73,8 @@ public class DetectionTask implements Supplier<Effect> {
     };
     private static final AllowedBlockValidator ALLOWED_BLOCK_VALIDATOR = new AllowedBlockValidator();
     private static final ForbiddenBlockValidator FORBIDDEN_BLOCK_VALIDATOR = new ForbiddenBlockValidator();
+
+    private static final InteriorBlockValidator INTERIOR_BLOCK_VALIDATOR = new InteriorBlockValidator();
     private static final List<DetectionPredicate<MovecraftLocation>> VALIDATORS = List.of(
             new ForbiddenSignStringValidator(),
             new NameSignValidator(),
@@ -324,9 +326,8 @@ public class DetectionTask implements Supplier<Effect> {
             visited.add(poll);
         }
         final HitBox interior = invertedHitbox.difference(exterior);
-        final InteriorBlockValidator validator = new InteriorBlockValidator();
         for (var loc : interior) {
-            var result = validator.validate(loc, type, movecraftWorld, player);
+            var result = INTERIOR_BLOCK_VALIDATOR.validate(loc, type, movecraftWorld, player);
             if (!result.isSucess())
                 continue;
             legal.add(loc);
