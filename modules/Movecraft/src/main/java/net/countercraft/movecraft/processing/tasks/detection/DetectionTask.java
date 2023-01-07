@@ -17,22 +17,12 @@ import net.countercraft.movecraft.processing.effects.Effect;
 import net.countercraft.movecraft.processing.functions.CraftSupplier;
 import net.countercraft.movecraft.processing.functions.DetectionPredicate;
 import net.countercraft.movecraft.processing.functions.Result;
-import net.countercraft.movecraft.processing.tasks.detection.validators.AllowedBlockValidator;
-import net.countercraft.movecraft.processing.tasks.detection.validators.DetectionBlockValidator;
-import net.countercraft.movecraft.processing.tasks.detection.validators.FlyBlockValidator;
-import net.countercraft.movecraft.processing.tasks.detection.validators.ForbiddenBlockValidator;
-import net.countercraft.movecraft.processing.tasks.detection.validators.ForbiddenSignStringValidator;
-import net.countercraft.movecraft.processing.tasks.detection.validators.NameSignValidator;
-import net.countercraft.movecraft.processing.tasks.detection.validators.PilotSignValidator;
-import net.countercraft.movecraft.processing.tasks.detection.validators.SizeValidator;
-import net.countercraft.movecraft.processing.tasks.detection.validators.WaterContactValidator;
+import net.countercraft.movecraft.processing.tasks.detection.validators.*;
 import net.countercraft.movecraft.util.AtomicLocationSet;
 import net.countercraft.movecraft.util.CollectionUtils;
+import net.countercraft.movecraft.util.MathUtils;
 import net.countercraft.movecraft.util.Tags;
-import net.countercraft.movecraft.util.hitboxes.BitmapHitBox;
-import net.countercraft.movecraft.util.hitboxes.HitBox;
-import net.countercraft.movecraft.util.hitboxes.SetHitBox;
-import net.countercraft.movecraft.util.hitboxes.SolidHitBox;
+import net.countercraft.movecraft.util.hitboxes.*;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
@@ -227,6 +217,7 @@ public class DetectionTask implements Supplier<Effect> {
     @Override
     public Effect get() {
         frontier();
+        detectInterior();
         if (!illegal.isEmpty())
             return null;
 
@@ -297,6 +288,50 @@ public class DetectionTask implements Supplier<Effect> {
                 // Add craft to CraftManager
                 () -> CraftManager.getInstance().add(craft)
         );
+    }
+
+    private void detectInterior() {
+        final HitBox hitBox = new BitmapHitBox(legal);
+        final int minX = hitBox.getMinX();
+        final int maxX = hitBox.getMaxX();
+        final int minY = hitBox.getMinY();
+        final int maxY = hitBox.getMaxY();
+        final int minZ = hitBox.getMinZ();
+        final int maxZ = hitBox.getMaxZ();
+        final HitBox invertedHitbox = hitBox.boundingHitBox().difference(hitBox);
+        final HitBox[] surfaces = {
+                new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(maxX, minY, maxZ)), //bottom
+                new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(minX, maxY, maxZ)), //east
+                new SolidHitBox(new MovecraftLocation(maxX, minY, minZ), new MovecraftLocation(maxX, maxY, maxZ)), //west
+                new SolidHitBox(new MovecraftLocation(minX, minY, maxZ), new MovecraftLocation(maxX, maxY, maxZ)), //south
+                new SolidHitBox(new MovecraftLocation(minX, minY, minZ), new MovecraftLocation(maxX, maxY, minZ)), //north
+        };
+        final MutableHitBox exterior = new SetHitBox();
+        final MutableHitBox visited = new SetHitBox();
+        for (var surface : surfaces) {
+            exterior.addAll(new BitmapHitBox(surface).difference(hitBox));
+        }
+        Queue<MovecraftLocation> queue = Lists.newLinkedList(exterior);
+        while (!queue.isEmpty()) {
+            var poll = queue.poll();
+            for (var neighbor : CollectionUtils.neighbors(invertedHitbox, poll)) {
+                if (neighbor.subtract(poll).getY() < 0)
+                    continue;
+                if (visited.contains(poll))
+                    continue;
+                exterior.add(neighbor);
+            }
+            visited.add(poll);
+        }
+        final HitBox interior = invertedHitbox.difference(exterior);
+        final InteriorBlockValidator validator = new InteriorBlockValidator();
+        for (var loc : interior) {
+            var result = validator.validate(loc, type, movecraftWorld, player);
+            if (!result.isSucess())
+                continue;
+            legal.add(loc);
+        }
+
     }
 
     private void frontier() {
