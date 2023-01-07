@@ -88,6 +88,7 @@ final public class CraftType {
     public static final NamespacedKey REQUIRE_WATER_CONTACT = buildKey("require_water_contact");
     public static final NamespacedKey TRY_NUDGE = buildKey("try_nudge");
     public static final NamespacedKey MOVE_BLOCKS = buildKey("move_blocks");
+    public static final NamespacedKey INTERIOR_BLOCKS = buildKey("interior_blocks");
     public static final NamespacedKey CAN_CRUISE = buildKey("can_cruise");
     public static final NamespacedKey CAN_TELEPORT = buildKey("can_teleport");
     public static final NamespacedKey CAN_SWITCH_WORLD = buildKey("can_switch_world");
@@ -401,6 +402,7 @@ final public class CraftType {
         registerProperty(new BooleanProperty("requireWaterContact", REQUIRE_WATER_CONTACT, type -> false));
         registerProperty(new BooleanProperty("tryNudge", TRY_NUDGE, type -> false));
         registerProperty(new RequiredBlockProperty("moveblocks", MOVE_BLOCKS, type -> new HashSet<>()));
+        registerProperty(new MaterialSetProperty("interiorBlocks", INTERIOR_BLOCKS));
         registerProperty(new BooleanProperty("canCruise", CAN_CRUISE, type -> false));
         registerProperty(new BooleanProperty("canTeleport", CAN_TELEPORT, type -> false));
         registerProperty(new BooleanProperty("canSwitchWorld", CAN_SWITCH_WORLD, type -> false));
