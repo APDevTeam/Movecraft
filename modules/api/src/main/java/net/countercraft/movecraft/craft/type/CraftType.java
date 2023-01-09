@@ -402,7 +402,7 @@ final public class CraftType {
         registerProperty(new BooleanProperty("requireWaterContact", REQUIRE_WATER_CONTACT, type -> false));
         registerProperty(new BooleanProperty("tryNudge", TRY_NUDGE, type -> false));
         registerProperty(new RequiredBlockProperty("moveblocks", MOVE_BLOCKS, type -> new HashSet<>()));
-        registerProperty(new MaterialSetProperty("interiorBlocks", INTERIOR_BLOCKS));
+        registerProperty(new MaterialSetProperty("interiorBlocks", INTERIOR_BLOCKS, type -> EnumSet.noneOf(Material.class)));
         registerProperty(new BooleanProperty("canCruise", CAN_CRUISE, type -> false));
         registerProperty(new BooleanProperty("canTeleport", CAN_TELEPORT, type -> false));
         registerProperty(new BooleanProperty("canSwitchWorld", CAN_SWITCH_WORLD, type -> false));
