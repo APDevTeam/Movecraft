@@ -24,6 +24,7 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.v1_18_R2.CraftWorld;
 import org.bukkit.craftbukkit.v1_18_R2.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.v1_18_R2.util.CraftMagicNumbers;
+import org.bukkit.inventory.InventoryView;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -245,6 +246,11 @@ public class IWorldHandler extends WorldHandler {
     @Override
     public void disableShadow(@NotNull Material type) {
         // Disabled
+    }
+
+    @Override
+    public void setAccessLocation(@NotNull InventoryView inventoryView, @NotNull Location location) {
+        // Not implemented
     }
 
     private void moveBlockEntity(@NotNull Level nativeWorld, @NotNull BlockPos newPosition, @NotNull BlockEntity tile) {

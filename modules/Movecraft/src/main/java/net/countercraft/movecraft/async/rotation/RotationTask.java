@@ -29,6 +29,7 @@ import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftRotateEvent;
 import net.countercraft.movecraft.events.CraftTeleportEntityEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.mapUpdater.update.AccessLocationUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.CraftRotateCommand;
 import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
@@ -43,7 +44,10 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.inventory.InventoryView;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -180,6 +184,21 @@ public class RotationTask extends AsyncTask {
                     oldHitBox.getXLength() / 2.0 + 1,
                     oldHitBox.getYLength() / 2.0 + 2,
                     oldHitBox.getZLength() / 2.0 + 1)) {
+
+                if (entity instanceof HumanEntity) {
+                    InventoryView inventoryView = ((HumanEntity) entity).getOpenInventory();
+                    if (inventoryView.getType() == InventoryType.WORKBENCH) {
+                        Location l = inventoryView.getTopInventory().getLocation();
+                        if (l != null) {
+                            MovecraftLocation location = new MovecraftLocation(l.getBlockX(), l.getBlockY(), l.getBlockZ());
+                            if (oldHitBox.contains(location)) {
+                                location = MathUtils.rotateVec(rotation, location.subtract(originPoint)).add(originPoint);
+                                updates.add(new AccessLocationUpdateCommand(inventoryView, location.toBukkit(w)));
+                            }
+                        }
+                    }
+                }
+
                 if (!craft.getType().getBoolProperty(CraftType.ONLY_MOVE_PLAYERS) || (
                         (entity.getType() == EntityType.PLAYER || entity.getType() == EntityType.PRIMED_TNT)
                                 && !(craft instanceof SinkingCraft)
