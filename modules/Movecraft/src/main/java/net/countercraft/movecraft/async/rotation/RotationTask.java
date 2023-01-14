@@ -18,6 +18,7 @@
 package net.countercraft.movecraft.async.rotation;
 
 import net.countercraft.movecraft.CruiseDirection;
+import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.MovecraftRotation;
 import net.countercraft.movecraft.async.AsyncTask;
@@ -187,8 +188,8 @@ public class RotationTask extends AsyncTask {
 
                 if (entity instanceof HumanEntity) {
                     InventoryView inventoryView = ((HumanEntity) entity).getOpenInventory();
-                    if (inventoryView.getType() == InventoryType.WORKBENCH) {
-                        Location l = inventoryView.getTopInventory().getLocation();
+                    if (inventoryView.getType() != InventoryType.CRAFTING) {
+                        Location l = Movecraft.getInstance().getWorldHandler().getAccessLocation(inventoryView);
                         if (l != null) {
                             MovecraftLocation location = new MovecraftLocation(l.getBlockX(), l.getBlockY(), l.getBlockZ());
                             if (oldHitBox.contains(location)) {

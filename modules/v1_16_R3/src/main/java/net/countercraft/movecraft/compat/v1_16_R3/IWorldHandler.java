@@ -288,6 +288,11 @@ public class IWorldHandler extends WorldHandler {
     }
 
     @Override
+    public @Nullable Location getAccessLocation(@NotNull InventoryView inventoryView) {
+        return null; // Not implemented
+    }
+
+    @Override
     public void setAccessLocation(@NotNull InventoryView inventoryView, @NotNull Location location) {
         // Not implemented
     }

@@ -415,8 +415,8 @@ public class TranslationTask extends AsyncTask {
 
                 if (entity instanceof HumanEntity) {
                     InventoryView inventoryView = ((HumanEntity) entity).getOpenInventory();
-                    if (inventoryView.getType() == InventoryType.WORKBENCH) {
-                        Location l = inventoryView.getTopInventory().getLocation();
+                    if (inventoryView.getType() != InventoryType.CRAFTING) {
+                        Location l = Movecraft.getInstance().getWorldHandler().getAccessLocation(inventoryView);
                         if (l != null) {
                             MovecraftLocation location = new MovecraftLocation(l.getBlockX(), l.getBlockY(), l.getBlockZ());
                             if (oldHitBox.contains(location)) {
