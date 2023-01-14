@@ -287,7 +287,17 @@ public class IWorldHandler extends WorldHandler {
 
     @Override
     public @Nullable Location getAccessLocation(@NotNull InventoryView inventoryView) {
-        return null; // Not implemented
+        Container menu = ((CraftInventoryView) inventoryView).getHandle();
+        Field field = UnsafeUtils.getFieldOfType(ContainerAccess.class, menu.getClass());
+        if (field != null) {
+            try {
+                field.setAccessible(true);
+                return ((ContainerAccess) field.get(menu)).getLocation();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
     }
 
     @Override
@@ -299,14 +309,7 @@ public class IWorldHandler extends WorldHandler {
         ContainerAccess access = ContainerAccess.at(level, position);
 
         Container menu = ((CraftInventoryView) inventoryView).getHandle();
-        try {
-            if (menu instanceof ContainerWorkbench) {
-                Field accessField = ContainerWorkbench.class.getDeclaredField("containerAccess");
-                UnsafeUtils.setField(accessField, menu, access);
-            }
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
-        }
+        UnsafeUtils.trySetFieldOfType(ContainerAccess.class, menu, access);
     }
 
     private static MovecraftLocation bukkit2MovecraftLoc(Location l) {
