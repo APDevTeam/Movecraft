@@ -42,7 +42,7 @@ public class UnsafeUtils {
     public static void trySetFieldOfType(@NotNull Class<?> type, @NotNull Object holder, @NotNull Object value) {
         Field field = getFieldOfType(type, holder.getClass());
         if (field != null) {
-            UnsafeUtils.setField(field, holder, value);
+            setField(field, holder, value);
         }
     }
 }
