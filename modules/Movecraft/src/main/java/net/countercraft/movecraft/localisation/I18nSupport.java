@@ -27,6 +27,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 import java.util.logging.Level;
 
@@ -56,7 +58,7 @@ public class I18nSupport {
         }
 
         try {
-            languageFile.load(is);
+            languageFile.load(new InputStreamReader(is, StandardCharsets.UTF_8));
             is.close();
         } catch (IOException e) {
             e.printStackTrace();
