@@ -118,7 +118,7 @@ public class Movecraft extends JavaPlugin {
                 saveResource("localisation/movecraftlang_" + s + ".properties", false);
             }
         }
-        I18nSupport.init();
+        I18nSupport.init(getConfig().getBoolean("UsePropertiesDefaults", false));
 
 
         // if the PilotTool is specified in the config.yml file, use it

@@ -28,3 +28,4 @@ ForbiddenRemoteSigns: # These strings will be ignored when searching for signs t
   - "[private]"
 CompatibilityMode: false
 GeneratedDatapack: false # Set to false to re-generate datapack on startup
+UsePropertiesDefaults: false # Substitute property value in English (from local file or then from jar) instead of key for unspecified language fields

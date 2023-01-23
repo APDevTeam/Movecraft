@@ -35,14 +35,32 @@ import java.util.logging.Level;
 public class I18nSupport {
     private static Properties languageFile;
 
-    public static void init() {
-        languageFile = new Properties();
-
+    public static void init(boolean usePropertiesDefaults) {
         File localisationDirectory = new File(Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/localisation");
 
         if (!localisationDirectory.exists()) {
             localisationDirectory.mkdirs();
         }
+
+        Properties defaultProperties = null;
+        if (usePropertiesDefaults) {
+            Properties defaultProperies4DefaultProperties = new Properties();
+            try {
+                defaultProperies4DefaultProperties.load(new InputStreamReader(
+                        I18nSupport.class.getResourceAsStream("localisation/movecraftlang_en.properties"),
+                        StandardCharsets.UTF_8));
+                defaultProperties = new Properties(defaultProperies4DefaultProperties);
+                defaultProperties.load(new InputStreamReader(
+                        new FileInputStream(localisationDirectory.getAbsolutePath() + "/movecraftlang_en.properties"),
+                        StandardCharsets.UTF_8));
+            } catch (FileNotFoundException e) {
+                defaultProperties = defaultProperies4DefaultProperties;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        languageFile = new Properties(defaultProperties);
 
         InputStream is = null;
         try {
