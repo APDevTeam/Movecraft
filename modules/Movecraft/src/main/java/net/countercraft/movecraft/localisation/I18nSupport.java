@@ -47,7 +47,7 @@ public class I18nSupport {
             Properties defaultProperies4DefaultProperties = new Properties();
             try {
                 defaultProperies4DefaultProperties.load(new InputStreamReader(
-                        I18nSupport.class.getResourceAsStream("localisation/movecraftlang_en.properties"),
+                        I18nSupport.class.getResourceAsStream("/localisation/movecraftlang_en.properties"),
                         StandardCharsets.UTF_8));
                 defaultProperties = new Properties(defaultProperies4DefaultProperties);
                 defaultProperties.load(new InputStreamReader(
