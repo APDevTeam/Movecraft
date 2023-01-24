@@ -14,7 +14,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
 
 public final class RelativeMoveSign implements Listener{
-    private static final String HEADER = "RMove:";
+    private static final String HEADER = I18nSupport.getInternationalisedString("Sign - Relative move");
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onSignClick(@NotNull PlayerInteractEvent event) {

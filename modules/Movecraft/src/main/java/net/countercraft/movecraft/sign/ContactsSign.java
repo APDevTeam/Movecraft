@@ -5,6 +5,7 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
+import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.ChatColor;
 import org.bukkit.Tag;
 import org.bukkit.World;
@@ -14,6 +15,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
 public class ContactsSign implements Listener{
+    private static final String MAIN_SIGN_TEXT = I18nSupport.getInternationalisedString("Sign - Contacts");
 
     @EventHandler
     public void onCraftDetect(CraftDetectEvent event){
@@ -26,7 +28,7 @@ public class ContactsSign implements Listener{
             BlockState state = block.getState();
             if(state instanceof Sign){
                 Sign sign = (Sign) state;
-                if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Contacts:")) {
+                if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase(MAIN_SIGN_TEXT)) {
                     sign.setLine(1, "");
                     sign.setLine(2, "");
                     sign.setLine(3, "");
@@ -40,7 +42,7 @@ public class ContactsSign implements Listener{
     public final void onSignTranslateEvent(SignTranslateEvent event){
         String[] lines = event.getLines();
         Craft craft = event.getCraft();
-        if (!ChatColor.stripColor(lines[0]).equalsIgnoreCase("Contacts:")) {
+        if (!ChatColor.stripColor(lines[0]).equalsIgnoreCase(MAIN_SIGN_TEXT)) {
             return;
         }
         int signLine=1;

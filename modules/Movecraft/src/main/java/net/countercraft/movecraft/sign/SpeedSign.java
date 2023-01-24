@@ -22,6 +22,8 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 public final class SpeedSign implements Listener{
+    private static final String HEADER = I18nSupport.getInternationalisedString("Sign - Speed");
+
     @EventHandler
     public void onCraftDetect(CraftDetectEvent event){
         World world = event.getCraft().getWorld();
@@ -35,7 +37,7 @@ public final class SpeedSign implements Listener{
                 continue;
 
             Sign sign = (Sign) state;
-            if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Speed:")) {
+            if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase(HEADER)) {
                 sign.setLine(1, "0 m/s");
                 sign.setLine(2, "0ms");
                 sign.setLine(3, "0T");
@@ -47,7 +49,7 @@ public final class SpeedSign implements Listener{
     @EventHandler
     public void onSignTranslate(SignTranslateEvent event) {
         Craft craft = event.getCraft();
-        if (!ChatColor.stripColor(event.getLine(0)).equalsIgnoreCase("Speed:")) {
+        if (!ChatColor.stripColor(event.getLine(0)).equalsIgnoreCase(HEADER)) {
             return;
         }
         event.setLine(1,String.format("%.2f",craft.getSpeed()) + "m/s");
@@ -69,7 +71,7 @@ public final class SpeedSign implements Listener{
             return;
 
         Sign sign = (Sign) state;
-        if (!ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Speed:"))
+        if (!ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase(HEADER))
             return;
 
         Player player = event.getPlayer();

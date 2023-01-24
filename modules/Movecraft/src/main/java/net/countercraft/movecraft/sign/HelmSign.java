@@ -18,10 +18,11 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
 
 public final class HelmSign implements Listener {
+    private static final String MAIN_SIGN_TEXT = I18nSupport.getInternationalisedString("Sign - Helm");
 
     @EventHandler
     public void onSignChange(SignChangeEvent event){
-        if (!ChatColor.stripColor(event.getLine(0)).equalsIgnoreCase("[helm]")) {
+        if (!ChatColor.stripColor(event.getLine(0)).equalsIgnoreCase(MAIN_SIGN_TEXT)) {
             return;
         }
         event.setLine(0, "\\  ||  /");

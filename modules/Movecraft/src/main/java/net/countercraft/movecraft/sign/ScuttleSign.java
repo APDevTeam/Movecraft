@@ -24,7 +24,7 @@ import static net.countercraft.movecraft.util.ChatUtils.MOVECRAFT_COMMAND_PREFIX
 
 public class ScuttleSign implements Listener {
 
-    private static final String HEADER = "Scuttle";
+    private static final String HEADER = I18nSupport.getInternationalisedString("Sign - Scuttle");
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onSignClick(@NotNull PlayerInteractEvent event) {

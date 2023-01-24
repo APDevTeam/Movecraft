@@ -6,6 +6,7 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftDetectEvent;
+import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.ChatColor;
 import org.bukkit.Tag;
 import org.bukkit.World;
@@ -20,6 +21,9 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
 
 public class AscendSign implements Listener {
+    private static final String MAIN_SIGN_TEXT = I18nSupport.getInternationalisedString("Sign - Ascend");
+    private static final String ON_SIGN_TEXT = I18nSupport.getInternationalisedString("Sign - ON");
+    private static final String OFF_SIGN_TEXT = I18nSupport.getInternationalisedString("Sign - OFF");
 
     @EventHandler
     public void onCraftDetect(CraftDetectEvent event){
@@ -32,8 +36,8 @@ public class AscendSign implements Listener {
             BlockState state = block.getState();
             if(block.getState() instanceof Sign){
                 Sign sign = (Sign) block.getState();
-                if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Ascend: ON")) {
-                    sign.setLine(0, "Ascend: OFF");
+                if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase(MAIN_SIGN_TEXT + ON_SIGN_TEXT)) {
+                    sign.setLine(0, MAIN_SIGN_TEXT + OFF_SIGN_TEXT);
                     sign.update();
                 }
             }
@@ -51,7 +55,7 @@ public class AscendSign implements Listener {
             return;
         }
         Sign sign = (Sign) event.getClickedBlock().getState();
-        if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Ascend: OFF")) {
+        if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase(MAIN_SIGN_TEXT + OFF_SIGN_TEXT)) {
             if (CraftManager.getInstance().getCraftByPlayer(event.getPlayer()) == null) {
                 return;
             }
@@ -60,7 +64,7 @@ public class AscendSign implements Listener {
                 return;
             }
             //c.resetSigns(true, false, true);
-            sign.setLine(0, "Ascend: ON");
+            sign.setLine(0, MAIN_SIGN_TEXT + ON_SIGN_TEXT);
             sign.update(true);
 
             c.setCruiseDirection(CruiseDirection.UP);
@@ -73,14 +77,14 @@ public class AscendSign implements Listener {
             }
             return;
         }
-        if (!ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Ascend: ON")) {
+        if (!ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase(MAIN_SIGN_TEXT + ON_SIGN_TEXT)) {
             return;
         }
         Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
         if (c == null || !c.getType().getBoolProperty(CraftType.CAN_CRUISE)) {
             return;
         }
-        sign.setLine(0, "Ascend: OFF");
+        sign.setLine(0, MAIN_SIGN_TEXT + OFF_SIGN_TEXT);
         sign.update(true);
 
         c.setCruising(false);

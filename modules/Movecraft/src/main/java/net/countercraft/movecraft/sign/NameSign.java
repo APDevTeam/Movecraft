@@ -5,6 +5,7 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.PilotedCraft;
 import net.countercraft.movecraft.events.CraftDetectEvent;
+import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.util.ChatUtils;
 import org.bukkit.Tag;
 import org.bukkit.World;
@@ -19,7 +20,7 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
 public final class NameSign implements Listener {
-    private static final String HEADER = "Name:";
+    private static final String HEADER = I18nSupport.getInternationalisedString("Sign - Name");;
     @EventHandler
     public void onCraftDetect(@NotNull CraftDetectEvent event) {
         Craft c = event.getCraft();

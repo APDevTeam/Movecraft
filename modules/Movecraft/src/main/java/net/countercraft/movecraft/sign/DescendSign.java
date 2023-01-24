@@ -6,6 +6,7 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftDetectEvent;
+import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.ChatColor;
 import org.bukkit.Tag;
 import org.bukkit.World;
@@ -19,6 +20,9 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
 
 public final class DescendSign implements Listener{
+    private static final String MAIN_SIGN_TEXT = I18nSupport.getInternationalisedString("Sign - Descend");
+    private static final String ON_SIGN_TEXT = I18nSupport.getInternationalisedString("Sign - ON");
+    private static final String OFF_SIGN_TEXT = I18nSupport.getInternationalisedString("Sign - OFF");
 
     @EventHandler
     public void onCraftDetect(CraftDetectEvent event){
@@ -31,8 +35,8 @@ public final class DescendSign implements Listener{
             BlockState state = block.getState();
             if(state instanceof Sign){
                 Sign sign = (Sign) state;
-                if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Descend: ON")) {
-                    sign.setLine(0, "Descend: OFF");
+                if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase(MAIN_SIGN_TEXT + ON_SIGN_TEXT)) {
+                    sign.setLine(0, MAIN_SIGN_TEXT + OFF_SIGN_TEXT);
                     sign.update();
                 }
             }
@@ -49,7 +53,7 @@ public final class DescendSign implements Listener{
             return;
         }
         Sign sign = (Sign) state;
-        if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Descend: OFF")) {
+        if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase(MAIN_SIGN_TEXT + OFF_SIGN_TEXT)) {
             if (CraftManager.getInstance().getCraftByPlayer(event.getPlayer()) == null) {
                 return;
             }
@@ -58,7 +62,7 @@ public final class DescendSign implements Listener{
                 return;
             }
             //c.resetSigns(true, true, false);
-            sign.setLine(0, "Descend: ON");
+            sign.setLine(0, MAIN_SIGN_TEXT + ON_SIGN_TEXT);
             sign.update(true);
 
             c.setCruiseDirection(CruiseDirection.DOWN);
@@ -71,10 +75,10 @@ public final class DescendSign implements Listener{
             }
             return;
         }
-        if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Descend: ON")) {
+        if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase(MAIN_SIGN_TEXT + ON_SIGN_TEXT)) {
             Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
             if (c != null && c.getType().getBoolProperty(CraftType.CAN_CRUISE)) {
-                sign.setLine(0, "Descend: OFF");
+                sign.setLine(0, MAIN_SIGN_TEXT + OFF_SIGN_TEXT);
                 sign.update(true);
                 c.setCruising(false);
                 c.resetSigns(sign);

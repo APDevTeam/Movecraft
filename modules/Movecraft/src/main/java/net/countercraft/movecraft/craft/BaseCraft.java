@@ -43,6 +43,15 @@ import java.util.logging.Level;
 import static net.countercraft.movecraft.util.SignUtils.getFacing;
 
 public abstract class BaseCraft implements Craft {
+    private static final String ASCEND_SIGN_TEXT = I18nSupport.getInternationalisedString("Sign - Ascend");
+    private static final String CRUISE_SIGN_TEXT = I18nSupport.getInternationalisedString("Sign - Cruise");
+    private static final String DESCEND_SIGN_TEXT = I18nSupport.getInternationalisedString("Sign - Descend");
+    private static final String ON_SIGN_TEXT = I18nSupport.getInternationalisedString("Sign - ON");
+    private static final String OFF_SIGN_TEXT = I18nSupport.getInternationalisedString("Sign - OFF");
+    private static final String CRUISING_MAIN_AB_TEXT = I18nSupport.getInternationalisedString("Cruising - Main action bar text");
+    private static final String CRUISING_ENABLED_AB_TEXT = I18nSupport.getInternationalisedString("Cruising - Enabled action bar text");
+    private static final String CRUISING_DISABLED_AB_TEXT = I18nSupport.getInternationalisedString("Cruising - Disabled action bar text");
+
     @NotNull
     protected final CraftType type;
     @NotNull
@@ -240,27 +249,27 @@ public abstract class BaseCraft implements Craft {
             if (sign.equals(clicked)) {
                 continue;
             }
-            if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Cruise: ON")) {
-                sign.setLine(0, "Cruise: OFF");
+            if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase(CRUISE_SIGN_TEXT + ON_SIGN_TEXT)) {
+                sign.setLine(0, CRUISE_SIGN_TEXT + OFF_SIGN_TEXT);
             }
-            else if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Cruise: OFF")
-                    && ChatColor.stripColor(clicked.getLine(0)).equalsIgnoreCase("Cruise: ON")
+            else if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase(CRUISE_SIGN_TEXT + OFF_SIGN_TEXT)
+                    && ChatColor.stripColor(clicked.getLine(0)).equalsIgnoreCase(CRUISE_SIGN_TEXT + ON_SIGN_TEXT)
                     && getFacing(sign) == getFacing(clicked)) {
-                sign.setLine(0, "Cruise: ON");
+                sign.setLine(0, CRUISE_SIGN_TEXT + ON_SIGN_TEXT);
             }
-            else if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Ascend: ON")) {
-                sign.setLine(0, "Ascend: OFF");
+            else if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase(ASCEND_SIGN_TEXT + ON_SIGN_TEXT)) {
+                sign.setLine(0, ASCEND_SIGN_TEXT + OFF_SIGN_TEXT);
             }
-            else if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Ascend: OFF")
-                    && ChatColor.stripColor(clicked.getLine(0)).equalsIgnoreCase("Ascend: ON")) {
-                sign.setLine(0, "Ascend: ON");
+            else if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase(ASCEND_SIGN_TEXT + OFF_SIGN_TEXT)
+                    && ChatColor.stripColor(clicked.getLine(0)).equalsIgnoreCase(ASCEND_SIGN_TEXT + ON_SIGN_TEXT)) {
+                sign.setLine(0, ASCEND_SIGN_TEXT + ON_SIGN_TEXT);
             }
-            else if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Descend: ON")) {
-                sign.setLine(0, "Descend: OFF");
+            else if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase(DESCEND_SIGN_TEXT + ON_SIGN_TEXT)) {
+                sign.setLine(0, DESCEND_SIGN_TEXT + OFF_SIGN_TEXT);
             }
-            else if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Descend: OFF")
-                    && ChatColor.stripColor(clicked.getLine(0)).equalsIgnoreCase("Descend: ON")) {
-                sign.setLine(0, "Descend: ON");
+            else if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase(DESCEND_SIGN_TEXT + OFF_SIGN_TEXT)
+                    && ChatColor.stripColor(clicked.getLine(0)).equalsIgnoreCase(DESCEND_SIGN_TEXT + ON_SIGN_TEXT)) {
+                sign.setLine(0, DESCEND_SIGN_TEXT + ON_SIGN_TEXT);
             }
             sign.update();
         }
@@ -273,7 +282,8 @@ public abstract class BaseCraft implements Craft {
 
     @Override
     public void setCruising(boolean cruising) {
-        audience.sendActionBar(Component.text().content("Cruising " + (cruising ? "enabled" : "disabled")));
+        audience.sendActionBar(Component.text().content(CRUISING_MAIN_AB_TEXT +
+                (cruising ? CRUISING_ENABLED_AB_TEXT : CRUISING_DISABLED_AB_TEXT)));
         this.cruising = cruising;
     }
 

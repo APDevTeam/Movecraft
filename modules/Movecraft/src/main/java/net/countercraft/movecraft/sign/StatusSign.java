@@ -10,6 +10,7 @@ import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.craft.type.RequiredBlockEntry;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
+import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.util.Counter;
 import net.countercraft.movecraft.util.Tags;
 import org.bukkit.ChatColor;
@@ -30,6 +31,8 @@ import java.util.Map;
 import java.util.logging.Level;
 
 public final class StatusSign implements Listener{
+    private static final String HEADER = I18nSupport.getInternationalisedString("Sign - Status");
+    private static final String FUEL_RANGE_LINE = I18nSupport.getInternationalisedString("Sign - Status/Fuel range");
 
     @EventHandler
     public void onCraftDetect(CraftDetectEvent event){
@@ -42,7 +45,7 @@ public final class StatusSign implements Listener{
             BlockState state = block.getState();
             if(state instanceof Sign){
                 Sign sign = (Sign) state;
-                if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Status:")) {
+                if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase(HEADER)) {
                     sign.setLine(1, "");
                     sign.setLine(2, "");
                     sign.setLine(3, "");
@@ -55,7 +58,7 @@ public final class StatusSign implements Listener{
     @EventHandler
     public final void onSignTranslate(SignTranslateEvent event) {
         Craft craft = event.getCraft();
-        if (!ChatColor.stripColor(event.getLine(0)).equalsIgnoreCase("Status:")) {
+        if (!ChatColor.stripColor(event.getLine(0)).equalsIgnoreCase(HEADER)) {
             return;
         }
         double fuel = craft.getTotalFuel();
@@ -149,7 +152,7 @@ public final class StatusSign implements Listener{
         } else {
             fuelText+=ChatColor.RED;
         }
-        fuelText+="Fuel range:";
+        fuelText+=FUEL_RANGE_LINE;
         fuelText+=fuelRange;
         event.setLine(signLine,fuelText);
     }

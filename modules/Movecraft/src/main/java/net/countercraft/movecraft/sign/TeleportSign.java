@@ -17,7 +17,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
 
 public final class TeleportSign implements Listener {
-    private static final String HEADER = "Teleport:";
+    private static final String HEADER = I18nSupport.getInternationalisedString("Sign - Teleport");
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onSignClick(@NotNull PlayerInteractEvent event) {

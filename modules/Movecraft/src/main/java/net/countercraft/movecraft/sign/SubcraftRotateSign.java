@@ -34,7 +34,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public final class SubcraftRotateSign implements Listener {
-    private static final String HEADER = "Subcraft Rotate";
+    private static final String HEADER = I18nSupport.getInternationalisedString("Sign - Subcraft rotate");
     private final Set<MovecraftLocation> rotating = new HashSet<>();
 
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
