@@ -84,10 +84,10 @@ public class BlockListener implements Listener {
             if (craft == null || craft.getDisabled())
                 continue;
 
-            if(!(craft instanceof PlayerCraft)) {
+            if(!(craft instanceof PilotedCraft)) {
                 continue;
             }
-            if (((PlayerCraft) craft).getPilot() == p) {
+            if (((PilotedCraft) craft).getPilot() == p) {
                 continue;
             }
 
