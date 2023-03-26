@@ -1,4 +1,4 @@
-package net.countercraft.movecraft.compat.v1_19_R2;
+package net.countercraft.movecraft.compat.v1_19_R3;
 
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.MovecraftRotation;
@@ -21,8 +21,8 @@ import net.minecraft.world.ticks.ScheduledTick;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.craftbukkit.v1_19_R2.CraftWorld;
-import org.bukkit.craftbukkit.v1_19_R2.block.data.CraftBlockData;
+import org.bukkit.craftbukkit.v1_19_R3.CraftWorld;
+import org.bukkit.craftbukkit.v1_19_R3.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.v1_19_R3.util.CraftMagicNumbers;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -48,7 +48,7 @@ public class IWorldHandler extends WorldHandler {
 
     public IWorldHandler() {
         String mappings = ((CraftMagicNumbers) CraftMagicNumbers.INSTANCE).getMappingsVersion();
-        if (!mappings.equals("1afe2ffe8a9d7fc510442a168b3d4338"))
+        if (!mappings.equals("3009edc0fff87fa34680686663bd59df"))
             throw new IllegalStateException("Movecraft is not compatible with this version of Minecraft 1.19: " + mappings);
     }
 
@@ -104,7 +104,7 @@ public class IWorldHandler extends WorldHandler {
             moveBlockEntity(nativeWorld, rotatedPositions.get(tileHolder.getTilePosition()), tileHolder.getTile());
             if (tileHolder.getNextTick() == null)
                 continue;
-            final long currentTime = nativeWorld.N.getGameTime(); // N is obfuscated serverLevelData
+            final long currentTime = nativeWorld.J.getGameTime(); // J is obfuscated serverLevelData
             nativeWorld.getBlockTicks().schedule(new ScheduledTick<>((Block) tileHolder.getNextTick().type(), rotatedPositions.get(tileHolder.getNextTick().pos()), tileHolder.getNextTick().triggerTick() - currentTime, tileHolder.getNextTick().priority(), tileHolder.getNextTick().subTickOrder()));
         }
 
@@ -250,7 +250,7 @@ public class IWorldHandler extends WorldHandler {
     private void moveBlockEntity(@NotNull Level nativeWorld, @NotNull BlockPos newPosition, @NotNull BlockEntity tile) {
         LevelChunk chunk = nativeWorld.getChunkAt(newPosition);
         try {
-            var positionField = BlockEntity.class.getDeclaredField("o"); // o is obfuscated worldPosition
+            var positionField = BlockEntity.class.getDeclaredField("p"); // p is obfuscated worldPosition
             UnsafeUtils.setField(positionField, tile, newPosition);
         }
         catch (NoSuchFieldException e) {
