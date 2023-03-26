@@ -64,15 +64,15 @@ public class ISmoothTeleport extends SmoothTeleport {
         sendMethod = connectionClass.getMethod("a", packetClass); // send
 
         vec3Constructor = vectorClass.getConstructor(Double.TYPE, Double.TYPE, Double.TYPE);
-        packetConstructor = positionPacketClass.getConstructor(Double.TYPE, Double.TYPE, Double.TYPE, Float.TYPE, Float.TYPE, Set.class, Integer.TYPE, Boolean.TYPE);
+        packetConstructor = positionPacketClass.getConstructor(Double.TYPE, Double.TYPE, Double.TYPE, Float.TYPE, Float.TYPE, Set.class, Integer.TYPE);
 
         connectionField = ReflectUtils.getField(playerClass, "b"); // connection
         teleportPosField = ReflectUtils.getField(connectionClass, "D"); // awaitingPositionFromClient
         teleportAwaitField = ReflectUtils.getField(connectionClass, "E"); // awaitingTeleport
         awaitingTeleportTimeField = ReflectUtils.getField(connectionClass, "F"); // awaitingTeleportTime
         tickCountField = ReflectUtils.getField(connectionClass, "j"); // tickCount
-        yawField = ReflectUtils.getField(entityClass, "aB"); // xRot
-        pitchField = ReflectUtils.getField(entityClass, "aA"); // yRot
+        yawField = ReflectUtils.getField(entityClass, "aF"); // xRot
+        pitchField = ReflectUtils.getField(entityClass, "aE"); // yRot
     }
 
     public void teleport(Player player, @NotNull Location location, float yawChange, float pitchChange) {
@@ -90,7 +90,7 @@ public class ISmoothTeleport extends SmoothTeleport {
             teleportAwaitField.setInt(connection, teleportAwait);
             awaitingTeleportTimeField.set(connection, tickCountField.get(connection));
 
-            Object packet = packetConstructor.newInstance(x, y, z, yawChange, pitchChange, teleportFlags, teleportAwait, false);
+            Object packet = packetConstructor.newInstance(x, y, z, yawChange, pitchChange, teleportFlags, teleportAwait);
             sendPacket(packet, player);
         }
         catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
