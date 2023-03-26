@@ -56,13 +56,7 @@
         </dependency>
         <dependency>
             <groupId>net.countercraft</groupId>
-            <artifactId>movecraft-v1_19_r1</artifactId>
-            <version>${revision}</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>net.countercraft</groupId>
-            <artifactId>movecraft-v1_19_r2</artifactId>
+            <artifactId>movecraft-v1_19_r3</artifactId>
             <version>${revision}</version>
             <type>jar</type>
         </dependency>
@@ -208,13 +202,7 @@
                                     </includes>
                                 </filter>
                                 <filter>
-                                    <artifact>net.countercraft:movecraft-v1_19_r1</artifact>
-                                    <includes>
-                                        <include>**</include>
-                                    </includes>
-                                </filter>
-                                <filter>
-                                    <artifact>net.countercraft:movecraft-v1_19_r2</artifact>
+                                    <artifact>net.countercraft:movecraft-v1_19_r3</artifact>
                                     <includes>
                                         <include>**</include>
                                     </includes>
