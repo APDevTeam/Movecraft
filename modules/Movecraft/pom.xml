@@ -4,7 +4,7 @@
     <artifactId>movecraft</artifactId>
     <packaging>jar</packaging>
     <name>Movecraft</name>
-    <url>http://github.com/apdevteam/Movecraft</url>
+    <url>http://github.com/APDevTeam/Movecraft</url>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -75,7 +75,7 @@
         <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
-            <version>1.33</version>
+            <version>2.0</version>
         </dependency>
     </dependencies>
 
