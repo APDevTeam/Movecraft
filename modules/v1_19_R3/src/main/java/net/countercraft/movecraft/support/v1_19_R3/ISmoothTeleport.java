@@ -57,7 +57,7 @@ public class ISmoothTeleport extends SmoothTeleport {
         Class<?> connectionClass = getNmClass("server.network.PlayerConnection"); // ServerGamePacketListenerImpl
         Class<?> vectorClass = getNmClass("world.phys.Vec3D"); // Vec3
 
-        Object[] flags = getNmClass("network.protocol.game.PacketPlayOutPosition$EnumPlayerTeleportFlags").getEnumConstants(); // $RelativeArgument
+        Object[] flags = getNmClass("world.entity.RelativeMovement").getEnumConstants();
         teleportFlags = Set.of(flags[4], flags[3]); // X_ROT, Y_ROT
 
         positionMethod = entityClass.getDeclaredMethod("a", Double.TYPE, Double.TYPE, Double.TYPE, Float.TYPE, Float.TYPE); // absMoveTo
