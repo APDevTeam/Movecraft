@@ -154,10 +154,13 @@ public class Movecraft extends JavaPlugin {
                     }
                     else {
                         smoothTeleport = new BukkitTeleport(); // Fall back to bukkit teleportation
-                        getLogger().warning("Falling back to bukkit teleportation provider.");
+                        getLogger().warning("Did not find smooth teleport, falling back to bukkit teleportation provider.");
                     }
                 }
                 catch (ReflectiveOperationException ignored) {
+                    if (Settings.Debug) {
+                        ignored.printStackTrace();
+                    }
                     smoothTeleport = new BukkitTeleport(); // Fall back to bukkit teleportation
                     getLogger().warning("Falling back to bukkit teleportation provider.");
                 }
