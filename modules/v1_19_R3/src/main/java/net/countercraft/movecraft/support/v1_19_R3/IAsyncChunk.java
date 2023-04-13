@@ -7,6 +7,7 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.processing.WorldManager;
 import net.countercraft.movecraft.support.AsyncChunk;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkStatus;
 import org.bukkit.Chunk;
 import org.bukkit.Material;
@@ -25,9 +26,13 @@ public class IAsyncChunk extends AsyncChunk<CraftChunk> {
             return WorldManager.INSTANCE.executeMain(block::getState);
         }
     });
+    
+    // getHandle needs to be access in the main thread as of 1.19.4
+    private final ChunkAccess handle;
 
     public IAsyncChunk(@NotNull Chunk chunk) {
         super(chunk);
+        handle = this.chunk.getHandle(ChunkStatus.FULL);
     }
 
     @NotNull
@@ -51,6 +56,6 @@ public class IAsyncChunk extends AsyncChunk<CraftChunk> {
     @Override
     @NotNull
     public BlockData getData(@NotNull MovecraftLocation location){
-        return CraftBlockData.fromData(chunk.getHandle(ChunkStatus.FULL).getBlockState(new BlockPos(location.getX(), location.getY(), location.getZ())));
+        return CraftBlockData.fromData(handle.getBlockState(new BlockPos(location.getX(), location.getY(), location.getZ())));
     }
 }
