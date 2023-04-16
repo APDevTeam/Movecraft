@@ -65,7 +65,7 @@ public final class WorldManager implements Executor {
             } catch (InterruptedException e) {
                 continue;
             }
-            if(runningTasks.isEmpty()){
+            if(runningTasks.isEmpty() || runningTasks.get(0) == null){
                 Bukkit.getLogger().severe("WorldManager timed out on task query! Dumping " + inProgress.size() + " tasks.");
                 inProgress.forEach(task -> task.cancel(true));
                 worldChanges.clear();
