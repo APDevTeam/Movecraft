@@ -29,18 +29,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
-public final class StatusSign implements Listener{
+public final class StatusSign implements Listener {
 
     @EventHandler
-    public void onCraftDetect(CraftDetectEvent event){
+    public void onCraftDetect(CraftDetectEvent event) {
         World world = event.getCraft().getWorld();
-        for(MovecraftLocation location: event.getCraft().getHitBox()){
+        for (MovecraftLocation location : event.getCraft().getHitBox()) {
             var block = location.toBukkit(world).getBlock();
-            if(!Tag.SIGNS.isTagged(block.getType())){
+            if (!Tag.SIGNS.isTagged(block.getType())) {
                 continue;
             }
             BlockState state = block.getState();
-            if(state instanceof Sign){
+            if (state instanceof Sign) {
                 Sign sign = (Sign) state;
                 if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Status:")) {
                     sign.setLine(1, "");
@@ -67,9 +67,9 @@ public final class StatusSign implements Listener{
             return;
         }
         for (Material material : materials.getKeySet()) {
-            if (material.equals(Material.FIRE) || material.equals(Material.AIR)) {
+            if (material.equals(Material.FIRE) || material.isAir())
                 continue;
-            }
+
             int add = materials.get(material);
             totalNonNegligibleBlocks += add;
             if (!Tags.WATER.contains(material)) {
@@ -84,7 +84,7 @@ public final class StatusSign implements Listener{
                     total += materials.get(material);
                 }
             }
-            displayBlocks.putIfAbsent(entry,total);
+            displayBlocks.putIfAbsent(entry, total);
         }
         for (RequiredBlockEntry entry : craft.getType().getRequiredBlockProperty(CraftType.MOVE_BLOCKS)) {
             int total = 0;
@@ -93,64 +93,64 @@ public final class StatusSign implements Listener{
                     total += materials.get(material);
                 }
             }
-            displayBlocks.putIfAbsent(entry,total);
+            displayBlocks.putIfAbsent(entry, total);
         }
-        int signLine=1;
-        int signColumn=0;
+        int signLine = 1;
+        int signColumn = 0;
         for (RequiredBlockEntry entry : displayBlocks.keySet()) {
             if (entry.getMin() == 0.0) {
                 continue;
             }
-            double percentPresent = (displayBlocks.get(entry)*100D);
+            double percentPresent = (displayBlocks.get(entry) * 100D);
             if (craft.getType().getBoolProperty(CraftType.BLOCKED_BY_WATER)) {
                 percentPresent /= totalNonNegligibleBlocks;
             } else {
                 percentPresent /= totalNonNegligibleWaterBlocks;
             }
-            String signText="";
-            if(percentPresent>entry.getMin()*1.04) {
-                signText+= ChatColor.GREEN;
-            } else if(percentPresent>entry.getMin()*1.02) {
-                signText+=ChatColor.YELLOW;
+            String signText = "";
+            if (percentPresent > entry.getMin() * 1.04) {
+                signText += ChatColor.GREEN;
+            } else if (percentPresent > entry.getMin() * 1.02) {
+                signText += ChatColor.YELLOW;
             } else {
-                signText+=ChatColor.RED;
+                signText += ChatColor.RED;
             }
             if (entry.getName() == null) {
                 signText += entry.materialsToString().toUpperCase().charAt(0);
             } else {
                 signText += entry.getName().toUpperCase().charAt(0);
             }
-            signText+=" ";
-            signText+=  (int) percentPresent;
-            signText+="/";
-            signText+= (int) entry.getMin();
-            signText+="  ";
-            if(signColumn==0) {
-                event.setLine(signLine,signText);
+            signText += " ";
+            signText += (int) percentPresent;
+            signText += "/";
+            signText += (int) entry.getMin();
+            signText += "  ";
+            if (signColumn == 0) {
+                event.setLine(signLine, signText);
                 signColumn++;
-            } else if(signLine<3) {
+            } else if (signLine < 3) {
                 String existingLine = event.getLine(signLine);
                 existingLine += signText;
                 event.setLine(signLine, existingLine);
                 signLine++;
-                signColumn=0;
+                signColumn = 0;
             }
         }
 
-        String fuelText="";
+        String fuelText = "";
         int cruiseSkipBlocks = (int) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_CRUISE_SKIP_BLOCKS, craft.getWorld());
         cruiseSkipBlocks++;
         double fuelBurnRate = (double) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_FUEL_BURN_RATE, craft.getWorld());
-        int fuelRange= (int) Math.round((fuel * (1 + cruiseSkipBlocks)) / fuelBurnRate);
-        if(fuelRange>1000) {
-            fuelText+=ChatColor.GREEN;
-        } else if(fuelRange>100) {
-            fuelText+=ChatColor.YELLOW;
+        int fuelRange = (int) Math.round((fuel * (1 + cruiseSkipBlocks)) / fuelBurnRate);
+        if (fuelRange > 1000) {
+            fuelText += ChatColor.GREEN;
+        } else if (fuelRange > 100) {
+            fuelText += ChatColor.YELLOW;
         } else {
-            fuelText+=ChatColor.RED;
+            fuelText += ChatColor.RED;
         }
-        fuelText+="Fuel range:";
-        fuelText+=fuelRange;
-        event.setLine(signLine,fuelText);
+        fuelText += "Fuel range:";
+        fuelText += fuelRange;
+        event.setLine(signLine, fuelText);
     }
 }
