@@ -141,6 +141,7 @@ public class Movecraft extends JavaPlugin {
 
         String packageName = getServer().getClass().getPackage().getName();
         String version = packageName.substring(packageName.lastIndexOf('.') + 1);
+        getLogger().info(I18nSupport.getInternationalisedString("Startup - Loading Support") + " " + version);
         try {
             final Class<?> worldHandlerClazz = Class.forName("net.countercraft.movecraft.compat." + version + ".IWorldHandler");
             // Check if we have a NMSHandler class at that location.
@@ -158,9 +159,9 @@ public class Movecraft extends JavaPlugin {
                         getLogger().warning("Did not find smooth teleport, falling back to bukkit teleportation provider.");
                     }
                 }
-                catch (ReflectiveOperationException ignored) {
+                catch (final ReflectiveOperationException e) {
                     if (Settings.Debug) {
-                        ignored.printStackTrace();
+                        e.printStackTrace();
                     }
                     smoothTeleport = new BukkitTeleport(); // Fall back to bukkit teleportation
                     getLogger().warning("Falling back to bukkit teleportation provider.");
@@ -170,10 +171,18 @@ public class Movecraft extends JavaPlugin {
         catch (final Exception e) {
             e.printStackTrace();
             getLogger().severe(I18nSupport.getInternationalisedString("Startup - Version Not Supported"));
-            setEnabled(false);
-            return;
+            if (!Settings.DisableNMSCompatibilityCheck) {
+                // Disable ourselves and exit
+                setEnabled(false);
+                return;
+            }
+            else {
+                // Server owner claims to know what they are doing, warn them of the possible consequences
+                getLogger().severe("WARNING!\n\t"
+                        + "Running Movecraft on an incompatible version can corrupt your world and break everything!\n\t"
+                        + "We provide no support for any issues.");
+            }
         }
-        getLogger().info(I18nSupport.getInternationalisedString("Startup - Loading Support") + " " + version);
 
 
         Settings.SinkCheckTicks = getConfig().getDouble("SinkCheckTicks", 100.0);
