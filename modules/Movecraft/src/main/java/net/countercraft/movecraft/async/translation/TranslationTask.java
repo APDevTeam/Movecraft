@@ -467,6 +467,8 @@ public class TranslationTask extends AsyncTask {
         return false;
     }
 
+    private static final ItemStack YIELD_TOOL = new ItemStack(Material.DIAMOND_PICKAXE);
+
     private void captureYield(List<MovecraftLocation> harvestedBlocks) {
         if (harvestedBlocks.isEmpty()) {
             return;
@@ -481,7 +483,7 @@ public class TranslationTask extends AsyncTask {
 
         for (MovecraftLocation harvestedBlock : harvestedBlocks) {
             Block block = craft.getWorld().getBlockAt(harvestedBlock.getX(), harvestedBlock.getY(), harvestedBlock.getZ());
-            List<ItemStack> drops = new ArrayList<>(block.getDrops());
+            List<ItemStack> drops = new ArrayList<>(block.getDrops(YIELD_TOOL));
             //generate seed drops
             if (block.getType() == Material.WHEAT) {
                 Random rand = new Random();
