@@ -35,12 +35,13 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
-import org.bukkit.Tag;
 import org.bukkit.World;
 import org.bukkit.World.Environment;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.Inventory;
@@ -48,14 +49,7 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Logger;
@@ -467,9 +461,57 @@ public class TranslationTask extends AsyncTask {
         return false;
     }
 
-    private static final ItemStack YIELD_TOOL = new ItemStack(Material.DIAMOND_PICKAXE);
+    private static final List<ItemStack> YIELD_TOOLS = new ArrayList<>();
+    static {
+        try {
+            List<Material> toolMaterials = new ArrayList<>();
+            toolMaterials.add(Material.DIAMOND_PICKAXE);
+            toolMaterials.add(Material.DIAMOND_SHOVEL);
+            toolMaterials.add(Material.DIAMOND_AXE);
+            toolMaterials.add(Material.DIAMOND_SWORD);
+            toolMaterials.add(Material.SHEARS);
 
-    private void captureYield(List<MovecraftLocation> harvestedBlocks) {
+            for (Material m : toolMaterials) {
+                YIELD_TOOLS.add(new ItemStack(m));
+            }
+            for (Material m : toolMaterials) {
+                ItemStack temp = new ItemStack(m);
+                if (!Enchantment.SILK_TOUCH.canEnchantItem(temp))
+                    continue;
+
+                temp.addEnchantment(Enchantment.SILK_TOUCH, 1);
+                YIELD_TOOLS.add(temp);
+            }
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private @NotNull List<ItemStack> getDrops(@NotNull Block b) {
+        List<ItemStack> result = new ArrayList<>();
+        for (ItemStack tool : YIELD_TOOLS) {
+            result.addAll(b.getDrops(tool));
+            if (!result.isEmpty())
+                break;
+        }
+
+        if (b.getState() instanceof InventoryHolder) {
+            BlockState state = b.getState();
+
+            Inventory temp;
+            if (state instanceof Chest) {
+                temp = ((Chest) state).getBlockInventory();
+            } else {
+                temp = ((InventoryHolder) state).getInventory();
+            }
+            result.addAll(Arrays.asList(temp.getContents()));
+        }
+
+        return result;
+    }
+
+    private void captureYield(@NotNull List<MovecraftLocation> harvestedBlocks) {
         if (harvestedBlocks.isEmpty()) {
             return;
         }
@@ -483,24 +525,8 @@ public class TranslationTask extends AsyncTask {
 
         for (MovecraftLocation harvestedBlock : harvestedBlocks) {
             Block block = craft.getWorld().getBlockAt(harvestedBlock.getX(), harvestedBlock.getY(), harvestedBlock.getZ());
-            List<ItemStack> drops = new ArrayList<>(block.getDrops(YIELD_TOOL));
-            //generate seed drops
-            if (block.getType() == Material.WHEAT) {
-                Random rand = new Random();
-                int amount = rand.nextInt(4);
-                if (amount > 0) {
-                    ItemStack seeds = new ItemStack(Material.WHEAT_SEEDS, amount);
-                    drops.add(seeds);
-                }
-            }
-            //get contents of inventories before deposting
-            if (block.getState() instanceof InventoryHolder) {
-                if (block.getState() instanceof Chest) {
-                    drops.addAll(Arrays.asList(((Chest) block.getState()).getBlockInventory().getContents()));
-                } else {
-                    drops.addAll(Arrays.asList((((InventoryHolder) block.getState()).getInventory().getContents())));
-                }
-            }
+            List<ItemStack> drops = getDrops(block);
+
             //call event
             final ItemHarvestEvent harvestEvent = new ItemHarvestEvent(craft, drops, harvestedBlock.toBukkit(craft.getWorld()));
             Bukkit.getServer().getPluginManager().callEvent(harvestEvent);
