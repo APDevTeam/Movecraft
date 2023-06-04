@@ -18,6 +18,7 @@ import net.countercraft.movecraft.events.CraftTeleportEntityEvent;
 import net.countercraft.movecraft.events.CraftTranslateEvent;
 import net.countercraft.movecraft.events.ItemHarvestEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.mapUpdater.update.AccessLocationUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.BlockCreateCommand;
 import net.countercraft.movecraft.mapUpdater.update.CraftTranslateCommand;
 import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
@@ -44,8 +45,11 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.HumanEntity;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
@@ -402,6 +406,21 @@ public class TranslationTask extends AsyncTask {
                     oldHitBox.getYLength() / 2.0 + 2,
                     oldHitBox.getZLength() / 2.0 + 1
             )) {
+
+                if (entity instanceof HumanEntity) {
+                    InventoryView inventoryView = ((HumanEntity) entity).getOpenInventory();
+                    if (inventoryView.getType() != InventoryType.CRAFTING) {
+                        Location l = Movecraft.getInstance().getWorldHandler().getAccessLocation(inventoryView);
+                        if (l != null) {
+                            MovecraftLocation location = new MovecraftLocation(l.getBlockX(), l.getBlockY(), l.getBlockZ());
+                            if (oldHitBox.contains(location)) {
+                                location = location.translate(dx, dy, dz);
+                                updates.add(new AccessLocationUpdateCommand(inventoryView, location.toBukkit(world)));
+                            }
+                        }
+                    }
+                }
+
                 if ((entity.getType() == EntityType.PLAYER && !(craft instanceof SinkingCraft))) {
                     CraftTeleportEntityEvent e = new CraftTeleportEntityEvent(craft, entity);
                     Bukkit.getServer().getPluginManager().callEvent(e);
