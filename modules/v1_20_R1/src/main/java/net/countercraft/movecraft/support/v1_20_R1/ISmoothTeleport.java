@@ -1,4 +1,4 @@
-package net.countercraft.movecraft.support.v1_19_R3;
+package net.countercraft.movecraft.support.v1_20_R1;
 
 import net.countercraft.movecraft.SmoothTeleport;
 import net.countercraft.movecraft.util.ReflectUtils;

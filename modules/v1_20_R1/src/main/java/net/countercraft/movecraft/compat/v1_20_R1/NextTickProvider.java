@@ -1,4 +1,4 @@
-package net.countercraft.movecraft.compat.v1_19_R3;
+package net.countercraft.movecraft.compat.v1_20_R1;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
