@@ -53,8 +53,8 @@ public class IWorldHandler extends WorldHandler {
 
     public IWorldHandler() {
         String mappings = ((CraftMagicNumbers) CraftMagicNumbers.INSTANCE).getMappingsVersion();
-        if (!mappings.equals("TBD"))
-            throw new IllegalStateException("Movecraft is not compatible with this version of Minecraft 1.20: " + mappings);
+        // if (!mappings.equals("TBD"))
+        //     throw new IllegalStateException("Movecraft is not compatible with this version of Minecraft 1.20: " + mappings);
     }
 
     @Override
