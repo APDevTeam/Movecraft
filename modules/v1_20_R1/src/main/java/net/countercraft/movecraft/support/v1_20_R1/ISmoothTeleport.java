@@ -15,7 +15,7 @@ import java.util.Set;
 /**
  * Code derived from code taken with permission from MicleBrick
  * https://www.spigotmc.org/threads/teleport-player-smoothly.317416/
- * Used for 1.19.4
+ * Used for 1.20
  */
 public class ISmoothTeleport extends SmoothTeleport {
     private final Set<Object> teleportFlags;
@@ -66,13 +66,13 @@ public class ISmoothTeleport extends SmoothTeleport {
         vec3Constructor = vectorClass.getConstructor(Double.TYPE, Double.TYPE, Double.TYPE);
         packetConstructor = positionPacketClass.getConstructor(Double.TYPE, Double.TYPE, Double.TYPE, Float.TYPE, Float.TYPE, Set.class, Integer.TYPE);
 
-        connectionField = ReflectUtils.getField(playerClass, "b"); // connection
+        connectionField = ReflectUtils.getField(playerClass, "c"); // connection
         teleportPosField = ReflectUtils.getField(connectionClass, "D"); // awaitingPositionFromClient
         teleportAwaitField = ReflectUtils.getField(connectionClass, "E"); // awaitingTeleport
         awaitingTeleportTimeField = ReflectUtils.getField(connectionClass, "F"); // awaitingTeleportTime
         tickCountField = ReflectUtils.getField(connectionClass, "j"); // tickCount
-        yawField = ReflectUtils.getField(entityClass, "aF"); // xRot
-        pitchField = ReflectUtils.getField(entityClass, "aE"); // yRot
+        yawField = ReflectUtils.getField(entityClass, "aH"); // xRot
+        pitchField = ReflectUtils.getField(entityClass, "aG"); // yRot
     }
 
     public void teleport(Player player, @NotNull Location location, float yawChange, float pitchChange) {
