@@ -172,19 +172,7 @@
                             <createDependencyReducedPom>false</createDependencyReducedPom>
                             <filters>
                                 <filter>
-                                    <artifact>net.countercraft:movecraft-v1_14_r1</artifact>
-                                    <includes>
-                                        <include>**</include>
-                                    </includes>
-                                </filter>
-                                <filter>
                                     <artifact>net.countercraft:movecraft-v1_16_r3</artifact>
-                                    <includes>
-                                        <include>**</include>
-                                    </includes>
-                                </filter>
-                                <filter>
-                                    <artifact>net.countercraft:movecraft-v1_17_r1</artifact>
                                     <includes>
                                         <include>**</include>
                                     </includes>
@@ -197,6 +185,12 @@
                                 </filter>
                                 <filter>
                                     <artifact>net.countercraft:movecraft-v1_19_r3</artifact>
+                                    <includes>
+                                        <include>**</include>
+                                    </includes>
+                                </filter>
+                                <filter>
+                                    <artifact>net.countercraft:movecraft-v1_20_r1</artifact>
                                     <includes>
                                         <include>**</include>
                                     </includes>
