@@ -26,13 +26,6 @@ else
     wget https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
 fi
 
-# Build 1.14.4
-if [ -f ~/.m2/repository/org/bukkit/craftbukkit/1.14.4-R0.1-SNAPSHOT/craftbukkit-1.14.4-R0.1-SNAPSHOT.jar ]; then
-    echo "1.14.4 already exists, skipping build"
-else
-    /usr/lib/jvm/temurin-11-jdk-amd64/bin/java -jar BuildTools.jar --rev 1.14.4 --compile craftbukkit
-fi
-
 # Build 1.16.5
 if [ -f ~/.m2/repository/org/bukkit/craftbukkit/1.16.5-R0.1-SNAPSHOT/craftbukkit-1.16.5-R0.1-SNAPSHOT.jar ]; then
     echo "1.16.5 already exists, skipping build"
@@ -47,18 +40,18 @@ else
     java -jar BuildTools.jar --rev 1.18.2 --remapped
 fi
 
-# Build 1.19.2
-if [ -f ~/.m2/repository/org/spigotmc/spigot/1.19.2-R0.1-SNAPSHOT/spigot-1.19.2-R0.1-SNAPSHOT.jar ]; then
-    echo "1.19.2 already exists, skipping build"
-else
-    java -jar BuildTools.jar --rev 1.19.2 --remapped
-fi
-
 # Build 1.19.4
 if [ -f ~/.m2/repository/org/spigotmc/spigot/1.19.4-R0.1-SNAPSHOT/spigot-1.19.4-R0.1-SNAPSHOT.jar ]; then
     echo "1.19.4 already exists, skipping build"
 else
     java -jar BuildTools.jar --rev 1.19.4 --remapped
+fi
+
+# Build 1.20
+if [ -f ~/.m2/repository/org/spigotmc/spigot/1.19.4-R0.1-SNAPSHOT/spigot-1.20-R0.1-SNAPSHOT.jar ]; then
+    echo "1.20 already exists, skipping build"
+else
+    java -jar BuildTools.jar --rev 1.20 --remapped
 fi
 
 # Restore git information
