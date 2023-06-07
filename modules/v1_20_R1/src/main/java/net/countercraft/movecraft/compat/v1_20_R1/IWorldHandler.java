@@ -22,6 +22,7 @@ import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.ticks.ScheduledTick;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.v1_20_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_20_R1.block.data.CraftBlockData;

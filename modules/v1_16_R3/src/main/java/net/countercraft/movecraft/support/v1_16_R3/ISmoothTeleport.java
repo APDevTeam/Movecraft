@@ -15,7 +15,7 @@ import java.util.Set;
 /**
  * Code taken with permission from MicleBrick
  * https://www.spigotmc.org/threads/teleport-player-smoothly.317416/
- * Used for 1.14.4 to 1.16.5
+ * Used for 1.16.5
  */
 public class ISmoothTeleport extends SmoothTeleport {
     private final Set<Object> teleportFlags;

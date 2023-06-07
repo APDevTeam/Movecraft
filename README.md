@@ -24,7 +24,7 @@ Please check the [Wiki](https://github.com/APDevTeam/Movecraft/wiki) and [FAQ](h
 [Discord](http://bit.ly/JoinAP-Dev)
 
 ## Development Environment
-Movecraft uses multiple versions of the Spigot server software for legacy support.  As such, you need to run [BuildTools](https://www.spigotmc.org/wiki/buildtools/) for several versions before building the plugin.  It doesn't matter where you do this, but inside the Movecraft directory is probably a bad place.  We recommend building Spigot 1.14.4 & 1.16.5 with Java 13 and Java 17 to build 1.17.1, 1.18.2 & 1.19.2.  Alternatively, you can use GitHub codespaces and run the `setup.sh` script to build all the needed versions automatically.
+Movecraft uses multiple versions of the Spigot server software for legacy support.  As such, you need to run [BuildTools](https://www.spigotmc.org/wiki/buildtools/) for several versions before building the plugin.  It doesn't matter where you do this, but inside the Movecraft directory is probably a bad place.  We recommend building Spigot 1.16.5 with Java 13 and Java 17 to build 1.18.2, 1.19.4 & 1.20.  Alternatively, you can use GitHub codespaces and run the `setup.sh` script to build all the needed versions automatically.
 
 ```
 java -jar BuildTools.jar --rev 1.16.5 --compile craftbukkit
