@@ -208,15 +208,15 @@ jobs:
           ~/.m2/repository/org/spigotmc/minecraft-server/
         key: ${{ runner.os }}-v1_19_R3
         restore-keys: ${{ runner.os }}-v1_19_R3
-      - name: Cache 1.20 Maven package
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.m2/repository/org/spigotmc/spigot/1.20-R0.1-SNAPSHOT/
-            ~/.m2/repository/org/spigotmc/spigot-parent/
-            ~/.m2/repository/org/spigotmc/minecraft-server/
-          key: ${{ runner.os }}-v1_20_R1
-          restore-keys: ${{ runner.os }}-v1_20_R1
+    - name: Cache 1.20 Maven package
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.m2/repository/org/spigotmc/spigot/1.20-R0.1-SNAPSHOT/
+          ~/.m2/repository/org/spigotmc/spigot-parent/
+          ~/.m2/repository/org/spigotmc/minecraft-server/
+        key: ${{ runner.os }}-v1_20_R1
+        restore-keys: ${{ runner.os }}-v1_20_R1
 
     - name: Build with Maven
       run: mvn -T 1C -B package --file pom.xml
