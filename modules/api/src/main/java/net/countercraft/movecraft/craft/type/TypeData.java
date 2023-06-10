@@ -532,7 +532,12 @@ public final class TypeData {
                 continue;
             }
             if (s.charAt(0) == '#' && s.length() > 1) {
-                name = s.substring(1);
+                int n = 1;
+                if (s.contains(":")) {
+                    s = s.split(":")[1];
+                    n--;
+                }
+                name = s.substring(n);
             } else {
                 name = s;
             }
