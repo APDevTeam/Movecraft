@@ -125,21 +125,21 @@ jobs:
         if: steps.wild.outputs.sucess != 'true' || steps.wildMojang.outputs.sucess != 'true' || steps.wildObf.outputs.sucess != 'true'
         run: cd BuildTools && java -jar BuildTools.jar --rev 1.19.4 --remapped
 
-  # Build 1.20 NMS
+  # Build 1.20.1 NMS
   v1_20_R1:
     runs-on: ubuntu-latest
     steps:
-      - name: Set up JDK 17 # 1.20 can only be built with Java 17
+      - name: Set up JDK 17 # 1.20.1 can only be built with Java 17
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Cache 1.20 Maven package
+      - name: Cache 1.20.1 Maven package
         id: cacheWild_r2
         uses: actions/cache@v3
         with:
           path: |
-            ~/.m2/repository/org/spigotmc/spigot/1.20-R0.1-SNAPSHOT/
+            ~/.m2/repository/org/spigotmc/spigot/1.20.1-R0.1-SNAPSHOT/
             ~/.m2/repository/org/spigotmc/spigot-parent/
             ~/.m2/repository/org/spigotmc/minecraft-server/
           key: ${{ runner.os }}-v1_20_R1
@@ -154,18 +154,18 @@ jobs:
 
       - name: Setup BuildTools
         run: mkdir BuildTools && wget -O BuildTools/BuildTools.jar https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
-      - name: Check 1.20 Spigot
+      - name: Check 1.20.1 Spigot
         id: wild
-        run: test -f ~/.m2/repository/org/spigotmc/spigot/1.20-R0.1-SNAPSHOT/spigot-1.20-R0.1-SNAPSHOT.jar && echo "sucess=true" >> $GITHUB_OUTPUT || echo "sucess=false" >> $GITHUB_OUTPUT
-      - name: Check 1.20 Spigot (Mojang)
+        run: test -f ~/.m2/repository/org/spigotmc/spigot/1.20.1-R0.1-SNAPSHOT/spigot-1.20.1-R0.1-SNAPSHOT.jar && echo "sucess=true" >> $GITHUB_OUTPUT || echo "sucess=false" >> $GITHUB_OUTPUT
+      - name: Check 1.20.1 Spigot (Mojang)
         id: wildMojang
-        run: test -f ~/.m2/repository/org/spigotmc/spigot/1.20-R0.1-SNAPSHOT/spigot-1.20-R0.1-SNAPSHOT-remapped-mojang.jar && echo "sucess=true" >> $GITHUB_OUTPUT || echo "sucess=false" >> $GITHUB_OUTPUT
-      - name: Check 1.20 Spigot (Obf)
+        run: test -f ~/.m2/repository/org/spigotmc/spigot/1.20.1-R0.1-SNAPSHOT/spigot-1.20.1-R0.1-SNAPSHOT-remapped-mojang.jar && echo "sucess=true" >> $GITHUB_OUTPUT || echo "sucess=false" >> $GITHUB_OUTPUT
+      - name: Check 1.20.1 Spigot (Obf)
         id: wildObf
-        run: test -f ~/.m2/repository/org/spigotmc/spigot/1.20-R0.1-SNAPSHOT/spigot-1.20-R0.1-SNAPSHOT-remapped-obf.jar && echo "sucess=true" >> $GITHUB_OUTPUT || echo "sucess=false" >> $GITHUB_OUTPUT
-      - name: Build 1.20
+        run: test -f ~/.m2/repository/org/spigotmc/spigot/1.20.1-R0.1-SNAPSHOT/spigot-1.20.1-R0.1-SNAPSHOT-remapped-obf.jar && echo "sucess=true" >> $GITHUB_OUTPUT || echo "sucess=false" >> $GITHUB_OUTPUT
+      - name: Build 1.20.1
         if: steps.wild.outputs.sucess != 'true' || steps.wildMojang.outputs.sucess != 'true' || steps.wildObf.outputs.sucess != 'true'
-        run: cd BuildTools && java -jar BuildTools.jar --rev 1.20 --remapped
+        run: cd BuildTools && java -jar BuildTools.jar --rev 1.20.1 --remapped
 
   # Build Movecraft
   build:
@@ -210,11 +210,11 @@ jobs:
             ~/.m2/repository/org/spigotmc/minecraft-server/
           key: ${{ runner.os }}-v1_19_R3
           restore-keys: ${{ runner.os }}-v1_19_R3
-      - name: Cache 1.20 Maven package
+      - name: Cache 1.20.1 Maven package
         uses: actions/cache@v3
         with:
           path: |
-            ~/.m2/repository/org/spigotmc/spigot/1.20-R0.1-SNAPSHOT/
+            ~/.m2/repository/org/spigotmc/spigot/1.20.1-R0.1-SNAPSHOT/
             ~/.m2/repository/org/spigotmc/spigot-parent/
             ~/.m2/repository/org/spigotmc/minecraft-server/
           key: ${{ runner.os }}-v1_20_R1
