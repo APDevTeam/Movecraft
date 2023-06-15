@@ -1,4 +1,4 @@
-package net.countercraft.movecraft.compat.v1_17_R1;
+package net.countercraft.movecraft.compat.v1_20_R1;
 
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.MovecraftRotation;
@@ -12,7 +12,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.TickNextTickData;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
@@ -20,13 +19,15 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
+import net.minecraft.world.ticks.ScheduledTick;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.craftbukkit.v1_17_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_17_R1.block.data.CraftBlockData;
-import org.bukkit.craftbukkit.v1_17_R1.inventory.CraftInventoryView;
-import org.bukkit.craftbukkit.v1_17_R1.util.CraftMagicNumbers;
+import org.bukkit.craftbukkit.v1_20_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_20_R1.block.data.CraftBlockData;
+import org.bukkit.craftbukkit.v1_20_R1.inventory.CraftInventoryView;
+import org.bukkit.craftbukkit.v1_20_R1.util.CraftMagicNumbers;
 import org.bukkit.inventory.InventoryView;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -53,8 +54,8 @@ public class IWorldHandler extends WorldHandler {
 
     public IWorldHandler() {
         String mappings = ((CraftMagicNumbers) CraftMagicNumbers.INSTANCE).getMappingsVersion();
-        if (!mappings.equals("f0e3dfc7390de285a4693518dd5bd126"))
-            throw new IllegalStateException("Movecraft is not compatible with this version of Minecraft 1.17: " + mappings);
+        if (!mappings.equals("bcf3dcb22ad42792794079f9443df2c0"))
+            throw new IllegalStateException("Movecraft is not compatible with this version of Minecraft 1.20: " + mappings);
     }
 
     @Override
@@ -109,8 +110,8 @@ public class IWorldHandler extends WorldHandler {
             moveBlockEntity(nativeWorld, rotatedPositions.get(tileHolder.getTilePosition()), tileHolder.getTile());
             if (tileHolder.getNextTick() == null)
                 continue;
-            final long currentTime = nativeWorld.E.getGameTime();
-            nativeWorld.getBlockTickList().scheduleTick(rotatedPositions.get(tileHolder.getNextTick().pos), (Block) tileHolder.getNextTick().getType(), (int) (tileHolder.getNextTick().triggerTick - currentTime), tileHolder.getNextTick().priority);
+            final long currentTime = nativeWorld.K.getGameTime(); // K is obfuscated serverLevelData
+            nativeWorld.getBlockTicks().schedule(new ScheduledTick<>((Block) tileHolder.getNextTick().type(), rotatedPositions.get(tileHolder.getNextTick().pos()), tileHolder.getNextTick().triggerTick() - currentTime, tileHolder.getNextTick().priority(), tileHolder.getNextTick().subTickOrder()));
         }
 
         //*******************************************
@@ -132,7 +133,7 @@ public class IWorldHandler extends WorldHandler {
         //*******************************************
         BlockPos translateVector = locationToPosition(displacement);
         List<BlockPos> positions = new ArrayList<>(craft.getHitBox().size());
-        craft.getHitBox().forEach((movecraftLocation) -> positions.add(locationToPosition((movecraftLocation)).e(translateVector)));
+        craft.getHitBox().forEach((movecraftLocation) -> positions.add(locationToPosition((movecraftLocation)).subtract(translateVector)));
         ServerLevel oldNativeWorld = ((CraftWorld) craft.getWorld()).getHandle();
         ServerLevel nativeWorld = ((CraftWorld) world).getHandle();
         //*******************************************
@@ -168,7 +169,7 @@ public class IWorldHandler extends WorldHandler {
         for (int i = 0, positionsSize = positions.size(); i < positionsSize; i++) {
             BlockPos position = positions.get(i);
             blockData.add(oldNativeWorld.getBlockState(position));
-            newPositions.add(position.f(translateVector));
+            newPositions.add(position.offset(translateVector));
         }
         //create the new block
         for (int i = 0, positionSize = newPositions.size(); i < positionSize; i++) {
@@ -180,11 +181,11 @@ public class IWorldHandler extends WorldHandler {
         //TODO: go by chunks
         for (int i = 0, tilesSize = tiles.size(); i < tilesSize; i++) {
             TileHolder tileHolder = tiles.get(i);
-            moveBlockEntity(nativeWorld, tileHolder.getTilePosition().f(translateVector), tileHolder.getTile());
+            moveBlockEntity(nativeWorld, tileHolder.getTilePosition().offset(translateVector), tileHolder.getTile());
             if (tileHolder.getNextTick() == null)
                 continue;
-            final long currentTime = nativeWorld.E.getGameTime();
-            nativeWorld.getBlockTickList().scheduleTick(tileHolder.getNextTick().pos.f(translateVector), (Block) tileHolder.getNextTick().getType(), (int) (tileHolder.getNextTick().triggerTick - currentTime), tileHolder.getNextTick().priority);
+            final long currentTime = nativeWorld.getGameTime();
+            nativeWorld.getBlockTicks().schedule(new ScheduledTick<>((Block) tileHolder.getNextTick().type(), tileHolder.getTilePosition().offset(translateVector), tileHolder.getNextTick().triggerTick() - currentTime, tileHolder.getNextTick().priority(), tileHolder.getNextTick().subTickOrder()));
         }
         //*******************************************
         //*   Step five: Destroy the leftovers      *
@@ -224,7 +225,7 @@ public class IWorldHandler extends WorldHandler {
         section.setBlockState(position.getX() & 15, position.getY() & 15, position.getZ() & 15, data);
         world.sendBlockUpdated(position, data, data, 3);
         world.getLightEngine().checkBlock(position); // boolean corresponds to if chunk section empty
-        chunk.markUnsaved();
+        chunk.setUnsaved(true);
     }
 
     @Override
@@ -282,7 +283,7 @@ public class IWorldHandler extends WorldHandler {
     private void moveBlockEntity(@NotNull Level nativeWorld, @NotNull BlockPos newPosition, @NotNull BlockEntity tile) {
         LevelChunk chunk = nativeWorld.getChunkAt(newPosition);
         try {
-            var positionField = BlockEntity.class.getDeclaredField("o"); // o is obfuscated worldPosition
+            var positionField = BlockEntity.class.getDeclaredField("p"); // p is obfuscated worldPosition
             UnsafeUtils.setField(positionField, tile, newPosition);
         }
         catch (NoSuchFieldException e) {
@@ -302,11 +303,11 @@ public class IWorldHandler extends WorldHandler {
         @NotNull
         private final BlockEntity tile;
         @Nullable
-        private final TickNextTickData<?> nextTick;
+        private final ScheduledTick<?> nextTick;
         @NotNull
         private final BlockPos tilePosition;
 
-        public TileHolder(@NotNull BlockEntity tile, @Nullable TickNextTickData<?> nextTick, @NotNull BlockPos tilePosition) {
+        public TileHolder(@NotNull BlockEntity tile, @Nullable ScheduledTick<?> nextTick, @NotNull BlockPos tilePosition) {
             this.tile = tile;
             this.nextTick = nextTick;
             this.tilePosition = tilePosition;
@@ -319,7 +320,7 @@ public class IWorldHandler extends WorldHandler {
         }
 
         @Nullable
-        public TickNextTickData<?> getNextTick() {
+        public ScheduledTick<?> getNextTick() {
             return nextTick;
         }
 

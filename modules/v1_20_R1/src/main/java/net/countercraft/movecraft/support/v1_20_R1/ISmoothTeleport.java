@@ -1,4 +1,4 @@
-package net.countercraft.movecraft.support.v1_17_R1;
+package net.countercraft.movecraft.support.v1_20_R1;
 
 import net.countercraft.movecraft.SmoothTeleport;
 import net.countercraft.movecraft.util.ReflectUtils;
@@ -15,7 +15,7 @@ import java.util.Set;
 /**
  * Code derived from code taken with permission from MicleBrick
  * https://www.spigotmc.org/threads/teleport-player-smoothly.317416/
- * Used for 1.17.1
+ * Used for 1.20.1
  */
 public class ISmoothTeleport extends SmoothTeleport {
     private final Set<Object> teleportFlags;
@@ -57,22 +57,22 @@ public class ISmoothTeleport extends SmoothTeleport {
         Class<?> connectionClass = getNmClass("server.network.PlayerConnection"); // ServerGamePacketListenerImpl
         Class<?> vectorClass = getNmClass("world.phys.Vec3D"); // Vec3
 
-        Object[] flags = getNmClass("network.protocol.game.PacketPlayOutPosition$EnumPlayerTeleportFlags").getEnumConstants(); // $RelativeArgument
+        Object[] flags = getNmClass("world.entity.RelativeMovement").getEnumConstants();
         teleportFlags = Set.of(flags[4], flags[3]); // X_ROT, Y_ROT
 
-        positionMethod = entityClass.getDeclaredMethod("setLocation", Double.TYPE, Double.TYPE, Double.TYPE, Float.TYPE, Float.TYPE); // absMoveTo
-        sendMethod = connectionClass.getMethod("sendPacket", packetClass); // send
+        positionMethod = entityClass.getDeclaredMethod("a", Double.TYPE, Double.TYPE, Double.TYPE, Float.TYPE, Float.TYPE); // absMoveTo
+        sendMethod = connectionClass.getMethod("a", packetClass); // send
 
         vec3Constructor = vectorClass.getConstructor(Double.TYPE, Double.TYPE, Double.TYPE);
-        packetConstructor = positionPacketClass.getConstructor(Double.TYPE, Double.TYPE, Double.TYPE, Float.TYPE, Float.TYPE, Set.class, Integer.TYPE, Boolean.TYPE);
+        packetConstructor = positionPacketClass.getConstructor(Double.TYPE, Double.TYPE, Double.TYPE, Float.TYPE, Float.TYPE, Set.class, Integer.TYPE);
 
-        connectionField = ReflectUtils.getField(playerClass, "b"); // connection
-        teleportPosField = ReflectUtils.getField(connectionClass, "y"); // awaitingPositionFromClient
-        teleportAwaitField = ReflectUtils.getField(connectionClass, "z"); // awaitingTeleport
-        awaitingTeleportTimeField = ReflectUtils.getField(connectionClass, "A"); // awaitingTeleportTime
-        tickCountField = ReflectUtils.getField(connectionClass, "f"); // tickCount
-        yawField = ReflectUtils.getField(entityClass, "az"); // xRot
-        pitchField = ReflectUtils.getField(entityClass, "ay"); // yRot
+        connectionField = ReflectUtils.getField(playerClass, "c"); // connection
+        teleportPosField = ReflectUtils.getField(connectionClass, "D"); // awaitingPositionFromClient
+        teleportAwaitField = ReflectUtils.getField(connectionClass, "E"); // awaitingTeleport
+        awaitingTeleportTimeField = ReflectUtils.getField(connectionClass, "F"); // awaitingTeleportTime
+        tickCountField = ReflectUtils.getField(connectionClass, "j"); // tickCount
+        yawField = ReflectUtils.getField(entityClass, "aH"); // xRot
+        pitchField = ReflectUtils.getField(entityClass, "aG"); // yRot
     }
 
     public void teleport(Player player, @NotNull Location location, float yawChange, float pitchChange) {
@@ -90,7 +90,7 @@ public class ISmoothTeleport extends SmoothTeleport {
             teleportAwaitField.setInt(connection, teleportAwait);
             awaitingTeleportTimeField.set(connection, tickCountField.get(connection));
 
-            Object packet = packetConstructor.newInstance(x, y, z, yawChange, pitchChange, teleportFlags, teleportAwait, false);
+            Object packet = packetConstructor.newInstance(x, y, z, yawChange, pitchChange, teleportFlags, teleportAwait);
             sendPacket(packet, player);
         }
         catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
