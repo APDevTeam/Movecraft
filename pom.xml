@@ -9,7 +9,7 @@
     <url>http://github.com/apdevteam/Movecraft</url>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <revision>8.0.0_beta-2_snapshot</revision>
+        <revision>8.0.0_beta-2</revision>
     </properties>
 
     <modules>
