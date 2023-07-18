@@ -6,18 +6,18 @@ import net.countercraft.movecraft.WorldHandler;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.util.CollectionUtils;
 import net.countercraft.movecraft.util.MathUtils;
+import net.countercraft.movecraft.util.UnsafeUtils;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
 import net.minecraft.server.v1_16_R3.Block;
 import net.minecraft.server.v1_16_R3.BlockPosition;
 import net.minecraft.server.v1_16_R3.Blocks;
 import net.minecraft.server.v1_16_R3.Chunk;
 import net.minecraft.server.v1_16_R3.ChunkSection;
-import net.minecraft.server.v1_16_R3.EntityPlayer;
+import net.minecraft.server.v1_16_R3.Container;
+import net.minecraft.server.v1_16_R3.ContainerAccess;
 import net.minecraft.server.v1_16_R3.EnumBlockRotation;
 import net.minecraft.server.v1_16_R3.IBlockData;
 import net.minecraft.server.v1_16_R3.NextTickListEntry;
-import net.minecraft.server.v1_16_R3.PacketPlayOutPosition;
-import net.minecraft.server.v1_16_R3.PlayerConnection;
 import net.minecraft.server.v1_16_R3.StructureBoundingBox;
 import net.minecraft.server.v1_16_R3.TileEntity;
 import net.minecraft.server.v1_16_R3.World;
@@ -27,22 +27,18 @@ import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.v1_16_R3.CraftWorld;
 import org.bukkit.craftbukkit.v1_16_R3.block.data.CraftBlockData;
-import org.bukkit.craftbukkit.v1_16_R3.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_16_R3.inventory.CraftInventoryView;
 import org.bukkit.craftbukkit.v1_16_R3.util.CraftMagicNumbers;
-import org.bukkit.entity.Player;
+import org.bukkit.inventory.InventoryView;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.reflect.Method;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 @SuppressWarnings("unused")
 public class IWorldHandler extends WorldHandler {
@@ -284,6 +280,32 @@ public class IWorldHandler extends WorldHandler {
     @Override
     public void disableShadow(@NotNull Material type) {
         // Disabled
+    }
+
+    public @Nullable Location getAccessLocation(@NotNull InventoryView inventoryView) {
+        Container menu = ((CraftInventoryView) inventoryView).getHandle();
+        Field field = UnsafeUtils.getFieldOfType(ContainerAccess.class, menu.getClass());
+        if (field != null) {
+            try {
+                field.setAccessible(true);
+                return ((ContainerAccess) field.get(menu)).getLocation();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public void setAccessLocation(@NotNull InventoryView inventoryView, @NotNull Location location) {
+        if (location.getWorld() == null)
+            return;
+        WorldServer level = ((CraftWorld) location.getWorld()).getHandle();
+        BlockPosition position = new BlockPosition(location.getBlockX(), location.getBlockY(), location.getBlockZ());
+        ContainerAccess access = ContainerAccess.at(level, position);
+
+        Container menu = ((CraftInventoryView) inventoryView).getHandle();
+        UnsafeUtils.trySetFieldOfType(ContainerAccess.class, menu, access);
     }
 
     private static MovecraftLocation bukkit2MovecraftLoc(Location l) {

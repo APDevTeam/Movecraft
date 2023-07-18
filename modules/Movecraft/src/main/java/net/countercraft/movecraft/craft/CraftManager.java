@@ -138,10 +138,10 @@ public class CraftManager implements Iterable<Craft>{
             }
         }
         if (craftTypes.isEmpty()) {
-            Movecraft.getInstance().getLogger().log(Level.SEVERE, ERROR_PREFIX + I18nSupport.getInternationalisedString("Startup - No Crafts Found"));
+            Movecraft.getInstance().getLogger().log(Level.SEVERE, ERROR_PREFIX + "NO CRAFT FILES FOUND!");
             return craftTypes;
         }
-        Movecraft.getInstance().getLogger().log(Level.INFO, String.format(I18nSupport.getInternationalisedString("Startup - Number of craft files loaded"), craftTypes.size()));
+        Movecraft.getInstance().getLogger().log(Level.INFO, "Loaded " + craftTypes.size() + " Craft files");
         return craftTypes;
     }
 

@@ -118,7 +118,7 @@ public class CraftRotateCommand extends UpdateCommand {
                 validExterior.addAll(hitBox.difference(craft.getHitBox()));
             }
             //Check to see which locations in the from set are actually outside of the craft
-            for (MovecraftLocation location :validExterior ) {
+            for (MovecraftLocation location : validExterior) {
                 if (craft.getHitBox().contains(location) || exterior.contains(location)) {
                     continue;
                 }
@@ -167,9 +167,9 @@ public class CraftRotateCommand extends UpdateCommand {
                 craft.getPhaseBlocks().remove(bukkit);
             }
 
-            for(MovecraftLocation location : originalLocations.boundingHitBox()){
+            for (MovecraftLocation location : originalLocations.boundingHitBox()) {
                 Location bukkit = location.toBukkit(craft.getWorld());
-                if(!craft.getHitBox().inBounds(location) && craft.getPhaseBlocks().containsKey(bukkit)){
+                if (!craft.getHitBox().inBounds(location) && craft.getPhaseBlocks().containsKey(bukkit)) {
                     var phaseBlock = craft.getPhaseBlocks().remove(bukkit);
                     handler.setBlockFast(bukkit, phaseBlock);
                 }
@@ -184,7 +184,7 @@ public class CraftRotateCommand extends UpdateCommand {
 
                 }
             }
-        }else{
+        } else {
             //translate the craft
 
             Movecraft.getInstance().getWorldHandler().rotateCraft(craft, originLocation, rotation);
@@ -199,7 +199,7 @@ public class CraftRotateCommand extends UpdateCommand {
             logger.info("Total time: " + (time / 1e6) + " milliseconds. Moving with cooldown of " + craft.getTickCooldown() + ". Speed of: " + String.format("%.2f", craft.getSpeed()));
     }
 
-    private void sendSignEvents(){
+    private void sendSignEvents() {
         Object2ObjectMap<String[], List<MovecraftLocation>> signs = new Object2ObjectOpenCustomHashMap<>(new Hash.Strategy<String[]>() {
             @Override
             public int hashCode(String[] strings) {
@@ -218,19 +218,19 @@ public class CraftRotateCommand extends UpdateCommand {
             BlockState state = block.getState();
             if (state instanceof Sign) {
                 Sign sign = (Sign) block.getState();
-                if(!signs.containsKey(sign.getLines()))
+                if (!signs.containsKey(sign.getLines()))
                     signs.put(sign.getLines(), new ArrayList<>());
                 signs.get(sign.getLines()).add(location);
                 signStates.put(location, sign);
             }
         }
-        for(Map.Entry<String[], List<MovecraftLocation>> entry : signs.entrySet()){
+        for (Map.Entry<String[], List<MovecraftLocation>> entry : signs.entrySet()) {
             SignTranslateEvent event = new SignTranslateEvent(craft, entry.getKey(), entry.getValue());
             Bukkit.getServer().getPluginManager().callEvent(event);
-            if(!event.isUpdated()){
+            if (!event.isUpdated()) {
                 continue;
             }
-            for(MovecraftLocation location : entry.getValue()){
+            for (MovecraftLocation location : entry.getValue()) {
                 Block block = location.toBukkit(craft.getWorld()).getBlock();
                 BlockState state = block.getState();
                 BlockData data = block.getBlockData();
@@ -238,7 +238,7 @@ public class CraftRotateCommand extends UpdateCommand {
                     continue;
                 }
                 Sign sign = signStates.get(location);
-                for(int i = 0; i<4; i++){
+                for (int i = 0; i < 4; i++) {
                     sign.setLine(i, entry.getKey()[i]);
                 }
                 sign.update(false, false);

@@ -21,6 +21,8 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.craft.PilotedCraft;
+import net.countercraft.movecraft.craft.PlayerCraft;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.util.MathUtils;
 import net.countercraft.movecraft.util.Tags;
@@ -30,6 +32,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Hopper;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -40,6 +43,7 @@ import org.bukkit.event.block.BlockFromToEvent;
 import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockRedstoneEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.material.Attachable;
@@ -61,6 +65,33 @@ public class BlockListener implements Listener {
 
             if (craft.getHitBox().contains(movecraftLocation)) {
                 // TODO: for some reason before when this check runs the location is no longer in the hitbox
+                e.setCancelled(true);
+                return;
+            }
+        }
+    }
+
+    //Prevents non pilots from placing blocks on your ship.
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onBlockPlace(BlockPlaceEvent e) {
+        if (!Settings.ProtectPilotedCrafts)
+            return;
+
+        Player p = e.getPlayer();
+
+        MovecraftLocation placedLocation = MathUtils.bukkit2MovecraftLoc(e.getBlockAgainst().getLocation());
+        for (Craft craft : CraftManager.getInstance().getCraftsInWorld(e.getBlock().getWorld())) {
+            if (craft == null || craft.getDisabled())
+                continue;
+
+            if(!(craft instanceof PilotedCraft)) {
+                continue;
+            }
+            if (((PilotedCraft) craft).getPilot() == p) {
+                continue;
+            }
+
+            if (craft.getHitBox().contains(placedLocation)) {
                 e.setCancelled(true);
                 return;
             }

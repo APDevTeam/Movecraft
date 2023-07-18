@@ -28,6 +28,7 @@ import java.util.Map;
 public class Settings {
     public static boolean IGNORE_RESET = false;
     public static boolean Debug = false;
+    public static boolean DisableNMSCompatibilityCheck = false;
     public static int THREAD_POOL_SIZE = 5;
     public static List<Integer> DATA_BLOCKS;
     public static String LOCALE;

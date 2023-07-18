@@ -688,7 +688,7 @@ final public class CraftType {
                 "minHeightLimit must be less than or equal to maxHeightLimit"
         );
         registerTypeValidator(
-                type -> type.getIntProperty(HOVER_LIMIT) <= 0,
+                type -> type.getIntProperty(HOVER_LIMIT) >= 0,
                 "hoverLimit must be greater than or equal to zero"
         );
         registerTypeValidator(
