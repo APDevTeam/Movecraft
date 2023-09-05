@@ -185,6 +185,7 @@ final public class CraftType {
     public static final NamespacedKey GEAR_SHIFTS_AFFECT_CRUISE_SKIP_BLOCKS = buildKey(
             "gear_shifts_affect_cruise_skip_blocks");
     public static final NamespacedKey RELEASE_TIMEOUT = buildKey("release_timeout");
+    public static final NamespacedKey MERGE_PISTON_EXTENSIONS = buildKey("merge_piston_extensions");
     //endregion
 
     @Contract("_ -> new")
@@ -558,6 +559,7 @@ final public class CraftType {
                 type -> false
         ));
         registerProperty(new IntegerProperty("releaseTimeout", RELEASE_TIMEOUT, type -> 30));
+        registerProperty(new BooleanProperty("mergePistonExtensions", MERGE_PISTON_EXTENSIONS, type -> false));
 
         /* Craft type transforms */
         // Convert speed to TICK_COOLDOWN
