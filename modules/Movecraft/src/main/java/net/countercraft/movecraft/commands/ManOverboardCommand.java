@@ -1,14 +1,14 @@
 package net.countercraft.movecraft.commands;
 
+import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.craft.PilotedCraft;
 import net.countercraft.movecraft.craft.SinkingCraft;
 import net.countercraft.movecraft.events.ManOverboardEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.util.MathUtils;
-import net.countercraft.movecraft.util.teleport.TeleportUtils;
+import net.countercraft.movecraft.util.ReflectUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
@@ -73,7 +73,7 @@ public class ManOverboardCommand implements CommandExecutor {
 
         player.setVelocity(new Vector(0, 0, 0));
         player.setFallDistance(0);
-        TeleportUtils.teleport(player, telPoint, 0, 0);
+        Movecraft.getInstance().getSmoothTeleport().teleport(player, telPoint, 0, 0);
         return true;
     }
 

@@ -4,7 +4,7 @@
     <artifactId>movecraft</artifactId>
     <packaging>jar</packaging>
     <name>Movecraft</name>
-    <url>http://github.com/apdevteam/Movecraft</url>
+    <url>http://github.com/APDevTeam/Movecraft</url>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -27,32 +27,12 @@
             <id>spigot-repo</id>
             <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
         </repository>
-        <repository>
-            <id>sk89q-repo</id>
-            <url>https://maven.sk89q.com/repo/</url>
-        </repository>
-        <repository>
-            <id>dmulloy2-repo</id>
-            <url>https://repo.dmulloy2.net/nexus/repository/public/</url>
-        </repository>
     </repositories>
 
     <dependencies>
         <dependency>
             <groupId>net.countercraft</groupId>
-            <artifactId>movecraft-v1_14_r1</artifactId>
-            <version>${revision}</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>net.countercraft</groupId>
             <artifactId>movecraft-v1_16_r3</artifactId>
-            <version>${revision}</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>net.countercraft</groupId>
-            <artifactId>movecraft-v1_17_r1</artifactId>
             <version>${revision}</version>
             <type>jar</type>
         </dependency>
@@ -64,7 +44,13 @@
         </dependency>
         <dependency>
             <groupId>net.countercraft</groupId>
-            <artifactId>movecraft-v1_19_r1</artifactId>
+            <artifactId>movecraft-v1_19_r3</artifactId>
+            <version>${revision}</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>net.countercraft</groupId>
+            <artifactId>movecraft-v1_20_r1</artifactId>
             <version>${revision}</version>
             <type>jar</type>
         </dependency>
@@ -83,18 +69,7 @@
         <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
-            <version>1.30</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jetbrains</groupId>
-            <artifactId>annotations-java5</artifactId>
-            <version>22.0.0</version>
-        </dependency>
-        <dependency>
-            <groupId>it.unimi.dsi</groupId>
-            <artifactId>fastutil</artifactId>
-            <version>8.5.8</version>
-            <scope>compile</scope>
+            <version>2.0</version>
         </dependency>
     </dependencies>
 
@@ -188,24 +163,16 @@
                                     <pattern>net.kyori</pattern>
                                     <shadedPattern>net.countercraft.movecraft.libs.net.kyori</shadedPattern>
                                 </relocation>
+                                <relocation>
+                                    <pattern>org.roaringbitmap</pattern>
+                                    <shadedPattern>net.countercraft.movecraft.libs.org.roaringbitmap</shadedPattern>
+                                </relocation>
                             </relocations>
                             <minimizeJar>true</minimizeJar>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
                             <filters>
                                 <filter>
-                                    <artifact>net.countercraft:movecraft-v1_14_r1</artifact>
-                                    <includes>
-                                        <include>**</include>
-                                    </includes>
-                                </filter>
-                                <filter>
                                     <artifact>net.countercraft:movecraft-v1_16_r3</artifact>
-                                    <includes>
-                                        <include>**</include>
-                                    </includes>
-                                </filter>
-                                <filter>
-                                    <artifact>net.countercraft:movecraft-v1_17_r1</artifact>
                                     <includes>
                                         <include>**</include>
                                     </includes>
@@ -217,7 +184,13 @@
                                     </includes>
                                 </filter>
                                 <filter>
-                                    <artifact>net.countercraft:movecraft-v1_19_r1</artifact>
+                                    <artifact>net.countercraft:movecraft-v1_19_r3</artifact>
+                                    <includes>
+                                        <include>**</include>
+                                    </includes>
+                                </filter>
+                                <filter>
+                                    <artifact>net.countercraft:movecraft-v1_20_r1</artifact>
                                     <includes>
                                         <include>**</include>
                                     </includes>

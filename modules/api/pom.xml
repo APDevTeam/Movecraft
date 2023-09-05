@@ -7,7 +7,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <junit.jupiter.version>5.8.2</junit.jupiter.version>
+        <junit.jupiter.version>5.9.0</junit.jupiter.version>
         <junit.vintage.version>${junit.jupiter.version}</junit.vintage.version>
         <junit.platform.version>1.2.0</junit.platform.version>
         <junit.version>4.13.2</junit.version>
@@ -41,12 +41,12 @@
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
-            <version>1.14.4-R0.1-SNAPSHOT</version>
+            <version>1.16.5-R0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
-            <version>23.0.0</version>
+            <version>23.1.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -80,24 +80,24 @@
         <dependency>
             <groupId>org.roaringbitmap</groupId>
             <artifactId>RoaringBitmap</artifactId>
-            <version>0.9.27</version>
+            <version>0.9.32</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>it.unimi.dsi</groupId>
             <artifactId>fastutil</artifactId>
-            <version>8.5.8</version>
+            <version>8.5.9</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>net.kyori</groupId>
             <artifactId>adventure-api</artifactId>
-            <version>4.10.1</version>
+            <version>4.12.0</version>
         </dependency>
         <dependency>
             <groupId>net.kyori</groupId>
             <artifactId>adventure-platform-bukkit</artifactId>
-            <version>4.1.0</version>
+            <version>4.1.2</version>
         </dependency>
     </dependencies>
 

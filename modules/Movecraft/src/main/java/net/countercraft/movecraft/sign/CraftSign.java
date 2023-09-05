@@ -16,14 +16,13 @@ import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.functions.Result;
 import net.countercraft.movecraft.util.Pair;
-import net.countercraft.movecraft.util.hitboxes.MutableHitBox;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
-import org.bukkit.block.data.type.WallSign;
+import org.bukkit.block.data.Directional;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -125,8 +124,8 @@ public final class CraftSign implements Listener {
 
                     if (craft.getType().getBoolProperty(CraftType.CRUISE_ON_PILOT)) {
                         // Setup cruise direction
-                        if (sign.getBlockData() instanceof WallSign)
-                            craft.setCruiseDirection(CruiseDirection.fromBlockFace(((WallSign) sign.getBlockData()).getFacing()));
+                        if (sign.getBlockData() instanceof Directional)
+                            craft.setCruiseDirection(CruiseDirection.fromBlockFace(((Directional) sign.getBlockData()).getFacing()));
                         else
                             craft.setCruiseDirection(CruiseDirection.NONE);
 

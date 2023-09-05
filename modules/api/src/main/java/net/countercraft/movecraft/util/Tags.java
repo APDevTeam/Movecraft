@@ -14,8 +14,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class Tags {
-
-    public static final EnumSet<Material> FLUID = EnumSet.of(Material.WATER, Material.LAVA);
+    public static final EnumSet<Material> WATER = EnumSet.of(Material.WATER, Material.BUBBLE_COLUMN);
+    public static final EnumSet<Material> FLUID = EnumSet.of(Material.WATER, Material.BUBBLE_COLUMN, Material.LAVA);
     public static final EnumSet<Material> CHESTS = EnumSet.of(Material.CHEST, Material.TRAPPED_CHEST, Material.BARREL);
     public static final EnumSet<Material> FURNACES = EnumSet.of(Material.FURNACE, Material.BLAST_FURNACE, Material.SMOKER);
     public static final EnumSet<Material> SINKING_PASSTHROUGH = EnumSet.of(Material.TALL_GRASS, Material.GRASS);
@@ -33,9 +33,12 @@ public class Tags {
         FRAGILE_MATERIALS.addAll(Tag.RAILS.getValues());
         FRAGILE_MATERIALS.addAll(Tag.WOODEN_PRESSURE_PLATES.getValues());
 
-        FALL_THROUGH_BLOCKS.add(Material.AIR);
-        FALL_THROUGH_BLOCKS.add(Material.WATER);
-        FALL_THROUGH_BLOCKS.add(Material.LAVA);
+        for (Material m : Material.values()) {
+            if (!m.isAir())
+                continue;
+
+            FALL_THROUGH_BLOCKS.add(m);
+        }
         FALL_THROUGH_BLOCKS.add(Material.DEAD_BUSH);
         FALL_THROUGH_BLOCKS.addAll(Tag.CORAL_PLANTS.getValues());
         FALL_THROUGH_BLOCKS.add(Material.BROWN_MUSHROOM);
@@ -51,6 +54,7 @@ public class Tags {
         FALL_THROUGH_BLOCKS.add(Material.CARROT);
         FALL_THROUGH_BLOCKS.add(Material.POTATO);
         FALL_THROUGH_BLOCKS.addAll(Tag.FENCES.getValues());
+        FALL_THROUGH_BLOCKS.addAll(FLUID);
     }
 
     @Nullable
@@ -73,16 +77,16 @@ public class Tags {
 
     @Nullable
     public static <T extends Enum<T> & Keyed> EnumSet<T> parseRegistry(@NotNull String identifier, String registry, Class<T> clazz) {
-        if(!identifier.startsWith("#")){
+        if (!identifier.startsWith("#")) {
             return null;
         }
         String nameKey = identifier.substring(1);
         var key = keyFromString(nameKey);
-        if(key == null){
+        if (key == null) {
             throw new IllegalArgumentException("Entry " + identifier + " is not a valid tag!");
         }
         var tag = Bukkit.getTag(registry, key, clazz);
-        if(tag == null){
+        if (tag == null) {
             throw new IllegalArgumentException("Entry " + identifier + " is not a valid tag!");
         }
         var tagged = tag.getValues();
@@ -92,6 +96,7 @@ public class Tags {
     /**
      * Gets a NamespacedKey from the supplied string with a default namespace of minecraft.
      * This is intended to be used to parse NamespacedKeys from user input before the API existed in 1.16
+     *
      * @param string the string to convert to a NamespacedKey
      * @return the created NamespacedKey, or null if invalid
      */
@@ -106,18 +111,17 @@ public class Tags {
                 // While a string based constructor is not supposed to be used,
                 // their does not exist any other method for doing this in < 1.16
                 return new NamespacedKey(namespace, key);
-            }
-            else {
+            } else {
                 return NamespacedKey.minecraft(string);
             }
-        }
-        catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             return null;
         }
     }
 
     /**
      * Searches for a tag which matches the provided materialName.  Failing that, it attempts to load a matching singular Material directly.
+     *
      * @param materialName Material name or tag
      * @return the set of materials the tag/material resolves to
      */
@@ -125,7 +129,7 @@ public class Tags {
     public static EnumSet<Material> parseMaterials(@NotNull String materialName) {
         EnumSet<Material> returnSet = EnumSet.noneOf(Material.class);
         var tagged = parseBlockRegistry(materialName);
-        if(tagged != null){
+        if (tagged != null) {
             returnSet.addAll(tagged);
         } else {
             returnSet.add(Material.valueOf(materialName.toUpperCase()));

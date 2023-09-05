@@ -23,18 +23,20 @@ import java.util.Set;
  */
 public class RequiredBlockEntry {
     private final EnumSet<Material> materials;
+    private String name;
     private final double max;
     private final boolean numericMax;
     private final double min;
     private final boolean numericMin;
 
 
-    public RequiredBlockEntry(EnumSet<Material> materials, @NotNull Pair<Boolean, ? extends Number> min, @NotNull Pair<Boolean, ? extends Number> max) {
+    public RequiredBlockEntry(EnumSet<Material> materials, @NotNull Pair<Boolean, ? extends Number> min, @NotNull Pair<Boolean, ? extends Number> max, @NotNull String name) {
         this.materials = materials;
         this.min = min.getRight().doubleValue();
         this.numericMin = min.getLeft();
         this.max = max.getRight().doubleValue();
         this.numericMax = max.getLeft();
+        this.name = name;
     }
 
     /**
@@ -173,5 +175,9 @@ public class RequiredBlockEntry {
      */
     public boolean isNumericMin() {
         return numericMin;
+    }
+
+    public String getName () {
+        return name;
     }
 }

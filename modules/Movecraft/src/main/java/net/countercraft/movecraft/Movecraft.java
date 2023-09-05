@@ -55,6 +55,8 @@ import net.countercraft.movecraft.sign.SpeedSign;
 import net.countercraft.movecraft.sign.StatusSign;
 import net.countercraft.movecraft.sign.SubcraftRotateSign;
 import net.countercraft.movecraft.sign.TeleportSign;
+import net.countercraft.movecraft.util.BukkitTeleport;
+import net.countercraft.movecraft.util.Tags;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -67,6 +69,7 @@ import java.io.IOException;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 public class Movecraft extends JavaPlugin {
@@ -76,6 +79,7 @@ public class Movecraft extends JavaPlugin {
     private Logger logger;
     private boolean shuttingDown;
     private WorldHandler worldHandler;
+    private SmoothTeleport smoothTeleport;
     private AsyncManager asyncManager;
 
     public static synchronized Movecraft getInstance() {
@@ -84,7 +88,7 @@ public class Movecraft extends JavaPlugin {
 
     @NotNull
     public static BukkitAudiences getAdventure() {
-        if(adventure == null)
+        if (adventure == null)
             throw new IllegalStateException("Tried to access Adventure when the plugin was disabled!");
 
         return adventure;
@@ -93,7 +97,7 @@ public class Movecraft extends JavaPlugin {
     @Override
     public void onDisable() {
         shuttingDown = true;
-        if(adventure != null) {
+        if (adventure != null) {
             adventure.close();
             adventure = null;
         }
@@ -104,49 +108,80 @@ public class Movecraft extends JavaPlugin {
         // Read in config
         Settings.LOCALE = getConfig().getString("Locale");
         Settings.Debug = getConfig().getBoolean("Debug", false);
+        Settings.DisableNMSCompatibilityCheck = getConfig().getBoolean("IReallyKnowWhatIAmDoing", false);
         Settings.DisableSpillProtection = getConfig().getBoolean("DisableSpillProtection", false);
         Settings.DisableIceForm = getConfig().getBoolean("DisableIceForm", true);
-        
-        String[] localisations = {"en", "cz", "nl"};
-        for(String s : localisations) {
-            if(!new File(getDataFolder()
+
+        String[] localisations = {"en", "cz", "nl", "fr"};
+        for (String s : localisations) {
+            if (!new File(getDataFolder()
                     + "/localisation/movecraftlang_" + s + ".properties").exists()) {
                 saveResource("localisation/movecraftlang_" + s + ".properties", false);
             }
         }
         I18nSupport.init();
-        
-        
+
+
         // if the PilotTool is specified in the config.yml file, use it
         String pilotTool = getConfig().getString("PilotTool");
-        if(pilotTool != null) {
+        if (pilotTool != null) {
             Material material = Material.getMaterial(pilotTool);
-            if(material != null) {
-                logger.info(I18nSupport.getInternationalisedString("Startup - Recognized Pilot Tool")
-                        + pilotTool);
+            if (material != null) {
+                logger.info("Recognized PilotTool setting of: " + pilotTool);
                 Settings.PilotTool = material;
             }
-            else
-                logger.info(I18nSupport.getInternationalisedString("Startup - No Pilot Tool"));
+            else {
+                logger.info("No PilotTool setting, using default of stick");
+            }
         }
-        else
-            logger.info(I18nSupport.getInternationalisedString("Startup - No Pilot Tool"));
+        else {
+            logger.info("No PilotTool setting, using default of stick");
+        }
 
         String packageName = getServer().getClass().getPackage().getName();
         String version = packageName.substring(packageName.lastIndexOf('.') + 1);
+        getLogger().info("Loading support for " + version);
         try {
-            final Class<?> clazz = Class.forName("net.countercraft.movecraft.compat." + version + ".IWorldHandler");
+            final Class<?> worldHandlerClazz = Class.forName("net.countercraft.movecraft.compat." + version + ".IWorldHandler");
             // Check if we have a NMSHandler class at that location.
-            if (WorldHandler.class.isAssignableFrom(clazz)) // Make sure it actually implements NMS
-                worldHandler = (WorldHandler) clazz.getConstructor().newInstance(); // Set our handler
+            if (WorldHandler.class.isAssignableFrom(worldHandlerClazz)) { // Make sure it actually implements NMS
+                worldHandler = (WorldHandler) worldHandlerClazz.getConstructor().newInstance(); // Set our handler
+
+                // Try to setup the smooth teleport handler
+                try {
+                    final Class<?> smoothTeleportClazz = Class.forName("net.countercraft.movecraft.support." + version + ".ISmoothTeleport");
+                    if (SmoothTeleport.class.isAssignableFrom(smoothTeleportClazz)) {
+                        smoothTeleport = (SmoothTeleport) smoothTeleportClazz.getConstructor().newInstance();
+                    }
+                    else {
+                        smoothTeleport = new BukkitTeleport(); // Fall back to bukkit teleportation
+                        getLogger().warning("Did not find smooth teleport, falling back to bukkit teleportation provider.");
+                    }
+                }
+                catch (final ReflectiveOperationException e) {
+                    if (Settings.Debug) {
+                        e.printStackTrace();
+                    }
+                    smoothTeleport = new BukkitTeleport(); // Fall back to bukkit teleportation
+                    getLogger().warning("Falling back to bukkit teleportation provider.");
+                }
+            }
         }
-        catch(final Exception e) {
+        catch (final Exception e) {
             e.printStackTrace();
-            getLogger().severe(I18nSupport.getInternationalisedString("Startup - Version Not Supported"));
-            setEnabled(false);
-            return;
+            getLogger().severe("Could not find support for this version.");
+            if (!Settings.DisableNMSCompatibilityCheck) {
+                // Disable ourselves and exit
+                setEnabled(false);
+                return;
+            }
+            else {
+                // Server owner claims to know what they are doing, warn them of the possible consequences
+                getLogger().severe("WARNING!\n\t"
+                        + "Running Movecraft on an incompatible version can corrupt your world and break EVERYTHING!\n\t"
+                        + "We provide no support for any issues.");
+            }
         }
-        getLogger().info(I18nSupport.getInternationalisedString("Startup - Loading Support") + " " + version);
 
 
         Settings.SinkCheckTicks = getConfig().getDouble("SinkCheckTicks", 100.0);
@@ -162,17 +197,13 @@ public class Movecraft extends JavaPlugin {
         Settings.FadeWrecksAfter = getConfig().getInt("FadeWrecksAfter", 0);
         Settings.FadeTickCooldown = getConfig().getInt("FadeTickCooldown", 20);
         Settings.FadePercentageOfWreckPerCycle = getConfig().getDouble("FadePercentageOfWreckPerCycle", 10.0);
-        if(getConfig().contains("ExtraFadeTimePerBlock")) {
+        if (getConfig().contains("ExtraFadeTimePerBlock")) {
             Map<String, Object> temp = getConfig().getConfigurationSection("ExtraFadeTimePerBlock").getValues(false);
-            for(String str : temp.keySet()) {
-                Material type;
-                try {
-                    type = Material.getMaterial(str);
+            for (String str : temp.keySet()) {
+                Set<Material> materials = Tags.parseMaterials(str);
+                for (Material m : materials) {
+                    Settings.ExtraFadeTimePerBlock.put(m, (Integer) temp.get(str));
                 }
-                catch(NumberFormatException e) {
-                    type = Material.getMaterial(str);
-                }
-                Settings.ExtraFadeTimePerBlock.put(type, (Integer) temp.get(str));
             }
         }
 
@@ -196,8 +227,8 @@ public class Movecraft extends JavaPlugin {
         adventure = BukkitAudiences.create(this);
 
         if(shuttingDown && Settings.IGNORE_RESET) {
-            logger.severe(I18nSupport.getInternationalisedString("Startup - Error - Reload error"));
-            logger.severe(I18nSupport.getInternationalisedString("Startup - Error - Disable warning for reload"));
+            logger.severe("Movecraft is incompatible with the reload command. Movecraft has shut down and will restart when the server is restarted.");
+            logger.severe("If you wish to use the reload command and Movecraft, you may disable this check inside the config.yml by setting 'safeReload: false'");
             getPluginLoader().disablePlugin(this);
             return;
         }
@@ -248,9 +279,7 @@ public class Movecraft extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new TeleportSign(), this);
         getServer().getPluginManager().registerEvents(new ScuttleSign(), this);
 
-        logger.info(String.format(
-                I18nSupport.getInternationalisedString("Startup - Enabled message"),
-                getDescription().getVersion()));
+        logger.info("[V " + getDescription().getVersion() + "] has been enabled.");
     }
 
     @Override
@@ -273,21 +302,19 @@ public class Movecraft extends JavaPlugin {
                 break;
         }
         if(datapackDirectory == null) {
-            logger.severe(I18nSupport.getInternationalisedString("Startup - Datapack World Error"));
+            logger.severe("Failed to initialize Movecraft data pack due to first time world initialization.");
             return false;
         }
         if(!datapackDirectory.exists()) {
-            logger.info(I18nSupport.getInternationalisedString("Startup - Datapack Directory") + datapackDirectory.getPath());
+            logger.info("Creating a datapack directory at " + datapackDirectory.getPath());
             if(!datapackDirectory.mkdir()) {
-                logger.severe(I18nSupport.getInternationalisedString("Startup - Datapack Directory Error"));
+                logger.severe("Failed to create datapack directory!");
                 return false;
             }
         }
         else if(new File(datapackDirectory, "movecraft-data.zip").exists()) {
-            logger.warning(String.format(
-                    I18nSupport.getInternationalisedString("Startup - Datapack Conflict"),
-                    datapackDirectory.getPath())
-            );
+            logger.warning("Conflicting datapack already exists in " + datapackDirectory.getPath()
+                    + ". If you would like to regenerate the datapack, delete the existing one and set the GeneratedDatapack config option to false.");
             getConfig().set("GeneratedDatapack", true);
             saveConfig();
             return false;
@@ -309,20 +336,20 @@ public class Movecraft extends JavaPlugin {
             e.printStackTrace();
             return false;
         }
-        logger.info(I18nSupport.getInternationalisedString("Startup - Datapack Saved"));
+        logger.info("Saved default Movecraft datapack.");
         getConfig().set("GeneratedDatapack", true);
         saveConfig();
 
-        logger.info(I18nSupport.getInternationalisedString("Startup - Datapack First Boot"));
+        logger.info("It is expected that your crafts are not loaded during startup on the first boot.  They will be loaded after startup.");
 
         getServer().getScheduler().scheduleSyncDelayedTask(this, () -> {
-            logger.info(I18nSupport.getInternationalisedString("Startup - Datapack Enabling"));
+            logger.info("Enabling datapack and reloading craft types.");
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "datapack list"); // required for some reason
             if (!Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "datapack enable \"file/movecraft-data.zip\""))
-                logger.severe(I18nSupport.getInternationalisedString("Startup - Datapack Enable Error"));
+                logger.severe("Failed to automatically load movecraft datapack. Check if it exists.");
 
             CraftManager.getInstance().reloadCraftTypes();
-        }, 200); // Wait 10 seconds before reloading.  Needed to prevent Paper from running this during startup.
+        }, 600); // Wait 30 seconds before reloading.  Needed to prevent Paper from running this during startup.
         return false;
     }
 
@@ -331,6 +358,9 @@ public class Movecraft extends JavaPlugin {
         return worldHandler;
     }
 
+    public SmoothTeleport getSmoothTeleport() {
+        return smoothTeleport;
+    }
+
     public AsyncManager getAsyncManager(){return asyncManager;}
 }
-
