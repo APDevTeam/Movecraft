@@ -76,4 +76,3 @@ allowVerticalMovement: false
 speed: 1.0
 tryNudge: false
 sinkPercent: 99.0
-mergePistonExtensions: false

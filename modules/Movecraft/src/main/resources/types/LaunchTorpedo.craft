@@ -21,7 +21,6 @@ speed: 9.0
 tryNudge: false
 sinkPercent: 99.0
 overallSinkPercent: 99.0
-mergePistonExtensions: false
 flyblocks:
     coal_block:
         - 10.0
