@@ -1,4 +1,4 @@
-package net.countercraft.movecraft.support.v1_20_R1;
+package net.countercraft.movecraft.support.v1_20_R2;
 
 import net.countercraft.movecraft.SmoothTeleport;
 import net.countercraft.movecraft.util.ReflectUtils;
@@ -15,7 +15,7 @@ import java.util.Set;
 /**
  * Code derived from code taken with permission from MicleBrick
  * https://www.spigotmc.org/threads/teleport-player-smoothly.317416/
- * Used for 1.20.1
+ * Used for 1.20.2
  */
 public class ISmoothTeleport extends SmoothTeleport {
     private final Set<Object> teleportFlags;
@@ -61,16 +61,16 @@ public class ISmoothTeleport extends SmoothTeleport {
         teleportFlags = Set.of(flags[4], flags[3]); // X_ROT, Y_ROT
 
         positionMethod = entityClass.getDeclaredMethod("a", Double.TYPE, Double.TYPE, Double.TYPE, Float.TYPE, Float.TYPE); // absMoveTo
-        sendMethod = connectionClass.getMethod("a", packetClass); // send
+        sendMethod = connectionClass.getMethod("a", packetClass); // send TODO!
 
         vec3Constructor = vectorClass.getConstructor(Double.TYPE, Double.TYPE, Double.TYPE);
         packetConstructor = positionPacketClass.getConstructor(Double.TYPE, Double.TYPE, Double.TYPE, Float.TYPE, Float.TYPE, Set.class, Integer.TYPE);
 
         connectionField = ReflectUtils.getField(playerClass, "c"); // connection
-        teleportPosField = ReflectUtils.getField(connectionClass, "D"); // awaitingPositionFromClient
-        teleportAwaitField = ReflectUtils.getField(connectionClass, "E"); // awaitingTeleport
-        awaitingTeleportTimeField = ReflectUtils.getField(connectionClass, "F"); // awaitingTeleportTime
-        tickCountField = ReflectUtils.getField(connectionClass, "j"); // tickCount
+        teleportPosField = ReflectUtils.getField(connectionClass, "B"); // awaitingPositionFromClient
+        teleportAwaitField = ReflectUtils.getField(connectionClass, "C"); // awaitingTeleport
+        awaitingTeleportTimeField = ReflectUtils.getField(connectionClass, "D"); // awaitingTeleportTime
+        tickCountField = ReflectUtils.getField(connectionClass, "k"); // tickCount
         yawField = ReflectUtils.getField(entityClass, "aH"); // xRot
         pitchField = ReflectUtils.getField(entityClass, "aG"); // yRot
     }
