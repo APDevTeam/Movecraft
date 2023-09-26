@@ -78,6 +78,10 @@ public abstract class BaseCraft implements Craft {
     private String name = "";
     @NotNull
     private MovecraftLocation lastTranslation = new MovecraftLocation(0, 0, 0);
+    @NotNull
+    private Map<Object, Collection<Object>> trackedLocations = new HashMap<>();
+    @NotNull
+    private Map<String, Object> craftTags = new HashMap<>();
 
     public BaseCraft(@NotNull CraftType type, @NotNull World world) {
         this.type = type;
@@ -113,6 +117,147 @@ public abstract class BaseCraft implements Craft {
     @NotNull
     public CraftType getType() {
         return type;
+    }
+
+    @Override
+    public void setDataTag(String key, Object data) {
+        this.craftTags.put(key, data);
+    }
+    @Override
+    @Nullable
+    public Object removeDataTag(String key) {
+        Object tag = this.craftTags.getOrDefault(key, null);
+        this.craftTags.remove(key);
+        return tag;
+    }
+    @Override
+    @Nullable
+    public Object getDataTag(String key) {
+        return this.craftTags.getOrDefault(key, null);
+    }
+    @Override
+    public Collection<Object> getAllTagValues() {
+        return this.craftTags.values();
+    }
+    @Override
+    public boolean hasDataKey(String key) {
+        return this.craftTags.containsKey(key);
+    }
+    @Override
+    public boolean hasDataValue(Object value) {
+        return this.craftTags.containsValue(value);
+    }
+
+    @Override
+    public HitBox translateBox(HitBox box, MovecraftLocation vec) {
+        SetHitBox newBox = new SetHitBox();
+        for(MovecraftLocation oldLoc : box) {
+          MovecraftLocation newLoc = oldLoc.translate(vec.getX(),vec.getY(),vec.getZ());
+          newBox.add(newLoc);
+        }
+        return newBox;
+    }
+    @Override
+    public HitBox rotateBox(HitBox box, MovecraftLocation axis, MovecraftRotation rotation) {
+        SetHitBox newBox = new SetHitBox();
+        for(MovecraftLocation oldLoc : box){
+          MovecraftLocation newLoc = MathUtils.rotateVec(rotation,oldLoc.subtract(axis)).add(axis);
+          newBox.add(newLoc);
+        }
+        return newBox;
+    }
+
+    @Override
+    public boolean isTracking(@NotNull Object tracked) {
+        boolean found = false;
+        if (tracked instanceof MovecraftLocation || tracked instanceof HitBox) {
+          for (Object key : this.trackedLocations.keySet()) {
+              if (this.trackedLocations.get(key).contains(tracked)) {
+                  found = true;
+                  return found;
+              }
+            }
+        }
+        return found;
+    }
+    @Override
+    public void setTrackedLocs(@NotNull Collection<Object> tracked, @NotNull Object key) {
+        if (this.trackedLocations.containsKey(key)) {
+            Set<Object> mlocs = new HashSet<>();
+            mlocs.addAll(this.trackedLocations.get(key));
+            for (Object o : tracked) {
+              if (o instanceof MovecraftLocation || o instanceof HitBox) {
+                continue;
+              } else {
+                return;
+              }
+            }
+            this.trackedLocations.put(key, tracked);
+        } else {
+            for (Object o : tracked) {
+              if (o instanceof MovecraftLocation || o instanceof HitBox) {
+                continue;
+              } else {
+                return;
+              }
+            }
+            this.trackedLocations.put(key, tracked);
+        }
+    }
+    @Override
+    public void addTrackedLoc(@NotNull Object tracked, @NotNull Object key) {
+        if (tracked instanceof MovecraftLocation || tracked instanceof HitBox) {
+          if (this.trackedLocations.containsKey(key)) {
+              Set<Object> mlocs = new HashSet<>(this.trackedLocations.get(key));
+              mlocs.add(tracked);
+              this.trackedLocations.put(key, mlocs);
+          } else {
+              Set<Object> mlocs = new HashSet<>();
+              mlocs.add(tracked);
+              this.trackedLocations.put(key, mlocs);
+          }
+      }
+    }
+    @Override
+    public void removeTrackedLoc(@NotNull Object tracked, @NotNull Object key) {
+        if (tracked instanceof MovecraftLocation || tracked instanceof HitBox) {
+          if (this.trackedLocations.containsKey(key)) {
+              Set<Object> mlocs = new HashSet<>(this.trackedLocations.get(key));
+              mlocs.remove(tracked);
+              this.trackedLocations.put(key, mlocs);
+          }
+       }
+    }
+    @Override
+    public Set<Object> getAllTrackedLocation() {
+        Set<Object> mlocs = new HashSet<>();
+        for (Object key : this.trackedLocations.keySet()) {
+            for (Object o : this.trackedLocations.get(key)) {
+              if (o instanceof MovecraftLocation) {
+                mlocs.add(o);
+            }
+              if (o instanceof SetHitBox) {
+                mlocs.add(((SetHitBox)o).asSet());
+            }
+          }
+        }
+        return mlocs;
+    }
+    @Override
+    @Nullable
+    public Set<MovecraftLocation> getTrackedLocs(@NotNull Object key) {
+        if (this.trackedLocations.get(key) == null)
+          return null;
+        Set<MovecraftLocation> mlocs = new HashSet<>(getHitBox().size()*8);
+        for (Object o : this.trackedLocations.get(key)) {
+          if (o instanceof MovecraftLocation || o instanceof HitBox) {
+            if (o instanceof MovecraftLocation)
+              mlocs.add((MovecraftLocation)o);
+            if (o instanceof HitBox)
+              mlocs.addAll(((HitBox)o).asSet());
+          }
+        }
+        return mlocs;
     }
 
     @NotNull
