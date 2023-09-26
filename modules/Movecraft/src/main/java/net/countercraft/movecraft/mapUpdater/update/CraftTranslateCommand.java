@@ -75,6 +75,7 @@ public class CraftTranslateCommand extends UpdateCommand {
             CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.EMPTY, false);
             return;
         }
+        
         if (craft.trackedLocations != null) {
             for (Object key : craft.trackedLocations.keySet()) {
                 ArrayList<Object> mlocs = new ArrayList<>(craft.trackedLocations.get(key));
@@ -94,7 +95,8 @@ public class CraftTranslateCommand extends UpdateCommand {
                 if (!clone.isEmpty() || clone != null) {
                     ((BaseCraft)craft).setTrackedLocs(clone,key);
                 }
-            
+            }
+        }
         long time = System.nanoTime();
         World oldWorld = craft.getWorld();
         final Set<Material> passthroughBlocks = new HashSet<>(
