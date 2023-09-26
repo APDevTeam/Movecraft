@@ -83,10 +83,6 @@ public abstract class BaseCraft implements Craft {
     private String name = "";
     @NotNull
     private MovecraftLocation lastTranslation = new MovecraftLocation(0, 0, 0);
-    @NotNull
-    private Map<Object, Collection<Object>> trackedLocations = new HashMap<>();
-    @NotNull
-    private Map<String, Object> craftTags = new HashMap<>();
 
     public BaseCraft(@NotNull CraftType type, @NotNull World world) {
         this.type = type;
