@@ -85,7 +85,7 @@ public class CraftRotateCommand extends UpdateCommand {
                     }
                 }
                 if (!clone.isEmpty() || clone != null) {
-                    ((BaseCraft)craft).setTrackedLocs(clone,key);
+                    (craft).setTrackedLocs(clone,key);
                 }
             }
         }
