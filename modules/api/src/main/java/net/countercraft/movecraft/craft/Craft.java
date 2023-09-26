@@ -36,6 +36,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -67,6 +68,9 @@ public interface Craft {
     CraftType getType();
 
 
+    Map<Object, Collection<Object>> trackedLocations = new HashMap<>();
+
+    Map<String, Object> craftTags = new HashMap<>();
 
     /**
      * Attaches a Key-Value Pair to a Craft Object. 
