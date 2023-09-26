@@ -70,6 +70,7 @@ public class CraftRotateCommand extends UpdateCommand {
             return;
         }
         if (craft.trackedLocations != null) {
+            ArrayList<Object> clone = new ArrayList<>();
             for (Object key : craft.trackedLocations.keySet()) {
                 ArrayList<Object> mlocs = new ArrayList<>(craft.getTrackedLocs(key));
                 for (Object tracked : mlocs) {
