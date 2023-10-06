@@ -458,7 +458,7 @@ public final class TypeData {
                 return new Pair<>(false, Double.valueOf(str));
         }
         else if (input instanceof Integer) {
-            return new Pair<>(false, (double) input);
+            return new Pair<>(false, (Integer) input);
         }
         else
             return new Pair<>(false, (double) input);
