@@ -10,17 +10,17 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>movecraft-v1_20_r1</artifactId>
-    <name>Movecraft-v1_20_R1</name>
+    <artifactId>movecraft-v1_20_r2</artifactId>
+    <name>Movecraft-v1_20_R2</name>
     <packaging>jar</packaging>
     <dependencies>
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot</artifactId>
-            <version>1.20.1-R0.1-SNAPSHOT</version>
+            <version>1.20.2-R0.1-SNAPSHOT</version>
             <classifier>remapped-mojang</classifier>
             <scope>provided</scope>
-            <!-- Mappings: https://piston-data.mojang.com/v1/objects/0b4dba049482496c507b2387a73a913230ebbd76/server.txt -->
+            <!-- Mappings: https://piston-data.mojang.com/v1/objects/dced504a9b5df367ddd3477adac084cea8024ba4/server.txt -->
         </dependency>
         <dependency>
             <groupId>net.countercraft</groupId>
@@ -38,8 +38,8 @@
                 <version>3.8.1</version>
                 <configuration>
                     <includes>
-                        <include>net/countercraft/movecraft/compat/v1_20_R1/**</include>
-                        <include>net/countercraft/movecraft/support/v1_20_R1/**</include>
+                        <include>net/countercraft/movecraft/compat/v1_20_R2/**</include>
+                        <include>net/countercraft/movecraft/support/v1_20_R2/**</include>
                     </includes>
                     <source>13</source>
                     <target>13</target>
@@ -51,8 +51,8 @@
                 <version>2.4</version>
                 <configuration>
                     <includes>
-                        <include>net/countercraft/movecraft/compat/v1_20_R1/**</include>
-                        <include>net/countercraft/movecraft/support/v1_20_R1/**</include>
+                        <include>net/countercraft/movecraft/compat/v1_20_R2/**</include>
+                        <include>net/countercraft/movecraft/support/v1_20_R2/**</include>
                     </includes>
                 </configuration>
             </plugin>
@@ -68,9 +68,9 @@
                         </goals>
                         <id>remap-obf</id>
                         <configuration>
-                            <srgIn>org.spigotmc:minecraft-server:1.20.1-R0.1-SNAPSHOT:txt:maps-mojang</srgIn>
+                            <srgIn>org.spigotmc:minecraft-server:1.20.2-R0.1-SNAPSHOT:txt:maps-mojang</srgIn>
                             <reverse>true</reverse>
-                            <remappedDependencies>org.spigotmc:spigot:1.20.1-R0.1-SNAPSHOT:jar:remapped-mojang</remappedDependencies>
+                            <remappedDependencies>org.spigotmc:spigot:1.20.2-R0.1-SNAPSHOT:jar:remapped-mojang</remappedDependencies>
                             <remappedArtifactAttached>true</remappedArtifactAttached>
                             <remappedClassifierName>remapped-obf</remappedClassifierName>
                         </configuration>
@@ -83,8 +83,8 @@
                         <id>remap-spigot</id>
                         <configuration>
                             <inputFile>${project.build.directory}/${project.artifactId}-${project.version}-remapped-obf.jar</inputFile>
-                            <srgIn>org.spigotmc:minecraft-server:1.20.1-R0.1-SNAPSHOT:csrg:maps-spigot</srgIn>
-                            <remappedDependencies>org.spigotmc:spigot:1.20.1-R0.1-SNAPSHOT:jar:remapped-obf</remappedDependencies>
+                            <srgIn>org.spigotmc:minecraft-server:1.20.2-R0.1-SNAPSHOT:csrg:maps-spigot</srgIn>
+                            <remappedDependencies>org.spigotmc:spigot:1.20.2-R0.1-SNAPSHOT:jar:remapped-obf</remappedDependencies>
                         </configuration>
                     </execution>
                 </executions>

@@ -1,4 +1,4 @@
-package net.countercraft.movecraft.support.v1_20_R1;
+package net.countercraft.movecraft.support.v1_20_R2;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -13,8 +13,8 @@ import org.bukkit.Chunk;
 import org.bukkit.Material;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.craftbukkit.v1_20_R1.CraftChunk;
-import org.bukkit.craftbukkit.v1_20_R1.block.data.CraftBlockData;
+import org.bukkit.craftbukkit.v1_20_R2.CraftChunk;
+import org.bukkit.craftbukkit.v1_20_R2.block.data.CraftBlockData;
 import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings("unused")
