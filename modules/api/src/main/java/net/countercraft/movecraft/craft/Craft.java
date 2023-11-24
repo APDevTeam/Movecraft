@@ -20,6 +20,7 @@ package net.countercraft.movecraft.craft;
 import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.MovecraftRotation;
+import net.countercraft.movecraft.TrackedLocation;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.util.Counter;
@@ -28,6 +29,7 @@ import net.countercraft.movecraft.util.hitboxes.MutableHitBox;
 import net.kyori.adventure.audience.Audience;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
@@ -263,4 +265,10 @@ public interface Craft {
     double getTotalFuel ();
 
     void setTotalFuel (double fuel);
+
+    Map<NamespacedKey, TrackedLocation> getTrackedLocations();
+
+    void addTrackedLocation(NamespacedKey key, MovecraftLocation location);
+
+    void removeTrackedLocation(NamespacedKey key);
 }

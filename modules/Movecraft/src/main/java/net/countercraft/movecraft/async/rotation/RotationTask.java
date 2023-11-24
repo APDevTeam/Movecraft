@@ -21,6 +21,7 @@ import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.MovecraftRotation;
+import net.countercraft.movecraft.TrackedLocation;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
@@ -51,6 +52,7 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.InventoryView;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import static net.countercraft.movecraft.util.MathUtils.withinWorldBorder;
@@ -167,6 +169,11 @@ public class RotationTask extends AsyncTask {
             parentCraft.getFluidLocations().addAll(newFluidList);
         }
 
+        //Rotates the craft's tracked locations.
+        Iterator<TrackedLocation> trackedLocations = craft.getTrackedLocations().values().iterator();
+        while(trackedLocations.hasNext()) {
+            trackedLocations.next().rotate(rotation);
+        }
 
         updates.add(new CraftRotateCommand(getCraft(),originPoint, rotation));
         //rotate entities in the craft
