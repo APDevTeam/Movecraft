@@ -1,4 +1,4 @@
-package net.countercraft.movecraft.support.v1_20_R3;
+package net.countercraft.movecraft.support.v1_20_R4;
 
 import net.countercraft.movecraft.SmoothTeleport;
 import net.countercraft.movecraft.util.ReflectUtils;
@@ -17,7 +17,7 @@ import java.util.Set;
 /**
  * Code derived from code taken with permission from MicleBrick
  * https://www.spigotmc.org/threads/teleport-player-smoothly.317416/
- * Used for 1.20.3
+ * Used for 1.20.4
  */
 public class ISmoothTeleport extends SmoothTeleport {
     private final Field teleportPosField;
