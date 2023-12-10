@@ -10,8 +10,8 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>movecraft-v1_20_R4</artifactId>
-    <name>Movecraft-v1_20_R4</name>
+    <artifactId>movecraft-v1_20_R3</artifactId>
+    <name>Movecraft-v1_20_R3</name>
     <packaging>jar</packaging>
     <dependencies>
         <dependency>
@@ -38,8 +38,8 @@
                 <version>3.8.1</version>
                 <configuration>
                     <includes>
-                        <include>net/countercraft/movecraft/compat/v1_20_R4/**</include>
-                        <include>net/countercraft/movecraft/support/v1_20_R4/**</include>
+                        <include>net/countercraft/movecraft/compat/v1_20_R3/**</include>
+                        <include>net/countercraft/movecraft/support/v1_20_R3/**</include>
                     </includes>
                     <source>13</source>
                     <target>13</target>
@@ -51,8 +51,8 @@
                 <version>2.4</version>
                 <configuration>
                     <includes>
-                        <include>net/countercraft/movecraft/compat/v1_20_R4/**</include>
-                        <include>net/countercraft/movecraft/support/v1_20_R4/**</include>
+                        <include>net/countercraft/movecraft/compat/v1_20_R3/**</include>
+                        <include>net/countercraft/movecraft/support/v1_20_R3/**</include>
                     </includes>
                 </configuration>
             </plugin>
