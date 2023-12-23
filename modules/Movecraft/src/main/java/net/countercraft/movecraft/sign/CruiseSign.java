@@ -56,6 +56,7 @@ public final class CruiseSign implements Listener {
         Sign sign = (Sign) state;
         String line = ChatColor.stripColor(sign.getLine(0));
         if (line.equalsIgnoreCase("Cruise: OFF")) {
+            event.setCancelled(true);
             Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
             if (c == null || !c.getType().getBoolProperty(CraftType.CAN_CRUISE))
                 return;
@@ -74,6 +75,7 @@ public final class CruiseSign implements Listener {
             }
         }
         else if (line.equalsIgnoreCase("Cruise: ON")) {
+            event.setCancelled(true);
             Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
             if (c == null || !c.getType().getBoolProperty(CraftType.CAN_CRUISE))
                 return;

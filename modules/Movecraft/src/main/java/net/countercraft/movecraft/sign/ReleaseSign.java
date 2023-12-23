@@ -29,6 +29,7 @@ public final class ReleaseSign implements Listener{
         if (!ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase(HEADER)) {
             return;
         }
+        event.setCancelled(true);
         Craft craft = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
         if (craft == null) {
             return;

@@ -68,6 +68,7 @@ public final class CraftSign implements Listener {
             return;
 
         // Valid sign prompt for ship command.
+        event.setCancelled(true);
         Player player = event.getPlayer();
         if (!player.hasPermission("movecraft." + ChatColor.stripColor(sign.getLine(0)) + ".pilot")) {
             player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
@@ -77,7 +78,6 @@ public final class CraftSign implements Listener {
         Location loc = event.getClickedBlock().getLocation();
         MovecraftLocation startPoint = new MovecraftLocation(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
         if (piloting.contains(startPoint)) {
-            event.setCancelled(true);
             return;
         }
 
@@ -150,7 +150,6 @@ public final class CraftSign implements Listener {
                     }
                 }
         );
-        event.setCancelled(true);
         new BukkitRunnable() {
             @Override
             public void run() {

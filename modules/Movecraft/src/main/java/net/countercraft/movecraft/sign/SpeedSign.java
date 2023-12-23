@@ -72,6 +72,7 @@ public final class SpeedSign implements Listener{
         if (!ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Speed:"))
             return;
 
+        event.setCancelled(true);
         Player player = event.getPlayer();
         Craft craft = CraftManager.getInstance().getCraftByPlayer(player);
         if (craft == null)

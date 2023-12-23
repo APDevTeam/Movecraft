@@ -50,8 +50,10 @@ public class AscendSign implements Listener {
         if (!(block.getState() instanceof Sign)){
             return;
         }
-        Sign sign = (Sign) event.getClickedBlock().getState();
+
+        Sign sign = (Sign) block.getState();
         if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Ascend: OFF")) {
+            event.setCancelled(true);
             if (CraftManager.getInstance().getCraftByPlayer(event.getPlayer()) == null) {
                 return;
             }
@@ -76,6 +78,7 @@ public class AscendSign implements Listener {
         if (!ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Ascend: ON")) {
             return;
         }
+        event.setCancelled(true);
         Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
         if (c == null || !c.getType().getBoolProperty(CraftType.CAN_CRUISE)) {
             return;

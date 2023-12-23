@@ -49,6 +49,7 @@ public final class HelmSign implements Listener {
                 ChatColor.stripColor(sign.getLine(2)).equals("/  ||  \\"))) {
             return;
         }
+        event.setCancelled(true);
         Craft craft = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
         if (craft == null) {
             return;
@@ -83,7 +84,6 @@ public final class HelmSign implements Listener {
         }
 
         //timeMap.put(event.getPlayer(), System.currentTimeMillis());
-        event.setCancelled(true);
         //TODO: Lower speed while turning
             /*int curTickCooldown = CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getCurTickCooldown();
             int baseTickCooldown = CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getCruiseTickCooldown();
