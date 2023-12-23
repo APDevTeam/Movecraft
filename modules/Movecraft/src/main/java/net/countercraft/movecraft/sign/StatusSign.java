@@ -16,12 +16,17 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.Tag;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -152,5 +157,22 @@ public final class StatusSign implements Listener {
         fuelText += "Fuel range:";
         fuelText += fuelRange;
         event.setLine(signLine, fuelText);
+    }
+
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    public void onSignClickEvent(@NotNull PlayerInteractEvent event) {
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
+            return;
+        }
+        Block block = event.getClickedBlock();
+        if (!(block.getState() instanceof Sign)) {
+            return;
+        }
+
+        Sign sign = (Sign) block.getState();
+        if (!ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Status:")) {
+            return;
+        }
+        event.setCancelled(true);
     }
 }

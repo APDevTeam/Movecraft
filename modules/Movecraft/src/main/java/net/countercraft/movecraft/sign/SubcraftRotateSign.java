@@ -54,6 +54,7 @@ public final class SubcraftRotateSign implements Listener {
         if (!ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase(HEADER))
             return;
 
+        event.setCancelled(true);
         Location loc = event.getClickedBlock().getLocation();
         MovecraftLocation startPoint = new MovecraftLocation(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
         if (rotating.contains(startPoint)) {
