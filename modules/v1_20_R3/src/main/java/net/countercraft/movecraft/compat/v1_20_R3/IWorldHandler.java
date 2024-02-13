@@ -12,6 +12,27 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.RedStoneWireBlock;
+import net.minecraft.world.level.block.DiodeBlock;
+import net.minecraft.world.level.block.TargetBlock;
+import net.minecraft.world.level.block.PressurePlateBlock;
+import net.minecraft.world.level.block.ButtonBlock;
+import net.minecraft.world.level.block.BasePressurePlateBlock;
+import net.minecraft.world.level.block.LeverBlock;
+import net.minecraft.world.level.block.HopperBlock;
+import net.minecraft.world.level.block.ObserverBlock;
+import net.minecraft.world.level.block.DaylightDetectorBlock;
+import net.minecraft.world.level.block.DispenserBlock;
+import net.minecraft.world.level.block.RedstoneLampBlock;
+import net.minecraft.world.level.block.RedstoneTorchBlock;
+import net.minecraft.world.level.block.ComparatorBlock;
+import net.minecraft.world.level.block.SculkSensorBlock;
+import net.minecraft.world.level.block.PistonBaseBlock;
+import net.minecraft.world.level.block.MovingPistonBlock;
+import net.minecraft.world.level.block.CrafterBlock;
+import net.minecraft.world.level.block.CopperBulbBlock;
+import net.minecraft.world.level.block.piston.PistonBaseBlock;
+import net.minecraft.world.level.block.piston.MovingPistonBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
@@ -20,6 +41,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.ticks.ScheduledTick;
+import net.minecraft.util.RandomSource;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Sign;
@@ -27,6 +49,7 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.v1_20_R3.CraftWorld;
 import org.bukkit.craftbukkit.v1_20_R3.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.v1_20_R3.inventory.CraftInventoryView;
+import org.bukkit.craftbukkit.v1_20_R3.util.RandomSourceWrapper;
 import org.bukkit.craftbukkit.v1_20_R3.util.CraftMagicNumbers;
 import org.bukkit.inventory.InventoryView;
 import org.jetbrains.annotations.NotNull;
@@ -38,6 +61,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 @SuppressWarnings("unused")
 public class IWorldHandler extends WorldHandler {
@@ -49,6 +73,7 @@ public class IWorldHandler extends WorldHandler {
         ROTATION[MovecraftRotation.CLOCKWISE.ordinal()] = Rotation.CLOCKWISE_90;
         ROTATION[MovecraftRotation.ANTICLOCKWISE.ordinal()] = Rotation.COUNTERCLOCKWISE_90;
     }
+    private static final RandomSource RANDOM = new RandomSourceWrapper(new Random());
 
     private final NextTickProvider tickProvider = new NextTickProvider();
 
@@ -93,8 +118,11 @@ public class IWorldHandler extends WorldHandler {
         //TODO: Don't move unnecessary blocks
         //get the blocks and rotate them
         HashMap<BlockPos, BlockState> blockData = new HashMap<>();
+        HashMap<BlockPos, BlockState> redstoneComps = new HashMap<>();
         for (BlockPos position : rotatedPositions.keySet()) {
-            blockData.put(position, nativeWorld.getBlockState(position).rotate(ROTATION[rotation.ordinal()]));
+            final BlockState data = nativeWorld.getBlockState(position).rotate(ROTATION[rotation.ordinal()]);
+            if (isRedstoneComponent(data.getBlock())) redstoneComps.put(position, data); //Determine Redstone Blocks
+            blockData.put(position, data);
         }
         //create the new block
         for (Map.Entry<BlockPos, BlockState> entry : blockData.entrySet()) {
@@ -122,6 +150,7 @@ public class IWorldHandler extends WorldHandler {
         for (BlockPos position : deletePositions) {
             setBlockFast(nativeWorld, position, Blocks.AIR.defaultBlockState());
         }
+        processRedstone(redstoneComps.keySet(), nativeWorld); //Process Redstone Updates
     }
 
     @Override
@@ -132,6 +161,7 @@ public class IWorldHandler extends WorldHandler {
         //*      Step one: Convert to Positions     *
         //*******************************************
         BlockPos translateVector = locationToPosition(displacement);
+        List<BlockPos> redstoneComps = new ArrayList<>(craft.getHitBox().size());
         List<BlockPos> positions = new ArrayList<>(craft.getHitBox().size());
         craft.getHitBox().forEach((movecraftLocation) -> positions.add(locationToPosition((movecraftLocation)).subtract(translateVector)));
         ServerLevel oldNativeWorld = ((CraftWorld) craft.getWorld()).getHandle();
@@ -173,7 +203,10 @@ public class IWorldHandler extends WorldHandler {
         }
         //create the new block
         for (int i = 0, positionSize = newPositions.size(); i < positionSize; i++) {
-            setBlockFast(nativeWorld, newPositions.get(i), blockData.get(i));
+            final BlockState data = blockData.get(i);
+            final BlockPos position = newPositions.get(i);
+            setBlockFast(nativeWorld, position, data);
+            if isRedstoneComponent(nativeWorld.getBlockState(position)) redstoneComps.add(data); //Determine Redstone Blocks
         }
         //*******************************************
         //*    Step four: replace all the tiles     *
@@ -197,6 +230,7 @@ public class IWorldHandler extends WorldHandler {
             BlockPos position = deletePositions.get(i);
             setBlockFast(oldNativeWorld, position, Blocks.AIR.defaultBlockState());
         }
+        processRedstone(redstoneComps, nativeWorld); //Process Redstone Updates
     }
 
     @Nullable
@@ -266,6 +300,50 @@ public class IWorldHandler extends WorldHandler {
             }
         }
         return null;
+    }
+
+    private void processRedstone(Collection<BlockPos> redstone, Level world) {
+        for (final BlockPos pos : redstone) {
+            BlockState data = world.getBlockState(pos);
+            if (isRedstoneComponent(data.getBlock())) {
+                world.updateNeighborsAt(pos, data.getBlock());
+                world.sendBlockUpdated(pos, data, data, 3);
+                if (isToggleableRedstoneComponent(data.getBlock())) {
+                    data.getBlock().tick(data,(ServerLevel)world,pos,RANDOM);
+                }
+            }
+        }
+    }
+
+    private boolean isRedstoneComponent(Block block) {
+        return block instanceof RedStoneWireBlock ||
+                block instanceof DiodeBlock ||
+                block instanceof TargetBlock ||
+                block instanceof PressurePlateBlock ||
+                block instanceof ButtonBlock ||
+                block instanceof BasePressurePlateBlock ||
+                block instanceof LeverBlock ||
+                block instanceof HopperBlock ||
+                block instanceof ObserverBlock ||
+                block instanceof DaylightDetectorBlock ||
+                block instanceof DispenserBlock ||
+                block instanceof RedstoneLampBlock ||
+                block instanceof RedstoneTorchBlock ||
+                block instanceof ComparatorBlock ||
+                block instanceof SculkSensorBlock ||
+                block instanceof PistonBaseBlock ||
+                block instanceof MovingPistonBlock ||
+                block instanceof CrafterBlock ||
+                block instanceof CopperBulbBlock;
+    }
+    private boolean isToggleableRedstoneComponent(Block block) {
+        return block instanceof PressurePlateBlock ||
+                block instanceof ButtonBlock ||
+                block instanceof BasePressurePlateBlock ||
+                block instanceof RedstoneLampBlock ||
+                block instanceof RedstoneTorchBlock ||
+                block instanceof PistonBaseBlock ||
+                block instanceof MovingPistonBlock;
     }
 
     @Override
