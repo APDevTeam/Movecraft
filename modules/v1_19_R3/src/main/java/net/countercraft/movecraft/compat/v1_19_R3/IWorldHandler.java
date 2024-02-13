@@ -12,6 +12,23 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.RedStoneWireBlock;
+import net.minecraft.world.level.block.DiodeBlock;
+import net.minecraft.world.level.block.TargetBlock;
+import net.minecraft.world.level.block.PressurePlateBlock;
+import net.minecraft.world.level.block.ButtonBlock;
+import net.minecraft.world.level.block.BasePressurePlateBlock;
+import net.minecraft.world.level.block.LeverBlock;
+import net.minecraft.world.level.block.HopperBlock;
+import net.minecraft.world.level.block.ObserverBlock;
+import net.minecraft.world.level.block.DaylightDetectorBlock;
+import net.minecraft.world.level.block.DispenserBlock;
+import net.minecraft.world.level.block.RedstoneLampBlock;
+import net.minecraft.world.level.block.RedstoneTorchBlock;
+import net.minecraft.world.level.block.ComparatorBlock;
+import net.minecraft.world.level.block.SculkSensorBlock;
+import net.minecraft.world.level.block.piston.PistonBaseBlock;
+import net.minecraft.world.level.block.piston.MovingPistonBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
@@ -20,6 +37,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.ticks.ScheduledTick;
+import net.minecraft.util.RandomSource;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
@@ -182,7 +200,7 @@ public class IWorldHandler extends WorldHandler {
             final BlockState data = blockData.get(i);
             final BlockPos position = newPositions.get(i);
             setBlockFast(nativeWorld, position, data);
-            if isRedstoneComponent(nativeWorld.getBlockState(position)) redstoneComps.add(data); //Determine Redstone Blocks
+            if (isRedstoneComponent(nativeWorld.getBlockState(position).getBlock())) redstoneComps.add(position); //Determine Redstone Blocks
         }
         //*******************************************
         //*    Step four: replace all the tiles     *
@@ -280,12 +298,10 @@ public class IWorldHandler extends WorldHandler {
     private void processRedstone(Collection<BlockPos> redstone, Level world) {
         for (final BlockPos pos : redstone) {
             BlockState data = world.getBlockState(pos);
-            if (isRedstoneComponent(data.getBlock())) {
-                world.updateNeighborsAt(pos, data.getBlock());
-                world.sendBlockUpdated(pos, data, data, 3);
-                if (isToggleableRedstoneComponent(data.getBlock())) {
-                    data.getBlock().tick(data,(ServerLevel)world,pos,RANDOM);
-                }
+            world.updateNeighborsAt(pos, data.getBlock());
+            world.sendBlockUpdated(pos, data, data, 3);
+            if (isToggleableRedstoneComponent(data.getBlock())) {
+                data.getBlock().tick(data,(ServerLevel)world,pos,RANDOM);
             }
         }
     }
@@ -307,9 +323,7 @@ public class IWorldHandler extends WorldHandler {
                 block instanceof ComparatorBlock ||
                 block instanceof SculkSensorBlock ||
                 block instanceof PistonBaseBlock ||
-                block instanceof MovingPistonBlock ||
-                block instanceof CrafterBlock ||
-                block instanceof CopperBulbBlock;
+                block instanceof MovingPistonBlock;
     }
     private boolean isToggleableRedstoneComponent(Block block) {
         return block instanceof PressurePlateBlock ||

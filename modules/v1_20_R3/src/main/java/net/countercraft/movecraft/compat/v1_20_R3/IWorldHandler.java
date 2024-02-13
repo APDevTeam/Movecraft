@@ -27,8 +27,6 @@ import net.minecraft.world.level.block.RedstoneLampBlock;
 import net.minecraft.world.level.block.RedstoneTorchBlock;
 import net.minecraft.world.level.block.ComparatorBlock;
 import net.minecraft.world.level.block.SculkSensorBlock;
-import net.minecraft.world.level.block.PistonBaseBlock;
-import net.minecraft.world.level.block.MovingPistonBlock;
 import net.minecraft.world.level.block.CrafterBlock;
 import net.minecraft.world.level.block.CopperBulbBlock;
 import net.minecraft.world.level.block.piston.PistonBaseBlock;
@@ -206,7 +204,7 @@ public class IWorldHandler extends WorldHandler {
             final BlockState data = blockData.get(i);
             final BlockPos position = newPositions.get(i);
             setBlockFast(nativeWorld, position, data);
-            if isRedstoneComponent(nativeWorld.getBlockState(position)) redstoneComps.add(data); //Determine Redstone Blocks
+            if (isRedstoneComponent(nativeWorld.getBlockState(position).getBlock())) redstoneComps.add(position); //Determine Redstone Blocks
         }
         //*******************************************
         //*    Step four: replace all the tiles     *
@@ -305,12 +303,10 @@ public class IWorldHandler extends WorldHandler {
     private void processRedstone(Collection<BlockPos> redstone, Level world) {
         for (final BlockPos pos : redstone) {
             BlockState data = world.getBlockState(pos);
-            if (isRedstoneComponent(data.getBlock())) {
-                world.updateNeighborsAt(pos, data.getBlock());
-                world.sendBlockUpdated(pos, data, data, 3);
-                if (isToggleableRedstoneComponent(data.getBlock())) {
-                    data.getBlock().tick(data,(ServerLevel)world,pos,RANDOM);
-                }
+            world.updateNeighborsAt(pos, data.getBlock());
+            world.sendBlockUpdated(pos, data, data, 3);
+            if (isToggleableRedstoneComponent(data.getBlock())) {
+                data.getBlock().tick(data,(ServerLevel)world,pos,RANDOM);
             }
         }
     }
