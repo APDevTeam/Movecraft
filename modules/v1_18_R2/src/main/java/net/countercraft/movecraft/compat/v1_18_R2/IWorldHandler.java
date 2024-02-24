@@ -112,12 +112,12 @@ public class IWorldHandler extends WorldHandler {
         HashMap<BlockPos, BlockState> redstoneComps = new HashMap<>();
         for (BlockPos position : rotatedPositions.keySet()) {
             final BlockState data = nativeWorld.getBlockState(position).rotate(ROTATION[rotation.ordinal()]);
-            if (isRedstoneComponent(data.getBlock())) redstoneComps.put(position, data); //Determine Redstone Blocks
             blockData.put(position, data);
         }
         //create the new block
         for (Map.Entry<BlockPos, BlockState> entry : blockData.entrySet()) {
             setBlockFast(nativeWorld, rotatedPositions.get(entry.getKey()), entry.getValue());
+            if (isRedstoneComponent(entry.getValue().getBlock())) redstoneComps.put(rotatedPositions.get(entry.getKey()), entry.getValue()); //Determine Redstone Blocks
         }
 
 
