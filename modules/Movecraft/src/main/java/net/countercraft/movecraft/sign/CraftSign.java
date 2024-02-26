@@ -140,7 +140,7 @@ public final class CraftSign implements Listener {
                                 craft.setCruising(false);
                                 CraftManager.getInstance().sink(craft);
                             }
-                        }.runTaskLater(Movecraft.getInstance(), (20 * 15));
+                        }.runTaskLater(Movecraft.getInstance(), (craftType.getIntProperty(CraftType.CRUISE_ON_PILOT_LIFETIME)));
                     }
                     else {
                         // Release old craft if it exists
