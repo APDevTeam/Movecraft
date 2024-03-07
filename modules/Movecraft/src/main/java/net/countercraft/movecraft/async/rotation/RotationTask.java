@@ -170,9 +170,10 @@ public class RotationTask extends AsyncTask {
         }
 
         //Rotates the craft's tracked locations.
-        Iterator<TrackedLocation> trackedLocations = craft.getTrackedLocations().values().iterator();
-        while(trackedLocations.hasNext()) {
-            trackedLocations.next().rotate(rotation);
+        for (Set<TrackedLocation> locations : craft.getTrackedLocations().values()) {
+            for (TrackedLocation location : locations) {
+                location.rotate(rotation, originPoint);
+            }
         }
 
         updates.add(new CraftRotateCommand(getCraft(),originPoint, rotation));
