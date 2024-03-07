@@ -33,9 +33,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.Set;
@@ -266,9 +264,5 @@ public interface Craft {
 
     void setTotalFuel (double fuel);
 
-    Map<NamespacedKey, TrackedLocation> getTrackedLocations();
-
-    void addTrackedLocation(NamespacedKey key, MovecraftLocation location);
-
-    void removeTrackedLocation(NamespacedKey key);
+    Map<NamespacedKey, Set<TrackedLocation>> getTrackedLocations();
 }

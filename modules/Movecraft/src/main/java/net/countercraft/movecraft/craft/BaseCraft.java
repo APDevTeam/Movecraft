@@ -80,7 +80,7 @@ public abstract class BaseCraft implements Craft {
     private String name = "";
     @NotNull
     private MovecraftLocation lastTranslation = new MovecraftLocation(0, 0, 0);
-    private Map<NamespacedKey, TrackedLocation> trackedLocations = new HashMap<>();
+    private Map<NamespacedKey, Set<TrackedLocation>> trackedLocations = new HashMap<>();
 
     public BaseCraft(@NotNull CraftType type, @NotNull World world) {
         this.type = type;
@@ -603,15 +603,5 @@ public abstract class BaseCraft implements Craft {
     }
 
     @Override
-    public Map<NamespacedKey, TrackedLocation> getTrackedLocations() {return trackedLocations;}
-
-    @Override
-    public void addTrackedLocation(NamespacedKey key, MovecraftLocation location) {
-        trackedLocations.put(key, new TrackedLocation(getHitBox().getMidPoint(), location));
-    }
-
-    @Override
-    public void removeTrackedLocation(NamespacedKey key) {
-        trackedLocations.remove(key);
-    }
+    public Map<NamespacedKey, Set<TrackedLocation>> getTrackedLocations() {return trackedLocations;}
 }
