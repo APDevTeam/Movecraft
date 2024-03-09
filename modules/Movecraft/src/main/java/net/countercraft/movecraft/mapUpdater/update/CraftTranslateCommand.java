@@ -75,6 +75,28 @@ public class CraftTranslateCommand extends UpdateCommand {
             CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.EMPTY, false);
             return;
         }
+        
+        if (craft.trackedLocations != null) {
+            for (Object key : craft.trackedLocations.keySet()) {
+                ArrayList<Object> mlocs = new ArrayList<>(craft.trackedLocations.get(key));
+                Set<Object> clone = new HashSet<>();
+                for (Object tracked : mlocs) {
+                    if (tracked != null) {
+                        if (tracked instanceof MovecraftLocation) {
+                            MovecraftLocation newTracked = ((MovecraftLocation)tracked).translate(displacement.getX(),displacement.getY(),displacement.getZ());
+                            clone.add(newTracked);
+                        }
+                        if (tracked instanceof HitBox) {
+                            HitBox newBox = (SetHitBox)(craft.translateBox(((SetHitBox)tracked), displacement));
+                            clone.add(newBox);
+                        }
+                    }
+                }
+                if (!clone.isEmpty() || clone != null) {
+                    (craft).setTrackedLocs(clone,key);
+                }
+            }
+        }
         long time = System.nanoTime();
         World oldWorld = craft.getWorld();
         final Set<Material> passthroughBlocks = new HashSet<>(

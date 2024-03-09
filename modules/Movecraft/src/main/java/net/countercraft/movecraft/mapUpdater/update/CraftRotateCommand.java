@@ -69,6 +69,27 @@ public class CraftRotateCommand extends UpdateCommand {
             CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.EMPTY, false);
             return;
         }
+        if (craft.trackedLocations != null) {
+            ArrayList<Object> clone = new ArrayList<>();
+            for (Object key : craft.trackedLocations.keySet()) {
+                ArrayList<Object> mlocs = new ArrayList<>(craft.getTrackedLocs(key));
+                for (Object tracked : mlocs) {
+                    if (tracked != null) {
+                        if (tracked instanceof MovecraftLocation) {
+                            MovecraftLocation newTracked = MathUtils.rotateVec(rotation,((MovecraftLocation)tracked).subtract(originLocation)).add(originLocation);
+                            clone.add(newTracked);
+                        }
+                        if (tracked instanceof HitBox) {
+                            HitBox newBox = (SetHitBox)(craft).rotateBox(((HitBox)tracked), originLocation, rotation);
+                            clone.add(newBox);
+                        }
+                    }
+                }
+                if (!clone.isEmpty() || clone != null) {
+                    (craft).setTrackedLocs(clone,key);
+                }
+            }
+        }
         long time = System.nanoTime();
         final Set<Material> passthroughBlocks = new HashSet<>(craft.getType().getMaterialSetProperty(CraftType.PASSTHROUGH_BLOCKS));
         if (craft instanceof SinkingCraft) {
