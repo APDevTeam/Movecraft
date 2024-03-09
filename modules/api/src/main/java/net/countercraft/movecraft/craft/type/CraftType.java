@@ -186,6 +186,10 @@ final public class CraftType {
             "gear_shifts_affect_cruise_skip_blocks");
     public static final NamespacedKey RELEASE_TIMEOUT = buildKey("release_timeout");
     public static final NamespacedKey MERGE_PISTON_EXTENSIONS = buildKey("merge_piston_extensions");
+
+    public static final NamespacedKey CRUISE_ON_PILOT_LIFETIME = buildKey("cruise_on_pilot_lifetime");
+
+    public static final NamespacedKey EXPLOSION_ARMING_TIME = buildKey("explosion_arming_time");
     //endregion
 
     @Contract("_ -> new")
@@ -560,6 +564,8 @@ final public class CraftType {
         ));
         registerProperty(new IntegerProperty("releaseTimeout", RELEASE_TIMEOUT, type -> 30));
         registerProperty(new BooleanProperty("mergePistonExtensions", MERGE_PISTON_EXTENSIONS, type -> false));
+        registerProperty(new IntegerProperty("cruiseOnPilotLifetime", CRUISE_ON_PILOT_LIFETIME, type -> 15*20));
+        registerProperty(new IntegerProperty("explosionArmingTime", EXPLOSION_ARMING_TIME, type -> 1000));
 
         /* Craft type transforms */
         // Convert speed to TICK_COOLDOWN
