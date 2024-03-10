@@ -22,7 +22,7 @@ public class CraftReportCommand implements CommandExecutor{
         if (commandSender.getName().equalsIgnoreCase("craftreport"))
             return false;
         if (!commandSender.hasPermission("movecraft.commands")
-                && !commandSender.hasPermission("movecraft.commands.craftreport")) {
+                || !commandSender.hasPermission("movecraft.commands.craftreport")) {
             commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX
                     + I18nSupport.getInternationalisedString("Insufficient Permissions"));
             return true;
