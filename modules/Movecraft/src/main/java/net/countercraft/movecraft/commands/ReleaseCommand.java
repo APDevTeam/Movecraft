@@ -24,7 +24,7 @@ public class ReleaseCommand implements TabExecutor {
             return false;
 
         if (!commandSender.hasPermission("movecraft.commands")
-                && !commandSender.hasPermission("movecraft.commands.release")) {
+                || !commandSender.hasPermission("movecraft.commands.release")) {
             commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX
                     + I18nSupport.getInternationalisedString("Insufficient Permissions"));
             return true;

@@ -32,7 +32,7 @@ public class RotateCommand implements TabExecutor{
             return true;
         }
         if (args[0].equalsIgnoreCase("left")) {
-            if (!player.hasPermission("movecraft.commands") && !player.hasPermission("movecraft.commands.rotateleft")) {
+            if (!player.hasPermission("movecraft.commands") || !player.hasPermission("movecraft.commands.rotateleft")) {
                 player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Insufficient Permissions"));
                 return true;
             }
@@ -50,7 +50,7 @@ public class RotateCommand implements TabExecutor{
         }
 
         if (args[0].equalsIgnoreCase("right")) {
-            if (!player.hasPermission("movecraft.commands") && !player.hasPermission("movecraft.commands.rotateright")) {
+            if (!player.hasPermission("movecraft.commands") || !player.hasPermission("movecraft.commands.rotateright")) {
                 player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Insufficient Permissions"));
                 return true;
             }
