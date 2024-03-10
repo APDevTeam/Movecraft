@@ -96,7 +96,7 @@ public class TranslationTask extends AsyncTask {
     @Override
     protected void execute() throws InterruptedException, ExecutionException {
 
-        //Check if theres anything to move
+        //Check if there's anything to move
         if (oldHitBox.isEmpty())
             return;
 
@@ -349,7 +349,7 @@ public class TranslationTask extends AsyncTask {
                 newHitBox.removeAll(toRemove);
             }
         } else if ((craft.getType().getFloatProperty(CraftType.COLLISION_EXPLOSION) > 0F)
-                && System.currentTimeMillis() - craft.getOrigPilotTime() > Settings.CollisionPrimer) {
+                && System.currentTimeMillis() - craft.getOrigPilotTime() > craft.getType().getIntProperty(CraftType.EXPLOSION_ARMING_TIME)) {
             for (MovecraftLocation location : collisionBox) {
                 float explosionForce = craft.getType().getFloatProperty(CraftType.COLLISION_EXPLOSION);
                 if (craft.getType().getBoolProperty(CraftType.FOCUSED_EXPLOSION)) {
