@@ -17,53 +17,32 @@ public class TrackedLocation {
     public TrackedLocation(@NotNull Craft craft, @NotNull MovecraftLocation location) {
         this.craft = craft;
         MovecraftLocation midPoint = craft.getHitBox().getMidPoint();
-        offSet = new MovecraftLocation(
-                location.getX() - midPoint.getX(),
-                location.getY() - midPoint.getY(),
-                location.getZ() - midPoint.getZ()
-        );
+        offSet = location.subtract(midPoint);
     }
 
     /**
-     * Rotates the stored location about any point.
+     * Rotates the stored location.
      * @param rotation A clockwise or counter-clockwise direction to rotate.
-     * @param pivot An absolute position at which to rotate the trackedLocation.
      */
-    public void rotate(MovecraftRotation rotation, MovecraftLocation pivot) {
-        //This is the position vector relative to the tracked location to the pivot.
-        MovecraftLocation offSetToPivot = new MovecraftLocation(
-                getAbsoluteLocation().getX() - pivot.getX(),
-                getAbsoluteLocation().getY() - pivot.getY(),
-                getAbsoluteLocation().getZ() - pivot.getZ()
-        );
-        //This is the position vector relative to the midpoint to the pivot.
+    public void rotate(MovecraftRotation rotation) {
         MovecraftLocation midPoint = craft.getHitBox().getMidPoint();
-        MovecraftLocation midPointToPivot = new MovecraftLocation(
-                midPoint.getX() - pivot.getX(),
-                midPoint.getY() - pivot.getY(),
-                midPoint.getZ() - pivot.getZ()
-        );
-        //Rotates both vectors
-        MovecraftLocation rotatedOffSetToPivot = MathUtils.rotateVec(rotation, offSetToPivot);
-        MovecraftLocation rotatedMidPointToPivot = MathUtils.rotateVec(rotation, midPointToPivot);
-        //Subtracts rotatedOffSetToPivot - rotatedMidPointToPivot to get the new offset to the midpoint.
-        offSet = new MovecraftLocation(
-                rotatedOffSetToPivot.getX() - rotatedMidPointToPivot.getX(),
-                rotatedOffSetToPivot.getY() - rotatedMidPointToPivot.getY(),
-                rotatedOffSetToPivot.getZ() - rotatedMidPointToPivot.getZ()
-        );
+        offSet = MathUtils.rotateVec(rotation, getAbsoluteLocation().subtract(midPoint));
     }
 
     /**
-     * Gets the stored location.
-     * @return Returns the location.
+     * Gets the stored absolute location.
+     * @return Returns the absolute location instead of a vector.
      */
     public MovecraftLocation getAbsoluteLocation() {
         MovecraftLocation midPoint = craft.getHitBox().getMidPoint();
-        return new MovecraftLocation(
-                offSet.getX() + midPoint.getX(),
-                offSet.getY() + midPoint.getY(),
-                offSet.getZ() + midPoint.getZ()
-        );
+        return offSet.add(midPoint);
+    }
+
+    /**
+     * Gets the stored location as a position vector relative to the midpoint.
+     * @return Returns the absolute location instead of a vector.
+     */
+    public MovecraftLocation getOffSet() {
+        return offSet;
     }
 }
