@@ -1,4 +1,4 @@
-package net.countercraft.movecraft.compat.v1_20_R3;
+package net.countercraft.movecraft.compat.v1_20_R4;
 
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.MovecraftRotation;
@@ -24,10 +24,10 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.craftbukkit.v1_20_R3.CraftWorld;
-import org.bukkit.craftbukkit.v1_20_R3.block.data.CraftBlockData;
-import org.bukkit.craftbukkit.v1_20_R3.inventory.CraftInventoryView;
-import org.bukkit.craftbukkit.v1_20_R3.util.CraftMagicNumbers;
+import org.bukkit.craftbukkit.v1_20_R4.CraftWorld;
+import org.bukkit.craftbukkit.v1_20_R4.block.data.CraftBlockData;
+import org.bukkit.craftbukkit.v1_20_R4.inventory.CraftInventoryView;
+import org.bukkit.craftbukkit.v1_20_R4.util.CraftMagicNumbers;
 import org.bukkit.inventory.InventoryView;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -54,7 +54,7 @@ public class IWorldHandler extends WorldHandler {
 
     public IWorldHandler() {
         String mappings = ((CraftMagicNumbers) CraftMagicNumbers.INSTANCE).getMappingsVersion();
-        if (!mappings.equals("60a2bb6bf2684dc61c56b90d7c41bddc"))
+        if (!mappings.equals("ad1a88fd7eaf2277f2507bf34d7b994c"))
             throw new IllegalStateException("Movecraft is not compatible with this version of Minecraft 1.20: " + mappings);
     }
 
@@ -283,7 +283,7 @@ public class IWorldHandler extends WorldHandler {
     private void moveBlockEntity(@NotNull Level nativeWorld, @NotNull BlockPos newPosition, @NotNull BlockEntity tile) {
         LevelChunk chunk = nativeWorld.getChunkAt(newPosition);
         try {
-            var positionField = BlockEntity.class.getDeclaredField("p"); // p is obfuscated worldPosition
+            var positionField = BlockEntity.class.getDeclaredField("o"); // o is obfuscated worldPosition
             UnsafeUtils.setField(positionField, tile, newPosition);
         }
         catch (NoSuchFieldException e) {
