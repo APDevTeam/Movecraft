@@ -1,4 +1,4 @@
-package net.countercraft.movecraft.support.v1_20_R3;
+package net.countercraft.movecraft.support.v1_20_R4;
 
 import net.countercraft.movecraft.SmoothTeleport;
 import net.countercraft.movecraft.util.ReflectUtils;
@@ -17,7 +17,7 @@ import java.util.Set;
 /**
  * Code derived from code taken with permission from MicleBrick
  * https://www.spigotmc.org/threads/teleport-player-smoothly.317416/
- * Used for 1.20.4
+ * Used for 1.20.6
  */
 public class ISmoothTeleport extends SmoothTeleport {
     private final Field teleportPosField;
@@ -26,10 +26,10 @@ public class ISmoothTeleport extends SmoothTeleport {
     private final Field tickCountField;
 
     public ISmoothTeleport() throws NoSuchFieldException, ClassNotFoundException {
-        teleportPosField = ReflectUtils.getField(ServerGamePacketListenerImpl.class, "B"); // awaitingPositionFromClient
-        teleportAwaitField = ReflectUtils.getField(ServerGamePacketListenerImpl.class, "C"); // awaitingTeleport
-        awaitingTeleportTimeField = ReflectUtils.getField(ServerGamePacketListenerImpl.class, "D"); // awaitingTeleportTime
-        tickCountField = ReflectUtils.getField(ServerGamePacketListenerImpl.class, "k"); // tickCount
+        teleportPosField = ReflectUtils.getField(ServerGamePacketListenerImpl.class, "F"); // awaitingPositionFromClient
+        teleportAwaitField = ReflectUtils.getField(ServerGamePacketListenerImpl.class, "G"); // awaitingTeleport
+        awaitingTeleportTimeField = ReflectUtils.getField(ServerGamePacketListenerImpl.class, "H"); // awaitingTeleportTime
+        tickCountField = ReflectUtils.getField(ServerGamePacketListenerImpl.class, "o"); // tickCount
     }
 
     public void teleport(Player player, @NotNull Location location, float yawChange, float pitchChange) {

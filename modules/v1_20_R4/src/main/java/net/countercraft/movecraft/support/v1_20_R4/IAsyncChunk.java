@@ -1,4 +1,4 @@
-package net.countercraft.movecraft.support.v1_20_R3;
+package net.countercraft.movecraft.support.v1_20_R4;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -8,13 +8,13 @@ import net.countercraft.movecraft.processing.WorldManager;
 import net.countercraft.movecraft.support.AsyncChunk;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.chunk.ChunkAccess;
-import net.minecraft.world.level.chunk.ChunkStatus;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 import org.bukkit.Chunk;
 import org.bukkit.Material;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.craftbukkit.v1_20_R3.CraftChunk;
-import org.bukkit.craftbukkit.v1_20_R3.block.data.CraftBlockData;
+import org.bukkit.craftbukkit.v1_20_R4.CraftChunk;
+import org.bukkit.craftbukkit.v1_20_R4.block.data.CraftBlockData;
 import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings("unused")
