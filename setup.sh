@@ -26,13 +26,6 @@ else
     wget https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
 fi
 
-# Build 1.16.5
-if [ -f ~/.m2/repository/org/bukkit/craftbukkit/1.16.5-R0.1-SNAPSHOT/craftbukkit-1.16.5-R0.1-SNAPSHOT.jar ]; then
-    echo "1.16.5 already exists, skipping build"
-else
-    /usr/lib/jvm/temurin-11-jdk-amd64/bin/java -jar BuildTools.jar --rev 1.16.5 --compile craftbukkit
-fi
-
 # Build 1.18.2
 if [ -f ~/.m2/repository/org/spigotmc/spigot/1.18.2-R0.1-SNAPSHOT/spigot-1.18.2-R0.1-SNAPSHOT.jar ]; then
     echo "1.18.2 already exists, skipping build"
