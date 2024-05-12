@@ -27,7 +27,7 @@ If applicable, add screenshots (or videos) to help explain your problem.
  - Movecraft: [e.g. 8.0.0 alpha 6]
  - Addons: [e.g. Movecraft-Combat v1.0.0, Movecraft-Repair v1.0.0, etc]
  - Java [e.g. Adoptium JDK 13]
- - Minecraft [e.g. 1.16.5]
+ - Minecraft [e.g. 1.20.6]
 
 **Additional context**
 Add any other context about the problem here.
