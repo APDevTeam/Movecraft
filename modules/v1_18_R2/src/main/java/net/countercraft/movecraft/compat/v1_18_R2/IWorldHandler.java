@@ -158,6 +158,8 @@ public class IWorldHandler extends WorldHandler {
                 ((LevelChunkTicks) nativeWorld.getChunkAt(position).getBlockTicks()).removeIf(
                         (Predicate<ScheduledTick>) scheduledTick -> scheduledTick.equals(tickHere)
                 );
+            } else {
+                Bukkit.getServer().broadcastMessage("non-ticking tile found");
             }
             tiles.add(new TileHolder(tile, tickHere, position));
         }
