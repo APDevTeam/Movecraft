@@ -155,11 +155,9 @@ public class IWorldHandler extends WorldHandler {
             //get the nextTick to move with the tile
             ScheduledTick tickHere = tickProvider.getNextTick(oldNativeWorld, position);
             if (tickHere != null) {
-                ((LevelChunkTicks) nativeWorld.getChunkAt(position).getBlockTicks()).removeIf(
-                        (Predicate<ScheduledTick>) scheduledTick -> scheduledTick.equals(tickHere)
-                );
-            } else {
-                Bukkit.getServer().broadcastMessage("non-ticking tile found");
+                //maybe this causes issues?
+                //((LevelChunkTicks) nativeWorld.getChunkAt(position).getBlockTicks()).removeIf(
+                //        (Predicate<ScheduledTick>) scheduledTick -> scheduledTick.equals(tickHere));
             }
             tiles.add(new TileHolder(tile, tickHere, position));
         }
