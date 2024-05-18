@@ -19,7 +19,9 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
+import net.minecraft.world.ticks.LevelChunkTicks;
 import net.minecraft.world.ticks.ScheduledTick;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
@@ -37,6 +39,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 @SuppressWarnings("unused")
 public class IWorldHandler extends WorldHandler {
@@ -148,12 +151,17 @@ public class IWorldHandler extends WorldHandler {
             BlockEntity tile = removeBlockEntity(oldNativeWorld, position);
             if (tile == null)
                 continue;
+            Bukkit.getServer().getLogger().log(java.util.logging.Level.INFO,
+                    "Found Non-null tile at " + position.toShortString());
+
             //get the nextTick to move with the tile
-
-            //nativeWorld.capturedTileEntities.remove(position);
-            //nativeWorld.getChunkAtWorldCoords(position).getTileEntities().remove(position);
-            tiles.add(new TileHolder(tile, tickProvider.getNextTick(oldNativeWorld, position), position));
-
+            ScheduledTick tickHere = tickProvider.getNextTick(oldNativeWorld, position);
+            if (tickHere != null) {
+                ((LevelChunkTicks) nativeWorld.getChunkAt(position).getBlockTicks()).removeIf(
+                        (Predicate<ScheduledTick>) scheduledTick -> scheduledTick.equals(tickHere)
+                );
+                tiles.add(new TileHolder(tile, tickHere, position));
+            }
         }
         //*******************************************
         //*   Step three: Translate all the blocks  *
