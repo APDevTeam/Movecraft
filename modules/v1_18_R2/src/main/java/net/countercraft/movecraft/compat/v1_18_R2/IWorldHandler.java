@@ -158,8 +158,8 @@ public class IWorldHandler extends WorldHandler {
                 ((LevelChunkTicks) nativeWorld.getChunkAt(position).getBlockTicks()).removeIf(
                         (Predicate<ScheduledTick>) scheduledTick -> scheduledTick.equals(tickHere)
                 );
-                tiles.add(new TileHolder(tile, tickHere, position));
             }
+            tiles.add(new TileHolder(tile, tickHere, position));
         }
         //*******************************************
         //*   Step three: Translate all the blocks  *
