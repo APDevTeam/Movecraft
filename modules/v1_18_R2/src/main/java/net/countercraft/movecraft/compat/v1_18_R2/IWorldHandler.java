@@ -151,8 +151,6 @@ public class IWorldHandler extends WorldHandler {
             BlockEntity tile = removeBlockEntity(oldNativeWorld, position);
             if (tile == null)
                 continue;
-            Bukkit.getServer().getLogger().log(java.util.logging.Level.INFO,
-                    "Found Non-null tile at " + position.toShortString());
 
             //get the nextTick to move with the tile
             ScheduledTick tickHere = tickProvider.getNextTick(oldNativeWorld, position);
