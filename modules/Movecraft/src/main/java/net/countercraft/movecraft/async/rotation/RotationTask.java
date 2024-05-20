@@ -117,6 +117,15 @@ public class RotationTask extends AsyncTask {
             MovecraftLocation newLocation = MathUtils.rotateVec(rotation,originalLocation.subtract(originPoint)).add(originPoint);
             newHitBox.add(newLocation);
 
+            //Prevent piston bug
+            if (originalLocation.toBukkit(getCraft().getWorld()).getBlock().getType().equals(Material.MOVING_PISTON)) {
+                failed = true;
+                failMessage = (String.format(I18nSupport.getInternationalisedString("Translation - Failed Craft is obstructed")
+                                + " @ %d,%d,%d,%s", originalLocation.getX(), originalLocation.getY(), originalLocation.getZ(),
+                        originalLocation.toBukkit(craft.getWorld()).getBlock().getType()));
+                break;
+            }
+
             Material oldMaterial = originalLocation.toBukkit(w).getBlock().getType();
             //prevent chests collision
             if (Tags.CHESTS.contains(oldMaterial) && !checkChests(oldMaterial, newLocation)) {
