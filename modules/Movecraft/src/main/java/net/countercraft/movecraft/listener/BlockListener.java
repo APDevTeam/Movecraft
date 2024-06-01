@@ -113,25 +113,6 @@ public class BlockListener implements Listener {
         }
     }
 
-    // prevent water and lava from spreading on moving crafts
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void onBlockFromTo(BlockFromToEvent e) {
-        if (e.isCancelled())
-            return;
-
-        Block block = e.getToBlock();
-        if (!Tags.FLUID.contains(block.getType()))
-            return;
-
-        MovecraftLocation location = MathUtils.bukkit2MovecraftLoc(block.getLocation());
-        for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(block.getWorld())) {
-            if ((!tcraft.isNotProcessing()) && MathUtils.locIsNearCraftFast(tcraft, location)) {
-                e.setCancelled(true);
-                return;
-            }
-        }
-    }
-
     // process certain redstone on cruising crafts
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onRedstoneEvent(@NotNull BlockRedstoneEvent event) {
@@ -223,9 +204,10 @@ public class BlockListener implements Listener {
 
     @EventHandler
     public void onFlow(@NotNull BlockFromToEvent e) {
-        if (Settings.DisableSpillProtection)
+        if (Settings.DisableSpillProtection || e.isCancelled())
             return;
-        if (!e.getBlock().isLiquid())
+        Block block = e.getToBlock();
+        if (!Tags.FLUID.contains(block.getType()))
             return;
 
         MovecraftLocation loc = MathUtils.bukkit2MovecraftLoc(e.getBlock().getLocation());
