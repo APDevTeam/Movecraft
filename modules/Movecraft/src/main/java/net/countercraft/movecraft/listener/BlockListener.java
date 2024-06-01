@@ -192,33 +192,29 @@ public class BlockListener implements Listener {
 
     // prevent fragile items from dropping on cruising crafts
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onPhysics(BlockPhysicsEvent event) {
-        if (event.isCancelled()) {
+    public void onPhysics(@NotNull BlockPhysicsEvent event) {
+        if (event.isCancelled())
             return;
-        }
-
         Block block = event.getBlock();
+        if (!Tags.FRAGILE_MATERIALS.contains(block.getType()))
+            return;
 
-        CraftManager.getInstance().getCraftsInWorld(block.getWorld());
+        MovecraftLocation mloc = new MovecraftLocation(block.getX(), block.getY(), block.getZ());
         for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(block.getWorld())) {
-            MovecraftLocation mloc = new MovecraftLocation(block.getX(), block.getY(), block.getZ());
-            if (!MathUtils.locIsNearCraftFast(tcraft, mloc)) {
+            if (!MathUtils.locIsNearCraftFast(tcraft, mloc))
                 continue;
-            }
-            if (Tags.FRAGILE_MATERIALS.contains(event.getBlock().getType())) {
-                BlockData m = block.getBlockData();
-                BlockFace face = BlockFace.DOWN;
-                boolean faceAlwaysDown = block.getType() == Material.COMPARATOR || block.getType() == Material.REPEATER;
-                if (m instanceof Attachable && !faceAlwaysDown)
-                    face = ((Attachable) m).getAttachedFace();
-                if (!event.getBlock().getRelative(face).getType().isSolid()) {
-                    event.setCancelled(true);
-                    return;
-                }
+
+            BlockData m = block.getBlockData();
+            BlockFace face = BlockFace.DOWN;
+            boolean faceAlwaysDown = block.getType() == Material.COMPARATOR || block.getType() == Material.REPEATER;
+            if (m instanceof Attachable && !faceAlwaysDown)
+                face = ((Attachable) m).getAttachedFace();
+            if (!event.getBlock().getRelative(face).getType().isSolid()) {
+                event.setCancelled(true);
+                return;
             }
         }
     }
-
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockDispense(BlockDispenseEvent e) {
