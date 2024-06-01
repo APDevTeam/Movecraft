@@ -134,19 +134,17 @@ public class BlockListener implements Listener {
 
     // process certain redstone on cruising crafts
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onRedstoneEvent(BlockRedstoneEvent event) {
+    public void onRedstoneEvent(@NotNull BlockRedstoneEvent event) {
         Block block = event.getBlock();
-        CraftManager.getInstance().getCraftsInWorld(block.getWorld());
-        for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(block.getWorld())) {
-            MovecraftLocation mloc = new MovecraftLocation(block.getX(), block.getY(), block.getZ());
-            if (MathUtils.locIsNearCraftFast(tcraft, mloc) &&
-                    tcraft.getCruising() && (block.getType() == Material.STICKY_PISTON ||
-                    block.getType() == Material.PISTON || block.getType() == Material.DISPENSER &&
-                    !tcraft.isNotProcessing())) {
-                event.setNewCurrent(event.getOldCurrent()); // don't allow piston movement on cruising crafts
-                return;
-            }
-        }
+        MovecraftLocation loc = MathUtils.bukkit2MovecraftLoc(block.getLocation());
+        Craft craft = MathUtils.fastNearestCraftToLoc(CraftManager.getInstance().getCrafts(), block.getLocation());
+        if (craft == null || craft.isNotProcessing() || !craft.getHitBox().contains((loc)))
+            return;
+
+        if (block.getType() != Material.STICKY_PISTON || block.getType() != Material.PISTON || block.getType() != Material.DISPENSER)
+            return;
+
+        event.setNewCurrent(event.getOldCurrent()); // don't allow piston movement on cruising crafts
     }
 
     // prevent pistons on cruising crafts
