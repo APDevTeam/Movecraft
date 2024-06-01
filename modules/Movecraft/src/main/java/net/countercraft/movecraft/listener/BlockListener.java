@@ -101,22 +101,22 @@ public class BlockListener implements Listener {
 
     // prevent items from dropping from moving crafts
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onItemSpawn(final ItemSpawnEvent e) {
-        if (e.isCancelled()) {
+    public void onItemSpawn(@NotNull ItemSpawnEvent e) {
+        if (e.isCancelled())
             return;
-        }
-        for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(e.getLocation().getWorld())) {
-            if ((!tcraft.isNotProcessing()) && MathUtils.locationInHitBox(tcraft.getHitBox(), e.getLocation())) {
-                e.setCancelled(true);
-                return;
-            }
-        }
+
+        MovecraftLocation loc = MathUtils.bukkit2MovecraftLoc(e.getLocation());
+        Craft craft = MathUtils.fastNearestCraftToLoc(CraftManager.getInstance().getCrafts(), e.getLocation());
+        if (craft == null || craft.isNotProcessing() || !craft.getHitBox().contains((loc)))
+            return;
+
+        e.setCancelled(true);
     }
 
     // process certain redstone on cruising crafts
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onRedstoneEvent(@NotNull BlockRedstoneEvent event) {
-        Block block = event.getBlock();
+    public void onRedstoneEvent(@NotNull BlockRedstoneEvent e) {
+        Block block = e.getBlock();
         MovecraftLocation loc = MathUtils.bukkit2MovecraftLoc(block.getLocation());
         Craft craft = MathUtils.fastNearestCraftToLoc(CraftManager.getInstance().getCrafts(), block.getLocation());
         if (craft == null || craft.isNotProcessing() || !craft.getHitBox().contains((loc)))
@@ -125,7 +125,7 @@ public class BlockListener implements Listener {
         if (block.getType() != Material.STICKY_PISTON || block.getType() != Material.PISTON || block.getType() != Material.DISPENSER)
             return;
 
-        event.setNewCurrent(event.getOldCurrent()); // don't allow piston movement on cruising crafts
+        e.setNewCurrent(e.getOldCurrent()); // don't allow piston movement on cruising crafts
     }
 
     // prevent pistons on cruising crafts
