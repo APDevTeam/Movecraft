@@ -192,28 +192,28 @@ public class BlockListener implements Listener {
 
     // prevent fragile items from dropping on cruising crafts
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onPhysics(@NotNull BlockPhysicsEvent event) {
-        if (event.isCancelled())
+    public void onPhysics(@NotNull BlockPhysicsEvent e) {
+        if (e.isCancelled())
             return;
-        Block block = event.getBlock();
+        Block block = e.getBlock();
         if (!Tags.FRAGILE_MATERIALS.contains(block.getType()))
             return;
 
-        MovecraftLocation mloc = new MovecraftLocation(block.getX(), block.getY(), block.getZ());
-        for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(block.getWorld())) {
-            if (!MathUtils.locIsNearCraftFast(tcraft, mloc))
-                continue;
+        MovecraftLocation loc = MathUtils.bukkit2MovecraftLoc(block.getLocation());
+        Craft craft = MathUtils.fastNearestCraftToLoc(CraftManager.getInstance().getCrafts(), block.getLocation());
+        if (craft == null || !craft.getHitBox().contains((loc)))
+            return;
 
-            BlockData m = block.getBlockData();
-            BlockFace face = BlockFace.DOWN;
-            boolean faceAlwaysDown = block.getType() == Material.COMPARATOR || block.getType() == Material.REPEATER;
-            if (m instanceof Attachable && !faceAlwaysDown)
-                face = ((Attachable) m).getAttachedFace();
-            if (!event.getBlock().getRelative(face).getType().isSolid()) {
-                event.setCancelled(true);
-                return;
-            }
-        }
+        BlockData m = block.getBlockData();
+        BlockFace face = BlockFace.DOWN;
+        boolean faceAlwaysDown = block.getType() == Material.COMPARATOR || block.getType() == Material.REPEATER;
+        if (m instanceof Attachable && !faceAlwaysDown)
+            face = ((Attachable) m).getAttachedFace();
+
+        if (e.getBlock().getRelative(face).getType().isSolid())
+            return;
+
+        e.setCancelled(true);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
