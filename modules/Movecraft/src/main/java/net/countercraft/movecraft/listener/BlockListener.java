@@ -243,16 +243,17 @@ public class BlockListener implements Listener {
     }
 
     @EventHandler
-    public void onIceForm(BlockFormEvent e) {
+    public void onIceForm(@NotNull BlockFormEvent e) {
         if (e.isCancelled() || !Settings.DisableIceForm)
             return;
         if (Tags.WATER.contains(e.getBlock().getType()))
             return;
 
         MovecraftLocation loc = MathUtils.bukkit2MovecraftLoc(e.getBlock().getLocation());
-        Craft craft = MathUtils.fastNearestCraftToLoc(CraftManager.getInstance().getCrafts(),
-                e.getBlock().getLocation());
-        if (craft != null && craft.getHitBox().contains((loc)))
-            e.setCancelled(true);
+        Craft craft = MathUtils.fastNearestCraftToLoc(CraftManager.getInstance().getCrafts(), e.getBlock().getLocation());
+        if (craft == null || !craft.getHitBox().contains((loc)))
+            return;
+
+        e.setCancelled(true);
     }
 }
