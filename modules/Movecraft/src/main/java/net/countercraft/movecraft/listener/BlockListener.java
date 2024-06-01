@@ -78,25 +78,16 @@ public class BlockListener implements Listener {
         if (!Settings.ProtectPilotedCrafts)
             return;
 
+        MovecraftLocation loc = MathUtils.bukkit2MovecraftLoc(e.getBlockAgainst().getLocation());
+        Craft craft = MathUtils.fastNearestCraftToLoc(CraftManager.getInstance().getCrafts(), e.getBlockAgainst().getLocation());
+        if (craft == null || !craft.getHitBox().contains(loc) || craft.getDisabled() || !(craft instanceof PilotedCraft))
+            return;
+
         Player p = e.getPlayer();
+        if (((PilotedCraft) craft).getPilot() == p)
+            return;
 
-        MovecraftLocation placedLocation = MathUtils.bukkit2MovecraftLoc(e.getBlockAgainst().getLocation());
-        for (Craft craft : CraftManager.getInstance().getCraftsInWorld(e.getBlock().getWorld())) {
-            if (craft == null || craft.getDisabled())
-                continue;
-
-            if(!(craft instanceof PilotedCraft)) {
-                continue;
-            }
-            if (((PilotedCraft) craft).getPilot() == p) {
-                continue;
-            }
-
-            if (craft.getHitBox().contains(placedLocation)) {
-                e.setCancelled(true);
-                return;
-            }
-        }
+        e.setCancelled(true);
     }
 
     // prevent items from dropping from moving crafts
