@@ -151,26 +151,25 @@ public class BlockListener implements Listener {
 
     // prevent pistons on cruising crafts
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onPistonEvent(BlockPistonExtendEvent event) {
-        Block block = event.getBlock();
-        CraftManager.getInstance().getCraftsInWorld(block.getWorld());
-        for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(block.getWorld())) {
-            if(tcraft == null || !MathUtils.locationInHitBox(tcraft.getHitBox(), block.getLocation()))
-                continue;
+    public void onPistonEvent(@NotNull BlockPistonExtendEvent e) {
+        Block block = e.getBlock();
+        MovecraftLocation loc = MathUtils.bukkit2MovecraftLoc(block.getLocation());
+        Craft craft = MathUtils.fastNearestCraftToLoc(CraftManager.getInstance().getCrafts(), block.getLocation());
+        if (craft == null || !craft.getHitBox().contains((loc)))
+            return;
 
-            if (tcraft.getCruising() && !tcraft.isNotProcessing()) {
-                event.setCancelled(true);
-            }
-            else if(tcraft.getType().getBoolProperty(CraftType.MERGE_PISTON_EXTENSIONS)){
-                BitmapHitBox hitBox = new BitmapHitBox();
-                for (Block b : event.getBlocks()) {
-                    Vector dir = event.getDirection().getDirection();
-                    hitBox.add(new MovecraftLocation(b.getX() + dir.getBlockX(), b.getY() + dir.getBlockY(), b.getZ() + dir.getBlockZ()));
-                }
-                tcraft.setHitBox(tcraft.getHitBox().union(hitBox));
-                return;
-            }
+        if (!craft.isNotProcessing())
+            e.setCancelled(true);
+
+        if (!craft.getType().getBoolProperty(CraftType.MERGE_PISTON_EXTENSIONS))
+            return;
+
+        BitmapHitBox hitBox = new BitmapHitBox();
+        for (Block b : e.getBlocks()) {
+            Vector dir = e.getDirection().getDirection();
+            hitBox.add(new MovecraftLocation(b.getX() + dir.getBlockX(), b.getY() + dir.getBlockY(), b.getZ() + dir.getBlockZ()));
         }
+        craft.setHitBox(craft.getHitBox().union(hitBox));
     }
 
     // prevent hoppers on cruising crafts
