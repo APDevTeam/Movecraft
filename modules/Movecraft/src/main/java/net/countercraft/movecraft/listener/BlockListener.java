@@ -22,7 +22,6 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.PilotedCraft;
-import net.countercraft.movecraft.craft.PlayerCraft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.util.MathUtils;
 import net.countercraft.movecraft.util.Tags;
@@ -55,21 +54,15 @@ public class BlockListener implements Listener {
     public void onBlockBreak(@NotNull BlockBreakEvent e) {
         if (!Settings.ProtectPilotedCrafts)
             return;
-
         if (e.getBlock().getType() == Material.FIRE)
             return; // allow players to punch out fire
 
-        MovecraftLocation movecraftLocation = MathUtils.bukkit2MovecraftLoc(e.getBlock().getLocation());
-        for (Craft craft : CraftManager.getInstance().getCraftsInWorld(e.getBlock().getWorld())) {
-            if (craft == null || craft.getDisabled())
-                continue;
+        MovecraftLocation loc = MathUtils.bukkit2MovecraftLoc(e.getBlock().getLocation());
+        Craft craft = MathUtils.fastNearestCraftToLoc(CraftManager.getInstance().getCrafts(), e.getBlock().getLocation());
+        if (craft == null || !craft.getHitBox().contains(loc) || craft.getDisabled())
+            return;
 
-            if (craft.getHitBox().contains(movecraftLocation)) {
-                // TODO: for some reason before when this check runs the location is no longer in the hitbox
-                e.setCancelled(true);
-                return;
-            }
-        }
+        e.setCancelled(true);
     }
 
     //Prevents non pilots from placing blocks on your ship.
