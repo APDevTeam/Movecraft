@@ -217,16 +217,13 @@ public class BlockListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onBlockDispense(BlockDispenseEvent e) {
-        CraftManager.getInstance().getCraftsInWorld(e.getBlock().getWorld());
-        for (Craft craft : CraftManager.getInstance().getCraftsInWorld(e.getBlock().getWorld())) {
-            if (craft != null &&
-                    !craft.isNotProcessing() &&
-                    MathUtils.locIsNearCraftFast(craft, MathUtils.bukkit2MovecraftLoc(e.getBlock().getLocation()))) {
-                e.setCancelled(true);
-                return;
-            }
-        }
+    public void onBlockDispense(@NotNull BlockDispenseEvent e) {
+        MovecraftLocation loc = MathUtils.bukkit2MovecraftLoc(e.getBlock().getLocation());
+        Craft craft = MathUtils.fastNearestCraftToLoc(CraftManager.getInstance().getCrafts(), e.getBlock().getLocation());
+        if (craft == null || craft.isNotProcessing() || !craft.getHitBox().contains((loc)))
+            return;
+
+        e.setCancelled(true);
     }
 
     @EventHandler
