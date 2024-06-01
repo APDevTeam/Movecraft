@@ -9,6 +9,7 @@ import java.util.UUID;
 
 public class PlayerCraftImpl extends BaseCraft implements PlayerCraft {
     private final UUID id = UUID.randomUUID();
+    private final int hashCode = id.hashCode();
     private final Player pilot;
     private boolean pilotLocked;
     private double pilotLockedX;
@@ -34,7 +35,7 @@ public class PlayerCraftImpl extends BaseCraft implements PlayerCraft {
 
     @Override
     public int hashCode() {
-        return id.hashCode();
+        return hashCode;
     }
 
     @NotNull
