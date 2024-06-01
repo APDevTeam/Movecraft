@@ -216,11 +216,13 @@ public class MathUtils {
         for (Craft i : crafts) {
             if (i.getHitBox().isEmpty())
                 continue;
+            if (i.getWorld() != loc.getWorld())
+                continue;
 
             int midX = (i.getHitBox().getMaxX() + i.getHitBox().getMinX()) >> 1;
             // don't check Y because it is slow
             int midZ = (i.getHitBox().getMaxZ() + i.getHitBox().getMinZ()) >> 1;
-            long distSquared = (long) (Math.pow(midX -  loc.getX(), 2) + Math.pow(midZ - (int) loc.getZ(), 2));
+            long distSquared = (long) (Math.pow(midX -  (int) loc.getX(), 2) + Math.pow(midZ - (int) loc.getZ(), 2));
             if (distSquared < closestDistSquared) {
                 closestDistSquared = distSquared;
                 result = i;

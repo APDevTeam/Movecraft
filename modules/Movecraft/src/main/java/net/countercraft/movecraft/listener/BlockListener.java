@@ -22,7 +22,6 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.PilotedCraft;
-import net.countercraft.movecraft.craft.PlayerCraft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.util.MathUtils;
 import net.countercraft.movecraft.util.Tags;
@@ -55,21 +54,15 @@ public class BlockListener implements Listener {
     public void onBlockBreak(@NotNull BlockBreakEvent e) {
         if (!Settings.ProtectPilotedCrafts)
             return;
-
         if (e.getBlock().getType() == Material.FIRE)
             return; // allow players to punch out fire
 
-        MovecraftLocation movecraftLocation = MathUtils.bukkit2MovecraftLoc(e.getBlock().getLocation());
-        for (Craft craft : CraftManager.getInstance().getCraftsInWorld(e.getBlock().getWorld())) {
-            if (craft == null || craft.getDisabled())
-                continue;
+        MovecraftLocation loc = MathUtils.bukkit2MovecraftLoc(e.getBlock().getLocation());
+        Craft craft = MathUtils.fastNearestCraftToLoc(CraftManager.getInstance().getCrafts(), e.getBlock().getLocation());
+        if (craft == null || !craft.getHitBox().contains(loc) || craft.getDisabled())
+            return;
 
-            if (craft.getHitBox().contains(movecraftLocation)) {
-                // TODO: for some reason before when this check runs the location is no longer in the hitbox
-                e.setCancelled(true);
-                return;
-            }
-        }
+        e.setCancelled(true);
     }
 
     //Prevents non pilots from placing blocks on your ship.
@@ -78,188 +71,150 @@ public class BlockListener implements Listener {
         if (!Settings.ProtectPilotedCrafts)
             return;
 
+        MovecraftLocation loc = MathUtils.bukkit2MovecraftLoc(e.getBlockAgainst().getLocation());
+        Craft craft = MathUtils.fastNearestCraftToLoc(CraftManager.getInstance().getCrafts(), e.getBlockAgainst().getLocation());
+        if (craft == null || !craft.getHitBox().contains(loc) || craft.getDisabled() || !(craft instanceof PilotedCraft))
+            return;
+
         Player p = e.getPlayer();
+        if (((PilotedCraft) craft).getPilot() == p)
+            return;
 
-        MovecraftLocation placedLocation = MathUtils.bukkit2MovecraftLoc(e.getBlockAgainst().getLocation());
-        for (Craft craft : CraftManager.getInstance().getCraftsInWorld(e.getBlock().getWorld())) {
-            if (craft == null || craft.getDisabled())
-                continue;
-
-            if(!(craft instanceof PilotedCraft)) {
-                continue;
-            }
-            if (((PilotedCraft) craft).getPilot() == p) {
-                continue;
-            }
-
-            if (craft.getHitBox().contains(placedLocation)) {
-                e.setCancelled(true);
-                return;
-            }
-        }
+        e.setCancelled(true);
     }
 
     // prevent items from dropping from moving crafts
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onItemSpawn(final ItemSpawnEvent e) {
-        if (e.isCancelled()) {
-            return;
-        }
-        for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(e.getLocation().getWorld())) {
-            if ((!tcraft.isNotProcessing()) && MathUtils.locationInHitBox(tcraft.getHitBox(), e.getLocation())) {
-                e.setCancelled(true);
-                return;
-            }
-        }
-    }
-
-    // prevent water and lava from spreading on moving crafts
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void onBlockFromTo(BlockFromToEvent e) {
+    public void onItemSpawn(@NotNull ItemSpawnEvent e) {
         if (e.isCancelled())
             return;
 
-        Block block = e.getToBlock();
-        if (!Tags.FLUID.contains(block.getType()))
+        MovecraftLocation loc = MathUtils.bukkit2MovecraftLoc(e.getLocation());
+        Craft craft = MathUtils.fastNearestCraftToLoc(CraftManager.getInstance().getCrafts(), e.getLocation());
+        if (craft == null || craft.isNotProcessing() || !craft.getHitBox().contains((loc)))
             return;
 
-        MovecraftLocation location = MathUtils.bukkit2MovecraftLoc(block.getLocation());
-        for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(block.getWorld())) {
-            if ((!tcraft.isNotProcessing()) && MathUtils.locIsNearCraftFast(tcraft, location)) {
-                e.setCancelled(true);
-                return;
-            }
-        }
+        e.setCancelled(true);
     }
 
     // process certain redstone on cruising crafts
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onRedstoneEvent(BlockRedstoneEvent event) {
-        Block block = event.getBlock();
-        CraftManager.getInstance().getCraftsInWorld(block.getWorld());
-        for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(block.getWorld())) {
-            MovecraftLocation mloc = new MovecraftLocation(block.getX(), block.getY(), block.getZ());
-            if (MathUtils.locIsNearCraftFast(tcraft, mloc) &&
-                    tcraft.getCruising() && (block.getType() == Material.STICKY_PISTON ||
-                    block.getType() == Material.PISTON || block.getType() == Material.DISPENSER &&
-                    !tcraft.isNotProcessing())) {
-                event.setNewCurrent(event.getOldCurrent()); // don't allow piston movement on cruising crafts
-                return;
-            }
-        }
+    public void onRedstoneEvent(@NotNull BlockRedstoneEvent e) {
+        Block block = e.getBlock();
+        MovecraftLocation loc = MathUtils.bukkit2MovecraftLoc(block.getLocation());
+        Craft craft = MathUtils.fastNearestCraftToLoc(CraftManager.getInstance().getCrafts(), block.getLocation());
+        if (craft == null || craft.isNotProcessing() || !craft.getHitBox().contains((loc)))
+            return;
+
+        if (block.getType() != Material.STICKY_PISTON || block.getType() != Material.PISTON || block.getType() != Material.DISPENSER)
+            return;
+
+        e.setNewCurrent(e.getOldCurrent()); // don't allow piston movement on cruising crafts
     }
 
     // prevent pistons on cruising crafts
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onPistonEvent(BlockPistonExtendEvent event) {
-        Block block = event.getBlock();
-        CraftManager.getInstance().getCraftsInWorld(block.getWorld());
-        for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(block.getWorld())) {
-            if(tcraft == null || !MathUtils.locationInHitBox(tcraft.getHitBox(), block.getLocation()))
-                continue;
+    public void onPistonEvent(@NotNull BlockPistonExtendEvent e) {
+        Block block = e.getBlock();
+        MovecraftLocation loc = MathUtils.bukkit2MovecraftLoc(block.getLocation());
+        Craft craft = MathUtils.fastNearestCraftToLoc(CraftManager.getInstance().getCrafts(), block.getLocation());
+        if (craft == null || !craft.getHitBox().contains((loc)))
+            return;
 
-            if (tcraft.getCruising() && !tcraft.isNotProcessing()) {
-                event.setCancelled(true);
-            }
-            else if(tcraft.getType().getBoolProperty(CraftType.MERGE_PISTON_EXTENSIONS)){
-                BitmapHitBox hitBox = new BitmapHitBox();
-                for (Block b : event.getBlocks()) {
-                    Vector dir = event.getDirection().getDirection();
-                    hitBox.add(new MovecraftLocation(b.getX() + dir.getBlockX(), b.getY() + dir.getBlockY(), b.getZ() + dir.getBlockZ()));
-                }
-                tcraft.setHitBox(tcraft.getHitBox().union(hitBox));
-                return;
-            }
+        if (!craft.isNotProcessing())
+            e.setCancelled(true);
+
+        if (!craft.getType().getBoolProperty(CraftType.MERGE_PISTON_EXTENSIONS))
+            return;
+
+        BitmapHitBox hitBox = new BitmapHitBox();
+        for (Block b : e.getBlocks()) {
+            Vector dir = e.getDirection().getDirection();
+            hitBox.add(new MovecraftLocation(b.getX() + dir.getBlockX(), b.getY() + dir.getBlockY(), b.getZ() + dir.getBlockZ()));
         }
+        craft.setHitBox(craft.getHitBox().union(hitBox));
     }
 
     // prevent hoppers on cruising crafts
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onHopperEvent(InventoryMoveItemEvent event) {
-        if (!(event.getSource().getHolder() instanceof Hopper)) {
+    public void onHopperEvent(@NotNull InventoryMoveItemEvent e) {
+        if (!(e.getSource().getHolder() instanceof Hopper))
             return;
-        }
-        Hopper block = (Hopper) event.getSource().getHolder();
-        CraftManager.getInstance().getCraftsInWorld(block.getWorld());
-        for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(block.getWorld())) {
-            MovecraftLocation mloc = new MovecraftLocation(block.getX(), block.getY(), block.getZ());
-            if (MathUtils.locIsNearCraftFast(tcraft, mloc) && tcraft.getCruising() && !tcraft.isNotProcessing()) {
-                event.setCancelled(true);
-                return;
-            }
-        }
+
+        Hopper block = (Hopper) e.getSource().getHolder();
+        MovecraftLocation loc = MathUtils.bukkit2MovecraftLoc(block.getLocation());
+        Craft craft = MathUtils.fastNearestCraftToLoc(CraftManager.getInstance().getCrafts(), block.getLocation());
+        if (craft == null || craft.isNotProcessing() || !craft.getHitBox().contains((loc)))
+            return;
+
+        e.setCancelled(true);
     }
 
     // prevent fragile items from dropping on cruising crafts
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onPhysics(BlockPhysicsEvent event) {
-        if (event.isCancelled()) {
+    public void onPhysics(@NotNull BlockPhysicsEvent e) {
+        if (e.isCancelled())
             return;
-        }
+        Block block = e.getBlock();
+        if (!Tags.FRAGILE_MATERIALS.contains(block.getType()))
+            return;
 
-        Block block = event.getBlock();
+        MovecraftLocation loc = MathUtils.bukkit2MovecraftLoc(block.getLocation());
+        Craft craft = MathUtils.fastNearestCraftToLoc(CraftManager.getInstance().getCrafts(), block.getLocation());
+        if (craft == null || !craft.getHitBox().contains((loc)))
+            return;
 
-        CraftManager.getInstance().getCraftsInWorld(block.getWorld());
-        for (Craft tcraft : CraftManager.getInstance().getCraftsInWorld(block.getWorld())) {
-            MovecraftLocation mloc = new MovecraftLocation(block.getX(), block.getY(), block.getZ());
-            if (!MathUtils.locIsNearCraftFast(tcraft, mloc)) {
-                continue;
-            }
-            if (Tags.FRAGILE_MATERIALS.contains(event.getBlock().getType())) {
-                BlockData m = block.getBlockData();
-                BlockFace face = BlockFace.DOWN;
-                boolean faceAlwaysDown = block.getType() == Material.COMPARATOR || block.getType() == Material.REPEATER;
-                if (m instanceof Attachable && !faceAlwaysDown)
-                    face = ((Attachable) m).getAttachedFace();
-                if (!event.getBlock().getRelative(face).getType().isSolid()) {
-                    event.setCancelled(true);
-                    return;
-                }
-            }
-        }
+        BlockData m = block.getBlockData();
+        BlockFace face = BlockFace.DOWN;
+        boolean faceAlwaysDown = block.getType() == Material.COMPARATOR || block.getType() == Material.REPEATER;
+        if (m instanceof Attachable && !faceAlwaysDown)
+            face = ((Attachable) m).getAttachedFace();
+
+        if (e.getBlock().getRelative(face).getType().isSolid())
+            return;
+
+        e.setCancelled(true);
     }
-
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onBlockDispense(BlockDispenseEvent e) {
-        CraftManager.getInstance().getCraftsInWorld(e.getBlock().getWorld());
-        for (Craft craft : CraftManager.getInstance().getCraftsInWorld(e.getBlock().getWorld())) {
-            if (craft != null &&
-                    !craft.isNotProcessing() &&
-                    MathUtils.locIsNearCraftFast(craft, MathUtils.bukkit2MovecraftLoc(e.getBlock().getLocation()))) {
-                e.setCancelled(true);
-                return;
-            }
-        }
+    public void onBlockDispense(@NotNull BlockDispenseEvent e) {
+        MovecraftLocation loc = MathUtils.bukkit2MovecraftLoc(e.getBlock().getLocation());
+        Craft craft = MathUtils.fastNearestCraftToLoc(CraftManager.getInstance().getCrafts(), e.getBlock().getLocation());
+        if (craft == null || craft.isNotProcessing() || !craft.getHitBox().contains((loc)))
+            return;
+
+        e.setCancelled(true);
     }
 
     @EventHandler
-    public void onFlow(BlockFromToEvent e) {
-        if (Settings.DisableSpillProtection)
+    public void onFlow(@NotNull BlockFromToEvent e) {
+        if (Settings.DisableSpillProtection || e.isCancelled())
             return;
-        if (!e.getBlock().isLiquid())
+        Block block = e.getToBlock();
+        if (!Tags.FLUID.contains(block.getType()))
             return;
+
         MovecraftLocation loc = MathUtils.bukkit2MovecraftLoc(e.getBlock().getLocation());
         MovecraftLocation toLoc = MathUtils.bukkit2MovecraftLoc(e.getToBlock().getLocation());
-        for (Craft craft : CraftManager.getInstance().getCraftsInWorld(e.getBlock().getWorld())) {
-            if (craft.getHitBox().contains((loc)) && !craft.getFluidLocations().contains(toLoc)) {
-                e.setCancelled(true);
-                break;
-            }
-        }
+        Craft craft = MathUtils.fastNearestCraftToLoc(CraftManager.getInstance().getCrafts(), e.getBlock().getLocation());
+        if (craft == null || !craft.getHitBox().contains((loc)) || craft.getFluidLocations().contains(toLoc))
+            return;
+
+        e.setCancelled(true);
     }
 
     @EventHandler
-    public void onIceForm(BlockFormEvent e) {
+    public void onIceForm(@NotNull BlockFormEvent e) {
         if (e.isCancelled() || !Settings.DisableIceForm)
             return;
         if (Tags.WATER.contains(e.getBlock().getType()))
             return;
 
         MovecraftLocation loc = MathUtils.bukkit2MovecraftLoc(e.getBlock().getLocation());
-        Craft craft = MathUtils.fastNearestCraftToLoc(CraftManager.getInstance().getCrafts(),
-                e.getBlock().getLocation());
-        if (craft != null && craft.getHitBox().contains((loc)))
-            e.setCancelled(true);
+        Craft craft = MathUtils.fastNearestCraftToLoc(CraftManager.getInstance().getCrafts(), e.getBlock().getLocation());
+        if (craft == null || !craft.getHitBox().contains((loc)))
+            return;
+
+        e.setCancelled(true);
     }
 }

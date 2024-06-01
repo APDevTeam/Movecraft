@@ -317,7 +317,7 @@ public class CraftManager implements Iterable<Craft>{
 
     @NotNull
     public Set<Craft> getCraftsInWorld(@NotNull World w) {
-        Set<Craft> crafts = new HashSet<>();
+        Set<Craft> crafts = new HashSet<>(this.crafts.size(), 1); // never has to resize
         for (Craft c : this.crafts) {
             if (c.getWorld() == w)
                 crafts.add(c);
@@ -327,7 +327,7 @@ public class CraftManager implements Iterable<Craft>{
 
     @NotNull
     public Set<PlayerCraft> getPlayerCraftsInWorld(World world) {
-        Set<PlayerCraft> crafts = new HashSet<>();
+        Set<PlayerCraft> crafts = new HashSet<>(this.crafts.size(), 1); // never has to resize
         for (PlayerCraft craft : playerCrafts.values()) {
             if (craft.getWorld() == world)
                 crafts.add(craft);
