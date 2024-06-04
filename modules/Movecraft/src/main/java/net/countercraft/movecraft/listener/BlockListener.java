@@ -190,11 +190,11 @@ public class BlockListener implements Listener {
     public void onFlow(@NotNull BlockFromToEvent e) {
         if (Settings.DisableSpillProtection || e.isCancelled())
             return;
-        Block block = e.getToBlock();
+        Block block = e.getBlock();
         if (!Tags.FLUID.contains(block.getType()))
             return;
 
-        MovecraftLocation loc = MathUtils.bukkit2MovecraftLoc(e.getBlock().getLocation());
+        MovecraftLocation loc = MathUtils.bukkit2MovecraftLoc(block.getLocation());
         MovecraftLocation toLoc = MathUtils.bukkit2MovecraftLoc(e.getToBlock().getLocation());
         Craft craft = MathUtils.fastNearestCraftToLoc(CraftManager.getInstance().getCrafts(), e.getBlock().getLocation());
         if (craft == null || !craft.getHitBox().contains((loc)) || craft.getFluidLocations().contains(toLoc))
