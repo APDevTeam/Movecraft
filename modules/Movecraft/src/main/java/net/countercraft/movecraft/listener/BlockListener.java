@@ -186,19 +186,18 @@ public class BlockListener implements Listener {
         e.setCancelled(true);
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onFlow(BlockFromToEvent e) {
-        if (Settings.DisableSpillProtection)
+        if (Settings.DisableSpillProtection || !Tags.FLUID.contains(e.getBlock().getType()))
             return;
-        if (!e.getBlock().isLiquid())
-            return;
+
         MovecraftLocation loc = MathUtils.bukkit2MovecraftLoc(e.getBlock().getLocation());
         MovecraftLocation toLoc = MathUtils.bukkit2MovecraftLoc(e.getToBlock().getLocation());
-        for (Craft craft : CraftManager.getInstance().getCraftsInWorld(e.getBlock().getWorld())) {
-            if (craft.getHitBox().contains((loc)) && !craft.getFluidLocations().contains(toLoc)) {
-                e.setCancelled(true);
-                break;
-            }
+        for (Craft craft : CraftManager.getInstance().getCrafts()) {
+            if (craft.getWorld() != e.getBlock().getWorld() || !craft.getHitBox().contains(loc) || craft.getFluidLocations().contains(toLoc))
+                continue;
+
+            e.setCancelled(true);
         }
     }
 
