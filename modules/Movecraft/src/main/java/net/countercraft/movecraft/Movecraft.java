@@ -140,6 +140,11 @@ public class Movecraft extends JavaPlugin {
 
         String packageName = getServer().getClass().getPackage().getName();
         String version = packageName.substring(packageName.lastIndexOf('.') + 1);
+        if (version.equals("craftbukkit")) {
+            // We must be running Paper without relocation
+            version = "v1_20_R4";
+        }
+
         getLogger().info("Loading support for " + version);
         try {
             final Class<?> worldHandlerClazz = Class.forName("net.countercraft.movecraft.compat." + version + ".IWorldHandler");
