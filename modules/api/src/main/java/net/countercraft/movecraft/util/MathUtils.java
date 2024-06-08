@@ -28,6 +28,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashSet;
 import java.util.OptionalInt;
 import java.util.Set;
 
@@ -227,6 +228,19 @@ public class MathUtils {
                 closestDistSquared = distSquared;
                 result = i;
             }
+        }
+        return result;
+    }
+
+    @Nullable
+    public static Set<Craft> craftsNearLocFast(@NotNull Set<Craft> crafts, @NotNull Location loc) {
+        Set<Craft> result = new HashSet<>(crafts.size(), 1);
+        MovecraftLocation location = new MovecraftLocation(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+        for (Craft i : crafts) {
+            if (i.getHitBox().isEmpty() || i.getWorld() != loc.getWorld() || !locIsNearCraftFast(i, location))
+                continue;
+
+            result.add(i);
         }
         return result;
     }
