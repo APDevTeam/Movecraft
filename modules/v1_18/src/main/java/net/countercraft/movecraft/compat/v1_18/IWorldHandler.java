@@ -261,11 +261,6 @@ public class IWorldHandler extends WorldHandler {
     }
 
     @Override
-    public void disableShadow(@NotNull Material type) {
-        // Disabled
-    }
-
-    @Override
     public @Nullable Location getAccessLocation(@NotNull InventoryView inventoryView) {
         AbstractContainerMenu menu = ((CraftInventoryView) inventoryView).getHandle();
         Field field = UnsafeUtils.getFieldOfType(ContainerLevelAccess.class, menu.getClass());

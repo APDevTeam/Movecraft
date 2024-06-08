@@ -138,23 +138,17 @@ public class Movecraft extends JavaPlugin {
             logger.info("No PilotTool setting, using default of stick");
         }
 
-        String packageName = getServer().getClass().getPackage().getName();
-        String version = packageName.substring(packageName.lastIndexOf('.') + 1);
-        if (version.equals("craftbukkit")) {
-            // We must be running Paper without relocation
-            version = "v1_20";
-        }
-
-        getLogger().info("Loading support for " + version);
+        String minecraftVersion = getServer().getMinecraftVersion();
+        getLogger().info("Loading support for " + minecraftVersion);
         try {
-            final Class<?> worldHandlerClazz = Class.forName("net.countercraft.movecraft.compat." + version + ".IWorldHandler");
+            final Class<?> worldHandlerClazz = Class.forName("net.countercraft.movecraft.compat." + WorldHandler.getPackageName(minecraftVersion) + ".IWorldHandler");
             // Check if we have a NMSHandler class at that location.
             if (WorldHandler.class.isAssignableFrom(worldHandlerClazz)) { // Make sure it actually implements NMS
                 worldHandler = (WorldHandler) worldHandlerClazz.getConstructor().newInstance(); // Set our handler
 
                 // Try to setup the smooth teleport handler
                 try {
-                    final Class<?> smoothTeleportClazz = Class.forName("net.countercraft.movecraft.support." + version + ".ISmoothTeleport");
+                    final Class<?> smoothTeleportClazz = Class.forName("net.countercraft.movecraft.support." + WorldHandler.getPackageName(minecraftVersion) + ".ISmoothTeleport");
                     if (SmoothTeleport.class.isAssignableFrom(smoothTeleportClazz)) {
                         smoothTeleport = (SmoothTeleport) smoothTeleportClazz.getConstructor().newInstance();
                     }
@@ -212,22 +206,11 @@ public class Movecraft extends JavaPlugin {
             }
         }
 
-        Settings.DisableShadowBlocks = EnumSet.noneOf(Material.class);  //REMOVE FOR PUBLIC VERSION
-//        for(String s : getConfig().getStringList("DisableShadowBlocks")){
-//            Settings.DisableShadowBlocks.add(Material.valueOf(s));
-//        }
-
         Settings.ForbiddenRemoteSigns = new HashSet<>();
-
         for(String s : getConfig().getStringList("ForbiddenRemoteSigns")) {
             Settings.ForbiddenRemoteSigns.add(s.toLowerCase());
         }
 
-        if(!Settings.CompatibilityMode) {
-            for(Material typ : Settings.DisableShadowBlocks) {
-                worldHandler.disableShadow(typ);
-            }
-        }
         adventure = BukkitAudiences.create(this);
 
         if(shuttingDown && Settings.IGNORE_RESET) {
@@ -237,7 +220,6 @@ public class Movecraft extends JavaPlugin {
             return;
         }
 
-
         // Startup procedure
         boolean datapackInitialized = initializeDatapack();
         asyncManager = new AsyncManager();
@@ -246,7 +228,6 @@ public class Movecraft extends JavaPlugin {
 
         CraftManager.initialize(datapackInitialized);
         Bukkit.getScheduler().runTaskTimer(this, WorldManager.INSTANCE::run, 0,1);
-
 
         getServer().getPluginManager().registerEvents(new InteractListener(), this);
 

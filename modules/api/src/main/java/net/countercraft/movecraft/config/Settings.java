@@ -29,15 +29,10 @@ public class Settings {
     public static boolean IGNORE_RESET = false;
     public static boolean Debug = false;
     public static boolean DisableNMSCompatibilityCheck = false;
-    public static int THREAD_POOL_SIZE = 5;
-    public static List<Integer> DATA_BLOCKS;
     public static String LOCALE;
     public static Material PilotTool = Material.STICK;
     public static int SilhouetteViewDistance = 200;
     public static int SilhouetteBlockCount = 20;
-    public static boolean CompatibilityMode = false;
-    public static boolean DelayColorChanges = false;
-    public static double SinkRateTicks = 20.0;
     public static double SinkCheckTicks = 100.0;
     public static boolean ProtectPilotedCrafts = false;
     public static boolean DisableSpillProtection = false;
@@ -52,7 +47,5 @@ public class Settings {
     public static double ManOverboardDistSquared = 1000000;
     public static int MaxRemoteSigns = -1;
     public static boolean CraftsUseNetherPortals = false;
-
-    public static EnumSet<Material> DisableShadowBlocks;
     public static HashSet<String> ForbiddenRemoteSigns;
 }
