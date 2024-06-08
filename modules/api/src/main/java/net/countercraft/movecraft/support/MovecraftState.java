@@ -152,6 +152,11 @@ public class MovecraftState implements BlockState {
     }
 
     @Override
+    public boolean isCollidable() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public void setMetadata(@NotNull String s, @NotNull MetadataValue metadataValue) {
         throw new UnsupportedOperationException();
     }
