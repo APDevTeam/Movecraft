@@ -10,8 +10,8 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>movecraft-v1_18_r2</artifactId>
-    <name>Movecraft-v1_18_R2</name>
+    <artifactId>movecraft-v1_18</artifactId>
+    <name>Movecraft-v1_18</name>
     <packaging>jar</packaging>
     <dependencies>
         <dependency>
@@ -38,8 +38,8 @@
                 <version>3.8.1</version>
                 <configuration>
                     <includes>
-                        <include>net/countercraft/movecraft/compat/v1_18_R2/**</include>
-                        <include>net/countercraft/movecraft/support/v1_18_R2/**</include>
+                        <include>net/countercraft/movecraft/compat/v1_18/**</include>
+                        <include>net/countercraft/movecraft/support/v1_18/**</include>
                     </includes>
                     <source>17</source>
                     <target>17</target>
@@ -51,8 +51,8 @@
                 <version>2.4</version>
                 <configuration>
                     <includes>
-                        <include>net/countercraft/movecraft/compat/v1_18_R2/**</include>
-                        <include>net/countercraft/movecraft/support/v1_18_R2/**</include>
+                        <include>net/countercraft/movecraft/compat/v1_18/**</include>
+                        <include>net/countercraft/movecraft/support/v1_18/**</include>
                     </includes>
                 </configuration>
             </plugin>

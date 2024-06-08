@@ -1,4 +1,4 @@
-package net.countercraft.movecraft.support.v1_18_R2;
+package net.countercraft.movecraft.support.v1_18;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;

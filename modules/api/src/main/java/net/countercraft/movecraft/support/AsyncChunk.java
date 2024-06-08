@@ -19,7 +19,7 @@ public abstract class AsyncChunk<T extends Chunk> {
         String version = packageName.substring(packageName.lastIndexOf('.') + 1);
         Constructor<?> temp = null;
         try {
-            Class.forName("net.countercraft.movecraft.support.v1_18_R2.IAsyncChunk");
+            Class.forName("net.countercraft.movecraft.support.v1_18.IAsyncChunk");
             final Class<?> clazz = Class.forName("net.countercraft.movecraft.support." + version + ".IAsyncChunk");
             if (AsyncChunk.class.isAssignableFrom(clazz)) {
                 temp = clazz.getConstructor(Chunk.class);

@@ -32,7 +32,7 @@
     <dependencies>
         <dependency>
             <groupId>net.countercraft</groupId>
-            <artifactId>movecraft-v1_18_r2</artifactId>
+            <artifactId>movecraft-v1_18</artifactId>
             <version>${revision}</version>
             <type>jar</type>
         </dependency>
@@ -166,7 +166,7 @@
                             <createDependencyReducedPom>false</createDependencyReducedPom>
                             <filters>
                                 <filter>
-                                    <artifact>net.countercraft:movecraft-v1_18_r2</artifact>
+                                    <artifact>net.countercraft:movecraft-v1_18</artifact>
                                     <includes>
                                         <include>**</include>
                                     </includes>
