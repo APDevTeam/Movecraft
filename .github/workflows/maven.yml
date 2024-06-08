@@ -51,7 +51,7 @@ jobs:
         run: cd BuildTools && java -jar BuildTools.jar --rev 1.18.2 --remapped
 
   # Build 1.19.4 NMS
-  v1_19_R3:
+  v1_19:
     runs-on: ubuntu-latest
     steps:
       - name: Set up JDK 17 # 1.19.4 can only be built with Java 17
@@ -67,15 +67,15 @@ jobs:
             ~/.m2/repository/org/spigotmc/spigot/1.19.4-R0.1-SNAPSHOT/
             ~/.m2/repository/org/spigotmc/spigot-parent/
             ~/.m2/repository/org/spigotmc/minecraft-server/
-          key: ${{ runner.os }}-v1_19_R3
-          restore-keys: ${{ runner.os }}-v1_19_R3
+          key: ${{ runner.os }}-v1_19
+          restore-keys: ${{ runner.os }}-v1_19
       - name: Cache Maven packages
         id: cacheMain
         uses: actions/cache@v3
         with:
           path: ~/.m2
-          key: ${{ runner.os }}-m2-v1_19_R3
-          restore-keys: ${{ runner.os }}-m2-v1_19_R3
+          key: ${{ runner.os }}-m2-v1_19
+          restore-keys: ${{ runner.os }}-m2-v1_19
 
       - name: Setup BuildTools
         run: mkdir BuildTools && wget -O BuildTools/BuildTools.jar https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
@@ -93,7 +93,7 @@ jobs:
         run: cd BuildTools && java -jar BuildTools.jar --rev 1.19.4 --remapped
 
   # Build 1.20.6 NMS
-  v1_20_R4:
+  v1_20:
     runs-on: ubuntu-latest
     steps:
       - name: Set up JDK 21 # 1.20.6 can only be built with Java 21
@@ -109,15 +109,15 @@ jobs:
             ~/.m2/repository/org/spigotmc/spigot/1.20.6-R0.1-SNAPSHOT/
             ~/.m2/repository/org/spigotmc/spigot-parent/
             ~/.m2/repository/org/spigotmc/minecraft-server/
-          key: ${{ runner.os }}-v1_20_R4
-          restore-keys: ${{ runner.os }}-v1_20_R4
+          key: ${{ runner.os }}-v1_20
+          restore-keys: ${{ runner.os }}-v1_20
       - name: Cache Maven packages
         id: cacheMain
         uses: actions/cache@v3
         with:
           path: ~/.m2
-          key: ${{ runner.os }}-m2-v1_20_R4
-          restore-keys: ${{ runner.os }}-m2-v1_20_R4
+          key: ${{ runner.os }}-m2-v1_20
+          restore-keys: ${{ runner.os }}-m2-v1_20
 
       - name: Setup BuildTools
         run: mkdir BuildTools && wget -O BuildTools/BuildTools.jar https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
@@ -137,7 +137,7 @@ jobs:
   # Build Movecraft
   build:
     runs-on: ubuntu-latest
-    needs: [v1_18, v1_19_R3, v1_20_R4]
+    needs: [v1_18, v1_19, v1_20]
 
     steps:
       - name: Checkout Movecraft
@@ -169,8 +169,8 @@ jobs:
             ~/.m2/repository/org/spigotmc/spigot/1.19.4-R0.1-SNAPSHOT/
             ~/.m2/repository/org/spigotmc/spigot-parent/
             ~/.m2/repository/org/spigotmc/minecraft-server/
-          key: ${{ runner.os }}-v1_19_R3
-          restore-keys: ${{ runner.os }}-v1_19_R3
+          key: ${{ runner.os }}-v1_19
+          restore-keys: ${{ runner.os }}-v1_19
       - name: Cache 1.20.6 Maven package
         uses: actions/cache@v3
         with:
@@ -178,8 +178,8 @@ jobs:
             ~/.m2/repository/org/spigotmc/spigot/1.20.6-R0.1-SNAPSHOT/
             ~/.m2/repository/org/spigotmc/spigot-parent/
             ~/.m2/repository/org/spigotmc/minecraft-server/
-          key: ${{ runner.os }}-v1_20_R4
-          restore-keys: ${{ runner.os }}-v1_20_R4
+          key: ${{ runner.os }}-v1_20
+          restore-keys: ${{ runner.os }}-v1_20
 
       - name: Build with Maven
         run: mvn -T 1C -B package --file pom.xml

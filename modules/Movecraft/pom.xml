@@ -38,13 +38,13 @@
         </dependency>
         <dependency>
             <groupId>net.countercraft</groupId>
-            <artifactId>movecraft-v1_19_r3</artifactId>
+            <artifactId>movecraft-v1_19</artifactId>
             <version>${revision}</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <groupId>net.countercraft</groupId>
-            <artifactId>movecraft-v1_20_R4</artifactId>
+            <artifactId>movecraft-v1_20</artifactId>
             <version>${revision}</version>
             <type>jar</type>
         </dependency>
@@ -172,13 +172,13 @@
                                     </includes>
                                 </filter>
                                 <filter>
-                                    <artifact>net.countercraft:movecraft-v1_19_r3</artifact>
+                                    <artifact>net.countercraft:movecraft-v1_19</artifact>
                                     <includes>
                                         <include>**</include>
                                     </includes>
                                 </filter>
                                 <filter>
-                                    <artifact>net.countercraft:movecraft-v1_20_R4</artifact>
+                                    <artifact>net.countercraft:movecraft-v1_20</artifact>
                                     <includes>
                                         <include>**</include>
                                     </includes>

@@ -142,7 +142,7 @@ public class Movecraft extends JavaPlugin {
         String version = packageName.substring(packageName.lastIndexOf('.') + 1);
         if (version.equals("craftbukkit")) {
             // We must be running Paper without relocation
-            version = "v1_20_R4";
+            version = "v1_20";
         }
 
         getLogger().info("Loading support for " + version);
