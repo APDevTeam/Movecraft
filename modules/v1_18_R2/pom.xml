@@ -41,8 +41,8 @@
                         <include>net/countercraft/movecraft/compat/v1_18_R2/**</include>
                         <include>net/countercraft/movecraft/support/v1_18_R2/**</include>
                     </includes>
-                    <source>13</source>
-                    <target>13</target>
+                    <source>17</source>
+                    <target>17</target>
                 </configuration>
             </plugin>
             <plugin>

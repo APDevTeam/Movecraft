@@ -117,8 +117,8 @@
                     <includes>
                         <include>net/countercraft/movecraft/**</include>
                     </includes>
-                    <source>13</source>
-                    <target>13</target>
+                    <source>17</source>
+                    <target>17</target>
                 </configuration>
             </plugin>
             <plugin>
