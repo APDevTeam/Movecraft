@@ -4,6 +4,7 @@ import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.MovecraftRotation;
+import net.countercraft.movecraft.TrackedLocation;
 import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.config.Settings;
@@ -25,6 +26,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
@@ -78,6 +80,7 @@ public abstract class BaseCraft implements Craft {
     private String name = "";
     @NotNull
     private MovecraftLocation lastTranslation = new MovecraftLocation(0, 0, 0);
+    private Map<NamespacedKey, Set<TrackedLocation>> trackedLocations = new HashMap<>();
 
     public BaseCraft(@NotNull CraftType type, @NotNull World world) {
         this.type = type;
@@ -598,4 +601,7 @@ public abstract class BaseCraft implements Craft {
     public double getTotalFuel() {
         return totalFuel;
     }
+
+    @Override
+    public Map<NamespacedKey, Set<TrackedLocation>> getTrackedLocations() {return trackedLocations;}
 }
