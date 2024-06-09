@@ -32,6 +32,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Hopper;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.Waterlogged;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -209,8 +210,8 @@ public class BlockListener implements Listener {
         if (Settings.DisableSpillProtection)
             return;
         Block block = e.getBlock();
-        if (!Tags.FLUID.contains(block.getType()))
-            return;
+        if (!Tags.FLUID.contains(block.getType()) && (!(block.getBlockData() instanceof Waterlogged waterlogged) || !waterlogged.isWaterlogged()))
+            return; // If the source is not a fluid or waterlogged, exit
 
         Location location = block.getLocation();
         MovecraftLocation loc = MathUtils.bukkit2MovecraftLoc(location);
