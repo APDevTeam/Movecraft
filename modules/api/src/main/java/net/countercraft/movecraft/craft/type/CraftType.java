@@ -41,7 +41,6 @@ import net.countercraft.movecraft.craft.type.transform.Transform;
 import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.util.Pair;
 import net.countercraft.movecraft.util.Tags;
-import net.countercraft.movecraft.util.WorldUtils;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import org.bukkit.Bukkit;
@@ -478,8 +477,7 @@ final public class CraftType {
                     if(w == null)
                         return type.getIntProperty(MAX_HEIGHT_ABOVE_GROUND);
 
-                    return Math.min(type.getIntProperty(MAX_HEIGHT_ABOVE_GROUND),
-                            w.getMaxHeight() - WorldUtils.getWorldMinHeightLimit(w));
+                    return Math.min(type.getIntProperty(MAX_HEIGHT_ABOVE_GROUND), w.getMaxHeight() - w.getMinHeight());
                 }
         ));
         registerProperty(new BooleanProperty("canDirectControl", CAN_DIRECT_CONTROL, type -> true));
@@ -712,7 +710,7 @@ final public class CraftType {
                         var w = Bukkit.getWorld(i.getKey());
                         if(w == null)
                             throw new IllegalArgumentException("World '" + i.getKey() + "' does not exist.");
-                        if(value < WorldUtils.getWorldMinHeightLimit(w) || value > w.getMaxHeight())
+                        if(value < w.getMinHeight() || value > w.getMaxHeight())
                             return false;
                     }
                     return true;
@@ -730,7 +728,7 @@ final public class CraftType {
                         var w = Bukkit.getWorld(i.getKey());
                         if(w == null)
                             throw new IllegalArgumentException("World '" + i.getKey() + "' does not exist.");
-                        if(value < WorldUtils.getWorldMinHeightLimit(w) || value > w.getMaxHeight())
+                        if(value < w.getMinHeight() || value > w.getMaxHeight())
                             return false;
                     }
                     return true;

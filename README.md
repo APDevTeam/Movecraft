@@ -4,17 +4,17 @@ Movecraft
 
 This is a maintained fork of Movecraft, which aims to add legacy version support as well as performance fixes.
 
-**Movecraft requires at least Java 13**
+**Movecraft requires at least Java 17**
 
 ## Download
 
-Public builds, as well as builds as old as v5.0 (for 1.9), are located on the [Spigot forums](https://www.spigotmc.org/resources/movecraft.31321/).
+Releases can be found on the [releases tab](https://github.com/APDevTeam/Movecraft/releases).
 
-Preliminary builds (including 1.14+ support), can be found on the [releases tab](https://github.com/APDevTeam/Movecraft/releases).
-
-Development builds can be found under the [actions tab](https://github.com/APDevTeam/Movecraft/actions?query=workflow%3A%22Java+CI%22).  Use at your own risk!
+Previous builds between v5.0 (for 1.9) and v7 (for 1.12), are located on the [Spigot forums](https://www.spigotmc.org/resources/movecraft.31321/).
 
 Legacy builds as old as v0.7.1 (for 1.0.0) can be found on the original [Bukkit page](https://dev.bukkit.org/projects/movecraft).
+
+Development builds can be found under the [actions tab](https://github.com/APDevTeam/Movecraft/actions?query=workflow%3A%22Java+CI%22).  Use at your own risk!
 
 ## Support
 Please check the [Wiki](https://github.com/APDevTeam/Movecraft/wiki) and [FAQ](https://github.com/APDevTeam/Movecraft/wiki/Frequently-Asked-Questions) pages before asking for help!
