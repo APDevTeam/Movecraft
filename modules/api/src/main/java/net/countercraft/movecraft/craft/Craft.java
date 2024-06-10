@@ -35,6 +35,8 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -45,7 +47,6 @@ public interface Craft {
 
     @Deprecated
     void setProcessing(boolean processing);
-
     /**
      * Gets a HitBox representing the current locations that this craft controls
      *
@@ -58,7 +59,6 @@ public interface Craft {
      * Sets the HitBox representing the current locations that this craft controls
      */
     void setHitBox(@NotNull HitBox hitBox);
-
     /**
      * Gets the CraftType used to determine the Craft's behaviours
      *
@@ -67,6 +67,94 @@ public interface Craft {
     @NotNull
     CraftType getType();
 
+
+    Map<Object, Collection<Object>> trackedLocations = new HashMap<>();
+
+    Map<String, Object> craftTags = new HashMap<>();
+
+    /**
+     * Attaches a Key-Value Pair to a Craft Object. 
+     */
+    void setDataTag(@NotNull String key, @Nullable Object data);
+
+    /**
+     * Gets the Value of and then Removes the Key, if Present (Otherwise Returns Null).
+     */
+    @Nullable
+    Object removeDataTag(String key);
+
+    /**
+     * Gets a Tag Value from a Keys.
+     */
+    @Nullable
+    Object getDataTag(String key);
+
+    /**
+     * Gets all Tag Values from all Keys.
+     */
+    @NotNull
+    Collection<Object> getAllTagValues();
+
+    /**
+     * Checks if the Craft has a certain Key out of all Keys
+     */
+    @NotNull
+    boolean hasDataKey(String key);
+
+    /**
+     * Checks if the Craft has a certain Value from all Keys
+     */
+    @NotNull
+    boolean hasDataValue(Object value);
+
+    /**
+     * Translates the given HitBox by a MovecraftLocation (Which is Treated as a Vector)
+     */
+    @NotNull
+    HitBox translateBox(HitBox box, MovecraftLocation vec);
+
+    /**
+     * Rotates the given HitBox around an Axis by a MovecraftRotation
+     */
+    @NotNull
+    HitBox rotateBox(HitBox box, MovecraftLocation axis, MovecraftRotation rotation);
+
+    /**
+     * Checks if an Object (MovecraftLocation / HitBox) is currently being Tracked.
+     */
+    @NotNull
+    boolean isTracking(@NotNull Object tracked);
+
+    /**
+     * Replaces/Updates a Key of Tracked MovecraftLocation or HitBox
+     */
+    void setTrackedLocs(@NotNull Collection<Object> tracked, @NotNull Object key);
+    /**
+     * Adds a Tracked MovecraftLocation or HitBox to a Key
+     */
+    void addTrackedLoc(@NotNull Object tracked, @NotNull Object key);
+    /**
+     * Removes a Tracked MovecraftLocation or HitBox from a Key
+     */
+    void removeTrackedLoc(@NotNull Object tracked, @NotNull Object key);
+    /**
+     * Gets all Tracked MovecraftLocations (Including from Tracked HitBoxes) from all Keys
+     */
+    Set<Object> getAllTrackedLocation();
+
+    /**
+     * Gets all Tracked MovecraftLocations (Including from Tracked HitBoxes) or HitBox from a particular key
+     */
+    @Nullable
+    Set<MovecraftLocation> getTrackedLocs(@NotNull Object key);
+
+    /**
+     * Gets a HitBox representing the current locations that this craft controls
+     *
+     * @return the crafts current HitBox
+     */
+
+    
     @Deprecated(forRemoval = true) @NotNull
     default World getW(){
         return this.getWorld();
