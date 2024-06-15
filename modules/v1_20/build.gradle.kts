@@ -4,11 +4,18 @@
 
 plugins {
     id("buildlogic.java-conventions")
+    id("io.papermc.paperweight.userdev") version "1.7.1"
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 dependencies {
     api(project(":movecraft-api"))
-    compileOnly("org.spigotmc:spigot:1.20.6-R0.1-SNAPSHOT")
+    paperweight.paperDevBundle("1.20.6-R0.1-SNAPSHOT")
 }
 
 description = "Movecraft-v1_20"
+paperweight.reobfArtifactConfiguration = io.papermc.paperweight.userdev.ReobfArtifactConfiguration.MOJANG_PRODUCTION

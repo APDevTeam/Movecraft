@@ -13,8 +13,8 @@ import org.bukkit.Chunk;
 import org.bukkit.Material;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.craftbukkit.v1_20_R4.CraftChunk;
-import org.bukkit.craftbukkit.v1_20_R4.block.data.CraftBlockData;
+import org.bukkit.craftbukkit.CraftChunk;
+import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings("unused")
@@ -23,7 +23,7 @@ public class IAsyncChunk extends AsyncChunk<CraftChunk> {
         @Override
         public BlockState load(@NotNull MovecraftLocation movecraftLocation) {
             var block = chunk.getBlock(movecraftLocation.getX(), movecraftLocation.getY(), movecraftLocation.getZ());
-            return WorldManager.INSTANCE.executeMain(block::getState);
+            return WorldManager.INSTANCE.executeMain(() -> block.getState());
         }
     });
     
