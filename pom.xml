@@ -15,7 +15,6 @@
     <modules>
         <module>modules/api</module>
         <module>modules/v1_18</module>
-        <module>modules/v1_19</module>
         <module>modules/v1_20</module>
         <module>modules/datapack</module>
         <module>modules/Movecraft</module>

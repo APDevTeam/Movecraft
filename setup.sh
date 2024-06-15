@@ -33,13 +33,6 @@ else
     java -jar BuildTools.jar --rev 1.18.2 --remapped
 fi
 
-# Build 1.19.4
-if [ -f ~/.m2/repository/org/spigotmc/spigot/1.19.4-R0.1-SNAPSHOT/spigot-1.19.4-R0.1-SNAPSHOT.jar ]; then
-    echo "1.19.4 already exists, skipping build"
-else
-    java -jar BuildTools.jar --rev 1.19.4 --remapped
-fi
-
 # Build 1.20.6
 if [ -f ~/.m2/repository/org/spigotmc/spigot/1.20.6-R0.1-SNAPSHOT/spigot-1.20.6-R0.1-SNAPSHOT.jar ]; then
     echo "1.20.6 already exists, skipping build"
