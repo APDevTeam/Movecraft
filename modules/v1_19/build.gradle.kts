@@ -8,7 +8,7 @@ plugins {
 
 dependencies {
     api(project(":movecraft-api"))
-    compileOnly(libs.org.spigotmc.spigot.x2)
+    compileOnly("org.spigotmc:spigot:1.19.4-R0.1-SNAPSHOT")
 }
 
 description = "Movecraft-v1_19"

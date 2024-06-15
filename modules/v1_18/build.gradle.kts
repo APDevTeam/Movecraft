@@ -4,11 +4,13 @@
 
 plugins {
     id("buildlogic.java-conventions")
+    id("io.papermc.paperweight.userdev") version "1.7.1"
 }
 
 dependencies {
     api(project(":movecraft-api"))
-    compileOnly(libs.org.spigotmc.spigot)
+    paperweight.paperDevBundle("1.18.2-R0.1-SNAPSHOT")
 }
 
 description = "Movecraft-v1_18"
+paperweight.reobfArtifactConfiguration = io.papermc.paperweight.userdev.ReobfArtifactConfiguration.REOBF_PRODUCTION

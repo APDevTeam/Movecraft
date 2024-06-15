@@ -13,9 +13,6 @@ org-junit-jupiter-junit-jupiter-api = "5.10.2"
 org-openjdk-jmh-jmh-core = "1.37"
 org-openjdk-jmh-jmh-generator-annprocess = "1.37"
 org-roaringbitmap-roaringbitmap = "1.0.6"
-org-spigotmc-spigot = "1.18.2-R0.1-SNAPSHOT"
-org-spigotmc-spigot-x1 = "1.20.6-R0.1-SNAPSHOT"
-org-spigotmc-spigot-x2 = "1.19.4-R0.1-SNAPSHOT"
 org-yaml-snakeyaml = "2.0"
 
 [libraries]
@@ -30,7 +27,4 @@ org-junit-jupiter-junit-jupiter-api = { module = "org.junit.jupiter:junit-jupite
 org-openjdk-jmh-jmh-core = { module = "org.openjdk.jmh:jmh-core", version.ref = "org-openjdk-jmh-jmh-core" }
 org-openjdk-jmh-jmh-generator-annprocess = { module = "org.openjdk.jmh:jmh-generator-annprocess", version.ref = "org-openjdk-jmh-jmh-generator-annprocess" }
 org-roaringbitmap-roaringbitmap = { module = "org.roaringbitmap:RoaringBitmap", version.ref = "org-roaringbitmap-roaringbitmap" }
-org-spigotmc-spigot = { module = "org.spigotmc:spigot", version.ref = "org-spigotmc-spigot" }
-org-spigotmc-spigot-x1 = { module = "org.spigotmc:spigot", version.ref = "org-spigotmc-spigot-x1" }
-org-spigotmc-spigot-x2 = { module = "org.spigotmc:spigot", version.ref = "org-spigotmc-spigot-x2" }
 org-yaml-snakeyaml = { module = "org.yaml:snakeyaml", version.ref = "org-yaml-snakeyaml" }
