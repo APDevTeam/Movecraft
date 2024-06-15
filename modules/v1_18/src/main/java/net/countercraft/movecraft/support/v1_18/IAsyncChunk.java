@@ -22,7 +22,7 @@ public class IAsyncChunk extends AsyncChunk<CraftChunk> {
         @Override
         public BlockState load(@NotNull MovecraftLocation movecraftLocation) {
             var block = chunk.getBlock(movecraftLocation.getX(), movecraftLocation.getY(), movecraftLocation.getZ());
-            return WorldManager.INSTANCE.executeMain(block::getState);
+            return WorldManager.INSTANCE.executeMain(() -> block.getState());
         }
     });
 

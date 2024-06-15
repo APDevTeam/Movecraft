@@ -117,7 +117,7 @@ public class IWorldHandler extends WorldHandler {
             moveBlockEntity(nativeWorld, rotatedPositions.get(tileHolder.getTilePosition()), tileHolder.getTile());
         }
         for (TickHolder tickHolder : ticks) {
-            final long currentTime = nativeWorld.M.getGameTime();
+            final long currentTime = nativeWorld.serverLevelData.getGameTime();
             nativeWorld.getBlockTicks().schedule(new ScheduledTick<>((Block) tickHolder.getTick().type(), rotatedPositions.get(tickHolder.getTick().pos()), tickHolder.getTick().triggerTick() - currentTime, tickHolder.getTick().priority(), tickHolder.getTick().subTickOrder()));
         }
 
