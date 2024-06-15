@@ -20,4 +20,12 @@ dependencies {
     compileOnly(libs.org.jetbrains.annotations)
 }
 
+tasks {
+    compileJava {
+        options.compilerArgs.addAll(listOf(
+            "--add-exports", "java.base/jdk.internal.vm.annotation=ALL-UNNAMED"
+        ))
+    }
+}
+
 description = "Movecraft-API"
