@@ -1,7 +1,9 @@
 plugins {
     id("buildlogic.java-conventions")
-    id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("io.github.goooler.shadow") version "8.1.7"
 }
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 repositories {
     mavenCentral()
@@ -26,9 +28,9 @@ tasks.shadowJar {
     archiveVersion.set("")
 
     dependencies {
-        include(dependency("net.countercraft:movecraft-v1_18"))
-        include(dependency("net.countercraft:movecraft-v1_20"))
-        include(dependency("net.countercraft:datapack"))
+        include(project(":movecraft-v1_18"))
+        include(project(":movecraft-v1_20"))
+        include(project(":movecraft-datapack"))
     }
 
     relocate("it.unimi", "net.countercraft.movecraft.libs.it.unimi")

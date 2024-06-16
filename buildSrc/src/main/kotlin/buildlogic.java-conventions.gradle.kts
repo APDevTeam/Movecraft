@@ -36,7 +36,6 @@ repositories {
 
 group = "net.countercraft"
 version = "8.0.0_beta-3"
-java.sourceCompatibility = JavaVersion.VERSION_17
 
 publishing {
     publications.create<MavenPublication>("maven") {

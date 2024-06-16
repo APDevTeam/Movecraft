@@ -6,6 +6,8 @@ plugins {
     id("buildlogic.java-conventions")
 }
 
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
 dependencies {
     api(libs.io.papermc.paper.paper.api)
     api(libs.org.openjdk.jmh.jmh.core)
