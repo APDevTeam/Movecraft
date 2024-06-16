@@ -28,6 +28,7 @@ tasks.shadowJar {
     archiveVersion.set("")
 
     dependencies {
+        include(project(":movecraft-api"))
         include(project(":movecraft-v1_18"))
         include(project(":movecraft-v1_20"))
         include(project(":movecraft-datapack"))
@@ -36,12 +37,6 @@ tasks.shadowJar {
     relocate("it.unimi", "net.countercraft.movecraft.libs.it.unimi")
     relocate("net.kyori", "net.countercraft.movecraft.libs.net.kyori")
     relocate("org.roaringbitmap", "net.countercraft.movecraft.libs.org.roaringbitmap")
-
-    minimize()
-}
-
-tasks.build {
-    dependsOn(tasks.shadowJar)
 }
 
 description = "Movecraft"
