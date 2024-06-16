@@ -32,6 +32,9 @@ tasks.processResources {
     from(rootProject.file("LICENSE.md"))
     from(project(":movecraft-datapack").file("build/zip/movecraft-data.zip"))
     dependsOn(project(":movecraft-datapack").tasks.build)
+    filesMatching("*.yml") {
+        expand(mapOf("projectVersion" to project.version))
+    }
 }
 
 description = "Movecraft"
