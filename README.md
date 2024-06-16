@@ -28,6 +28,6 @@ Building Movecraft is as easy as downloading the source code and executing the f
 ```
 ./gradlew build
 ```
-Compiled jars can be found in the `/build/libs` directory.
+Compiled jars can be found in the `modules/Movecraft/build/libs` directory.
 
 #### Movecraft is released under the GNU General Public License V3. 

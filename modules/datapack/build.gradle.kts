@@ -15,4 +15,4 @@ tasks.build {
     dependsOn(zipTask)
 }
 
-description = "Movecraft-datapack"
+description = "Movecraft-Datapack"

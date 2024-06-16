@@ -5,5 +5,3 @@
 plugins {
     id("buildlogic.java-conventions")
 }
-
-description = "datapack"

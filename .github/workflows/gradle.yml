@@ -26,10 +26,10 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
 
       - name: Build with Gradle
-        run: ./gradlew build
+        run: ./gradlew clean build
 
       - name: Stage jar
-        run: mkdir staging && cp build/libs/Movecraft.jar staging && mv staging/Movecraft.jar staging/Movecraft_$GITHUB_SHA.jar
+        run: mkdir staging && cp modules/Movecraft/build/libs/Movecraft.jar staging && mv staging/Movecraft.jar staging/Movecraft_$GITHUB_SHA.jar
       - name: Upload jar
         uses: actions/upload-artifact@v4
         with:
