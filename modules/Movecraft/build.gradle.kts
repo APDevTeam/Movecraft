@@ -5,17 +5,13 @@ plugins {
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
-repositories {
-    mavenCentral()
-    gradlePluginPortal()
-}
-
 dependencies {
     implementation(project(":movecraft-v1_18"))
     implementation(project(":movecraft-v1_20"))
     implementation(project(":movecraft-api"))
-    implementation(project(":movecraft-datapack"))
-    implementation("org.yaml:snakeyaml:2.0")
+    compileOnly("org.yaml:snakeyaml:2.0")
+    implementation(libs.org.roaringbitmap.roaringbitmap)
+    implementation(libs.it.unimi.dsi.fastutil)
 }
 
 tasks.shadowJar {
@@ -31,11 +27,9 @@ tasks.shadowJar {
         include(project(":movecraft-api"))
         include(project(":movecraft-v1_18"))
         include(project(":movecraft-v1_20"))
-        include(project(":movecraft-datapack"))
     }
 
     relocate("it.unimi", "net.countercraft.movecraft.libs.it.unimi")
-    relocate("net.kyori", "net.countercraft.movecraft.libs.net.kyori")
     relocate("org.roaringbitmap", "net.countercraft.movecraft.libs.org.roaringbitmap")
 }
 
