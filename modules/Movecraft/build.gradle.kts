@@ -10,8 +10,6 @@ dependencies {
     implementation(project(":movecraft-v1_20"))
     implementation(project(":movecraft-api"))
     compileOnly("org.yaml:snakeyaml:2.0")
-    implementation(libs.org.roaringbitmap.roaringbitmap)
-    implementation(libs.it.unimi.dsi.fastutil)
 }
 
 tasks.shadowJar {
@@ -28,9 +26,12 @@ tasks.shadowJar {
         include(project(":movecraft-v1_18"))
         include(project(":movecraft-v1_20"))
     }
+}
 
-    relocate("it.unimi", "net.countercraft.movecraft.libs.it.unimi")
-    relocate("org.roaringbitmap", "net.countercraft.movecraft.libs.org.roaringbitmap")
+tasks.processResources {
+    from(rootProject.file("LICENSE.md"))
+    from(project(":movecraft-datapack").file("build/zip/movecraft-data.zip"))
+    dependsOn(project(":movecraft-datapack").tasks.build)
 }
 
 description = "Movecraft"
