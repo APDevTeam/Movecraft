@@ -40,3 +40,5 @@ commands:
   craftinfo:
     description: Get information on a piloted craft
     usage: /craftinfo [player] [page]
+libraries:
+  - org.roaringbitmap:RoaringBitmap:1.0.6
