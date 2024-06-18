@@ -13,10 +13,6 @@ dependencies {
 }
 
 tasks.shadowJar {
-    manifest {
-        attributes["paperweight-mappings-namespace"] = "mojang"
-    }
-
     archiveBaseName.set("Movecraft")
     archiveClassifier.set("")
     archiveVersion.set("")
