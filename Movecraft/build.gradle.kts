@@ -6,8 +6,8 @@ plugins {
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 dependencies {
-    runtimeOnly(project(":movecraft-v1_18"))
-    runtimeOnly(project(":movecraft-v1_20"))
+    runtimeOnly(project(":movecraft-v1_18", "reobf"))
+    runtimeOnly(project(":movecraft-v1_20", "reobf"))
     implementation(project(":movecraft-api"))
     compileOnly("org.yaml:snakeyaml:2.0")
 }
