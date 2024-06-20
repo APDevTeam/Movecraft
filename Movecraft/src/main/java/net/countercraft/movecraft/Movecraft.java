@@ -18,17 +18,7 @@
 package net.countercraft.movecraft;
 
 import net.countercraft.movecraft.async.AsyncManager;
-import net.countercraft.movecraft.commands.ContactsCommand;
-import net.countercraft.movecraft.commands.CraftInfoCommand;
-import net.countercraft.movecraft.commands.CraftReportCommand;
-import net.countercraft.movecraft.commands.CraftTypeCommand;
-import net.countercraft.movecraft.commands.CruiseCommand;
-import net.countercraft.movecraft.commands.ManOverboardCommand;
-import net.countercraft.movecraft.commands.MovecraftCommand;
-import net.countercraft.movecraft.commands.PilotCommand;
-import net.countercraft.movecraft.commands.ReleaseCommand;
-import net.countercraft.movecraft.commands.RotateCommand;
-import net.countercraft.movecraft.commands.ScuttleCommand;
+import net.countercraft.movecraft.commands.*;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.ChunkManager;
 import net.countercraft.movecraft.craft.CraftManager;
@@ -38,35 +28,16 @@ import net.countercraft.movecraft.listener.PlayerListener;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.processing.WorldManager;
-import net.countercraft.movecraft.sign.AscendSign;
-import net.countercraft.movecraft.sign.ContactsSign;
-import net.countercraft.movecraft.sign.CraftSign;
-import net.countercraft.movecraft.sign.CruiseSign;
-import net.countercraft.movecraft.sign.DescendSign;
-import net.countercraft.movecraft.sign.HelmSign;
-import net.countercraft.movecraft.sign.MoveSign;
-import net.countercraft.movecraft.sign.NameSign;
-import net.countercraft.movecraft.sign.PilotSign;
-import net.countercraft.movecraft.sign.RelativeMoveSign;
-import net.countercraft.movecraft.sign.ReleaseSign;
-import net.countercraft.movecraft.sign.RemoteSign;
-import net.countercraft.movecraft.sign.ScuttleSign;
-import net.countercraft.movecraft.sign.SpeedSign;
-import net.countercraft.movecraft.sign.StatusSign;
-import net.countercraft.movecraft.sign.SubcraftRotateSign;
-import net.countercraft.movecraft.sign.TeleportSign;
+import net.countercraft.movecraft.sign.*;
 import net.countercraft.movecraft.util.BukkitTeleport;
 import net.countercraft.movecraft.util.Tags;
-import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -74,7 +45,6 @@ import java.util.logging.Logger;
 
 public class Movecraft extends JavaPlugin {
     private static Movecraft instance;
-    private static BukkitAudiences adventure = null;
 
     private Logger logger;
     private boolean shuttingDown;
@@ -86,21 +56,9 @@ public class Movecraft extends JavaPlugin {
         return instance;
     }
 
-    @NotNull
-    public static BukkitAudiences getAdventure() {
-        if (adventure == null)
-            throw new IllegalStateException("Tried to access Adventure when the plugin was disabled!");
-
-        return adventure;
-    }
-
     @Override
     public void onDisable() {
         shuttingDown = true;
-        if (adventure != null) {
-            adventure.close();
-            adventure = null;
-        }
     }
 
     @Override
@@ -210,8 +168,6 @@ public class Movecraft extends JavaPlugin {
         for(String s : getConfig().getStringList("ForbiddenRemoteSigns")) {
             Settings.ForbiddenRemoteSigns.add(s.toLowerCase());
         }
-
-        adventure = BukkitAudiences.create(this);
 
         if(shuttingDown && Settings.IGNORE_RESET) {
             logger.severe("Movecraft is incompatible with the reload command. Movecraft has shut down and will restart when the server is restarted.");

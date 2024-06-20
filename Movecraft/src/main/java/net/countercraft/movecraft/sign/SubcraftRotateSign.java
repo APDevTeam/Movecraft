@@ -3,18 +3,13 @@ package net.countercraft.movecraft.sign;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.MovecraftRotation;
-import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.craft.SubCraft;
-import net.countercraft.movecraft.craft.SubCraftImpl;
-import net.countercraft.movecraft.craft.SubcraftRotateCraft;
+import net.countercraft.movecraft.craft.*;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftPilotEvent;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.functions.Result;
 import net.countercraft.movecraft.util.Pair;
-import net.countercraft.movecraft.util.hitboxes.MutableHitBox;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -111,8 +106,7 @@ public final class SubcraftRotateSign implements Listener {
                     Craft parent = parents.iterator().next();
                     return new Pair<>(Result.succeed(), new SubCraftImpl(type, w, parent));
                 },
-                world, player,
-                Movecraft.getAdventure().player(player),
+                world, player, player,
                 craft -> () -> {
                     Bukkit.getServer().getPluginManager().callEvent(new CraftPilotEvent(craft, CraftPilotEvent.Reason.SUB_CRAFT));
                     if (craft instanceof SubCraft) { // Subtract craft from the parent

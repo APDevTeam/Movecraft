@@ -110,9 +110,7 @@ public final class CraftSign implements Listener {
                                 new PlayerCraftImpl(type, w, p));
                     }
                 },
-                world,
-                player,
-                Movecraft.getAdventure().player(player),
+                world, player, player,
                 craft -> () -> {
                     Bukkit.getServer().getPluginManager().callEvent(new CraftPilotEvent(craft, CraftPilotEvent.Reason.PLAYER));
                     if (craft instanceof SubCraft) { // Subtract craft from the parent

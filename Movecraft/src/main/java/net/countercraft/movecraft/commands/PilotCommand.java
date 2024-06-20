@@ -1,35 +1,24 @@
 package net.countercraft.movecraft.commands;
 
-import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.craft.CruiseOnPilotCraft;
-import net.countercraft.movecraft.craft.CruiseOnPilotSubCraft;
-import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.craft.PlayerCraftImpl;
-import net.countercraft.movecraft.events.CraftPilotEvent;
+import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.processing.effects.Effect;
-import net.countercraft.movecraft.processing.functions.CraftSupplier;
 import net.countercraft.movecraft.processing.functions.Result;
 import net.countercraft.movecraft.util.MathUtils;
 import net.countercraft.movecraft.util.Pair;
-import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-import java.util.function.Function;
 
 import static net.countercraft.movecraft.util.ChatUtils.MOVECRAFT_COMMAND_PREFIX;
 
@@ -75,8 +64,7 @@ public class PilotCommand implements TabExecutor {
                     return new Pair<>(Result.succeed(),
                             new PlayerCraftImpl(type, w, p));
                 },
-                world, player,
-                Movecraft.getAdventure().player(player),
+                world, player, player,
                 craft -> () -> {
                     // Release old craft if it exists
                     Craft oldCraft = CraftManager.getInstance().getCraftByPlayer(player);
