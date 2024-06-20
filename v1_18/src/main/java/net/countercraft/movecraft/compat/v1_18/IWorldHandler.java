@@ -21,23 +21,18 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.ticks.LevelChunkTicks;
 import net.minecraft.world.ticks.ScheduledTick;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.v1_18_R2.CraftWorld;
 import org.bukkit.craftbukkit.v1_18_R2.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.v1_18_R2.inventory.CraftInventoryView;
-import org.bukkit.craftbukkit.v1_18_R2.util.CraftMagicNumbers;
 import org.bukkit.inventory.InventoryView;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Predicate;
 
 @SuppressWarnings("unused")
@@ -54,9 +49,9 @@ public class IWorldHandler extends WorldHandler {
     private final NextTickProvider tickProvider = new NextTickProvider();
 
     public IWorldHandler() {
-        String mappings = ((CraftMagicNumbers) CraftMagicNumbers.INSTANCE).getMappingsVersion();
-        if (!mappings.equals("eaeedbff51b16ead3170906872fda334"))
-            throw new IllegalStateException("Movecraft is not compatible with this version of Minecraft 1.18: " + mappings);
+        String version = Bukkit.getServer().getMinecraftVersion();
+        if (!version.equals("1.18.2"))
+            throw new IllegalStateException("Movecraft is not compatible with this version of Minecraft: " + version);
     }
 
     @Override

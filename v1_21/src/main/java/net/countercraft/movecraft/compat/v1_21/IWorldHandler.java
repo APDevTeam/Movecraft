@@ -20,22 +20,18 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.ticks.ScheduledTick;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.inventory.CraftInventoryView;
-import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.inventory.InventoryView;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @SuppressWarnings("unused")
 public class IWorldHandler extends WorldHandler {
@@ -51,9 +47,9 @@ public class IWorldHandler extends WorldHandler {
     private final NextTickProvider tickProvider = new NextTickProvider();
 
     public IWorldHandler() {
-        String mappings = ((CraftMagicNumbers) CraftMagicNumbers.INSTANCE).getMappingsVersion();
-        if (!mappings.equals("ee13f98a43b9c5abffdcc0bb24154460"))
-            throw new IllegalStateException("Movecraft is not compatible with this version of Minecraft 1.10: " + mappings);
+        String version = Bukkit.getServer().getMinecraftVersion();
+        if (!version.equals("1.21"))
+            throw new IllegalStateException("Movecraft is not compatible with this version of Minecraft: " + version);
     }
 
     @Override
