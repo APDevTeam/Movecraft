@@ -8,6 +8,7 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 dependencies {
     runtimeOnly(project(":movecraft-v1_18", "reobf"))
     runtimeOnly(project(":movecraft-v1_20", "reobf"))
+    runtimeOnly(project(":movecraft-v1_21", "reobf"))
     implementation(project(":movecraft-api"))
     compileOnly("org.yaml:snakeyaml:2.0")
 }
@@ -21,6 +22,7 @@ tasks.shadowJar {
         include(project(":movecraft-api"))
         include(project(":movecraft-v1_18"))
         include(project(":movecraft-v1_20"))
+        include(project(":movecraft-v1_21"))
     }
 }
 
