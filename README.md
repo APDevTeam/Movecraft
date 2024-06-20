@@ -24,18 +24,10 @@ Please check the [Wiki](https://github.com/APDevTeam/Movecraft/wiki) and [FAQ](h
 [Discord](http://bit.ly/JoinAP-Dev)
 
 ## Development Environment
-Movecraft uses multiple versions of the Spigot server software for legacy support.  As such, you need to run [BuildTools](https://www.spigotmc.org/wiki/buildtools/) for several versions before building the plugin.  It doesn't matter where you do this, but inside the Movecraft directory is probably a bad place.  We recommend building Spigot 1.18.2 and 1.19.4 with Java 17, and 1.20.6 with Java 21.
-
+Building Movecraft is as easy as downloading the source code and executing the following command:
 ```
-java -jar BuildTools.jar --rev 1.18.2 --remapped
-java -jar BuildTools.jar --rev 1.19.4 --remapped
-java -jar BuildTools.jar --rev 1.20.6 --remapped
+./gradlew clean shadowJar
 ```
-
-Once you have compiled CraftBukkit, it should continue to exist in your local maven repository, and thus you should need to compile each version at most one time. Once complete, run the following to build Movecraft through `maven`.
-```
-mvn -T 1C clean install
-```
-Compiled jars can be found in the `/target` directory.
+Compiled jars can be found in the `Movecraft/build/libs` directory.
 
 #### Movecraft is released under the GNU General Public License V3. 
