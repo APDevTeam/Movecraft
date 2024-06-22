@@ -26,7 +26,7 @@ Please check the [Wiki](https://github.com/APDevTeam/Movecraft/wiki) and [FAQ](h
 ## Development Environment
 Building Movecraft is as easy as downloading the source code and executing the following command:
 ```
-./gradlew clean shadowJar
+./gradlew clean shadowJar --parallel
 ```
 Compiled jars can be found in the `Movecraft/build/libs` directory.
 

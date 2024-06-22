@@ -30,7 +30,7 @@ jobs:
           build-scan-terms-of-use-agree: "yes"
 
       - name: Build with Gradle
-        run: ./gradlew clean shadowJar
+        run: ./gradlew clean shadowJar --parallel
 
       - name: Stage jar
         run: mkdir staging && cp Movecraft/build/libs/Movecraft.jar staging && mv staging/Movecraft.jar staging/Movecraft_$GITHUB_SHA.jar
