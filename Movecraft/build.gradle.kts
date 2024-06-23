@@ -39,7 +39,7 @@ publishing {
         create<MavenPublication>("github") {
             groupId = "net.countercraft"
             artifactId = "movecraft"
-            version = "$project.version"
+            version = "${project.version}"
 
             project.shadow.component(this)
         }
