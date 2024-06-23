@@ -14,10 +14,6 @@ dependencies {
 }
 
 tasks.shadowJar {
-    archiveBaseName.set("Movecraft")
-    archiveClassifier.set("")
-    archiveVersion.set("")
-
     dependencies {
         include(project(":movecraft-api"))
         include(project(":movecraft-v1_18"))
