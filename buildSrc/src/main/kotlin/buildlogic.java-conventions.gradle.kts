@@ -35,7 +35,7 @@ repositories {
 }
 
 group = "net.countercraft"
-version = "8.0.0_beta-3"
+version = "8.0.0_beta-3+_gradle"
 
 publishing {
     publications.create<MavenPublication>("maven") {
