@@ -41,7 +41,7 @@ publishing {
             artifactId = "movecraft"
             version = "$project.version"
 
-            from(components["java"])
+            project.shadow.component(this)
             artifact(tasks["shadowJar"])
         }
     }
