@@ -42,6 +42,7 @@ publishing {
             version = "$project.version"
 
             from(components["java"])
+            artifact(tasks["shadowJar"])
         }
     }
     repositories {
