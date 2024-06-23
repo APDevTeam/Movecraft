@@ -14,6 +14,10 @@ dependencies {
 }
 
 tasks.shadowJar {
+    archiveBaseName.set("Movecraft")
+    archiveClassifier.set("all")
+    archiveVersion.set("")
+
     dependencies {
         include(project(":movecraft-api"))
         include(project(":movecraft-v1_18"))
@@ -37,7 +41,6 @@ publishing {
             artifactId = "movecraft"
             version = "${project.version}"
 
-            from(components["java"])
             artifact(tasks["shadowJar"])
         }
     }
