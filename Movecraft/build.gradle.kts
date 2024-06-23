@@ -36,10 +36,10 @@ tasks.processResources {
 
 publishing {
     publications {
-        create<MavenPublication>("maven") {
+        create<MavenPublication>("github") {
             groupId = "net.countercraft"
             artifactId = "movecraft"
-            version = project.version
+            version = "$project.version"
 
             from(components["java"])
         }
@@ -47,7 +47,7 @@ publishing {
     repositories {
         maven {
             name = "GitHubPackages"
-            url = "https://maven.pkg.github.com/apdevteam/movecraft"
+            url = uri("https://maven.pkg.github.com/apdevteam/movecraft")
             credentials {
                 username = System.getenv("GITHUB_ACTOR")
                 password = System.getenv("GITHUB_TOKEN")
