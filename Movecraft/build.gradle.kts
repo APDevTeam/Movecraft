@@ -36,7 +36,7 @@ tasks.processResources {
 
 publishing {
     publications {
-        create<MavenPublication>("github") {
+        create<MavenPublication>("maven") {
             groupId = "net.countercraft"
             artifactId = "movecraft"
             version = "${project.version}"
