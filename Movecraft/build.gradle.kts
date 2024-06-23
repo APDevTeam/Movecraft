@@ -1,6 +1,7 @@
 plugins {
     id("buildlogic.java-conventions")
     id("io.github.goooler.shadow") version "8.1.7"
+    `maven-publish`
 }
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
@@ -14,7 +15,7 @@ dependencies {
 
 tasks.shadowJar {
     archiveBaseName.set("Movecraft")
-    archiveClassifier.set("")
+    archiveClassifier.set("all")
     archiveVersion.set("")
 
     dependencies {
@@ -30,6 +31,28 @@ tasks.processResources {
     dependsOn(project(":movecraft-datapack").tasks.build)
     filesMatching("*.yml") {
         expand(mapOf("projectVersion" to project.version))
+    }
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            groupId = "net.countercraft"
+            artifactId = "movecraft"
+            version = "${project.version}"
+
+            artifact(tasks["shadowJar"])
+        }
+    }
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/apdevteam/movecraft")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
     }
 }
 
