@@ -70,11 +70,11 @@ public class AsyncManager extends BukkitRunnable {
     private final Map<AsyncTask, Craft> ownershipMap = new HashMap<>();
     private final Map<Craft, Map<Craft, Long>> recentContactTracking = new WeakHashMap<>();
     private final BlockingQueue<AsyncTask> finishedAlgorithms = new LinkedBlockingQueue<>();
-    private final HashSet<Craft> clearanceSet = new HashSet<>();
-    private final Map<HitBox, Long> wrecks = new HashMap<>();
-    private final Map<HitBox, World> wreckWorlds = new HashMap<>();
-    private final Map<HitBox, Map<Location, BlockData>> wreckPhases = new HashMap<>();
-    private final WeakHashMap<World, Set<MovecraftLocation>> processedFadeLocs = new WeakHashMap<>();
+    private final Set<Craft> clearanceSet = new HashSet<>();
+    private final Map<HitBox, Long> wrecks = new WeakHashMap<>();
+    private final Map<HitBox, World> wreckWorlds = new WeakHashMap<>();
+    private final Map<HitBox, Map<Location, BlockData>> wreckPhases = new WeakHashMap<>();
+    private final Map<World, Set<MovecraftLocation>> processedFadeLocs = new WeakHashMap<>();
     private final Map<Craft, Integer> cooldownCache = new WeakHashMap<>();
 
     private long lastFadeCheck = 0;
