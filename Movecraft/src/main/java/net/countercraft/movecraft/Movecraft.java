@@ -273,32 +273,25 @@ public class Movecraft extends JavaPlugin {
             return false;
         }
         logger.info("Saved default Movecraft datapack.");
-        logger.info("It is expected that your crafts are not loaded during startup on the first boot.  They will be loaded after startup.");
 
-        getServer().getScheduler().scheduleSyncDelayedTask(this, () -> {
-            logger.info("Enabling datapack and reloading craft types.");
+        getServer().dispatchCommand(getServer().createCommandSender(response -> {}), "datapack list"); // list datapacks to trigger the server to check
+        for (Datapack datapack : getServer().getDatapackManager().getPacks()) {
+            if (!datapack.getName().equals("file/movecraft-data.zip"))
+                continue;
 
-            getServer().dispatchCommand(getServer().createCommandSender(response -> {}), "datapack list"); // list datapacks to trigger the server to check
-            for (Datapack datapack : getServer().getDatapackManager().getPacks()) {
-                if (!datapack.getName().equals("file/movecraft-data.zip"))
-                    continue;
-
-                if (!datapack.isEnabled()) {
-                    datapack.setEnabled(true);
-                    logger.info("Datapack enabled.");
-                }
-                break;
+            if (!datapack.isEnabled()) {
+                datapack.setEnabled(true);
+                logger.info("Datapack enabled.");
             }
+            break;
+        }
 
-            if (!isDatapackEnabled()) {
-                logger.severe("Failed to automatically load movecraft datapack. Check if it exists.");
-                setEnabled(false);
-            }
-            else {
-                CraftManager.getInstance().reloadCraftTypes();
-            }
-        }, 600); // Wait 30 seconds before reloading.  Needed to prevent Paper from running this during startup.
-        return false;
+        if (!isDatapackEnabled()) {
+            logger.severe("Failed to automatically load movecraft datapack. Check if it exists.");
+            setEnabled(false);
+            return false;
+        }
+        return true;
     }
 
     private boolean isDatapackEnabled() {
