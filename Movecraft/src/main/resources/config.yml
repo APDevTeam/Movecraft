@@ -26,4 +26,3 @@ ForbiddenRemoteSigns: # These strings will be ignored when searching for signs t
   - "Mounted"
   - "Denied"
   - "[private]"
-GeneratedDatapack: false # Set to false to re-generate datapack on startup
