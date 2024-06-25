@@ -17,6 +17,7 @@
 
 package net.countercraft.movecraft;
 
+import io.papermc.paper.datapack.Datapack;
 import net.countercraft.movecraft.async.AsyncManager;
 import net.countercraft.movecraft.commands.*;
 import net.countercraft.movecraft.config.Settings;
@@ -268,7 +269,7 @@ public class Movecraft extends JavaPlugin {
         try(var stream = new FileOutputStream(new File(datapackDirectory, "movecraft-data.zip"));
                 var pack = getResource("movecraft-data.zip")) {
             if(pack == null) {
-                logger.warning("No internal datapack found, report this.");
+                logger.severe("No internal datapack found, report this.");
                 return false;
             }
             pack.transferTo(stream);
@@ -278,18 +279,31 @@ public class Movecraft extends JavaPlugin {
             return false;
         }
         logger.info("Saved default Movecraft datapack.");
-        getConfig().set("GeneratedDatapack", true);
-        saveConfig();
-
         logger.info("It is expected that your crafts are not loaded during startup on the first boot.  They will be loaded after startup.");
 
         getServer().getScheduler().scheduleSyncDelayedTask(this, () -> {
             logger.info("Enabling datapack and reloading craft types.");
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "datapack list"); // required for some reason
-            if (!Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "datapack enable \"file/movecraft-data.zip\""))
-                logger.severe("Failed to automatically load movecraft datapack. Check if it exists.");
+            boolean success = false;
+            for (Datapack datapack : getServer().getDatapackManager().getPacks()) {
+                if (!datapack.getName().equals("file/movecraft-data.zip"))
+                    continue;
 
-            CraftManager.getInstance().reloadCraftTypes();
+                if (!datapack.isEnabled()) {
+                    datapack.setEnabled(true);
+                    logger.info("Datapack enabled.");
+                }
+                success = datapack.isEnabled();
+                break;
+            }
+            if (!success) {
+                logger.severe("Failed to automatically load movecraft datapack. Check if it exists.");
+            }
+            else {
+                CraftManager.getInstance().reloadCraftTypes();
+
+                getConfig().set("GeneratedDatapack", true);
+                saveConfig();
+            }
         }, 600); // Wait 30 seconds before reloading.  Needed to prevent Paper from running this during startup.
         return false;
     }
