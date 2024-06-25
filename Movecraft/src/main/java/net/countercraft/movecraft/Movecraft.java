@@ -178,7 +178,7 @@ public class Movecraft extends JavaPlugin {
         }
 
         // Startup procedure
-        boolean datapackInitialized = initializeDatapack();
+        boolean datapackInitialized = isDatapackEnabled() || initializeDatapack();
         asyncManager = new AsyncManager();
         asyncManager.runTaskTimer(this, 0, 1);
         MapUpdateManager.getInstance().runTaskTimer(this, 0, 1);
@@ -234,9 +234,6 @@ public class Movecraft extends JavaPlugin {
     }
 
     private boolean initializeDatapack() {
-        if(getConfig().getBoolean("GeneratedDatapack"))
-            return true;
-
         File datapackDirectory = null;
         for(var world : getServer().getWorlds()) {
             datapackDirectory = new File(world.getWorldFolder(), "datapacks");
@@ -255,10 +252,7 @@ public class Movecraft extends JavaPlugin {
             }
         }
         else if(new File(datapackDirectory, "movecraft-data.zip").exists()) {
-            logger.warning("Conflicting datapack already exists in " + datapackDirectory.getPath()
-                    + ". If you would like to regenerate the datapack, delete the existing one and set the GeneratedDatapack config option to false.");
-            getConfig().set("GeneratedDatapack", true);
-            saveConfig();
+            logger.warning("Conflicting datapack already exists in " + datapackDirectory.getPath() + ". If you would like to regenerate the datapack, delete the existing one.");
             return false;
         }
         if(!datapackDirectory.canWrite()) {
@@ -283,7 +277,8 @@ public class Movecraft extends JavaPlugin {
 
         getServer().getScheduler().scheduleSyncDelayedTask(this, () -> {
             logger.info("Enabling datapack and reloading craft types.");
-            boolean success = false;
+
+            getServer().dispatchCommand(getServer().createCommandSender(response -> {}), "datapack list"); // list datapacks to trigger the server to check
             for (Datapack datapack : getServer().getDatapackManager().getPacks()) {
                 if (!datapack.getName().equals("file/movecraft-data.zip"))
                     continue;
@@ -292,19 +287,28 @@ public class Movecraft extends JavaPlugin {
                     datapack.setEnabled(true);
                     logger.info("Datapack enabled.");
                 }
-                success = datapack.isEnabled();
                 break;
             }
-            if (!success) {
+
+            if (!isDatapackEnabled()) {
                 logger.severe("Failed to automatically load movecraft datapack. Check if it exists.");
+                setEnabled(false);
             }
             else {
                 CraftManager.getInstance().reloadCraftTypes();
-
-                getConfig().set("GeneratedDatapack", true);
-                saveConfig();
             }
         }, 600); // Wait 30 seconds before reloading.  Needed to prevent Paper from running this during startup.
+        return false;
+    }
+
+    private boolean isDatapackEnabled() {
+        getServer().dispatchCommand(getServer().createCommandSender(response -> {}), "datapack list"); // list datapacks to trigger the server to check
+        for (Datapack datapack : getServer().getDatapackManager().getPacks()) {
+            if (!datapack.getName().equals("file/movecraft-data.zip"))
+                continue;
+
+            return datapack.isEnabled();
+        }
         return false;
     }
 
