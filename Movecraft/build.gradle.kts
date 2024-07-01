@@ -16,7 +16,7 @@ dependencies {
 
 tasks.shadowJar {
     archiveBaseName.set("Movecraft")
-    archiveClassifier.set("all")
+    archiveClassifier.set("")
     archiveVersion.set("")
 
     dependencies {
