@@ -1,6 +1,6 @@
 Movecraft
 ======
-![Java CI](https://github.com/APDevTeam/Movecraft/workflows/Java%20CI/badge.svg?branch=main)
+![Java CI](https://github.com/APDevTeam/Movecraft/actions/workflows/gradle.yml/badge.svg?branch=main)
 
 This is a maintained fork of Movecraft, which aims to add legacy version support as well as performance fixes.
 
