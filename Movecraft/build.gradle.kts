@@ -1,7 +1,8 @@
 plugins {
+    `maven-publish`
     id("buildlogic.java-conventions")
     id("io.github.goooler.shadow") version "8.1.7"
-    `maven-publish`
+    id("io.papermc.hangar-publish-plugin") version "0.1.2"
 }
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
@@ -53,6 +54,21 @@ publishing {
             credentials {
                 username = System.getenv("GITHUB_ACTOR")
                 password = System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
+}
+
+hangarPublish {
+    publications.register("plugin") {
+        version.set(project.version as String)
+        channel.set("Release")
+        id.set("Airship-Pirates/Movecraft")
+        apiKey.set(System.getenv("HANGAR_API_TOKEN"))
+        platforms {
+            register(io.papermc.hangarpublishplugin.model.Platforms.PAPER) {
+                jar.set(tasks.shadowJar.flatMap { it.archiveFile })
+                platformVersions.set(listOf("1.18.2", "1.20.6", "1.21"))
             }
         }
     }
