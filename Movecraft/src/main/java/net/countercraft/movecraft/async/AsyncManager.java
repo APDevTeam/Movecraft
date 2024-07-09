@@ -68,7 +68,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 @Deprecated
 public class AsyncManager extends BukkitRunnable {
     private final Map<AsyncTask, Craft> ownershipMap = new HashMap<>();
-    private final Map<Craft, Map<Craft, Long>> recentContactTracking = new WeakHashMap<>();
     private final BlockingQueue<AsyncTask> finishedAlgorithms = new LinkedBlockingQueue<>();
     private final Set<Craft> clearanceSet = new HashSet<>();
     private final Map<HitBox, Long> wrecks = new HashMap<>();
@@ -78,7 +77,6 @@ public class AsyncManager extends BukkitRunnable {
     private final Map<Craft, Integer> cooldownCache = new WeakHashMap<>();
 
     private long lastFadeCheck = 0;
-    private long lastContactCheck = 0;
 
     public AsyncManager() {}
 
@@ -438,105 +436,6 @@ public class AsyncManager extends BukkitRunnable {
         lastFadeCheck = System.currentTimeMillis();
     }
 
-    private void processDetection() {
-        long ticksElapsed = (System.currentTimeMillis() - lastContactCheck) / 50;
-        if (ticksElapsed < 20)
-            return;
-        lastContactCheck = System.currentTimeMillis();
-
-        for (World w : Bukkit.getWorlds()) {
-            if (w == null)
-                continue;
-
-            for (Craft craft : CraftManager.getInstance().getPlayerCraftsInWorld(w)) {
-                MovecraftLocation craftCenter;
-                try {
-                    craftCenter = craft.getHitBox().getMidPoint();
-                }
-                catch (EmptyHitBoxException e) {
-                    continue;
-                }
-                if (!recentContactTracking.containsKey(craft))
-                    recentContactTracking.put(craft, new WeakHashMap<>());
-                for (Craft target : craft.getContacts()) {
-                    MovecraftLocation targetCenter;
-                    try {
-                        targetCenter = target.getHitBox().getMidPoint();
-                    }
-                    catch (EmptyHitBoxException e) {
-                        continue;
-                    }
-                    int diffx = craftCenter.getX() - targetCenter.getX();
-                    int diffz = craftCenter.getZ() - targetCenter.getZ();
-                    int distsquared = craftCenter.distanceSquared(targetCenter);
-                    // craft has been detected
-
-                    // has the craft not been seen in the last
-                    // minute, or is completely new?
-                    if (System.currentTimeMillis()
-                            - recentContactTracking.get(craft).getOrDefault(target, 0L) <= 60000)
-                        continue;
-
-
-                    Component notification = I18nSupport.getInternationalisedComponent(
-                            "Contact - New Contact").append(Component.text( ": "));
-
-                    if (target.getName().length() >= 1)
-                        notification = notification.append(Component.text(target.getName() + " ("));
-                    notification = notification.append(Component.text(
-                            target.getType().getStringProperty(CraftType.NAME)));
-                    if (target.getName().length() >= 1)
-                        notification = notification.append(Component.text(")"));
-                    notification = notification.append(Component.text(" "))
-                            .append(I18nSupport.getInternationalisedComponent("Contact - Commanded By"))
-                            .append(Component.text(" "));
-                    if (target instanceof PilotedCraft)
-                        notification = notification.append(Component.text(
-                                ((PilotedCraft) target).getPilot().getDisplayName()));
-                    else
-                        notification = notification.append(Component.text("NULL"));
-                    notification = notification.append(Component.text(", "))
-                            .append(I18nSupport.getInternationalisedComponent("Contact - Size"))
-                            .append(Component.text( ": "))
-                            .append(Component.text(target.getOrigBlockCount()))
-                            .append(Component.text(", "))
-                            .append(I18nSupport.getInternationalisedComponent("Contact - Range"))
-                            .append(Component.text(": "))
-                            .append(Component.text((int) Math.sqrt(distsquared)))
-                            .append(Component.text(" "))
-                            .append(I18nSupport.getInternationalisedComponent("Contact - To The"))
-                            .append(Component.text(" "));
-                    if (Math.abs(diffx) > Math.abs(diffz)) {
-                        if (diffx < 0)
-                            notification = notification.append(I18nSupport.getInternationalisedComponent(
-                                    "Contact/Subcraft Rotate - East"));
-                        else
-                            notification = notification.append(I18nSupport.getInternationalisedComponent(
-                                    "Contact/Subcraft Rotate - West"));
-                    }
-                    else if (diffz < 0)
-                        notification = notification.append(I18nSupport.getInternationalisedComponent(
-                                "Contact/Subcraft Rotate - South"));
-                    else
-                        notification = notification.append(I18nSupport.getInternationalisedComponent(
-                                "Contact/Subcraft Rotate - North"));
-
-                    notification = notification.append(Component.text("."));
-
-                    craft.getAudience().sendMessage(notification);
-                    var object = craft.getType().getObjectProperty(CraftType.COLLISION_SOUND);
-                    if (!(object instanceof Sound))
-                        throw new IllegalStateException("COLLISION_SOUND must be of type Sound");
-
-                    craft.getAudience().playSound((Sound) object);
-
-                    long timestamp = System.currentTimeMillis();
-                    recentContactTracking.get(craft).put(target, timestamp);
-                }
-            }
-        }
-    }
-
     public void run() {
         clearAll();
 
@@ -544,7 +443,6 @@ public class AsyncManager extends BukkitRunnable {
         detectSinking();
         processSinking();
         processFadingBlocks();
-        processDetection();
         processAlgorithmQueue();
 
         // now cleanup craft that are bugged and have not moved in the past 60 seconds,
