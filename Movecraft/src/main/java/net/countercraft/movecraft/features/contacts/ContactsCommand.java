@@ -3,6 +3,7 @@ package net.countercraft.movecraft.features.contacts;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.util.ComponentPaginator;
 import net.countercraft.movecraft.util.TopicPaginator;
 import net.kyori.adventure.text.Component;
 import org.bukkit.command.Command;
@@ -47,7 +48,7 @@ public class ContactsCommand implements CommandExecutor {
             return true;
         ContactsManager.update(base);
 
-        TopicPaginator paginator = new TopicPaginator(I18nSupport.getInternationalisedString("Contacts"));
+        ComponentPaginator paginator = new ComponentPaginator(I18nSupport.getInternationalisedComponent("Contacts"));
         for (Craft target : base.getContacts()) {
             if (target.getHitBox().isEmpty())
                 continue;
@@ -56,15 +57,16 @@ public class ContactsCommand implements CommandExecutor {
             paginator.addLine(notification);
         }
         if (paginator.isEmpty()) {
-            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Contacts - None Found"));
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedComponent("Contacts - None Found"));
             return true;
         }
         if (!paginator.isInBounds(page)){
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Paginator - Invalid page") + "\"" + page + "\"");
+            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedComponent("Paginator - Invalid page") + "\"" + page + "\"");
             return true;
         }
-        for (String line : paginator.getPage(page))
+        for (Component line : paginator.getPage(page)) {
             commandSender.sendMessage(line);
+        }
         return true;
     }
 }
