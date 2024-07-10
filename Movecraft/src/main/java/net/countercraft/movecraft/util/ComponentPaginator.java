@@ -1,0 +1,64 @@
+package net.countercraft.movecraft.util;
+
+import net.countercraft.movecraft.localisation.I18nSupport;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
+import static org.bukkit.util.ChatPaginator.CLOSED_CHAT_PAGE_HEIGHT;
+
+public class ComponentPaginator {
+    private final Component title;
+    private final List<Component> lines = new ArrayList<>();
+
+    public ComponentPaginator(@NotNull Component title) {
+        this.title = title.color(NamedTextColor.GOLD);
+    }
+
+    public void addLine(Component line){
+        lines.add(line);
+    }
+
+    /**
+     * Page numbers begin at 1
+     * @param pageNumber
+     * @return An array of lines to send as a page
+     */
+    public Component[] getPage(int pageNumber) {
+        if (!isInBounds(pageNumber))
+            throw new IndexOutOfBoundsException(I18nSupport.getInternationalisedString("Paginator - Page Number") + " " + pageNumber + " " + I18nSupport.getInternationalisedString("Paginator - Exceeds Bounds") + "<1, " + getPageCount() + ">");
+
+        Component[] tempLines = new Component[pageNumber == getPageCount() ? (lines.size() % (CLOSED_CHAT_PAGE_HEIGHT - 1)) + 1 : CLOSED_CHAT_PAGE_HEIGHT];
+
+        tempLines[0] = Component.text("--- ").color(NamedTextColor.YELLOW)
+                .append(title)
+                .append(Component.text(" -- ").color(NamedTextColor.YELLOW))
+                .append(Component.text("page ").color(NamedTextColor.GOLD))
+                .append(Component.text(pageNumber).color(NamedTextColor.RED))
+                .append(Component.text("/").color(NamedTextColor.YELLOW))
+                .append(Component.text(getPageCount()).color(NamedTextColor.RED))
+                .append(Component.text(" ---").color(NamedTextColor.YELLOW));
+
+        for (int i = 1; i < tempLines.length; i++) {
+            tempLines[i] = lines.get(((CLOSED_CHAT_PAGE_HEIGHT - 1) * (pageNumber - 1)) + i - 1);
+        }
+        return tempLines;
+    }
+
+    public int getPageCount() {
+        return (int) Math.ceil(((double) lines.size()) / (CLOSED_CHAT_PAGE_HEIGHT - 1));
+    }
+
+    public boolean isInBounds(int pageNumber) {
+        return pageNumber > 0 && pageNumber <= getPageCount();
+    }
+
+    public boolean isEmpty() {
+        return lines.isEmpty();
+    }
+}
