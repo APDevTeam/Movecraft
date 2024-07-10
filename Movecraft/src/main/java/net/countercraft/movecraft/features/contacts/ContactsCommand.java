@@ -1,15 +1,10 @@
 package net.countercraft.movecraft.features.contacts;
 
-import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.craft.PilotedCraft;
-import net.countercraft.movecraft.craft.SinkingCraft;
-import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.util.hitboxes.HitBox;
 import net.countercraft.movecraft.util.TopicPaginator;
-import org.bukkit.ChatColor;
+import net.kyori.adventure.text.Component;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -47,56 +42,28 @@ public class ContactsCommand implements CommandExecutor {
             return true;
         }
 
+        Craft base = CraftManager.getInstance().getCraftByPlayer(player);
+        if (base == null)
+            return true;
+        ContactsManager.update(base);
+
         TopicPaginator paginator = new TopicPaginator(I18nSupport.getInternationalisedString("Contacts"));
-        Craft ccraft = CraftManager.getInstance().getCraftByPlayer(player);
-        HitBox hitBox = ccraft.getHitBox();
-        MovecraftLocation center = hitBox.getMidPoint();
-        ContactsManager.update(ccraft);
-        for (Craft tcraft : ccraft.getContacts()) {
-            HitBox tHitBox = tcraft.getHitBox();
-            if (tHitBox.isEmpty())
+        for (Craft target : base.getContacts()) {
+            if (target.getHitBox().isEmpty())
                 continue;
-            MovecraftLocation tCenter = tHitBox.getMidPoint();
 
-            int distsquared = center.distanceSquared(tCenter);
-            String notification = I18nSupport.getInternationalisedString("Contact");
-            notification += ": ";
-            notification += tcraft instanceof SinkingCraft ? ChatColor.RED : tcraft.getDisabled() ? ChatColor.BLUE : "";
-            notification += tcraft.getName().length() >= 1 ? tcraft.getName() + " (" : "";
-            notification += tcraft.getType().getStringProperty(CraftType.NAME);
-            notification += tcraft.getName().length() >= 1 ? ") " : " ";
-            notification += ChatColor.RESET;
-            notification += I18nSupport.getInternationalisedString("Contact - Commanded By") + ", ";
-            notification += tcraft instanceof PilotedCraft ? ((PilotedCraft) tcraft).getPilot().getDisplayName() : "null";
-            notification += " ";
-            notification += I18nSupport.getInternationalisedString("Contact - Size")+ " ";
-            notification += tcraft.getOrigBlockCount();
-            notification += ", "+I18nSupport.getInternationalisedString("Contact - Range")+" ";
-            notification += (int) Math.sqrt(distsquared);
-            notification += " "+I18nSupport.getInternationalisedString("Contact - To The");
-            int diffx = center.getX() - tCenter.getX();
-            int diffz = center.getZ() - tCenter.getZ();
-            if (Math.abs(diffx) > Math.abs(diffz))
-                if (diffx < 0)
-                    notification += " "+I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - East") + ".";
-                else
-                    notification += " "+I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - West") + ".";
-            else if (diffz < 0)
-                notification += " "+I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - South") + ".";
-            else
-                notification += " "+I18nSupport.getInternationalisedString("Contact/Subcraft Rotate - North") + ".";
+            Component notification = ContactsManager.contactMessage(false, base, target);
             paginator.addLine(notification);
-
         }
         if (paginator.isEmpty()) {
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Contacts - None Found"));
             return true;
         }
-        if(!paginator.isInBounds(page)){
+        if (!paginator.isInBounds(page)){
             commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Paginator - Invalid page") + "\"" + page + "\"");
             return true;
         }
-        for(String line :paginator.getPage(page))
+        for (String line : paginator.getPage(page))
             commandSender.sendMessage(line);
         return true;
     }

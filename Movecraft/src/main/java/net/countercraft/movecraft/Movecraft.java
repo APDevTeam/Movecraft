@@ -24,6 +24,7 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.ChunkManager;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.features.contacts.ContactsCommand;
+import net.countercraft.movecraft.features.contacts.ContactsManager;
 import net.countercraft.movecraft.listener.BlockListener;
 import net.countercraft.movecraft.listener.InteractListener;
 import net.countercraft.movecraft.listener.PlayerListener;
@@ -222,6 +223,10 @@ public class Movecraft extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new TeleportSign(), this);
         getServer().getPluginManager().registerEvents(new ScuttleSign(), this);
 
+        var contactsManager = new ContactsManager();
+        contactsManager.runTaskTimerAsynchronously(this, 0, 20);
+        getServer().getPluginManager().registerEvents(contactsManager, this);
+
         logger.info("[V " + getDescription().getVersion() + "] has been enabled.");
     }
 
@@ -231,7 +236,6 @@ public class Movecraft extends JavaPlugin {
         instance = this;
         logger = getLogger();
         saveDefaultConfig();
-
     }
 
     private boolean initializeDatapack() {
@@ -315,5 +319,7 @@ public class Movecraft extends JavaPlugin {
         return smoothTeleport;
     }
 
-    public AsyncManager getAsyncManager(){return asyncManager;}
+    public AsyncManager getAsyncManager() {
+        return asyncManager;
+    }
 }
