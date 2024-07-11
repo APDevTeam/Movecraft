@@ -6,8 +6,6 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import static org.bukkit.util.ChatPaginator.CLOSED_CHAT_PAGE_HEIGHT;
@@ -31,18 +29,18 @@ public class ComponentPaginator {
      */
     public Component[] getPage(int pageNumber) {
         if (!isInBounds(pageNumber))
-            throw new IndexOutOfBoundsException(I18nSupport.getInternationalisedString("Paginator - Page Number") + " " + pageNumber + " " + I18nSupport.getInternationalisedString("Paginator - Exceeds Bounds") + "<1, " + getPageCount() + ">");
+            throw new IndexOutOfBoundsException();
 
         Component[] tempLines = new Component[pageNumber == getPageCount() ? (lines.size() % (CLOSED_CHAT_PAGE_HEIGHT - 1)) + 1 : CLOSED_CHAT_PAGE_HEIGHT];
 
-        tempLines[0] = Component.text("--- ").color(NamedTextColor.YELLOW)
+        tempLines[0] = Component.text("--- ", NamedTextColor.YELLOW)
                 .append(title)
-                .append(Component.text(" -- ").color(NamedTextColor.YELLOW))
-                .append(Component.text("page ").color(NamedTextColor.GOLD))
-                .append(Component.text(pageNumber).color(NamedTextColor.RED))
-                .append(Component.text("/").color(NamedTextColor.YELLOW))
-                .append(Component.text(getPageCount()).color(NamedTextColor.RED))
-                .append(Component.text(" ---").color(NamedTextColor.YELLOW));
+                .append(Component.text(" -- ", NamedTextColor.YELLOW))
+                .append(Component.text("page ", NamedTextColor.GOLD))
+                .append(Component.text(pageNumber, NamedTextColor.RED))
+                .append(Component.text("/", NamedTextColor.YELLOW))
+                .append(Component.text(getPageCount(), NamedTextColor.RED))
+                .append(Component.text(" ---", NamedTextColor.YELLOW));
 
         for (int i = 1; i < tempLines.length; i++) {
             tempLines[i] = lines.get(((CLOSED_CHAT_PAGE_HEIGHT - 1) * (pageNumber - 1)) + i - 1);
