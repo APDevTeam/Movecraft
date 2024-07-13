@@ -50,7 +50,9 @@ public class ContactsCommand implements CommandExecutor {
             return true;
         ContactsManager.update(base);
 
-        ComponentPaginator paginator = new ComponentPaginator(I18nSupport.getInternationalisedComponent("Contacts"));
+        ComponentPaginator paginator = new ComponentPaginator(
+                I18nSupport.getInternationalisedComponent("Contacts"),
+                (pageNumber) -> "/contacts " + pageNumber);
         for (Craft target : base.getContacts()) {
             if (target.getHitBox().isEmpty())
                 continue;
