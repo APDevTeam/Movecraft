@@ -38,7 +38,7 @@ public class ComponentPaginator {
 
         tempLines[0] = Component.text("--- ", NamedTextColor.YELLOW);
         if (isInBounds(pageNumber - 1)) {
-            tempLines[0] = tempLines[0].append(Component.text("[<]")
+            tempLines[0] = tempLines[0].append(Component.text("[<] ")
                     .color(NamedTextColor.AQUA)
                     .clickEvent(ClickEvent.runCommand(
                             pageConsumer.apply(pageNumber - 1))));
