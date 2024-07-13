@@ -19,9 +19,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.*;
 
 public class ContactsManager extends BukkitRunnable implements Listener {
     private final Map<Craft, List<Craft>> contactsMap = new WeakHashMap<>();
@@ -29,7 +27,61 @@ public class ContactsManager extends BukkitRunnable implements Listener {
 
     @Override
     public void run() {
+        runContacts();
         runRecentContacts();
+    }
+
+    private void runContacts() {
+        for (World w : Bukkit.getWorlds()) {
+            if (w == null)
+                continue;
+
+            Set<Craft> craftsInWorld = CraftManager.getInstance().getCraftsInWorld(w);
+            for (Craft craft : craftsInWorld) {
+                contactsMap.put(craft, update(craft, craftsInWorld));
+            }
+        }
+    }
+
+    private @NotNull List<Craft> update(Craft base, @NotNull Set<Craft> craftsInWorld) {
+        Map<Craft, Integer> inRangeDistanceSquared = new HashMap<>();
+        for (Craft target : craftsInWorld) {
+            if (base instanceof PilotedCraft && this instanceof PilotedCraft
+                    && ((PilotedCraft) base).getPilot() == ((PilotedCraft) this).getPilot())
+                continue;
+
+            MovecraftLocation baseCenter;
+            MovecraftLocation targetCenter;
+            try {
+                baseCenter = base.getHitBox().getMidPoint();
+                targetCenter = target.getHitBox().getMidPoint();
+            }
+            catch (EmptyHitBoxException e) {
+                continue;
+            }
+
+            int distanceSquared = baseCenter.distanceSquared(targetCenter);
+            double detectionMultiplier;
+            if (targetCenter.getY() > 65) { // TODO: fix the water line
+                detectionMultiplier = (double) target.getType().getPerWorldProperty(
+                        CraftType.PER_WORLD_DETECTION_MULTIPLIER, target.getWorld());
+            }
+            else {
+                detectionMultiplier = (double) target.getType().getPerWorldProperty(
+                        CraftType.PER_WORLD_UNDERWATER_DETECTION_MULTIPLIER, target.getWorld());
+            }
+            int detectionRange = (int) (target.getOrigBlockCount() * detectionMultiplier);
+            detectionRange = detectionRange * 10;
+            if (distanceSquared > detectionRange)
+                continue;
+
+            inRangeDistanceSquared.put(target, distanceSquared);
+        }
+
+        List<Craft> result = new ArrayList<>(inRangeDistanceSquared.keySet().size());
+        result.addAll(inRangeDistanceSquared.keySet());
+        result.sort(Comparator.comparingInt(inRangeDistanceSquared::get));
+        return result;
     }
 
     private void runRecentContacts() {
@@ -139,10 +191,6 @@ public class ContactsManager extends BukkitRunnable implements Listener {
 
         notification = notification.append(Component.text("."));
         return notification;
-    }
-
-    private void update(Craft c) {
-        // TODO
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
