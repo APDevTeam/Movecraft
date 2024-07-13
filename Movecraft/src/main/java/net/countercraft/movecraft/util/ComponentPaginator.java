@@ -3,15 +3,16 @@ package net.countercraft.movecraft.util;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.util.ChatPaginator;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-import static org.bukkit.util.ChatPaginator.CLOSED_CHAT_PAGE_HEIGHT;
-
 public class ComponentPaginator {
+    private static final int TOTAL_HEIGHT = ChatPaginator.CLOSED_CHAT_PAGE_HEIGHT;
+    private static final int CONTENT_HEIGHT = TOTAL_HEIGHT - 1;
     private final Component title;
     private final List<Component> lines = new ArrayList<>();
     private final Function<Integer, String> pageConsumer;
@@ -34,7 +35,13 @@ public class ComponentPaginator {
         if (!isInBounds(pageNumber))
             throw new IndexOutOfBoundsException();
 
-        Component[] tempLines = new Component[pageNumber == getPageCount() ? (lines.size() % (CLOSED_CHAT_PAGE_HEIGHT - 1)) + 1 : CLOSED_CHAT_PAGE_HEIGHT];
+        Component[] tempLines;
+        if (pageNumber < getPageCount()) {
+            tempLines = new Component[TOTAL_HEIGHT];
+        }
+        else {
+            tempLines = new Component[lines.size() - (CONTENT_HEIGHT * (pageNumber - 1)) + 1];
+        }
 
         tempLines[0] = Component.text("--- ", NamedTextColor.YELLOW);
         if (isInBounds(pageNumber - 1)) {
@@ -60,13 +67,13 @@ public class ComponentPaginator {
                 .append(Component.text(" ---", NamedTextColor.YELLOW));
 
         for (int i = 1; i < tempLines.length; i++) {
-            tempLines[i] = lines.get(((CLOSED_CHAT_PAGE_HEIGHT - 1) * (pageNumber - 1)) + i - 1);
+            tempLines[i] = lines.get((CONTENT_HEIGHT * (pageNumber - 1)) + i - 1);
         }
         return tempLines;
     }
 
     public int getPageCount() {
-        return (int) Math.ceil(((double) lines.size()) / (CLOSED_CHAT_PAGE_HEIGHT - 1));
+        return (int) Math.ceil(((double) lines.size()) / CONTENT_HEIGHT);
     }
 
     public boolean isInBounds(int pageNumber) {
