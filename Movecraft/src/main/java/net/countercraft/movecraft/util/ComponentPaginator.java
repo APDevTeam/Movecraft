@@ -1,21 +1,24 @@
 package net.countercraft.movecraft.util;
 
-import net.countercraft.movecraft.localisation.I18nSupport;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 import static org.bukkit.util.ChatPaginator.CLOSED_CHAT_PAGE_HEIGHT;
 
 public class ComponentPaginator {
     private final Component title;
     private final List<Component> lines = new ArrayList<>();
+    private final Function<Integer, String> pageConsumer;
 
-    public ComponentPaginator(@NotNull Component title) {
+    public ComponentPaginator(@NotNull Component title, @NotNull Function<Integer, String> pageConsumer) {
         this.title = title.color(NamedTextColor.GOLD);
+        this.pageConsumer = pageConsumer;
     }
 
     public void addLine(Component line){
@@ -33,13 +36,27 @@ public class ComponentPaginator {
 
         Component[] tempLines = new Component[pageNumber == getPageCount() ? (lines.size() % (CLOSED_CHAT_PAGE_HEIGHT - 1)) + 1 : CLOSED_CHAT_PAGE_HEIGHT];
 
-        tempLines[0] = Component.text("--- ", NamedTextColor.YELLOW)
+        tempLines[0] = Component.text("--- ", NamedTextColor.YELLOW);
+        if (isInBounds(pageNumber - 1)) {
+            tempLines[0] = tempLines[0].append(Component.text("[<]")
+                    .color(NamedTextColor.AQUA)
+                    .clickEvent(ClickEvent.runCommand(
+                            pageConsumer.apply(pageNumber - 1))));
+        }
+        tempLines[0] = tempLines[0]
                 .append(title)
                 .append(Component.text(" -- ", NamedTextColor.YELLOW))
                 .append(Component.text("page ", NamedTextColor.GOLD))
                 .append(Component.text(pageNumber, NamedTextColor.RED))
                 .append(Component.text("/", NamedTextColor.YELLOW))
-                .append(Component.text(getPageCount(), NamedTextColor.RED))
+                .append(Component.text(getPageCount(), NamedTextColor.RED));
+        if (isInBounds(pageNumber + 1)) {
+            tempLines[0] = tempLines[0].append(Component.text(" [>]")
+                    .color(NamedTextColor.AQUA)
+                    .clickEvent(ClickEvent.runCommand(
+                            pageConsumer.apply(pageNumber + 1))));
+        }
+        tempLines[0] = tempLines[0]
                 .append(Component.text(" ---", NamedTextColor.YELLOW));
 
         for (int i = 1; i < tempLines.length; i++) {
