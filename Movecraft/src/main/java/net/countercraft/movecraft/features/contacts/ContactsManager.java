@@ -5,6 +5,8 @@ import net.countercraft.movecraft.craft.*;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.*;
 import net.countercraft.movecraft.exception.EmptyHitBoxException;
+import net.countercraft.movecraft.features.contacts.events.LostContactEvent;
+import net.countercraft.movecraft.features.contacts.events.NewContactEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -38,12 +40,33 @@ public class ContactsManager extends BukkitRunnable implements Listener {
 
             Set<Craft> craftsInWorld = CraftManager.getInstance().getCraftsInWorld(w);
             for (Craft craft : craftsInWorld) {
-                contactsMap.put(craft, update(craft, craftsInWorld));
+                update(craft, craftsInWorld);
             }
         }
     }
 
-    private @NotNull List<Craft> update(Craft base, @NotNull Set<Craft> craftsInWorld) {
+    private void update(Craft base, @NotNull Set<Craft> craftsInWorld) {
+        List<Craft> previousContacts = contactsMap.get(base);
+        List<Craft> futureContacts = get(base, craftsInWorld);
+
+        Set<Craft> newContacts = new HashSet<>(futureContacts);
+        previousContacts.forEach(newContacts::remove);
+        for (Craft target : newContacts) {
+            NewContactEvent event = new NewContactEvent(base, target);
+            Bukkit.getServer().getPluginManager().callEvent(event);
+        }
+
+        Set<Craft> oldContacts = new HashSet<>(previousContacts);
+        futureContacts.forEach(oldContacts::remove);
+        for (Craft target : oldContacts) {
+            LostContactEvent event = new LostContactEvent(base, target);
+            Bukkit.getServer().getPluginManager().callEvent(event);
+        }
+
+        contactsMap.put(base, futureContacts);
+    }
+
+    private @NotNull List<Craft> get(Craft base, @NotNull Set<Craft> craftsInWorld) {
         Map<Craft, Integer> inRangeDistanceSquared = new HashMap<>();
         for (Craft target : craftsInWorld) {
             if (base instanceof PilotedCraft && this instanceof PilotedCraft
