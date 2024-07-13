@@ -8,6 +8,7 @@ import net.countercraft.movecraft.exception.EmptyHitBoxException;
 import net.countercraft.movecraft.features.contacts.events.LostContactEvent;
 import net.countercraft.movecraft.features.contacts.events.NewContactEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
@@ -237,5 +238,17 @@ public class ContactsManager extends BukkitRunnable implements Listener {
 
     public List<Craft> get(Craft craft) {
         return contactsMap.get(craft);
+    }
+
+    @EventHandler
+    public void onNewContact(@NotNull NewContactEvent e) {
+        Component notification = contactMessage(true, e.getCraft(), e.getTargetCraft());
+        if (notification != null)
+            e.getCraft().getAudience().sendMessage(notification);
+
+        Object object = e.getCraft().getType().getObjectProperty(CraftType.COLLISION_SOUND);
+        if (!(object instanceof Sound sound))
+            throw new IllegalStateException("COLLISION_SOUND must be of type Sound");
+        e.getCraft().getAudience().playSound(sound);
     }
 }
