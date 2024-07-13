@@ -50,6 +50,7 @@ public class ContactsSign implements Listener {
 
     @EventHandler
     public final void onSignTranslateEvent(@NotNull SignTranslateEvent event) {
+        event.getLines();
         if (!ChatColor.stripColor(event.getLine(0)).equalsIgnoreCase(HEADER))
             return;
 
