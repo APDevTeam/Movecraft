@@ -61,6 +61,9 @@ public class ContactsSign implements Listener {
 
             event.setLine(line++, contactsLine(base, target));
         }
+        while (line <= 3) {
+            event.setLine(line++, "");
+        }
     }
 
     private static @NotNull String contactsLine(@NotNull Craft base, @NotNull Craft target) {
