@@ -27,7 +27,7 @@ public class ContactsSign implements Listener {
     }
 
     @EventHandler
-    public void onCraftDetect(@NotNull CraftDetectEvent event){
+    public void onCraftDetect(@NotNull CraftDetectEvent event) {
         World world = event.getCraft().getWorld();
         for (MovecraftLocation location : event.getCraft().getHitBox()) {
             var block = location.toBukkit(world).getBlock();
@@ -49,7 +49,7 @@ public class ContactsSign implements Listener {
     }
 
     @EventHandler
-    public final void onSignTranslateEvent(@NotNull SignTranslateEvent event){
+    public final void onSignTranslateEvent(@NotNull SignTranslateEvent event) {
         if (!ChatColor.stripColor(event.getLine(0)).equalsIgnoreCase(HEADER))
             return;
 
@@ -106,6 +106,6 @@ public class ContactsSign implements Listener {
             return;
 
         event.setCancelled(true);
-        event.getPlayer().performCommand("/contacts");
+        event.getPlayer().performCommand("contacts");
     }
 }

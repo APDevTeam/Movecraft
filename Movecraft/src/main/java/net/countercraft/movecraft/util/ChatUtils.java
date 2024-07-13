@@ -13,13 +13,15 @@ public class ChatUtils {
     public static final String ERROR_PREFIX = ChatColor.RED +"[" + I18nSupport.getInternationalisedString("Error") + "]" + ChatColor.RESET;
 
     public static @NotNull Component commandPrefix() {
-        return Component.text("[", NamedTextColor.GOLD)
+        return Component.empty()
+                .append(Component.text("[", NamedTextColor.GOLD))
                 .append(Component.text("Movecraft", (NamedTextColor.WHITE)))
                 .append(Component.text("] ", NamedTextColor.GOLD));
     }
 
     public static @NotNull Component errorPrefix() {
-        return Component.text("[")
+        return Component.empty()
+                .append(Component.text("["))
                 .append(I18nSupport.getInternationalisedComponent("Error"))
                 .append(Component.text("] "))
                 .color(NamedTextColor.RED);

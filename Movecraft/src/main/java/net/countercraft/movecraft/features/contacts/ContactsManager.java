@@ -11,7 +11,6 @@ import net.countercraft.movecraft.localisation.I18nSupport;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -48,6 +47,8 @@ public class ContactsManager extends BukkitRunnable implements Listener {
 
     private void update(Craft base, @NotNull Set<Craft> craftsInWorld) {
         List<Craft> previousContacts = contactsMap.get(base);
+        if (previousContacts == null)
+            previousContacts = new ArrayList<>(0);
         List<Craft> futureContacts = get(base, craftsInWorld);
 
         Set<Craft> newContacts = new HashSet<>(futureContacts);
@@ -70,8 +71,8 @@ public class ContactsManager extends BukkitRunnable implements Listener {
     private @NotNull List<Craft> get(Craft base, @NotNull Set<Craft> craftsInWorld) {
         Map<Craft, Integer> inRangeDistanceSquared = new HashMap<>();
         for (Craft target : craftsInWorld) {
-            if (base instanceof PilotedCraft && this instanceof PilotedCraft
-                    && ((PilotedCraft) base).getPilot() == ((PilotedCraft) this).getPilot())
+            if (base instanceof PilotedCraft && target instanceof PilotedCraft
+                    && ((PilotedCraft) base).getPilot() == ((PilotedCraft) target).getPilot())
                 continue;
 
             MovecraftLocation baseCenter;
@@ -113,24 +114,24 @@ public class ContactsManager extends BukkitRunnable implements Listener {
             if (w == null)
                 continue;
 
-            for (PlayerCraft craft : CraftManager.getInstance().getPlayerCraftsInWorld(w)) {
-                if (craft.getHitBox().isEmpty())
+            for (PlayerCraft base : CraftManager.getInstance().getPlayerCraftsInWorld(w)) {
+                if (base.getHitBox().isEmpty())
                     continue;
 
-                if (!recentContacts.containsKey(craft))
-                    recentContacts.put(craft, new WeakHashMap<>());
+                if (!recentContacts.containsKey(base))
+                    recentContacts.put(base, new WeakHashMap<>());
 
-                for (Craft target : contactsMap.get(craft)) {
+                for (Craft target : contactsMap.get(base)) {
                     // has the craft not been seen in the last minute?
-                    if (System.currentTimeMillis() - recentContacts.get(craft).getOrDefault(target, 0L) <= 60000)
+                    if (System.currentTimeMillis() - recentContacts.get(base).getOrDefault(target, 0L) <= 60000)
                         continue;
 
-                    Component message = contactMessage(false, craft, target);
+                    Component message = contactMessage(false, base, target);
                     if (message == null)
                         continue;
 
-                    craft.getAudience().sendMessage(message);
-                    recentContacts.get(craft).put(target, System.currentTimeMillis());
+                    base.getAudience().sendMessage(message);
+                    recentContacts.get(base).put(target, System.currentTimeMillis());
                 }
             }
         }
@@ -149,12 +150,12 @@ public class ContactsManager extends BukkitRunnable implements Listener {
         int diffZ = baseCenter.getZ() - targetCenter.getZ();
         int distSquared = baseCenter.distanceSquared(targetCenter);
 
-        Component notification;
+        Component notification = Component.empty();
         if (isNew) {
-            notification = I18nSupport.getInternationalisedComponent("Contact - New Contact").style(Style.style(NamedTextColor.RED, TextDecoration.BOLD));
+            notification = notification.append(I18nSupport.getInternationalisedComponent("Contact - New Contact").color(NamedTextColor.RED).decorate(TextDecoration.BOLD));
         }
         else {
-            notification = I18nSupport.getInternationalisedComponent("Contact");
+            notification = notification.append(I18nSupport.getInternationalisedComponent("Contact"));
         }
         notification = notification.append(Component.text( ": "));
 
@@ -219,36 +220,48 @@ public class ContactsManager extends BukkitRunnable implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onCraftRelease(@NotNull CraftReleaseEvent e) {
-        Craft craft = e.getCraft();
-        contactsMap.remove(craft);
+        Craft base = e.getCraft();
+        contactsMap.remove(base);
         for (Craft key : contactsMap.keySet()) {
-            if (!contactsMap.get(key).contains(craft))
+            if (!contactsMap.get(key).contains(base))
                 continue;
 
-            contactsMap.get(key).remove(craft);
+            contactsMap.get(key).remove(base);
         }
 
-        if (craft instanceof PlayerCraft)
-            recentContacts.remove(craft);
+        if (base instanceof PlayerCraft)
+            recentContacts.remove(base);
 
         for (PlayerCraft key : recentContacts.keySet()) {
-            recentContacts.get(key).remove(craft);
+            if (!recentContacts.containsKey(key))
+                continue;
+
+            recentContacts.get(key).remove(base);
         }
     }
 
-    public List<Craft> get(Craft craft) {
-        return contactsMap.get(craft);
+    public List<Craft> get(Craft base) {
+        return contactsMap.get(base);
     }
 
     @EventHandler
     public void onNewContact(@NotNull NewContactEvent e) {
-        Component notification = contactMessage(true, e.getCraft(), e.getTargetCraft());
+        Craft base = e.getCraft();
+        Craft target = e.getTargetCraft();
+        Component notification = contactMessage(true, base, target);
         if (notification != null)
-            e.getCraft().getAudience().sendMessage(notification);
+            base.getAudience().sendMessage(notification);
 
-        Object object = e.getCraft().getType().getObjectProperty(CraftType.COLLISION_SOUND);
+        Object object = base.getType().getObjectProperty(CraftType.COLLISION_SOUND);
         if (!(object instanceof Sound sound))
             throw new IllegalStateException("COLLISION_SOUND must be of type Sound");
-        e.getCraft().getAudience().playSound(sound);
+        base.getAudience().playSound(sound);
+
+        if (base instanceof PlayerCraft playerCraft) {
+            if (!recentContacts.containsKey(base))
+                recentContacts.put(playerCraft, new WeakHashMap<>());
+
+            recentContacts.get(playerCraft).put(target, System.currentTimeMillis());
+        }
     }
 }
