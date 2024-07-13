@@ -31,12 +31,9 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
-import java.util.Set;
 
 public interface Craft {
 
@@ -130,12 +127,6 @@ public interface Craft {
      * @param cruising the desired cruise state
      */
     void setCruising(boolean cruising);
-
-    /**
-     * Gets the crafts that have made contact with this craft
-     * @return a set of crafts on contact with this craft
-     */
-    Set<Craft> getContacts();
 
     /**
      * Gets the disabled status of the craft

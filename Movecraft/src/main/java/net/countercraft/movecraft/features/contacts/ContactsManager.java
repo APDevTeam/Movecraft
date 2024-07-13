@@ -1,17 +1,15 @@
 package net.countercraft.movecraft.features.contacts;
 
 import net.countercraft.movecraft.MovecraftLocation;
-import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.craft.PilotedCraft;
-import net.countercraft.movecraft.craft.SinkingCraft;
+import net.countercraft.movecraft.craft.*;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.*;
 import net.countercraft.movecraft.exception.EmptyHitBoxException;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.Style;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.event.EventHandler;
@@ -21,26 +19,32 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
 public class ContactsManager extends BukkitRunnable implements Listener {
-    private final Map<Craft, Map<Craft, Long>> recentContacts = new WeakHashMap<>();
+    private final Map<Craft, List<Craft>> contactsMap = new WeakHashMap<>();
+    private final Map<PlayerCraft, Map<Craft, Long>> recentContacts = new WeakHashMap<>();
 
     @Override
     public void run() {
+        runRecentContacts();
+    }
+
+    private void runRecentContacts() {
         for (World w : Bukkit.getWorlds()) {
             if (w == null)
                 continue;
 
-            for (Craft craft : CraftManager.getInstance().getPlayerCraftsInWorld(w)) {
+            for (PlayerCraft craft : CraftManager.getInstance().getPlayerCraftsInWorld(w)) {
                 if (craft.getHitBox().isEmpty())
                     continue;
 
                 if (!recentContacts.containsKey(craft))
                     recentContacts.put(craft, new WeakHashMap<>());
 
-                for (Craft target : craft.getContacts()) {
+                for (Craft target : contactsMap.get(craft)) {
                     // has the craft not been seen in the last minute?
                     if (System.currentTimeMillis() - recentContacts.get(craft).getOrDefault(target, 0L) <= 60000)
                         continue;
@@ -71,7 +75,7 @@ public class ContactsManager extends BukkitRunnable implements Listener {
 
         Component notification;
         if (isNew) {
-            notification = I18nSupport.getInternationalisedComponent("Contact - New Contact");
+            notification = I18nSupport.getInternationalisedComponent("Contact - New Contact").style(Style.style(NamedTextColor.RED, TextDecoration.BOLD));
         }
         else {
             notification = I18nSupport.getInternationalisedComponent("Contact");
@@ -137,37 +141,30 @@ public class ContactsManager extends BukkitRunnable implements Listener {
         return notification;
     }
 
-    public static void update(Craft c) {
+    private void update(Craft c) {
         // TODO
-    }
-
-    private static void remove(Craft c) {
-        // TODO
-    }
-
-
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onCraftTranslate(@NotNull CraftTranslateEvent e) {
-        update(e.getCraft());
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onCraftDetect(@NotNull CraftDetectEvent e) {
-        remove(e.getCraft());
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onCraftRelease(@NotNull CraftReleaseEvent e) {
-        remove(e.getCraft());
+        Craft craft = e.getCraft();
+        contactsMap.remove(craft);
+        for (Craft key : contactsMap.keySet()) {
+            if (!contactsMap.get(key).contains(craft))
+                continue;
+
+            contactsMap.get(key).remove(craft);
+        }
+
+        if (craft instanceof PlayerCraft)
+            recentContacts.remove(craft);
+
+        for (PlayerCraft key : recentContacts.keySet()) {
+            recentContacts.get(key).remove(craft);
+        }
     }
 
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onCraftSink(@NotNull CraftSinkEvent e) {
-        remove(e.getCraft());
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onCraftScuttle(@NotNull CraftScuttleEvent e) {
-        remove(e.getCraft());
+    public List<Craft> get(Craft craft) {
+        return contactsMap.get(craft);
     }
 }

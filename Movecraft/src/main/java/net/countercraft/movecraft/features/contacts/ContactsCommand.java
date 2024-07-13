@@ -13,6 +13,12 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 public class ContactsCommand implements CommandExecutor {
+    private final ContactsManager contactsManager;
+
+    public ContactsCommand(ContactsManager contactsManager) {
+        this.contactsManager = contactsManager;
+    }
+
     @Override
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, String[] args) {
         if (!command.getName().equalsIgnoreCase("contacts"))
@@ -48,12 +54,11 @@ public class ContactsCommand implements CommandExecutor {
         Craft base = CraftManager.getInstance().getCraftByPlayer(player);
         if (base == null)
             return true;
-        ContactsManager.update(base);
 
         ComponentPaginator paginator = new ComponentPaginator(
                 I18nSupport.getInternationalisedComponent("Contacts"),
                 (pageNumber) -> "/contacts " + pageNumber);
-        for (Craft target : base.getContacts()) {
+        for (Craft target : contactsManager.get(base)) {
             if (target.getHitBox().isEmpty())
                 continue;
 

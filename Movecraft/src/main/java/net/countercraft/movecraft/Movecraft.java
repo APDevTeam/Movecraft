@@ -25,6 +25,7 @@ import net.countercraft.movecraft.craft.ChunkManager;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.features.contacts.ContactsCommand;
 import net.countercraft.movecraft.features.contacts.ContactsManager;
+import net.countercraft.movecraft.features.contacts.ContactsSign;
 import net.countercraft.movecraft.listener.BlockListener;
 import net.countercraft.movecraft.listener.InteractListener;
 import net.countercraft.movecraft.listener.PlayerListener;
@@ -197,7 +198,6 @@ public class Movecraft extends JavaPlugin {
         getCommand("cruise").setExecutor(new CruiseCommand());
         getCommand("craftreport").setExecutor(new CraftReportCommand());
         getCommand("manoverboard").setExecutor(new ManOverboardCommand());
-        getCommand("contacts").setExecutor(new ContactsCommand());
         getCommand("scuttle").setExecutor(new ScuttleCommand());
         getCommand("crafttype").setExecutor(new CraftTypeCommand());
         getCommand("craftinfo").setExecutor(new CraftInfoCommand());
@@ -206,7 +206,6 @@ public class Movecraft extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new PlayerListener(), this);
         getServer().getPluginManager().registerEvents(new ChunkManager(), this);
         getServer().getPluginManager().registerEvents(new AscendSign(), this);
-        getServer().getPluginManager().registerEvents(new ContactsSign(), this);
         getServer().getPluginManager().registerEvents(new CraftSign(), this);
         getServer().getPluginManager().registerEvents(new CruiseSign(), this);
         getServer().getPluginManager().registerEvents(new DescendSign(), this);
@@ -226,6 +225,8 @@ public class Movecraft extends JavaPlugin {
         var contactsManager = new ContactsManager();
         contactsManager.runTaskTimerAsynchronously(this, 0, 20);
         getServer().getPluginManager().registerEvents(contactsManager, this);
+        getCommand("contacts").setExecutor(new ContactsCommand(contactsManager));
+        getServer().getPluginManager().registerEvents(new ContactsSign(contactsManager), this);
 
         logger.info("[V " + getDescription().getVersion() + "] has been enabled.");
     }
