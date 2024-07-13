@@ -39,8 +39,11 @@ public class ContactsManager extends BukkitRunnable implements Listener {
                 continue;
 
             Set<Craft> craftsInWorld = CraftManager.getInstance().getCraftsInWorld(w);
-            for (Craft craft : craftsInWorld) {
-                update(craft, craftsInWorld);
+            for (Craft base : craftsInWorld) {
+                if (base instanceof SinkingCraft)
+                    continue;
+
+                update(base, craftsInWorld);
             }
         }
     }
@@ -220,7 +223,15 @@ public class ContactsManager extends BukkitRunnable implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onCraftRelease(@NotNull CraftReleaseEvent e) {
-        Craft base = e.getCraft();
+        remove(e.getCraft());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onCraftSink(@NotNull CraftSinkEvent e) {
+        remove(e.getCraft());
+    }
+
+    private void remove(Craft base) {
         contactsMap.remove(base);
         for (Craft key : contactsMap.keySet()) {
             if (!contactsMap.get(key).contains(base))
