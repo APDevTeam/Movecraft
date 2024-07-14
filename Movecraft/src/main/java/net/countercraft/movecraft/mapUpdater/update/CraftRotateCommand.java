@@ -227,9 +227,6 @@ public class CraftRotateCommand extends UpdateCommand {
         for (Map.Entry<String[], List<MovecraftLocation>> entry : signs.entrySet()) {
             SignTranslateEvent event = new SignTranslateEvent(craft, entry.getKey(), entry.getValue());
             Bukkit.getServer().getPluginManager().callEvent(event);
-            if (!event.isUpdated()) {
-                continue;
-            }
             for (MovecraftLocation location : entry.getValue()) {
                 Block block = location.toBukkit(craft.getWorld()).getBlock();
                 BlockState state = block.getState();
@@ -238,8 +235,10 @@ public class CraftRotateCommand extends UpdateCommand {
                     continue;
                 }
                 Sign sign = signStates.get(location);
-                for (int i = 0; i < 4; i++) {
-                    sign.setLine(i, entry.getKey()[i]);
+                if (event.isUpdated()) {
+                    for (int i = 0; i < 4; i++) {
+                        sign.setLine(i, entry.getKey()[i]);
+                    }
                 }
                 sign.update(false, false);
                 block.setBlockData(data);

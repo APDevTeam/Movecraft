@@ -31,12 +31,7 @@ import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 
@@ -186,47 +181,6 @@ public abstract class BaseCraft implements Craft {
     @Override
     public void rotate(MovecraftRotation rotation, MovecraftLocation originPoint, boolean isSubCraft) {
         Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(this, originPoint, rotation, getWorld(), isSubCraft), this);
-    }
-
-    /**
-     * Gets the crafts that have made contact with this craft
-     *
-     * @return a set of crafts in contact with this craft
-     */
-    @NotNull
-    @Override
-    public Set<Craft> getContacts() {
-        final Set<Craft> contacts = new HashSet<>();
-        for (Craft contact : CraftManager.getInstance().getCraftsInWorld(w)) {
-            if (contact instanceof PilotedCraft && this instanceof PilotedCraft
-                    && ((PilotedCraft) contact).getPilot() == ((PilotedCraft) this).getPilot())
-                continue;
-
-            MovecraftLocation ccenter;
-            MovecraftLocation tcenter;
-            try {
-                ccenter = getHitBox().getMidPoint();
-                tcenter = contact.getHitBox().getMidPoint();
-            }
-            catch (EmptyHitBoxException e) {
-                continue;
-            }
-            int distsquared = ccenter.distanceSquared(tcenter);
-            double detectionMultiplier;
-            if (tcenter.getY() > 65) // TODO: fix the water line
-                detectionMultiplier = (double) contact.getType().getPerWorldProperty(
-                        CraftType.PER_WORLD_DETECTION_MULTIPLIER, contact.getWorld());
-            else
-                detectionMultiplier = (double) contact.getType().getPerWorldProperty(
-                        CraftType.PER_WORLD_UNDERWATER_DETECTION_MULTIPLIER, contact.getWorld());
-            int detectionRange = (int) (contact.getOrigBlockCount() * detectionMultiplier);
-            detectionRange = detectionRange * 10;
-            if (distsquared > detectionRange)
-                continue;
-
-            contacts.add(contact);
-        }
-        return contacts;
     }
 
     @Override

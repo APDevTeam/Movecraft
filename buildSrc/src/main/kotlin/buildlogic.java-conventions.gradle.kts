@@ -11,7 +11,7 @@ repositories {
 }
 
 group = "net.countercraft"
-version = "8.0.0_beta-3_gradle"
+version = "8.0.0_beta-3_gradle-2"
 
 tasks.withType<JavaCompile>() {
     options.encoding = "UTF-8"
