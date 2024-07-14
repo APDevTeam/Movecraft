@@ -40,7 +40,7 @@ public class ContactsManager extends BukkitRunnable implements Listener {
 
             Set<Craft> craftsInWorld = CraftManager.getInstance().getCraftsInWorld(w);
             for (Craft base : craftsInWorld) {
-                if (base instanceof SinkingCraft)
+                if (base instanceof SinkingCraft || base instanceof SubCraft)
                     continue;
 
                 update(base, craftsInWorld);
@@ -74,6 +74,8 @@ public class ContactsManager extends BukkitRunnable implements Listener {
     private @NotNull List<Craft> get(Craft base, @NotNull Set<Craft> craftsInWorld) {
         Map<Craft, Integer> inRangeDistanceSquared = new HashMap<>();
         for (Craft target : craftsInWorld) {
+            if (target instanceof SubCraft)
+                continue;
             if (base instanceof PilotedCraft && target instanceof PilotedCraft
                     && ((PilotedCraft) base).getPilot() == ((PilotedCraft) target).getPilot())
                 continue;
@@ -92,11 +94,11 @@ public class ContactsManager extends BukkitRunnable implements Listener {
             double detectionMultiplier;
             if (targetCenter.getY() > 65) { // TODO: fix the water line
                 detectionMultiplier = (double) target.getType().getPerWorldProperty(
-                        CraftType.PER_WORLD_DETECTION_MULTIPLIER, target.getWorld());
+                        CraftType.PER_WORLD_DETECTION_MULTIPLIER, target.getMovecraftWorld());
             }
             else {
                 detectionMultiplier = (double) target.getType().getPerWorldProperty(
-                        CraftType.PER_WORLD_UNDERWATER_DETECTION_MULTIPLIER, target.getWorld());
+                        CraftType.PER_WORLD_UNDERWATER_DETECTION_MULTIPLIER, target.getMovecraftWorld());
             }
             int detectionRange = (int) (target.getOrigBlockCount() * detectionMultiplier);
             detectionRange = detectionRange * 10;
