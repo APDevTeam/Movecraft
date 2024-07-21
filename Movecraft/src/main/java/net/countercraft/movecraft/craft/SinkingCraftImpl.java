@@ -1,6 +1,5 @@
 package net.countercraft.movecraft.craft;
 
-import net.countercraft.movecraft.craft.datatag.CraftDataTagContainer;
 import org.jetbrains.annotations.NotNull;
 
 public class SinkingCraftImpl extends BaseCraft implements SinkingCraft {
@@ -15,9 +14,4 @@ public class SinkingCraftImpl extends BaseCraft implements SinkingCraft {
         setAudience(original.getAudience());
     }
 
-    @Override
-    protected CraftDataTagContainer createContainer() {
-        // No tags here!
-        return null;
-    }
 }
