@@ -7,6 +7,7 @@ import net.countercraft.movecraft.MovecraftRotation;
 import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.craft.datatag.CraftDataTagContainer;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.exception.EmptyHitBoxException;
 import net.countercraft.movecraft.localisation.I18nSupport;
@@ -74,6 +75,8 @@ public abstract class BaseCraft implements Craft {
     @NotNull
     private MovecraftLocation lastTranslation = new MovecraftLocation(0, 0, 0);
 
+    private final CraftDataTagContainer dataTagContainer = this.createContainer();
+
     public BaseCraft(@NotNull CraftType type, @NotNull World world) {
         this.type = type;
         this.w = world;
@@ -86,6 +89,10 @@ public abstract class BaseCraft implements Craft {
         origPilotTime = System.currentTimeMillis();
         materials = new Counter<>();
         audience = Audience.empty();
+    }
+
+    protected CraftDataTagContainer createContainer() {
+        return new CraftDataTagContainer();
     }
 
     public boolean isNotProcessing() {
@@ -551,5 +558,10 @@ public abstract class BaseCraft implements Craft {
     @Override
     public double getTotalFuel() {
         return totalFuel;
+    }
+
+    @Override
+    public CraftDataTagContainer getDataTagContainer() {
+        return dataTagContainer;
     }
 }

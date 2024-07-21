@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.craft;
 
+import net.countercraft.movecraft.craft.datatag.CraftDataTagContainer;
 import net.countercraft.movecraft.craft.type.CraftType;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -22,5 +23,11 @@ public class CruiseOnPilotSubCraft extends CruiseOnPilotCraft implements SubCraf
     @Override
     public void setParent(@NotNull Craft parent) {
         this.parent = parent;
+    }
+
+    @Override
+    protected CraftDataTagContainer createContainer() {
+        // No tags here!
+        return null;
     }
 }
