@@ -275,6 +275,6 @@ public interface Craft {
         if (container == null) {
             return null;
         }
-        return container.get(tagKey);
+        return container.get(this, tagKey);
     }
 }
