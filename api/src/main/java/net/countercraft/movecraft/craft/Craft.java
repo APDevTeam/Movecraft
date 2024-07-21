@@ -261,6 +261,15 @@ public interface Craft {
     public default CraftDataTagContainer getDataTagContainer() {
         return null;
     }
+
+    public default <T extends ICraftDataTag> boolean setDataTag(CraftDataTagKey<T> tagKey, T data) {
+        CraftDataTagContainer container = this.getDataTagContainer();
+        if (container == null) {
+            return false;
+        }
+        container.set(tagKey, data);
+        return true;
+    }
     public default <T extends ICraftDataTag> T getDataTag(CraftDataTagKey<T> tagKey) {
         CraftDataTagContainer container = this.getDataTagContainer();
         if (container == null) {

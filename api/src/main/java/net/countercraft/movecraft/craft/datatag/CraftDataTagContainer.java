@@ -1,6 +1,7 @@
 package net.countercraft.movecraft.craft.datatag;
 
 import org.bukkit.NamespacedKey;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -41,6 +42,10 @@ public class CraftDataTagContainer extends HashMap<CraftDataTagKey<?>, Object> {
             }
         }
         return result;
+    }
+
+    public <T extends ICraftDataTag> void set(CraftDataTagKey<T> tagKey, @NotNull T value) {
+        this.put(tagKey, value);
     }
 
 }
