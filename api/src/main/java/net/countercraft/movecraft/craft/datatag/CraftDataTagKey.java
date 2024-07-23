@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Function;
 
-public class CraftDataTagKey<T extends ICraftDataTag> {
+public class CraftDataTagKey<T> {
     protected final Function<Craft, T> dataCreator;
     protected final NamespacedKey key;
 

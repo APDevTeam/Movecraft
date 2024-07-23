@@ -13,7 +13,7 @@ public class CraftDataTagContainer extends HashMap<CraftDataTagKey<?>, Object> {
 
     public static final Map<NamespacedKey, CraftDataTagKey<?>> REGISTERED_TAGS = new HashMap<>();
 
-    public static <T extends ICraftDataTag> CraftDataTagKey<T> tryRegisterTagKey(final NamespacedKey key, final Function<Craft, T> supplier) {
+    public static <T> CraftDataTagKey<T> tryRegisterTagKey(final NamespacedKey key, final Function<Craft, T> supplier) {
         if (REGISTERED_TAGS.containsKey(key)) {
             throw new IllegalArgumentException("Duplicate keys are not allowed!");
         } else {
@@ -23,7 +23,7 @@ public class CraftDataTagContainer extends HashMap<CraftDataTagKey<?>, Object> {
         }
     }
 
-    public <T extends ICraftDataTag> T get(final Craft craft, CraftDataTagKey<T> tagKey) {
+    public <T> T get(final Craft craft, CraftDataTagKey<T> tagKey) {
         if (!REGISTERED_TAGS.containsKey(tagKey.key)) {
             // TODO: Log error
             return null;
@@ -46,7 +46,7 @@ public class CraftDataTagContainer extends HashMap<CraftDataTagKey<?>, Object> {
         return result;
     }
 
-    public <T extends ICraftDataTag> void set(CraftDataTagKey<T> tagKey, @NotNull T value) {
+    public <T> void set(CraftDataTagKey<T> tagKey, @NotNull T value) {
         this.put(tagKey, value);
     }
 
