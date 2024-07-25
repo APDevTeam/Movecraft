@@ -2,6 +2,8 @@ package net.countercraft.movecraft.features.contacts;
 
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.*;
+import net.countercraft.movecraft.craft.datatag.CraftDataTagContainer;
+import net.countercraft.movecraft.craft.datatag.CraftDataTagKey;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.*;
 import net.countercraft.movecraft.exception.EmptyHitBoxException;
@@ -13,6 +15,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -24,7 +27,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 public class ContactsManager extends BukkitRunnable implements Listener {
-    private final Map<Craft, List<Craft>> contactsMap = new WeakHashMap<>();
+    public static final CraftDataTagKey<ContactsDataTag> CONTACTS = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "contacts"), craft -> new ContactsDataTag(0));
     private final Map<PlayerCraft, Map<Craft, Long>> recentContacts = new WeakHashMap<>();
 
     @Override
@@ -48,11 +51,11 @@ public class ContactsManager extends BukkitRunnable implements Listener {
         }
     }
 
-    private void update(Craft base, @NotNull Set<Craft> craftsInWorld) {
-        List<Craft> previousContacts = contactsMap.get(base);
+    private void update(@NotNull Craft base, @NotNull Set<Craft> craftsInWorld) {
+        List<Craft> previousContacts = base.getDataTag(CONTACTS);
         if (previousContacts == null)
             previousContacts = new ArrayList<>(0);
-        List<Craft> futureContacts = get(base, craftsInWorld);
+        ContactsDataTag futureContacts = get(base, craftsInWorld);
 
         Set<Craft> newContacts = new HashSet<>(futureContacts);
         previousContacts.forEach(newContacts::remove);
@@ -68,10 +71,10 @@ public class ContactsManager extends BukkitRunnable implements Listener {
             Bukkit.getServer().getPluginManager().callEvent(event);
         }
 
-        contactsMap.put(base, futureContacts);
+        base.setDataTag(CONTACTS, futureContacts);
     }
 
-    private @NotNull List<Craft> get(Craft base, @NotNull Set<Craft> craftsInWorld) {
+    private @NotNull ContactsDataTag get(Craft base, @NotNull Set<Craft> craftsInWorld) {
         Map<Craft, Integer> inRangeDistanceSquared = new HashMap<>();
         for (Craft target : craftsInWorld) {
             if (target instanceof SubCraft)
@@ -108,7 +111,7 @@ public class ContactsManager extends BukkitRunnable implements Listener {
             inRangeDistanceSquared.put(target, distanceSquared);
         }
 
-        List<Craft> result = new ArrayList<>(inRangeDistanceSquared.keySet().size());
+        ContactsDataTag result = new ContactsDataTag(inRangeDistanceSquared.keySet().size());
         result.addAll(inRangeDistanceSquared.keySet());
         result.sort(Comparator.comparingInt(inRangeDistanceSquared::get));
         return result;
@@ -126,7 +129,7 @@ public class ContactsManager extends BukkitRunnable implements Listener {
                 if (!recentContacts.containsKey(base))
                     recentContacts.put(base, new WeakHashMap<>());
 
-                for (Craft target : contactsMap.get(base)) {
+                for (Craft target : base.getDataTag(CONTACTS)) {
                     // has the craft not been seen in the last minute?
                     if (System.currentTimeMillis() - recentContacts.get(base).getOrDefault(target, 0L) <= 60000)
                         continue;
@@ -234,12 +237,13 @@ public class ContactsManager extends BukkitRunnable implements Listener {
     }
 
     private void remove(Craft base) {
-        contactsMap.remove(base);
-        for (Craft key : contactsMap.keySet()) {
-            if (!contactsMap.get(key).contains(base))
+        for (Craft other : CraftManager.getInstance().getCrafts()) {
+            ContactsDataTag contacts = other.getDataTag(CONTACTS);
+            if (contacts.contains(base))
                 continue;
 
-            contactsMap.get(key).remove(base);
+            contacts.remove(base);
+            other.setDataTag(CONTACTS, contacts);
         }
 
         if (base instanceof PlayerCraft)
@@ -251,10 +255,6 @@ public class ContactsManager extends BukkitRunnable implements Listener {
 
             recentContacts.get(key).remove(base);
         }
-    }
-
-    public List<Craft> get(Craft base) {
-        return contactsMap.get(base);
     }
 
     @EventHandler

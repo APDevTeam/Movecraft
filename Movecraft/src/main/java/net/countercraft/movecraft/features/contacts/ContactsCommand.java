@@ -13,12 +13,6 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 public class ContactsCommand implements CommandExecutor {
-    private final ContactsManager contactsManager;
-
-    public ContactsCommand(ContactsManager contactsManager) {
-        this.contactsManager = contactsManager;
-    }
-
     @Override
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, String[] args) {
         if (!command.getName().equalsIgnoreCase("contacts"))
@@ -63,7 +57,7 @@ public class ContactsCommand implements CommandExecutor {
         ComponentPaginator paginator = new ComponentPaginator(
                 I18nSupport.getInternationalisedComponent("Contacts"),
                 (pageNumber) -> "/contacts " + pageNumber);
-        for (Craft target : contactsManager.get(base)) {
+        for (Craft target : base.getDataTag(ContactsManager.CONTACTS)) {
             if (target.getHitBox().isEmpty())
                 continue;
 
