@@ -27,6 +27,7 @@ import net.countercraft.movecraft.features.contacts.ContactsCommand;
 import net.countercraft.movecraft.features.contacts.ContactsManager;
 import net.countercraft.movecraft.features.contacts.ContactsSign;
 import net.countercraft.movecraft.listener.BlockListener;
+import net.countercraft.movecraft.listener.CraftAssembleListener;
 import net.countercraft.movecraft.listener.InteractListener;
 import net.countercraft.movecraft.listener.PlayerListener;
 import net.countercraft.movecraft.localisation.I18nSupport;
@@ -221,6 +222,7 @@ public class Movecraft extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new SubcraftRotateSign(), this);
         getServer().getPluginManager().registerEvents(new TeleportSign(), this);
         getServer().getPluginManager().registerEvents(new ScuttleSign(), this);
+        getServer().getPluginManager().registerEvents(new CraftAssembleListener(), this);
 
         var contactsManager = new ContactsManager();
         contactsManager.runTaskTimerAsynchronously(this, 0, 20);
