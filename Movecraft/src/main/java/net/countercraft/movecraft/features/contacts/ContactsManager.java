@@ -4,6 +4,7 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.*;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagContainer;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagKey;
+import net.countercraft.movecraft.craft.datatag.ICraftDataTag;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.*;
 import net.countercraft.movecraft.exception.EmptyHitBoxException;
@@ -28,7 +29,7 @@ import java.util.*;
 
 public class ContactsManager extends BukkitRunnable implements Listener {
     public static final CraftDataTagKey<ContactsDataTag> CONTACTS = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "contacts"), craft -> new ContactsDataTag(0));
-    private final Map<PlayerCraft, Map<Craft, Long>> recentContacts = new WeakHashMap<>();
+    private static final CraftDataTagKey<RecentContactsDataTag> RECENT_CONTACTS = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "recent-contacts"), craft -> new RecentContactsDataTag());
 
     @Override
     public void run() {
@@ -126,12 +127,9 @@ public class ContactsManager extends BukkitRunnable implements Listener {
                 if (base.getHitBox().isEmpty())
                     continue;
 
-                if (!recentContacts.containsKey(base))
-                    recentContacts.put(base, new WeakHashMap<>());
-
                 for (Craft target : base.getDataTag(CONTACTS)) {
                     // has the craft not been seen in the last minute?
-                    if (System.currentTimeMillis() - recentContacts.get(base).getOrDefault(target, 0L) <= 60000)
+                    if (System.currentTimeMillis() - base.getDataTag(RECENT_CONTACTS).getOrDefault(target, 0L) <= 60000)
                         continue;
 
                     Component message = contactMessage(false, base, target);
@@ -139,7 +137,7 @@ public class ContactsManager extends BukkitRunnable implements Listener {
                         continue;
 
                     base.getAudience().sendMessage(message);
-                    recentContacts.get(base).put(target, System.currentTimeMillis());
+                    base.getDataTag(RECENT_CONTACTS).put(target, System.currentTimeMillis());
                 }
             }
         }
@@ -246,14 +244,13 @@ public class ContactsManager extends BukkitRunnable implements Listener {
             other.setDataTag(CONTACTS, contacts);
         }
 
-        if (base instanceof PlayerCraft)
-            recentContacts.remove(base);
-
-        for (PlayerCraft key : recentContacts.keySet()) {
-            if (!recentContacts.containsKey(key))
+        for (Craft other : CraftManager.getInstance().getCrafts()) {
+            RecentContactsDataTag recentContacts = other.getDataTag(RECENT_CONTACTS);
+            if (!recentContacts.containsKey(other))
                 continue;
 
-            recentContacts.get(key).remove(base);
+            recentContacts.remove(base);
+            other.setDataTag(RECENT_CONTACTS, recentContacts);
         }
     }
 
@@ -270,11 +267,37 @@ public class ContactsManager extends BukkitRunnable implements Listener {
             throw new IllegalStateException("COLLISION_SOUND must be of type Sound");
         base.getAudience().playSound(sound);
 
-        if (base instanceof PlayerCraft playerCraft) {
-            if (!recentContacts.containsKey(base))
-                recentContacts.put(playerCraft, new WeakHashMap<>());
+        if (base instanceof PlayerCraft) {
+            RecentContactsDataTag recentContacts = base.getDataTag(RECENT_CONTACTS);
+            recentContacts.put(target, System.currentTimeMillis());
+            base.setDataTag(RECENT_CONTACTS, recentContacts);
+        }
+    }
 
-            recentContacts.get(playerCraft).put(target, System.currentTimeMillis());
+    private static class RecentContactsDataTag extends WeakHashMap<Craft, Long> implements ICraftDataTag {
+        @Override
+        public void onRotate(Craft craft) {
+
+        }
+
+        @Override
+        public void onSwitchWorld(Craft craft) {
+
+        }
+
+        @Override
+        public void onRelease(Craft craft) {
+
+        }
+
+        @Override
+        public void onAssembly(Craft craft) {
+
+        }
+
+        @Override
+        public void onTranslate(Craft craft) {
+
         }
     }
 }
