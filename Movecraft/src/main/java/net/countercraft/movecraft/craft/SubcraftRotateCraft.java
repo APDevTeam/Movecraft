@@ -17,5 +17,4 @@ public class SubcraftRotateCraft extends BaseCraft implements PilotedCraft {
     public @NotNull Player getPilot() {
         return pilot;
     }
-
 }
