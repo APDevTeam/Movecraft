@@ -35,6 +35,7 @@ public class CraftAssembleListener implements Listener {
                     PersistentDataType.STRING,
                     craft.getUUID().toString()
             );
+            tile.update();
         }
     }
 
@@ -68,7 +69,7 @@ public class CraftAssembleListener implements Listener {
                 // Remove the marker
                 tile.getPersistentDataContainer().remove(MathUtils.KEY_CRAFT_UUID);
             }
-
+            tile.update();
         }
     }
 }

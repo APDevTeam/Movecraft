@@ -254,15 +254,18 @@ public class MathUtils {
                 if (result == null) {
                     // Remove invalid entry!
                     blockEntity.getPersistentDataContainer().remove(KEY_CRAFT_UUID);
+                    blockEntity.update();
                 } else if (!result.getHitBox().inBounds(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ())) {
                     // Remove invalid entry!
                     blockEntity.getPersistentDataContainer().remove(KEY_CRAFT_UUID);
+                    blockEntity.update();
                     result = null;
                 }
                 return result;
             } catch(IllegalArgumentException iae) {
                 // Remove invalid entry!
                 blockEntity.getPersistentDataContainer().remove(KEY_CRAFT_UUID);
+                blockEntity.update();
                 return null;
             }
 
