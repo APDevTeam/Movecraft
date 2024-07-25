@@ -55,7 +55,7 @@ public class ContactsSign implements Listener {
 
         Craft base = event.getCraft();
         int line = 1;
-        for (Craft target : contactsManager.get(base)) {
+        for (Craft target : base.getDataTag(ContactsManager.CONTACTS)) {
             if (line > 3)
                 break;
 

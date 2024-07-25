@@ -2,6 +2,8 @@ package net.countercraft.movecraft.features.contacts;
 
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.*;
+import net.countercraft.movecraft.craft.datatag.CraftDataTagContainer;
+import net.countercraft.movecraft.craft.datatag.CraftDataTagKey;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.*;
 import net.countercraft.movecraft.exception.EmptyHitBoxException;
@@ -13,6 +15,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -24,8 +27,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 public class ContactsManager extends BukkitRunnable implements Listener {
-    private final Map<Craft, List<Craft>> contactsMap = new WeakHashMap<>();
-    private final Map<PlayerCraft, Map<Craft, Long>> recentContacts = new WeakHashMap<>();
+    public static final CraftDataTagKey<List<Craft>> CONTACTS = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "contacts"), craft -> new ArrayList<>(0));
+    private static final CraftDataTagKey<Map<Craft, Long>> RECENT_CONTACTS = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "recent-contacts"), craft -> new WeakHashMap<>());
 
     @Override
     public void run() {
@@ -48,8 +51,8 @@ public class ContactsManager extends BukkitRunnable implements Listener {
         }
     }
 
-    private void update(Craft base, @NotNull Set<Craft> craftsInWorld) {
-        List<Craft> previousContacts = contactsMap.get(base);
+    private void update(@NotNull Craft base, @NotNull Set<Craft> craftsInWorld) {
+        List<Craft> previousContacts = base.getDataTag(CONTACTS);
         if (previousContacts == null)
             previousContacts = new ArrayList<>(0);
         List<Craft> futureContacts = get(base, craftsInWorld);
@@ -68,7 +71,7 @@ public class ContactsManager extends BukkitRunnable implements Listener {
             Bukkit.getServer().getPluginManager().callEvent(event);
         }
 
-        contactsMap.put(base, futureContacts);
+        base.setDataTag(CONTACTS, futureContacts);
     }
 
     private @NotNull List<Craft> get(Craft base, @NotNull Set<Craft> craftsInWorld) {
@@ -123,12 +126,9 @@ public class ContactsManager extends BukkitRunnable implements Listener {
                 if (base.getHitBox().isEmpty())
                     continue;
 
-                if (!recentContacts.containsKey(base))
-                    recentContacts.put(base, new WeakHashMap<>());
-
-                for (Craft target : contactsMap.get(base)) {
+                for (Craft target : base.getDataTag(CONTACTS)) {
                     // has the craft not been seen in the last minute?
-                    if (System.currentTimeMillis() - recentContacts.get(base).getOrDefault(target, 0L) <= 60000)
+                    if (System.currentTimeMillis() - base.getDataTag(RECENT_CONTACTS).getOrDefault(target, 0L) <= 60000)
                         continue;
 
                     Component message = contactMessage(false, base, target);
@@ -136,7 +136,7 @@ public class ContactsManager extends BukkitRunnable implements Listener {
                         continue;
 
                     base.getAudience().sendMessage(message);
-                    recentContacts.get(base).put(target, System.currentTimeMillis());
+                    base.getDataTag(RECENT_CONTACTS).put(target, System.currentTimeMillis());
                 }
             }
         }
@@ -234,27 +234,23 @@ public class ContactsManager extends BukkitRunnable implements Listener {
     }
 
     private void remove(Craft base) {
-        contactsMap.remove(base);
-        for (Craft key : contactsMap.keySet()) {
-            if (!contactsMap.get(key).contains(base))
+        for (Craft other : CraftManager.getInstance().getCrafts()) {
+            List<Craft> contacts = other.getDataTag(CONTACTS);
+            if (contacts.contains(base))
                 continue;
 
-            contactsMap.get(key).remove(base);
+            contacts.remove(base);
+            other.setDataTag(CONTACTS, contacts);
         }
 
-        if (base instanceof PlayerCraft)
+        for (Craft other : CraftManager.getInstance().getCrafts()) {
+            Map<Craft, Long> recentContacts = other.getDataTag(RECENT_CONTACTS);
+            if (!recentContacts.containsKey(other))
+                continue;
+
             recentContacts.remove(base);
-
-        for (PlayerCraft key : recentContacts.keySet()) {
-            if (!recentContacts.containsKey(key))
-                continue;
-
-            recentContacts.get(key).remove(base);
+            other.setDataTag(RECENT_CONTACTS, recentContacts);
         }
-    }
-
-    public List<Craft> get(Craft base) {
-        return contactsMap.get(base);
     }
 
     @EventHandler
@@ -270,11 +266,10 @@ public class ContactsManager extends BukkitRunnable implements Listener {
             throw new IllegalStateException("COLLISION_SOUND must be of type Sound");
         base.getAudience().playSound(sound);
 
-        if (base instanceof PlayerCraft playerCraft) {
-            if (!recentContacts.containsKey(base))
-                recentContacts.put(playerCraft, new WeakHashMap<>());
-
-            recentContacts.get(playerCraft).put(target, System.currentTimeMillis());
+        if (base instanceof PlayerCraft) {
+            Map<Craft, Long> recentContacts = base.getDataTag(RECENT_CONTACTS);
+            recentContacts.put(target, System.currentTimeMillis());
+            base.setDataTag(RECENT_CONTACTS, recentContacts);
         }
     }
 }
