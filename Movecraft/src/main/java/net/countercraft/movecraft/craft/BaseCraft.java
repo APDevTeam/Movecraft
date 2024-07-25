@@ -27,10 +27,7 @@ import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 
@@ -74,6 +71,13 @@ public abstract class BaseCraft implements Craft {
     private MovecraftLocation lastTranslation = new MovecraftLocation(0, 0, 0);
 
     private final CraftDataTagContainer dataTagContainer = new CraftDataTagContainer();
+
+    private final UUID uuid = UUID.randomUUID();
+
+    {
+        // Map to craft
+        Hidden.uuidToCraft.put(uuid, this);
+    }
 
     public BaseCraft(@NotNull CraftType type, @NotNull World world) {
         this.type = type;
@@ -558,5 +562,22 @@ public abstract class BaseCraft implements Craft {
     @Override
     public CraftDataTagContainer getDataTagContainer() {
         return dataTagContainer;
+    }
+
+    public UUID getUuid() {
+        return this.uuid;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof BaseCraft))
+            return false;
+
+        return this.getUUID().equals(((BaseCraft) obj).getUUID());
+    }
+
+    @Override
+    public int hashCode() {
+        return this.getUUID().hashCode();
     }
 }
