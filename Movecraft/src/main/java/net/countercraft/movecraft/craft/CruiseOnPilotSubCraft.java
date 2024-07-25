@@ -23,5 +23,4 @@ public class CruiseOnPilotSubCraft extends CruiseOnPilotCraft implements SubCraf
     public void setParent(@NotNull Craft parent) {
         this.parent = parent;
     }
-
 }
