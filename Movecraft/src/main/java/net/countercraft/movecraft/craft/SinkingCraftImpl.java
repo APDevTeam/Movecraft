@@ -13,5 +13,4 @@ public class SinkingCraftImpl extends BaseCraft implements SinkingCraft {
         setLastTranslation(original.getLastTranslation());
         setAudience(original.getAudience());
     }
-
 }
