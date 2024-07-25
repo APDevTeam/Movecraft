@@ -23,5 +23,4 @@ public class SubCraftImpl extends BaseCraft implements SubCraft {
     public void setParent(@NotNull Craft parent) {
         this.parent = parent;
     }
-
 }
