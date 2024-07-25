@@ -20,6 +20,8 @@ package net.countercraft.movecraft.craft;
 import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.MovecraftRotation;
+import net.countercraft.movecraft.craft.datatag.CraftDataTagContainer;
+import net.countercraft.movecraft.craft.datatag.CraftDataTagKey;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.util.Counter;
@@ -254,4 +256,24 @@ public interface Craft {
     double getTotalFuel ();
 
     void setTotalFuel (double fuel);
+
+    public default CraftDataTagContainer getDataTagContainer() {
+        return null;
+    }
+
+    public default <T> boolean setDataTag(CraftDataTagKey<T> tagKey, T data) {
+        CraftDataTagContainer container = this.getDataTagContainer();
+        if (container == null) {
+            return false;
+        }
+        container.set(tagKey, data);
+        return true;
+    }
+    public default <T> T getDataTag(CraftDataTagKey<T> tagKey) {
+        CraftDataTagContainer container = this.getDataTagContainer();
+        if (container == null) {
+            return null;
+        }
+        return container.get(this, tagKey);
+    }
 }

@@ -7,8 +7,8 @@ import net.countercraft.movecraft.MovecraftRotation;
 import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.craft.datatag.CraftDataTagContainer;
 import net.countercraft.movecraft.craft.type.CraftType;
-import net.countercraft.movecraft.exception.EmptyHitBoxException;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.CachedMovecraftWorld;
 import net.countercraft.movecraft.processing.MovecraftWorld;
@@ -21,17 +21,16 @@ import net.countercraft.movecraft.util.hitboxes.MutableHitBox;
 import net.countercraft.movecraft.util.hitboxes.SetHitBox;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 
@@ -74,6 +73,8 @@ public abstract class BaseCraft implements Craft {
     @NotNull
     private MovecraftLocation lastTranslation = new MovecraftLocation(0, 0, 0);
 
+    private final CraftDataTagContainer dataTagContainer = new CraftDataTagContainer();
+
     public BaseCraft(@NotNull CraftType type, @NotNull World world) {
         this.type = type;
         this.w = world;
@@ -87,6 +88,7 @@ public abstract class BaseCraft implements Craft {
         materials = new Counter<>();
         audience = Audience.empty();
     }
+
 
     public boolean isNotProcessing() {
         return !processing.get();
@@ -551,5 +553,10 @@ public abstract class BaseCraft implements Craft {
     @Override
     public double getTotalFuel() {
         return totalFuel;
+    }
+
+    @Override
+    public CraftDataTagContainer getDataTagContainer() {
+        return dataTagContainer;
     }
 }
