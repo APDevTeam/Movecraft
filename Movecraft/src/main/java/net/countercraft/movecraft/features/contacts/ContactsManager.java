@@ -4,7 +4,6 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.*;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagContainer;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagKey;
-import net.countercraft.movecraft.craft.datatag.ICraftDataTag;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.*;
 import net.countercraft.movecraft.exception.EmptyHitBoxException;
@@ -28,8 +27,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 public class ContactsManager extends BukkitRunnable implements Listener {
-    public static final CraftDataTagKey<ContactsDataTag> CONTACTS = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "contacts"), craft -> new ContactsDataTag(0));
-    private static final CraftDataTagKey<RecentContactsDataTag> RECENT_CONTACTS = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "recent-contacts"), craft -> new RecentContactsDataTag());
+    public static final CraftDataTagKey<List<Craft>> CONTACTS = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "contacts"), craft -> new ArrayList<>(0));
+    private static final CraftDataTagKey<Map<Craft, Long>> RECENT_CONTACTS = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "recent-contacts"), craft -> new WeakHashMap<>());
 
     @Override
     public void run() {
@@ -56,7 +55,7 @@ public class ContactsManager extends BukkitRunnable implements Listener {
         List<Craft> previousContacts = base.getDataTag(CONTACTS);
         if (previousContacts == null)
             previousContacts = new ArrayList<>(0);
-        ContactsDataTag futureContacts = get(base, craftsInWorld);
+        List<Craft> futureContacts = get(base, craftsInWorld);
 
         Set<Craft> newContacts = new HashSet<>(futureContacts);
         previousContacts.forEach(newContacts::remove);
@@ -75,7 +74,7 @@ public class ContactsManager extends BukkitRunnable implements Listener {
         base.setDataTag(CONTACTS, futureContacts);
     }
 
-    private @NotNull ContactsDataTag get(Craft base, @NotNull Set<Craft> craftsInWorld) {
+    private @NotNull List<Craft> get(Craft base, @NotNull Set<Craft> craftsInWorld) {
         Map<Craft, Integer> inRangeDistanceSquared = new HashMap<>();
         for (Craft target : craftsInWorld) {
             if (target instanceof SubCraft)
@@ -112,7 +111,7 @@ public class ContactsManager extends BukkitRunnable implements Listener {
             inRangeDistanceSquared.put(target, distanceSquared);
         }
 
-        ContactsDataTag result = new ContactsDataTag(inRangeDistanceSquared.keySet().size());
+        List<Craft> result = new ArrayList<>(inRangeDistanceSquared.keySet().size());
         result.addAll(inRangeDistanceSquared.keySet());
         result.sort(Comparator.comparingInt(inRangeDistanceSquared::get));
         return result;
@@ -236,7 +235,7 @@ public class ContactsManager extends BukkitRunnable implements Listener {
 
     private void remove(Craft base) {
         for (Craft other : CraftManager.getInstance().getCrafts()) {
-            ContactsDataTag contacts = other.getDataTag(CONTACTS);
+            List<Craft> contacts = other.getDataTag(CONTACTS);
             if (contacts.contains(base))
                 continue;
 
@@ -245,7 +244,7 @@ public class ContactsManager extends BukkitRunnable implements Listener {
         }
 
         for (Craft other : CraftManager.getInstance().getCrafts()) {
-            RecentContactsDataTag recentContacts = other.getDataTag(RECENT_CONTACTS);
+            Map<Craft, Long> recentContacts = other.getDataTag(RECENT_CONTACTS);
             if (!recentContacts.containsKey(other))
                 continue;
 
@@ -268,36 +267,9 @@ public class ContactsManager extends BukkitRunnable implements Listener {
         base.getAudience().playSound(sound);
 
         if (base instanceof PlayerCraft) {
-            RecentContactsDataTag recentContacts = base.getDataTag(RECENT_CONTACTS);
+            Map<Craft, Long> recentContacts = base.getDataTag(RECENT_CONTACTS);
             recentContacts.put(target, System.currentTimeMillis());
             base.setDataTag(RECENT_CONTACTS, recentContacts);
-        }
-    }
-
-    private static class RecentContactsDataTag extends WeakHashMap<Craft, Long> implements ICraftDataTag {
-        @Override
-        public void onRotate(Craft craft) {
-
-        }
-
-        @Override
-        public void onSwitchWorld(Craft craft) {
-
-        }
-
-        @Override
-        public void onRelease(Craft craft) {
-
-        }
-
-        @Override
-        public void onAssembly(Craft craft) {
-
-        }
-
-        @Override
-        public void onTranslate(Craft craft) {
-
         }
     }
 }
