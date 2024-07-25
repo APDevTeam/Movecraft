@@ -3,6 +3,7 @@ package net.countercraft.movecraft.listener;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.craft.SubCraft;
 import net.countercraft.movecraft.events.CraftPilotEvent;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.util.MathUtils;
@@ -51,8 +52,24 @@ public class CraftAssembleListener implements Listener {
                 continue;
             // Sign located!
             Sign sign = (Sign) block.getState();
-            // Remove the marker
-            sign.getPersistentDataContainer().remove(MathUtils.KEY_CRAFT_UUID);
+
+            if (craft instanceof SubCraft subcraft) {
+                Craft parent = subcraft.getParent();
+                if (parent != null) {
+                    sign.getPersistentDataContainer().set(
+                            MathUtils.KEY_CRAFT_UUID,
+                            PersistentDataType.STRING,
+                            parent.getUUID().toString()
+                    );
+                } else {
+                    // Remove the marker
+                    sign.getPersistentDataContainer().remove(MathUtils.KEY_CRAFT_UUID);
+                }
+            } else {
+                // Remove the marker
+                sign.getPersistentDataContainer().remove(MathUtils.KEY_CRAFT_UUID);
+            }
+
         }
     }
 }
