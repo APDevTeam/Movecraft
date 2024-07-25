@@ -35,9 +35,22 @@ import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Map;
+import java.util.*;
 
 public interface Craft {
+
+    // Java disallows private or protected fields in interfaces, this is a workaround
+    class Hidden {
+        // Concurrent so we don't have problems when accessing async (useful for addon plugins that want to do stuff async, for example NPC crafts with complex off-thread pathfinding)
+        protected static final Map<UUID, Craft> uuidToCraft = Collections.synchronizedMap(new WeakHashMap<>());
+    }
+    public default Optional<Craft> getCraftByUUID(final UUID uuid) {
+        return Optional.ofNullable(Hidden.uuidToCraft.getOrDefault(uuid, null));
+    }
+
+    public default UUID getUUID() {
+        return null;
+    }
 
     @Deprecated
     boolean isNotProcessing();
