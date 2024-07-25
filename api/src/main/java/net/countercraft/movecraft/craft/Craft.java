@@ -44,8 +44,8 @@ public interface Craft {
         // Concurrent so we don't have problems when accessing async (useful for addon plugins that want to do stuff async, for example NPC crafts with complex off-thread pathfinding)
         protected static final Map<UUID, Craft> uuidToCraft = Collections.synchronizedMap(new WeakHashMap<>());
     }
-    public default Optional<Craft> getCraftByUUID(final UUID uuid) {
-        return Optional.ofNullable(Hidden.uuidToCraft.getOrDefault(uuid, null));
+    public static Craft getCraftByUUID(final UUID uuid) {
+        return Hidden.uuidToCraft.getOrDefault(uuid, null);
     }
 
     public default UUID getUUID() {

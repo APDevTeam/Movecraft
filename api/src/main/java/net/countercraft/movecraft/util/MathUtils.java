@@ -22,8 +22,12 @@ import net.countercraft.movecraft.MovecraftRotation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
 import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.WorldBorder;
+import org.bukkit.block.Block;
+import org.bukkit.block.TileState;
+import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -31,6 +35,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashSet;
 import java.util.OptionalInt;
 import java.util.Set;
+import java.util.UUID;
 
 public class MathUtils {
 
@@ -230,6 +235,39 @@ public class MathUtils {
             }
         }
         return result;
+    }
+
+    // TODO: Move somewhere else!
+    public static final NamespacedKey KEY_CRAFT_UUID = new NamespacedKey("movecraft", "craft-uuid");
+    public static Craft getCraftByPersistentBlockData(@NotNull Location loc) {
+        Block block = loc.getBlock();
+        if (!(block.getState() instanceof TileState))
+            return null;
+
+        TileState blockEntity = (TileState)block.getState();
+
+        if (blockEntity.getPersistentDataContainer().has(KEY_CRAFT_UUID, PersistentDataType.STRING)) {
+            String value = blockEntity.getPersistentDataContainer().get(KEY_CRAFT_UUID, PersistentDataType.STRING);
+            try {
+                UUID uuid = UUID.fromString(value);
+                Craft result = Craft.getCraftByUUID(uuid);
+                if (result == null) {
+                    // Remove invalid entry!
+                    blockEntity.getPersistentDataContainer().remove(KEY_CRAFT_UUID);
+                } else if (!result.getHitBox().contains(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ())) {
+                    // Remove invalid entry!
+                    blockEntity.getPersistentDataContainer().remove(KEY_CRAFT_UUID);
+                    result = null;
+                }
+                return result;
+            } catch(IllegalArgumentException iae) {
+                // Remove invalid entry!
+                blockEntity.getPersistentDataContainer().remove(KEY_CRAFT_UUID);
+                return null;
+            }
+
+        }
+        return null;
     }
 
     @Nullable
