@@ -25,6 +25,7 @@ import net.countercraft.movecraft.craft.datatag.CraftDataTagKey;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.util.Counter;
+import net.countercraft.movecraft.util.MathUtils;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
 import net.countercraft.movecraft.util.hitboxes.MutableHitBox;
 import net.kyori.adventure.audience.Audience;
@@ -32,7 +33,9 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Sign;
+import org.bukkit.block.TileState;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -288,5 +291,18 @@ public interface Craft {
             return null;
         }
         return container.get(this, tagKey);
+    }
+
+    public default void markTileStateWithUUID(TileState tile) {
+        // Add the marker
+        tile.getPersistentDataContainer().set(
+                MathUtils.KEY_CRAFT_UUID,
+                PersistentDataType.STRING,
+                this.getUUID().toString()
+        );
+    }
+
+    public default void removeUUIDMarkFromTile(TileState tile) {
+        tile.getPersistentDataContainer().remove(MathUtils.KEY_CRAFT_UUID);
     }
 }
