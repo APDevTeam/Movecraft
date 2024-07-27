@@ -69,7 +69,7 @@ public class StatusManager extends BukkitRunnable implements Listener {
             int nonNegligibleSolidBlocks = 0;
             double fuel = 0;
             for (MovecraftLocation l : craft.getHitBox()) {
-                Material type = craft.getWorld().getBlockAt(l.getX(), l.getY(), l.getZ()).getType();
+                Material type = craft.getMovecraftWorld().getMaterial(l);
                 materials.add(type);
 
                 if (type != Material.FIRE && !type.isAir()) {
@@ -80,7 +80,7 @@ public class StatusManager extends BukkitRunnable implements Listener {
                 }
 
                 if (Tags.FURNACES.contains(type)) {
-                    InventoryHolder inventoryHolder = (InventoryHolder) craft.getWorld().getBlockAt(l.getX(), l.getY(), l.getZ()).getState();
+                    InventoryHolder inventoryHolder = (InventoryHolder) craft.getMovecraftWorld().getState(l);
                     for (ItemStack iStack : inventoryHolder.getInventory()) {
                         if (iStack == null || !fuelTypes.containsKey(iStack.getType()))
                             continue;
