@@ -319,6 +319,7 @@ public class AsyncManager extends BukkitRunnable {
         }
     }
 
+    /*
     private void detectSinking(){
         for(Craft craft : CraftManager.getInstance()) {
             if (craft instanceof SinkingCraft)
@@ -352,6 +353,7 @@ public class AsyncManager extends BukkitRunnable {
             }
         }
     }
+    */
 
     //Controls sinking crafts
     private void processSinking() {
@@ -440,7 +442,6 @@ public class AsyncManager extends BukkitRunnable {
         clearAll();
 
         processCruise();
-        detectSinking();
         processSinking();
         processFadingBlocks();
         processAlgorithmQueue();
@@ -473,6 +474,7 @@ public class AsyncManager extends BukkitRunnable {
         clearanceSet.clear();
     }
 
+    /*
     public CraftStatus checkCraftStatus(@NotNull Craft craft) {
         boolean isSinking = false;
         boolean isDisabled = false;
@@ -563,4 +565,5 @@ public class AsyncManager extends BukkitRunnable {
 
         return CraftStatus.of(isSinking, isDisabled);
     }
+    */
 }
