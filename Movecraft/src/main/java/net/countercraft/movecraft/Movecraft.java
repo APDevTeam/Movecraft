@@ -231,7 +231,7 @@ public class Movecraft extends JavaPlugin {
 
         var statusManager = new StatusManager();
         statusManager.runTaskTimerAsynchronously(this, 0, 1);
-        getServer().getPluginManager().registerEvents(contactsManager, this);
+        getServer().getPluginManager().registerEvents(statusManager, this);
         getServer().getPluginManager().registerEvents(new StatusSign(), this);
 
         logger.info("[V " + getDescription().getVersion() + "] has been enabled.");
