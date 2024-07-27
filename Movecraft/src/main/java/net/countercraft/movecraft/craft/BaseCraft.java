@@ -321,15 +321,14 @@ public abstract class BaseCraft implements Craft {
             return type.getIntProperty(CraftType.SINK_RATE_TICKS);
 
         Counter<Material> materials = getDataTag(Craft.MATERIALS);
-        if (materials.isEmpty()) {
-            return (int) (Settings.SinkCheckTicks * 2); // Delay movement until calculated
-        }
 
         int chestPenalty = 0;
-        for (Material m : Tags.CHESTS) {
-            chestPenalty += materials.get(m);
+        if (!materials.isEmpty()) {
+            for (Material m : Tags.CHESTS) {
+                chestPenalty += materials.get(m);
+            }
         }
-        chestPenalty *= type.getDoubleProperty(CraftType.CHEST_PENALTY);
+        chestPenalty *= (int) type.getDoubleProperty(CraftType.CHEST_PENALTY);
         if (!cruising)
             return ((int) type.getPerWorldProperty(CraftType.PER_WORLD_TICK_COOLDOWN, w) + chestPenalty) * (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1);
 
@@ -340,6 +339,9 @@ public abstract class BaseCraft implements Craft {
         // Dynamic Fly Block Speed
         int cruiseTickCooldown = (int) type.getPerWorldProperty(CraftType.PER_WORLD_CRUISE_TICK_COOLDOWN, w);
         if (type.getDoubleProperty(CraftType.DYNAMIC_FLY_BLOCK_SPEED_FACTOR) != 0) {
+            if (materials.isEmpty()) {
+                return ((int) type.getPerWorldProperty(CraftType.PER_WORLD_TICK_COOLDOWN, w) + chestPenalty) * (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1);
+            }
             EnumSet<Material> flyBlockMaterials = type.getMaterialSetProperty(CraftType.DYNAMIC_FLY_BLOCK);
             double count = 0;
             for (Material m : flyBlockMaterials) {
