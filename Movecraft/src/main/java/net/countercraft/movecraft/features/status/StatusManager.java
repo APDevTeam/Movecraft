@@ -10,9 +10,12 @@ import net.countercraft.movecraft.craft.datatag.CraftDataTagKey;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.craft.type.RequiredBlockEntry;
 import net.countercraft.movecraft.features.status.events.CraftStatusUpdateEvent;
+import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.WorldManager;
 import net.countercraft.movecraft.util.Counter;
 import net.countercraft.movecraft.util.Tags;
+import net.kyori.adventure.key.Key;
+import net.kyori.adventure.sound.Sound;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -90,6 +93,7 @@ public class StatusManager extends BukkitRunnable implements Listener {
             craft.setDataTag(Craft.MATERIALS, materials);
             craft.setDataTag(Craft.NON_NEGLIGIBLE_BLOCKS, nonNegligibleBlocks);
             craft.setDataTag(Craft.NON_NEGLIGIBLE_SOLID_BLOCKS, nonNegligibleSolidBlocks);
+            craft.setDataTag(LAST_STATUS_CHECK, System.currentTimeMillis());
             Bukkit.getPluginManager().callEvent(new CraftStatusUpdateEvent(craft));
         }
     }
@@ -154,6 +158,17 @@ public class StatusManager extends BukkitRunnable implements Listener {
         if (nonNegligibleBlocks == 0)
             sinking = true;
 
-        // TODO: handle sinking and disabled variables
+        // If the craft is disabled, play a sound and disable it.
+        if (disabled && !craft.getDisabled()) {
+            craft.setDisabled(true);
+            craft.getAudience().playSound(Sound.sound(Key.key("entity.iron_golem.death"), Sound.Source.NEUTRAL, 5.0f, 5.0f));
+        }
+
+        // If the craft is sinking, let the player know and sink the craft.
+        if (sinking) {
+            craft.getAudience().sendMessage(I18nSupport.getInternationalisedComponent("Player - Craft is sinking"));
+            craft.setCruising(false);
+            CraftManager.getInstance().sink(craft);
+        }
     }
 }
