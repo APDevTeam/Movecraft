@@ -41,9 +41,11 @@ import java.util.List;
 import java.util.Map;
 
 public interface Craft {
-    public static CraftDataTagKey<List<Craft>> CONTACTS = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "contacts"), craft -> new ArrayList<>(0));
-    public static CraftDataTagKey<Double> FUEL = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "fuel"), craft -> 0D);
-    public static CraftDataTagKey<Counter<Material>> MATERIALS = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "materials"), craft -> new Counter<>());
+    CraftDataTagKey<List<Craft>> CONTACTS = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "contacts"), craft -> new ArrayList<>(0));
+    CraftDataTagKey<Double> FUEL = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "fuel"), craft -> 0D);
+    CraftDataTagKey<Counter<Material>> MATERIALS = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "materials"), craft -> new Counter<>());
+    CraftDataTagKey<Integer> NON_NEGLIGIBLE_BLOCKS = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "non-negligible-blocks"), Craft::getOrigBlockCount);
+    CraftDataTagKey<Integer> NON_NEGLIGIBLE_SOLID_BLOCKS = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "non-negligible-solid-blocks"), Craft::getOrigBlockCount);
 
     @Deprecated
     boolean isNotProcessing();

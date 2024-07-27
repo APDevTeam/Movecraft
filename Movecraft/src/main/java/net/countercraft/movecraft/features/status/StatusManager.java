@@ -4,13 +4,13 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.craft.SinkingCraft;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagContainer;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagKey;
 import net.countercraft.movecraft.craft.type.CraftType;
-import net.countercraft.movecraft.events.CraftReleaseEvent;
+import net.countercraft.movecraft.craft.type.RequiredBlockEntry;
 import net.countercraft.movecraft.features.status.events.CraftStatusUpdateEvent;
 import net.countercraft.movecraft.processing.WorldManager;
-import net.countercraft.movecraft.processing.effects.Effect;
 import net.countercraft.movecraft.util.Counter;
 import net.countercraft.movecraft.util.Tags;
 import org.bukkit.Bukkit;
@@ -25,7 +25,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
-import java.util.function.Supplier;
 
 public class StatusManager extends BukkitRunnable implements Listener {
     private static final CraftDataTagKey<Long> LAST_STATUS_CHECK = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "last-status-check"), craft -> System.currentTimeMillis());
@@ -41,7 +40,7 @@ public class StatusManager extends BukkitRunnable implements Listener {
         }
     }
 
-    private static final class StatusUpdateTask implements Supplier<Effect> {
+    private static final class StatusUpdateTask implements Runnable {
         private final Craft craft;
         private final Map<Material, Double> fuelTypes;
 
@@ -61,20 +60,20 @@ public class StatusManager extends BukkitRunnable implements Listener {
         }
 
         @Override
-        public @NotNull Effect get() {
+        public void run() {
             Counter<Material> materials = new Counter<>();
-            int totalNonNegligibleBlocks = 0;
-            int totalNonNegligibleWaterBlocks = 0;
+            int nonNegligibleBlocks = 0;
+            int nonNegligibleSolidBlocks = 0;
             double fuel = 0;
             for (MovecraftLocation l : craft.getHitBox()) {
                 Material type = craft.getWorld().getBlockAt(l.getX(), l.getY(), l.getZ()).getType();
                 materials.add(type);
 
                 if (type != Material.FIRE && !type.isAir()) {
-                    totalNonNegligibleBlocks++;
+                    nonNegligibleBlocks++;
                 }
                 if (type != Material.FIRE && !type.isAir() && !Tags.FLUID.contains(type)) {
-                    totalNonNegligibleWaterBlocks++;
+                    nonNegligibleSolidBlocks++;
                 }
 
                 if (Tags.FURNACES.contains(type)) {
@@ -87,17 +86,74 @@ public class StatusManager extends BukkitRunnable implements Listener {
                 }
             }
 
-            craft.setDataTag(Craft.MATERIALS, materials);
             craft.setDataTag(Craft.FUEL, fuel);
+            craft.setDataTag(Craft.MATERIALS, materials);
+            craft.setDataTag(Craft.NON_NEGLIGIBLE_BLOCKS, nonNegligibleBlocks);
+            craft.setDataTag(Craft.NON_NEGLIGIBLE_SOLID_BLOCKS, nonNegligibleSolidBlocks);
             Bukkit.getPluginManager().callEvent(new CraftStatusUpdateEvent(craft));
-
-            return () -> {};
         }
     }
 
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onCraftStatusUpdate(@NotNull CraftStatusUpdateEvent e) {
-        // TODO: Process disabled and sinking
+        Craft craft = e.getCraft();
+        if (craft instanceof SinkingCraft)
+            return;
+        if (craft.getType().getDoubleProperty(CraftType.SINK_PERCENT) == 0.0)
+            return;
+
+        boolean sinking = false;
+        boolean disabled = false;
+        Counter<Material> materials = craft.getDataTag(Craft.MATERIALS);
+        int nonNegligibleBlocks = craft.getDataTag(Craft.NON_NEGLIGIBLE_BLOCKS);
+        int nonNegligibleSolidBlocks = craft.getDataTag(Craft.NON_NEGLIGIBLE_SOLID_BLOCKS);
+
+        // Build up counters of the fly and move blocks
+        Counter<RequiredBlockEntry> flyBlocks = new Counter<>();
+        flyBlocks.putAll(craft.getType().getRequiredBlockProperty(CraftType.FLY_BLOCKS));
+        Counter<RequiredBlockEntry> moveBlocks = new Counter<>();
+        moveBlocks.putAll(craft.getType().getRequiredBlockProperty(CraftType.MOVE_BLOCKS));
+        for (Material m : materials.getKeySet()) {
+            for (RequiredBlockEntry entry : flyBlocks.getKeySet()) {
+                if(entry.contains(m))
+                    flyBlocks.add(entry, materials.get(m));
+            }
+            for (RequiredBlockEntry entry : moveBlocks.getKeySet()) {
+                if(entry.contains(m))
+                    moveBlocks.add(entry, materials.get(m));
+            }
+        }
+
+        // now see if any of the resulting percentages are below the threshold specified in sinkPercent
+        double sinkPercent = craft.getType().getDoubleProperty(CraftType.SINK_PERCENT) / 100.0;
+        for (RequiredBlockEntry entry : flyBlocks.getKeySet()) {
+            if(!entry.check(flyBlocks.get(entry), nonNegligibleBlocks, sinkPercent))
+                sinking = true;
+        }
+        for (RequiredBlockEntry entry : moveBlocks.getKeySet()) {
+            if (!entry.check(moveBlocks.get(entry), nonNegligibleBlocks, sinkPercent))
+                disabled = true;
+        }
+
+        // And check the OverallSinkPercent
+        if (craft.getType().getDoubleProperty(CraftType.OVERALL_SINK_PERCENT) != 0.0) {
+            double percent;
+            if (craft.getType().getBoolProperty(CraftType.BLOCKED_BY_WATER)) {
+                percent = (double) nonNegligibleBlocks
+                        / (double) craft.getOrigBlockCount();
+            }
+            else {
+                percent = (double) nonNegligibleSolidBlocks
+                        / (double) craft.getOrigBlockCount();
+            }
+            if (percent * 100.0 < craft.getType().getDoubleProperty(CraftType.OVERALL_SINK_PERCENT))
+                sinking = true;
+        }
+
+        if (nonNegligibleBlocks == 0)
+            sinking = true;
+
+        // TODO: handle sinking and disabled variables
     }
 }
