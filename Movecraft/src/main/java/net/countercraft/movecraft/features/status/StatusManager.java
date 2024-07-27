@@ -42,6 +42,7 @@ public class StatusManager extends BukkitRunnable implements Listener {
             if (ticksElapsed <= Settings.SinkCheckTicks)
                 continue;
 
+            c.setDataTag(LAST_STATUS_CHECK, System.currentTimeMillis());
             WorldManager.INSTANCE.submit(new StatusUpdateTask(c));
         }
     }
