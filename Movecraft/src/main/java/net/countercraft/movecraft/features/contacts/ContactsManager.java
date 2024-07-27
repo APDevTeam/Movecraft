@@ -27,7 +27,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 public class ContactsManager extends BukkitRunnable implements Listener {
-    public static final CraftDataTagKey<List<Craft>> CONTACTS = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "contacts"), craft -> new ArrayList<>(0));
     private static final CraftDataTagKey<Map<Craft, Long>> RECENT_CONTACTS = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "recent-contacts"), craft -> new WeakHashMap<>());
 
     @Override
@@ -52,7 +51,7 @@ public class ContactsManager extends BukkitRunnable implements Listener {
     }
 
     private void update(@NotNull Craft base, @NotNull Set<Craft> craftsInWorld) {
-        List<Craft> previousContacts = base.getDataTag(CONTACTS);
+        List<Craft> previousContacts = base.getDataTag(Craft.CONTACTS);
         if (previousContacts == null)
             previousContacts = new ArrayList<>(0);
         List<Craft> futureContacts = get(base, craftsInWorld);
@@ -71,7 +70,7 @@ public class ContactsManager extends BukkitRunnable implements Listener {
             Bukkit.getServer().getPluginManager().callEvent(event);
         }
 
-        base.setDataTag(CONTACTS, futureContacts);
+        base.setDataTag(Craft.CONTACTS, futureContacts);
     }
 
     private @NotNull List<Craft> get(Craft base, @NotNull Set<Craft> craftsInWorld) {
@@ -126,7 +125,7 @@ public class ContactsManager extends BukkitRunnable implements Listener {
                 if (base.getHitBox().isEmpty())
                     continue;
 
-                for (Craft target : base.getDataTag(CONTACTS)) {
+                for (Craft target : base.getDataTag(Craft.CONTACTS)) {
                     // has the craft not been seen in the last minute?
                     if (System.currentTimeMillis() - base.getDataTag(RECENT_CONTACTS).getOrDefault(target, 0L) <= 60000)
                         continue;
@@ -235,12 +234,12 @@ public class ContactsManager extends BukkitRunnable implements Listener {
 
     private void remove(Craft base) {
         for (Craft other : CraftManager.getInstance().getCrafts()) {
-            List<Craft> contacts = other.getDataTag(CONTACTS);
+            List<Craft> contacts = other.getDataTag(Craft.CONTACTS);
             if (contacts.contains(base))
                 continue;
 
             contacts.remove(base);
-            other.setDataTag(CONTACTS, contacts);
+            other.setDataTag(Craft.CONTACTS, contacts);
         }
 
         for (Craft other : CraftManager.getInstance().getCrafts()) {

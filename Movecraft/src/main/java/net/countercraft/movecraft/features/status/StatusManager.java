@@ -28,14 +28,12 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 public class StatusManager extends BukkitRunnable implements Listener {
-    public static final CraftDataTagKey<Counter<Material>> CRAFT_MATERIALS = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "materials"), craft -> new Counter<>());
-    private static final CraftDataTagKey<Long> LAST_CHECK = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "last-status-check"), craft -> System.currentTimeMillis());
-    public static final CraftDataTagKey<Double> CRAFT_FUEL = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "fuel"), craft -> 0D);
+    private static final CraftDataTagKey<Long> LAST_STATUS_CHECK = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "last-status-check"), craft -> System.currentTimeMillis());
 
     @Override
     public void run() {
         for (Craft c : CraftManager.getInstance().getCrafts()) {
-            long ticksElapsed = (System.currentTimeMillis() - c.getDataTag(LAST_CHECK)) / 50;
+            long ticksElapsed = (System.currentTimeMillis() - c.getDataTag(LAST_STATUS_CHECK)) / 50;
             if (ticksElapsed <= Settings.SinkCheckTicks)
                 continue;
 
@@ -89,8 +87,8 @@ public class StatusManager extends BukkitRunnable implements Listener {
                 }
             }
 
-            craft.setDataTag(CRAFT_MATERIALS, materials);
-            craft.setDataTag(CRAFT_FUEL, fuel);
+            craft.setDataTag(Craft.MATERIALS, materials);
+            craft.setDataTag(Craft.FUEL, fuel);
             Bukkit.getPluginManager().callEvent(new CraftStatusUpdateEvent(craft));
 
             return () -> {};
@@ -99,7 +97,7 @@ public class StatusManager extends BukkitRunnable implements Listener {
 
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onCraftStatsUpdate(@NotNull CraftStatusUpdateEvent e) {
+    public void onCraftStatusUpdate(@NotNull CraftStatusUpdateEvent e) {
         // TODO: Process disabled and sinking
     }
 }

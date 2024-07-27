@@ -30,14 +30,20 @@ import net.countercraft.movecraft.util.hitboxes.MutableHitBox;
 import net.kyori.adventure.audience.Audience;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public interface Craft {
+    public static CraftDataTagKey<List<Craft>> CONTACTS = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "contacts"), craft -> new ArrayList<>(0));
+    public static CraftDataTagKey<Double> FUEL = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "fuel"), craft -> 0D);
+    public static CraftDataTagKey<Counter<Material>> MATERIALS = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "materials"), craft -> new Counter<>());
 
     @Deprecated
     boolean isNotProcessing();
@@ -248,14 +254,6 @@ public interface Craft {
     Audience getAudience();
 
     void setAudience(Audience audience);
-
-    Counter<Material> getMaterials ();
-
-    void updateMaterials (Counter<Material> materials);
-
-    double getTotalFuel ();
-
-    void setTotalFuel (double fuel);
 
     public default CraftDataTagContainer getDataTagContainer() {
         return null;

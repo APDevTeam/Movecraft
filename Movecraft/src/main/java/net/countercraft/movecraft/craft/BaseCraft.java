@@ -42,8 +42,6 @@ public abstract class BaseCraft implements Craft {
     @NotNull
     protected final MutableHitBox collapsedHitBox;
     @NotNull
-    protected Counter<Material> materials;
-    @NotNull
     private final AtomicBoolean processing = new AtomicBoolean();
     private final long origPilotTime;
     @NotNull
@@ -65,7 +63,6 @@ public abstract class BaseCraft implements Craft {
     private int currentGear = 1;
     private double burningFuel;
     private int origBlockCount;
-    private double totalFuel = 0;
     @NotNull
     private Audience audience;
     @NotNull
@@ -85,7 +82,6 @@ public abstract class BaseCraft implements Craft {
         cruising = false;
         disabled = false;
         origPilotTime = System.currentTimeMillis();
-        materials = new Counter<>();
         audience = Audience.empty();
     }
 
@@ -324,10 +320,9 @@ public abstract class BaseCraft implements Craft {
         if (this instanceof SinkingCraft)
             return type.getIntProperty(CraftType.SINK_RATE_TICKS);
 
+        Counter<Material> materials = getDataTag(Craft.MATERIALS);
         if (materials.isEmpty()) {
-            for (MovecraftLocation location : hitBox) {
-                materials.add(location.toBukkit(w).getBlock().getType());
-            }
+            return (int) (Settings.SinkCheckTicks * 2); // Delay movement until calculated
         }
 
         int chestPenalty = 0;
@@ -534,25 +529,6 @@ public abstract class BaseCraft implements Craft {
     @Override
     public void setAudience(@NotNull Audience audience) {
         this.audience = audience;
-    }
-
-    public void updateMaterials (Counter<Material> counter) {
-        materials = counter;
-    }
-
-    @Override
-    public Counter<Material> getMaterials() {
-        return materials;
-    }
-
-    @Override
-    public void setTotalFuel(double fuel) {
-        totalFuel = fuel;
-    }
-
-    @Override
-    public double getTotalFuel() {
-        return totalFuel;
     }
 
     @Override

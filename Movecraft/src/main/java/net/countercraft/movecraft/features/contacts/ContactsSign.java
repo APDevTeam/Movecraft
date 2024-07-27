@@ -20,11 +20,6 @@ import org.jetbrains.annotations.NotNull;
 
 public class ContactsSign implements Listener {
     private static final String HEADER = "Contacts:";
-    private final ContactsManager contactsManager;
-
-    public ContactsSign(ContactsManager contactsManager) {
-        this.contactsManager = contactsManager;
-    }
 
     @EventHandler
     public void onCraftDetect(@NotNull CraftDetectEvent event) {
@@ -55,7 +50,7 @@ public class ContactsSign implements Listener {
 
         Craft base = event.getCraft();
         int line = 1;
-        for (Craft target : base.getDataTag(ContactsManager.CONTACTS)) {
+        for (Craft target : base.getDataTag(Craft.CONTACTS)) {
             if (line > 3)
                 break;
 
