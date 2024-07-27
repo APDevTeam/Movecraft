@@ -12,6 +12,7 @@ import net.countercraft.movecraft.craft.type.RequiredBlockEntry;
 import net.countercraft.movecraft.features.status.events.CraftStatusUpdateEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.WorldManager;
+import net.countercraft.movecraft.processing.effects.Effect;
 import net.countercraft.movecraft.util.Counter;
 import net.countercraft.movecraft.util.Tags;
 import net.kyori.adventure.key.Key;
@@ -26,8 +27,10 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
+import java.util.function.Supplier;
 
 public class StatusManager extends BukkitRunnable implements Listener {
     private static final CraftDataTagKey<Long> LAST_STATUS_CHECK = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "last-status-check"), craft -> System.currentTimeMillis());
@@ -43,7 +46,7 @@ public class StatusManager extends BukkitRunnable implements Listener {
         }
     }
 
-    private static final class StatusUpdateTask implements Runnable {
+    private static final class StatusUpdateTask implements Supplier<Effect> {
         private final Craft craft;
         private final Map<Material, Double> fuelTypes;
 
@@ -63,7 +66,7 @@ public class StatusManager extends BukkitRunnable implements Listener {
         }
 
         @Override
-        public void run() {
+        public @Nullable Effect get() {
             Counter<Material> materials = new Counter<>();
             int nonNegligibleBlocks = 0;
             int nonNegligibleSolidBlocks = 0;
@@ -95,9 +98,9 @@ public class StatusManager extends BukkitRunnable implements Listener {
             craft.setDataTag(Craft.NON_NEGLIGIBLE_SOLID_BLOCKS, nonNegligibleSolidBlocks);
             craft.setDataTag(LAST_STATUS_CHECK, System.currentTimeMillis());
             Bukkit.getPluginManager().callEvent(new CraftStatusUpdateEvent(craft));
+            return null;
         }
     }
-
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onCraftStatusUpdate(@NotNull CraftStatusUpdateEvent e) {
