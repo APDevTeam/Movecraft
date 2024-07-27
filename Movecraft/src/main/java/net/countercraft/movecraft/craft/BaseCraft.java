@@ -74,12 +74,8 @@ public abstract class BaseCraft implements Craft {
 
     private final UUID uuid = UUID.randomUUID();
 
-    {
-        // Map to craft
-        Hidden.uuidToCraft.put(uuid, this);
-    }
-
     public BaseCraft(@NotNull CraftType type, @NotNull World world) {
+        Hidden.uuidToCraft.put(uuid, this);
         this.type = type;
         this.w = world;
         hitBox = new SetHitBox();
