@@ -97,8 +97,7 @@ public class StatusManager extends BukkitRunnable implements Listener {
             craft.setDataTag(Craft.NON_NEGLIGIBLE_BLOCKS, nonNegligibleBlocks);
             craft.setDataTag(Craft.NON_NEGLIGIBLE_SOLID_BLOCKS, nonNegligibleSolidBlocks);
             craft.setDataTag(LAST_STATUS_CHECK, System.currentTimeMillis());
-            Bukkit.getPluginManager().callEvent(new CraftStatusUpdateEvent(craft));
-            return null;
+            return () -> Bukkit.getPluginManager().callEvent(new CraftStatusUpdateEvent(craft));
         }
     }
 

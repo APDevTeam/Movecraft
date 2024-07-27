@@ -9,7 +9,7 @@ public class CraftStatusUpdateEvent extends CraftEvent {
     private static final HandlerList HANDLERS = new HandlerList();
 
     public CraftStatusUpdateEvent(@NotNull Craft craft) {
-        super(craft, true);
+        super(craft);
     }
 
     @SuppressWarnings("unused")
