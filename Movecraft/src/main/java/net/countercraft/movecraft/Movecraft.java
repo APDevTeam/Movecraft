@@ -26,10 +26,7 @@ import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.features.contacts.ContactsCommand;
 import net.countercraft.movecraft.features.contacts.ContactsManager;
 import net.countercraft.movecraft.features.contacts.ContactsSign;
-import net.countercraft.movecraft.listener.BlockListener;
-import net.countercraft.movecraft.listener.CraftAssembleListener;
-import net.countercraft.movecraft.listener.InteractListener;
-import net.countercraft.movecraft.listener.PlayerListener;
+import net.countercraft.movecraft.listener.*;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.processing.WorldManager;
@@ -222,7 +219,8 @@ public class Movecraft extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new SubcraftRotateSign(), this);
         getServer().getPluginManager().registerEvents(new TeleportSign(), this);
         getServer().getPluginManager().registerEvents(new ScuttleSign(), this);
-        getServer().getPluginManager().registerEvents(new CraftAssembleListener(), this);
+        getServer().getPluginManager().registerEvents(new CraftPilotListener(), this);
+        getServer().getPluginManager().registerEvents(new CraftReleaseListener(), this);
 
         var contactsManager = new ContactsManager();
         contactsManager.runTaskTimerAsynchronously(this, 0, 20);
