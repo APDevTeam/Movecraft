@@ -538,7 +538,8 @@ public abstract class BaseCraft implements Craft {
         return dataTagContainer;
     }
 
-    public UUID getUuid() {
+    @Override
+    public UUID getUUID() {
         return this.uuid;
     }
 
