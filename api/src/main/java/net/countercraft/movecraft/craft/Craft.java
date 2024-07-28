@@ -31,6 +31,7 @@ import net.countercraft.movecraft.util.hitboxes.MutableHitBox;
 import net.kyori.adventure.audience.Audience;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.block.Sign;
 import org.bukkit.block.TileState;
@@ -38,9 +39,16 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public interface Craft {
+    CraftDataTagKey<List<Craft>> CONTACTS = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "contacts"), craft -> new ArrayList<>(0));
+    CraftDataTagKey<Double> FUEL = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "fuel"), craft -> 0D);
+    CraftDataTagKey<Counter<Material>> MATERIALS = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "materials"), craft -> new Counter<>());
+    CraftDataTagKey<Integer> NON_NEGLIGIBLE_BLOCKS = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "non-negligible-blocks"), Craft::getOrigBlockCount);
+    CraftDataTagKey<Integer> NON_NEGLIGIBLE_SOLID_BLOCKS = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "non-negligible-solid-blocks"), Craft::getOrigBlockCount);
 
     // Java disallows private or protected fields in interfaces, this is a workaround
     class Hidden {
@@ -264,14 +272,6 @@ public interface Craft {
     Audience getAudience();
 
     void setAudience(Audience audience);
-
-    Counter<Material> getMaterials ();
-
-    void updateMaterials (Counter<Material> materials);
-
-    double getTotalFuel ();
-
-    void setTotalFuel (double fuel);
 
     public default CraftDataTagContainer getDataTagContainer() {
         return null;

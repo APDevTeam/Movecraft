@@ -215,7 +215,6 @@ public class Movecraft extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new ReleaseSign(), this);
         getServer().getPluginManager().registerEvents(new RemoteSign(), this);
         getServer().getPluginManager().registerEvents(new SpeedSign(), this);
-        getServer().getPluginManager().registerEvents(new StatusSign(), this);
         getServer().getPluginManager().registerEvents(new SubcraftRotateSign(), this);
         getServer().getPluginManager().registerEvents(new TeleportSign(), this);
         getServer().getPluginManager().registerEvents(new ScuttleSign(), this);
@@ -225,8 +224,13 @@ public class Movecraft extends JavaPlugin {
         var contactsManager = new ContactsManager();
         contactsManager.runTaskTimerAsynchronously(this, 0, 20);
         getServer().getPluginManager().registerEvents(contactsManager, this);
-        getServer().getPluginManager().registerEvents(new ContactsSign(contactsManager), this);
+        getServer().getPluginManager().registerEvents(new ContactsSign(), this);
         getCommand("contacts").setExecutor(new ContactsCommand());
+
+        var statusManager = new StatusManager();
+        statusManager.runTaskTimerAsynchronously(this, 0, 1);
+        getServer().getPluginManager().registerEvents(statusManager, this);
+        getServer().getPluginManager().registerEvents(new StatusSign(), this);
 
         logger.info("[V " + getDescription().getVersion() + "] has been enabled.");
     }

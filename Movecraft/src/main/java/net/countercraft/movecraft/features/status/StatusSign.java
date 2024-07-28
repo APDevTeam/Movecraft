@@ -1,4 +1,4 @@
-package net.countercraft.movecraft.sign;
+package net.countercraft.movecraft.features.status;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
@@ -10,6 +10,7 @@ import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.craft.type.RequiredBlockEntry;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
+import net.countercraft.movecraft.features.status.StatusManager;
 import net.countercraft.movecraft.util.Counter;
 import net.countercraft.movecraft.util.Tags;
 import org.bukkit.ChatColor;
@@ -63,11 +64,11 @@ public final class StatusSign implements Listener {
         if (!ChatColor.stripColor(event.getLine(0)).equalsIgnoreCase("Status:")) {
             return;
         }
-        double fuel = craft.getTotalFuel();
+        double fuel = craft.getDataTag(Craft.FUEL);
 
         int totalNonNegligibleBlocks = 0;
         int totalNonNegligibleWaterBlocks = 0;
-        Counter<Material> materials = craft.getMaterials();
+        Counter<Material> materials = craft.getDataTag(Craft.MATERIALS);
         if (materials.isEmpty()) {
             return;
         }
