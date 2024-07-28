@@ -333,9 +333,11 @@ public class CraftTranslateCommand extends UpdateCommand {
         for(Map.Entry<String[], List<MovecraftLocation>> entry : signs.entrySet()){
             SignTranslateEvent event = new SignTranslateEvent(craft, entry.getKey(), entry.getValue());
             Bukkit.getServer().getPluginManager().callEvent(event);
-            if(!event.isUpdated()){
-                continue;
-            }
+            // if(!event.isUpdated()){
+            //     continue;
+            // }
+            // TODO: This is implemented only to fix client caching
+            //  ideally we wouldn't do the update and would instead fake it out to the player
             for(MovecraftLocation location : entry.getValue()){
                 Block block = location.toBukkit(craft.getWorld()).getBlock();
                 BlockState state = block.getState();

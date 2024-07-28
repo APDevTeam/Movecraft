@@ -27,6 +27,7 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.SinkingCraft;
+import net.countercraft.movecraft.craft.SubCraft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftRotateEvent;
 import net.countercraft.movecraft.events.CraftTeleportEntityEvent;
@@ -178,12 +179,15 @@ public class RotationTask extends AsyncTask {
             parentCraft.getFluidLocations().addAll(newFluidList);
         }
 
-        //Rotates the craft's tracked locations.
-        for (Set<TrackedLocation> locations : craft.getTrackedLocations().values()) {
-            for (TrackedLocation location : locations) {
-                location.rotate(rotation, originPoint);
+        // Rotates the craft's tracked locations, and all parent craft's.
+        Craft temp = craft;
+        do {
+            for (Set<TrackedLocation> locations : craft.getTrackedLocations().values()) {
+                for (TrackedLocation location : locations) {
+                    location.rotate(rotation, originPoint);
+                }
             }
-        }
+        } while (temp instanceof SubCraft && (temp = ((SubCraft) temp).getParent()) != null);
 
         updates.add(new CraftRotateCommand(getCraft(),originPoint, rotation));
         //rotate entities in the craft

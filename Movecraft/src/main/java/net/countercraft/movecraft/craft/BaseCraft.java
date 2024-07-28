@@ -8,8 +8,8 @@ import net.countercraft.movecraft.TrackedLocation;
 import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.craft.datatag.CraftDataTagContainer;
 import net.countercraft.movecraft.craft.type.CraftType;
-import net.countercraft.movecraft.exception.EmptyHitBoxException;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.CachedMovecraftWorld;
 import net.countercraft.movecraft.processing.MovecraftWorld;
@@ -22,23 +22,13 @@ import net.countercraft.movecraft.util.hitboxes.MutableHitBox;
 import net.countercraft.movecraft.util.hitboxes.SetHitBox;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 
@@ -49,8 +39,6 @@ public abstract class BaseCraft implements Craft {
     protected final CraftType type;
     @NotNull
     protected final MutableHitBox collapsedHitBox;
-    @NotNull
-    protected Counter<Material> materials;
     @NotNull
     private final AtomicBoolean processing = new AtomicBoolean();
     private final long origPilotTime;
@@ -73,7 +61,6 @@ public abstract class BaseCraft implements Craft {
     private int currentGear = 1;
     private double burningFuel;
     private int origBlockCount;
-    private double totalFuel = 0;
     @NotNull
     private Audience audience;
     @NotNull
@@ -82,7 +69,12 @@ public abstract class BaseCraft implements Craft {
     private MovecraftLocation lastTranslation = new MovecraftLocation(0, 0, 0);
     private Map<NamespacedKey, Set<TrackedLocation>> trackedLocations = new HashMap<>();
 
+    private final CraftDataTagContainer dataTagContainer = new CraftDataTagContainer();
+
+    private final UUID uuid = UUID.randomUUID();
+
     public BaseCraft(@NotNull CraftType type, @NotNull World world) {
+        Hidden.uuidToCraft.put(uuid, this);
         this.type = type;
         this.w = world;
         hitBox = new SetHitBox();
@@ -92,9 +84,9 @@ public abstract class BaseCraft implements Craft {
         cruising = false;
         disabled = false;
         origPilotTime = System.currentTimeMillis();
-        materials = new Counter<>();
         audience = Audience.empty();
     }
+
 
     public boolean isNotProcessing() {
         return !processing.get();
@@ -189,47 +181,6 @@ public abstract class BaseCraft implements Craft {
     @Override
     public void rotate(MovecraftRotation rotation, MovecraftLocation originPoint, boolean isSubCraft) {
         Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(this, originPoint, rotation, getWorld(), isSubCraft), this);
-    }
-
-    /**
-     * Gets the crafts that have made contact with this craft
-     *
-     * @return a set of crafts in contact with this craft
-     */
-    @NotNull
-    @Override
-    public Set<Craft> getContacts() {
-        final Set<Craft> contacts = new HashSet<>();
-        for (Craft contact : CraftManager.getInstance().getCraftsInWorld(w)) {
-            if (contact instanceof PilotedCraft && this instanceof PilotedCraft
-                    && ((PilotedCraft) contact).getPilot() == ((PilotedCraft) this).getPilot())
-                continue;
-
-            MovecraftLocation ccenter;
-            MovecraftLocation tcenter;
-            try {
-                ccenter = getHitBox().getMidPoint();
-                tcenter = contact.getHitBox().getMidPoint();
-            }
-            catch (EmptyHitBoxException e) {
-                continue;
-            }
-            int distsquared = ccenter.distanceSquared(tcenter);
-            double detectionMultiplier;
-            if (tcenter.getY() > 65) // TODO: fix the water line
-                detectionMultiplier = (double) contact.getType().getPerWorldProperty(
-                        CraftType.PER_WORLD_DETECTION_MULTIPLIER, contact.getWorld());
-            else
-                detectionMultiplier = (double) contact.getType().getPerWorldProperty(
-                        CraftType.PER_WORLD_UNDERWATER_DETECTION_MULTIPLIER, contact.getWorld());
-            int detectionRange = (int) (contact.getOrigBlockCount() * detectionMultiplier);
-            detectionRange = detectionRange * 10;
-            if (distsquared > detectionRange)
-                continue;
-
-            contacts.add(contact);
-        }
-        return contacts;
     }
 
     @Override
@@ -371,17 +322,15 @@ public abstract class BaseCraft implements Craft {
         if (this instanceof SinkingCraft)
             return type.getIntProperty(CraftType.SINK_RATE_TICKS);
 
-        if (materials.isEmpty()) {
-            for (MovecraftLocation location : hitBox) {
-                materials.add(location.toBukkit(w).getBlock().getType());
-            }
-        }
+        Counter<Material> materials = getDataTag(Craft.MATERIALS);
 
         int chestPenalty = 0;
-        for (Material m : Tags.CHESTS) {
-            chestPenalty += materials.get(m);
+        if (!materials.isEmpty()) {
+            for (Material m : Tags.CHESTS) {
+                chestPenalty += materials.get(m);
+            }
         }
-        chestPenalty *= type.getDoubleProperty(CraftType.CHEST_PENALTY);
+        chestPenalty *= (int) type.getDoubleProperty(CraftType.CHEST_PENALTY);
         if (!cruising)
             return ((int) type.getPerWorldProperty(CraftType.PER_WORLD_TICK_COOLDOWN, w) + chestPenalty) * (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1);
 
@@ -392,6 +341,9 @@ public abstract class BaseCraft implements Craft {
         // Dynamic Fly Block Speed
         int cruiseTickCooldown = (int) type.getPerWorldProperty(CraftType.PER_WORLD_CRUISE_TICK_COOLDOWN, w);
         if (type.getDoubleProperty(CraftType.DYNAMIC_FLY_BLOCK_SPEED_FACTOR) != 0) {
+            if (materials.isEmpty()) {
+                return ((int) type.getPerWorldProperty(CraftType.PER_WORLD_TICK_COOLDOWN, w) + chestPenalty) * (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1);
+            }
             EnumSet<Material> flyBlockMaterials = type.getMaterialSetProperty(CraftType.DYNAMIC_FLY_BLOCK);
             double count = 0;
             for (Material m : flyBlockMaterials) {
@@ -583,23 +535,26 @@ public abstract class BaseCraft implements Craft {
         this.audience = audience;
     }
 
-    public void updateMaterials (Counter<Material> counter) {
-        materials = counter;
+    @Override
+    public CraftDataTagContainer getDataTagContainer() {
+        return dataTagContainer;
+    }
+
+    public UUID getUuid() {
+        return this.uuid;
     }
 
     @Override
-    public Counter<Material> getMaterials() {
-        return materials;
+    public boolean equals(Object obj) {
+        if (!(obj instanceof BaseCraft))
+            return false;
+
+        return this.getUUID().equals(((BaseCraft) obj).getUUID());
     }
 
     @Override
-    public void setTotalFuel(double fuel) {
-        totalFuel = fuel;
-    }
-
-    @Override
-    public double getTotalFuel() {
-        return totalFuel;
+    public int hashCode() {
+        return this.getUUID().hashCode();
     }
 
     @Override

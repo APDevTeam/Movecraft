@@ -21,9 +21,12 @@ import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.MovecraftRotation;
 import net.countercraft.movecraft.TrackedLocation;
+import net.countercraft.movecraft.craft.datatag.CraftDataTagContainer;
+import net.countercraft.movecraft.craft.datatag.CraftDataTagKey;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.util.Counter;
+import net.countercraft.movecraft.util.MathUtils;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
 import net.countercraft.movecraft.util.hitboxes.MutableHitBox;
 import net.kyori.adventure.audience.Audience;
@@ -32,13 +35,32 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.block.Sign;
+import org.bukkit.block.TileState;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public interface Craft {
+    CraftDataTagKey<List<Craft>> CONTACTS = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "contacts"), craft -> new ArrayList<>(0));
+    CraftDataTagKey<Double> FUEL = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "fuel"), craft -> 0D);
+    CraftDataTagKey<Counter<Material>> MATERIALS = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "materials"), craft -> new Counter<>());
+    CraftDataTagKey<Integer> NON_NEGLIGIBLE_BLOCKS = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "non-negligible-blocks"), Craft::getOrigBlockCount);
+    CraftDataTagKey<Integer> NON_NEGLIGIBLE_SOLID_BLOCKS = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "non-negligible-solid-blocks"), Craft::getOrigBlockCount);
+
+    // Java disallows private or protected fields in interfaces, this is a workaround
+    class Hidden {
+        // Concurrent so we don't have problems when accessing async (useful for addon plugins that want to do stuff async, for example NPC crafts with complex off-thread pathfinding)
+        protected static final Map<UUID, Craft> uuidToCraft = Collections.synchronizedMap(new WeakHashMap<>());
+    }
+    public static Craft getCraftByUUID(final UUID uuid) {
+        return Hidden.uuidToCraft.getOrDefault(uuid, null);
+    }
+
+    public default UUID getUUID() {
+        return null;
+    }
 
     @Deprecated
     boolean isNotProcessing();
@@ -130,12 +152,6 @@ public interface Craft {
      * @param cruising the desired cruise state
      */
     void setCruising(boolean cruising);
-
-    /**
-     * Gets the crafts that have made contact with this craft
-     * @return a set of crafts on contact with this craft
-     */
-    Set<Craft> getContacts();
 
     /**
      * Gets the disabled status of the craft
@@ -256,13 +272,38 @@ public interface Craft {
 
     void setAudience(Audience audience);
 
-    Counter<Material> getMaterials ();
+    public default CraftDataTagContainer getDataTagContainer() {
+        return null;
+    }
 
-    void updateMaterials (Counter<Material> materials);
+    public default <T> boolean setDataTag(CraftDataTagKey<T> tagKey, T data) {
+        CraftDataTagContainer container = this.getDataTagContainer();
+        if (container == null) {
+            return false;
+        }
+        container.set(tagKey, data);
+        return true;
+    }
+    public default <T> T getDataTag(CraftDataTagKey<T> tagKey) {
+        CraftDataTagContainer container = this.getDataTagContainer();
+        if (container == null) {
+            return null;
+        }
+        return container.get(this, tagKey);
+    }
 
-    double getTotalFuel ();
+    public default void markTileStateWithUUID(TileState tile) {
+        // Add the marker
+        tile.getPersistentDataContainer().set(
+                MathUtils.KEY_CRAFT_UUID,
+                PersistentDataType.STRING,
+                this.getUUID().toString()
+        );
+    }
 
-    void setTotalFuel (double fuel);
+    public default void removeUUIDMarkFromTile(TileState tile) {
+        tile.getPersistentDataContainer().remove(MathUtils.KEY_CRAFT_UUID);
+    }
 
     Map<NamespacedKey, Set<TrackedLocation>> getTrackedLocations();
 }
