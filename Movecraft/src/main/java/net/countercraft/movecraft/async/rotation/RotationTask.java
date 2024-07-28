@@ -179,19 +179,15 @@ public class RotationTask extends AsyncTask {
             parentCraft.getFluidLocations().addAll(newFluidList);
         }
 
-        // Rotates the craft's tracked locations, then all parent craft's.
+        // Rotates the craft's tracked locations, and all parent craft's.
         Craft temp = craft;
-        while (true) {
+        do {
             for (Set<TrackedLocation> locations : craft.getTrackedLocations().values()) {
                 for (TrackedLocation location : locations) {
                     location.rotate(rotation, originPoint);
                 }
             }
-            if (!(temp instanceof SubCraft))
-                break;
-
-            temp = ((SubCraft) temp).getParent();
-        }
+        } while (temp instanceof SubCraft && (temp = ((SubCraft) temp).getParent()) != null);
 
         updates.add(new CraftRotateCommand(getCraft(),originPoint, rotation));
         //rotate entities in the craft
