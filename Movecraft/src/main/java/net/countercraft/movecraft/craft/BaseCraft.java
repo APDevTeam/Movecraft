@@ -39,8 +39,6 @@ public abstract class BaseCraft implements Craft {
     @NotNull
     protected final MutableHitBox collapsedHitBox;
     @NotNull
-    protected Counter<Material> materials;
-    @NotNull
     private final AtomicBoolean processing = new AtomicBoolean();
     private final long origPilotTime;
     @NotNull
@@ -62,7 +60,6 @@ public abstract class BaseCraft implements Craft {
     private int currentGear = 1;
     private double burningFuel;
     private int origBlockCount;
-    private double totalFuel = 0;
     @NotNull
     private Audience audience;
     @NotNull
@@ -85,7 +82,6 @@ public abstract class BaseCraft implements Craft {
         cruising = false;
         disabled = false;
         origPilotTime = System.currentTimeMillis();
-        materials = new Counter<>();
         audience = Audience.empty();
     }
 
@@ -324,17 +320,15 @@ public abstract class BaseCraft implements Craft {
         if (this instanceof SinkingCraft)
             return type.getIntProperty(CraftType.SINK_RATE_TICKS);
 
-        if (materials.isEmpty()) {
-            for (MovecraftLocation location : hitBox) {
-                materials.add(location.toBukkit(w).getBlock().getType());
-            }
-        }
+        Counter<Material> materials = getDataTag(Craft.MATERIALS);
 
         int chestPenalty = 0;
-        for (Material m : Tags.CHESTS) {
-            chestPenalty += materials.get(m);
+        if (!materials.isEmpty()) {
+            for (Material m : Tags.CHESTS) {
+                chestPenalty += materials.get(m);
+            }
         }
-        chestPenalty *= type.getDoubleProperty(CraftType.CHEST_PENALTY);
+        chestPenalty *= (int) type.getDoubleProperty(CraftType.CHEST_PENALTY);
         if (!cruising)
             return ((int) type.getPerWorldProperty(CraftType.PER_WORLD_TICK_COOLDOWN, w) + chestPenalty) * (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1);
 
@@ -345,6 +339,9 @@ public abstract class BaseCraft implements Craft {
         // Dynamic Fly Block Speed
         int cruiseTickCooldown = (int) type.getPerWorldProperty(CraftType.PER_WORLD_CRUISE_TICK_COOLDOWN, w);
         if (type.getDoubleProperty(CraftType.DYNAMIC_FLY_BLOCK_SPEED_FACTOR) != 0) {
+            if (materials.isEmpty()) {
+                return ((int) type.getPerWorldProperty(CraftType.PER_WORLD_TICK_COOLDOWN, w) + chestPenalty) * (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1);
+            }
             EnumSet<Material> flyBlockMaterials = type.getMaterialSetProperty(CraftType.DYNAMIC_FLY_BLOCK);
             double count = 0;
             for (Material m : flyBlockMaterials) {
@@ -534,25 +531,6 @@ public abstract class BaseCraft implements Craft {
     @Override
     public void setAudience(@NotNull Audience audience) {
         this.audience = audience;
-    }
-
-    public void updateMaterials (Counter<Material> counter) {
-        materials = counter;
-    }
-
-    @Override
-    public Counter<Material> getMaterials() {
-        return materials;
-    }
-
-    @Override
-    public void setTotalFuel(double fuel) {
-        totalFuel = fuel;
-    }
-
-    @Override
-    public double getTotalFuel() {
-        return totalFuel;
     }
 
     @Override

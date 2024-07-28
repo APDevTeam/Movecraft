@@ -45,9 +45,10 @@ public final class WorldManager implements Executor {
         if(tasks.isEmpty())
             return;
         running = true;
-        int remaining = tasks.size();
+        int remaining = 0;
         List<CompletableFuture<Effect>> inProgress = new ArrayList<>();
         while(!tasks.isEmpty()){
+            remaining++;
             inProgress.add(CompletableFuture.supplyAsync(tasks.poll()).whenComplete((effect, exception) -> {
                 poison();
                 if(exception != null){

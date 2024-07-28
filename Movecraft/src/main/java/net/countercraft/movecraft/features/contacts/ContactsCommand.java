@@ -57,7 +57,7 @@ public class ContactsCommand implements CommandExecutor {
         ComponentPaginator paginator = new ComponentPaginator(
                 I18nSupport.getInternationalisedComponent("Contacts"),
                 (pageNumber) -> "/contacts " + pageNumber);
-        for (Craft target : base.getDataTag(ContactsManager.CONTACTS)) {
+        for (Craft target : base.getDataTag(Craft.CONTACTS)) {
             if (target.getHitBox().isEmpty())
                 continue;
 
