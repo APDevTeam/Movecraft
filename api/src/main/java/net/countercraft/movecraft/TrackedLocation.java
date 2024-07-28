@@ -24,9 +24,8 @@ public class TrackedLocation {
      * Rotates the stored location.
      * @param rotation A clockwise or counter-clockwise direction to rotate.
      */
-    public void rotate(MovecraftRotation rotation) {
-        MovecraftLocation midPoint = craft.getHitBox().getMidPoint();
-        offSet = MathUtils.rotateVec(rotation, getAbsoluteLocation().subtract(midPoint));
+    public void rotate(MovecraftRotation rotation, MovecraftLocation origin) {
+        offSet = MathUtils.rotateVec(rotation, getAbsoluteLocation().subtract(origin));
     }
 
     /**
