@@ -40,12 +40,7 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.Collections;
-import java.util.WeakHashMap;
+import java.util.*;
 
 public interface Craft {
     CraftDataTagKey<List<Craft>> CONTACTS = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "contacts"), craft -> new ArrayList<>(0));
