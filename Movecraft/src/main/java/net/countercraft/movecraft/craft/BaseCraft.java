@@ -27,10 +27,7 @@ import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 
@@ -72,7 +69,10 @@ public abstract class BaseCraft implements Craft {
 
     private final CraftDataTagContainer dataTagContainer = new CraftDataTagContainer();
 
+    private final UUID uuid = UUID.randomUUID();
+
     public BaseCraft(@NotNull CraftType type, @NotNull World world) {
+        Hidden.uuidToCraft.put(uuid, this);
         this.type = type;
         this.w = world;
         hitBox = new SetHitBox();
@@ -536,5 +536,22 @@ public abstract class BaseCraft implements Craft {
     @Override
     public CraftDataTagContainer getDataTagContainer() {
         return dataTagContainer;
+    }
+
+    public UUID getUuid() {
+        return this.uuid;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof BaseCraft))
+            return false;
+
+        return this.getUUID().equals(((BaseCraft) obj).getUUID());
+    }
+
+    @Override
+    public int hashCode() {
+        return this.getUUID().hashCode();
     }
 }
