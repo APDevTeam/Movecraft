@@ -21,11 +21,13 @@ import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.MovecraftRotation;
+import net.countercraft.movecraft.TrackedLocation;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.SinkingCraft;
+import net.countercraft.movecraft.craft.SubCraft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftRotateEvent;
 import net.countercraft.movecraft.events.CraftTeleportEntityEvent;
@@ -51,6 +53,7 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.InventoryView;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import static net.countercraft.movecraft.util.MathUtils.withinWorldBorder;
@@ -176,6 +179,15 @@ public class RotationTask extends AsyncTask {
             parentCraft.getFluidLocations().addAll(newFluidList);
         }
 
+        // Rotates the craft's tracked locations, and all parent craft's.
+        Craft temp = craft;
+        do {
+            for (Set<TrackedLocation> locations : craft.getTrackedLocations().values()) {
+                for (TrackedLocation location : locations) {
+                    location.rotate(rotation, originPoint);
+                }
+            }
+        } while (temp instanceof SubCraft && (temp = ((SubCraft) temp).getParent()) != null);
 
         updates.add(new CraftRotateCommand(getCraft(),originPoint, rotation));
         //rotate entities in the craft

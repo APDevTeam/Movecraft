@@ -20,6 +20,7 @@ package net.countercraft.movecraft.craft;
 import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.MovecraftRotation;
+import net.countercraft.movecraft.TrackedLocation;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagContainer;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagKey;
 import net.countercraft.movecraft.craft.type.CraftType;
@@ -39,12 +40,7 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.Collections;
-import java.util.WeakHashMap;
+import java.util.*;
 
 public interface Craft {
     CraftDataTagKey<List<Craft>> CONTACTS = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "contacts"), craft -> new ArrayList<>(0));
@@ -308,4 +304,6 @@ public interface Craft {
     public default void removeUUIDMarkFromTile(TileState tile) {
         tile.getPersistentDataContainer().remove(MathUtils.KEY_CRAFT_UUID);
     }
+
+    Map<NamespacedKey, Set<TrackedLocation>> getTrackedLocations();
 }

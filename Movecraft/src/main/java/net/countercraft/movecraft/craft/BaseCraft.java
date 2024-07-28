@@ -4,6 +4,7 @@ import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.MovecraftRotation;
+import net.countercraft.movecraft.TrackedLocation;
 import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.config.Settings;
@@ -66,6 +67,7 @@ public abstract class BaseCraft implements Craft {
     private String name = "";
     @NotNull
     private MovecraftLocation lastTranslation = new MovecraftLocation(0, 0, 0);
+    private Map<NamespacedKey, Set<TrackedLocation>> trackedLocations = new HashMap<>();
 
     private final CraftDataTagContainer dataTagContainer = new CraftDataTagContainer();
 
@@ -555,4 +557,7 @@ public abstract class BaseCraft implements Craft {
     public int hashCode() {
         return this.getUUID().hashCode();
     }
+
+    @Override
+    public Map<NamespacedKey, Set<TrackedLocation>> getTrackedLocations() {return trackedLocations;}
 }
