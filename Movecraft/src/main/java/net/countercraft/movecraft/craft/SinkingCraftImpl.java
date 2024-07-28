@@ -8,6 +8,7 @@ public class SinkingCraftImpl extends BaseCraft implements SinkingCraft {
         hitBox = original.getHitBox();
         collapsedHitBox.addAll(original.getCollapsedHitBox());
         fluidLocations = original.getFluidLocations();
+        setOrigBlockCount(original.getOrigBlockCount());
         setCruiseDirection(original.getCruiseDirection());
         setLastTranslation(original.getLastTranslation());
         setAudience(original.getAudience());

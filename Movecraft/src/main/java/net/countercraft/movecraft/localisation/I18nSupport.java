@@ -21,6 +21,8 @@ import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -44,40 +46,44 @@ public class I18nSupport {
             localisationDirectory.mkdirs();
         }
 
-        InputStream is = null;
+        InputStream inputStream = null;
         try {
-            is = new FileInputStream(localisationDirectory.getAbsolutePath() + "/movecraftlang" + "_" + Settings.LOCALE + ".properties");
+            inputStream = new FileInputStream(localisationDirectory.getAbsolutePath() + "/movecraftlang" + "_" + Settings.LOCALE + ".properties");
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
 
-        if (is == null) {
+        if (inputStream == null) {
             Movecraft.getInstance().getLogger().log(Level.SEVERE, "Critical Error in Localisation System");
             Movecraft.getInstance().getServer().shutdown();
             return;
         }
 
         try {
-            languageFile.load(new InputStreamReader(is, StandardCharsets.UTF_8));
-            is.close();
+            languageFile.load(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
+            inputStream.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
     }
 
-    public static String getInternationalisedString(String key) {
+    private static String get(String key) {
         String ret = languageFile.getProperty(key);
         if (ret != null) {
             return ret;
         } else {
             return key;
         }
+
     }
 
-    public static TextComponent getInternationalisedComponent(String key){
-        return Component.text(getInternationalisedString(key));
+    @Deprecated(forRemoval = true)
+    public static String getInternationalisedString(String key) {
+        return get(key);
     }
 
+    @Contract("_ -> new")
+    public static @NotNull TextComponent getInternationalisedComponent(String key){
+        return Component.text(get(key));
+    }
 }
