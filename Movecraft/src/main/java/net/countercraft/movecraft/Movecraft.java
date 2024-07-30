@@ -73,6 +73,7 @@ public class Movecraft extends JavaPlugin {
         Settings.DisableNMSCompatibilityCheck = getConfig().getBoolean("IReallyKnowWhatIAmDoing", false);
         Settings.DisableSpillProtection = getConfig().getBoolean("DisableSpillProtection", false);
         Settings.DisableIceForm = getConfig().getBoolean("DisableIceForm", true);
+        Settings.ReleaseOnDeath = getConfig().getBoolean("ReleaseOnDeath", false);
 
         String[] localisations = {"en", "cz", "nl", "fr"};
         for (String s : localisations) {

@@ -21,7 +21,6 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.craft.PlayerCraft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
@@ -32,15 +31,13 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.util.EnumSet;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
 import java.util.WeakHashMap;
 
@@ -102,12 +99,13 @@ public class PlayerListener implements Listener {
     }
 
     @EventHandler
-    public void onPlayerDeath(EntityDamageByEntityEvent e) {
+    public void onPlayerDeath(PlayerDeathEvent e) {
         // changed to death so when you shoot up an airship and hit the pilot, it still sinks
-        if (!(e instanceof Player))
+
+        if (!Settings.ReleaseOnDeath)
             return;
 
-        Player p = (Player) e;
+        Player p = e.getPlayer();
         Craft craft = CraftManager.getInstance().getCraftByPlayer(p);
         if (craft == null)
             return;
