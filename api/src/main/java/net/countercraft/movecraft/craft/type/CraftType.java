@@ -127,6 +127,7 @@ final public class CraftType {
     public static final NamespacedKey KEEP_MOVING_ON_SINK = buildKey("keep_moving_on_sink");
     public static final NamespacedKey SMOKE_ON_SINK = buildKey("smoke_on_sink");
     public static final NamespacedKey EXPLODE_ON_CRASH = buildKey("explode_on_crash");
+    public static final NamespacedKey INCENDIARY_ON_CRASH = buildKey("incendiary_on_crash");
     public static final NamespacedKey COLLISION_EXPLOSION = buildKey("collision_explosion");
     private static final NamespacedKey MIN_HEIGHT_LIMIT = buildKey("min_height_limit");
         // Private key used as default for PER_WORLD_MIN_HEIGHT_LIMIT
@@ -449,6 +450,7 @@ final public class CraftType {
         registerProperty(new BooleanProperty("keepMovingOnSink", KEEP_MOVING_ON_SINK, type -> false));
         registerProperty(new IntegerProperty("smokeOnSink", SMOKE_ON_SINK, type -> 0));
         registerProperty(new FloatProperty("explodeOnCrash", EXPLODE_ON_CRASH, type -> 0F));
+        registerProperty(new BooleanProperty("incendiaryOnCrash", INCENDIARY_ON_CRASH, type -> false));
         registerProperty(new FloatProperty("collisionExplosion", COLLISION_EXPLOSION, type -> 0F));
         registerProperty(new IntegerProperty("minHeightLimit", MIN_HEIGHT_LIMIT, type -> Integer.MIN_VALUE));
         registerProperty(new PerWorldProperty<>("perWorldMinHeightLimit", PER_WORLD_MIN_HEIGHT_LIMIT,
