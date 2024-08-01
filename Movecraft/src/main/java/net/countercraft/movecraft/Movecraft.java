@@ -222,6 +222,7 @@ public class Movecraft extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new ScuttleSign(), this);
         getServer().getPluginManager().registerEvents(new CraftPilotListener(), this);
         getServer().getPluginManager().registerEvents(new CraftReleaseListener(), this);
+        getServer().getPluginManager().registerEvents(new SignListener(), this);
 
         var contactsManager = new ContactsManager();
         contactsManager.runTaskTimerAsynchronously(this, 0, 20);
