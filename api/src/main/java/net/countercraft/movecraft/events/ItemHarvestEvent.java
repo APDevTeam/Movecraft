@@ -3,6 +3,7 @@ package net.countercraft.movecraft.events;
 
 import net.countercraft.movecraft.craft.Craft;
 import org.bukkit.Location;
+import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -12,10 +13,12 @@ import java.util.List;
 /**
  * Called when one or more blocks are harvested by a moving craft
  */
-public class ItemHarvestEvent extends CraftEvent {
+public class ItemHarvestEvent extends CraftEvent implements Cancellable {
     @NotNull private List<ItemStack> harvested;
     private static final HandlerList HANDLER_LIST = new HandlerList();
     @NotNull private final Location location;
+    private boolean cancelled;
+
     public ItemHarvestEvent(@NotNull Craft craft, @NotNull List<ItemStack> harvested, @NotNull Location location) {
         super(craft);
         this.harvested = harvested;
@@ -44,5 +47,15 @@ public class ItemHarvestEvent extends CraftEvent {
     @NotNull
     public Location getLocation() {
         return location;
+    }
+
+    @Override
+    public boolean isCancelled() {
+        return cancelled;
+    }
+
+    @Override
+    public void setCancelled(boolean b) {
+        cancelled = b;
     }
 }
