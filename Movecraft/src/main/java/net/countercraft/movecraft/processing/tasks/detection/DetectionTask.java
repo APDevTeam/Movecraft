@@ -39,6 +39,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.data.Directional;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -48,7 +50,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -339,6 +343,8 @@ public class DetectionTask implements Supplier<Effect> {
         @Override
         public void run() {
             MovecraftLocation probe;
+            LinkedList<MovecraftLocation> directionalList = new LinkedList<>();
+
             while((probe = currentFrontier.poll()) != null) {
                 visitedMaterials.computeIfAbsent(movecraftWorld.getMaterial(probe), Functions.forSupplier(ConcurrentLinkedDeque::new)).add(probe);
                 if(!ALLOWED_BLOCK_VALIDATOR.validate(probe, type, movecraftWorld, player).isSucess())
@@ -350,22 +356,38 @@ public class DetectionTask implements Supplier<Effect> {
                 }
                 var result = chain.validate(probe, type, movecraftWorld, player);
 
-                if(result.isSucess()) {
-                    legal.add(probe);
-                    if(Tags.FLUID.contains(movecraftWorld.getMaterial(probe)))
-                        fluid.add(probe);
-
-                    size.increment();
-                    materials.computeIfAbsent(movecraftWorld.getMaterial(probe), Functions.forSupplier(ConcurrentLinkedDeque::new)).add(probe);
-                    for(MovecraftLocation shift : SHIFTS) {
-                        var shifted = probe.add(shift);
-                        if(visited.add(shifted))
-                            nextFrontier.add(shifted);
-                    }
-                }
-                else {
+                if (!result.isSucess()) {
                     illegal.add(probe);
                     audience.sendMessage(Component.text(result.getMessage()));
+                    return;
+                }
+
+                Block b = probe.toBukkit(world).getBlock();
+                boolean blockFacingCraft = true;
+
+                if (b instanceof Directional directional) {
+                    Block relativeBlock = b.getRelative(directional.getFacing());
+                    MovecraftLocation relativeLoc = new MovecraftLocation(relativeBlock.getX(), relativeBlock.getY(), relativeBlock.getZ());
+
+                    if (!legal.contains(relativeLoc)) {
+                        blockFacingCraft = false; // Invalidate block if it's not facing the craft
+                    }
+                }
+
+                if (!blockFacingCraft) {
+                    continue;
+                }
+
+                legal.add(probe);
+                if (Tags.FLUID.contains(movecraftWorld.getMaterial(probe)))
+                    fluid.add(probe);
+
+                size.increment();
+                materials.computeIfAbsent(movecraftWorld.getMaterial(probe), Functions.forSupplier(ConcurrentLinkedDeque::new)).add(probe);
+                for (MovecraftLocation shift : SHIFTS) {
+                    var shifted = probe.add(shift);
+                    if (visited.add(shifted))
+                        nextFrontier.add(shifted);
                 }
             }
         }
