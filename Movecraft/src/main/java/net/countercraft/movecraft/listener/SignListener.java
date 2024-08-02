@@ -27,7 +27,7 @@ public class SignListener implements Listener {
                     if (state instanceof Sign sign) {
                         String ident = sign.getLines()[0];
                         AbstractCraftSign.tryGetCraftSign(ident).ifPresent(acs -> {
-                            acs.onCraftDetect(event);
+                            acs.onCraftDetect(event, sign);
                         });
                     }
                 }
