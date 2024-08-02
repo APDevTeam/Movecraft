@@ -52,6 +52,18 @@ public abstract class AbstractMovecraftSign {
         this.optPermission = Optional.ofNullable(permissionNode);
     }
 
+    public static String findIdent(AbstractMovecraftSign instance) {
+        if (!SIGNS.containsValue(instance)) {
+            throw new IllegalArgumentException("MovecraftSign instanceo must be registered!");
+        }
+        for (Map.Entry<String, AbstractMovecraftSign> entry : SIGNS.entrySet()) {
+            if (entry.getValue() == instance) {
+                return entry.getKey();
+            }
+        }
+        throw new IllegalStateException("Somehow didn't find a key for a value that is in the map!");
+    }
+
     // Return true to cancel the event
     public boolean processSignClick(Action clickType, Sign sign, Player player) {
         if (!this.isSignValid(clickType, sign, player)) {
@@ -79,5 +91,4 @@ public abstract class AbstractMovecraftSign {
     protected abstract boolean isSignValid(Action clickType, Sign sign, Player player);
     protected abstract boolean internalProcessSign(Action clickType, Sign sign, Player player, Optional<Craft> craft);
     public abstract boolean processSignChange(SignChangeEvent event);
-
 }
