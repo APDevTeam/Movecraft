@@ -9,7 +9,6 @@ import net.countercraft.movecraft.util.MathUtils;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.inventory.ClickType;
 
 import java.util.Optional;
 
@@ -59,6 +58,14 @@ public abstract class AbstractCraftSign extends AbstractMovecraftSign {
         return internalProcessSign(clickType, sign, player, craft);
     }
 
+    @Override
+    protected boolean internalProcessSign(Action clickType, Sign sign, Player player, Optional<Craft> craft) {
+        if (this.canPlayerUseSignOn(player, craft.get())) {
+            return this.internalProcessSign(clickType, sign, player, craft.get());
+        }
+        return false;
+    }
+
     protected abstract void onParentCraftBusy(Player player, Craft craft);
 
     protected boolean canPlayerUseSignOn(Player player, Craft craft) {
@@ -70,20 +77,18 @@ public abstract class AbstractCraftSign extends AbstractMovecraftSign {
 
     protected abstract void onCraftNotFound(Player player, Sign sign);
 
-    protected boolean canPlayerUseSign(ClickType clickType, Sign sign, Player player) {
+    protected boolean canPlayerUseSign(Action clickType, Sign sign, Player player) {
         if (this.optPermission.isPresent()) {
             return player.hasPermission(this.optPermission.get());
         }
         return true;
     }
 
-    protected abstract boolean internalProcessSign(ClickType clickType, Sign sign, Player player, Optional<Craft> craft);
-
     protected Optional<Craft> getCraft(Sign sign) {
         return Optional.ofNullable(MathUtils.getCraftByPersistentBlockData(sign.getLocation()));
     }
 
-    public void onCraftDetect(CraftDetectEvent event) {
+    public void onCraftDetect(CraftDetectEvent event, Sign sign) {
         // Do nothing by default
     }
 
@@ -91,6 +96,8 @@ public abstract class AbstractCraftSign extends AbstractMovecraftSign {
         // Do nothing by default
     }
 
-    protected abstract boolean isSignValid(ClickType clickType, Sign sign, Player player);
+    protected abstract boolean isSignValid(Action clickType, Sign sign, Player player);
+
+    protected abstract boolean internalProcessSign(Action clickType, Sign sign, Player player, Craft craft);
 
 }
