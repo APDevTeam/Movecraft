@@ -100,8 +100,7 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerDeath(PlayerDeathEvent e) {
-        // changed to death so when you shoot up an airship and hit the pilot, it still sinks
-
+        // when you shoot a craft and kill the pilot, it sinks
         if (!Settings.ReleaseOnDeath)
             return;
 
@@ -110,7 +109,7 @@ public class PlayerListener implements Listener {
         if (craft == null)
             return;
 
-        CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.DEATH, false);
+        CraftManager.getInstance().sink(craft);
     }
 
     @EventHandler
