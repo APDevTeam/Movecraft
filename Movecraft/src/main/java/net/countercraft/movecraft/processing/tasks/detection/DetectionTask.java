@@ -39,7 +39,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Directional;
@@ -53,9 +52,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Deque;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -348,25 +345,6 @@ public class DetectionTask implements Supplier<Effect> {
             MovecraftLocation probe;
 
             while((probe = currentFrontier.poll()) != null) {
-                if(!visited.add(probe))
-                    continue;
-
-                visitedMaterials.computeIfAbsent(movecraftWorld.getMaterial(probe), Functions.forSupplier(ConcurrentLinkedDeque::new)).add(probe);
-                if(!ALLOWED_BLOCK_VALIDATOR.validate(probe, type, movecraftWorld, player).isSucess())
-                    continue;
-
-                DetectionPredicate<MovecraftLocation> chain = FORBIDDEN_BLOCK_VALIDATOR;
-                for(var validator : VALIDATORS) {
-                    chain = chain.and(validator);
-                }
-                var result = chain.validate(probe, type, movecraftWorld, player);
-
-                if (!result.isSucess()) {
-                    illegal.add(probe);
-                    audience.sendMessage(Component.text(result.getMessage()));
-                    return;
-                }
-
                 BlockData bd = movecraftWorld.getData(probe);
                 boolean blockFacingCraft = true;
 
@@ -384,11 +362,43 @@ public class DetectionTask implements Supplier<Effect> {
                     } else {
                         Bukkit.getLogger().info("Yes legal");
                     }
+                } else if (bd instanceof Directional directional) {
+                    BlockFace facing = directional.getFacing().getOppositeFace();
+                    MovecraftLocation relativeLoc = probe.getRelative(facing);
+
+                    Bukkit.getLogger().info("[ATT] Type: " + bd.getMaterial() + " Loc: " + probe + " Facing: " + facing + " ATFace: " + facing);
+                    Bukkit.getLogger().info("[ATT] Relative: " + movecraftWorld.getMaterial(relativeLoc) + " Loc: " + relativeLoc);
+
+                    if (!legal.contains(relativeLoc)) {
+                        Bukkit.getLogger().info("No legal");
+                        blockFacingCraft = false; // Invalidate block if it's not facing the craft
+                    } else {
+                        Bukkit.getLogger().info("Yes legal");
+                    }
                 }
 
                 if (!blockFacingCraft) {
                     Bukkit.getLogger().info("Skipped");
                     continue;
+                }
+
+                if(!visited.add(probe))
+                    continue;
+
+                visitedMaterials.computeIfAbsent(movecraftWorld.getMaterial(probe), Functions.forSupplier(ConcurrentLinkedDeque::new)).add(probe);
+                if(!ALLOWED_BLOCK_VALIDATOR.validate(probe, type, movecraftWorld, player).isSucess())
+                    continue;
+
+                DetectionPredicate<MovecraftLocation> chain = FORBIDDEN_BLOCK_VALIDATOR;
+                for(var validator : VALIDATORS) {
+                    chain = chain.and(validator);
+                }
+                var result = chain.validate(probe, type, movecraftWorld, player);
+
+                if (!result.isSucess()) {
+                    illegal.add(probe);
+                    audience.sendMessage(Component.text(result.getMessage()));
+                    return;
                 }
 
                 legal.add(probe);
