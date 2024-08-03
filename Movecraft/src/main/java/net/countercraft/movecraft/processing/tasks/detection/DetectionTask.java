@@ -40,7 +40,10 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Directional;
+import org.bukkit.block.data.FaceAttachable;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -308,7 +311,7 @@ public class DetectionTask implements Supplier<Effect> {
         ConcurrentLinkedQueue<MovecraftLocation> nextFrontier = new ConcurrentLinkedQueue<>();
         currentFrontier.add(startLocation);
         currentFrontier.addAll(Arrays.stream(SHIFTS).map(startLocation::add).collect(Collectors.toList()));
-        visited.addAll(currentFrontier);
+        //visited.addAll(currentFrontier);
         int threads = Runtime.getRuntime().availableProcessors();
         while(!currentFrontier.isEmpty() && size.intValue() < type.getIntProperty(CraftType.MAX_SIZE) + threads) {
             List<ForkJoinTask<?>> tasks = new ArrayList<>();
@@ -343,9 +346,11 @@ public class DetectionTask implements Supplier<Effect> {
         @Override
         public void run() {
             MovecraftLocation probe;
-            LinkedList<MovecraftLocation> directionalList = new LinkedList<>();
 
             while((probe = currentFrontier.poll()) != null) {
+                if(!visited.add(probe))
+                    continue;
+
                 visitedMaterials.computeIfAbsent(movecraftWorld.getMaterial(probe), Functions.forSupplier(ConcurrentLinkedDeque::new)).add(probe);
                 if(!ALLOWED_BLOCK_VALIDATOR.validate(probe, type, movecraftWorld, player).isSucess())
                     continue;
@@ -362,19 +367,27 @@ public class DetectionTask implements Supplier<Effect> {
                     return;
                 }
 
-                Block b = probe.toBukkit(world).getBlock();
+                BlockData bd = movecraftWorld.getData(probe);
                 boolean blockFacingCraft = true;
 
-                if (b instanceof Directional directional) {
-                    Block relativeBlock = b.getRelative(directional.getFacing());
-                    MovecraftLocation relativeLoc = new MovecraftLocation(relativeBlock.getX(), relativeBlock.getY(), relativeBlock.getZ());
+                if (bd instanceof FaceAttachable attachable) {
+                    FaceAttachable.AttachedFace attachedFace = attachable.getAttachedFace();
+                    BlockFace facing = toBlockFace(attachedFace, bd);
+                    MovecraftLocation relativeLoc = probe.getRelative(facing);
+
+                    Bukkit.getLogger().info("[ATT] Type: " + bd.getMaterial() + " Loc: " + probe + " Facing: " + facing + " ATFace: " + attachedFace);
+                    Bukkit.getLogger().info("[ATT] Relative: " + movecraftWorld.getMaterial(relativeLoc) + " Loc: " + relativeLoc);
 
                     if (!legal.contains(relativeLoc)) {
+                        Bukkit.getLogger().info("No legal");
                         blockFacingCraft = false; // Invalidate block if it's not facing the craft
+                    } else {
+                        Bukkit.getLogger().info("Yes legal");
                     }
                 }
 
                 if (!blockFacingCraft) {
+                    Bukkit.getLogger().info("Skipped");
                     continue;
                 }
 
@@ -386,10 +399,17 @@ public class DetectionTask implements Supplier<Effect> {
                 materials.computeIfAbsent(movecraftWorld.getMaterial(probe), Functions.forSupplier(ConcurrentLinkedDeque::new)).add(probe);
                 for (MovecraftLocation shift : SHIFTS) {
                     var shifted = probe.add(shift);
-                    if (visited.add(shifted))
-                        nextFrontier.add(shifted);
+                    nextFrontier.add(shifted);
                 }
             }
+        }
+
+        private BlockFace toBlockFace(FaceAttachable.AttachedFace attachedFace, BlockData bd) {
+            return switch (attachedFace) {
+                case FLOOR -> BlockFace.DOWN;
+                case WALL -> ((Directional) bd).getFacing().getOppositeFace();
+                case CEILING -> BlockFace.UP;
+            };
         }
     }
 }
