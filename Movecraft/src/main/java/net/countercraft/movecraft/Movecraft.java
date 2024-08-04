@@ -209,7 +209,9 @@ public class Movecraft extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new CraftSign(), this);
         getServer().getPluginManager().registerEvents(new CruiseSign(), this);
         getServer().getPluginManager().registerEvents(new DescendSign(), this);
-        getServer().getPluginManager().registerEvents(new HelmSign(), this);
+        //getServer().getPluginManager().registerEvents(new HelmSign(), this);
+        AbstractMovecraftSign.register("[Helm]", new HelmSign(), true);
+        AbstractMovecraftSign.register(HelmSign.PRETTY_HEADER, new HelmSign(), true);
         //getServer().getPluginManager().registerEvents(new MoveSign(), this);
         AbstractMovecraftSign.register("Move", new MoveSign(), true);
         //getServer().getPluginManager().registerEvents(new NameSign(), this);
