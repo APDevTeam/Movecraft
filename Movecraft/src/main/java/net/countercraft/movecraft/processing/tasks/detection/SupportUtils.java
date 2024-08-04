@@ -22,15 +22,12 @@ public class SupportUtils {
             return Optional.of(face);
         }
 
-        //This should become Hangable instead when we drop support for 1.18
+        //TODO: Use pattern matched switch statements once we update do Java 21
+        //TODO: This should become Hangable instead when we drop support for 1.18
         if (data instanceof Lantern lantern)
             return Optional.of(lantern.isHanging() ? BlockFace.UP : BlockFace.DOWN);
 
-        if (data instanceof FaceAttachable faceAttachable) {
-            //this cast should never fail as the only blocks that implement FaceAttachable
-            //are also directional: Switch(Lever) and Grindstone
-            Directional directional = (Directional) data;
-
+        if (data instanceof FaceAttachable faceAttachable && data instanceof Directional directional) {
             return switch (faceAttachable.getAttachedFace()) {
                 case FLOOR -> Optional.of(BlockFace.DOWN);
                 case WALL -> Optional.of(directional.getFacing().getOppositeFace());
