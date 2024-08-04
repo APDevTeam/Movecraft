@@ -56,13 +56,21 @@ public class MoveSign extends AbstractCraftSign {
     }
 
     @Override
-    protected boolean internalProcessSign(Action clickType, Sign sign, Player player, Craft craft) {
-        if (!craft.getType().getBoolProperty(CraftType.CAN_STATIC_MOVE)) {
+    protected boolean canPlayerUseSignOn(Player player, Craft craft) {
+        if (!super.canPlayerUseSignOn(player, craft)) {
             return false;
         }
         if (!player.hasPermission("movecraft." + craft.getType().getStringProperty(CraftType.NAME) + ".move")) {
             player.sendMessage(
                     I18nSupport.getInternationalisedString("Insufficient Permissions"));
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    protected boolean internalProcessSign(Action clickType, Sign sign, Player player, Craft craft) {
+        if (!craft.getType().getBoolProperty(CraftType.CAN_STATIC_MOVE)) {
             return false;
         }
 
