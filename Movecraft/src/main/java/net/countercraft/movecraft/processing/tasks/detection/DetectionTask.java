@@ -50,6 +50,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Deque;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -349,12 +350,13 @@ public class DetectionTask implements Supplier<Effect> {
         @Override
         public void run() {
             MovecraftLocation probe;
+            EnumSet<Material> directionalDependent = type.getMaterialSetProperty(CraftType.DIRECTIONAL_DEPENDENT_MATERIALS);
 
             while((probe = currentFrontier.poll()) != null) {
                 BlockData blockData = movecraftWorld.getData(probe);
                 Material material = blockData.getMaterial();
 
-                Optional<BlockFace> blockDataOptional = SupportUtils.getSupportFace(blockData);
+                Optional<BlockFace> blockDataOptional = SupportUtils.getSupportFace(blockData, directionalDependent);
                 if (blockDataOptional.isPresent()) {
                     BlockFace facing = blockDataOptional.get();
                     MovecraftLocation relativeLoc = probe.getRelative(facing);

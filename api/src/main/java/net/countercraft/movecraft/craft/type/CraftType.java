@@ -53,6 +53,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -189,6 +190,7 @@ final public class CraftType {
     public static final NamespacedKey CRUISE_ON_PILOT_LIFETIME = buildKey("cruise_on_pilot_lifetime");
 
     public static final NamespacedKey EXPLOSION_ARMING_TIME = buildKey("explosion_arming_time");
+    public static final NamespacedKey DIRECTIONAL_DEPENDENT_MATERIALS = buildKey("directional_dependent_materials");
     //endregion
 
     @Contract("_ -> new")
@@ -391,6 +393,13 @@ final public class CraftType {
         /* Optional properties */
         registerProperty(new RequiredBlockProperty("flyblocks", FLY_BLOCKS, type -> new HashSet<>()));
         registerProperty(new RequiredBlockProperty("detectionblocks", DETECTION_BLOCKS, type -> new HashSet<>()));
+        registerProperty(new MaterialSetProperty("directionDependentMaterials", DIRECTIONAL_DEPENDENT_MATERIALS, type -> {
+            var set = EnumSet.of(Material.LADDER, Material.TORCH, Material.LEVER, Material.GRINDSTONE, Material.LANTERN);
+            //add all Signs (maybe there is a better way to do it?)
+            Arrays.stream(Material.values()).filter(mat -> mat.name().endsWith("_SIGN")).forEach(set::add);
+            return set;
+        }));
+
         registerProperty(new ObjectPropertyImpl("forbiddenSignStrings", FORBIDDEN_SIGN_STRINGS,
                 (data, type, fileKey, namespacedKey) -> data.getStringListOrEmpty(fileKey).stream().map(
                         String::toLowerCase).collect(Collectors.toSet()),

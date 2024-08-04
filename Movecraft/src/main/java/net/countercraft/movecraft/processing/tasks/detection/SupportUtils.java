@@ -7,6 +7,7 @@ import org.bukkit.block.data.Directional;
 import org.bukkit.block.data.FaceAttachable;
 import org.bukkit.block.data.type.Lantern;
 
+import java.util.EnumSet;
 import java.util.Optional;
 
 /**
@@ -15,11 +16,11 @@ import java.util.Optional;
  */
 
 public class SupportUtils {
-    public static Optional<BlockFace> getSupportFace(BlockData data) {
+    public static Optional<BlockFace> getSupportFace(BlockData data, EnumSet<Material> directionalDependent) {
 
-        if (data.getMaterial() == Material.LADDER) {
-            BlockFace face = ((Directional) data).getFacing().getOppositeFace();
-            return Optional.of(face);
+        Material material = data.getMaterial();
+        if (!directionalDependent.contains(material)) {
+            return Optional.empty();
         }
 
         //TODO: Use pattern matched switch statements once we update do Java 21
@@ -27,12 +28,18 @@ public class SupportUtils {
         if (data instanceof Lantern lantern)
             return Optional.of(lantern.isHanging() ? BlockFace.UP : BlockFace.DOWN);
 
-        if (data instanceof FaceAttachable faceAttachable && data instanceof Directional directional) {
-            return switch (faceAttachable.getAttachedFace()) {
-                case FLOOR -> Optional.of(BlockFace.DOWN);
-                case WALL -> Optional.of(directional.getFacing().getOppositeFace());
-                case CEILING -> Optional.of(BlockFace.UP);
-            };
+        if (data instanceof Directional directional) {
+            BlockFace normalCase = directional.getFacing().getOppositeFace();
+
+            if (data instanceof FaceAttachable faceAttachable) {
+                return switch (faceAttachable.getAttachedFace()) {
+                    case FLOOR -> Optional.of(BlockFace.DOWN);
+                    case WALL -> Optional.of(normalCase);
+                    case CEILING -> Optional.of(BlockFace.UP);
+                };
+            }
+
+            return Optional.of(normalCase);
         }
 
         return Optional.empty();
