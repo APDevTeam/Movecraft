@@ -389,21 +389,20 @@ public class DetectionTask implements Supplier<Effect> {
 
                 var result = chain.validate(probe, type, movecraftWorld, player);
 
-                if (!result.isSucess()) {
+                if (result.isSucess()) {
+                    legal.add(probe);
+                    if (Tags.FLUID.contains(material))
+                        fluid.add(probe);
+
+                    size.increment();
+                    materials.computeIfAbsent(material, Functions.forSupplier(ConcurrentLinkedDeque::new)).add(probe);
+                    for (MovecraftLocation shift : SHIFTS) {
+                        var shifted = probe.add(shift);
+                        nextFrontier.add(shifted);
+                    }
+                } else {
                     illegal.add(probe);
                     audience.sendMessage(Component.text(result.getMessage()));
-                    return;
-                }
-
-                legal.add(probe);
-                if (Tags.FLUID.contains(material))
-                    fluid.add(probe);
-
-                size.increment();
-                materials.computeIfAbsent(material, Functions.forSupplier(ConcurrentLinkedDeque::new)).add(probe);
-                for (MovecraftLocation shift : SHIFTS) {
-                    var shifted = probe.add(shift);
-                    nextFrontier.add(shifted);
                 }
             }
         }
