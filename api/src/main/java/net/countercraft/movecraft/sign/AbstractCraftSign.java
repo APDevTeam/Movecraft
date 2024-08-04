@@ -50,7 +50,7 @@ public abstract class AbstractCraftSign extends AbstractMovecraftSign {
 
         if (craft.get() instanceof PlayerCraft pc) {
             if (!pc.isNotProcessing() && !this.ignoreCraftIsBusy) {
-                this.onParentCraftBusy(player, craft.get());
+                this.onCraftIsBusy(player, craft.get());
                 return false;
             }
         }
@@ -66,7 +66,7 @@ public abstract class AbstractCraftSign extends AbstractMovecraftSign {
         return false;
     }
 
-    protected abstract void onParentCraftBusy(Player player, Craft craft);
+    protected abstract void onCraftIsBusy(Player player, Craft craft);
 
     protected boolean canPlayerUseSignOn(Player player, Craft craft) {
         if (craft instanceof PilotedCraft pc) {

@@ -16,7 +16,7 @@ public class ReleaseSign extends AbstractCraftSign {
     }
 
     @Override
-    protected void onParentCraftBusy(Player player, Craft craft) {
+    protected void onCraftIsBusy(Player player, Craft craft) {
 
     }
 

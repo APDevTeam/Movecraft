@@ -17,7 +17,7 @@ public class MoveSign extends AbstractCraftSign {
     }
 
     @Override
-    protected void onParentCraftBusy(Player player, Craft craft) {
+    protected void onCraftIsBusy(Player player, Craft craft) {
         player.sendMessage(I18nSupport.getInternationalisedString("Detection - Parent Craft is busy"));
     }
 
