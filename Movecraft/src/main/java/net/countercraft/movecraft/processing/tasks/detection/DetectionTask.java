@@ -353,26 +353,26 @@ public class DetectionTask implements Supplier<Effect> {
             MovecraftLocation probe;
 
             while((probe = currentFrontier.poll()) != null) {
-                BlockData bd = movecraftWorld.getData(probe);
-                Material m = bd.getMaterial();
+                BlockData blockData = movecraftWorld.getData(probe);
+                Material material = blockData.getMaterial();
                 boolean blockFacingCraft = true;
 
-                if (m == Material.LADDER) {
-                    BlockFace facing = ((Directional) bd).getFacing().getOppositeFace();
+                if (material == Material.LADDER) {
+                    BlockFace facing = ((Directional) blockData).getFacing().getOppositeFace();
                     MovecraftLocation relativeLoc = probe.getRelative(facing);
 
                     if (!legal.contains(relativeLoc)) {
                         blockFacingCraft = false; // Invalidate block if it's not facing the craft
                     }
-                } else if (bd instanceof FaceAttachable attachable) {
+                } else if (blockData instanceof FaceAttachable attachable) {
                     FaceAttachable.AttachedFace attachedFace = attachable.getAttachedFace();
-                    BlockFace facing = toBlockFace(attachedFace, bd);
+                    BlockFace facing = toBlockFace(attachedFace, blockData);
                     MovecraftLocation relativeLoc = probe.getRelative(facing);
 
                     if (!legal.contains(relativeLoc)) {
                         blockFacingCraft = false; // Invalidate block if it's not facing the craft
                     }
-                } else if (bd instanceof Lantern lantern) {
+                } else if (blockData instanceof Lantern lantern) {
                     BlockFace facing = toBlockFace(lantern);
                     MovecraftLocation relativeLoc = probe.getRelative(facing);
 
@@ -389,7 +389,7 @@ public class DetectionTask implements Supplier<Effect> {
                 if(!visited.add(probe))
                     continue;
 
-                visitedMaterials.computeIfAbsent(m, Functions.forSupplier(ConcurrentLinkedDeque::new)).add(probe);
+                visitedMaterials.computeIfAbsent(material, Functions.forSupplier(ConcurrentLinkedDeque::new)).add(probe);
                 if(!ALLOWED_BLOCK_VALIDATOR.validate(probe, type, movecraftWorld, player).isSucess())
                     continue;
 
@@ -402,11 +402,11 @@ public class DetectionTask implements Supplier<Effect> {
                 }
 
                 legal.add(probe);
-                if (Tags.FLUID.contains(m))
+                if (Tags.FLUID.contains(material))
                     fluid.add(probe);
 
                 size.increment();
-                materials.computeIfAbsent(m, Functions.forSupplier(ConcurrentLinkedDeque::new)).add(probe);
+                materials.computeIfAbsent(material, Functions.forSupplier(ConcurrentLinkedDeque::new)).add(probe);
                 for (MovecraftLocation shift : SHIFTS) {
                     var shifted = probe.add(shift);
                     nextFrontier.add(shifted);
