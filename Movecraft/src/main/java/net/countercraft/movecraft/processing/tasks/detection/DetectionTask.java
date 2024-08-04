@@ -309,7 +309,6 @@ public class DetectionTask implements Supplier<Effect> {
         ConcurrentLinkedQueue<MovecraftLocation> nextFrontier = new ConcurrentLinkedQueue<>();
         currentFrontier.add(startLocation);
         currentFrontier.addAll(Arrays.stream(SHIFTS).map(startLocation::add).collect(Collectors.toList()));
-        //visited.addAll(currentFrontier);
         int threads = Runtime.getRuntime().availableProcessors();
         while(!currentFrontier.isEmpty() && size.intValue() < type.getIntProperty(CraftType.MAX_SIZE) + threads) {
             List<ForkJoinTask<?>> tasks = new ArrayList<>();
