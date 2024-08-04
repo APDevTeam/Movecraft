@@ -202,6 +202,8 @@ public class Movecraft extends JavaPlugin {
         getCommand("crafttype").setExecutor(new CraftTypeCommand());
         getCommand("craftinfo").setExecutor(new CraftInfoCommand());
 
+        // Naming scheme: If it has parameters, append a double colon except if it is a subcraft
+        // Parameters follow on the following lines
         getServer().getPluginManager().registerEvents(new BlockListener(), this);
         getServer().getPluginManager().registerEvents(new PlayerListener(), this);
         getServer().getPluginManager().registerEvents(new ChunkManager(), this);
