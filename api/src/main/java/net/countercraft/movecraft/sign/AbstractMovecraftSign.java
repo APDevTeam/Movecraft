@@ -26,6 +26,9 @@ public abstract class AbstractMovecraftSign {
         String identToUse = ident.toUpperCase();
         if (identToUse.indexOf(":") >= 0) {
             identToUse = identToUse.split(":")[0];
+            if (ident.contains(":")) {
+                identToUse = identToUse + ":";
+            }
         }
         return Optional.ofNullable(SIGNS.getOrDefault(identToUse, null));
     }
