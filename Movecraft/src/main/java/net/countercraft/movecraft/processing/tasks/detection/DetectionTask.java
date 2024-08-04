@@ -355,14 +355,13 @@ public class DetectionTask implements Supplier<Effect> {
             while((probe = currentFrontier.poll()) != null) {
                 BlockData blockData = movecraftWorld.getData(probe);
                 Material material = blockData.getMaterial();
-                boolean blockFacingCraft = true;
 
                 if (material == Material.LADDER) {
                     BlockFace facing = ((Directional) blockData).getFacing().getOppositeFace();
                     MovecraftLocation relativeLoc = probe.getRelative(facing);
 
                     if (!legal.contains(relativeLoc)) {
-                        blockFacingCraft = false; // Invalidate block if it's not facing the craft
+                        continue; // Invalidate block if it's not facing the craft
                     }
                 } else if (blockData instanceof FaceAttachable attachable) {
                     FaceAttachable.AttachedFace attachedFace = attachable.getAttachedFace();
@@ -370,20 +369,15 @@ public class DetectionTask implements Supplier<Effect> {
                     MovecraftLocation relativeLoc = probe.getRelative(facing);
 
                     if (!legal.contains(relativeLoc)) {
-                        blockFacingCraft = false; // Invalidate block if it's not facing the craft
+                        continue; // Invalidate block if it's not facing the craft
                     }
                 } else if (blockData instanceof Lantern lantern) {
                     BlockFace facing = toBlockFace(lantern);
                     MovecraftLocation relativeLoc = probe.getRelative(facing);
 
                     if (!legal.contains(relativeLoc)) {
-                        blockFacingCraft = false; // Invalidate block if it's not facing the craft
+                        continue; // Invalidate block if it's not facing the craft
                     }
-                }
-
-                if (!blockFacingCraft) {
-                    Bukkit.getLogger().info("Skipped");
-                    continue;
                 }
 
                 if(!visited.add(probe))
