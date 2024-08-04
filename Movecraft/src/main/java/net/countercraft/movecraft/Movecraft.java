@@ -203,6 +203,8 @@ public class Movecraft extends JavaPlugin {
         getCommand("crafttype").setExecutor(new CraftTypeCommand());
         getCommand("craftinfo").setExecutor(new CraftInfoCommand());
 
+        // Naming scheme: If it has parameters, append a double colon except if it is a subcraft
+        // Parameters follow on the following lines
         getServer().getPluginManager().registerEvents(new BlockListener(), this);
         getServer().getPluginManager().registerEvents(new PlayerListener(), this);
         getServer().getPluginManager().registerEvents(new ChunkManager(), this);
@@ -210,19 +212,27 @@ public class Movecraft extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new CraftSign(), this);
         getServer().getPluginManager().registerEvents(new CruiseSign(), this);
         getServer().getPluginManager().registerEvents(new DescendSign(), this);
-        getServer().getPluginManager().registerEvents(new HelmSign(), this);
-        getServer().getPluginManager().registerEvents(new MoveSign(), this);
-        getServer().getPluginManager().registerEvents(new NameSign(), this);
+        //getServer().getPluginManager().registerEvents(new HelmSign(), this);
+        AbstractMovecraftSign.register("[Helm]", new HelmSign(), true);
+        AbstractMovecraftSign.register(HelmSign.PRETTY_HEADER, new HelmSign(), true);
+        //getServer().getPluginManager().registerEvents(new MoveSign(), this);
+        AbstractMovecraftSign.register("Move:", new MoveSign(), true);
+        //getServer().getPluginManager().registerEvents(new NameSign(), this);
+        AbstractMovecraftSign.register("Name:", new NameSign(), true);
         getServer().getPluginManager().registerEvents(new PilotSign(), this);
-        getServer().getPluginManager().registerEvents(new RelativeMoveSign(), this);
-        getServer().getPluginManager().registerEvents(new ReleaseSign(), this);
+        //getServer().getPluginManager().registerEvents(new RelativeMoveSign(), this);
+        AbstractMovecraftSign.register("RMove:", new RelativeMoveSign(), true);
+        //getServer().getPluginManager().registerEvents(new ReleaseSign(), this);
+        AbstractMovecraftSign.register("Release", new ReleaseSign(), true);
         getServer().getPluginManager().registerEvents(new RemoteSign(), this);
         getServer().getPluginManager().registerEvents(new SpeedSign(), this);
         getServer().getPluginManager().registerEvents(new SubcraftRotateSign(), this);
         getServer().getPluginManager().registerEvents(new TeleportSign(), this);
-        getServer().getPluginManager().registerEvents(new ScuttleSign(), this);
+        //getServer().getPluginManager().registerEvents(new ScuttleSign(), this);
+        AbstractMovecraftSign.register("Scuttle", new ScuttleSign(), true);
         getServer().getPluginManager().registerEvents(new CraftPilotListener(), this);
         getServer().getPluginManager().registerEvents(new CraftReleaseListener(), this);
+        getServer().getPluginManager().registerEvents(new SignListener(), this);
 
         var contactsManager = new ContactsManager();
         contactsManager.runTaskTimerAsynchronously(this, 0, 20);
