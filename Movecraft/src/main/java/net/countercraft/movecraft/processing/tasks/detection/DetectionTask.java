@@ -43,6 +43,7 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Directional;
 import org.bukkit.block.data.FaceAttachable;
+import org.bukkit.block.data.type.Lantern;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -334,6 +335,14 @@ public class DetectionTask implements Supplier<Effect> {
     private class DetectAction implements Runnable {
         private final ConcurrentLinkedQueue<MovecraftLocation> currentFrontier;
         private final ConcurrentLinkedQueue<MovecraftLocation> nextFrontier;
+        private static DetectionPredicate<MovecraftLocation> chain;
+
+        static {
+            chain = FORBIDDEN_BLOCK_VALIDATOR;
+            for(var validator : VALIDATORS) {
+                chain = chain.and(validator);
+            }
+        }
 
         private DetectAction(ConcurrentLinkedQueue<MovecraftLocation> currentFrontier, ConcurrentLinkedQueue<MovecraftLocation> nextFrontier) {
             this.currentFrontier = currentFrontier;
@@ -346,34 +355,30 @@ public class DetectionTask implements Supplier<Effect> {
 
             while((probe = currentFrontier.poll()) != null) {
                 BlockData bd = movecraftWorld.getData(probe);
+                Material m = bd.getMaterial();
                 boolean blockFacingCraft = true;
 
-                if (bd instanceof FaceAttachable attachable) {
+                if (m == Material.LADDER) {
+                    BlockFace facing = ((Directional) bd).getFacing().getOppositeFace();
+                    MovecraftLocation relativeLoc = probe.getRelative(facing);
+
+                    if (!legal.contains(relativeLoc)) {
+                        blockFacingCraft = false; // Invalidate block if it's not facing the craft
+                    }
+                } else if (bd instanceof FaceAttachable attachable) {
                     FaceAttachable.AttachedFace attachedFace = attachable.getAttachedFace();
                     BlockFace facing = toBlockFace(attachedFace, bd);
                     MovecraftLocation relativeLoc = probe.getRelative(facing);
 
-                    Bukkit.getLogger().info("[ATT] Type: " + bd.getMaterial() + " Loc: " + probe + " Facing: " + facing + " ATFace: " + attachedFace);
-                    Bukkit.getLogger().info("[ATT] Relative: " + movecraftWorld.getMaterial(relativeLoc) + " Loc: " + relativeLoc);
-
                     if (!legal.contains(relativeLoc)) {
-                        Bukkit.getLogger().info("No legal");
                         blockFacingCraft = false; // Invalidate block if it's not facing the craft
-                    } else {
-                        Bukkit.getLogger().info("Yes legal");
                     }
-                } else if (bd instanceof Directional directional) {
-                    BlockFace facing = directional.getFacing().getOppositeFace();
+                } else if (bd instanceof Lantern lantern) {
+                    BlockFace facing = toBlockFace(lantern);
                     MovecraftLocation relativeLoc = probe.getRelative(facing);
 
-                    Bukkit.getLogger().info("[ATT] Type: " + bd.getMaterial() + " Loc: " + probe + " Facing: " + facing + " ATFace: " + facing);
-                    Bukkit.getLogger().info("[ATT] Relative: " + movecraftWorld.getMaterial(relativeLoc) + " Loc: " + relativeLoc);
-
                     if (!legal.contains(relativeLoc)) {
-                        Bukkit.getLogger().info("No legal");
                         blockFacingCraft = false; // Invalidate block if it's not facing the craft
-                    } else {
-                        Bukkit.getLogger().info("Yes legal");
                     }
                 }
 
@@ -385,14 +390,10 @@ public class DetectionTask implements Supplier<Effect> {
                 if(!visited.add(probe))
                     continue;
 
-                visitedMaterials.computeIfAbsent(movecraftWorld.getMaterial(probe), Functions.forSupplier(ConcurrentLinkedDeque::new)).add(probe);
+                visitedMaterials.computeIfAbsent(m, Functions.forSupplier(ConcurrentLinkedDeque::new)).add(probe);
                 if(!ALLOWED_BLOCK_VALIDATOR.validate(probe, type, movecraftWorld, player).isSucess())
                     continue;
 
-                DetectionPredicate<MovecraftLocation> chain = FORBIDDEN_BLOCK_VALIDATOR;
-                for(var validator : VALIDATORS) {
-                    chain = chain.and(validator);
-                }
                 var result = chain.validate(probe, type, movecraftWorld, player);
 
                 if (!result.isSucess()) {
@@ -402,11 +403,11 @@ public class DetectionTask implements Supplier<Effect> {
                 }
 
                 legal.add(probe);
-                if (Tags.FLUID.contains(movecraftWorld.getMaterial(probe)))
+                if (Tags.FLUID.contains(m))
                     fluid.add(probe);
 
                 size.increment();
-                materials.computeIfAbsent(movecraftWorld.getMaterial(probe), Functions.forSupplier(ConcurrentLinkedDeque::new)).add(probe);
+                materials.computeIfAbsent(m, Functions.forSupplier(ConcurrentLinkedDeque::new)).add(probe);
                 for (MovecraftLocation shift : SHIFTS) {
                     var shifted = probe.add(shift);
                     nextFrontier.add(shifted);
@@ -420,6 +421,10 @@ public class DetectionTask implements Supplier<Effect> {
                 case WALL -> ((Directional) bd).getFacing().getOppositeFace();
                 case CEILING -> BlockFace.UP;
             };
+        }
+
+        private BlockFace toBlockFace(Lantern hangable) {
+            return hangable.isHanging() ? BlockFace.UP : BlockFace.DOWN;
         }
     }
 }
