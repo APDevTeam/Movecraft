@@ -41,9 +41,6 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.block.data.Directional;
-import org.bukkit.block.data.FaceAttachable;
-import org.bukkit.block.data.type.Lantern;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -56,6 +53,7 @@ import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -356,28 +354,13 @@ public class DetectionTask implements Supplier<Effect> {
                 BlockData blockData = movecraftWorld.getData(probe);
                 Material material = blockData.getMaterial();
 
-                if (material == Material.LADDER) {
-                    BlockFace facing = ((Directional) blockData).getFacing().getOppositeFace();
+                Optional<BlockFace> blockDataOptional = SupportUtils.getSupportFace(blockData);
+                if (blockDataOptional.isPresent()) {
+                    BlockFace facing = blockDataOptional.get();
                     MovecraftLocation relativeLoc = probe.getRelative(facing);
 
-                    if (!legal.contains(relativeLoc)) {
-                        continue; // Invalidate block if it's not facing the craft
-                    }
-                } else if (blockData instanceof FaceAttachable attachable) {
-                    FaceAttachable.AttachedFace attachedFace = attachable.getAttachedFace();
-                    BlockFace facing = toBlockFace(attachedFace, blockData);
-                    MovecraftLocation relativeLoc = probe.getRelative(facing);
-
-                    if (!legal.contains(relativeLoc)) {
-                        continue; // Invalidate block if it's not facing the craft
-                    }
-                } else if (blockData instanceof Lantern lantern) {
-                    BlockFace facing = toBlockFace(lantern);
-                    MovecraftLocation relativeLoc = probe.getRelative(facing);
-
-                    if (!legal.contains(relativeLoc)) {
-                        continue; // Invalidate block if it's not facing the craft
-                    }
+                    if (!legal.contains(relativeLoc))
+                        continue;
                 }
 
                 if(!visited.add(probe))
@@ -405,18 +388,6 @@ public class DetectionTask implements Supplier<Effect> {
                     audience.sendMessage(Component.text(result.getMessage()));
                 }
             }
-        }
-
-        private BlockFace toBlockFace(FaceAttachable.AttachedFace attachedFace, BlockData bd) {
-            return switch (attachedFace) {
-                case FLOOR -> BlockFace.DOWN;
-                case WALL -> ((Directional) bd).getFacing().getOppositeFace();
-                case CEILING -> BlockFace.UP;
-            };
-        }
-
-        private BlockFace toBlockFace(Lantern hangable) {
-            return hangable.isHanging() ? BlockFace.UP : BlockFace.DOWN;
         }
     }
 }
