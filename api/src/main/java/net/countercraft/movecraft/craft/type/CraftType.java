@@ -396,7 +396,7 @@ final public class CraftType {
         registerProperty(new MaterialSetProperty("directionDependentMaterials", DIRECTIONAL_DEPENDENT_MATERIALS, type -> {
             var set = EnumSet.of(Material.LADDER, Material.TORCH, Material.LEVER, Material.GRINDSTONE, Material.LANTERN);
             //add all Signs (maybe there is a better way to do it?)
-            Arrays.stream(Material.values()).filter(mat -> mat.name().endsWith("_SIGN")).forEach(set::add);
+            Arrays.stream(Material.values()).filter(mat -> mat.name().endsWith("WALL_SIGN")).forEach(set::add);
             return set;
         }));
 
