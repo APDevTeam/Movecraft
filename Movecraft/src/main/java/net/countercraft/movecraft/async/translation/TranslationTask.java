@@ -334,7 +334,6 @@ public class TranslationTask extends AsyncTask {
         captureYield(harvestedBlocks);
     }
 
-    //this part looks similar to rotationTask?
     private void preventsTorpedoRocketsPilots() {
         if (craft instanceof SinkingCraft
                 && craft.getType().getBoolProperty(CraftType.ONLY_MOVE_PLAYERS)
@@ -357,19 +356,7 @@ public class TranslationTask extends AsyncTask {
                 oldHitBox.getZLength() / 2.0 + 1
         )) {
 
-            if (entity instanceof HumanEntity) {
-                InventoryView inventoryView = ((HumanEntity) entity).getOpenInventory();
-                if (inventoryView.getType() != InventoryType.CRAFTING) {
-                    Location l = Movecraft.getInstance().getWorldHandler().getAccessLocation(inventoryView);
-                    if (l != null) {
-                        MovecraftLocation location = new MovecraftLocation(l.getBlockX(), l.getBlockY(), l.getBlockZ());
-                        if (oldHitBox.contains(location)) {
-                            location = location.translate(dx, dy, dz);
-                            updates.add(new AccessLocationUpdateCommand(inventoryView, location.toBukkit(world)));
-                        }
-                    }
-                }
-            }
+            processHumanEntity(entity);
 
             if ((entity.getType() == EntityType.PLAYER && !(craft instanceof SinkingCraft))) {
                 CraftTeleportEntityEvent e = new CraftTeleportEntityEvent(craft, entity);
@@ -395,6 +382,30 @@ public class TranslationTask extends AsyncTask {
 
             EntityUpdateCommand eUp = new EntityUpdateCommand(entity, dx, dy, dz, 0, 0, world);
             updates.add(eUp);
+        }
+    }
+
+    //this part looks similar to rotationTask
+    //maybe can be thrown in a util class?
+    private void processHumanEntity(Entity entity) {
+        if (!(entity instanceof HumanEntity)) {
+            return;
+        }
+
+        InventoryView inventoryView = ((HumanEntity) entity).getOpenInventory();
+        if (inventoryView.getType() == InventoryType.CRAFTING) {
+            return;
+        }
+
+        Location l = Movecraft.getInstance().getWorldHandler().getAccessLocation(inventoryView);
+        if (l == null) {
+            return;
+        }
+
+        MovecraftLocation location = new MovecraftLocation(l.getBlockX(), l.getBlockY(), l.getBlockZ());
+        if (oldHitBox.contains(location)) {
+            location = location.translate(dx, dy, dz);
+            updates.add(new AccessLocationUpdateCommand(inventoryView, location.toBukkit(world)));
         }
     }
 
