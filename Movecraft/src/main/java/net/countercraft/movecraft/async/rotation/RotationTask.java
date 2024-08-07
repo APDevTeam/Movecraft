@@ -199,10 +199,9 @@ public class RotationTask extends AsyncTask {
         Craft craft1 = getCraft();
         if (craft1.getCruising()) {
             CruiseDirection direction = craft1.getCruiseDirection();
-            if (rotation == MovecraftRotation.ANTICLOCKWISE) {
-                craft1.setCruiseDirection(direction.getAnticlockwiseRotation());
-            } else if (rotation == MovecraftRotation.CLOCKWISE) {
-                craft1.setCruiseDirection(direction.getClockwiseRotation());
+            switch (rotation) {
+                case ANTICLOCKWISE -> craft1.setCruiseDirection(direction.getAnticlockwiseRotation());
+                case CLOCKWISE -> craft1.setCruiseDirection(direction.getClockwiseRotation());
             }
         }
 
@@ -253,7 +252,6 @@ public class RotationTask extends AsyncTask {
             }
             break;
         }
-
 
     }
 
@@ -359,37 +357,32 @@ public class RotationTask extends AsyncTask {
     private boolean checkChests(Material mBlock, MovecraftLocation newLoc) {
         Material testMaterial;
         MovecraftLocation aroundNewLoc;
+        final World world = craft.getWorld();
 
         aroundNewLoc = newLoc.translate(1, 0, 0);
-        testMaterial = craft.getWorld().getBlockAt(aroundNewLoc.getX(), aroundNewLoc.getY(), aroundNewLoc.getZ()).getType();
-        if (testMaterial.equals(mBlock)) {
-            if (!oldHitBox.contains(aroundNewLoc)) {
-                return false;
-            }
-        }
+        testMaterial = world.getBlockAt(aroundNewLoc.getX(), aroundNewLoc.getY(), aroundNewLoc.getZ()).getType();
+        if (checkOldHitBox(testMaterial, mBlock, aroundNewLoc))
+            return false;
 
         aroundNewLoc = newLoc.translate(-1, 0, 0);
-        testMaterial = craft.getWorld().getBlockAt(aroundNewLoc.getX(), aroundNewLoc.getY(), aroundNewLoc.getZ()).getType();
-        if (testMaterial.equals(mBlock)) {
-            if (!oldHitBox.contains(aroundNewLoc)) {
-                return false;
-            }
-        }
+        testMaterial = world.getBlockAt(aroundNewLoc.getX(), aroundNewLoc.getY(), aroundNewLoc.getZ()).getType();
+        if (checkOldHitBox(testMaterial, mBlock, aroundNewLoc))
+            return false;
 
         aroundNewLoc = newLoc.translate(0, 0, 1);
-        testMaterial = craft.getWorld().getBlockAt(aroundNewLoc.getX(), aroundNewLoc.getY(), aroundNewLoc.getZ()).getType();
-        if (testMaterial.equals(mBlock)) {
-            if (!oldHitBox.contains(aroundNewLoc)) {
-                return false;
-            }
-        }
+        testMaterial = world.getBlockAt(aroundNewLoc.getX(), aroundNewLoc.getY(), aroundNewLoc.getZ()).getType();
+
+        if (checkOldHitBox(testMaterial, mBlock, aroundNewLoc))
+            return false;
 
         aroundNewLoc = newLoc.translate(0, 0, -1);
-        testMaterial = craft.getWorld().getBlockAt(aroundNewLoc.getX(), aroundNewLoc.getY(), aroundNewLoc.getZ()).getType();
-        return !testMaterial.equals(mBlock) || oldHitBox.contains(aroundNewLoc);
+        testMaterial = world.getBlockAt(aroundNewLoc.getX(), aroundNewLoc.getY(), aroundNewLoc.getZ()).getType();
+        return !checkOldHitBox(testMaterial, mBlock, aroundNewLoc);
     }
 
-
+    private boolean checkOldHitBox(Material testMaterial, Material mBlock, MovecraftLocation aroundNewLoc) {
+        return testMaterial.equals(mBlock) && !oldHitBox.contains(aroundNewLoc);
+    }
 
     public MutableHitBox getNewHitBox() {
         return newHitBox;
