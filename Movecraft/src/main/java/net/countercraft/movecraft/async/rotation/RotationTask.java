@@ -275,19 +275,7 @@ public class RotationTask extends AsyncTask {
                 oldHitBox.getYLength() / 2.0 + 2,
                 oldHitBox.getZLength() / 2.0 + 1)) {
 
-            if (entity instanceof HumanEntity) {
-                InventoryView inventoryView = ((HumanEntity) entity).getOpenInventory();
-                if (inventoryView.getType() != InventoryType.CRAFTING) {
-                    Location l = Movecraft.getInstance().getWorldHandler().getAccessLocation(inventoryView);
-                    if (l != null) {
-                        MovecraftLocation location = new MovecraftLocation(l.getBlockX(), l.getBlockY(), l.getBlockZ());
-                        if (oldHitBox.contains(location)) {
-                            location = MathUtils.rotateVec(rotation, location.subtract(originPoint)).add(originPoint);
-                            updates.add(new AccessLocationUpdateCommand(inventoryView, location.toBukkit(w)));
-                        }
-                    }
-                }
-            }
+            rotateHumanEntity(entity);
 
             if (craft.getType().getBoolProperty(CraftType.ONLY_MOVE_PLAYERS)
                     && ((List.of(EntityType.PLAYER, EntityType.PRIMED_TNT).contains(entity.getType()))
@@ -318,7 +306,30 @@ public class RotationTask extends AsyncTask {
             );
             updates.add(eUp);
         }
+    }
 
+    private void rotateHumanEntity(Entity entity) {
+        if (!(entity instanceof HumanEntity)) {
+            return;
+        }
+
+        InventoryView inventoryView = ((HumanEntity) entity).getOpenInventory();
+        if (inventoryView.getType() == InventoryType.CRAFTING) {
+            return;
+        }
+
+        Location l = Movecraft.getInstance().getWorldHandler().getAccessLocation(inventoryView);
+        if (l == null) {
+            return;
+        }
+
+        MovecraftLocation location = new MovecraftLocation(l.getBlockX(), l.getBlockY(), l.getBlockZ());
+        if (!oldHitBox.contains(location)) {
+            return;
+        }
+
+        location = MathUtils.rotateVec(rotation, location.subtract(originPoint)).add(originPoint);
+        updates.add(new AccessLocationUpdateCommand(inventoryView, location.toBukkit(w)));
     }
 
     public MovecraftLocation getOriginPoint() {
