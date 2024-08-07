@@ -250,59 +250,62 @@ public class RotationTask extends AsyncTask {
             }
         }
 
-        if (getCraft().getCruising()) {
-            CruiseDirection direction = getCraft().getCruiseDirection();
+        Craft craft1 = getCraft();
+        if (craft1.getCruising()) {
+            CruiseDirection direction = craft1.getCruiseDirection();
             if (rotation == MovecraftRotation.ANTICLOCKWISE) {
-                getCraft().setCruiseDirection(direction.getAnticlockwiseRotation());
+                craft1.setCruiseDirection(direction.getAnticlockwiseRotation());
             } else if (rotation == MovecraftRotation.CLOCKWISE) {
-                getCraft().setCruiseDirection(direction.getClockwiseRotation());
+                craft1.setCruiseDirection(direction.getClockwiseRotation());
             }
         }
 
         // if you rotated a subcraft, update the parent with the new blocks
-        if (this.isSubCraft) {
-            // also find the furthest extent from center and notify the player of the new direction
-            int farthestX = 0;
-            int farthestZ = 0;
-            for (MovecraftLocation loc : newHitBox) {
-                if (Math.abs(loc.getX() - originPoint.getX()) > Math.abs(farthestX))
-                    farthestX = loc.getX() - originPoint.getX();
-                if (Math.abs(loc.getZ() - originPoint.getZ()) > Math.abs(farthestZ))
-                    farthestZ = loc.getZ() - originPoint.getZ();
-            }
-            Component faceMessage = I18nSupport.getInternationalisedComponent("Rotation - Farthest Extent Facing")
-                    .append(Component.text(" "));
-            if (Math.abs(farthestX) > Math.abs(farthestZ)) {
-                if (farthestX > 0) {
-                    faceMessage = faceMessage.append(I18nSupport.getInternationalisedComponent("Contact/Subcraft Rotate - East"));
-                } else {
-                    faceMessage = faceMessage.append(I18nSupport.getInternationalisedComponent("Contact/Subcraft Rotate - West"));
-                }
+        if (!this.isSubCraft) {
+            return;
+        }
+        // also find the furthest extent from center and notify the player of the new direction
+        int farthestX = 0;
+        int farthestZ = 0;
+        for (MovecraftLocation loc : newHitBox) {
+            if (Math.abs(loc.getX() - originPoint.getX()) > Math.abs(farthestX))
+                farthestX = loc.getX() - originPoint.getX();
+            if (Math.abs(loc.getZ() - originPoint.getZ()) > Math.abs(farthestZ))
+                farthestZ = loc.getZ() - originPoint.getZ();
+        }
+        Component faceMessage = I18nSupport.getInternationalisedComponent("Rotation - Farthest Extent Facing")
+                .append(Component.text(" "));
+        if (Math.abs(farthestX) > Math.abs(farthestZ)) {
+            if (farthestX > 0) {
+                faceMessage = faceMessage.append(I18nSupport.getInternationalisedComponent("Contact/Subcraft Rotate - East"));
             } else {
-                if (farthestZ > 0) {
-                    faceMessage = faceMessage.append(I18nSupport.getInternationalisedComponent("Contact/Subcraft Rotate - South"));
-                } else {
-                    faceMessage = faceMessage.append(I18nSupport.getInternationalisedComponent("Contact/Subcraft Rotate - North"));
-                }
+                faceMessage = faceMessage.append(I18nSupport.getInternationalisedComponent("Contact/Subcraft Rotate - West"));
             }
-            getCraft().getAudience().sendMessage(faceMessage);
+        } else {
+            if (farthestZ > 0) {
+                faceMessage = faceMessage.append(I18nSupport.getInternationalisedComponent("Contact/Subcraft Rotate - South"));
+            } else {
+                faceMessage = faceMessage.append(I18nSupport.getInternationalisedComponent("Contact/Subcraft Rotate - North"));
+            }
+        }
+        craft1.getAudience().sendMessage(faceMessage);
 
-            craftsInWorld = CraftManager.getInstance().getCraftsInWorld(getCraft().getWorld());
-            for (Craft craft : craftsInWorld) {
-                if (!newHitBox.intersection(craft.getHitBox()).isEmpty() && craft != getCraft()) {
-                    //newHitBox.addAll(CollectionUtils.filter(craft.getHitBox(),newHitBox));
-                    //craft.setHitBox(newHitBox);
-                    if (Settings.Debug) {
-                        Bukkit.broadcastMessage(String.format("Size of %s hitbox: %d, Size of %s hitbox: %d", this.craft.getType().getStringProperty(CraftType.NAME), newHitBox.size(), craft.getType().getStringProperty(CraftType.NAME), craft.getHitBox().size()));
-                    }
-                    craft.setHitBox(craft.getHitBox().difference(oldHitBox).union(newHitBox));
-                    if (Settings.Debug){
-                        Bukkit.broadcastMessage(String.format("Hitbox of craft %s intersects hitbox of craft %s", this.craft.getType().getStringProperty(CraftType.NAME), craft.getType().getStringProperty(CraftType.NAME)));
-                        Bukkit.broadcastMessage(String.format("Size of %s hitbox: %d, Size of %s hitbox: %d", this.craft.getType().getStringProperty(CraftType.NAME), newHitBox.size(), craft.getType().getStringProperty(CraftType.NAME), craft.getHitBox().size()));
-                    }
-                    break;
-                }
+        craftsInWorld = CraftManager.getInstance().getCraftsInWorld(craft1.getWorld());
+        for (Craft craft : craftsInWorld) {
+            if (newHitBox.intersection(craft.getHitBox()).isEmpty() || craft == craft1) {
+                continue;
             }
+            //newHitBox.addAll(CollectionUtils.filter(craft.getHitBox(),newHitBox));
+            //craft.setHitBox(newHitBox);
+            if (Settings.Debug) {
+                Bukkit.broadcastMessage(String.format("Size of %s hitbox: %d, Size of %s hitbox: %d", this.craft.getType().getStringProperty(CraftType.NAME), newHitBox.size(), craft.getType().getStringProperty(CraftType.NAME), craft.getHitBox().size()));
+            }
+            craft.setHitBox(craft.getHitBox().difference(oldHitBox).union(newHitBox));
+            if (Settings.Debug){
+                Bukkit.broadcastMessage(String.format("Hitbox of craft %s intersects hitbox of craft %s", this.craft.getType().getStringProperty(CraftType.NAME), craft.getType().getStringProperty(CraftType.NAME)));
+                Bukkit.broadcastMessage(String.format("Size of %s hitbox: %d, Size of %s hitbox: %d", this.craft.getType().getStringProperty(CraftType.NAME), newHitBox.size(), craft.getType().getStringProperty(CraftType.NAME), craft.getHitBox().size()));
+            }
+            break;
         }
 
 
