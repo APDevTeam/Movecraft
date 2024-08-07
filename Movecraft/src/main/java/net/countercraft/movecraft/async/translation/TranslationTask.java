@@ -288,7 +288,8 @@ public class TranslationTask extends AsyncTask {
                 && System.currentTimeMillis() - craft.getOrigPilotTime() > craft.getType().getIntProperty(CraftType.EXPLOSION_ARMING_TIME)) {
             for (MovecraftLocation location : collisionBox) {
                 float explosionForce = craft.getType().getFloatProperty(CraftType.COLLISION_EXPLOSION);
-                if (craft.getType().getBoolProperty(CraftType.FOCUSED_EXPLOSION)) {
+                final boolean focused_explosion = craft.getType().getBoolProperty(CraftType.FOCUSED_EXPLOSION);
+                if (focused_explosion) {
                     explosionForce *= Math.min(oldHitBox.size(), craft.getType().getIntProperty(CraftType.MAX_SIZE));
                 }
                 //TODO: Account for underwater explosions
@@ -306,7 +307,8 @@ public class TranslationTask extends AsyncTask {
                         collisionExplosion = true;
                     }
                 }
-                if (craft.getType().getBoolProperty(CraftType.FOCUSED_EXPLOSION)) {
+
+                if (focused_explosion) {
                     // don't handle any further collisions if it is set to focusedexplosion
                     break;
                 }
