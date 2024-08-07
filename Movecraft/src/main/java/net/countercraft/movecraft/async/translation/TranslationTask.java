@@ -137,6 +137,7 @@ public class TranslationTask extends AsyncTask {
         //Process gravity (must be same world too)
         if (processGravity())
             return;
+
         //Fail the movement if the craft is too high and if the craft is not explosive
         int maxHeightLimit = (int) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_MAX_HEIGHT_LIMIT, world);
         int minHeightLimit = (int) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_MIN_HEIGHT_LIMIT, world);
@@ -329,60 +330,72 @@ public class TranslationTask extends AsyncTask {
         updates.add(new CraftTranslateCommand(craft, new MovecraftLocation(dx, dy, dz), world));
 
         //prevents torpedo and rocket pilots
-        if (!(craft instanceof SinkingCraft && craft.getType().getBoolProperty(CraftType.ONLY_MOVE_PLAYERS))
-                && craft.getType().getBoolProperty(CraftType.MOVE_ENTITIES)) {
-            Location midpoint = new Location(
-                    craft.getWorld(),
-                    (oldHitBox.getMaxX() + oldHitBox.getMinX()) / 2.0,
-                    (oldHitBox.getMaxY() + oldHitBox.getMinY()) / 2.0,
-                    (oldHitBox.getMaxZ() + oldHitBox.getMinZ()) / 2.0);
-            for (Entity entity : craft.getWorld().getNearbyEntities(midpoint,
-                    oldHitBox.getXLength() / 2.0 + 1,
-                    oldHitBox.getYLength() / 2.0 + 2,
-                    oldHitBox.getZLength() / 2.0 + 1
-            )) {
+        preventsTorpedoRocketsPilots();
+        captureYield(harvestedBlocks);
+    }
 
-                if (entity instanceof HumanEntity) {
-                    InventoryView inventoryView = ((HumanEntity) entity).getOpenInventory();
-                    if (inventoryView.getType() != InventoryType.CRAFTING) {
-                        Location l = Movecraft.getInstance().getWorldHandler().getAccessLocation(inventoryView);
-                        if (l != null) {
-                            MovecraftLocation location = new MovecraftLocation(l.getBlockX(), l.getBlockY(), l.getBlockZ());
-                            if (oldHitBox.contains(location)) {
-                                location = location.translate(dx, dy, dz);
-                                updates.add(new AccessLocationUpdateCommand(inventoryView, location.toBukkit(world)));
-                            }
-                        }
-                    }
-                }
-
-                if ((entity.getType() == EntityType.PLAYER && !(craft instanceof SinkingCraft))) {
-                    CraftTeleportEntityEvent e = new CraftTeleportEntityEvent(craft, entity);
-                    Bukkit.getServer().getPluginManager().callEvent(e);
-                    if (e.isCancelled())
-                        continue;
-
-                    EntityUpdateCommand eUp = new EntityUpdateCommand(entity, dx, dy, dz, 0, 0,
-                            world, sound, volume);
-                    updates.add(eUp);
-                } else if (!craft.getType().getBoolProperty(CraftType.ONLY_MOVE_PLAYERS)
-                        || entity.getType() == EntityType.PRIMED_TNT) {
-                    CraftTeleportEntityEvent e = new CraftTeleportEntityEvent(craft, entity);
-                    Bukkit.getServer().getPluginManager().callEvent(e);
-                    if (e.isCancelled())
-                        continue;
-
-                    EntityUpdateCommand eUp = new EntityUpdateCommand(entity, dx, dy, dz, 0, 0, world);
-                    updates.add(eUp);
-                }
-            }
-        } else {
+    //this part looks similar to rotationTask?
+    private void preventsTorpedoRocketsPilots() {
+        if (craft instanceof SinkingCraft
+                && craft.getType().getBoolProperty(CraftType.ONLY_MOVE_PLAYERS)
+                || !craft.getType().getBoolProperty(CraftType.MOVE_ENTITIES)) {
             // add releaseTask without playermove to manager
             if (!craft.getType().getBoolProperty(CraftType.CRUISE_ON_PILOT) && !(craft instanceof SinkingCraft))
                 // not necessary to release cruiseonpilot crafts, because they will already be released
                 CraftManager.getInstance().addReleaseTask(craft);
+            return;
         }
-        captureYield(harvestedBlocks);
+
+        Location midpoint = new Location(
+                craft.getWorld(),
+                (oldHitBox.getMaxX() + oldHitBox.getMinX()) / 2.0,
+                (oldHitBox.getMaxY() + oldHitBox.getMinY()) / 2.0,
+                (oldHitBox.getMaxZ() + oldHitBox.getMinZ()) / 2.0);
+        for (Entity entity : craft.getWorld().getNearbyEntities(midpoint,
+                oldHitBox.getXLength() / 2.0 + 1,
+                oldHitBox.getYLength() / 2.0 + 2,
+                oldHitBox.getZLength() / 2.0 + 1
+        )) {
+
+            if (entity instanceof HumanEntity) {
+                InventoryView inventoryView = ((HumanEntity) entity).getOpenInventory();
+                if (inventoryView.getType() != InventoryType.CRAFTING) {
+                    Location l = Movecraft.getInstance().getWorldHandler().getAccessLocation(inventoryView);
+                    if (l != null) {
+                        MovecraftLocation location = new MovecraftLocation(l.getBlockX(), l.getBlockY(), l.getBlockZ());
+                        if (oldHitBox.contains(location)) {
+                            location = location.translate(dx, dy, dz);
+                            updates.add(new AccessLocationUpdateCommand(inventoryView, location.toBukkit(world)));
+                        }
+                    }
+                }
+            }
+
+            if ((entity.getType() == EntityType.PLAYER && !(craft instanceof SinkingCraft))) {
+                CraftTeleportEntityEvent e = new CraftTeleportEntityEvent(craft, entity);
+                Bukkit.getServer().getPluginManager().callEvent(e);
+                if (e.isCancelled())
+                    continue;
+
+                EntityUpdateCommand eUp = new EntityUpdateCommand(entity, dx, dy, dz, 0, 0,
+                        world, sound, volume);
+                updates.add(eUp);
+                continue;
+            }
+
+            if (craft.getType().getBoolProperty(CraftType.ONLY_MOVE_PLAYERS)
+                    && entity.getType() != EntityType.PRIMED_TNT) {
+                continue;
+            }
+
+            CraftTeleportEntityEvent e = new CraftTeleportEntityEvent(craft, entity);
+            Bukkit.getServer().getPluginManager().callEvent(e);
+            if (e.isCancelled())
+                continue;
+
+            EntityUpdateCommand eUp = new EntityUpdateCommand(entity, dx, dy, dz, 0, 0, world);
+            updates.add(eUp);
+        }
     }
 
     /**
