@@ -133,24 +133,7 @@ public class TranslationTask extends AsyncTask {
 
         // Only modify dy when not switching worlds
         //Check if the craft is too high
-        if (world.equals(craft.getWorld())
-                && (int) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_MAX_HEIGHT_LIMIT, craft.getWorld())
-                < craft.getHitBox().getMinY())
-            dy = Math.min(dy, -1);
-        else if (world.equals(craft.getWorld())
-                && (int) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_MAX_HEIGHT_ABOVE_GROUND,
-                craft.getWorld()) > 0) {
-            final MovecraftLocation middle = oldHitBox.getMidPoint();
-            int testY = minY;
-            while (testY > 0) {
-                testY--;
-                if (!craft.getWorld().getBlockAt(middle.getX(), testY, middle.getZ()).getType().isAir())
-                    break;
-            }
-            if (maxY - testY
-                    > (int) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_MAX_HEIGHT_ABOVE_GROUND, world))
-                dy = Math.min(dy, -1);
-        }
+        processHighCraft(minY, maxY);
         //Process gravity
         if (world.equals(craft.getWorld()) && craft.getType().getBoolProperty(CraftType.USE_GRAVITY)
                 && !(craft instanceof SinkingCraft)) {
@@ -457,6 +440,34 @@ public class TranslationTask extends AsyncTask {
                 break;
             }
 
+        }
+    }
+
+    private void processHighCraft(int minY, int maxY) {
+        // Only modify dy when not switching worlds
+        //Check if the craft is too high
+        boolean sameWorld = world.equals(craft.getWorld());
+        CraftType craftType = craft.getType();
+        if (!sameWorld) {
+            return;
+        }
+
+        if ((int) craftType.getPerWorldProperty(CraftType.PER_WORLD_MAX_HEIGHT_LIMIT, craft.getWorld()) < craft.getHitBox().getMinY()) {
+            dy = Math.min(dy, -1);
+            return;
+        }
+        final int perWorldMaxHeigh = (int) craftType.getPerWorldProperty(CraftType.PER_WORLD_MAX_HEIGHT_ABOVE_GROUND, world);
+        // world == craft.world
+        if (perWorldMaxHeigh > 0) {
+            final MovecraftLocation middle = oldHitBox.getMidPoint();
+            int testY = minY;
+            while (testY > 0) {
+                testY--;
+                if (!craft.getWorld().getBlockAt(middle.getX(), testY, middle.getZ()).getType().isAir())
+                    break;
+            }
+            if (maxY - testY > perWorldMaxHeigh)
+                dy = Math.min(dy, -1);
         }
     }
 
