@@ -53,5 +53,33 @@ public enum CruiseDirection {
         else
             return NONE;
     }
+
+    public CruiseDirection getOpposite() {
+        return switch (this) {
+            case NORTH -> SOUTH;
+            case SOUTH -> NORTH;
+            case EAST -> WEST;
+            case WEST -> EAST;
+            case UP -> DOWN;
+            case DOWN -> UP;
+            case NONE -> NONE;
+        };
+    }
+
+    public CruiseDirection getClockwiseRotation() {
+        return switch (this) {
+            case NORTH -> EAST;
+            case SOUTH -> WEST;
+            case EAST -> SOUTH;
+            case WEST -> NORTH;
+            case UP -> UP;
+            case DOWN -> DOWN;
+            case NONE -> NONE;
+        };
+    }
+
+    public CruiseDirection getAnticlockwiseRotation() {
+        return this.getClockwiseRotation().getOpposite();
+    }
 }
 
