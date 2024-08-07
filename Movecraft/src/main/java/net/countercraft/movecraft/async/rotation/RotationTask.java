@@ -220,19 +220,8 @@ public class RotationTask extends AsyncTask {
         }
         Component faceMessage = I18nSupport.getInternationalisedComponent("Rotation - Farthest Extent Facing")
                 .append(Component.text(" "));
-        if (Math.abs(farthestX) > Math.abs(farthestZ)) {
-            if (farthestX > 0) {
-                faceMessage = faceMessage.append(I18nSupport.getInternationalisedComponent("Contact/Subcraft Rotate - East"));
-            } else {
-                faceMessage = faceMessage.append(I18nSupport.getInternationalisedComponent("Contact/Subcraft Rotate - West"));
-            }
-        } else {
-            if (farthestZ > 0) {
-                faceMessage = faceMessage.append(I18nSupport.getInternationalisedComponent("Contact/Subcraft Rotate - South"));
-            } else {
-                faceMessage = faceMessage.append(I18nSupport.getInternationalisedComponent("Contact/Subcraft Rotate - North"));
-            }
-        }
+
+        faceMessage = faceMessage.append(getRotationMessage(farthestX, farthestZ));
         craft1.getAudience().sendMessage(faceMessage);
 
         craftsInWorld = CraftManager.getInstance().getCraftsInWorld(craft1.getWorld());
@@ -253,6 +242,22 @@ public class RotationTask extends AsyncTask {
             break;
         }
 
+    }
+
+    private Component getRotationMessage(int farthestX, int farthestZ) {
+        if (Math.abs(farthestX) > Math.abs(farthestZ)) {
+            if (farthestX > 0) {
+                return I18nSupport.getInternationalisedComponent("Contact/Subcraft Rotate - East");
+            } else {
+                return I18nSupport.getInternationalisedComponent("Contact/Subcraft Rotate - West");
+            }
+        } else {
+            if (farthestZ > 0) {
+                return I18nSupport.getInternationalisedComponent("Contact/Subcraft Rotate - South");
+            } else {
+                return I18nSupport.getInternationalisedComponent("Contact/Subcraft Rotate - North");
+            }
+        }
     }
 
     private void rotateEntitiesOnCraft(Location tOP) {
