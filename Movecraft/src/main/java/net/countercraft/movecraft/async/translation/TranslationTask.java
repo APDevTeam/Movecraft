@@ -134,34 +134,9 @@ public class TranslationTask extends AsyncTask {
         // Only modify dy when not switching worlds
         //Check if the craft is too high
         processHighCraft(minY, maxY);
-        //Process gravity
-        if (world.equals(craft.getWorld()) && craft.getType().getBoolProperty(CraftType.USE_GRAVITY)
-                && !(craft instanceof SinkingCraft)) {
-            int incline = inclineCraft(oldHitBox);
-            if (incline > 0) {
-                boolean tooSteep = craft.getType().getIntProperty(CraftType.GRAVITY_INCLINE_DISTANCE) > -1
-                        && incline > craft.getType().getIntProperty(CraftType.GRAVITY_INCLINE_DISTANCE);
-                if (tooSteep && craft.getType().getFloatProperty(CraftType.COLLISION_EXPLOSION) <= 0F) {
-                    fail(I18nSupport.getInternationalisedString("Translation - Failed Incline too steep"));
-                    return;
-                }
-                dy = tooSteep ? 0 : incline;
-            } else if (!isOnGround(oldHitBox) && craft.getType().getBoolProperty(CraftType.CAN_HOVER)) {
-                MovecraftLocation midPoint = oldHitBox.getMidPoint();
-                int centreMinY = oldHitBox.getMinYAt(midPoint.getX(), midPoint.getZ());
-                int groundY = centreMinY;
-                World w = craft.getWorld();
-                while (groundY - 1 >= w.getMinHeight()
-                        && (w.getBlockAt(midPoint.getX(), groundY - 1, midPoint.getZ()).getType().isAir()
-                        || craft.getType().getMaterialSetProperty(CraftType.PASSTHROUGH_BLOCKS).contains(
-                        w.getBlockAt(midPoint.getX(), groundY - 1, midPoint.getZ()).getType()))) {
-                    groundY--;
-                }
-                if (centreMinY - groundY > craft.getType().getIntProperty(CraftType.HOVER_LIMIT))
-                    dy = -1;
-            } else if (!isOnGround(oldHitBox))
-                dy = dropDistance(oldHitBox);
-        }
+        //Process gravity (must be same world too)
+        if (processGravity())
+            return;
         //Fail the movement if the craft is too high and if the craft is not explosive
         int maxHeightLimit = (int) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_MAX_HEIGHT_LIMIT, world);
         int minHeightLimit = (int) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_MIN_HEIGHT_LIMIT, world);
@@ -408,6 +383,55 @@ public class TranslationTask extends AsyncTask {
                 CraftManager.getInstance().addReleaseTask(craft);
         }
         captureYield(harvestedBlocks);
+    }
+
+    /**
+     *
+     * @return True if failed, false otherwise
+     */
+    private boolean processGravity() {
+        //Process gravity (must be same world too)
+        if (!world.equals(craft.getWorld()) || !craft.getType().getBoolProperty(CraftType.USE_GRAVITY)
+                || craft instanceof SinkingCraft) {
+            return false;
+        }
+
+        int incline = inclineCraft(oldHitBox);
+        if (incline > 0) {
+            boolean tooSteep = craft.getType().getIntProperty(CraftType.GRAVITY_INCLINE_DISTANCE) > -1
+                    && incline > craft.getType().getIntProperty(CraftType.GRAVITY_INCLINE_DISTANCE);
+            if (tooSteep && craft.getType().getFloatProperty(CraftType.COLLISION_EXPLOSION) <= 0F) {
+                fail(I18nSupport.getInternationalisedString("Translation - Failed Incline too steep"));
+                return true;
+            }
+            dy = tooSteep ? 0 : incline;
+            return false;
+        }
+
+        if (isOnGround(oldHitBox)) {
+            return false;
+        }
+
+        if (craft.getType().getBoolProperty(CraftType.CAN_HOVER)) {
+            MovecraftLocation midPoint = oldHitBox.getMidPoint();
+            int centreMinY = oldHitBox.getMinYAt(midPoint.getX(), midPoint.getZ());
+            int groundY = centreMinY;
+            World w = craft.getWorld();
+
+            while (groundY - 1 >= w.getMinHeight()
+                    && (w.getBlockAt(midPoint.getX(), groundY - 1, midPoint.getZ()).getType().isAir()
+                    || craft.getType().getMaterialSetProperty(CraftType.PASSTHROUGH_BLOCKS).contains(
+                    w.getBlockAt(midPoint.getX(), groundY - 1, midPoint.getZ()).getType()))) {
+                groundY--;
+            }
+
+            if (centreMinY - groundY > craft.getType().getIntProperty(CraftType.HOVER_LIMIT))
+                dy = -1;
+            return false;
+        }
+
+        dy = dropDistance(oldHitBox);
+        return false;
     }
 
     private void processAllNetherPortals() throws ExecutionException, InterruptedException {
