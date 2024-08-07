@@ -48,12 +48,11 @@ import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.InventoryView;
 
 import java.util.HashSet;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import static net.countercraft.movecraft.util.MathUtils.withinWorldBorder;
@@ -195,60 +194,7 @@ public class RotationTask extends AsyncTask {
         tOP.setX(tOP.getBlockX() + 0.5);
         tOP.setZ(tOP.getBlockZ() + 0.5);
 
-        if (!(craft instanceof SinkingCraft && craft.getType().getBoolProperty(CraftType.ONLY_MOVE_PLAYERS))
-                && craft.getType().getBoolProperty(CraftType.MOVE_ENTITIES)) {
-            Location midpoint = new Location(
-                    craft.getWorld(),
-                    (oldHitBox.getMaxX() + oldHitBox.getMinX())/2.0,
-                    (oldHitBox.getMaxY() + oldHitBox.getMinY())/2.0,
-                    (oldHitBox.getMaxZ() + oldHitBox.getMinZ())/2.0);
-            for(Entity entity : craft.getWorld().getNearbyEntities(midpoint,
-                    oldHitBox.getXLength() / 2.0 + 1,
-                    oldHitBox.getYLength() / 2.0 + 2,
-                    oldHitBox.getZLength() / 2.0 + 1)) {
-
-                if (entity instanceof HumanEntity) {
-                    InventoryView inventoryView = ((HumanEntity) entity).getOpenInventory();
-                    if (inventoryView.getType() != InventoryType.CRAFTING) {
-                        Location l = Movecraft.getInstance().getWorldHandler().getAccessLocation(inventoryView);
-                        if (l != null) {
-                            MovecraftLocation location = new MovecraftLocation(l.getBlockX(), l.getBlockY(), l.getBlockZ());
-                            if (oldHitBox.contains(location)) {
-                                location = MathUtils.rotateVec(rotation, location.subtract(originPoint)).add(originPoint);
-                                updates.add(new AccessLocationUpdateCommand(inventoryView, location.toBukkit(w)));
-                            }
-                        }
-                    }
-                }
-
-                if (!craft.getType().getBoolProperty(CraftType.ONLY_MOVE_PLAYERS) || (
-                        (entity.getType() == EntityType.PLAYER || entity.getType() == EntityType.PRIMED_TNT)
-                                && !(craft instanceof SinkingCraft)
-                )) {
-                    // Player is onboard this craft
-
-                    Location adjustedPLoc = entity.getLocation().subtract(tOP);
-
-                    double[] rotatedCoords = MathUtils.rotateVecNoRound(rotation,
-                            adjustedPLoc.getX(), adjustedPLoc.getZ());
-                    float newYaw = rotation == MovecraftRotation.CLOCKWISE ? 90F : -90F;
-
-                    CraftTeleportEntityEvent e = new CraftTeleportEntityEvent(craft, entity);
-                    Bukkit.getServer().getPluginManager().callEvent(e);
-                    if (e.isCancelled())
-                        continue;
-
-                    EntityUpdateCommand eUp = new EntityUpdateCommand(entity,
-                            rotatedCoords[0] + tOP.getX() - entity.getLocation().getX(),
-                            0,
-                            rotatedCoords[1] + tOP.getZ() - entity.getLocation().getZ(),
-                            newYaw,
-                            0
-                    );
-                    updates.add(eUp);
-                }
-            }
-        }
+        rotateEntitiesOnCraft(tOP);
 
         Craft craft1 = getCraft();
         if (craft1.getCruising()) {
@@ -308,6 +254,70 @@ public class RotationTask extends AsyncTask {
             break;
         }
 
+
+    }
+
+    private void rotateEntitiesOnCraft(Location tOP) {
+        if (craft instanceof SinkingCraft
+                && craft.getType().getBoolProperty(CraftType.ONLY_MOVE_PLAYERS)
+                || !craft.getType().getBoolProperty(CraftType.MOVE_ENTITIES)) {
+            return;
+        }
+
+        Location midpoint = new Location(
+                craft.getWorld(),
+                (oldHitBox.getMaxX() + oldHitBox.getMinX())/2.0,
+                (oldHitBox.getMaxY() + oldHitBox.getMinY())/2.0,
+                (oldHitBox.getMaxZ() + oldHitBox.getMinZ())/2.0);
+
+        for(Entity entity : craft.getWorld().getNearbyEntities(midpoint,
+                oldHitBox.getXLength() / 2.0 + 1,
+                oldHitBox.getYLength() / 2.0 + 2,
+                oldHitBox.getZLength() / 2.0 + 1)) {
+
+            if (entity instanceof HumanEntity) {
+                InventoryView inventoryView = ((HumanEntity) entity).getOpenInventory();
+                if (inventoryView.getType() != InventoryType.CRAFTING) {
+                    Location l = Movecraft.getInstance().getWorldHandler().getAccessLocation(inventoryView);
+                    if (l != null) {
+                        MovecraftLocation location = new MovecraftLocation(l.getBlockX(), l.getBlockY(), l.getBlockZ());
+                        if (oldHitBox.contains(location)) {
+                            location = MathUtils.rotateVec(rotation, location.subtract(originPoint)).add(originPoint);
+                            updates.add(new AccessLocationUpdateCommand(inventoryView, location.toBukkit(w)));
+                        }
+                    }
+                }
+            }
+
+            if (craft.getType().getBoolProperty(CraftType.ONLY_MOVE_PLAYERS)
+                    && ((List.of(EntityType.PLAYER, EntityType.PRIMED_TNT).contains(entity.getType()))
+                    || craft instanceof SinkingCraft)) {
+                continue;
+            }
+
+
+            // Player is onboard this craft
+
+            Location adjustedPLoc = entity.getLocation().subtract(tOP);
+
+            double[] rotatedCoords = MathUtils.rotateVecNoRound(rotation,
+                    adjustedPLoc.getX(), adjustedPLoc.getZ());
+            float newYaw = rotation == MovecraftRotation.CLOCKWISE ? 90F : -90F;
+
+            CraftTeleportEntityEvent e = new CraftTeleportEntityEvent(craft, entity);
+            Bukkit.getServer().getPluginManager().callEvent(e);
+            if (e.isCancelled())
+                continue;
+
+            EntityUpdateCommand eUp = new EntityUpdateCommand(entity,
+                    rotatedCoords[0] + tOP.getX() - entity.getLocation().getX(),
+                    0,
+                    rotatedCoords[1] + tOP.getZ() - entity.getLocation().getZ(),
+                    newYaw,
+                    0
+            );
+            updates.add(eUp);
+        }
 
     }
 
