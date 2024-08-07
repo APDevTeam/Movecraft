@@ -273,6 +273,7 @@ public class RotationTask extends AsyncTask {
                 (oldHitBox.getMaxY() + oldHitBox.getMinY())/2.0,
                 (oldHitBox.getMaxZ() + oldHitBox.getMinZ())/2.0);
 
+        List<EntityType> entityList = List.of(EntityType.PLAYER, EntityType.PRIMED_TNT);
         for(Entity entity : craft.getWorld().getNearbyEntities(midpoint,
                 oldHitBox.getXLength() / 2.0 + 1,
                 oldHitBox.getYLength() / 2.0 + 2,
@@ -281,13 +282,10 @@ public class RotationTask extends AsyncTask {
             rotateHumanEntity(entity);
 
             if (craft.getType().getBoolProperty(CraftType.ONLY_MOVE_PLAYERS)
-                    && ((List.of(EntityType.PLAYER, EntityType.PRIMED_TNT).contains(entity.getType()))
+                    && (!entityList.contains(entity.getType())
                     || craft instanceof SinkingCraft)) {
                 continue;
-            }
-
-
-            // Player is onboard this craft
+            }// Player is onboard this craft
 
             Location adjustedPLoc = entity.getLocation().subtract(tOP);
 
@@ -308,6 +306,8 @@ public class RotationTask extends AsyncTask {
                     0
             );
             updates.add(eUp);
+
+
         }
     }
 
