@@ -251,44 +251,11 @@ public class RotationTask extends AsyncTask {
         }
 
         if (getCraft().getCruising()) {
+            CruiseDirection direction = getCraft().getCruiseDirection();
             if (rotation == MovecraftRotation.ANTICLOCKWISE) {
-                // ship faces west
-                switch (getCraft().getCruiseDirection()) {
-                    case WEST:
-                        getCraft().setCruiseDirection(CruiseDirection.SOUTH);
-                        break;
-                    // ship faces east
-                    case EAST:
-                        getCraft().setCruiseDirection(CruiseDirection.NORTH);
-                        break;
-                    // ship faces north
-                    case SOUTH:
-                        getCraft().setCruiseDirection(CruiseDirection.EAST);
-                        break;
-                    // ship faces south
-                    case NORTH:
-                        getCraft().setCruiseDirection(CruiseDirection.WEST);
-                        break;
-                }
+                getCraft().setCruiseDirection(direction.getAnticlockwiseRotation());
             } else if (rotation == MovecraftRotation.CLOCKWISE) {
-                // ship faces west
-                switch (getCraft().getCruiseDirection()) {
-                    case WEST:
-                        getCraft().setCruiseDirection(CruiseDirection.NORTH);
-                        break;
-                    // ship faces east
-                    case EAST:
-                        getCraft().setCruiseDirection(CruiseDirection.SOUTH);
-                        break;
-                    // ship faces north
-                    case SOUTH:
-                        getCraft().setCruiseDirection(CruiseDirection.WEST);
-                        break;
-                    // ship faces south
-                    case NORTH:
-                        getCraft().setCruiseDirection(CruiseDirection.EAST);
-                        break;
-                }
+                getCraft().setCruiseDirection(direction.getClockwiseRotation());
             }
         }
 
