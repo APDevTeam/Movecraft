@@ -3,7 +3,6 @@ package net.countercraft.movecraft.async.translation;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftChunk;
 import net.countercraft.movecraft.MovecraftLocation;
-import net.countercraft.movecraft.TrackedLocation;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.ChunkManager;
@@ -58,7 +57,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -122,33 +120,7 @@ public class TranslationTask extends AsyncTask {
         final int maxY = oldHitBox.getMaxY();
 
         // proccess nether portals
-        if (Settings.CraftsUseNetherPortals && craft.getWorld().getEnvironment() != Environment.THE_END
-                && world.equals(craft.getWorld())) {
-
-            // ensure chunks are loaded for portal checking only if change in location is
-            // large
-            Set<MovecraftChunk> chunksToLoad = ChunkManager.getChunks(oldHitBox, world, dx, dy, dz);
-            MovecraftChunk.addSurroundingChunks(chunksToLoad, 2);
-            ChunkManager.checkChunks(chunksToLoad);
-            if (!chunksToLoad.isEmpty())
-                ChunkManager.syncLoadChunks(chunksToLoad).get();
-
-            for (MovecraftLocation oldLocation : oldHitBox) {
-
-                Location location = oldLocation.translate(dx, dy, dz).toBukkit(craft.getWorld());
-                Block block = craft.getWorld().getBlockAt(location);
-                if (block.getType() == Material.NETHER_PORTAL) {
-                    if (processNetherPortal(block)) {
-                        sound = Sound.BLOCK_PORTAL_TRAVEL;
-                        volume = 0.25f;
-                        break;
-                    }
-
-                }
-
-            }
-
-        }
+        processAllNetherPortals();
 
         // ensure chunks are loaded only if world is different or change in location is
         // large
@@ -453,6 +425,39 @@ public class TranslationTask extends AsyncTask {
                 CraftManager.getInstance().addReleaseTask(craft);
         }
         captureYield(harvestedBlocks);
+    }
+
+    private void processAllNetherPortals() throws ExecutionException, InterruptedException {
+        // proccess nether portals
+        if (!Settings.CraftsUseNetherPortals
+                || craft.getWorld().getEnvironment() == Environment.THE_END
+                || !world.equals(craft.getWorld())) {
+            return;
+        }
+
+        // ensure chunks are loaded for portal checking only if change in location is
+        // large
+        Set<MovecraftChunk> chunksToLoad = ChunkManager.getChunks(oldHitBox, world, dx, dy, dz);
+        MovecraftChunk.addSurroundingChunks(chunksToLoad, 2);
+        ChunkManager.checkChunks(chunksToLoad);
+        if (!chunksToLoad.isEmpty())
+            ChunkManager.syncLoadChunks(chunksToLoad).get();
+
+        for (MovecraftLocation oldLocation : oldHitBox) {
+            Location location = oldLocation.translate(dx, dy, dz).toBukkit(craft.getWorld());
+            Block block = craft.getWorld().getBlockAt(location);
+
+            if (block.getType() != Material.NETHER_PORTAL) {
+                continue;
+            }
+
+            if (processNetherPortal(block)) {
+                sound = Sound.BLOCK_PORTAL_TRAVEL;
+                volume = 0.25f;
+                break;
+            }
+
+        }
     }
 
     private void fail(@NotNull String failMessage) {
