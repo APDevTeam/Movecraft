@@ -2,19 +2,29 @@ package net.countercraft.movecraft.features.fading;
 
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.processing.WorldManager;
 import net.countercraft.movecraft.processing.effects.DeferredEffect;
 import net.countercraft.movecraft.processing.effects.Effect;
+import net.countercraft.movecraft.processing.tasks.detection.DetectionTask;
+import net.countercraft.movecraft.util.CollectionUtils;
+import net.countercraft.movecraft.util.CollectorUtils;
+import net.countercraft.movecraft.util.MathUtils;
+import net.countercraft.movecraft.util.hitboxes.BitmapHitBox;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
 import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.Duration;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinTask;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public class WreckTask implements Supplier<Effect> {
 
@@ -36,13 +46,21 @@ public class WreckTask implements Supplier<Effect> {
 
     @Override
     public Effect get() {
-        return partialUpdate();
+        var updates = hitBox
+            .asSet()
+            .stream()
+            .collect(Collectors.groupingBy(location -> location.scalarMod(16), CollectorUtils.toHitBox()))
+            .values()
+            .stream()
+            .map(slice -> ForkJoinTask.adapt(() -> partialUpdate(slice)))
+            .toList();
+
+        return ForkJoinTask.invokeAll(updates).stream().map(ForkJoinTask::join).reduce(Effect.NONE, Effect::andThen);
     }
 
-    public Effect partialUpdate(){
-        // TODO: parallel?
+    public Effect partialUpdate(HitBox slice){
         Effect accumulator = Effect.NONE;
-        for (MovecraftLocation location : hitBox){
+        for (MovecraftLocation location : slice){
             // Get the existing data
             final BlockData data = world.getData(location);
             // Determine the replacement data
