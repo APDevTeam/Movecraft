@@ -1,6 +1,5 @@
 package net.countercraft.movecraft.features.fading;
 
-import io.papermc.paper.util.Tick;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.processing.MovecraftWorld;
@@ -29,7 +28,9 @@ public class WreckTask implements Supplier<Effect> {
         this.phaseBlocks = Objects.requireNonNull(phaseBlocks);
         this.world = Objects.requireNonNull(world);
 
-        int ticks = Tick.tick().fromDuration(Duration.ofSeconds(Settings.FadeWrecksAfter));
+        // TODO: figure out when Tick class got added
+//        int ticks = Tick.tick().fromDuration(Duration.ofSeconds(Settings.FadeWrecksAfter));
+        int ticks = Settings.FadeWrecksAfter * 20;
         this.fadeMaximumTicks = (int) (ticks / (Settings.FadePercentageOfWreckPerCycle / 100.0));
     }
 
