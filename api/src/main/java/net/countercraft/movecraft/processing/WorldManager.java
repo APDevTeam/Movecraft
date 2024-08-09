@@ -4,6 +4,7 @@ import net.countercraft.movecraft.processing.effects.Effect;
 import net.countercraft.movecraft.util.CompletableFutureTask;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +33,7 @@ public final class WorldManager implements Executor {
     };
 
     private final ConcurrentLinkedQueue<Effect> worldChanges = new ConcurrentLinkedQueue<>();
-    private final ConcurrentLinkedQueue<Supplier<Effect>> tasks = new ConcurrentLinkedQueue<>();
+    private final ConcurrentLinkedQueue<Supplier<@Nullable Effect>> tasks = new ConcurrentLinkedQueue<>();
     private final BlockingQueue<Runnable> currentTasks = new LinkedBlockingQueue<>();
     private volatile boolean running = false;
 
@@ -122,7 +123,7 @@ public final class WorldManager implements Executor {
         });
     }
 
-    public void submit(Supplier<Effect> task){
+    public void submit(Supplier<@Nullable Effect> task){
         tasks.add(task);
     }
 

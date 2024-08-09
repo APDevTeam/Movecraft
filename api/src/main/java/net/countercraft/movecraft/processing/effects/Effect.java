@@ -5,6 +5,18 @@ import org.jetbrains.annotations.Nullable;
 
 @FunctionalInterface
 public interface Effect {
+    Effect NONE = new Effect() {
+        @Override
+        public void run() {
+            // No-op
+        }
+
+        @Override
+        public boolean isAsync() {
+            return true;
+        }
+    };
+
     void run();
 
     default boolean isAsync(){
