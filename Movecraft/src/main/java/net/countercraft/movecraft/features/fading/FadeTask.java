@@ -9,6 +9,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Supplier;
 
+/**
+ * Fades a block if the data for the intended block has not been mutated since creation.
+ */
 public class FadeTask implements Supplier<Effect> {
     private final @NotNull BlockData compareData;
     private final @NotNull BlockData setData;
