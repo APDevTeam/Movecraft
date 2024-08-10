@@ -23,13 +23,23 @@ import net.countercraft.movecraft.util.hitboxes.MutableHitBox;
 import net.countercraft.movecraft.util.hitboxes.SetHitBox;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 
@@ -537,12 +547,12 @@ public abstract class BaseCraft implements Craft {
     }
 
     @Override
-    public <T> void setDataTag(CraftDataTagKey<T> tagKey, T data) {
+    public <T> void setDataTag(final @NotNull CraftDataTagKey<T> tagKey, final T data) {
         dataTagContainer.set(tagKey, data);
     }
 
     @Override
-    public <T> T getDataTag(CraftDataTagKey<T> tagKey) {
+    public <T> T getDataTag(final @NotNull CraftDataTagKey<T> tagKey) {
         return dataTagContainer.get(this, tagKey);
     }
 
