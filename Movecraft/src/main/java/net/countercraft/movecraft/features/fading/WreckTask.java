@@ -23,17 +23,15 @@ public class WreckTask implements Supplier<Effect> {
     private final @NotNull HitBox hitBox;
     private final @NotNull Map<MovecraftLocation, BlockData> phaseBlocks;
     private final @NotNull MovecraftWorld world;
-    private final int fadeMaximumTicks;
+    private final int fadeDelayTicks;
+    private final int maximumFadeDurationTicks;
 
     public WreckTask(@NotNull HitBox wreck, @NotNull MovecraftWorld world, @NotNull Map<MovecraftLocation, BlockData> phaseBlocks){
         this.hitBox = Objects.requireNonNull(wreck);
         this.phaseBlocks = Objects.requireNonNull(phaseBlocks);
         this.world = Objects.requireNonNull(world);
-
-        // TODO: figure out when Tick class got added
-//        int ticks = Tick.tick().fromDuration(Duration.ofSeconds(Settings.FadeWrecksAfter));
-        int ticks = Settings.FadeWrecksAfter * 20;
-        this.fadeMaximumTicks = (int) (ticks / (Settings.FadePercentageOfWreckPerCycle / 100.0));
+        this.fadeDelayTicks = Settings.FadeWrecksAfter * 20;
+        this.maximumFadeDurationTicks = (int) (Settings.FadeTickCooldown *  (100.0 / Settings.FadePercentageOfWreckPerCycle));
     }
 
     @Override
@@ -62,7 +60,8 @@ public class WreckTask implements Supplier<Effect> {
             // Determine the replacement data
             BlockData replacementData = phaseBlocks.getOrDefault(location, Material.AIR.createBlockData());
             // Calculate ticks until replacement
-            long fadeTicks = (int) (Math.random() * fadeMaximumTicks);
+            long fadeTicks = this.fadeDelayTicks;
+            fadeTicks += (int) (Math.random() * maximumFadeDurationTicks);
             fadeTicks += Settings.ExtraFadeTimePerBlock.getOrDefault(data.getMaterial(), 0);
             // Deffer replacement until time delay elapses
             accumulator = accumulator.andThen(new DeferredEffect(fadeTicks, () -> WorldManager.INSTANCE.submit(new FadeTask(data, replacementData, world, location))));
