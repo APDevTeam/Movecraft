@@ -40,7 +40,7 @@ public abstract class AbstractInformationSign extends AbstractCraftSign {
         for (MovecraftLocation movecraftLocation : event.getLocations()) {
             Block block = movecraftLocation.toBukkit(craft.getWorld()).getBlock();
             if (block instanceof Sign sign) {
-                for (AbstractSignListener.SignWrapper wrapper : AbstractSignListener.INSTANCE.getSignWrappers(sign)) {
+                for (AbstractSignListener.SignWrapper wrapper : AbstractSignListener.INSTANCE.getSignWrappers(sign, event)) {
                     this.refreshSign(event.getCraft(), wrapper, false);
                 }
             }
@@ -94,6 +94,7 @@ public abstract class AbstractInformationSign extends AbstractCraftSign {
         if (changedSome) {
             this.performUpdate(updatePayload, sign);
             this.sendUpdatePacket(craft, sign);
+            sign.block().update(true);
         }
     }
 
