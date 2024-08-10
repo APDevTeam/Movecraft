@@ -13,7 +13,7 @@ public class CraftDataTagContainer extends HashMap<CraftDataTagKey<?>, Object> {
 
     public static final Map<NamespacedKey, CraftDataTagKey<?>> REGISTERED_TAGS = new HashMap<>();
 
-    public static <T> CraftDataTagKey<T> tryRegisterTagKey(final NamespacedKey key, final Function<Craft, T> supplier) throws IllegalArgumentException {
+    public static <T> @NotNull CraftDataTagKey<T> tryRegisterTagKey(final @NotNull NamespacedKey key, final @NotNull Function<Craft, T> supplier) throws IllegalArgumentException {
         if (REGISTERED_TAGS.containsKey(key)) {
             throw new IllegalArgumentException("Duplicate keys are not allowed!");
         } else {
