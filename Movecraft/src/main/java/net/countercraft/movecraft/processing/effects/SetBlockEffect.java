@@ -8,6 +8,8 @@ import org.bukkit.World;
 import org.bukkit.block.data.BlockData;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Objects;
+
 /**
  * Sets a block based on the provided data.
  */
@@ -24,10 +26,10 @@ public final class SetBlockEffect implements Effect {
 
     @Override
     public void run() {
-        World bukkitWorld = Bukkit.getWorld(world.getWorldUUID());
-        if(bukkitWorld == null) {
-            return;
-        }
+        World bukkitWorld = Objects.requireNonNull(
+            Bukkit.getWorld(world.getWorldUUID()),
+            "Failed to access base World from MovecraftWorld");
+
         // TODO: Reverse indirection
         new BlockCreateCommand(bukkitWorld, location, data).doUpdate();
     }

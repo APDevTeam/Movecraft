@@ -41,7 +41,7 @@ public class WreckTask implements Supplier<Effect> {
         var updates = hitBox
             .asSet()
             .stream()
-            .collect(Collectors.groupingBy(location -> location.scalarMod(16).hadamardProduct(1,0,1), CollectorUtils.toHitBox()))
+            .collect(Collectors.groupingBy(location -> location.scalarDivide(16).hadamardProduct(1,0,1), CollectorUtils.toHitBox()))
             .values()
             .stream()
             .map(slice -> ForkJoinTask.adapt(() -> partialUpdate(slice)))
@@ -65,7 +65,7 @@ public class WreckTask implements Supplier<Effect> {
             long fadeTicks = (int) (Math.random() * fadeMaximumTicks);
             fadeTicks += Settings.ExtraFadeTimePerBlock.getOrDefault(data.getMaterial(), 0);
             // Deffer replacement until time delay elapses
-            accumulator.andThen(new DeferredEffect(fadeTicks, () -> WorldManager.INSTANCE.submit(new FadeTask(data, replacementData, world, location))));
+            accumulator = accumulator.andThen(new DeferredEffect(fadeTicks, () -> WorldManager.INSTANCE.submit(new FadeTask(data, replacementData, world, location))));
         }
 
         // TODO: Determine if we need to reduce the spread of deferred effects due to runnable overhead
