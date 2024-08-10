@@ -2,7 +2,6 @@ package net.countercraft.movecraft.sign;
 
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.util.MathUtils;
-import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
@@ -14,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+// TODO: In 1.21 signs can have multiple sides! This requires us to pass the clicked side through or well the relevant lines and the set method for the clicked side
 public abstract class AbstractMovecraftSign {
 
     private static final Map<String, AbstractMovecraftSign> SIGNS = Collections.synchronizedMap(new HashMap<>());
@@ -24,7 +24,7 @@ public abstract class AbstractMovecraftSign {
 
     public static Optional<AbstractMovecraftSign> tryGet(final String ident) {
         String identToUse = ident.toUpperCase();
-        if (identToUse.indexOf(":") >= 0) {
+        if (identToUse.contains(":")) {
             identToUse = identToUse.split(":")[0];
             if (ident.contains(":")) {
                 identToUse = identToUse + ":";
@@ -68,7 +68,7 @@ public abstract class AbstractMovecraftSign {
     }
 
     // Return true to cancel the event
-    public boolean processSignClick(Action clickType, Sign sign, Player player) {
+    public boolean processSignClick(Action clickType, AbstractSignListener.SignWrapper sign, Player player) {
         if (!this.isSignValid(clickType, sign, player)) {
             return false;
         }
@@ -79,19 +79,16 @@ public abstract class AbstractMovecraftSign {
         return internalProcessSign(clickType, sign, player, getCraft(sign));
     }
 
-    protected boolean canPlayerUseSign(Action clickType, Sign sign, Player player) {
-        if (this.optPermission.isPresent()) {
-            return player.hasPermission(this.optPermission.get());
-        }
-        return true;
+    protected boolean canPlayerUseSign(Action clickType, AbstractSignListener.SignWrapper sign, Player player) {
+        return this.optPermission.map(player::hasPermission).orElse(true);
     }
 
-    protected Optional<Craft> getCraft(Sign sign) {
-        return Optional.ofNullable(MathUtils.getCraftByPersistentBlockData(sign.getLocation()));
+    protected Optional<Craft> getCraft(AbstractSignListener.SignWrapper sign) {
+        return Optional.ofNullable(MathUtils.getCraftByPersistentBlockData(sign.block().getLocation()));
     }
 
     public abstract boolean shouldCancelEvent(boolean processingSuccessful, @Nullable Action type, boolean sneaking);
-    protected abstract boolean isSignValid(Action clickType, Sign sign, Player player);
-    protected abstract boolean internalProcessSign(Action clickType, Sign sign, Player player, Optional<Craft> craft);
-    public abstract boolean processSignChange(SignChangeEvent event);
+    protected abstract boolean isSignValid(Action clickType, AbstractSignListener.SignWrapper sign, Player player);
+    protected abstract boolean internalProcessSign(Action clickType, AbstractSignListener.SignWrapper sign, Player player, Optional<Craft> craft);
+    public abstract boolean processSignChange(SignChangeEvent event, AbstractSignListener.SignWrapper sign);
 }

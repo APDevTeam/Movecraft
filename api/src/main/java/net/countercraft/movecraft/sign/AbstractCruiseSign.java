@@ -7,8 +7,7 @@ import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
-import org.bukkit.ChatColor;
-import org.bukkit.block.Sign;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
@@ -31,11 +30,11 @@ public abstract class AbstractCruiseSign extends AbstractCraftSign {
     }
 
     @Override
-    protected boolean isSignValid(Action clickType, Sign sign, Player player) {
-        if (sign.getLines() == null || sign.getLines()[0] == null) {
+    protected boolean isSignValid(Action clickType, AbstractSignListener.SignWrapper sign, Player player) {
+        if (PlainTextComponentSerializer.plainText().serialize(sign.line(0)).isBlank()) {
             return false;
         }
-        String[] headerSplit = ChatColor.stripColor(sign.getLine(0)).split(":");
+        String[] headerSplit = this.getSplitHeader(sign);
         if (headerSplit.length != 2) {
             return false;
         }
@@ -43,8 +42,16 @@ public abstract class AbstractCruiseSign extends AbstractCraftSign {
         return suffix.equalsIgnoreCase(this.suffixOff) || suffix.equalsIgnoreCase(this.suffixOn);
     }
 
-    protected boolean isOnOrOff(Sign sign) {
-        String[] headerSplit = ChatColor.stripColor(sign.getLine(0)).split(":");
+    protected String[] getSplitHeader(final AbstractSignListener.SignWrapper sign) {
+        String header = PlainTextComponentSerializer.plainText().serialize(sign.line(0));
+        if (header.isBlank()) {
+            return null;
+        }
+        return header.split(":");
+    }
+
+    protected boolean isOnOrOff(AbstractSignListener.SignWrapper sign) {
+        String[] headerSplit = this.getSplitHeader(sign);
         if (headerSplit.length != 2) {
             return false;
         }
@@ -58,7 +65,7 @@ public abstract class AbstractCruiseSign extends AbstractCraftSign {
     }
 
     @Override
-    protected boolean internalProcessSign(Action clickType, Sign sign, Player player, Craft craft) {
+    protected boolean internalProcessSign(Action clickType, AbstractSignListener.SignWrapper sign, Player player, Craft craft) {
         boolean isOn = this.isOnOrOff(sign);
         boolean willBeOn = !isOn;
         if (willBeOn) {
@@ -70,19 +77,20 @@ public abstract class AbstractCruiseSign extends AbstractCraftSign {
 
         // Update sign
         sign.line(0, buildHeader(willBeOn));
-        sign.update(true);
-        craft.resetSigns(sign);
+        sign.block().update(true);
+        // TODO: What to replace this with?
+        craft.resetSigns(sign.block());
 
         return true;
     }
 
     @Override
-    public boolean processSignChange(SignChangeEvent event) {
+    public boolean processSignChange(SignChangeEvent event, AbstractSignListener.SignWrapper sign) {
         return true;
     }
 
     @Override
-    public void onCraftDetect(CraftDetectEvent event, Sign sign) {
+    public void onCraftDetect(CraftDetectEvent event, AbstractSignListener.SignWrapper sign) {
         Player p = null;
         if (event.getCraft() instanceof PilotedCraft pc) {
             p = pc.getPilot();
@@ -110,5 +118,5 @@ public abstract class AbstractCruiseSign extends AbstractCraftSign {
 
     protected abstract void setCraftCruising(Player player, CruiseDirection direction);
     // TODO: Rework cruise direction to vectors => Vector defines the skip distance and the direction
-    protected abstract CruiseDirection getCruiseDirection(Sign sign);
+    protected abstract CruiseDirection getCruiseDirection(AbstractSignListener.SignWrapper sign);
 }
