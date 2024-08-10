@@ -3,7 +3,6 @@ package net.countercraft.movecraft.sign;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
-import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
@@ -21,7 +20,7 @@ public class ReleaseSign extends AbstractCraftSign {
     }
 
     @Override
-    protected void onCraftNotFound(Player player, Sign sign) {
+    protected void onCraftNotFound(Player player, AbstractSignListener.SignWrapper sign) {
 
     }
 
@@ -34,17 +33,17 @@ public class ReleaseSign extends AbstractCraftSign {
     }
 
     @Override
-    protected boolean isSignValid(Action clickType, Sign sign, Player player) {
+    protected boolean isSignValid(Action clickType, AbstractSignListener.SignWrapper sign, Player player) {
         return true;
     }
 
     @Override
-    public boolean processSignChange(SignChangeEvent event) {
+    public boolean processSignChange(SignChangeEvent event, AbstractSignListener.SignWrapper sign) {
         return false;
     }
 
     @Override
-    protected boolean internalProcessSign(Action clickType, Sign sign, Player player, Craft craft) {
+    protected boolean internalProcessSign(Action clickType, AbstractSignListener.SignWrapper sign, Player player, Craft craft) {
         CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.PLAYER, false);
         return true;
     }

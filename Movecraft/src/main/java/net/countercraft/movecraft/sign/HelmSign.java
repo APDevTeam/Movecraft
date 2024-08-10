@@ -2,17 +2,13 @@ package net.countercraft.movecraft.sign;
 
 import net.countercraft.movecraft.MovecraftRotation;
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.util.MathUtils;
 import org.bukkit.ChatColor;
-import org.bukkit.block.BlockState;
-import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -54,7 +50,7 @@ public class HelmSign extends AbstractCraftSign {
     }
 
     @Override
-    protected void onCraftNotFound(Player player, Sign sign) {
+    protected void onCraftNotFound(Player player, AbstractSignListener.SignWrapper sign) {
 
     }
 
@@ -64,13 +60,13 @@ public class HelmSign extends AbstractCraftSign {
     }
 
     @Override
-    protected boolean isSignValid(Action clickType, Sign sign, Player player) {
+    protected boolean isSignValid(Action clickType, AbstractSignListener.SignWrapper sign, Player player) {
         // Nothing to check here honestly...
         return true;
     }
 
     @Override
-    public boolean processSignChange(SignChangeEvent event) {
+    public boolean processSignChange(SignChangeEvent event, AbstractSignListener.SignWrapper sign) {
         if (!ChatColor.stripColor(event.getLine(0)).equalsIgnoreCase("[helm]")) {
             return true;
         }
@@ -81,7 +77,7 @@ public class HelmSign extends AbstractCraftSign {
     }
 
     @Override
-    protected boolean internalProcessSign(Action clickType, Sign sign, Player player, Craft craft) {
+    protected boolean internalProcessSign(Action clickType, AbstractSignListener.SignWrapper sign, Player player, Craft craft) {
         MovecraftRotation rotation;
         if (clickType == Action.RIGHT_CLICK_BLOCK) {
             rotation = MovecraftRotation.CLOCKWISE;

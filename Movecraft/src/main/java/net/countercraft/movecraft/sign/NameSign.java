@@ -5,7 +5,6 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.PilotedCraft;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.util.ChatUtils;
-import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
@@ -32,22 +31,22 @@ public class NameSign extends AbstractCraftSign {
     }
 
     @Override
-    protected boolean canPlayerUseSign(Action clickType, Sign sign, Player player) {
+    protected boolean canPlayerUseSign(Action clickType, AbstractSignListener.SignWrapper sign, Player player) {
         return !Settings.RequireNamePerm || super.canPlayerUseSign(clickType, sign, player);
     }
 
     @Override
-    protected boolean isSignValid(Action clickType, Sign sign, Player player) {
+    protected boolean isSignValid(Action clickType, AbstractSignListener.SignWrapper sign, Player player) {
         return true;
     }
 
     @Override
-    protected boolean internalProcessSign(Action clickType, Sign sign, Player player, Craft craft) {
+    protected boolean internalProcessSign(Action clickType, AbstractSignListener.SignWrapper sign, Player player, Craft craft) {
         return true;
     }
 
     @Override
-    protected boolean internalProcessSign(Action clickType, Sign sign, Player player, Optional<Craft> craft) {
+    protected boolean internalProcessSign(Action clickType, AbstractSignListener.SignWrapper sign, Player player, Optional<Craft> craft) {
         return true;
     }
 
@@ -56,11 +55,11 @@ public class NameSign extends AbstractCraftSign {
     }
 
     @Override
-    protected void onCraftNotFound(Player player, Sign sign) {
+    protected void onCraftNotFound(Player player, AbstractSignListener.SignWrapper sign) {
     }
 
     @Override
-    public boolean processSignChange(SignChangeEvent event) {
+    public boolean processSignChange(SignChangeEvent event, AbstractSignListener.SignWrapper sign) {
         if (this.canPlayerUseSign(Action.RIGHT_CLICK_BLOCK, null, event.getPlayer())) {
             // Nothing to do
             return true;
@@ -72,7 +71,7 @@ public class NameSign extends AbstractCraftSign {
     }
 
     @Override
-    public void onCraftDetect(CraftDetectEvent event, Sign sign) {
+    public void onCraftDetect(CraftDetectEvent event, AbstractSignListener.SignWrapper sign) {
         Craft craft = event.getCraft();
         if (craft != null && craft instanceof PilotedCraft pc) {
             if (Settings.RequireNamePerm && !pc.getPilot().hasPermission(NAME_SIGN_PERMISSION))

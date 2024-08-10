@@ -4,7 +4,6 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.ChatColor;
-import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
@@ -22,7 +21,7 @@ public class MoveSign extends AbstractCraftSign {
     }
 
     @Override
-    protected void onCraftNotFound(Player player, Sign sign) {
+    protected void onCraftNotFound(Player player, AbstractSignListener.SignWrapper sign) {
 
     }
 
@@ -35,7 +34,7 @@ public class MoveSign extends AbstractCraftSign {
     }
 
     @Override
-    protected boolean isSignValid(Action clickType, Sign sign, Player player) {
+    protected boolean isSignValid(Action clickType, AbstractSignListener.SignWrapper sign, Player player) {
         String[] numbers = ChatColor.stripColor(sign.getLine(1)).split(",");
         if (numbers.length != 3) {
             return false;
@@ -51,7 +50,7 @@ public class MoveSign extends AbstractCraftSign {
     }
 
     @Override
-    public boolean processSignChange(SignChangeEvent event) {
+    public boolean processSignChange(SignChangeEvent event, AbstractSignListener.SignWrapper sign) {
         return false;
     }
 
@@ -69,7 +68,7 @@ public class MoveSign extends AbstractCraftSign {
     }
 
     @Override
-    protected boolean internalProcessSign(Action clickType, Sign sign, Player player, Craft craft) {
+    protected boolean internalProcessSign(Action clickType, AbstractSignListener.SignWrapper sign, Player player, Craft craft) {
         if (!craft.getType().getBoolProperty(CraftType.CAN_STATIC_MOVE)) {
             return false;
         }
@@ -79,7 +78,7 @@ public class MoveSign extends AbstractCraftSign {
         int dy = Integer.parseInt(numbers[1]);
         int dz = Integer.parseInt(numbers[2]);
 
-        return translateCraft(sign.getRawData(), dy, dy, dz, craft);
+        return translateCraft(sign.getRawData(), dx, dy, dz, craft);
     }
 
     protected boolean translateCraft(final byte signDataRaw, int dxRaw, int dyRaw, int dzRaw, Craft craft) {
