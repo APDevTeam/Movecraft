@@ -3,6 +3,7 @@ package net.countercraft.movecraft.sign;
 import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.PilotedCraft;
+import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.Style;
@@ -64,6 +65,14 @@ public abstract class AbstractCruiseSign extends AbstractCraftSign {
         return false;
     }
 
+    protected void onAfterStoppingCruise(Craft craft, AbstractSignListener.SignWrapper signWrapper, Player player) {
+
+    }
+
+    protected void onAfterStartingCruise(Craft craft, AbstractSignListener.SignWrapper signWrapper, Player player) {
+
+    }
+
     @Override
     protected boolean internalProcessSign(Action clickType, AbstractSignListener.SignWrapper sign, Player player, Craft craft) {
         boolean isOn = this.isOnOrOff(sign);
@@ -81,11 +90,21 @@ public abstract class AbstractCruiseSign extends AbstractCraftSign {
         // TODO: What to replace this with?
         craft.resetSigns(sign.block());
 
+        if (willBeOn) {
+            this.onAfterStartingCruise(craft, sign, player);
+        } else {
+            this.onAfterStoppingCruise(craft, sign, player);
+        }
+
         return true;
     }
 
     @Override
     public boolean processSignChange(SignChangeEvent event, AbstractSignListener.SignWrapper sign) {
+        String header = sign.getRaw(0).trim();
+        if (header.equalsIgnoreCase(this.ident)) {
+            sign.line(0, buildHeaderOff());
+        }
         return true;
     }
 
