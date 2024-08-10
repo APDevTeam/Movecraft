@@ -28,7 +28,7 @@ import net.countercraft.movecraft.features.contacts.ContactsManager;
 import net.countercraft.movecraft.features.contacts.ContactsSign;
 import net.countercraft.movecraft.features.status.StatusManager;
 import net.countercraft.movecraft.features.status.StatusSign;
-import net.countercraft.movecraft.listener.*;
+import net.countercraft.movecraft.compat.v1_21.listener.*;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.processing.WorldManager;
@@ -126,6 +126,12 @@ public class Movecraft extends JavaPlugin {
                     smoothTeleport = new BukkitTeleport(); // Fall back to bukkit teleportation
                     getLogger().warning("Falling back to bukkit teleportation provider.");
                 }
+            }
+
+            final Class<?> signListenerClass = Class.forName("net.countercraft.movecraft.compat." + WorldHandler.getPackageName(minecraftVersion) + ".SignListener");
+            if (AbstractSignListener.class.isAssignableFrom(signListenerClass)) {
+                AbstractSignListener abstractSignListener = (AbstractSignListener) signListenerClass.getConstructor().newInstance();
+                getServer().getPluginManager().registerEvents(abstractSignListener, this);
             }
         }
         catch (final Exception e) {
@@ -231,7 +237,8 @@ public class Movecraft extends JavaPlugin {
         AbstractMovecraftSign.register("Scuttle", new ScuttleSign(), true);
         getServer().getPluginManager().registerEvents(new CraftPilotListener(), this);
         getServer().getPluginManager().registerEvents(new CraftReleaseListener(), this);
-        getServer().getPluginManager().registerEvents(new SignListener(), this);
+        // Moved to compat section!
+        //getServer().getPluginManager().registerEvents(new SignListener(), this);
 
         var contactsManager = new ContactsManager();
         contactsManager.runTaskTimerAsynchronously(this, 0, 20);
