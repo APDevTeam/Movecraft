@@ -10,6 +10,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.SignChangeEvent;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class AbstractInformationSign extends AbstractCraftSign {
@@ -29,7 +30,7 @@ public abstract class AbstractInformationSign extends AbstractCraftSign {
     public void onCraftDetect(CraftDetectEvent event, AbstractSignListener.SignWrapper sign) {
         // TODO: Check if the craft supports this sign? If no, cancel
         super.onCraftDetect(event, sign);
-        this.refreshSign(event.getCraft(), sign);
+        this.refreshSign(event.getCraft(), sign, true);
     }
 
     @Override
@@ -40,7 +41,7 @@ public abstract class AbstractInformationSign extends AbstractCraftSign {
             Block block = movecraftLocation.toBukkit(craft.getWorld()).getBlock();
             if (block instanceof Sign sign) {
                 for (AbstractSignListener.SignWrapper wrapper : AbstractSignListener.INSTANCE.getSignWrappers(sign)) {
-                    this.refreshSign(event.getCraft(), wrapper);
+                    this.refreshSign(event.getCraft(), wrapper, false);
                 }
             }
         }
@@ -66,16 +67,21 @@ public abstract class AbstractInformationSign extends AbstractCraftSign {
 
     @Override
     protected boolean internalProcessSign(Action clickType, AbstractSignListener.SignWrapper sign, Player player, Craft craft) {
-        this.refreshSign(craft, sign);
+        this.refreshSign(craft, sign, false);
         return true;
     }
 
-    protected void refreshSign(Craft craft, AbstractSignListener.SignWrapper sign) {
+    protected void refreshSign(@Nullable Craft craft, AbstractSignListener.SignWrapper sign, boolean fillDefault) {
         boolean changedSome = false;
         Component[] updatePayload = new Component[sign.lines().size()];
         for(int i = 1; i < sign.lines().size(); i++) {
             Component oldComponent = sign.line(i);
-            Component potentiallyNew = this.getUpdateString(i, oldComponent, craft);
+            Component potentiallyNew;
+            if (craft == null || fillDefault) {
+                potentiallyNew = this.getDefaultString(i, oldComponent);
+            } else {
+                 potentiallyNew = this.getUpdateString(i, oldComponent, craft);
+            }
             if (potentiallyNew != null && !potentiallyNew.equals(oldComponent)) {
                 String oldValue = PlainTextComponentSerializer.plainText().serialize(oldComponent);
                 String newValue = PlainTextComponentSerializer.plainText().serialize(potentiallyNew);
@@ -91,12 +97,20 @@ public abstract class AbstractInformationSign extends AbstractCraftSign {
         }
     }
 
+    @Override
+    public boolean processSignChange(SignChangeEvent event, AbstractSignListener.SignWrapper sign) {
+        this.refreshSign(null, sign, true);
+        return true;
+    }
+
     /*
-    Data to set on the sign. Return null if no update should happen!
-    Attention: A update will only be performed, if the new and old component are different!
-     */
+        Data to set on the sign. Return null if no update should happen!
+        Attention: A update will only be performed, if the new and old component are different!
+         */
     @Nullable
     protected abstract Component getUpdateString(int lineIndex, Component oldData, Craft craft);
+    @Nullable
+    protected abstract Component getDefaultString(int lineIndex, Component oldComponent);
 
     /*
      * @param newComponents: Array of nullable values. The index represents the index on the sign. Only contains the updated components
