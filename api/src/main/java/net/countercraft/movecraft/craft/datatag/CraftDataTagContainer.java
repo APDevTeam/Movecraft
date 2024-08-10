@@ -31,27 +31,27 @@ public class CraftDataTagContainer {
         }
     }
 
-    public <T> T get(final Craft craft, CraftDataTagKey<T> tagKey) {
+    /**
+     * Gets the data associate with a provided tagKey from a craft.
+     * @param craft the craft to perform a lookup against
+     * @param tagKey the tagKey to use for looking up the relevant data
+     * @return the tag value associate with the provided tagKey on the specified craft
+     * @param <T> the value type of the registered data key
+     * @throws IllegalArgumentException when the provided tagKey is not registered
+     * @throws IllegalStateException when the provided tagKey does not match the underlying tag value
+     */
+    public <T> T get(final @NotNull Craft craft, CraftDataTagKey<T> tagKey) {
         if (!REGISTERED_TAGS.containsKey(tagKey.key)) {
-            // TODO: Log error
-            return null;
+            throw new IllegalArgumentException(String.format("The provided key %s was not registered.", tagKey));
         }
-        T result;
-        if (!_backing.containsKey(tagKey)) {
-            result = tagKey.createNew(craft);
-            _backing.put(tagKey, result);
-        } else {
-            Object stored = _backing.getOrDefault(tagKey, tagKey.createNew(craft));
-            try {
-                T temp = (T) stored;
-                result = temp;
-            } catch (ClassCastException cce) {
-                // TODO: Log error
-                result = tagKey.createNew(craft);
-                _backing.put(tagKey, result);
-            }
+
+        Object stored = _backing.computeIfAbsent(tagKey, ignored -> tagKey.createNew(craft));
+        try {
+            //noinspection unchecked
+            return (T) stored;
+        } catch (ClassCastException cce) {
+            throw new IllegalStateException(String.format("The provided key %s has an invalid value type.", tagKey), cce);
         }
-        return result;
     }
 
     public <T> void set(CraftDataTagKey<T> tagKey, @NotNull T value) {
