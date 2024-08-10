@@ -272,25 +272,8 @@ public interface Craft {
 
     void setAudience(Audience audience);
 
-    public default CraftDataTagContainer getDataTagContainer() {
-        return null;
-    }
-
-    public default <T> boolean setDataTag(CraftDataTagKey<T> tagKey, T data) {
-        CraftDataTagContainer container = this.getDataTagContainer();
-        if (container == null) {
-            return false;
-        }
-        container.set(tagKey, data);
-        return true;
-    }
-    public default <T> T getDataTag(CraftDataTagKey<T> tagKey) {
-        CraftDataTagContainer container = this.getDataTagContainer();
-        if (container == null) {
-            return null;
-        }
-        return container.get(this, tagKey);
-    }
+    <T> boolean setDataTag(CraftDataTagKey<T> tagKey, T data);
+    <T> T getDataTag(CraftDataTagKey<T> tagKey);
 
     public default void markTileStateWithUUID(TileState tile) {
         // Add the marker
