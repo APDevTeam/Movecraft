@@ -57,7 +57,6 @@ public class Movecraft extends JavaPlugin {
     private WorldHandler worldHandler;
     private SmoothTeleport smoothTeleport;
     private AsyncManager asyncManager;
-    private CraftDataTagRegistry craftDataTagRegistry;
 
     public static synchronized Movecraft getInstance() {
         return instance;
@@ -188,10 +187,6 @@ public class Movecraft extends JavaPlugin {
         boolean datapackInitialized = isDatapackEnabled() || initializeDatapack();
         asyncManager = new AsyncManager();
         asyncManager.runTaskTimer(this, 0, 1);
-
-        craftDataTagRegistry = new CraftDataTagRegistry();
-
-
         MapUpdateManager.getInstance().runTaskTimer(this, 0, 1);
 
         CraftManager.initialize(datapackInitialized);
@@ -336,9 +331,5 @@ public class Movecraft extends JavaPlugin {
 
     public AsyncManager getAsyncManager() {
         return asyncManager;
-    }
-
-    public CraftDataTagRegistry getCraftDataTagRegistry() {
-        return craftDataTagRegistry;
     }
 }

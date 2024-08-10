@@ -10,11 +10,9 @@ import java.util.concurrent.ConcurrentMap;
 
 public class CraftDataTagContainer {
     private final @NotNull ConcurrentMap<@NotNull CraftDataTagKey<?>, @Nullable Object> backing;
-    private final @NotNull CraftDataTagRegistry registry;
 
-    public CraftDataTagContainer(@NotNull CraftDataTagRegistry registry){
+    public CraftDataTagContainer(){
         backing = new ConcurrentHashMap<>();
-        this.registry = Objects.requireNonNull(registry);
     }
 
     /**
@@ -28,7 +26,7 @@ public class CraftDataTagContainer {
      * @throws IllegalStateException when the provided tagKey does not match the underlying tag value
      */
     public <T> T get(final @NotNull Craft craft, @NotNull CraftDataTagKey<T> tagKey) {
-        if (!registry.isRegistered(tagKey.key)) {
+        if (!CraftDataTagRegistry.INSTANCE.isRegistered(tagKey.key)) {
             throw new IllegalArgumentException(String.format("The provided key %s was not registered.", tagKey));
         }
 
@@ -49,7 +47,7 @@ public class CraftDataTagContainer {
      * @param <T> the type of the value
      */
     public <T> void set(@NotNull CraftDataTagKey<T> tagKey, @NotNull T value) {
-        if (!registry.isRegistered(tagKey.key)) {
+        if (!CraftDataTagRegistry.INSTANCE.isRegistered(tagKey.key)) {
             throw new IllegalArgumentException(String.format("The provided key %s was not registered.", tagKey));
         }
 

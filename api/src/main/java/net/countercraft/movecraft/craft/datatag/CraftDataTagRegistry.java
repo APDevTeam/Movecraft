@@ -9,6 +9,8 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 
 public class CraftDataTagRegistry {
+    public static final @NotNull CraftDataTagRegistry INSTANCE = new CraftDataTagRegistry();
+
     private final @NotNull ConcurrentMap<@NotNull NamespacedKey, @NotNull CraftDataTagKey<?>> _registeredTags;
 
     public CraftDataTagRegistry(){

@@ -10,6 +10,7 @@ import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagContainer;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagKey;
+import net.countercraft.movecraft.craft.datatag.CraftDataTagRegistry;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.CachedMovecraftWorld;
@@ -97,7 +98,7 @@ public abstract class BaseCraft implements Craft {
         disabled = false;
         origPilotTime = System.currentTimeMillis();
         audience = Audience.empty();
-        dataTagContainer = new CraftDataTagContainer(Movecraft.getInstance().getCraftDataTagRegistry());
+        dataTagContainer = new CraftDataTagContainer();
     }
 
 
