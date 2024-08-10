@@ -16,8 +16,10 @@ public class CruiseSign extends AbstractCruiseSign {
     }
 
     @Override
-    protected void setCraftCruising(Player player, CruiseDirection direction) {
-
+    protected void setCraftCruising(Player player, CruiseDirection direction, Craft craft) {
+        craft.setCruiseDirection(direction);
+        craft.setLastCruiseUpdate(System.currentTimeMillis());
+        craft.setCruising(true);
     }
 
     @Override

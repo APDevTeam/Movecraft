@@ -3,7 +3,6 @@ package net.countercraft.movecraft.sign;
 import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.PilotedCraft;
-import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.Style;
@@ -79,7 +78,7 @@ public abstract class AbstractCruiseSign extends AbstractCraftSign {
         boolean willBeOn = !isOn;
         if (willBeOn) {
             CruiseDirection direction = this.getCruiseDirection(sign);
-            this.setCraftCruising(player, direction);
+            this.setCraftCruising(player, direction, craft);
         } else {
            craft.setCruising(false);
         }
@@ -135,7 +134,7 @@ public abstract class AbstractCruiseSign extends AbstractCraftSign {
         return Component.text(this.ident).append(Component.text(": ")).append(Component.text(this.suffixOff, Style.style(TextColor.color(255, 0, 0))));
     }
 
-    protected abstract void setCraftCruising(Player player, CruiseDirection direction);
+    protected abstract void setCraftCruising(Player player, CruiseDirection direction, Craft craft);
     // TODO: Rework cruise direction to vectors => Vector defines the skip distance and the direction
     protected abstract CruiseDirection getCruiseDirection(AbstractSignListener.SignWrapper sign);
 }
