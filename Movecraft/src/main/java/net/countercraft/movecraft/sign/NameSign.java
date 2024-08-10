@@ -78,7 +78,7 @@ public class NameSign extends AbstractCraftSign {
                 return;
         }
 
-        craft.setName(Arrays.stream(sign.getLines()).skip(1).filter(f -> f != null
+        craft.setName(Arrays.stream(sign.rawLines()).skip(1).filter(f -> f != null
                 && !f.trim().isEmpty()).collect(Collectors.joining(" ")));
     }
 }
