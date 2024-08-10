@@ -36,6 +36,7 @@ public class TeleportSign extends MoveSign {
             world = Bukkit.getWorld(w);
         }
 
+        // Substract the signs location so we get a vector
         int dx = dxRaw - signWrapper.block().getX();
         int dy = dyRaw - signWrapper.block().getY();
         int dz = dzRaw - signWrapper.block().getZ();
