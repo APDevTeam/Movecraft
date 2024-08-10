@@ -272,7 +272,7 @@ public interface Craft {
 
     void setAudience(Audience audience);
 
-    <T> boolean setDataTag(CraftDataTagKey<T> tagKey, T data);
+    <T> void setDataTag(CraftDataTagKey<T> tagKey, T data);
     <T> T getDataTag(CraftDataTagKey<T> tagKey);
 
     public default void markTileStateWithUUID(TileState tile) {

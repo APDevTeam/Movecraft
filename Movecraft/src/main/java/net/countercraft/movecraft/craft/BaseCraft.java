@@ -537,10 +537,8 @@ public abstract class BaseCraft implements Craft {
     }
 
     @Override
-    public <T> boolean setDataTag(CraftDataTagKey<T> tagKey, T data) {
+    public <T> void setDataTag(CraftDataTagKey<T> tagKey, T data) {
         dataTagContainer.set(tagKey, data);
-
-        return true;
     }
 
     @Override
