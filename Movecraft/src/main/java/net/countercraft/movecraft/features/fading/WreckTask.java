@@ -62,7 +62,7 @@ public class WreckTask implements Supplier<Effect> {
             // Calculate ticks until replacement
             long fadeTicks = this.fadeDelayTicks;
             fadeTicks += (int) (Math.random() * maximumFadeDurationTicks);
-            fadeTicks += Settings.ExtraFadeTimePerBlock.getOrDefault(data.getMaterial(), 0);
+            fadeTicks += 20L * Settings.ExtraFadeTimePerBlock.getOrDefault(data.getMaterial(), 0);
             // Deffer replacement until time delay elapses
             accumulator = accumulator.andThen(new DeferredEffect(fadeTicks, () -> WorldManager.INSTANCE.submit(new FadeTask(data, replacementData, world, location))));
         }
