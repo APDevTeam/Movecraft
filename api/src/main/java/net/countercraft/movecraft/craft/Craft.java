@@ -272,8 +272,9 @@ public interface Craft {
 
     void setAudience(Audience audience);
 
-    <T> void setDataTag(CraftDataTagKey<T> tagKey, T data);
-    <T> T getDataTag(CraftDataTagKey<T> tagKey);
+    <T> void setDataTag(@NotNull final CraftDataTagKey<T> tagKey, final T data);
+
+    <T> T getDataTag(@NotNull final CraftDataTagKey<T> tagKey);
 
     public default void markTileStateWithUUID(TileState tile) {
         // Add the marker
