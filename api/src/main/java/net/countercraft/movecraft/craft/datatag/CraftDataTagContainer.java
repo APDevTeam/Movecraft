@@ -17,11 +17,22 @@ public class CraftDataTagContainer {
         _backing = new ConcurrentHashMap<>();
     }
 
-    public static <T> @NotNull CraftDataTagKey<T> registerTagKey(final @NotNull NamespacedKey key, final @NotNull Function<Craft, T> supplier) throws IllegalArgumentException {
-        CraftDataTagKey<T> result = new CraftDataTagKey<>(key, supplier);
+    /**
+     * Registers a data tag to be attached to craft instances. The data tag will initialize to the value supplied by the
+     * initializer. Once a tag is registered, it can be accessed from crafts using the returned key through various
+     * methods.
+     *
+     * @param key the namespace key to use for registration, which must be unique
+     * @param initializer a default initializer for the value type
+     * @return A CraftDataTagKey, which can be used to control an associated value on a Craft instance
+     * @param <T> the value type
+     * @throws IllegalArgumentException when the provided key is already registered
+     */
+    public static <T> @NotNull CraftDataTagKey<T> registerTagKey(final @NotNull NamespacedKey key, final @NotNull Function<Craft, T> initializer) throws IllegalArgumentException {
+        CraftDataTagKey<T> result = new CraftDataTagKey<>(key, initializer);
         var previous = REGISTERED_TAGS.putIfAbsent(key, result);
         if(previous != null){
-            throw new IllegalArgumentException("Duplicate keys are not allowed!");
+            throw new IllegalArgumentException(String.format("Key %s is already registered.", key));
         }
 
         return result;
@@ -29,6 +40,7 @@ public class CraftDataTagContainer {
 
     /**
      * Gets the data value associated with the provided tagKey from a craft.
+     *
      * @param craft the craft to perform a lookup against
      * @param tagKey the tagKey to use for looking up the relevant data
      * @return the tag value associate with the provided tagKey on the specified craft
@@ -50,6 +62,13 @@ public class CraftDataTagContainer {
         }
     }
 
+    /**
+     * Set the value associated with the provided tagKey on the associated craft.
+     *
+     * @param tagKey the tagKey to use for storing the relevant data
+     * @param value the value to set for future lookups
+     * @param <T> the type of the value
+     */
     public <T> void set(@NotNull CraftDataTagKey<T> tagKey, @NotNull T value) {
         _backing.put(tagKey, value);
     }
