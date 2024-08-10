@@ -4,6 +4,8 @@ import net.countercraft.movecraft.craft.Craft;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Enumeration;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
@@ -40,5 +42,13 @@ public class CraftDataTagRegistry {
 
     public boolean isRegistered(final @NotNull NamespacedKey key){
         return _registeredTags.containsKey(key);
+    }
+
+    /**
+     * Get an iterable over all keys currently registered.
+     * @return An immutable iterable over the registry keys
+     */
+    public @NotNull Iterable<@NotNull NamespacedKey> getAllKeys(){
+        return _registeredTags.keySet().stream().toList();
     }
 }
