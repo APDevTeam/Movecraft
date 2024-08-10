@@ -87,6 +87,14 @@ final public class MovecraftLocation implements Comparable<MovecraftLocation>{
         return new MovecraftLocation(getX() - l.getX(), getY() - l.getY(), getZ() - l.getZ());
     }
 
+    public MovecraftLocation hadamardProduct(int x, int y, int z){
+        return new MovecraftLocation(this.x*x, this.y*y, this.z*z);
+    }
+
+    public MovecraftLocation hadamardProduct(MovecraftLocation location){
+        return hadamardProduct(location.x, location.y, location.z);
+    }
+
     public MovecraftLocation scalarMultiply(int multiplier){
         return new MovecraftLocation(x * multiplier, y * multiplier, z * multiplier);
     }

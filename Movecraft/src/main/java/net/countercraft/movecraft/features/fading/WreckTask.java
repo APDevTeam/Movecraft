@@ -49,7 +49,7 @@ public class WreckTask implements Supplier<Effect> {
         var updates = hitBox
             .asSet()
             .stream()
-            .collect(Collectors.groupingBy(location -> location.scalarMod(16), CollectorUtils.toHitBox()))
+            .collect(Collectors.groupingBy(location -> location.scalarMod(16).hadamardProduct(1,0,1), CollectorUtils.toHitBox()))
             .values()
             .stream()
             .map(slice -> ForkJoinTask.adapt(() -> partialUpdate(slice)))
