@@ -54,11 +54,13 @@ public abstract class AbstractSignListener implements Listener {
             for (int i = 0; i < result.length; i++) {
                 result[i] = this.getRaw(i);
             }
+            return result;
         }
 
     }
 
     public abstract SignWrapper[] getSignWrappers(Sign sign);
+    public abstract SignWrapper[] getSignWrappers(Sign sign, SignTranslateEvent event);
     protected abstract SignWrapper getSignWrapper(Sign sign, SignChangeEvent signChangeEvent);
     protected abstract SignWrapper getSignWrapper(Sign sign, PlayerInteractEvent interactEvent);
 
