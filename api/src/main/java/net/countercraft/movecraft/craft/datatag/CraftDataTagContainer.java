@@ -19,7 +19,7 @@ public class CraftDataTagContainer {
         _backing = new ConcurrentHashMap<>();
     }
 
-    public static final Map<@NotNull NamespacedKey, @NotNull CraftDataTagKey<?>> REGISTERED_TAGS = new HashMap<>();
+    public static final ConcurrentMap<@NotNull NamespacedKey, @NotNull CraftDataTagKey<?>> REGISTERED_TAGS = new ConcurrentHashMap<>();
 
     public static <T> @NotNull CraftDataTagKey<T> tryRegisterTagKey(final @NotNull NamespacedKey key, final @NotNull Function<Craft, T> supplier) throws IllegalArgumentException {
         if (REGISTERED_TAGS.containsKey(key)) {
