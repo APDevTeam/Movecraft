@@ -3,7 +3,6 @@ package net.countercraft.movecraft.sign;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
@@ -35,7 +34,7 @@ public class MoveSign extends AbstractCraftSign {
 
     @Override
     protected boolean isSignValid(Action clickType, AbstractSignListener.SignWrapper sign, Player player) {
-        String[] numbers = ChatColor.stripColor(sign.getLine(1)).split(",");
+        String[] numbers = sign.getRaw(1).split(",");
         if (numbers.length != 3) {
             return false;
         }
@@ -73,15 +72,15 @@ public class MoveSign extends AbstractCraftSign {
             return false;
         }
 
-        String[] numbers = ChatColor.stripColor(sign.getLine(1)).split(",");
+        String[] numbers = sign.getRaw(1).split(",");
         int dx = Integer.parseInt(numbers[0]);
         int dy = Integer.parseInt(numbers[1]);
         int dz = Integer.parseInt(numbers[2]);
 
-        return translateCraft(sign.getRawData(), dx, dy, dz, craft);
+        return translateCraft(sign.block().getRawData(), dx, dy, dz, craft, sign);
     }
 
-    protected boolean translateCraft(final byte signDataRaw, int dxRaw, int dyRaw, int dzRaw, Craft craft) {
+    protected boolean translateCraft(final byte signDataRaw, int dxRaw, int dyRaw, int dzRaw, Craft craft, AbstractSignListener.SignWrapper signWrapper) {
         int maxMove = craft.getType().getIntProperty(CraftType.MAX_STATIC_MOVE);
 
         if (dxRaw > maxMove)

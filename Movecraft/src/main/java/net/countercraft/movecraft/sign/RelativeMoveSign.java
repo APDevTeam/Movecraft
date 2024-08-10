@@ -3,6 +3,8 @@ package net.countercraft.movecraft.sign;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.type.CraftType;
 
+import javax.annotation.Nullable;
+
 public class RelativeMoveSign extends MoveSign {
 
     public RelativeMoveSign() {
@@ -10,7 +12,7 @@ public class RelativeMoveSign extends MoveSign {
     }
 
     @Override
-    protected boolean translateCraft(byte signDataRaw, int dxRaw, int dyRaw, int dzRaw, Craft craft) {
+    protected boolean translateCraft(byte signDataRaw, int dxRaw, int dyRaw, int dzRaw, Craft craft, AbstractSignListener.SignWrapper signWrapper) {
         final int maxMove = craft.getType().getIntProperty(CraftType.MAX_STATIC_MOVE);
 
         // X: Left/Right

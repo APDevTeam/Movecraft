@@ -44,6 +44,11 @@ public abstract class AbstractSignListener implements Listener {
         public void line(int index, Component component) {
             setLine.accept(index, component);
         }
+
+        public String getRaw(int index) {
+            return PlainTextComponentSerializer.plainText().serialize(line(index));
+        }
+
     }
 
     public abstract SignWrapper[] getSignWrappers(Sign sign);
