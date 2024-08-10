@@ -28,7 +28,7 @@ public class CraftDataTagContainer {
     }
 
     /**
-     * Gets the data associate with a provided tagKey from a craft.
+     * Gets the data value associated with the provided tagKey from a craft.
      * @param craft the craft to perform a lookup against
      * @param tagKey the tagKey to use for looking up the relevant data
      * @return the tag value associate with the provided tagKey on the specified craft
@@ -36,7 +36,7 @@ public class CraftDataTagContainer {
      * @throws IllegalArgumentException when the provided tagKey is not registered
      * @throws IllegalStateException when the provided tagKey does not match the underlying tag value
      */
-    public <T> T get(final @NotNull Craft craft, CraftDataTagKey<T> tagKey) {
+    public <T> T get(final @NotNull Craft craft, @NotNull CraftDataTagKey<T> tagKey) {
         if (!REGISTERED_TAGS.containsKey(tagKey.key)) {
             throw new IllegalArgumentException(String.format("The provided key %s was not registered.", tagKey));
         }
@@ -50,8 +50,7 @@ public class CraftDataTagContainer {
         }
     }
 
-    public <T> void set(CraftDataTagKey<T> tagKey, @NotNull T value) {
+    public <T> void set(@NotNull CraftDataTagKey<T> tagKey, @NotNull T value) {
         _backing.put(tagKey, value);
     }
-
 }
