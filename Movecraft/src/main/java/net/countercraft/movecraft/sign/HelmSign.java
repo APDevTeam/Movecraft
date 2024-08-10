@@ -110,7 +110,7 @@ public class HelmSign extends AbstractCraftSign {
         if (craft.getType().getBoolProperty(CraftType.ROTATE_AT_MIDPOINT)) {
             craft.rotate(rotation, craft.getHitBox().getMidPoint());
         } else {
-           craft.rotate(rotation, MathUtils.bukkit2MovecraftLoc(sign.getLocation()));
+           craft.rotate(rotation, MathUtils.bukkit2MovecraftLoc(sign.block().getLocation()));
         }
 
         //timeMap.put(event.getPlayer(), System.currentTimeMillis());
