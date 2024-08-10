@@ -5,12 +5,9 @@ import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 public class CraftDataTagContainer {
     private static final @NotNull ConcurrentMap<@NotNull NamespacedKey, @NotNull CraftDataTagKey<?>> REGISTERED_TAGS = new ConcurrentHashMap<>();
@@ -20,14 +17,14 @@ public class CraftDataTagContainer {
         _backing = new ConcurrentHashMap<>();
     }
 
-    public static <T> @NotNull CraftDataTagKey<T> tryRegisterTagKey(final @NotNull NamespacedKey key, final @NotNull Function<Craft, T> supplier) throws IllegalArgumentException {
-        if (REGISTERED_TAGS.containsKey(key)) {
+    public static <T> @NotNull CraftDataTagKey<T> registerTagKey(final @NotNull NamespacedKey key, final @NotNull Function<Craft, T> supplier) throws IllegalArgumentException {
+        CraftDataTagKey<T> result = new CraftDataTagKey<>(key, supplier);
+        var previous = REGISTERED_TAGS.putIfAbsent(key, result);
+        if(previous != null){
             throw new IllegalArgumentException("Duplicate keys are not allowed!");
-        } else {
-            CraftDataTagKey<T> result = new CraftDataTagKey<>(key, supplier);
-            REGISTERED_TAGS.put(key, result);
-            return result;
         }
+
+        return result;
     }
 
     /**

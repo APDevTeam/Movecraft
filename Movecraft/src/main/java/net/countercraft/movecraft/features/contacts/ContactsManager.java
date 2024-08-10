@@ -27,7 +27,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 public class ContactsManager extends BukkitRunnable implements Listener {
-    private static final CraftDataTagKey<Map<Craft, Long>> RECENT_CONTACTS = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "recent-contacts"), craft -> new WeakHashMap<>());
+    private static final CraftDataTagKey<Map<Craft, Long>> RECENT_CONTACTS = CraftDataTagContainer.registerTagKey(new NamespacedKey("movecraft", "recent-contacts"), craft -> new WeakHashMap<>());
 
     @Override
     public void run() {

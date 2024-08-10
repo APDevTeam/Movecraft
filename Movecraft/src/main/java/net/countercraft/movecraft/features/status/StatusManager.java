@@ -33,7 +33,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 public class StatusManager extends BukkitRunnable implements Listener {
-    private static final CraftDataTagKey<Long> LAST_STATUS_CHECK = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "last-status-check"), craft -> System.currentTimeMillis());
+    private static final CraftDataTagKey<Long> LAST_STATUS_CHECK = CraftDataTagContainer.registerTagKey(new NamespacedKey("movecraft", "last-status-check"), craft -> System.currentTimeMillis());
 
     @Override
     public void run() {

@@ -43,11 +43,11 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 
 public interface Craft {
-    CraftDataTagKey<List<Craft>> CONTACTS = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "contacts"), craft -> new ArrayList<>(0));
-    CraftDataTagKey<Double> FUEL = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "fuel"), craft -> 0D);
-    CraftDataTagKey<Counter<Material>> MATERIALS = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "materials"), craft -> new Counter<>());
-    CraftDataTagKey<Integer> NON_NEGLIGIBLE_BLOCKS = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "non-negligible-blocks"), Craft::getOrigBlockCount);
-    CraftDataTagKey<Integer> NON_NEGLIGIBLE_SOLID_BLOCKS = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "non-negligible-solid-blocks"), Craft::getOrigBlockCount);
+    CraftDataTagKey<List<Craft>> CONTACTS = CraftDataTagContainer.registerTagKey(new NamespacedKey("movecraft", "contacts"), craft -> new ArrayList<>(0));
+    CraftDataTagKey<Double> FUEL = CraftDataTagContainer.registerTagKey(new NamespacedKey("movecraft", "fuel"), craft -> 0D);
+    CraftDataTagKey<Counter<Material>> MATERIALS = CraftDataTagContainer.registerTagKey(new NamespacedKey("movecraft", "materials"), craft -> new Counter<>());
+    CraftDataTagKey<Integer> NON_NEGLIGIBLE_BLOCKS = CraftDataTagContainer.registerTagKey(new NamespacedKey("movecraft", "non-negligible-blocks"), Craft::getOrigBlockCount);
+    CraftDataTagKey<Integer> NON_NEGLIGIBLE_SOLID_BLOCKS = CraftDataTagContainer.registerTagKey(new NamespacedKey("movecraft", "non-negligible-solid-blocks"), Craft::getOrigBlockCount);
 
     // Java disallows private or protected fields in interfaces, this is a workaround
     class Hidden {
