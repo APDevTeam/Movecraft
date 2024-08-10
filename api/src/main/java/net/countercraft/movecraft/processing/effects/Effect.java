@@ -5,6 +5,9 @@ import org.jetbrains.annotations.Nullable;
 
 @FunctionalInterface
 public interface Effect {
+    /**
+     * A no-op effect for use in systems where a non-null effect is needed
+     */
     Effect NONE = new Effect() {
         @Override
         public void run() {
@@ -15,6 +18,11 @@ public interface Effect {
         public boolean isAsync() {
             return true;
         }
+
+        @Override
+        public @NotNull Effect andThen(@Nullable Effect chain){
+            return chain == null ? this : chain;
+        }
     };
 
     void run();
@@ -23,8 +31,7 @@ public interface Effect {
         return false;
     }
 
-    default @NotNull
-    Effect andThen(@Nullable Effect chain){
+    default @NotNull Effect andThen(@Nullable Effect chain){
         if(chain == null){
             return this;
         }
