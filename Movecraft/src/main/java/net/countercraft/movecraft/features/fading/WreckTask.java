@@ -55,10 +55,14 @@ public class WreckTask implements Supplier<Effect> {
             .map(slice -> ForkJoinTask.adapt(() -> partialUpdate(slice)))
             .toList();
 
-        return ForkJoinTask.invokeAll(updates).stream().map(ForkJoinTask::join).reduce(Effect.NONE, Effect::andThen);
+        return ForkJoinTask
+            .invokeAll(updates)
+            .stream()
+            .map(ForkJoinTask::join)
+            .reduce(Effect.NONE, Effect::andThen);
     }
 
-    public Effect partialUpdate(HitBox slice){
+    private @NotNull Effect partialUpdate(@NotNull HitBox slice){
         Effect accumulator = Effect.NONE;
         for (MovecraftLocation location : slice){
             // Get the existing data
