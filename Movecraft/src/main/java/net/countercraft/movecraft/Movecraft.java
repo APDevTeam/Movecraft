@@ -23,6 +23,7 @@ import net.countercraft.movecraft.commands.*;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.ChunkManager;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.craft.datatag.CraftDataTagRegistry;
 import net.countercraft.movecraft.features.contacts.ContactsCommand;
 import net.countercraft.movecraft.features.contacts.ContactsManager;
 import net.countercraft.movecraft.features.contacts.ContactsSign;
@@ -38,6 +39,7 @@ import net.countercraft.movecraft.util.Tags;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -55,6 +57,7 @@ public class Movecraft extends JavaPlugin {
     private WorldHandler worldHandler;
     private SmoothTeleport smoothTeleport;
     private AsyncManager asyncManager;
+    private CraftDataTagRegistry craftDataTagRegistry;
 
     public static synchronized Movecraft getInstance() {
         return instance;
@@ -185,6 +188,10 @@ public class Movecraft extends JavaPlugin {
         boolean datapackInitialized = isDatapackEnabled() || initializeDatapack();
         asyncManager = new AsyncManager();
         asyncManager.runTaskTimer(this, 0, 1);
+
+        craftDataTagRegistry = new CraftDataTagRegistry();
+
+
         MapUpdateManager.getInstance().runTaskTimer(this, 0, 1);
 
         CraftManager.initialize(datapackInitialized);
@@ -329,5 +336,9 @@ public class Movecraft extends JavaPlugin {
 
     public AsyncManager getAsyncManager() {
         return asyncManager;
+    }
+
+    public CraftDataTagRegistry getCraftDataTagRegistry() {
+        return craftDataTagRegistry;
     }
 }

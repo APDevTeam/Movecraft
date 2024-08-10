@@ -80,7 +80,8 @@ public abstract class BaseCraft implements Craft {
     private MovecraftLocation lastTranslation = new MovecraftLocation(0, 0, 0);
     private Map<NamespacedKey, Set<TrackedLocation>> trackedLocations = new HashMap<>();
 
-    private final CraftDataTagContainer dataTagContainer = new CraftDataTagContainer();
+    @NotNull
+    private final CraftDataTagContainer dataTagContainer;
 
     private final UUID uuid = UUID.randomUUID();
 
@@ -96,6 +97,7 @@ public abstract class BaseCraft implements Craft {
         disabled = false;
         origPilotTime = System.currentTimeMillis();
         audience = Audience.empty();
+        dataTagContainer = new CraftDataTagContainer(Movecraft.getInstance().getCraftDataTagRegistry());
     }
 
 
