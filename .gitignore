@@ -197,3 +197,6 @@ gradle-app.setting
 
 # datapack output
 /target-datapack/
+
+# test servers
+/Movecraft/run-*
