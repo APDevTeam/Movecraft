@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Function;
 
 public class CraftDataTagContainer {
     private final @NotNull ConcurrentMap<@NotNull CraftDataTagKey<?>, @Nullable Object> backing;
@@ -25,7 +26,7 @@ public class CraftDataTagContainer {
      * @throws IllegalArgumentException when the provided tagKey is not registered
      * @throws IllegalStateException when the provided tagKey does not match the underlying tag value
      */
-    public <T> T get(final @NotNull Craft craft, @NotNull CraftDataTagKey<T> tagKey) {
+    public <T> T get(final @NotNull Craft craft, final @NotNull CraftDataTagKey<T> tagKey) {
         if (!CraftDataTagRegistry.INSTANCE.isRegistered(tagKey.key)) {
             throw new IllegalArgumentException(String.format("The provided key %s was not registered.", tagKey));
         }
@@ -46,11 +47,24 @@ public class CraftDataTagContainer {
      * @param value the value to set for future lookups
      * @param <T> the type of the value
      */
-    public <T> void set(@NotNull CraftDataTagKey<T> tagKey, @NotNull T value) {
+    public <T> void set(final @NotNull CraftDataTagKey<T> tagKey, final @NotNull T value) {
         if (!CraftDataTagRegistry.INSTANCE.isRegistered(tagKey.key)) {
             throw new IllegalArgumentException(String.format("The provided key %s was not registered.", tagKey));
         }
 
         backing.put(tagKey, value);
+    }
+
+    public <T> T compute(final @NotNull Craft craft, final @NotNull CraftDataTagKey<T> tagKey, final @NotNull Function<? super T, ? extends T> computation){
+        if (!CraftDataTagRegistry.INSTANCE.isRegistered(tagKey.key)) {
+            throw new IllegalArgumentException(String.format("The provided key %s was not registered.", tagKey));
+        }
+
+        try {
+            //noinspection unchecked
+            return (T) backing.compute(tagKey, (k,v) -> v == null ? tagKey.createNew(craft) : computation.apply((T) v));
+        } catch (ClassCastException cce) {
+            throw new IllegalStateException(String.format("The provided key %s has an invalid value type.", tagKey), cce);
+        }
     }
 }

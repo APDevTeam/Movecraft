@@ -42,6 +42,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 import java.util.logging.Level;
 
 import static net.countercraft.movecraft.util.SignUtils.getFacing;
@@ -557,6 +558,10 @@ public abstract class BaseCraft implements Craft {
     @Override
     public <T> T getDataTag(final @NotNull CraftDataTagKey<T> tagKey) {
         return dataTagContainer.get(this, tagKey);
+    }
+
+    @Override <T> T computeDataTag(final @NotNull CraftDataTagKey<T> tagKey, @NotNull Function<? super T, ? extends T> computation){
+        return dataTagContainer.compute(this, tagKey, computation);
     }
 
     @Override
