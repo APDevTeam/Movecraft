@@ -27,6 +27,7 @@ import net.countercraft.movecraft.craft.datatag.CraftDataTagRegistry;
 import net.countercraft.movecraft.features.contacts.ContactsCommand;
 import net.countercraft.movecraft.features.contacts.ContactsManager;
 import net.countercraft.movecraft.features.contacts.ContactsSign;
+import net.countercraft.movecraft.features.fading.WreckManager;
 import net.countercraft.movecraft.features.status.StatusManager;
 import net.countercraft.movecraft.features.status.StatusSign;
 import net.countercraft.movecraft.listener.*;
@@ -57,6 +58,7 @@ public class Movecraft extends JavaPlugin {
     private WorldHandler worldHandler;
     private SmoothTeleport smoothTeleport;
     private AsyncManager asyncManager;
+    private WreckManager wreckManager;
 
     public static synchronized Movecraft getInstance() {
         return instance;
@@ -189,8 +191,10 @@ public class Movecraft extends JavaPlugin {
         asyncManager.runTaskTimer(this, 0, 1);
         MapUpdateManager.getInstance().runTaskTimer(this, 0, 1);
 
+
         CraftManager.initialize(datapackInitialized);
         Bukkit.getScheduler().runTaskTimer(this, WorldManager.INSTANCE::run, 0,1);
+        wreckManager = new WreckManager(WorldManager.INSTANCE);
 
         getServer().getPluginManager().registerEvents(new InteractListener(), this);
 
@@ -331,5 +335,9 @@ public class Movecraft extends JavaPlugin {
 
     public AsyncManager getAsyncManager() {
         return asyncManager;
+    }
+
+    public @NotNull WreckManager getWreckManager(){
+        return wreckManager;
     }
 }
