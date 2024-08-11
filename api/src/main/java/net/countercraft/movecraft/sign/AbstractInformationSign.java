@@ -5,6 +5,8 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.Style;
+import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
@@ -14,6 +16,17 @@ import org.bukkit.event.block.SignChangeEvent;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class AbstractInformationSign extends AbstractCraftSign {
+
+    protected static final Style STYLE_COLOR_GREEN = Style.style(TextColor.color(0, 255, 0));
+    protected static final Style STYLE_COLOR_YELLOW = Style.style(TextColor.color(255, 255, 0));
+    protected static final Style STYLE_COLOR_RED = Style.style(TextColor.color(255, 0, 0));
+
+    public enum REFRESH_CAUSE {
+        SIGN_CREATION,
+        CRAFT_DETECT,
+        SIGN_MOVED_BY_CRAFT,
+        SIGN_CLICK
+    }
 
     public AbstractInformationSign() {
         // Info signs only display things, that should not require permissions, also it doesn't matter if the craft is busy or not
@@ -30,7 +43,7 @@ public abstract class AbstractInformationSign extends AbstractCraftSign {
     public void onCraftDetect(CraftDetectEvent event, AbstractSignListener.SignWrapper sign) {
         // TODO: Check if the craft supports this sign? If no, cancel
         super.onCraftDetect(event, sign);
-        this.refreshSign(event.getCraft(), sign, true);
+        this.refreshSign(event.getCraft(), sign, true, REFRESH_CAUSE.CRAFT_DETECT);
     }
 
     @Override
@@ -41,7 +54,7 @@ public abstract class AbstractInformationSign extends AbstractCraftSign {
             Block block = movecraftLocation.toBukkit(craft.getWorld()).getBlock();
             if (block instanceof Sign sign) {
                 for (AbstractSignListener.SignWrapper wrapper : AbstractSignListener.INSTANCE.getSignWrappers(sign, event)) {
-                    this.refreshSign(event.getCraft(), wrapper, false);
+                    this.refreshSign(event.getCraft(), wrapper, false, REFRESH_CAUSE.SIGN_MOVED_BY_CRAFT);
                 }
             }
         }
@@ -67,11 +80,11 @@ public abstract class AbstractInformationSign extends AbstractCraftSign {
 
     @Override
     protected boolean internalProcessSign(Action clickType, AbstractSignListener.SignWrapper sign, Player player, Craft craft) {
-        this.refreshSign(craft, sign, false);
+        this.refreshSign(craft, sign, false, REFRESH_CAUSE.SIGN_CLICK);
         return true;
     }
 
-    protected void refreshSign(@Nullable Craft craft, AbstractSignListener.SignWrapper sign, boolean fillDefault) {
+    protected void refreshSign(@Nullable Craft craft, AbstractSignListener.SignWrapper sign, boolean fillDefault, REFRESH_CAUSE refreshCause) {
         boolean changedSome = false;
         Component[] updatePayload = new Component[sign.lines().size()];
         for(int i = 1; i < sign.lines().size(); i++) {
@@ -92,15 +105,14 @@ public abstract class AbstractInformationSign extends AbstractCraftSign {
             }
         }
         if (changedSome) {
-            this.performUpdate(updatePayload, sign);
-            this.sendUpdatePacket(craft, sign);
-            sign.block().update(true);
+            this.performUpdate(updatePayload, sign, refreshCause);
+            this.sendUpdatePacket(craft, sign, refreshCause);
         }
     }
 
     @Override
     public boolean processSignChange(SignChangeEvent event, AbstractSignListener.SignWrapper sign) {
-        this.refreshSign(null, sign, true);
+        this.refreshSign(null, sign, true, REFRESH_CAUSE.SIGN_CREATION);
         return true;
     }
 
@@ -118,10 +130,10 @@ public abstract class AbstractInformationSign extends AbstractCraftSign {
      *
      * Only gets called if at least one line has changed
      */
-    protected abstract void performUpdate(Component[] newComponents, AbstractSignListener.SignWrapper sign);
+    protected abstract void performUpdate(Component[] newComponents, AbstractSignListener.SignWrapper sign, REFRESH_CAUSE refreshCause);
 
     /*
     Gets called after performUpdate has been called
      */
-    protected abstract void sendUpdatePacket(Craft craft, AbstractSignListener.SignWrapper sign);
+    protected abstract void sendUpdatePacket(Craft craft, AbstractSignListener.SignWrapper sign, REFRESH_CAUSE refreshCause);
 }
