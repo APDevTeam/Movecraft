@@ -42,6 +42,7 @@ import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.function.Function;
 
 public interface Craft {
     CraftDataTagKey<List<Craft>> CONTACTS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "contacts"), craft -> new ArrayList<>(0));
@@ -276,6 +277,8 @@ public interface Craft {
     <T> void setDataTag(@NotNull final CraftDataTagKey<T> tagKey, final T data);
 
     <T> T getDataTag(@NotNull final CraftDataTagKey<T> tagKey);
+
+    <T> T computeDataTag(final @NotNull CraftDataTagKey<T> tagKey, @NotNull Function<? super T, ? extends T> computation);
 
     public default void markTileStateWithUUID(TileState tile) {
         // Add the marker
