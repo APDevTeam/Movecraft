@@ -27,7 +27,6 @@ import net.countercraft.movecraft.features.contacts.ContactsCommand;
 import net.countercraft.movecraft.features.contacts.ContactsManager;
 import net.countercraft.movecraft.features.contacts.ContactsSign;
 import net.countercraft.movecraft.features.status.StatusManager;
-import net.countercraft.movecraft.features.status.StatusSign;
 import net.countercraft.movecraft.listener.*;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
@@ -236,6 +235,7 @@ public class Movecraft extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new RemoteSign(), this);
         //getServer().getPluginManager().registerEvents(new SpeedSign(), this);
         AbstractMovecraftSign.register("Speed:", new SpeedSign(), true);
+        AbstractMovecraftSign.register("Status:", new StatusSign(), true);
         getServer().getPluginManager().registerEvents(new SubcraftRotateSign(), this);
         //getServer().getPluginManager().registerEvents(new TeleportSign(), this);
         AbstractMovecraftSign.register("Teleport:", new TeleportSign(), true);
@@ -255,7 +255,7 @@ public class Movecraft extends JavaPlugin {
         var statusManager = new StatusManager();
         statusManager.runTaskTimerAsynchronously(this, 0, 1);
         getServer().getPluginManager().registerEvents(statusManager, this);
-        getServer().getPluginManager().registerEvents(new StatusSign(), this);
+        //getServer().getPluginManager().registerEvents(new StatusSign(), this);
 
         logger.info("[V " + getDescription().getVersion() + "] has been enabled.");
     }
