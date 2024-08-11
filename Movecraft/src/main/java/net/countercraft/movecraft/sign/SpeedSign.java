@@ -1,27 +1,13 @@
 package net.countercraft.movecraft.sign;
 
-import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.type.CraftType;
-import net.countercraft.movecraft.events.CraftDetectEvent;
-import net.countercraft.movecraft.events.SignTranslateEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.kyori.adventure.text.Component;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.ChatColor;
-import org.bukkit.Tag;
-import org.bukkit.World;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockState;
-import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.block.SignChangeEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.Nullable;
 
 public class SpeedSign extends AbstractInformationSign {
@@ -82,17 +68,20 @@ public class SpeedSign extends AbstractInformationSign {
     }
 
     @Override
-    protected void performUpdate(Component[] newComponents, AbstractSignListener.SignWrapper sign) {
+    protected void performUpdate(Component[] newComponents, AbstractSignListener.SignWrapper sign, REFRESH_CAUSE refreshCause) {
         for (int i = 0; i < newComponents.length; i++) {
             Component newComp = newComponents[i];
             if (newComp != null) {
                 sign.line(i, newComp);
             }
         }
+        if (refreshCause != REFRESH_CAUSE.SIGN_MOVED_BY_CRAFT) {
+            sign.block().update(true);
+        }
     }
 
     @Override
-    protected void sendUpdatePacket(Craft craft, AbstractSignListener.SignWrapper sign) {
+    protected void sendUpdatePacket(Craft craft, AbstractSignListener.SignWrapper sign, REFRESH_CAUSE refreshCause) {
 
     }
 
