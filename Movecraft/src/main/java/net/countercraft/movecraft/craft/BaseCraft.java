@@ -560,7 +560,8 @@ public abstract class BaseCraft implements Craft {
         return dataTagContainer.get(this, tagKey);
     }
 
-    @Override <T> T computeDataTag(final @NotNull CraftDataTagKey<T> tagKey, @NotNull Function<? super T, ? extends T> computation){
+    @Override
+    public <T> T computeDataTag(final @NotNull CraftDataTagKey<T> tagKey, @NotNull Function<? super T, ? extends T> computation){
         return dataTagContainer.compute(this, tagKey, computation);
     }
 
