@@ -1,53 +1,56 @@
 package net.countercraft.movecraft.craft.datatag;
 
 import net.countercraft.movecraft.craft.Craft;
-import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
-public class CraftDataTagContainer extends HashMap<CraftDataTagKey<?>, Object> {
+public class CraftDataTagContainer {
+    private final @NotNull ConcurrentMap<@NotNull CraftDataTagKey<?>, @Nullable Object> backing;
 
-    public static final Map<NamespacedKey, CraftDataTagKey<?>> REGISTERED_TAGS = new HashMap<>();
+    public CraftDataTagContainer(){
+        backing = new ConcurrentHashMap<>();
+    }
 
-    public static <T> CraftDataTagKey<T> tryRegisterTagKey(final NamespacedKey key, final Function<Craft, T> supplier) throws IllegalArgumentException {
-        if (REGISTERED_TAGS.containsKey(key)) {
-            throw new IllegalArgumentException("Duplicate keys are not allowed!");
-        } else {
-            CraftDataTagKey<T> result = new CraftDataTagKey<T>(key, supplier);
-            REGISTERED_TAGS.put(key, result);
-            return result;
+    /**
+     * Gets the data value associated with the provided tagKey from a craft.
+     *
+     * @param craft the craft to perform a lookup against
+     * @param tagKey the tagKey to use for looking up the relevant data
+     * @return the tag value associate with the provided tagKey on the specified craft
+     * @param <T> the value type of the registered data key
+     * @throws IllegalArgumentException when the provided tagKey is not registered
+     * @throws IllegalStateException when the provided tagKey does not match the underlying tag value
+     */
+    public <T> T get(final @NotNull Craft craft, @NotNull CraftDataTagKey<T> tagKey) {
+        if (!CraftDataTagRegistry.INSTANCE.isRegistered(tagKey.key)) {
+            throw new IllegalArgumentException(String.format("The provided key %s was not registered.", tagKey));
+        }
+
+        Object stored = backing.computeIfAbsent(tagKey, ignored -> tagKey.createNew(craft));
+        try {
+            //noinspection unchecked
+            return (T) stored;
+        } catch (ClassCastException cce) {
+            throw new IllegalStateException(String.format("The provided key %s has an invalid value type.", tagKey), cce);
         }
     }
 
-    public <T> T get(final Craft craft, CraftDataTagKey<T> tagKey) {
-        if (!REGISTERED_TAGS.containsKey(tagKey.key)) {
-            // TODO: Log error
-            return null;
+    /**
+     * Set the value associated with the provided tagKey on the associated craft.
+     *
+     * @param tagKey the tagKey to use for storing the relevant data
+     * @param value the value to set for future lookups
+     * @param <T> the type of the value
+     */
+    public <T> void set(@NotNull CraftDataTagKey<T> tagKey, @NotNull T value) {
+        if (!CraftDataTagRegistry.INSTANCE.isRegistered(tagKey.key)) {
+            throw new IllegalArgumentException(String.format("The provided key %s was not registered.", tagKey));
         }
-        T result = null;
-        if (!this.containsKey(tagKey)) {
-            result = tagKey.createNew(craft);
-            this.put(tagKey, result);
-        } else {
-            Object stored = this.getOrDefault(tagKey, tagKey.createNew(craft));
-            try {
-                T temp = (T) stored;
-                result = temp;
-            } catch (ClassCastException cce) {
-                // TODO: Log error
-                result = tagKey.createNew(craft);
-                this.put(tagKey, result);
-            }
-        }
-        return result;
-    }
 
-    public <T> void set(CraftDataTagKey<T> tagKey, @NotNull T value) {
-        this.put(tagKey, value);
+        backing.put(tagKey, value);
     }
-
 }
