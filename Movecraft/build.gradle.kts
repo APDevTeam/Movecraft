@@ -53,7 +53,7 @@ tasks {
             group = "run paper"
             runDirectory.set(file("run-$serverVersion"))
             downloadPlugins {
-                url("https://dev.bukkit.org/projects/worldedit/files/5564367/download")
+                hangar("WorldEdit", "7.3.6")
                 url("https://ci.lucko.me/job/spark/441/artifact/spark-bukkit/build/libs/spark-1.10.95-bukkit.jar")
                 hangar("ViaVersion", "5.0.3")
                 hangar("ViaBackwards", "5.0.3")
