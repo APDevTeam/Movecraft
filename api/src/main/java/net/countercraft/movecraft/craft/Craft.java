@@ -274,7 +274,7 @@ public interface Craft {
 
     void setAudience(Audience audience);
 
-    <T> void setDataTag(@NotNull final CraftDataTagKey<T> tagKey, final T data);
+    <T> T setDataTag(@NotNull final CraftDataTagKey<T> tagKey, final T data);
 
     <T> T getDataTag(@NotNull final CraftDataTagKey<T> tagKey);
 

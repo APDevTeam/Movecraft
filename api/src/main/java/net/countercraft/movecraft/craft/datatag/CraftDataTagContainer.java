@@ -47,12 +47,17 @@ public class CraftDataTagContainer {
      * @param value the value to set for future lookups
      * @param <T> the type of the value
      */
-    public <T> void set(final @NotNull CraftDataTagKey<T> tagKey, final @NotNull T value) {
+    public <T> @Nullable T set(final @NotNull CraftDataTagKey<T> tagKey, final @NotNull T value) {
         if (!CraftDataTagRegistry.INSTANCE.isRegistered(tagKey.key)) {
             throw new IllegalArgumentException(String.format("The provided key %s was not registered.", tagKey));
         }
+        try {
+            //noinspection unchecked
+            return (T) backing.put(tagKey, value);
+        } catch (ClassCastException cce) {
+            throw new IllegalStateException(String.format("The provided key %s has an invalid value type.", tagKey), cce);
+        }
 
-        backing.put(tagKey, value);
     }
 
     public <T> T compute(final @NotNull Craft craft, final @NotNull CraftDataTagKey<T> tagKey, final @NotNull Function<? super T, ? extends T> computation){
