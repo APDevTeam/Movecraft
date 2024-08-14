@@ -57,6 +57,49 @@ public abstract class AbstractSignListener implements Listener {
             return result;
         }
 
+        public boolean areSignsEqual(SignWrapper other) {
+            if (other == null) {
+                return false;
+            }
+
+            String[] myLines = this.rawLines();
+            String[] theirLines = other.rawLines();
+
+            if (myLines.length != theirLines.length) {
+                return false;
+            }
+
+            for (int i = 0; i < myLines.length; i++) {
+                String mine = myLines[i].trim();
+                String theirs = theirLines[i].trim();
+
+                if (!mine.equalsIgnoreCase(theirs)) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public static boolean areSignsEqual(SignWrapper[] a, SignWrapper[] b) {
+            if (a == null || b == null) {
+                return false;
+            }
+            if (a.length != b.length) {
+                return false;
+            }
+
+            for (int i = 0; i < a.length; i++) {
+                SignWrapper aWrap = a[i];
+                SignWrapper bWrap = b[i];
+
+                if (!aWrap.areSignsEqual(bWrap)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
     }
 
     public abstract SignWrapper[] getSignWrappers(Sign sign);
