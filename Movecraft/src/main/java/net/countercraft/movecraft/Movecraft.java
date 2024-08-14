@@ -214,7 +214,6 @@ public class Movecraft extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new ChunkManager(), this);
         //getServer().getPluginManager().registerEvents(new AscendSign(), this);
         AbstractMovecraftSign.register("Ascend:", new AscendSign(), true);
-        getServer().getPluginManager().registerEvents(new CraftSign(), this);
         //getServer().getPluginManager().registerEvents(new CruiseSign(), this);
         AbstractMovecraftSign.register("Cruise:", new CruiseSign(), true);
         //getServer().getPluginManager().registerEvents(new DescendSign(), this);
@@ -245,6 +244,8 @@ public class Movecraft extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new CraftReleaseListener(), this);
         // Moved to compat section!
         //getServer().getPluginManager().registerEvents(new SignListener(), this);
+
+        AbstractMovecraftSign.registerCraftPilotSigns(CraftManager.getInstance().getCraftTypes(), CraftPilotSign::new);
 
         var contactsManager = new ContactsManager();
         contactsManager.runTaskTimerAsynchronously(this, 0, 20);
