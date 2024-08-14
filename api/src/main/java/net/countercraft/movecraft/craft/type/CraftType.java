@@ -50,7 +50,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -391,9 +390,9 @@ final public class CraftType {
         registerProperty(new RequiredBlockProperty("flyblocks", FLY_BLOCKS, type -> new HashSet<>()));
         registerProperty(new RequiredBlockProperty("detectionblocks", DETECTION_BLOCKS, type -> new HashSet<>()));
         registerProperty(new MaterialSetProperty("directionDependentMaterials", DIRECTIONAL_DEPENDENT_MATERIALS, type -> {
-            var set = EnumSet.of(Material.LADDER, Material.TORCH, Material.LEVER, Material.GRINDSTONE, Material.LANTERN);
-            //add all Signs (maybe there is a better way to do it?)
+            var set = EnumSet.of(Material.LADDER, Material.LEVER, Material.GRINDSTONE, Material.LANTERN);
             set.addAll(Tag.WALL_SIGNS.getValues());
+            set.addAll(Tags.WALL_TORCHES);
             return set;
         }));
 
