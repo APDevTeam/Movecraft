@@ -43,10 +43,7 @@ import net.countercraft.movecraft.util.Pair;
 import net.countercraft.movecraft.util.Tags;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -396,7 +393,7 @@ final public class CraftType {
         registerProperty(new MaterialSetProperty("directionDependentMaterials", DIRECTIONAL_DEPENDENT_MATERIALS, type -> {
             var set = EnumSet.of(Material.LADDER, Material.TORCH, Material.LEVER, Material.GRINDSTONE, Material.LANTERN);
             //add all Signs (maybe there is a better way to do it?)
-            Arrays.stream(Material.values()).filter(mat -> mat.name().endsWith("WALL_SIGN")).forEach(set::add);
+            set.addAll(Tag.WALL_SIGNS.getValues());
             return set;
         }));
 
