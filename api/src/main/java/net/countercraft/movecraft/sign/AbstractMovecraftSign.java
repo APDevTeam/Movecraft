@@ -1,6 +1,8 @@
 package net.countercraft.movecraft.sign;
 
 import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.events.CraftPilotEvent;
 import net.countercraft.movecraft.util.MathUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
@@ -8,10 +10,8 @@ import org.bukkit.event.block.SignChangeEvent;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Function;
 
 // TODO: In 1.21 signs can have multiple sides! This requires us to pass the clicked side through or well the relevant lines and the set method for the clicked side
 public abstract class AbstractMovecraftSign {
@@ -20,6 +20,17 @@ public abstract class AbstractMovecraftSign {
 
     public static boolean hasBeenRegistered(final String ident) {
         return SIGNS.containsKey(ident);
+    }
+
+    public static void registerCraftPilotSigns(Set<CraftType> loadedTypes, Function<CraftType, AbstractCraftPilotSign> signFactory) {
+        SIGNS.entrySet().removeIf(entry -> {
+           return entry.getValue() instanceof AbstractCraftPilotSign;
+        });
+        // Now, add all types...
+        for (CraftType type : loadedTypes) {
+            AbstractCraftPilotSign sign = signFactory.apply(type);
+            register(type.getStringProperty(CraftType.NAME), sign, true);
+        }
     }
 
     public static Optional<AbstractMovecraftSign> tryGet(final String ident) {
