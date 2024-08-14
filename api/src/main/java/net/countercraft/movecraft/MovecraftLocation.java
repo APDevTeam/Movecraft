@@ -87,6 +87,26 @@ final public class MovecraftLocation implements Comparable<MovecraftLocation>{
         return new MovecraftLocation(getX() - l.getX(), getY() - l.getY(), getZ() - l.getZ());
     }
 
+    public MovecraftLocation hadamardProduct(int x, int y, int z){
+        return new MovecraftLocation(this.x*x, this.y*y, this.z*z);
+    }
+
+    public MovecraftLocation hadamardProduct(MovecraftLocation location){
+        return hadamardProduct(location.x, location.y, location.z);
+    }
+
+    public MovecraftLocation scalarMultiply(int multiplier){
+        return new MovecraftLocation(x * multiplier, y * multiplier, z * multiplier);
+    }
+
+    public MovecraftLocation scalarDivide(int divisor){
+        return new MovecraftLocation(x / divisor, y / divisor, z/divisor);
+    }
+
+    public MovecraftLocation scalarMod(int modulus){
+        return new MovecraftLocation(x % modulus, y & modulus, z % modulus);
+    }
+
     /**
      *
      * Gives the euclidean distance between this MovecraftLocation and another MovecraftLocation

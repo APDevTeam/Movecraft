@@ -334,14 +334,17 @@ public class TranslationTask extends AsyncTask {
             }
             newHitBox.removeAll(air);
             for (MovecraftLocation location : collisionBox) {
-                if (craft.getType().getFloatProperty(CraftType.EXPLODE_ON_CRASH) > 0F) {
+                CraftType type = craft.getType();
+
+                if (type.getFloatProperty(CraftType.EXPLODE_ON_CRASH) > 0F) {
                     if (System.currentTimeMillis() - craft.getOrigPilotTime() <= 1000) {
                         continue;
                     }
                     Location loc = location.toBukkit(craft.getWorld());
                     if (!loc.getBlock().getType().isAir() && ThreadLocalRandom.current().nextDouble(1) < .05) {
                         updates.add(new ExplosionUpdateCommand(loc,
-                                craft.getType().getFloatProperty(CraftType.EXPLODE_ON_CRASH)));
+                                type.getFloatProperty(CraftType.EXPLODE_ON_CRASH),
+                                type.getBoolProperty(CraftType.INCENDIARY_ON_CRASH)));
                         collisionExplosion = true;
                     }
                 }
@@ -358,6 +361,7 @@ public class TranslationTask extends AsyncTask {
                 && System.currentTimeMillis() - craft.getOrigPilotTime() > craft.getType().getIntProperty(CraftType.EXPLOSION_ARMING_TIME)) {
             for (MovecraftLocation location : collisionBox) {
                 float explosionForce = craft.getType().getFloatProperty(CraftType.COLLISION_EXPLOSION);
+                boolean incendiary = craft.getType().getBoolProperty(CraftType.INCENDIARY_ON_CRASH);
                 if (craft.getType().getBoolProperty(CraftType.FOCUSED_EXPLOSION)) {
                     explosionForce *= Math.min(oldHitBox.size(), craft.getType().getIntProperty(CraftType.MAX_SIZE));
                 }
@@ -372,7 +376,7 @@ public class TranslationTask extends AsyncTask {
                             newLocation, craft.getWorld());
                     Bukkit.getServer().getPluginManager().callEvent(e);
                     if (!e.isCancelled()) {
-                        updates.add(new ExplosionUpdateCommand(newLocation, explosionForce));
+                        updates.add(new ExplosionUpdateCommand(newLocation, explosionForce, incendiary));
                         collisionExplosion = true;
                     }
                 }

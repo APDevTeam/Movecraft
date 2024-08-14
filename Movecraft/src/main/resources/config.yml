@@ -22,6 +22,7 @@ ExtraFadeTimePerBlock: # List of blocks that will take longer time to fade
   DROPPER: 600
   FURNACE: 600
 CollisionPrimer: 1000
+ReleaseOnDeath: false
 ForbiddenRemoteSigns: # These strings will be ignored when searching for signs to trigger from a remote sign
   - "Mounted"
   - "Denied"
