@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
+//TODO: This is not very pretty...
 public class CraftPilotSign extends AbstractCraftPilotSign {
 
     static final Set<MovecraftLocation> PILOTING = Collections.synchronizedSet(new HashSet<>());
@@ -145,6 +146,8 @@ public class CraftPilotSign extends AbstractCraftPilotSign {
                     }
                 }
         );
+        // TODO: Move this to be directly called by the craftmanager post detection...
+        // Or use the event handler or something
         new BukkitRunnable() {
             @Override
             public void run() {
