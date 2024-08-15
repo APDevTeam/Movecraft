@@ -9,6 +9,7 @@ import net.countercraft.movecraft.craft.ChunkManager;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.SinkingCraft;
+import net.countercraft.movecraft.craft.SubCraft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftCollisionEvent;
 import net.countercraft.movecraft.events.CraftCollisionExplosionEvent;
@@ -357,7 +358,16 @@ public class TranslationTask extends AsyncTask {
             }
         } else if ((craft.getType().getFloatProperty(CraftType.COLLISION_EXPLOSION) > 0F)
                 && System.currentTimeMillis() - craft.getOrigPilotTime() > craft.getType().getIntProperty(CraftType.EXPLOSION_ARMING_TIME)) {
+            Craft parentCraft = null;
+            if (craft instanceof SubCraft) {
+                parentCraft = ((SubCraft) craft).getParent();
+            }
             for (MovecraftLocation location : collisionBox) {
+                if (parentCraft != null && parentCraft.getHitBox().contains(location)
+                   && !parentCraft.getType().getBoolProperty(CraftType.ALLOW_INTERNAL_COLLISION_EXPLOSION)) {
+                    //Prevents CollisionExplosion crafts from exploding inside the craft.
+                    break;
+                }
                 float explosionForce = craft.getType().getFloatProperty(CraftType.COLLISION_EXPLOSION);
                 boolean incendiary = craft.getType().getBoolProperty(CraftType.INCENDIARY_ON_CRASH);
                 if (craft.getType().getBoolProperty(CraftType.FOCUSED_EXPLOSION)) {
