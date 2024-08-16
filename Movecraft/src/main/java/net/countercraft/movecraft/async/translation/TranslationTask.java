@@ -368,15 +368,17 @@ public class TranslationTask extends AsyncTask {
                     //Prevents CollisionExplosion crafts from exploding inside the craft.
                     break;
                 }
-                float explosionForce = craft.getType().getFloatProperty(CraftType.COLLISION_EXPLOSION);
+                float explosionForce;
+                if (location.getY() < craft.getWaterLine()) {
+                    explosionForce = craft.getType().getFloatProperty(CraftType.UNDERWATER_COLLISION_EXPLOSION);
+                }
+                else {
+                    explosionForce = craft.getType().getFloatProperty(CraftType.COLLISION_EXPLOSION);
+                }
                 boolean incendiary = craft.getType().getBoolProperty(CraftType.INCENDIARY_ON_CRASH);
                 if (craft.getType().getBoolProperty(CraftType.FOCUSED_EXPLOSION)) {
                     explosionForce *= Math.min(oldHitBox.size(), craft.getType().getIntProperty(CraftType.MAX_SIZE));
                 }
-                //TODO: Account for underwater explosions
-                /*if (location.getY() < waterLine) { // underwater explosions require more force to do anything
-                    explosionForce += 25;//TODO: find the correct amount
-                }*/
                 Location oldLocation = location.translate(-dx, -dy, -dz).toBukkit(craft.getWorld());
                 Location newLocation = location.toBukkit(world);
                 if (!oldLocation.getBlock().getType().isAir()) {

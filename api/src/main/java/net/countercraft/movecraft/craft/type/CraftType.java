@@ -129,6 +129,7 @@ final public class CraftType {
     public static final NamespacedKey EXPLODE_ON_CRASH = buildKey("explode_on_crash");
     public static final NamespacedKey INCENDIARY_ON_CRASH = buildKey("incendiary_on_crash");
     public static final NamespacedKey COLLISION_EXPLOSION = buildKey("collision_explosion");
+    public static final NamespacedKey UNDERWATER_COLLISION_EXPLOSION = buildKey("underwater_collision_explosion");
     private static final NamespacedKey MIN_HEIGHT_LIMIT = buildKey("min_height_limit");
         // Private key used as default for PER_WORLD_MIN_HEIGHT_LIMIT
     public static final NamespacedKey PER_WORLD_MIN_HEIGHT_LIMIT = buildKey("per_world_min_height_limit");
@@ -454,6 +455,7 @@ final public class CraftType {
         registerProperty(new FloatProperty("explodeOnCrash", EXPLODE_ON_CRASH, type -> 0F));
         registerProperty(new BooleanProperty("incendiaryOnCrash", INCENDIARY_ON_CRASH, type -> false));
         registerProperty(new FloatProperty("collisionExplosion", COLLISION_EXPLOSION, type -> 0F));
+        registerProperty(new FloatProperty("underwaterCollisionExplosion", UNDERWATER_COLLISION_EXPLOSION, type -> type.getFloatProperty(COLLISION_EXPLOSION)));
         registerProperty(new IntegerProperty("minHeightLimit", MIN_HEIGHT_LIMIT, type -> Integer.MIN_VALUE));
         registerProperty(new PerWorldProperty<>("perWorldMinHeightLimit", PER_WORLD_MIN_HEIGHT_LIMIT,
                 (type, worldName) -> type.getIntProperty(MIN_HEIGHT_LIMIT)));

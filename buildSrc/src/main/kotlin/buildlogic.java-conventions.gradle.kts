@@ -6,7 +6,6 @@ repositories {
     mavenLocal()
     maven("https://repo.maven.apache.org/maven2/")
     maven("https://oss.sonatype.org/content/repositories/snapshots/")
-    maven("https://repo.dmulloy2.net/nexus/repository/public/")
     maven("https://repo.papermc.io/repository/maven-public/")
 }
 
