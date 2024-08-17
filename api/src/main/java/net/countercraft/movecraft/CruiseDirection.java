@@ -66,20 +66,18 @@ public enum CruiseDirection {
         };
     }
 
-    public CruiseDirection getClockwiseRotation() {
-        return switch (this) {
-            case NORTH -> EAST;
-            case SOUTH -> WEST;
-            case EAST -> SOUTH;
-            case WEST -> NORTH;
-            case UP -> UP;
-            case DOWN -> DOWN;
-            case NONE -> NONE;
+    public CruiseDirection getRotated(MovecraftRotation rotation) {
+        return switch(rotation) {
+            case CLOCKWISE -> switch (this) {
+                case NORTH -> EAST;
+                case SOUTH -> WEST;
+                case EAST -> SOUTH;
+                case WEST -> NORTH;
+                default -> this;
+            };
+            case ANTICLOCKWISE -> getRotated(MovecraftRotation.CLOCKWISE).getOpposite();
+            case NONE -> this;
         };
-    }
-
-    public CruiseDirection getAnticlockwiseRotation() {
-        return this.getClockwiseRotation().getOpposite();
     }
 }
 

@@ -199,10 +199,7 @@ public class RotationTask extends AsyncTask {
         Craft craft1 = getCraft();
         if (craft1.getCruising()) {
             CruiseDirection direction = craft1.getCruiseDirection();
-            switch (rotation) {
-                case ANTICLOCKWISE -> craft1.setCruiseDirection(direction.getAnticlockwiseRotation());
-                case CLOCKWISE -> craft1.setCruiseDirection(direction.getClockwiseRotation());
-            }
+            craft1.setCruiseDirection(direction.getRotated(rotation));
         }
 
         // if you rotated a subcraft, update the parent with the new blocks
