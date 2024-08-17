@@ -124,7 +124,9 @@ final public class CraftType {
     public static final NamespacedKey KEEP_MOVING_ON_SINK = buildKey("keep_moving_on_sink");
     public static final NamespacedKey SMOKE_ON_SINK = buildKey("smoke_on_sink");
     public static final NamespacedKey EXPLODE_ON_CRASH = buildKey("explode_on_crash");
+    public static final NamespacedKey INCENDIARY_ON_CRASH = buildKey("incendiary_on_crash");
     public static final NamespacedKey COLLISION_EXPLOSION = buildKey("collision_explosion");
+    public static final NamespacedKey UNDERWATER_COLLISION_EXPLOSION = buildKey("underwater_collision_explosion");
     private static final NamespacedKey MIN_HEIGHT_LIMIT = buildKey("min_height_limit");
         // Private key used as default for PER_WORLD_MIN_HEIGHT_LIMIT
     public static final NamespacedKey PER_WORLD_MIN_HEIGHT_LIMIT = buildKey("per_world_min_height_limit");
@@ -187,6 +189,7 @@ final public class CraftType {
 
     public static final NamespacedKey EXPLOSION_ARMING_TIME = buildKey("explosion_arming_time");
     public static final NamespacedKey DIRECTIONAL_DEPENDENT_MATERIALS = buildKey("directional_dependent_materials");
+    public static final NamespacedKey ALLOW_INTERNAL_COLLISION_EXPLOSION = buildKey("allow_internal_collision_explosion");
     //endregion
 
     @Contract("_ -> new")
@@ -454,7 +457,9 @@ final public class CraftType {
         registerProperty(new BooleanProperty("keepMovingOnSink", KEEP_MOVING_ON_SINK, type -> false));
         registerProperty(new IntegerProperty("smokeOnSink", SMOKE_ON_SINK, type -> 0));
         registerProperty(new FloatProperty("explodeOnCrash", EXPLODE_ON_CRASH, type -> 0F));
+        registerProperty(new BooleanProperty("incendiaryOnCrash", INCENDIARY_ON_CRASH, type -> false));
         registerProperty(new FloatProperty("collisionExplosion", COLLISION_EXPLOSION, type -> 0F));
+        registerProperty(new FloatProperty("underwaterCollisionExplosion", UNDERWATER_COLLISION_EXPLOSION, type -> type.getFloatProperty(COLLISION_EXPLOSION)));
         registerProperty(new IntegerProperty("minHeightLimit", MIN_HEIGHT_LIMIT, type -> Integer.MIN_VALUE));
         registerProperty(new PerWorldProperty<>("perWorldMinHeightLimit", PER_WORLD_MIN_HEIGHT_LIMIT,
                 (type, worldName) -> type.getIntProperty(MIN_HEIGHT_LIMIT)));
@@ -569,6 +574,7 @@ final public class CraftType {
         registerProperty(new BooleanProperty("mergePistonExtensions", MERGE_PISTON_EXTENSIONS, type -> false));
         registerProperty(new IntegerProperty("cruiseOnPilotLifetime", CRUISE_ON_PILOT_LIFETIME, type -> 15*20));
         registerProperty(new IntegerProperty("explosionArmingTime", EXPLOSION_ARMING_TIME, type -> 1000));
+        registerProperty(new BooleanProperty("allowInternalCollisionExplosion", ALLOW_INTERNAL_COLLISION_EXPLOSION, type -> false));
 
         /* Craft type transforms */
         // Convert speed to TICK_COOLDOWN

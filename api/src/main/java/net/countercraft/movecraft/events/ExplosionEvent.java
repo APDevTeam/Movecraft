@@ -9,11 +9,13 @@ public class ExplosionEvent extends Event implements Cancellable {
     private static final HandlerList HANDLERS = new HandlerList();
     private final Location explosionLocation;
     private final float explosionStrength;
+    private final boolean incendiary;
     private boolean cancelled;
 
-    public ExplosionEvent(Location explosionLocation, float explosionStrength) {
+    public ExplosionEvent(Location explosionLocation, float explosionStrength, boolean incendiary) {
         this.explosionLocation = explosionLocation;
         this.explosionStrength = explosionStrength;
+        this.incendiary = incendiary;
         cancelled = false;
     }
 
@@ -43,5 +45,9 @@ public class ExplosionEvent extends Event implements Cancellable {
     @Override
     public void setCancelled(boolean cancelled) {
         this.cancelled = cancelled;
+    }
+
+    public boolean isIncendiary() {
+        return incendiary;
     }
 }
