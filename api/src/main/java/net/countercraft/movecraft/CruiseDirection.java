@@ -38,20 +38,15 @@ public enum CruiseDirection {
     }
 
     public static CruiseDirection fromBlockFace(BlockFace direction) {
-        if(direction.getOppositeFace() == BlockFace.NORTH)
-            return NORTH;
-        else if(direction.getOppositeFace() == BlockFace.SOUTH)
-            return SOUTH;
-        else if(direction.getOppositeFace() == BlockFace.EAST)
-            return EAST;
-        else if(direction.getOppositeFace() == BlockFace.WEST)
-            return WEST;
-        else if(direction.getOppositeFace() == BlockFace.UP)
-            return UP;
-        else if(direction.getOppositeFace() == BlockFace.DOWN)
-            return DOWN;
-        else
-            return NONE;
+        return switch (direction.getOppositeFace()) {
+            case NORTH -> NORTH;
+            case SOUTH -> SOUTH;
+            case EAST -> EAST;
+            case WEST -> WEST;
+            case UP -> UP;
+            case DOWN -> DOWN;
+            default -> NONE;
+        };
     }
 
     public CruiseDirection getOpposite() {
