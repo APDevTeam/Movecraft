@@ -69,13 +69,13 @@ public class TranslationTask extends AsyncTask {
     private World world;
     private int dx, dy, dz;
     private SetHitBox newHitBox;
-    private HitBox oldHitBox;
-    private SetHitBox oldFluidList;
-    private SetHitBox newFluidList;
+    private final HitBox oldHitBox;
+    private final SetHitBox oldFluidList;
+    private final SetHitBox newFluidList;
     private boolean failed;
     private boolean collisionExplosion = false;
     private String failMessage;
-    private Collection<UpdateCommand> updates = new HashSet<>();
+    private final Collection<UpdateCommand> updates = new HashSet<>();
     private Sound sound = null;
     private float volume = 0.0f;
 
@@ -495,7 +495,7 @@ public class TranslationTask extends AsyncTask {
 
     private void processHighCraft(int minY, int maxY) {
         // Only modify dy when not switching worlds
-        //Check if the craft is too high
+        // Check if the craft is too high
         boolean sameWorld = world.equals(craft.getWorld());
         CraftType craftType = craft.getType();
         if (!sameWorld) {
@@ -508,17 +508,21 @@ public class TranslationTask extends AsyncTask {
         }
         final int perWorldMaxHeigh = (int) craftType.getPerWorldProperty(CraftType.PER_WORLD_MAX_HEIGHT_ABOVE_GROUND, world);
         // world == craft.world
-        if (perWorldMaxHeigh > 0) {
-            final MovecraftLocation middle = oldHitBox.getMidPoint();
-            int testY = minY;
-            while (testY > 0) {
-                testY--;
-                if (!craft.getWorld().getBlockAt(middle.getX(), testY, middle.getZ()).getType().isAir())
-                    break;
-            }
-            if (maxY - testY > perWorldMaxHeigh)
-                dy = Math.min(dy, -1);
+        if (perWorldMaxHeigh <= world.getMinHeight()) {
+            return;
         }
+
+        final MovecraftLocation middle = oldHitBox.getMidPoint();
+        int testY;
+
+        for (testY = minY; testY > 0; testY--) {
+            if (!craft.getWorld().getBlockAt(middle.getX(), testY - 1, middle.getZ()).getType().isAir()) {
+                break;
+            }
+        }
+
+        if (maxY - testY > perWorldMaxHeigh)
+            dy = Math.min(dy, -1);
     }
 
     private void fail(@NotNull String failMessage) {
