@@ -337,9 +337,9 @@ public class TranslationTask extends AsyncTask {
     }
 
     private void preventsTorpedoRocketsPilots() {
-        if (craft instanceof SinkingCraft
-                && craft.getType().getBoolProperty(CraftType.ONLY_MOVE_PLAYERS)
-                || !craft.getType().getBoolProperty(CraftType.MOVE_ENTITIES)) {
+        if (!craft.getType().getBoolProperty(CraftType.MOVE_ENTITIES) ||
+                (craft instanceof SinkingCraft
+                && craft.getType().getBoolProperty(CraftType.ONLY_MOVE_PLAYERS))) {
             // add releaseTask without playermove to manager
             if (!craft.getType().getBoolProperty(CraftType.CRUISE_ON_PILOT) && !(craft instanceof SinkingCraft))
                 // not necessary to release cruiseonpilot crafts, because they will already be released
