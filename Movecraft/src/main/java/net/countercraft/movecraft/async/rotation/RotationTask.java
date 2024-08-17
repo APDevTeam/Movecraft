@@ -261,9 +261,9 @@ public class RotationTask extends AsyncTask {
     }
 
     private void rotateEntitiesOnCraft(Location tOP) {
-        if (craft instanceof SinkingCraft
-                && craft.getType().getBoolProperty(CraftType.ONLY_MOVE_PLAYERS)
-                || !craft.getType().getBoolProperty(CraftType.MOVE_ENTITIES)) {
+        if (!craft.getType().getBoolProperty(CraftType.MOVE_ENTITIES)
+                || (craft instanceof SinkingCraft
+                && craft.getType().getBoolProperty(CraftType.ONLY_MOVE_PLAYERS))) {
             return;
         }
 
