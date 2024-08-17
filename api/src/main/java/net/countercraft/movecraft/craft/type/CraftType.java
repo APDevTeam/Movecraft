@@ -43,10 +43,7 @@ import net.countercraft.movecraft.util.Pair;
 import net.countercraft.movecraft.util.Tags;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -191,7 +188,7 @@ final public class CraftType {
     public static final NamespacedKey CRUISE_ON_PILOT_LIFETIME = buildKey("cruise_on_pilot_lifetime");
 
     public static final NamespacedKey EXPLOSION_ARMING_TIME = buildKey("explosion_arming_time");
-
+    public static final NamespacedKey DIRECTIONAL_DEPENDENT_MATERIALS = buildKey("directional_dependent_materials");
     public static final NamespacedKey ALLOW_INTERNAL_COLLISION_EXPLOSION = buildKey("allow_internal_collision_explosion");
     //endregion
 
@@ -395,6 +392,13 @@ final public class CraftType {
         /* Optional properties */
         registerProperty(new RequiredBlockProperty("flyblocks", FLY_BLOCKS, type -> new HashSet<>()));
         registerProperty(new RequiredBlockProperty("detectionblocks", DETECTION_BLOCKS, type -> new HashSet<>()));
+        registerProperty(new MaterialSetProperty("directionDependentMaterials", DIRECTIONAL_DEPENDENT_MATERIALS, type -> {
+            var set = EnumSet.of(Material.LADDER, Material.LEVER, Material.GRINDSTONE, Material.LANTERN);
+            set.addAll(Tag.WALL_SIGNS.getValues());
+            set.addAll(Tags.WALL_TORCHES);
+            return set;
+        }));
+
         registerProperty(new ObjectPropertyImpl("forbiddenSignStrings", FORBIDDEN_SIGN_STRINGS,
                 (data, type, fileKey, namespacedKey) -> data.getStringListOrEmpty(fileKey).stream().map(
                         String::toLowerCase).collect(Collectors.toSet()),
