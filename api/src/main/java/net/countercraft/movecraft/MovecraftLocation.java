@@ -20,6 +20,7 @@ package net.countercraft.movecraft;
 import com.google.common.primitives.UnsignedInteger;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.block.BlockFace;
 import org.jetbrains.annotations.NotNull;
 
 import static net.countercraft.movecraft.util.BitMath.mask;
@@ -85,6 +86,26 @@ final public class MovecraftLocation implements Comparable<MovecraftLocation>{
 
     public MovecraftLocation subtract(MovecraftLocation l) {
         return new MovecraftLocation(getX() - l.getX(), getY() - l.getY(), getZ() - l.getZ());
+    }
+
+    public MovecraftLocation hadamardProduct(int x, int y, int z){
+        return new MovecraftLocation(this.x*x, this.y*y, this.z*z);
+    }
+
+    public MovecraftLocation hadamardProduct(MovecraftLocation location){
+        return hadamardProduct(location.x, location.y, location.z);
+    }
+
+    public MovecraftLocation scalarMultiply(int multiplier){
+        return new MovecraftLocation(x * multiplier, y * multiplier, z * multiplier);
+    }
+
+    public MovecraftLocation scalarDivide(int divisor){
+        return new MovecraftLocation(x / divisor, y / divisor, z/divisor);
+    }
+
+    public MovecraftLocation scalarMod(int modulus){
+        return new MovecraftLocation(x % modulus, y & modulus, z % modulus);
     }
 
     /**
@@ -153,5 +174,9 @@ final public class MovecraftLocation implements Comparable<MovecraftLocation>{
             return this.z - other.z ;
         }
         return 0;
+    }
+
+    public MovecraftLocation getRelative(BlockFace facing) {
+        return this.translate(facing.getModX(), facing.getModY(), facing.getModZ());
     }
 }

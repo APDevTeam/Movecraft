@@ -3,12 +3,10 @@ package net.countercraft.movecraft.async.translation;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftChunk;
 import net.countercraft.movecraft.MovecraftLocation;
+import net.countercraft.movecraft.TrackedLocation;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.config.Settings;
-import net.countercraft.movecraft.craft.ChunkManager;
-import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.craft.SinkingCraft;
+import net.countercraft.movecraft.craft.*;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftCollisionEvent;
 import net.countercraft.movecraft.events.CraftCollisionExplosionEvent;
@@ -57,6 +55,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -69,13 +68,13 @@ public class TranslationTask extends AsyncTask {
     private World world;
     private int dx, dy, dz;
     private SetHitBox newHitBox;
-    private final HitBox oldHitBox;
-    private final SetHitBox oldFluidList;
-    private final SetHitBox newFluidList;
+    private HitBox oldHitBox;
+    private SetHitBox oldFluidList;
+    private SetHitBox newFluidList;
     private boolean failed;
     private boolean collisionExplosion = false;
     private String failMessage;
-    private final Collection<UpdateCommand> updates = new HashSet<>();
+    private Collection<UpdateCommand> updates = new HashSet<>();
     private Sound sound = null;
     private float volume = 0.0f;
 
@@ -286,16 +285,27 @@ public class TranslationTask extends AsyncTask {
             }
         } else if ((craft.getType().getFloatProperty(CraftType.COLLISION_EXPLOSION) > 0F)
                 && System.currentTimeMillis() - craft.getOrigPilotTime() > craft.getType().getIntProperty(CraftType.EXPLOSION_ARMING_TIME)) {
+            Craft parentCraft = null;
+            if (craft instanceof SubCraft) {
+                parentCraft = ((SubCraft) craft).getParent();
+            }
             for (MovecraftLocation location : collisionBox) {
-                float explosionForce = craft.getType().getFloatProperty(CraftType.COLLISION_EXPLOSION);
-                final boolean focused_explosion = craft.getType().getBoolProperty(CraftType.FOCUSED_EXPLOSION);
-                if (focused_explosion) {
+                if (parentCraft != null && parentCraft.getHitBox().contains(location)
+                   && !parentCraft.getType().getBoolProperty(CraftType.ALLOW_INTERNAL_COLLISION_EXPLOSION)) {
+                    //Prevents CollisionExplosion crafts from exploding inside the craft.
+                    break;
+                }
+                float explosionForce;
+                if (location.getY() < craft.getWaterLine()) {
+                    explosionForce = craft.getType().getFloatProperty(CraftType.UNDERWATER_COLLISION_EXPLOSION);
+                }
+                else {
+                    explosionForce = craft.getType().getFloatProperty(CraftType.COLLISION_EXPLOSION);
+                }
+                boolean incendiary = craft.getType().getBoolProperty(CraftType.INCENDIARY_ON_CRASH);
+                if (craft.getType().getBoolProperty(CraftType.FOCUSED_EXPLOSION)) {
                     explosionForce *= Math.min(oldHitBox.size(), craft.getType().getIntProperty(CraftType.MAX_SIZE));
                 }
-                //TODO: Account for underwater explosions
-                /*if (location.getY() < waterLine) { // underwater explosions require more force to do anything
-                    explosionForce += 25;//TODO: find the correct amount
-                }*/
                 Location oldLocation = location.translate(-dx, -dy, -dz).toBukkit(craft.getWorld());
                 Location newLocation = location.toBukkit(world);
                 if (!oldLocation.getBlock().getType().isAir()) {
@@ -303,12 +313,11 @@ public class TranslationTask extends AsyncTask {
                             newLocation, craft.getWorld());
                     Bukkit.getServer().getPluginManager().callEvent(e);
                     if (!e.isCancelled()) {
-                        updates.add(new ExplosionUpdateCommand(newLocation, explosionForce));
+                        updates.add(new ExplosionUpdateCommand(newLocation, explosionForce, incendiary));
                         collisionExplosion = true;
                     }
                 }
-
-                if (focused_explosion) {
+                if (craft.getType().getBoolProperty(CraftType.FOCUSED_EXPLOSION)) {
                     // don't handle any further collisions if it is set to focusedexplosion
                     break;
                 }
