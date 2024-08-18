@@ -75,6 +75,7 @@ public class IWorldHandler extends WorldHandler {
         ServerLevel nativeWorld = ((CraftWorld) craft.getWorld()).getHandle();
         List<TileHolder> tiles = new ArrayList<>();
         List<TickHolder> ticks = new ArrayList<>();
+
         //get the tiles
         for (BlockPos position : rotatedPositions.keySet()) {
 
