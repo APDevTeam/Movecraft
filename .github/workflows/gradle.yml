@@ -1,4 +1,4 @@
-name: Java CI
+name: Gradle CI
 
 on: 
   workflow_dispatch:
@@ -6,13 +6,15 @@ on:
   pull_request:
   schedule:
     - cron: '22 13 * * 6'
+  release:
+    types: [created, prereleased]
 
 jobs:
-  # Build Movecraft
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
+      packages: write
 
     steps:
       - name: Checkout Movecraft
@@ -30,12 +32,35 @@ jobs:
           build-scan-terms-of-use-agree: "yes"
 
       - name: Build with Gradle
-        run: ./gradlew clean shadowJar
+        run: ./gradlew clean shadowJar --parallel
 
-      - name: Stage jar
-        run: mkdir staging && cp Movecraft/build/libs/Movecraft-all.jar staging && mv staging/Movecraft-all.jar staging/Movecraft_$GITHUB_SHA.jar
-      - name: Upload jar
+      - name: Publish to GitHub Packages
+        if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
+        run: ./gradlew publish --parallel
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish to PaperMC Hangar
+        if: ${{ github.event_name == 'release' }}
+        run: ./gradlew publishPluginPublicationToHangar --parallel
+        env:
+          HANGAR_API_TOKEN: ${{ secrets.HANGAR_API_TOKEN }}
+
+      - name: Stage jar for Actions
+        if: ${{ github.event_name != 'release' }}
+        run: mkdir staging && cp Movecraft/build/libs/Movecraft.jar staging && mv staging/Movecraft.jar staging/Movecraft_$GITHUB_SHA.jar
+      - name: Upload jar to Actions
+        if: ${{ github.event_name != 'release' }}
         uses: actions/upload-artifact@v4
         with:
           name: Movecraft_Dev-Build
           path: staging/Movecraft_*.jar
+
+      - name: Stage jar for Release
+        if: ${{ github.event_name == 'release' }}
+        run: mkdir staging && cp Movecraft/build/libs/Movecraft.jar staging && mv staging/Movecraft.jar staging/Movecraft_${{ github.event.release.tag_name }}.jar
+      - name: Upload jar to Release
+        if: ${{ github.event_name == 'release' }}
+        uses: softprops/action-gh-release@v2
+        with:
+          files: staging/Movecraft_${{ github.event.release.tag_name }}.jar

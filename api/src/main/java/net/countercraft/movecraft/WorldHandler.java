@@ -19,6 +19,9 @@ public abstract class WorldHandler {
     public abstract void setAccessLocation(@NotNull InventoryView inventoryView, @NotNull Location location);
 
     public static @NotNull String getPackageName(@NotNull String minecraftVersion) {
-        return "v1_" + minecraftVersion.substring(minecraftVersion.indexOf('.') + 1, minecraftVersion.lastIndexOf('.'));
+        String[] parts = minecraftVersion.split("\\.");
+        if (parts.length < 2)
+            throw new IllegalArgumentException();
+        return "v1_" + parts[1];
     }
 }

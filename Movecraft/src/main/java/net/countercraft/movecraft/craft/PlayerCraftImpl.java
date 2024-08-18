@@ -8,8 +8,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.UUID;
 
 public class PlayerCraftImpl extends BaseCraft implements PlayerCraft {
-    private final UUID id = UUID.randomUUID();
-    private final int hashCode = id.hashCode();
     private final Player pilot;
     private boolean pilotLocked;
     private double pilotLockedX;
@@ -30,12 +28,7 @@ public class PlayerCraftImpl extends BaseCraft implements PlayerCraft {
         if (!(obj instanceof PlayerCraftImpl))
             return false;
 
-        return id.equals(((PlayerCraftImpl) obj).id);
-    }
-
-    @Override
-    public int hashCode() {
-        return hashCode;
+        return super.equals(obj);
     }
 
     @NotNull

@@ -26,6 +26,7 @@ import net.countercraft.movecraft.events.TypesReloadedEvent;
 import net.countercraft.movecraft.exception.NonCancellableReleaseException;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.CachedMovecraftWorld;
+import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.processing.WorldManager;
 import net.countercraft.movecraft.processing.effects.Effect;
 import net.countercraft.movecraft.processing.functions.CraftSupplier;
@@ -243,7 +244,7 @@ public class CraftManager implements Iterable<Craft>{
                         craft.getHitBox().getMinZ())
                 );
         }
-        Movecraft.getInstance().getAsyncManager().addWreck(craft);
+        Movecraft.getInstance().getWreckManager().queueWreck(craft);
     }
 
     //region Craft management
@@ -319,17 +320,17 @@ public class CraftManager implements Iterable<Craft>{
     public Set<Craft> getCraftsInWorld(@NotNull World w) {
         Set<Craft> crafts = new HashSet<>(this.crafts.size(), 1); // never has to resize
         for (Craft c : this.crafts) {
-            if (c.getWorld() == w)
+            if (c.getMovecraftWorld().getWorldUUID() == w.getUID())
                 crafts.add(c);
         }
         return crafts;
     }
 
     @NotNull
-    public Set<PlayerCraft> getPlayerCraftsInWorld(World world) {
+    public Set<PlayerCraft> getPlayerCraftsInWorld(World w) {
         Set<PlayerCraft> crafts = new HashSet<>(this.crafts.size(), 1); // never has to resize
         for (PlayerCraft craft : playerCrafts.values()) {
-            if (craft.getWorld() == world)
+            if (craft.getMovecraftWorld().getWorldUUID() == w.getUID())
                 crafts.add(craft);
         }
         return crafts;

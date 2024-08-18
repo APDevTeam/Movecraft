@@ -8,6 +8,7 @@ import java.util.List;
 
 import static org.bukkit.util.ChatPaginator.CLOSED_CHAT_PAGE_HEIGHT;
 
+@Deprecated(forRemoval = true)
 public class TopicPaginator {
     private String title;
     private List<String> lines = new ArrayList<>();

@@ -23,9 +23,14 @@ import net.countercraft.movecraft.commands.*;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.ChunkManager;
 import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.listener.BlockListener;
-import net.countercraft.movecraft.listener.InteractListener;
-import net.countercraft.movecraft.listener.PlayerListener;
+import net.countercraft.movecraft.craft.datatag.CraftDataTagRegistry;
+import net.countercraft.movecraft.features.contacts.ContactsCommand;
+import net.countercraft.movecraft.features.contacts.ContactsManager;
+import net.countercraft.movecraft.features.contacts.ContactsSign;
+import net.countercraft.movecraft.features.fading.WreckManager;
+import net.countercraft.movecraft.features.status.StatusManager;
+import net.countercraft.movecraft.features.status.StatusSign;
+import net.countercraft.movecraft.listener.*;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.processing.WorldManager;
@@ -35,6 +40,7 @@ import net.countercraft.movecraft.util.Tags;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -52,6 +58,7 @@ public class Movecraft extends JavaPlugin {
     private WorldHandler worldHandler;
     private SmoothTeleport smoothTeleport;
     private AsyncManager asyncManager;
+    private WreckManager wreckManager;
 
     public static synchronized Movecraft getInstance() {
         return instance;
@@ -70,6 +77,7 @@ public class Movecraft extends JavaPlugin {
         Settings.DisableNMSCompatibilityCheck = getConfig().getBoolean("IReallyKnowWhatIAmDoing", false);
         Settings.DisableSpillProtection = getConfig().getBoolean("DisableSpillProtection", false);
         Settings.DisableIceForm = getConfig().getBoolean("DisableIceForm", true);
+        Settings.ReleaseOnDeath = getConfig().getBoolean("ReleaseOnDeath", false);
 
         String[] localisations = {"en", "cz", "nl", "fr"};
         for (String s : localisations) {
@@ -183,8 +191,10 @@ public class Movecraft extends JavaPlugin {
         asyncManager.runTaskTimer(this, 0, 1);
         MapUpdateManager.getInstance().runTaskTimer(this, 0, 1);
 
+
         CraftManager.initialize(datapackInitialized);
         Bukkit.getScheduler().runTaskTimer(this, WorldManager.INSTANCE::run, 0,1);
+        wreckManager = new WreckManager(WorldManager.INSTANCE);
 
         getServer().getPluginManager().registerEvents(new InteractListener(), this);
 
@@ -195,7 +205,6 @@ public class Movecraft extends JavaPlugin {
         getCommand("cruise").setExecutor(new CruiseCommand());
         getCommand("craftreport").setExecutor(new CraftReportCommand());
         getCommand("manoverboard").setExecutor(new ManOverboardCommand());
-        getCommand("contacts").setExecutor(new ContactsCommand());
         getCommand("scuttle").setExecutor(new ScuttleCommand());
         getCommand("crafttype").setExecutor(new CraftTypeCommand());
         getCommand("craftinfo").setExecutor(new CraftInfoCommand());
@@ -204,7 +213,6 @@ public class Movecraft extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new PlayerListener(), this);
         getServer().getPluginManager().registerEvents(new ChunkManager(), this);
         getServer().getPluginManager().registerEvents(new AscendSign(), this);
-        getServer().getPluginManager().registerEvents(new ContactsSign(), this);
         getServer().getPluginManager().registerEvents(new CraftSign(), this);
         getServer().getPluginManager().registerEvents(new CruiseSign(), this);
         getServer().getPluginManager().registerEvents(new DescendSign(), this);
@@ -216,10 +224,22 @@ public class Movecraft extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new ReleaseSign(), this);
         getServer().getPluginManager().registerEvents(new RemoteSign(), this);
         getServer().getPluginManager().registerEvents(new SpeedSign(), this);
-        getServer().getPluginManager().registerEvents(new StatusSign(), this);
         getServer().getPluginManager().registerEvents(new SubcraftRotateSign(), this);
         getServer().getPluginManager().registerEvents(new TeleportSign(), this);
         getServer().getPluginManager().registerEvents(new ScuttleSign(), this);
+        getServer().getPluginManager().registerEvents(new CraftPilotListener(), this);
+        getServer().getPluginManager().registerEvents(new CraftReleaseListener(), this);
+
+        var contactsManager = new ContactsManager();
+        contactsManager.runTaskTimerAsynchronously(this, 0, 20);
+        getServer().getPluginManager().registerEvents(contactsManager, this);
+        getServer().getPluginManager().registerEvents(new ContactsSign(), this);
+        getCommand("contacts").setExecutor(new ContactsCommand());
+
+        var statusManager = new StatusManager();
+        statusManager.runTaskTimerAsynchronously(this, 0, 1);
+        getServer().getPluginManager().registerEvents(statusManager, this);
+        getServer().getPluginManager().registerEvents(new StatusSign(), this);
 
         logger.info("[V " + getDescription().getVersion() + "] has been enabled.");
     }
@@ -230,7 +250,6 @@ public class Movecraft extends JavaPlugin {
         instance = this;
         logger = getLogger();
         saveDefaultConfig();
-
     }
 
     private boolean initializeDatapack() {
@@ -314,5 +333,11 @@ public class Movecraft extends JavaPlugin {
         return smoothTeleport;
     }
 
-    public AsyncManager getAsyncManager(){return asyncManager;}
+    public AsyncManager getAsyncManager() {
+        return asyncManager;
+    }
+
+    public @NotNull WreckManager getWreckManager(){
+        return wreckManager;
+    }
 }

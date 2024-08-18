@@ -1,6 +1,6 @@
 Movecraft
 ======
-![Java CI](https://github.com/APDevTeam/Movecraft/workflows/Java%20CI/badge.svg?branch=main)
+![Java CI](https://github.com/APDevTeam/Movecraft/actions/workflows/gradle.yml/badge.svg?branch=main)
 
 This is a maintained fork of Movecraft, which aims to add legacy version support as well as performance fixes.
 
@@ -26,7 +26,7 @@ Please check the [Wiki](https://github.com/APDevTeam/Movecraft/wiki) and [FAQ](h
 ## Development Environment
 Building Movecraft is as easy as downloading the source code and executing the following command:
 ```
-./gradlew clean shadowJar
+./gradlew clean shadowJar --parallel
 ```
 Compiled jars can be found in the `Movecraft/build/libs` directory.
 
