@@ -3,7 +3,6 @@ package net.countercraft.movecraft.async.translation;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftChunk;
 import net.countercraft.movecraft.MovecraftLocation;
-import net.countercraft.movecraft.TrackedLocation;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.*;
@@ -55,7 +54,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -270,7 +268,8 @@ public class TranslationTask extends AsyncTask {
                     Location loc = location.toBukkit(craft.getWorld());
                     if (!loc.getBlock().getType().isAir() && ThreadLocalRandom.current().nextDouble(1) < .05) {
                         updates.add(new ExplosionUpdateCommand(loc,
-                                craft.getType().getFloatProperty(CraftType.EXPLODE_ON_CRASH)));
+                                craft.getType().getFloatProperty(CraftType.EXPLODE_ON_CRASH),
+                                craft.getType().getBoolProperty(CraftType.INCENDIARY_ON_CRASH)));
                         collisionExplosion = true;
                     }
                 }
