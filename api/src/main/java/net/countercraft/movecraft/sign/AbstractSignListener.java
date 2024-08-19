@@ -27,7 +27,7 @@ public abstract class AbstractSignListener implements Listener {
         INSTANCE = this;
     }
 
-    public static record SignWrapper(
+    public record SignWrapper(
             Sign block,
             Function<Integer, Component> getLine,
             List<Component> lines,
