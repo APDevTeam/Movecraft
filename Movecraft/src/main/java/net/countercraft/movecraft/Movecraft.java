@@ -252,6 +252,7 @@ public class Movecraft extends JavaPlugin {
         contactsManager.runTaskTimerAsynchronously(this, 0, 20);
         getServer().getPluginManager().registerEvents(contactsManager, this);
         getServer().getPluginManager().registerEvents(new ContactsSign(), this);
+        getServer().getPluginManager().registerEvents(new CraftTypeListener(), this);
         getCommand("contacts").setExecutor(new ContactsCommand());
 
         var statusManager = new StatusManager();

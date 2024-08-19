@@ -23,9 +23,7 @@ public abstract class AbstractMovecraftSign {
     }
 
     public static void registerCraftPilotSigns(Set<CraftType> loadedTypes, Function<CraftType, AbstractCraftPilotSign> signFactory) {
-        SIGNS.entrySet().removeIf(entry -> {
-           return entry.getValue() instanceof AbstractCraftPilotSign;
-        });
+        SIGNS.entrySet().removeIf(entry ->  entry.getValue() instanceof AbstractCraftPilotSign);
         // Now, add all types...
         for (CraftType type : loadedTypes) {
             AbstractCraftPilotSign sign = signFactory.apply(type);

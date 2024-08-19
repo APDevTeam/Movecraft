@@ -35,7 +35,6 @@ public class MovecraftCommand implements TabExecutor {
 
         if(args.length==1 && args[0].equalsIgnoreCase("reloadtypes") && commandSender.hasPermission("movecraft.commands.movecraft.reloadtypes")){
             CraftManager.getInstance().reloadCraftTypes();
-            AbstractMovecraftSign.registerCraftPilotSigns(CraftManager.getInstance().getCraftTypes(), CraftPilotSign::new);
             commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Movecraft - Reloaded Types"));
             return true;
         }
