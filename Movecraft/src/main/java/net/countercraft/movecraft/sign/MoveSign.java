@@ -67,7 +67,7 @@ public class MoveSign extends AbstractCraftSign {
     }
 
     @Override
-    protected boolean internalProcessSign(Action clickType, AbstractSignListener.SignWrapper sign, Player player, Craft craft) {
+    protected boolean internalProcessSignWithCraft(Action clickType, AbstractSignListener.SignWrapper sign, Craft craft, Player player) {
         if (!craft.getType().getBoolProperty(CraftType.CAN_STATIC_MOVE)) {
             return false;
         }

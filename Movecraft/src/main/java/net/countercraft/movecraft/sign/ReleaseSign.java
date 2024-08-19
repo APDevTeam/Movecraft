@@ -43,7 +43,7 @@ public class ReleaseSign extends AbstractCraftSign {
     }
 
     @Override
-    protected boolean internalProcessSign(Action clickType, AbstractSignListener.SignWrapper sign, Player player, Craft craft) {
+    protected boolean internalProcessSignWithCraft(Action clickType, AbstractSignListener.SignWrapper sign, Craft craft, Player player) {
         CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.PLAYER, false);
         return true;
     }

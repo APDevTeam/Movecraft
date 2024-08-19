@@ -41,15 +41,15 @@ public abstract class AbstractCraftSign extends AbstractMovecraftSign {
         if (!this.canPlayerUseSign(clickType, sign, player)) {
             return false;
         }
-        Optional<Craft> craft = this.getCraft(sign);
-        if (craft.isEmpty()) {
+        Craft craft = this.getCraft(sign);
+        if (craft == null) {
             this.onCraftNotFound(player, sign);
             return false;
         }
 
-        if (craft.get() instanceof PlayerCraft pc) {
+        if (craft instanceof PlayerCraft pc) {
             if (!pc.isNotProcessing() && !this.ignoreCraftIsBusy) {
-                this.onCraftIsBusy(player, craft.get());
+                this.onCraftIsBusy(player, craft);
                 return false;
             }
         }
@@ -58,12 +58,12 @@ public abstract class AbstractCraftSign extends AbstractMovecraftSign {
     }
 
     @Override
-    protected boolean internalProcessSign(Action clickType, AbstractSignListener.SignWrapper sign, Player player, Optional<Craft> craft) {
-        if (craft.isEmpty()) {
+    protected boolean internalProcessSign(Action clickType, AbstractSignListener.SignWrapper sign, Player player, @Nullable Craft craft) {
+        if (craft == null) {
             throw new IllegalStateException("Somehow craft is not set here. It should always be present here!");
         }
-        if (this.canPlayerUseSignOn(player, craft.get())) {
-            return this.internalProcessSign(clickType, sign, player, craft.get());
+        if (this.canPlayerUseSignOn(player, craft)) {
+            return this.internalProcessSignWithCraft(clickType, sign, craft, player);
         }
         return false;
     }
@@ -89,6 +89,7 @@ public abstract class AbstractCraftSign extends AbstractMovecraftSign {
 
     protected abstract boolean isSignValid(Action clickType, AbstractSignListener.SignWrapper sign, Player player);
 
-    protected abstract boolean internalProcessSign(Action clickType, AbstractSignListener.SignWrapper sign, Player player, Craft craft);
+    // Gets called by internalProcessSign if a craft is found
+    protected abstract boolean internalProcessSignWithCraft(Action clickType, AbstractSignListener.SignWrapper sign, Craft craft, Player player);
 
 }

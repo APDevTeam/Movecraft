@@ -94,12 +94,13 @@ public abstract class AbstractMovecraftSign {
         return player.hasPermission(this.permissionString);
     }
 
-    protected Optional<Craft> getCraft(AbstractSignListener.SignWrapper sign) {
-        return Optional.ofNullable(MathUtils.getCraftByPersistentBlockData(sign.block().getLocation()));
+    @Nullable
+    protected Craft getCraft(AbstractSignListener.SignWrapper sign) {
+        return MathUtils.getCraftByPersistentBlockData(sign.block().getLocation());
     }
 
     public abstract boolean shouldCancelEvent(boolean processingSuccessful, @Nullable Action type, boolean sneaking);
     protected abstract boolean isSignValid(Action clickType, AbstractSignListener.SignWrapper sign, Player player);
-    protected abstract boolean internalProcessSign(Action clickType, AbstractSignListener.SignWrapper sign, Player player, Optional<Craft> craft);
+    protected abstract boolean internalProcessSign(Action clickType, AbstractSignListener.SignWrapper sign, Player player, @Nullable Craft craft);
     public abstract boolean processSignChange(SignChangeEvent event, AbstractSignListener.SignWrapper sign);
 }

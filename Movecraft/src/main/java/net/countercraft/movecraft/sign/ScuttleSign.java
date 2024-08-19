@@ -79,7 +79,7 @@ public class ScuttleSign extends AbstractCraftSign {
     }
 
     @Override
-    protected boolean internalProcessSign(Action clickType, AbstractSignListener.SignWrapper sign, Player player, Craft craft) {
+    protected boolean internalProcessSignWithCraft(Action clickType, AbstractSignListener.SignWrapper sign, Craft craft, Player player) {
         CraftScuttleEvent e = new CraftScuttleEvent(craft, player);
         Bukkit.getServer().getPluginManager().callEvent(e);
         if(e.isCancelled())

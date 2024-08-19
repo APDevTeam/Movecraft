@@ -56,7 +56,7 @@ public class CraftPilotSign extends AbstractCraftPilotSign {
     }
 
     @Override
-    protected boolean internalProcessSign(Action clickType, AbstractSignListener.SignWrapper sign, Player player, Optional<Craft> craft) {
+    protected boolean internalProcessSign(Action clickType, AbstractSignListener.SignWrapper sign, Player player, @javax.annotation.Nullable Craft craft) {
         if (this.craftType.getBoolProperty(CraftType.MUST_BE_SUBCRAFT) && craft.isEmpty()) {
             return false;
         }
