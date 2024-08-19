@@ -40,12 +40,12 @@ public abstract class AbstractMovecraftSign {
         return Optional.ofNullable(SIGNS.getOrDefault(identToUse, null));
     }
 
-    public static void forceRegister(final String ident, final @Nonnull AbstractMovecraftSign instance) {
+    public static void register(final String ident, final @Nonnull AbstractMovecraftSign instance) {
         register(ident, instance, true);
     }
 
-    public static void register(final String ident, final @Nonnull AbstractMovecraftSign instance, boolean allowOverride) {
-        if (allowOverride) {
+    public static void register(final String ident, final @Nonnull AbstractMovecraftSign instance, boolean overrideIfAlreadyRegistered) {
+        if (overrideIfAlreadyRegistered) {
             SIGNS.put(ident.toUpperCase(), instance);
         } else {
             SIGNS.putIfAbsent(ident.toUpperCase(), instance);
