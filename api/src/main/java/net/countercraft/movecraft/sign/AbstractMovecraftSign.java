@@ -65,7 +65,7 @@ public abstract class AbstractMovecraftSign {
 
     public static String findIdent(AbstractMovecraftSign instance) {
         if (!SIGNS.containsValue(instance)) {
-            throw new IllegalArgumentException("MovecraftSign instanceo must be registered!");
+            throw new IllegalArgumentException("MovecraftSign instance must be registered!");
         }
         for (Map.Entry<String, AbstractMovecraftSign> entry : SIGNS.entrySet()) {
             if (entry.getValue() == instance) {
