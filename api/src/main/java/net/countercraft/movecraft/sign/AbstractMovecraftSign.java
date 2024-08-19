@@ -2,7 +2,6 @@ package net.countercraft.movecraft.sign;
 
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.type.CraftType;
-import net.countercraft.movecraft.events.CraftPilotEvent;
 import net.countercraft.movecraft.util.MathUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
@@ -53,14 +52,15 @@ public abstract class AbstractMovecraftSign {
         }
     }
 
-    protected final Optional<String> optPermission;
+    @Nullable
+    protected final String permissionString;
 
     public AbstractMovecraftSign() {
         this(null);
     }
 
     public AbstractMovecraftSign(String permissionNode) {
-        this.optPermission = Optional.ofNullable(permissionNode);
+        this.permissionString = permissionNode;
     }
 
     public static String findIdent(AbstractMovecraftSign instance) {
@@ -88,7 +88,10 @@ public abstract class AbstractMovecraftSign {
     }
 
     protected boolean canPlayerUseSign(Action clickType, AbstractSignListener.SignWrapper sign, Player player) {
-        return this.optPermission.map(player::hasPermission).orElse(true);
+        if (this.permissionString == null || this.permissionString.isBlank()) {
+            return true;
+        }
+        return player.hasPermission(this.permissionString);
     }
 
     protected Optional<Craft> getCraft(AbstractSignListener.SignWrapper sign) {

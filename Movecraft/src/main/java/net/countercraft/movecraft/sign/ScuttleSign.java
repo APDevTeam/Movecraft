@@ -69,8 +69,8 @@ public class ScuttleSign extends AbstractCraftSign {
             }
         }
         // Check for "can scuttle others" permission
-        if (this.optPermission.isPresent()) {
-            if (!player.hasPermission(this.optPermission.get())) {
+        if (this.permissionString != null || !this.permissionString.isBlank()) {
+            if (!player.hasPermission(this.permissionString)) {
                 player.sendMessage(MOVECRAFT_COMMAND_PREFIX
                         + I18nSupport.getInternationalisedString("You must be piloting a craft"));
             }
