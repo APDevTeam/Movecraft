@@ -35,9 +35,8 @@ public abstract class AbstractMovecraftSign {
         String identToUse = ident.toUpperCase();
         if (identToUse.contains(":")) {
             identToUse = identToUse.split(":")[0];
-            if (ident.contains(":")) {
-                identToUse = identToUse + ":";
-            }
+            // Re-add the : cause things should be registered with : at the end
+            identToUse = identToUse + ":";
         }
         return Optional.ofNullable(SIGNS.getOrDefault(identToUse, null));
     }
