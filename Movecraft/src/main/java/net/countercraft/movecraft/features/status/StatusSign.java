@@ -1,4 +1,4 @@
-package net.countercraft.movecraft.sign;
+package net.countercraft.movecraft.features.status;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
@@ -6,6 +6,8 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.craft.type.RequiredBlockEntry;
+import net.countercraft.movecraft.sign.AbstractInformationSign;
+import net.countercraft.movecraft.sign.AbstractSignListener;
 import net.countercraft.movecraft.util.Counter;
 import net.countercraft.movecraft.util.Tags;
 import net.kyori.adventure.text.Component;
