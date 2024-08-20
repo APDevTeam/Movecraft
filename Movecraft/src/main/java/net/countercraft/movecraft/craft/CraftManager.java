@@ -244,7 +244,7 @@ public class CraftManager implements Iterable<Craft>{
                         craft.getHitBox().getMinZ())
                 );
         }
-        Movecraft.getInstance().getWreckManager().queueWreck(craft);
+        Movecraft.getInstance().getAsyncManager().addWreck(craft);
     }
 
     //region Craft management

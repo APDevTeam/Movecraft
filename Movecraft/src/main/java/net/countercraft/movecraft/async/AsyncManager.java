@@ -23,26 +23,24 @@ import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
-import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.craft.PilotedCraft;
-import net.countercraft.movecraft.craft.PlayerCraft;
-import net.countercraft.movecraft.craft.SinkingCraft;
+import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.craft.*;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
+import net.countercraft.movecraft.mapUpdater.update.BlockCreateCommand;
+import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
+import net.countercraft.movecraft.util.hitboxes.HitBox;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.WeakHashMap;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -51,7 +49,13 @@ public class AsyncManager extends BukkitRunnable {
     private final Map<AsyncTask, Craft> ownershipMap = new HashMap<>();
     private final BlockingQueue<AsyncTask> finishedAlgorithms = new LinkedBlockingQueue<>();
     private final Set<Craft> clearanceSet = new HashSet<>();
+    private final Map<HitBox, Long> wrecks = new HashMap<>();
+    private final Map<HitBox, World> wreckWorlds = new HashMap<>();
+    private final Map<HitBox, Map<Location, BlockData>> wreckPhases = new HashMap<>();
+    private final Map<World, Set<MovecraftLocation>> processedFadeLocs = new HashMap<>();
     private final Map<Craft, Integer> cooldownCache = new WeakHashMap<>();
+
+    private long lastFadeCheck = 0;
 
     public AsyncManager() {}
 
@@ -65,6 +69,15 @@ public class AsyncManager extends BukkitRunnable {
 
     public void submitCompletedTask(AsyncTask task) {
         finishedAlgorithms.add(task);
+    }
+
+    public void addWreck(Craft craft){
+        if(craft.getCollapsedHitBox().isEmpty() || Settings.FadeWrecksAfter == 0){
+            return;
+        }
+        wrecks.put(craft.getCollapsedHitBox(), System.currentTimeMillis());
+        wreckWorlds.put(craft.getCollapsedHitBox(), craft.getWorld());
+        wreckPhases.put(craft.getCollapsedHitBox(), craft.getPhaseBlocks());
     }
 
     private void processAlgorithmQueue() {
@@ -312,11 +325,68 @@ public class AsyncManager extends BukkitRunnable {
         }
     }
 
+    private void processFadingBlocks() {
+        if (Settings.FadeWrecksAfter == 0)
+            return;
+        long ticksElapsed = (System.currentTimeMillis() - lastFadeCheck) / 50;
+        if (ticksElapsed <= Settings.FadeTickCooldown)
+            return;
+
+        List<HitBox> processed = new ArrayList<>();
+        for(Map.Entry<HitBox, Long> entry : wrecks.entrySet()){
+            if (Settings.FadeWrecksAfter * 1000L > System.currentTimeMillis() - entry.getValue())
+                continue;
+
+            final HitBox hitBox = entry.getKey();
+            final Map<Location, BlockData> phaseBlocks = wreckPhases.get(hitBox);
+            final World world = wreckWorlds.get(hitBox);
+            List<UpdateCommand> commands = new ArrayList<>();
+            int fadedBlocks = 0;
+            if (!processedFadeLocs.containsKey(world))
+                processedFadeLocs.put(world, new HashSet<>());
+
+            int maxFadeBlocks = (int) (hitBox.size() *  (Settings.FadePercentageOfWreckPerCycle / 100.0));
+            //Iterate hitbox as a set to get more random locations
+            for (MovecraftLocation location : hitBox.asSet()){
+                if (processedFadeLocs.get(world).contains(location))
+                    continue;
+
+                if (fadedBlocks >= maxFadeBlocks)
+                    break;
+
+                final Location bLoc = location.toBukkit(world);
+                if ((Settings.FadeWrecksAfter
+                        + Settings.ExtraFadeTimePerBlock.getOrDefault(bLoc.getBlock().getType(), 0))
+                        * 1000L > System.currentTimeMillis() - entry.getValue())
+                    continue;
+
+                fadedBlocks++;
+                processedFadeLocs.get(world).add(location);
+                BlockData phaseBlock = phaseBlocks.getOrDefault(bLoc, Material.AIR.createBlockData());
+                commands.add(new BlockCreateCommand(world, location, phaseBlock));
+            }
+            MapUpdateManager.getInstance().scheduleUpdates(commands);
+            if (!processedFadeLocs.get(world).containsAll(hitBox.asSet()))
+                continue;
+
+            processed.add(hitBox);
+            processedFadeLocs.get(world).removeAll(hitBox.asSet());
+        }
+        for(HitBox hitBox : processed) {
+            wrecks.remove(hitBox);
+            wreckPhases.remove(hitBox);
+            wreckWorlds.remove(hitBox);
+        }
+
+        lastFadeCheck = System.currentTimeMillis();
+    }
+
     public void run() {
         clearAll();
 
         processCruise();
         processSinking();
+        processFadingBlocks();
         processAlgorithmQueue();
 
         // now cleanup craft that are bugged and have not moved in the past 60 seconds,
