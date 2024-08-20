@@ -198,16 +198,7 @@ public class Movecraft extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(new InteractListener(), this);
 
-        getCommand("movecraft").setExecutor(new MovecraftCommand());
-        getCommand("release").setExecutor(new ReleaseCommand());
-        getCommand("pilot").setExecutor(new PilotCommand());
-        getCommand("rotate").setExecutor(new RotateCommand());
-        getCommand("cruise").setExecutor(new CruiseCommand());
-        getCommand("craftreport").setExecutor(new CraftReportCommand());
-        getCommand("manoverboard").setExecutor(new ManOverboardCommand());
-        getCommand("scuttle").setExecutor(new ScuttleCommand());
-        getCommand("crafttype").setExecutor(new CraftTypeCommand());
-        getCommand("craftinfo").setExecutor(new CraftInfoCommand());
+        initializeCommands();
 
         getServer().getPluginManager().registerEvents(new BlockListener(), this);
         getServer().getPluginManager().registerEvents(new PlayerListener(), this);
@@ -242,6 +233,19 @@ public class Movecraft extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new StatusSign(), this);
 
         logger.info("[V " + getDescription().getVersion() + "] has been enabled.");
+    }
+
+    private void initializeCommands() {
+        getCommand("movecraft").setExecutor(new MovecraftCommand());
+        getCommand("release").setExecutor(new ReleaseCommand());
+        getCommand("pilot").setExecutor(new PilotCommand());
+        getCommand("rotate").setExecutor(new RotateCommand());
+        getCommand("cruise").setExecutor(new CruiseCommand());
+        getCommand("craftreport").setExecutor(new CraftReportCommand());
+        getCommand("manoverboard").setExecutor(new ManOverboardCommand());
+        getCommand("scuttle").setExecutor(new ScuttleCommand());
+        getCommand("crafttype").setExecutor(new CraftTypeCommand());
+        getCommand("craftinfo").setExecutor(new CraftInfoCommand());
     }
 
     @Override
