@@ -13,6 +13,7 @@ dependencies {
     runtimeOnly(project(":movecraft-v1_21", "reobf"))
     implementation(project(":movecraft-api"))
     compileOnly("org.yaml:snakeyaml:2.0")
+    implementation("co.aikar:acf-paper:0.5.1-SNAPSHOT")
 }
 
 tasks.shadowJar {
