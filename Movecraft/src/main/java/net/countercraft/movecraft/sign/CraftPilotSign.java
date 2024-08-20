@@ -57,12 +57,12 @@ public class CraftPilotSign extends AbstractCraftPilotSign {
 
     @Override
     protected boolean internalProcessSign(Action clickType, AbstractSignListener.SignWrapper sign, Player player, @javax.annotation.Nullable Craft craft) {
-        if (this.craftType.getBoolProperty(CraftType.MUST_BE_SUBCRAFT) && craft.isEmpty()) {
+        if (this.craftType.getBoolProperty(CraftType.MUST_BE_SUBCRAFT) && craft == null) {
             return false;
         }
         World world = sign.block().getWorld();
-        if (craft.isPresent()) {
-            world = craft.get().getWorld();
+        if (craft != null) {
+            world = craft.getWorld();
         }
         Location loc = sign.block().getLocation();
         MovecraftLocation startPoint = new MovecraftLocation(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
@@ -77,7 +77,7 @@ public class CraftPilotSign extends AbstractCraftPilotSign {
         return true;
     }
 
-    protected void runDetectTask(MovecraftLocation startPoint, Player player, AbstractSignListener.SignWrapper signWrapper, Optional<Craft> parentCraft, World world) {
+    protected void runDetectTask(MovecraftLocation startPoint, Player player, AbstractSignListener.SignWrapper signWrapper, Craft parentCraft, World world) {
         PILOTING.add(startPoint);
         CraftManager.getInstance().detect(
                 startPoint,

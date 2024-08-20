@@ -28,7 +28,7 @@ public abstract class AbstractCraftSign extends AbstractMovecraftSign {
         return Optional.empty();
     }
 
-    private final boolean ignoreCraftIsBusy;
+    protected final boolean ignoreCraftIsBusy;
 
     public AbstractCraftSign(boolean ignoreCraftIsBusy) {
         this(null, ignoreCraftIsBusy);
