@@ -26,6 +26,8 @@ tasks.shadowJar {
         include(project(":movecraft-v1_18"))
         include(project(":movecraft-v1_20"))
         include(project(":movecraft-v1_21"))
+        relocate("co.aikar.commands", "Movecraft.acf")
+        relocate("co.aikar.locales", "Movecraft.locales")
     }
 }
 
