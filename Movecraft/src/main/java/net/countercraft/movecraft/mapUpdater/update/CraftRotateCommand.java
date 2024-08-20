@@ -28,6 +28,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -233,20 +234,22 @@ public class CraftRotateCommand extends UpdateCommand {
             // TODO: This is implemented only to fix client caching
             //  ideally we wouldn't do the update and would instead fake it out to the player
             for (MovecraftLocation location : entry.getValue()) {
-                Block block = location.toBukkit(craft.getWorld()).getBlock();
+                Location mcLocation = location.toBukkit(craft.getWorld());
+                Block block = mcLocation.getBlock();
                 BlockState state = block.getState();
-                BlockData data = block.getBlockData();
                 if (!(state instanceof Sign)) {
                     continue;
                 }
+
                 Sign sign = signStates.get(location);
-                if (event.isUpdated()) {
-                    for (int i = 0; i < 4; i++) {
-                        sign.setLine(i, entry.getKey()[i]);
-                    }
+                for (Player player : mcLocation.getNearbyPlayers(64)) {
+                    player.sendSignChange(mcLocation, entry.getKey(), sign.getColor(), sign.isGlowingText());
                 }
-                sign.update(false, false);
-                block.setBlockData(data);
+                /*
+                for(int i = 0; i<4; i++){
+                    sign.setLine(i, entry.getKey()[i]);
+                }
+                sign.update(false, false);*/
             }
         }
     }
