@@ -514,22 +514,22 @@ public class TranslationTask extends AsyncTask {
             dy = Math.min(dy, -1);
             return;
         }
-        final int perWorldMaxHeigh = (int) craftType.getPerWorldProperty(CraftType.PER_WORLD_MAX_HEIGHT_ABOVE_GROUND, world);
+        final int perWorldMaxHeighAboveGround = (int) craftType.getPerWorldProperty(CraftType.PER_WORLD_MAX_HEIGHT_ABOVE_GROUND, world);
         // world == craft.world
-        if (perWorldMaxHeigh <= world.getMinHeight()) {
+        if (perWorldMaxHeighAboveGround <= 0) {
             return;
         }
 
         final MovecraftLocation middle = oldHitBox.getMidPoint();
         int testY;
 
-        for (testY = minY; testY > world.getMinHeight(); testY--) {
+        for (testY = minY; testY > 0; testY--) {
             if (!craft.getWorld().getBlockAt(middle.getX(), testY - 1, middle.getZ()).getType().isAir()) {
                 break;
             }
         }
 
-        if (maxY - testY > perWorldMaxHeigh)
+        if (maxY - testY > perWorldMaxHeighAboveGround)
             dy = Math.min(dy, -1);
     }
 
