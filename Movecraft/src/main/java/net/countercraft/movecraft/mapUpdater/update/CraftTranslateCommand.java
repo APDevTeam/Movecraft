@@ -344,6 +344,9 @@ public class CraftTranslateCommand extends UpdateCommand {
                 }
 
                 Sign sign = signStates.get(location);
+                if (!event.isUpdated())
+                    continue;
+
                 for (Player player : mcLocation.getNearbyPlayers(64)) {
                     DyeColor color = sign.getColor();
                     if (color != null)

@@ -20,10 +20,7 @@ import net.countercraft.movecraft.util.Tags;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
 import net.countercraft.movecraft.util.hitboxes.SetHitBox;
 import net.countercraft.movecraft.util.hitboxes.SolidHitBox;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Tag;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
@@ -242,9 +239,17 @@ public class CraftRotateCommand extends UpdateCommand {
                 }
 
                 Sign sign = signStates.get(location);
+                if (!event.isUpdated())
+                    continue;
+
                 for (Player player : mcLocation.getNearbyPlayers(64)) {
-                    player.sendSignChange(mcLocation, entry.getKey(), sign.getColor(), sign.isGlowingText());
+                    DyeColor color = sign.getColor();
+                    if (color != null)
+                        player.sendSignChange(mcLocation, entry.getKey(), color, sign.isGlowingText());
+                    else
+                        player.sendSignChange(mcLocation, entry.getKey());
                 }
+
                 /*
                 for(int i = 0; i<4; i++){
                     sign.setLine(i, entry.getKey()[i]);
