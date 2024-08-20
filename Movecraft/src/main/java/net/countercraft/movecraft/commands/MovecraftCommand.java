@@ -16,6 +16,7 @@ public class MovecraftCommand extends BaseCommand {
 
     @Default
     @Syntax("<reloadtypes>")
+    @Description("Get the authors list of the plugin.")
     public static void displayAuthors(CommandSender commandSender) {
         PluginDescriptionFile descriptionFile = Movecraft.getInstance().getDescription();
         commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "Movecraft " + descriptionFile.getVersion() + " by " + descriptionFile.getAuthors());
@@ -23,6 +24,7 @@ public class MovecraftCommand extends BaseCommand {
 
     @CommandPermission("movecraft.commands.movecraft.reloadtypes")
     @Subcommand("reloadtypes")
+    @Description("Reload craft types from file.")
     public static void reloadTypes(CommandSender commandSender) {
         CraftManager.getInstance().reloadCraftTypes();
         commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Movecraft - Reloaded Types"));
