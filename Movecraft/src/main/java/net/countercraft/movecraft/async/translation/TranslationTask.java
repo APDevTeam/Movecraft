@@ -523,7 +523,7 @@ public class TranslationTask extends AsyncTask {
         final MovecraftLocation middle = oldHitBox.getMidPoint();
         int testY;
 
-        for (testY = minY; testY > 0; testY--) {
+        for (testY = minY; testY > world.getMinHeight(); testY--) {
             if (!craft.getWorld().getBlockAt(middle.getX(), testY - 1, middle.getZ()).getType().isAir()) {
                 break;
             }
