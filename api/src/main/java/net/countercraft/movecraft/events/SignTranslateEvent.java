@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Collections;
 import java.util.List;
 
+// TODO: Rewrite to use the adventure API
 public class SignTranslateEvent extends CraftEvent{
     private static final HandlerList HANDLERS = new HandlerList();
     @NotNull private final List<MovecraftLocation> locations;

@@ -11,8 +11,15 @@ import org.bukkit.event.block.Action;
 import javax.annotation.Nullable;
 import java.util.Optional;
 
+/*
+ * Extension of @AbstractMovecraftSign
+ * The difference is, that for this sign to work, it must exist on a craft instance
+ *
+ * Also this will react to the SignTranslate event
+ */
 public abstract class AbstractCraftSign extends AbstractMovecraftSign {
 
+    // Helper method for the listener
     public static Optional<AbstractCraftSign> tryGetCraftSign(final String ident) {
         Optional<AbstractMovecraftSign> tmp = AbstractCraftSign.tryGet(ident);
         if (tmp.isPresent() && tmp.get() instanceof AbstractCraftSign acs) {
@@ -32,6 +39,10 @@ public abstract class AbstractCraftSign extends AbstractMovecraftSign {
         this.ignoreCraftIsBusy = ignoreCraftIsBusy;
     }
 
+    // Similar to the super class variant
+    // In addition a check for a existing craft is being made
+    // If the craft is a player craft that is currently processing and ignoreCraftIsBusy is set to false, this will quit early and call onCraftIsBusy()
+    // If no craft is found, onCraftNotFound() is called
     // Return true to cancel the event
     @Override
     public boolean processSignClick(Action clickType, AbstractSignListener.SignWrapper sign, Player player) {
@@ -57,6 +68,9 @@ public abstract class AbstractCraftSign extends AbstractMovecraftSign {
         return internalProcessSign(clickType, sign, player, craft);
     }
 
+    // Implementation of the standard method.
+    // The craft instance is required here and it's existance is being confirmed in processSignClick() in beforehand
+    // After that, canPlayerUseSignOn() is being called. If that is successful, the result of internalProcessSignWithCraft() is returned
     @Override
     protected boolean internalProcessSign(Action clickType, AbstractSignListener.SignWrapper sign, Player player, @Nullable Craft craft) {
         if (craft == null) {
@@ -68,8 +82,11 @@ public abstract class AbstractCraftSign extends AbstractMovecraftSign {
         return false;
     }
 
+    // Called when the craft is a player craft and is processing and ignoreCraftIsBusy is set to false
     protected abstract void onCraftIsBusy(Player player, Craft craft);
 
+    // Validation method, intended to indicate if a player is allowed to execute a sign action on a mounted craft
+    // By default, this returns wether or not the player is the pilot of the craft
     protected boolean canPlayerUseSignOn(Player player, @Nullable Craft craft) {
         if (craft instanceof PilotedCraft pc) {
             return pc.getPilot() == player;
@@ -77,8 +94,10 @@ public abstract class AbstractCraftSign extends AbstractMovecraftSign {
         return true;
     }
 
+    // Called when there is no craft instance for this sign
     protected abstract void onCraftNotFound(Player player, AbstractSignListener.SignWrapper sign);
 
+    // By default we don't react to CraftDetectEvent here
     public void onCraftDetect(CraftDetectEvent event, AbstractSignListener.SignWrapper sign) {
         // Do nothing by default
     }
@@ -87,9 +106,8 @@ public abstract class AbstractCraftSign extends AbstractMovecraftSign {
         // Do nothing by default
     }
 
-    protected abstract boolean isSignValid(Action clickType, AbstractSignListener.SignWrapper sign, Player player);
-
     // Gets called by internalProcessSign if a craft is found
+    // Always override this as the validation has been made already when this is being called
     protected abstract boolean internalProcessSignWithCraft(Action clickType, AbstractSignListener.SignWrapper sign, Craft craft, Player player);
 
 }

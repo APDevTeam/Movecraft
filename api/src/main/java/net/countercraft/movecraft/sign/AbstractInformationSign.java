@@ -84,6 +84,11 @@ public abstract class AbstractInformationSign extends AbstractCraftSign {
         return true;
     }
 
+    // Called whenever the info needs to be refreshed
+    // That happens on CraftDetect, sign right click (new), Sign Translate
+    // The new and old values are gathered here and compared
+    // If nothing has changed, no update happens
+    // If something has changed, performUpdate() and sendUpdatePacket() are called
     protected void refreshSign(@Nullable Craft craft, AbstractSignListener.SignWrapper sign, boolean fillDefault, REFRESH_CAUSE refreshCause) {
         boolean changedSome = false;
         Component[] updatePayload = new Component[sign.lines().size()];
@@ -117,11 +122,14 @@ public abstract class AbstractInformationSign extends AbstractCraftSign {
     }
 
     /*
-        Data to set on the sign. Return null if no update should happen!
-        Attention: A update will only be performed, if the new and old component are different!
-         */
+    Data to set on the sign. Return null if no update should happen!
+    Attention: A update will only be performed, if the new and old component are different!
+     */
     @Nullable
     protected abstract Component getUpdateString(int lineIndex, Component oldData, Craft craft);
+
+    // Returns the default value for this info sign per line
+    // Used on CraftDetect and on sign change
     @Nullable
     protected abstract Component getDefaultString(int lineIndex, Component oldComponent);
 
