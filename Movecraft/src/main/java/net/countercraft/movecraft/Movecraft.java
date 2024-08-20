@@ -17,13 +17,13 @@
 
 package net.countercraft.movecraft;
 
+import co.aikar.commands.PaperCommandManager;
 import io.papermc.paper.datapack.Datapack;
 import net.countercraft.movecraft.async.AsyncManager;
 import net.countercraft.movecraft.commands.*;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.ChunkManager;
 import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.craft.datatag.CraftDataTagRegistry;
 import net.countercraft.movecraft.features.contacts.ContactsCommand;
 import net.countercraft.movecraft.features.contacts.ContactsManager;
 import net.countercraft.movecraft.features.contacts.ContactsSign;
@@ -236,7 +236,8 @@ public class Movecraft extends JavaPlugin {
     }
 
     private void initializeCommands() {
-        getCommand("movecraft").setExecutor(new MovecraftCommand());
+        PaperCommandManager pcm = new PaperCommandManager(this);
+        pcm.registerCommand(new MovecraftCommand());
         getCommand("release").setExecutor(new ReleaseCommand());
         getCommand("pilot").setExecutor(new PilotCommand());
         getCommand("rotate").setExecutor(new RotateCommand());
