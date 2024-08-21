@@ -43,11 +43,11 @@ public class CruiseCommand extends BaseCommand {
     @Syntax("[on|off|DIRECTION]")
     @CommandCompletion("@directions")
     @Description("Starts your craft cruising")
-    public static void onCommand(Player player, CruiseDirection direction) {
+    public static void onCommand(Player player, @Optional CruiseDirection direction) {
         final Craft craft = CraftManager.getInstance().getCraftByPlayerName(player.getName());
 
-        //Resolver returns NONE on fail
-        if (direction != CruiseDirection.NONE) {
+        //Resolver returns NONE on resolver fail, null if no argument at all
+        if (direction != null && direction != CruiseDirection.NONE) {
             craft.setCruiseDirection(direction);
             craft.setCruising(true);
             return;
