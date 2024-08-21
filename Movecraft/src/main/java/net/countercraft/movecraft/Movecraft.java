@@ -245,6 +245,10 @@ public class Movecraft extends JavaPlugin {
             return craftNames;
         });
 
+        pcm.getCommandConditions().addCondition("craft_or_list", context -> {
+
+        });
+
         pcm.registerCommand(new MovecraftCommand());
         pcm.registerCommand(new CraftInfoCommand());
         pcm.registerCommand(new CraftReportCommand());
