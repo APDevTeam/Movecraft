@@ -1,6 +1,7 @@
 package net.countercraft.movecraft.commands;
 
 import co.aikar.commands.BaseCommand;
+import co.aikar.commands.annotation.CommandAlias;
 import co.aikar.commands.annotation.Default;
 import co.aikar.commands.annotation.Description;
 import co.aikar.commands.annotation.Syntax;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.OptionalInt;
 import java.util.function.Function;
 
+@CommandAlias("craftinfo")
 public class CraftInfoCommand extends BaseCommand {
     private static final List<Function<Craft,? extends Iterable<String>>> providers = new ArrayList<>();
     static {
