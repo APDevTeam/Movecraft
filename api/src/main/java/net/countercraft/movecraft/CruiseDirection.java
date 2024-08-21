@@ -2,6 +2,11 @@ package net.countercraft.movecraft;
 
 import org.bukkit.block.BlockFace;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
+
 public enum CruiseDirection {
     NORTH((byte) 0x3), //0x3
     SOUTH((byte) 0x2), //0x2
@@ -73,6 +78,24 @@ public enum CruiseDirection {
             case ANTICLOCKWISE -> getRotated(MovecraftRotation.CLOCKWISE).getOpposite();
             case NONE -> this;
         };
+    }
+
+    public static CruiseDirection fromString(String input) {
+        final String sanitized = input.toLowerCase(Locale.ROOT);
+
+        return switch (sanitized) {
+            case "north", "n" -> CruiseDirection.NORTH;
+            case "south", "s" -> CruiseDirection.SOUTH;
+            case "east", "e" -> CruiseDirection.EAST;
+            case "west", "w" -> CruiseDirection.WEST;
+            case "up", "u" -> CruiseDirection.UP;
+            case "down", "d" -> CruiseDirection.DOWN;
+            default -> CruiseDirection.NONE;
+        };
+    }
+
+    public static List<String> valuesString() {
+        return Arrays.stream(values()).map(v -> v.toString().toLowerCase(Locale.ROOT)).toList();
     }
 }
 
