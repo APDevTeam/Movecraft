@@ -23,9 +23,10 @@ public class CraftReportCommand extends BaseCommand {
     @Syntax("<page>")
     @CommandPermission("movecraft.commands.craftreport")
     @Description("Reports on all active craft")
-    public static void onCommand(CommandSender commandSender, String[] args) {
-
-        int page;
+    public static void onCommand(CommandSender commandSender, @Default("1") int page) {
+        // TODO: This is ugly to read, maybe better make a component concatenator method in ChatUtils?
+        // TODO: Should we keep the error for invalid page or just default to 1 in this case?
+        /*
         try {
             if (args.length == 0)
                 page = 1;
@@ -39,7 +40,7 @@ public class CraftReportCommand extends BaseCommand {
                     .append(Component.text(args[0]))
                     .append(Component.text("\"")));
             return;
-        }
+        }*/
         if (CraftManager.getInstance().isEmpty()) {
             commandSender.sendMessage(Component.empty()
                     .append(ChatUtils.commandPrefix())
@@ -82,7 +83,7 @@ public class CraftReportCommand extends BaseCommand {
                     .append(ChatUtils.commandPrefix())
                     .append(I18nSupport.getInternationalisedComponent("Paginator - Invalid page"))
                     .append(Component.text(" \""))
-                    .append(Component.text(args[0]))
+                    .append(Component.text(page))
                     .append(Component.text("\"")));
             return;
         }
