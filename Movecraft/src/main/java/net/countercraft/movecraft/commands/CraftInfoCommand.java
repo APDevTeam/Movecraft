@@ -1,15 +1,12 @@
 package net.countercraft.movecraft.commands;
 
 import co.aikar.commands.BaseCommand;
-import co.aikar.commands.annotation.CommandAlias;
-import co.aikar.commands.annotation.Default;
-import co.aikar.commands.annotation.Description;
-import co.aikar.commands.annotation.Syntax;
+import co.aikar.commands.annotation.*;
+import co.aikar.commands.bukkit.contexts.OnlinePlayer;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.type.CraftType;
-import net.countercraft.movecraft.util.MathUtils;
 import net.countercraft.movecraft.util.TopicPaginator;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -17,7 +14,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.OptionalInt;
 import java.util.function.Function;
 
 @CommandAlias("craftinfo")
@@ -53,68 +49,30 @@ public class CraftInfoCommand extends BaseCommand {
     }
 
     @Default
-    @Syntax("<player> <page:integer>")
+    @Syntax("[player|self] <page>")
     @Description("Get information on a piloted craft")
-    public static void onCommand(Player player, String[] args) {
-        if(args.length == 0){
-            Craft craft = CraftManager.getInstance().getCraftByPlayer(player);
-            if(craft == null){
-                player.sendMessage("You must be piloting a craft.");
-                return;
-            }
-            craftInfo(player, craft, 1);
-            return;
-        }
-
-        //if first argument is an integer, get your own craft's info
-        if (handleSelf(player, args[0]))
-            return;
-
-        handleOther(player, args);
-    }
-
-    private static boolean handleSelf(Player player, String page) {
-        OptionalInt pageQuery = MathUtils.parseInt(page);
-
-        if (pageQuery.isEmpty()) {
-            return false;
-        }
-
-        Craft craft = CraftManager.getInstance().getCraftByPlayer(player);
-        if(craft == null){
-            player.sendMessage("You must be piloting a craft.");
-            return true;
-        }
-
-        craftInfo(player, craft, pageQuery.getAsInt());
-        return true;
-    }
-
-    private static void handleOther(Player player, String[] args) {
-        OptionalInt pageQuery;
-        final String lookupPlayer = args[0];
-
-        var craft = CraftManager.getInstance().getCraftByPlayerName(lookupPlayer);
+    @CommandCompletion("@players")
+    public static void onCommand(Player player, OnlinePlayer subject, @Default("1") int page) {
+        var craft = CraftManager.getInstance().getCraftByPlayer(subject.getPlayer());
         if (craft == null) {
             //maybe no craft found would be more correct
             player.sendMessage("No player found");
             return;
         }
 
-        if (args.length == 1) {
-            pageQuery = OptionalInt.of(1);
-            craftInfo(player, craft, pageQuery.getAsInt());
+        craftInfo(player, craft, page);
+    }
+
+    @Subcommand("self")
+    @Syntax("<page>")
+    public static void selfCraftInfo(Player player, @Default("1") int page) {
+        Craft craft = CraftManager.getInstance().getCraftByPlayer(player);
+        if(craft == null){
+            player.sendMessage("You must be piloting a craft.");
             return;
         }
 
-        final String page = args[1];
-        pageQuery = MathUtils.parseInt(page);
-        if(pageQuery.isEmpty()){
-            player.sendMessage("Parameter " + page + " must be a page number.");
-            return;
-        }
-
-        craftInfo(player, craft, pageQuery.getAsInt());
+        craftInfo(player, craft, page);
     }
 
     public static void craftInfo(@NotNull CommandSender commandSender, @NotNull Craft craft, int page){
