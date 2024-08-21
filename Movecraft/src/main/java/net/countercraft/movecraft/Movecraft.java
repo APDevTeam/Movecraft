@@ -17,7 +17,6 @@
 
 package net.countercraft.movecraft;
 
-import co.aikar.commands.InvalidCommandArgument;
 import co.aikar.commands.PaperCommandManager;
 import io.papermc.paper.datapack.Datapack;
 import net.countercraft.movecraft.async.AsyncManager;
@@ -48,13 +47,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
-
-import static net.countercraft.movecraft.util.ChatUtils.MOVECRAFT_COMMAND_PREFIX;
 
 public class Movecraft extends JavaPlugin {
     private static Movecraft instance;
@@ -260,11 +256,6 @@ public class Movecraft extends JavaPlugin {
         pcm.getCommandContexts().registerContext(CruiseDirection.class, (c) -> {
             String data = c.popFirstArg();
             CruiseDirection direction = CruiseDirection.fromString(data);
-
-            if (direction == CruiseDirection.NONE) {
-                throw new InvalidCommandArgument(MOVECRAFT_COMMAND_PREFIX + "You must input a direction");
-            }
-
             return direction;
         });
 

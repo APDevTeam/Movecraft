@@ -7,13 +7,8 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 import static net.countercraft.movecraft.util.ChatUtils.MOVECRAFT_COMMAND_PREFIX;
 
@@ -48,63 +43,29 @@ public class CruiseCommand extends BaseCommand {
     @Syntax("[on|off|DIRECTION]")
     @CommandCompletion("@directions")
     @Description("Starts your craft cruising")
-    public static void onCommand(Player player, String[] args) {
-        if(args.length<1){ //same as no argument
-            final Craft craft = CraftManager.getInstance().getCraftByPlayerName(player.getName());
-            if (craft == null) {
-                player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("You must be piloting a craft"));
-                return;
-            }
-            if (!player.hasPermission("movecraft.commands") || !player.hasPermission("movecraft.commands.cruise")) {
-                craft.setCruising(false);
-                return;
-            }
-
-            if(craft.getCruising()){
-                craft.setCruising(false);
-                return;
-            }
-            // Normalize yaw from [-360, 360] to [0, 360]
-            yawLocationCruising(player);
-            return;
-        }
-        if (!player.hasPermission("movecraft.commands") || !player.hasPermission("movecraft.commands.cruise")) {
-            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Insufficient Permissions"));
-            return;
-        }
-
+    public static void onCommand(Player player, CruiseDirection direction) {
         final Craft craft = CraftManager.getInstance().getCraftByPlayerName(player.getName());
 
-        if (args[0].equalsIgnoreCase("north") || args[0].equalsIgnoreCase("n")) {
-            craft.setCruiseDirection(CruiseDirection.NORTH);
+
+        /* Might use this over aikar's permission annotation after confirm it doesn't support multiple permission checks
+        if (!player.hasPermission("movecraft.commands") || !player.hasPermission("movecraft.commands.cruise")) {
+            craft.setCruising(false);
+            return;
+        }*/
+
+        //Resolver returns NONE on fail
+        if (direction != CruiseDirection.NONE) {
+            craft.setCruiseDirection(direction);
             craft.setCruising(true);
             return;
         }
-        if (args[0].equalsIgnoreCase("south") || args[0].equalsIgnoreCase("s")) {
-            craft.setCruiseDirection(CruiseDirection.SOUTH);
-            craft.setCruising(true);
+
+        if(craft.getCruising()){
+            craft.setCruising(false);
             return;
         }
-        if (args[0].equalsIgnoreCase("east") || args[0].equalsIgnoreCase("e")) {
-            craft.setCruiseDirection(CruiseDirection.EAST);
-            craft.setCruising(true);
-            return;
-        }
-        if (args[0].equalsIgnoreCase("west") || args[0].equalsIgnoreCase("w")) {
-            craft.setCruiseDirection(CruiseDirection.WEST);
-            craft.setCruising(true);
-            return;
-        }
-        if (args[0].equalsIgnoreCase("up") || args[0].equalsIgnoreCase("u")) {
-            craft.setCruiseDirection(CruiseDirection.UP);
-            craft.setCruising(true);
-            return;
-        }
-        if (args[0].equalsIgnoreCase("down") || args[0].equalsIgnoreCase("d")) {
-            craft.setCruiseDirection(CruiseDirection.DOWN);
-            craft.setCruising(true);
-            return;
-        }
+        // Normalize yaw from [-360, 360] to [0, 360]
+        yawLocationCruising(player);
     }
 
     @Subcommand("off")
