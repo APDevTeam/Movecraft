@@ -57,8 +57,8 @@ public class CruiseCommand extends BaseCommand {
             craft.setCruising(false);
             return;
         }
-        // Normalize yaw from [-360, 360] to [0, 360]
-        yawLocationCruising(player);
+
+        yawLocationCruising(player, craft);
     }
 
     @Subcommand("off")
@@ -74,16 +74,15 @@ public class CruiseCommand extends BaseCommand {
 
     @Subcommand("on")
     public static void onCruising(Player player) {
-        yawLocationCruising(player);
+        final Craft craft = CraftManager.getInstance().getCraftByPlayerName(player.getName());
+        yawLocationCruising(player, craft);
     }
 
-    private static void yawLocationCruising(Player player) {
-        final Craft craft = CraftManager.getInstance().getCraftByPlayerName(player.getName());
+    private static void yawLocationCruising(Player player, Craft craft) {
 
-        float yaw = (player.getLocation().getYaw() + 360.0f);
-        if (yaw >= 360.0f) {
-            yaw %= 360.0f;
-        }
+        // Normalize yaw from [-360, 360] to [0, 360]
+        float yaw = (player.getLocation().getYaw() + 360.0f) % 360.0f;
+
         if (yaw >= 45 && yaw < 135) { // west
             craft.setCruiseDirection(CruiseDirection.WEST);
         } else if (yaw >= 135 && yaw < 225) { // north
@@ -93,6 +92,7 @@ public class CruiseCommand extends BaseCommand {
         } else { // default south
             craft.setCruiseDirection(CruiseDirection.SOUTH);
         }
+
         craft.setCruising(true);
     }
 }
