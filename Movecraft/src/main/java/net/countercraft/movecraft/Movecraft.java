@@ -24,6 +24,7 @@ import net.countercraft.movecraft.commands.*;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.ChunkManager;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.features.contacts.ContactsCommand;
 import net.countercraft.movecraft.features.contacts.ContactsManager;
 import net.countercraft.movecraft.features.contacts.ContactsSign;
@@ -46,6 +47,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -237,16 +239,22 @@ public class Movecraft extends JavaPlugin {
 
     private void initializeCommands() {
         PaperCommandManager pcm = new PaperCommandManager(this);
+        pcm.getCommandCompletions().registerCompletion("crafttypes", c ->  {
+            Set<CraftType> craftTypes = CraftManager.getInstance().getCraftTypes();
+            List<String> craftNames = craftTypes.stream().map(type -> type.getStringProperty(CraftType.NAME)).toList();
+            return craftNames;
+        });
+
         pcm.registerCommand(new MovecraftCommand());
         pcm.registerCommand(new CraftInfoCommand());
         pcm.registerCommand(new CraftReportCommand());
+        pcm.registerCommand(new CraftTypeCommand());
         getCommand("release").setExecutor(new ReleaseCommand());
         getCommand("pilot").setExecutor(new PilotCommand());
         getCommand("rotate").setExecutor(new RotateCommand());
         getCommand("cruise").setExecutor(new CruiseCommand());
         getCommand("manoverboard").setExecutor(new ManOverboardCommand());
         getCommand("scuttle").setExecutor(new ScuttleCommand());
-        getCommand("crafttype").setExecutor(new CraftTypeCommand());
     }
 
     @Override
