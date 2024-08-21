@@ -1,5 +1,7 @@
 package net.countercraft.movecraft.commands;
 
+import co.aikar.commands.BaseCommand;
+import co.aikar.commands.annotation.*;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.PilotedCraft;
@@ -11,45 +13,38 @@ import net.countercraft.movecraft.util.ComponentPaginator;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.jetbrains.annotations.NotNull;
 
-public class CraftReportCommand implements CommandExecutor {
-    @Override
-    public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, String[] args) {
-        if (commandSender.getName().equalsIgnoreCase("craftreport"))
-            return false;
+@CommandAlias("craftreport")
+@CommandPermission("movecraft.commands")
+public class CraftReportCommand extends BaseCommand {
 
-        if (!commandSender.hasPermission("movecraft.commands")
-                || !commandSender.hasPermission("movecraft.commands.craftreport")) {
-            commandSender.sendMessage(Component.empty()
-                    .append(ChatUtils.errorPrefix())
-                    .append(I18nSupport.getInternationalisedComponent("Insufficient Permissions")));
-            return true;
-        }
+    @Default
+    @Syntax("<page>")
+    @CommandPermission("movecraft.commands.craftreport")
+    @Description("Reports on all active craft")
+    public static void onCommand(CommandSender commandSender, String[] args) {
+
         int page;
         try {
             if (args.length == 0)
                 page = 1;
             else
                 page = Integer.parseInt(args[0]);
-        }
-        catch (NumberFormatException e) {
+        } catch (NumberFormatException e) {
             commandSender.sendMessage(Component.empty()
                     .append(ChatUtils.commandPrefix())
                     .append(I18nSupport.getInternationalisedComponent("Paginator - Invalid Page"))
                     .append(Component.text("\""))
                     .append(Component.text(args[0]))
                     .append(Component.text("\"")));
-            return true;
+            return;
         }
         if (CraftManager.getInstance().isEmpty()) {
             commandSender.sendMessage(Component.empty()
                     .append(ChatUtils.commandPrefix())
                     .append(I18nSupport.getInternationalisedComponent("Craft Report - None Found")));
-            return true;
+            return;
         }
         ComponentPaginator paginator = new ComponentPaginator(
                 I18nSupport.getInternationalisedComponent("Craft Report"),
@@ -89,10 +84,9 @@ public class CraftReportCommand implements CommandExecutor {
                     .append(Component.text(" \""))
                     .append(Component.text(args[0]))
                     .append(Component.text("\"")));
-            return true;
+            return;
         }
         for (Component line : paginator.getPage(page))
             commandSender.sendMessage(line);
-        return true;
     }
 }

@@ -239,11 +239,11 @@ public class Movecraft extends JavaPlugin {
         PaperCommandManager pcm = new PaperCommandManager(this);
         pcm.registerCommand(new MovecraftCommand());
         pcm.registerCommand(new CraftInfoCommand());
+        pcm.registerCommand(new CraftReportCommand());
         getCommand("release").setExecutor(new ReleaseCommand());
         getCommand("pilot").setExecutor(new PilotCommand());
         getCommand("rotate").setExecutor(new RotateCommand());
         getCommand("cruise").setExecutor(new CruiseCommand());
-        getCommand("craftreport").setExecutor(new CraftReportCommand());
         getCommand("manoverboard").setExecutor(new ManOverboardCommand());
         getCommand("scuttle").setExecutor(new ScuttleCommand());
         getCommand("crafttype").setExecutor(new CraftTypeCommand());
