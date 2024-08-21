@@ -47,6 +47,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -239,20 +240,34 @@ public class Movecraft extends JavaPlugin {
 
     private void initializeCommands() {
         PaperCommandManager pcm = new PaperCommandManager(this);
-        pcm.getCommandCompletions().registerCompletion("crafttypes", c ->  {
+        var commandCompletions = pcm.getCommandCompletions();
+
+        commandCompletions.registerCompletion("crafttypes", c ->  {
             Set<CraftType> craftTypes = CraftManager.getInstance().getCraftTypes();
             List<String> craftNames = craftTypes.stream().map(type -> type.getStringProperty(CraftType.NAME)).toList();
             return craftNames;
+        });
+
+        commandCompletions.registerCompletion("directions", c -> {
+           LinkedList<String> directionStrings = new LinkedList<>();
+           for (CruiseDirection direction : CruiseDirection.values()) {
+               if (direction == CruiseDirection.NONE)
+                   continue;
+
+               directionStrings.add(direction.toString());
+           }
+
+           return directionStrings;
         });
 
         pcm.registerCommand(new MovecraftCommand());
         pcm.registerCommand(new CraftInfoCommand());
         pcm.registerCommand(new CraftReportCommand());
         pcm.registerCommand(new CraftTypeCommand());
+        pcm.registerCommand(new CruiseCommand());
         getCommand("release").setExecutor(new ReleaseCommand());
         getCommand("pilot").setExecutor(new PilotCommand());
         getCommand("rotate").setExecutor(new RotateCommand());
-        getCommand("cruise").setExecutor(new CruiseCommand());
         getCommand("manoverboard").setExecutor(new ManOverboardCommand());
         getCommand("scuttle").setExecutor(new ScuttleCommand());
     }
