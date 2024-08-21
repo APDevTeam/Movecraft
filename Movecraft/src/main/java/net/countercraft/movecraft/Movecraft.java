@@ -17,7 +17,6 @@
 
 package net.countercraft.movecraft;
 
-import co.aikar.commands.PaperCommandManager;
 import io.papermc.paper.datapack.Datapack;
 import net.countercraft.movecraft.async.AsyncManager;
 import net.countercraft.movecraft.commands.*;
@@ -238,8 +237,8 @@ public class Movecraft extends JavaPlugin {
     }
 
     private void initializeCommands() {
-        PaperCommandManager pcm = new PaperCommandManager(this);
-        var commandCompletions = pcm.getCommandCompletions();
+        MovecraftCommandManager movecraftCommandManager = new MovecraftCommandManager(this);
+        var commandCompletions = movecraftCommandManager.getCommandCompletions();
 
         commandCompletions.registerCompletion("crafttypes", c ->  {
             Set<CraftType> craftTypes = CraftManager.getInstance().getCraftTypes();
@@ -253,17 +252,17 @@ public class Movecraft extends JavaPlugin {
             return allButNone;
         });
 
-        pcm.getCommandContexts().registerContext(CruiseDirection.class, (c) -> {
+        movecraftCommandManager.getCommandContexts().registerContext(CruiseDirection.class, (c) -> {
             String data = c.popFirstArg();
             CruiseDirection direction = CruiseDirection.fromString(data);
             return direction;
         });
 
-        pcm.registerCommand(new MovecraftCommand());
-        pcm.registerCommand(new CraftInfoCommand());
-        pcm.registerCommand(new CraftReportCommand());
-        pcm.registerCommand(new CraftTypeCommand());
-        pcm.registerCommand(new CruiseCommand());
+        movecraftCommandManager.registerCommand(new MovecraftCommand());
+        movecraftCommandManager.registerCommand(new CraftInfoCommand());
+        movecraftCommandManager.registerCommand(new CraftReportCommand());
+        movecraftCommandManager.registerCommand(new CraftTypeCommand());
+        movecraftCommandManager.registerCommand(new CruiseCommand());
         getCommand("release").setExecutor(new ReleaseCommand());
         getCommand("pilot").setExecutor(new PilotCommand());
         getCommand("rotate").setExecutor(new RotateCommand());
