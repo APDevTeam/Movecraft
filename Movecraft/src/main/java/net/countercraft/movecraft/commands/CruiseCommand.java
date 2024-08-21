@@ -65,20 +65,7 @@ public class CruiseCommand extends BaseCommand {
                 return;
             }
             // Normalize yaw from [-360, 360] to [0, 360]
-            float yaw = (player.getLocation().getYaw() + 360.0f);
-            if (yaw >= 360.0f) {
-                yaw %= 360.0f;
-            }
-            if (yaw >= 45 && yaw < 135) { // west
-                craft.setCruiseDirection(CruiseDirection.WEST);
-            } else if (yaw >= 135 && yaw < 225) { // north
-                craft.setCruiseDirection(CruiseDirection.NORTH);
-            } else if (yaw >= 225 && yaw <= 315){ // east
-                craft.setCruiseDirection(CruiseDirection.EAST);
-            } else { // default south
-                craft.setCruiseDirection(CruiseDirection.SOUTH);
-            }
-            craft.setCruising(true);
+            yawLocationCruising(player);
             return;
         }
         if (!player.hasPermission("movecraft.commands") || !player.hasPermission("movecraft.commands.cruise")) {
@@ -88,23 +75,6 @@ public class CruiseCommand extends BaseCommand {
 
         final Craft craft = CraftManager.getInstance().getCraftByPlayerName(player.getName());
 
-        if (args[0].equalsIgnoreCase("on")) {
-            float yaw = (player.getLocation().getYaw() + 360.0f);
-            if (yaw >= 360.0f) {
-                yaw %= 360.0f;
-            }
-            if (yaw >= 45 && yaw < 135) { // west
-                craft.setCruiseDirection(CruiseDirection.WEST);
-            } else if (yaw >= 135 && yaw < 225) { // north
-                craft.setCruiseDirection(CruiseDirection.NORTH);
-            } else if (yaw >= 225 && yaw <= 315){ // east
-                craft.setCruiseDirection(CruiseDirection.EAST);
-            } else { // default south
-                craft.setCruiseDirection(CruiseDirection.SOUTH);
-            }
-            craft.setCruising(true);
-            return;
-        }
         if (args[0].equalsIgnoreCase("north") || args[0].equalsIgnoreCase("n")) {
             craft.setCruiseDirection(CruiseDirection.NORTH);
             craft.setCruising(true);
@@ -138,7 +108,7 @@ public class CruiseCommand extends BaseCommand {
     }
 
     @Subcommand("off")
-    public static void stopCruising(Player player) {
+    public static void offCruising(Player player) {
         final Craft craft = CraftManager.getInstance().getCraftByPlayerName(player.getName());
         if (craft == null) {
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("You must be piloting a craft"));
@@ -148,14 +118,27 @@ public class CruiseCommand extends BaseCommand {
         craft.setCruising(false);
     }
 
-    private final String[] completions = {"North", "East", "South", "West", "Up", "Down", "On", "Off"};
-    public List<String> onTabComplete(CommandSender commandSender, Command command, String s, String[] strings) {
-        if(strings.length !=1)
-            return Collections.emptyList();
-        List<String> returnValues = new ArrayList<>();
-        for(String completion : completions)
-            if(completion.toLowerCase().startsWith(strings[strings.length-1].toLowerCase()))
-                returnValues.add(completion);
-        return returnValues;
+    @Subcommand("on")
+    public static void onCruising(Player player) {
+        yawLocationCruising(player);
+    }
+
+    private static void yawLocationCruising(Player player) {
+        final Craft craft = CraftManager.getInstance().getCraftByPlayerName(player.getName());
+
+        float yaw = (player.getLocation().getYaw() + 360.0f);
+        if (yaw >= 360.0f) {
+            yaw %= 360.0f;
+        }
+        if (yaw >= 45 && yaw < 135) { // west
+            craft.setCruiseDirection(CruiseDirection.WEST);
+        } else if (yaw >= 135 && yaw < 225) { // north
+            craft.setCruiseDirection(CruiseDirection.NORTH);
+        } else if (yaw >= 225 && yaw <= 315){ // east
+            craft.setCruiseDirection(CruiseDirection.EAST);
+        } else { // default south
+            craft.setCruiseDirection(CruiseDirection.SOUTH);
+        }
+        craft.setCruising(true);
     }
 }
