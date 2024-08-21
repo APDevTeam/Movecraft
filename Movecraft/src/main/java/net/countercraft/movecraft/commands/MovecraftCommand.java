@@ -16,7 +16,7 @@ public class MovecraftCommand extends BaseCommand {
 
     @Default
     @Syntax("<reloadtypes>")
-    @Description("Get the authors list of the plugin.")
+    @Description("Base movecraft command")
     public static void displayAuthors(CommandSender commandSender) {
         PluginDescriptionFile descriptionFile = Movecraft.getInstance().getDescription();
         commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + "Movecraft " + descriptionFile.getVersion() + " by " + descriptionFile.getAuthors());
