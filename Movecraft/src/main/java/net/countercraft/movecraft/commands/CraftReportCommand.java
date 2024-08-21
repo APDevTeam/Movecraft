@@ -16,12 +16,11 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.command.CommandSender;
 
 @CommandAlias("craftreport")
-@CommandPermission("movecraft.commands")
+@CommandPermission("movecraft.commands|movecraft.commands.craftreport")
 public class CraftReportCommand extends BaseCommand {
 
     @Default
     @Syntax("<page>")
-    @CommandPermission("movecraft.commands.craftreport")
     @Description("Reports on all active craft")
     public static void onCommand(CommandSender commandSender, @Default("1") int page) {
         // TODO: This is ugly to read, maybe better make a component concatenator method in ChatUtils?

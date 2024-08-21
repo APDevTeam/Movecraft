@@ -13,7 +13,7 @@ import org.bukkit.entity.Player;
 import static net.countercraft.movecraft.util.ChatUtils.MOVECRAFT_COMMAND_PREFIX;
 
 @CommandAlias("cruise")
-@CommandPermission("movecraft.commands.cruise")
+@CommandPermission("movecraft.commands|movecraft.commands.cruise")
 public class CruiseCommand extends BaseCommand {
 
     @PreCommand
@@ -45,13 +45,6 @@ public class CruiseCommand extends BaseCommand {
     @Description("Starts your craft cruising")
     public static void onCommand(Player player, CruiseDirection direction) {
         final Craft craft = CraftManager.getInstance().getCraftByPlayerName(player.getName());
-
-
-        /* Might use this over aikar's permission annotation after confirm it doesn't support multiple permission checks
-        if (!player.hasPermission("movecraft.commands") || !player.hasPermission("movecraft.commands.cruise")) {
-            craft.setCruising(false);
-            return;
-        }*/
 
         //Resolver returns NONE on fail
         if (direction != CruiseDirection.NONE) {
