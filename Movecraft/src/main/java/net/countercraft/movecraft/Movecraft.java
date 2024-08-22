@@ -17,6 +17,7 @@
 
 package net.countercraft.movecraft;
 
+import co.aikar.commands.InvalidCommandArgument;
 import io.papermc.paper.datapack.Datapack;
 import net.countercraft.movecraft.async.AsyncManager;
 import net.countercraft.movecraft.commands.*;
@@ -252,10 +253,22 @@ public class Movecraft extends JavaPlugin {
             return allButNone;
         });
 
-        movecraftCommandManager.getCommandContexts().registerContext(CruiseDirection.class, (c) -> {
+        var commandContexts = movecraftCommandManager.getCommandContexts();
+
+        commandContexts.registerContext(CruiseDirection.class, (c) -> {
             String data = c.popFirstArg();
-            CruiseDirection direction = CruiseDirection.fromString(data);
-            return direction;
+            return CruiseDirection.fromString(data);
+        });
+
+        commandContexts.registerContext(CraftType.class, (c) -> {
+            String data = c.popFirstArg();
+            CraftType type = CraftManager.getInstance().getCraftTypeFromString(data);
+
+            if (type == null) {
+                throw new InvalidCommandArgument("You must supply a craft type!");
+            }
+
+            return type;
         });
 
         movecraftCommandManager.registerCommand(new MovecraftCommand());

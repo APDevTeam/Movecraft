@@ -49,14 +49,7 @@ public class CraftTypeCommand extends BaseCommand {
     @Syntax("[list|self|CRAFTTYPE] <page>")
     @Description("Get information on a specific craft type")
     @CommandCompletion("@crafttypes")
-    public static void onCommand(@NotNull CommandSender commandSender, String craft, @Default("1") int page) {
-        CraftType type;
-
-        type = CraftManager.getInstance().getCraftTypeFromString(craft);
-        if (type == null) {
-            commandSender.sendMessage("You must supply a craft type!");
-            return;
-        }
+    public static void onCommand(@NotNull CommandSender commandSender, CraftType type, @Default("1") int page) {
 
         if (!commandSender.hasPermission("movecraft." + type.getStringProperty(CraftType.NAME) + ".pilot")) {
             commandSender.sendMessage("You don't have permission for that craft type!");
