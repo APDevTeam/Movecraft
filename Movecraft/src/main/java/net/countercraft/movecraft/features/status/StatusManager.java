@@ -5,7 +5,6 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.SinkingCraft;
-import net.countercraft.movecraft.craft.datatag.CraftDataTagContainer;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagKey;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagRegistry;
 import net.countercraft.movecraft.craft.type.CraftType;
@@ -50,10 +49,12 @@ public class StatusManager extends BukkitRunnable implements Listener {
 
     private static final class StatusUpdateTask implements Supplier<Effect> {
         private final Craft craft;
+        private final CraftType crafttype;
         private final Map<Material, Double> fuelTypes;
 
         private StatusUpdateTask(@NotNull Craft craft) {
             this.craft = craft;
+            this.crafttype = craft.getType();
 
             Object object = craft.getType().getObjectProperty(CraftType.FUEL_TYPES);
             if(!(object instanceof Map<?, ?> map))
@@ -70,12 +71,28 @@ public class StatusManager extends BukkitRunnable implements Listener {
         @Override
         public @Nullable Effect get() {
             Counter<Material> materials = new Counter<>();
+            Counter<Material> flyblocks = new Counter<>();
+            Counter<Material> moveblocks = new Counter<>();
             int nonNegligibleBlocks = 0;
             int nonNegligibleSolidBlocks = 0;
             double fuel = 0;
             for (MovecraftLocation l : craft.getHitBox()) {
                 Material type = craft.getMovecraftWorld().getMaterial(l);
                 materials.add(type);
+
+                for(RequiredBlockEntry entry : crafttype.getRequiredBlockProperty(CraftType.FLY_BLOCKS)) {
+                    if(entry.contains(type)) {
+                        flyblocks.add(type);
+                        break;
+                    }
+                }
+
+                for(RequiredBlockEntry entry : crafttype.getRequiredBlockProperty(CraftType.MOVE_BLOCKS)) {
+                    if(entry.contains(type)) {
+                        moveblocks.add(type);
+                        break;
+                    }
+                }
 
                 if (type != Material.FIRE && !type.isAir()) {
                     nonNegligibleBlocks++;
@@ -96,6 +113,8 @@ public class StatusManager extends BukkitRunnable implements Listener {
 
             craft.setDataTag(Craft.FUEL, fuel);
             craft.setDataTag(Craft.MATERIALS, materials);
+            craft.setDataTag(Craft.FLYBLOCKS, flyblocks);
+            craft.setDataTag(Craft.MOVEBLOCKS, moveblocks);
             craft.setDataTag(Craft.NON_NEGLIGIBLE_BLOCKS, nonNegligibleBlocks);
             craft.setDataTag(Craft.NON_NEGLIGIBLE_SOLID_BLOCKS, nonNegligibleSolidBlocks);
             craft.setDataTag(LAST_STATUS_CHECK, System.currentTimeMillis());
