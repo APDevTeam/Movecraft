@@ -76,18 +76,20 @@ public class StatusManager extends BukkitRunnable implements Listener {
             int nonNegligibleBlocks = 0;
             int nonNegligibleSolidBlocks = 0;
             double fuel = 0;
+            final var flyblocksList = crafttype.getRequiredBlockProperty(CraftType.FLY_BLOCKS);
+            final var moveblocksList = crafttype.getRequiredBlockProperty(CraftType.MOVE_BLOCKS);
             for (MovecraftLocation l : craft.getHitBox()) {
                 Material type = craft.getMovecraftWorld().getMaterial(l);
                 materials.add(type);
 
-                for(RequiredBlockEntry entry : crafttype.getRequiredBlockProperty(CraftType.FLY_BLOCKS)) {
+                for(RequiredBlockEntry entry : flyblocksList) {
                     if(entry.contains(type)) {
                         flyblocks.add(type);
                         break;
                     }
                 }
 
-                for(RequiredBlockEntry entry : crafttype.getRequiredBlockProperty(CraftType.MOVE_BLOCKS)) {
+                for(RequiredBlockEntry entry : moveblocksList) {
                     if(entry.contains(type)) {
                         moveblocks.add(type);
                         break;
