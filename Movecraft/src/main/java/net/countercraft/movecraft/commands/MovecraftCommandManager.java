@@ -3,12 +3,9 @@ package net.countercraft.movecraft.commands;
 import co.aikar.commands.CommandIssuer;
 import co.aikar.commands.PaperCommandManager;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
-import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 public class MovecraftCommandManager extends PaperCommandManager {
@@ -28,27 +25,18 @@ public class MovecraftCommandManager extends PaperCommandManager {
         //handle AND like normal using comma ","
         String[] perms = COMMA.split(permission);
         if (perms.length > 1) {
-            return super.hasPermission(issuer, new HashSet<>(Arrays.asList(perms)));
+            return super.hasPermission(issuer, Set.of(perms));
         }
 
         //handle OR using pipe "|"
         CommandSender sender = issuer.getIssuer();
         for (String perm : PIPE.split(permission)) {
             perm = perm.trim();
-            if (!perm.isEmpty() && senderHasPermission(sender, perm)) {
+            if (!perm.isEmpty() && sender.hasPermission(perm)) {
                 return true;
             }
         }
 
         return false;
     }
-
-    public static boolean senderHasPermission(@NotNull CommandSender sender, @NotNull String perm) {
-        if (!(sender instanceof Player p)) {
-            return sender.isOp();
-        }
-
-        return p.hasPermission(perm);
-    }
-
 }
