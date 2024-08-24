@@ -48,14 +48,7 @@ public class MovecraftCommandManager extends PaperCommandManager {
             return sender.isOp();
         }
 
-        if (p.isOp())
-            return true;
-
-        if (p.hasPermission(perm) || p.hasPermission("movecraft.all")) {
-            return true;
-        }
-
-        return false;
+        return p.hasPermission(perm);
     }
 
 }
