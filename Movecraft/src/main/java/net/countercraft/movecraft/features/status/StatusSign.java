@@ -2,15 +2,12 @@ package net.countercraft.movecraft.features.status;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
-import net.countercraft.movecraft.craft.BaseCraft;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.craft.type.RequiredBlockEntry;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
-import net.countercraft.movecraft.features.status.StatusManager;
 import net.countercraft.movecraft.util.Counter;
 import net.countercraft.movecraft.util.Tags;
 import org.bukkit.ChatColor;
@@ -25,15 +22,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.InventoryHolder;
-import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
 
 public final class StatusSign implements Listener {
 
@@ -82,25 +71,21 @@ public final class StatusSign implements Listener {
                 totalNonNegligibleWaterBlocks += add;
             }
         }
+        //region Add flyblocks and moveblocks to displayBlocks
+        Counter<RequiredBlockEntry> flyblocks = craft.getDataTag(Craft.FLYBLOCKS);
+        Counter<RequiredBlockEntry> moveblocks = craft.getDataTag(Craft.MOVEBLOCKS);
         Object2IntMap<RequiredBlockEntry> displayBlocks = new Object2IntOpenHashMap<>();
-        for (RequiredBlockEntry entry : craft.getType().getRequiredBlockProperty(CraftType.FLY_BLOCKS)) {
-            int total = 0;
-            for (Material material : entry.getMaterials()) {
-                if (materials.getKeySet().contains(material)) {
-                    total += materials.get(material);
-                }
-            }
+
+        for (RequiredBlockEntry entry : flyblocks.getKeySet()) {
+            int total = flyblocks.get(entry);
             displayBlocks.putIfAbsent(entry, total);
         }
-        for (RequiredBlockEntry entry : craft.getType().getRequiredBlockProperty(CraftType.MOVE_BLOCKS)) {
-            int total = 0;
-            for (Material material : entry.getMaterials()) {
-                if (materials.getKeySet().contains(material)) {
-                    total += materials.get(material);
-                }
-            }
+
+        for (RequiredBlockEntry entry : moveblocks.getKeySet()) {
+            int total = flyblocks.get(entry);
             displayBlocks.putIfAbsent(entry, total);
         }
+        //endregion
         int signLine = 1;
         int signColumn = 0;
         for (RequiredBlockEntry entry : displayBlocks.keySet()) {
