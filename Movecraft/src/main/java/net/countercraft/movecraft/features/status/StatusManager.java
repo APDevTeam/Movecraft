@@ -82,20 +82,6 @@ public class StatusManager extends BukkitRunnable implements Listener {
                 Material type = craft.getMovecraftWorld().getMaterial(l);
                 materials.add(type);
 
-                for(RequiredBlockEntry entry : flyblocksList) {
-                    if(entry.contains(type)) {
-                        flyblocks.add(type);
-                        break;
-                    }
-                }
-
-                for(RequiredBlockEntry entry : moveblocksList) {
-                    if(entry.contains(type)) {
-                        moveblocks.add(type);
-                        break;
-                    }
-                }
-
                 if (type != Material.FIRE && !type.isAir()) {
                     nonNegligibleBlocks++;
                 }
@@ -109,6 +95,22 @@ public class StatusManager extends BukkitRunnable implements Listener {
                         if (iStack == null || !fuelTypes.containsKey(iStack.getType()))
                             continue;
                         fuel += iStack.getAmount() * fuelTypes.get(iStack.getType());
+                    }
+                }
+            }
+
+            for(Material material : materials.getKeySet()) {
+                for(RequiredBlockEntry entry : flyblocksList) {
+                    if(entry.contains(material)) {
+                        flyblocks.add(material, materials.get(material) );
+                        break;
+                    }
+                }
+
+                for(RequiredBlockEntry entry : moveblocksList) {
+                    if(entry.contains(material)) {
+                        moveblocks.add(material, materials.get(material) );
+                        break;
                     }
                 }
             }
