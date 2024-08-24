@@ -26,6 +26,10 @@ public class Counter<T> {
         counter.put(item, count);
     }
 
+    public void putIfAbsent(T item, int count) {
+        counter.putIfAbsent(item, count);
+    }
+
     public void add(T item, int count) {
         counter.put(item, counter.getInt(item) + count);
     }

@@ -1,7 +1,5 @@
 package net.countercraft.movecraft.features.status;
 
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.type.CraftType;
@@ -74,21 +72,14 @@ public final class StatusSign implements Listener {
         //region Add flyblocks and moveblocks to displayBlocks
         Counter<RequiredBlockEntry> flyblocks = craft.getDataTag(Craft.FLYBLOCKS);
         Counter<RequiredBlockEntry> moveblocks = craft.getDataTag(Craft.MOVEBLOCKS);
-        Object2IntMap<RequiredBlockEntry> displayBlocks = new Object2IntOpenHashMap<>();
+        Counter<RequiredBlockEntry> displayBlocks = new Counter<>();
 
-        for (RequiredBlockEntry entry : flyblocks.getKeySet()) {
-            int total = flyblocks.get(entry);
-            displayBlocks.putIfAbsent(entry, total);
-        }
-
-        for (RequiredBlockEntry entry : moveblocks.getKeySet()) {
-            int total = flyblocks.get(entry);
-            displayBlocks.putIfAbsent(entry, total);
-        }
+        displayBlocks.add(flyblocks);
+        displayBlocks.add(moveblocks);
         //endregion
         int signLine = 1;
         int signColumn = 0;
-        for (RequiredBlockEntry entry : displayBlocks.keySet()) {
+        for (RequiredBlockEntry entry : displayBlocks.getKeySet()) {
             if (entry.getMin() == 0.0) {
                 continue;
             }
