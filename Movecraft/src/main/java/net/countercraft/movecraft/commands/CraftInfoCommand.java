@@ -49,26 +49,25 @@ public class CraftInfoCommand extends BaseCommand {
     }
 
     @Default
-    @Syntax("[player|self] <page>")
+    @Syntax("[player] <page>")
     @Description("Get information on a piloted craft")
     @CommandCompletion("@players")
-    public static void onCommand(Player player, OnlinePlayer subject, @Default("1") int page) {
-        var craft = CraftManager.getInstance().getCraftByPlayer(subject.getPlayer());
-        if (craft == null) {
-            //maybe no craft found would be more correct
-            player.sendMessage("No player found");
+    public static void onCommand(Player player, @Optional OnlinePlayer subject, @Default("1") int page) {
+        if(subject == null) {
+            Craft craft = CraftManager.getInstance().getCraftByPlayer(player);
+            if(craft == null){
+                player.sendMessage("You must be piloting a craft.");
+                return;
+            }
+
+            craftInfo(player, craft, page);
             return;
         }
 
-        craftInfo(player, craft, page);
-    }
-
-    @Subcommand("self")
-    @Syntax("<page>")
-    public static void selfCraftInfo(Player player, @Default("1") int page) {
-        Craft craft = CraftManager.getInstance().getCraftByPlayer(player);
-        if(craft == null){
-            player.sendMessage("You must be piloting a craft.");
+        Craft craft = CraftManager.getInstance().getCraftByPlayer(subject.getPlayer());
+        if (craft == null) {
+            //maybe no craft found would be more correct
+            player.sendMessage("No player found");
             return;
         }
 
