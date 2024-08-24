@@ -49,12 +49,10 @@ public class StatusManager extends BukkitRunnable implements Listener {
 
     private static final class StatusUpdateTask implements Supplier<Effect> {
         private final Craft craft;
-        private final CraftType crafttype;
         private final Map<Material, Double> fuelTypes;
 
         private StatusUpdateTask(@NotNull Craft craft) {
             this.craft = craft;
-            this.crafttype = craft.getType();
 
             Object object = craft.getType().getObjectProperty(CraftType.FUEL_TYPES);
             if(!(object instanceof Map<?, ?> map))
@@ -71,13 +69,11 @@ public class StatusManager extends BukkitRunnable implements Listener {
         @Override
         public @Nullable Effect get() {
             Counter<Material> materials = new Counter<>();
-            Counter<RequiredBlockEntry> flyblocks = new Counter<>();
-            Counter<RequiredBlockEntry> moveblocks = new Counter<>();
             int nonNegligibleBlocks = 0;
             int nonNegligibleSolidBlocks = 0;
             double fuel = 0;
-            final var flyblocksList = crafttype.getRequiredBlockProperty(CraftType.FLY_BLOCKS);
-            final var moveblocksList = crafttype.getRequiredBlockProperty(CraftType.MOVE_BLOCKS);
+            final CraftType crafttype = craft.getType();
+            
             for (MovecraftLocation l : craft.getHitBox()) {
                 Material type = craft.getMovecraftWorld().getMaterial(l);
                 materials.add(type);
@@ -99,6 +95,10 @@ public class StatusManager extends BukkitRunnable implements Listener {
                 }
             }
 
+            Counter<RequiredBlockEntry> flyblocks = new Counter<>();
+            Counter<RequiredBlockEntry> moveblocks = new Counter<>();
+            final var flyblocksList = crafttype.getRequiredBlockProperty(CraftType.FLY_BLOCKS);
+            final var moveblocksList = crafttype.getRequiredBlockProperty(CraftType.MOVE_BLOCKS);
             for(Material material : materials.getKeySet()) {
                 for(RequiredBlockEntry entry : flyblocksList) {
                     if(entry.contains(material)) {
