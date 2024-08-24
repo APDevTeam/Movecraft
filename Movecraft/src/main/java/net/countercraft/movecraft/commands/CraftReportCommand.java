@@ -22,24 +22,22 @@ public class CraftReportCommand extends BaseCommand {
     @Default
     @Syntax("<page>")
     @Description("Reports on all active craft")
-    public static void onCommand(CommandSender commandSender, @Default("1") int page) {
-        // TODO: This is ugly to read, maybe better make a component concatenator method in ChatUtils?
-        // TODO: Should we keep the error for invalid page or just default to 1 in this case?
-        /*
+    public static void onCommand(CommandSender commandSender, @Optional String pageString) {
+        int page;
         try {
-            if (args.length == 0)
+            if (pageString == null)
                 page = 1;
             else
-                page = Integer.parseInt(args[0]);
+                page = Integer.parseInt(pageString);
         } catch (NumberFormatException e) {
             commandSender.sendMessage(Component.empty()
                     .append(ChatUtils.commandPrefix())
                     .append(I18nSupport.getInternationalisedComponent("Paginator - Invalid Page"))
                     .append(Component.text("\""))
-                    .append(Component.text(args[0]))
+                    .append(Component.text(pageString))
                     .append(Component.text("\"")));
             return;
-        }*/
+        }
         if (CraftManager.getInstance().isEmpty()) {
             commandSender.sendMessage(Component.empty()
                     .append(ChatUtils.commandPrefix())
