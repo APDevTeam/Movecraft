@@ -71,8 +71,8 @@ public class StatusManager extends BukkitRunnable implements Listener {
         @Override
         public @Nullable Effect get() {
             Counter<Material> materials = new Counter<>();
-            Counter<Material> flyblocks = new Counter<>();
-            Counter<Material> moveblocks = new Counter<>();
+            Counter<RequiredBlockEntry> flyblocks = new Counter<>();
+            Counter<RequiredBlockEntry> moveblocks = new Counter<>();
             int nonNegligibleBlocks = 0;
             int nonNegligibleSolidBlocks = 0;
             double fuel = 0;
@@ -102,14 +102,14 @@ public class StatusManager extends BukkitRunnable implements Listener {
             for(Material material : materials.getKeySet()) {
                 for(RequiredBlockEntry entry : flyblocksList) {
                     if(entry.contains(material)) {
-                        flyblocks.add(material, materials.get(material) );
+                        flyblocks.add(entry, materials.get(material) );
                         break;
                     }
                 }
 
                 for(RequiredBlockEntry entry : moveblocksList) {
                     if(entry.contains(material)) {
-                        moveblocks.add(material, materials.get(material) );
+                        moveblocks.add(entry, materials.get(material) );
                         break;
                     }
                 }
