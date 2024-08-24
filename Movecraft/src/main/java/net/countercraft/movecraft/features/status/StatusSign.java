@@ -69,14 +69,14 @@ public final class StatusSign implements Listener {
                 totalNonNegligibleWaterBlocks += add;
             }
         }
-        //region Add flyblocks and moveblocks to displayBlocks
+
         Counter<RequiredBlockEntry> flyblocks = craft.getDataTag(Craft.FLYBLOCKS);
         Counter<RequiredBlockEntry> moveblocks = craft.getDataTag(Craft.MOVEBLOCKS);
         Counter<RequiredBlockEntry> displayBlocks = new Counter<>();
 
         displayBlocks.add(flyblocks);
         displayBlocks.add(moveblocks);
-        //endregion
+
         int signLine = 1;
         int signColumn = 0;
         for (RequiredBlockEntry entry : displayBlocks.getKeySet()) {
