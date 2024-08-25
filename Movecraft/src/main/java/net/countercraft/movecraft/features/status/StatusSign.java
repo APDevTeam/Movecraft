@@ -70,12 +70,9 @@ public final class StatusSign implements Listener {
             }
         }
 
-        Counter<RequiredBlockEntry> flyblocks = craft.getDataTag(Craft.FLYBLOCKS);
-        Counter<RequiredBlockEntry> moveblocks = craft.getDataTag(Craft.MOVEBLOCKS);
         Counter<RequiredBlockEntry> displayBlocks = new Counter<>();
-
-        displayBlocks.add(flyblocks);
-        displayBlocks.add(moveblocks);
+        displayBlocks.add(craft.getDataTag(Craft.FLYBLOCKS));
+        displayBlocks.add(craft.getDataTag(Craft.MOVEBLOCKS));
 
         int signLine = 1;
         int signColumn = 0;

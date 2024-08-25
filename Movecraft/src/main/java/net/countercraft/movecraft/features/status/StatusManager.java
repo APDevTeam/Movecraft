@@ -67,12 +67,11 @@ public class StatusManager extends BukkitRunnable implements Listener {
         }
 
         @Override
-        public @Nullable Effect get() {
+        public @NotNull Effect get() {
             Counter<Material> materials = new Counter<>();
             int nonNegligibleBlocks = 0;
             int nonNegligibleSolidBlocks = 0;
             double fuel = 0;
-            final CraftType crafttype = craft.getType();
             
             for (MovecraftLocation l : craft.getHitBox()) {
                 Material type = craft.getMovecraftWorld().getMaterial(l);
@@ -97,17 +96,15 @@ public class StatusManager extends BukkitRunnable implements Listener {
 
             Counter<RequiredBlockEntry> flyblocks = new Counter<>();
             Counter<RequiredBlockEntry> moveblocks = new Counter<>();
-            final var flyblocksList = crafttype.getRequiredBlockProperty(CraftType.FLY_BLOCKS);
-            final var moveblocksList = crafttype.getRequiredBlockProperty(CraftType.MOVE_BLOCKS);
             for(Material material : materials.getKeySet()) {
-                for(RequiredBlockEntry entry : flyblocksList) {
+                for(RequiredBlockEntry entry : craft.getType().getRequiredBlockProperty(CraftType.FLY_BLOCKS)) {
                     if(entry.contains(material)) {
                         flyblocks.add(entry, materials.get(material) );
                         break;
                     }
                 }
 
-                for(RequiredBlockEntry entry : moveblocksList) {
+                for(RequiredBlockEntry entry : craft.getType().getRequiredBlockProperty(CraftType.MOVE_BLOCKS)) {
                     if(entry.contains(material)) {
                         moveblocks.add(entry, materials.get(material) );
                         break;
