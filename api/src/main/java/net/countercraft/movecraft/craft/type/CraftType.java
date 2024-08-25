@@ -125,6 +125,9 @@ final public class CraftType {
     public static final NamespacedKey SMOKE_ON_SINK = buildKey("smoke_on_sink");
     public static final NamespacedKey EXPLODE_ON_CRASH = buildKey("explode_on_crash");
     public static final NamespacedKey INCENDIARY_ON_CRASH = buildKey("incendiary_on_crash");
+    public static final NamespacedKey EXPLODE_ON_SINK = buildKey("explode_on_sink");
+    public static final NamespacedKey INCENDIARY_ON_SINK = buildKey("incendiary_on_sink");
+    public static final NamespacedKey EXPLODE_ON_SINK_DELAY = buildKey("explode_on_sink_delay");
     public static final NamespacedKey COLLISION_EXPLOSION = buildKey("collision_explosion");
     public static final NamespacedKey UNDERWATER_COLLISION_EXPLOSION = buildKey("underwater_collision_explosion");
     private static final NamespacedKey MIN_HEIGHT_LIMIT = buildKey("min_height_limit");
@@ -456,10 +459,16 @@ final public class CraftType {
                 type -> (int) Math.ceil(20 / type.getDoubleProperty(SINK_SPEED))));
         registerProperty(new BooleanProperty("keepMovingOnSink", KEEP_MOVING_ON_SINK, type -> false));
         registerProperty(new IntegerProperty("smokeOnSink", SMOKE_ON_SINK, type -> 0));
+
+        /* Craft explosion properties */
         registerProperty(new FloatProperty("explodeOnCrash", EXPLODE_ON_CRASH, type -> 0F));
         registerProperty(new BooleanProperty("incendiaryOnCrash", INCENDIARY_ON_CRASH, type -> false));
+        registerProperty(new FloatProperty("explodeOnSink", EXPLODE_ON_SINK, type -> 0F));
+        registerProperty(new BooleanProperty("incendiaryOnSink", INCENDIARY_ON_SINK, type -> false));
+        registerProperty(new IntegerProperty("explodeOnSinkDelay", EXPLODE_ON_SINK_DELAY, type -> 0));
         registerProperty(new FloatProperty("collisionExplosion", COLLISION_EXPLOSION, type -> 0F));
         registerProperty(new FloatProperty("underwaterCollisionExplosion", UNDERWATER_COLLISION_EXPLOSION, type -> type.getFloatProperty(COLLISION_EXPLOSION)));
+
         registerProperty(new IntegerProperty("minHeightLimit", MIN_HEIGHT_LIMIT, type -> Integer.MIN_VALUE));
         registerProperty(new PerWorldProperty<>("perWorldMinHeightLimit", PER_WORLD_MIN_HEIGHT_LIMIT,
                 (type, worldName) -> type.getIntProperty(MIN_HEIGHT_LIMIT)));
