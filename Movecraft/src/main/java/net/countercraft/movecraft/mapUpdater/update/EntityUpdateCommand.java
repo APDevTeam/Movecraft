@@ -83,14 +83,13 @@ public class EntityUpdateCommand extends UpdateCommand {
 
     @Override
     public void doUpdate() {
-        Location playerLoc = entity.getLocation();
+        Location location = new Location(world, x, y, z, yaw, pitch);
         // Use bukkit teleporting API for changing worlds because it won't be smooth anyway
-        if (!(entity instanceof Player) || !playerLoc.getWorld().equals(world)) { 
-            entity.teleport(new Location(world, x + playerLoc.getX(),y + playerLoc.getY(),z + playerLoc.getZ(),yaw + playerLoc.getYaw(),pitch + playerLoc.getPitch()));
+        if (!(entity instanceof Player) || !entity.getLocation().getWorld().equals(world)) {
+            entity.teleport(new Location(world, x, y, z, yaw, pitch));
             return;
         }
-        Location location = new Location(world, playerLoc.getX() + x, playerLoc.getY() + y, playerLoc.getZ() + z);
-        Movecraft.getInstance().getSmoothTeleport().teleport((Player) entity, location, yaw, pitch);
+        Movecraft.getInstance().getSmoothTeleport().teleport((Player) entity, location);
         if (sound != null) {
             ((Player) entity).playSound(location, sound, volume, 1.0f);
         }

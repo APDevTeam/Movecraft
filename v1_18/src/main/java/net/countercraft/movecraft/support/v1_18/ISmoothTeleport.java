@@ -2,7 +2,9 @@ package net.countercraft.movecraft.support.v1_18;
 
 import net.countercraft.movecraft.SmoothTeleport;
 import net.countercraft.movecraft.util.ReflectUtils;
+import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.Location;
+import org.bukkit.craftbukkit.v1_18_R2.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -75,10 +77,12 @@ public class ISmoothTeleport extends SmoothTeleport {
         pitchField = ReflectUtils.getField(entityClass, "aA"); // yRot
     }
 
-    public void teleport(Player player, @NotNull Location location, float yawChange, float pitchChange) {
+    public void teleport(@NotNull Player player, @NotNull Location location) {
         double x = location.getX();
         double y = location.getY();
         double z = location.getZ();
+        float yawChange = location.getYaw();
+        float pitchChange = location.getPitch();
         Object handle = ReflectUtils.getHandle(player);
         try {
             positionMethod.invoke(handle, x, y, z, yawField.get(handle), pitchField.get(handle));
