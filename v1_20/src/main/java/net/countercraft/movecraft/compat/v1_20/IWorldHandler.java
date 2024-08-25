@@ -262,29 +262,13 @@ public class IWorldHandler extends WorldHandler {
 
     @Override
     public @Nullable Location getAccessLocation(@NotNull InventoryView inventoryView) {
-        AbstractContainerMenu menu = ((CraftInventoryView) inventoryView).getHandle();
-        Field field = UnsafeUtils.getFieldOfType(ContainerLevelAccess.class, menu.getClass());
-        if (field != null) {
-            try {
-                field.setAccessible(true);
-                return ((ContainerLevelAccess) field.get(menu)).getLocation();
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
-        }
+        // Not needed for 1.20+, remove when dropping support for 1.18.2
         return null;
     }
 
     @Override
     public void setAccessLocation(@NotNull InventoryView inventoryView, @NotNull Location location) {
-        if (location.getWorld() == null)
-            return;
-        ServerLevel level = ((CraftWorld) location.getWorld()).getHandle();
-        BlockPos position = new BlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ());
-        ContainerLevelAccess access = ContainerLevelAccess.create(level, position);
-
-        AbstractContainerMenu menu = ((CraftInventoryView) inventoryView).getHandle();
-        UnsafeUtils.trySetFieldOfType(ContainerLevelAccess.class, menu, access);
+        // Not needed for 1.20+, remove when dropping support for 1.18.2
     }
 
     private void moveBlockEntity(@NotNull Level nativeWorld, @NotNull BlockPos newPosition, @NotNull BlockEntity tile) {
