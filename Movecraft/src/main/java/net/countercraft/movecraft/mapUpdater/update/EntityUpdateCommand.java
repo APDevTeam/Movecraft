@@ -86,15 +86,18 @@ public class EntityUpdateCommand extends UpdateCommand {
         Location location = entity.getLocation().add(x, y, z);
         location.setYaw(location.getYaw() + yaw);
         location.setPitch(location.getPitch() + pitch);
-        // Use bukkit teleporting API for changing worlds because it won't be smooth anyway
-        if (!(entity instanceof Player) || !entity.getLocation().getWorld().equals(world)) {
-            entity.teleport(new Location(world, x, y, z, yaw, pitch));
-            return;
-        }
-        Movecraft.getInstance().getSmoothTeleport().teleport((Player) entity, location);
+        location.setWorld(world);
         if (sound != null) {
             ((Player) entity).playSound(location, sound, volume, 1.0f);
         }
+
+        // Use bukkit teleporting API for changing worlds because it won't be smooth anyway
+        if (!(entity instanceof Player) || !entity.getLocation().getWorld().equals(world)) {
+            entity.teleport(location);
+            return;
+        }
+
+        Movecraft.getInstance().getSmoothTeleport().teleport((Player) entity, location);
     }
 
     @Override
