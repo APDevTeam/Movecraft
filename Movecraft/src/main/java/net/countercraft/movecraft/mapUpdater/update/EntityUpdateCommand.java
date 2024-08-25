@@ -83,7 +83,9 @@ public class EntityUpdateCommand extends UpdateCommand {
 
     @Override
     public void doUpdate() {
-        Location location = new Location(world, x, y, z, yaw, pitch);
+        Location location = entity.getLocation().add(x, y, z);
+        location.setYaw(location.getYaw() + yaw);
+        location.setPitch(location.getPitch() + pitch);
         // Use bukkit teleporting API for changing worlds because it won't be smooth anyway
         if (!(entity instanceof Player) || !entity.getLocation().getWorld().equals(world)) {
             entity.teleport(new Location(world, x, y, z, yaw, pitch));
