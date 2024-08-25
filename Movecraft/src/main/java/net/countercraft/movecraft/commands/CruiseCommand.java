@@ -13,7 +13,7 @@ import org.bukkit.entity.Player;
 import static net.countercraft.movecraft.util.ChatUtils.MOVECRAFT_COMMAND_PREFIX;
 
 @CommandAlias("cruise")
-@CommandPermission("movecraft.commands|movecraft.commands.cruise")
+@CommandPermission("movecraft.commands,movecraft.commands.cruise")
 public class CruiseCommand extends BaseCommand {
 
     @PreCommand

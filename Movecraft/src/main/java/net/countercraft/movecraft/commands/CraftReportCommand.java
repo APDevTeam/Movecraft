@@ -16,7 +16,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.command.CommandSender;
 
 @CommandAlias("craftreport")
-@CommandPermission("movecraft.commands|movecraft.commands.craftreport")
+@CommandPermission("movecraft.commands,movecraft.commands.craftreport")
 public class CraftReportCommand extends BaseCommand {
 
     @Default
