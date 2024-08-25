@@ -18,6 +18,7 @@
 package net.countercraft.movecraft.async.rotation;
 
 import net.countercraft.movecraft.CruiseDirection;
+import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.MovecraftRotation;
 import net.countercraft.movecraft.TrackedLocation;
@@ -31,6 +32,7 @@ import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftRotateEvent;
 import net.countercraft.movecraft.events.CraftTeleportEntityEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.mapUpdater.update.AccessLocationUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.CraftRotateCommand;
 import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
@@ -45,6 +47,9 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.HumanEntity;
+import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.inventory.InventoryView;
 
 import java.util.HashSet;
 import java.util.List;
@@ -270,6 +275,9 @@ public class RotationTask extends AsyncTask {
                 oldHitBox.getXLength() / 2.0 + 1,
                 oldHitBox.getYLength() / 2.0 + 2,
                 oldHitBox.getZLength() / 2.0 + 1)) {
+
+            rotateHumanEntity(entity);
+
             if (craft.getType().getBoolProperty(CraftType.ONLY_MOVE_PLAYERS)
                     && (!entityList.contains(entity.getType())
                     || craft instanceof SinkingCraft)) {
@@ -298,6 +306,30 @@ public class RotationTask extends AsyncTask {
 
 
         }
+    }
+
+    private void rotateHumanEntity(Entity entity) {
+        if (!(entity instanceof HumanEntity)) {
+            return;
+        }
+
+        InventoryView inventoryView = ((HumanEntity) entity).getOpenInventory();
+        if (inventoryView.getType() == InventoryType.CRAFTING) {
+            return;
+        }
+
+        Location l = Movecraft.getInstance().getWorldHandler().getAccessLocation(inventoryView);
+        if (l == null) {
+            return;
+        }
+
+        MovecraftLocation location = new MovecraftLocation(l.getBlockX(), l.getBlockY(), l.getBlockZ());
+        if (!oldHitBox.contains(location)) {
+            return;
+        }
+
+        location = MathUtils.rotateVec(rotation, location.subtract(originPoint)).add(originPoint);
+        updates.add(new AccessLocationUpdateCommand(inventoryView, location.toBukkit(w)));
     }
 
     public MovecraftLocation getOriginPoint() {

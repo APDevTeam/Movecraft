@@ -256,6 +256,7 @@ public class IWorldHandler extends WorldHandler {
         setBlockFast(world, BlockPos, blockData);
     }
 
+    @Override
     public @Nullable Location getAccessLocation(@NotNull InventoryView inventoryView) {
         AbstractContainerMenu menu = ((CraftInventoryView) inventoryView).getHandle();
         Field field = UnsafeUtils.getFieldOfType(ContainerLevelAccess.class, menu.getClass());
@@ -270,6 +271,7 @@ public class IWorldHandler extends WorldHandler {
         return null;
     }
 
+    @Override
     public void setAccessLocation(@NotNull InventoryView inventoryView, @NotNull Location location) {
         if (location.getWorld() == null)
             return;
