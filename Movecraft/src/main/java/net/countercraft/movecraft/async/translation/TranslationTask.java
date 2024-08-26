@@ -6,6 +6,7 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.*;
+import net.countercraft.movecraft.craft.controller.SinkingController;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftCollisionEvent;
 import net.countercraft.movecraft.events.CraftCollisionExplosionEvent;
@@ -95,7 +96,7 @@ public class TranslationTask extends AsyncTask {
         if (oldHitBox.isEmpty())
             return;
 
-        if (getCraft().getDisabled() && !(craft instanceof SinkingCraft)) {
+        if (getCraft().getDisabled() && !(craft.getDataTag(Craft.CONTROLLER) instanceof SinkingController)) {
             fail(I18nSupport.getInternationalisedString("Translation - Failed Craft Is Disabled"));
             return;
         }
@@ -144,7 +145,7 @@ public class TranslationTask extends AsyncTask {
             return;
         } else if (dy > 0 && maxY + dy > maxHeightLimit) { //If explosive and too high, set dy to 0
             dy = 0;
-        } else if (minY + dy < minHeightLimit && dy < 0 && !(craft instanceof SinkingCraft)
+        } else if (minY + dy < minHeightLimit && dy < 0 && !(craft.getDataTag(Craft.CONTROLLER) instanceof SinkingController)
                 && !craft.getType().getBoolProperty(CraftType.USE_GRAVITY)) {
             fail(I18nSupport.getInternationalisedString("Translation - Failed Craft hit minimum height limit"));
             return;
@@ -193,7 +194,7 @@ public class TranslationTask extends AsyncTask {
             }
 
             boolean blockObstructed;
-            if (craft instanceof SinkingCraft)
+            if (craft.getDataTag(Craft.CONTROLLER) instanceof SinkingController)
                 blockObstructed = !Tags.FALL_THROUGH_BLOCKS.contains(testMaterial);
             else
                 blockObstructed = !testMaterial.isAir()
@@ -212,7 +213,7 @@ public class TranslationTask extends AsyncTask {
             }
 
             if (blockObstructed) {
-                if (!(craft instanceof SinkingCraft)
+                if (!(craft.getDataTag(Craft.CONTROLLER) instanceof SinkingController)
                         && craft.getType().getFloatProperty(CraftType.COLLISION_EXPLOSION) <= 0F) {
                     fail(String.format(I18nSupport.getInternationalisedString(
                                     "Translation - Failed Craft is obstructed") + " @ %d,%d,%d,%s",
@@ -252,7 +253,7 @@ public class TranslationTask extends AsyncTask {
         }
 
         // do not switch world if sinking
-        if (craft instanceof SinkingCraft) {
+        if (craft.getDataTag(Craft.CONTROLLER) instanceof SinkingController) {
             List<MovecraftLocation> air = new ArrayList<>();
             for (MovecraftLocation location : oldHitBox) {
                 if (location.toBukkit(craft.getWorld()).getBlock().getType().isAir()) {
@@ -346,10 +347,10 @@ public class TranslationTask extends AsyncTask {
 
     private void preventsTorpedoRocketsPilots() {
         if (!craft.getType().getBoolProperty(CraftType.MOVE_ENTITIES) ||
-                (craft instanceof SinkingCraft
+                (craft.getDataTag(Craft.CONTROLLER) instanceof SinkingController
                 && craft.getType().getBoolProperty(CraftType.ONLY_MOVE_PLAYERS))) {
             // add releaseTask without playermove to manager
-            if (!craft.getType().getBoolProperty(CraftType.CRUISE_ON_PILOT) && !(craft instanceof SinkingCraft))
+            if (!craft.getType().getBoolProperty(CraftType.CRUISE_ON_PILOT) && !(craft.getDataTag(Craft.CONTROLLER) instanceof SinkingController))
                 // not necessary to release cruiseonpilot crafts, because they will already be released
                 CraftManager.getInstance().addReleaseTask(craft);
             return;
@@ -368,7 +369,7 @@ public class TranslationTask extends AsyncTask {
 
             processHumanEntity(entity);
 
-            if ((entity.getType() == EntityType.PLAYER && !(craft instanceof SinkingCraft))) {
+            if ((entity.getType() == EntityType.PLAYER && !(craft.getDataTag(Craft.CONTROLLER) instanceof SinkingController))) {
                 CraftTeleportEntityEvent e = new CraftTeleportEntityEvent(craft, entity);
                 Bukkit.getServer().getPluginManager().callEvent(e);
                 if (e.isCancelled())
@@ -426,7 +427,7 @@ public class TranslationTask extends AsyncTask {
     private boolean processGravity() {
         //Process gravity (must be same world too)
         if (!world.equals(craft.getWorld()) || !craft.getType().getBoolProperty(CraftType.USE_GRAVITY)
-                || craft instanceof SinkingCraft) {
+                || craft.getDataTag(Craft.CONTROLLER) instanceof SinkingController) {
             return false;
         }
 

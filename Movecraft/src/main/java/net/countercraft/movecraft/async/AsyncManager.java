@@ -25,9 +25,9 @@ import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.craft.PilotedCraft;
-import net.countercraft.movecraft.craft.PlayerCraft;
-import net.countercraft.movecraft.craft.SinkingCraft;
+import net.countercraft.movecraft.craft.controller.PilotController;
+import net.countercraft.movecraft.craft.controller.PlayerController;
+import net.countercraft.movecraft.craft.controller.SinkingController;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
@@ -114,7 +114,7 @@ public class AsyncManager extends BukkitRunnable {
 
         if (task.failed()) {
             // The craft translation failed
-            if (!(c instanceof SinkingCraft))
+            if (c.getDataTag(Craft.CONTROLLER) instanceof SinkingController)
                 c.getAudience().sendMessage(Component.text(task.getFailMessage()));
 
             if (task.isCollisionExplosion()) {
@@ -142,7 +142,7 @@ public class AsyncManager extends BukkitRunnable {
      */
     private boolean processRotation(@NotNull final RotationTask task, @NotNull final Craft c) {
         // Check that the craft hasn't been sneakily unpiloted
-        if (!(c instanceof PilotedCraft) && !task.getIsSubCraft())
+        if (!(c.getDataTag(Craft.CONTROLLER) instanceof PilotController) && !task.getIsSubCraft())
             return false;
 
         if (task.isFailed()) {
@@ -176,8 +176,8 @@ public class AsyncManager extends BukkitRunnable {
             boolean bankLeft = false;
             boolean bankRight = false;
             boolean dive = false;
-            if (craft instanceof PlayerCraft && ((PlayerCraft) craft).getPilotLocked()) {
-                Player pilot = ((PlayerCraft) craft).getPilot();
+            if (craft.getDataTag(Craft.CONTROLLER) instanceof PlayerController playerController && playerController.getPilotLocked()) {
+                Player pilot = playerController.getPilot();
                 if (pilot.isSneaking())
                     dive = true;
                 if (pilot.getInventory().getHeldItemSlot() == 3)
@@ -290,7 +290,7 @@ public class AsyncManager extends BukkitRunnable {
         //copy the crafts before iteration to prevent concurrent modifications
         List<Craft> crafts = Lists.newArrayList(CraftManager.getInstance());
         for (Craft craft : crafts) {
-            if (!(craft instanceof SinkingCraft))
+            if (!(craft.getDataTag(Craft.CONTROLLER) instanceof SinkingController))
                 continue;
 
             if (craft.getHitBox().isEmpty() || craft.getHitBox().getMinY() < 5) {
@@ -322,7 +322,7 @@ public class AsyncManager extends BukkitRunnable {
         // now cleanup craft that are bugged and have not moved in the past 60 seconds,
         //  but have no pilot or are still processing
         for (Craft craft : CraftManager.getInstance()) {
-            if (!(craft instanceof PilotedCraft)) {
+            if (!(craft.getDataTag(Craft.CONTROLLER) instanceof PilotController)) {
                 if (craft.getLastCruiseUpdate() < System.currentTimeMillis() - 60000)
                     CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.INACTIVE, true);
             }

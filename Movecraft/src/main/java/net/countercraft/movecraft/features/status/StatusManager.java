@@ -4,7 +4,7 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.craft.SinkingCraft;
+import net.countercraft.movecraft.craft.controller.SinkingController;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagKey;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagRegistry;
 import net.countercraft.movecraft.craft.type.CraftType;
@@ -123,7 +123,7 @@ public class StatusManager extends BukkitRunnable implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onCraftStatusUpdate(@NotNull CraftStatusUpdateEvent e) {
         Craft craft = e.getCraft();
-        if (craft instanceof SinkingCraft)
+        if (craft.getDataTag(Craft.CONTROLLER) instanceof SinkingController)
             return;
         if (craft.getType().getDoubleProperty(CraftType.SINK_PERCENT) == 0.0)
             return;

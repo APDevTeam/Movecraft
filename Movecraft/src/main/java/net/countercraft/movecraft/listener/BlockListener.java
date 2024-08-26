@@ -21,7 +21,7 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.craft.PilotedCraft;
+import net.countercraft.movecraft.craft.controller.PilotController;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.util.MathUtils;
 import net.countercraft.movecraft.util.Tags;
@@ -80,9 +80,9 @@ public class BlockListener implements Listener {
         MovecraftLocation loc = MathUtils.bukkit2MovecraftLoc(location);
         Player p = e.getPlayer();
         for (Craft craft : MathUtils.craftsNearLocFast(CraftManager.getInstance().getCrafts(), location)) {
-            if (craft.getDisabled() || !(craft instanceof PilotedCraft) || !craft.getHitBox().contains(loc))
+            if (craft.getDisabled() || !(craft.getDataTag(Craft.CONTROLLER) instanceof PilotController pilotController) || !craft.getHitBox().contains(loc))
                 continue;
-            if (((PilotedCraft) craft).getPilot() == p)
+            if (pilotController.getPilot() == p)
                 continue;
 
             e.setCancelled(true);

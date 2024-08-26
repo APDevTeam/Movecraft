@@ -2,8 +2,8 @@ package net.countercraft.movecraft.commands;
 
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.craft.PilotedCraft;
-import net.countercraft.movecraft.craft.SinkingCraft;
+import net.countercraft.movecraft.craft.controller.PilotController;
+import net.countercraft.movecraft.craft.controller.SinkingController;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.util.ChatUtils;
@@ -59,13 +59,13 @@ public class CraftReportCommand implements CommandExecutor {
             HitBox hitBox = craft.getHitBox();
             Component line = Component.empty();
             Component name = Component.text(craft.getType().getStringProperty(CraftType.NAME));
-            if (craft instanceof SinkingCraft)
+            if (craft.getDataTag(Craft.CONTROLLER) instanceof SinkingController)
                 name = name.color(NamedTextColor.RED);
             else if (craft.getDisabled())
                 name = name.color(NamedTextColor.BLUE);
             line = line.append(name).append(Component.text(" "));
-            if (craft instanceof PilotedCraft pilotedCraft)
-                line = line.append(Component.text(pilotedCraft.getPilot().getName()));
+            if (craft.getDataTag(Craft.CONTROLLER) instanceof PilotController pilotController)
+                line = line.append(Component.text(pilotController.getPilot().getName()));
             else
                 line = line.append(I18nSupport.getInternationalisedComponent("None"));
             line = line.append(Component.text(" "));

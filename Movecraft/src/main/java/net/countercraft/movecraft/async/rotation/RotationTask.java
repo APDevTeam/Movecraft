@@ -26,8 +26,8 @@ import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.craft.SinkingCraft;
 import net.countercraft.movecraft.craft.SubCraft;
+import net.countercraft.movecraft.craft.controller.SinkingController;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftRotateEvent;
 import net.countercraft.movecraft.events.CraftTeleportEntityEvent;
@@ -94,7 +94,7 @@ public class RotationTask extends AsyncTask {
         if(oldHitBox.isEmpty())
             return;
 
-        if (getCraft().getDisabled() && !(craft instanceof SinkingCraft)) {
+        if (getCraft().getDisabled() && !(craft.getDataTag(Craft.CONTROLLER) instanceof SinkingController)) {
             failed = true;
             failMessage = I18nSupport.getInternationalisedString("Translation - Failed Craft Is Disabled");
         }
@@ -259,8 +259,8 @@ public class RotationTask extends AsyncTask {
 
     private void rotateEntitiesOnCraft(Location tOP) {
         if (!craft.getType().getBoolProperty(CraftType.MOVE_ENTITIES)
-                || (craft instanceof SinkingCraft
-                && craft.getType().getBoolProperty(CraftType.ONLY_MOVE_PLAYERS))) {
+                || (craft.getDataTag(Craft.CONTROLLER) instanceof SinkingController
+                    && craft.getType().getBoolProperty(CraftType.ONLY_MOVE_PLAYERS))) {
             return;
         }
 
@@ -280,7 +280,7 @@ public class RotationTask extends AsyncTask {
 
             if (craft.getType().getBoolProperty(CraftType.ONLY_MOVE_PLAYERS)
                     && (!entityList.contains(entity.getType())
-                    || craft instanceof SinkingCraft)) {
+                        || craft.getDataTag(Craft.CONTROLLER) instanceof SinkingController)) {
                 continue;
             }// Player is onboard this craft
 

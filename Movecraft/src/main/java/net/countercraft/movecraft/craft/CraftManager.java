@@ -19,6 +19,8 @@ package net.countercraft.movecraft.craft;
 
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
+import net.countercraft.movecraft.craft.controller.PilotController;
+import net.countercraft.movecraft.craft.controller.PlayerController;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.events.CraftSinkEvent;
@@ -83,7 +85,7 @@ public class CraftManager implements Iterable<Craft>{
     /**
      * Map of players to their current craft.
      */
-    @NotNull private final ConcurrentMap<Player, PlayerCraft> playerCrafts = new ConcurrentHashMap<>();
+    @NotNull private final ConcurrentMap<Player, Craft> playerCrafts = new ConcurrentHashMap<>();
     @NotNull private final ConcurrentMap<Craft, BukkitTask> releaseEvents = new ConcurrentHashMap<>();
     /**
      * Set of all craft types on the server.
@@ -182,11 +184,11 @@ public class CraftManager implements Iterable<Craft>{
     }
 
     public void add(@NotNull Craft c) {
-        if (c instanceof PlayerCraft) {
-            if (playerCrafts.containsKey(((PlayerCraft) c).getPilot()))
+        if (c.getDataTag(Craft.CONTROLLER) instanceof PlayerController playerController) {
+            if (playerCrafts.containsKey(playerController.getPilot()))
                 throw new IllegalStateException("Players may only have one PlayerCraft associated with them!");
 
-            playerCrafts.put(((PlayerCraft) c).getPilot(), (PlayerCraft) c);
+            playerCrafts.put(playerController.getPilot(), c);
         }
 
         crafts.add(c);
@@ -199,8 +201,8 @@ public class CraftManager implements Iterable<Craft>{
             return;
 
         crafts.remove(craft);
-        if (craft instanceof PlayerCraft)
-            playerCrafts.remove(((PlayerCraft) craft).getPilot());
+        if (craft.getDataTag(Craft.CONTROLLER) instanceof PlayerController playerController)
+            playerCrafts.remove(playerController.getPilot());
 
         crafts.add(new SinkingCraftImpl(craft));
     }
@@ -216,20 +218,20 @@ public class CraftManager implements Iterable<Craft>{
         }
 
         crafts.remove(craft);
-        if(craft instanceof PlayerCraft)
-            playerCrafts.remove(((PlayerCraft) craft).getPilot());
+        if(craft.getDataTag(Craft.CONTROLLER) instanceof PlayerController playerController)
+            playerCrafts.remove(playerController.getPilot());
 
         if(craft.getHitBox().isEmpty())
             Movecraft.getInstance().getLogger().warning(I18nSupport.getInternationalisedString(
                     "Release - Empty Craft Release Console"));
         else {
-            if (craft instanceof PlayerCraft)
+            if (craft.getDataTag(Craft.CONTROLLER) instanceof PlayerController)
                 craft.getAudience().sendMessage(Component.text(I18nSupport.getInternationalisedString(
                         "Release - Craft has been released")));
-            if (craft instanceof PilotedCraft)
+            if (craft.getDataTag(Craft.CONTROLLER) instanceof PilotController pilotController)
                 Movecraft.getInstance().getLogger().info(String.format(I18nSupport.getInternationalisedString(
                         "Release - Player has released a craft console"),
-                        ((PilotedCraft) craft).getPilot().getName(),
+                        pilotController.getPilot().getName(),
                         craft.getType().getStringProperty(CraftType.NAME),
                         craft.getHitBox().size(),
                         craft.getHitBox().getMinX(),
@@ -327,9 +329,9 @@ public class CraftManager implements Iterable<Craft>{
     }
 
     @NotNull
-    public Set<PlayerCraft> getPlayerCraftsInWorld(World w) {
-        Set<PlayerCraft> crafts = new HashSet<>(this.crafts.size(), 1); // never has to resize
-        for (PlayerCraft craft : playerCrafts.values()) {
+    public Set<Craft> getPlayerCraftsInWorld(World w) {
+        Set<Craft> crafts = new HashSet<>(this.crafts.size(), 1); // never has to resize
+        for (Craft craft : playerCrafts.values()) {
             if (craft.getMovecraftWorld().getWorldUUID() == w.getUID())
                 crafts.add(craft);
         }
@@ -338,13 +340,13 @@ public class CraftManager implements Iterable<Craft>{
 
     @Contract("null -> null")
     @Nullable
-    public PlayerCraft getCraftByPlayer(@Nullable Player p) {
+    public Craft getCraftByPlayer(@Nullable Player p) {
         if(p == null)
             return null;
         return playerCrafts.get(p);
     }
 
-    public PlayerCraft getCraftByPlayerName(String name) {
+    public Craft getCraftByPlayerName(String name) {
         for (var entry : playerCrafts.entrySet()) {
             if (entry.getKey() != null && entry.getKey().getName().equals(name))
                 return entry.getValue();

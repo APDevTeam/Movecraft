@@ -2,7 +2,7 @@ package net.countercraft.movecraft.commands;
 
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.craft.PilotedCraft;
+import net.countercraft.movecraft.craft.controller.PilotController;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.Bukkit;
@@ -78,7 +78,7 @@ public class ReleaseCommand implements TabExecutor {
         if (args[0].equalsIgnoreCase("-n")) {
             final List<Craft> craftsToRelease = new ArrayList<>(CraftManager.getInstance().getCrafts());
             for (Craft craft : craftsToRelease) {
-                if (!(craft instanceof PilotedCraft))
+                if (!(craft.getDataTag(Craft.CONTROLLER) instanceof PilotController))
                     CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.FORCE, false);
             }
             commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX

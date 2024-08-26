@@ -11,7 +11,7 @@ import net.countercraft.movecraft.WorldHandler;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.craft.SinkingCraft;
+import net.countercraft.movecraft.craft.controller.SinkingController;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
@@ -79,7 +79,7 @@ public class CraftTranslateCommand extends UpdateCommand {
         World oldWorld = craft.getWorld();
         final Set<Material> passthroughBlocks = new HashSet<>(
                 craft.getType().getMaterialSetProperty(CraftType.PASSTHROUGH_BLOCKS));
-        if (craft instanceof SinkingCraft) {
+        if (craft.getDataTag(Craft.CONTROLLER) instanceof SinkingController) {
             passthroughBlocks.addAll(Tags.FLUID);
             passthroughBlocks.addAll(Tag.LEAVES.getValues());
             passthroughBlocks.addAll(Tags.SINKING_PASSTHROUGH);
@@ -131,7 +131,7 @@ public class CraftTranslateCommand extends UpdateCommand {
             }
 
             //Check to see which locations in the from set are actually outside of the craft
-            final Set<MovecraftLocation> confirmed = craft instanceof SinkingCraft
+            final Set<MovecraftLocation> confirmed = craft.getDataTag(Craft.CONTROLLER) instanceof SinkingController
                     ? invertedHitBox.copyInto(new LinkedHashSet<>())
                     : verifyExterior(invertedHitBox, validExterior);
 

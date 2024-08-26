@@ -1,7 +1,6 @@
-package net.countercraft.movecraft.craft;
+package net.countercraft.movecraft.craft.controller;
 
-public interface PlayerCraft extends PilotedCraft {
-
+public interface PlayerController extends PilotController {
     boolean getPilotLocked();
 
     void setPilotLocked(boolean pilotLocked);

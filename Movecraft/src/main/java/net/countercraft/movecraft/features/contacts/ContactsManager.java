@@ -2,6 +2,9 @@ package net.countercraft.movecraft.features.contacts;
 
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.*;
+import net.countercraft.movecraft.craft.controller.PilotController;
+import net.countercraft.movecraft.craft.controller.PlayerController;
+import net.countercraft.movecraft.craft.controller.SinkingController;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagContainer;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagKey;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagRegistry;
@@ -43,7 +46,7 @@ public class ContactsManager extends BukkitRunnable implements Listener {
 
             Set<Craft> craftsInWorld = CraftManager.getInstance().getCraftsInWorld(w);
             for (Craft base : craftsInWorld) {
-                if (base instanceof SinkingCraft || base instanceof SubCraft)
+                if (base.getDataTag(Craft.CONTROLLER) instanceof SinkingController || base instanceof SubCraft)
                     continue;
 
                 update(base, craftsInWorld);
@@ -79,8 +82,9 @@ public class ContactsManager extends BukkitRunnable implements Listener {
         for (Craft target : craftsInWorld) {
             if (target instanceof SubCraft)
                 continue;
-            if (base instanceof PilotedCraft && target instanceof PilotedCraft
-                    && ((PilotedCraft) base).getPilot() == ((PilotedCraft) target).getPilot())
+            if (base.getDataTag(Craft.CONTROLLER) instanceof PilotController baseController
+                    && target.getDataTag(Craft.CONTROLLER) instanceof PilotController targetController
+                    && baseController.getPilot() == targetController.getPilot())
                 continue;
 
             MovecraftLocation baseCenter;
@@ -122,7 +126,7 @@ public class ContactsManager extends BukkitRunnable implements Listener {
             if (w == null)
                 continue;
 
-            for (PlayerCraft base : CraftManager.getInstance().getPlayerCraftsInWorld(w)) {
+            for (Craft base : CraftManager.getInstance().getPlayerCraftsInWorld(w)) {
                 if (base.getHitBox().isEmpty())
                     continue;
 
@@ -172,7 +176,7 @@ public class ContactsManager extends BukkitRunnable implements Listener {
         if (!target.getName().isEmpty()) {
             name = name.append(Component.text(")"));
         }
-        if (target instanceof SinkingCraft) {
+        if (target.getDataTag(Craft.CONTROLLER) instanceof SinkingController) {
             name = name.color(NamedTextColor.RED);
         }
         else if (target.getDisabled()) {
@@ -184,8 +188,8 @@ public class ContactsManager extends BukkitRunnable implements Listener {
                 .append(I18nSupport.getInternationalisedComponent("Contact - Commanded By"))
                 .append(Component.text(" "));
 
-        if (target instanceof PilotedCraft) {
-            notification = notification.append(((PilotedCraft) target).getPilot().displayName());
+        if (target.getDataTag(Craft.CONTROLLER) instanceof PilotController targetController) {
+            notification = notification.append(targetController.getPilot().displayName());
         }
         else {
             notification = notification.append(Component.text("null"));
@@ -266,7 +270,7 @@ public class ContactsManager extends BukkitRunnable implements Listener {
             throw new IllegalStateException("COLLISION_SOUND must be of type Sound");
         base.getAudience().playSound(sound);
 
-        if (base instanceof PlayerCraft) {
+        if (base.getDataTag(Craft.CONTROLLER) instanceof PlayerController) {
             Map<Craft, Long> recentContacts = base.getDataTag(RECENT_CONTACTS);
             recentContacts.put(target, System.currentTimeMillis());
             base.setDataTag(RECENT_CONTACTS, recentContacts);

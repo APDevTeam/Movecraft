@@ -8,6 +8,7 @@ import net.countercraft.movecraft.TrackedLocation;
 import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.craft.controller.SinkingController;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagContainer;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagKey;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagRegistry;
@@ -159,7 +160,7 @@ public abstract class BaseCraft implements Craft {
         });
 
         // check to see if the craft is trying to move in a direction not permitted by the type
-        if (!(this instanceof SinkingCraft)) { // sinking crafts can move in any direction
+        if (!(getDataTag(Craft.CONTROLLER) instanceof SinkingController)) { // sinking crafts can move in any direction
             if (!world.equals(w)
                     && !(getType().getBoolProperty(CraftType.CAN_SWITCH_WORLD)
                             || disableTeleportToWorlds.contains(world.getName())))
@@ -176,7 +177,7 @@ public abstract class BaseCraft implements Craft {
 
         if (!getType().getBoolProperty(CraftType.ALLOW_VERTICAL_TAKEOFF_AND_LANDING)
                 && dy != 0 && dx == 0 && dz == 0
-                && !(this instanceof SinkingCraft))
+                && !(getDataTag(Craft.CONTROLLER) instanceof SinkingController))
             return;
 
         Movecraft.getInstance().getAsyncManager().submitTask(new TranslationTask(this, world, dx, dy, dz), this);
@@ -333,7 +334,7 @@ public abstract class BaseCraft implements Craft {
 
     @Override
     public int getTickCooldown() {
-        if (this instanceof SinkingCraft)
+        if (getDataTag(Craft.CONTROLLER) instanceof SinkingController)
             return type.getIntProperty(CraftType.SINK_RATE_TICKS);
 
         Counter<Material> materials = getDataTag(Craft.MATERIALS);

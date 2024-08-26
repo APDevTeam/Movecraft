@@ -3,7 +3,7 @@ package net.countercraft.movecraft.sign;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.craft.PilotedCraft;
+import net.countercraft.movecraft.craft.controller.PilotController;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.util.ChatUtils;
 import org.bukkit.ChatColor;
@@ -29,9 +29,8 @@ public final class NameSign implements Listener {
     public void onCraftDetect(@NotNull CraftDetectEvent event) {
         Craft c = event.getCraft();
 
-        if (c instanceof PilotedCraft) {
-            PilotedCraft pilotedCraft = (PilotedCraft) c;
-            if (Settings.RequireNamePerm && !pilotedCraft.getPilot().hasPermission("movecraft.name.place"))
+        if (c.getDataTag(Craft.CONTROLLER) instanceof PilotController pilotController) {
+            if (Settings.RequireNamePerm && !pilotController.getPilot().hasPermission("movecraft.name.place"))
                 return;
         }
 

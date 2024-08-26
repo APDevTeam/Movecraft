@@ -18,8 +18,9 @@
 package net.countercraft.movecraft.listener;
 
 import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.craft.PlayerCraft;
+import net.countercraft.movecraft.craft.controller.PlayerController;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.util.MathUtils;
@@ -47,13 +48,13 @@ public final class InteractListener implements Listener {
                 e.setCancelled(true);
 
                 Player p = e.getPlayer();
-                PlayerCraft craft = CraftManager.getInstance().getCraftByPlayer(p);
-                if (craft == null)
+                Craft craft = CraftManager.getInstance().getCraftByPlayer(p);
+                if (craft == null || !(craft.getDataTag(Craft.CONTROLLER) instanceof PlayerController playerController))
                     return;
 
-                if (craft.getPilotLocked()) {
+                if (playerController.getPilotLocked()) {
                     // Allow all players to leave direct control mode
-                    craft.setPilotLocked(false);
+                    playerController.setPilotLocked(false);
                     p.sendMessage(I18nSupport.getInternationalisedString("Direct Control - Leaving"));
                 }
                 else if (!p.hasPermission(
@@ -64,10 +65,10 @@ public final class InteractListener implements Listener {
                 }
                 else {
                     // Enter direct control mode
-                    craft.setPilotLocked(true);
-                    craft.setPilotLockedX(p.getLocation().getBlockX() + 0.5);
-                    craft.setPilotLockedY(p.getLocation().getY());
-                    craft.setPilotLockedZ(p.getLocation().getBlockZ() + 0.5);
+                    playerController.setPilotLocked(true);
+                    playerController.setPilotLockedX(p.getLocation().getBlockX() + 0.5);
+                    playerController.setPilotLockedY(p.getLocation().getY());
+                    playerController.setPilotLockedZ(p.getLocation().getBlockZ() + 0.5);
                     p.sendMessage(I18nSupport.getInternationalisedString("Direct Control - Entering"));
                 }
             }
@@ -94,8 +95,8 @@ public final class InteractListener implements Listener {
             e.setCancelled(true);
 
             Player p = e.getPlayer();
-            PlayerCraft craft = CraftManager.getInstance().getCraftByPlayer(p);
-            if (craft == null)
+            Craft craft = CraftManager.getInstance().getCraftByPlayer(p);
+            if (craft == null || !(craft.getDataTag(Craft.CONTROLLER) instanceof PlayerController playerController))
                 return;
 
             CraftType type = craft.getType();
@@ -126,7 +127,7 @@ public final class InteractListener implements Listener {
             if (!MathUtils.locationNearHitBox(craft.getHitBox(), p.getLocation(), 2))
                 return; // Player is not near the craft, so don't do anything
 
-            if (craft.getPilotLocked()) {
+            if (playerController.getPilotLocked()) {
                 // Direct control mode allows vertical movements when right-clicking
                 int dy = 1; // Default to up
                 if (p.isSneaking())

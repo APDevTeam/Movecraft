@@ -2,7 +2,7 @@ package net.countercraft.movecraft.sign;
 
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.craft.SinkingCraft;
+import net.countercraft.movecraft.craft.controller.SinkingController;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftScuttleEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
@@ -58,7 +58,7 @@ public class ScuttleSign implements Listener {
     }
 
     private void scuttle(Craft craft, CommandSender commandSender){
-        if(craft instanceof SinkingCraft) {
+        if(craft.getDataTag(Craft.CONTROLLER) instanceof SinkingController) {
             commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX
                     + I18nSupport.getInternationalisedString("Scuttle - Craft Already Sinking"));
             return;

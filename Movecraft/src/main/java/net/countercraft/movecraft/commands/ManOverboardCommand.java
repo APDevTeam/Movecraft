@@ -4,7 +4,7 @@ import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.craft.SinkingCraft;
+import net.countercraft.movecraft.craft.controller.SinkingController;
 import net.countercraft.movecraft.events.ManOverboardEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.util.MathUtils;
@@ -61,7 +61,7 @@ public class ManOverboardCommand implements CommandExecutor {
             return true;
         }
 
-        if (craft.getDisabled() || craft instanceof SinkingCraft) {
+        if (craft.getDisabled() || craft.getDataTag(Craft.CONTROLLER) instanceof SinkingController) {
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX
                     + I18nSupport.getInternationalisedString("ManOverboard - Disabled"));
             return true;

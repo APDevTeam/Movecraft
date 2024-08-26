@@ -3,7 +3,7 @@ package net.countercraft.movecraft.processing.tasks.translation;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.MovecraftRotation;
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.craft.SinkingCraft;
+import net.countercraft.movecraft.craft.controller.SinkingController;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftCollisionEvent;
 import net.countercraft.movecraft.events.CraftPreTranslateEvent;
@@ -46,7 +46,7 @@ public class TranslationTask implements Supplier<Effect> {
     private static final List<MonadicPredicate<Craft>> preTranslationValidators = new ArrayList<>();
     static {
         preTranslationValidators.add((craft -> craft.getHitBox().isEmpty() ? Result.failWithMessage("Empty hitbox") : Result.succeed()));
-        preTranslationValidators.add((craft -> craft.getDisabled() && !(craft instanceof SinkingCraft)
+        preTranslationValidators.add((craft -> craft.getDisabled() && !(craft.getDataTag(Craft.CONTROLLER) instanceof SinkingController)
                 ? Result.failWithMessage(
                         I18nSupport.getInternationalisedString("Translation - Failed Craft Is Disabled"))
                 : Result.succeed()));

@@ -21,6 +21,7 @@ import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.MovecraftRotation;
 import net.countercraft.movecraft.TrackedLocation;
+import net.countercraft.movecraft.craft.controller.Controller;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagKey;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagRegistry;
 import net.countercraft.movecraft.craft.type.CraftType;
@@ -44,6 +45,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 
 public interface Craft {
+    CraftDataTagKey<Controller> CONTROLLER = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "controller"), craft -> null);
     CraftDataTagKey<List<Craft>> CONTACTS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "contacts"), craft -> new ArrayList<>(0));
     CraftDataTagKey<Double> FUEL = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "fuel"), craft -> 0D);
     CraftDataTagKey<Counter<Material>> MATERIALS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "materials"), craft -> new Counter<>());
