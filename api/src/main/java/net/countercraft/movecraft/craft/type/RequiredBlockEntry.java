@@ -179,7 +179,7 @@ public class RequiredBlockEntry {
         return numericMin;
     }
 
-    public String getName () {
+    public @Nullable String getName () {
         return name;
     }
 
