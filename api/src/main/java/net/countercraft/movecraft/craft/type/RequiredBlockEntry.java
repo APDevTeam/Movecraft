@@ -2,6 +2,7 @@ package net.countercraft.movecraft.craft.type;
 
 import net.countercraft.movecraft.util.Pair;
 import org.bukkit.Material;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -35,6 +36,8 @@ public class RequiredBlockEntry {
         this.name = name;
         hash = Objects.hash(
             this.materials,
+            this.min,
+            this.max,
             this.min,
             this.numericMin,
             this.numericMax,
@@ -188,10 +191,11 @@ public class RequiredBlockEntry {
         return hash;
     }
 
+    @Contract(value = "null -> false", pure = true)
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof RequiredBlockEntry that)) return false;
-        return numericMax == that.numericMax && numericMin == that.numericMin && Objects.equals(materials, that.materials) && Objects.equals(name, that.name);
+        return max == that.max && min == that.min && numericMax == that.numericMax && numericMin == that.numericMin && Objects.equals(materials, that.materials) && Objects.equals(name, that.name);
     }
 }
