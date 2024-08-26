@@ -21,6 +21,8 @@ import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.controller.PilotController;
 import net.countercraft.movecraft.craft.controller.PlayerController;
+import net.countercraft.movecraft.craft.controller.SinkingController;
+import net.countercraft.movecraft.craft.controller.SinkingControllerImpl;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.events.CraftSinkEvent;
@@ -200,11 +202,10 @@ public class CraftManager implements Iterable<Craft>{
         if (event.isCancelled())
             return;
 
-        crafts.remove(craft);
         if (craft.getDataTag(Craft.CONTROLLER) instanceof PlayerController playerController)
             playerCrafts.remove(playerController.getPilot());
 
-        crafts.add(new SinkingCraftImpl(craft));
+        craft.setDataTag(Craft.CONTROLLER, new SinkingControllerImpl());
     }
 
     public void release(@NotNull Craft craft, @NotNull CraftReleaseEvent.Reason reason, boolean force) {
