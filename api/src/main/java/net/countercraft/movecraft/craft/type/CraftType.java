@@ -39,14 +39,20 @@ import net.countercraft.movecraft.craft.type.transform.RequiredBlockTransform;
 import net.countercraft.movecraft.craft.type.transform.StringTransform;
 import net.countercraft.movecraft.craft.type.transform.Transform;
 import net.countercraft.movecraft.processing.MovecraftWorld;
+import net.countercraft.movecraft.util.EntityUtil;
 import net.countercraft.movecraft.util.Pair;
 import net.countercraft.movecraft.util.Tags;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import org.bukkit.*;
+import org.bukkit.entity.Animals;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Monster;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -54,6 +60,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -155,6 +162,7 @@ final public class CraftType {
     public static final NamespacedKey CAN_HOVER = buildKey("can_hover");
     public static final NamespacedKey CAN_HOVER_OVER_WATER = buildKey("can_hover_over_water");
     public static final NamespacedKey MOVE_ENTITIES = buildKey("move_entities");
+    public static final NamespacedKey MOVE_ENTITIES_LIST = buildKey("move_entities_list");
     public static final NamespacedKey ONLY_MOVE_PLAYERS = buildKey("only_move_players");
     public static final NamespacedKey USE_GRAVITY = buildKey("use_gravity");
     public static final NamespacedKey HOVER_LIMIT = buildKey("hover_limit");
@@ -190,6 +198,7 @@ final public class CraftType {
     public static final NamespacedKey EXPLOSION_ARMING_TIME = buildKey("explosion_arming_time");
     public static final NamespacedKey DIRECTIONAL_DEPENDENT_MATERIALS = buildKey("directional_dependent_materials");
     public static final NamespacedKey ALLOW_INTERNAL_COLLISION_EXPLOSION = buildKey("allow_internal_collision_explosion");
+    private static final Logger log = LoggerFactory.getLogger(CraftType.class);
     //endregion
 
     @Contract("_ -> new")
@@ -495,6 +504,34 @@ final public class CraftType {
         registerProperty(new BooleanProperty("canHover", CAN_HOVER, type -> false));
         registerProperty(new BooleanProperty("canHoverOverWater", CAN_HOVER_OVER_WATER, type -> true));
         registerProperty(new BooleanProperty("moveEntities", MOVE_ENTITIES, type -> true));
+        registerProperty(new ObjectPropertyImpl("moveEntitiesList", MOVE_ENTITIES_LIST,
+                (data, type, fileKey, namespacedKey) -> {
+                    var entityStringList = data.getStringList(fileKey);
+                    EnumSet<EntityType> entityList = EnumSet.noneOf(EntityType.class);
+                    for (String entityString : entityStringList) {
+                        String upper = entityString.toUpperCase(Locale.ROOT);
+
+                        // User wants a premade list
+                        if(upper.startsWith("@")) {
+
+                            switch (upper.substring(1)) {
+                                case "monsters" -> entityList.addAll(EntityUtil.getClassEntities(Monster.class));
+
+                                case "animals" -> entityList.addAll(EntityUtil.getClassEntities(Animals.class));
+
+                                default -> throw new TypeData.InvalidValueException("Value for " + fileKey + " is not a valid EntityType list");
+                            }
+                        }
+
+                        try {
+                            EntityType.valueOf(upper);
+                        } catch (Exception e) {
+                            throw new TypeData.InvalidValueException("Value for " + fileKey + " must be an EntityType");
+                        }
+                    }
+
+                    return entityList;
+        }, type -> EnumSet.noneOf(EntityType.class)));
         registerProperty(new BooleanProperty("onlyMovePlayers", ONLY_MOVE_PLAYERS, type -> true));
         registerProperty(new BooleanProperty("useGravity", USE_GRAVITY, type -> false));
         registerProperty(new IntegerProperty("hoverLimit", HOVER_LIMIT, type -> 0));
