@@ -360,6 +360,8 @@ public class TranslationTask extends AsyncTask {
                 (oldHitBox.getMaxX() + oldHitBox.getMinX()) / 2.0,
                 (oldHitBox.getMaxY() + oldHitBox.getMinY()) / 2.0,
                 (oldHitBox.getMaxZ() + oldHitBox.getMinZ()) / 2.0);
+
+        EnumSet<EntityType> shouldBeProcessed = (EnumSet<EntityType>) craft.getType().getObjectProperty(CraftType.MOVE_ENTITIES_LIST);
         for (Entity entity : craft.getWorld().getNearbyEntities(midpoint,
                 oldHitBox.getXLength() / 2.0 + 1,
                 oldHitBox.getYLength() / 2.0 + 2,
@@ -382,6 +384,10 @@ public class TranslationTask extends AsyncTask {
 
             if (craft.getType().getBoolProperty(CraftType.ONLY_MOVE_PLAYERS)
                     && entity.getType() != EntityType.PRIMED_TNT) {
+                continue;
+            }
+
+            if (!shouldBeProcessed.contains(entity)) {
                 continue;
             }
 
