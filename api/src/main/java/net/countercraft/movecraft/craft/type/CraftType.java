@@ -515,9 +515,15 @@ final public class CraftType {
                         if(upper.startsWith("@")) {
 
                             switch (upper.substring(1)) {
-                                case "monsters" -> entityList.addAll(EntityUtil.getClassEntities(Monster.class));
+                                case "monsters" -> {
+                                    entityList.addAll(EntityUtil.getClassEntities(Monster.class));
+                                    continue;
+                                }
 
-                                case "animals" -> entityList.addAll(EntityUtil.getClassEntities(Animals.class));
+                                case "animals" -> {
+                                    entityList.addAll(EntityUtil.getClassEntities(Animals.class));
+                                    continue;
+                                }
 
                                 default -> throw new TypeData.InvalidValueException("Value for " + fileKey + " is not a valid EntityType list");
                             }
