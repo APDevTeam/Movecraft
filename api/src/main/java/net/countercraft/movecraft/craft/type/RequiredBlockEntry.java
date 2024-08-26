@@ -1,15 +1,11 @@
 package net.countercraft.movecraft.craft.type;
 
 import net.countercraft.movecraft.util.Pair;
-import net.countercraft.movecraft.util.Tags;
 import org.bukkit.Material;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * This class represents a single flyblock or moveblock entry.
@@ -22,21 +18,27 @@ import java.util.Set;
  * A percentage limit represents a limit which scales with craft size, ex: 10 for 10%.
  */
 public class RequiredBlockEntry {
-    private final EnumSet<Material> materials;
-    private String name;
+    private final @NotNull EnumSet<Material> materials;
+    private final @Nullable String name;
     private final double max;
     private final boolean numericMax;
     private final double min;
     private final boolean numericMin;
+    private final int hash;
 
-
-    public RequiredBlockEntry(EnumSet<Material> materials, @NotNull Pair<Boolean, ? extends Number> min, @NotNull Pair<Boolean, ? extends Number> max, @NotNull String name) {
+    public RequiredBlockEntry(@NotNull EnumSet<Material> materials, @NotNull Pair<Boolean, ? extends Number> min, @NotNull Pair<Boolean, ? extends Number> max, @Nullable String name) {
         this.materials = materials;
         this.min = min.getRight().doubleValue();
         this.numericMin = min.getLeft();
         this.max = max.getRight().doubleValue();
         this.numericMax = max.getLeft();
         this.name = name;
+        hash = Objects.hash(
+            this.materials,
+            this.min,
+            this.numericMin,
+            this.numericMax,
+            this.name);
     }
 
     /**
@@ -179,5 +181,17 @@ public class RequiredBlockEntry {
 
     public String getName () {
         return name;
+    }
+
+    @Override
+    public int hashCode() {
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof RequiredBlockEntry that)) return false;
+        return numericMax == that.numericMax && numericMin == that.numericMin && Objects.equals(materials, that.materials) && Objects.equals(name, that.name);
     }
 }

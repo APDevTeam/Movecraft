@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.features.status;
 
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
@@ -11,10 +12,12 @@ import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.craft.type.RequiredBlockEntry;
 import net.countercraft.movecraft.features.status.events.CraftStatusUpdateEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.processing.WorldManager;
 import net.countercraft.movecraft.processing.effects.Effect;
 import net.countercraft.movecraft.util.Counter;
 import net.countercraft.movecraft.util.Tags;
+import net.countercraft.movecraft.util.hitboxes.HitBoxSlicer;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import org.bukkit.Bukkit;
@@ -29,7 +32,11 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ForkJoinTask;
 import java.util.function.Supplier;
 
 public class StatusManager extends BukkitRunnable implements Listener {
@@ -63,63 +70,109 @@ public class StatusManager extends BukkitRunnable implements Listener {
                 if(!(e.getValue() instanceof Double))
                     throw new IllegalStateException("Values in FUEL_TYPES must be of type Double");
             }
+
+            //noinspection unchecked
             fuelTypes = (Map<Material, Double>) map;
         }
 
         @Override
-        public @NotNull Effect get() {
-            Counter<Material> materials = new Counter<>();
-            int nonNegligibleBlocks = 0;
-            int nonNegligibleSolidBlocks = 0;
-            double fuel = 0;
-            
-            for (MovecraftLocation l : craft.getHitBox()) {
-                Material type = craft.getMovecraftWorld().getMaterial(l);
-                materials.add(type);
+        public @Nullable Effect get() {
 
-                if (type != Material.FIRE && !type.isAir()) {
-                    nonNegligibleBlocks++;
-                }
-                if (type != Material.FIRE && !type.isAir() && !Tags.FLUID.contains(type)) {
-                    nonNegligibleSolidBlocks++;
-                }
+            ArrayList<ForkJoinTask<WorkerData>> workers = new ArrayList<>();
+            new HitBoxSlicer(craft.getHitBox()).forEach(slice -> workers.add(ForkJoinTask.adapt(new StatusWorker(slice, craft.getMovecraftWorld(), fuelTypes))));
 
-                if (Tags.FURNACES.contains(type)) {
-                    InventoryHolder inventoryHolder = (InventoryHolder) craft.getMovecraftWorld().getState(l);
-                    for (ItemStack iStack : inventoryHolder.getInventory()) {
-                        if (iStack == null || !fuelTypes.containsKey(iStack.getType()))
-                            continue;
-                        fuel += iStack.getAmount() * fuelTypes.get(iStack.getType());
-                    }
-                }
+            Optional<WorkerData> workResult = ForkJoinTask
+                .invokeAll(workers)
+                .stream()
+                .map(ForkJoinTask::join)
+                .reduce(WorkerData::add);
+
+            if(workResult.isEmpty()){
+                return null;
             }
+
+            var materials = workResult.get().materials;
 
             Counter<RequiredBlockEntry> flyblocks = new Counter<>();
             Counter<RequiredBlockEntry> moveblocks = new Counter<>();
-            for(Material material : materials.getKeySet()) {
+            for(Object2IntMap.Entry<Material> material : materials.getEntrySet()) {
                 for(RequiredBlockEntry entry : craft.getType().getRequiredBlockProperty(CraftType.FLY_BLOCKS)) {
-                    if(entry.contains(material)) {
-                        flyblocks.add(entry, materials.get(material) );
+                    if(entry.contains(material.getKey())) {
+                        flyblocks.add(entry, material.getIntValue());
                         break;
                     }
                 }
 
                 for(RequiredBlockEntry entry : craft.getType().getRequiredBlockProperty(CraftType.MOVE_BLOCKS)) {
-                    if(entry.contains(material)) {
-                        moveblocks.add(entry, materials.get(material) );
+                    if(entry.contains(material.getKey())) {
+                        moveblocks.add(entry, material.getIntValue());
                         break;
                     }
                 }
             }
 
-            craft.setDataTag(Craft.FUEL, fuel);
+            craft.setDataTag(Craft.FUEL, workResult.get().fuel);
             craft.setDataTag(Craft.MATERIALS, materials);
             craft.setDataTag(Craft.FLYBLOCKS, flyblocks);
             craft.setDataTag(Craft.MOVEBLOCKS, moveblocks);
-            craft.setDataTag(Craft.NON_NEGLIGIBLE_BLOCKS, nonNegligibleBlocks);
-            craft.setDataTag(Craft.NON_NEGLIGIBLE_SOLID_BLOCKS, nonNegligibleSolidBlocks);
+            craft.setDataTag(Craft.NON_NEGLIGIBLE_BLOCKS, workResult.get().nonNegligibleBlocks);
+            craft.setDataTag(Craft.NON_NEGLIGIBLE_SOLID_BLOCKS, workResult.get().nonNegligibleSolidBlocks);
             craft.setDataTag(LAST_STATUS_CHECK, System.currentTimeMillis());
             return () -> Bukkit.getPluginManager().callEvent(new CraftStatusUpdateEvent(craft));
+        }
+
+        private record WorkerData(
+            Counter<Material> materials,
+            int nonNegligibleBlocks,
+            int nonNegligibleSolidBlocks,
+            double fuel){
+
+            public WorkerData add(WorkerData other){
+                return new WorkerData(
+                    Counter.add(this.materials, other.materials),
+                    this.nonNegligibleBlocks + other.nonNegligibleBlocks,
+                    this.nonNegligibleSolidBlocks + other.nonNegligibleSolidBlocks,
+                    this.fuel+other.fuel
+                );
+            }
+        }
+
+        private record StatusWorker(
+            @NotNull Iterable<MovecraftLocation> slice,
+            @NotNull MovecraftWorld world,
+            @NotNull Map<Material, Double> fuelTypes
+        ) implements Callable<WorkerData> {
+
+            @Override
+            public WorkerData call() {
+                Counter<Material> materials = new Counter<>();
+                int nonNegligibleBlocks = 0;
+                int nonNegligibleSolidBlocks = 0;
+                double fuel = 0;
+
+                for (MovecraftLocation l : slice) {
+                    Material type = world.getMaterial(l);
+                    materials.add(type);
+
+                    if (type != Material.FIRE && !type.isAir()) {
+                        nonNegligibleBlocks++;
+                    }
+                    if (type != Material.FIRE && !type.isAir() && !Tags.FLUID.contains(type)) {
+                        nonNegligibleSolidBlocks++;
+                    }
+
+                    if (Tags.FURNACES.contains(type)) {
+                        InventoryHolder inventoryHolder = (InventoryHolder) world.getState(l);
+                        for (ItemStack iStack : inventoryHolder.getInventory()) {
+                            if (iStack == null || !fuelTypes.containsKey(iStack.getType()))
+                                continue;
+                            fuel += iStack.getAmount() * fuelTypes.get(iStack.getType());
+                        }
+                    }
+                }
+
+                return new WorkerData(materials, nonNegligibleBlocks, nonNegligibleSolidBlocks, fuel);
+            }
         }
     }
 
@@ -133,25 +186,10 @@ public class StatusManager extends BukkitRunnable implements Listener {
 
         boolean sinking = false;
         boolean disabled = false;
-        Counter<Material> materials = craft.getDataTag(Craft.MATERIALS);
         int nonNegligibleBlocks = craft.getDataTag(Craft.NON_NEGLIGIBLE_BLOCKS);
         int nonNegligibleSolidBlocks = craft.getDataTag(Craft.NON_NEGLIGIBLE_SOLID_BLOCKS);
-
-        // Build up counters of the fly and move blocks
-        Counter<RequiredBlockEntry> flyBlocks = new Counter<>();
-        flyBlocks.putAll(craft.getType().getRequiredBlockProperty(CraftType.FLY_BLOCKS));
-        Counter<RequiredBlockEntry> moveBlocks = new Counter<>();
-        moveBlocks.putAll(craft.getType().getRequiredBlockProperty(CraftType.MOVE_BLOCKS));
-        for (Material m : materials.getKeySet()) {
-            for (RequiredBlockEntry entry : flyBlocks.getKeySet()) {
-                if(entry.contains(m))
-                    flyBlocks.add(entry, materials.get(m));
-            }
-            for (RequiredBlockEntry entry : moveBlocks.getKeySet()) {
-                if(entry.contains(m))
-                    moveBlocks.add(entry, materials.get(m));
-            }
-        }
+        var flyBlocks = craft.getDataTag(Craft.FLYBLOCKS);
+        var moveBlocks = craft.getDataTag(Craft.MOVEBLOCKS);
 
         // now see if any of the resulting percentages are below the threshold specified in sinkPercent
         double sinkPercent = craft.getType().getDoubleProperty(CraftType.SINK_PERCENT) / 100.0;

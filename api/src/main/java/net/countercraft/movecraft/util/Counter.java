@@ -2,9 +2,9 @@ package net.countercraft.movecraft.util;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collection;
 import java.util.Set;
 
 public class Counter<T> {
@@ -16,6 +16,13 @@ public class Counter<T> {
 
     public Counter(@NotNull Counter<T> other) {
         this.counter.putAll(other.counter);
+    }
+
+    public static <T> Counter<T> add(Counter<T> left, Counter<T> right){
+        var out = new Counter<>(left);
+        out.add(right);
+
+        return out;
     }
 
     public int get(T item) {
@@ -54,8 +61,8 @@ public class Counter<T> {
         return counter.keySet();
     }
 
-    public void putAll(@NotNull Collection<T> items) {
-        items.forEach(item -> counter.put(item, 0));
+    public ObjectSet<Object2IntMap.Entry<T>> getEntrySet(){
+        return counter.object2IntEntrySet();
     }
 
     public void add(@NotNull Counter<T> other) {
