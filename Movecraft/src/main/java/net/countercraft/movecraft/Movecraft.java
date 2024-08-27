@@ -238,7 +238,8 @@ public class Movecraft extends JavaPlugin {
         //getServer().getPluginManager().registerEvents(new SpeedSign(), this);
         AbstractMovecraftSign.register("Speed:", new SpeedSign());
         AbstractMovecraftSign.register("Status:", new StatusSign());
-        getServer().getPluginManager().registerEvents(new SubcraftRotateSign(), this);
+        //getServer().getPluginManager().registerEvents(new SubcraftRotateSign(), this);
+        AbstractMovecraftSign.register("Subcraft Rotate", new SubcraftRotateSign(CraftManager.getInstance()::getCraftTypeFromString, Movecraft::getInstance));
         //getServer().getPluginManager().registerEvents(new TeleportSign(), this);
         AbstractMovecraftSign.register("Teleport:", new TeleportSign());
         //getServer().getPluginManager().registerEvents(new ScuttleSign(), this);

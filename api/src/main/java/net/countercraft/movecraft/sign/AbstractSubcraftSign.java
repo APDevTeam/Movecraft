@@ -134,7 +134,7 @@ public abstract class AbstractSubcraftSign extends AbstractCraftSign {
 
         final World world = sign.block().getWorld();
 
-        this.runDetectTask(subcraftType, craft, world, player, startPoint);
+        this.runDetectTask(clickType, subcraftType, craft, world, player, startPoint);
 
         // TODO: Change this, it is ugly, should be done by the detect task itself
         new BukkitRunnable() {
@@ -146,8 +146,6 @@ public abstract class AbstractSubcraftSign extends AbstractCraftSign {
 
         return false;
     }
-
-    protected abstract void runDetectTask(CraftType subcraftType, Craft craft, World world, Player player, MovecraftLocation startPoint);
 
     protected void applyDefaultText(AbstractSignListener.SignWrapper sign) {
         if (sign.getRaw(2).isBlank() && sign.getRaw(3).isBlank()) {
@@ -171,9 +169,10 @@ public abstract class AbstractSubcraftSign extends AbstractCraftSign {
         return this.craftTypeRetrievalFunction.apply(ident);
     }
 
+    protected abstract void runDetectTask(Action clickType, CraftType subcraftType, Craft parentCraft, World world, Player player, MovecraftLocation startPoint);
     protected abstract boolean isActionAllowed(final String action);
     protected abstract void onActionAlreadyInProgress(Player player);
     protected abstract Component getDefaultTextFor(int line);
-    protected abstract boolean canPlayerUseSignForCraftType(Action clickType, AbstractSignListener.SignWrapper sign, Player player, CraftType craftType);
+    protected abstract boolean canPlayerUseSignForCraftType(Action clickType, AbstractSignListener.SignWrapper sign, Player player, CraftType subCraftType);
 
 }
