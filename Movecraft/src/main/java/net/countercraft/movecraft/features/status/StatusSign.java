@@ -14,6 +14,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.Style;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.block.Action;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -97,7 +98,6 @@ public class StatusSign extends AbstractInformationSign {
                 totalNonNegligibleWaterBlocks += add;
             }
         }
-        Object2IntMap<RequiredBlockEntry> displayBlocks = new Object2IntOpenHashMap<>();
         for (RequiredBlockEntry entry : craft.getType().getRequiredBlockProperty(CraftType.FLY_BLOCKS)) {
             int total = 0;
             for (Material material : entry.getMaterials()) {
@@ -178,4 +178,5 @@ public class StatusSign extends AbstractInformationSign {
     protected void onCraftIsBusy(Player player, Craft craft) {
 
     }
+
 }
