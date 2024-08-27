@@ -79,7 +79,7 @@ public abstract class AbstractInformationSign extends AbstractCraftSign {
     }
 
     @Override
-    protected boolean internalProcessSign(Action clickType, AbstractSignListener.SignWrapper sign, Player player, Craft craft) {
+    protected boolean internalProcessSignWithCraft(Action clickType, AbstractSignListener.SignWrapper sign, Craft craft, Player player) {
         this.refreshSign(craft, sign, false, REFRESH_CAUSE.SIGN_CLICK);
         return true;
     }
