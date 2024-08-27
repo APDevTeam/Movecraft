@@ -55,6 +55,7 @@ public class Movecraft extends JavaPlugin {
     private WorldHandler worldHandler;
     private SmoothTeleport smoothTeleport;
     private AsyncManager asyncManager;
+    private  AbstractSignListener abstractSignListener;
 
     public static synchronized Movecraft getInstance() {
         return instance;
@@ -130,7 +131,7 @@ public class Movecraft extends JavaPlugin {
 
             final Class<?> signListenerClass = Class.forName("net.countercraft.movecraft.compat." + WorldHandler.getPackageName(minecraftVersion) + ".SignListener");
             if (AbstractSignListener.class.isAssignableFrom(signListenerClass)) {
-                AbstractSignListener abstractSignListener = (AbstractSignListener) signListenerClass.getConstructor().newInstance();
+                abstractSignListener = (AbstractSignListener) signListenerClass.getConstructor().newInstance();
                 getServer().getPluginManager().registerEvents(abstractSignListener, this);
             }
         }
@@ -232,7 +233,8 @@ public class Movecraft extends JavaPlugin {
         AbstractMovecraftSign.register("RMove:", new RelativeMoveSign());
         //getServer().getPluginManager().registerEvents(new ReleaseSign(), this);
         AbstractMovecraftSign.register("Release", new ReleaseSign());
-        getServer().getPluginManager().registerEvents(new RemoteSign(), this);
+        //getServer().getPluginManager().registerEvents(new RemoteSign(), this);
+        AbstractMovecraftSign.register("Remote Sign", new RemoteSign());
         //getServer().getPluginManager().registerEvents(new SpeedSign(), this);
         AbstractMovecraftSign.register("Speed:", new SpeedSign());
         AbstractMovecraftSign.register("Status:", new StatusSign());
@@ -355,4 +357,6 @@ public class Movecraft extends JavaPlugin {
     public AsyncManager getAsyncManager() {
         return asyncManager;
     }
+
+    public AbstractSignListener getAbstractSignListener() {return abstractSignListener;}
 }
