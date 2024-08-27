@@ -7,7 +7,7 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 dependencies {
     api(project(":movecraft-api"))
-    paperweight.paperDevBundle("1.21-R0.1-SNAPSHOT")
+    paperweight.paperDevBundle("1.21.1-R0.1-SNAPSHOT")
 }
 
 description = "Movecraft-v1_21"

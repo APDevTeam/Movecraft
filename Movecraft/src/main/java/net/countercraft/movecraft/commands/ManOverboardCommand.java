@@ -8,7 +8,6 @@ import net.countercraft.movecraft.craft.SinkingCraft;
 import net.countercraft.movecraft.events.ManOverboardEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.util.MathUtils;
-import net.countercraft.movecraft.util.ReflectUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
@@ -71,9 +70,11 @@ public class ManOverboardCommand implements CommandExecutor {
         ManOverboardEvent event = new ManOverboardEvent(craft, telPoint);
         Bukkit.getServer().getPluginManager().callEvent(event);
 
+        telPoint.setYaw(player.getLocation().getYaw());
+        telPoint.setPitch(player.getLocation().getPitch());
         player.setVelocity(new Vector(0, 0, 0));
         player.setFallDistance(0);
-        Movecraft.getInstance().getSmoothTeleport().teleport(player, telPoint, 0, 0);
+        Movecraft.getInstance().getSmoothTeleport().teleport(player, telPoint);
         return true;
     }
 

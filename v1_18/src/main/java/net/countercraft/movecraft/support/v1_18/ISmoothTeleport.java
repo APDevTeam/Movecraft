@@ -75,10 +75,12 @@ public class ISmoothTeleport extends SmoothTeleport {
         pitchField = ReflectUtils.getField(entityClass, "aA"); // yRot
     }
 
-    public void teleport(Player player, @NotNull Location location, float yawChange, float pitchChange) {
+    public void teleport(@NotNull Player player, @NotNull Location location) {
         double x = location.getX();
         double y = location.getY();
         double z = location.getZ();
+        float yawChange = location.getYaw() - player.getLocation().getYaw();
+        float pitchChange = player.getLocation().getPitch() - location.getPitch();
         Object handle = ReflectUtils.getHandle(player);
         try {
             positionMethod.invoke(handle, x, y, z, yawField.get(handle), pitchField.get(handle));
