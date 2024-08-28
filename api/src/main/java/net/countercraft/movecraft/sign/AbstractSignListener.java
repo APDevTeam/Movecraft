@@ -140,8 +140,7 @@ public abstract class AbstractSignListener implements Listener {
                     BlockState state = block.getState();
                     if (state instanceof Sign sign) {
                         for (SignWrapper wrapper : this.getSignWrappers(sign)) {
-                            String ident = PlainTextComponentSerializer.plainText().serialize(wrapper.line(0));
-                            AbstractCraftSign.tryGetCraftSign(ident).ifPresent(acs -> acs.onCraftDetect(event, wrapper));
+                            AbstractCraftSign.tryGetCraftSign(wrapper.line(0)).ifPresent(acs -> acs.onCraftDetect(event, wrapper));
                         }
                     }
                 }
@@ -150,8 +149,7 @@ public abstract class AbstractSignListener implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
     public void onSignTranslate(SignTranslateEvent event) {
-        String ident = event.getLine(0);
-        AbstractCraftSign.tryGetCraftSign(ident).ifPresent(acs -> acs.onSignMovedByCraft(event));
+        AbstractCraftSign.tryGetCraftSign(event.line(0)).ifPresent(acs -> acs.onSignMovedByCraft(event));
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
@@ -160,8 +158,7 @@ public abstract class AbstractSignListener implements Listener {
         BlockState state = block.getState();
         if (state instanceof Sign sign) {
             SignWrapper wrapper = this.getSignWrapper(sign, event);
-            final String signHeader = PlainTextComponentSerializer.plainText().serialize(wrapper.line(0));
-            AbstractMovecraftSign.tryGet(signHeader).ifPresent(ams -> {
+            AbstractMovecraftSign.tryGet(wrapper.line(0)).ifPresent(ams -> {
 
                 boolean success = ams.processSignChange(event, wrapper);
                 if (ams.shouldCancelEvent(success, null, event.getPlayer().isSneaking())) {
@@ -180,8 +177,7 @@ public abstract class AbstractSignListener implements Listener {
         BlockState state = block.getState();
         if (state instanceof Sign sign) {
             SignWrapper wrapper = this.getSignWrapper(sign, event);
-            final String signHeader = PlainTextComponentSerializer.plainText().serialize(wrapper.line(0));
-            AbstractMovecraftSign.tryGet(signHeader).ifPresent(ams -> {
+            AbstractMovecraftSign.tryGet(wrapper.line(0)).ifPresent(ams -> {
                 boolean success = ams.processSignClick(event.getAction(), wrapper, event.getPlayer());
                 if (ams.shouldCancelEvent(success, event.getAction(), event.getPlayer().isSneaking())) {
                     event.setCancelled(true);
