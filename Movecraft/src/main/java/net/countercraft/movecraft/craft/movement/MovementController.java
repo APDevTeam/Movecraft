@@ -17,7 +17,7 @@ import java.util.function.Supplier;
 
 public class MovementController {
     private static final @NotNull MovecraftLocation ZERO = new MovecraftLocation(0,0,0);
-    private static final @NotNull MovementData DEFAULT = new MovementData(ZERO, MovecraftRotation.NONE, null);
+    private static final @NotNull MovementData DEFAULT = new MovementData(AffineTransformation.NONE, null);
     private final @NotNull CraftDataTagKey<MovementData> _dataTagKey;
 
     public MovementController(Plugin plugin) {
@@ -28,8 +28,7 @@ public class MovementController {
 
     public void move(@NotNull Craft craft, @Nullable MovecraftLocation translation, @Nullable MovecraftRotation rotation, @Nullable MovecraftWorld changeWorld){
         craft.computeDataTag(_dataTagKey, (data) -> data.merge(new MovementData(
-            translation == null ? ZERO : translation,
-            rotation == null ? MovecraftRotation.NONE : rotation,
+            AffineTransformation.of(translation).mult(AffineTransformation.of(rotation)),
             changeWorld)));
     }
 
@@ -54,23 +53,20 @@ public class MovementController {
         }
     }
 
-    private record MovementData(@NotNull MovecraftLocation translation, @NotNull MovecraftRotation rotation, @Nullable MovecraftWorld world){
+    // TODO: Implement int matrix or find library (most are for floating point)
+    private record AffineTransformation(){
+        public static @NotNull AffineTransformation NONE = null;
+        public static @NotNull AffineTransformation of(MovecraftLocation translation){ return null; }
+        public static @NotNull AffineTransformation of(MovecraftRotation rotation){ return null; }
+        public @NotNull AffineTransformation mult(AffineTransformation other){ return null; }
+        public @NotNull MovecraftLocation apply(MovecraftLocation location){ return location; }
+    }
 
-        private static MovecraftRotation add(MovecraftRotation a, MovecraftRotation b){
-            if(a == MovecraftRotation.NONE || a==b){
-                return b;
-            }
-            if(b == MovecraftRotation.NONE){
-                return a;
-            }
-
-            return MovecraftRotation.NONE;
-        }
-
+    private record MovementData(@NotNull AffineTransformation transformation, @Nullable MovecraftWorld world){
         @Contract("_ -> new")
         public @NotNull MovementData merge(@NotNull MovementData other){
             // TODO: Correct this
-            return new MovementData(translation.add(other.translation), add(rotation, other.rotation), this.world == null ? other.world : this.world);
+            return new MovementData(transformation.mult(other.transformation), this.world == null ? other.world : this.world);
         }
     }
 }
