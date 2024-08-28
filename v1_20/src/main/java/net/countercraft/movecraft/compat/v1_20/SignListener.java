@@ -3,7 +3,6 @@ package net.countercraft.movecraft.compat.v1_20;
 import net.countercraft.movecraft.events.SignTranslateEvent;
 import net.countercraft.movecraft.sign.AbstractSignListener;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.Directional;
@@ -53,6 +52,7 @@ public class SignListener extends AbstractSignListener {
 
     @Override
     public SignWrapper[] getSignWrappers(Sign sign, SignTranslateEvent event) {
+        // TODO: WTF? This is nonsensical
         Side[] sides = new Side[Side.values().length];
         SignWrapper[] wrappers = new SignWrapper[sides.length];
         for (int i = 0; i < sides.length; i++) {
@@ -62,20 +62,12 @@ public class SignListener extends AbstractSignListener {
             if (side == Side.BACK) {
                 face = face.getOppositeFace();
             }
-            List<Component> lines = new ArrayList<>();
-            for (int j = 0; j < event.getLines().length; j++) {
-                lines.add(Component.text(event.getLine(j)));
-            }
+            List<Component> lines = new ArrayList<>(event.lines());
             SignWrapper wrapper = new SignWrapper(
                     sign,
-                    (k) -> {
-                        String valTmp = event.getLine(k);
-                        return Component.text(valTmp);
-                    },
+                    event::line,
                     lines,
-                    (k, component) -> {
-                        event.setLine(k, PlainTextComponentSerializer.plainText().serialize(component));
-                    },
+                    event::line,
                     face
             );
             wrappers[i] = wrapper;
