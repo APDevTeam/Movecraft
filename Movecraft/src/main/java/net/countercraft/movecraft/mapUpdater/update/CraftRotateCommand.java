@@ -200,6 +200,7 @@ public class CraftRotateCommand extends UpdateCommand {
     }
 
     private void sendSignEvents() {
+        // TODO: Use the signwrappers here
         Object2ObjectMap<String[], List<MovecraftLocation>> signs = new Object2ObjectOpenCustomHashMap<>(new Hash.Strategy<String[]>() {
             @Override
             public int hashCode(String[] strings) {
@@ -216,6 +217,7 @@ public class CraftRotateCommand extends UpdateCommand {
         for (MovecraftLocation location : craft.getHitBox()) {
             Block block = location.toBukkit(craft.getWorld()).getBlock();
             BlockState state = block.getState();
+            // TODO: Change to return the signwrappers for this sign (if not empty!)
             if (state instanceof Sign) {
                 Sign sign = (Sign) block.getState();
                 if (!signs.containsKey(sign.getLines()))
