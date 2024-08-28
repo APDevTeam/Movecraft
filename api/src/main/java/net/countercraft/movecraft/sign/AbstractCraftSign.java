@@ -5,6 +5,8 @@ import net.countercraft.movecraft.craft.PilotedCraft;
 import net.countercraft.movecraft.craft.PlayerCraft;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 
@@ -20,6 +22,14 @@ import java.util.Optional;
 public abstract class AbstractCraftSign extends AbstractMovecraftSign {
 
     // Helper method for the listener
+    public static Optional<AbstractCraftSign> tryGetCraftSign(final Component ident) {
+        if (ident == null) {
+            return Optional.empty();
+        }
+        final String identStr = PlainTextComponentSerializer.plainText().serialize(ident);
+        return tryGetCraftSign(identStr);
+    }
+
     public static Optional<AbstractCraftSign> tryGetCraftSign(final String ident) {
         Optional<AbstractMovecraftSign> tmp = AbstractCraftSign.tryGet(ident);
         if (tmp.isPresent() && tmp.get() instanceof AbstractCraftSign acs) {

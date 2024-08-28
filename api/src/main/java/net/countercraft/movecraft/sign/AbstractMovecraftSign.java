@@ -3,6 +3,8 @@ package net.countercraft.movecraft.sign;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.util.MathUtils;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
@@ -43,6 +45,14 @@ public abstract class AbstractMovecraftSign {
             AbstractCraftPilotSign sign = signFactory.apply(type);
             register(type.getStringProperty(CraftType.NAME), sign, true);
         }
+    }
+
+    public static Optional<AbstractMovecraftSign> tryGet(final Component ident) {
+        if (ident == null) {
+            return Optional.empty();
+        }
+        final String identStr = PlainTextComponentSerializer.plainText().serialize(ident);
+        return tryGet(identStr);
     }
 
     // Attempts to find a AbstractMovecraftSign instance, if something has been registered
