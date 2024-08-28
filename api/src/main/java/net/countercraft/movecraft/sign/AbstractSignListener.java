@@ -57,6 +57,29 @@ public abstract class AbstractSignListener implements Listener {
             return result;
         }
 
+        public boolean isEmpty() {
+            for(String s : this.rawLines()) {
+                if (s.trim().isEmpty() || s.trim().isBlank()) {
+                    continue;
+                }
+                else {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == this) {
+                return true;
+            }
+            if (obj instanceof SignWrapper other) {
+                return areSignsEqual(other);
+            }
+            return false;
+        }
+
         public boolean areSignsEqual(SignWrapper other) {
             return areSignsEqual(this, other);
         }
