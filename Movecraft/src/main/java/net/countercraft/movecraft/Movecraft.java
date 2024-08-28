@@ -238,6 +238,7 @@ public class Movecraft extends JavaPlugin {
         //getServer().getPluginManager().registerEvents(new SpeedSign(), this);
         AbstractMovecraftSign.register("Speed:", new SpeedSign());
         AbstractMovecraftSign.register("Status:", new StatusSign());
+        AbstractMovecraftSign.register("Contacts:", new ContactsSign());
         //getServer().getPluginManager().registerEvents(new SubcraftRotateSign(), this);
         AbstractMovecraftSign.register("Subcraft Rotate", new SubcraftRotateSign(CraftManager.getInstance()::getCraftTypeFromString, Movecraft::getInstance));
         //getServer().getPluginManager().registerEvents(new TeleportSign(), this);
@@ -254,7 +255,7 @@ public class Movecraft extends JavaPlugin {
         var contactsManager = new ContactsManager();
         contactsManager.runTaskTimerAsynchronously(this, 0, 20);
         getServer().getPluginManager().registerEvents(contactsManager, this);
-        getServer().getPluginManager().registerEvents(new ContactsSign(), this);
+        //getServer().getPluginManager().registerEvents(new ContactsSign(), this);
         getServer().getPluginManager().registerEvents(new CraftTypeListener(), this);
         getCommand("contacts").setExecutor(new ContactsCommand());
 

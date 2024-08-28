@@ -17,9 +17,12 @@ import org.jetbrains.annotations.Nullable;
 
 public abstract class AbstractInformationSign extends AbstractCraftSign {
 
+    public static final Component EMPTY = Component.text("");
+
     protected static final Style STYLE_COLOR_GREEN = Style.style(TextColor.color(0, 255, 0));
     protected static final Style STYLE_COLOR_YELLOW = Style.style(TextColor.color(255, 255, 0));
     protected static final Style STYLE_COLOR_RED = Style.style(TextColor.color(255, 0, 0));
+    protected static final Style STYLE_COLOR_WHITE = Style.style(TextColor.color(255, 255, 255));
 
     public enum REFRESH_CAUSE {
         SIGN_CREATION,

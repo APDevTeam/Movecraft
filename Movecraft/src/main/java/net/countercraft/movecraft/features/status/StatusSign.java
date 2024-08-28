@@ -27,8 +27,6 @@ public class StatusSign extends AbstractInformationSign {
     int totalNonNegligibleBlocks = 0;
     int totalNonNegligibleWaterBlocks = 0;
 
-    public static final Component EMPTY = Component.text("");
-
     protected static final int FUEL_LINE_INDEX = 3;
     protected static final int BLOCK_LINE_INDEX_TOP = 1;
     protected static final int BLOCK_LINE_INDEX_BOTTOM = 2;
