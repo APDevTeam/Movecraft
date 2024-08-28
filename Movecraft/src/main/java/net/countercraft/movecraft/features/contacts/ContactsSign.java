@@ -15,7 +15,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 public class ContactsSign extends AbstractInformationSign {
-    private static final String HEADER = "Contacts:";
 
     protected final int MAX_DISTANCE_COLOR_RED = 64 * 64;
     protected final int MAX_DISTANCE_COLOR_YELLOW = 128 * 128;
@@ -41,7 +40,7 @@ public class ContactsSign extends AbstractInformationSign {
 
         int diffX = baseCenter.getX() - targetCenter.getX();
         int diffZ = baseCenter.getZ() - targetCenter.getZ();
-        String directionStr = "" + (int) Math.sqrt(distanceSquared));
+        String directionStr = "" + (int) Math.sqrt(distanceSquared);
         if (Math.abs(diffX) > Math.abs(diffZ)) {
             if (diffX<0) {
                 directionStr +=" E";
