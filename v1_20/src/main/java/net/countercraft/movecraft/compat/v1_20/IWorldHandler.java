@@ -13,6 +13,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -36,13 +37,17 @@ import java.util.stream.Collectors;
 
 @SuppressWarnings({"unused", "ForLoopReplaceableByForEach"})
 public class IWorldHandler extends WorldHandler {
-    private static final Rotation[] ROTATION;
+    private static final Rotation[] ROTATION = new Rotation[3];
+    private static final Mirror[] MIRROR = new Mirror[3];
 
     static {
-        ROTATION = new Rotation[3];
         ROTATION[MovecraftRotation.NONE.ordinal()] = Rotation.NONE;
         ROTATION[MovecraftRotation.CLOCKWISE.ordinal()] = Rotation.CLOCKWISE_90;
         ROTATION[MovecraftRotation.ANTICLOCKWISE.ordinal()] = Rotation.COUNTERCLOCKWISE_90;
+
+        MIRROR[org.bukkit.block.structure.Mirror.NONE.ordinal()] = Mirror.NONE;
+        MIRROR[org.bukkit.block.structure.Mirror.LEFT_RIGHT.ordinal()] = Mirror.LEFT_RIGHT;
+        MIRROR[org.bukkit.block.structure.Mirror.FRONT_BACK.ordinal()] = Mirror.FRONT_BACK;
     }
 
     private final NextTickProvider tickProvider = new NextTickProvider();
@@ -98,7 +103,7 @@ public class IWorldHandler extends WorldHandler {
         List<BlockPos> newPositions = new ArrayList<>();
         for (int i = 0, positionsSize = positions.size(); i < positionsSize; i++) {
             BlockPos position = positions.get(i);
-            blockData.add(originLevel.getBlockState(position));
+            blockData.add(locallyTransformState(transformation, originLevel.getBlockState(position)));
             newPositions.add(transformPosition(transformation, position));
         }
         //create the new block
@@ -130,6 +135,13 @@ public class IWorldHandler extends WorldHandler {
     @Nullable
     private BlockEntity removeBlockEntity(@NotNull Level world, @NotNull BlockPos position) {
         return world.getChunkAt(position).blockEntities.remove(position);
+    }
+
+    @NotNull
+    private BlockState locallyTransformState(@NotNull AffineTransformation transformation, @NotNull BlockState state){
+        return state
+            .rotate(ROTATION[transformation.extractRotation().ordinal()])
+            .mirror(MIRROR[transformation.extractMirror().ordinal()]);
     }
 
     @NotNull
