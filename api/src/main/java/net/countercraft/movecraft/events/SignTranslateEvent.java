@@ -76,6 +76,10 @@ public class SignTranslateEvent extends CraftEvent{
         return backing.rawLines();
     }
 
+    public BlockFace facing() {
+        return backing.facing();
+    }
+
     public List<Component> lines() {
         return backing.lines();
     }
