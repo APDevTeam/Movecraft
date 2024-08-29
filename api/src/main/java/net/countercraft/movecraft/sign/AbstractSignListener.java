@@ -21,6 +21,10 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
+/*
+ * As soon as 1.18 support is dropped, the adapter system will be dropped too
+ */
+@Deprecated(forRemoval = true)
 public abstract class AbstractSignListener implements Listener {
 
     public static AbstractSignListener INSTANCE;
@@ -29,6 +33,10 @@ public abstract class AbstractSignListener implements Listener {
         INSTANCE = this;
     }
 
+    /*
+     * As soon as 1.18 support is dropped, the adapter system will be dropped too
+     */
+    @Deprecated(forRemoval = true)
     public record SignWrapper(
             @Nullable Sign block,
             Function<Integer, Component> getLine,

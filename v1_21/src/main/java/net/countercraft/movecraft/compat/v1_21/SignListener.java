@@ -23,6 +23,10 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
+/*
+ * As soon as 1.18 support is dropped, the adapter system will be dropped too
+ */
+@Deprecated(forRemoval = true)
 public class SignListener extends AbstractSignListener {
 
     protected final SignWrapper createFromSide(final Sign sign, final Side side) {

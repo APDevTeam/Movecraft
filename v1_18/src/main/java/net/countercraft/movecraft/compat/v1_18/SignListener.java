@@ -20,6 +20,10 @@ import org.bukkit.event.player.PlayerInteractEvent;
 
 import java.util.*;
 
+/*
+ * As soon as 1.18 support is dropped, the adapter system will be dropped too
+ */
+@Deprecated(forRemoval = true)
 public class SignListener extends AbstractSignListener {
 
     protected final SignWrapper createFromSign(final Sign sign) {
