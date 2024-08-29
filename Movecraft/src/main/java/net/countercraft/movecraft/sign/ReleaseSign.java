@@ -8,20 +8,10 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
 import org.jetbrains.annotations.Nullable;
 
-public class ReleaseSign extends AbstractCraftSign {
+public class ReleaseSign extends AbstractMovecraftSign {
 
     public ReleaseSign() {
-        super(true);
-    }
-
-    @Override
-    protected void onCraftIsBusy(Player player, Craft craft) {
-
-    }
-
-    @Override
-    protected void onCraftNotFound(Player player, AbstractSignListener.SignWrapper sign) {
-
+        super(null);
     }
 
     @Override
@@ -38,13 +28,19 @@ public class ReleaseSign extends AbstractCraftSign {
     }
 
     @Override
+    protected boolean internalProcessSign(Action clickType, AbstractSignListener.SignWrapper sign, Player player, @Nullable Craft craft) {
+        if (craft == null) {
+            craft = CraftManager.getInstance().getCraftByPlayer(player);
+        }
+        if (craft != null) {
+            CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.PLAYER, false);
+        }
+        return true;
+    }
+
+    @Override
     public boolean processSignChange(SignChangeEvent event, AbstractSignListener.SignWrapper sign) {
         return false;
     }
 
-    @Override
-    protected boolean internalProcessSignWithCraft(Action clickType, AbstractSignListener.SignWrapper sign, Craft craft, Player player) {
-        CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.PLAYER, false);
-        return true;
-    }
 }
