@@ -8,6 +8,12 @@ import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.craft.type.RequiredBlockEntry;
 import net.countercraft.movecraft.sign.AbstractInformationSign;
 import net.countercraft.movecraft.sign.AbstractSignListener;
+import net.countercraft.movecraft.MovecraftLocation;
+import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.RequiredBlockEntry;
+import net.countercraft.movecraft.events.CraftDetectEvent;
+import net.countercraft.movecraft.events.SignTranslateEvent;
 import net.countercraft.movecraft.util.Counter;
 import net.countercraft.movecraft.util.Tags;
 import net.kyori.adventure.text.Component;
@@ -96,24 +102,25 @@ public class StatusSign extends AbstractInformationSign {
                 totalNonNegligibleWaterBlocks += add;
             }
         }
-        for (RequiredBlockEntry entry : craft.getType().getRequiredBlockProperty(CraftType.FLY_BLOCKS)) {
-            int total = 0;
-            for (Material material : entry.getMaterials()) {
-                if (materials.getKeySet().contains(material)) {
-                    total += materials.get(material);
-                }
-            }
-            displayBlocks.putIfAbsent(entry, total);
-        }
-        for (RequiredBlockEntry entry : craft.getType().getRequiredBlockProperty(CraftType.MOVE_BLOCKS)) {
-            int total = 0;
-            for (Material material : entry.getMaterials()) {
-                if (materials.getKeySet().contains(material)) {
-                    total += materials.get(material);
-                }
-            }
-            displayBlocks.putIfAbsent(entry, total);
-        }
+
+        Counter<RequiredBlockEntry> displayBlocksTmp = new Counter<>();
+        displayBlocksTmp.add(craft.getDataTag(Craft.FLYBLOCKS);
+        displayBlocksTmp.add(craft.getDataTag(Craft.MOVEBLOCKS);
+                             
+        for (RequiredBlockEntry entry : displayBlocksTmp.getKeySet()) {
+          // TODO: Sure?
+          if (entry.getMin() == 0.0) {
+            continue;
+          }
+          double pctPresent = (displayBlocksTmp.get(entry) * 100D);
+          // TODO: WTF? Why?
+          if (craft.getType().getBoolProperty(CraftType.BLOCKED_BY_WATER)) {
+            pctPresent /= totalNonNegligibleBlocks;
+          } else {
+            pctPresent /= totalNonNegligibleWaterBlocks;
+          }
+          displayBlocks.putIfAbsent(entry, (int) pctPresent);
+        }      
     }
 
     protected void calcdisplayComponents(Craft craft) {
@@ -121,7 +128,7 @@ public class StatusSign extends AbstractInformationSign {
         displayComponents.set(1, EMPTY);
         int signLine = 0;
         int signColumn = 0;
-        for (RequiredBlockEntry entry : displayBlocks.keySet()) {
+        for (RequiredBlockEntry entry : displayBlocks.getKeySet()) {
             if (entry.getMin() == 0.0) {
                 continue;
             }

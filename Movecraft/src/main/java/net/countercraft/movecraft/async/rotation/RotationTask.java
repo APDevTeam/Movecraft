@@ -48,12 +48,11 @@ import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.InventoryView;
 
 import java.util.HashSet;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import static net.countercraft.movecraft.util.MathUtils.withinWorldBorder;
@@ -195,150 +194,142 @@ public class RotationTask extends AsyncTask {
         tOP.setX(tOP.getBlockX() + 0.5);
         tOP.setZ(tOP.getBlockZ() + 0.5);
 
-        if (!(craft instanceof SinkingCraft && craft.getType().getBoolProperty(CraftType.ONLY_MOVE_PLAYERS))
-                && craft.getType().getBoolProperty(CraftType.MOVE_ENTITIES)) {
-            Location midpoint = new Location(
-                    craft.getWorld(),
-                    (oldHitBox.getMaxX() + oldHitBox.getMinX())/2.0,
-                    (oldHitBox.getMaxY() + oldHitBox.getMinY())/2.0,
-                    (oldHitBox.getMaxZ() + oldHitBox.getMinZ())/2.0);
-            for(Entity entity : craft.getWorld().getNearbyEntities(midpoint,
-                    oldHitBox.getXLength() / 2.0 + 1,
-                    oldHitBox.getYLength() / 2.0 + 2,
-                    oldHitBox.getZLength() / 2.0 + 1)) {
+        rotateEntitiesOnCraft(tOP);
 
-                if (entity instanceof HumanEntity) {
-                    InventoryView inventoryView = ((HumanEntity) entity).getOpenInventory();
-                    if (inventoryView.getType() != InventoryType.CRAFTING) {
-                        Location l = Movecraft.getInstance().getWorldHandler().getAccessLocation(inventoryView);
-                        if (l != null) {
-                            MovecraftLocation location = new MovecraftLocation(l.getBlockX(), l.getBlockY(), l.getBlockZ());
-                            if (oldHitBox.contains(location)) {
-                                location = MathUtils.rotateVec(rotation, location.subtract(originPoint)).add(originPoint);
-                                updates.add(new AccessLocationUpdateCommand(inventoryView, location.toBukkit(w)));
-                            }
-                        }
-                    }
-                }
-
-                if (!craft.getType().getBoolProperty(CraftType.ONLY_MOVE_PLAYERS) || (
-                        (entity.getType() == EntityType.PLAYER || entity.getType() == EntityType.PRIMED_TNT)
-                                && !(craft instanceof SinkingCraft)
-                )) {
-                    // Player is onboard this craft
-
-                    Location adjustedPLoc = entity.getLocation().subtract(tOP);
-
-                    double[] rotatedCoords = MathUtils.rotateVecNoRound(rotation,
-                            adjustedPLoc.getX(), adjustedPLoc.getZ());
-                    float newYaw = rotation == MovecraftRotation.CLOCKWISE ? 90F : -90F;
-
-                    CraftTeleportEntityEvent e = new CraftTeleportEntityEvent(craft, entity);
-                    Bukkit.getServer().getPluginManager().callEvent(e);
-                    if (e.isCancelled())
-                        continue;
-
-                    EntityUpdateCommand eUp = new EntityUpdateCommand(entity,
-                            rotatedCoords[0] + tOP.getX() - entity.getLocation().getX(),
-                            0,
-                            rotatedCoords[1] + tOP.getZ() - entity.getLocation().getZ(),
-                            newYaw,
-                            0
-                    );
-                    updates.add(eUp);
-                }
-            }
-        }
-
-        if (getCraft().getCruising()) {
-            if (rotation == MovecraftRotation.ANTICLOCKWISE) {
-                // ship faces west
-                switch (getCraft().getCruiseDirection()) {
-                    case WEST:
-                        getCraft().setCruiseDirection(CruiseDirection.SOUTH);
-                        break;
-                    // ship faces east
-                    case EAST:
-                        getCraft().setCruiseDirection(CruiseDirection.NORTH);
-                        break;
-                    // ship faces north
-                    case SOUTH:
-                        getCraft().setCruiseDirection(CruiseDirection.EAST);
-                        break;
-                    // ship faces south
-                    case NORTH:
-                        getCraft().setCruiseDirection(CruiseDirection.WEST);
-                        break;
-                }
-            } else if (rotation == MovecraftRotation.CLOCKWISE) {
-                // ship faces west
-                switch (getCraft().getCruiseDirection()) {
-                    case WEST:
-                        getCraft().setCruiseDirection(CruiseDirection.NORTH);
-                        break;
-                    // ship faces east
-                    case EAST:
-                        getCraft().setCruiseDirection(CruiseDirection.SOUTH);
-                        break;
-                    // ship faces north
-                    case SOUTH:
-                        getCraft().setCruiseDirection(CruiseDirection.WEST);
-                        break;
-                    // ship faces south
-                    case NORTH:
-                        getCraft().setCruiseDirection(CruiseDirection.EAST);
-                        break;
-                }
-            }
+        Craft craft1 = getCraft();
+        if (craft1.getCruising()) {
+            CruiseDirection direction = craft1.getCruiseDirection();
+            craft1.setCruiseDirection(direction.getRotated(rotation));
         }
 
         // if you rotated a subcraft, update the parent with the new blocks
-        if (this.isSubCraft) {
-            // also find the furthest extent from center and notify the player of the new direction
-            int farthestX = 0;
-            int farthestZ = 0;
-            for (MovecraftLocation loc : newHitBox) {
-                if (Math.abs(loc.getX() - originPoint.getX()) > Math.abs(farthestX))
-                    farthestX = loc.getX() - originPoint.getX();
-                if (Math.abs(loc.getZ() - originPoint.getZ()) > Math.abs(farthestZ))
-                    farthestZ = loc.getZ() - originPoint.getZ();
-            }
-            Component faceMessage = I18nSupport.getInternationalisedComponent("Rotation - Farthest Extent Facing")
-                    .append(Component.text(" "));
-            if (Math.abs(farthestX) > Math.abs(farthestZ)) {
-                if (farthestX > 0) {
-                    faceMessage = faceMessage.append(I18nSupport.getInternationalisedComponent("Contact/Subcraft Rotate - East"));
-                } else {
-                    faceMessage = faceMessage.append(I18nSupport.getInternationalisedComponent("Contact/Subcraft Rotate - West"));
-                }
-            } else {
-                if (farthestZ > 0) {
-                    faceMessage = faceMessage.append(I18nSupport.getInternationalisedComponent("Contact/Subcraft Rotate - South"));
-                } else {
-                    faceMessage = faceMessage.append(I18nSupport.getInternationalisedComponent("Contact/Subcraft Rotate - North"));
-                }
-            }
-            getCraft().getAudience().sendMessage(faceMessage);
+        if (!this.isSubCraft) {
+            return;
+        }
+        // also find the furthest extent from center and notify the player of the new direction
+        int farthestX = 0;
+        int farthestZ = 0;
+        for (MovecraftLocation loc : newHitBox) {
+            if (Math.abs(loc.getX() - originPoint.getX()) > Math.abs(farthestX))
+                farthestX = loc.getX() - originPoint.getX();
+            if (Math.abs(loc.getZ() - originPoint.getZ()) > Math.abs(farthestZ))
+                farthestZ = loc.getZ() - originPoint.getZ();
+        }
+        Component faceMessage = I18nSupport.getInternationalisedComponent("Rotation - Farthest Extent Facing")
+                .append(Component.text(" "));
 
-            craftsInWorld = CraftManager.getInstance().getCraftsInWorld(getCraft().getWorld());
-            for (Craft craft : craftsInWorld) {
-                if (!newHitBox.intersection(craft.getHitBox()).isEmpty() && craft != getCraft()) {
-                    //newHitBox.addAll(CollectionUtils.filter(craft.getHitBox(),newHitBox));
-                    //craft.setHitBox(newHitBox);
-                    if (Settings.Debug) {
-                        Bukkit.broadcastMessage(String.format("Size of %s hitbox: %d, Size of %s hitbox: %d", this.craft.getType().getStringProperty(CraftType.NAME), newHitBox.size(), craft.getType().getStringProperty(CraftType.NAME), craft.getHitBox().size()));
-                    }
-                    craft.setHitBox(craft.getHitBox().difference(oldHitBox).union(newHitBox));
-                    if (Settings.Debug){
-                        Bukkit.broadcastMessage(String.format("Hitbox of craft %s intersects hitbox of craft %s", this.craft.getType().getStringProperty(CraftType.NAME), craft.getType().getStringProperty(CraftType.NAME)));
-                        Bukkit.broadcastMessage(String.format("Size of %s hitbox: %d, Size of %s hitbox: %d", this.craft.getType().getStringProperty(CraftType.NAME), newHitBox.size(), craft.getType().getStringProperty(CraftType.NAME), craft.getHitBox().size()));
-                    }
-                    break;
-                }
+        faceMessage = faceMessage.append(getRotationMessage(farthestX, farthestZ));
+        craft1.getAudience().sendMessage(faceMessage);
+
+        craftsInWorld = CraftManager.getInstance().getCraftsInWorld(craft1.getWorld());
+        for (Craft craft : craftsInWorld) {
+            if (newHitBox.intersection(craft.getHitBox()).isEmpty() || craft == craft1) {
+                continue;
             }
+            //newHitBox.addAll(CollectionUtils.filter(craft.getHitBox(),newHitBox));
+            //craft.setHitBox(newHitBox);
+            if (Settings.Debug) {
+                Bukkit.broadcastMessage(String.format("Size of %s hitbox: %d, Size of %s hitbox: %d", this.craft.getType().getStringProperty(CraftType.NAME), newHitBox.size(), craft.getType().getStringProperty(CraftType.NAME), craft.getHitBox().size()));
+            }
+            craft.setHitBox(craft.getHitBox().difference(oldHitBox).union(newHitBox));
+            if (Settings.Debug){
+                Bukkit.broadcastMessage(String.format("Hitbox of craft %s intersects hitbox of craft %s", this.craft.getType().getStringProperty(CraftType.NAME), craft.getType().getStringProperty(CraftType.NAME)));
+                Bukkit.broadcastMessage(String.format("Size of %s hitbox: %d, Size of %s hitbox: %d", this.craft.getType().getStringProperty(CraftType.NAME), newHitBox.size(), craft.getType().getStringProperty(CraftType.NAME), craft.getHitBox().size()));
+            }
+            break;
         }
 
+    }
 
+    private Component getRotationMessage(int farthestX, int farthestZ) {
+        if (Math.abs(farthestX) > Math.abs(farthestZ)) {
+            if (farthestX > 0) {
+                return I18nSupport.getInternationalisedComponent("Contact/Subcraft Rotate - East");
+            } else {
+                return I18nSupport.getInternationalisedComponent("Contact/Subcraft Rotate - West");
+            }
+        } else {
+            if (farthestZ > 0) {
+                return I18nSupport.getInternationalisedComponent("Contact/Subcraft Rotate - South");
+            } else {
+                return I18nSupport.getInternationalisedComponent("Contact/Subcraft Rotate - North");
+            }
+        }
+    }
+
+    private void rotateEntitiesOnCraft(Location tOP) {
+        if (!craft.getType().getBoolProperty(CraftType.MOVE_ENTITIES)
+                || (craft instanceof SinkingCraft
+                && craft.getType().getBoolProperty(CraftType.ONLY_MOVE_PLAYERS))) {
+            return;
+        }
+
+        Location midpoint = new Location(
+                craft.getWorld(),
+                (oldHitBox.getMaxX() + oldHitBox.getMinX())/2.0,
+                (oldHitBox.getMaxY() + oldHitBox.getMinY())/2.0,
+                (oldHitBox.getMaxZ() + oldHitBox.getMinZ())/2.0);
+
+        List<EntityType> entityList = List.of(EntityType.PLAYER, EntityType.PRIMED_TNT);
+        for(Entity entity : craft.getWorld().getNearbyEntities(midpoint,
+                oldHitBox.getXLength() / 2.0 + 1,
+                oldHitBox.getYLength() / 2.0 + 2,
+                oldHitBox.getZLength() / 2.0 + 1)) {
+
+            rotateHumanEntity(entity);
+
+            if (craft.getType().getBoolProperty(CraftType.ONLY_MOVE_PLAYERS)
+                    && (!entityList.contains(entity.getType())
+                    || craft instanceof SinkingCraft)) {
+                continue;
+            }// Player is onboard this craft
+
+            Location adjustedPLoc = entity.getLocation().subtract(tOP);
+
+            double[] rotatedCoords = MathUtils.rotateVecNoRound(rotation,
+                    adjustedPLoc.getX(), adjustedPLoc.getZ());
+            float newYaw = rotation == MovecraftRotation.CLOCKWISE ? 90F : -90F;
+
+            CraftTeleportEntityEvent e = new CraftTeleportEntityEvent(craft, entity);
+            Bukkit.getServer().getPluginManager().callEvent(e);
+            if (e.isCancelled())
+                continue;
+
+            EntityUpdateCommand eUp = new EntityUpdateCommand(entity,
+                    rotatedCoords[0] + tOP.getX() - entity.getLocation().getX(),
+                    0,
+                    rotatedCoords[1] + tOP.getZ() - entity.getLocation().getZ(),
+                    newYaw,
+                    0
+            );
+            updates.add(eUp);
+
+
+        }
+    }
+
+    private void rotateHumanEntity(Entity entity) {
+        if (!(entity instanceof HumanEntity)) {
+            return;
+        }
+
+        InventoryView inventoryView = ((HumanEntity) entity).getOpenInventory();
+        if (inventoryView.getType() == InventoryType.CRAFTING) {
+            return;
+        }
+
+        Location l = Movecraft.getInstance().getWorldHandler().getAccessLocation(inventoryView);
+        if (l == null) {
+            return;
+        }
+
+        MovecraftLocation location = new MovecraftLocation(l.getBlockX(), l.getBlockY(), l.getBlockZ());
+        if (!oldHitBox.contains(location)) {
+            return;
+        }
+
+        location = MathUtils.rotateVec(rotation, location.subtract(originPoint)).add(originPoint);
+        updates.add(new AccessLocationUpdateCommand(inventoryView, location.toBukkit(w)));
     }
 
     public MovecraftLocation getOriginPoint() {
@@ -368,37 +359,32 @@ public class RotationTask extends AsyncTask {
     private boolean checkChests(Material mBlock, MovecraftLocation newLoc) {
         Material testMaterial;
         MovecraftLocation aroundNewLoc;
+        final World world = craft.getWorld();
 
         aroundNewLoc = newLoc.translate(1, 0, 0);
-        testMaterial = craft.getWorld().getBlockAt(aroundNewLoc.getX(), aroundNewLoc.getY(), aroundNewLoc.getZ()).getType();
-        if (testMaterial.equals(mBlock)) {
-            if (!oldHitBox.contains(aroundNewLoc)) {
-                return false;
-            }
-        }
+        testMaterial = world.getBlockAt(aroundNewLoc.getX(), aroundNewLoc.getY(), aroundNewLoc.getZ()).getType();
+        if (checkOldHitBox(testMaterial, mBlock, aroundNewLoc))
+            return false;
 
         aroundNewLoc = newLoc.translate(-1, 0, 0);
-        testMaterial = craft.getWorld().getBlockAt(aroundNewLoc.getX(), aroundNewLoc.getY(), aroundNewLoc.getZ()).getType();
-        if (testMaterial.equals(mBlock)) {
-            if (!oldHitBox.contains(aroundNewLoc)) {
-                return false;
-            }
-        }
+        testMaterial = world.getBlockAt(aroundNewLoc.getX(), aroundNewLoc.getY(), aroundNewLoc.getZ()).getType();
+        if (checkOldHitBox(testMaterial, mBlock, aroundNewLoc))
+            return false;
 
         aroundNewLoc = newLoc.translate(0, 0, 1);
-        testMaterial = craft.getWorld().getBlockAt(aroundNewLoc.getX(), aroundNewLoc.getY(), aroundNewLoc.getZ()).getType();
-        if (testMaterial.equals(mBlock)) {
-            if (!oldHitBox.contains(aroundNewLoc)) {
-                return false;
-            }
-        }
+        testMaterial = world.getBlockAt(aroundNewLoc.getX(), aroundNewLoc.getY(), aroundNewLoc.getZ()).getType();
+
+        if (checkOldHitBox(testMaterial, mBlock, aroundNewLoc))
+            return false;
 
         aroundNewLoc = newLoc.translate(0, 0, -1);
-        testMaterial = craft.getWorld().getBlockAt(aroundNewLoc.getX(), aroundNewLoc.getY(), aroundNewLoc.getZ()).getType();
-        return !testMaterial.equals(mBlock) || oldHitBox.contains(aroundNewLoc);
+        testMaterial = world.getBlockAt(aroundNewLoc.getX(), aroundNewLoc.getY(), aroundNewLoc.getZ()).getType();
+        return !checkOldHitBox(testMaterial, mBlock, aroundNewLoc);
     }
 
-
+    private boolean checkOldHitBox(Material testMaterial, Material mBlock, MovecraftLocation aroundNewLoc) {
+        return testMaterial.equals(mBlock) && !oldHitBox.contains(aroundNewLoc);
+    }
 
     public MutableHitBox getNewHitBox() {
         return newHitBox;

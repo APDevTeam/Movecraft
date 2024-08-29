@@ -19,10 +19,8 @@ package net.countercraft.movecraft.config;
 
 import org.bukkit.Material;
 
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 
 public class Settings {
@@ -48,4 +46,5 @@ public class Settings {
     public static int MaxRemoteSigns = -1;
     public static boolean CraftsUseNetherPortals = false;
     public static HashSet<String> ForbiddenRemoteSigns;
+    public static boolean ReleaseOnDeath = false;
 }

@@ -5,8 +5,8 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.SinkingCraft;
-import net.countercraft.movecraft.craft.datatag.CraftDataTagContainer;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagKey;
+import net.countercraft.movecraft.craft.datatag.CraftDataTagRegistry;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.craft.type.RequiredBlockEntry;
 import net.countercraft.movecraft.features.status.events.CraftStatusUpdateEvent;
@@ -27,13 +27,12 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.function.Supplier;
 
 public class StatusManager extends BukkitRunnable implements Listener {
-    private static final CraftDataTagKey<Long> LAST_STATUS_CHECK = CraftDataTagContainer.tryRegisterTagKey(new NamespacedKey("movecraft", "last-status-check"), craft -> System.currentTimeMillis());
+    private static final CraftDataTagKey<Long> LAST_STATUS_CHECK = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "last-status-check"), craft -> System.currentTimeMillis());
 
     @Override
     public void run() {
@@ -67,11 +66,12 @@ public class StatusManager extends BukkitRunnable implements Listener {
         }
 
         @Override
-        public @Nullable Effect get() {
+        public @NotNull Effect get() {
             Counter<Material> materials = new Counter<>();
             int nonNegligibleBlocks = 0;
             int nonNegligibleSolidBlocks = 0;
             double fuel = 0;
+            
             for (MovecraftLocation l : craft.getHitBox()) {
                 Material type = craft.getMovecraftWorld().getMaterial(l);
                 materials.add(type);
@@ -93,8 +93,26 @@ public class StatusManager extends BukkitRunnable implements Listener {
                 }
             }
 
+            Counter<RequiredBlockEntry> flyblocks = new Counter<>();
+            Counter<RequiredBlockEntry> moveblocks = new Counter<>();
+            for(Material material : materials.getKeySet()) {
+                for(RequiredBlockEntry entry : craft.getType().getRequiredBlockProperty(CraftType.FLY_BLOCKS)) {
+                    if(entry.contains(material)) {
+                        flyblocks.add(entry, materials.get(material) );
+                    }
+                }
+
+                for(RequiredBlockEntry entry : craft.getType().getRequiredBlockProperty(CraftType.MOVE_BLOCKS)) {
+                    if(entry.contains(material)) {
+                        moveblocks.add(entry, materials.get(material) );
+                    }
+                }
+            }
+
             craft.setDataTag(Craft.FUEL, fuel);
             craft.setDataTag(Craft.MATERIALS, materials);
+            craft.setDataTag(Craft.FLYBLOCKS, flyblocks);
+            craft.setDataTag(Craft.MOVEBLOCKS, moveblocks);
             craft.setDataTag(Craft.NON_NEGLIGIBLE_BLOCKS, nonNegligibleBlocks);
             craft.setDataTag(Craft.NON_NEGLIGIBLE_SOLID_BLOCKS, nonNegligibleSolidBlocks);
             craft.setDataTag(LAST_STATUS_CHECK, System.currentTimeMillis());
