@@ -84,14 +84,9 @@ public class ContactsSign extends AbstractInformationSign {
 
     @Override
     protected void performUpdate(Component[] newComponents, AbstractSignListener.SignWrapper sign, REFRESH_CAUSE refreshCause) {
-        if (refreshCause != REFRESH_CAUSE.SIGN_MOVED_BY_CRAFT) {
+        if (refreshCause != REFRESH_CAUSE.SIGN_MOVED_BY_CRAFT && sign.block() != null) {
             sign.block().update();
         }
-    }
-
-    @Override
-    protected void sendUpdatePacket(Craft craft, AbstractSignListener.SignWrapper sign, REFRESH_CAUSE refreshCause) {
-
     }
 
     @Override

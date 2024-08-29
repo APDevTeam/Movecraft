@@ -75,14 +75,9 @@ public class SpeedSign extends AbstractInformationSign {
                 sign.line(i, newComp);
             }
         }
-        if (refreshCause != REFRESH_CAUSE.SIGN_MOVED_BY_CRAFT) {
+        if (refreshCause != REFRESH_CAUSE.SIGN_MOVED_BY_CRAFT && sign.block() != null) {
             sign.block().update(true);
         }
-    }
-
-    @Override
-    protected void sendUpdatePacket(Craft craft, AbstractSignListener.SignWrapper sign, REFRESH_CAUSE refreshCause) {
-
     }
 
     @Override

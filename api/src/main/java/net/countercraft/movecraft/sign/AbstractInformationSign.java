@@ -9,6 +9,7 @@ import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
@@ -53,11 +54,13 @@ public abstract class AbstractInformationSign extends AbstractCraftSign {
     public void onSignMovedByCraft(SignTranslateEvent event) {
         super.onSignMovedByCraft(event);
         final Craft craft = event.getCraft();
-        for (MovecraftLocation movecraftLocation : event.getLocations()) {
-            Block block = movecraftLocation.toBukkit(craft.getWorld()).getBlock();
-            if (block instanceof Sign sign) {
-                for (AbstractSignListener.SignWrapper wrapper : AbstractSignListener.INSTANCE.getSignWrappers(sign, event)) {
-                    this.refreshSign(event.getCraft(), wrapper, false, REFRESH_CAUSE.SIGN_MOVED_BY_CRAFT);
+        AbstractSignListener.SignWrapper wrapperTmp = new AbstractSignListener.SignWrapper(null, event::line, event.lines(), event::line, BlockFace.SELF);
+        if (this.refreshSign(craft, wrapperTmp, false, REFRESH_CAUSE.SIGN_MOVED_BY_CRAFT)) {
+            for (MovecraftLocation movecraftLocation : event.getLocations()) {
+                Block block = movecraftLocation.toBukkit(craft.getWorld()).getBlock();
+                if (block instanceof Sign sign) {
+                    AbstractSignListener.SignWrapper wrapperTmpTmp = new AbstractSignListener.SignWrapper(sign, event::line, event.lines(), event::line, event.facing());
+                    this.sendUpdatePacket(craft, wrapperTmpTmp, REFRESH_CAUSE.SIGN_MOVED_BY_CRAFT);
                 }
             }
         }
@@ -83,7 +86,9 @@ public abstract class AbstractInformationSign extends AbstractCraftSign {
 
     @Override
     protected boolean internalProcessSignWithCraft(Action clickType, AbstractSignListener.SignWrapper sign, Craft craft, Player player) {
-        this.refreshSign(craft, sign, false, REFRESH_CAUSE.SIGN_CLICK);
+        if (this.refreshSign(craft, sign, false, REFRESH_CAUSE.SIGN_CLICK)) {
+            this.sendUpdatePacket(craft, sign, REFRESH_CAUSE.SIGN_CLICK);
+        }
         return true;
     }
 
@@ -92,7 +97,8 @@ public abstract class AbstractInformationSign extends AbstractCraftSign {
     // The new and old values are gathered here and compared
     // If nothing has changed, no update happens
     // If something has changed, performUpdate() and sendUpdatePacket() are called
-    protected void refreshSign(@Nullable Craft craft, AbstractSignListener.SignWrapper sign, boolean fillDefault, REFRESH_CAUSE refreshCause) {
+    // Returns wether or not something has changed
+    protected boolean refreshSign(@Nullable Craft craft, AbstractSignListener.SignWrapper sign, boolean fillDefault, REFRESH_CAUSE refreshCause) {
         boolean changedSome = false;
         Component[] updatePayload = new Component[sign.lines().size()];
         for(int i = 1; i < sign.lines().size(); i++) {
@@ -114,13 +120,15 @@ public abstract class AbstractInformationSign extends AbstractCraftSign {
         }
         if (changedSome) {
             this.performUpdate(updatePayload, sign, refreshCause);
-            this.sendUpdatePacket(craft, sign, refreshCause);
         }
+        return changedSome;
     }
 
     @Override
     public boolean processSignChange(SignChangeEvent event, AbstractSignListener.SignWrapper sign) {
-        this.refreshSign(null, sign, true, REFRESH_CAUSE.SIGN_CREATION);
+        if (this.refreshSign(null, sign, true, REFRESH_CAUSE.SIGN_CREATION)) {
+            this.sendUpdatePacket(null, sign, REFRESH_CAUSE.SIGN_CREATION);
+        }
         return true;
     }
 
@@ -146,5 +154,12 @@ public abstract class AbstractInformationSign extends AbstractCraftSign {
     /*
     Gets called after performUpdate has been called
      */
-    protected abstract void sendUpdatePacket(Craft craft, AbstractSignListener.SignWrapper sign, REFRESH_CAUSE refreshCause);
+    protected void sendUpdatePacket(Craft craft, AbstractSignListener.SignWrapper sign, REFRESH_CAUSE refreshCause) {
+        if (sign.block() == null) {
+            return;
+        }
+        for (Player player : sign.block().getLocation().getNearbyPlayers(16)) {
+            player.sendSignChange(sign.block().getLocation(), sign.lines());
+        }
+    }
 }

@@ -69,11 +69,11 @@ public class StatusSign extends AbstractInformationSign {
     }
 
     @Override
-    protected void refreshSign(@Nullable Craft craft, AbstractSignListener.SignWrapper sign, boolean fillDefault, REFRESH_CAUSE refreshCause) {
+    protected boolean refreshSign(@Nullable Craft craft, AbstractSignListener.SignWrapper sign, boolean fillDefault, REFRESH_CAUSE refreshCause) {
         // Calculate blocks and store them temporary, not pretty but works!
         calcDisplayBlocks(craft);
         calcdisplayComponents(craft);
-        super.refreshSign(craft, sign, fillDefault, refreshCause);
+        return super.refreshSign(craft, sign, fillDefault, refreshCause);
     }
 
     protected void calcDisplayBlocks(Craft craft) {
@@ -162,14 +162,9 @@ public class StatusSign extends AbstractInformationSign {
 
     @Override
     protected void performUpdate(Component[] newComponents, AbstractSignListener.SignWrapper sign, REFRESH_CAUSE refreshCause) {
-        if (refreshCause != REFRESH_CAUSE.SIGN_MOVED_BY_CRAFT) {
+        if (refreshCause != REFRESH_CAUSE.SIGN_MOVED_BY_CRAFT && sign.block() != null) {
             sign.block().update(true);
         }
-    }
-
-    @Override
-    protected void sendUpdatePacket(Craft craft, AbstractSignListener.SignWrapper sign, REFRESH_CAUSE refreshCause) {
-
     }
 
     @Override
