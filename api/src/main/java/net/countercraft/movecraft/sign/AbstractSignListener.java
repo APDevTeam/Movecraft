@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.sign;
 
+import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
 import net.kyori.adventure.text.Component;
@@ -14,6 +15,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -28,7 +30,7 @@ public abstract class AbstractSignListener implements Listener {
     }
 
     public record SignWrapper(
-            Sign block,
+            @Nullable Sign block,
             Function<Integer, Component> getLine,
             List<Component> lines,
             BiConsumer<Integer, Component> setLine,
@@ -103,7 +105,9 @@ public abstract class AbstractSignListener implements Listener {
                     return false;
                 }
             }
-            return true;
+
+            // Now check the facing too!
+            return a.facing().equals(b.facing());
         }
 
         public static boolean areSignsEqual(SignWrapper[] a, SignWrapper[] b) {
@@ -124,12 +128,22 @@ public abstract class AbstractSignListener implements Listener {
             return true;
         }
 
+        public void copyContent(SignWrapper other) {
+            for (int i = 0; i < this.lines().size() && i < other.lines().size(); i++) {
+                this.line(i, other.line(i));
+            }
+        }
+
     }
 
-    public abstract SignWrapper[] getSignWrappers(Sign sign);
-    public abstract SignWrapper[] getSignWrappers(Sign sign, SignTranslateEvent event);
+    public SignWrapper[] getSignWrappers(Sign sign) {
+        return getSignWrappers(sign, false);
+    };
+    public abstract SignWrapper[] getSignWrappers(Sign sign, boolean ignoreEmpty);
     protected abstract SignWrapper getSignWrapper(Sign sign, SignChangeEvent signChangeEvent);
     protected abstract SignWrapper getSignWrapper(Sign sign, PlayerInteractEvent interactEvent);
+
+    public abstract void processSignTranslation(final Craft craft, boolean checkEventIsUpdated);
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
     public void onCraftDetect(CraftDetectEvent event) {
