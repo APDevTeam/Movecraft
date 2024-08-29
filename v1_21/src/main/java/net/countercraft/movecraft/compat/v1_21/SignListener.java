@@ -1,9 +1,18 @@
 package net.countercraft.movecraft.compat.v1_21;
 
+import it.unimi.dsi.fastutil.Hash;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
+import net.countercraft.movecraft.MovecraftLocation;
+import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.events.SignTranslateEvent;
 import net.countercraft.movecraft.sign.AbstractSignListener;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
+import org.bukkit.Tag;
+import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.Directional;
 import org.bukkit.block.sign.Side;
@@ -12,8 +21,7 @@ import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class SignListener extends AbstractSignListener {
 
@@ -38,41 +46,18 @@ public class SignListener extends AbstractSignListener {
     }
 
     @Override
-    public SignWrapper[] getSignWrappers(Sign sign) {
+    public SignWrapper[] getSignWrappers(Sign sign, boolean ignoreEmpty) {
         Side[] sides = new Side[Side.values().length];
-        SignWrapper[] wrappers = new SignWrapper[sides.length];
+        List<SignWrapper> wrappers = new ArrayList<>();
         for (int i = 0; i < sides.length; i++) {
             Side side = sides[i];
             SignSide signSide = sign.getSide(side);
             SignWrapper wrapper = this.createFromSide(sign, signSide, side);
-            wrappers[i] = wrapper;
+            wrappers.add(wrapper);
         }
-        return wrappers;
-    }
-
-    @Override
-    public SignWrapper[] getSignWrappers(Sign sign, SignTranslateEvent event) {
-        // TODO: WTF? This is nonsensical
-        Side[] sides = new Side[Side.values().length];
-        SignWrapper[] wrappers = new SignWrapper[sides.length];
-        for (int i = 0; i < sides.length; i++) {
-            Side side = sides[i];
-            SignSide signSide = sign.getSide(side);
-            BlockFace face = ((Directional) sign.getBlockData()).getFacing();
-            if (side == Side.BACK) {
-                face = face.getOppositeFace();
-            }
-            List<Component> lines = new ArrayList<>(event.lines());
-            SignWrapper wrapper = new SignWrapper(
-                    sign,
-                    event::line,
-                    lines,
-                    event::line,
-                    face
-            );
-            wrappers[i] = wrapper;
-        }
-        return wrappers;
+        if (ignoreEmpty)
+            wrappers.removeIf(SignWrapper::isEmpty);
+        return wrappers.toArray(new SignWrapper[wrappers.size()]);
     }
 
     @Override
@@ -96,5 +81,76 @@ public class SignListener extends AbstractSignListener {
     protected SignWrapper getSignWrapper(Sign sign, PlayerInteractEvent interactEvent) {
         @NotNull SignSide side = sign.getTargetSide(interactEvent.getPlayer());
         return this.createFromSide(sign, side, sign.getInteractableSideFor(interactEvent.getPlayer()));
+    }
+
+    @Override
+    public void processSignTranslation(Craft craft, boolean checkEventIsUpdated) {
+        Object2ObjectMap<SignWrapper, List<MovecraftLocation>> signs = new Object2ObjectOpenCustomHashMap<>(new Hash.Strategy<SignWrapper>() {
+            @Override
+            public int hashCode(SignWrapper strings) {
+                return Arrays.hashCode(strings.rawLines()) * strings.facing().hashCode();
+            }
+
+            @Override
+            public boolean equals(SignWrapper a, SignWrapper b) {
+                return SignWrapper.areSignsEqual(a, b);
+            }
+        });
+        Map<MovecraftLocation, SignWrapper[]> signStates = new HashMap<>();
+
+        for (MovecraftLocation location : craft.getHitBox()) {
+            Block block = location.toBukkit(craft.getWorld()).getBlock();
+            if(!Tag.SIGNS.isTagged(block.getType())){
+                continue;
+            }
+            BlockState state = block.getState();
+            if (state instanceof Sign) {
+                Sign sign = (Sign) state;
+                SignWrapper[] wrappersAtLoc = this.getSignWrappers(sign, true);
+                if (wrappersAtLoc == null || wrappersAtLoc.length == 0) {
+                    continue;
+                }
+                for (SignWrapper wrapper : wrappersAtLoc) {
+                    List<MovecraftLocation> values = signs.computeIfAbsent(wrapper, (w) -> new ArrayList<>());
+                    values.add(location);
+                }
+                signStates.put(location, wrappersAtLoc);
+            }
+        }
+        for(Map.Entry<SignWrapper, List<MovecraftLocation>> entry : signs.entrySet()){
+            final List<Component> components = new ArrayList<>(entry.getKey().lines());
+            SignWrapper backingForEvent = new SignWrapper(null, components::get, components, components::set, entry.getKey().facing());
+            SignTranslateEvent event = new SignTranslateEvent(craft, backingForEvent, entry.getValue());
+            Bukkit.getServer().getPluginManager().callEvent(event);
+            // if(!event.isUpdated()){
+            //     continue;
+            // }
+            // TODO: This is implemented only to fix client caching
+            //  ideally we wouldn't do the update and would instead fake it out to the player
+            for(MovecraftLocation location : entry.getValue()){
+                Block block = location.toBukkit(craft.getWorld()).getBlock();
+                BlockState state = block.getState();
+                if (!(state instanceof Sign)) {
+                    continue;
+                }
+                SignWrapper[] signsAtLoc = signStates.get(location);
+                if (signsAtLoc != null && signsAtLoc.length > 0) {
+                    for (SignWrapper sw : signsAtLoc) {
+                        // Important: Check if the wrapper faces the right way!
+                        if (!sw.facing().equals(entry.getKey().facing())) {
+                            continue;
+                        }
+                        if (!checkEventIsUpdated || event.isUpdated()) {
+                            sw.copyContent(entry.getKey());
+                        }
+                    }
+                    try {
+                        ((Sign)location.toBukkit(craft.getWorld()).getBlock()).update(false, false);
+                    } catch(ClassCastException ex) {
+                        // Ignore
+                    }
+                }
+            }
+        }
     }
 }
