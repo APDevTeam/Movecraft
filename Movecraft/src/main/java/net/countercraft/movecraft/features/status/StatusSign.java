@@ -128,7 +128,7 @@ public class StatusSign extends AbstractInformationSign {
         displayComponents.set(1, EMPTY);
         int signLine = 0;
         int signColumn = 0;
-        for (RequiredBlockEntry entry : displayBlocks.getKeySet()) {
+        for (RequiredBlockEntry entry : displayBlocks.keySet()) {
             if (entry.getMin() == 0.0) {
                 continue;
             }
