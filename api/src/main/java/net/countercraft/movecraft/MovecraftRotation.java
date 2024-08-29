@@ -20,7 +20,7 @@ package net.countercraft.movecraft;
 import org.bukkit.event.block.Action;
 
 public enum MovecraftRotation {
-    CLOCKWISE, NONE, ANTICLOCKWISE
+    CLOCKWISE, NONE, ANTICLOCKWISE;
 
     public static MovecraftRotation fromAction(Action clickType) {
         switch (clickType) {

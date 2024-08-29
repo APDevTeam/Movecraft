@@ -104,8 +104,8 @@ public class StatusSign extends AbstractInformationSign {
         }
 
         Counter<RequiredBlockEntry> displayBlocksTmp = new Counter<>();
-        displayBlocksTmp.add(craft.getDataTag(Craft.FLYBLOCKS);
-        displayBlocksTmp.add(craft.getDataTag(Craft.MOVEBLOCKS);
+        displayBlocksTmp.add(craft.getDataTag(Craft.FLYBLOCKS));
+        displayBlocksTmp.add(craft.getDataTag(Craft.MOVEBLOCKS));
                              
         for (RequiredBlockEntry entry : displayBlocksTmp.getKeySet()) {
           // TODO: Sure?
