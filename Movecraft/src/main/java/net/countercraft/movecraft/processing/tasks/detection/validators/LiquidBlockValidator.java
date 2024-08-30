@@ -5,6 +5,7 @@ import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.processing.functions.DetectionPredicate;
 import net.countercraft.movecraft.processing.functions.Result;
+import net.countercraft.movecraft.util.Tags;
 import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Waterlogged;
@@ -30,25 +31,25 @@ public class LiquidBlockValidator implements DetectionPredicate<Map<Material, De
                 maxAmount = Integer.parseInt(allowedAmountString);
             }
         } catch (NumberFormatException e) {
-            return Result.failWithMessage("waterloggedMaxAmount wasn't configurated properly");
+            return Result.failWithMessage("liquidsMaxAmount wasn't configurated properly");
         }
 
-        final int waterLoggedBlocks = getWaterLoggedAmount(materialDequeMap, world);
-        if (waterLoggedBlocks == 0)
+        final int liquidBlocks = getLiquidAmount(materialDequeMap, world);
+        if (liquidBlocks == 0)
             return Result.succeed();
 
         if (maxAmount == 0)
             return Result.failWithMessage(errorMessage);
 
         if(blockNumber) {
-            if (waterLoggedBlocks <= maxAmount) {
+            if (liquidBlocks <= maxAmount) {
                 return Result.succeed();
             } else {
                 return Result.failWithMessage(errorMessage);
             }
         } else {
             int allBlocks = getTotalBlocks(materialDequeMap);
-            double percentage = ((double) waterLoggedBlocks / allBlocks) * 100;
+            double percentage = ((double) liquidBlocks / allBlocks) * 100;
 
             if (percentage <= maxAmount) {
                 return Result.succeed();
@@ -58,13 +59,21 @@ public class LiquidBlockValidator implements DetectionPredicate<Map<Material, De
         }
     }
 
-    public int getWaterLoggedAmount(Map<Material, Deque<MovecraftLocation>> materialDequeMap, MovecraftWorld world) {
+    public int getLiquidAmount(Map<Material, Deque<MovecraftLocation>> materialDequeMap, MovecraftWorld world) {
         int amount = 0;
-        for (var locationList : materialDequeMap.values()) {
-            for (var location : locationList) {
+        for (var locationList : materialDequeMap.entrySet()) {
+            final Deque<MovecraftLocation> locations = locationList.getValue();
+
+            if (Tags.FLUID.contains(locationList.getKey())) {
+                amount += locations.size();
+                continue;
+            }
+
+            for (var location : locations) {
                 BlockData blockData = world.getData(location);
-                if (blockData instanceof Waterlogged waterlogged) {
-                    if (waterlogged.isWaterlogged()) amount++;
+
+                if (blockData instanceof Waterlogged waterlogged && waterlogged.isWaterlogged()) {
+                    amount++;
                 }
             }
         }
