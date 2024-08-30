@@ -26,7 +26,7 @@ import net.countercraft.movecraft.processing.tasks.detection.validators.NameSign
 import net.countercraft.movecraft.processing.tasks.detection.validators.PilotSignValidator;
 import net.countercraft.movecraft.processing.tasks.detection.validators.SizeValidator;
 import net.countercraft.movecraft.processing.tasks.detection.validators.WaterContactValidator;
-import net.countercraft.movecraft.processing.tasks.detection.validators.WaterloggedBlockValidator;
+import net.countercraft.movecraft.processing.tasks.detection.validators.LiquidBlockValidator;
 import net.countercraft.movecraft.util.AtomicLocationSet;
 import net.countercraft.movecraft.util.CollectionUtils;
 import net.countercraft.movecraft.util.Tags;
@@ -97,7 +97,7 @@ public class DetectionTask implements Supplier<Effect> {
             new SizeValidator(),
             new FlyBlockValidator(),
             new DetectionBlockValidator(),
-            new WaterloggedBlockValidator()
+            new LiquidBlockValidator()
     );
     private static final List<DetectionPredicate<Map<Material, Deque<MovecraftLocation>>>> VISITED_VALIDATORS = List.of(
             new WaterContactValidator()

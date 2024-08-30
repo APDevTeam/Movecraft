@@ -82,7 +82,7 @@ final public class CraftType {
     private static final NamespacedKey CAN_FLY = buildKey("can_fly");
         // Private key used to calculate BLOCKED_BY_WATER
     public static final NamespacedKey REQUIRE_WATER_CONTACT = buildKey("require_water_contact");
-    public static final NamespacedKey WATERLOGGED_MAX_AMOUNT = buildKey("waterlogged_max_amount");
+    public static final NamespacedKey LIQUIDS_MAX_AMOUNT = buildKey("liquids_max_amount");
     public static final NamespacedKey TRY_NUDGE = buildKey("try_nudge");
     public static final NamespacedKey MOVE_BLOCKS = buildKey("move_blocks");
     public static final NamespacedKey CAN_CRUISE = buildKey("can_cruise");
@@ -413,7 +413,7 @@ final public class CraftType {
         registerProperty(new BooleanProperty("blockedByWater", BLOCKED_BY_WATER, type -> true));
         registerProperty(new BooleanProperty("canFly", CAN_FLY, type -> type.getBoolProperty(BLOCKED_BY_WATER)));
         registerProperty(new BooleanProperty("requireWaterContact", REQUIRE_WATER_CONTACT, type -> false));
-        registerProperty(new StringProperty("waterloggedMaxAmount", WATERLOGGED_MAX_AMOUNT, type -> "0"));
+        registerProperty(new StringProperty("liquidsMaxAmount", LIQUIDS_MAX_AMOUNT, type -> "0"));
         registerProperty(new BooleanProperty("tryNudge", TRY_NUDGE, type -> false));
         registerProperty(new RequiredBlockProperty("moveblocks", MOVE_BLOCKS, type -> new HashSet<>()));
         registerProperty(new BooleanProperty("canCruise", CAN_CRUISE, type -> false));

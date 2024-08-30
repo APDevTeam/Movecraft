@@ -15,10 +15,10 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Deque;
 import java.util.Map;
 
-public class WaterloggedBlockValidator implements DetectionPredicate<Map<Material, Deque<MovecraftLocation>>> {
+public class LiquidBlockValidator implements DetectionPredicate<Map<Material, Deque<MovecraftLocation>>> {
     @Override
     public @NotNull Result validate(@NotNull Map<Material, Deque<MovecraftLocation>> materialDequeMap, @NotNull CraftType type, @NotNull MovecraftWorld world, @Nullable Player player) {
-        String allowedAmountString = type.getStringProperty(CraftType.WATERLOGGED_MAX_AMOUNT);
+        String allowedAmountString = type.getStringProperty(CraftType.LIQUIDS_MAX_AMOUNT);
         boolean blockNumber = !allowedAmountString.startsWith("N"); //if false use block percentage
         final String errorMessage = "Too many waterlogged blocks on craft";
 
