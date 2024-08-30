@@ -5,6 +5,7 @@ import org.bukkit.Keyed;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Tag;
+import org.bukkit.entity.EntityType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -132,6 +133,42 @@ public class Tags {
             returnSet.addAll(tagged);
         } else {
             returnSet.add(Material.valueOf(materialName.toUpperCase()));
+        }
+        return returnSet;
+    }
+
+    @Nullable
+    public static EnumSet<EntityType> parseEntityRegistry(@NotNull String string) {
+        if (!string.startsWith("#"))
+            return null;
+
+        String nameKey = string.substring(1);
+        var key = keyFromString(nameKey);
+        if (key == null)
+            throw new IllegalArgumentException("Entry " + string + " is not a valid namespace key!");
+
+        var tag = Bukkit.getTag(Tag.REGISTRY_ENTITY_TYPES, key, EntityType.class);
+        if (tag == null)
+            throw new IllegalArgumentException("Entry " + string + " is not a valid tag!");
+
+        var tags = tag.getValues();
+        return tags.isEmpty() ? EnumSet.noneOf(EntityType.class) : EnumSet.copyOf(tags);
+    }
+
+    /**
+     * Searches for a tag which matches the provided entityName. Failing that, it attempts to load a matching singular EntityType directly.
+     *
+     * @param entityName EntityType name or tag
+     * @return the set of EntityType the tag/EntityType resolves to
+     */
+    @NotNull
+    public static EnumSet<EntityType> parseEntities(@NotNull String entityName) {
+        EnumSet<EntityType> returnSet = EnumSet.noneOf(EntityType.class);
+        EnumSet<EntityType> tagged = parseEntityRegistry(entityName);
+        if (tagged != null) {
+            returnSet.addAll(tagged);
+        } else {
+            returnSet.add(EntityType.valueOf(entityName.toUpperCase()));
         }
         return returnSet;
     }

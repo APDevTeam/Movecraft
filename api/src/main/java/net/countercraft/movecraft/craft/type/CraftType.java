@@ -39,15 +39,12 @@ import net.countercraft.movecraft.craft.type.transform.RequiredBlockTransform;
 import net.countercraft.movecraft.craft.type.transform.StringTransform;
 import net.countercraft.movecraft.craft.type.transform.Transform;
 import net.countercraft.movecraft.processing.MovecraftWorld;
-import net.countercraft.movecraft.util.EntityUtil;
 import net.countercraft.movecraft.util.Pair;
 import net.countercraft.movecraft.util.Tags;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import org.bukkit.*;
-import org.bukkit.entity.Animals;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Monster;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -60,7 +57,6 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -509,31 +505,7 @@ final public class CraftType {
                     var entityStringList = data.getStringList(fileKey);
                     EnumSet<EntityType> entityList = EnumSet.noneOf(EntityType.class);
                     for (String entityString : entityStringList) {
-                        String upper = entityString.toUpperCase(Locale.ROOT);
-
-                        // User wants a premade list
-                        if(upper.startsWith("@")) {
-
-                            switch (upper.substring(1)) {
-                                case "monsters" -> {
-                                    entityList.addAll(EntityUtil.getClassEntities(Monster.class));
-                                    continue;
-                                }
-
-                                case "animals" -> {
-                                    entityList.addAll(EntityUtil.getClassEntities(Animals.class));
-                                    continue;
-                                }
-
-                                default -> throw new TypeData.InvalidValueException("Value for " + fileKey + " is not a valid EntityType list");
-                            }
-                        }
-
-                        try {
-                            EntityType.valueOf(upper);
-                        } catch (Exception e) {
-                            throw new TypeData.InvalidValueException("Value for " + fileKey + " must be an EntityType");
-                        }
+                        entityList.addAll(Tags.parseEntities(entityString));
                     }
 
                     return entityList;
