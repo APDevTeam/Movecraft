@@ -18,5 +18,18 @@
 package net.countercraft.movecraft;
 
 public enum MovecraftRotation {
-    CLOCKWISE, NONE, ANTICLOCKWISE
+    CLOCKWISE, NONE, ANTICLOCKWISE;
+	
+	public static MovecraftRotation fromAction(Action clickType) {
+        switch (clickType) {
+            case LEFT_CLICK_AIR:
+            case LEFT_CLICK_BLOCK:
+                return ANTICLOCKWISE;
+            case RIGHT_CLICK_AIR:
+            case RIGHT_CLICK_BLOCK:
+                return CLOCKWISE;
+            default:
+                return NONE;
+        }
+    }
 }
