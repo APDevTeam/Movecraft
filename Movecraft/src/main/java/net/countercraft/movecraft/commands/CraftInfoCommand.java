@@ -48,30 +48,33 @@ public class CraftInfoCommand extends BaseCommand {
         providers.add(provider.andThen(List::of));
     }
 
-    @Default
-    @Syntax("[player] <page>")
-    @Description("Get information on a piloted craft")
+    @Syntax("<page>")
+    @Description("Get information on a your craft")
     @CommandCompletion("@players")
-    public static void onCommand(Player player, @Optional OnlinePlayer subject, @Default("1") int page) {
-        if(subject == null) {
-            Craft craft = CraftManager.getInstance().getCraftByPlayer(player);
-            if(craft == null){
-                player.sendMessage("You must be piloting a craft.");
-                return;
-            }
-
-            craftInfo(player, craft, page);
-            return;
-        }
-
-        Craft craft = CraftManager.getInstance().getCraftByPlayer(subject.getPlayer());
+    public static void onSelf(Player player, @Default("1") int page) {
+        Craft craft = CraftManager.getInstance().getCraftByPlayer(player);
         if (craft == null) {
             //maybe no craft found would be more correct
-            player.sendMessage("No player found");
+            player.sendMessage("You aren't piloting any craft");
             return;
         }
 
         craftInfo(player, craft, page);
+    }
+
+    @Default
+    @Syntax("[player] <page>")
+    @Description("Get information on a piloted craft")
+    @CommandCompletion("@players")
+    public static void onOtherPlayer(Player player, OnlinePlayer subject, @Default("1") int page) {
+        Craft craft = CraftManager.getInstance().getCraftByPlayer(subject.getPlayer());
+        if (craft == null) {
+            //maybe no craft found would be more correct
+            player.sendMessage("No player craft found");
+            return;
+        }
+
+        craftInfo(subject.getPlayer(), craft, page);
     }
 
     public static void craftInfo(@NotNull CommandSender commandSender, @NotNull Craft craft, int page){
