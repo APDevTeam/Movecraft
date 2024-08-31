@@ -17,26 +17,26 @@ import static net.countercraft.movecraft.util.ChatUtils.MOVECRAFT_COMMAND_PREFIX
 public class CruiseCommand extends BaseCommand {
 
     @PreCommand
-    public static boolean preCommand(CommandSender sender, String[] args) {
+    public static boolean preCommand(CommandSender sender) {
         if(!(sender instanceof Player player))
-            return false;
+            return true;
 
         final Craft craft = CraftManager.getInstance().getCraftByPlayerName(player.getName());
         if (craft == null) {
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("You must be piloting a craft"));
-            return false;
+            return true;
         }
 
         if (!player.hasPermission("movecraft." + craft.getType().getStringProperty(CraftType.NAME) + ".move")) {
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Insufficient Permissions"));
-            return false;
+            return true;
         }
         if (!craft.getType().getBoolProperty(CraftType.CAN_CRUISE)) {
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Cruise - Craft Cannot Cruise"));
-            return false;
+            return true;
         }
 
-        return true;
+        return false;
     }
 
     @Default
@@ -51,9 +51,7 @@ public class CruiseCommand extends BaseCommand {
             craft.setCruiseDirection(direction);
             craft.setCruising(true);
             return;
-        }
-
-        if(craft.getCruising()){
+        } else if(craft.getCruising()) {
             craft.setCruising(false);
             return;
         }
