@@ -17,14 +17,12 @@
 
 package net.countercraft.movecraft;
 
-import co.aikar.commands.InvalidCommandArgument;
 import io.papermc.paper.datapack.Datapack;
 import net.countercraft.movecraft.async.AsyncManager;
 import net.countercraft.movecraft.commands.*;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.ChunkManager;
 import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.features.contacts.ContactsCommand;
 import net.countercraft.movecraft.features.contacts.ContactsManager;
 import net.countercraft.movecraft.features.contacts.ContactsSign;
@@ -47,7 +45,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -239,37 +236,8 @@ public class Movecraft extends JavaPlugin {
 
     private void initializeCommands() {
         MovecraftCommandManager movecraftCommandManager = new MovecraftCommandManager(this);
-        var commandCompletions = movecraftCommandManager.getCommandCompletions();
-
-        commandCompletions.registerCompletion("crafttypes", c ->  {
-            Set<CraftType> craftTypes = CraftManager.getInstance().getCraftTypes();
-            List<String> craftNames = craftTypes.stream().map(type -> type.getStringProperty(CraftType.NAME)).toList();
-            return craftNames;
-        });
-
-        commandCompletions.registerCompletion("directions", c -> {
-            var allDirections = CruiseDirection.valuesString();
-            var allButNone = allDirections.stream().filter(p -> !p.equals("none")).toList();
-            return allButNone;
-        });
-
-        var commandContexts = movecraftCommandManager.getCommandContexts();
-
-        commandContexts.registerContext(CruiseDirection.class, (c) -> {
-            String data = c.popFirstArg();
-            return CruiseDirection.fromString(data);
-        });
-
-        commandContexts.registerContext(CraftType.class, (c) -> {
-            String data = c.popFirstArg();
-            CraftType type = CraftManager.getInstance().getCraftTypeFromString(data);
-
-            if (type == null) {
-                throw new InvalidCommandArgument("You must supply a craft type!");
-            }
-
-            return type;
-        });
+        movecraftCommandManager.registerMovecraftCompletions();
+        movecraftCommandManager.registerMovecraftContexts();
 
         movecraftCommandManager.registerCommand(new MovecraftCommand());
         movecraftCommandManager.registerCommand(new CraftInfoCommand());
