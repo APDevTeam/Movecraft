@@ -16,6 +16,7 @@ dependencies {
     api(libs.it.unimi.dsi.fastutil)
     api(libs.net.kyori.adventure.api)
     api(libs.net.kyori.adventure.platform.bukkit)
+    api(libs.org.ejml.simple.library)
     testImplementation(libs.org.junit.jupiter.junit.jupiter.api)
     testImplementation(libs.junit.junit)
     testImplementation(libs.org.hamcrest.hamcrest.library)
