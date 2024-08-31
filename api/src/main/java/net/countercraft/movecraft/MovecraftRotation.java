@@ -17,6 +17,8 @@
 
 package net.countercraft.movecraft;
 
+import org.bukkit.event.block.Action;
+
 public enum MovecraftRotation {
     CLOCKWISE, NONE, ANTICLOCKWISE;
 	
