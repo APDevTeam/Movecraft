@@ -59,6 +59,7 @@ public class Movecraft extends JavaPlugin {
     private SmoothTeleport smoothTeleport;
     private AsyncManager asyncManager;
     private WreckManager wreckManager;
+    private AbstractSignListener abstractSignListener;
 
     public static synchronized Movecraft getInstance() {
         return instance;
@@ -131,6 +132,13 @@ public class Movecraft extends JavaPlugin {
                     smoothTeleport = new BukkitTeleport(); // Fall back to bukkit teleportation
                     getLogger().warning("Falling back to bukkit teleportation provider.");
                 }
+            }
+
+            // Create instance of sign listener
+            final Class<?> signListenerClass = Class.forName("net.countercraft.movecraft.compat." + WorldHandler.getPackageName(minecraftVersion) + ".SignListener");
+            if (AbstractSignListener.class.isAssignableFrom(signListenerClass)) {
+                abstractSignListener = (AbstractSignListener) signListenerClass.getConstructor().newInstance();
+                getServer().getPluginManager().registerEvents(abstractSignListener, this);
             }
         }
         catch (final Exception e) {
@@ -339,5 +347,9 @@ public class Movecraft extends JavaPlugin {
 
     public @NotNull WreckManager getWreckManager(){
         return wreckManager;
+    }
+
+    public AbstractSignListener getAbstractSignListener() {
+        return abstractSignListener;
     }
 }
