@@ -20,6 +20,7 @@ public class Tags {
     public static final EnumSet<Material> FALL_THROUGH_BLOCKS = EnumSet.noneOf(Material.class);
     public static final EnumSet<Material> BUCKETS = EnumSet.of(Material.LAVA_BUCKET, Material.WATER_BUCKET, Material.MILK_BUCKET, Material.COD_BUCKET, Material.PUFFERFISH_BUCKET, Material.SALMON_BUCKET, Material.TROPICAL_FISH_BUCKET);
     public static final EnumSet<Material> WALL_TORCHES = EnumSet.of(Material.WALL_TORCH, Material.SOUL_WALL_TORCH, Material.REDSTONE_WALL_TORCH);
+    public static final EnumSet<Material> LANTERNS = EnumSet.of(Material.LANTERN, Material.SOUL_LANTERN);
 
     static {
         FRAGILE_MATERIALS.add(Material.PISTON_HEAD);

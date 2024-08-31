@@ -5,11 +5,7 @@ import net.countercraft.movecraft.MovecraftChunk;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.config.Settings;
-import net.countercraft.movecraft.craft.ChunkManager;
-import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.craft.SinkingCraft;
-import net.countercraft.movecraft.craft.SubCraft;
+import net.countercraft.movecraft.craft.*;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftCollisionEvent;
 import net.countercraft.movecraft.events.CraftCollisionExplosionEvent;
@@ -110,45 +106,18 @@ public class TranslationTask extends AsyncTask {
             fail(preTranslateEvent.getFailMessage(), preTranslateEvent.isPlayingFailSound());
             return;
         }
-        if (dx != preTranslateEvent.getDx())
-            dx = preTranslateEvent.getDx();
-        if (dy != preTranslateEvent.getDy())
-            dy = preTranslateEvent.getDy();
-        if (dz != preTranslateEvent.getDz())
-            dz = preTranslateEvent.getDz();
+
+        dx = preTranslateEvent.getDx();
+        dy = preTranslateEvent.getDy();
+        dz = preTranslateEvent.getDz();
+
         world = preTranslateEvent.getWorld();
 
         final int minY = oldHitBox.getMinY();
         final int maxY = oldHitBox.getMaxY();
 
         // proccess nether portals
-        if (Settings.CraftsUseNetherPortals && craft.getWorld().getEnvironment() != Environment.THE_END
-                && world.equals(craft.getWorld())) {
-
-            // ensure chunks are loaded for portal checking only if change in location is
-            // large
-            Set<MovecraftChunk> chunksToLoad = ChunkManager.getChunks(oldHitBox, world, dx, dy, dz);
-            MovecraftChunk.addSurroundingChunks(chunksToLoad, 2);
-            ChunkManager.checkChunks(chunksToLoad);
-            if (!chunksToLoad.isEmpty())
-                ChunkManager.syncLoadChunks(chunksToLoad).get();
-
-            for (MovecraftLocation oldLocation : oldHitBox) {
-
-                Location location = oldLocation.translate(dx, dy, dz).toBukkit(craft.getWorld());
-                Block block = craft.getWorld().getBlockAt(location);
-                if (block.getType() == Material.NETHER_PORTAL) {
-                    if (processNetherPortal(block)) {
-                        sound = Sound.BLOCK_PORTAL_TRAVEL;
-                        volume = 0.25f;
-                        break;
-                    }
-
-                }
-
-            }
-
-        }
+        processAllNetherPortals();
 
         // ensure chunks are loaded only if world is different or change in location is
         // large
@@ -161,52 +130,11 @@ public class TranslationTask extends AsyncTask {
 
         // Only modify dy when not switching worlds
         //Check if the craft is too high
-        if (world.equals(craft.getWorld())
-                && (int) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_MAX_HEIGHT_LIMIT, craft.getWorld())
-                < craft.getHitBox().getMinY())
-            dy = Math.min(dy, -1);
-        else if (world.equals(craft.getWorld())
-                && (int) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_MAX_HEIGHT_ABOVE_GROUND,
-                craft.getWorld()) > 0) {
-            final MovecraftLocation middle = oldHitBox.getMidPoint();
-            int testY = minY;
-            while (testY > 0) {
-                testY--;
-                if (!craft.getWorld().getBlockAt(middle.getX(), testY, middle.getZ()).getType().isAir())
-                    break;
-            }
-            if (maxY - testY
-                    > (int) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_MAX_HEIGHT_ABOVE_GROUND, world))
-                dy = Math.min(dy, -1);
-        }
-        //Process gravity
-        if (world.equals(craft.getWorld()) && craft.getType().getBoolProperty(CraftType.USE_GRAVITY)
-                && !(craft instanceof SinkingCraft)) {
-            int incline = inclineCraft(oldHitBox);
-            if (incline > 0) {
-                boolean tooSteep = craft.getType().getIntProperty(CraftType.GRAVITY_INCLINE_DISTANCE) > -1
-                        && incline > craft.getType().getIntProperty(CraftType.GRAVITY_INCLINE_DISTANCE);
-                if (tooSteep && craft.getType().getFloatProperty(CraftType.COLLISION_EXPLOSION) <= 0F) {
-                    fail(I18nSupport.getInternationalisedString("Translation - Failed Incline too steep"));
-                    return;
-                }
-                dy = tooSteep ? 0 : incline;
-            } else if (!isOnGround(oldHitBox) && craft.getType().getBoolProperty(CraftType.CAN_HOVER)) {
-                MovecraftLocation midPoint = oldHitBox.getMidPoint();
-                int centreMinY = oldHitBox.getMinYAt(midPoint.getX(), midPoint.getZ());
-                int groundY = centreMinY;
-                World w = craft.getWorld();
-                while (groundY - 1 >= w.getMinHeight()
-                        && (w.getBlockAt(midPoint.getX(), groundY - 1, midPoint.getZ()).getType().isAir()
-                        || craft.getType().getMaterialSetProperty(CraftType.PASSTHROUGH_BLOCKS).contains(
-                        w.getBlockAt(midPoint.getX(), groundY - 1, midPoint.getZ()).getType()))) {
-                    groundY--;
-                }
-                if (centreMinY - groundY > craft.getType().getIntProperty(CraftType.HOVER_LIMIT))
-                    dy = -1;
-            } else if (!isOnGround(oldHitBox))
-                dy = dropDistance(oldHitBox);
-        }
+        processHighCraft(minY, maxY);
+        //Process gravity (must be same world too)
+        if (processGravity())
+            return;
+
         //Fail the movement if the craft is too high and if the craft is not explosive
         int maxHeightLimit = (int) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_MAX_HEIGHT_LIMIT, world);
         int minHeightLimit = (int) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_MIN_HEIGHT_LIMIT, world);
@@ -333,17 +261,15 @@ public class TranslationTask extends AsyncTask {
             }
             newHitBox.removeAll(air);
             for (MovecraftLocation location : collisionBox) {
-                CraftType type = craft.getType();
-
-                if (type.getFloatProperty(CraftType.EXPLODE_ON_CRASH) > 0F) {
+                if (craft.getType().getFloatProperty(CraftType.EXPLODE_ON_CRASH) > 0F) {
                     if (System.currentTimeMillis() - craft.getOrigPilotTime() <= 1000) {
                         continue;
                     }
                     Location loc = location.toBukkit(craft.getWorld());
                     if (!loc.getBlock().getType().isAir() && ThreadLocalRandom.current().nextDouble(1) < .05) {
                         updates.add(new ExplosionUpdateCommand(loc,
-                                type.getFloatProperty(CraftType.EXPLODE_ON_CRASH),
-                                type.getBoolProperty(CraftType.INCENDIARY_ON_CRASH)));
+                                craft.getType().getFloatProperty(CraftType.EXPLODE_ON_CRASH),
+                                craft.getType().getBoolProperty(CraftType.INCENDIARY_ON_CRASH)));
                         collisionExplosion = true;
                     }
                 }
@@ -414,60 +340,197 @@ public class TranslationTask extends AsyncTask {
         updates.add(new CraftTranslateCommand(craft, new MovecraftLocation(dx, dy, dz), world));
 
         //prevents torpedo and rocket pilots
-        if (!(craft instanceof SinkingCraft && craft.getType().getBoolProperty(CraftType.ONLY_MOVE_PLAYERS))
-                && craft.getType().getBoolProperty(CraftType.MOVE_ENTITIES)) {
-            Location midpoint = new Location(
-                    craft.getWorld(),
-                    (oldHitBox.getMaxX() + oldHitBox.getMinX()) / 2.0,
-                    (oldHitBox.getMaxY() + oldHitBox.getMinY()) / 2.0,
-                    (oldHitBox.getMaxZ() + oldHitBox.getMinZ()) / 2.0);
-            for (Entity entity : craft.getWorld().getNearbyEntities(midpoint,
-                    oldHitBox.getXLength() / 2.0 + 1,
-                    oldHitBox.getYLength() / 2.0 + 2,
-                    oldHitBox.getZLength() / 2.0 + 1
-            )) {
+        preventsTorpedoRocketsPilots();
+        captureYield(harvestedBlocks);
+    }
 
-                if (entity instanceof HumanEntity) {
-                    InventoryView inventoryView = ((HumanEntity) entity).getOpenInventory();
-                    if (inventoryView.getType() != InventoryType.CRAFTING) {
-                        Location l = Movecraft.getInstance().getWorldHandler().getAccessLocation(inventoryView);
-                        if (l != null) {
-                            MovecraftLocation location = new MovecraftLocation(l.getBlockX(), l.getBlockY(), l.getBlockZ());
-                            if (oldHitBox.contains(location)) {
-                                location = location.translate(dx, dy, dz);
-                                updates.add(new AccessLocationUpdateCommand(inventoryView, location.toBukkit(world)));
-                            }
-                        }
-                    }
-                }
-
-                if ((entity.getType() == EntityType.PLAYER && !(craft instanceof SinkingCraft))) {
-                    CraftTeleportEntityEvent e = new CraftTeleportEntityEvent(craft, entity);
-                    Bukkit.getServer().getPluginManager().callEvent(e);
-                    if (e.isCancelled())
-                        continue;
-
-                    EntityUpdateCommand eUp = new EntityUpdateCommand(entity, dx, dy, dz, 0, 0,
-                            world, sound, volume);
-                    updates.add(eUp);
-                } else if (!craft.getType().getBoolProperty(CraftType.ONLY_MOVE_PLAYERS)
-                        || entity.getType() == EntityType.PRIMED_TNT) {
-                    CraftTeleportEntityEvent e = new CraftTeleportEntityEvent(craft, entity);
-                    Bukkit.getServer().getPluginManager().callEvent(e);
-                    if (e.isCancelled())
-                        continue;
-
-                    EntityUpdateCommand eUp = new EntityUpdateCommand(entity, dx, dy, dz, 0, 0, world);
-                    updates.add(eUp);
-                }
-            }
-        } else {
+    private void preventsTorpedoRocketsPilots() {
+        if (!craft.getType().getBoolProperty(CraftType.MOVE_ENTITIES) ||
+                (craft instanceof SinkingCraft
+                && craft.getType().getBoolProperty(CraftType.ONLY_MOVE_PLAYERS))) {
             // add releaseTask without playermove to manager
             if (!craft.getType().getBoolProperty(CraftType.CRUISE_ON_PILOT) && !(craft instanceof SinkingCraft))
                 // not necessary to release cruiseonpilot crafts, because they will already be released
                 CraftManager.getInstance().addReleaseTask(craft);
+            return;
         }
-        captureYield(harvestedBlocks);
+
+        Location midpoint = new Location(
+                craft.getWorld(),
+                (oldHitBox.getMaxX() + oldHitBox.getMinX()) / 2.0,
+                (oldHitBox.getMaxY() + oldHitBox.getMinY()) / 2.0,
+                (oldHitBox.getMaxZ() + oldHitBox.getMinZ()) / 2.0);
+        for (Entity entity : craft.getWorld().getNearbyEntities(midpoint,
+                oldHitBox.getXLength() / 2.0 + 1,
+                oldHitBox.getYLength() / 2.0 + 2,
+                oldHitBox.getZLength() / 2.0 + 1
+        )) {
+
+            processHumanEntity(entity);
+
+            if ((entity.getType() == EntityType.PLAYER && !(craft instanceof SinkingCraft))) {
+                CraftTeleportEntityEvent e = new CraftTeleportEntityEvent(craft, entity);
+                Bukkit.getServer().getPluginManager().callEvent(e);
+                if (e.isCancelled())
+                    continue;
+
+                EntityUpdateCommand eUp = new EntityUpdateCommand(entity, dx, dy, dz, 0, 0,
+                        world, sound, volume);
+                updates.add(eUp);
+                continue;
+            }
+
+            if (craft.getType().getBoolProperty(CraftType.ONLY_MOVE_PLAYERS)
+                    && entity.getType() != EntityType.PRIMED_TNT) {
+                continue;
+            }
+
+            CraftTeleportEntityEvent e = new CraftTeleportEntityEvent(craft, entity);
+            Bukkit.getServer().getPluginManager().callEvent(e);
+            if (e.isCancelled())
+                continue;
+
+            EntityUpdateCommand eUp = new EntityUpdateCommand(entity, dx, dy, dz, 0, 0, world);
+            updates.add(eUp);
+        }
+    }
+
+    //this part looks similar to rotationTask
+    //maybe can be thrown in a util class?
+    private void processHumanEntity(Entity entity) {
+        if (!(entity instanceof HumanEntity)) {
+            return;
+        }
+
+        InventoryView inventoryView = ((HumanEntity) entity).getOpenInventory();
+        if (inventoryView.getType() == InventoryType.CRAFTING) {
+            return;
+        }
+
+        Location l = Movecraft.getInstance().getWorldHandler().getAccessLocation(inventoryView);
+        if (l == null) {
+            return;
+        }
+
+        MovecraftLocation location = new MovecraftLocation(l.getBlockX(), l.getBlockY(), l.getBlockZ());
+        if (oldHitBox.contains(location)) {
+            location = location.translate(dx, dy, dz);
+            updates.add(new AccessLocationUpdateCommand(inventoryView, location.toBukkit(world)));
+        }
+    }
+
+    /**
+     *
+     * @return True if failed, false otherwise
+     */
+    private boolean processGravity() {
+        //Process gravity (must be same world too)
+        if (!world.equals(craft.getWorld()) || !craft.getType().getBoolProperty(CraftType.USE_GRAVITY)
+                || craft instanceof SinkingCraft) {
+            return false;
+        }
+
+        int incline = inclineCraft(oldHitBox);
+        if (incline > 0) {
+            boolean tooSteep = craft.getType().getIntProperty(CraftType.GRAVITY_INCLINE_DISTANCE) > -1
+                    && incline > craft.getType().getIntProperty(CraftType.GRAVITY_INCLINE_DISTANCE);
+            if (tooSteep && craft.getType().getFloatProperty(CraftType.COLLISION_EXPLOSION) <= 0F) {
+                fail(I18nSupport.getInternationalisedString("Translation - Failed Incline too steep"));
+                return true;
+            }
+            dy = tooSteep ? 0 : incline;
+            return false;
+        }
+
+        if (isOnGround(oldHitBox)) {
+            return false;
+        }
+
+        if (craft.getType().getBoolProperty(CraftType.CAN_HOVER)) {
+            MovecraftLocation midPoint = oldHitBox.getMidPoint();
+            int centreMinY = oldHitBox.getMinYAt(midPoint.getX(), midPoint.getZ());
+            int groundY = centreMinY;
+            World w = craft.getWorld();
+
+            while (groundY - 1 >= w.getMinHeight()
+                    && (w.getBlockAt(midPoint.getX(), groundY - 1, midPoint.getZ()).getType().isAir()
+                    || craft.getType().getMaterialSetProperty(CraftType.PASSTHROUGH_BLOCKS).contains(
+                    w.getBlockAt(midPoint.getX(), groundY - 1, midPoint.getZ()).getType()))) {
+                groundY--;
+            }
+
+            if (centreMinY - groundY > craft.getType().getIntProperty(CraftType.HOVER_LIMIT))
+                dy = -1;
+            return false;
+        }
+
+        dy = dropDistance(oldHitBox);
+        return false;
+    }
+
+    private void processAllNetherPortals() throws ExecutionException, InterruptedException {
+        // proccess nether portals
+        if (!Settings.CraftsUseNetherPortals
+                || craft.getWorld().getEnvironment() == Environment.THE_END
+                || !world.equals(craft.getWorld())) {
+            return;
+        }
+
+        // ensure chunks are loaded for portal checking only if change in location is
+        // large
+        Set<MovecraftChunk> chunksToLoad = ChunkManager.getChunks(oldHitBox, world, dx, dy, dz);
+        MovecraftChunk.addSurroundingChunks(chunksToLoad, 2);
+        ChunkManager.checkChunks(chunksToLoad);
+        if (!chunksToLoad.isEmpty())
+            ChunkManager.syncLoadChunks(chunksToLoad).get();
+
+        for (MovecraftLocation oldLocation : oldHitBox) {
+            Location location = oldLocation.translate(dx, dy, dz).toBukkit(craft.getWorld());
+            Block block = craft.getWorld().getBlockAt(location);
+
+            if (block.getType() != Material.NETHER_PORTAL) {
+                continue;
+            }
+
+            if (processNetherPortal(block)) {
+                sound = Sound.BLOCK_PORTAL_TRAVEL;
+                volume = 0.25f;
+                break;
+            }
+
+        }
+    }
+
+    private void processHighCraft(int minY, int maxY) {
+        // Only modify dy when not switching worlds
+        // Check if the craft is too high
+        boolean sameWorld = world.equals(craft.getWorld());
+        CraftType craftType = craft.getType();
+        if (!sameWorld) {
+            return;
+        }
+
+        if ((int) craftType.getPerWorldProperty(CraftType.PER_WORLD_MAX_HEIGHT_LIMIT, craft.getWorld()) < craft.getHitBox().getMinY()) {
+            dy = Math.min(dy, -1);
+            return;
+        }
+        final int perWorldMaxHeighAboveGround = (int) craftType.getPerWorldProperty(CraftType.PER_WORLD_MAX_HEIGHT_ABOVE_GROUND, world);
+        // world == craft.world
+        if (perWorldMaxHeighAboveGround <= 0) {
+            return;
+        }
+
+        final MovecraftLocation middle = oldHitBox.getMidPoint();
+        int testY;
+
+        for (testY = minY; testY > world.getMinHeight(); testY--) {
+            if (!craft.getWorld().getBlockAt(middle.getX(), testY - 1, middle.getZ()).getType().isAir()) {
+                break;
+            }
+        }
+
+        if (maxY - testY > perWorldMaxHeighAboveGround)
+            dy = Math.min(dy, -1);
     }
 
     private void fail(@NotNull String failMessage) {
