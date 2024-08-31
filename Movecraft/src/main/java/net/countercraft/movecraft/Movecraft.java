@@ -221,7 +221,6 @@ public class Movecraft extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new PlayerListener(), this);
         getServer().getPluginManager().registerEvents(new ChunkManager(), this);
         getServer().getPluginManager().registerEvents(new AscendSign(), this);
-        getServer().getPluginManager().registerEvents(new CraftSign(), this);
         getServer().getPluginManager().registerEvents(new CruiseSign(), this);
         getServer().getPluginManager().registerEvents(new DescendSign(), this);
         getServer().getPluginManager().registerEvents(new HelmSign(), this);
@@ -229,7 +228,6 @@ public class Movecraft extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new NameSign(), this);
         getServer().getPluginManager().registerEvents(new PilotSign(), this);
         getServer().getPluginManager().registerEvents(new RelativeMoveSign(), this);
-        getServer().getPluginManager().registerEvents(new ReleaseSign(), this);
         getServer().getPluginManager().registerEvents(new RemoteSign(), this);
         getServer().getPluginManager().registerEvents(new SpeedSign(), this);
         getServer().getPluginManager().registerEvents(new SubcraftRotateSign(), this);
@@ -237,6 +235,10 @@ public class Movecraft extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new ScuttleSign(), this);
         getServer().getPluginManager().registerEvents(new CraftPilotListener(), this);
         getServer().getPluginManager().registerEvents(new CraftReleaseListener(), this);
+        getServer().getPluginManager().registerEvents(new CraftTypeListener(), this);
+
+        // Signs
+        AbstractMovecraftSign.register("Release", new ReleaseSign());
 
         var contactsManager = new ContactsManager();
         contactsManager.runTaskTimerAsynchronously(this, 0, 20);
