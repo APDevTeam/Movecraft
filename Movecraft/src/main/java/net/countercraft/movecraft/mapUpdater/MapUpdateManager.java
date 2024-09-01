@@ -100,9 +100,4 @@ public class MapUpdateManager implements Worker {
     public void scheduleUpdates(@NotNull Collection<UpdateCommand> updates){
         this.updates.addAll(updates);
     }
-
-    private static class MapUpdateManagerHolder {
-        private static final MapUpdateManager INSTANCE = new MapUpdateManager();
-    }
-
 }

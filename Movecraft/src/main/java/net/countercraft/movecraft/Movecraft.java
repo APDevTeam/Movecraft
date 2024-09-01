@@ -30,6 +30,7 @@ import net.countercraft.movecraft.features.contacts.ContactsSign;
 import net.countercraft.movecraft.features.fading.WreckManager;
 import net.countercraft.movecraft.features.status.StatusManager;
 import net.countercraft.movecraft.features.status.StatusSign;
+import net.countercraft.movecraft.lifecycle.ListenerLifecycleService;
 import net.countercraft.movecraft.lifecycle.ServiceHost;
 import net.countercraft.movecraft.lifecycle.WorkerServiceHost;
 import net.countercraft.movecraft.listener.*;
@@ -142,6 +143,7 @@ public class Movecraft extends JavaPlugin {
 
         // Lifecycle management
         injector.register(WorkerServiceHost.class);
+        injector.register(ListenerLifecycleService.class);
         injector.getInstance(ServiceHost.class).startAll();
 
         logger.info("[V %s] has been enabled.".formatted(getDescription().getVersion()));
