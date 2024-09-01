@@ -23,6 +23,7 @@ import net.countercraft.movecraft.config.DataPackService;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.config.SettingsService;
 import net.countercraft.movecraft.craft.ChunkManager;
+import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.features.contacts.ContactsCommand;
 import net.countercraft.movecraft.features.contacts.ContactsManager;
@@ -89,9 +90,8 @@ public class Movecraft extends JavaPlugin {
             return;
         }
 
-        // TODO: DI for CraftManager
         injector.register(DataPackService.class);
-        CraftManager.initialize(injector.getInstance(DataPackService.class).isDatapackInitialized());
+        injector.register(CraftManager.class);
 
         //TODO: migrate to aikar or brigadier commands, left in place for now
         getCommand("movecraft").setExecutor(new MovecraftCommand());
@@ -144,8 +144,9 @@ public class Movecraft extends JavaPlugin {
         // Lifecycle management
         injector.register(WorkerServiceHost.class);
         injector.register(ListenerLifecycleService.class);
-        injector.getInstance(ServiceHost.class).startAll();
 
+        // Startup
+        injector.getInstance(ServiceHost.class).startAll();
         logger.info("[V %s] has been enabled.".formatted(getDescription().getVersion()));
     }
 

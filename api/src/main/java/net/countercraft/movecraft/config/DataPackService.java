@@ -27,6 +27,7 @@ public class DataPackService implements Service {
     }
 
     public boolean isDatapackInitialized(){
+        // TODO: Async
         return isInitialized;
     }
 

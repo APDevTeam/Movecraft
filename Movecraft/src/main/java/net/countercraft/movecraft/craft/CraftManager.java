@@ -19,11 +19,13 @@ package net.countercraft.movecraft.craft;
 
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
+import net.countercraft.movecraft.config.DataPackService;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.events.CraftSinkEvent;
 import net.countercraft.movecraft.events.TypesReloadedEvent;
 import net.countercraft.movecraft.exception.NonCancellableReleaseException;
+import net.countercraft.movecraft.lifecycle.Service;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.CachedMovecraftWorld;
 import net.countercraft.movecraft.processing.MovecraftWorld;
@@ -59,18 +61,16 @@ import java.util.logging.Level;
 
 import static net.countercraft.movecraft.util.ChatUtils.ERROR_PREFIX;
 
-public class CraftManager implements Iterable<Craft>{
+public class CraftManager implements Iterable<Craft>, Service {
     private static CraftManager instance;
 
+    /**
+     * @deprecated Prefer DI
+     */
+    @Deprecated
     public static CraftManager getInstance() {
         return instance;
     }
-
-    public static void initialize(boolean loadCraftTypes) {
-        instance = new CraftManager(loadCraftTypes);
-    }
-
-
 
     /**
      * Set of all crafts on the server, weakly ordered by their hashcode.
@@ -91,11 +91,17 @@ public class CraftManager implements Iterable<Craft>{
     @NotNull private Set<CraftType> craftTypes;
 
 
-    private CraftManager(boolean loadCraftTypes) {
-        if(loadCraftTypes)
+    private CraftManager(@NotNull DataPackService dataPackService) {
+        if(dataPackService.isDatapackInitialized())
             craftTypes = loadCraftTypes();
         else
             craftTypes = new HashSet<>();
+    }
+
+
+    @Override
+    public void start() {
+        instance = this;
     }
 
     @NotNull
