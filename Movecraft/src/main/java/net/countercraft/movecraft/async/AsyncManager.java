@@ -18,6 +18,7 @@
 package net.countercraft.movecraft.async;
 
 import com.google.common.collect.Lists;
+import jakarta.inject.Inject;
 import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
@@ -31,6 +32,7 @@ import net.countercraft.movecraft.craft.PlayerCraft;
 import net.countercraft.movecraft.craft.SinkingCraft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
+import net.countercraft.movecraft.lifecycle.Worker;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.kyori.adventure.text.Component;
 import org.bukkit.World;
@@ -44,7 +46,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 @Deprecated
-public class AsyncManager extends BukkitRunnable implements Service {
+public class AsyncManager implements Worker {
     private final Map<AsyncTask, Craft> ownershipMap;
     private final BlockingQueue<AsyncTask> finishedAlgorithms;
     private final Set<Craft> clearanceSet;
@@ -52,6 +54,7 @@ public class AsyncManager extends BukkitRunnable implements Service {
     private final @NotNull Plugin plugin;
     private final @NotNull MapUpdateManager mapUpdateManager;
 
+    @Inject
     public AsyncManager(@NotNull Plugin plugin, @NotNull MapUpdateManager mapUpdateManager) {
         this.plugin = Objects.requireNonNull(plugin);
         this.mapUpdateManager = mapUpdateManager;
@@ -59,11 +62,6 @@ public class AsyncManager extends BukkitRunnable implements Service {
         finishedAlgorithms = new LinkedBlockingQueue<>();
         clearanceSet = new HashSet<>();
         cooldownCache = new WeakHashMap<>();
-    }
-
-    @Override
-    public void start(){
-        this.runTaskTimer(plugin, 0, 1);
     }
 
     public void submitTask(AsyncTask task, Craft c) {
@@ -321,6 +319,16 @@ public class AsyncManager extends BukkitRunnable implements Service {
             craft.translate(dx, -1, dz);
             craft.setLastCruiseUpdate(System.currentTimeMillis());
         }
+    }
+
+    @Override
+    public boolean isAsync() {
+        return false;
+    }
+
+    @Override
+    public int getPeriod() {
+        return 1;
     }
 
     public void run() {
