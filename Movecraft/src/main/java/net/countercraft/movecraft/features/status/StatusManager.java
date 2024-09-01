@@ -35,9 +35,12 @@ import java.util.function.Supplier;
 
 public class StatusManager implements Listener, Worker {
     private static final CraftDataTagKey<Long> LAST_STATUS_CHECK = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "last-status-check"), craft -> System.currentTimeMillis());
+    private final @NotNull CraftManager craftManager;
 
     @Inject
-    public StatusManager(){}
+    public StatusManager(@NotNull CraftManager craftManager){
+        this.craftManager = craftManager;
+    }
 
     @Override
     public boolean isAsync() {
@@ -51,7 +54,7 @@ public class StatusManager implements Listener, Worker {
 
     @Override
     public void run() {
-        for (Craft c : CraftManager.getInstance().getCrafts()) {
+        for (Craft c : craftManager.getCrafts()) {
             long ticksElapsed = (System.currentTimeMillis() - c.getDataTag(LAST_STATUS_CHECK)) / 50;
             if (ticksElapsed <= Settings.SinkCheckTicks)
                 continue;
@@ -204,7 +207,7 @@ public class StatusManager implements Listener, Worker {
         if (sinking) {
             craft.getAudience().sendMessage(I18nSupport.getInternationalisedComponent("Player - Craft is sinking"));
             craft.setCruising(false);
-            CraftManager.getInstance().sink(craft);
+            craftManager.sink(craft);
         }
     }
 }

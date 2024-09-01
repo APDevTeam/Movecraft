@@ -3,7 +3,6 @@ package net.countercraft.movecraft.features.contacts;
 import jakarta.inject.Inject;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.*;
-import net.countercraft.movecraft.craft.datatag.CraftDataTagContainer;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagKey;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagRegistry;
 import net.countercraft.movecraft.craft.type.CraftType;
@@ -23,7 +22,6 @@ import org.bukkit.World;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -31,9 +29,11 @@ import java.util.*;
 
 public class ContactsManager implements Listener, Worker {
     private static final CraftDataTagKey<Map<Craft, Long>> RECENT_CONTACTS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "recent-contacts"), craft -> new WeakHashMap<>());
-
+    private final @NotNull CraftManager craftManager;
     @Inject
-    public ContactsManager(){}
+    public ContactsManager(@NotNull CraftManager craftManager){
+        this.craftManager = craftManager;
+    }
 
     @Override
     public boolean isAsync() {
@@ -56,7 +56,7 @@ public class ContactsManager implements Listener, Worker {
             if (w == null)
                 continue;
 
-            Set<Craft> craftsInWorld = CraftManager.getInstance().getCraftsInWorld(w);
+            Set<Craft> craftsInWorld = craftManager.getCraftsInWorld(w);
             for (Craft base : craftsInWorld) {
                 if (base instanceof SinkingCraft || base instanceof SubCraft)
                     continue;
@@ -137,7 +137,7 @@ public class ContactsManager implements Listener, Worker {
             if (w == null)
                 continue;
 
-            for (PlayerCraft base : CraftManager.getInstance().getPlayerCraftsInWorld(w)) {
+            for (PlayerCraft base : craftManager.getPlayerCraftsInWorld(w)) {
                 if (base.getHitBox().isEmpty())
                     continue;
 
@@ -249,7 +249,7 @@ public class ContactsManager implements Listener, Worker {
     }
 
     private void remove(Craft base) {
-        for (Craft other : CraftManager.getInstance().getCrafts()) {
+        for (Craft other : craftManager.getCrafts()) {
             List<Craft> contacts = other.getDataTag(Craft.CONTACTS);
             if (contacts.contains(base))
                 continue;
@@ -258,7 +258,7 @@ public class ContactsManager implements Listener, Worker {
             other.setDataTag(Craft.CONTACTS, contacts);
         }
 
-        for (Craft other : CraftManager.getInstance().getCrafts()) {
+        for (Craft other : craftManager.getCrafts()) {
             Map<Craft, Long> recentContacts = other.getDataTag(RECENT_CONTACTS);
             if (!recentContacts.containsKey(other))
                 continue;
