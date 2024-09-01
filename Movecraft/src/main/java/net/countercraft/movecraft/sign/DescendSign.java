@@ -19,9 +19,13 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
 
-public final class DescendSign implements Listener{
+public final class DescendSign implements Listener {
+    private final @NotNull CraftManager craftManager;
+    
     @Inject
-    public DescendSign(){}
+    public DescendSign(@NotNull CraftManager craftManager){
+        this.craftManager = craftManager;
+    }
 
     @EventHandler
     public void onCraftDetect(CraftDetectEvent event){
@@ -54,10 +58,10 @@ public final class DescendSign implements Listener{
         Sign sign = (Sign) state;
         if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Descend: OFF")) {
             event.setCancelled(true);
-            if (CraftManager.getInstance().getCraftByPlayer(event.getPlayer()) == null) {
+            if (craftManager.getCraftByPlayer(event.getPlayer()) == null) {
                 return;
             }
-            Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
+            Craft c = craftManager.getCraftByPlayer(event.getPlayer());
             if (!c.getType().getBoolProperty(CraftType.CAN_CRUISE)) {
                 return;
             }
@@ -71,13 +75,13 @@ public final class DescendSign implements Listener{
             c.resetSigns(sign);
 
             if (!c.getType().getBoolProperty(CraftType.MOVE_ENTITIES)) {
-                CraftManager.getInstance().addReleaseTask(c);
+                craftManager.addReleaseTask(c);
             }
             return;
         }
         if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Descend: ON")) {
             event.setCancelled(true);
-            Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
+            Craft c = craftManager.getCraftByPlayer(event.getPlayer());
             if (c != null && c.getType().getBoolProperty(CraftType.CAN_CRUISE)) {
                 sign.setLine(0, "Descend: OFF");
                 sign.update(true);

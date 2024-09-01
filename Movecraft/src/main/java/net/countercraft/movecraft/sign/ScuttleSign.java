@@ -25,9 +25,12 @@ import static net.countercraft.movecraft.util.ChatUtils.MOVECRAFT_COMMAND_PREFIX
 
 public class ScuttleSign implements Listener {
     private static final String HEADER = "Scuttle";
+    private final @NotNull CraftManager craftManager;
 
     @Inject
-    public ScuttleSign(){}
+    public ScuttleSign(@NotNull CraftManager craftManager){
+        this.craftManager = craftManager;
+    }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onSignClick(@NotNull PlayerInteractEvent event) {
@@ -45,14 +48,14 @@ public class ScuttleSign implements Listener {
             return;
         }
         event.setCancelled(true);
-        Craft craft = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
+        Craft craft = craftManager.getCraftByPlayer(event.getPlayer());
         if (craft == null) {
             if (!event.getPlayer().hasPermission("movecraft.commands.scuttle.others")) {
                 event.getPlayer().sendMessage(MOVECRAFT_COMMAND_PREFIX
                         + I18nSupport.getInternationalisedString("You must be piloting a craft"));
                 return;
             }
-            craft = MathUtils.fastNearestCraftToLoc(CraftManager.getInstance().getCrafts(),
+            craft = MathUtils.fastNearestCraftToLoc(craftManager.getCrafts(),
                     event.getClickedBlock().getLocation());
             if (craft == null)
                 return;
@@ -79,7 +82,7 @@ public class ScuttleSign implements Listener {
             return;
 
         craft.setCruising(false);
-        CraftManager.getInstance().sink(craft);
+        craftManager.sink(craft);
         commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX
                 + I18nSupport.getInternationalisedString("Scuttle - Scuttle Activated"));
     }

@@ -32,9 +32,11 @@ import java.util.Set;
 public final class SubcraftRotateSign implements Listener {
     private static final String HEADER = "Subcraft Rotate";
     private final Set<MovecraftLocation> rotating;
+    private final @NotNull CraftManager craftManager;
 
     @Inject
-    public SubcraftRotateSign() {
+    public SubcraftRotateSign(@NotNull CraftManager craftManager) {
+        this.craftManager = craftManager;
         rotating = new HashSet<>();
     }
 
@@ -66,7 +68,7 @@ public final class SubcraftRotateSign implements Listener {
 
         // rotate subcraft
         String craftTypeStr = ChatColor.stripColor(sign.getLine(1));
-        CraftType craftType = CraftManager.getInstance().getCraftTypeFromString(craftTypeStr);
+        CraftType craftType = craftManager.getCraftTypeFromString(craftTypeStr);
         if (craftType == null)
             return;
         if (ChatColor.stripColor(sign.getLine(2)).equals("")
@@ -81,7 +83,7 @@ public final class SubcraftRotateSign implements Listener {
             return;
         }
 
-        Craft playerCraft = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
+        Craft playerCraft = craftManager.getCraftByPlayer(event.getPlayer());
         if (playerCraft != null) {
             if (!playerCraft.isNotProcessing()) {
                 event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Detection - Parent Craft is busy"));
@@ -100,7 +102,7 @@ public final class SubcraftRotateSign implements Listener {
 
         Player player = event.getPlayer();
         World world = event.getClickedBlock().getWorld();
-        CraftManager.getInstance().detect(
+        craftManager.detect(
                 startPoint,
                 craftType, (type, w, p, parents) -> {
                     if (parents.size() > 1)
@@ -130,7 +132,7 @@ public final class SubcraftRotateSign implements Listener {
                                 var newHitbox = parent.getHitBox().union(craft.getHitBox());
                                 parent.setHitBox(newHitbox);
                             }
-                            CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.SUB_CRAFT, false);
+                            craftManager.release(craft, CraftReleaseEvent.Reason.SUB_CRAFT, false);
                         }
                     }.runTaskLater(Movecraft.getInstance(), 3);
                 }

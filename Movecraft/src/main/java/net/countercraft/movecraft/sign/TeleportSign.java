@@ -19,9 +19,12 @@ import org.jetbrains.annotations.NotNull;
 
 public final class TeleportSign implements Listener {
     private static final String HEADER = "Teleport:";
+    private final @NotNull CraftManager craftManager;
 
     @Inject
-    public TeleportSign(){}
+    public TeleportSign(@NotNull CraftManager craftManager){
+        this.craftManager = craftManager;
+    }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onSignClick(@NotNull PlayerInteractEvent event) {
@@ -37,7 +40,7 @@ public final class TeleportSign implements Listener {
             return;
         }
         event.setCancelled(true);
-        if (CraftManager.getInstance().getCraftByPlayer(event.getPlayer()) == null) {
+        if (craftManager.getCraftByPlayer(event.getPlayer()) == null) {
             return;
         }
         
@@ -60,11 +63,11 @@ public final class TeleportSign implements Listener {
         World world = Bukkit.getWorld(w);
         if (world == null) world = sign.getWorld();
 
-        if (!event.getPlayer().hasPermission("movecraft." + CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getStringProperty(CraftType.NAME) + ".move")) {
+        if (!event.getPlayer().hasPermission("movecraft." + craftManager.getCraftByPlayer(event.getPlayer()).getType().getStringProperty(CraftType.NAME) + ".move")) {
             event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
             return;
         }
-        final Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
+        final Craft c = craftManager.getCraftByPlayer(event.getPlayer());
         if (c == null || !c.getType().getBoolProperty(CraftType.CAN_TELEPORT)) {
             return;
         }

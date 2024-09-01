@@ -28,9 +28,12 @@ import static net.countercraft.movecraft.util.ChatUtils.ERROR_PREFIX;
 
 public final class RemoteSign implements Listener{
     private static final String HEADER = "Remote Sign";
+    private final @NotNull CraftManager craftManager;
 
     @Inject
-    public RemoteSign(){}
+    public RemoteSign(@NotNull CraftManager craftManager){
+        this.craftManager = craftManager;
+    }
 
     @EventHandler
     public final void onSignChange(SignChangeEvent event) {
@@ -61,7 +64,7 @@ public final class RemoteSign implements Listener{
         }
         event.setCancelled(true);
         Craft foundCraft = null;
-        for (PlayerCraft tcraft : CraftManager.getInstance().getPlayerCraftsInWorld(event.getClickedBlock().getWorld())) {
+        for (PlayerCraft tcraft : craftManager.getPlayerCraftsInWorld(event.getClickedBlock().getWorld())) {
             if (MathUtils.locationInHitBox(tcraft.getHitBox(), event.getClickedBlock().getLocation())) {
                 // don't use a craft with a null player. This is
                 // mostly to avoid trying to use subcrafts

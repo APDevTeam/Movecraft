@@ -25,8 +25,12 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
 
 public final class CruiseSign implements Listener {
+    private final @NotNull CraftManager craftManager;
+    
     @Inject
-    public CruiseSign(){}
+    public CruiseSign(@NotNull CraftManager craftManager){
+        this.craftManager = craftManager;
+    }
 
     @EventHandler
     public void onCraftDetect(@NotNull CraftDetectEvent event) {
@@ -60,7 +64,7 @@ public final class CruiseSign implements Listener {
         String line = ChatColor.stripColor(sign.getLine(0));
         if (line.equalsIgnoreCase("Cruise: OFF")) {
             event.setCancelled(true);
-            Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
+            Craft c = craftManager.getCraftByPlayer(event.getPlayer());
             if (c == null || !c.getType().getBoolProperty(CraftType.CAN_CRUISE))
                 return;
             if (!(sign.getBlockData() instanceof Directional))
@@ -74,12 +78,12 @@ public final class CruiseSign implements Listener {
             c.setCruising(true);
             c.resetSigns(sign);
             if (!c.getType().getBoolProperty(CraftType.MOVE_ENTITIES)) {
-                CraftManager.getInstance().addReleaseTask(c);
+                craftManager.addReleaseTask(c);
             }
         }
         else if (line.equalsIgnoreCase("Cruise: ON")) {
             event.setCancelled(true);
-            Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
+            Craft c = craftManager.getCraftByPlayer(event.getPlayer());
             if (c == null || !c.getType().getBoolProperty(CraftType.CAN_CRUISE))
                 return;
 

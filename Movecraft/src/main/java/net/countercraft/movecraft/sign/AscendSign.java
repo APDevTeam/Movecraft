@@ -21,8 +21,12 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
 
 public class AscendSign implements Listener {
+    private final @NotNull CraftManager craftManager;
+    
     @Inject
-    public AscendSign(){}
+    public AscendSign(@NotNull CraftManager craftManager){
+        this.craftManager = craftManager;
+    }
 
     @EventHandler
     public void onCraftDetect(CraftDetectEvent event){
@@ -57,10 +61,10 @@ public class AscendSign implements Listener {
         Sign sign = (Sign) block.getState();
         if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Ascend: OFF")) {
             event.setCancelled(true);
-            if (CraftManager.getInstance().getCraftByPlayer(event.getPlayer()) == null) {
+            if (craftManager.getCraftByPlayer(event.getPlayer()) == null) {
                 return;
             }
-            Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
+            Craft c = craftManager.getCraftByPlayer(event.getPlayer());
             if (!c.getType().getBoolProperty(CraftType.CAN_CRUISE)) {
                 return;
             }
@@ -74,7 +78,7 @@ public class AscendSign implements Listener {
             c.resetSigns(sign);
 
             if (!c.getType().getBoolProperty(CraftType.MOVE_ENTITIES)) {
-                CraftManager.getInstance().addReleaseTask(c);
+                craftManager.addReleaseTask(c);
             }
             return;
         }
@@ -82,7 +86,7 @@ public class AscendSign implements Listener {
             return;
         }
         event.setCancelled(true);
-        Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
+        Craft c = craftManager.getCraftByPlayer(event.getPlayer());
         if (c == null || !c.getType().getBoolProperty(CraftType.CAN_CRUISE)) {
             return;
         }

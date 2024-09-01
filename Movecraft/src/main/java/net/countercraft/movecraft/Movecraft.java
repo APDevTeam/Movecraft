@@ -23,7 +23,6 @@ import net.countercraft.movecraft.config.DataPackService;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.config.SettingsService;
 import net.countercraft.movecraft.craft.ChunkManager;
-import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.features.contacts.ContactsCommand;
 import net.countercraft.movecraft.features.contacts.ContactsManager;
@@ -46,7 +45,6 @@ import org.int4.dirk.api.Injector;
 import org.int4.dirk.di.Injectors;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
 import java.util.logging.Logger;
 
 public class Movecraft extends JavaPlugin {

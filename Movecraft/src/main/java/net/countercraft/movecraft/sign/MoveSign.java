@@ -16,9 +16,12 @@ import org.jetbrains.annotations.NotNull;
 
 public final class MoveSign implements Listener{
     private static final String HEADER = "Move:";
+    private final @NotNull CraftManager craftManager;
 
     @Inject
-    public MoveSign(){}
+    public MoveSign(@NotNull CraftManager craftManager){
+        this.craftManager = craftManager;
+    }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onSignClick(@NotNull PlayerInteractEvent event) {
@@ -34,19 +37,19 @@ public final class MoveSign implements Listener{
             return;
         }
         event.setCancelled(true);
-        if (CraftManager.getInstance().getCraftByPlayer(event.getPlayer()) == null) {
+        if (craftManager.getCraftByPlayer(event.getPlayer()) == null) {
             return;
         }
         /*Long time = timeMap.get(event.getPlayer());
         if (time != null) {
             long ticksElapsed = (System.currentTimeMillis() - time) / 50;
-            Craft craft = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
+            Craft craft = craftManager.getCraftByPlayer(event.getPlayer());
             // if the craft should go slower underwater, make time pass
             // more slowly there
             if (craft.getType().getHalfSpeedUnderwater() && craft.getMinY() < craft.getW().getSeaLevel()) {
                 ticksElapsed = ticksElapsed >> 1;
             }
-            if (Math.abs(ticksElapsed) < CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getTickCooldown()) {
+            if (Math.abs(ticksElapsed) < craftManager.getCraftByPlayer(event.getPlayer()).getType().getTickCooldown()) {
                 event.setCancelled(true);
                 return;
             }
@@ -55,7 +58,7 @@ public final class MoveSign implements Listener{
         int dx = Integer.parseInt(numbers[0]);
         int dy = Integer.parseInt(numbers[1]);
         int dz = Integer.parseInt(numbers[2]);
-        int maxMove = CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getIntProperty(CraftType.MAX_STATIC_MOVE);
+        int maxMove = craftManager.getCraftByPlayer(event.getPlayer()).getType().getIntProperty(CraftType.MAX_STATIC_MOVE);
 
         if (dx > maxMove)
             dx = maxMove;
@@ -70,15 +73,15 @@ public final class MoveSign implements Listener{
         if (dz < 0 - maxMove)
             dz = 0 - maxMove;
 
-        if (!event.getPlayer().hasPermission("movecraft." + CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getStringProperty(CraftType.NAME) + ".move")) {
+        if (!event.getPlayer().hasPermission("movecraft." + craftManager.getCraftByPlayer(event.getPlayer()).getType().getStringProperty(CraftType.NAME) + ".move")) {
             event.getPlayer().sendMessage(
                     I18nSupport.getInternationalisedString("Insufficient Permissions"));
             return;
         }
-        if (CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getBoolProperty(CraftType.CAN_STATIC_MOVE)) {
-            CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).translate(dx, dy, dz);
+        if (craftManager.getCraftByPlayer(event.getPlayer()).getType().getBoolProperty(CraftType.CAN_STATIC_MOVE)) {
+            craftManager.getCraftByPlayer(event.getPlayer()).translate(dx, dy, dz);
             //timeMap.put(event.getPlayer(), System.currentTimeMillis());
-            CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setLastCruiseUpdate(System.currentTimeMillis());
+            craftManager.getCraftByPlayer(event.getPlayer()).setLastCruiseUpdate(System.currentTimeMillis());
         }
     }
 }

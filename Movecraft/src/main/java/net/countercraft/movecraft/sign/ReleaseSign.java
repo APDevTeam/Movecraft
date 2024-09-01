@@ -16,9 +16,12 @@ import org.jetbrains.annotations.NotNull;
 
 public final class ReleaseSign implements Listener{
     private static final String HEADER = "Release";
+    private final @NotNull CraftManager craftManager;
 
     @Inject
-    public ReleaseSign(){}
+    public ReleaseSign(@NotNull CraftManager craftManager){
+        this.craftManager = craftManager;
+    }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onSignClick(@NotNull PlayerInteractEvent event) {
@@ -34,10 +37,10 @@ public final class ReleaseSign implements Listener{
             return;
         }
         event.setCancelled(true);
-        Craft craft = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
+        Craft craft = craftManager.getCraftByPlayer(event.getPlayer());
         if (craft == null) {
             return;
         }
-        CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.PLAYER, false);
+        craftManager.release(craft, CraftReleaseEvent.Reason.PLAYER, false);
     }
 }

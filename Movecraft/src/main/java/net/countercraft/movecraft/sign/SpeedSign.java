@@ -21,10 +21,15 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.jetbrains.annotations.NotNull;
 
 public final class SpeedSign implements Listener {
+    private final @NotNull CraftManager craftManager;
+
     @Inject
-    public SpeedSign(){}
+    public SpeedSign(@NotNull CraftManager craftManager){
+        this.craftManager = craftManager;
+    }
 
     @EventHandler
     public void onCraftDetect(CraftDetectEvent event){
@@ -78,7 +83,7 @@ public final class SpeedSign implements Listener {
 
         event.setCancelled(true);
         Player player = event.getPlayer();
-        Craft craft = CraftManager.getInstance().getCraftByPlayer(player);
+        Craft craft = craftManager.getCraftByPlayer(player);
         if (craft == null)
             return;
 
