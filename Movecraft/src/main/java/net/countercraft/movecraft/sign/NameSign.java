@@ -1,6 +1,5 @@
 package net.countercraft.movecraft.sign;
 
-import jakarta.inject.Inject;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
@@ -26,10 +25,6 @@ import java.util.stream.Collectors;
 
 public final class NameSign implements Listener {
     private static final String HEADER = "Name:";
-
-    @Inject
-    public NameSign(){}
-
     @EventHandler
     public void onCraftDetect(@NotNull CraftDetectEvent event) {
         Craft c = event.getCraft();

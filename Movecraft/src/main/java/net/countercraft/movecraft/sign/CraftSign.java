@@ -1,6 +1,5 @@
 package net.countercraft.movecraft.sign;
 
-import jakarta.inject.Inject;
 import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
@@ -38,18 +37,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 public final class CraftSign implements Listener {
-    private final Set<MovecraftLocation> piloting;
-    private final @NotNull CraftManager craftManager;
-
-    @Inject
-    public CraftSign(@NotNull CraftManager craftManager) {
-        this.craftManager = craftManager;
-        piloting = new HashSet<>();
-    }
+    private final Set<MovecraftLocation> piloting = new HashSet<>();
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onSignChange(@NotNull SignChangeEvent event) {
-        if (craftManager.getCraftTypeFromString(event.getLine(0)) == null)
+        if (CraftManager.getInstance().getCraftTypeFromString(event.getLine(0)) == null)
             return;
 
         if (!Settings.RequireCreatePerm)
@@ -71,7 +63,7 @@ public final class CraftSign implements Listener {
             return;
 
         Sign sign = (Sign) state;
-        CraftType craftType = craftManager.getCraftTypeFromString(ChatColor.stripColor(sign.getLine(0)));
+        CraftType craftType = CraftManager.getInstance().getCraftTypeFromString(ChatColor.stripColor(sign.getLine(0)));
         if (craftType == null)
             return;
 
@@ -92,7 +84,7 @@ public final class CraftSign implements Listener {
         // Attempt to run detection
         World world = event.getClickedBlock().getWorld();
 
-        craftManager.detect(
+        CraftManager.getInstance().detect(
                 startPoint,
                 craftType, (type, w, p, parents) -> {
                     assert p != null; // Note: This only passes in a non-null player.
@@ -144,15 +136,15 @@ public final class CraftSign implements Listener {
                             @Override
                             public void run() {
                                 craft.setCruising(false);
-                                craftManager.sink(craft);
+                                CraftManager.getInstance().sink(craft);
                             }
                         }.runTaskLater(Movecraft.getInstance(), (craftType.getIntProperty(CraftType.CRUISE_ON_PILOT_LIFETIME)));
                     }
                     else {
                         // Release old craft if it exists
-                        Craft oldCraft = craftManager.getCraftByPlayer(player);
+                        Craft oldCraft = CraftManager.getInstance().getCraftByPlayer(player);
                         if (oldCraft != null)
-                            craftManager.release(oldCraft, CraftReleaseEvent.Reason.PLAYER, false);
+                            CraftManager.getInstance().release(oldCraft, CraftReleaseEvent.Reason.PLAYER, false);
                     }
                 }
         );

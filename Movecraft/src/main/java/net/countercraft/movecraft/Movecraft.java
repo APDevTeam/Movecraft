@@ -108,22 +108,21 @@ public class Movecraft extends JavaPlugin {
         injector.register(PlayerListener.class);
         injector.register(ChunkManager.class);
 
-        // Signs
-        injector.register(AscendSign.class);
-        injector.register(CraftSign.class);
-        injector.register(CruiseSign.class);
-        injector.register(DescendSign.class);
-        injector.register(HelmSign.class);
-        injector.register(MoveSign.class);
-        injector.register(NameSign.class);
-        injector.register(PilotSign.class);
-        injector.register(RelativeMoveSign.class);
-        injector.register(ReleaseSign.class);
-        injector.register(RemoteSign.class);
-        injector.register(SpeedSign.class);
-        injector.register(SubcraftRotateSign.class);
-        injector.register(TeleportSign.class);
-        injector.register(ScuttleSign.class);
+        getServer().getPluginManager().registerEvents(new AscendSign(), this);
+        getServer().getPluginManager().registerEvents(new CraftSign(), this);
+        getServer().getPluginManager().registerEvents(new CruiseSign(), this);
+        getServer().getPluginManager().registerEvents(new DescendSign(), this);
+        getServer().getPluginManager().registerEvents(new HelmSign(), this);
+        getServer().getPluginManager().registerEvents(new MoveSign(), this);
+        getServer().getPluginManager().registerEvents(new NameSign(), this);
+        getServer().getPluginManager().registerEvents(new PilotSign(), this);
+        getServer().getPluginManager().registerEvents(new RelativeMoveSign(), this);
+        getServer().getPluginManager().registerEvents(new ReleaseSign(), this);
+        getServer().getPluginManager().registerEvents(new RemoteSign(), this);
+        getServer().getPluginManager().registerEvents(new SpeedSign(), this);
+        getServer().getPluginManager().registerEvents(new SubcraftRotateSign(), this);
+        getServer().getPluginManager().registerEvents(new TeleportSign(), this);
+        getServer().getPluginManager().registerEvents(new ScuttleSign(), this);
 
         injector.register(CraftPilotListener.class);
         injector.register(CraftReleaseListener.class);

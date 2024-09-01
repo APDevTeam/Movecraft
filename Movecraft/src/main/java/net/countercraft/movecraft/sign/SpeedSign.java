@@ -1,6 +1,5 @@
 package net.countercraft.movecraft.sign;
 
-import jakarta.inject.Inject;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
@@ -21,16 +20,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.jetbrains.annotations.NotNull;
 
-public final class SpeedSign implements Listener {
-    private final @NotNull CraftManager craftManager;
-
-    @Inject
-    public SpeedSign(@NotNull CraftManager craftManager){
-        this.craftManager = craftManager;
-    }
-
+public final class SpeedSign implements Listener{
     @EventHandler
     public void onCraftDetect(CraftDetectEvent event){
         World world = event.getCraft().getWorld();
@@ -83,7 +74,7 @@ public final class SpeedSign implements Listener {
 
         event.setCancelled(true);
         Player player = event.getPlayer();
-        Craft craft = craftManager.getCraftByPlayer(player);
+        Craft craft = CraftManager.getInstance().getCraftByPlayer(player);
         if (craft == null)
             return;
 

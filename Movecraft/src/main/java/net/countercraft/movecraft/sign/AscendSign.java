@@ -1,6 +1,5 @@
 package net.countercraft.movecraft.sign;
 
-import jakarta.inject.Inject;
 import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
@@ -21,12 +20,6 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
 
 public class AscendSign implements Listener {
-    private final @NotNull CraftManager craftManager;
-    
-    @Inject
-    public AscendSign(@NotNull CraftManager craftManager){
-        this.craftManager = craftManager;
-    }
 
     @EventHandler
     public void onCraftDetect(CraftDetectEvent event){
@@ -61,10 +54,10 @@ public class AscendSign implements Listener {
         Sign sign = (Sign) block.getState();
         if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Ascend: OFF")) {
             event.setCancelled(true);
-            if (craftManager.getCraftByPlayer(event.getPlayer()) == null) {
+            if (CraftManager.getInstance().getCraftByPlayer(event.getPlayer()) == null) {
                 return;
             }
-            Craft c = craftManager.getCraftByPlayer(event.getPlayer());
+            Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
             if (!c.getType().getBoolProperty(CraftType.CAN_CRUISE)) {
                 return;
             }
@@ -78,7 +71,7 @@ public class AscendSign implements Listener {
             c.resetSigns(sign);
 
             if (!c.getType().getBoolProperty(CraftType.MOVE_ENTITIES)) {
-                craftManager.addReleaseTask(c);
+                CraftManager.getInstance().addReleaseTask(c);
             }
             return;
         }
@@ -86,7 +79,7 @@ public class AscendSign implements Listener {
             return;
         }
         event.setCancelled(true);
-        Craft c = craftManager.getCraftByPlayer(event.getPlayer());
+        Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
         if (c == null || !c.getType().getBoolProperty(CraftType.CAN_CRUISE)) {
             return;
         }

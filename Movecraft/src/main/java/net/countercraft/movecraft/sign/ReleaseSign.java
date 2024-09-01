@@ -1,6 +1,5 @@
 package net.countercraft.movecraft.sign;
 
-import jakarta.inject.Inject;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
@@ -16,12 +15,6 @@ import org.jetbrains.annotations.NotNull;
 
 public final class ReleaseSign implements Listener{
     private static final String HEADER = "Release";
-    private final @NotNull CraftManager craftManager;
-
-    @Inject
-    public ReleaseSign(@NotNull CraftManager craftManager){
-        this.craftManager = craftManager;
-    }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onSignClick(@NotNull PlayerInteractEvent event) {
@@ -37,10 +30,10 @@ public final class ReleaseSign implements Listener{
             return;
         }
         event.setCancelled(true);
-        Craft craft = craftManager.getCraftByPlayer(event.getPlayer());
+        Craft craft = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
         if (craft == null) {
             return;
         }
-        craftManager.release(craft, CraftReleaseEvent.Reason.PLAYER, false);
+        CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.PLAYER, false);
     }
 }

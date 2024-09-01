@@ -1,6 +1,5 @@
 package net.countercraft.movecraft.sign;
 
-import jakarta.inject.Inject;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.SinkingCraft;
@@ -24,13 +23,8 @@ import org.jetbrains.annotations.NotNull;
 import static net.countercraft.movecraft.util.ChatUtils.MOVECRAFT_COMMAND_PREFIX;
 
 public class ScuttleSign implements Listener {
-    private static final String HEADER = "Scuttle";
-    private final @NotNull CraftManager craftManager;
 
-    @Inject
-    public ScuttleSign(@NotNull CraftManager craftManager){
-        this.craftManager = craftManager;
-    }
+    private static final String HEADER = "Scuttle";
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onSignClick(@NotNull PlayerInteractEvent event) {
@@ -48,14 +42,14 @@ public class ScuttleSign implements Listener {
             return;
         }
         event.setCancelled(true);
-        Craft craft = craftManager.getCraftByPlayer(event.getPlayer());
+        Craft craft = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
         if (craft == null) {
             if (!event.getPlayer().hasPermission("movecraft.commands.scuttle.others")) {
                 event.getPlayer().sendMessage(MOVECRAFT_COMMAND_PREFIX
                         + I18nSupport.getInternationalisedString("You must be piloting a craft"));
                 return;
             }
-            craft = MathUtils.fastNearestCraftToLoc(craftManager.getCrafts(),
+            craft = MathUtils.fastNearestCraftToLoc(CraftManager.getInstance().getCrafts(),
                     event.getClickedBlock().getLocation());
             if (craft == null)
                 return;
@@ -82,7 +76,7 @@ public class ScuttleSign implements Listener {
             return;
 
         craft.setCruising(false);
-        craftManager.sink(craft);
+        CraftManager.getInstance().sink(craft);
         commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX
                 + I18nSupport.getInternationalisedString("Scuttle - Scuttle Activated"));
     }

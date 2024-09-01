@@ -1,6 +1,5 @@
 package net.countercraft.movecraft.sign;
 
-import jakarta.inject.Inject;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
@@ -14,10 +13,6 @@ import org.jetbrains.annotations.NotNull;
 
 public final class PilotSign implements Listener {
     private static final String HEADER = "Pilot:";
-
-    @Inject
-    public PilotSign(){}
-
     @EventHandler
     public final void onSignChange(SignChangeEvent event){
         if (event.getLine(0).equalsIgnoreCase(HEADER)) {

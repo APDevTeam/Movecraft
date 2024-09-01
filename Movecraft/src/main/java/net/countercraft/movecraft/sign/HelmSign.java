@@ -1,6 +1,5 @@
 package net.countercraft.movecraft.sign;
 
-import jakarta.inject.Inject;
 import net.countercraft.movecraft.MovecraftRotation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
@@ -19,12 +18,6 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
 
 public final class HelmSign implements Listener {
-    private final @NotNull CraftManager craftManager;
-
-    @Inject
-    public HelmSign(@NotNull CraftManager craftManager){
-        this.craftManager = craftManager;
-    }
 
     @EventHandler
     public void onSignChange(SignChangeEvent event){
@@ -57,7 +50,7 @@ public final class HelmSign implements Listener {
             return;
         }
         event.setCancelled(true);
-        Craft craft = craftManager.getCraftByPlayer(event.getPlayer());
+        Craft craft = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
         if (craft == null) {
             return;
         }
@@ -85,20 +78,20 @@ public final class HelmSign implements Listener {
             return;
 
         if (craft.getType().getBoolProperty(CraftType.ROTATE_AT_MIDPOINT)) {
-            craftManager.getCraftByPlayer(event.getPlayer()).rotate(rotation, craft.getHitBox().getMidPoint());
+            CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).rotate(rotation, craft.getHitBox().getMidPoint());
         } else {
-            craftManager.getCraftByPlayer(event.getPlayer()).rotate(rotation, MathUtils.bukkit2MovecraftLoc(sign.getLocation()));
+            CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).rotate(rotation, MathUtils.bukkit2MovecraftLoc(sign.getLocation()));
         }
 
         //timeMap.put(event.getPlayer(), System.currentTimeMillis());
         //TODO: Lower speed while turning
-            /*int curTickCooldown = craftManager.getCraftByPlayer(event.getPlayer()).getCurTickCooldown();
-            int baseTickCooldown = craftManager.getCraftByPlayer(event.getPlayer()).getType().getCruiseTickCooldown();
+            /*int curTickCooldown = CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getCurTickCooldown();
+            int baseTickCooldown = CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getCruiseTickCooldown();
             if (curTickCooldown * 2 > baseTickCooldown)
                 curTickCooldown = baseTickCooldown;
             else
                 curTickCooldown = curTickCooldown * 2;*/
-        //craftManager.getCraftByPlayer(event.getPlayer()).setCurTickCooldown(curTickCooldown); // lose half your speed when turning
+        //CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCurTickCooldown(curTickCooldown); // lose half your speed when turning
 
     }
 }
