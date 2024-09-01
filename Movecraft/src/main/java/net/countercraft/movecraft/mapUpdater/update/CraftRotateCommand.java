@@ -131,11 +131,13 @@ public class CraftRotateCommand extends UpdateCommand {
                     MovecraftLocation node = queue.poll();
                     //If the node is already a valid member of the exterior of the HitBox, continued search is unitary.
                     for (MovecraftLocation neighbor : CollectionUtils.neighbors(invertedHitBox, node)) {
-                        if (visited.contains(neighbor)) {
-                            continue;
+                        // This is a set! If it already contains the element, it won't add it anyway!
+                        //if (visited.contains(neighbor)) {
+                        //    continue;
+                        //}
+                        if (visited.add(neighbor)) {
+                            queue.add(neighbor);
                         }
-                        visited.add(neighbor);
-                        queue.add(neighbor);
                     }
                 }               
             }
