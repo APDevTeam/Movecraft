@@ -18,7 +18,16 @@
 package net.countercraft.movecraft;
 
 import net.countercraft.movecraft.async.AsyncManager;
-import net.countercraft.movecraft.commands.*;
+import net.countercraft.movecraft.commands.CraftInfoCommand;
+import net.countercraft.movecraft.commands.CraftReportCommand;
+import net.countercraft.movecraft.commands.CraftTypeCommand;
+import net.countercraft.movecraft.commands.CruiseCommand;
+import net.countercraft.movecraft.commands.ManOverboardCommand;
+import net.countercraft.movecraft.commands.MovecraftCommand;
+import net.countercraft.movecraft.commands.PilotCommand;
+import net.countercraft.movecraft.commands.ReleaseCommand;
+import net.countercraft.movecraft.commands.RotateCommand;
+import net.countercraft.movecraft.commands.ScuttleCommand;
 import net.countercraft.movecraft.config.DataPackService;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.config.SettingsService;
@@ -33,11 +42,29 @@ import net.countercraft.movecraft.features.status.StatusSign;
 import net.countercraft.movecraft.lifecycle.ListenerLifecycleService;
 import net.countercraft.movecraft.lifecycle.ServiceHost;
 import net.countercraft.movecraft.lifecycle.WorkerServiceHost;
-import net.countercraft.movecraft.listener.*;
+import net.countercraft.movecraft.listener.BlockListener;
+import net.countercraft.movecraft.listener.CraftPilotListener;
+import net.countercraft.movecraft.listener.CraftReleaseListener;
+import net.countercraft.movecraft.listener.InteractListener;
+import net.countercraft.movecraft.listener.PlayerListener;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.processing.WorldManager;
-import net.countercraft.movecraft.sign.*;
+import net.countercraft.movecraft.sign.AscendSign;
+import net.countercraft.movecraft.sign.CraftSign;
+import net.countercraft.movecraft.sign.CruiseSign;
+import net.countercraft.movecraft.sign.DescendSign;
+import net.countercraft.movecraft.sign.HelmSign;
+import net.countercraft.movecraft.sign.MoveSign;
+import net.countercraft.movecraft.sign.NameSign;
+import net.countercraft.movecraft.sign.PilotSign;
+import net.countercraft.movecraft.sign.RelativeMoveSign;
+import net.countercraft.movecraft.sign.ReleaseSign;
+import net.countercraft.movecraft.sign.RemoteSign;
+import net.countercraft.movecraft.sign.ScuttleSign;
+import net.countercraft.movecraft.sign.SpeedSign;
+import net.countercraft.movecraft.sign.SubcraftRotateSign;
+import net.countercraft.movecraft.sign.TeleportSign;
 import net.countercraft.movecraft.support.SmoothTeleportFactory;
 import net.countercraft.movecraft.support.WorldHandlerFactory;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -49,8 +76,6 @@ import java.util.logging.Logger;
 
 public class Movecraft extends JavaPlugin {
     private static Movecraft instance;
-
-    private Logger logger;
     private boolean shuttingDown;
     private Injector injector;
 
@@ -67,8 +92,9 @@ public class Movecraft extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        Logger logger = getLogger();
         injector = Injectors.manual();
-        injector.registerInstance(getLogger());
+        injector.registerInstance(logger);
         injector.registerInstance(this);
         injector.register(AsyncManager.class);
         injector.register(MapUpdateManager.class);
@@ -108,6 +134,7 @@ public class Movecraft extends JavaPlugin {
         injector.register(PlayerListener.class);
         injector.register(ChunkManager.class);
 
+        //TODO: Sign rework
         getServer().getPluginManager().registerEvents(new AscendSign(), this);
         getServer().getPluginManager().registerEvents(new CraftSign(), this);
         getServer().getPluginManager().registerEvents(new CruiseSign(), this);
@@ -147,7 +174,6 @@ public class Movecraft extends JavaPlugin {
     public void onLoad() {
         super.onLoad();
         instance = this;
-        logger = getLogger();
         saveDefaultConfig();
     }
 
