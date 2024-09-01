@@ -118,12 +118,13 @@ public class CraftRotateCommand extends UpdateCommand {
                 validExterior.addAll(hitBox.difference(craft.getHitBox()));
             }
             //Check to see which locations in the from set are actually outside of the craft
+            SetHitBox visited = new SetHitBox();
             for (MovecraftLocation location : validExterior) {
                 if (craft.getHitBox().contains(location) || exterior.contains(location)) {
                     continue;
                 }
                 //use a modified BFS for multiple origin elements
-                SetHitBox visited = new SetHitBox();
+                
                 Queue<MovecraftLocation> queue = new LinkedList<>();
                 queue.add(location);
                 while (!queue.isEmpty()) {
@@ -136,9 +137,9 @@ public class CraftRotateCommand extends UpdateCommand {
                         visited.add(neighbor);
                         queue.add(neighbor);
                     }
-                }
-                exterior.addAll(visited);
+                }               
             }
+            exterior.addAll(visited);
             interior.addAll(invertedHitBox.difference(exterior));
 
             final WorldHandler handler = Movecraft.getInstance().getWorldHandler();
