@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.features.contacts;
 
+import jakarta.inject.Inject;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.*;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagContainer;
@@ -10,6 +11,7 @@ import net.countercraft.movecraft.events.*;
 import net.countercraft.movecraft.exception.EmptyHitBoxException;
 import net.countercraft.movecraft.features.contacts.events.LostContactEvent;
 import net.countercraft.movecraft.features.contacts.events.NewContactEvent;
+import net.countercraft.movecraft.lifecycle.Worker;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
@@ -27,8 +29,21 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-public class ContactsManager extends BukkitRunnable implements Listener {
+public class ContactsManager implements Listener, Worker {
     private static final CraftDataTagKey<Map<Craft, Long>> RECENT_CONTACTS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "recent-contacts"), craft -> new WeakHashMap<>());
+
+    @Inject
+    public ContactsManager(){}
+
+    @Override
+    public boolean isAsync() {
+        return true;
+    }
+
+    @Override
+    public int getPeriod() {
+        return 20;
+    }
 
     @Override
     public void run() {

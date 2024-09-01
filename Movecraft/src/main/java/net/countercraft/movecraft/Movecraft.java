@@ -130,16 +130,12 @@ public class Movecraft extends JavaPlugin {
         injector.register(CraftPilotListener.class);
         injector.register(CraftReleaseListener.class);
 
-        var contactsManager = new ContactsManager();
-        contactsManager.runTaskTimerAsynchronously(this, 0, 20);
-        getServer().getPluginManager().registerEvents(contactsManager, this);
-        getServer().getPluginManager().registerEvents(new ContactsSign(), this);
+        injector.register(ContactsManager.class);
+        injector.register(ContactsSign.class);
         getCommand("contacts").setExecutor(new ContactsCommand());
 
-        var statusManager = new StatusManager();
-        statusManager.runTaskTimerAsynchronously(this, 0, 1);
-        getServer().getPluginManager().registerEvents(statusManager, this);
-        getServer().getPluginManager().registerEvents(new StatusSign(), this);
+        injector.register(StatusManager.class);
+        injector.register(StatusSign.class);
 
         // Lifecycle management
         injector.register(WorkerServiceHost.class);
