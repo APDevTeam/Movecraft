@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.sign;
 
+import jakarta.inject.Inject;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.type.CraftType;
@@ -18,6 +19,9 @@ import org.jetbrains.annotations.NotNull;
 
 public final class TeleportSign implements Listener {
     private static final String HEADER = "Teleport:";
+
+    @Inject
+    public TeleportSign(){}
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onSignClick(@NotNull PlayerInteractEvent event) {

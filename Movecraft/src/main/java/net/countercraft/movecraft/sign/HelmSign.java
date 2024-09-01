@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.sign;
 
+import jakarta.inject.Inject;
 import net.countercraft.movecraft.MovecraftRotation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
@@ -18,6 +19,8 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
 
 public final class HelmSign implements Listener {
+    @Inject
+    public HelmSign(){}
 
     @EventHandler
     public void onSignChange(SignChangeEvent event){

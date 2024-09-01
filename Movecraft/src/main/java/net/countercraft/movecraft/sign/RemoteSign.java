@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.sign;
 
+import jakarta.inject.Inject;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
@@ -27,6 +28,9 @@ import static net.countercraft.movecraft.util.ChatUtils.ERROR_PREFIX;
 
 public final class RemoteSign implements Listener{
     private static final String HEADER = "Remote Sign";
+
+    @Inject
+    public RemoteSign(){}
 
     @EventHandler
     public final void onSignChange(SignChangeEvent event) {

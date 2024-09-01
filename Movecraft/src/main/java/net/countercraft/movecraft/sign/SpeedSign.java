@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.sign;
 
+import jakarta.inject.Inject;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
@@ -21,7 +22,10 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 
-public final class SpeedSign implements Listener{
+public final class SpeedSign implements Listener {
+    @Inject
+    public SpeedSign(){}
+
     @EventHandler
     public void onCraftDetect(CraftDetectEvent event){
         World world = event.getCraft().getWorld();

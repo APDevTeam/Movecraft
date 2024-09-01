@@ -21,6 +21,7 @@ import com.google.common.collect.Lists;
 import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
+import net.countercraft.movecraft.lifecycle.Service;
 import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.craft.Craft;
@@ -34,26 +35,36 @@ import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.kyori.adventure.text.Component;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.WeakHashMap;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 @Deprecated
-public class AsyncManager extends BukkitRunnable {
-    private final Map<AsyncTask, Craft> ownershipMap = new HashMap<>();
-    private final BlockingQueue<AsyncTask> finishedAlgorithms = new LinkedBlockingQueue<>();
-    private final Set<Craft> clearanceSet = new HashSet<>();
-    private final Map<Craft, Integer> cooldownCache = new WeakHashMap<>();
+public class AsyncManager extends BukkitRunnable implements Service {
+    private final Map<AsyncTask, Craft> ownershipMap;
+    private final BlockingQueue<AsyncTask> finishedAlgorithms;
+    private final Set<Craft> clearanceSet;
+    private final Map<Craft, Integer> cooldownCache;
+    private final @NotNull Plugin plugin;
+    private final @NotNull MapUpdateManager mapUpdateManager;
 
-    public AsyncManager() {}
+    public AsyncManager(@NotNull Plugin plugin, @NotNull MapUpdateManager mapUpdateManager) {
+        this.plugin = Objects.requireNonNull(plugin);
+        this.mapUpdateManager = mapUpdateManager;
+        ownershipMap = new HashMap<>();
+        finishedAlgorithms = new LinkedBlockingQueue<>();
+        clearanceSet = new HashSet<>();
+        cooldownCache = new WeakHashMap<>();
+    }
+
+    @Override
+    public void start(){
+        this.runTaskTimer(plugin, 0, 1);
+    }
 
     public void submitTask(AsyncTask task, Craft c) {
         if (c.isNotProcessing()) {
@@ -120,14 +131,14 @@ public class AsyncManager extends BukkitRunnable {
             if (task.isCollisionExplosion()) {
                 c.setHitBox(task.getNewHitBox());
                 c.setFluidLocations(task.getNewFluidList());
-                MapUpdateManager.getInstance().scheduleUpdates(task.getUpdates());
+                mapUpdateManager.scheduleUpdates(task.getUpdates());
                 CraftManager.getInstance().addReleaseTask(c);
                 return true;
             }
             return false;
         }
         // The craft is clear to move, perform the block updates
-        MapUpdateManager.getInstance().scheduleUpdates(task.getUpdates());
+        mapUpdateManager.scheduleUpdates(task.getUpdates());
 
         c.setHitBox(task.getNewHitBox());
         c.setFluidLocations(task.getNewFluidList());
@@ -153,7 +164,7 @@ public class AsyncManager extends BukkitRunnable {
         }
 
 
-        MapUpdateManager.getInstance().scheduleUpdates(task.getUpdates());
+        mapUpdateManager.scheduleUpdates(task.getUpdates());
 
         c.setHitBox(task.getNewHitBox());
         c.setFluidLocations(task.getNewFluidList());

@@ -1,8 +1,13 @@
 package net.countercraft.movecraft.processing;
 
+import jakarta.inject.Inject;
+import net.countercraft.movecraft.lifecycle.Service;
+import net.countercraft.movecraft.lifecycle.Worker;
 import net.countercraft.movecraft.processing.effects.Effect;
 import net.countercraft.movecraft.util.CompletableFutureTask;
 import org.bukkit.Bukkit;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -20,9 +25,13 @@ import java.util.function.Supplier;
 /**
  *
  */
-public final class WorldManager implements Executor {
-
+public final class WorldManager implements Executor, Worker {
+    /**
+     * @deprecated Prefer dependency injection over static accessors
+     */
+    @Deprecated
     public static final WorldManager INSTANCE = new WorldManager();
+
     private static final Runnable POISON = new Runnable() {
         @Override
         public void run() {/* No-op */}
@@ -38,6 +47,16 @@ public final class WorldManager implements Executor {
     private volatile boolean running = false;
 
     private WorldManager(){}
+
+    @Override
+    public boolean isAsync() {
+        return false;
+    }
+
+    @Override
+    public int getPeriod() {
+        return 1;
+    }
 
     public void run() {
         if(!Bukkit.isPrimaryThread()){

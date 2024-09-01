@@ -17,6 +17,7 @@
 
 package net.countercraft.movecraft.listener;
 
+import jakarta.inject.Inject;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.PlayerCraft;
@@ -37,7 +38,12 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 public final class InteractListener implements Listener {
-    private final Map<Player, Long> timeMap = new WeakHashMap<>();
+    private final Map<Player, Long> timeMap;
+
+    @Inject
+    public InteractListener() {
+        timeMap = new WeakHashMap<>();
+    }
 
     @EventHandler(priority = EventPriority.LOWEST) // LOWEST so that it runs before the other events
     public void onPlayerInteract(@NotNull PlayerInteractEvent e) {

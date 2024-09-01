@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.sign;
 
+import jakarta.inject.Inject;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.localisation.I18nSupport;
@@ -15,6 +16,9 @@ import org.jetbrains.annotations.NotNull;
 
 public final class RelativeMoveSign implements Listener{
     private static final String HEADER = "RMove:";
+
+    @Inject
+    public RelativeMoveSign(){}
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onSignClick(@NotNull PlayerInteractEvent event) {

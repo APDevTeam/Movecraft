@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.listener;
 
+import jakarta.inject.Inject;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
@@ -10,6 +11,8 @@ import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
 
 public class CraftReleaseListener implements Listener {
+    @Inject
+    public CraftReleaseListener(){}
 
     @EventHandler
     public void onDisassembly(@NotNull CraftReleaseEvent event) {

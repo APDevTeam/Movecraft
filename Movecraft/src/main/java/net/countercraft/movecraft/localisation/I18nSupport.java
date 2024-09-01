@@ -19,8 +19,10 @@ package net.countercraft.movecraft.localisation;
 
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.lifecycle.Service;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
+import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -34,10 +36,28 @@ import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 import java.util.logging.Level;
 
-public class I18nSupport {
+public class I18nSupport implements Service {
     private static Properties languageFile;
+    private final @NotNull Plugin plugin;
 
-    public static void init() {
+    public I18nSupport(@NotNull Plugin plugin){
+        this.plugin = plugin;
+    }
+
+    @Override
+    public void start() {
+        String[] localisations = {"en", "cz", "nl", "fr"};
+        for (String locale : localisations) {
+            var file = new File("%s/localisation/movecraftlang_%s.properties".formatted(plugin.getDataFolder(), locale));
+            if (!file.exists()) {
+                plugin.saveResource("localisation/movecraftlang_%s.properties".formatted(locale), false);
+            }
+        }
+
+        init();
+    }
+
+    private static void init() {
         languageFile = new Properties();
 
         File localisationDirectory = new File(Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/localisation");

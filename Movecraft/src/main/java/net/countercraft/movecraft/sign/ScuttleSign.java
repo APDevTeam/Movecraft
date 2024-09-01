@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.sign;
 
+import jakarta.inject.Inject;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.SinkingCraft;
@@ -23,8 +24,10 @@ import org.jetbrains.annotations.NotNull;
 import static net.countercraft.movecraft.util.ChatUtils.MOVECRAFT_COMMAND_PREFIX;
 
 public class ScuttleSign implements Listener {
-
     private static final String HEADER = "Scuttle";
+
+    @Inject
+    public ScuttleSign(){}
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onSignClick(@NotNull PlayerInteractEvent event) {

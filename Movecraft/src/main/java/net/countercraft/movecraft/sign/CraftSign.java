@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.sign;
 
+import jakarta.inject.Inject;
 import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
@@ -37,7 +38,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 public final class CraftSign implements Listener {
-    private final Set<MovecraftLocation> piloting = new HashSet<>();
+    private final Set<MovecraftLocation> piloting;
+
+    @Inject
+    public CraftSign() {
+        piloting = new HashSet<>();
+    }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onSignChange(@NotNull SignChangeEvent event) {

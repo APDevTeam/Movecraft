@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.sign;
 
+import jakarta.inject.Inject;
 import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
@@ -20,6 +21,8 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
 
 public class AscendSign implements Listener {
+    @Inject
+    public AscendSign(){}
 
     @EventHandler
     public void onCraftDetect(CraftDetectEvent event){

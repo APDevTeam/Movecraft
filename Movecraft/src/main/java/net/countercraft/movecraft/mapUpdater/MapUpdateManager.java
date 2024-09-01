@@ -18,8 +18,10 @@
 package net.countercraft.movecraft.mapUpdater;
 
 import net.countercraft.movecraft.Movecraft;
+import net.countercraft.movecraft.lifecycle.Service;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
@@ -30,19 +32,18 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Logger;
 
 @Deprecated
-public class MapUpdateManager extends BukkitRunnable {
+public class MapUpdateManager extends BukkitRunnable implements Service {
+    private final Queue<UpdateCommand> updates;
+    private final @NotNull Plugin plugin;
 
-    private final Queue<UpdateCommand> updates = new ConcurrentLinkedQueue<>();
-//    private final Queue<UpdateCommand> updates = new LinkedBlockingQueue<>();
-    //private PriorityQueue<UpdateCommand> updateQueue = new PriorityQueue<>();
+    public MapUpdateManager(@NotNull Plugin plugin) {
+        this.plugin = plugin;
+        this.updates = new ConcurrentLinkedQueue<>();
+    }
 
-    //@Deprecated
-    //public HashMap<Craft, Integer> blockUpdatesPerCraft = new HashMap<>();
-
-    private MapUpdateManager() { }
-
-    public static MapUpdateManager getInstance() {
-        return MapUpdateManagerHolder.INSTANCE;
+    @Override
+    public void start(){
+        this.runTaskTimer(plugin, 0, 1);
     }
 
     public void run() {

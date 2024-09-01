@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.sign;
 
+import jakarta.inject.Inject;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
@@ -15,6 +16,9 @@ import org.jetbrains.annotations.NotNull;
 
 public final class ReleaseSign implements Listener{
     private static final String HEADER = "Release";
+
+    @Inject
+    public ReleaseSign(){}
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onSignClick(@NotNull PlayerInteractEvent event) {

@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.sign;
 
+import jakarta.inject.Inject;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.MovecraftRotation;
@@ -30,7 +31,12 @@ import java.util.Set;
 
 public final class SubcraftRotateSign implements Listener {
     private static final String HEADER = "Subcraft Rotate";
-    private final Set<MovecraftLocation> rotating = new HashSet<>();
+    private final Set<MovecraftLocation> rotating;
+
+    @Inject
+    public SubcraftRotateSign() {
+        rotating = new HashSet<>();
+    }
 
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onSignClick(@NotNull PlayerInteractEvent event) {

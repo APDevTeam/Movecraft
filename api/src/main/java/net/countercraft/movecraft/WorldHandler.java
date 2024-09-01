@@ -20,6 +20,7 @@ public abstract class WorldHandler {
     @Deprecated(forRemoval = true)
     public abstract void setAccessLocation(@NotNull InventoryView inventoryView, @NotNull Location location); // Not needed for 1.20+, remove when dropping support for 1.18.2
 
+    @Deprecated
     public static @NotNull String getPackageName(@NotNull String minecraftVersion) {
         String[] parts = minecraftVersion.split("\\.");
         if (parts.length < 2)
