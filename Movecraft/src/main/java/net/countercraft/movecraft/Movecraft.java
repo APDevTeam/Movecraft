@@ -29,7 +29,6 @@ import net.countercraft.movecraft.commands.ReleaseCommand;
 import net.countercraft.movecraft.commands.RotateCommand;
 import net.countercraft.movecraft.commands.ScuttleCommand;
 import net.countercraft.movecraft.config.DataPackHostedService;
-import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.config.SettingsHostedService;
 import net.countercraft.movecraft.craft.ChunkManager;
 import net.countercraft.movecraft.craft.CraftManager;
@@ -68,11 +67,8 @@ import net.countercraft.movecraft.support.WorldHandlerFactory;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.logging.Logger;
-
 public class Movecraft extends JavaPlugin {
     private static Movecraft instance;
-    private boolean shuttingDown;
     private PluginBuilder.Application application;
 
     public static synchronized Movecraft getInstance() {
@@ -81,7 +77,6 @@ public class Movecraft extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        shuttingDown = true;
         application.host().stopAll();
         application = null;
     }
@@ -90,15 +85,6 @@ public class Movecraft extends JavaPlugin {
     public void onEnable() {
         var injector = PluginBuilder.create();
         registerServices(injector);
-
-        // TODO: make this work somehow
-        if(shuttingDown && Settings.IGNORE_RESET) {
-            this.getLogger().severe("Movecraft is incompatible with the reload command. Movecraft has shut down and will restart when the server is restarted.");
-            this.getLogger().severe("If you wish to use the reload command and Movecraft, you may disable this check inside the config.yml by setting 'safeReload: false'");
-            getPluginLoader().disablePlugin(this);
-
-            return;
-        }
 
         //TODO: migrate to aikar or brigadier commands, left in place for now
         getCommand("movecraft").setExecutor(new MovecraftCommand());
@@ -111,6 +97,7 @@ public class Movecraft extends JavaPlugin {
         getCommand("scuttle").setExecutor(new ScuttleCommand());
         getCommand("crafttype").setExecutor(new CraftTypeCommand());
         getCommand("craftinfo").setExecutor(new CraftInfoCommand());
+        getCommand("contacts").setExecutor(new ContactsCommand());
 
         //TODO: Sign rework
         getServer().getPluginManager().registerEvents(new AscendSign(), this);
@@ -129,13 +116,10 @@ public class Movecraft extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new TeleportSign(), this);
         getServer().getPluginManager().registerEvents(new ScuttleSign(), this);
 
-
-        getCommand("contacts").setExecutor(new ContactsCommand());
-
         // Startup
         application = injector.build();
         application.host().startAll();
-        logger.info("[V %s] has been enabled.".formatted(getDescription().getVersion()));
+        getLogger().info("[V %s] has been enabled.".formatted(getDescription().getVersion()));
     }
 
     @Override
@@ -167,16 +151,10 @@ public class Movecraft extends JavaPlugin {
         injector.register(ContactsManager.class);
         injector.register(StatusManager.class);
 
+        // Signs
         injector.register(StatusSign.class);
         injector.register(ContactsSign.class);
-
     }
-
-    private record MovecraftAPI(
-        @NotNull WorldHandler worldHandler,
-        @NotNull SmoothTeleport smoothTeleport,
-        @NotNull AsyncManager asyncManager,
-        @NotNull WreckManager wreckManager) {}
 
     public WorldHandler getWorldHandler(){
         return application.container().getService(WorldHandler.class);
