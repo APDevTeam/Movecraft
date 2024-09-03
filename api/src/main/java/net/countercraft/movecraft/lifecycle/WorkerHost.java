@@ -7,12 +7,12 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class WorkerHostedServiceHost implements HostedService {
+public class WorkerHost implements HostedService {
     private final @NotNull Plugin plugin;
     private final @NotNull List<Worker> workers;
     private @NotNull List<BukkitTask> tasks;
 
-    public WorkerHostedServiceHost(@NotNull Plugin plugin, @NotNull List<Worker> workers) {
+    public WorkerHost(@NotNull Plugin plugin, @NotNull List<Worker> workers) {
         this.plugin = plugin;
         this.workers = workers;
         tasks = List.of();
