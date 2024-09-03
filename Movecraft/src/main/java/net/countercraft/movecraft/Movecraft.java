@@ -28,25 +28,9 @@ import net.countercraft.movecraft.commands.PilotCommand;
 import net.countercraft.movecraft.commands.ReleaseCommand;
 import net.countercraft.movecraft.commands.RotateCommand;
 import net.countercraft.movecraft.commands.ScuttleCommand;
-import net.countercraft.movecraft.config.DataPackHostedService;
-import net.countercraft.movecraft.config.SettingsHostedService;
-import net.countercraft.movecraft.craft.ChunkManager;
-import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.features.contacts.ContactsCommand;
-import net.countercraft.movecraft.features.contacts.ContactsManager;
-import net.countercraft.movecraft.features.contacts.ContactsSign;
 import net.countercraft.movecraft.features.fading.WreckManager;
-import net.countercraft.movecraft.features.status.StatusManager;
-import net.countercraft.movecraft.features.status.StatusSign;
 import net.countercraft.movecraft.lifecycle.PluginBuilder;
-import net.countercraft.movecraft.listener.BlockListener;
-import net.countercraft.movecraft.listener.CraftPilotListener;
-import net.countercraft.movecraft.listener.CraftReleaseListener;
-import net.countercraft.movecraft.listener.InteractListener;
-import net.countercraft.movecraft.listener.PlayerListener;
-import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
-import net.countercraft.movecraft.processing.WorldManager;
 import net.countercraft.movecraft.sign.AscendSign;
 import net.countercraft.movecraft.sign.CraftSign;
 import net.countercraft.movecraft.sign.CruiseSign;
@@ -62,8 +46,6 @@ import net.countercraft.movecraft.sign.ScuttleSign;
 import net.countercraft.movecraft.sign.SpeedSign;
 import net.countercraft.movecraft.sign.SubcraftRotateSign;
 import net.countercraft.movecraft.sign.TeleportSign;
-import net.countercraft.movecraft.support.SmoothTeleportFactory;
-import net.countercraft.movecraft.support.WorldHandlerFactory;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
@@ -84,7 +66,7 @@ public class Movecraft extends JavaPlugin {
     @Override
     public void onEnable() {
         var injector = PluginBuilder.createFor(this);
-        registerServices(injector);
+        Startup.registerServices(injector);
 
         //TODO: migrate to aikar or brigadier commands, left in place for now
         getCommand("movecraft").setExecutor(new MovecraftCommand());
@@ -127,31 +109,6 @@ public class Movecraft extends JavaPlugin {
         super.onLoad();
         instance = this;
         saveDefaultConfig();
-    }
-
-    private static void registerServices(PluginBuilder injector){
-        injector.register(AsyncManager.class);
-        injector.register(MapUpdateManager.class);
-        injector.register(SmoothTeleportFactory.class);
-        injector.register(WorldHandlerFactory.class);
-        injector.registerInstance(WorldManager.INSTANCE);
-        injector.register(WreckManager.class);
-        injector.register(I18nSupport.class);
-        injector.register(SettingsHostedService.class);
-        injector.register(DataPackHostedService.class);
-        injector.register(CraftManager.class);
-        injector.register(InteractListener.class);
-        injector.register(BlockListener.class);
-        injector.register(PlayerListener.class);
-        injector.register(ChunkManager.class);
-        injector.register(CraftPilotListener.class);
-        injector.register(CraftReleaseListener.class);
-        injector.register(ContactsManager.class);
-        injector.register(StatusManager.class);
-
-        // Signs
-        injector.register(StatusSign.class);
-        injector.register(ContactsSign.class);
     }
 
     public @NotNull WorldHandler getWorldHandler(){
