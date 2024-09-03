@@ -1,5 +1,10 @@
 package net.countercraft.movecraft.commands;
 
+import co.aikar.commands.BaseCommand;
+import co.aikar.commands.annotation.CommandAlias;
+import co.aikar.commands.annotation.CommandCompletion;
+import co.aikar.commands.annotation.CommandPermission;
+import co.aikar.commands.annotation.Default;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
@@ -22,32 +27,32 @@ import java.util.List;
 
 import static net.countercraft.movecraft.util.ChatUtils.MOVECRAFT_COMMAND_PREFIX;
 
-public class PilotCommand implements TabExecutor {
-    @Override
-    public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args) {
+@CommandAlias("pilot")
+@CommandPermission("movecraft.commands,movecraft.commands.pilot")
+public class PilotCommand extends BaseCommand {
+
+    @Default
+    @CommandCompletion("@crafttypes")
+    public static void onCommand(CommandSender commandSender, Command command, String s, String[] args) {
         if (!command.getName().equalsIgnoreCase("pilot"))
-            return false;
-        if (!(commandSender instanceof Player)) {
+            return;
+        if (!(commandSender instanceof Player player)) {
             commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Pilot - Must Be Player"));
-            return true;
+            return;
         }
-        Player player = (Player) commandSender;
-        if (!player.hasPermission("movecraft.commands") || !player.hasPermission("movecraft.commands.pilot")) {
-            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Insufficient Permissions"));
-            return true;
-        }
+
         if (args.length < 1) {
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Pilot - No Craft Type"));
-            return true;
+            return;
         }
         if (!player.hasPermission("movecraft." + args[0] + ".pilot")) {
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Insufficient Permissions"));
-            return true;
+            return;
         }
         CraftType craftType = CraftManager.getInstance().getCraftTypeFromString(args[0]);
         if (craftType == null) {
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Pilot - Invalid Craft Type"));
-            return true;
+            return;
         }
 
         final World world = player.getWorld();
@@ -72,25 +77,5 @@ public class PilotCommand implements TabExecutor {
                         CraftManager.getInstance().release(oldCraft, CraftReleaseEvent.Reason.PLAYER, false);
                 }
         );
-       return true;
-    }
-
-    @Override
-    public List<String> onTabComplete(CommandSender commandSender, Command command, String s, String[] strings) {
-        if (strings.length != 1 || !commandSender.hasPermission("movecraft.commands")
-                || !commandSender.hasPermission("movecraft.commands.pilot"))
-            return Collections.emptyList();
-
-        List<String> completions = new ArrayList<>();
-        for (CraftType type : CraftManager.getInstance().getCraftTypes())
-            if (commandSender.hasPermission("movecraft." + type.getStringProperty(CraftType.NAME) + ".pilot"))
-                completions.add(type.getStringProperty(CraftType.NAME));
-
-        List<String> returnValues = new ArrayList<>();
-        for (String completion : completions)
-            if (completion.toLowerCase().startsWith(strings[strings.length-1].toLowerCase()))
-                returnValues.add(completion);
-
-        return returnValues;
     }
 }
