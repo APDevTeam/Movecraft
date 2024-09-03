@@ -86,7 +86,7 @@ public class CraftInfoCommand extends BaseCommand {
                 return;
             }
 
-            craftInfo(commandSender, craft, parseDefaultInt(args[1], 1));
+            craftInfo(commandSender, craft, args.length == 1 ? 1 : Integer.parseInt(args[1]));
         }
     }
 
@@ -103,13 +103,5 @@ public class CraftInfoCommand extends BaseCommand {
         }
         for(String line : paginator.getPage(page))
             commandSender.sendMessage(line);
-    }
-
-    public static int parseDefaultInt(String s, int def) {
-        try {
-            return Integer.parseInt(s);
-        } catch (NumberFormatException e) {
-            return def;
-        }
     }
 }

@@ -1,6 +1,7 @@
 package net.countercraft.movecraft.commands;
 
 import co.aikar.commands.BaseCommand;
+import co.aikar.commands.InvalidCommandArgument;
 import co.aikar.commands.annotation.*;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
@@ -33,30 +34,40 @@ public class CraftTypeCommand extends BaseCommand {
         sendTypeListPage(page, commandSender);
     }
 
-    @Syntax("<page>")
-    @Subcommand("self")
-    public static void selfCommand(Player player, @Default("1") int page) {
-        Optional<CraftType> typeQuery = tryGetCraftFromPlayer(player);
-        if (typeQuery.isEmpty()) {
-            player.sendMessage("You aren't piloting any craft!");
-            return;
-        }
-
-        sendTypePage(typeQuery.get(), page, player);
-    }
-
     @Default
-    @Syntax("[list|self|CRAFTTYPE] <page>")
+    @Syntax("[list|CRAFTTYPE] <page>")
     @Description("Get information on a specific craft type")
     @CommandCompletion("@crafttypes")
-    public static void onCommand(@NotNull CommandSender commandSender, CraftType type, @Default("1") int page) {
-
-        if (!commandSender.hasPermission("movecraft." + type.getStringProperty(CraftType.NAME) + ".pilot")) {
-            commandSender.sendMessage("You don't have permission for that craft type!");
-            return;
+    public static void onCommand(@NotNull CommandSender commandSender, String[] args) {
+        if (args.length > 2) {
+            throw new InvalidCommandArgument("Max allowed arguments: 2");
         }
 
-        sendTypePage(type, page, commandSender);
+        try {
+            int page = args.length == 0 ? 1 : Integer.parseInt(args[0]);
+            Optional<CraftType> type = tryGetCraftFromPlayer(commandSender);
+            if (type.isEmpty()) {
+                commandSender.sendMessage("Craft not found!");
+                return;
+            }
+
+            sendTypePage(type.get(), page, commandSender);
+        } catch (NumberFormatException e) {
+            CraftType type = CraftManager.getInstance().getCraftTypeFromString(args[0]);
+            if (type == null) {
+                commandSender.sendMessage("First argument must be either a number or a craft");
+                return;
+            }
+
+            if (!commandSender.hasPermission("movecraft." + type.getStringProperty(CraftType.NAME) + ".pilot")) {
+                commandSender.sendMessage("You don't have permission for that craft type!");
+                return;
+            }
+
+            int page = args.length == 1 ? 1 : Integer.parseInt(args[1]);
+            sendTypePage(type, page, commandSender);
+        }
+
     }
 
     private static void sendTypePage(@NotNull CraftType type, int page, @NotNull CommandSender commandSender) {
