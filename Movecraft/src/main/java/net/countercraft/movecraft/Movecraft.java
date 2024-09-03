@@ -246,7 +246,7 @@ public class Movecraft extends JavaPlugin {
         movecraftCommandManager.registerCommand(new CruiseCommand());
         movecraftCommandManager.registerCommand(new ManOverboardCommand());
         movecraftCommandManager.registerCommand(new PilotCommand());
-        getCommand("release").setExecutor(new ReleaseCommand());
+        movecraftCommandManager.registerCommand(new ReleaseCommand());
         getCommand("rotate").setExecutor(new RotateCommand());
         getCommand("scuttle").setExecutor(new ScuttleCommand());
     }
