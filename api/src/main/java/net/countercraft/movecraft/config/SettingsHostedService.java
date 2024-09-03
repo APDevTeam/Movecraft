@@ -5,7 +5,10 @@ import net.countercraft.movecraft.lifecycle.HostedService;
 import net.countercraft.movecraft.util.Tags;
 import org.bukkit.Material;
 import org.bukkit.configuration.Configuration;
+import org.bukkit.plugin.Plugin;
+import org.int4.dirk.annotations.Opt;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -13,17 +16,22 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 public class SettingsHostedService implements HostedService {
-    private final @NotNull Configuration configuration;
+    private final @Nullable Configuration configuration;
     private final @NotNull Logger logger;
 
     @Inject
-    public SettingsHostedService(@NotNull Configuration configuration, @NotNull Logger logger) {
-        this.configuration = configuration;
+    public SettingsHostedService(@Nullable @Opt Plugin plugin, @NotNull Logger logger) {
+        this.configuration = plugin == null ? null : plugin.getConfig();
         this.logger = logger;
     }
 
     @Override
     public void start() {
+        // TODO: Abstract away configuration to not need plugin
+        if(configuration == null){
+            return;
+        }
+
         Settings.LOCALE = configuration.getString("Locale");
         Settings.Debug = configuration.getBoolean("Debug", false);
         Settings.DisableNMSCompatibilityCheck = configuration.getBoolean("IReallyKnowWhatIAmDoing", false);

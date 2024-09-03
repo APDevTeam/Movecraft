@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.support;
 
+import jakarta.inject.Inject;
 import jakarta.inject.Provider;
 import net.countercraft.movecraft.SmoothTeleport;
 import net.countercraft.movecraft.config.Settings;
@@ -12,6 +13,7 @@ public class SmoothTeleportFactory implements Provider<SmoothTeleport> {
     private final @NotNull Logger logger;
     private final @NotNull VersionInfo versionInfo;
 
+    @Inject
     public SmoothTeleportFactory(@NotNull Logger logger, @NotNull VersionInfo versionInfo) {
         this.logger = logger;
         this.versionInfo = versionInfo;

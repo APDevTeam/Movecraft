@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.lifecycle;
 
+import jakarta.inject.Inject;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
@@ -12,6 +13,7 @@ public class WorkerHost implements HostedService {
     private final @NotNull List<Worker> workers;
     private @NotNull List<BukkitTask> tasks;
 
+    @Inject
     public WorkerHost(@NotNull Plugin plugin, @NotNull List<Worker> workers) {
         this.plugin = plugin;
         this.workers = workers;

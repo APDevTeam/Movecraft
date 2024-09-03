@@ -27,14 +27,6 @@ public final class PluginBuilder {
         return builder;
     }
 
-    @Contract("->new")
-    public static @NotNull PluginBuilder createForTest(){
-        var builder = new PluginBuilder();
-        builder.injector.registerInstance(Logger.getLogger("movecraft-unit-test"));
-
-        return builder;
-    }
-
     @SuppressWarnings("UnusedReturnValue")
     @Contract("_->this")
     public @NotNull PluginBuilder register(Type type){
@@ -63,6 +55,7 @@ public final class PluginBuilder {
         // Lifecycle management
         injector.register(WorkerHost.class);
         injector.register(ListenerHostedService.class);
+        injector.register(ServiceHost.class);
 
         return new Application(injector.getInstance(ServiceHost.class), new ServiceProvider(injector));
     }

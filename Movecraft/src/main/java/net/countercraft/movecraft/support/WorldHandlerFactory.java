@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.support;
 
+import jakarta.inject.Inject;
 import jakarta.inject.Provider;
 import net.countercraft.movecraft.WorldHandler;
 import net.countercraft.movecraft.config.Settings;
@@ -11,6 +12,7 @@ public class WorldHandlerFactory implements Provider<WorldHandler> {
     private final @NotNull Logger logger;
     private final @NotNull VersionInfo versionInfo;
 
+    @Inject
     public WorldHandlerFactory(@NotNull Logger logger, @NotNull VersionInfo versionInfo) {
         this.logger = logger;
         this.versionInfo = versionInfo;

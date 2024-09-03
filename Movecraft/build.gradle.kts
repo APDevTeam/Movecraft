@@ -13,6 +13,10 @@ dependencies {
     runtimeOnly(project(":movecraft-v1_21", "reobf"))
     implementation(project(":movecraft-api"))
     compileOnly("org.yaml:snakeyaml:2.0")
+    testImplementation(libs.org.junit.jupiter.junit.jupiter.api)
+    testImplementation(libs.junit.junit)
+    testImplementation(libs.org.hamcrest.hamcrest.library)
+    testImplementation("org.mockito:mockito-core:5.13.0")
 }
 
 tasks.shadowJar {

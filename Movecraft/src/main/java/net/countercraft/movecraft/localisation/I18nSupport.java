@@ -17,7 +17,7 @@
 
 package net.countercraft.movecraft.localisation;
 
-import net.countercraft.movecraft.Movecraft;
+import jakarta.inject.Inject;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.lifecycle.HostedService;
 import net.kyori.adventure.text.Component;
@@ -34,15 +34,20 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
-import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class I18nSupport implements HostedService {
     private static Properties languageFile;
     private final @NotNull Plugin plugin;
+    private final @NotNull Logger logger;
 
-    public I18nSupport(@NotNull Plugin plugin){
+    @Inject
+    public I18nSupport(@NotNull Plugin plugin, @NotNull Logger logger){
         this.plugin = plugin;
+        this.logger = logger;
     }
+
+
 
     @Override
     public void start() {
@@ -57,10 +62,10 @@ public class I18nSupport implements HostedService {
         init();
     }
 
-    private static void init() {
+    private void init() {
         languageFile = new Properties();
 
-        File localisationDirectory = new File(Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/localisation");
+        File localisationDirectory = new File(plugin.getDataFolder().getAbsolutePath() + "/localisation");
 
         if (!localisationDirectory.exists()) {
             localisationDirectory.mkdirs();
@@ -70,13 +75,7 @@ public class I18nSupport implements HostedService {
         try {
             inputStream = new FileInputStream(localisationDirectory.getAbsolutePath() + "/movecraftlang" + "_" + Settings.LOCALE + ".properties");
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        if (inputStream == null) {
-            Movecraft.getInstance().getLogger().log(Level.SEVERE, "Critical Error in Localisation System");
-            Movecraft.getInstance().getServer().shutdown();
-            return;
+            throw new IllegalStateException("Critical Error in Localisation System", e);
         }
 
         try {

@@ -1,6 +1,7 @@
 package net.countercraft.movecraft.config;
 
 import io.papermc.paper.datapack.Datapack;
+import jakarta.inject.Inject;
 import net.countercraft.movecraft.lifecycle.HostedService;
 import org.bukkit.Server;
 import org.bukkit.plugin.Plugin;
@@ -16,6 +17,7 @@ public class DataPackHostedService implements HostedService {
     private final @NotNull Logger logger;
     private boolean isInitialized;
 
+    @Inject
     public DataPackHostedService(@NotNull Plugin plugin, @NotNull Logger logger) {
         this.plugin = plugin;
         this.logger = logger;

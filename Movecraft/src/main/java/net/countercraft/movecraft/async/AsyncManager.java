@@ -36,14 +36,12 @@ import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.kyori.adventure.text.Component;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.BlockingQueue;
@@ -55,12 +53,10 @@ public class AsyncManager implements Worker {
     private final BlockingQueue<AsyncTask> finishedAlgorithms;
     private final Set<Craft> clearanceSet;
     private final Map<Craft, Integer> cooldownCache;
-    private final @NotNull Plugin plugin;
     private final @NotNull MapUpdateManager mapUpdateManager;
 
     @Inject
-    public AsyncManager(@NotNull Plugin plugin, @NotNull MapUpdateManager mapUpdateManager) {
-        this.plugin = Objects.requireNonNull(plugin);
+    public AsyncManager(@NotNull MapUpdateManager mapUpdateManager) {
         this.mapUpdateManager = mapUpdateManager;
         ownershipMap = new HashMap<>();
         finishedAlgorithms = new LinkedBlockingQueue<>();

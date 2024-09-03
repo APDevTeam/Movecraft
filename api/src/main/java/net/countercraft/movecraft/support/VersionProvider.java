@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.support;
 
+import jakarta.inject.Inject;
 import jakarta.inject.Provider;
 import net.countercraft.movecraft.WorldHandler;
 import net.countercraft.movecraft.config.Settings;
@@ -11,6 +12,7 @@ import java.util.logging.Logger;
 public class VersionProvider implements Provider<VersionInfo> {
     private final @NotNull Plugin plugin;
 
+    @Inject
     public VersionProvider(@NotNull Plugin plugin) {
         this.plugin = plugin;
     }

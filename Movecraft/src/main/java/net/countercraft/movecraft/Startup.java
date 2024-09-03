@@ -20,13 +20,18 @@ import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.processing.WorldManager;
 import net.countercraft.movecraft.support.SmoothTeleportFactory;
+import net.countercraft.movecraft.support.VersionProvider;
 import net.countercraft.movecraft.support.WorldHandlerFactory;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 public class Startup {
-    public static void registerServices(PluginBuilder injector){
+    @Contract("_->param1")
+    public static @NotNull PluginBuilder registerServices(@NotNull PluginBuilder injector){
         injector
-            .register(AsyncManager.class)
             .register(MapUpdateManager.class)
+            .register(AsyncManager.class)
+            .register(VersionProvider.class)
             .register(SmoothTeleportFactory.class)
             .register(WorldHandlerFactory.class)
             .registerInstance(WorldManager.INSTANCE)
@@ -48,5 +53,7 @@ public class Startup {
         injector
             .register(StatusSign.class)
             .register(ContactsSign.class);
+
+        return injector;
     }
 }

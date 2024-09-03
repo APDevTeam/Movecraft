@@ -17,6 +17,7 @@
 
 package net.countercraft.movecraft.craft;
 
+import jakarta.inject.Inject;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.DataPackHostedService;
@@ -89,8 +90,8 @@ public class CraftManager implements Iterable<Craft>, HostedService {
      */
     @NotNull private Set<CraftType> craftTypes;
 
-
-    private CraftManager(@NotNull DataPackHostedService dataPackService) {
+    @Inject
+    public CraftManager(@NotNull DataPackHostedService dataPackService) {
         if(dataPackService.isDatapackInitialized())
             craftTypes = loadCraftTypes();
         else
