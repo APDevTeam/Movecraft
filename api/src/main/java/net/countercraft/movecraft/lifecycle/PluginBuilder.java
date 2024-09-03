@@ -45,8 +45,8 @@ public abstract class PluginBuilder {
     @Contract("->new")
     public @NotNull Application build(){
         // Lifecycle management
-        injector.register(WorkerServiceHost.class);
-        injector.register(ListenerLifecycleService.class);
+        injector.register(WorkerHostedServiceHost.class);
+        injector.register(ListenerLifecycleHostedService.class);
 
         return new Application(injector.getInstance(ServiceHost.class), new ServiceProvider(injector));
     }

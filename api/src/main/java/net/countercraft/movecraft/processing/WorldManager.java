@@ -1,13 +1,9 @@
 package net.countercraft.movecraft.processing;
 
-import jakarta.inject.Inject;
-import net.countercraft.movecraft.lifecycle.Service;
 import net.countercraft.movecraft.lifecycle.Worker;
 import net.countercraft.movecraft.processing.effects.Effect;
 import net.countercraft.movecraft.util.CompletableFutureTask;
 import org.bukkit.Bukkit;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

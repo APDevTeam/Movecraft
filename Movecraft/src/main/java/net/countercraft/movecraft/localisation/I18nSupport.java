@@ -19,7 +19,7 @@ package net.countercraft.movecraft.localisation;
 
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
-import net.countercraft.movecraft.lifecycle.Service;
+import net.countercraft.movecraft.lifecycle.HostedService;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import org.bukkit.plugin.Plugin;
@@ -36,7 +36,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 import java.util.logging.Level;
 
-public class I18nSupport implements Service {
+public class I18nSupport implements HostedService {
     private static Properties languageFile;
     private final @NotNull Plugin plugin;
 

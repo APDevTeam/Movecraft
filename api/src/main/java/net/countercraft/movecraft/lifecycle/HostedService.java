@@ -1,6 +1,6 @@
 package net.countercraft.movecraft.lifecycle;
 
-public interface Service {
+public interface HostedService {
     default void start(){}
     default void stop(){}
 }

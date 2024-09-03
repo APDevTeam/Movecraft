@@ -1,13 +1,10 @@
 package net.countercraft.movecraft.config;
 
 import jakarta.inject.Inject;
-import jakarta.inject.Provider;
-import net.countercraft.movecraft.lifecycle.Service;
+import net.countercraft.movecraft.lifecycle.HostedService;
 import net.countercraft.movecraft.util.Tags;
 import org.bukkit.Material;
 import org.bukkit.configuration.Configuration;
-import org.int4.dirk.api.Injector;
-import org.int4.dirk.di.Injectors;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
@@ -15,12 +12,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
-public class SettingsService implements Service {
+public class SettingsHostedService implements HostedService {
     private final @NotNull Configuration configuration;
     private final @NotNull Logger logger;
 
     @Inject
-    public SettingsService(@NotNull Configuration configuration, @NotNull Logger logger) {
+    public SettingsHostedService(@NotNull Configuration configuration, @NotNull Logger logger) {
         this.configuration = configuration;
         this.logger = logger;
     }

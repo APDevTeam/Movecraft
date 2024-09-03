@@ -6,18 +6,18 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 public class ServiceHost {
-    private final @NotNull List<Service> services;
+    private final @NotNull List<HostedService> hostedServices;
 
     @Inject
-    public ServiceHost(@NotNull List<Service> services) {
-        this.services = services;
+    public ServiceHost(@NotNull List<HostedService> hostedServices) {
+        this.hostedServices = hostedServices;
     }
 
     public void startAll(){
-        services.forEach(Service::start);
+        hostedServices.forEach(HostedService::start);
     }
 
     public void stopAll(){
-        services.forEach(Service::stop);
+        hostedServices.forEach(HostedService::stop);
     }
 }

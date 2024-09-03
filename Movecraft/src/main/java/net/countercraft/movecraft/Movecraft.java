@@ -28,9 +28,9 @@ import net.countercraft.movecraft.commands.PilotCommand;
 import net.countercraft.movecraft.commands.ReleaseCommand;
 import net.countercraft.movecraft.commands.RotateCommand;
 import net.countercraft.movecraft.commands.ScuttleCommand;
-import net.countercraft.movecraft.config.DataPackService;
+import net.countercraft.movecraft.config.DataPackHostedService;
 import net.countercraft.movecraft.config.Settings;
-import net.countercraft.movecraft.config.SettingsService;
+import net.countercraft.movecraft.config.SettingsHostedService;
 import net.countercraft.movecraft.craft.ChunkManager;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.features.contacts.ContactsCommand;
@@ -40,7 +40,6 @@ import net.countercraft.movecraft.features.fading.WreckManager;
 import net.countercraft.movecraft.features.status.StatusManager;
 import net.countercraft.movecraft.features.status.StatusSign;
 import net.countercraft.movecraft.lifecycle.PluginBuilder;
-import net.countercraft.movecraft.lifecycle.ServiceHost;
 import net.countercraft.movecraft.listener.BlockListener;
 import net.countercraft.movecraft.listener.CraftPilotListener;
 import net.countercraft.movecraft.listener.CraftReleaseListener;
@@ -101,7 +100,7 @@ public class Movecraft extends JavaPlugin {
         injector.registerInstance(WorldManager.INSTANCE);
         injector.register(WreckManager.class);
         injector.register(I18nSupport.class);
-        injector.register(SettingsService.class);
+        injector.register(SettingsHostedService.class);
 
         // TODO: make this work somehow
         if(shuttingDown && Settings.IGNORE_RESET) {
@@ -112,7 +111,7 @@ public class Movecraft extends JavaPlugin {
             return;
         }
 
-        injector.register(DataPackService.class);
+        injector.register(DataPackHostedService.class);
         injector.register(CraftManager.class);
 
         //TODO: migrate to aikar or brigadier commands, left in place for now

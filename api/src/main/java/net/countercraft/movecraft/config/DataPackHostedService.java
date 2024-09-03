@@ -1,7 +1,7 @@
 package net.countercraft.movecraft.config;
 
 import io.papermc.paper.datapack.Datapack;
-import net.countercraft.movecraft.lifecycle.Service;
+import net.countercraft.movecraft.lifecycle.HostedService;
 import org.bukkit.Server;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
@@ -11,12 +11,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.logging.Logger;
 
-public class DataPackService implements Service {
+public class DataPackHostedService implements HostedService {
     private final @NotNull Plugin plugin;
     private final @NotNull Logger logger;
     private boolean isInitialized;
 
-    public DataPackService(@NotNull Plugin plugin, @NotNull Logger logger) {
+    public DataPackHostedService(@NotNull Plugin plugin, @NotNull Logger logger) {
         this.plugin = plugin;
         this.logger = logger;
     }

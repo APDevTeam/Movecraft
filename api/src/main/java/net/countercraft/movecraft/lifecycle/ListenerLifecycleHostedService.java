@@ -7,12 +7,12 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public class ListenerLifecycleService implements Service {
+public class ListenerLifecycleHostedService implements HostedService {
     private final @NotNull List<Listener> listeners;
     private final @NotNull Plugin plugin;
 
     @Inject
-    public ListenerLifecycleService(@NotNull List<Listener> listeners, @NotNull Plugin plugin){
+    public ListenerLifecycleHostedService(@NotNull List<Listener> listeners, @NotNull Plugin plugin){
         this.listeners = listeners;
         this.plugin = plugin;
     }
