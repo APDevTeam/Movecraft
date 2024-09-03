@@ -27,7 +27,6 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.function.Supplier;
@@ -100,14 +99,12 @@ public class StatusManager extends BukkitRunnable implements Listener {
                 for(RequiredBlockEntry entry : craft.getType().getRequiredBlockProperty(CraftType.FLY_BLOCKS)) {
                     if(entry.contains(material)) {
                         flyblocks.add(entry, materials.get(material) );
-                        break;
                     }
                 }
 
                 for(RequiredBlockEntry entry : craft.getType().getRequiredBlockProperty(CraftType.MOVE_BLOCKS)) {
                     if(entry.contains(material)) {
                         moveblocks.add(entry, materials.get(material) );
-                        break;
                     }
                 }
             }

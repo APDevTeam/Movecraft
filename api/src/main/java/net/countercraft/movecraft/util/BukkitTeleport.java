@@ -7,9 +7,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class BukkitTeleport extends SmoothTeleport {
     @Override
-    public void teleport(Player player, @NotNull Location location, float yawChange, float pitchChange) {
-        location.setYaw(player.getLocation().getYaw() + yawChange);
-        location.setPitch(player.getLocation().getPitch() + pitchChange);
+    public void teleport(@NotNull Player player, @NotNull Location location) {
         player.teleport(location);
     }
 }
