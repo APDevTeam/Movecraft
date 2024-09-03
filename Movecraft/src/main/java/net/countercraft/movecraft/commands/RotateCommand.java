@@ -5,6 +5,8 @@ import co.aikar.commands.annotation.CommandAlias;
 import co.aikar.commands.annotation.CommandCompletion;
 import co.aikar.commands.annotation.CommandPermission;
 import co.aikar.commands.annotation.Default;
+import co.aikar.commands.annotation.Subcommand;
+import co.aikar.commands.annotation.Syntax;
 import net.countercraft.movecraft.MovecraftRotation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
@@ -18,49 +20,49 @@ import static net.countercraft.movecraft.util.ChatUtils.MOVECRAFT_COMMAND_PREFIX
 @CommandPermission("movecraft.commands")
 public class RotateCommand extends BaseCommand {
 
+    @Subcommand("left")
+    @CommandPermission("movecraft.commands.rotateleft")
+    public static void rotateLeft(Player player) {
+        final Craft craft = CraftManager.getInstance().getCraftByPlayerName(player.getName());
+        if(craft==null){
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("You must be piloting a craft"));
+            return;
+        }
+
+        if (!player.hasPermission("movecraft." + craft.getType().getStringProperty(CraftType.NAME) + ".rotate")) {
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Insufficient Permissions"));
+            return;
+        }
+
+        CraftManager.getInstance().getCraftByPlayerName(player.getName()).rotate(MovecraftRotation.ANTICLOCKWISE, craft.getHitBox().getMidPoint());
+    }
+
+    @Subcommand("right")
+    @CommandPermission("movecraft.commands.rotateright")
+    public static void rotateRight(Player player) {
+        final Craft craft = CraftManager.getInstance().getCraftByPlayerName(player.getName());
+        if(craft==null){
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("You must be piloting a craft"));
+            return;
+        }
+
+        if (!player.hasPermission("movecraft." + craft.getType().getStringProperty(CraftType.NAME) + ".rotate")) {
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Insufficient Permissions"));
+            return;
+        }
+
+        CraftManager.getInstance().getCraftByPlayerName(player.getName()).rotate(MovecraftRotation.CLOCKWISE, craft.getHitBox().getMidPoint());
+    }
+
     @Default
-    @CommandCompletion("left|right")
+    @Syntax("[left|right]")
     public static void onCommand(Player player, String[] args) {
 
         if(args.length<1){
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Rotation - Specify Direction"));
             return;
         }
-        if (args[0].equalsIgnoreCase("left")) {
-            if (!player.hasPermission("movecraft.commands") || !player.hasPermission("movecraft.commands.rotateleft")) {
-                player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Insufficient Permissions"));
-                return;
-            }
-            final Craft craft = CraftManager.getInstance().getCraftByPlayerName(player.getName());
-            if(craft==null){
-                player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("You must be piloting a craft"));
-                return;
-            }
-            if (!player.hasPermission("movecraft." + craft.getType().getStringProperty(CraftType.NAME) + ".rotate")) {
-                player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Insufficient Permissions"));
-                return;
-            }
-            CraftManager.getInstance().getCraftByPlayerName(player.getName()).rotate(MovecraftRotation.ANTICLOCKWISE, craft.getHitBox().getMidPoint());
-            return;
-        }
 
-        if (args[0].equalsIgnoreCase("right")) {
-            if (!player.hasPermission("movecraft.commands") || !player.hasPermission("movecraft.commands.rotateright")) {
-                player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Insufficient Permissions"));
-                return;
-            }
-            final Craft craft = CraftManager.getInstance().getCraftByPlayerName(player.getName());
-            if(craft==null){
-                player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("You must be piloting a craft"));
-                return;
-            }
-            if (!player.hasPermission("movecraft." + craft.getType().getStringProperty(CraftType.NAME) + ".rotate")) {
-                player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Insufficient Permissions"));
-                return;
-            }
-            CraftManager.getInstance().getCraftByPlayerName(player.getName()).rotate(MovecraftRotation.CLOCKWISE, craft.getHitBox().getMidPoint());
-            return;
-        }
         player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Rotation - Invalid Direction"));
     }
 }
