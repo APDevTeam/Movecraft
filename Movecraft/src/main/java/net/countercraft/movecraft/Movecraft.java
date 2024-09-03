@@ -83,7 +83,7 @@ public class Movecraft extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        var injector = PluginBuilder.create();
+        var injector = PluginBuilder.createFor(this);
         registerServices(injector);
 
         //TODO: migrate to aikar or brigadier commands, left in place for now
@@ -129,9 +129,7 @@ public class Movecraft extends JavaPlugin {
         saveDefaultConfig();
     }
 
-    private void registerServices(PluginBuilder injector){
-        injector.registerInstance(getLogger());
-        injector.registerInstance(this);
+    private static void registerServices(PluginBuilder injector){
         injector.register(AsyncManager.class);
         injector.register(MapUpdateManager.class);
         injector.register(SmoothTeleportFactory.class);
@@ -156,15 +154,15 @@ public class Movecraft extends JavaPlugin {
         injector.register(ContactsSign.class);
     }
 
-    public WorldHandler getWorldHandler(){
+    public @NotNull WorldHandler getWorldHandler(){
         return application.container().getService(WorldHandler.class);
     }
 
-    public SmoothTeleport getSmoothTeleport() {
+    public @NotNull SmoothTeleport getSmoothTeleport() {
         return application.container().getService(SmoothTeleport.class);
     }
 
-    public AsyncManager getAsyncManager() {
+    public @NotNull AsyncManager getAsyncManager() {
         return application.container().getService(AsyncManager.class);
     }
 

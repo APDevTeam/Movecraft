@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.lifecycle;
 
+import org.bukkit.plugin.Plugin;
 import org.int4.dirk.api.Injector;
 import org.int4.dirk.di.Injectors;
 import org.jetbrains.annotations.Contract;
@@ -8,19 +9,33 @@ import org.jetbrains.annotations.NotNull;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.Collection;
+import java.util.logging.Logger;
 
-public abstract class PluginBuilder {
+public final class PluginBuilder {
     private final Injector injector;
 
-    protected PluginBuilder() {
+    private PluginBuilder() {
         injector = Injectors.manual();
     }
 
-    @Contract("->new")
-    public static @NotNull PluginBuilder create(){
-        return null;
+    @Contract("_->new")
+    public static @NotNull PluginBuilder createFor(@NotNull Plugin plugin){
+        var builder = new PluginBuilder();
+        builder.injector.registerInstance(plugin.getLogger());
+        builder.injector.registerInstance(plugin);
+
+        return builder;
     }
 
+    @Contract("->new")
+    public static @NotNull PluginBuilder createForTest(){
+        var builder = new PluginBuilder();
+        builder.injector.registerInstance(Logger.getLogger("movecraft-unit-test"));
+
+        return builder;
+    }
+
+    @SuppressWarnings("UnusedReturnValue")
     @Contract("_->this")
     public @NotNull PluginBuilder register(Type type){
         injector.register(type);
@@ -35,6 +50,7 @@ public abstract class PluginBuilder {
         return this;
     }
 
+    @SuppressWarnings("UnusedReturnValue")
     @Contract("_,_->this")
     public @NotNull PluginBuilder registerInstance(Object instance, Annotation... qualifiers){
         injector.registerInstance(instance, qualifiers);
