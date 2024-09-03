@@ -348,19 +348,14 @@ public class CraftTranslateCommand extends UpdateCommand {
                     continue;
 
                 for (Player player : mcLocation.getNearbyPlayers(64)) {
-                    DyeColor color = sign.getColor();
-                    if (color != null)
-                        player.sendSignChange(mcLocation, entry.getKey(), color, sign.isGlowingText());
-                    else
-                        player.sendSignChange(mcLocation, entry.getKey());
+                    updateSign(player, mcLocation, entry.getKey(), sign);
                 }
-                /*
-                for(int i = 0; i<4; i++){
-                    sign.setLine(i, entry.getKey()[i]);
-                }
-                sign.update(false, false);*/
             }
         }
+    }
+
+    private void updateSign(Player player, Location location, String[] lines, Sign sign) {
+        player.sendBlockChange(location, sign.getBlockData());
     }
 
     @NotNull
