@@ -2,9 +2,9 @@ package net.countercraft.movecraft.commands;
 
 import co.aikar.commands.BaseCommand;
 import co.aikar.commands.annotation.CommandAlias;
-import co.aikar.commands.annotation.CommandCompletion;
 import co.aikar.commands.annotation.CommandPermission;
 import co.aikar.commands.annotation.Default;
+import co.aikar.commands.annotation.Description;
 import co.aikar.commands.annotation.Subcommand;
 import co.aikar.commands.annotation.Syntax;
 import net.countercraft.movecraft.MovecraftRotation;
@@ -56,6 +56,7 @@ public class RotateCommand extends BaseCommand {
 
     @Default
     @Syntax("[left|right]")
+    @Description("Rotates your craft")
     public static void onCommand(Player player, String[] args) {
 
         if(args.length<1){
