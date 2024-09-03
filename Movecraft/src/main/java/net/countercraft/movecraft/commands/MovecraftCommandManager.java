@@ -1,11 +1,13 @@
 package net.countercraft.movecraft.commands;
 
 import co.aikar.commands.CommandIssuer;
+import co.aikar.commands.ConditionFailedException;
 import co.aikar.commands.InvalidCommandArgument;
 import co.aikar.commands.PaperCommandManager;
 import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
 
@@ -13,9 +15,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import static net.countercraft.movecraft.util.ChatUtils.MOVECRAFT_COMMAND_PREFIX;
+
 public class MovecraftCommandManager extends PaperCommandManager {
     public MovecraftCommandManager(Plugin plugin) {
         super(plugin);
+        this.registerMovecraftCompletions();
+        this.registerMovecraftContexts();
+        this.registerMovecraftConditions();
     }
 
     private static final Pattern COMMA = Pattern.compile(",");
@@ -45,7 +52,7 @@ public class MovecraftCommandManager extends PaperCommandManager {
         return false;
     }
 
-    public void registerMovecraftCompletions() {
+    private void registerMovecraftCompletions() {
         getCommandCompletions().registerCompletion("crafttypes", c ->  {
             Set<CraftType> craftTypes = CraftManager.getInstance().getCraftTypes();
             List<String> craftNames = craftTypes.stream().map(type -> type.getStringProperty(CraftType.NAME)).toList();
@@ -59,7 +66,7 @@ public class MovecraftCommandManager extends PaperCommandManager {
         });
     }
 
-    public void registerMovecraftContexts() {
+    private void registerMovecraftContexts() {
         getCommandContexts().registerContext(CruiseDirection.class, (c) -> {
             String data = c.popFirstArg();
             return CruiseDirection.fromString(data);
@@ -75,5 +82,16 @@ public class MovecraftCommandManager extends PaperCommandManager {
 
             return type;
         });
+    }
+
+    private void registerMovecraftConditions() {
+        getCommandConditions().addCondition("pilot_others", (context -> {
+            var issuer = context.getIssuer();
+            if (!issuer.hasPermission("movecraft.commands.release.others")) {
+                throw new ConditionFailedException(MOVECRAFT_COMMAND_PREFIX
+                        + I18nSupport.getInternationalisedString("Release - No Force Release"));
+
+            }
+        }));
     }
 }

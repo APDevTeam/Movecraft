@@ -236,8 +236,6 @@ public class Movecraft extends JavaPlugin {
 
     private void initializeCommands() {
         MovecraftCommandManager movecraftCommandManager = new MovecraftCommandManager(this);
-        movecraftCommandManager.registerMovecraftCompletions();
-        movecraftCommandManager.registerMovecraftContexts();
 
         movecraftCommandManager.registerCommand(new MovecraftCommand());
         movecraftCommandManager.registerCommand(new CraftInfoCommand());
