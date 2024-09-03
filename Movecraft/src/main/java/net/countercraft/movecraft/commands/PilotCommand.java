@@ -5,6 +5,8 @@ import co.aikar.commands.annotation.CommandAlias;
 import co.aikar.commands.annotation.CommandCompletion;
 import co.aikar.commands.annotation.CommandPermission;
 import co.aikar.commands.annotation.Default;
+import co.aikar.commands.annotation.Description;
+import co.aikar.commands.annotation.Syntax;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
@@ -16,14 +18,9 @@ import net.countercraft.movecraft.processing.functions.Result;
 import net.countercraft.movecraft.util.MathUtils;
 import net.countercraft.movecraft.util.Pair;
 import org.bukkit.World;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.Locale;
 
 import static net.countercraft.movecraft.util.ChatUtils.MOVECRAFT_COMMAND_PREFIX;
 
@@ -33,25 +30,11 @@ public class PilotCommand extends BaseCommand {
 
     @Default
     @CommandCompletion("@crafttypes")
-    public static void onCommand(CommandSender commandSender, Command command, String s, String[] args) {
-        if (!command.getName().equalsIgnoreCase("pilot"))
-            return;
-        if (!(commandSender instanceof Player player)) {
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Pilot - Must Be Player"));
-            return;
-        }
-
-        if (args.length < 1) {
-            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Pilot - No Craft Type"));
-            return;
-        }
-        if (!player.hasPermission("movecraft." + args[0] + ".pilot")) {
+    @Syntax("[CRAFTTYPE]")
+    @Description("Pilots the craft at your feet")
+    public static void onCommand(Player player, CraftType craftType) {
+        if (!player.hasPermission("movecraft." + craftType.toString().toLowerCase(Locale.ROOT) + ".pilot")) {
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Insufficient Permissions"));
-            return;
-        }
-        CraftType craftType = CraftManager.getInstance().getCraftTypeFromString(args[0]);
-        if (craftType == null) {
-            player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Pilot - Invalid Craft Type"));
             return;
         }
 
