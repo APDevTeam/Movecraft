@@ -89,30 +89,16 @@ public class Movecraft extends JavaPlugin {
     @Override
     public void onEnable() {
         var injector = PluginBuilder.create();
-        Logger logger = getLogger();
-
-        injector.registerInstance(logger);
-        injector.registerInstance(this);
-        injector.register(AsyncManager.class);
-        injector.register(MapUpdateManager.class);
-        injector.register(SmoothTeleportFactory.class);
-        injector.register(WorldHandlerFactory.class);
-        injector.registerInstance(WorldManager.INSTANCE);
-        injector.register(WreckManager.class);
-        injector.register(I18nSupport.class);
-        injector.register(SettingsHostedService.class);
+        registerServices(injector);
 
         // TODO: make this work somehow
         if(shuttingDown && Settings.IGNORE_RESET) {
-            logger.severe("Movecraft is incompatible with the reload command. Movecraft has shut down and will restart when the server is restarted.");
-            logger.severe("If you wish to use the reload command and Movecraft, you may disable this check inside the config.yml by setting 'safeReload: false'");
+            this.getLogger().severe("Movecraft is incompatible with the reload command. Movecraft has shut down and will restart when the server is restarted.");
+            this.getLogger().severe("If you wish to use the reload command and Movecraft, you may disable this check inside the config.yml by setting 'safeReload: false'");
             getPluginLoader().disablePlugin(this);
 
             return;
         }
-
-        injector.register(DataPackHostedService.class);
-        injector.register(CraftManager.class);
 
         //TODO: migrate to aikar or brigadier commands, left in place for now
         getCommand("movecraft").setExecutor(new MovecraftCommand());
@@ -125,11 +111,6 @@ public class Movecraft extends JavaPlugin {
         getCommand("scuttle").setExecutor(new ScuttleCommand());
         getCommand("crafttype").setExecutor(new CraftTypeCommand());
         getCommand("craftinfo").setExecutor(new CraftInfoCommand());
-
-        injector.register(InteractListener.class);
-        injector.register(BlockListener.class);
-        injector.register(PlayerListener.class);
-        injector.register(ChunkManager.class);
 
         //TODO: Sign rework
         getServer().getPluginManager().registerEvents(new AscendSign(), this);
@@ -148,15 +129,8 @@ public class Movecraft extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new TeleportSign(), this);
         getServer().getPluginManager().registerEvents(new ScuttleSign(), this);
 
-        injector.register(CraftPilotListener.class);
-        injector.register(CraftReleaseListener.class);
 
-        injector.register(ContactsManager.class);
-        injector.register(ContactsSign.class);
         getCommand("contacts").setExecutor(new ContactsCommand());
-
-        injector.register(StatusManager.class);
-        injector.register(StatusSign.class);
 
         // Startup
         application = injector.build();
@@ -169,6 +143,33 @@ public class Movecraft extends JavaPlugin {
         super.onLoad();
         instance = this;
         saveDefaultConfig();
+    }
+
+    private void registerServices(PluginBuilder injector){
+        injector.registerInstance(getLogger());
+        injector.registerInstance(this);
+        injector.register(AsyncManager.class);
+        injector.register(MapUpdateManager.class);
+        injector.register(SmoothTeleportFactory.class);
+        injector.register(WorldHandlerFactory.class);
+        injector.registerInstance(WorldManager.INSTANCE);
+        injector.register(WreckManager.class);
+        injector.register(I18nSupport.class);
+        injector.register(SettingsHostedService.class);
+        injector.register(DataPackHostedService.class);
+        injector.register(CraftManager.class);
+        injector.register(InteractListener.class);
+        injector.register(BlockListener.class);
+        injector.register(PlayerListener.class);
+        injector.register(ChunkManager.class);
+        injector.register(CraftPilotListener.class);
+        injector.register(CraftReleaseListener.class);
+        injector.register(ContactsManager.class);
+        injector.register(StatusManager.class);
+
+        injector.register(StatusSign.class);
+        injector.register(ContactsSign.class);
+
     }
 
     private record MovecraftAPI(
