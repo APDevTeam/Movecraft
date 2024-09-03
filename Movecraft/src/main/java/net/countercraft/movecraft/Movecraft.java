@@ -39,9 +39,8 @@ import net.countercraft.movecraft.features.contacts.ContactsSign;
 import net.countercraft.movecraft.features.fading.WreckManager;
 import net.countercraft.movecraft.features.status.StatusManager;
 import net.countercraft.movecraft.features.status.StatusSign;
-import net.countercraft.movecraft.lifecycle.ListenerLifecycleService;
+import net.countercraft.movecraft.lifecycle.PluginBuilder;
 import net.countercraft.movecraft.lifecycle.ServiceHost;
-import net.countercraft.movecraft.lifecycle.WorkerServiceHost;
 import net.countercraft.movecraft.listener.BlockListener;
 import net.countercraft.movecraft.listener.CraftPilotListener;
 import net.countercraft.movecraft.listener.CraftReleaseListener;
@@ -68,8 +67,6 @@ import net.countercraft.movecraft.sign.TeleportSign;
 import net.countercraft.movecraft.support.SmoothTeleportFactory;
 import net.countercraft.movecraft.support.WorldHandlerFactory;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.int4.dirk.api.Injector;
-import org.int4.dirk.di.Injectors;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.logging.Logger;
@@ -77,7 +74,7 @@ import java.util.logging.Logger;
 public class Movecraft extends JavaPlugin {
     private static Movecraft instance;
     private boolean shuttingDown;
-    private Injector injector;
+    private PluginBuilder.Application application;
 
     public static synchronized Movecraft getInstance() {
         return instance;
@@ -86,14 +83,15 @@ public class Movecraft extends JavaPlugin {
     @Override
     public void onDisable() {
         shuttingDown = true;
-        injector.getInstance(ServiceHost.class).stopAll();
-        injector = null;
+        application.host().stopAll();
+        application = null;
     }
 
     @Override
     public void onEnable() {
+        var injector = PluginBuilder.create();
         Logger logger = getLogger();
-        injector = Injectors.manual();
+
         injector.registerInstance(logger);
         injector.registerInstance(this);
         injector.register(AsyncManager.class);
@@ -161,12 +159,9 @@ public class Movecraft extends JavaPlugin {
         injector.register(StatusManager.class);
         injector.register(StatusSign.class);
 
-        // Lifecycle management
-        injector.register(WorkerServiceHost.class);
-        injector.register(ListenerLifecycleService.class);
-
         // Startup
-        injector.getInstance(ServiceHost.class).startAll();
+        application = injector.build();
+        application.host().startAll();
         logger.info("[V %s] has been enabled.".formatted(getDescription().getVersion()));
     }
 
@@ -177,19 +172,25 @@ public class Movecraft extends JavaPlugin {
         saveDefaultConfig();
     }
 
+    private record MovecraftAPI(
+        @NotNull WorldHandler worldHandler,
+        @NotNull SmoothTeleport smoothTeleport,
+        @NotNull AsyncManager asyncManager,
+        @NotNull WreckManager wreckManager) {}
+
     public WorldHandler getWorldHandler(){
-        return injector.getInstance(WorldHandler.class);
+        return application.container().getService(WorldHandler.class);
     }
 
     public SmoothTeleport getSmoothTeleport() {
-        return injector.getInstance(SmoothTeleport.class);
+        return application.container().getService(SmoothTeleport.class);
     }
 
     public AsyncManager getAsyncManager() {
-        return injector.getInstance(AsyncManager.class);
+        return application.container().getService(AsyncManager.class);
     }
 
     public @NotNull WreckManager getWreckManager(){
-        return injector.getInstance(WreckManager.class);
+        return application.container().getService(WreckManager.class);
     }
 }
