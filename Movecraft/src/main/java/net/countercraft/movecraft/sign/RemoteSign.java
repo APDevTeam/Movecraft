@@ -14,10 +14,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Hashtable;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static net.countercraft.movecraft.util.ChatUtils.ERROR_PREFIX;
 
@@ -40,8 +37,7 @@ public class RemoteSign extends AbstractCraftSign {
 
     @Override
     protected boolean internalProcessSignWithCraft(Action clickType, AbstractSignListener.SignWrapper sign, Craft craft, Player player) {
-        LinkedList<MovecraftLocation> foundLocations = new LinkedList<MovecraftLocation>();
-        Map<AbstractMovecraftSign, LinkedList<AbstractSignListener.SignWrapper>> foundTargetSigns = new Hashtable<>();
+        Map<AbstractMovecraftSign, LinkedList<AbstractSignListener.SignWrapper>> foundTargetSigns = new HashMap<>();
         boolean firstError = true;
         final String targetIdent = sign.getRaw(1).toUpperCase();
         for (MovecraftLocation tloc : craft.getHitBox()) {
@@ -62,19 +58,19 @@ public class RemoteSign extends AbstractCraftSign {
                     if (!signHandler.isPresent() || signHandler.get() instanceof RemoteSign) {
                         continue;
                     }
-                    // Forbidden strings
-                    if (hasForbiddenString(wrapper)) {
-                        if (firstError) {
-                            player.sendMessage(I18nSupport.getInternationalisedString("Remote Sign - Forbidden string found"));
-                            firstError = false;
-                        }
-                        player.sendMessage(" - ".concat(tloc.toString()).concat(" : ").concat(ts.getLine(0)));
-                    }
                     // But does it match the source man?
                     if (matchesDescriptor(targetIdent, wrapper)) {
-                        LinkedList<AbstractSignListener.SignWrapper> value = foundTargetSigns.getOrDefault(signHandler.get(), new LinkedList<>());
-                        value.add(wrapper);
-                        foundLocations.add(tloc);
+                        // Forbidden strings
+                        if (hasForbiddenString(wrapper)) {
+                            if (firstError) {
+                                player.sendMessage(I18nSupport.getInternationalisedString("Remote Sign - Forbidden string found"));
+                                firstError = false;
+                            }
+                            player.sendMessage(" - ".concat(tloc.toString()).concat(" : ").concat(ts.getLine(0)));
+                        } else {
+                            LinkedList<AbstractSignListener.SignWrapper> value = foundTargetSigns.computeIfAbsent(signHandler.get(), (a) -> new LinkedList<>());
+                            value.add(wrapper);
+                        }
                     }
                 }
             }
