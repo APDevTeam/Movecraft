@@ -9,8 +9,8 @@ import org.jetbrains.annotations.Nullable;
 
 public class AscendSign extends AbstractCruiseSign {
 
-    public AscendSign() {
-        super(true, "ON", "OFF");
+    public AscendSign(final String ident) {
+        super(true, ident, "ON", "OFF");
     }
 
     @Override

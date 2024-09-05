@@ -11,8 +11,8 @@ import org.jetbrains.annotations.Nullable;
 
 public class CruiseSign extends AbstractCruiseSign {
 
-    public CruiseSign() {
-        super("movecraft.cruisesign", true, "ON", "OFF");
+    public CruiseSign(final String ident) {
+        super("movecraft.cruisesign", true, ident,"ON", "OFF");
     }
 
     @Override

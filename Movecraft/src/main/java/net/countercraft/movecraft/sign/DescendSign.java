@@ -10,8 +10,8 @@ import org.jetbrains.annotations.Nullable;
 // TODO: Unify with AscendSign to use a common "VerticalCruiseSign" class
 public class DescendSign extends AbstractCruiseSign {
 
-    public DescendSign() {
-        super(true, "ON", "OFF");
+    public DescendSign(final String ident) {
+        super(true, ident, "ON", "OFF");
     }
 
     @Override

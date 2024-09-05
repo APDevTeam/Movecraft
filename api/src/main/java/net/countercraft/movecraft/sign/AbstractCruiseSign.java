@@ -23,16 +23,17 @@ public abstract class AbstractCruiseSign extends AbstractCraftSign {
 
     private final String suffixOn;
     private final String suffixOff;
-    private final String ident = AbstractMovecraftSign.findIdent(this);
+    private final String ident;
 
-    public AbstractCruiseSign(boolean ignoreCraftIsBusy, final String suffixOn, final String suffixOff) {
-        this(null, ignoreCraftIsBusy, suffixOn, suffixOff);
+    public AbstractCruiseSign(boolean ignoreCraftIsBusy, final String ident, final String suffixOn, final String suffixOff) {
+        this(null, ignoreCraftIsBusy, ident, suffixOn, suffixOff);
     }
 
-    public AbstractCruiseSign(final String permission, boolean ignoreCraftIsBusy, final String suffixOn, final String suffixOff) {
+    public AbstractCruiseSign(final String permission, boolean ignoreCraftIsBusy, final String ident,  final String suffixOn, final String suffixOff) {
         super(permission, ignoreCraftIsBusy);
         this.suffixOn = suffixOn;
         this.suffixOff = suffixOff;
+        this.ident = ident;
     }
 
     // Checks if the header is empty, if yes, it quits early (unnecessary actually as if it was empty this would never be called)
