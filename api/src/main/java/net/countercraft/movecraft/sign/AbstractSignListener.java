@@ -98,6 +98,12 @@ public abstract class AbstractSignListener implements Listener {
         }
 
         public static boolean areSignsEqual(SignWrapper a, SignWrapper b) {
+            if (a == b) {
+                return true;
+            }
+            if (a == null || b == null) {
+                return false;
+            }
             String[] aLines = a.rawLines();
             String[] bLines = b.rawLines();
 
