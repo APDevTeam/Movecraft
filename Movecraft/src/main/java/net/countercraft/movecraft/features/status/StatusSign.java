@@ -8,19 +8,12 @@ import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.craft.type.RequiredBlockEntry;
 import net.countercraft.movecraft.sign.AbstractInformationSign;
 import net.countercraft.movecraft.sign.AbstractSignListener;
-import net.countercraft.movecraft.MovecraftLocation;
-import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.craft.type.CraftType;
-import net.countercraft.movecraft.craft.type.RequiredBlockEntry;
-import net.countercraft.movecraft.events.CraftDetectEvent;
-import net.countercraft.movecraft.events.SignTranslateEvent;
 import net.countercraft.movecraft.util.Counter;
 import net.countercraft.movecraft.util.Tags;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.Style;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.event.block.Action;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -82,9 +75,13 @@ public class StatusSign extends AbstractInformationSign {
         return super.refreshSign(craft, sign, fillDefault, refreshCause);
     }
 
-    protected void calcDisplayBlocks(Craft craft) {
+    protected void calcDisplayBlocks(@Nullable Craft craft) {
         displayBlocks.clear();
         displayComponents.clear();
+
+        if (craft == null) {
+            return;
+        }
 
         totalNonNegligibleBlocks = 0;
         totalNonNegligibleWaterBlocks = 0;
@@ -123,9 +120,14 @@ public class StatusSign extends AbstractInformationSign {
         }      
     }
 
-    protected void calcdisplayComponents(Craft craft) {
+    protected void calcdisplayComponents(@Nullable Craft craft) {
         displayComponents.add(EMPTY);
         displayComponents.add(EMPTY);
+
+        if (craft == null) {
+            return;
+        }
+
         int signLine = 0;
         int signColumn = 0;
         for (RequiredBlockEntry entry : displayBlocks.keySet()) {
