@@ -124,8 +124,8 @@ public class StatusSign extends AbstractInformationSign {
     }
 
     protected void calcdisplayComponents(Craft craft) {
-        displayComponents.set(0, EMPTY);
-        displayComponents.set(1, EMPTY);
+        displayComponents.add(EMPTY);
+        displayComponents.add(EMPTY);
         int signLine = 0;
         int signColumn = 0;
         for (RequiredBlockEntry entry : displayBlocks.keySet()) {
