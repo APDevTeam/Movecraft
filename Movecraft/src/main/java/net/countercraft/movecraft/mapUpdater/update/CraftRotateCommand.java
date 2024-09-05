@@ -118,27 +118,29 @@ public class CraftRotateCommand extends UpdateCommand {
                 validExterior.addAll(hitBox.difference(craft.getHitBox()));
             }
             //Check to see which locations in the from set are actually outside of the craft
+            SetHitBox visited = new SetHitBox();
             for (MovecraftLocation location : validExterior) {
                 if (craft.getHitBox().contains(location) || exterior.contains(location)) {
                     continue;
                 }
-                //use a modified BFS for multiple origin elements
-                SetHitBox visited = new SetHitBox();
+                //use a modified BFS for multiple origin elements                
                 Queue<MovecraftLocation> queue = new LinkedList<>();
                 queue.add(location);
                 while (!queue.isEmpty()) {
                     MovecraftLocation node = queue.poll();
                     //If the node is already a valid member of the exterior of the HitBox, continued search is unitary.
                     for (MovecraftLocation neighbor : CollectionUtils.neighbors(invertedHitBox, node)) {
-                        if (visited.contains(neighbor)) {
-                            continue;
+                        // This is a set! If it already contains the element, it won't add it anyway!
+                        //if (visited.contains(neighbor)) {
+                        //    continue;
+                        //}
+                        if (visited.add(neighbor)) {
+                            queue.add(neighbor);
                         }
-                        visited.add(neighbor);
-                        queue.add(neighbor);
                     }
-                }
-                exterior.addAll(visited);
+                }                
             }
+            exterior.addAll(visited);
             interior.addAll(invertedHitBox.difference(exterior));
 
             final WorldHandler handler = Movecraft.getInstance().getWorldHandler();
