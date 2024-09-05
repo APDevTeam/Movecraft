@@ -25,7 +25,8 @@ public class CruiseSign extends AbstractCruiseSign {
     @Override
     protected CruiseDirection getCruiseDirection(AbstractSignListener.SignWrapper sign) {
         BlockFace face = sign.facing();
-        face = face.getOppositeFace();
+        // NOt necessary, CruiseDirection#fromBlockFace already handles this!
+        //face = face.getOppositeFace();
         return CruiseDirection.fromBlockFace(face);
     }
 
