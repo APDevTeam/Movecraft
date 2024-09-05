@@ -5,7 +5,6 @@ import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.processing.functions.DetectionPredicate;
 import net.countercraft.movecraft.processing.functions.Result;
-import net.countercraft.movecraft.util.Tags;
 import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Waterlogged;
@@ -64,7 +63,7 @@ public class LiquidBlockValidator implements DetectionPredicate<Map<Material, De
         for (var locationList : materialDequeMap.entrySet()) {
             final Deque<MovecraftLocation> locations = locationList.getValue();
 
-            if (Tags.FLUID.contains(locationList.getKey())) {
+            if (locationList.getKey() == Material.WATER || locationList.getKey() == Material.BUBBLE_COLUMN) {
                 amount += locations.size();
                 continue;
             }
