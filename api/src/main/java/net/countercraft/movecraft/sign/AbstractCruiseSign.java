@@ -159,11 +159,11 @@ public abstract class AbstractCruiseSign extends AbstractCraftSign {
     }
 
     protected Component buildHeaderOn() {
-        return Component.text(this.ident).append(this.ident.endsWith(":") ? Component.empty() : Component.text(": ")).append(Component.text(this.suffixOn, Style.style(TextColor.color(0, 255, 0))));
+        return Component.text(this.ident).append(this.ident.endsWith(":") ? Component.text(" ") : Component.text(": ")).append(Component.text(this.suffixOn, Style.style(TextColor.color(0, 255, 0))));
     }
 
     protected Component buildHeaderOff() {
-        return Component.text(this.ident).append(this.ident.endsWith(":") ? Component.empty() : Component.text(": ")).append(Component.text(this.suffixOff, Style.style(TextColor.color(255, 0, 0))));
+        return Component.text(this.ident).append(this.ident.endsWith(":") ? Component.text(" ") : Component.text(": ")).append(Component.text(this.suffixOff, Style.style(TextColor.color(255, 0, 0))));
     }
 
     // Should call the craft's relevant methods to start cruising
