@@ -35,7 +35,7 @@ public class SignListener extends AbstractSignListener {
     }
 
     protected final SignWrapper createFromSide(final Sign sign, final SignSide signSide, Side side) {
-        BlockFace face = ((Directional) sign.getBlockData()).getFacing();
+        BlockFace face = ((Directional) sign.getBlock().getBlockData()).getFacing();
         if (side == Side.BACK) {
             face = face.getOppositeFace();
         }
@@ -65,7 +65,7 @@ public class SignListener extends AbstractSignListener {
     @Override
     protected SignWrapper getSignWrapper(Sign sign, SignChangeEvent signChangeEvent) {
         @NotNull Side side = signChangeEvent.getSide();
-        BlockFace face = ((Directional) sign.getBlockData()).getFacing();
+        BlockFace face = ((Directional) sign.getBlock().getBlockData()).getFacing();
         if (side == Side.BACK) {
             face = face.getOppositeFace();
         }
