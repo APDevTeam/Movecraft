@@ -24,8 +24,8 @@ public abstract class AbstractCruiseSign extends AbstractCraftSign {
     private final String suffixOn;
     private final String suffixOff;
     private final String ident;
-    private final Component headerOn = this.buildHeaderOn();
-    private final Component headerOff = this.buildHeaderOff();
+    private final Component headerOn;
+    private final Component headerOff;
 
     public AbstractCruiseSign(boolean ignoreCraftIsBusy, final String ident, final String suffixOn, final String suffixOff) {
         this(null, ignoreCraftIsBusy, ident, suffixOn, suffixOff);
@@ -36,6 +36,9 @@ public abstract class AbstractCruiseSign extends AbstractCraftSign {
         this.suffixOn = suffixOn;
         this.suffixOff = suffixOff;
         this.ident = ident;
+
+        this.headerOn = this.buildHeaderOn();
+        this.headerOff = this.buildHeaderOff();
     }
 
     // Checks if the header is empty, if yes, it quits early (unnecessary actually as if it was empty this would never be called)
