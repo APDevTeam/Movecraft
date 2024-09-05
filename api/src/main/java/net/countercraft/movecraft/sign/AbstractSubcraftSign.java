@@ -41,7 +41,7 @@ public abstract class AbstractSubcraftSign extends AbstractCraftSign {
 
     @Override
     public boolean processSignClick(Action clickType, AbstractSignListener.SignWrapper sign, Player player) {
-        if (!this.isSignValid(clickType, sign, player)) {
+t        if (!this.isSignValid(clickType, sign, player)) {
             return false;
         }
         if (!this.canPlayerUseSign(clickType, sign, player)) {
@@ -162,7 +162,7 @@ public abstract class AbstractSubcraftSign extends AbstractCraftSign {
 
     @Nullable
     protected CraftType getCraftType(AbstractSignListener.SignWrapper wrapper) {
-        String ident = wrapper.getRaw(2);
+        String ident = wrapper.getRaw(1);
         if (ident.trim().isBlank()) {
             return null;
         }
