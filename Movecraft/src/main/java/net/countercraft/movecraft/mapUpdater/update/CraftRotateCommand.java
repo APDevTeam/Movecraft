@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.mapUpdater.update;
 
+import com.google.common.collect.Sets;
 import it.unimi.dsi.fastutil.Hash;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
@@ -83,7 +84,7 @@ public class CraftRotateCommand extends UpdateCommand {
                 originalLocations.add(MathUtils.rotateVec(counterRotation, movecraftLocation.subtract(originLocation)).add(originLocation));
             }
 
-            final HitBox to = craft.getHitBox().difference(originalLocations);
+            final Set<MovecraftLocation> to = Sets.difference(craft.getHitBox().asSet(), originalLocations.asSet());
 
             for (MovecraftLocation location : to) {
                 var data = location.toBukkit(craft.getWorld()).getBlock().getBlockData();
@@ -92,7 +93,7 @@ public class CraftRotateCommand extends UpdateCommand {
                 }
             }
             //The subtraction of the set of coordinates in the HitBox cube and the HitBox itself
-            final HitBox invertedHitBox = new SetHitBox(craft.getHitBox().boundingHitBox()).difference(craft.getHitBox());
+            final SetHitBox invertedHitBox = new SetHitBox(Sets.difference(craft.getHitBox().boundingHitBox().asSet(), craft.getHitBox().asSet()));
             //A set of locations that are confirmed to be "exterior" locations
             final SetHitBox exterior = new SetHitBox();
             final SetHitBox interior = new SetHitBox();
@@ -138,10 +139,10 @@ public class CraftRotateCommand extends UpdateCommand {
                 }               
             }
             exterior.addAll(visited);
-            interior.addAll(invertedHitBox.difference(exterior));
+            interior.addAll(Sets.difference(invertedHitBox.asSet(), exterior.asSet()));
 
             final WorldHandler handler = Movecraft.getInstance().getWorldHandler();
-            for (MovecraftLocation location : invertedHitBox.difference(exterior)) {
+            for (MovecraftLocation location : Sets.difference(invertedHitBox.asSet(), exterior.asSet())) {
                 var data = location.toBukkit(craft.getWorld()).getBlock().getBlockData();
                 if (!passthroughBlocks.contains(data.getMaterial())) {
                     continue;
