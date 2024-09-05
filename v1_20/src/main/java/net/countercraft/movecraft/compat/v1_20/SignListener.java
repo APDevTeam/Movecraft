@@ -14,7 +14,9 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Directional;
+import org.bukkit.block.data.Rotatable;
 import org.bukkit.block.sign.Side;
 import org.bukkit.block.sign.SignSide;
 import org.bukkit.event.block.SignChangeEvent;
@@ -35,7 +37,17 @@ public class SignListener extends AbstractSignListener {
     }
 
     protected final SignWrapper createFromSide(final Sign sign, final SignSide signSide, Side side) {
-        BlockFace face = ((Directional) sign.getBlock().getBlockData()).getFacing();
+        BlockData blockData = sign.getBlock().getBlockData();
+        BlockFace face;
+        if (blockData instanceof Directional directional) {
+            face = directional.getFacing();
+        } else if (blockData instanceof Rotatable rotatable) {
+            face = rotatable.getRotation();
+        }
+        else {
+            face = BlockFace.SELF;
+        }
+
         if (side == Side.BACK) {
             face = face.getOppositeFace();
         }
@@ -65,7 +77,18 @@ public class SignListener extends AbstractSignListener {
     @Override
     protected SignWrapper getSignWrapper(Sign sign, SignChangeEvent signChangeEvent) {
         @NotNull Side side = signChangeEvent.getSide();
-        BlockFace face = ((Directional) sign.getBlock().getBlockData()).getFacing();
+
+        BlockData blockData = sign.getBlock().getBlockData();
+        BlockFace face;
+        if (blockData instanceof Directional directional) {
+            face = directional.getFacing();
+        } else if (blockData instanceof Rotatable rotatable) {
+            face = rotatable.getRotation();
+        }
+        else {
+            face = BlockFace.SELF;
+        }
+
         if (side == Side.BACK) {
             face = face.getOppositeFace();
         }
