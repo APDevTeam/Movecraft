@@ -41,7 +41,7 @@ public abstract class AbstractSubcraftSign extends AbstractCraftSign {
 
     @Override
     public boolean processSignClick(Action clickType, AbstractSignListener.SignWrapper sign, Player player) {
-t        if (!this.isSignValid(clickType, sign, player)) {
+        if (!this.isSignValid(clickType, sign, player)) {
             return false;
         }
         if (!this.canPlayerUseSign(clickType, sign, player)) {
