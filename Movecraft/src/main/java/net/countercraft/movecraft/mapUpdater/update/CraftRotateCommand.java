@@ -1,8 +1,5 @@
 package net.countercraft.movecraft.mapUpdater.update;
 
-import it.unimi.dsi.fastutil.Hash;
-import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.MovecraftRotation;
@@ -13,35 +10,18 @@ import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.SinkingCraft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
-import net.countercraft.movecraft.events.SignTranslateEvent;
 import net.countercraft.movecraft.util.CollectionUtils;
 import net.countercraft.movecraft.util.MathUtils;
 import net.countercraft.movecraft.util.Tags;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
 import net.countercraft.movecraft.util.hitboxes.SetHitBox;
 import net.countercraft.movecraft.util.hitboxes.SolidHitBox;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Tag;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockState;
-import org.bukkit.block.Sign;
-import org.bukkit.block.data.BlockData;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -200,7 +180,8 @@ public class CraftRotateCommand extends UpdateCommand {
     }
 
     private void sendSignEvents() {
-        Object2ObjectMap<String[], List<MovecraftLocation>> signs = new Object2ObjectOpenCustomHashMap<>(new Hash.Strategy<String[]>() {
+        Movecraft.getInstance().getAbstractSignListener().processSignTranslation(craft, true);
+       /* Object2ObjectMap<String[], List<MovecraftLocation>> signs = new Object2ObjectOpenCustomHashMap<>(new Hash.Strategy<String[]>() {
             @Override
             public int hashCode(String[] strings) {
                 return Arrays.hashCode(strings);
@@ -216,6 +197,7 @@ public class CraftRotateCommand extends UpdateCommand {
         for (MovecraftLocation location : craft.getHitBox()) {
             Block block = location.toBukkit(craft.getWorld()).getBlock();
             BlockState state = block.getState();
+            // TODO: Change to return the signwrappers for this sign (if not empty!)
             if (state instanceof Sign) {
                 Sign sign = (Sign) block.getState();
                 if (!signs.containsKey(sign.getLines()))
@@ -248,7 +230,7 @@ public class CraftRotateCommand extends UpdateCommand {
                 sign.update(false, false);
                 block.setBlockData(data);
             }
-        }
+        }*/
     }
 
     @NotNull

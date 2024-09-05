@@ -1,60 +1,90 @@
 package net.countercraft.movecraft.features.status;
 
-import net.countercraft.movecraft.MovecraftLocation;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.craft.type.RequiredBlockEntry;
-import net.countercraft.movecraft.events.CraftDetectEvent;
-import net.countercraft.movecraft.events.SignTranslateEvent;
+import net.countercraft.movecraft.sign.AbstractInformationSign;
+import net.countercraft.movecraft.sign.AbstractSignListener;
 import net.countercraft.movecraft.util.Counter;
 import net.countercraft.movecraft.util.Tags;
-import org.bukkit.ChatColor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.Style;
 import org.bukkit.Material;
-import org.bukkit.Tag;
-import org.bukkit.World;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockState;
-import org.bukkit.block.Sign;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.jetbrains.annotations.NotNull;
+import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 
-public final class StatusSign implements Listener {
+import java.util.List;
 
-    @EventHandler
-    public void onCraftDetect(CraftDetectEvent event) {
-        World world = event.getCraft().getWorld();
-        for (MovecraftLocation location : event.getCraft().getHitBox()) {
-            var block = location.toBukkit(world).getBlock();
-            if (!Tag.SIGNS.isTagged(block.getType())) {
-                continue;
-            }
-            BlockState state = block.getState();
-            if (state instanceof Sign) {
-                Sign sign = (Sign) state;
-                if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Status:")) {
-                    sign.setLine(1, "");
-                    sign.setLine(2, "");
-                    sign.setLine(3, "");
-                    sign.update();
-                }
-            }
+// TODO: Split this into multiple signs? Separate sign for fuel would make sense
+public class StatusSign extends AbstractInformationSign {
+
+    Object2IntMap<RequiredBlockEntry> displayBlocks = new Object2IntOpenHashMap<>();
+    List<Component> displayComponents = new ObjectArrayList<>();
+    int totalNonNegligibleBlocks = 0;
+    int totalNonNegligibleWaterBlocks = 0;
+
+    protected static final int FUEL_LINE_INDEX = 3;
+    protected static final int BLOCK_LINE_INDEX_TOP = 1;
+    protected static final int BLOCK_LINE_INDEX_BOTTOM = 2;
+
+    @Override
+    protected @Nullable Component getUpdateString(int lineIndex, Component oldData, Craft craft) {
+        switch(lineIndex) {
+            case FUEL_LINE_INDEX:
+                return calcFuel(craft);
+            case BLOCK_LINE_INDEX_TOP:
+                return displayComponents.get(0);
+            case BLOCK_LINE_INDEX_BOTTOM:
+                return displayComponents.get(1);
         }
+        return oldData;
     }
 
-    @EventHandler
-    public final void onSignTranslate(SignTranslateEvent event) {
-        Craft craft = event.getCraft();
-        if (!ChatColor.stripColor(event.getLine(0)).equalsIgnoreCase("Status:")) {
+    protected Component calcFuel(Craft craft) {
+        double fuel = craft.getDataTag(Craft.FUEL);
+        int cruiseSkipBlocks = (int) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_CRUISE_SKIP_BLOCKS, craft.getWorld());
+        cruiseSkipBlocks++;
+        double fuelBurnRate = (double) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_FUEL_BURN_RATE, craft.getWorld());
+        int fuelRange = (int) Math.round((fuel * (1 + cruiseSkipBlocks)) / fuelBurnRate);
+        // DONE: Create constants in base class for style colors!
+        Style style;
+        if (fuelRange > 1000) {
+            style = STYLE_COLOR_GREEN;
+        } else if (fuelRange > 100) {
+            style = STYLE_COLOR_YELLOW;
+        } else {
+            style = STYLE_COLOR_RED;
+        }
+
+        return Component.text("Fuel range: " + fuelRange).style(style);
+    }
+
+    @Override
+    protected @Nullable Component getDefaultString(int lineIndex, Component oldComponent) {
+        return EMPTY;
+    }
+
+    @Override
+    protected boolean refreshSign(@Nullable Craft craft, AbstractSignListener.SignWrapper sign, boolean fillDefault, REFRESH_CAUSE refreshCause) {
+        // Calculate blocks and store them temporary, not pretty but works!
+        calcDisplayBlocks(craft);
+        calcdisplayComponents(craft);
+        return super.refreshSign(craft, sign, fillDefault, refreshCause);
+    }
+
+    protected void calcDisplayBlocks(@Nullable Craft craft) {
+        displayBlocks.clear();
+        displayComponents.clear();
+
+        if (craft == null) {
             return;
         }
-        double fuel = craft.getDataTag(Craft.FUEL);
 
-        int totalNonNegligibleBlocks = 0;
-        int totalNonNegligibleWaterBlocks = 0;
+        totalNonNegligibleBlocks = 0;
+        totalNonNegligibleWaterBlocks = 0;
         Counter<Material> materials = craft.getDataTag(Craft.MATERIALS);
         if (materials.isEmpty()) {
             return;
@@ -70,13 +100,37 @@ public final class StatusSign implements Listener {
             }
         }
 
-        Counter<RequiredBlockEntry> displayBlocks = new Counter<>();
-        displayBlocks.add(craft.getDataTag(Craft.FLYBLOCKS));
-        displayBlocks.add(craft.getDataTag(Craft.MOVEBLOCKS));
+        Counter<RequiredBlockEntry> displayBlocksTmp = new Counter<>();
+        displayBlocksTmp.add(craft.getDataTag(Craft.FLYBLOCKS));
+        displayBlocksTmp.add(craft.getDataTag(Craft.MOVEBLOCKS));
+                             
+        for (RequiredBlockEntry entry : displayBlocksTmp.getKeySet()) {
+          // TODO: Sure?
+          if (entry.getMin() == 0.0) {
+            continue;
+          }
+          double pctPresent = (displayBlocksTmp.get(entry) * 100D);
+          // TODO: WTF? Why?
+          if (craft.getType().getBoolProperty(CraftType.BLOCKED_BY_WATER)) {
+            pctPresent /= totalNonNegligibleBlocks;
+          } else {
+            pctPresent /= totalNonNegligibleWaterBlocks;
+          }
+          displayBlocks.putIfAbsent(entry, (int) pctPresent);
+        }      
+    }
 
-        int signLine = 1;
+    protected void calcdisplayComponents(@Nullable Craft craft) {
+        displayComponents.add(EMPTY);
+        displayComponents.add(EMPTY);
+
+        if (craft == null) {
+            return;
+        }
+
+        int signLine = 0;
         int signColumn = 0;
-        for (RequiredBlockEntry entry : displayBlocks.getKeySet()) {
+        for (RequiredBlockEntry entry : displayBlocks.keySet()) {
             if (entry.getMin() == 0.0) {
                 continue;
             }
@@ -86,67 +140,45 @@ public final class StatusSign implements Listener {
             } else {
                 percentPresent /= totalNonNegligibleWaterBlocks;
             }
-            String signText = "";
+            Component signText = EMPTY;
+            Style style;
             if (percentPresent > entry.getMin() * 1.04) {
-                signText += ChatColor.GREEN;
+                style = STYLE_COLOR_GREEN;
             } else if (percentPresent > entry.getMin() * 1.02) {
-                signText += ChatColor.YELLOW;
+                style = STYLE_COLOR_YELLOW;
             } else {
-                signText += ChatColor.RED;
+                style = STYLE_COLOR_RED;
             }
             if (entry.getName() == null) {
-                signText += entry.materialsToString().toUpperCase().charAt(0);
+                signText = Component.text(entry.materialsToString().toUpperCase().charAt(0));
             } else {
-                signText += entry.getName().toUpperCase().charAt(0);
+                signText = Component.text(entry.getName().toUpperCase().charAt(0));
             }
-            signText += " ";
-            signText += (int) percentPresent;
-            signText += "/";
-            signText += (int) entry.getMin();
-            signText += "  ";
+            signText = signText.append(Component.text(" " + (int)percentPresent + "/" + (int)entry.getMin() + " "));
+            signText = signText.style(style);
             if (signColumn == 0) {
-                event.setLine(signLine, signText);
+                displayComponents.set(signLine, signText);
                 signColumn++;
-            } else if (signLine < 3) {
-                String existingLine = event.getLine(signLine);
-                existingLine += signText;
-                event.setLine(signLine, existingLine);
+            } else if (signLine < 2) {
+                Component existingLine = displayComponents.get(signLine);
+                existingLine = existingLine.append(signText);
+                displayComponents.set(signLine, existingLine);
                 signLine++;
                 signColumn = 0;
             }
         }
-
-        String fuelText = "";
-        int cruiseSkipBlocks = (int) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_CRUISE_SKIP_BLOCKS, craft.getWorld());
-        cruiseSkipBlocks++;
-        double fuelBurnRate = (double) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_FUEL_BURN_RATE, craft.getWorld());
-        int fuelRange = (int) Math.round((fuel * (1 + cruiseSkipBlocks)) / fuelBurnRate);
-        if (fuelRange > 1000) {
-            fuelText += ChatColor.GREEN;
-        } else if (fuelRange > 100) {
-            fuelText += ChatColor.YELLOW;
-        } else {
-            fuelText += ChatColor.RED;
-        }
-        fuelText += "Fuel range:";
-        fuelText += fuelRange;
-        event.setLine(signLine, fuelText);
     }
 
-    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    public void onSignClickEvent(@NotNull PlayerInteractEvent event) {
-        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
-            return;
+    @Override
+    protected void performUpdate(Component[] newComponents, AbstractSignListener.SignWrapper sign, REFRESH_CAUSE refreshCause) {
+        if (refreshCause != REFRESH_CAUSE.SIGN_MOVED_BY_CRAFT && sign.block() != null) {
+            sign.block().update(true);
         }
-        Block block = event.getClickedBlock();
-        if (!(block.getState() instanceof Sign)) {
-            return;
-        }
-
-        Sign sign = (Sign) block.getState();
-        if (!ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Status:")) {
-            return;
-        }
-        event.setCancelled(true);
     }
+
+    @Override
+    protected void onCraftIsBusy(Player player, Craft craft) {
+
+    }
+
 }

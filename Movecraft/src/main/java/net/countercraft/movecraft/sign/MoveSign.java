@@ -1,80 +1,105 @@
 package net.countercraft.movecraft.sign;
 
-import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import org.bukkit.ChatColor;
-import org.bukkit.block.BlockState;
-import org.bukkit.block.Sign;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
+import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.jetbrains.annotations.NotNull;
+import org.bukkit.event.block.SignChangeEvent;
+import org.jetbrains.annotations.Nullable;
 
-public final class MoveSign implements Listener{
-    private static final String HEADER = "Move:";
+public class MoveSign extends AbstractCraftSign {
 
-    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    public void onSignClick(@NotNull PlayerInteractEvent event) {
-        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
-            return;
+    public MoveSign() {
+        super(null, false);
+    }
+
+    @Override
+    protected void onCraftIsBusy(Player player, Craft craft) {
+        player.sendMessage(I18nSupport.getInternationalisedString("Detection - Parent Craft is busy"));
+    }
+
+    @Override
+    protected void onCraftNotFound(Player player, AbstractSignListener.SignWrapper sign) {
+
+    }
+
+    @Override
+    public boolean shouldCancelEvent(boolean processingSuccessful, @Nullable Action type, boolean sneaking) {
+        if (processingSuccessful) {
+            return true;
         }
-        BlockState state = event.getClickedBlock().getState();
-        if (!(state instanceof Sign)) {
-            return;
+        return !sneaking;
+    }
+
+    @Override
+    protected boolean isSignValid(Action clickType, AbstractSignListener.SignWrapper sign, Player player) {
+        String[] numbers = sign.getRaw(1).split(",");
+        if (numbers.length != 3) {
+            return false;
         }
-        Sign sign = (Sign) state;
-        if (!ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase(HEADER)) {
-            return;
-        }
-        event.setCancelled(true);
-        if (CraftManager.getInstance().getCraftByPlayer(event.getPlayer()) == null) {
-            return;
-        }
-        /*Long time = timeMap.get(event.getPlayer());
-        if (time != null) {
-            long ticksElapsed = (System.currentTimeMillis() - time) / 50;
-            Craft craft = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
-            // if the craft should go slower underwater, make time pass
-            // more slowly there
-            if (craft.getType().getHalfSpeedUnderwater() && craft.getMinY() < craft.getW().getSeaLevel()) {
-                ticksElapsed = ticksElapsed >> 1;
+        for (String s : numbers) {
+            try {
+                Integer.parseInt(s);
+            } catch(NumberFormatException nfe) {
+                return false;
             }
-            if (Math.abs(ticksElapsed) < CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getTickCooldown()) {
-                event.setCancelled(true);
-                return;
-            }
-        }*/
-        String[] numbers = ChatColor.stripColor(sign.getLine(1)).split(",");
+        }
+        return true;
+    }
+
+    @Override
+    public boolean processSignChange(SignChangeEvent event, AbstractSignListener.SignWrapper sign) {
+        return false;
+    }
+
+    @Override
+    protected boolean canPlayerUseSignOn(Player player, Craft craft) {
+        if (!super.canPlayerUseSignOn(player, craft)) {
+            return false;
+        }
+        if (!player.hasPermission("movecraft." + craft.getType().getStringProperty(CraftType.NAME) + ".move")) {
+            player.sendMessage(
+                    I18nSupport.getInternationalisedString("Insufficient Permissions"));
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    protected boolean internalProcessSignWithCraft(Action clickType, AbstractSignListener.SignWrapper sign, Craft craft, Player player) {
+        if (!craft.getType().getBoolProperty(CraftType.CAN_STATIC_MOVE)) {
+            return false;
+        }
+
+        String[] numbers = sign.getRaw(1).split(",");
         int dx = Integer.parseInt(numbers[0]);
         int dy = Integer.parseInt(numbers[1]);
         int dz = Integer.parseInt(numbers[2]);
-        int maxMove = CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getIntProperty(CraftType.MAX_STATIC_MOVE);
 
-        if (dx > maxMove)
-            dx = maxMove;
-        if (dx < 0 - maxMove)
-            dx = 0 - maxMove;
-        if (dy > maxMove)
-            dy = maxMove;
-        if (dy < 0 - maxMove)
-            dy = 0 - maxMove;
-        if (dz > maxMove)
-            dz = maxMove;
-        if (dz < 0 - maxMove)
-            dz = 0 - maxMove;
+        return translateCraft(sign.block().getRawData(), dx, dy, dz, craft, sign);
+    }
 
-        if (!event.getPlayer().hasPermission("movecraft." + CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getStringProperty(CraftType.NAME) + ".move")) {
-            event.getPlayer().sendMessage(
-                    I18nSupport.getInternationalisedString("Insufficient Permissions"));
-            return;
-        }
-        if (CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).getType().getBoolProperty(CraftType.CAN_STATIC_MOVE)) {
-            CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).translate(dx, dy, dz);
-            //timeMap.put(event.getPlayer(), System.currentTimeMillis());
-            CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setLastCruiseUpdate(System.currentTimeMillis());
-        }
+    protected boolean translateCraft(final byte signDataRaw, int dxRaw, int dyRaw, int dzRaw, Craft craft, AbstractSignListener.SignWrapper signWrapper) {
+        int maxMove = craft.getType().getIntProperty(CraftType.MAX_STATIC_MOVE);
+
+        if (dxRaw > maxMove)
+            dxRaw = maxMove;
+        if (dxRaw < 0 - maxMove)
+            dxRaw = 0 - maxMove;
+        if (dyRaw > maxMove)
+            dyRaw = maxMove;
+        if (dyRaw < 0 - maxMove)
+            dyRaw = 0 - maxMove;
+        if (dzRaw > maxMove)
+            dzRaw = maxMove;
+        if (dzRaw < 0 - maxMove)
+            dzRaw = 0 - maxMove;
+
+        craft.translate(dxRaw, dyRaw, dzRaw);
+        //timeMap.put(event.getPlayer(), System.currentTimeMillis());
+        craft.setLastCruiseUpdate(System.currentTimeMillis());
+
+        return true;
     }
 }

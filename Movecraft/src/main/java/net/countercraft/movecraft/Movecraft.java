@@ -58,6 +58,7 @@ public class Movecraft extends JavaPlugin {
     private WorldHandler worldHandler;
     private SmoothTeleport smoothTeleport;
     private AsyncManager asyncManager;
+    private  AbstractSignListener abstractSignListener;
     private WreckManager wreckManager;
 
     public static synchronized Movecraft getInstance() {
@@ -131,6 +132,12 @@ public class Movecraft extends JavaPlugin {
                     smoothTeleport = new BukkitTeleport(); // Fall back to bukkit teleportation
                     getLogger().warning("Falling back to bukkit teleportation provider.");
                 }
+            }
+
+            final Class<?> signListenerClass = Class.forName("net.countercraft.movecraft.compat." + WorldHandler.getPackageName(minecraftVersion) + ".SignListener");
+            if (AbstractSignListener.class.isAssignableFrom(signListenerClass)) {
+                abstractSignListener = (AbstractSignListener) signListenerClass.getConstructor().newInstance();
+                getServer().getPluginManager().registerEvents(abstractSignListener, this);
             }
         }
         catch (final Exception e) {
@@ -209,37 +216,60 @@ public class Movecraft extends JavaPlugin {
         getCommand("crafttype").setExecutor(new CraftTypeCommand());
         getCommand("craftinfo").setExecutor(new CraftInfoCommand());
 
+        // Naming scheme: If it has parameters, append a double colon except if it is a subcraft
+        // Parameters follow on the following lines
         getServer().getPluginManager().registerEvents(new BlockListener(), this);
         getServer().getPluginManager().registerEvents(new PlayerListener(), this);
         getServer().getPluginManager().registerEvents(new ChunkManager(), this);
-        getServer().getPluginManager().registerEvents(new AscendSign(), this);
-        getServer().getPluginManager().registerEvents(new CraftSign(), this);
-        getServer().getPluginManager().registerEvents(new CruiseSign(), this);
-        getServer().getPluginManager().registerEvents(new DescendSign(), this);
-        getServer().getPluginManager().registerEvents(new HelmSign(), this);
-        getServer().getPluginManager().registerEvents(new MoveSign(), this);
-        getServer().getPluginManager().registerEvents(new NameSign(), this);
-        getServer().getPluginManager().registerEvents(new PilotSign(), this);
-        getServer().getPluginManager().registerEvents(new RelativeMoveSign(), this);
-        getServer().getPluginManager().registerEvents(new ReleaseSign(), this);
-        getServer().getPluginManager().registerEvents(new RemoteSign(), this);
-        getServer().getPluginManager().registerEvents(new SpeedSign(), this);
-        getServer().getPluginManager().registerEvents(new SubcraftRotateSign(), this);
-        getServer().getPluginManager().registerEvents(new TeleportSign(), this);
-        getServer().getPluginManager().registerEvents(new ScuttleSign(), this);
+        //getServer().getPluginManager().registerEvents(new AscendSign(), this);
+        AbstractMovecraftSign.register("Ascend:", new AscendSign("Ascend:"));
+        //getServer().getPluginManager().registerEvents(new CruiseSign(), this);
+        AbstractMovecraftSign.register("Cruise:", new CruiseSign("Cruise:"));
+        //getServer().getPluginManager().registerEvents(new DescendSign(), this);
+        AbstractMovecraftSign.register("Descend:", new DescendSign("Descend:"));
+        //getServer().getPluginManager().registerEvents(new HelmSign(), this);
+        AbstractMovecraftSign.register("[Helm]", new HelmSign());
+        AbstractMovecraftSign.register(HelmSign.PRETTY_HEADER, new HelmSign());
+        //getServer().getPluginManager().registerEvents(new MoveSign(), this);
+        AbstractMovecraftSign.register("Move:", new MoveSign());
+        //getServer().getPluginManager().registerEvents(new NameSign(), this);
+        AbstractMovecraftSign.register("Name:", new NameSign());
+        //getServer().getPluginManager().registerEvents(new PilotSign(), this);
+        AbstractMovecraftSign.register("Pilot:", new PilotSign());
+        //getServer().getPluginManager().registerEvents(new RelativeMoveSign(), this);
+        AbstractMovecraftSign.register("RMove:", new RelativeMoveSign());
+        //getServer().getPluginManager().registerEvents(new ReleaseSign(), this);
+        AbstractMovecraftSign.register("Release", new ReleaseSign());
+        //getServer().getPluginManager().registerEvents(new RemoteSign(), this);
+        AbstractMovecraftSign.register("Remote Sign", new RemoteSign());
+        //getServer().getPluginManager().registerEvents(new SpeedSign(), this);
+        AbstractMovecraftSign.register("Speed:", new SpeedSign());
+        AbstractMovecraftSign.register("Status:", new StatusSign());
+        AbstractMovecraftSign.register("Contacts:", new ContactsSign());
+        //getServer().getPluginManager().registerEvents(new SubcraftRotateSign(), this);
+        AbstractMovecraftSign.register("Subcraft Rotate", new SubcraftRotateSign(CraftManager.getInstance()::getCraftTypeFromString, Movecraft::getInstance));
+        //getServer().getPluginManager().registerEvents(new TeleportSign(), this);
+        AbstractMovecraftSign.register("Teleport:", new TeleportSign());
+        //getServer().getPluginManager().registerEvents(new ScuttleSign(), this);
+        AbstractMovecraftSign.register("Scuttle", new ScuttleSign());
         getServer().getPluginManager().registerEvents(new CraftPilotListener(), this);
         getServer().getPluginManager().registerEvents(new CraftReleaseListener(), this);
+        // Moved to compat section!
+        //getServer().getPluginManager().registerEvents(new SignListener(), this);
+
+        AbstractMovecraftSign.registerCraftPilotSigns(CraftManager.getInstance().getCraftTypes(), CraftPilotSign::new);
 
         var contactsManager = new ContactsManager();
         contactsManager.runTaskTimerAsynchronously(this, 0, 20);
         getServer().getPluginManager().registerEvents(contactsManager, this);
-        getServer().getPluginManager().registerEvents(new ContactsSign(), this);
+        //getServer().getPluginManager().registerEvents(new ContactsSign(), this);
+        getServer().getPluginManager().registerEvents(new CraftTypeListener(), this);
         getCommand("contacts").setExecutor(new ContactsCommand());
 
         var statusManager = new StatusManager();
         statusManager.runTaskTimerAsynchronously(this, 0, 1);
         getServer().getPluginManager().registerEvents(statusManager, this);
-        getServer().getPluginManager().registerEvents(new StatusSign(), this);
+        //getServer().getPluginManager().registerEvents(new StatusSign(), this);
 
         logger.info("[V " + getDescription().getVersion() + "] has been enabled.");
     }
@@ -336,6 +366,8 @@ public class Movecraft extends JavaPlugin {
     public AsyncManager getAsyncManager() {
         return asyncManager;
     }
+
+    public AbstractSignListener getAbstractSignListener() {return abstractSignListener;}
 
     public @NotNull WreckManager getWreckManager(){
         return wreckManager;
