@@ -6,11 +6,7 @@ import net.countercraft.movecraft.util.hitboxes.HitBox;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 public class CollectionUtils {
     /**
@@ -90,6 +86,18 @@ public class CollectionUtils {
     @NotNull
     @Contract(pure = true)
     public static Iterable<MovecraftLocation> neighbors(@NotNull HitBox hitbox, @NotNull MovecraftLocation location){
+        return neighbors(hitbox.asSet(), location);
+    }
+
+    /**
+     * finds the axial neighbors to a location. Neighbors are defined as locations that exist within one meter of a given
+     * location
+     * @param location the location to search for neighbors
+     * @return an iterable set of neighbors to the given location
+     */
+    @NotNull
+    @Contract(pure = true)
+    public static Iterable<MovecraftLocation> neighbors(@NotNull Set<MovecraftLocation> hitbox, @NotNull MovecraftLocation location){
         if(hitbox.isEmpty()){
             return Collections.emptyList();
         }
