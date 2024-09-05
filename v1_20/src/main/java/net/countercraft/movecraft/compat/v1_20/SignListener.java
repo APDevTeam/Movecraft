@@ -51,10 +51,8 @@ public class SignListener extends AbstractSignListener {
 
     @Override
     public SignWrapper[] getSignWrappers(Sign sign, boolean ignoreEmpty) {
-        Side[] sides = new Side[Side.values().length];
         List<SignWrapper> wrappers = new ArrayList<>();
-        for (int i = 0; i < sides.length; i++) {
-            Side side = sides[i];
+        for (Side side : Side.values()) {
             SignSide signSide = sign.getSide(side);
             SignWrapper wrapper = this.createFromSide(sign, signSide, side);
             wrappers.add(wrapper);
