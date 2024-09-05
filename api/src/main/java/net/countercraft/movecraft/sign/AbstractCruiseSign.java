@@ -47,7 +47,7 @@ public abstract class AbstractCruiseSign extends AbstractCraftSign {
         if (headerSplit.length != 2) {
             return false;
         }
-        String suffix = headerSplit[1];
+        String suffix = headerSplit[1].trim();
         return suffix.equalsIgnoreCase(this.suffixOff) || suffix.equalsIgnoreCase(this.suffixOn);
     }
 
@@ -69,7 +69,7 @@ public abstract class AbstractCruiseSign extends AbstractCraftSign {
         if (headerSplit == null || headerSplit.length != 2) {
             return false;
         }
-        String suffix = headerSplit[1];
+        String suffix = headerSplit[1].trim();
         return suffix.equalsIgnoreCase(this.suffixOn);
     }
 
