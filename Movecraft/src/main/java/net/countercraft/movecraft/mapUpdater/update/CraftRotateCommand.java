@@ -93,7 +93,7 @@ public class CraftRotateCommand extends UpdateCommand {
                 }
             }
             //The subtraction of the set of coordinates in the HitBox cube and the HitBox itself
-            final SetHitBox invertedHitBox = new SetHitBox(Sets.difference(craft.getHitBox().boundingHitBox().asSet(), craft.getHitBox().asSet()));
+            final Set<MovecraftLocation> invertedHitBox = Sets.difference(craft.getHitBox().boundingHitBox().asSet(), craft.getHitBox().asSet());
             //A set of locations that are confirmed to be "exterior" locations
             final SetHitBox exterior = new SetHitBox();
             final SetHitBox interior = new SetHitBox();
@@ -139,10 +139,10 @@ public class CraftRotateCommand extends UpdateCommand {
                 }               
             }
             exterior.addAll(visited);
-            interior.addAll(Sets.difference(invertedHitBox.asSet(), exterior.asSet()));
+            interior.addAll(Sets.difference(invertedHitBox, exterior.asSet()));
 
             final WorldHandler handler = Movecraft.getInstance().getWorldHandler();
-            for (MovecraftLocation location : Sets.difference(invertedHitBox.asSet(), exterior.asSet())) {
+            for (MovecraftLocation location : Sets.difference(invertedHitBox, exterior.asSet())) {
                 var data = location.toBukkit(craft.getWorld()).getBlock().getBlockData();
                 if (!passthroughBlocks.contains(data.getMaterial())) {
                     continue;
