@@ -116,8 +116,9 @@ public class CraftRotateCommand extends UpdateCommand {
             //Valid exterior starts as the 6 surface planes of the HitBox with the locations that lie in the HitBox removed
             final SetHitBox validExterior = new SetHitBox();
             for (HitBox hitBox : surfaces) {
-                validExterior.addAll(hitBox.difference(craft.getHitBox()));
+                validExterior.addAll(Sets.difference(hitBox.asSet(),craft.getHitBox().asSet()));
             }
+
             //Check to see which locations in the from set are actually outside of the craft
             SetHitBox visited = new SetHitBox();
             for (MovecraftLocation location : validExterior) {
