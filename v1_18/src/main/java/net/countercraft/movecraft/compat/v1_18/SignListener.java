@@ -14,7 +14,9 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Directional;
+import org.bukkit.block.data.Rotatable;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
@@ -27,7 +29,16 @@ import java.util.*;
 public class SignListener extends AbstractSignListener {
 
     protected final SignWrapper createFromSign(final Sign sign) {
-        BlockFace face = ((Directional) sign.getBlockData()).getFacing();
+        BlockData blockData = sign.getBlock().getBlockData();
+        BlockFace face;
+        if (blockData instanceof Directional directional) {
+            face = directional.getFacing();
+        } else if (blockData instanceof Rotatable rotatable) {
+            face = rotatable.getRotation();
+        }
+        else {
+            face = BlockFace.SELF;
+        }
         SignWrapper wrapper = new SignWrapper(
                 sign,
                 sign::line,
@@ -49,7 +60,16 @@ public class SignListener extends AbstractSignListener {
 
     @Override
     protected SignWrapper getSignWrapper(Sign sign, SignChangeEvent signChangeEvent) {
-        BlockFace face = ((Directional) sign.getBlockData()).getFacing();
+        BlockData blockData = sign.getBlock().getBlockData();
+        BlockFace face;
+        if (blockData instanceof Directional directional) {
+            face = directional.getFacing();
+        } else if (blockData instanceof Rotatable rotatable) {
+            face = rotatable.getRotation();
+        }
+        else {
+            face = BlockFace.SELF;
+        }
         SignWrapper wrapper = new SignWrapper(
                 sign,
                 signChangeEvent::line,
