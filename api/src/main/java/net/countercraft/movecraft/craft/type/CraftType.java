@@ -44,6 +44,7 @@ import net.countercraft.movecraft.util.Tags;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import org.bukkit.*;
+import org.bukkit.entity.EntityType;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -155,6 +156,7 @@ final public class CraftType {
     public static final NamespacedKey CAN_HOVER = buildKey("can_hover");
     public static final NamespacedKey CAN_HOVER_OVER_WATER = buildKey("can_hover_over_water");
     public static final NamespacedKey MOVE_ENTITIES = buildKey("move_entities");
+    public static final NamespacedKey MOVE_ENTITIES_LIST = buildKey("move_entities_list");
     public static final NamespacedKey ONLY_MOVE_PLAYERS = buildKey("only_move_players");
     public static final NamespacedKey USE_GRAVITY = buildKey("use_gravity");
     public static final NamespacedKey HOVER_LIMIT = buildKey("hover_limit");
@@ -495,6 +497,16 @@ final public class CraftType {
         registerProperty(new BooleanProperty("canHover", CAN_HOVER, type -> false));
         registerProperty(new BooleanProperty("canHoverOverWater", CAN_HOVER_OVER_WATER, type -> true));
         registerProperty(new BooleanProperty("moveEntities", MOVE_ENTITIES, type -> true));
+        registerProperty(new ObjectPropertyImpl("moveEntitiesList", MOVE_ENTITIES_LIST,
+                (data, type, fileKey, namespacedKey) -> {
+                    var entityStringList = data.getStringList(fileKey);
+                    EnumSet<EntityType> entityList = EnumSet.noneOf(EntityType.class);
+                    for (String entityString : entityStringList) {
+                        entityList.addAll(Tags.parseEntities(entityString));
+                    }
+
+                    return entityList;
+        }, type -> EnumSet.noneOf(EntityType.class)));
         registerProperty(new BooleanProperty("onlyMovePlayers", ONLY_MOVE_PLAYERS, type -> true));
         registerProperty(new BooleanProperty("useGravity", USE_GRAVITY, type -> false));
         registerProperty(new IntegerProperty("hoverLimit", HOVER_LIMIT, type -> 0));

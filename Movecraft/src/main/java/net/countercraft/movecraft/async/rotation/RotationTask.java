@@ -51,6 +51,7 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.InventoryView;
 
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -270,7 +271,8 @@ public class RotationTask extends AsyncTask {
                 (oldHitBox.getMaxY() + oldHitBox.getMinY())/2.0,
                 (oldHitBox.getMaxZ() + oldHitBox.getMinZ())/2.0);
 
-        List<EntityType> entityList = List.of(EntityType.PLAYER, EntityType.PRIMED_TNT);
+        EnumSet<EntityType> entityList = EnumSet.of(EntityType.PLAYER, EntityType.PRIMED_TNT);
+        EnumSet<EntityType> shouldBeProcessed = (EnumSet<EntityType>) craft.getType().getObjectProperty(CraftType.MOVE_ENTITIES_LIST);
         for(Entity entity : craft.getWorld().getNearbyEntities(midpoint,
                 oldHitBox.getXLength() / 2.0 + 1,
                 oldHitBox.getYLength() / 2.0 + 2,
@@ -283,6 +285,10 @@ public class RotationTask extends AsyncTask {
                     || craft instanceof SinkingCraft)) {
                 continue;
             }// Player is onboard this craft
+
+            if(!shouldBeProcessed.contains(entity)) {
+                continue;
+            }
 
             Location adjustedPLoc = entity.getLocation().subtract(tOP);
 
