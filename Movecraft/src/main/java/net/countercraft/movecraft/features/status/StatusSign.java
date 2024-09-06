@@ -1,7 +1,5 @@
 package net.countercraft.movecraft.features.status;
 
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.type.CraftType;
@@ -21,10 +19,7 @@ import java.util.List;
 // TODO: Split this into multiple signs? Separate sign for fuel would make sense
 public class StatusSign extends AbstractInformationSign {
 
-    Object2IntMap<RequiredBlockEntry> displayBlocks = new Object2IntOpenHashMap<>();
     List<Component> displayComponents = new ObjectArrayList<>();
-    int totalNonNegligibleBlocks = 0;
-    int totalNonNegligibleWaterBlocks = 0;
 
     protected static final int FUEL_LINE_INDEX = 3;
     protected static final int BLOCK_LINE_INDEX_TOP = 1;
@@ -59,6 +54,7 @@ public class StatusSign extends AbstractInformationSign {
             style = STYLE_COLOR_RED;
         }
 
+        // TODO: Shorten for large numbers, or trim the number (e.g. 10k instead of 10.000)
         return Component.text("Fuel range: " + fuelRange).style(style);
     }
 
@@ -70,21 +66,18 @@ public class StatusSign extends AbstractInformationSign {
     @Override
     protected boolean refreshSign(@Nullable Craft craft, AbstractSignListener.SignWrapper sign, boolean fillDefault, REFRESH_CAUSE refreshCause) {
         // Calculate blocks and store them temporary, not pretty but works!
-        calcDisplayBlocks(craft);
         calcdisplayComponents(craft);
+        // Access violation prevention
+        while(displayComponents.size() < 2) {
+            displayComponents.add(EMPTY);
+        }
         return super.refreshSign(craft, sign, fillDefault, refreshCause);
     }
 
-    protected void calcDisplayBlocks(@Nullable Craft craft) {
-        displayBlocks.clear();
+    protected void calcdisplayComponents(@Nullable Craft craft) {
         displayComponents.clear();
-
-        if (craft == null) {
-            return;
-        }
-
-        totalNonNegligibleBlocks = 0;
-        totalNonNegligibleWaterBlocks = 0;
+        int totalNonNegligibleBlocks = 0;
+        int totalNonNegligibleWaterBlocks = 0;
         Counter<Material> materials = craft.getDataTag(Craft.MATERIALS);
         if (materials.isEmpty()) {
             return;
@@ -100,37 +93,15 @@ public class StatusSign extends AbstractInformationSign {
             }
         }
 
-        Counter<RequiredBlockEntry> displayBlocksTmp = new Counter<>();
-        displayBlocksTmp.add(craft.getDataTag(Craft.FLYBLOCKS));
-        displayBlocksTmp.add(craft.getDataTag(Craft.MOVEBLOCKS));
-                             
-        for (RequiredBlockEntry entry : displayBlocksTmp.getKeySet()) {
-          // TODO: Sure?
-          if (entry.getMin() == 0.0) {
-            continue;
-          }
-          double pctPresent = (displayBlocksTmp.get(entry) * 100D);
-          // TODO: WTF? Why?
-          if (craft.getType().getBoolProperty(CraftType.BLOCKED_BY_WATER)) {
-            pctPresent /= totalNonNegligibleBlocks;
-          } else {
-            pctPresent /= totalNonNegligibleWaterBlocks;
-          }
-          displayBlocks.putIfAbsent(entry, (int) pctPresent);
-        }      
-    }
+        Counter<RequiredBlockEntry> displayBlocks = new Counter<>();
+        // TODO: Extend to allow definition of tags in craft file
+        displayBlocks.add(craft.getDataTag(Craft.FLYBLOCKS));
+        displayBlocks.add(craft.getDataTag(Craft.MOVEBLOCKS));
 
-    protected void calcdisplayComponents(@Nullable Craft craft) {
-        displayComponents.add(EMPTY);
-        displayComponents.add(EMPTY);
-
-        if (craft == null) {
-            return;
-        }
-
-        int signLine = 0;
+        // TODO: Refactor loop into own method
+        int signLine = 1;
         int signColumn = 0;
-        for (RequiredBlockEntry entry : displayBlocks.keySet()) {
+        for (RequiredBlockEntry entry : displayBlocks.getKeySet()) {
             if (entry.getMin() == 0.0) {
                 continue;
             }
@@ -140,29 +111,34 @@ public class StatusSign extends AbstractInformationSign {
             } else {
                 percentPresent /= totalNonNegligibleWaterBlocks;
             }
-            Component signText = EMPTY;
+
+            String text = "";
+            if (entry.getName() == null) {
+                text += entry.materialsToString().toUpperCase().charAt(0);
+            } else {
+                text += entry.getName().toUpperCase().charAt(0);
+            }
+            text += " ";
+            text += (int) percentPresent;
+            text += "/";
+            text += (int) entry.getMin();
+
             Style style;
             if (percentPresent > entry.getMin() * 1.04) {
                 style = STYLE_COLOR_GREEN;
             } else if (percentPresent > entry.getMin() * 1.02) {
                 style = STYLE_COLOR_YELLOW;
             } else {
-                style = STYLE_COLOR_RED;
+                style = STYLE_COLOR_YELLOW;
             }
-            if (entry.getName() == null) {
-                signText = Component.text(entry.materialsToString().toUpperCase().charAt(0));
-            } else {
-                signText = Component.text(entry.getName().toUpperCase().charAt(0));
-            }
-            signText = signText.append(Component.text(" " + (int)percentPresent + "/" + (int)entry.getMin() + " "));
-            signText = signText.style(style);
+            Component signText = Component.text(text).style(style);
             if (signColumn == 0) {
-                displayComponents.set(signLine, signText);
+                displayComponents.add(signText);
                 signColumn++;
-            } else if (signLine < 2) {
-                Component existingLine = displayComponents.get(signLine);
-                existingLine = existingLine.append(signText);
-                displayComponents.set(signLine, existingLine);
+            } else if (signLine < 3) {
+                Component existingLine = displayComponents.get(signLine - 1);
+                existingLine = existingLine.append(Component.text("  ")).append(signText);
+                displayComponents.set((signLine - 1), existingLine);
                 signLine++;
                 signColumn = 0;
             }
