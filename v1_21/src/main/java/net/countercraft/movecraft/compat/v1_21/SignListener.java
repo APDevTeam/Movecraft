@@ -110,18 +110,20 @@ public class SignListener extends AbstractSignListener {
 
     @Override
     public void processSignTranslation(Craft craft, boolean checkEventIsUpdated) {
-        Object2ObjectMap<SignWrapper, List<MovecraftLocation>> signs = new Object2ObjectOpenCustomHashMap<>(new Hash.Strategy<SignWrapper>() {
+        // Ignore facing value here and directly store the associated wrappers in the list
+        Object2ObjectMap<SignWrapper, List<SignWrapper>> signs = new Object2ObjectOpenCustomHashMap<>(new Hash.Strategy<SignWrapper>() {
             @Override
             public int hashCode(SignWrapper strings) {
-                return Arrays.hashCode(strings.rawLines()) * strings.facing().hashCode();
+                return Arrays.hashCode(strings.rawLines());
             }
 
             @Override
             public boolean equals(SignWrapper a, SignWrapper b) {
-                return SignWrapper.areSignsEqual(a, b);
+                return SignWrapper.areSignsEqualIgnoreFace(a, b);
             }
         });
-        Map<MovecraftLocation, SignWrapper[]> signStates = new HashMap<>();
+        // Remember the locations for the event!
+        Map<SignWrapper, List<MovecraftLocation>> wrapperToLocs = new HashMap<>();
 
         for (MovecraftLocation location : craft.getHitBox()) {
             Block block = location.toBukkit(craft.getWorld()).getBlock();
@@ -136,45 +138,75 @@ public class SignListener extends AbstractSignListener {
                     continue;
                 }
                 for (SignWrapper wrapper : wrappersAtLoc) {
-                    List<MovecraftLocation> values = signs.computeIfAbsent(wrapper, (w) -> new ArrayList<>());
-                    values.add(location);
+                    List<SignWrapper> values = signs.computeIfAbsent(wrapper, (w) -> new ArrayList<>());
+                    values.add(wrapper);
+                    wrapperToLocs.computeIfAbsent(wrapper, (w) -> new ArrayList<>()).add(location);
                 }
-                signStates.put(location, wrappersAtLoc);
             }
         }
-        for(Map.Entry<SignWrapper, List<MovecraftLocation>> entry : signs.entrySet()){
+        Set<SignWrapper> keySet = new HashSet<>();
+        for(Map.Entry<SignWrapper, List<SignWrapper>> entry : signs.entrySet()){
             final List<Component> components = new ArrayList<>(entry.getKey().lines());
             SignWrapper backingForEvent = new SignWrapper(null, components::get, components, components::set, entry.getKey().facing());
-            SignTranslateEvent event = new SignTranslateEvent(craft, backingForEvent, entry.getValue());
+            SignTranslateEvent event = new SignTranslateEvent(craft, backingForEvent, wrapperToLocs.getOrDefault(entry.getKey(), new ArrayList<>()));
             Bukkit.getServer().getPluginManager().callEvent(event);
             // if(!event.isUpdated()){
             //     continue;
             // }
             // TODO: This is implemented only to fix client caching
             //  ideally we wouldn't do the update and would instead fake it out to the player
-            for(MovecraftLocation location : entry.getValue()){
-                Block block = location.toBukkit(craft.getWorld()).getBlock();
+
+            System.out.println("New lines: ");
+            for (String s : event.rawLines()) {
+                System.out.println(" - " + s);
+            }
+            System.out.println("Old lines: ");
+            for (String s : entry.getKey().rawLines()) {
+                System.out.println(" - " + s);
+            }
+            // Values get changed definitely, but perhaps it does not get applied to the sign after all?
+            for(SignWrapper wrapperTmp : entry.getValue()){
+                /*Block block = location.toBukkit(craft.getWorld()).getBlock();
                 BlockState state = block.getState();
                 if (!(state instanceof Sign)) {
                     continue;
                 }
                 SignWrapper[] signsAtLoc = signStates.get(location);
                 if (signsAtLoc != null && signsAtLoc.length > 0) {
+                    boolean hadCorrectSide = false;
                     for (SignWrapper sw : signsAtLoc) {
                         // Important: Check if the wrapper faces the right way!
-                        if (!sw.facing().equals(entry.getKey().facing())) {
+                        if (!sw.facing().equals(event.facing())) {
                             continue;
                         }
+                        hadCorrectSide = true;
                         if (!checkEventIsUpdated || event.isUpdated()) {
-                            sw.copyContent(entry.getKey());
+                            sw.copyContent(event::line, (i) -> i < event.lines().size());
                         }
                     }
-                    try {
-                        ((Sign)location.toBukkit(craft.getWorld()).getBlock()).update(false, false);
-                    } catch(ClassCastException ex) {
-                        // Ignore
+                    if (hadCorrectSide) {
+                        try {
+                            ((Sign)location.toBukkit(craft.getWorld()).getBlock()).update(false, false);
+                        } catch(ClassCastException ex) {
+                            // Ignore
+                        }
                     }
+                }*/
+                if (!checkEventIsUpdated || event.isUpdated()) {
+                    wrapperTmp.copyContent(event::line, (i) -> i < event.lines().size());
+                    keySet.add(entry.getKey());
                 }
+            }
+        }
+
+        for (SignWrapper wrapperTmp : keySet) {
+            for (MovecraftLocation mLoc : wrapperToLocs.getOrDefault(wrapperTmp, new ArrayList<>())) {
+                Block block = mLoc.toBukkit(craft.getWorld()).getBlock();
+                BlockState state = block.getState();
+                if (!(state instanceof Sign)) {
+                    continue;
+                }
+                ((Sign)block).update(false, false);
             }
         }
     }
