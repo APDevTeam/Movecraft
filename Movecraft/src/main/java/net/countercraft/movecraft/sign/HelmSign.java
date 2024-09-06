@@ -55,7 +55,7 @@ public class HelmSign extends AbstractCraftSign {
     }
 
     @Override
-    public boolean shouldCancelEvent(boolean processingSuccessful, @Nullable Action type, boolean sneaking) {
+    public boolean shouldCancelEvent(boolean processingSuccessful, @Nullable Action type, boolean sneaking, EventType eventType) {
         return !sneaking;
     }
 
