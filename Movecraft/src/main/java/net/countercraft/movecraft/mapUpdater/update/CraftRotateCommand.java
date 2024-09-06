@@ -227,8 +227,6 @@ public class CraftRotateCommand extends UpdateCommand {
             // if(!event.isUpdated()){
             //     continue;
             // }
-            // TODO: This is implemented only to fix client caching
-            //  ideally we wouldn't do the update and would instead fake it out to the player
             for (MovecraftLocation location : entry.getValue()) {
                 Location mcLocation = location.toBukkit(craft.getWorld());
                 Block block = mcLocation.getBlock();
