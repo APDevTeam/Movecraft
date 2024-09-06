@@ -14,7 +14,7 @@ public class PilotSign extends AbstractMovecraftSign {
     }
 
     @Override
-    public boolean shouldCancelEvent(boolean processingSuccessful, @Nullable Action type, boolean sneaking) {
+    public boolean shouldCancelEvent(boolean processingSuccessful, @Nullable Action type, boolean sneaking, EventType eventType) {
         return processingSuccessful || !sneaking;
     }
 
