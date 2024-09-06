@@ -48,8 +48,6 @@ import org.bukkit.entity.EntityType;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -194,7 +192,6 @@ final public class CraftType {
     public static final NamespacedKey EXPLOSION_ARMING_TIME = buildKey("explosion_arming_time");
     public static final NamespacedKey DIRECTIONAL_DEPENDENT_MATERIALS = buildKey("directional_dependent_materials");
     public static final NamespacedKey ALLOW_INTERNAL_COLLISION_EXPLOSION = buildKey("allow_internal_collision_explosion");
-    private static final Logger log = LoggerFactory.getLogger(CraftType.class);
     //endregion
 
     @Contract("_ -> new")
