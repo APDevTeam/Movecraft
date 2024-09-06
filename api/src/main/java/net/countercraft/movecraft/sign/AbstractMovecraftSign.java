@@ -140,10 +140,28 @@ public abstract class AbstractMovecraftSign {
         return MathUtils.getCraftByPersistentBlockData(sign.block().getLocation());
     }
 
+    public enum EventType {
+        SIGN_CREATION,
+        SIGN_EDIT,
+        SIGN_EDIT_ON_CRAFT(true),
+        SIGN_CLICK,
+        SIGN_CLICK_ON_CRAFT(true);
+
+        private boolean onCraft;
+
+        EventType() {
+            this(false);
+        }
+
+        EventType(boolean onCraft) {
+            this.onCraft = onCraft;
+        }
+    }
+
     // Used by the event handler to determine if the event should be cancelled
     // processingSuccessful is the output of processSignClick() or processSignChange()
     // This is only called for the PlayerInteractEvent and the SignChangeEvent
-    public abstract boolean shouldCancelEvent(boolean processingSuccessful, @Nullable Action type, boolean sneaking);
+    public abstract boolean shouldCancelEvent(boolean processingSuccessful, @Nullable Action type, boolean sneaking, EventType eventType);
 
     // Validation method, called by default in processSignClick
     // If false is returned, nothing will be processed

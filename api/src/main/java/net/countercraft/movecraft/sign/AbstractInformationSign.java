@@ -78,7 +78,7 @@ public abstract class AbstractInformationSign extends AbstractCraftSign {
 
     // TODO: Add "reason" what to cancel, we might not want to cancel all edit events
     @Override
-    public boolean shouldCancelEvent(boolean processingSuccessful, @Nullable Action type, boolean sneaking) {
+    public boolean shouldCancelEvent(boolean processingSuccessful, @Nullable Action type, boolean sneaking, EventType eventType) {
         if (processingSuccessful) {
             return true;
         }
