@@ -144,7 +144,7 @@ public class SignListener extends AbstractSignListener {
                 }
             }
         }
-        Set<SignWrapper> keySet = new HashSet<>();
+        Set<Sign> signsToUpdate = new HashSet<>();
         for(Map.Entry<SignWrapper, List<SignWrapper>> entry : signs.entrySet()){
             final List<Component> components = new ArrayList<>(entry.getKey().lines());
             SignWrapper backingForEvent = new SignWrapper(null, components::get, components, components::set, entry.getKey().facing());
@@ -156,14 +156,14 @@ public class SignListener extends AbstractSignListener {
             // TODO: This is implemented only to fix client caching
             //  ideally we wouldn't do the update and would instead fake it out to the player
 
-            System.out.println("New lines: ");
+            /*System.out.println("New lines: ");
             for (String s : event.rawLines()) {
                 System.out.println(" - " + s);
             }
             System.out.println("Old lines: ");
             for (String s : entry.getKey().rawLines()) {
                 System.out.println(" - " + s);
-            }
+            }*/
             // Values get changed definitely, but perhaps it does not get applied to the sign after all?
             for(SignWrapper wrapperTmp : entry.getValue()){
                 /*Block block = location.toBukkit(craft.getWorld()).getBlock();
@@ -194,20 +194,15 @@ public class SignListener extends AbstractSignListener {
                 }*/
                 if (!checkEventIsUpdated || event.isUpdated()) {
                     wrapperTmp.copyContent(event::line, (i) -> i < event.lines().size());
-                    keySet.add(entry.getKey());
+                    if (wrapperTmp.block() != null) {
+                        signsToUpdate.add(wrapperTmp.block());
+                    }
                 }
             }
         }
 
-        for (SignWrapper wrapperTmp : keySet) {
-            for (MovecraftLocation mLoc : wrapperToLocs.getOrDefault(wrapperTmp, new ArrayList<>())) {
-                Block block = mLoc.toBukkit(craft.getWorld()).getBlock();
-                BlockState state = block.getState();
-                if (!(state instanceof Sign)) {
-                    continue;
-                }
-                ((Sign)state).update(false, false);
-            }
+        for (Sign sign : signsToUpdate) {
+            sign.update(false, false);
         }
     }
 }
