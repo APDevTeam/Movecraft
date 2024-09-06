@@ -23,7 +23,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 //TODO: This is not very pretty...
@@ -36,7 +35,7 @@ public class CraftPilotSign extends AbstractCraftPilotSign {
     }
 
     @Override
-    public boolean shouldCancelEvent(boolean processingSuccessful, @Nullable Action type, boolean sneaking) {
+    public boolean shouldCancelEvent(boolean processingSuccessful, @Nullable Action type, boolean sneaking, EventType eventType) {
         return processingSuccessful || !sneaking;
     }
 
