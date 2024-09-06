@@ -88,7 +88,7 @@ public abstract class AbstractSubcraftSign extends AbstractCraftSign {
             return false;
         }
         // TODO: Change to enums?
-        String action = headerSplit[headerSplit.length - 1].toUpperCase();
+        String action = headerSplit[headerSplit.length - 1];
         if (!this.isActionAllowed(action)) {
             return false;
         }
