@@ -74,7 +74,7 @@ public class SubcraftRotateSign extends AbstractSubcraftSign {
 
     @Override
     protected boolean isActionAllowed(String action) {
-        return action.toUpperCase().equalsIgnoreCase("ROTATE");
+        return action.equalsIgnoreCase("ROTATE");
     }
 
     @Override
