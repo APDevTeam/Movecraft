@@ -14,6 +14,7 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
+import java.text.DecimalFormat;
 import java.util.List;
 
 // TODO: Split this into multiple signs? Separate sign for fuel would make sense
@@ -124,7 +125,8 @@ public class StatusSign extends AbstractInformationSign {
                 text += entry.getName().toUpperCase().charAt(0);
             }
             text += " ";
-            text += (int) percentPresent;
+            // Round to 2 digits to better reflect the actual situation
+            text += String.format("%.2f", percentPresent);
             text += "/";
             text += (int) entry.getMin();
 
