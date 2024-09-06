@@ -97,7 +97,15 @@ public abstract class AbstractSignListener implements Listener {
             return areSignsEqual(this, other);
         }
 
+        public static boolean areSignsEqualIgnoreFace(SignWrapper a, SignWrapper b) {
+            return areSignsEqual(a, b, true);
+        }
+
         public static boolean areSignsEqual(SignWrapper a, SignWrapper b) {
+            return areSignsEqual(a, b, false);
+        }
+
+        public static boolean areSignsEqual(SignWrapper a, SignWrapper b, boolean ignoreFace) {
             if (a == b) {
                 return true;
             }
@@ -121,7 +129,7 @@ public abstract class AbstractSignListener implements Listener {
             }
 
             // Now check the facing too!
-            return a.facing().equals(b.facing());
+            return ignoreFace || a.facing().equals(b.facing());
         }
 
         public static boolean areSignsEqual(SignWrapper[] a, SignWrapper[] b) {
@@ -143,8 +151,12 @@ public abstract class AbstractSignListener implements Listener {
         }
 
         public void copyContent(SignWrapper other) {
-            for (int i = 0; i < this.lines().size() && i < other.lines().size(); i++) {
-                this.line(i, other.line(i));
+            this.copyContent(other::line, (i) -> i < other.lines().size());
+        }
+
+        public void copyContent(Function<Integer, Component> retrievalFunction, Function<Integer, Boolean> indexValidator) {
+            for (int i = 0; i < this.lines().size() && indexValidator.apply(i); i++) {
+                this.line(i, retrievalFunction.apply(i));
             }
         }
 
