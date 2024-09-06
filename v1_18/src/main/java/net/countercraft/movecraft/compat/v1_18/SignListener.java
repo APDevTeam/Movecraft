@@ -141,13 +141,14 @@ public class SignListener extends AbstractSignListener {
                     for (SignWrapper sw : signsAtLoc) {
                         if (!checkEventIsUpdated || event.isUpdated()) {
                             sw.copyContent(entry.getKey());
+                            sw.block().update(false, false);
                         }
                     }
-                    try {
+                    /*try {
                         ((Sign)location.toBukkit(craft.getWorld()).getBlock().getState()).update(false, false);
                     } catch(ClassCastException ex) {
                         // Ignore
-                    }
+                    }*/
                 }
             }
         }
