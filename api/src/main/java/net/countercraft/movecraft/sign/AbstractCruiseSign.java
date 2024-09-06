@@ -81,7 +81,7 @@ public abstract class AbstractCruiseSign extends AbstractCraftSign {
 
     // By default, cancel the event if the processing was successful, or the invoker was not sneaking => Allows breaking signs while sneaking
     @Override
-    public boolean shouldCancelEvent(boolean processingSuccessful, @Nullable Action type, boolean sneaking) {
+    public boolean shouldCancelEvent(boolean processingSuccessful, @Nullable Action type, boolean sneaking, EventType eventType) {
         return processingSuccessful || !sneaking;
     }
 
