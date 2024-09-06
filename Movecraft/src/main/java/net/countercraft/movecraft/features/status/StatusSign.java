@@ -76,6 +76,11 @@ public class StatusSign extends AbstractInformationSign {
 
     protected void calcdisplayComponents(@Nullable Craft craft) {
         displayComponents.clear();
+
+        if (craft == null) {
+            return;
+        }
+
         int totalNonNegligibleBlocks = 0;
         int totalNonNegligibleWaterBlocks = 0;
         Counter<Material> materials = craft.getDataTag(Craft.MATERIALS);
