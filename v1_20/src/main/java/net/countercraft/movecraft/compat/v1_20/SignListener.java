@@ -172,7 +172,7 @@ public class SignListener extends AbstractSignListener {
                 if (!(state instanceof Sign)) {
                     continue;
                 }
-                ((Sign)block).update(false, false);
+                ((Sign)state).update(false, false);
             }
         }
     }

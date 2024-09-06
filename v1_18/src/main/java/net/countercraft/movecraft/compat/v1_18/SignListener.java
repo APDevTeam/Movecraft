@@ -144,7 +144,7 @@ public class SignListener extends AbstractSignListener {
                         }
                     }
                     try {
-                        ((Sign)location.toBukkit(craft.getWorld()).getBlock()).update(false, false);
+                        ((Sign)location.toBukkit(craft.getWorld()).getBlock().getState()).update(false, false);
                     } catch(ClassCastException ex) {
                         // Ignore
                     }
