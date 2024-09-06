@@ -156,14 +156,6 @@ public class SignListener extends AbstractSignListener {
             // TODO: This is implemented only to fix client caching
             //  ideally we wouldn't do the update and would instead fake it out to the player
 
-            System.out.println("New lines: ");
-            for (String s : event.rawLines()) {
-                System.out.println(" - " + s);
-            }
-            System.out.println("Old lines: ");
-            for (String s : entry.getKey().rawLines()) {
-                System.out.println(" - " + s);
-            }
             // Values get changed definitely, but perhaps it does not get applied to the sign after all?
             for(SignWrapper wrapperTmp : entry.getValue()){
                 if (!checkEventIsUpdated || event.isUpdated()) {
