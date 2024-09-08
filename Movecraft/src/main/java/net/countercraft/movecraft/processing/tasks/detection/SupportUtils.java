@@ -5,6 +5,7 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Directional;
 import org.bukkit.block.data.FaceAttachable;
+import org.bukkit.block.data.Hangable;
 import org.bukkit.block.data.type.Lantern;
 
 import java.util.EnumSet;
@@ -25,8 +26,8 @@ public class SupportUtils {
 
         //TODO: Use pattern matched switch statements once we update do Java 21
         //TODO: This should become Hangable instead when we drop support for 1.18
-        if (data instanceof Lantern lantern)
-            return Optional.of(lantern.isHanging() ? BlockFace.UP : BlockFace.DOWN);
+        if (data instanceof Hangable hangable)
+            return Optional.of(hangable.isHanging() ? BlockFace.UP : BlockFace.DOWN);
 
         if (data instanceof Directional directional) {
             BlockFace normalCase = directional.getFacing().getOppositeFace();
