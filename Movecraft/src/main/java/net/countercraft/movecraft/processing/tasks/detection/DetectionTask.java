@@ -356,10 +356,9 @@ public class DetectionTask implements Supplier<Effect> {
                 BlockData blockData = movecraftWorld.getData(probe);
                 Material material = blockData.getMaterial();
 
-                Optional<BlockFace> blockDataOptional = SupportUtils.getSupportFace(blockData, directionalDependent);
-                if (blockDataOptional.isPresent()) {
-                    BlockFace facing = blockDataOptional.get();
-                    MovecraftLocation relativeLoc = probe.getRelative(facing);
+                BlockFace supportFace = SupportUtils.getSupportFace(blockData, directionalDependent);
+                if (supportFace != null) {
+                    MovecraftLocation relativeLoc = probe.getRelative(supportFace);
 
                     if (!legal.contains(relativeLoc))
                         continue;
