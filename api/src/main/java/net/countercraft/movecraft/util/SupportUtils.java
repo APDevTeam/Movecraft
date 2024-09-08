@@ -12,14 +12,14 @@ public class SupportUtils {
     @Nullable
     public static BlockFace getSupportFace(@NotNull BlockData data) {
         return switch (data) {
-            case Hangable hangable -> hangable.isHanging() ? BlockFace.UP : BlockFace.DOWN;
+            case Directional directional -> directional.getFacing().getOppositeFace();
+            case Hangable hangable when hangable.isHanging() -> BlockFace.UP;
+            case Hangable hangable when !hangable.isHanging() -> BlockFace.DOWN;
             case FaceAttachable faceAttachable -> switch (faceAttachable.getAttachedFace()) {
                 case FLOOR -> BlockFace.DOWN;
-                case WALL ->
-                        faceAttachable instanceof Directional directional ? directional.getFacing().getOppositeFace() : null;
                 case CEILING -> BlockFace.UP;
+                case WALL -> null; // Wall attachable should be Directional
             };
-            case Directional directional -> directional.getFacing().getOppositeFace();
             default -> null;
         };
     }
