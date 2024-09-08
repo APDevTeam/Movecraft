@@ -270,7 +270,7 @@ public class RotationTask extends AsyncTask {
                 (oldHitBox.getMaxY() + oldHitBox.getMinY())/2.0,
                 (oldHitBox.getMaxZ() + oldHitBox.getMinZ())/2.0);
 
-        List<EntityType> entityList = List.of(EntityType.PLAYER, EntityType.PRIMED_TNT);
+        List<EntityType> entityList = List.of(EntityType.PLAYER, EntityType.TNT);
         for(Entity entity : craft.getWorld().getNearbyEntities(midpoint,
                 oldHitBox.getXLength() / 2.0 + 1,
                 oldHitBox.getYLength() / 2.0 + 2,

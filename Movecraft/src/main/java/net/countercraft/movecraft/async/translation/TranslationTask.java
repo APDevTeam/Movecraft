@@ -381,7 +381,7 @@ public class TranslationTask extends AsyncTask {
             }
 
             if (craft.getType().getBoolProperty(CraftType.ONLY_MOVE_PLAYERS)
-                    && entity.getType() != EntityType.PRIMED_TNT) {
+                    && entity.getType() != EntityType.TNT) {
                 continue;
             }
 
