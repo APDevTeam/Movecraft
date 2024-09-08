@@ -28,6 +28,7 @@ import net.countercraft.movecraft.processing.tasks.detection.validators.SizeVali
 import net.countercraft.movecraft.processing.tasks.detection.validators.WaterContactValidator;
 import net.countercraft.movecraft.util.AtomicLocationSet;
 import net.countercraft.movecraft.util.CollectionUtils;
+import net.countercraft.movecraft.util.SupportUtils;
 import net.countercraft.movecraft.util.Tags;
 import net.countercraft.movecraft.util.hitboxes.BitmapHitBox;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
@@ -54,7 +55,6 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;

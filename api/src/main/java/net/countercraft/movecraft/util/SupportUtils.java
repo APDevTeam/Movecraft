@@ -1,4 +1,4 @@
-package net.countercraft.movecraft.processing.tasks.detection;
+package net.countercraft.movecraft.util;
 
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
