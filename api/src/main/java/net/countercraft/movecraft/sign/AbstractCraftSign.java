@@ -22,20 +22,20 @@ import java.util.Optional;
 public abstract class AbstractCraftSign extends AbstractMovecraftSign {
 
     // Helper method for the listener
-    public static Optional<AbstractCraftSign> tryGetCraftSign(final Component ident) {
+    public static @Nullable AbstractCraftSign getCraftSign(final Component ident) {
         if (ident == null) {
-            return Optional.empty();
+            return null;
         }
         final String identStr = PlainTextComponentSerializer.plainText().serialize(ident);
-        return tryGetCraftSign(identStr);
+        return getCraftSign(identStr);
     }
 
-    public static Optional<AbstractCraftSign> tryGetCraftSign(final String ident) {
-        Optional<AbstractMovecraftSign> tmp = AbstractCraftSign.tryGet(ident);
-        if (tmp.isPresent() && tmp.get() instanceof AbstractCraftSign acs) {
-            return Optional.of(acs);
+    public static @Nullable AbstractCraftSign getCraftSign(final String ident) {
+        AbstractMovecraftSign tmp = AbstractCraftSign.get(ident);
+        if (tmp != null && tmp instanceof AbstractCraftSign acs) {
+            return acs;
         }
-        return Optional.empty();
+        return null;
     }
 
     protected final boolean ignoreCraftIsBusy;
