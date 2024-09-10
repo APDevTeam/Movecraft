@@ -53,9 +53,9 @@ public class RemoteSign extends AbstractCraftSign {
                 for (AbstractSignListener.SignWrapper wrapper : targetSignWrappers) {
                     // Matches source?
                     final String signHeader = PlainTextComponentSerializer.plainText().serialize(wrapper.line(0));
-                    Optional<AbstractMovecraftSign> signHandler = AbstractMovecraftSign.tryGet(signHeader);
+                    AbstractMovecraftSign signHandler = AbstractMovecraftSign.get(signHeader);
                     // Ignore other remove signs
-                    if (!signHandler.isPresent() || signHandler.get() instanceof RemoteSign) {
+                    if (signHandler == null || signHandler instanceof RemoteSign) {
                         continue;
                     }
                     // But does it match the source man?
