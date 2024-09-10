@@ -74,8 +74,8 @@ public abstract class AbstractMovecraftSign {
 
     // Registers a sign
     // If @param overrideIfAlreadyRegistered is set to false, it won't be registered if something has elready been registered using that name
-    public static void register(final String ident, final @Nonnull AbstractMovecraftSign instance, boolean overrideIfAlreadyRegistered) {
-        if (overrideIfAlreadyRegistered) {
+    public static void register(final String ident, final @Nonnull AbstractMovecraftSign instance, boolean override) {
+        if (override) {
             SIGNS.put(ident.toUpperCase(), instance);
         } else {
             SIGNS.putIfAbsent(ident.toUpperCase(), instance);
