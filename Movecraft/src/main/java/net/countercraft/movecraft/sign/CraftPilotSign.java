@@ -119,10 +119,6 @@ public class CraftPilotSign extends AbstractCraftPilotSign {
                         // Setup cruise direction
                         BlockFace facing = signWrapper.facing();
                         craft.setCruiseDirection(CruiseDirection.fromBlockFace(facing));
-                        /*if (signWrapper.block().getBlockData() instanceof Directional)
-                            craft.setCruiseDirection(CruiseDirection.fromBlockFace(((Directional) sign.getBlockData()).getFacing()));
-                        else
-                            craft.setCruiseDirection(CruiseDirection.NONE);*/
 
                         // Start craft cruising
                         craft.setLastCruiseUpdate(System.currentTimeMillis());
