@@ -1,0 +1,46 @@
+package net.countercraft.movecraft.util;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
+public class SimpleRegistry<K, T> {
+
+    protected final @NotNull ConcurrentMap<@NotNull K, @NotNull T> _register;
+
+    public SimpleRegistry(){
+        _register = new ConcurrentHashMap<>();
+    }
+
+    public @NotNull T register(final @NotNull K key, final @NotNull T value) throws IllegalArgumentException {
+        return this.register(key, value, false);
+    }
+
+    public @NotNull T register(final @NotNull K key, final @NotNull T value, boolean override) throws IllegalArgumentException {
+        T previous = _register.putIfAbsent(key, value);
+        if(previous != null && !override){
+            throw new IllegalArgumentException(String.format("Key %s is already registered.", key));
+        }
+
+        return value;
+    }
+
+    public @Nullable T get(final @NotNull K key) {
+        return _register.getOrDefault(key, null);
+    }
+
+    public boolean isRegistered(final @NotNull K key){
+        return _register.containsKey(key);
+    }
+
+    /**
+     * Get an iterable over all keys currently registered.
+     * @return An immutable iterable over the registry keys
+     */
+    public @NotNull Iterable<@NotNull K> getAllKeys(){
+        return _register.keySet().stream().toList();
+    }
+
+}
