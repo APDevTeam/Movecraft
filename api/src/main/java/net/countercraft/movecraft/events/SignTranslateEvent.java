@@ -85,7 +85,7 @@ public class SignTranslateEvent extends CraftEvent{
         return backing.lines();
     }
 
-    // Bukkit crap
+    // Bukkit
     @Override
     public HandlerList getHandlers() {
         return HANDLERS;
