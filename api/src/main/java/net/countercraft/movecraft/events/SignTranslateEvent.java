@@ -39,7 +39,8 @@ public class SignTranslateEvent extends CraftEvent{
     @NotNull
     @Deprecated(forRemoval = true)
     public String[] getLines() {
-        // TODO: Why does this set it to updated? This is just reading...
+        // Why does this set it to updated? This is just reading...
+        // => Lines can be updated externally. We need to mark all signs as updated so it displays properly on clients
         this.updated = true;
         return backing.rawLines();
     }
