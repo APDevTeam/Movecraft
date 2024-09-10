@@ -22,20 +22,16 @@ import java.util.Optional;
 public abstract class AbstractCraftSign extends AbstractMovecraftSign {
 
     // Helper method for the listener
+    // Use the methods in MovecraftSignRegistry instead
+    @Deprecated(forRemoval = true)
     public static @Nullable AbstractCraftSign getCraftSign(final Component ident) {
-        if (ident == null) {
-            return null;
-        }
-        final String identStr = PlainTextComponentSerializer.plainText().serialize(ident);
-        return getCraftSign(identStr);
+        return MovecraftSignRegistry.INSTANCE.getCraftSign(ident);
     }
 
+    // Use the methods in MovecraftSignRegistry instead
+    @Deprecated(forRemoval = true)
     public static @Nullable AbstractCraftSign getCraftSign(final String ident) {
-        AbstractMovecraftSign tmp = AbstractCraftSign.get(ident);
-        if (tmp != null && tmp instanceof AbstractCraftSign acs) {
-            return acs;
-        }
-        return null;
+        return MovecraftSignRegistry.INSTANCE.getCraftSign(ident);
     }
 
     protected final boolean ignoreCraftIsBusy;

@@ -38,48 +38,39 @@ public abstract class AbstractMovecraftSign {
     }
 
     // Special case for pilot signs, they are registered via the crafttypes name
+    // Use the methods in MovecraftSignRegistry instead
+    @Deprecated(forRemoval = true)
     public static void registerCraftPilotSigns(Set<CraftType> loadedTypes, Function<CraftType, AbstractCraftPilotSign> signFactory) {
-        SIGNS.entrySet().removeIf(entry ->  entry.getValue() instanceof AbstractCraftPilotSign);
-        // Now, add all types...
-        for (CraftType type : loadedTypes) {
-            AbstractCraftPilotSign sign = signFactory.apply(type);
-            register(type.getStringProperty(CraftType.NAME), sign, true);
-        }
+        MovecraftSignRegistry.INSTANCE.registerCraftPilotSigns(loadedTypes, signFactory);
     }
 
+    // Use the methods in MovecraftSignRegistry instead
+    @Deprecated(forRemoval = true)
     public static @Nullable AbstractMovecraftSign get(final Component ident) {
-        if (ident == null) {
-            return null;
-        }
-        final String identStr = PlainTextComponentSerializer.plainText().serialize(ident);
-        return get(identStr);
+        return MovecraftSignRegistry.INSTANCE.get(ident);
     }
 
     // Attempts to find a AbstractMovecraftSign instance, if something has been registered
     // If the ident follows the format "foo: bar", only "foo:" is used as ident to search for
+    // Use the methods in MovecraftSignRegistry instead
+    @Deprecated(forRemoval = true)
     public static @Nullable AbstractMovecraftSign get(final String ident) {
-        String identToUse = ident.toUpperCase();
-        if (identToUse.contains(":")) {
-            identToUse = identToUse.split(":")[0];
-            // Re-add the : cause things should be registered with : at the end
-            identToUse = identToUse + ":";
-        }
-        return SIGNS.getOrDefault(identToUse, null);
+        return MovecraftSignRegistry.INSTANCE.get(ident);
     }
 
     // Registers a sign in all cases
+    // Use the methods in MovecraftSignRegistry instead
+    @Deprecated(forRemoval = true)
     public static void register(final String ident, final @Nonnull AbstractMovecraftSign instance) {
-        register(ident, instance, true);
+        MovecraftSignRegistry.INSTANCE.register(ident, instance);
     }
 
     // Registers a sign
     // If @param overrideIfAlreadyRegistered is set to false, it won't be registered if something has elready been registered using that name
+    // Use the methods in MovecraftSignRegistry instead
+    @Deprecated(forRemoval = true)
     public static void register(final String ident, final @Nonnull AbstractMovecraftSign instance, boolean override) {
-        if (override) {
-            SIGNS.put(ident.toUpperCase(), instance);
-        } else {
-            SIGNS.putIfAbsent(ident.toUpperCase(), instance);
-        }
+        MovecraftSignRegistry.INSTANCE.register(ident, instance, override);
     }
 
     // Optional permission for this sign
