@@ -47,24 +47,24 @@ public abstract class AbstractMovecraftSign {
         }
     }
 
-    public static Optional<AbstractMovecraftSign> tryGet(final Component ident) {
+    public static @Nullable AbstractMovecraftSign get(final Component ident) {
         if (ident == null) {
-            return Optional.empty();
+            return null;
         }
         final String identStr = PlainTextComponentSerializer.plainText().serialize(ident);
-        return tryGet(identStr);
+        return get(identStr);
     }
 
     // Attempts to find a AbstractMovecraftSign instance, if something has been registered
     // If the ident follows the format "foo: bar", only "foo:" is used as ident to search for
-    public static Optional<AbstractMovecraftSign> tryGet(final String ident) {
+    public static @Nullable AbstractMovecraftSign get(final String ident) {
         String identToUse = ident.toUpperCase();
         if (identToUse.contains(":")) {
             identToUse = identToUse.split(":")[0];
             // Re-add the : cause things should be registered with : at the end
             identToUse = identToUse + ":";
         }
-        return Optional.ofNullable(SIGNS.getOrDefault(identToUse, null));
+        return SIGNS.getOrDefault(identToUse, null);
     }
 
     // Registers a sign in all cases

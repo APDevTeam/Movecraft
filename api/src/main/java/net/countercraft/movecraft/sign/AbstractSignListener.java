@@ -3,6 +3,7 @@ package net.countercraft.movecraft.sign;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
+import net.countercraft.movecraft.util.MathUtils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.World;
@@ -10,11 +11,13 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -167,7 +170,10 @@ public abstract class AbstractSignListener implements Listener {
     };
     public abstract SignWrapper[] getSignWrappers(Sign sign, boolean ignoreEmpty);
     protected abstract SignWrapper getSignWrapper(Sign sign, SignChangeEvent signChangeEvent);
-    protected abstract SignWrapper getSignWrapper(Sign sign, PlayerInteractEvent interactEvent);
+    protected SignWrapper getSignWrapper(Sign sign, PlayerInteractEvent interactEvent) {
+        return this.getSignWrapper(sign, interactEvent.getPlayer());
+    }
+    protected abstract SignWrapper getSignWrapper(Sign sign, Player player);
 
     public abstract void processSignTranslation(final Craft craft, boolean checkEventIsUpdated);
 
@@ -180,7 +186,11 @@ public abstract class AbstractSignListener implements Listener {
                     BlockState state = block.getState();
                     if (state instanceof Sign sign) {
                         for (SignWrapper wrapper : this.getSignWrappers(sign)) {
-                            AbstractCraftSign.tryGetCraftSign(wrapper.line(0)).ifPresent(acs -> acs.onCraftDetect(event, wrapper));
+                            // Would be one more readable line if using Optionals but Nullables were wanted
+                            AbstractCraftSign acs = AbstractCraftSign.getCraftSign(wrapper.line(0));
+                            if (acs != null) {
+                                acs.onCraftDetect(event, wrapper);
+                            }
                         }
                     }
                 }
@@ -189,7 +199,11 @@ public abstract class AbstractSignListener implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
     public void onSignTranslate(SignTranslateEvent event) {
-        AbstractCraftSign.tryGetCraftSign(event.line(0)).ifPresent(acs -> acs.onSignMovedByCraft(event));
+        // Would be one more readable line if using Optionals but Nullables were wanted
+        AbstractCraftSign acs = AbstractCraftSign.getCraftSign(event.line(0));
+        if (acs != null) {
+            acs.onSignMovedByCraft(event);
+        }
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
@@ -197,11 +211,19 @@ public abstract class AbstractSignListener implements Listener {
         Block block = event.getBlock();
         BlockState state = block.getState();
         if (state instanceof Sign sign) {
+            SignWrapper signWrapper = this.getSignWrapper(sign, event.getPlayer());
             SignWrapper wrapper = this.getSignWrapper(sign, event);
-            AbstractMovecraftSign.tryGet(wrapper.line(0)).ifPresent(ams -> {
 
+            AbstractMovecraftSign.EventType eventType = signWrapper.isEmpty() ? AbstractMovecraftSign.EventType.SIGN_CREATION : AbstractMovecraftSign.EventType.SIGN_EDIT;
+            if (eventType == AbstractMovecraftSign.EventType.SIGN_EDIT && MathUtils.getCraftByPersistentBlockData(sign.getLocation()) != null) {
+                eventType = AbstractMovecraftSign.EventType.SIGN_EDIT_ON_CRAFT;
+            }
+            final AbstractMovecraftSign.EventType eventTypeTmp = eventType;
+            AbstractMovecraftSign ams = AbstractMovecraftSign.get(wrapper.line(0));
+            // Would be one more readable line if using Optionals but Nullables were wanted
+            if (ams != null) {
                 boolean success = ams.processSignChange(event, wrapper);
-                if (ams.shouldCancelEvent(success, null, event.getPlayer().isSneaking())) {
+                if (ams.shouldCancelEvent(success, null, event.getPlayer().isSneaking(), eventTypeTmp)) {
                     event.setCancelled(true);
                 }
             });
@@ -217,9 +239,19 @@ public abstract class AbstractSignListener implements Listener {
         BlockState state = block.getState();
         if (state instanceof Sign sign) {
             SignWrapper wrapper = this.getSignWrapper(sign, event);
-            AbstractMovecraftSign.tryGet(wrapper.line(0)).ifPresent(ams -> {
+            boolean shift = event.getPlayer().isSneaking();
+            ItemStack heldItem = event.getItem();
+
+            // TODO: If the item is a feather (right click) or a axe (left click) and shift is pressed, then we don't do movecraft stuff
+
+            // Would be one more readable line if using Optionals but Nullables were wanted
+            AbstractMovecraftSign ams = AbstractMovecraftSign.get(wrapper.line(0));
+            if (ams != null) {
                 boolean success = ams.processSignClick(event.getAction(), wrapper, event.getPlayer());
-                if (ams.shouldCancelEvent(success, event.getAction(), event.getPlayer().isSneaking())) {
+                if (ams.shouldCancelEvent(success, event.getAction(), event.getPlayer().isSneaking(), AbstractMovecraftSign.EventType.SIGN_CLICK)) {
+                    event.setCancelled(true);
+                } else if (MathUtils.getCraftByPersistentBlockData(sign.getLocation()) != null) {
+                    // Cancel interact in all cases when on a craft
                     event.setCancelled(true);
                 }
             });
