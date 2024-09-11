@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static net.countercraft.movecraft.util.MathUtils.withinWorldBorder;
@@ -167,10 +168,11 @@ public class TranslationTask extends AsyncTask {
                 continue;
             }
             //Prevent piston bug
-            //if (oldLocation.toBukkit(world).getBlock().getType().equals(Material.MOVING_PISTON))
+            if (oldLocation.toBukkit(world).getBlock().getType().equals(Material.MOVING_PISTON))
             //    fail(String.format(I18nSupport.getInternationalisedString("Translation - Failed Craft is obstructed")
             //                    + " @ %d,%d,%d,%s", oldLocation.getX(), oldLocation.getY(), oldLocation.getZ(),
-            //            oldLocation.toBukkit(craft.getWorld()).getBlock().getType()));
+            //           oldLocation.toBukkit(craft.getWorld()).getBlock().getType()));
+                Movecraft.getInstance().getLogger().log(Level.INFO,"Potentially unsafe piston detected");
 
             final Material testMaterial = newLocation.toBukkit(world).getBlock().getType();
 
