@@ -164,6 +164,15 @@ public abstract class AbstractSubcraftSign extends AbstractCraftSign {
         return this.craftTypeRetrievalFunction.apply(ident);
     }
 
+    @Override
+    public boolean shouldCancelEvent(boolean processingSuccessful, @Nullable Action type, boolean sneaking, EventType eventType) {
+        boolean resultSuper = !super.shouldCancelEvent(processingSuccessful, type, sneaking, eventType);
+        if (!resultSuper) {
+            return eventType == EventType.SIGN_CLICK_ON_CRAFT || eventType == EventType.SIGN_CLICK;
+        }
+        return resultSuper;
+    }
+
     protected abstract void runDetectTask(Action clickType, CraftType subcraftType, Craft parentCraft, World world, Player player, MovecraftLocation startPoint);
     protected abstract boolean isActionAllowed(final String action);
     protected abstract void onActionAlreadyInProgress(Player player);
