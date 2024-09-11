@@ -293,8 +293,12 @@ public class AsyncManager extends BukkitRunnable {
             if (!(craft instanceof SinkingCraft))
                 continue;
 
-            if (craft.getHitBox().isEmpty() || craft.getHitBox().getMinY() < 5) {
-                CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.SUNK, false);
+            if (craft.getHitBox().isEmpty() || craft.getHitBox().getMinY() < -63) {
+                //comment out old relase
+                //CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.SUNK, false);
+                
+                // Remove the bottom-most layer
+                removeBottomLayer(craft);
                 continue;
             }
             long ticksElapsed = (System.currentTimeMillis() - craft.getLastCruiseUpdate()) / 50;
@@ -309,6 +313,31 @@ public class AsyncManager extends BukkitRunnable {
             }
             craft.translate(dx, -1, dz);
             craft.setLastCruiseUpdate(System.currentTimeMillis());
+        }
+    }
+    
+    private void removeBottomLayer(Craft craft) {
+        if (craft.getHitBox().isEmpty()) {
+            return;
+        }
+    
+        // Get the bottom-most Y coordinate of the craft
+        int bottomY = craft.getHitBox().getMinY();
+    
+        // Get the dimensions of the craft
+        int width = craft.getHitBox().getWidth();
+        int length = craft.getHitBox().getLength();
+
+        // Assuming you have a method to get the current block position
+        int startX = craft.getCurrentPosition().getX();
+        int startZ = craft.getCurrentPosition().getZ();
+
+        // Remove the bottom-most layer blocks
+        for (int x = startX; x < startX + width; x++) {
+            for (int z = startZ; z < startZ + length; z++) {
+                // Assume getWorld() returns the world instance where the craft is located
+                craft.getWorld().getBlockAt(x, bottomY, z).setType(Material.AIR);
+            }
         }
     }
 
