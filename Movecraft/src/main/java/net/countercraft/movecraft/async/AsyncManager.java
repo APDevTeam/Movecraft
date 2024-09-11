@@ -320,17 +320,18 @@ public class AsyncManager extends BukkitRunnable {
         if (craft.getHitBox().isEmpty()) {
             return;
         }
-    
-        // Get the bottom-most Y coordinate of the craft
+
+        // Use the last translation to approximate current location
+        MovecraftLocation location = craft.getLastTranslation(); // Use getLastTranslation()
         int bottomY = craft.getHitBox().getMinY();
-    
+
         // Get the dimensions of the craft
         int width = craft.getHitBox().getWidth();
         int length = craft.getHitBox().getLength();
 
-        // Assuming you have a method to get the current block position
-        int startX = craft.getCurrentPosition().getX();
-        int startZ = craft.getCurrentPosition().getZ();
+        // Get the dimensions and coordinates
+        int startX = location.getX();
+        int startZ = location.getZ();
 
         // Remove the bottom-most layer blocks
         for (int x = startX; x < startX + width; x++) {
