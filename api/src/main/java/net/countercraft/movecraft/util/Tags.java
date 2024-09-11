@@ -21,6 +21,9 @@ public class Tags {
     public static final EnumSet<Material> BUCKETS = EnumSet.of(Material.LAVA_BUCKET, Material.WATER_BUCKET, Material.MILK_BUCKET, Material.COD_BUCKET, Material.PUFFERFISH_BUCKET, Material.SALMON_BUCKET, Material.TROPICAL_FISH_BUCKET);
     public static final EnumSet<Material> WALL_TORCHES = EnumSet.of(Material.WALL_TORCH, Material.SOUL_WALL_TORCH, Material.REDSTONE_WALL_TORCH);
     public static final EnumSet<Material> LANTERNS = EnumSet.of(Material.LANTERN, Material.SOUL_LANTERN);
+    // TODO: Move to tags
+    public static final EnumSet<Material> SIGN_BYPASS_RIGHT_CLICK = EnumSet.of(Material.FEATHER);
+    public static final EnumSet<Material> SIGN_BYPASS_LEFT_CLICK = EnumSet.copyOf(Tag.ITEMS_AXES.getValues());
 
     static {
         FRAGILE_MATERIALS.add(Material.PISTON_HEAD);

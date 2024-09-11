@@ -4,6 +4,7 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
 import net.countercraft.movecraft.util.MathUtils;
+import net.countercraft.movecraft.util.Tags;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.World;
@@ -239,16 +240,25 @@ public abstract class AbstractSignListener implements Listener {
         BlockState state = block.getState();
         if (state instanceof Sign sign) {
             SignWrapper wrapper = this.getSignWrapper(sign, event);
-            boolean shift = event.getPlayer().isSneaking();
             ItemStack heldItem = event.getItem();
+            boolean onCraft = MathUtils.getCraftByPersistentBlockData(sign.getLocation()) != null;
+            boolean sneaking = event.getPlayer().isSneaking();
+            // Allow editing and breaking signs with tools
+            if (!onCraft && sneaking) {
+                if (Tags.SIGN_BYPASS_RIGHT_CLICK.contains(heldItem.getType()) && (event.getAction().isRightClick())) {
+                    return;
+                }
 
-            // TODO: If the item is a feather (right click) or a axe (left click) and shift is pressed, then we don't do movecraft stuff
+                if (Tags.SIGN_BYPASS_LEFT_CLICK.contains(heldItem.getType()) && (event.getAction().isLeftClick())) {
+                    return;
+                }
+            }
 
             // Would be one more readable line if using Optionals but Nullables were wanted
             AbstractMovecraftSign ams = AbstractMovecraftSign.get(wrapper.line(0));
             if (ams != null) {
                 boolean success = ams.processSignClick(event.getAction(), wrapper, event.getPlayer());
-                if (ams.shouldCancelEvent(success, event.getAction(), event.getPlayer().isSneaking(), AbstractMovecraftSign.EventType.SIGN_CLICK)) {
+                if (ams.shouldCancelEvent(success, event.getAction(), sneaking, onCraft ? AbstractMovecraftSign.EventType.SIGN_CLICK_ON_CRAFT : AbstractMovecraftSign.EventType.SIGN_CLICK)) {
                     event.setCancelled(true);
                 } else if (MathUtils.getCraftByPersistentBlockData(sign.getLocation()) != null) {
                     // Cancel interact in all cases when on a craft
