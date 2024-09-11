@@ -115,13 +115,13 @@ public class RotationTask extends AsyncTask {
             newHitBox.add(newLocation);
 
             //Prevent piston bug
-            if (originalLocation.toBukkit(getCraft().getWorld()).getBlock().getType().equals(Material.MOVING_PISTON)) {
-                failed = true;
-                failMessage = (String.format(I18nSupport.getInternationalisedString("Translation - Failed Craft is obstructed")
-                                + " @ %d,%d,%d,%s", originalLocation.getX(), originalLocation.getY(), originalLocation.getZ(),
-                        originalLocation.toBukkit(craft.getWorld()).getBlock().getType()));
-                break;
-            }
+            //if (originalLocation.toBukkit(getCraft().getWorld()).getBlock().getType().equals(Material.MOVING_PISTON)) {
+            //    failed = true;
+            //    failMessage = (String.format(I18nSupport.getInternationalisedString("Translation - Failed Craft is obstructed")
+            //                    + " @ %d,%d,%d,%s", originalLocation.getX(), originalLocation.getY(), originalLocation.getZ(),
+            //            originalLocation.toBukkit(craft.getWorld()).getBlock().getType()));
+            //    break;
+            //}
 
             Material oldMaterial = originalLocation.toBukkit(w).getBlock().getType();
             //prevent chests collision

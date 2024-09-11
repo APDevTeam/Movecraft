@@ -167,10 +167,10 @@ public class TranslationTask extends AsyncTask {
                 continue;
             }
             //Prevent piston bug
-            if (oldLocation.toBukkit(world).getBlock().getType().equals(Material.MOVING_PISTON))
-                fail(String.format(I18nSupport.getInternationalisedString("Translation - Failed Craft is obstructed")
-                                + " @ %d,%d,%d,%s", oldLocation.getX(), oldLocation.getY(), oldLocation.getZ(),
-                        oldLocation.toBukkit(craft.getWorld()).getBlock().getType()));
+            //if (oldLocation.toBukkit(world).getBlock().getType().equals(Material.MOVING_PISTON))
+            //    fail(String.format(I18nSupport.getInternationalisedString("Translation - Failed Craft is obstructed")
+            //                    + " @ %d,%d,%d,%s", oldLocation.getX(), oldLocation.getY(), oldLocation.getZ(),
+            //            oldLocation.toBukkit(craft.getWorld()).getBlock().getType()));
 
             final Material testMaterial = newLocation.toBukkit(world).getBlock().getType();
 
