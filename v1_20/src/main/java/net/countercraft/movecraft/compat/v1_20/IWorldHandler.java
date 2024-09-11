@@ -217,7 +217,7 @@ public class IWorldHandler extends WorldHandler {
 
     @Nullable
     private BlockEntity removeBlockEntity(@NotNull Level world, @NotNull BlockPos position) {
-        BlockEntity testEntity = world.getChunkAt(position).getBlockEntity(position)
+        BlockEntity testEntity = world.getChunkAt(position).getBlockEntity(position);
         if (testEntity instanceof PistonMovingBlockEntity)
         {
             ((PistonMovingBlockEntity)testEntity).finalTick(); //attempt to prevent piston bug
