@@ -223,6 +223,13 @@ public abstract class AbstractSignListener implements Listener {
             AbstractMovecraftSign ams = AbstractMovecraftSign.get(wrapper.line(0));
             // Would be one more readable line if using Optionals but Nullables were wanted
             if (ams != null) {
+                if (!eventType.isOnCraft()) {
+                    ItemStack heldItem = event.getPlayer().getActiveItem();
+                    if (Tags.SIGN_BYPASS_RIGHT_CLICK.contains(heldItem.getType())) {
+                        return;
+                    }
+                }
+
                 boolean success = ams.processSignChange(event, wrapper);
                 if (ams.shouldCancelEvent(success, null, event.getPlayer().isSneaking(), eventTypeTmp)) {
                     event.setCancelled(true);
