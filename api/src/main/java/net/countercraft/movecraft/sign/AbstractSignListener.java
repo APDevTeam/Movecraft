@@ -251,7 +251,7 @@ public abstract class AbstractSignListener implements Listener {
             boolean onCraft = MathUtils.getCraftByPersistentBlockData(sign.getLocation()) != null;
             boolean sneaking = event.getPlayer().isSneaking();
             // Allow editing and breaking signs with tools
-            if (!onCraft && sneaking) {
+            if (heldItem != null && !onCraft && sneaking) {
                 if (Tags.SIGN_BYPASS_RIGHT_CLICK.contains(heldItem.getType()) && (event.getAction().isRightClick())) {
                     return;
                 }
