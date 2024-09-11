@@ -163,10 +163,11 @@ public class IWorldHandler extends WorldHandler {
 
             //get the nextTick to move with the tile
             ScheduledTick tickHere = tickProvider.getNextTick(nativeWorld, position);
-            if (tickHere != null) {
+            while (tickHere != null) {
                 ((LevelChunkTicks) nativeWorld.getChunkAt(position).getBlockTicks()).removeIf(
                         (Predicate<ScheduledTick>) scheduledTick -> scheduledTick.equals(tickHere));
                 ticks.add(new TickHolder(tickHere, position));
+                tickHere = tickProvider.getNextTick(nativeWorld, position);
             }
 
         }
