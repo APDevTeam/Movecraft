@@ -288,36 +288,37 @@ public class AsyncManager extends BukkitRunnable {
     }
 
     //Controls sinking crafts
-    private void processSinking() {
-        //copy the crafts before iteration to prevent concurrent modifications
-        List<Craft> crafts = Lists.newArrayList(CraftManager.getInstance());
-        for (Craft craft : crafts) {
-            if (!(craft instanceof SinkingCraft))
-                continue;
+private void processSinking() {
+    // Copy the crafts before iteration to prevent concurrent modifications
+    List<Craft> crafts = Lists.newArrayList(CraftManager.getInstance());
+    for (Craft craft : crafts) {
+        if (!(craft instanceof SinkingCraft))
+            continue;
 
-            if (craft.getHitBox().isEmpty() || craft.getHitBox().getMinY() < -63) {
-                //comment out old relase
-                //CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.SUNK, false);
-                
-                // Remove the bottom-most layer
-                removeBottomLayer(craft);
-                continue;
-            }
-            long ticksElapsed = (System.currentTimeMillis() - craft.getLastCruiseUpdate()) / 50;
-            if (Math.abs(ticksElapsed) < craft.getType().getIntProperty(CraftType.SINK_RATE_TICKS))
-                continue;
+        if (craft.getHitBox().isEmpty() || craft.getHitBox().getMinY() < -63) {
+            // Commented out old release
+            // CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.SUNK, false);
 
-            int dx = 0;
-            int dz = 0;
-            if (craft.getType().getBoolProperty(CraftType.KEEP_MOVING_ON_SINK)) {
-                dx = craft.getLastTranslation().getX();
-                dz = craft.getLastTranslation().getZ();
-            }
-            craft.translate(dx, -1, dz);
-            craft.setLastCruiseUpdate(System.currentTimeMillis());
+            // Remove the bottom-most layer
+            removeBottomLayer(craft);
+            continue;
         }
+
+        long ticksElapsed = (System.currentTimeMillis() - craft.getLastCruiseUpdate()) / 50;
+        if (Math.abs(ticksElapsed) < craft.getType().getIntProperty(CraftType.SINK_RATE_TICKS))
+            continue;
+
+        int dx = 0;
+        int dz = 0;
+        if (craft.getType().getBoolProperty(CraftType.KEEP_MOVING_ON_SINK)) {
+            dx = craft.getLastTranslation().getX();
+            dz = craft.getLastTranslation().getZ();
+        }
+        craft.translate(dx, -1, dz);
+        craft.setLastCruiseUpdate(System.currentTimeMillis());
     }
-    
+}
+
     private void removeBottomLayer(Craft craft) {
         if (craft == null || craft.getHitBox() == null || craft.getHitBox().isEmpty()) {
             return;
@@ -330,8 +331,8 @@ public class AsyncManager extends BukkitRunnable {
         }
     
         int bottomY = craft.getHitBox().getMinY();
-        int width = craft.getHitBox().getWidth();
-        int length = craft.getHitBox().getLength();
+        int width = craft.getHitBox().getXLength(); // Updated method
+        int length = craft.getHitBox().getZLength(); // Updated method
         int startX = location.getX();
         int startZ = location.getZ();
         World world = craft.getWorld();
@@ -339,7 +340,7 @@ public class AsyncManager extends BukkitRunnable {
         if (world == null) {
             return; // or handle error appropriately
         }
-
+    
         // Remove the bottom-most layer blocks
         for (int x = startX; x < startX + width; x++) {
             for (int z = startZ; z < startZ + length; z++) {
@@ -350,6 +351,7 @@ public class AsyncManager extends BukkitRunnable {
             }
         }
     }
+
 
 
     public void run() {
