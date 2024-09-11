@@ -324,35 +324,39 @@ private void processSinking() {
             return;
         }
 
-        // Approximate the craft's current position
         MovecraftLocation location = craft.getLastTranslation();
         if (location == null) {
-            return; // or handle error appropriately
+            return;
         }
-    
+
         int bottomY = craft.getHitBox().getMinY();
-        int width = craft.getHitBox().getXLength(); // Updated method
-        int length = craft.getHitBox().getZLength(); // Updated method
+        int width = craft.getHitBox().getWidth();
+        int length = craft.getHitBox().getLength();
         int startX = location.getX();
         int startZ = location.getZ();
         World world = craft.getWorld();
 
         if (world == null) {
-            return; // or handle error appropriately
+            return;
         }
-    
-        // Remove the bottom-most layer blocks
+
+        // Collect blocks to update
+        List<Block> blocksToUpdate = new ArrayList<>();
+
         for (int x = startX; x < startX + width; x++) {
             for (int z = startZ; z < startZ + length; z++) {
                 Block block = world.getBlockAt(x, bottomY, z);
                 if (block.getType() != Material.AIR) {
-                    block.setType(Material.AIR);
+                blocksToUpdate.add(block);
                 }
             }
         }
+
+        // Update blocks in batch
+        for (Block block : blocksToUpdate) {
+            block.setType(Material.AIR);
+        }
     }
-
-
 
     public void run() {
         clearAll();
