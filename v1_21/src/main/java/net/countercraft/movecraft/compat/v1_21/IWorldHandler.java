@@ -255,17 +255,6 @@ public class IWorldHandler extends WorldHandler {
         setBlockFast(world, BlockPos, blockData);
     }
 
-    @Override
-    public @Nullable Location getAccessLocation(@NotNull InventoryView inventoryView) {
-        // Not needed for 1.20+, remove when dropping support for 1.18.2
-        return null;
-    }
-
-    @Override
-    public void setAccessLocation(@NotNull InventoryView inventoryView, @NotNull Location location) {
-        // Not needed for 1.20+, remove when dropping support for 1.18.2
-    }
-
     private void moveBlockEntity(@NotNull Level nativeWorld, @NotNull BlockPos newPosition, @NotNull BlockEntity tile) {
         LevelChunk chunk = nativeWorld.getChunkAt(newPosition);
         try {
