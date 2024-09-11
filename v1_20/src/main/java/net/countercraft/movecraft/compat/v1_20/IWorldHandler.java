@@ -11,12 +11,14 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerLevelAccess;
+import net.minecraft.world.level.BlockEventData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.piston.PistonMovingBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
@@ -215,6 +217,12 @@ public class IWorldHandler extends WorldHandler {
 
     @Nullable
     private BlockEntity removeBlockEntity(@NotNull Level world, @NotNull BlockPos position) {
+        BlockEntity testEntity = world.getChunkAt(position).getBlockEntity(position)
+        if (testEntity instanceof PistonMovingBlockEntity)
+        {
+            ((PistonMovingBlockEntity)testEntity).finalTick(); //attempt to prevent piston bug
+            return null;
+        }
         return world.getChunkAt(position).blockEntities.remove(position);
     }
 

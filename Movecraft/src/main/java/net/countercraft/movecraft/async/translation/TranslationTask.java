@@ -168,14 +168,12 @@ public class TranslationTask extends AsyncTask {
                 continue;
             }
             //Prevent piston bug
-            if (oldLocation.toBukkit(world).getBlock().getType().equals(Material.MOVING_PISTON)) {
+            if (oldLocation.toBukkit(world).getBlock().getType().equals(Material.MOVING_PISTON))
             //    fail(String.format(I18nSupport.getInternationalisedString("Translation - Failed Craft is obstructed")
             //                    + " @ %d,%d,%d,%s", oldLocation.getX(), oldLocation.getY(), oldLocation.getZ(),
             //           oldLocation.toBukkit(craft.getWorld()).getBlock().getType()));
                 Movecraft.getInstance().getLogger().log(Level.INFO,"Potentially unsafe piston detected");
-                if (!craft.isNotProcessing())
-                    Movecraft.getInstance().getLogger().log(Level.INFO,"And while it was processing, too!");
-            }
+
 
             final Material testMaterial = newLocation.toBukkit(world).getBlock().getType();
 
