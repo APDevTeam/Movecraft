@@ -1,5 +1,9 @@
 package net.countercraft.movecraft.mapUpdater.update;
 
+import com.google.common.collect.Sets;
+import it.unimi.dsi.fastutil.Hash;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.MovecraftRotation;
@@ -63,7 +67,7 @@ public class CraftRotateCommand extends UpdateCommand {
                 originalLocations.add(MathUtils.rotateVec(counterRotation, movecraftLocation.subtract(originLocation)).add(originLocation));
             }
 
-            final HitBox to = craft.getHitBox().difference(originalLocations);
+            final Set<MovecraftLocation> to = Sets.difference(craft.getHitBox().asSet(), originalLocations.asSet());
 
             for (MovecraftLocation location : to) {
                 var data = location.toBukkit(craft.getWorld()).getBlock().getBlockData();
@@ -72,7 +76,7 @@ public class CraftRotateCommand extends UpdateCommand {
                 }
             }
             //The subtraction of the set of coordinates in the HitBox cube and the HitBox itself
-            final HitBox invertedHitBox = new SetHitBox(craft.getHitBox().boundingHitBox()).difference(craft.getHitBox());
+            final Set<MovecraftLocation> invertedHitBox = Sets.difference(craft.getHitBox().boundingHitBox().asSet(), craft.getHitBox().asSet());
             //A set of locations that are confirmed to be "exterior" locations
             final SetHitBox exterior = new SetHitBox();
             final SetHitBox interior = new SetHitBox();
@@ -95,15 +99,16 @@ public class CraftRotateCommand extends UpdateCommand {
             //Valid exterior starts as the 6 surface planes of the HitBox with the locations that lie in the HitBox removed
             final SetHitBox validExterior = new SetHitBox();
             for (HitBox hitBox : surfaces) {
-                validExterior.addAll(hitBox.difference(craft.getHitBox()));
+                validExterior.addAll(Sets.difference(hitBox.asSet(),craft.getHitBox().asSet()));
             }
+
             //Check to see which locations in the from set are actually outside of the craft
             SetHitBox visited = new SetHitBox();
             for (MovecraftLocation location : validExterior) {
-                if (craft.getHitBox().contains(location) || exterior.contains(location)) {
+                if (craft.getHitBox().contains(location))
                     continue;
-                }
-                //use a modified BFS for multiple origin elements                
+                //use a modified BFS for multiple origin elements
+
                 Queue<MovecraftLocation> queue = new LinkedList<>();
                 queue.add(location);
                 while (!queue.isEmpty()) {
@@ -111,20 +116,17 @@ public class CraftRotateCommand extends UpdateCommand {
                     //If the node is already a valid member of the exterior of the HitBox, continued search is unitary.
                     for (MovecraftLocation neighbor : CollectionUtils.neighbors(invertedHitBox, node)) {
                         // This is a set! If it already contains the element, it won't add it anyway!
-                        //if (visited.contains(neighbor)) {
-                        //    continue;
-                        //}
                         if (visited.add(neighbor)) {
                             queue.add(neighbor);
                         }
                     }
-                }                
+                }               
             }
             exterior.addAll(visited);
-            interior.addAll(invertedHitBox.difference(exterior));
+            interior.addAll(Sets.difference(invertedHitBox, exterior.asSet()));
 
             final WorldHandler handler = Movecraft.getInstance().getWorldHandler();
-            for (MovecraftLocation location : invertedHitBox.difference(exterior)) {
+            for (MovecraftLocation location : Sets.difference(invertedHitBox, exterior.asSet())) {
                 var data = location.toBukkit(craft.getWorld()).getBlock().getBlockData();
                 if (!passthroughBlocks.contains(data.getMaterial())) {
                     continue;

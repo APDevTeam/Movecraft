@@ -15,7 +15,6 @@ import net.countercraft.movecraft.events.CraftTeleportEntityEvent;
 import net.countercraft.movecraft.events.CraftTranslateEvent;
 import net.countercraft.movecraft.events.ItemHarvestEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.mapUpdater.update.AccessLocationUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.BlockCreateCommand;
 import net.countercraft.movecraft.mapUpdater.update.CraftTranslateCommand;
 import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
@@ -41,11 +40,8 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.HumanEntity;
-import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
-import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
@@ -365,9 +361,6 @@ public class TranslationTask extends AsyncTask {
                 oldHitBox.getYLength() / 2.0 + 2,
                 oldHitBox.getZLength() / 2.0 + 1
         )) {
-
-            processHumanEntity(entity);
-
             if ((entity.getType() == EntityType.PLAYER && !(craft instanceof SinkingCraft))) {
                 CraftTeleportEntityEvent e = new CraftTeleportEntityEvent(craft, entity);
                 Bukkit.getServer().getPluginManager().callEvent(e);
@@ -381,7 +374,7 @@ public class TranslationTask extends AsyncTask {
             }
 
             if (craft.getType().getBoolProperty(CraftType.ONLY_MOVE_PLAYERS)
-                    && entity.getType() != EntityType.PRIMED_TNT) {
+                    && entity.getType() != EntityType.TNT) {
                 continue;
             }
 
@@ -392,30 +385,6 @@ public class TranslationTask extends AsyncTask {
 
             EntityUpdateCommand eUp = new EntityUpdateCommand(entity, dx, dy, dz, 0, 0, world);
             updates.add(eUp);
-        }
-    }
-
-    //this part looks similar to rotationTask
-    //maybe can be thrown in a util class?
-    private void processHumanEntity(Entity entity) {
-        if (!(entity instanceof HumanEntity)) {
-            return;
-        }
-
-        InventoryView inventoryView = ((HumanEntity) entity).getOpenInventory();
-        if (inventoryView.getType() == InventoryType.CRAFTING) {
-            return;
-        }
-
-        Location l = Movecraft.getInstance().getWorldHandler().getAccessLocation(inventoryView);
-        if (l == null) {
-            return;
-        }
-
-        MovecraftLocation location = new MovecraftLocation(l.getBlockX(), l.getBlockY(), l.getBlockZ());
-        if (oldHitBox.contains(location)) {
-            location = location.translate(dx, dy, dz);
-            updates.add(new AccessLocationUpdateCommand(inventoryView, location.toBukkit(world)));
         }
     }
 
