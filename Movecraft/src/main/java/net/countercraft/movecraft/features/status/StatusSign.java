@@ -154,7 +154,8 @@ public class StatusSign extends AbstractInformationSign {
                 // TODO: Specific case for normal and hanging signs
                 // Switch to the next line if the string is too long (will happen in every case now, especially on hanging signs => Always do this for hanging signs
                 // For normal signs => Maybe discard the /xx suffix?
-                if (text.length() >= 10) {
+                // ACtually it can fit 10 chars, but if the values are like 1.XX / X it will think it fits
+                if (text.length() >= 8) {
                     signLine++;
                 }
             } else if (signLine < 3) {
