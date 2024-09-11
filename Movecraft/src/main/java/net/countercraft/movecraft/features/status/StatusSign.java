@@ -39,6 +39,8 @@ public class StatusSign extends AbstractInformationSign {
         return oldData;
     }
 
+    final char[] NUMBER_SIZE_MARKERS = {'k', 'm'};
+
     protected Component calcFuel(Craft craft) {
         double fuel = craft.getDataTag(Craft.FUEL);
         int cruiseSkipBlocks = (int) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_CRUISE_SKIP_BLOCKS, craft.getWorld());
@@ -55,8 +57,15 @@ public class StatusSign extends AbstractInformationSign {
             style = STYLE_COLOR_RED;
         }
 
-        // TODO: Shorten for large numbers, or trim the number (e.g. 10k instead of 10.000)
-        return Component.text("Fuel range: " + fuelRange).style(style);
+        // Shorten for large numbers, or trim the number (e.g. 10k instead of 10.000)
+        String fuelString = "" + fuelRange;
+        int numberSuffixIndex = 0;
+        while (numberSuffixIndex < NUMBER_SIZE_MARKERS.length && fuelRange > 1000) {
+            fuelRange /= 1000;
+            fuelString = "" + fuelRange + NUMBER_SIZE_MARKERS[numberSuffixIndex];
+            numberSuffixIndex++;
+        }
+        return Component.text("Fuel: " + fuelString).style(style);
     }
 
     @Override
