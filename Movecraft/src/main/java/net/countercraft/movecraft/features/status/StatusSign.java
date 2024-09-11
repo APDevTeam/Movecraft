@@ -151,6 +151,12 @@ public class StatusSign extends AbstractInformationSign {
             if (signColumn == 0) {
                 displayComponents.add(signText);
                 signColumn++;
+                // TODO: Specific case for normal and hanging signs
+                // Switch to the next line if the string is too long (will happen in every case now, especially on hanging signs => Always do this for hanging signs
+                // For normal signs => Maybe discard the /xx suffix?
+                if (text.length() >= 10) {
+                    signLine++;
+                }
             } else if (signLine < 3) {
                 Component existingLine = displayComponents.get(signLine - 1);
                 existingLine = existingLine.append(Component.text("  ")).append(signText);
