@@ -19,7 +19,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -32,11 +31,6 @@ public class CraftPilotSign extends AbstractCraftPilotSign {
 
     public CraftPilotSign(CraftType craftType) {
         super(craftType);
-    }
-
-    @Override
-    public boolean shouldCancelEvent(boolean processingSuccessful, @Nullable Action type, boolean sneaking, EventType eventType) {
-        return processingSuccessful || !sneaking;
     }
 
     @Override

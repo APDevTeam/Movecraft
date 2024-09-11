@@ -76,15 +76,6 @@ public abstract class AbstractInformationSign extends AbstractCraftSign {
         return true;
     }
 
-    // TODO: Add "reason" what to cancel, we might not want to cancel all edit events
-    @Override
-    public boolean shouldCancelEvent(boolean processingSuccessful, @Nullable Action type, boolean sneaking, EventType eventType) {
-        if (processingSuccessful) {
-            return true;
-        }
-        return !sneaking;
-    }
-
     @Override
     protected boolean internalProcessSignWithCraft(Action clickType, AbstractSignListener.SignWrapper sign, Craft craft, Player player) {
         if (this.refreshSign(craft, sign, false, REFRESH_CAUSE.SIGN_CLICK)) {

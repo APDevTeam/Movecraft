@@ -71,11 +71,6 @@ public abstract class AbstractSubcraftSign extends AbstractCraftSign {
     }
 
     @Override
-    public boolean shouldCancelEvent(boolean processingSuccessful, @Nullable Action type, boolean sneaking, EventType eventType) {
-        return processingSuccessful || !sneaking;
-    }
-
-    @Override
     public boolean processSignChange(SignChangeEvent event, AbstractSignListener.SignWrapper sign) {
         // TODO: Implement
         return false;

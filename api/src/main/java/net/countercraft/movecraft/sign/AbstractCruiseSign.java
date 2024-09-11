@@ -79,12 +79,6 @@ public abstract class AbstractCruiseSign extends AbstractCraftSign {
         return suffix.equalsIgnoreCase(this.suffixOn);
     }
 
-    // By default, cancel the event if the processing was successful, or the invoker was not sneaking => Allows breaking signs while sneaking
-    @Override
-    public boolean shouldCancelEvent(boolean processingSuccessful, @Nullable Action type, boolean sneaking, EventType eventType) {
-        return processingSuccessful || !sneaking;
-    }
-
     // Hook to do stuff that run after stopping to cruise
     protected void onAfterStoppingCruise(Craft craft, AbstractSignListener.SignWrapper signWrapper, Player player) {
 
