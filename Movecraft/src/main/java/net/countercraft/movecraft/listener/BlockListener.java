@@ -131,8 +131,8 @@ public class BlockListener implements Listener {
             if (!craft.getHitBox().contains(loc))
                 continue;
 
-            if (!craft.isNotProcessing())
-                e.setCancelled(true); // prevent pistons on cruising crafts
+           // if (!craft.isNotProcessing())
+           //     e.setCancelled(true); // prevent pistons on cruising crafts
 
             // merge piston extensions to craft
             if (craft.getType().getBoolProperty(CraftType.MERGE_PISTON_EXTENSIONS))
