@@ -5,10 +5,9 @@ plugins {
     id("io.papermc.hangar-publish-plugin") version "0.1.2"
 }
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 dependencies {
-    runtimeOnly(project(":movecraft-v1_18", "reobf"))
     runtimeOnly(project(":movecraft-v1_20", "reobf"))
     runtimeOnly(project(":movecraft-v1_21", "reobf"))
     implementation(project(":movecraft-api"))
@@ -22,7 +21,6 @@ tasks.shadowJar {
 
     dependencies {
         include(project(":movecraft-api"))
-        include(project(":movecraft-v1_18"))
         include(project(":movecraft-v1_20"))
         include(project(":movecraft-v1_21"))
     }
@@ -68,7 +66,7 @@ hangarPublish {
         platforms {
             register(io.papermc.hangarpublishplugin.model.Platforms.PAPER) {
                 jar.set(tasks.shadowJar.flatMap { it.archiveFile })
-                platformVersions.set(listOf("1.18.2", "1.20.6", "1.21.1"))
+                platformVersions.set(listOf("1.20.6", "1.21.1"))
             }
         }
     }
