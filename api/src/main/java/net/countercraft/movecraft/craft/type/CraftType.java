@@ -393,11 +393,7 @@ final public class CraftType {
         registerProperty(new RequiredBlockProperty("flyblocks", FLY_BLOCKS, type -> new HashSet<>()));
         registerProperty(new RequiredBlockProperty("detectionblocks", DETECTION_BLOCKS, type -> new HashSet<>()));
         registerProperty(new MaterialSetProperty("directionDependentMaterials", DIRECTIONAL_DEPENDENT_MATERIALS, type -> {
-            var set = EnumSet.of(Material.LADDER, Material.LEVER, Material.GRINDSTONE);
-            set.addAll(Tag.WALL_SIGNS.getValues());
-            set.addAll(Tags.WALL_TORCHES);
-            set.addAll(Tags.LANTERNS);
-            return set;
+            return EnumSet.noneOf(Material.class);
         }));
 
         registerProperty(new ObjectPropertyImpl("forbiddenSignStrings", FORBIDDEN_SIGN_STRINGS,
