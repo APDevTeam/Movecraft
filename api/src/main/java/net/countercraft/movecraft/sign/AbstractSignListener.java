@@ -226,7 +226,7 @@ public abstract class AbstractSignListener implements Listener {
                 if (ams.shouldCancelEvent(success, null, event.getPlayer().isSneaking(), eventTypeTmp)) {
                     event.setCancelled(true);
                 }
-            });
+            }
         }
     }
 
@@ -254,7 +254,7 @@ public abstract class AbstractSignListener implements Listener {
                     // Cancel interact in all cases when on a craft
                     event.setCancelled(true);
                 }
-            });
+            }
         }
     }
 

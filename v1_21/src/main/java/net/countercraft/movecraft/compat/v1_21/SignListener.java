@@ -19,6 +19,7 @@ import org.bukkit.block.data.Directional;
 import org.bukkit.block.data.Rotatable;
 import org.bukkit.block.sign.Side;
 import org.bukkit.block.sign.SignSide;
+import org.bukkit.entity.Player;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
@@ -103,9 +104,9 @@ public class SignListener extends AbstractSignListener {
     }
 
     @Override
-    protected SignWrapper getSignWrapper(Sign sign, PlayerInteractEvent interactEvent) {
-        @NotNull SignSide side = sign.getTargetSide(interactEvent.getPlayer());
-        return this.createFromSide(sign, side, sign.getInteractableSideFor(interactEvent.getPlayer()));
+    protected SignWrapper getSignWrapper(Sign sign, Player player) {
+        @NotNull SignSide side = sign.getTargetSide(player);
+        return this.createFromSide(sign, side, sign.getInteractableSideFor(player));
     }
 
     @Override
