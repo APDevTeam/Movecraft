@@ -68,7 +68,7 @@ public class RemoteSign extends AbstractCraftSign {
                             }
                             player.sendMessage(" - ".concat(tloc.toString()).concat(" : ").concat(ts.getLine(0)));
                         } else {
-                            LinkedList<AbstractSignListener.SignWrapper> value = foundTargetSigns.computeIfAbsent(signHandler.get(), (a) -> new LinkedList<>());
+                            LinkedList<AbstractSignListener.SignWrapper> value = foundTargetSigns.computeIfAbsent(signHandler, (a) -> new LinkedList<>());
                             value.add(wrapper);
                         }
                     }
