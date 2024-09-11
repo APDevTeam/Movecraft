@@ -13,7 +13,6 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class HelmSign extends AbstractCraftSign {
 
@@ -52,11 +51,6 @@ public class HelmSign extends AbstractCraftSign {
     @Override
     protected void onCraftNotFound(Player player, AbstractSignListener.SignWrapper sign) {
 
-    }
-
-    @Override
-    public boolean shouldCancelEvent(boolean processingSuccessful, @Nullable Action type, boolean sneaking, EventType eventType) {
-        return !sneaking;
     }
 
     @Override

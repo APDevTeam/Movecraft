@@ -6,7 +6,6 @@ import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
-import org.jetbrains.annotations.Nullable;
 
 public class MoveSign extends AbstractCraftSign {
 
@@ -22,14 +21,6 @@ public class MoveSign extends AbstractCraftSign {
     @Override
     protected void onCraftNotFound(Player player, AbstractSignListener.SignWrapper sign) {
 
-    }
-
-    @Override
-    public boolean shouldCancelEvent(boolean processingSuccessful, @Nullable Action type, boolean sneaking, EventType eventType) {
-        if (processingSuccessful) {
-            return true;
-        }
-        return !sneaking;
     }
 
     @Override

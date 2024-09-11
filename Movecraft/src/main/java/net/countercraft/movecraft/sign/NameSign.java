@@ -22,14 +22,6 @@ public class NameSign extends AbstractCraftSign {
     }
 
     @Override
-    public boolean shouldCancelEvent(boolean processingSuccessful, @Nullable Action type, boolean sneaking, EventType eventType) {
-        if (type == null) {
-            return !processingSuccessful;
-        }
-        return !sneaking;
-    }
-
-    @Override
     protected boolean canPlayerUseSign(Action clickType, AbstractSignListener.SignWrapper sign, Player player) {
         return !Settings.RequireNamePerm || super.canPlayerUseSign(clickType, sign, player);
     }

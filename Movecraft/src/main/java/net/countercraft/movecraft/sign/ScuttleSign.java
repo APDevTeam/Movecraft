@@ -33,14 +33,6 @@ public class ScuttleSign extends AbstractCraftSign {
     }
 
     @Override
-    public boolean shouldCancelEvent(boolean processingSuccessful, @Nullable Action type, boolean sneaking, EventType eventType) {
-        if (processingSuccessful) {
-            return true;
-        }
-        return !sneaking;
-    }
-
-    @Override
     protected boolean isSignValid(Action clickType, AbstractSignListener.SignWrapper sign, Player player) {
         return true;
     }

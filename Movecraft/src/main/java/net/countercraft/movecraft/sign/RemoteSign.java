@@ -103,11 +103,6 @@ public class RemoteSign extends AbstractCraftSign {
     }
 
     @Override
-    public boolean shouldCancelEvent(boolean processingSuccessful, @Nullable Action type, boolean sneaking, EventType eventType) {
-        return processingSuccessful || !sneaking;
-    }
-
-    @Override
     protected boolean isSignValid(Action clickType, AbstractSignListener.SignWrapper sign, Player player) {
         String target = sign.getRaw(1);
         if (target.isBlank()) {

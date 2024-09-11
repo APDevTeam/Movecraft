@@ -4,18 +4,12 @@ import net.countercraft.movecraft.craft.Craft;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
-import org.jetbrains.annotations.Nullable;
 
 // TODO: Replace PilotSignValidator with this?
 public class PilotSign extends AbstractMovecraftSign {
 
     public PilotSign() {
         super(null);
-    }
-
-    @Override
-    public boolean shouldCancelEvent(boolean processingSuccessful, @Nullable Action type, boolean sneaking, EventType eventType) {
-        return processingSuccessful || !sneaking;
     }
 
     // Pilot signs are pretty much always valid
