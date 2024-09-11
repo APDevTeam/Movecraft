@@ -117,7 +117,7 @@ public class BlockListener implements Listener {
             if (craft.isNotProcessing() || !craft.getHitBox().contains(loc))
                 continue;
 
-            e.setNewCurrent(e.getOldCurrent()); // don't allow piston movement on cruising crafts
+            //e.setNewCurrent(e.getOldCurrent()); // don't allow piston movement on cruising crafts
             return;
         }
     }
