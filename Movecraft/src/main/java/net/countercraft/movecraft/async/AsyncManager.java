@@ -317,30 +317,38 @@ public class AsyncManager extends BukkitRunnable {
     }
     
     private void removeBottomLayer(Craft craft) {
-        if (craft.getHitBox().isEmpty()) {
+        if (craft == null || craft.getHitBox() == null || craft.getHitBox().isEmpty()) {
             return;
         }
 
-        // Use the last translation to approximate current location
-        MovecraftLocation location = craft.getLastTranslation(); // Use getLastTranslation()
+        // Approximate the craft's current position
+        MovecraftLocation location = craft.getLastTranslation();
+        if (location == null) {
+            return; // or handle error appropriately
+        }
+    
         int bottomY = craft.getHitBox().getMinY();
-
-        // Get the dimensions of the craft
         int width = craft.getHitBox().getWidth();
         int length = craft.getHitBox().getLength();
-
-        // Get the dimensions and coordinates
         int startX = location.getX();
         int startZ = location.getZ();
+        World world = craft.getWorld();
+
+        if (world == null) {
+            return; // or handle error appropriately
+        }
 
         // Remove the bottom-most layer blocks
         for (int x = startX; x < startX + width; x++) {
             for (int z = startZ; z < startZ + length; z++) {
-                // Assume getWorld() returns the world instance where the craft is located
-                craft.getWorld().getBlockAt(x, bottomY, z).setType(Material.AIR);
+                Block block = world.getBlockAt(x, bottomY, z);
+                if (block.getType() != Material.AIR) {
+                    block.setType(Material.AIR);
+                }
             }
         }
     }
+
 
     public void run() {
         clearAll();
