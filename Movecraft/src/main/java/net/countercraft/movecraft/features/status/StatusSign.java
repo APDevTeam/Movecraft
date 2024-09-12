@@ -160,7 +160,7 @@ public class StatusSign extends AbstractInformationSign {
                     signLine++;
                 }
             } else if (signLine < 3) {
-                Component existingLine = displayComponents.get(signLine - 1);
+                Component existingLine = (signLine - 1) >= displayComponents.size() ? EMPTY : displayComponents.get(signLine - 1);
                 existingLine = existingLine.append(Component.text("  ")).append(signText);
                 displayComponents.set((signLine - 1), existingLine);
                 signLine++;
