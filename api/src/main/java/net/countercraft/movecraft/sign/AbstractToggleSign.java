@@ -128,6 +128,9 @@ public abstract class AbstractToggleSign extends AbstractCraftSign {
         AbstractMovecraftSign otherHandler = MovecraftSignRegistry.INSTANCE.getCraftSign(other.line(0));
         boolean originalIsOn = this.isOnOrOff(original);
         if (otherHandler != this) {
+            if (otherHandler instanceof AbstractToggleSign ats) {
+                other.line(0, ats.buildHeaderOff());
+            }
             return false;
         }
         if (this.shouldShareSameToggleState(original, other)) {
