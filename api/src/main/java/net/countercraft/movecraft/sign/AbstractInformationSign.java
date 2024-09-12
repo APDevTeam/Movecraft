@@ -48,6 +48,7 @@ public abstract class AbstractInformationSign extends AbstractCraftSign {
         // TODO: Check if the craft supports this sign? If no, cancel
         super.onCraftDetect(event, sign);
         this.refreshSign(event.getCraft(), sign, true, REFRESH_CAUSE.CRAFT_DETECT);
+        sign.block().update();
     }
 
     @Override
