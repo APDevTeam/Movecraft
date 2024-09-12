@@ -39,7 +39,8 @@ public class StatusSign extends AbstractInformationSign {
         return oldData;
     }
 
-    final char[] NUMBER_SIZE_MARKERS = {'k', 'm'};
+    // Yes, trillion is ridiculous, anyway...
+    final char[] NUMBER_SIZE_MARKERS = {'K', 'M', 'B', 'T'};
 
     protected Component calcFuel(Craft craft) {
         double fuel = craft.getDataTag(Craft.FUEL);
