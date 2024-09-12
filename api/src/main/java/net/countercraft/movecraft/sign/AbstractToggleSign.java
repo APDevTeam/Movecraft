@@ -128,7 +128,7 @@ public abstract class AbstractToggleSign extends AbstractCraftSign {
         AbstractMovecraftSign otherHandler = MovecraftSignRegistry.INSTANCE.getCraftSign(other.line(0));
         boolean originalIsOn = this.isOnOrOff(original);
         if (otherHandler != this) {
-            if (otherHandler instanceof AbstractToggleSign ats) {
+            if (otherHandler instanceof AbstractToggleSign ats && ats.canBeResettedBy(this)) {
                 other.line(0, ats.buildHeaderOff());
                 return true;
             }
@@ -139,6 +139,10 @@ public abstract class AbstractToggleSign extends AbstractCraftSign {
         } else {
             other.line(0, this.buildHeaderOff());
         }
+        return true;
+    }
+
+    protected boolean canBeResettedBy(AbstractToggleSign caller) {
         return true;
     }
 
