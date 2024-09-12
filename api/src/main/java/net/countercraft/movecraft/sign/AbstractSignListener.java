@@ -7,6 +7,7 @@ import net.countercraft.movecraft.util.MathUtils;
 import net.countercraft.movecraft.util.Tags;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -225,6 +226,11 @@ public abstract class AbstractSignListener implements Listener {
             if (ams != null) {
                 if (!eventType.isOnCraft()) {
                     ItemStack heldItem = event.getPlayer().getActiveItem();
+                    // Allow the usage of the colors and wax for things => Cleaner solution: Use NMS to check if the item is an instanceof of SignApplicator...
+                    if (Tags.SIGN_EDIT_MATERIALS.contains(heldItem.getType())) {
+                        return;
+                    }
+
                     if (Tags.SIGN_BYPASS_RIGHT_CLICK.contains(heldItem.getType())) {
                         return;
                     }
@@ -251,13 +257,19 @@ public abstract class AbstractSignListener implements Listener {
             boolean onCraft = MathUtils.getCraftByPersistentBlockData(sign.getLocation()) != null;
             boolean sneaking = event.getPlayer().isSneaking();
             // Allow editing and breaking signs with tools
-            if (heldItem != null && !onCraft && sneaking) {
-                if (Tags.SIGN_BYPASS_RIGHT_CLICK.contains(heldItem.getType()) && (event.getAction().isRightClick())) {
+            if (heldItem != null && !onCraft) {
+                // Allow the usage of the colors and wax for things => Cleaner solution: Use NMS to check if the item is an instanceof of SignApplicator...
+                if (Tags.SIGN_EDIT_MATERIALS.contains(heldItem.getType()) && event.getAction().isRightClick()) {
                     return;
                 }
+                if (sneaking) {
+                    if (Tags.SIGN_BYPASS_RIGHT_CLICK.contains(heldItem.getType()) && (event.getAction().isRightClick())) {
+                        return;
+                    }
 
-                if (Tags.SIGN_BYPASS_LEFT_CLICK.contains(heldItem.getType()) && (event.getAction().isLeftClick())) {
-                    return;
+                    if (Tags.SIGN_BYPASS_LEFT_CLICK.contains(heldItem.getType()) && (event.getAction().isLeftClick())) {
+                        return;
+                    }
                 }
             }
 
@@ -265,10 +277,9 @@ public abstract class AbstractSignListener implements Listener {
             AbstractMovecraftSign ams = AbstractMovecraftSign.get(wrapper.line(0));
             if (ams != null) {
                 boolean success = ams.processSignClick(event.getAction(), wrapper, event.getPlayer());
+                // Always cancel, regardless of the success
+                event.setCancelled(true);
                 if (ams.shouldCancelEvent(success, event.getAction(), sneaking, onCraft ? AbstractMovecraftSign.EventType.SIGN_CLICK_ON_CRAFT : AbstractMovecraftSign.EventType.SIGN_CLICK)) {
-                    event.setCancelled(true);
-                } else if (MathUtils.getCraftByPersistentBlockData(sign.getLocation()) != null) {
-                    // Cancel interact in all cases when on a craft
                     event.setCancelled(true);
                 }
             }
