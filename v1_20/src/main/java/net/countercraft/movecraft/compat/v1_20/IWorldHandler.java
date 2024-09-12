@@ -223,7 +223,8 @@ public class IWorldHandler extends WorldHandler {
     @Nullable
     private BlockEntity removeBlockEntity(@NotNull Level world, @NotNull BlockPos position) {
         BlockEntity testEntity = world.getChunkAt(position).getBlockEntity(position);
-        if (testEntity instanceof PistonMovingBlockEntity) //attempt to prevent piston bug
+        //Prevents moving pistons by locking up by forcing their movement to finish
+        if (testEntity instanceof PistonMovingBlockEntity)
         {
             BlockState oldState;
             if (((PistonMovingBlockEntity) testEntity).isSourcePiston() && testEntity.getBlockState().getBlock() instanceof PistonBaseBlock) {
@@ -236,7 +237,6 @@ public class IWorldHandler extends WorldHandler {
             } else
                 oldState = ((PistonMovingBlockEntity) testEntity).getMovedState();
             ((PistonMovingBlockEntity) testEntity).finalTick();
-            Bukkit.getServer().broadcastMessage("Caught an unsafe piston!");
             setBlockFast(world, position, oldState);
             return world.getBlockEntity(position);
         }

@@ -18,7 +18,6 @@
 package net.countercraft.movecraft.async.rotation;
 
 import net.countercraft.movecraft.CruiseDirection;
-import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.MovecraftRotation;
 import net.countercraft.movecraft.TrackedLocation;
@@ -50,7 +49,6 @@ import org.bukkit.entity.EntityType;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
 
 import static net.countercraft.movecraft.util.MathUtils.withinWorldBorder;
 
@@ -115,16 +113,6 @@ public class RotationTask extends AsyncTask {
         for(MovecraftLocation originalLocation : oldHitBox){
             MovecraftLocation newLocation = MathUtils.rotateVec(rotation,originalLocation.subtract(originPoint)).add(originPoint);
             newHitBox.add(newLocation);
-
-            //Prevent piston bug
-            if (originalLocation.toBukkit(getCraft().getWorld()).getBlock().getType().equals(Material.MOVING_PISTON)) {
-            //    failed = true;
-            //    failMessage = (String.format(I18nSupport.getInternationalisedString("Translation - Failed Craft is obstructed")
-            //                    + " @ %d,%d,%d,%s", originalLocation.getX(), originalLocation.getY(), originalLocation.getZ(),
-            //            originalLocation.toBukkit(craft.getWorld()).getBlock().getType()));
-            //    break;
-                Movecraft.getInstance().getLogger().log(Level.INFO,"Potentially unsafe piston detected");
-            }
 
             Material oldMaterial = originalLocation.toBukkit(w).getBlock().getType();
             //prevent chests collision

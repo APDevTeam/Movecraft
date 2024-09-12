@@ -137,10 +137,8 @@ public class BlockListener implements Listener {
             if (!craft.getHitBox().contains(loc))
                 continue;
 
-           if (!craft.isNotProcessing()) {
+           if (!craft.isNotProcessing())
                e.setCancelled(true); // prevent pistons on cruising crafts
-               Movecraft.getInstance().getLogger().log(Level.INFO,"Ran onPistonEvent");
-           }
            if (!(e instanceof BlockPistonExtendEvent))
                return;
             // merge piston extensions to craft
