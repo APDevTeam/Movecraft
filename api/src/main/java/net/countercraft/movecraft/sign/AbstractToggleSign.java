@@ -1,6 +1,6 @@
 package net.countercraft.movecraft.sign;
 
-import net.countercraft.movecraft.CruiseDirection;
+import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.PilotedCraft;
 import net.countercraft.movecraft.events.CraftDetectEvent;
@@ -8,10 +8,16 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import org.bukkit.block.Block;
+import org.bukkit.block.Sign;
+import org.bukkit.block.sign.SignSide;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public abstract class AbstractToggleSign extends AbstractCraftSign {
 
@@ -92,10 +98,47 @@ public abstract class AbstractToggleSign extends AbstractCraftSign {
         // Update sign
         sign.line(0, buildHeader(willBeOn));
         sign.block().update(true);
-        craft.resetSigns(sign.block());
+        //craft.resetSigns(sign.block());
+        for (final MovecraftLocation mLoc : craft.getHitBox()) {
+            final Block b = mLoc.toBukkit(craft.getWorld()).getBlock();
+            if (!(b.getState() instanceof Sign)) {
+                continue;
+            }
+            final Sign s = (Sign) b.getState();
+            boolean update = false;
+            AbstractSignListener.SignWrapper[] wrappers = AbstractSignListener.INSTANCE.getSignWrappers(s);
+            for (AbstractSignListener.SignWrapper wrapperTmp : wrappers) {
+                if (wrapperTmp.areSignsEqual(sign)) {
+                    continue;
+                }
+                if (this.doReset(sign, wrapperTmp)) {
+                    update = true;
+                }
+            }
+            if (update)
+                s.update();
+        }
 
         this.onAfterToggle(craft, sign, player, willBeOn);
 
+        return true;
+    }
+
+    public boolean doReset(AbstractSignListener.SignWrapper original, AbstractSignListener.SignWrapper other) {
+        AbstractMovecraftSign otherHandler = MovecraftSignRegistry.INSTANCE.getCraftSign(other.line(0));
+        boolean originalIsOn = this.isOnOrOff(original);
+        if (otherHandler != this) {
+            return false;
+        }
+        if (this.shouldShareSameToggleState(original, other)) {
+            other.line(0, this.buildHeader(originalIsOn));
+        } else {
+            other.line(0, this.buildHeaderOff());
+        }
+        return true;
+    }
+
+    protected boolean shouldShareSameToggleState(AbstractSignListener.SignWrapper sign, AbstractSignListener.SignWrapper other) {
         return true;
     }
 
@@ -123,6 +166,7 @@ public abstract class AbstractToggleSign extends AbstractCraftSign {
             // TODO: Error? React in any way?
             sign.line(0, buildHeader(false));
         }
+        sign.block().update();
     }
 
     // Helper method to build the headline for on or off state
