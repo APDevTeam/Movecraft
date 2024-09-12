@@ -255,6 +255,12 @@ public abstract class AbstractSignListener implements Listener {
             SignWrapper wrapper = this.getSignWrapper(sign, event);
             ItemStack heldItem = event.getItem();
             boolean onCraft = MathUtils.getCraftByPersistentBlockData(sign.getLocation()) != null;
+
+            // Always cancel if on craft => Avoid clicking empty sides and entering edit mode
+            if (onCraft) {
+                event.setCancelled(true);
+            }
+
             boolean sneaking = event.getPlayer().isSneaking();
             // Allow editing and breaking signs with tools
             if (heldItem != null && !onCraft) {
