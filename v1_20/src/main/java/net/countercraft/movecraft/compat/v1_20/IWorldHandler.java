@@ -236,6 +236,7 @@ public class IWorldHandler extends WorldHandler {
             } else
                 oldState = ((PistonMovingBlockEntity) testEntity).getMovedState();
             ((PistonMovingBlockEntity) testEntity).finalTick();
+            Bukkit.getServer().broadcastMessage("Caught an unsafe piston!");
             setBlockFast(world, position, oldState);
             return world.getBlockEntity(position);
         }
