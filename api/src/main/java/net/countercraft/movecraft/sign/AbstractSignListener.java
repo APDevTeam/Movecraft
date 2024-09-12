@@ -257,7 +257,7 @@ public abstract class AbstractSignListener implements Listener {
             boolean onCraft = MathUtils.getCraftByPersistentBlockData(sign.getLocation()) != null;
 
             // Always cancel if on craft => Avoid clicking empty sides and entering edit mode
-            if (onCraft) {
+            if (onCraft && wrapper.isEmpty()) {
                 event.setCancelled(true);
             }
 
