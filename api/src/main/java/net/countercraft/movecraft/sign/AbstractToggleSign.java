@@ -130,6 +130,7 @@ public abstract class AbstractToggleSign extends AbstractCraftSign {
         if (otherHandler != this) {
             if (otherHandler instanceof AbstractToggleSign ats) {
                 other.line(0, ats.buildHeaderOff());
+                return true;
             }
             return false;
         }
