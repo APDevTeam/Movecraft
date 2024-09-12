@@ -55,6 +55,11 @@ public class CruiseSign extends AbstractCruiseSign {
     }
 
     @Override
+    protected boolean shouldShareSameToggleState(AbstractSignListener.SignWrapper sign, AbstractSignListener.SignWrapper other) {
+        return super.shouldShareSameToggleState(sign, other) && sign.facing() == other.facing();
+    }
+
+    @Override
     protected void onCraftIsBusy(Player player, Craft craft) {
         // Ignore
     }
