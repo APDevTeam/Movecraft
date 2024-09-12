@@ -24,6 +24,7 @@ public class Tags {
     // TODO: Move to tags
     public static final EnumSet<Material> SIGN_BYPASS_RIGHT_CLICK = EnumSet.of(Material.FEATHER);
     public static final EnumSet<Material> SIGN_BYPASS_LEFT_CLICK = EnumSet.copyOf(Tag.ITEMS_AXES.getValues());
+    public static final EnumSet<Material> SIGN_EDIT_MATERIALS = EnumSet.copyOf(Tag.ITEMS_AXES.getValues());
 
     static {
         FRAGILE_MATERIALS.add(Material.PISTON_HEAD);
@@ -57,6 +58,27 @@ public class Tags {
         FALL_THROUGH_BLOCKS.add(Material.POTATO);
         FALL_THROUGH_BLOCKS.addAll(Tag.FENCES.getValues());
         FALL_THROUGH_BLOCKS.addAll(FLUID);
+
+        SIGN_EDIT_MATERIALS.add(Material.HONEYCOMB);
+        SIGN_EDIT_MATERIALS.add(Material.INK_SAC);
+        SIGN_EDIT_MATERIALS.add(Material.GLOW_INK_SAC);
+
+        SIGN_EDIT_MATERIALS.add(Material.WHITE_DYE);
+        SIGN_EDIT_MATERIALS.add(Material.LIGHT_GRAY_DYE);
+        SIGN_EDIT_MATERIALS.add(Material.GRAY_DYE);
+        SIGN_EDIT_MATERIALS.add(Material.BLACK_DYE);
+        SIGN_EDIT_MATERIALS.add(Material.BROWN_DYE);
+        SIGN_EDIT_MATERIALS.add(Material.RED_DYE);
+        SIGN_EDIT_MATERIALS.add(Material.ORANGE_DYE);
+        SIGN_EDIT_MATERIALS.add(Material.YELLOW_DYE);
+        SIGN_EDIT_MATERIALS.add(Material.LIME_DYE);
+        SIGN_EDIT_MATERIALS.add(Material.GREEN_DYE);
+        SIGN_EDIT_MATERIALS.add(Material.CYAN_DYE);
+        SIGN_EDIT_MATERIALS.add(Material.LIGHT_BLUE_DYE);
+        SIGN_EDIT_MATERIALS.add(Material.BLUE_DYE);
+        SIGN_EDIT_MATERIALS.add(Material.PURPLE_DYE);
+        SIGN_EDIT_MATERIALS.add(Material.MAGENTA_DYE);
+        SIGN_EDIT_MATERIALS.add(Material.PINK_DYE);
     }
 
     @Nullable
