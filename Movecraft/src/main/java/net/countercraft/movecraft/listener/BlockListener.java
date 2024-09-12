@@ -17,7 +17,6 @@
 
 package net.countercraft.movecraft.listener;
 
-import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
@@ -44,8 +43,6 @@ import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.material.Attachable;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.logging.Level;
 
 public class BlockListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -113,7 +110,6 @@ public class BlockListener implements Listener {
             if (craft.isNotProcessing() || !craft.getHitBox().contains(loc))
                 continue;
 
-            Movecraft.getInstance().getLogger().log(Level.INFO,"Ran onRedstoneEvent");
             e.setNewCurrent(e.getOldCurrent()); // don't allow piston movement on cruising crafts
             return;
         }
