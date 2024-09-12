@@ -158,11 +158,13 @@ public class StatusSign extends AbstractInformationSign {
                 // ACtually it can fit 10 chars, but if the values are like 1.XX / X it will think it fits
                 if (text.length() >= 8) {
                     signLine++;
+                    signColumn = 0;
                 }
             } else if (signLine < 3) {
-                Component existingLine = (signLine - 1) >= displayComponents.size() ? EMPTY : displayComponents.get(signLine - 1);
+                Component existingLine = displayComponents.get(signLine - 1);
                 existingLine = existingLine.append(Component.text("  ")).append(signText);
                 displayComponents.set((signLine - 1), existingLine);
+                
                 signLine++;
                 signColumn = 0;
             }
