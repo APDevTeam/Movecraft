@@ -329,17 +329,17 @@ private void removeBottomLayer(Craft craft) {
     }
 
     int bottomY = craft.getHitBox().getMinY();
-    System.out.println("my bottom coord is "craft.getHitBox().getMinY());//DEBUG
+    System.out.println("my bottom coord is " + bottomY);//DEBUG
     int width = craft.getHitBox().getXLength();
-    System.out.println("my width is "craft.getHitBox().getXLength());//DEBUG
+    System.out.println("my width is " + width);//DEBUG
     int length = craft.getHitBox().getZLength();
-    System.out.println("my length is "craft.getHitBox().getZLength());//DEBUG
+    System.out.println("my length is " + length);//DEBUG
     int startX = craft.getHitBox().getMinX();
-    System.out.println("my Min-X is "craft.getHitBox().getMinX());//DEBUG
+    System.out.println("my Min-X is " + startX);//DEBUG
     int startZ = craft.getHitBox().getMinZ();
-    System.out.println("my Min-Y is "craft.getHitBox().getMinZ());//DEBUG
+    System.out.println("my Min-Z is " + startZ);//DEBUG
     World world = craft.getWorld();
-    System.out.println("my world is "craft.getWorld());//DEBUG
+    System.out.println("my world is " + world);//DEBUG
 
     // Directly update blocks using Bukkit API
     for (int x = startX; x < startX + width; x++) {
