@@ -223,17 +223,28 @@ public class IWorldHandler extends WorldHandler {
 
     private void setBlockFast(@NotNull Level world, @NotNull BlockPos position, @NotNull BlockState data) {
         LevelChunk chunk = world.getChunkAt(position);
-        int chunkSection = (position.getY() >> 4) - chunk.getMinSection();
-        LevelChunkSection section = chunk.getSections()[chunkSection];
-        if (section == null) {
-            // Put a GLASS block to initialize the section. It will be replaced next with the real block.
-            chunk.setBlockState(position, Blocks.GLASS.defaultBlockState(), false);
-            section = chunk.getSections()[chunkSection];
+        int sectionIndex = (position.getY() >> 4) - chunk.getMinSection();
+        
+        // Check if the sectionIndex is valid
+        if (sectionIndex < 0 || sectionIndex >= chunk.getSections().length) {
+            throw new IndexOutOfBoundsException("Chunk section index out of bounds: " + sectionIndex);
         }
+        
+        LevelChunkSection[] sections = chunk.getSections();
+        LevelChunkSection section = sections[sectionIndex];
+        
+        if (section == null) {
+            // Initialize the section if it is null
+            section = new LevelChunkSection(position.getY() >> 4);
+            sections[sectionIndex] = section;
+            chunk.setSections(sections);
+        }
+        
         if (section.getBlockState(position.getX() & 15, position.getY() & 15, position.getZ() & 15).equals(data)) {
-            //Block is already of correct type and data, don't overwrite
+            // Block is already of correct type and data, don't overwrite
             return;
         }
+        
         section.setBlockState(position.getX() & 15, position.getY() & 15, position.getZ() & 15, data);
         world.sendBlockUpdated(position, data, data, 3);
         world.getLightEngine().checkBlock(position); // boolean corresponds to if chunk section empty
@@ -290,7 +301,6 @@ public class IWorldHandler extends WorldHandler {
             this.tilePosition = tilePosition;
         }
 
-
         @NotNull
         public BlockEntity getTile() {
             return tile;
@@ -312,7 +322,6 @@ public class IWorldHandler extends WorldHandler {
             this.tick = tick;
             this.tickPosition = tilePosition;
         }
-
 
         @NotNull
         public ScheduledTick getTick() {
