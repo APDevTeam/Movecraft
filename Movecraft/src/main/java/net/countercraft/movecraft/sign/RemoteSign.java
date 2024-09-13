@@ -47,7 +47,7 @@ public class RemoteSign extends AbstractCraftSign {
             }
             Sign ts = (Sign) tstate;
 
-            SignListener.SignWrapper[] targetSignWrappers = Movecraft.getInstance().getAbstractSignListener().getSignWrappers(ts);
+            SignListener.SignWrapper[] targetSignWrappers = SignListener.INSTANCE.getSignWrappers(ts);
 
             if (targetSignWrappers != null) {
                 for (SignListener.SignWrapper wrapper : targetSignWrappers) {

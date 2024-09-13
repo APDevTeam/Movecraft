@@ -360,8 +360,6 @@ public class Movecraft extends JavaPlugin {
         return asyncManager;
     }
 
-    public SignListener getAbstractSignListener() {return abstractSignListener;}
-
     public @NotNull WreckManager getWreckManager(){
         return wreckManager;
     }
