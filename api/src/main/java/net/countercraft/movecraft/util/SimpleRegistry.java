@@ -19,11 +19,11 @@ public class SimpleRegistry<K, T> {
     }
 
     public @NotNull T register(final @NotNull K key, final @NotNull T value, boolean override) throws IllegalArgumentException {
-        T previous = _register.putIfAbsent(key, value);
-        if(previous != null && !override){
+        T previous = _register.put(key, value);
+        if (previous != null && !override) {
+            _register.put(key, value);
             throw new IllegalArgumentException(String.format("Key %s is already registered.", key));
         }
-
         return value;
     }
 
