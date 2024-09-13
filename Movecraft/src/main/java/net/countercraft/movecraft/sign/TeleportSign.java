@@ -15,7 +15,7 @@ public class TeleportSign extends MoveSign {
     }
 
     @Override
-    protected boolean isSignValid(Action clickType, AbstractSignListener.SignWrapper sign, Player player) {
+    protected boolean isSignValid(Action clickType, SignListener.SignWrapper sign, Player player) {
         if (!super.isSignValid(clickType, sign, player)) {
             return false;
         }
@@ -29,7 +29,7 @@ public class TeleportSign extends MoveSign {
     }
 
     @Override
-    protected boolean translateCraft(byte signDataRaw, int dxRaw, int dyRaw, int dzRaw, Craft craft, AbstractSignListener.SignWrapper signWrapper) {
+    protected boolean translateCraft(byte signDataRaw, int dxRaw, int dyRaw, int dzRaw, Craft craft, SignListener.SignWrapper signWrapper) {
         World world = craft.getWorld();
         String w = signWrapper.getRaw(2);
         if (!w.isBlank()) {

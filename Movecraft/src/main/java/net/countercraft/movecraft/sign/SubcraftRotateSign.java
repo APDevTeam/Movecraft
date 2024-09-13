@@ -98,7 +98,7 @@ public class SubcraftRotateSign extends AbstractSubcraftSign {
     }
 
     @Override
-    protected boolean canPlayerUseSignForCraftType(Action clickType, AbstractSignListener.SignWrapper sign, Player player, CraftType subcraftType) {
+    protected boolean canPlayerUseSignForCraftType(Action clickType, SignListener.SignWrapper sign, Player player, CraftType subcraftType) {
         final String craftTypeStr = subcraftType.getStringProperty(CraftType.NAME).toLowerCase();
         if (!player.hasPermission("movecraft." + craftTypeStr + ".rotate")) {
             player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
@@ -113,7 +113,7 @@ public class SubcraftRotateSign extends AbstractSubcraftSign {
     }
 
     @Override
-    protected void onCraftNotFound(Player player, AbstractSignListener.SignWrapper sign) {
+    protected void onCraftNotFound(Player player, SignListener.SignWrapper sign) {
         // Ignored
     }
 }

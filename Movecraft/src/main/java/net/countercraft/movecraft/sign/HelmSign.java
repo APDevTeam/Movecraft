@@ -49,18 +49,18 @@ public class HelmSign extends AbstractCraftSign {
     }
 
     @Override
-    protected void onCraftNotFound(Player player, AbstractSignListener.SignWrapper sign) {
+    protected void onCraftNotFound(Player player, SignListener.SignWrapper sign) {
 
     }
 
     @Override
-    protected boolean isSignValid(Action clickType, AbstractSignListener.SignWrapper sign, Player player) {
+    protected boolean isSignValid(Action clickType, SignListener.SignWrapper sign, Player player) {
         // Nothing to check here honestly...
         return true;
     }
 
     @Override
-    public boolean processSignChange(SignChangeEvent event, AbstractSignListener.SignWrapper sign) {
+    public boolean processSignChange(SignChangeEvent event, SignListener.SignWrapper sign) {
         if (!ChatColor.stripColor(event.getLine(0)).equalsIgnoreCase("[helm]")) {
             return true;
         }
@@ -71,7 +71,7 @@ public class HelmSign extends AbstractCraftSign {
     }
 
     @Override
-    protected boolean internalProcessSignWithCraft(Action clickType, AbstractSignListener.SignWrapper sign, Craft craft, Player player) {
+    protected boolean internalProcessSignWithCraft(Action clickType, SignListener.SignWrapper sign, Craft craft, Player player) {
         MovecraftRotation rotation;
         if (clickType == Action.RIGHT_CLICK_BLOCK) {
             rotation = MovecraftRotation.CLOCKWISE;

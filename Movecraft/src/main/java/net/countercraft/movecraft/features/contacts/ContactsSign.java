@@ -4,7 +4,7 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.sign.AbstractInformationSign;
-import net.countercraft.movecraft.sign.AbstractSignListener;
+import net.countercraft.movecraft.sign.SignListener;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.Style;
 import org.bukkit.entity.Player;
@@ -59,7 +59,7 @@ public class ContactsSign extends AbstractInformationSign {
     }
 
     @Override
-    protected boolean internalProcessSignWithCraft(Action clickType, AbstractSignListener.SignWrapper sign, Craft craft, Player player) {
+    protected boolean internalProcessSignWithCraft(Action clickType, SignListener.SignWrapper sign, Craft craft, Player player) {
         player.performCommand("contacts");
 
         return true;
@@ -83,7 +83,7 @@ public class ContactsSign extends AbstractInformationSign {
     }
 
     @Override
-    protected void performUpdate(Component[] newComponents, AbstractSignListener.SignWrapper sign, REFRESH_CAUSE refreshCause) {
+    protected void performUpdate(Component[] newComponents, SignListener.SignWrapper sign, REFRESH_CAUSE refreshCause) {
         for (int i = 0; i < newComponents.length; i++) {
             Component newComp = newComponents[i];
             if (newComp != null) {

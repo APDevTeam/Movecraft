@@ -11,7 +11,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
-import org.jetbrains.annotations.Nullable;
 
 import static net.countercraft.movecraft.util.ChatUtils.MOVECRAFT_COMMAND_PREFIX;
 
@@ -27,18 +26,18 @@ public class ScuttleSign extends AbstractCraftSign {
     }
 
     @Override
-    protected void onCraftNotFound(Player player, AbstractSignListener.SignWrapper sign) {
+    protected void onCraftNotFound(Player player, SignListener.SignWrapper sign) {
         player.sendMessage(MOVECRAFT_COMMAND_PREFIX
                 + I18nSupport.getInternationalisedString("You must be piloting a craft"));
     }
 
     @Override
-    protected boolean isSignValid(Action clickType, AbstractSignListener.SignWrapper sign, Player player) {
+    protected boolean isSignValid(Action clickType, SignListener.SignWrapper sign, Player player) {
         return true;
     }
 
     @Override
-    public boolean processSignChange(SignChangeEvent event, AbstractSignListener.SignWrapper sign) {
+    public boolean processSignChange(SignChangeEvent event, SignListener.SignWrapper sign) {
         return false;
     }
 
@@ -71,7 +70,7 @@ public class ScuttleSign extends AbstractCraftSign {
     }
 
     @Override
-    protected boolean internalProcessSignWithCraft(Action clickType, AbstractSignListener.SignWrapper sign, Craft craft, Player player) {
+    protected boolean internalProcessSignWithCraft(Action clickType, SignListener.SignWrapper sign, Craft craft, Player player) {
         CraftScuttleEvent e = new CraftScuttleEvent(craft, player);
         Bukkit.getServer().getPluginManager().callEvent(e);
         if(e.isCancelled())

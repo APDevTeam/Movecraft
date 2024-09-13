@@ -22,22 +22,22 @@ public class NameSign extends AbstractCraftSign {
     }
 
     @Override
-    protected boolean canPlayerUseSign(Action clickType, AbstractSignListener.SignWrapper sign, Player player) {
+    protected boolean canPlayerUseSign(Action clickType, SignListener.SignWrapper sign, Player player) {
         return !Settings.RequireNamePerm || super.canPlayerUseSign(clickType, sign, player);
     }
 
     @Override
-    protected boolean isSignValid(Action clickType, AbstractSignListener.SignWrapper sign, Player player) {
+    protected boolean isSignValid(Action clickType, SignListener.SignWrapper sign, Player player) {
         return true;
     }
 
     @Override
-    protected boolean internalProcessSignWithCraft(Action clickType, AbstractSignListener.SignWrapper sign, Craft craft, Player player) {
+    protected boolean internalProcessSignWithCraft(Action clickType, SignListener.SignWrapper sign, Craft craft, Player player) {
         return true;
     }
 
     @Override
-    protected boolean internalProcessSign(Action clickType, AbstractSignListener.SignWrapper sign, Player player, @Nullable Craft craft) {
+    protected boolean internalProcessSign(Action clickType, SignListener.SignWrapper sign, Player player, @Nullable Craft craft) {
         return true;
     }
 
@@ -46,11 +46,11 @@ public class NameSign extends AbstractCraftSign {
     }
 
     @Override
-    protected void onCraftNotFound(Player player, AbstractSignListener.SignWrapper sign) {
+    protected void onCraftNotFound(Player player, SignListener.SignWrapper sign) {
     }
 
     @Override
-    public boolean processSignChange(SignChangeEvent event, AbstractSignListener.SignWrapper sign) {
+    public boolean processSignChange(SignChangeEvent event, SignListener.SignWrapper sign) {
         if (this.canPlayerUseSign(Action.RIGHT_CLICK_BLOCK, null, event.getPlayer())) {
             // Nothing to do
             return true;
@@ -62,7 +62,7 @@ public class NameSign extends AbstractCraftSign {
     }
 
     @Override
-    public void onCraftDetect(CraftDetectEvent event, AbstractSignListener.SignWrapper sign) {
+    public void onCraftDetect(CraftDetectEvent event, SignListener.SignWrapper sign) {
         Craft craft = event.getCraft();
         if (craft != null && craft instanceof PilotedCraft pc) {
             if (Settings.RequireNamePerm && !pc.getPilot().hasPermission(NAME_SIGN_PERMISSION))

@@ -5,7 +5,7 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.craft.type.RequiredBlockEntry;
 import net.countercraft.movecraft.sign.AbstractInformationSign;
-import net.countercraft.movecraft.sign.AbstractSignListener;
+import net.countercraft.movecraft.sign.SignListener;
 import net.countercraft.movecraft.util.Counter;
 import net.countercraft.movecraft.util.Tags;
 import net.kyori.adventure.text.Component;
@@ -14,7 +14,6 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
-import java.text.DecimalFormat;
 import java.util.List;
 
 // TODO: Split this into multiple signs? Separate sign for fuel would make sense
@@ -75,7 +74,7 @@ public class StatusSign extends AbstractInformationSign {
     }
 
     @Override
-    protected boolean refreshSign(@Nullable Craft craft, AbstractSignListener.SignWrapper sign, boolean fillDefault, REFRESH_CAUSE refreshCause) {
+    protected boolean refreshSign(@Nullable Craft craft, SignListener.SignWrapper sign, boolean fillDefault, REFRESH_CAUSE refreshCause) {
         // Calculate blocks and store them temporary, not pretty but works!
         calcdisplayComponents(craft);
         // Access violation prevention
@@ -172,7 +171,7 @@ public class StatusSign extends AbstractInformationSign {
     }
 
     @Override
-    protected void performUpdate(Component[] newComponents, AbstractSignListener.SignWrapper sign, REFRESH_CAUSE refreshCause) {
+    protected void performUpdate(Component[] newComponents, SignListener.SignWrapper sign, REFRESH_CAUSE refreshCause) {
         for (int i = 0; i < newComponents.length; i++) {
             Component newComp = newComponents[i];
             if (newComp != null) {

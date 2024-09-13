@@ -14,18 +14,18 @@ public class PilotSign extends AbstractMovecraftSign {
 
     // Pilot signs are pretty much always valid
     @Override
-    protected boolean isSignValid(Action clickType, AbstractSignListener.SignWrapper sign, Player player) {
+    protected boolean isSignValid(Action clickType, SignListener.SignWrapper sign, Player player) {
         return true;
     }
 
     @Override
-    protected boolean internalProcessSign(Action clickType, AbstractSignListener.SignWrapper sign, Player player, @javax.annotation.Nullable Craft craft) {
+    protected boolean internalProcessSign(Action clickType, SignListener.SignWrapper sign, Player player, @javax.annotation.Nullable Craft craft) {
         // Nothing to do here
         return true;
     }
 
     @Override
-    public boolean processSignChange(SignChangeEvent event, AbstractSignListener.SignWrapper sign) {
+    public boolean processSignChange(SignChangeEvent event, SignListener.SignWrapper sign) {
         boolean foundSome = false;
         for (int i = 1; i < sign.lines().size(); i++) {
             String data = null;

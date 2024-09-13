@@ -23,7 +23,7 @@ public class CruiseSign extends AbstractCruiseSign {
     }
 
     @Override
-    protected CruiseDirection getCruiseDirection(AbstractSignListener.SignWrapper sign) {
+    protected CruiseDirection getCruiseDirection(SignListener.SignWrapper sign) {
         BlockFace face = sign.facing();
         // NOt necessary, CruiseDirection#fromBlockFace already handles this!
         //face = face.getOppositeFace();
@@ -31,7 +31,7 @@ public class CruiseSign extends AbstractCruiseSign {
     }
 
     @Override
-    protected boolean isSignValid(Action clickType, AbstractSignListener.SignWrapper sign, Player player) {
+    protected boolean isSignValid(Action clickType, SignListener.SignWrapper sign, Player player) {
         if (super.isSignValid(clickType, sign, player)) {
             switch(sign.facing()) {
                 case NORTH:
@@ -47,7 +47,7 @@ public class CruiseSign extends AbstractCruiseSign {
     }
 
     @Override
-    protected void onAfterStoppingCruise(Craft craft, AbstractSignListener.SignWrapper signWrapper, Player player) {
+    protected void onAfterStoppingCruise(Craft craft, SignListener.SignWrapper signWrapper, Player player) {
         super.onAfterStoppingCruise(craft, signWrapper, player);
         if (!craft.getType().getBoolProperty(CraftType.MOVE_ENTITIES)) {
             CraftManager.getInstance().addReleaseTask(craft);
@@ -55,7 +55,7 @@ public class CruiseSign extends AbstractCruiseSign {
     }
 
     @Override
-    protected boolean shouldShareSameToggleState(AbstractSignListener.SignWrapper sign, AbstractSignListener.SignWrapper other) {
+    protected boolean shouldShareSameToggleState(SignListener.SignWrapper sign, SignListener.SignWrapper other) {
         return super.shouldShareSameToggleState(sign, other) && sign.facing() == other.facing();
     }
 
@@ -65,7 +65,7 @@ public class CruiseSign extends AbstractCruiseSign {
     }
 
     @Override
-    protected void onCraftNotFound(Player player, AbstractSignListener.SignWrapper sign) {
+    protected void onCraftNotFound(Player player, SignListener.SignWrapper sign) {
 
     }
 

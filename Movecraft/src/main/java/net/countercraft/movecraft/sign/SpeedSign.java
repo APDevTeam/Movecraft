@@ -17,7 +17,7 @@ public class SpeedSign extends AbstractInformationSign {
     }
 
     @Override
-    protected boolean internalProcessSign(Action clickType, AbstractSignListener.SignWrapper sign, Player player, Craft craft) {
+    protected boolean internalProcessSign(Action clickType, SignListener.SignWrapper sign, Player player, Craft craft) {
         if (clickType != Action.RIGHT_CLICK_BLOCK)
             return false;
 
@@ -68,7 +68,7 @@ public class SpeedSign extends AbstractInformationSign {
     }
 
     @Override
-    protected void performUpdate(Component[] newComponents, AbstractSignListener.SignWrapper sign, REFRESH_CAUSE refreshCause) {
+    protected void performUpdate(Component[] newComponents, SignListener.SignWrapper sign, REFRESH_CAUSE refreshCause) {
         for (int i = 0; i < newComponents.length; i++) {
             Component newComp = newComponents[i];
             if (newComp != null) {

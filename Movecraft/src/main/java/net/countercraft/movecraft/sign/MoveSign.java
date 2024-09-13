@@ -19,12 +19,12 @@ public class MoveSign extends AbstractCraftSign {
     }
 
     @Override
-    protected void onCraftNotFound(Player player, AbstractSignListener.SignWrapper sign) {
+    protected void onCraftNotFound(Player player, SignListener.SignWrapper sign) {
 
     }
 
     @Override
-    protected boolean isSignValid(Action clickType, AbstractSignListener.SignWrapper sign, Player player) {
+    protected boolean isSignValid(Action clickType, SignListener.SignWrapper sign, Player player) {
         String[] numbers = sign.getRaw(1).split(",");
         if (numbers.length != 3) {
             return false;
@@ -40,7 +40,7 @@ public class MoveSign extends AbstractCraftSign {
     }
 
     @Override
-    public boolean processSignChange(SignChangeEvent event, AbstractSignListener.SignWrapper sign) {
+    public boolean processSignChange(SignChangeEvent event, SignListener.SignWrapper sign) {
         return false;
     }
 
@@ -58,7 +58,7 @@ public class MoveSign extends AbstractCraftSign {
     }
 
     @Override
-    protected boolean internalProcessSignWithCraft(Action clickType, AbstractSignListener.SignWrapper sign, Craft craft, Player player) {
+    protected boolean internalProcessSignWithCraft(Action clickType, SignListener.SignWrapper sign, Craft craft, Player player) {
         if (!craft.getType().getBoolProperty(CraftType.CAN_STATIC_MOVE)) {
             return false;
         }
@@ -71,7 +71,7 @@ public class MoveSign extends AbstractCraftSign {
         return translateCraft(sign.block().getRawData(), dx, dy, dz, craft, sign);
     }
 
-    protected boolean translateCraft(final byte signDataRaw, int dxRaw, int dyRaw, int dzRaw, Craft craft, AbstractSignListener.SignWrapper signWrapper) {
+    protected boolean translateCraft(final byte signDataRaw, int dxRaw, int dyRaw, int dzRaw, Craft craft, SignListener.SignWrapper signWrapper) {
         int maxMove = craft.getType().getIntProperty(CraftType.MAX_STATIC_MOVE);
 
         if (dxRaw > maxMove)

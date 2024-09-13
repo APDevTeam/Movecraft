@@ -31,13 +31,13 @@ public class RemoteSign extends AbstractCraftSign {
     }
 
     @Override
-    protected void onCraftNotFound(Player player, AbstractSignListener.SignWrapper sign) {
+    protected void onCraftNotFound(Player player, SignListener.SignWrapper sign) {
         player.sendMessage(ERROR_PREFIX+I18nSupport.getInternationalisedString("Remote Sign - Must be a part of a piloted craft"));
     }
 
     @Override
-    protected boolean internalProcessSignWithCraft(Action clickType, AbstractSignListener.SignWrapper sign, Craft craft, Player player) {
-        Map<AbstractMovecraftSign, LinkedList<AbstractSignListener.SignWrapper>> foundTargetSigns = new HashMap<>();
+    protected boolean internalProcessSignWithCraft(Action clickType, SignListener.SignWrapper sign, Craft craft, Player player) {
+        Map<AbstractMovecraftSign, LinkedList<SignListener.SignWrapper>> foundTargetSigns = new HashMap<>();
         boolean firstError = true;
         final String targetIdent = sign.getRaw(1).toUpperCase();
         for (MovecraftLocation tloc : craft.getHitBox()) {
@@ -47,10 +47,10 @@ public class RemoteSign extends AbstractCraftSign {
             }
             Sign ts = (Sign) tstate;
 
-            AbstractSignListener.SignWrapper[] targetSignWrappers = Movecraft.getInstance().getAbstractSignListener().getSignWrappers(ts);
+            SignListener.SignWrapper[] targetSignWrappers = Movecraft.getInstance().getAbstractSignListener().getSignWrappers(ts);
 
             if (targetSignWrappers != null) {
-                for (AbstractSignListener.SignWrapper wrapper : targetSignWrappers) {
+                for (SignListener.SignWrapper wrapper : targetSignWrappers) {
                     // Matches source?
                     final String signHeader = PlainTextComponentSerializer.plainText().serialize(wrapper.line(0));
                     AbstractMovecraftSign signHandler = AbstractMovecraftSign.get(signHeader);
@@ -68,7 +68,7 @@ public class RemoteSign extends AbstractCraftSign {
                             }
                             player.sendMessage(" - ".concat(tloc.toString()).concat(" : ").concat(ts.getLine(0)));
                         } else {
-                            LinkedList<AbstractSignListener.SignWrapper> value = foundTargetSigns.computeIfAbsent(signHandler, (a) -> new LinkedList<>());
+                            LinkedList<SignListener.SignWrapper> value = foundTargetSigns.computeIfAbsent(signHandler, (a) -> new LinkedList<>());
                             value.add(wrapper);
                         }
                     }
@@ -94,7 +94,7 @@ public class RemoteSign extends AbstractCraftSign {
         // call the handlers!
         foundTargetSigns.entrySet().forEach(entry -> {
             AbstractMovecraftSign signHandler = entry.getKey();
-            for (AbstractSignListener.SignWrapper wrapper : entry.getValue()) {
+            for (SignListener.SignWrapper wrapper : entry.getValue()) {
                 signHandler.processSignClick(clickType, wrapper, player);
             }
         });
@@ -103,7 +103,7 @@ public class RemoteSign extends AbstractCraftSign {
     }
 
     @Override
-    protected boolean isSignValid(Action clickType, AbstractSignListener.SignWrapper sign, Player player) {
+    protected boolean isSignValid(Action clickType, SignListener.SignWrapper sign, Player player) {
         String target = sign.getRaw(1);
         if (target.isBlank()) {
             player.sendMessage(ERROR_PREFIX + I18nSupport.getInternationalisedString("Remote Sign - Cannot be blank"));
@@ -118,7 +118,7 @@ public class RemoteSign extends AbstractCraftSign {
         return true;
     }
 
-    protected static boolean hasForbiddenString(AbstractSignListener.SignWrapper wrapper) {
+    protected static boolean hasForbiddenString(SignListener.SignWrapper wrapper) {
         for (int i = 0; i < wrapper.lines().size(); i++) {
             String s = wrapper.getRaw(i).toLowerCase();
             if(Settings.ForbiddenRemoteSigns.contains(s))
@@ -128,7 +128,7 @@ public class RemoteSign extends AbstractCraftSign {
     }
 
     // Walks through all strings on the wrapper and if any of the non-header strings match it returns true
-    protected static boolean matchesDescriptor(final String descriptor, final AbstractSignListener.SignWrapper potentialTarget) {
+    protected static boolean matchesDescriptor(final String descriptor, final SignListener.SignWrapper potentialTarget) {
         for (int i = 1; i < potentialTarget.lines().size(); i++) {
             String targetStr = potentialTarget.getRaw(i).toUpperCase();
             if (descriptor.equalsIgnoreCase(targetStr)) {
@@ -139,7 +139,7 @@ public class RemoteSign extends AbstractCraftSign {
     }
 
     @Override
-    public boolean processSignChange(SignChangeEvent event, AbstractSignListener.SignWrapper sign) {
+    public boolean processSignChange(SignChangeEvent event, SignListener.SignWrapper sign) {
         return isSignValid(Action.PHYSICAL, sign, event.getPlayer());
     }
 

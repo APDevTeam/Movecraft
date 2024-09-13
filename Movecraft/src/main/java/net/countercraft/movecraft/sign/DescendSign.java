@@ -22,7 +22,7 @@ public class DescendSign extends AbstractCruiseSign {
     }
 
     @Override
-    protected CruiseDirection getCruiseDirection(AbstractSignListener.SignWrapper sign) {
+    protected CruiseDirection getCruiseDirection(SignListener.SignWrapper sign) {
         return CruiseDirection.DOWN;
     }
 
@@ -32,12 +32,12 @@ public class DescendSign extends AbstractCruiseSign {
     }
 
     @Override
-    protected void onCraftNotFound(Player player, AbstractSignListener.SignWrapper sign) {
+    protected void onCraftNotFound(Player player, SignListener.SignWrapper sign) {
 
     }
 
     @Override
-    protected void onAfterStoppingCruise(Craft craft, AbstractSignListener.SignWrapper signWrapper, Player player) {
+    protected void onAfterStoppingCruise(Craft craft, SignListener.SignWrapper signWrapper, Player player) {
         if (!craft.getType().getBoolProperty(CraftType.MOVE_ENTITIES)) {
             CraftManager.getInstance().addReleaseTask(craft);
         }
