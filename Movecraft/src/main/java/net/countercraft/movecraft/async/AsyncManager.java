@@ -324,53 +324,20 @@ public class AsyncManager extends BukkitRunnable {
 
 
 private void removeBottomLayer(Craft craft) {
-    if (craft == null || craft.getHitBox() == null || craft.getHitBox().isEmpty()) {
+    if (craft.getHitBox().isEmpty()) {
         return;
     }
 
-    // Replace location.getX() with craft.getHitBox().getMinX()
-    // Replace location.getZ() with craft.getHitBox().getMinZ()
     int bottomY = craft.getHitBox().getMinY();
     int width = craft.getHitBox().getXLength();
     int length = craft.getHitBox().getZLength();
-    int startX = craft.getHitBox().getMinX(); // Changed
-    int startZ = craft.getHitBox().getMinZ(); // Changed
+    int startX = craft.getHitBox().getMinX();
+    int startZ = craft.getHitBox().getMinZ();
     World world = craft.getWorld();
-
-    if (world == null) {
-        return;
-    }
-
-    // Get the world’s minimum and maximum Y-coordinate limits
-    int minY = world.getMinHeight(); // Minecraft 1.18+ worlds have a min height of -64
-    int maxY = world.getMaxHeight(); // Minecraft 1.18+ worlds have a max height of 320
-
-    // Ensure bottomY is within valid range
-    if (bottomY < minY || bottomY >= maxY) {
-        System.err.println("bottomY out of bounds: " + bottomY);
-        return;
-    }
-
-    // Ensure width and length are valid
-    if (width <= 0 || length <= 0) {
-        System.err.println("Invalid width or length: width=" + width + ", length=" + length);
-        return;
-    }
 
     // Directly update blocks using Bukkit API
     for (int x = startX; x < startX + width; x++) {
         for (int z = startZ; z < startZ + length; z++) {
-            // Ensure coordinates are within the valid range of the world
-            if (x < 0 || z < 0 || x >= world.getMaxWidth() || z >= world.getMaxWidth()) {
-                System.err.println("Coordinates out of bounds: x=" + x + ", z=" + z);
-                continue;
-            }
-
-            // Ensure y coordinate is within bounds
-            if (bottomY < minY || bottomY >= maxY) {
-                System.err.println("Y coordinate out of bounds: y=" + bottomY);
-                continue;
-            }
 
             // Get the block at the current coordinates
             Block block = world.getBlockAt(x, bottomY, z);
