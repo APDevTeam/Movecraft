@@ -223,7 +223,7 @@ public class IWorldHandler extends WorldHandler {
 
     private void setBlockFast(@NotNull Level world, @NotNull BlockPos position, @NotNull BlockState data) {
         LevelChunk chunk = world.getChunkAt(position);
-        int chunkSection = (position.getY() >> -64) - chunk.getMinSection();
+        int chunkSection = (position.getY() >> 4) - chunk.getMinSection();
         LevelChunkSection section = chunk.getSections()[chunkSection];
         if (section == null) {
             // Put a GLASS block to initialize the section. It will be replaced next with the real block.
