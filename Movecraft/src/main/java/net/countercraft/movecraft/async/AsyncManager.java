@@ -289,6 +289,38 @@ public class AsyncManager extends BukkitRunnable {
     }
 
     //Controls sinking crafts
+    private void processSinking() {
+        // Copy the crafts before iteration to prevent concurrent modifications
+        List<Craft> crafts = Lists.newArrayList(CraftManager.getInstance());
+        for (Craft craft : crafts) {
+            if (!(craft instanceof SinkingCraft))
+                continue;
+
+           if (craft.getHitBox().isEmpty()) {
+                // Commented out old release
+                CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.SUNK, false);
+
+                // Remove the bottom-most layer
+                continue;
+            }
+
+            long ticksElapsed = (System.currentTimeMillis() - craft.getLastCruiseUpdate()) / 50;
+            if (Math.abs(ticksElapsed) < craft.getType().getIntProperty(CraftType.SINK_RATE_TICKS))
+                continue;
+
+           int dx = 0;
+            int dz = 0;
+            if (craft.getType().getBoolProperty(CraftType.KEEP_MOVING_ON_SINK)) {
+                dx = craft.getLastTranslation().getX();
+                dz = craft.getLastTranslation().getZ();
+            }
+            craft.translate(dx, -1, dz);
+            craft.setLastCruiseUpdate(System.currentTimeMillis());
+            removeBottomLayer(craft);
+        }
+    }
+
+
     private void removeBottomLayer(Craft craft) {
         if (craft == null || craft.getHitBox() == null || craft.getHitBox().isEmpty()) {
             return;
