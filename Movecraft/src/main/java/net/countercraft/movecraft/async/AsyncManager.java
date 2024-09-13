@@ -331,11 +331,11 @@ private void removeBottomLayer(Craft craft) {
         return;
     }
 
-    int bottomY = -64; // Adjust based on the world’s minimum Y-coordinate
+    int bottomY = -63; // Adjust based on the world’s minimum Y-coordinate
     int width = craft.getHitBox().getXLength();
     int length = craft.getHitBox().getZLength();
-    int startX = location.getX();
-    int startZ = location.getZ();
+    int startX = location.getMinX();
+    int startZ = location.getMinZ();
     World world = craft.getWorld();
 
     if (world == null) {
