@@ -295,12 +295,11 @@ private void processSinking() {
         if (!(craft instanceof SinkingCraft))
             continue;
 
-        if (craft.getHitBox().isEmpty() || craft.getHitBox().getMinY() < -63) {
+        if (craft.getHitBox().isEmpty(){
             // Commented out old release
-            // CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.SUNK, false);
+            CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.SUNK, false);
 
             // Remove the bottom-most layer
-            removeBottomLayer(craft);
             continue;
         }
 
@@ -316,6 +315,7 @@ private void processSinking() {
         }
         craft.translate(dx, -1, dz);
         craft.setLastCruiseUpdate(System.currentTimeMillis());
+        removeBottomLayer(craft);
     }
 }
 
@@ -329,7 +329,7 @@ private void processSinking() {
             return;
         }
 
-        int bottomY = craft.getHitBox().getMinY();
+        int bottomY = -64;
         int width = craft.getHitBox().getWidth();
         int length = craft.getHitBox().getLength();
         int startX = location.getX();
