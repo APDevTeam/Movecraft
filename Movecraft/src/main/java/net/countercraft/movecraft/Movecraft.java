@@ -23,7 +23,6 @@ import net.countercraft.movecraft.commands.*;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.ChunkManager;
 import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.craft.datatag.CraftDataTagRegistry;
 import net.countercraft.movecraft.features.contacts.ContactsCommand;
 import net.countercraft.movecraft.features.contacts.ContactsManager;
 import net.countercraft.movecraft.features.contacts.ContactsSign;
@@ -133,13 +132,6 @@ public class Movecraft extends JavaPlugin {
                     getLogger().warning("Falling back to bukkit teleportation provider.");
                 }
             }
-
-            // Create instance of sign listener
-            final Class<?> signListenerClass = Class.forName("net.countercraft.movecraft.compat." + WorldHandler.getPackageName(minecraftVersion) + ".SignListener");
-            if (AbstractSignListener.class.isAssignableFrom(signListenerClass)) {
-                abstractSignListener = (AbstractSignListener) signListenerClass.getConstructor().newInstance();
-                getServer().getPluginManager().registerEvents(abstractSignListener, this);
-            }
         }
         catch (final Exception e) {
             e.printStackTrace();
@@ -236,6 +228,7 @@ public class Movecraft extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new CraftPilotListener(), this);
         getServer().getPluginManager().registerEvents(new CraftReleaseListener(), this);
         getServer().getPluginManager().registerEvents(new CraftTypeListener(), this);
+        getServer().getPluginManager().registerEvents(new SignListener(), this);
 
         // Signs
         AbstractMovecraftSign.register("Release", new ReleaseSign());
@@ -351,7 +344,7 @@ public class Movecraft extends JavaPlugin {
         return wreckManager;
     }
 
-    public AbstractSignListener getAbstractSignListener() {
+    public SignListener getAbstractSignListener() {
         return abstractSignListener;
     }
 }

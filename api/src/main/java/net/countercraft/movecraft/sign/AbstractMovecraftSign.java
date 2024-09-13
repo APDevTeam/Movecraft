@@ -4,7 +4,6 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.util.MathUtils;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
@@ -105,7 +104,7 @@ public abstract class AbstractMovecraftSign {
     // Called whenever a player clicks the sign
     // SignWrapper wraps the relevant clicked side of the sign and the sign block itself
     // If true is returned, the event will be cancelled
-    public boolean processSignClick(Action clickType, AbstractSignListener.SignWrapper sign, Player player) {
+    public boolean processSignClick(Action clickType, SignListener.SignWrapper sign, Player player) {
         if (!this.isSignValid(clickType, sign, player)) {
             return false;
         }
@@ -118,7 +117,7 @@ public abstract class AbstractMovecraftSign {
 
     // Validation method
     // By default this checks if the player has the set permission
-    protected boolean canPlayerUseSign(Action clickType, AbstractSignListener.SignWrapper sign, Player player) {
+    protected boolean canPlayerUseSign(Action clickType, SignListener.SignWrapper sign, Player player) {
         if (this.permissionString == null || this.permissionString.isBlank()) {
             return true;
         }
@@ -127,7 +126,7 @@ public abstract class AbstractMovecraftSign {
 
     // Helper method, simply calls the existing methods
     @Nullable
-    protected Craft getCraft(AbstractSignListener.SignWrapper sign) {
+    protected Craft getCraft(SignListener.SignWrapper sign) {
         return MathUtils.getCraftByPersistentBlockData(sign.block().getLocation());
     }
 
@@ -168,14 +167,14 @@ public abstract class AbstractMovecraftSign {
 
     // Validation method, called by default in processSignClick
     // If false is returned, nothing will be processed
-    protected abstract boolean isSignValid(Action clickType, AbstractSignListener.SignWrapper sign, Player player);
+    protected abstract boolean isSignValid(Action clickType, SignListener.SignWrapper sign, Player player);
 
     // Called by processSignClick after validation. At this point, isSignValid() and canPlayerUseSign() have been called already
     // If the sign belongs to a craft, that craft is given in the @param craft argument
     // Return true, if everything was ok
-    protected abstract boolean internalProcessSign(Action clickType, AbstractSignListener.SignWrapper sign, Player player, @Nullable Craft craft);
+    protected abstract boolean internalProcessSign(Action clickType, SignListener.SignWrapper sign, Player player, @Nullable Craft craft);
 
     // Called by the event handler when SignChangeEvent is being cought
     // Return true, if everything was ok
-    public abstract boolean processSignChange(SignChangeEvent event, AbstractSignListener.SignWrapper sign);
+    public abstract boolean processSignChange(SignChangeEvent event, SignListener.SignWrapper sign);
 }

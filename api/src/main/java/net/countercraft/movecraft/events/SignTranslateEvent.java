@@ -2,7 +2,7 @@ package net.countercraft.movecraft.events;
 
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.sign.AbstractSignListener;
+import net.countercraft.movecraft.sign.SignListener;
 import net.kyori.adventure.text.Component;
 import org.bukkit.block.BlockFace;
 import org.bukkit.event.HandlerList;
@@ -12,11 +12,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-// TODO: Rewrite to use the adventure API
+/**
+ * Obsolete, functionality is covered by the new sign system
+ */
+@Deprecated(forRemoval = true)
 public class SignTranslateEvent extends CraftEvent{
     private static final HandlerList HANDLERS = new HandlerList();
     @NotNull private final List<MovecraftLocation> locations;
-    @NotNull private final AbstractSignListener.SignWrapper backing;
+    @NotNull private final SignListener.SignWrapper backing;
     private boolean updated = false;
 
     @Deprecated(forRemoval = true)
@@ -27,13 +30,17 @@ public class SignTranslateEvent extends CraftEvent{
         for (String s : lines) {
             components.add(Component.text(s));
         }
-        this.backing = new AbstractSignListener.SignWrapper(null, components::get, components, components::set, BlockFace.SELF);
+        this.backing = new SignListener.SignWrapper(null, components::get, components, components::set, BlockFace.SELF);
     }
 
-    public SignTranslateEvent(@NotNull Craft craft, @NotNull AbstractSignListener.SignWrapper backing, @NotNull List<MovecraftLocation> locations) throws IndexOutOfBoundsException{
+    public SignTranslateEvent(@NotNull Craft craft, @NotNull SignListener.SignWrapper backing, @NotNull List<MovecraftLocation> locations) throws IndexOutOfBoundsException{
         super(craft);
         this.locations = locations;
         this.backing = backing;
+    }
+
+    public @NotNull SignListener.SignWrapper getBacking() {
+         return this.backing;
     }
 
     @NotNull
