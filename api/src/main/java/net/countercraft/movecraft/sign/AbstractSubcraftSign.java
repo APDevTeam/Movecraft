@@ -40,7 +40,7 @@ public abstract class AbstractSubcraftSign extends AbstractCraftSign {
     }
 
     @Override
-    public boolean processSignClick(Action clickType, AbstractSignListener.SignWrapper sign, Player player) {
+    public boolean processSignClick(Action clickType, SignListener.SignWrapper sign, Player player) {
         if (!this.isSignValid(clickType, sign, player)) {
             return false;
         }
@@ -60,7 +60,7 @@ public abstract class AbstractSubcraftSign extends AbstractCraftSign {
     }
 
     @Override
-    protected boolean internalProcessSign(Action clickType, AbstractSignListener.SignWrapper sign, Player player, Craft craft) {
+    protected boolean internalProcessSign(Action clickType, SignListener.SignWrapper sign, Player player, Craft craft) {
         if (craft != null) {
             // TODO: Add property to crafts that they can use subcrafts?
             if (!this.canPlayerUseSignOn(player, craft)) {
@@ -71,13 +71,13 @@ public abstract class AbstractSubcraftSign extends AbstractCraftSign {
     }
 
     @Override
-    public boolean processSignChange(SignChangeEvent event, AbstractSignListener.SignWrapper sign) {
+    public boolean processSignChange(SignChangeEvent event, SignListener.SignWrapper sign) {
         // TODO: Implement
         return false;
     }
 
     @Override
-    protected boolean isSignValid(Action clickType, AbstractSignListener.SignWrapper sign, Player player) {
+    protected boolean isSignValid(Action clickType, SignListener.SignWrapper sign, Player player) {
         String[] headerSplit = sign.getRaw(0).split(" ");
         if (headerSplit.length != 2) {
             return false;
@@ -91,7 +91,7 @@ public abstract class AbstractSubcraftSign extends AbstractCraftSign {
     }
 
     @Override
-    protected boolean canPlayerUseSign(Action clickType, AbstractSignListener.SignWrapper sign, Player player) {
+    protected boolean canPlayerUseSign(Action clickType, SignListener.SignWrapper sign, Player player) {
         if (!super.canPlayerUseSign(clickType, sign, player)) {
             return false;
         }
@@ -103,7 +103,7 @@ public abstract class AbstractSubcraftSign extends AbstractCraftSign {
     }
 
     @Override
-    protected boolean internalProcessSignWithCraft(Action clickType, AbstractSignListener.SignWrapper sign, @Nullable Craft craft, Player player) {
+    protected boolean internalProcessSignWithCraft(Action clickType, SignListener.SignWrapper sign, @Nullable Craft craft, Player player) {
         CraftType subcraftType = this.getCraftType(sign);
 
         final Location signLoc = sign.block().getLocation();
@@ -142,7 +142,7 @@ public abstract class AbstractSubcraftSign extends AbstractCraftSign {
         return false;
     }
 
-    protected void applyDefaultText(AbstractSignListener.SignWrapper sign) {
+    protected void applyDefaultText(SignListener.SignWrapper sign) {
         if (sign.getRaw(2).isBlank() && sign.getRaw(3).isBlank()) {
             Component l3 = this.getDefaultTextFor(2);
             Component l4 = this.getDefaultTextFor(3);
@@ -156,7 +156,7 @@ public abstract class AbstractSubcraftSign extends AbstractCraftSign {
     }
 
     @Nullable
-    protected CraftType getCraftType(AbstractSignListener.SignWrapper wrapper) {
+    protected CraftType getCraftType(SignListener.SignWrapper wrapper) {
         String ident = wrapper.getRaw(1);
         if (ident.trim().isBlank()) {
             return null;
@@ -177,6 +177,6 @@ public abstract class AbstractSubcraftSign extends AbstractCraftSign {
     protected abstract boolean isActionAllowed(final String action);
     protected abstract void onActionAlreadyInProgress(Player player);
     protected abstract Component getDefaultTextFor(int line);
-    protected abstract boolean canPlayerUseSignForCraftType(Action clickType, AbstractSignListener.SignWrapper sign, Player player, CraftType subCraftType);
+    protected abstract boolean canPlayerUseSignForCraftType(Action clickType, SignListener.SignWrapper sign, Player player, CraftType subCraftType);
 
 }

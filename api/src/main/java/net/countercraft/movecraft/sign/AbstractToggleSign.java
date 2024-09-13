@@ -10,14 +10,10 @@ import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
-import org.bukkit.block.sign.SignSide;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.HashSet;
-import java.util.Set;
 
 public abstract class AbstractToggleSign extends AbstractCraftSign {
 
@@ -45,7 +41,7 @@ public abstract class AbstractToggleSign extends AbstractCraftSign {
     // Afterwards the header is validated, if it's splitted variant doesn't have exactly 2 entries it is invalid
     // Finally, the "state" (second part of the header) isn't matching suffixOn or suffixOff, it is invalid
     @Override
-    protected boolean isSignValid(Action clickType, AbstractSignListener.SignWrapper sign, Player player) {
+    protected boolean isSignValid(Action clickType, SignListener.SignWrapper sign, Player player) {
         if (PlainTextComponentSerializer.plainText().serialize(sign.line(0)).isBlank()) {
             return false;
         }
@@ -60,7 +56,7 @@ public abstract class AbstractToggleSign extends AbstractCraftSign {
     // Returns the raw header, which should consist of the ident and either the suffixOn or suffixOff value
     // Returns null if the header is blank
     @Nullable
-    protected static String[] getSplitHeader(final AbstractSignListener.SignWrapper sign) {
+    protected static String[] getSplitHeader(final SignListener.SignWrapper sign) {
         String header = PlainTextComponentSerializer.plainText().serialize(sign.line(0));
         if (header.isBlank()) {
             return null;
@@ -70,7 +66,7 @@ public abstract class AbstractToggleSign extends AbstractCraftSign {
 
     // If the suffix matches the suffixOn field it will returnt true
     // calls getSplitHeader() to retrieve the raw header string
-    protected boolean isOnOrOff(AbstractSignListener.SignWrapper sign) {
+    protected boolean isOnOrOff(SignListener.SignWrapper sign) {
         String[] headerSplit = getSplitHeader(sign);
         if (headerSplit == null || headerSplit.length != 2) {
             return false;
@@ -79,8 +75,8 @@ public abstract class AbstractToggleSign extends AbstractCraftSign {
         return suffix.equalsIgnoreCase(this.suffixOn);
     }
 
-    protected abstract void onAfterToggle(Craft craft, AbstractSignListener.SignWrapper signWrapper, Player player, boolean toggledToOn);
-    protected abstract void onBeforeToggle(Craft craft, AbstractSignListener.SignWrapper signWrapper, Player player, boolean willBeOn);
+    protected abstract void onAfterToggle(Craft craft, SignListener.SignWrapper signWrapper, Player player, boolean toggledToOn);
+    protected abstract void onBeforeToggle(Craft craft, SignListener.SignWrapper signWrapper, Player player, boolean willBeOn);
 
     // Actual processing, determines wether the sign will switch to on or off
     // If it will be on, the CruiseDirection is retrieved and then setCraftCruising() is called
@@ -89,7 +85,7 @@ public abstract class AbstractToggleSign extends AbstractCraftSign {
     // Finally, the relevant hooks are called
     // This always returns true
     @Override
-    protected boolean internalProcessSignWithCraft(Action clickType, AbstractSignListener.SignWrapper sign, Craft craft, Player player) {
+    protected boolean internalProcessSignWithCraft(Action clickType, SignListener.SignWrapper sign, Craft craft, Player player) {
         boolean isOn = this.isOnOrOff(sign);
         boolean willBeOn = !isOn;
 
@@ -106,8 +102,8 @@ public abstract class AbstractToggleSign extends AbstractCraftSign {
             }
             final Sign s = (Sign) b.getState();
             boolean update = false;
-            AbstractSignListener.SignWrapper[] wrappers = AbstractSignListener.INSTANCE.getSignWrappers(s);
-            for (AbstractSignListener.SignWrapper wrapperTmp : wrappers) {
+            SignListener.SignWrapper[] wrappers = SignListener.INSTANCE.getSignWrappers(s);
+            for (SignListener.SignWrapper wrapperTmp : wrappers) {
                 if (wrapperTmp.areSignsEqual(sign)) {
                     continue;
                 }
@@ -124,7 +120,7 @@ public abstract class AbstractToggleSign extends AbstractCraftSign {
         return true;
     }
 
-    public boolean doReset(AbstractSignListener.SignWrapper original, AbstractSignListener.SignWrapper other) {
+    public boolean doReset(SignListener.SignWrapper original, SignListener.SignWrapper other) {
         AbstractMovecraftSign otherHandler = MovecraftSignRegistry.INSTANCE.getCraftSign(other.line(0));
         boolean originalIsOn = this.isOnOrOff(original);
         if (otherHandler != this) {
@@ -146,13 +142,13 @@ public abstract class AbstractToggleSign extends AbstractCraftSign {
         return true;
     }
 
-    protected boolean shouldShareSameToggleState(AbstractSignListener.SignWrapper sign, AbstractSignListener.SignWrapper other) {
+    protected boolean shouldShareSameToggleState(SignListener.SignWrapper sign, SignListener.SignWrapper other) {
         return true;
     }
 
     // On sign placement, if the entered header is the same as our ident, it will append the off-suffix automatically
     @Override
-    public boolean processSignChange(SignChangeEvent event, AbstractSignListener.SignWrapper sign) {
+    public boolean processSignChange(SignChangeEvent event, SignListener.SignWrapper sign) {
         String header = sign.getRaw(0).trim();
         if (header.equalsIgnoreCase(this.ident)) {
             sign.line(0, buildHeaderOff());
@@ -162,7 +158,7 @@ public abstract class AbstractToggleSign extends AbstractCraftSign {
 
     // On craft detection, we set all the headers to the "off" header
     @Override
-    public void onCraftDetect(CraftDetectEvent event, AbstractSignListener.SignWrapper sign) {
+    public void onCraftDetect(CraftDetectEvent event, SignListener.SignWrapper sign) {
         Player p = null;
         if (event.getCraft() instanceof PilotedCraft pc) {
             p = pc.getPilot();

@@ -1,17 +1,17 @@
 package net.countercraft.movecraft.sign;
 
+import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.PilotedCraft;
 import net.countercraft.movecraft.craft.PlayerCraft;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 
 import javax.annotation.Nullable;
-import java.util.Optional;
+import java.util.List;
 
 /*
  * Extension of @AbstractMovecraftSign
@@ -51,7 +51,7 @@ public abstract class AbstractCraftSign extends AbstractMovecraftSign {
     // If no craft is found, onCraftNotFound() is called
     // Return true to cancel the event
     @Override
-    public boolean processSignClick(Action clickType, AbstractSignListener.SignWrapper sign, Player player) {
+    public boolean processSignClick(Action clickType, SignListener.SignWrapper sign, Player player) {
         if (!this.isSignValid(clickType, sign, player)) {
             return false;
         }
@@ -78,7 +78,7 @@ public abstract class AbstractCraftSign extends AbstractMovecraftSign {
     // The craft instance is required here and it's existance is being confirmed in processSignClick() in beforehand
     // After that, canPlayerUseSignOn() is being called. If that is successful, the result of internalProcessSignWithCraft() is returned
     @Override
-    protected boolean internalProcessSign(Action clickType, AbstractSignListener.SignWrapper sign, Player player, @Nullable Craft craft) {
+    protected boolean internalProcessSign(Action clickType, SignListener.SignWrapper sign, Player player, @Nullable Craft craft) {
         if (craft == null) {
             throw new IllegalStateException("Somehow craft is not set here. It should always be present here!");
         }
@@ -101,19 +101,25 @@ public abstract class AbstractCraftSign extends AbstractMovecraftSign {
     }
 
     // Called when there is no craft instance for this sign
-    protected abstract void onCraftNotFound(Player player, AbstractSignListener.SignWrapper sign);
+    protected abstract void onCraftNotFound(Player player, SignListener.SignWrapper sign);
 
     // By default we don't react to CraftDetectEvent here
-    public void onCraftDetect(CraftDetectEvent event, AbstractSignListener.SignWrapper sign) {
+    public void onCraftDetect(CraftDetectEvent event, SignListener.SignWrapper sign) {
         // Do nothing by default
     }
 
+    // Return true if you modified anything
+    public boolean processSignTranslation(final Craft translatingCraft, SignListener.SignWrapper movingData, @Nullable List<MovecraftLocation> signLocations) {
+        // DO nothing by default
+        return false;
+    }
+
     public void onSignMovedByCraft(SignTranslateEvent event) {
-        // Do nothing by default
+        this.processSignTranslation(event.getCraft(), event.getBacking(), event.getLocations());
     }
 
     // Gets called by internalProcessSign if a craft is found
     // Always override this as the validation has been made already when this is being called
-    protected abstract boolean internalProcessSignWithCraft(Action clickType, AbstractSignListener.SignWrapper sign, Craft craft, Player player);
+    protected abstract boolean internalProcessSignWithCraft(Action clickType, SignListener.SignWrapper sign, Craft craft, Player player);
 
 }

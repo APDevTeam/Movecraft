@@ -16,6 +16,8 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+
 public abstract class AbstractInformationSign extends AbstractCraftSign {
 
     public static final Component EMPTY = Component.text("");
@@ -44,7 +46,7 @@ public abstract class AbstractInformationSign extends AbstractCraftSign {
     }
 
     @Override
-    public void onCraftDetect(CraftDetectEvent event, AbstractSignListener.SignWrapper sign) {
+    public void onCraftDetect(CraftDetectEvent event, SignListener.SignWrapper sign) {
         // TODO: Check if the craft supports this sign? If no, cancel
         super.onCraftDetect(event, sign);
         this.refreshSign(event.getCraft(), sign, true, REFRESH_CAUSE.CRAFT_DETECT);
@@ -52,33 +54,33 @@ public abstract class AbstractInformationSign extends AbstractCraftSign {
     }
 
     @Override
-    public void onSignMovedByCraft(SignTranslateEvent event) {
-        super.onSignMovedByCraft(event);
-        final Craft craft = event.getCraft();
-        AbstractSignListener.SignWrapper wrapperTmp = new AbstractSignListener.SignWrapper(null, event::line, event.lines(), event::line, BlockFace.SELF);
-        if (this.refreshSign(craft, wrapperTmp, false, REFRESH_CAUSE.SIGN_MOVED_BY_CRAFT)) {
-            for (MovecraftLocation movecraftLocation : event.getLocations()) {
-                Block block = movecraftLocation.toBukkit(craft.getWorld()).getBlock();
+    public boolean processSignTranslation(Craft translatingCraft, SignListener.SignWrapper movingData, @Nullable List<MovecraftLocation> signLocations) {
+        //SignListener.SignWrapper wrapperTmp = new SignListener.SignWrapper(null, movingData::line, movingData.lines(), movingData::line, BlockFace.SELF);
+        if (this.refreshSign(translatingCraft, movingData, false, REFRESH_CAUSE.SIGN_MOVED_BY_CRAFT)) {
+            for (MovecraftLocation movecraftLocation : signLocations) {
+                Block block = movecraftLocation.toBukkit(translatingCraft.getWorld()).getBlock();
                 if (block instanceof Sign sign) {
-                    AbstractSignListener.SignWrapper wrapperTmpTmp = new AbstractSignListener.SignWrapper(sign, event::line, event.lines(), event::line, event.facing());
-                    this.sendUpdatePacket(craft, wrapperTmpTmp, REFRESH_CAUSE.SIGN_MOVED_BY_CRAFT);
+                    SignListener.SignWrapper wrapperTmpTmp = new SignListener.SignWrapper(sign, movingData::line, movingData.lines(), movingData::line, movingData.facing());
+                    this.sendUpdatePacket(translatingCraft, wrapperTmpTmp, REFRESH_CAUSE.SIGN_MOVED_BY_CRAFT);
                 }
             }
         }
-    }
-
-    @Override
-    protected void onCraftNotFound(Player player, AbstractSignListener.SignWrapper sign) {
-        // Nothing to do
-    }
-
-    @Override
-    protected boolean isSignValid(Action clickType, AbstractSignListener.SignWrapper sign, Player player) {
+        // We looped over the lines, so we HAVE to return true here
         return true;
     }
 
     @Override
-    protected boolean internalProcessSignWithCraft(Action clickType, AbstractSignListener.SignWrapper sign, Craft craft, Player player) {
+    protected void onCraftNotFound(Player player, SignListener.SignWrapper sign) {
+        // Nothing to do
+    }
+
+    @Override
+    protected boolean isSignValid(Action clickType, SignListener.SignWrapper sign, Player player) {
+        return true;
+    }
+
+    @Override
+    protected boolean internalProcessSignWithCraft(Action clickType, SignListener.SignWrapper sign, Craft craft, Player player) {
         if (this.refreshSign(craft, sign, false, REFRESH_CAUSE.SIGN_CLICK)) {
             this.sendUpdatePacket(craft, sign, REFRESH_CAUSE.SIGN_CLICK);
         }
@@ -91,7 +93,7 @@ public abstract class AbstractInformationSign extends AbstractCraftSign {
     // If nothing has changed, no update happens
     // If something has changed, performUpdate() and sendUpdatePacket() are called
     // Returns wether or not something has changed
-    protected boolean refreshSign(@Nullable Craft craft, AbstractSignListener.SignWrapper sign, boolean fillDefault, REFRESH_CAUSE refreshCause) {
+    protected boolean refreshSign(@Nullable Craft craft, SignListener.SignWrapper sign, boolean fillDefault, REFRESH_CAUSE refreshCause) {
         boolean changedSome = false;
         Component[] updatePayload = new Component[sign.lines().size()];
         for(int i = 1; i < sign.lines().size(); i++) {
@@ -118,7 +120,7 @@ public abstract class AbstractInformationSign extends AbstractCraftSign {
     }
 
     @Override
-    public boolean processSignChange(SignChangeEvent event, AbstractSignListener.SignWrapper sign) {
+    public boolean processSignChange(SignChangeEvent event, SignListener.SignWrapper sign) {
         if (this.refreshSign(null, sign, true, REFRESH_CAUSE.SIGN_CREATION)) {
             this.sendUpdatePacket(null, sign, REFRESH_CAUSE.SIGN_CREATION);
         }
@@ -142,12 +144,12 @@ public abstract class AbstractInformationSign extends AbstractCraftSign {
      *
      * Only gets called if at least one line has changed
      */
-    protected abstract void performUpdate(Component[] newComponents, AbstractSignListener.SignWrapper sign, REFRESH_CAUSE refreshCause);
+    protected abstract void performUpdate(Component[] newComponents, SignListener.SignWrapper sign, REFRESH_CAUSE refreshCause);
 
     /*
     Gets called after performUpdate has been called
      */
-    protected void sendUpdatePacket(Craft craft, AbstractSignListener.SignWrapper sign, REFRESH_CAUSE refreshCause) {
+    protected void sendUpdatePacket(Craft craft, SignListener.SignWrapper sign, REFRESH_CAUSE refreshCause) {
         if (sign.block() == null) {
             return;
         }

@@ -2,16 +2,7 @@ package net.countercraft.movecraft.sign;
 
 import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.craft.PilotedCraft;
-import net.countercraft.movecraft.events.CraftDetectEvent;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.Style;
-import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.entity.Player;
-import org.bukkit.event.block.Action;
-import org.bukkit.event.block.SignChangeEvent;
-import org.jetbrains.annotations.Nullable;
 
 /*
  * Base class for all cruise signs
@@ -30,17 +21,17 @@ public abstract class AbstractCruiseSign extends AbstractToggleSign {
     }
 
     // Hook to do stuff that run after stopping to cruise
-    protected void onAfterStoppingCruise(Craft craft, AbstractSignListener.SignWrapper signWrapper, Player player) {
+    protected void onAfterStoppingCruise(Craft craft, SignListener.SignWrapper signWrapper, Player player) {
 
     }
 
     // Hook to do stuff that run after starting to cruise
-    protected void onAfterStartingCruise(Craft craft, AbstractSignListener.SignWrapper signWrapper, Player player) {
+    protected void onAfterStartingCruise(Craft craft, SignListener.SignWrapper signWrapper, Player player) {
 
     }
 
     @Override
-    protected void onAfterToggle(Craft craft, AbstractSignListener.SignWrapper signWrapper, Player player, boolean toggledToOn) {
+    protected void onAfterToggle(Craft craft, SignListener.SignWrapper signWrapper, Player player, boolean toggledToOn) {
         if (toggledToOn) {
             this.onAfterStartingCruise(craft, signWrapper, player);
         } else {
@@ -49,7 +40,7 @@ public abstract class AbstractCruiseSign extends AbstractToggleSign {
     }
 
     @Override
-    protected void onBeforeToggle(Craft craft, AbstractSignListener.SignWrapper signWrapper, Player player, boolean willBeOn) {
+    protected void onBeforeToggle(Craft craft, SignListener.SignWrapper signWrapper, Player player, boolean willBeOn) {
         if (willBeOn) {
             CruiseDirection cruiseDirection = this.getCruiseDirection(signWrapper);
             this.setCraftCruising(player, cruiseDirection, craft);
@@ -63,5 +54,5 @@ public abstract class AbstractCruiseSign extends AbstractToggleSign {
 
     // TODO: Rework cruise direction to vectors => Vector defines the skip distance and the direction
     // Returns the direction in which the craft should cruise
-    protected abstract CruiseDirection getCruiseDirection(AbstractSignListener.SignWrapper sign);
+    protected abstract CruiseDirection getCruiseDirection(SignListener.SignWrapper sign);
 }

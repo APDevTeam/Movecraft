@@ -1,5 +1,9 @@
 package net.countercraft.movecraft.sign;
 
+import it.unimi.dsi.fastutil.Hash;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
+import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
@@ -7,12 +11,17 @@ import net.countercraft.movecraft.util.MathUtils;
 import net.countercraft.movecraft.util.Tags;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
-import org.bukkit.Material;
+import org.bukkit.Tag;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.Directional;
+import org.bukkit.block.data.Rotatable;
+import org.bukkit.block.sign.Side;
+import org.bukkit.block.sign.SignSide;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -20,28 +29,22 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-/*
- * As soon as 1.18 support is dropped, the adapter system will be dropped too
- */
-@Deprecated(forRemoval = true)
-public abstract class AbstractSignListener implements Listener {
+public class SignListener implements Listener {
 
-    public static AbstractSignListener INSTANCE;
+    public static SignListener INSTANCE;
 
-    public AbstractSignListener() {
+    public SignListener() {
         INSTANCE = this;
     }
 
-    /*
-     * As soon as 1.18 support is dropped, the adapter system will be dropped too
-     */
-    @Deprecated(forRemoval = true)
+    // Keep this, it is good to abstract away the sign
     public record SignWrapper(
             @Nullable Sign block,
             Function<Integer, Component> getLine,
@@ -170,14 +173,159 @@ public abstract class AbstractSignListener implements Listener {
     public SignWrapper[] getSignWrappers(Sign sign) {
         return getSignWrappers(sign, false);
     };
-    public abstract SignWrapper[] getSignWrappers(Sign sign, boolean ignoreEmpty);
-    protected abstract SignWrapper getSignWrapper(Sign sign, SignChangeEvent signChangeEvent);
+
     protected SignWrapper getSignWrapper(Sign sign, PlayerInteractEvent interactEvent) {
         return this.getSignWrapper(sign, interactEvent.getPlayer());
     }
-    protected abstract SignWrapper getSignWrapper(Sign sign, Player player);
 
-    public abstract void processSignTranslation(final Craft craft, boolean checkEventIsUpdated);
+    protected final SignWrapper createFromSide(final Sign sign, final Side side) {
+        SignSide signSide = sign.getSide(side);
+        return createFromSide(sign, signSide, side);
+    }
+
+    protected final SignWrapper createFromSide(final Sign sign, final SignSide signSide, Side side) {
+        BlockData blockData = sign.getBlock().getBlockData();
+        BlockFace face;
+        if (blockData instanceof Directional directional) {
+            face = directional.getFacing();
+        } else if (blockData instanceof Rotatable rotatable) {
+            face = rotatable.getRotation();
+        }
+        else {
+            face = BlockFace.SELF;
+        }
+
+        if (side == Side.BACK) {
+            face = face.getOppositeFace();
+        }
+        SignWrapper wrapper = new SignWrapper(
+                sign,
+                signSide::line,
+                signSide.lines(),
+                signSide::line,
+                face
+        );
+        return wrapper;
+    }
+
+    public SignWrapper[] getSignWrappers(Sign sign, boolean ignoreEmpty) {
+        List<SignWrapper> wrappers = new ArrayList<>();
+        for (Side side : Side.values()) {
+            SignSide signSide = sign.getSide(side);
+            SignWrapper wrapper = this.createFromSide(sign, signSide, side);
+            wrappers.add(wrapper);
+        }
+        if (ignoreEmpty)
+            wrappers.removeIf(SignWrapper::isEmpty);
+        return wrappers.toArray(new SignWrapper[wrappers.size()]);
+    }
+
+    protected SignWrapper getSignWrapper(Sign sign, SignChangeEvent signChangeEvent) {
+        @NotNull Side side = signChangeEvent.getSide();
+
+        BlockData blockData = sign.getBlock().getBlockData();
+        BlockFace face;
+        if (blockData instanceof Directional directional) {
+            face = directional.getFacing();
+        } else if (blockData instanceof Rotatable rotatable) {
+            face = rotatable.getRotation();
+        }
+        else {
+            face = BlockFace.SELF;
+        }
+
+        if (side == Side.BACK) {
+            face = face.getOppositeFace();
+        }
+        SignWrapper wrapper = new SignWrapper(
+                sign,
+                signChangeEvent::line,
+                signChangeEvent.lines(),
+                signChangeEvent::line,
+                face
+        );
+        return wrapper;
+    }
+
+    protected SignWrapper getSignWrapper(Sign sign, Player player) {
+        @NotNull SignSide side = sign.getTargetSide(player);
+        return this.createFromSide(sign, side, sign.getInteractableSideFor(player));
+    }
+
+    public void processSignTranslation(final Craft craft, boolean checkEventIsUpdated) {
+        // Ignore facing value here and directly store the associated wrappers in the list
+        Object2ObjectMap<SignWrapper, List<SignWrapper>> signs = new Object2ObjectOpenCustomHashMap<>(new Hash.Strategy<SignWrapper>() {
+            @Override
+            public int hashCode(SignWrapper strings) {
+                return Arrays.hashCode(strings.rawLines());
+            }
+
+            @Override
+            public boolean equals(SignWrapper a, SignWrapper b) {
+                return SignWrapper.areSignsEqualIgnoreFace(a, b);
+            }
+        });
+        // Remember the locations for the event!
+        Map<SignWrapper, List<MovecraftLocation>> wrapperToLocs = new HashMap<>();
+
+        for (MovecraftLocation location : craft.getHitBox()) {
+            Block block = location.toBukkit(craft.getWorld()).getBlock();
+            if(!Tag.SIGNS.isTagged(block.getType())){
+                continue;
+            }
+            BlockState state = block.getState();
+            if (state instanceof Sign) {
+                Sign sign = (Sign) state;
+                SignWrapper[] wrappersAtLoc = this.getSignWrappers(sign, true);
+                if (wrappersAtLoc == null || wrappersAtLoc.length == 0) {
+                    continue;
+                }
+                for (SignWrapper wrapper : wrappersAtLoc) {
+                    List<SignWrapper> values = signs.computeIfAbsent(wrapper, (w) -> new ArrayList<>());
+                    values.add(wrapper);
+                    wrapperToLocs.computeIfAbsent(wrapper, (w) -> new ArrayList<>()).add(location);
+                }
+            }
+        }
+        Set<Sign> signsToUpdate = new HashSet<>();
+        for(Map.Entry<SignWrapper, List<SignWrapper>> entry : signs.entrySet()){
+            final List<Component> components = new ArrayList<>(entry.getKey().lines());
+            SignWrapper backingForEvent = new SignWrapper(null, components::get, components, components::set, entry.getKey().facing());
+            // if(!event.isUpdated()){
+            //     continue;
+            // }
+            // TODO: This is implemented only to fix client caching
+            //  ideally we wouldn't do the update and would instead fake it out to the player
+
+            /*System.out.println("New lines: ");
+            for (String s : event.rawLines()) {
+                System.out.println(" - " + s);
+            }
+            System.out.println("Old lines: ");
+            for (String s : entry.getKey().rawLines()) {
+                System.out.println(" - " + s);
+            }*/
+            AbstractCraftSign acs = AbstractCraftSign.getCraftSign(backingForEvent.line(0));
+            if (acs != null) {
+                if (acs.processSignTranslation(craft, backingForEvent, wrapperToLocs.get(entry.getKey()))) {
+                    // Values get changed definitely, but perhaps it does not get applied to the sign after all?
+                    for(SignWrapper wrapperTmp : entry.getValue()){
+                        if (!checkEventIsUpdated) {
+                            wrapperTmp.copyContent(backingForEvent::line, (i) -> i < backingForEvent.lines().size());
+                            if (wrapperTmp.block() != null) {
+                                signsToUpdate.add(wrapperTmp.block());
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+
+        for (Sign sign : signsToUpdate) {
+            sign.update(false, false);
+        }
+    }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
     public void onCraftDetect(CraftDetectEvent event) {
