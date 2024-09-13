@@ -330,8 +330,8 @@ private void processSinking() {
         }
 
         int bottomY = -64;
-        int width = craft.getHitBox().getWidth();
-        int length = craft.getHitBox().getLength();
+        int width = craft.getHitBox().getxlengthh();
+        int length = craft.getHitBox().getzlength();
         int startX = location.getX();
         int startZ = location.getZ();
         World world = craft.getWorld();
