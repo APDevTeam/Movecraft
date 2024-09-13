@@ -303,6 +303,7 @@ public class AsyncManager extends BukkitRunnable {
             }
             if (craft.getHitBox().getMinY() == -64) {
                 removeBottomLayer(craft);
+                c.setHitBox(task.getNewHitBox());
                 System.out.println("I am trying to remove the bottom layer of the craft.");//DEBUG
                 continue;
             }
