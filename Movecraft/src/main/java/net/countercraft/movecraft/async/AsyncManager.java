@@ -358,9 +358,7 @@ private void removeBottomLayer(Craft craft) {
         return;
     }
 
-    // Collect blocks to update
-    List<Block> blocksToUpdate = new ArrayList<>();
-
+    // Directly update blocks
     for (int x = startX; x < startX + width; x++) {
         for (int z = startZ; z < startZ + length; z++) {
             // Ensure coordinates are within the valid range
@@ -369,16 +367,18 @@ private void removeBottomLayer(Craft craft) {
                 continue;
             }
 
+            // Ensure y coordinate is within bounds
+            if (bottomY < minY || bottomY >= maxY) {
+                System.err.println("Y coordinate out of bounds: y=" + bottomY);
+                continue;
+            }
+
             Block block = world.getBlockAt(x, bottomY, z);
             if (block.getType() != Material.AIR) {
-                blocksToUpdate.add(block);
+                // Directly remove the block
+                block.setType(Material.AIR);
             }
         }
-    }
-
-    // Update blocks in batch
-    for (Block block : blocksToUpdate) {
-        block.setType(Material.AIR);
     }
 }
 
