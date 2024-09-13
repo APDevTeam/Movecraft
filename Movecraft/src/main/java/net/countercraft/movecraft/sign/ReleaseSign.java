@@ -15,12 +15,12 @@ public class ReleaseSign extends AbstractMovecraftSign {
     }
 
     @Override
-    protected boolean isSignValid(Action clickType, AbstractSignListener.SignWrapper sign, Player player) {
+    protected boolean isSignValid(Action clickType, SignListener.SignWrapper sign, Player player) {
         return true;
     }
 
     @Override
-    protected boolean internalProcessSign(Action clickType, AbstractSignListener.SignWrapper sign, Player player, @Nullable Craft craft) {
+    protected boolean internalProcessSign(Action clickType, SignListener.SignWrapper sign, Player player, @Nullable Craft craft) {
         if (craft == null) {
             craft = CraftManager.getInstance().getCraftByPlayer(player);
         }
@@ -31,7 +31,7 @@ public class ReleaseSign extends AbstractMovecraftSign {
     }
 
     @Override
-    public boolean processSignChange(SignChangeEvent event, AbstractSignListener.SignWrapper sign) {
+    public boolean processSignChange(SignChangeEvent event, SignListener.SignWrapper sign) {
         return false;
     }
 

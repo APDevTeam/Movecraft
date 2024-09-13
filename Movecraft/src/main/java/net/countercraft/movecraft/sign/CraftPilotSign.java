@@ -34,7 +34,7 @@ public class CraftPilotSign extends AbstractCraftPilotSign {
     }
 
     @Override
-    protected boolean isSignValid(Action clickType, AbstractSignListener.SignWrapper sign, Player player) {
+    protected boolean isSignValid(Action clickType, SignListener.SignWrapper sign, Player player) {
         String header = sign.getRaw(0).trim();
         CraftType craftType = CraftManager.getInstance().getCraftTypeFromString(header);
         if (craftType != this.craftType) {
@@ -49,7 +49,7 @@ public class CraftPilotSign extends AbstractCraftPilotSign {
     }
 
     @Override
-    protected boolean internalProcessSign(Action clickType, AbstractSignListener.SignWrapper sign, Player player, @javax.annotation.Nullable Craft craft) {
+    protected boolean internalProcessSign(Action clickType, SignListener.SignWrapper sign, Player player, @javax.annotation.Nullable Craft craft) {
         if (this.craftType.getBoolProperty(CraftType.MUST_BE_SUBCRAFT) && craft == null) {
             return false;
         }
@@ -70,7 +70,7 @@ public class CraftPilotSign extends AbstractCraftPilotSign {
         return true;
     }
 
-    protected void runDetectTask(MovecraftLocation startPoint, Player player, AbstractSignListener.SignWrapper signWrapper, Craft parentCraft, World world) {
+    protected void runDetectTask(MovecraftLocation startPoint, Player player, SignListener.SignWrapper signWrapper, Craft parentCraft, World world) {
         PILOTING.add(startPoint);
         CraftManager.getInstance().detect(
                 startPoint,
@@ -147,7 +147,7 @@ public class CraftPilotSign extends AbstractCraftPilotSign {
     }
 
     @Override
-    public boolean processSignChange(SignChangeEvent event, AbstractSignListener.SignWrapper sign) {
+    public boolean processSignChange(SignChangeEvent event, SignListener.SignWrapper sign) {
         String header = sign.getRaw(0).trim();
         CraftType craftType = CraftManager.getInstance().getCraftTypeFromString(header);
         if (craftType != this.craftType) {
