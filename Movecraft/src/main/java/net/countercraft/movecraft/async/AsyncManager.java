@@ -289,37 +289,6 @@ public class AsyncManager extends BukkitRunnable {
     }
 
     //Controls sinking crafts
-private void processSinking() {
-    // Copy the crafts before iteration to prevent concurrent modifications
-    List<Craft> crafts = Lists.newArrayList(CraftManager.getInstance());
-    for (Craft craft : crafts) {
-        if (!(craft instanceof SinkingCraft))
-            continue;
-
-        if (craft.getHitBox().isEmpty()) {
-            // Commented out old release
-            CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.SUNK, false);
-
-            // Remove the bottom-most layer
-            continue;
-        }
-
-        long ticksElapsed = (System.currentTimeMillis() - craft.getLastCruiseUpdate()) / 50;
-        if (Math.abs(ticksElapsed) < craft.getType().getIntProperty(CraftType.SINK_RATE_TICKS))
-            continue;
-
-        int dx = 0;
-        int dz = 0;
-        if (craft.getType().getBoolProperty(CraftType.KEEP_MOVING_ON_SINK)) {
-            dx = craft.getLastTranslation().getX();
-            dz = craft.getLastTranslation().getZ();
-        }
-        craft.translate(dx, -1, dz);
-        craft.setLastCruiseUpdate(System.currentTimeMillis());
-        removeBottomLayer(craft);
-    }
-}
-
     private void removeBottomLayer(Craft craft) {
         if (craft == null || craft.getHitBox() == null || craft.getHitBox().isEmpty()) {
             return;
@@ -330,7 +299,7 @@ private void processSinking() {
             return;
         }
 
-        int bottomY = -64;
+        int bottomY = -64; // Adjust based on the world’s minimum Y-coordinate
         int width = craft.getHitBox().getXLength();
         int length = craft.getHitBox().getZLength();
         int startX = location.getX();
@@ -341,23 +310,39 @@ private void processSinking() {
             return;
         }
 
+        // Get the world’s minimum and maximum Y-coordinate limits
+        int minY = world.getMinHeight(); // Minecraft 1.18+ worlds have a min height of -64
+        int maxY = world.getMaxHeight(); // Minecraft 1.18+ worlds have a max height of 320
+
+        // Ensure bottomY is within valid range
+        if (bottomY < minY || bottomY >= maxY) {
+            System.err.println("bottomY out of bounds: " + bottomY);
+            return;
+        }
+
+        // Ensure coordinates and dimensions are within the world's valid range
+        if (width <= 0 || length <= 0) {
+            System.err.println("Invalid width or length: width=" + width + ", length=" + length);
+            return;
+        }
+
         // Collect blocks to update
         List<Block> blocksToUpdate = new ArrayList<>();
 
         for (int x = startX; x < startX + width; x++) {
             for (int z = startZ; z < startZ + length; z++) {
-                Block block = world.getBlockAt(x, bottomY, z);
-                if (block.getType() != Material.AIR) {
-                blocksToUpdate.add(block);
+                // Ensure coordinates are within the valid range
+                if (x < 0 || z < 0 || x >= world.getMaxHeight() || z >= world.getMaxHeight()) {
+                    System.err.println("Coordinates out of bounds: x=" + x + ", y=" + bottomY + ", z=" + z);
+                    continue;
                 }
-            }
-        }
 
         // Update blocks in batch
         for (Block block : blocksToUpdate) {
             block.setType(Material.AIR);
         }
     }
+
 
     public void run() {
         clearAll();
