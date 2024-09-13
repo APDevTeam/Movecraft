@@ -316,7 +316,7 @@ public class AsyncManager extends BukkitRunnable {
             }
             craft.translate(dx, -1, dz);
             craft.setLastCruiseUpdate(System.currentTimeMillis());
-            removeBottomLayer(craft);
+            //removeBottomLayer(craft);
         }
     }
 
@@ -331,11 +331,11 @@ private void removeBottomLayer(Craft craft) {
         return;
     }
 
-    int bottomY = -63; // Adjust based on the world’s minimum Y-coordinate
+    int bottomY = -64; // Adjust based on the world’s minimum Y-coordinate
     int width = craft.getHitBox().getXLength();
     int length = craft.getHitBox().getZLength();
-    int startX = location.getX();
-    int startZ = location.getZ();
+    int startX = craft.getHitBox().getMinX();
+    int startZ = craft.getHitBox().getMinZ();
     World world = craft.getWorld();
 
     if (world == null) {
