@@ -330,9 +330,9 @@ private void removeBottomLayer(Craft craft) {
 
     int bottomY = craft.getHitBox().getMinY();
     System.out.println("my bottom coord is " + bottomY);//DEBUG
-    int width = craft.getHitBox().getXLength();
+    int width = (craft.getHitBox().getXLength() + 1); //added 1 because value returns one-off
     System.out.println("my width is " + width);//DEBUG
-    int length = craft.getHitBox().getZLength();
+    int length = (craft.getHitBox().getZLength() + 1); //added 1 because value returns one-off
     System.out.println("my length is " + length);//DEBUG
     int startX = craft.getHitBox().getMinX();
     System.out.println("my Min-X is " + startX);//DEBUG
