@@ -295,7 +295,7 @@ private void processSinking() {
         if (!(craft instanceof SinkingCraft))
             continue;
 
-        if (craft.getHitBox().isEmpty(){
+        if (craft.getHitBox().isEmpty() {
             // Commented out old release
             CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.SUNK, false);
 
