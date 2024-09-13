@@ -296,11 +296,14 @@ public class AsyncManager extends BukkitRunnable {
             if (!(craft instanceof SinkingCraft))
                 continue;
 
-           if (craft.getHitBox().isEmpty()) {
-                // Commented out old release
+            if (craft.getHitBox().isEmpty()) {
                 CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.SUNK, false);
-
-                // Remove the bottom-most layer
+                System.out.println("Craft is empty while sinking so it was released");//DEBUG
+                continue;
+            }
+            if (craft.getHitBox().getMinY() == -64) {
+                removeBottomLayer(craft);
+                System.out.println("I am trying to remove the bottom layer of the craft.");//DEBUG
                 continue;
             }
 
@@ -308,7 +311,7 @@ public class AsyncManager extends BukkitRunnable {
             if (Math.abs(ticksElapsed) < craft.getType().getIntProperty(CraftType.SINK_RATE_TICKS))
                 continue;
 
-           int dx = 0;
+            int dx = 0;
             int dz = 0;
             if (craft.getType().getBoolProperty(CraftType.KEEP_MOVING_ON_SINK)) {
                 dx = craft.getLastTranslation().getX();
@@ -316,7 +319,6 @@ public class AsyncManager extends BukkitRunnable {
             }
             craft.translate(dx, -1, dz);
             craft.setLastCruiseUpdate(System.currentTimeMillis());
-            //removeBottomLayer(craft);
         }
     }
 
@@ -326,16 +328,13 @@ private void removeBottomLayer(Craft craft) {
         return;
     }
 
-    MovecraftLocation location = craft.getLastTranslation();
-    if (location == null) {
-        return;
-    }
-
-    int bottomY = -64; // Adjust based on the world’s minimum Y-coordinate
+    // Replace location.getX() with craft.getHitBox().getMinX()
+    // Replace location.getZ() with craft.getHitBox().getMinZ()
+    int bottomY = craft.getHitBox().getMinY();
     int width = craft.getHitBox().getXLength();
     int length = craft.getHitBox().getZLength();
-    int startX = craft.getHitBox().getMinX();
-    int startZ = craft.getHitBox().getMinZ();
+    int startX = craft.getHitBox().getMinX(); // Changed
+    int startZ = craft.getHitBox().getMinZ(); // Changed
     World world = craft.getWorld();
 
     if (world == null) {
@@ -352,18 +351,18 @@ private void removeBottomLayer(Craft craft) {
         return;
     }
 
-    // Ensure coordinates and dimensions are within the world's valid range
+    // Ensure width and length are valid
     if (width <= 0 || length <= 0) {
         System.err.println("Invalid width or length: width=" + width + ", length=" + length);
         return;
     }
 
-    // Directly update blocks
+    // Directly update blocks using Bukkit API
     for (int x = startX; x < startX + width; x++) {
         for (int z = startZ; z < startZ + length; z++) {
-            // Ensure coordinates are within the valid range
-            if (x < 0 || z < 0 || x >= world.getMaxHeight() || z >= world.getMaxHeight()) {
-                System.err.println("Coordinates out of bounds: x=" + x + ", y=" + bottomY + ", z=" + z);
+            // Ensure coordinates are within the valid range of the world
+            if (x < 0 || z < 0 || x >= world.getMaxWidth() || z >= world.getMaxWidth()) {
+                System.err.println("Coordinates out of bounds: x=" + x + ", z=" + z);
                 continue;
             }
 
@@ -373,16 +372,17 @@ private void removeBottomLayer(Craft craft) {
                 continue;
             }
 
+            // Get the block at the current coordinates
             Block block = world.getBlockAt(x, bottomY, z);
+
+            // Check if the block is not air before updating
             if (block.getType() != Material.AIR) {
-                // Directly remove the block
-                block.setType(Material.AIR);
+                // Directly remove the block using Bukkit API
+                block.setType(Material.AIR); // Changed
             }
         }
     }
 }
-
-
 
     public void run() {
         clearAll();
