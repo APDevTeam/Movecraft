@@ -305,7 +305,7 @@ public class SignListener implements Listener {
             for (String s : entry.getKey().rawLines()) {
                 System.out.println(" - " + s);
             }*/
-            AbstractCraftSign acs = AbstractCraftSign.getCraftSign(backingForEvent.line(0));
+            AbstractCraftSign acs = MovecraftSignRegistry.INSTANCE.getCraftSign(backingForEvent.line(0));
             if (acs != null) {
                 if (acs.processSignTranslation(craft, backingForEvent, wrapperToLocs.get(entry.getKey()))) {
                     // Values get changed definitely, but perhaps it does not get applied to the sign after all?
@@ -337,7 +337,7 @@ public class SignListener implements Listener {
                     if (state instanceof Sign sign) {
                         for (SignWrapper wrapper : this.getSignWrappers(sign)) {
                             // Would be one more readable line if using Optionals but Nullables were wanted
-                            AbstractCraftSign acs = AbstractCraftSign.getCraftSign(wrapper.line(0));
+                            AbstractCraftSign acs = MovecraftSignRegistry.INSTANCE.getCraftSign(wrapper.line(0));
                             if (acs != null) {
                                 acs.onCraftDetect(event, wrapper);
                             }
@@ -350,7 +350,7 @@ public class SignListener implements Listener {
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
     public void onSignTranslate(SignTranslateEvent event) {
         // Would be one more readable line if using Optionals but Nullables were wanted
-        AbstractCraftSign acs = AbstractCraftSign.getCraftSign(event.line(0));
+        AbstractCraftSign acs = MovecraftSignRegistry.INSTANCE.getCraftSign(event.line(0));
         if (acs != null) {
             acs.onSignMovedByCraft(event);
         }
@@ -369,7 +369,7 @@ public class SignListener implements Listener {
                 eventType = AbstractMovecraftSign.EventType.SIGN_EDIT_ON_CRAFT;
             }
             final AbstractMovecraftSign.EventType eventTypeTmp = eventType;
-            AbstractMovecraftSign ams = AbstractMovecraftSign.get(wrapper.line(0));
+            AbstractMovecraftSign ams = MovecraftSignRegistry.INSTANCE.get(wrapper.line(0));
             // Would be one more readable line if using Optionals but Nullables were wanted
             if (ams != null) {
                 if (!eventType.isOnCraft()) {
@@ -428,7 +428,7 @@ public class SignListener implements Listener {
             }
 
             // Would be one more readable line if using Optionals but Nullables were wanted
-            AbstractMovecraftSign ams = AbstractMovecraftSign.get(wrapper.line(0));
+            AbstractMovecraftSign ams = MovecraftSignRegistry.INSTANCE.get(wrapper.line(0));
             if (ams != null) {
                 boolean success = ams.processSignClick(event.getAction(), wrapper, event.getPlayer());
                 // Always cancel, regardless of the success
