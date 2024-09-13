@@ -321,59 +321,67 @@ public class AsyncManager extends BukkitRunnable {
     }
 
 
-    private void removeBottomLayer(Craft craft) {
-        if (craft == null || craft.getHitBox() == null || craft.getHitBox().isEmpty()) {
-            return;
-        }
+private void removeBottomLayer(Craft craft) {
+    if (craft == null || craft.getHitBox() == null || craft.getHitBox().isEmpty()) {
+        return;
+    }
 
-        MovecraftLocation location = craft.getLastTranslation();
-        if (location == null) {
-            return;
-        }
+    MovecraftLocation location = craft.getLastTranslation();
+    if (location == null) {
+        return;
+    }
 
-        int bottomY = -64; // Adjust based on the world’s minimum Y-coordinate
-        int width = craft.getHitBox().getXLength();
-        int length = craft.getHitBox().getZLength();
-        int startX = location.getX();
-        int startZ = location.getZ();
-        World world = craft.getWorld();
+    int bottomY = -64; // Adjust based on the world’s minimum Y-coordinate
+    int width = craft.getHitBox().getXLength();
+    int length = craft.getHitBox().getZLength();
+    int startX = location.getX();
+    int startZ = location.getZ();
+    World world = craft.getWorld();
 
-        if (world == null) {
-            return;
-        }
+    if (world == null) {
+        return;
+    }
 
-        // Get the world’s minimum and maximum Y-coordinate limits
-        int minY = world.getMinHeight(); // Minecraft 1.18+ worlds have a min height of -64
-        int maxY = world.getMaxHeight(); // Minecraft 1.18+ worlds have a max height of 320
+    // Get the world’s minimum and maximum Y-coordinate limits
+    int minY = world.getMinHeight(); // Minecraft 1.18+ worlds have a min height of -64
+    int maxY = world.getMaxHeight(); // Minecraft 1.18+ worlds have a max height of 320
 
-        // Ensure bottomY is within valid range
-        if (bottomY < minY || bottomY >= maxY) {
-            System.err.println("bottomY out of bounds: " + bottomY);
-            return;
-        }
+    // Ensure bottomY is within valid range
+    if (bottomY < minY || bottomY >= maxY) {
+        System.err.println("bottomY out of bounds: " + bottomY);
+        return;
+    }
 
-        // Ensure coordinates and dimensions are within the world's valid range
-        if (width <= 0 || length <= 0) {
-            System.err.println("Invalid width or length: width=" + width + ", length=" + length);
-            return;
-        }
+    // Ensure coordinates and dimensions are within the world's valid range
+    if (width <= 0 || length <= 0) {
+        System.err.println("Invalid width or length: width=" + width + ", length=" + length);
+        return;
+    }
 
-        // Collect blocks to update
-        List<Block> blocksToUpdate = new ArrayList<>();
+    // Collect blocks to update
+    List<Block> blocksToUpdate = new ArrayList<>();
 
-        for (int x = startX; x < startX + width; x++) {
-            for (int z = startZ; z < startZ + length; z++) {
-                // Ensure coordinates are within the valid range
-                if (x < 0 || z < 0 || x >= world.getMaxHeight() || z >= world.getMaxHeight()) {
-                    System.err.println("Coordinates out of bounds: x=" + x + ", y=" + bottomY + ", z=" + z);
-                    continue;
-                }
+    for (int x = startX; x < startX + width; x++) {
+        for (int z = startZ; z < startZ + length; z++) {
+            // Ensure coordinates are within the valid range
+            if (x < 0 || z < 0 || x >= world.getMaxHeight() || z >= world.getMaxHeight()) {
+                System.err.println("Coordinates out of bounds: x=" + x + ", y=" + bottomY + ", z=" + z);
+                continue;
+            }
 
-        // Update blocks in batch
-        for (Block block : blocksToUpdate) {
-            block.setType(Material.AIR);
+            Block block = world.getBlockAt(x, bottomY, z);
+            if (block.getType() != Material.AIR) {
+                blocksToUpdate.add(block);
+            }
         }
     }
+
+    // Update blocks in batch
+    for (Block block : blocksToUpdate) {
+        block.setType(Material.AIR);
+    }
+}
+
 
 
     public void run() {
