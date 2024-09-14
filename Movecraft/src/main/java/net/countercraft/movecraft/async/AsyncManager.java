@@ -299,13 +299,10 @@ public class AsyncManager extends BukkitRunnable {
 
             if (craft.getHitBox().isEmpty()) {
                 CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.SUNK, false);
-                //System.out.println("Craft is empty while sinking so it was released");//DEBUG
                 continue;
             }
-            if (craft.getHitBox().getMinY() == -64) {
-                // remove the bottom layer of blocks
+            if (craft.getHitBox().getMinY() == world.getMinHeight()) {
                 removeBottomLayer(craft);
-                // Adjust the hitbox by removing the bottom layer of the hitbox
                 MovecraftLocation start = new MovecraftLocation(
                     craft.getHitBox().getMinX(), 
                     craft.getHitBox().getMinY() + 1, 
@@ -318,7 +315,6 @@ public class AsyncManager extends BukkitRunnable {
                 );
                 SolidHitBox newHitBox = new SolidHitBox(start, end);
                 craft.setHitBox(newHitBox);
-                //System.out.println("I am trying to remove the bottom layer of the craft.");//DEBUG
                 continue;
             }
 
@@ -344,30 +340,17 @@ private void removeBottomLayer(Craft craft) {
     }
 
     int bottomY = craft.getHitBox().getMinY();
-    //System.out.println("my bottom coord is " + bottomY);//DEBUG
     int width = craft.getHitBox().getXLength();
-    //System.out.println("my width is " + width);//DEBUG
     int length = craft.getHitBox().getZLength();
-    //System.out.println("my length is " + length);//DEBUG
     int startX = craft.getHitBox().getMinX();
-    //System.out.println("my Min-X is " + startX);//DEBUG
     int startZ = craft.getHitBox().getMinZ();
-    //System.out.println("my Min-Z is " + startZ);//DEBUG
     World world = craft.getWorld();
-    //System.out.println("my world is " + world);//DEBUG
 
-    // Directly update blocks using Bukkit API
     for (int x = startX; x < startX + width; x++) {
         for (int z = startZ; z < startZ + length; z++) {
-
-            // Get the block at the current coordinates
             Block block = world.getBlockAt(x, bottomY, z);
-
-            // Check if the block is not air before updating
             if (block.getType() != Material.AIR) {
-                // Directly remove the block using Bukkit API
-                block.setType(Material.AIR); // Changed
-                //System.out.println("I am trying to change one block to air");//DEBUG
+                block.setType(Material.AIR);
             }
         }
     }
