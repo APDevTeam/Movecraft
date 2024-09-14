@@ -301,7 +301,7 @@ public class AsyncManager extends BukkitRunnable {
                 CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.SUNK, false);
                 continue;
             }
-            if (craft.getHitBox().getMinY() == world.getMinHeight()) {
+            if (craft.getHitBox().getMinY() == craft.getWorld().getMinHeight()) {
                 removeBottomLayer(craft);
                 MovecraftLocation start = new MovecraftLocation(
                     craft.getHitBox().getMinX(), 
