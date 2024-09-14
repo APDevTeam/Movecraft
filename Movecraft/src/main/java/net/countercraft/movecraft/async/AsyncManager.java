@@ -302,8 +302,13 @@ public class AsyncManager extends BukkitRunnable {
                 continue;
             }
             if (craft.getHitBox().getMinY() == -64) {
+                // remove the bottom layer of blocks
                 removeBottomLayer(craft);
-                craft.setHitBox(task.getNewHitBox());
+                // Adjust the hitbox by removing the bottom layer of the hitbox
+                MovecraftLocation start = new MovecraftLocation(hitBox.getMinX(), hitBox.getMinY() + 1, hitBox.getMinZ());
+                MovecraftLocation end = new MovecraftLocation(hitBox.getMaxX(), hitBox.getMaxY(), hitBox.getMaxZ());
+                SolidHitBox newHitBox = new SolidHitBox(start, end);
+                craft.setHitBox(newHitBox);
                 System.out.println("I am trying to remove the bottom layer of the craft.");//DEBUG
                 continue;
             }
