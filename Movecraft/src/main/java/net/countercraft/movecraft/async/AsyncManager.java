@@ -299,7 +299,7 @@ public class AsyncManager extends BukkitRunnable {
 
             if (craft.getHitBox().isEmpty()) {
                 CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.SUNK, false);
-                System.out.println("Craft is empty while sinking so it was released");//DEBUG
+                //System.out.println("Craft is empty while sinking so it was released");//DEBUG
                 continue;
             }
             if (craft.getHitBox().getMinY() == -64) {
@@ -318,7 +318,7 @@ public class AsyncManager extends BukkitRunnable {
                 );
                 SolidHitBox newHitBox = new SolidHitBox(start, end);
                 craft.setHitBox(newHitBox);
-                System.out.println("I am trying to remove the bottom layer of the craft.");//DEBUG
+                //System.out.println("I am trying to remove the bottom layer of the craft.");//DEBUG
                 continue;
             }
 
@@ -344,17 +344,17 @@ private void removeBottomLayer(Craft craft) {
     }
 
     int bottomY = craft.getHitBox().getMinY();
-    System.out.println("my bottom coord is " + bottomY);//DEBUG
-    int width = (craft.getHitBox().getXLength() + 1); //added 1 because value returns one-off
-    System.out.println("my width is " + width);//DEBUG
-    int length = (craft.getHitBox().getZLength() + 1); //added 1 because value returns one-off
-    System.out.println("my length is " + length);//DEBUG
+    //System.out.println("my bottom coord is " + bottomY);//DEBUG
+    int width = craft.getHitBox().getXLength();
+    //System.out.println("my width is " + width);//DEBUG
+    int length = craft.getHitBox().getZLength();
+    //System.out.println("my length is " + length);//DEBUG
     int startX = craft.getHitBox().getMinX();
-    System.out.println("my Min-X is " + startX);//DEBUG
+    //System.out.println("my Min-X is " + startX);//DEBUG
     int startZ = craft.getHitBox().getMinZ();
-    System.out.println("my Min-Z is " + startZ);//DEBUG
+    //System.out.println("my Min-Z is " + startZ);//DEBUG
     World world = craft.getWorld();
-    System.out.println("my world is " + world);//DEBUG
+    //System.out.println("my world is " + world);//DEBUG
 
     // Directly update blocks using Bukkit API
     for (int x = startX; x < startX + width; x++) {
@@ -367,7 +367,7 @@ private void removeBottomLayer(Craft craft) {
             if (block.getType() != Material.AIR) {
                 // Directly remove the block using Bukkit API
                 block.setType(Material.AIR); // Changed
-                System.out.println("I am trying to change one block to air");//DEBUG
+                //System.out.println("I am trying to change one block to air");//DEBUG
             }
         }
     }
