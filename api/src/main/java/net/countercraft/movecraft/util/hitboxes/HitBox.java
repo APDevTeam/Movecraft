@@ -23,21 +23,21 @@ public interface HitBox extends Iterable<MovecraftLocation>{
         if (isEmpty())
             return 0;
 
-        return Math.abs(getMaxX() - getMinX());
+        return Math.abs(getMaxX() - getMinX() +1);
     }
 
     default int getYLength() {
         if (isEmpty())
             return 0;
 
-        return Math.abs(getMaxY() - getMinY());
+        return Math.abs(getMaxY() - getMinY() +1);
     }
 
     default int getZLength() {
         if (isEmpty())
             return 0;
 
-        return Math.abs(getMaxZ() -getMinZ());
+        return Math.abs(getMaxZ() -getMinZ() +1);
     }
 
     default boolean isEmpty() {
