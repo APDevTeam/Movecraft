@@ -72,8 +72,14 @@ public abstract class AbstractSubcraftSign extends AbstractCraftSign {
 
     @Override
     public boolean processSignChange(SignChangeEvent event, SignListener.SignWrapper sign) {
-        // TODO: Implement
-        return false;
+        if (!this.isSignValid(Action.PHYSICAL, sign, event.getPlayer())) {
+            for (int i = 0; i < sign.lines().size(); i++) {
+                sign.line(i, Component.empty());
+            }
+            return false;
+        }
+        this.applyDefaultText(sign);
+        return true;
     }
 
     @Override
