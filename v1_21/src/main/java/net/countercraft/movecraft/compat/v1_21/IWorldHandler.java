@@ -16,6 +16,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.piston.PistonBaseBlock;
+import net.minecraft.world.level.block.piston.PistonMovingBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
@@ -134,6 +136,24 @@ public class IWorldHandler extends WorldHandler {
 
     @Nullable
     private BlockEntity removeBlockEntity(@NotNull Level world, @NotNull BlockPos position) {
+        BlockEntity testEntity = world.getChunkAt(position).getBlockEntity(position);
+        //Prevents moving pistons by locking up by forcing their movement to finish
+        if (testEntity instanceof PistonMovingBlockEntity)
+        {
+            BlockState oldState;
+            if (((PistonMovingBlockEntity) testEntity).isSourcePiston() && testEntity.getBlockState().getBlock() instanceof PistonBaseBlock) {
+                if (((PistonMovingBlockEntity) testEntity).getMovedState().is(Blocks.PISTON))
+                    oldState = Blocks.PISTON.defaultBlockState()
+                        .setValue(PistonBaseBlock.FACING, ((PistonMovingBlockEntity) testEntity).getMovedState().getValue(PistonBaseBlock.FACING));
+                else
+                    oldState = Blocks.STICKY_PISTON.defaultBlockState()
+                        .setValue(PistonBaseBlock.FACING, ((PistonMovingBlockEntity) testEntity).getMovedState().getValue(PistonBaseBlock.FACING));
+            } else
+                oldState = ((PistonMovingBlockEntity) testEntity).getMovedState();
+            ((PistonMovingBlockEntity) testEntity).finalTick();
+            setBlockFast(world, position, oldState);
+            return world.getBlockEntity(position);
+        }
         return world.getChunkAt(position).blockEntities.remove(position);
     }
 
