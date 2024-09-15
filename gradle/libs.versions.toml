@@ -2,7 +2,7 @@
 # https://docs.gradle.org/current/userguide/platforms.html#sub::toml-dependencies-format
 
 [versions]
-io-papermc-paper-paper-api = "1.18.2-R0.1-SNAPSHOT"
+io-papermc-paper-paper-api = "1.20.6-R0.1-SNAPSHOT"
 it-unimi-dsi-fastutil = "8.5.13"
 junit-junit = "4.13.2"
 net-kyori-adventure-api = "4.17.0"

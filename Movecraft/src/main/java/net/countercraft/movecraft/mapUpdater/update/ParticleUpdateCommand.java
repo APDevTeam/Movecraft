@@ -38,7 +38,7 @@ public class ParticleUpdateCommand extends UpdateCommand {
             for (Player p : location.getWorld().getPlayers()) { // this is necessary because signs do not get updated client side correctly without refreshing the chunks, which causes a memory leak in the clients
                 double distSquared = location.distanceSquared(p.getLocation());
                 if ((distSquared < Settings.SilhouetteViewDistance * Settings.SilhouetteViewDistance) && (distSquared > 32 * 32)) {
-                    p.spawnParticle(Particle.VILLAGER_HAPPY, location, 9);
+                    p.spawnParticle(Particle.HAPPY_VILLAGER, location, 9);
                 }
             }
             return true;
