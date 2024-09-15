@@ -33,6 +33,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Properties;
 import java.util.logging.Logger;
 
@@ -65,15 +67,17 @@ public class I18nSupport implements HostedService {
     private void init() {
         languageFile = new Properties();
 
-        File localisationDirectory = new File(plugin.getDataFolder().getAbsolutePath() + "/localisation");
+        Path localisationDirectory = plugin.getDataFolder().toPath().resolve("localisation");
 
-        if (!localisationDirectory.exists()) {
-            localisationDirectory.mkdirs();
+        try {
+            Files.createDirectories(localisationDirectory);
+        } catch (IOException e) {
+            throw new IllegalStateException("Critical Error in Localisation System", e);
         }
 
-        InputStream inputStream = null;
+        InputStream inputStream;
         try {
-            inputStream = new FileInputStream(localisationDirectory.getAbsolutePath() + "/movecraftlang" + "_" + Settings.LOCALE + ".properties");
+            inputStream = new FileInputStream(localisationDirectory.resolve("movecraftlang_" + Settings.LOCALE + ".properties").toFile());
         } catch (FileNotFoundException e) {
             throw new IllegalStateException("Critical Error in Localisation System", e);
         }

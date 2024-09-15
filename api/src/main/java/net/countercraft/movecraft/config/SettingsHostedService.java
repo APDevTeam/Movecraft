@@ -16,22 +16,17 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 public class SettingsHostedService implements HostedService {
-    private final @Nullable Configuration configuration;
+    private final @NotNull Configuration configuration;
     private final @NotNull Logger logger;
 
     @Inject
-    public SettingsHostedService(@Nullable @Opt Plugin plugin, @NotNull Logger logger) {
-        this.configuration = plugin == null ? null : plugin.getConfig();
+    public SettingsHostedService(@NotNull Plugin plugin, @NotNull Logger logger) {
+        this.configuration = plugin.getConfig();
         this.logger = logger;
     }
 
     @Override
     public void start() {
-        // TODO: Abstract away configuration to not need plugin
-        if(configuration == null){
-            return;
-        }
-
         Settings.LOCALE = configuration.getString("Locale");
         Settings.Debug = configuration.getBoolean("Debug", false);
         Settings.DisableNMSCompatibilityCheck = configuration.getBoolean("IReallyKnowWhatIAmDoing", false);

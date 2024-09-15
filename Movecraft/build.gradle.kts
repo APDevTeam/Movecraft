@@ -17,6 +17,7 @@ dependencies {
     testImplementation(libs.junit.junit)
     testImplementation(libs.org.hamcrest.hamcrest.library)
     testImplementation("org.mockito:mockito-core:5.13.0")
+    testImplementation("com.github.seeseemelk:MockBukkit-v1.18:2.85.2")
 }
 
 tasks.shadowJar {
