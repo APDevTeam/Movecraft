@@ -156,7 +156,7 @@ public abstract class AbstractSubcraftSign extends AbstractCraftSign {
                 sign.line(2, l3);
             }
             if (l4 != null) {
-                sign.line(2, l4);
+                sign.line(3, l4);
             }
         }
     }
