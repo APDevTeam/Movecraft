@@ -166,7 +166,7 @@ public abstract class AbstractSubcraftSign extends AbstractCraftSign {
 
     @Override
     public boolean shouldCancelEvent(boolean processingSuccessful, @Nullable Action type, boolean sneaking, EventType eventType) {
-        boolean resultSuper = !super.shouldCancelEvent(processingSuccessful, type, sneaking, eventType);
+        boolean resultSuper = super.shouldCancelEvent(processingSuccessful, type, sneaking, eventType);
         if (!resultSuper) {
             return eventType == EventType.SIGN_CLICK_ON_CRAFT || eventType == EventType.SIGN_CLICK;
         }
