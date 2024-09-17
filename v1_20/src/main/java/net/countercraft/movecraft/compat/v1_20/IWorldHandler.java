@@ -8,16 +8,23 @@ import net.countercraft.movecraft.util.CollectionUtils;
 import net.countercraft.movecraft.util.MathUtils;
 import net.countercraft.movecraft.util.UnsafeUtils;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerLevelAccess;
+import net.minecraft.world.level.BlockEventData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.DirectionalBlock;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.piston.PistonBaseBlock;
+import net.minecraft.world.level.block.piston.PistonMovingBlockEntity;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.ticks.LevelChunkTicks;
@@ -163,10 +170,12 @@ public class IWorldHandler extends WorldHandler {
 
             //get the nextTick to move with the tile
             ScheduledTick tickHere = tickProvider.getNextTick(nativeWorld, position);
-            if (tickHere != null) {
+            while (tickHere != null) {
+                ScheduledTick tickToRemove = tickHere;
                 ((LevelChunkTicks) nativeWorld.getChunkAt(position).getBlockTicks()).removeIf(
-                        (Predicate<ScheduledTick>) scheduledTick -> scheduledTick.equals(tickHere));
+                        (Predicate<ScheduledTick>) scheduledTick -> scheduledTick.equals(tickToRemove));
                 ticks.add(new TickHolder(tickHere, position));
+                tickHere = tickProvider.getNextTick(nativeWorld, position);
             }
 
         }
@@ -213,6 +222,24 @@ public class IWorldHandler extends WorldHandler {
 
     @Nullable
     private BlockEntity removeBlockEntity(@NotNull Level world, @NotNull BlockPos position) {
+        BlockEntity testEntity = world.getChunkAt(position).getBlockEntity(position);
+        //Prevents moving pistons by locking up by forcing their movement to finish
+        if (testEntity instanceof PistonMovingBlockEntity)
+        {
+            BlockState oldState;
+            if (((PistonMovingBlockEntity) testEntity).isSourcePiston() && testEntity.getBlockState().getBlock() instanceof PistonBaseBlock) {
+                if (((PistonMovingBlockEntity) testEntity).getMovedState().is(Blocks.PISTON))
+                    oldState = Blocks.PISTON.defaultBlockState()
+                            .setValue(PistonBaseBlock.FACING, ((PistonMovingBlockEntity) testEntity).getMovedState().getValue(PistonBaseBlock.FACING));
+                else
+                    oldState = Blocks.STICKY_PISTON.defaultBlockState()
+                            .setValue(PistonBaseBlock.FACING, ((PistonMovingBlockEntity) testEntity).getMovedState().getValue(PistonBaseBlock.FACING));
+            } else
+                oldState = ((PistonMovingBlockEntity) testEntity).getMovedState();
+            ((PistonMovingBlockEntity) testEntity).finalTick();
+            setBlockFast(world, position, oldState);
+            return world.getBlockEntity(position);
+        }
         return world.getChunkAt(position).blockEntities.remove(position);
     }
 
