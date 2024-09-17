@@ -15,7 +15,7 @@ public class Tags {
     public static final EnumSet<Material> FLUID = EnumSet.of(Material.WATER, Material.BUBBLE_COLUMN, Material.LAVA);
     public static final EnumSet<Material> CHESTS = EnumSet.of(Material.CHEST, Material.TRAPPED_CHEST, Material.BARREL);
     public static final EnumSet<Material> FURNACES = EnumSet.of(Material.FURNACE, Material.BLAST_FURNACE, Material.SMOKER);
-    public static final EnumSet<Material> SINKING_PASSTHROUGH = EnumSet.of(Material.TALL_GRASS, Material.GRASS);
+    public static final EnumSet<Material> SINKING_PASSTHROUGH = EnumSet.of(Material.TALL_GRASS, Material.SHORT_GRASS);
     public static final EnumSet<Material> FRAGILE_MATERIALS = EnumSet.noneOf(Material.class);
     public static final EnumSet<Material> FALL_THROUGH_BLOCKS = EnumSet.noneOf(Material.class);
     public static final EnumSet<Material> BUCKETS = EnumSet.of(Material.LAVA_BUCKET, Material.WATER_BUCKET, Material.MILK_BUCKET, Material.COD_BUCKET, Material.PUFFERFISH_BUCKET, Material.SALMON_BUCKET, Material.TROPICAL_FISH_BUCKET);

@@ -18,7 +18,6 @@
 package net.countercraft.movecraft.async.rotation;
 
 import net.countercraft.movecraft.CruiseDirection;
-import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.MovecraftRotation;
 import net.countercraft.movecraft.TrackedLocation;
@@ -32,7 +31,6 @@ import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftRotateEvent;
 import net.countercraft.movecraft.events.CraftTeleportEntityEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.mapUpdater.update.AccessLocationUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.CraftRotateCommand;
 import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
@@ -47,9 +45,6 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.HumanEntity;
-import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.inventory.InventoryView;
 
 import java.util.HashSet;
 import java.util.List;
@@ -118,15 +113,6 @@ public class RotationTask extends AsyncTask {
         for(MovecraftLocation originalLocation : oldHitBox){
             MovecraftLocation newLocation = MathUtils.rotateVec(rotation,originalLocation.subtract(originPoint)).add(originPoint);
             newHitBox.add(newLocation);
-
-            //Prevent piston bug
-            if (originalLocation.toBukkit(getCraft().getWorld()).getBlock().getType().equals(Material.MOVING_PISTON)) {
-                failed = true;
-                failMessage = (String.format(I18nSupport.getInternationalisedString("Translation - Failed Craft is obstructed")
-                                + " @ %d,%d,%d,%s", originalLocation.getX(), originalLocation.getY(), originalLocation.getZ(),
-                        originalLocation.toBukkit(craft.getWorld()).getBlock().getType()));
-                break;
-            }
 
             Material oldMaterial = originalLocation.toBukkit(w).getBlock().getType();
             //prevent chests collision
@@ -270,13 +256,11 @@ public class RotationTask extends AsyncTask {
                 (oldHitBox.getMaxY() + oldHitBox.getMinY())/2.0,
                 (oldHitBox.getMaxZ() + oldHitBox.getMinZ())/2.0);
 
-        List<EntityType> entityList = List.of(EntityType.PLAYER, EntityType.PRIMED_TNT);
+        List<EntityType> entityList = List.of(EntityType.PLAYER, EntityType.TNT);
         for(Entity entity : craft.getWorld().getNearbyEntities(midpoint,
                 oldHitBox.getXLength() / 2.0 + 1,
                 oldHitBox.getYLength() / 2.0 + 2,
                 oldHitBox.getZLength() / 2.0 + 1)) {
-
-            rotateHumanEntity(entity);
 
             if (craft.getType().getBoolProperty(CraftType.ONLY_MOVE_PLAYERS)
                     && (!entityList.contains(entity.getType())
@@ -306,30 +290,6 @@ public class RotationTask extends AsyncTask {
 
 
         }
-    }
-
-    private void rotateHumanEntity(Entity entity) {
-        if (!(entity instanceof HumanEntity)) {
-            return;
-        }
-
-        InventoryView inventoryView = ((HumanEntity) entity).getOpenInventory();
-        if (inventoryView.getType() == InventoryType.CRAFTING) {
-            return;
-        }
-
-        Location l = Movecraft.getInstance().getWorldHandler().getAccessLocation(inventoryView);
-        if (l == null) {
-            return;
-        }
-
-        MovecraftLocation location = new MovecraftLocation(l.getBlockX(), l.getBlockY(), l.getBlockZ());
-        if (!oldHitBox.contains(location)) {
-            return;
-        }
-
-        location = MathUtils.rotateVec(rotation, location.subtract(originPoint)).add(originPoint);
-        updates.add(new AccessLocationUpdateCommand(inventoryView, location.toBukkit(w)));
     }
 
     public MovecraftLocation getOriginPoint() {

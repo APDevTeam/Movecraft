@@ -9,13 +9,13 @@ import net.countercraft.movecraft.util.MathUtils;
 import net.countercraft.movecraft.util.UnsafeUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.piston.PistonBaseBlock;
+import net.minecraft.world.level.block.piston.PistonMovingBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
@@ -26,13 +26,14 @@ import org.bukkit.Location;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
-import org.bukkit.craftbukkit.inventory.CraftInventoryView;
-import org.bukkit.inventory.InventoryView;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.Field;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
 
 @SuppressWarnings("unused")
@@ -208,6 +209,24 @@ public class IWorldHandler extends WorldHandler {
 
     @Nullable
     private BlockEntity removeBlockEntity(@NotNull Level world, @NotNull BlockPos position) {
+        BlockEntity testEntity = world.getChunkAt(position).getBlockEntity(position);
+        //Prevents moving pistons by locking up by forcing their movement to finish
+        if (testEntity instanceof PistonMovingBlockEntity)
+        {
+            BlockState oldState;
+            if (((PistonMovingBlockEntity) testEntity).isSourcePiston() && testEntity.getBlockState().getBlock() instanceof PistonBaseBlock) {
+                if (((PistonMovingBlockEntity) testEntity).getMovedState().is(Blocks.PISTON))
+                    oldState = Blocks.PISTON.defaultBlockState()
+                            .setValue(PistonBaseBlock.FACING, ((PistonMovingBlockEntity) testEntity).getMovedState().getValue(PistonBaseBlock.FACING));
+                else
+                    oldState = Blocks.STICKY_PISTON.defaultBlockState()
+                            .setValue(PistonBaseBlock.FACING, ((PistonMovingBlockEntity) testEntity).getMovedState().getValue(PistonBaseBlock.FACING));
+            } else
+                oldState = ((PistonMovingBlockEntity) testEntity).getMovedState();
+            ((PistonMovingBlockEntity) testEntity).finalTick();
+            setBlockFast(world, position, oldState);
+            return world.getBlockEntity(position);
+        }
         return world.getChunkAt(position).blockEntities.remove(position);
     }
 
@@ -253,17 +272,6 @@ public class IWorldHandler extends WorldHandler {
         Level world = ((CraftWorld) (location.getWorld())).getHandle();
         BlockPos BlockPos = locationToPosition(MathUtils.bukkit2MovecraftLoc(location));
         setBlockFast(world, BlockPos, blockData);
-    }
-
-    @Override
-    public @Nullable Location getAccessLocation(@NotNull InventoryView inventoryView) {
-        // Not needed for 1.20+, remove when dropping support for 1.18.2
-        return null;
-    }
-
-    @Override
-    public void setAccessLocation(@NotNull InventoryView inventoryView, @NotNull Location location) {
-        // Not needed for 1.20+, remove when dropping support for 1.18.2
     }
 
     private void moveBlockEntity(@NotNull Level nativeWorld, @NotNull BlockPos newPosition, @NotNull BlockEntity tile) {

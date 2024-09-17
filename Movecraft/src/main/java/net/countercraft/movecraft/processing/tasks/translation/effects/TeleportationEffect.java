@@ -47,7 +47,7 @@ public class TeleportationEffect implements Effect {
                 eUp.doUpdate();
             }
             else if (!craft.getType().getBoolProperty(CraftType.ONLY_MOVE_PLAYERS)
-                    || entity.getType() == EntityType.PRIMED_TNT) {
+                    || entity.getType() == EntityType.TNT) {
                 CraftTeleportEntityEvent e = new CraftTeleportEntityEvent(craft, entity);
                 Bukkit.getServer().getPluginManager().callEvent(e);
                 if (e.isCancelled())
