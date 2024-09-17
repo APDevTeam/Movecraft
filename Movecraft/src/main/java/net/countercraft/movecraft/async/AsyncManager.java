@@ -184,7 +184,7 @@ public class AsyncManager extends BukkitRunnable {
                 Player pilot = ((PlayerCraft) craft).getPilot();
                 if (pilot.isSneaking()) {
                     if (pilot.getInventory().getItem(EquipmentSlot.OFF_HAND) != null) {
-                        dive = !pilot.getInventory().getItem(EquipmentSlot.OFF_HAND).getType().isEmpty();
+                        dive = pilot.getInventory().getItem(EquipmentSlot.OFF_HAND).getType().isEmpty();
                     } else {
                         dive = true;
                     }
