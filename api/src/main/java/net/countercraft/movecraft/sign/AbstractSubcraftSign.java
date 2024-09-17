@@ -145,7 +145,7 @@ public abstract class AbstractSubcraftSign extends AbstractCraftSign {
             }
         }.runTaskLater(this.pluginInstance.get(), 4);
 
-        return false;
+        return true;
     }
 
     protected void applyDefaultText(SignListener.SignWrapper sign) {
