@@ -3,107 +3,100 @@ package net.countercraft.movecraft.features.contacts;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.type.CraftType;
-import net.countercraft.movecraft.events.CraftDetectEvent;
-import net.countercraft.movecraft.events.SignTranslateEvent;
-import org.bukkit.ChatColor;
-import org.bukkit.Tag;
-import org.bukkit.World;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockState;
-import org.bukkit.block.Sign;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
+import net.countercraft.movecraft.sign.AbstractInformationSign;
+import net.countercraft.movecraft.sign.SignListener;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.Style;
+import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-public class ContactsSign implements Listener {
-    private static final String HEADER = "Contacts:";
+import java.util.List;
 
-    @EventHandler
-    public void onCraftDetect(@NotNull CraftDetectEvent event) {
-        World world = event.getCraft().getWorld();
-        for (MovecraftLocation location : event.getCraft().getHitBox()) {
-            var block = location.toBukkit(world).getBlock();
-            if (!Tag.SIGNS.isTagged(block.getType()))
-                continue;
+public class ContactsSign extends AbstractInformationSign {
 
-            BlockState state = block.getState();
-            if (!(state instanceof Sign sign))
-                continue;
+    protected final int MAX_DISTANCE_COLOR_RED = 64 * 64;
+    protected final int MAX_DISTANCE_COLOR_YELLOW = 128 * 128;
 
-            if (!ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase(HEADER))
-                continue;
-
-            sign.setLine(1, "");
-            sign.setLine(2, "");
-            sign.setLine(3, "");
-            sign.update();
-        }
-    }
-
-    @EventHandler
-    public final void onSignTranslateEvent(@NotNull SignTranslateEvent event) {
-        if (!ChatColor.stripColor(event.getLine(0)).equalsIgnoreCase(HEADER))
-            return;
-
-        Craft base = event.getCraft();
-        int line = 1;
-        for (Craft target : base.getDataTag(Craft.CONTACTS)) {
-            if (line > 3)
-                break;
-
-            event.setLine(line++, contactsLine(base, target));
-        }
-        while (line <= 3) {
-            event.setLine(line++, "");
-        }
-    }
-
-    private static @NotNull String contactsLine(@NotNull Craft base, @NotNull Craft target) {
+    protected @NotNull Component contactsLine(@NotNull Craft base, @NotNull Craft target) {
         MovecraftLocation baseCenter = base.getHitBox().getMidPoint();
         MovecraftLocation targetCenter = target.getHitBox().getMidPoint();
         int distanceSquared = baseCenter.distanceSquared(targetCenter);
 
-        String result = ChatColor.BLUE + target.getType().getStringProperty(CraftType.NAME);
-        if (result.length() > 9)
-            result = result.substring(0, 7);
+        String craftTypeName = target.getType().getStringProperty(CraftType.NAME);
+        if (craftTypeName.length() > 9)
+            craftTypeName = craftTypeName.substring(0, 7);
 
-        result += " " + (int) Math.sqrt(distanceSquared);
+        Style style = STYLE_COLOR_GREEN;
+        if (distanceSquared <= MAX_DISTANCE_COLOR_RED) {
+            style = STYLE_COLOR_RED;
+        }
+        else if (distanceSquared <= MAX_DISTANCE_COLOR_YELLOW) {
+            style = STYLE_COLOR_YELLOW;
+        }
+
+        Component result = Component.text(craftTypeName + " ").style(style);
+
         int diffX = baseCenter.getX() - targetCenter.getX();
         int diffZ = baseCenter.getZ() - targetCenter.getZ();
+        String directionStr = "" + (int) Math.sqrt(distanceSquared);
         if (Math.abs(diffX) > Math.abs(diffZ)) {
             if (diffX<0) {
-                result +=" E";
+                directionStr +=" E";
             } else {
-                result +=" W";
+                directionStr +=" W";
             }
         } else {
             if (diffZ<0) {
-                result +=" S";
+                directionStr +=" S";
             } else {
-                result +=" N";
+                directionStr +=" N";
             }
         }
+        result = result.append(Component.text(directionStr).style(STYLE_COLOR_WHITE));
         return result;
     }
 
-    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    public void onSignClickEvent(@NotNull PlayerInteractEvent event) {
-        if (event.getAction() != Action.RIGHT_CLICK_BLOCK)
-            return;
+    @Override
+    protected boolean internalProcessSignWithCraft(Action clickType, SignListener.SignWrapper sign, Craft craft, Player player) {
+        player.performCommand("contacts");
 
-        Block block = event.getClickedBlock();
-        if (block == null)
-            return;
-        if (!(block.getState() instanceof Sign sign))
-            return;
+        return true;
+    }
 
-        if (!ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase(HEADER))
-            return;
+    @Override
+    protected @Nullable Component getUpdateString(int lineIndex, Component oldData, Craft craft) {
+        Craft contact = null;
+        List<Craft> contacts = craft.getDataTag(Craft.CONTACTS);
+        if (contacts.isEmpty() || contacts.size() < lineIndex) {
+            return EMPTY;
+        }
+        contact = contacts.get(lineIndex);
 
-        event.setCancelled(true);
-        event.getPlayer().performCommand("contacts");
+        return contactsLine(craft, contact);
+    }
+
+    @Override
+    protected @Nullable Component getDefaultString(int lineIndex, Component oldComponent) {
+        return EMPTY;
+    }
+
+    @Override
+    protected void performUpdate(Component[] newComponents, SignListener.SignWrapper sign, REFRESH_CAUSE refreshCause) {
+        for (int i = 0; i < newComponents.length; i++) {
+            Component newComp = newComponents[i];
+            if (newComp != null) {
+                sign.line(i, newComp);
+            }
+        }
+        if (refreshCause != REFRESH_CAUSE.SIGN_MOVED_BY_CRAFT && sign.block() != null) {
+            sign.block().update();
+        }
+    }
+
+    @Override
+    protected void onCraftIsBusy(Player player, Craft craft) {
+
     }
 }

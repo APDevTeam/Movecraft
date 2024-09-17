@@ -2,62 +2,85 @@ package net.countercraft.movecraft.sign;
 
 import net.countercraft.movecraft.MovecraftRotation;
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.util.MathUtils;
 import org.bukkit.ChatColor;
-import org.bukkit.block.BlockState;
-import org.bukkit.block.Sign;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
 
-public final class HelmSign implements Listener {
+public class HelmSign extends AbstractCraftSign {
+
+    public static final String[] PRETTY_LINES = new String[] {
+            "\\  ||  /",
+            "\\  ||  /",
+            "/  ||  \\"
+    };
+    public static final String PRETTY_HEADER = PRETTY_LINES[0];
+
+    public HelmSign() {
+        super(false);
+    }
 
     @EventHandler
     public void onSignChange(SignChangeEvent event){
         if (!ChatColor.stripColor(event.getLine(0)).equalsIgnoreCase("[helm]")) {
             return;
         }
-        event.setLine(0, "\\  ||  /");
-        event.setLine(1, "==      ==");
-        event.setLine(2, "/  ||  \\");
+        for (int i = 0; i < PRETTY_LINES.length && i < event.getLines().length; i++) {
+            event.setLine(i, PRETTY_LINES[i]);
+        }
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onSignClick(@NotNull PlayerInteractEvent event) {
+
+
+    }
+
+    @Override
+    protected void onCraftIsBusy(Player player, Craft craft) {
+
+    }
+
+    @Override
+    protected void onCraftNotFound(Player player, SignListener.SignWrapper sign) {
+
+    }
+
+    @Override
+    protected boolean isSignValid(Action clickType, SignListener.SignWrapper sign, Player player) {
+        // Nothing to check here honestly...
+        return true;
+    }
+
+    @Override
+    public boolean processSignChange(SignChangeEvent event, SignListener.SignWrapper sign) {
+        if (!ChatColor.stripColor(event.getLine(0)).equalsIgnoreCase("[helm]")) {
+            return true;
+        }
+        event.setLine(0, "\\  ||  /");
+        event.setLine(1, "==      ==");
+        event.setLine(2, "/  ||  \\");
+        return true;
+    }
+
+    @Override
+    protected boolean internalProcessSignWithCraft(Action clickType, SignListener.SignWrapper sign, Craft craft, Player player) {
         MovecraftRotation rotation;
-        if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+        if (clickType == Action.RIGHT_CLICK_BLOCK) {
             rotation = MovecraftRotation.CLOCKWISE;
-        }else if(event.getAction() == Action.LEFT_CLICK_BLOCK){
+        }else if(clickType == Action.LEFT_CLICK_BLOCK){
             rotation = MovecraftRotation.ANTICLOCKWISE;
         }else{
-            return;
+            return false;
         }
-        BlockState state = event.getClickedBlock().getState();
-        if (!(state instanceof Sign)) {
-            return;
-        }
-        Sign sign = (Sign) state;
-        if (!(ChatColor.stripColor(sign.getLine(0)).equals("\\  ||  /") &&
-                ChatColor.stripColor(sign.getLine(1)).equals("==      ==") &&
-                ChatColor.stripColor(sign.getLine(2)).equals("/  ||  \\"))) {
-            return;
-        }
-        event.setCancelled(true);
-        Craft craft = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
-        if (craft == null) {
-            return;
-        }
-        if (!event.getPlayer().hasPermission("movecraft." + craft.getType().getStringProperty(CraftType.NAME) + ".rotate")) {
-            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
-            return;
-        }
+
         /*Long time = timeMap.get(event.getPlayer());
         if (time != null) {
             long ticksElapsed = (System.currentTimeMillis() - time) / 50;
@@ -74,13 +97,14 @@ public final class HelmSign implements Listener {
             }
         }*/
 
-        if(!MathUtils.locIsNearCraftFast(craft, MathUtils.bukkit2MovecraftLoc(event.getPlayer().getLocation())))
-            return;
+        if(!MathUtils.locIsNearCraftFast(craft, MathUtils.bukkit2MovecraftLoc(player.getLocation())))
+            return false;
 
+        // TODO: Why was this used before?  CraftManager.getInstance().getCraftByPlayer(event.getPlayer())...  The craft variable did exist, so why don't use it?
         if (craft.getType().getBoolProperty(CraftType.ROTATE_AT_MIDPOINT)) {
-            CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).rotate(rotation, craft.getHitBox().getMidPoint());
+            craft.rotate(rotation, craft.getHitBox().getMidPoint());
         } else {
-            CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).rotate(rotation, MathUtils.bukkit2MovecraftLoc(sign.getLocation()));
+           craft.rotate(rotation, MathUtils.bukkit2MovecraftLoc(sign.block().getLocation()));
         }
 
         //timeMap.put(event.getPlayer(), System.currentTimeMillis());
@@ -93,5 +117,18 @@ public final class HelmSign implements Listener {
                 curTickCooldown = curTickCooldown * 2;*/
         //CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCurTickCooldown(curTickCooldown); // lose half your speed when turning
 
+        return false;
+    }
+
+    @Override
+    protected boolean canPlayerUseSignOn(Player player, Craft craft) {
+        if (super.canPlayerUseSignOn(player, craft)) {
+            if (!player.hasPermission("movecraft." + craft.getType().getStringProperty(CraftType.NAME) + ".rotate")) {
+                player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
+                return false;
+            }
+            return true;
+        }
+        return false;
     }
 }

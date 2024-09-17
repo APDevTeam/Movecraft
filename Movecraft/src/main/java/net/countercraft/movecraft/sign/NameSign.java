@@ -1,84 +1,75 @@
 package net.countercraft.movecraft.sign;
 
-import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.PilotedCraft;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.util.ChatUtils;
-import org.bukkit.ChatColor;
-import org.bukkit.Tag;
-import org.bukkit.World;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockState;
-import org.bukkit.block.Sign;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
+import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-public final class NameSign implements Listener {
-    private static final String HEADER = "Name:";
-    @EventHandler
-    public void onCraftDetect(@NotNull CraftDetectEvent event) {
-        Craft c = event.getCraft();
+public class NameSign extends AbstractCraftSign {
 
-        if (c instanceof PilotedCraft) {
-            PilotedCraft pilotedCraft = (PilotedCraft) c;
-            if (Settings.RequireNamePerm && !pilotedCraft.getPilot().hasPermission("movecraft.name.place"))
-                return;
-        }
+    public static final String NAME_SIGN_PERMISSION = "movecraft.name.place";
 
-        World w = c.getWorld();
-
-        for (MovecraftLocation location : c.getHitBox()) {
-            var block = location.toBukkit(w).getBlock();
-            if(!Tag.SIGNS.isTagged(block.getType())){
-                continue;
-            }
-            BlockState state = block.getState();
-            if (!(state instanceof Sign)) {
-                return;
-            }
-            Sign sign = (Sign) state;
-            if (sign.getLine(0).equalsIgnoreCase(HEADER)) {
-                String name = Arrays.stream(sign.getLines()).skip(1).filter(f -> f != null
-                        && !f.trim().isEmpty()).collect(Collectors.joining(" "));
-                c.setName(name);
-                return;
-            }
-        }
+    public NameSign() {
+        super(NAME_SIGN_PERMISSION, true);
     }
 
-    @EventHandler
-    public void onSignChange(@NotNull SignChangeEvent event) {
-        if (HEADER.equalsIgnoreCase(event.getLine(0))
-                && Settings.RequireNamePerm && !event.getPlayer().hasPermission("movecraft.name.place")) {
+    @Override
+    protected boolean canPlayerUseSign(Action clickType, SignListener.SignWrapper sign, Player player) {
+        return !Settings.RequireNamePerm || super.canPlayerUseSign(clickType, sign, player);
+    }
+
+    @Override
+    protected boolean isSignValid(Action clickType, SignListener.SignWrapper sign, Player player) {
+        return true;
+    }
+
+    @Override
+    protected boolean internalProcessSignWithCraft(Action clickType, SignListener.SignWrapper sign, Craft craft, Player player) {
+        return true;
+    }
+
+    @Override
+    protected boolean internalProcessSign(Action clickType, SignListener.SignWrapper sign, Player player, @Nullable Craft craft) {
+        return true;
+    }
+
+    @Override
+    protected void onCraftIsBusy(Player player, Craft craft) {
+    }
+
+    @Override
+    protected void onCraftNotFound(Player player, SignListener.SignWrapper sign) {
+    }
+
+    @Override
+    public boolean processSignChange(SignChangeEvent event, SignListener.SignWrapper sign) {
+        if (this.canPlayerUseSign(Action.RIGHT_CLICK_BLOCK, null, event.getPlayer())) {
+            // Nothing to do
+            return true;
+        } else {
             event.getPlayer().sendMessage(ChatUtils.MOVECRAFT_COMMAND_PREFIX + "Insufficient permissions");
             event.setCancelled(true);
+            return false;
         }
     }
 
-    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    public void onSignClickEvent(@NotNull PlayerInteractEvent event) {
-        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
-            return;
-        }
-        Block block = event.getClickedBlock();
-        if (!(block.getState() instanceof Sign)) {
-            return;
+    @Override
+    public void onCraftDetect(CraftDetectEvent event, SignListener.SignWrapper sign) {
+        Craft craft = event.getCraft();
+        if (craft != null && craft instanceof PilotedCraft pc) {
+            if (Settings.RequireNamePerm && !pc.getPilot().hasPermission(NAME_SIGN_PERMISSION))
+                return;
         }
 
-        Sign sign = (Sign) block.getState();
-        if (!ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase(HEADER)) {
-            return;
-        }
-        event.setCancelled(true);
+        craft.setName(Arrays.stream(sign.rawLines()).skip(1).filter(f -> f != null
+                && !f.trim().isEmpty()).collect(Collectors.joining(" ")));
     }
 }

@@ -2,9 +2,6 @@ package net.countercraft.movecraft.mapUpdater.update;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import it.unimi.dsi.fastutil.Hash;
-import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.WorldHandler;
@@ -14,37 +11,20 @@ import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.SinkingCraft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
-import net.countercraft.movecraft.events.SignTranslateEvent;
+import net.countercraft.movecraft.sign.SignListener;
 import net.countercraft.movecraft.util.MathUtils;
 import net.countercraft.movecraft.util.Tags;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
 import net.countercraft.movecraft.util.hitboxes.SetHitBox;
 import net.countercraft.movecraft.util.hitboxes.SolidHitBox;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Tag;
 import org.bukkit.World;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockState;
-import org.bukkit.block.Sign;
 import org.bukkit.block.data.Waterlogged;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Logger;
 
 public class CraftTranslateCommand extends UpdateCommand {
@@ -303,54 +283,7 @@ public class CraftTranslateCommand extends UpdateCommand {
     }
 
     private void sendSignEvents(){
-        Object2ObjectMap<String[], List<MovecraftLocation>> signs = new Object2ObjectOpenCustomHashMap<>(new Hash.Strategy<String[]>() {
-            @Override
-            public int hashCode(String[] strings) {
-                return Arrays.hashCode(strings);
-            }
-
-            @Override
-            public boolean equals(String[] a, String[] b) {
-                return Arrays.equals(a, b);
-            }
-        });
-        Map<MovecraftLocation, Sign> signStates = new HashMap<>();
-
-        for (MovecraftLocation location : craft.getHitBox()) {
-            Block block = location.toBukkit(craft.getWorld()).getBlock();
-            if(!Tag.SIGNS.isTagged(block.getType())){
-                continue;
-            }
-            BlockState state = block.getState();
-            if (state instanceof Sign) {
-                Sign sign = (Sign) state;
-                if(!signs.containsKey(sign.getLines()))
-                    signs.put(sign.getLines(), new ArrayList<>());
-                signs.get(sign.getLines()).add(location);
-                signStates.put(location, sign);
-            }
-        }
-        for(Map.Entry<String[], List<MovecraftLocation>> entry : signs.entrySet()){
-            SignTranslateEvent event = new SignTranslateEvent(craft, entry.getKey(), entry.getValue());
-            Bukkit.getServer().getPluginManager().callEvent(event);
-            // if(!event.isUpdated()){
-            //     continue;
-            // }
-            // TODO: This is implemented only to fix client caching
-            //  ideally we wouldn't do the update and would instead fake it out to the player
-            for(MovecraftLocation location : entry.getValue()){
-                Block block = location.toBukkit(craft.getWorld()).getBlock();
-                BlockState state = block.getState();
-                if (!(state instanceof Sign)) {
-                    continue;
-                }
-                Sign sign = signStates.get(location);
-                for(int i = 0; i<4; i++){
-                    sign.setLine(i, entry.getKey()[i]);
-                }
-                sign.update(false, false);
-            }
-        }
+        SignListener.INSTANCE.processSignTranslation(craft, false);
     }
 
     @NotNull
