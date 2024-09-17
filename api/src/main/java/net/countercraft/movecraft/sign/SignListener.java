@@ -364,12 +364,40 @@ public class SignListener implements Listener {
             SignWrapper signWrapper = this.getSignWrapper(sign, event.getPlayer());
             SignWrapper wrapper = this.getSignWrapper(sign, event);
 
+            boolean onCraft = MathUtils.getCraftByPersistentBlockData(sign.getLocation()) != null;
+
             AbstractMovecraftSign.EventType eventType = signWrapper.isEmpty() ? AbstractMovecraftSign.EventType.SIGN_CREATION : AbstractMovecraftSign.EventType.SIGN_EDIT;
-            if (eventType == AbstractMovecraftSign.EventType.SIGN_EDIT && MathUtils.getCraftByPersistentBlockData(sign.getLocation()) != null) {
+            if (eventType == AbstractMovecraftSign.EventType.SIGN_EDIT && onCraft) {
                 eventType = AbstractMovecraftSign.EventType.SIGN_EDIT_ON_CRAFT;
             }
             final AbstractMovecraftSign.EventType eventTypeTmp = eventType;
-            AbstractMovecraftSign ams = MovecraftSignRegistry.INSTANCE.get(wrapper.line(0));
+            AbstractMovecraftSign ams = null;
+
+            // If the side is empty, we should try a different side, like, the next side that is not empty and which has a signHandler
+            if (wrapper.isEmpty()) {
+                SignWrapper[] wrapps = this.getSignWrappers(sign, true);
+                if (wrapps == null || wrapps.length == 0) {
+                    // Nothing found
+                    if (onCraft) {
+                        event.setCancelled(true);
+                    }
+                    return;
+                } else {
+                    for (SignWrapper swTmp : wrapps) {
+                        AbstractMovecraftSign amsTmp = MovecraftSignRegistry.INSTANCE.get(swTmp.line(0));
+                        if (amsTmp != null) {
+                            wrapper = swTmp;
+                            ams = amsTmp;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (ams == null) {
+                ams = MovecraftSignRegistry.INSTANCE.get(wrapper.line(0));
+            }
+
             // Would be one more readable line if using Optionals but Nullables were wanted
             if (ams != null) {
                 if (!eventType.isOnCraft()) {
@@ -404,6 +432,29 @@ public class SignListener implements Listener {
             ItemStack heldItem = event.getItem();
             boolean onCraft = MathUtils.getCraftByPersistentBlockData(sign.getLocation()) != null;
 
+            AbstractMovecraftSign ams = null;
+
+            // If the side is empty, we should try a different side, like, the next side that is not empty and which has a signHandler
+            if (wrapper.isEmpty()) {
+                SignWrapper[] wrapps = this.getSignWrappers(sign, true);
+                if (wrapps == null || wrapps.length == 0) {
+                    // Nothing found
+                    if (onCraft) {
+                        event.setCancelled(true);
+                    }
+                    return;
+                } else {
+                    for (SignWrapper swTmp : wrapps) {
+                        AbstractMovecraftSign amsTmp = MovecraftSignRegistry.INSTANCE.get(swTmp.line(0));
+                        if (amsTmp != null) {
+                            wrapper = swTmp;
+                            ams = amsTmp;
+                            break;
+                        }
+                    }
+                }
+            }
+
             // Always cancel if on craft => Avoid clicking empty sides and entering edit mode
             if (onCraft && wrapper.isEmpty()) {
                 event.setCancelled(true);
@@ -427,8 +478,11 @@ public class SignListener implements Listener {
                 }
             }
 
+            if (ams == null) {
+                ams = MovecraftSignRegistry.INSTANCE.get(wrapper.line(0));
+            }
+
             // Would be one more readable line if using Optionals but Nullables were wanted
-            AbstractMovecraftSign ams = MovecraftSignRegistry.INSTANCE.get(wrapper.line(0));
             if (ams != null) {
                 boolean success = ams.processSignClick(event.getAction(), wrapper, event.getPlayer());
                 // Always cancel, regardless of the success
