@@ -58,7 +58,7 @@ public class Movecraft extends JavaPlugin {
     private SmoothTeleport smoothTeleport;
     private AsyncManager asyncManager;
     private WreckManager wreckManager;
-    private AbstractSignListener abstractSignListener;
+    private SignListener abstractSignListener;
 
     public static synchronized Movecraft getInstance() {
         return instance;
