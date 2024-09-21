@@ -214,6 +214,10 @@ public class AsyncManager extends BukkitRunnable {
                 }
             }
 
+            if (craft.getCruiseCooldownMultiplier() != 1 && craft.getCruiseCooldownMultiplier() != 0) {
+                tickCoolDown *= craft.getCruiseCooldownMultiplier();
+            }
+
             if (Math.abs(ticksElapsed) < tickCoolDown)
                 continue;
 

@@ -293,4 +293,12 @@ public interface Craft {
     }
 
     Map<NamespacedKey, Set<TrackedLocation>> getTrackedLocations();
+
+    public default void setCruiseCooldownMultiplier(double value) {
+        // Do nothing by default
+    }
+
+    public default double getCruiseCooldownMultiplier() {
+        return 1;
+    }
 }
