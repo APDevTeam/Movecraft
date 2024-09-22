@@ -86,6 +86,8 @@ public abstract class BaseCraft implements Craft {
 
     private final UUID uuid = UUID.randomUUID();
 
+    private double cruiseTickMultiplier = 1;
+
     public BaseCraft(@NotNull CraftType type, @NotNull World world) {
         Hidden.uuidToCraft.put(uuid, this);
         this.type = type;
@@ -243,6 +245,9 @@ public abstract class BaseCraft implements Craft {
     public void setCruising(boolean cruising) {
         audience.sendActionBar(Component.text().content("Cruising " + (cruising ? "enabled" : "disabled")));
         this.cruising = cruising;
+        if (!this.cruising) {
+            this.setCruiseCooldownMultiplier(1);
+        }
     }
 
     @Override
@@ -262,6 +267,9 @@ public abstract class BaseCraft implements Craft {
 
     @Override
     public void setCruiseDirection(CruiseDirection cruiseDirection) {
+        if (!cruiseDirection.equals(this.cruiseDirection)) {
+            this.setCruiseCooldownMultiplier(1);
+        }
         this.cruiseDirection = cruiseDirection;
     }
 
@@ -579,4 +587,14 @@ public abstract class BaseCraft implements Craft {
 
     @Override
     public Map<NamespacedKey, Set<TrackedLocation>> getTrackedLocations() {return trackedLocations;}
+
+    @Override
+    public void setCruiseCooldownMultiplier(double value) {
+        this.cruiseTickMultiplier = value;
+    }
+
+    @Override
+    public double getCruiseCooldownMultiplier() {
+        return this.cruiseTickMultiplier;
+    }
 }
