@@ -28,6 +28,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -430,12 +431,16 @@ public class SignListener implements Listener {
         if (state instanceof Sign sign) {
             SignWrapper wrapper = this.getSignWrapper(sign, event);
             ItemStack heldItem = event.getItem();
+            if (heldItem == null) {
+                heldItem = event.getHand() == EquipmentSlot.HAND ? event.getPlayer().getInventory().getItem(EquipmentSlot.OFF_HAND) : event.getPlayer().getInventory().getItem(EquipmentSlot.HAND);
+            }
             boolean onCraft = MathUtils.getCraftByPersistentBlockData(sign.getLocation()) != null;
 
-            AbstractMovecraftSign ams = null;
+            AbstractMovecraftSign ams = MovecraftSignRegistry.INSTANCE.get(wrapper.line(0));
 
             // If the side is empty, we should try a different side, like, the next side that is not empty and which has a signHandler
-            if (wrapper.isEmpty()) {
+            // If we found no handler for that side, it is practically empty, so we need to check for the other side to avoid breaking stuff
+            if (wrapper.isEmpty() || ams == null) {
                 SignWrapper[] wrapps = this.getSignWrappers(sign, true);
                 if (wrapps == null || wrapps.length == 0) {
                     // Nothing found
@@ -467,14 +472,11 @@ public class SignListener implements Listener {
                 if (Tags.SIGN_EDIT_MATERIALS.contains(heldItem.getType()) && event.getAction().isRightClick()) {
                     return;
                 }
-                if (sneaking) {
-                    if (Tags.SIGN_BYPASS_RIGHT_CLICK.contains(heldItem.getType()) && (event.getAction().isRightClick())) {
-                        return;
-                    }
-
-                    if (Tags.SIGN_BYPASS_LEFT_CLICK.contains(heldItem.getType()) && (event.getAction().isLeftClick())) {
-                        return;
-                    }
+                if (Tags.SIGN_BYPASS_RIGHT_CLICK.contains(heldItem.getType()) && (event.getAction().isRightClick())) {
+                    return;
+                }
+                if (sneaking && Tags.SIGN_BYPASS_LEFT_CLICK.contains(heldItem.getType()) && (event.getAction().isLeftClick())) {
+                    return;
                 }
             }
 
