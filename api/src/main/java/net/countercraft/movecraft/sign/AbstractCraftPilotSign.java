@@ -14,4 +14,8 @@ public abstract class AbstractCraftPilotSign extends AbstractMovecraftSign {
         this.craftType = craftType;
     }
 
+    public CraftType getCraftType() {
+        return this.craftType;
+    }
+
 }
