@@ -5,11 +5,7 @@ import net.countercraft.movecraft.MovecraftChunk;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.config.Settings;
-import net.countercraft.movecraft.craft.ChunkManager;
-import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.craft.SinkingCraft;
-import net.countercraft.movecraft.craft.SubCraft;
+import net.countercraft.movecraft.craft.*;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftCollisionEvent;
 import net.countercraft.movecraft.events.CraftCollisionExplosionEvent;
@@ -25,6 +21,7 @@ import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.ExplosionUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.ItemDropUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
+import net.countercraft.movecraft.util.MathUtils;
 import net.countercraft.movecraft.util.Tags;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
 import net.countercraft.movecraft.util.hitboxes.MutableHitBox;
@@ -42,11 +39,11 @@ import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
+import org.bukkit.entity.*;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -360,6 +357,48 @@ public class TranslationTask extends AsyncTask {
                 oldHitBox.getYLength() / 2.0 + 2,
                 oldHitBox.getZLength() / 2.0 + 1
         )) {
+
+            // Do not move moving projectiles
+            if (entity instanceof Projectile projectile) {
+                if (projectile.isOnGround()) {
+                    continue;
+                }
+                Vector velocity = entity.getVelocity();
+                if (entity instanceof Fireball fireball) {
+                    velocity = fireball.getAcceleration();
+                }
+                if (Math.abs(velocity.lengthSquared()) >= 0.25) {
+                    continue;
+                }
+            }
+
+            // Do not drag along other pilots pretty please
+            if (entity instanceof Player) {
+                boolean skip = false;
+                // Player => Check for other craft
+                for (Craft craftTmp : MathUtils.craftsNearLocFast(CraftManager.getInstance().getCraftsInWorld(entity.getWorld()), entity.getLocation())) {
+                    if (craftTmp == craft) {
+                        continue;
+                    }
+                    if (craftTmp instanceof PilotedCraft pilotedCraft && pilotedCraft.getPilot() == entity) {
+                        skip = true;
+                        break;
+                    }
+                    if (craftTmp.getHitBox().contains(entity.getLocation().getBlockX(), entity.getLocation().getBlockY(), entity.getLocation().getBlockZ())) {
+                        // Because of squadrons implementing SubCraft...
+                        if (craftTmp instanceof SubCraftImpl) {
+                            continue;
+                        }
+                        skip = true;
+                        break;
+                    }
+                }
+                // DO NOT MOVE THIS PLAYER
+                if (skip) {
+                    continue;
+                }
+            }
+
             if ((entity.getType() == EntityType.PLAYER && !(craft instanceof SinkingCraft))) {
                 CraftTeleportEntityEvent e = new CraftTeleportEntityEvent(craft, entity);
                 Bukkit.getServer().getPluginManager().callEvent(e);
