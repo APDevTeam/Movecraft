@@ -267,7 +267,7 @@ public abstract class BaseCraft implements Craft {
 
     @Override
     public void setCruiseDirection(CruiseDirection cruiseDirection) {
-        if (!cruiseDirection.equals(this.cruiseDirection)) {
+        if (cruiseDirection != null && !cruiseDirection.equals(this.cruiseDirection)) {
             this.setCruiseCooldownMultiplier(1);
         }
         this.cruiseDirection = cruiseDirection;
