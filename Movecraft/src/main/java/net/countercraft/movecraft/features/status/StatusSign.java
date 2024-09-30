@@ -4,6 +4,8 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.craft.type.RequiredBlockEntry;
+import net.countercraft.movecraft.events.CraftDetectEvent;
+import net.countercraft.movecraft.processing.WorldManager;
 import net.countercraft.movecraft.sign.AbstractInformationSign;
 import net.countercraft.movecraft.sign.SignListener;
 import net.countercraft.movecraft.util.Counter;
@@ -24,6 +26,18 @@ public class StatusSign extends AbstractInformationSign {
     protected static final int FUEL_LINE_INDEX = 3;
     protected static final int BLOCK_LINE_INDEX_TOP = 1;
     protected static final int BLOCK_LINE_INDEX_BOTTOM = 2;
+
+    @Override
+    public void onCraftDetect(CraftDetectEvent event, SignListener.SignWrapper sign) {
+        // Icky hack to supply the craft with the status values
+        long lastStatusUpdate = event.getCraft().getDataTag(StatusManager.LAST_STATUS_CHECK);
+        if (lastStatusUpdate == System.currentTimeMillis()) {
+            StatusManager.StatusUpdateTask updateTask = new StatusManager.StatusUpdateTask(event.getCraft());
+            updateTask.get();
+        }
+
+        super.onCraftDetect(event, sign);
+    }
 
     @Override
     protected @Nullable Component getUpdateString(int lineIndex, Component oldData, Craft craft) {

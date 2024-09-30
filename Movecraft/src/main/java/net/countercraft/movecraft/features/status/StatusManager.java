@@ -32,7 +32,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 public class StatusManager extends BukkitRunnable implements Listener {
-    private static final CraftDataTagKey<Long> LAST_STATUS_CHECK = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "last-status-check"), craft -> System.currentTimeMillis());
+    public static final CraftDataTagKey<Long> LAST_STATUS_CHECK = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "last-status-check"), craft -> System.currentTimeMillis());
 
     @Override
     public void run() {
@@ -46,11 +46,11 @@ public class StatusManager extends BukkitRunnable implements Listener {
         }
     }
 
-    private static final class StatusUpdateTask implements Supplier<Effect> {
+    public static final class StatusUpdateTask implements Supplier<Effect> {
         private final Craft craft;
         private final Map<Material, Double> fuelTypes;
 
-        private StatusUpdateTask(@NotNull Craft craft) {
+        public StatusUpdateTask(@NotNull Craft craft) {
             this.craft = craft;
 
             Object object = craft.getType().getObjectProperty(CraftType.FUEL_TYPES);
