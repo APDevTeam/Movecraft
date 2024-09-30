@@ -2,6 +2,7 @@ package net.countercraft.movecraft.sign;
 
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.craft.PilotedCraft;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
@@ -21,7 +22,7 @@ public class ReleaseSign extends AbstractMovecraftSign {
 
     @Override
     protected boolean internalProcessSign(Action clickType, SignListener.SignWrapper sign, Player player, @Nullable Craft craft) {
-        if (craft == null) {
+        if (craft == null || (craft instanceof PilotedCraft pc && pc.getPilot() != player)) {
             craft = CraftManager.getInstance().getCraftByPlayer(player);
         }
         if (craft != null) {
