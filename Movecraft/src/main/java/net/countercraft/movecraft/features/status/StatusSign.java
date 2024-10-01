@@ -32,8 +32,7 @@ public class StatusSign extends AbstractInformationSign {
         // Icky hack to supply the craft with the status values
         long lastStatusUpdate = event.getCraft().getDataTag(StatusManager.LAST_STATUS_CHECK);
         if (lastStatusUpdate == System.currentTimeMillis()) {
-            StatusManager.StatusUpdateTask updateTask = new StatusManager.StatusUpdateTask(event.getCraft());
-            updateTask.get();
+            event.getCraft().setDataTag(StatusManager.LAST_STATUS_CHECK, 0l);
         }
 
         super.onCraftDetect(event, sign);
