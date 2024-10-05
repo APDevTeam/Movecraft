@@ -39,7 +39,7 @@ public class RemoteSign extends AbstractCraftSign {
     protected boolean internalProcessSignWithCraft(Action clickType, AbstractSignListener.SignWrapper sign, Craft craft, Player player) {
         Map<AbstractMovecraftSign, LinkedList<AbstractSignListener.SignWrapper>> foundTargetSigns = new HashMap<>();
         boolean firstError = true;
-        final String targetIdent = sign.getRaw(1).toUpperCase();
+        final String targetIdent = sign.getRaw(1);
         for (MovecraftLocation tloc : craft.getHitBox()) {
             BlockState tstate = craft.getWorld().getBlockAt(tloc.getX(), tloc.getY(), tloc.getZ()).getState();
             if (!(tstate instanceof Sign)) {
@@ -134,8 +134,8 @@ public class RemoteSign extends AbstractCraftSign {
 
     // Walks through all strings on the wrapper and if any of the non-header strings match it returns true
     protected static boolean matchesDescriptor(final String descriptor, final AbstractSignListener.SignWrapper potentialTarget) {
-        for (int i = 1; i < potentialTarget.lines().size(); i++) {
-            String targetStr = potentialTarget.getRaw(i).toUpperCase();
+        for (int i = 2; i < potentialTarget.lines().size(); i++) {
+            String targetStr = potentialTarget.getRaw(i);
             if (descriptor.equalsIgnoreCase(targetStr)) {
                 return true;
             }
