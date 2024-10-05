@@ -129,7 +129,7 @@ public class RemoteSign extends AbstractCraftSign {
 
     // Walks through all strings on the wrapper and if any of the non-header strings match it returns true
     protected static boolean matchesDescriptor(final String descriptor, final SignListener.SignWrapper potentialTarget) {
-        for (int i = 2; i < potentialTarget.lines().size(); i++) {
+        for (int i = 1; i < potentialTarget.lines().size(); i++) {
             String targetStr = potentialTarget.getRaw(i);
             if (descriptor.equalsIgnoreCase(targetStr)) {
                 return true;
