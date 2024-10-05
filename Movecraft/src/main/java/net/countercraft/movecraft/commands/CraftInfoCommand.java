@@ -1,23 +1,24 @@
 package net.countercraft.movecraft.commands;
 
+import co.aikar.commands.BaseCommand;
+import co.aikar.commands.InvalidCommandArgument;
+import co.aikar.commands.annotation.*;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.type.CraftType;
-import net.countercraft.movecraft.util.MathUtils;
 import net.countercraft.movecraft.util.TopicPaginator;
-import org.bukkit.command.Command;
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.OptionalInt;
 import java.util.function.Function;
 
-public class CraftInfoCommand implements TabExecutor {
+@CommandAlias("craftinfo")
+public class CraftInfoCommand extends BaseCommand {
     private static final List<Function<Craft,? extends Iterable<String>>> providers = new ArrayList<>();
     static {
         registerMultiProvider(CraftInfoCommand::allowedBlockProvider);
@@ -48,51 +49,48 @@ public class CraftInfoCommand implements TabExecutor {
         providers.add(provider.andThen(List::of));
     }
 
+    @Default
+    @Syntax("[player] <page>")
+    @Description("Get information on a piloted craft")
+    @CommandCompletion("@players")
+    public static void onOtherPlayer(CommandSender commandSender, String[] args) {
+        if (args.length > 2) {
+            throw new InvalidCommandArgument("Max allowed arguments: 2");
+        }
 
-    @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if(args.length == 0){
-            if (!(sender instanceof Player)){
-                sender.sendMessage("Supply a parameter.");
-                return true;
+        try {
+            int page = args.length == 0 ? 1 : Integer.parseInt(args[0]);
+            if (!(commandSender instanceof Player player)) {
+                commandSender.sendMessage("You can't run this command on yourself as console");
+                return;
             }
-            Craft craft = CraftManager.getInstance().getCraftByPlayer(((Player) sender));
-            if(craft == null){
-                sender.sendMessage("You must be piloting a craft.");
-                return true;
+
+            Craft craft = CraftManager.getInstance().getCraftByPlayer(player);
+            if (craft == null) {
+                commandSender.sendMessage("No player craft found");
+                return;
             }
-            craftInfo(sender, craft, 1);
-            return true;
-        }
-        OptionalInt pageQuery;
-        if (sender instanceof  Player && (pageQuery = MathUtils.parseInt(args[0])).isPresent()){
-            Craft craft = CraftManager.getInstance().getCraftByPlayer(((Player) sender));
-            if(craft == null){
-                sender.sendMessage("You must be piloting a craft.");
-                return true;
+
+            craftInfo(commandSender, craft, page);
+
+        } catch (NumberFormatException e) {
+            Player playerSubject = Bukkit.getPlayer(args[0]);
+            if (playerSubject == null) {
+                commandSender.sendMessage("First argument must be either a number or a player");
+                return;
             }
-            craftInfo(sender, craft, pageQuery.getAsInt());
-            return true;
-        }
-        var craft = CraftManager.getInstance().getCraftByPlayerName(args[0]);
-        if (craft == null) {
-            sender.sendMessage("No player found");
-            return true;
-        }
-        if(args.length > 1){
-            pageQuery = MathUtils.parseInt(args[1]);
-            if(pageQuery.isEmpty()){
-                sender.sendMessage("Parameter " + args[1] + " must be a page number.");
-                return true;
+
+            Craft craft = CraftManager.getInstance().getCraftByPlayer(playerSubject);
+            if (craft == null) {
+                commandSender.sendMessage("No player craft found");
+                return;
             }
-        } else {
-            pageQuery = OptionalInt.of(1);
+
+            craftInfo(commandSender, craft, args.length == 1 ? 1 : Integer.parseInt(args[1]));
         }
-        craftInfo(sender, craft, pageQuery.getAsInt());
-        return true;
     }
 
-    public void craftInfo(@NotNull CommandSender commandSender, @NotNull Craft craft, int page){
+    public static void craftInfo(@NotNull CommandSender commandSender, @NotNull Craft craft, int page){
         TopicPaginator paginator = new TopicPaginator("Craft Info");
         for(var provider : providers){
             for(var line : provider.apply(craft)){
@@ -105,10 +103,5 @@ public class CraftInfoCommand implements TabExecutor {
         }
         for(String line : paginator.getPage(page))
             commandSender.sendMessage(line);
-    }
-
-    @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
-        return null;
     }
 }
