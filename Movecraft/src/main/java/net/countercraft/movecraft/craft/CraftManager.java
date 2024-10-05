@@ -22,6 +22,7 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.events.CraftSinkEvent;
+import net.countercraft.movecraft.events.ExplosionEvent;
 import net.countercraft.movecraft.events.TypesReloadedEvent;
 import net.countercraft.movecraft.exception.NonCancellableReleaseException;
 import net.countercraft.movecraft.localisation.I18nSupport;
@@ -34,6 +35,7 @@ import net.countercraft.movecraft.processing.tasks.detection.DetectionTask;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -202,7 +204,27 @@ public class CraftManager implements Iterable<Craft>{
         if (craft instanceof PlayerCraft)
             playerCrafts.remove(((PlayerCraft) craft).getPilot());
 
-        crafts.add(new SinkingCraftImpl(craft));
+        SinkingCraftImpl sinkingCraft = new SinkingCraftImpl(craft);
+        crafts.add(sinkingCraft);
+
+        int tickDelay = sinkingCraft.getType().getIntProperty(CraftType.EXPLODE_ON_SINK_DELAY);
+        new BukkitRunnable() {
+
+            @Override
+            public void run() {
+                CraftType type = sinkingCraft.getType();
+                float explosionStrength = type.getFloatProperty(CraftType.EXPLODE_ON_SINK);
+                boolean incendiary = type.getBoolProperty(CraftType.INCENDIARY_ON_SINK);
+
+                Location location = sinkingCraft.getHitBox().getMidPoint().toBukkit(sinkingCraft.getWorld());
+
+                ExplosionEvent event = new ExplosionEvent(location, explosionStrength, incendiary);
+                Bukkit.getServer().getPluginManager().callEvent(event);
+
+                if (!event.isCancelled())
+                    location.createExplosion(explosionStrength, incendiary);
+            }
+        }.runTaskLater(Movecraft.getInstance(), tickDelay);
     }
 
     public void release(@NotNull Craft craft, @NotNull CraftReleaseEvent.Reason reason, boolean force) {
