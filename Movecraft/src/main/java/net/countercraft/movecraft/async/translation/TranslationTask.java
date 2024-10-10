@@ -360,27 +360,51 @@ public class TranslationTask extends AsyncTask {
 
             // Do not move moving projectiles
             if (entity instanceof Projectile projectile) {
-                if (projectile.isOnGround()) {
-                    continue;
-                }
-                Vector velocity = entity.getVelocity();
-                if (entity instanceof Fireball fireball) {
-                    velocity = fireball.getAcceleration();
-                }
-                if (Math.abs(velocity.lengthSquared()) >= 0.25) {
-                    continue;
+                if (!projectile.isOnGround()) {
+                    Vector velocity = entity.getVelocity();
+                    if (entity instanceof Fireball fireball) {
+                        velocity = fireball.getAcceleration();
+                    }
+                    if (Math.abs(velocity.lengthSquared()) >= 0.025) {
+                        continue;
+                    }
                 }
             }
 
+            // TNT special check
+            // DO NOT move moving tnt
+            // Velocity in water: [0.0, 0.0, 0.05]
+            if (entity instanceof TNTPrimed tntPrimed) {
+                // If it is on the ground it is most likely in our cannon, so then we don't need to check, then it is allowed to move
+                if (!tntPrimed.isOnGround()) {
+                    // It is not on the ground
+                    // It's velocity is slightly faster then when travelling in water (0.0025)
+                    // Velocity when pushed by a single tnt: [0, 0,0, 0.16] => 0.0256
+                    if (tntPrimed.getVelocity().lengthSquared() > 0.0512) {
+                        continue;
+                    }
+                }
+            }
+
+            final boolean isEntityAlwaysMoved = (
+                    entity instanceof Player
+                    || entity.getType() == EntityType.TNT
+                    || entity.getType() == EntityType.TNT_MINECART
+                    || entity instanceof Minecart
+                    || entity instanceof Hanging
+                    || entity instanceof Display
+            );
+
             // Do not drag along other pilots pretty please
-            if (entity instanceof Player) {
+            if (isEntityAlwaysMoved) {
                 boolean skip = false;
                 // Player => Check for other craft
                 for (Craft craftTmp : MathUtils.craftsNearLocFast(CraftManager.getInstance().getCraftsInWorld(entity.getWorld()), entity.getLocation())) {
                     if (craftTmp == craft) {
                         continue;
                     }
-                    if (craftTmp instanceof PilotedCraft pilotedCraft && pilotedCraft.getPilot() == entity) {
+                    // Playerspecific check
+                    if (entity instanceof Player && craftTmp instanceof PilotedCraft pilotedCraft && pilotedCraft.getPilot() == entity) {
                         skip = true;
                         break;
                     }
@@ -393,7 +417,7 @@ public class TranslationTask extends AsyncTask {
                         break;
                     }
                 }
-                // DO NOT MOVE THIS PLAYER
+                // DO NOT MOVE THIS ENTITY
                 if (skip) {
                     continue;
                 }
@@ -411,8 +435,10 @@ public class TranslationTask extends AsyncTask {
                 continue;
             }
 
-            if (craft.getType().getBoolProperty(CraftType.ONLY_MOVE_PLAYERS)
-                    && entity.getType() != EntityType.TNT) {
+            if (
+                    craft.getType().getBoolProperty(CraftType.ONLY_MOVE_PLAYERS)
+                    && !isEntityAlwaysMoved
+            ) {
                 continue;
             }
 
