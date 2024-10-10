@@ -29,5 +29,6 @@ public class CraftReleaseListener implements Listener {
 
             tile.update();
         }
+        InteractListener.INTERACTION_TIME_MAP.remove(craft.getUUID());
     }
 }

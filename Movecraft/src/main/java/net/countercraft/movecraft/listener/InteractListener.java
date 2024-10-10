@@ -34,10 +34,12 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
+import java.util.UUID;
 import java.util.WeakHashMap;
 
 public final class InteractListener implements Listener {
-    private final Map<Player, Long> timeMap = new WeakHashMap<>();
+    public static final Map<UUID, Long> INTERACTION_TIME_MAP = new WeakHashMap<>();
+    public static final Map<UUID, Long> PLAYER_INTERACTION_TIME_MAP = new WeakHashMap<>();
 
     @EventHandler(priority = EventPriority.LOWEST) // LOWEST so that it runs before the other events
     public void onPlayerInteract(@NotNull PlayerInteractEvent e) {
@@ -105,7 +107,7 @@ public final class InteractListener implements Listener {
             if (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_DIRECT_MOVEMENT)
                     && type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN))
                 tickCooldown *= currentGear; // Account for gear shifts
-            Long lastTime = timeMap.get(p);
+            Long lastTime = Math.min(INTERACTION_TIME_MAP.get(craft.getUUID()), PLAYER_INTERACTION_TIME_MAP.get(p.getUniqueId()));
             if (lastTime != null) {
                 long ticksElapsed = (System.currentTimeMillis() - lastTime) / 50;
 
@@ -135,7 +137,8 @@ public final class InteractListener implements Listener {
                     dy *= currentGear; // account for gear shifts
 
                 craft.translate(craft.getWorld(), 0, dy, 0);
-                timeMap.put(p, System.currentTimeMillis());
+                INTERACTION_TIME_MAP.put(craft.getUUID(), System.currentTimeMillis());
+                PLAYER_INTERACTION_TIME_MAP.put(p.getUniqueId(), System.currentTimeMillis());
                 craft.setLastCruiseUpdate(System.currentTimeMillis());
                 return;
             }
@@ -154,7 +157,8 @@ public final class InteractListener implements Listener {
             }
 
             craft.translate(craft.getWorld(), dx, dy, dz);
-            timeMap.put(p, System.currentTimeMillis());
+            INTERACTION_TIME_MAP.put(craft.getUUID(), System.currentTimeMillis());
+            PLAYER_INTERACTION_TIME_MAP.put(p.getUniqueId(), System.currentTimeMillis());
             craft.setLastCruiseUpdate(System.currentTimeMillis());
         }
     }
