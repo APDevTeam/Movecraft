@@ -395,6 +395,8 @@ public class TranslationTask extends AsyncTask {
                     || entity instanceof Display
             );
 
+            final int craftSize = craft.getHitBox().size();
+
             // Do not drag along other pilots pretty please
             if (isEntityAlwaysMoved) {
                 boolean skip = false;
@@ -405,8 +407,16 @@ public class TranslationTask extends AsyncTask {
                     }
                     // Playerspecific check
                     if (entity instanceof Player && craftTmp instanceof PilotedCraft pilotedCraft && pilotedCraft.getPilot() == entity) {
-                        skip = true;
-                        break;
+                        // Only skip, if the found craft is smaller
+                        if (craft instanceof  PilotedCraft pilotedCraft1 && pilotedCraft1.getPilot() == entity) {
+                            // Squadron or subskiff moving, can be ignored
+                        } else {
+                            int sizeTmp = craftTmp.getHitBox().size();
+                            if (sizeTmp < craftSize) {
+                                skip = true;
+                                break;
+                            }
+                        }
                     }
                     if (craftTmp.getHitBox().contains(entity.getLocation().getBlockX(), entity.getLocation().getBlockY(), entity.getLocation().getBlockZ())) {
                         // Because of squadrons implementing SubCraft...
