@@ -107,17 +107,30 @@ public final class InteractListener implements Listener {
             if (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_DIRECT_MOVEMENT)
                     && type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN))
                 tickCooldown *= currentGear; // Account for gear shifts
-            Long lastTime = Math.min(INTERACTION_TIME_MAP.get(craft.getUUID()), PLAYER_INTERACTION_TIME_MAP.get(p.getUniqueId()));
-            if (lastTime != null) {
-                long ticksElapsed = (System.currentTimeMillis() - lastTime) / 50;
+            Long lastTimePlayer = PLAYER_INTERACTION_TIME_MAP.get(p.getUniqueId());
+            Long lastTimeCraft = INTERACTION_TIME_MAP.get(craft.getUUID());
+            if (lastTimeCraft != null || lastTimePlayer != null) {
+                Long lastTime = null;
+                if (lastTimeCraft == null) {
+                    lastTime = lastTimePlayer;
+                }
+                else if (lastTimePlayer == null) {
+                    lastTime = lastTimeCraft;
+                }
+                else {
+                    lastTime = Math.min(INTERACTION_TIME_MAP.get(craft.getUUID()), PLAYER_INTERACTION_TIME_MAP.get(p.getUniqueId()));
+                }
+                if (lastTime != null) {
+                    long ticksElapsed = (System.currentTimeMillis() - lastTime) / 50;
 
-                // if the craft should go slower underwater, make time pass more slowly there
-                if (craft.getType().getBoolProperty(CraftType.HALF_SPEED_UNDERWATER)
-                        && craft.getHitBox().getMinY() < craft.getWorld().getSeaLevel())
-                    ticksElapsed /= 2;
+                    // if the craft should go slower underwater, make time pass more slowly there
+                    if (craft.getType().getBoolProperty(CraftType.HALF_SPEED_UNDERWATER)
+                            && craft.getHitBox().getMinY() < craft.getWorld().getSeaLevel())
+                        ticksElapsed /= 2;
 
-                if (ticksElapsed < tickCooldown)
-                    return; // Not enough time has passed, so don't do anything
+                    if (ticksElapsed < tickCooldown)
+                        return; // Not enough time has passed, so don't do anything
+                }
             }
 
             if (!p.hasPermission("movecraft." + craft.getType().getStringProperty(CraftType.NAME) + ".move")) {
