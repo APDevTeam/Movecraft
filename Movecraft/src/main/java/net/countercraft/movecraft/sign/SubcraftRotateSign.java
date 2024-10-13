@@ -56,10 +56,11 @@ public class SubcraftRotateSign extends AbstractSubcraftSign {
                         parent.setHitBox(newHitbox);
                     }
 
+                    subcraft.rotate(rotation, startPoint, true);
+
                     new BukkitRunnable() {
                         @Override
                         public void run() {
-                            subcraft.rotate(rotation, startPoint, true);
                             if (subcraft instanceof SubCraft) {
                                 Craft parent = ((SubCraft) subcraft).getParent();
                                 var newHitbox = parent.getHitBox().union(subcraft.getHitBox());
